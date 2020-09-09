@@ -1,0 +1,35 @@
+[package]
+name = "sideswap_client"
+version = "0.1.0"
+edition = "2018"
+
+[lib]
+name = "sideswap_client"
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]
+sideswap_api = { version = "*", path = "../sideswap_api" }
+cxx = "*"
+elements = "*"
+bitcoin = "*"
+tungstenite = { version = "*", features = ["native-tls"] }
+url = "*"
+openssl = { version = "*", features = ["vendored"] }
+serde = { version = "*", features = ["derive"] }
+serde_json = "*"
+reqwest = { version = "*", features = ["blocking", "json"] }
+log = "*"
+anyhow = "*"
+env_logger = "*"
+diesel = { version = "*", features = ["sqlite"] }
+diesel_migrations = "*"
+libsqlite3-sys = { version = "0.9.1", features = ["bundled"] }
+qrcode = "*"
+async-tungstenite = { version = "*", features = ["tokio-native-tls"] }
+tokio = "*"
+futures = "*"
+futures-util = "*"
+derive_more = "*"
+clap = { version = "3.0.0-beta.1", default-features = false, features = ["std", "derive"] }
+dirs = "3.0.1"
+log4rs = "*"

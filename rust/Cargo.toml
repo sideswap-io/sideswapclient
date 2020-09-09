@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "sideswap_api",
+    "sideswap_client",
+]
