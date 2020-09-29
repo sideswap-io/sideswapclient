@@ -1,7 +1,7 @@
 use super::hist;
 use super::models::Wallet;
-use sideswap_api::*;
 use serde::Serialize;
+use sideswap_api::*;
 use std::sync::mpsc;
 
 #[derive(Serialize)]
@@ -51,7 +51,7 @@ pub struct PegState {
     pub pegin: bool,
     pub peg_addr: String,
     pub status: Status,
-    pub server_status: Option<super::sideswap_api::PegStatus>,
+    pub server_status: Option<PegStatus>,
     pub min_pegin_amount: Option<i64>,
     pub min_pegout_amount: Option<i64>,
     pub server_fee_percent_peg_in: Option<f64>,
@@ -65,8 +65,7 @@ pub struct MatchState {
 
 #[derive(Serialize, Clone)]
 pub enum SwapStatus {
-    OfferSent,
-    OfferRecv,
+    ReviewOffer,
     WaitTxInfo,
     WaitPsbt,
     WaitSign,
@@ -82,12 +81,14 @@ pub struct SwapState {
     pub show_password_prompt: bool,
     pub rfq_offer: Offer,
     pub tx_id: String,
-    pub psb_to_sign: String,
     pub asset_labels: std::collections::HashMap<String, String>,
-    pub own_outputs: SwapOutputs,
-    pub contra_outputs: SwapOutputs,
     pub canceled_by_me: bool,
-    pub stage_accepted_by_me: bool,
+    pub network_fee: i64,
+    pub server_fee: i64,
+    pub swap_in_progress: bool,
+    pub unconfirmed_balances: String,
+    pub price: Option<f64>,
+    pub deliver_amount: Option<i64>,
 }
 
 #[derive(Serialize, Clone)]
@@ -116,32 +117,34 @@ pub enum Update {
     WalletApplyResult(ApplyResult),
 }
 
-pub static TITLE_NODE_RPC_CONN: &'static str = "Node rpc connection";
+pub static TITLE_NODE_OFFLINE: &'static str = "Elements node offline";
+pub static TITLE_NODE_ONLINE: &'static str = "Elements node online";
 pub static TITLE_SERVER_CONN: &'static str = "Server connection";
 pub static TITLE_SWAP: &'static str = "SWAP";
 pub static TITLE_PEG: &'static str = "PEG";
 pub static TITLE_DATABASE: &'static str = "DATABASE";
 pub static TITLE_SERVER_RESP: &'static str = "Server response";
 
-pub static MSG_NOT_CONNECTED: &'static str = "Not connected. Please make sure you have access to <a href=\"https://api.sideswap.io/\">sideswap server</a>";
+pub static MSG_NOT_CONNECTED: &'static str = "Not connected. Please make sure you have access to <a href=\"https://sideswap.io/\">sideswap server</a>.";
 pub static MSG_NODE_RPC_NOT_CONNECTED_NETWORK: &'static str =
-    "Cannot connect to node rpc. Plase check network configuration.";
+    "Please check your network configuration.";
 pub static MSG_NODE_RPC_NOT_CONNECTED_AUTH: &'static str =
     "Invalid authentication data. Please check login/passsword data accuracy.";
-pub static MSG_NODE_RPC_CONNECTED: &'static str = "Succesfully connected to node rpc";
-pub static MSG_NO_UTXO_SELL: &'static str = "Not enough UTXO to sell";
-pub static MSG_NO_UTXO_BUY: &'static str = "Not enough UTXO to buy";
-pub static MSG_SUCCESS: &'static str = "Success";
-pub static MSG_UNEXPECTED: &'static str = "Unexpected response";
-pub static MSG_INVALID_PSWD: &'static str = "Invalid password";
-pub static MSG_CONN_LOST: &'static str = "Connection to server lost";
-pub static MSG_NO_QUOTES: &'static str = "No quotes were received";
-pub static MSG_RESP_NO_UTXO: &'static str = "Responder had not send UTXO information";
-pub static MSG_RESP_NO_PSBT: &'static str = "Responder had not send PSBT information";
-pub static MSG_RESP_NO_SIGN: &'static str = "Responder failed to sign";
-pub static MSG_OWN_NO_PSBT: &'static str = "Swap elapsed without being accepted";
-pub static MSG_OWN_NO_SIGN: &'static str = "Swap elapsed without being signed";
-pub static MSG_RFQ_CANCELLED: &'static str = "RFQ Canceled";
+pub static MSG_NODE_RPC_CONNECTED: &'static str =
+    "You have successfully connected to your Elements node.";
+pub static MSG_NO_UTXO_SELL: &'static str = "Not enough UTXO to sell.";
+pub static MSG_NO_UTXO_BUY: &'static str = "Not enough UTXO to buy.";
+pub static MSG_SUCCESS: &'static str = "Success.";
+pub static MSG_UNEXPECTED: &'static str = "Unexpected response.";
+pub static MSG_INVALID_PSWD: &'static str = "Invalid password.";
+pub static MSG_CONN_LOST: &'static str = "Connection to server lost.";
+pub static MSG_NO_QUOTES: &'static str = "No quotes were received.";
+
+pub static MSG_CLIENT_ERROR: &'static str = "Sign failed.";
+pub static MSG_DEALER_ERROR: &'static str = "Dealer failed to sign.";
+pub static MSG_SERVER_ERROR: &'static str = "Unknown server error.";
+pub static MSG_TIMEOUT: &'static str = "Swap elapsed without being accepted.";
+pub static MSG_CANCELLED: &'static str = "Cancelled.";
 
 pub fn show_notification(
     title: &str,

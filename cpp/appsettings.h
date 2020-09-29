@@ -6,7 +6,7 @@
 #include <QJsonArray>
 
 namespace BuildData {
-    const QString host = "api.sideswap.io";
+    const std::string host = "api.sideswap.io";
     const int port = 443;
     const bool useTls = true;
     const bool mainnet = true;
@@ -28,41 +28,7 @@ public:
         return &settings;
     }
 
-    // debug property
-    QString host() {
-        if (BuildData::isDebug) {
-            return value("Authentification/host", BuildData::host).toString();
-        } else {
-            return BuildData::host;
-        }
-    }
-    void setHost(QString value) { setValue("Authentification/host", value); }
-
-    int port() const {
-        if (BuildData::isDebug) {
-            return value("Authentification/port", BuildData::port).toInt();
-        } else {
-            return BuildData::port;
-        }
-    }
-    void setPort(int value) { setValue("Authentification/port", value); }
-
-    bool useTls() const {
-        if (BuildData::isDebug) {
-            return value("Authentification/usetls", BuildData::useTls).toBool();
-        } else {
-            return BuildData::useTls;
-        }
-    }
-    void setUseTls(bool value) { setValue("Authentification/usetls", value); }
-
-    bool mainnet() const {
-        if (BuildData::isDebug) {
-            return value("Authentification/mainnet", BuildData::mainnet).toBool();
-        } else {
-            return BuildData::mainnet;
-        }
-    }
-    void setMainnet(bool value) { setValue("Authentification/mainnet", value); }
+    bool showWizard() const { return value("General/openWizard", true).toBool(); }
+    void setWizardShowed() { setValue("General/openWizard", false); }
 };
 #endif // APPSETTINGS_H

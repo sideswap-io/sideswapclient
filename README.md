@@ -52,7 +52,7 @@ cd sideswapclient
 #### Check building Rust
 
 ```bash
-cd rast
+cd rust
 cargo build
 ```
 

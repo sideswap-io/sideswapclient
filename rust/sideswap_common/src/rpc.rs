@@ -2,7 +2,14 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::vec::Vec;
 
-pub type RpcServer = super::ffi::ffi::RpcServer;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RpcServer {
+    pub host: String,
+    pub port: u16,
+    pub login: String,
+    pub password: String,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RpcRequest {
     pub method: String,
@@ -10,7 +17,7 @@ pub struct RpcRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct RpcError {
+pub struct RpcError {
     pub message: String,
 }
 
@@ -20,19 +27,86 @@ struct RpcResult<T> {
     pub error: Option<RpcError>,
 }
 
-pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
+pub fn is_default_rpc(rpc_server: &RpcServer) -> bool {
+    rpc_server.host == "localhost"
+        && rpc_server.port == 7041
+        && rpc_server.login.is_empty()
+        && rpc_server.password.is_empty()
+}
+
+fn get_default_rpc() -> Result<RpcServer, anyhow::Error> {
+    let mut is_linux = false;
+    let mut conf_path = match std::env::consts::FAMILY {
+        "unix" => match std::env::consts::OS {
+            "macos" => dirs::config_dir(),
+            _ => {
+                is_linux = true;
+                dirs::home_dir()
+            }
+        },
+        _ => dirs::config_dir(),
+    }
+    .unwrap();
+
+    if is_linux {
+        conf_path.push(".elements");
+    } else {
+        conf_path.push("Elements");
+    }
+
+    conf_path.push("liquidv1");
+    conf_path.push(".cookie");
+
+    let cookie = std::fs::read_to_string(conf_path)?;
+    let credential: Vec<&str> = cookie.split(':').collect();
+
+    ensure!(credential.len() == 2, "invalid cookie faile");
+    let login = credential[0].to_owned();
+    let password = credential[1].to_owned();
+
+    Ok(RpcServer {
+        host: "localhost".to_owned(),
+        port: 7041,
+        login,
+        password,
+    })
+}
+
+fn make_rpc_impl(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
     req: &RpcRequest,
-) -> Result<T, anyhow::Error> {
+) -> Result<(String, reqwest::StatusCode), anyhow::Error> {
     let endpoint = format!("http://{}:{}", &rpc_server.host, rpc_server.port);
     let res = http_client
         .post(&endpoint)
         .basic_auth(&rpc_server.login, Some(&rpc_server.password))
         .json(&req)
-        .send()?
-        .text()?;
-    let response = serde_json::from_str::<RpcResult<T>>(&res)?;
+        .send()?;
+    let status = res.status();
+    let data = std::str::from_utf8(&res.bytes()?)?.to_owned();
+    Ok((data, status))
+}
+
+pub fn make_rpc(
+    http_client: &reqwest::blocking::Client,
+    rpc_server: &RpcServer,
+    req: &RpcRequest,
+) -> Result<(String, reqwest::StatusCode), anyhow::Error> {
+    if is_default_rpc(&rpc_server) {
+        make_rpc_impl(http_client, &get_default_rpc()?, &req)
+    } else {
+        make_rpc_impl(http_client, &rpc_server, &req)
+    }
+}
+
+pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
+    http_client: &reqwest::blocking::Client,
+    rpc_server: &RpcServer,
+    req: &RpcRequest,
+) -> Result<T, anyhow::Error> {
+    let response = make_rpc(&http_client, &rpc_server, &req)?;
+    let response = serde_json::from_str::<RpcResult<T>>(&response.0)?;
     if let Some(error) = response.error {
         debug!("rpc failed: {}", error.message);
         Err(anyhow!("RPC failed: {}", error.message))
@@ -58,15 +132,9 @@ pub fn make_rpc_call_status_silent(
     rpc_server: &RpcServer,
     req: &RpcRequest,
 ) -> reqwest::StatusCode {
-    let endpoint = format!("http://{}:{}", &rpc_server.host, rpc_server.port);
-    let res = http_client
-        .post(&endpoint)
-        .basic_auth(&rpc_server.login, Some(&rpc_server.password))
-        .json(&req)
-        .send();
-
+    let res = make_rpc(&http_client, &rpc_server, &req);
     match res {
-        Ok(r) => r.status(),
+        Ok((_, status_code)) => status_code,
         _ => reqwest::StatusCode::NOT_FOUND,
     }
 }
@@ -140,11 +208,7 @@ pub struct RawUtxo {
     pub amount: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RawTxInputs {
-    pub txid: String,
-    pub vout: i32,
-}
+pub type RawTxInputs = crate::types::TxOut;
 
 pub type RawTxOutputsAmounts = BTreeMap<String, f64>;
 pub type RawTxOutputsAssets = BTreeMap<String, String>;
@@ -200,12 +264,28 @@ pub fn fill_psbt_data(converted_tx: &str) -> RpcRequest {
         params: vec![serde_json::json!(converted_tx)],
     }
 }
+#[derive(Deserialize)]
+pub struct FillPsbtData {
+    pub psbt: String,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PsbtInputs {
     pub txid: String,
     pub vout: i64,
     pub sequence: i64,
+}
+
+pub fn wallet_sign_psbt(tx: &str) -> RpcRequest {
+    RpcRequest {
+        method: "walletsignpsbt".into(),
+        params: vec![serde_json::json!(tx)],
+    }
+}
+#[derive(Deserialize)]
+pub struct WalletSignPsbt {
+    pub psbt: String,
+    pub complete: bool,
 }
 
 pub fn create_funded_psbt(
@@ -272,6 +352,33 @@ pub fn list_unspent(minimum_amount: &String, asset: &String) -> RpcRequest {
     RpcRequest {
         method: "listunspent".into(),
         params: data,
+    }
+}
+
+pub fn list_unspent2(minconf: i32) -> RpcRequest {
+    // minconf
+    RpcRequest {
+        method: "listunspent".to_owned(),
+        params: vec![serde_json::json!(minconf)],
+    }
+}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UnspentItem {
+    pub txid: String,
+    pub vout: i32,
+    pub address: String,
+    pub amount: f64,
+    pub confirmations: i32,
+    pub asset: String,
+}
+pub type ListUnspent = Vec<UnspentItem>;
+
+impl UnspentItem {
+    pub fn tx_out(&self) -> crate::types::TxOut {
+        crate::types::TxOut {
+            txid: self.txid.clone(),
+            vout: self.vout,
+        }
     }
 }
 

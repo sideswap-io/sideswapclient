@@ -6,7 +6,7 @@ import "../style"
 Button {
     id: root
 
-    readonly property color disableColor: Style.dyn.baseGrey
+    property color disableColor: Style.dyn.baseGrey
     property color baseColor: Style.dyn.baseGrey
     property int borderOffset: 0
     property alias fontColor: descr.color

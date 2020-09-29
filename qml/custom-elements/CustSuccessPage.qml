@@ -8,6 +8,7 @@ ColumnLayout {
     spacing: 20
 
     property alias header: headerItem.text
+    property bool bShowControls: true
 
     signal backClicked();
 
@@ -42,6 +43,8 @@ ColumnLayout {
         Layout.alignment: Qt.AlignCenter
 
         spacing: 20
+
+        visible: root.bShowControls
 
         CustRectButton {
             Layout.fillHeight: true

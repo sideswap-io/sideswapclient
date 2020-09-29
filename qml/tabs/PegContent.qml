@@ -341,10 +341,9 @@ TabBase {
 
     onEnsureFocus: receiveAddress.forceActiveFocus();
 
-    BusyIndicator {
+    CustSpinner {
         id: spinner
         anchors.centerIn: parent
-        running: false;
     }
 
     function changeTab(newIndex) {

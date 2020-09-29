@@ -1,0 +1,10 @@
+#!/bin/sh
+
+for SIZE in 32 48 64 128 256
+do
+    xdg-icon-resource uninstall --size $SIZE sideswap
+done
+
+update-desktop-database
+
+exit 0

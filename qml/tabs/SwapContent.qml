@@ -28,14 +28,13 @@ TabBase {
 
     property int networkFee: 0
     property int serverFee: 0
+    property bool bEmptyWalletConfig: true
 
-    property string price:  if (currentOrder === undefined || currentOrder.buy_amount === null) {
-                            return qsTr("Awaiting Quote");
-                        } else if (root.selectedDelivery.ticker === "L-BTC") {
-                            return toPrice(currentOrder.buy_amount / (Number(amount.text) * 100000000))
-                        } else {
-                            return toPrice((Number(amount.text) * 100000000) / currentOrder.buy_amount)
-                        }
+    property string price
+    property double deliverAmount
+
+    property var sendAsset: undefined
+    property var recvAsset: undefined
 
     Connections {
         target: netManager
@@ -55,24 +54,31 @@ TabBase {
                 availableAssets = [];
             }
 
+            if (stateInfo.price) {
+                root.price = toPrice(stateInfo.price)
+            } else {
+                root.price = qsTr("Awaiting Quote")
+            }
+            if (stateInfo.deliver_amount) {
+                root.deliverAmount = stateInfo.deliver_amount
+            }
+
             updateAssetsList(assetsList)
 
             encDialog.visible = stateInfo.show_password_prompt
 
-            if (root.rfq === undefined && stateInfo.status !== "OfferRecv") {
+            if (root.rfq === undefined && stateInfo.status !== "ReviewOffer") {
                 return;
             }
 
             switch (stateInfo.status) {
-                case "OfferRecv":
+                case "ReviewOffer":
                     root.rfq = stateInfo.rfq_offer;
-                    break;
-                case "WaitTxInfo":
-                    break;
-                case "WaitPsbt":
                     btnAcceptSwap.enabled = true;
                     update_fee(stateInfo);
                     changeTab(tabs.offerReview);
+                    break;
+                case "WaitPsbt":
                     break;
                 case "WaitSign":
                     break;
@@ -91,6 +97,9 @@ TabBase {
                     console.log("unknown state: " + stateInfo.status)
                     break;
             }
+
+            btnAcceptSwap.enabled = !stateInfo.swap_in_progress
+            btnRejectSwap.enabled = !stateInfo.swap_in_progress
         }
 
         onUpdateRfqClient: {
@@ -122,42 +131,7 @@ TabBase {
 
         onUpdateWalletsList: {
             let wallets = JSON.parse(data).configs;
-            requireWallet.visible = (wallets.length === 0);
-        }
-    }
-
-    RowLayout {
-        id: requireWallet
-        visible: assetsList.length === 0
-
-        anchors{
-            left: parent.left
-            right: parent.right
-            top: parent.top
-            topMargin: 10
-            leftMargin: 10
-            rightMargin: anchors.leftMargin
-        }
-
-        Image {
-            Layout.preferredHeight: 50
-            Layout.preferredWidth: 50
-            Layout.alignment: Qt.AlignLeft | Qt.AlignTop
-            sourceSize.width:  width
-            sourceSize.height: height
-            source: "qrc:/assets/left_icon_blue.png"
-        }
-
-        CustLabel {
-            Layout.preferredHeight: 50
-            Layout.fillWidth: true
-            font.pixelSize: 20
-            font.bold: false
-            text: qsTr("We cannot detect your liquid wallet automatically. " +
-                       "Please setup your liquid wallet(s) in the settings bar in order to make possible to use swap functionality in this page.")
-            color: Style.dyn.baseActive
-            horizontalAlignment: Qt.AlignLeft
-            wrapMode: Text.WordWrap
+            bEmptyWalletConfig = (wallets.length === 0);
         }
     }
 
@@ -284,9 +258,15 @@ TabBase {
 
                     CustBalanceInput {
                         id: amount
+
                         Layout.preferredHeight: 50
                         Layout.fillWidth: parent.width
-                        upperBound: root.hasDelivery? Number(root.selectedDelivery.amount / 100000000) : 0
+
+                        upperBound: root.hasDelivery?
+                                        Number.fromLocaleString(Qt.locale(),
+                                                                fromSatoshi(root.selectedDelivery.amount, root.selectedDelivery.precision))
+                                      : 0
+
                         decimals: root.hasDelivery? root.selectedDelivery.precision : 0
                         leftPadding: 20
 
@@ -298,7 +278,7 @@ TabBase {
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             anchors.verticalCenter: parent.verticalCenter
-                            source: (selectedDelivery !== undefined) ? "data:image/png;base64," + selectedDelivery.icon : ""
+                            source: root.hasDelivery ? "data:image/png;base64," + selectedDelivery.icon : ""
                         }
                     }
 
@@ -321,7 +301,7 @@ TabBase {
 
                         CustLabel {
                             Layout.alignment: Qt.AlignRight
-                            text: root.selectedDelivery !== undefined
+                            text: root.hasDelivery
                                   ? fromSatoshi(root.selectedDelivery.amount, root.selectedDelivery.precision) : ""
                             font.pixelSize: 14
                         }
@@ -333,7 +313,9 @@ TabBase {
                     text: qsTr("MAX")
                     implicitHeight: 50
                     implicitWidth: 100
-                    onClicked: amount.text = (root.selectedDelivery.amount / 100000000)
+                    onClicked: amount.text = (root.hasDelivery && root.selectedDelivery.amount > 0)
+                               ? fromSatoshi(root.selectedDelivery.amount, root.selectedDelivery.precision)
+                               : "0";
                     baseColor: Style.dyn.helpColor
                     fontColor: "black"
                     anchors.verticalCenter: parent.verticalCenter
@@ -353,11 +335,19 @@ TabBase {
                 text: qsTr("Request")
                 borderOffset: 12
                 baseColor: Style.dyn.baseActive
-                enabled: amount.acceptableInput
+                enabled: amount.acceptableInput && Number(amount.text) !== 0
 
-                onClicked: netManager.createRfq(selectedDelivery.asset_id,
-                                            Number(amount.text * 100000000),
+                onClicked: {
+                    let deliverAmount = fromSatoshi(root.selectedDelivery.amount, root.selectedDelivery.precision) === amount.text
+                        ? root.selectedDelivery.amount
+                        : formatString(amount.text);
+
+                    root.sendAsset = assetsList[deliver.currentIndex]
+                    root.recvAsset = receivingList[receive.currentIndex]
+                    netManager.createRfq(selectedDelivery.asset_id,
+                                            deliverAmount,
                                             selectedReceive.asset_id);
+                }
             }
 
             Item { Layout.fillHeight: true }
@@ -392,18 +382,18 @@ TabBase {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: 160 + 20 * mainWindow.dynHeightMult
 
-                sourceIcon: (selectedDelivery !== undefined) ? "data:image/png;base64," + selectedDelivery.icon : ""
-                destIcon: (selectedReceive !== undefined) ? "data:image/png;base64," + selectedReceive.icon : ""
+                sourceIcon: (root.sendAsset !== undefined) ? "data:image/png;base64," + root.sendAsset.icon : ""
+                destIcon: (root.recvAsset !== undefined) ? "data:image/png;base64," + root.recvAsset.icon : ""
                 price: root.price
-                deliver: if (currentOrder !== undefined)
+                deliver: if (root.sendAsset !== undefined && root.deliverAmount !== undefined)
                              qsTr("Deliver %1 %2")
-                                .arg(formatNumber(amount.text, root.selectedDelivery.precision))
-                                .arg(selectedDelivery.ticker)
+                                .arg(fromSatoshi(root.deliverAmount, root.sendAsset.precision))
+                                .arg(root.sendAsset.ticker)
                          else ""
-                receive:  if (currentOrder !== undefined && Number(currentOrder.buy_amount) !== 0)
+                receive:  if (currentOrder !== undefined && Number(currentOrder.recv_amount) !== 0)
                               qsTr("Receive %1 %2")
-                                .arg(fromSatoshi(currentOrder.buy_amount, root.selectedReceive.precision))
-                                .arg(selectedReceive.ticker)
+                                .arg(fromSatoshi(currentOrder.recv_amount, root.recvAsset.precision))
+                                .arg(root.recvAsset.ticker)
                           else qsTr("No quotes")
             }
 
@@ -450,7 +440,7 @@ TabBase {
                 implicitWidth: 180
                 baseColor: Style.dyn.baseActive
                 font.pixelSize: 18
-                onClicked: netManager.cancelRfq(currentOrder.order_id)
+                onClicked: netManager.cancelRfq()
             }
 
             Item { Layout.fillHeight: true }
@@ -475,19 +465,19 @@ TabBase {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: 160 + 20 * mainWindow.dynHeightMult
 
-                sourceIcon: (selectedDelivery !== undefined) ? "data:image/png;base64," + selectedDelivery.icon : ""
-                destIcon: (selectedReceive !== undefined) ? "data:image/png;base64," + selectedReceive.icon : ""
+                sourceIcon: (root.sendAsset !== undefined) ? "data:image/png;base64," + root.sendAsset.icon : ""
+                destIcon: (root.recvAsset !== undefined) ? "data:image/png;base64," + root.recvAsset.icon : ""
                 price: root.price
                 deliver: if (rfq !== undefined )
                              qsTr("Deliver %1 %2")
-                                .arg(fromSatoshi(rfq.swap.sell_amount, root.selectedDelivery.precision))
-                                .arg(assetsNameByAssetId(rfq.swap.sell_asset))
+                                .arg(fromSatoshi(rfq.swap.send_amount, root.sendAsset.precision))
+                                .arg(assetsNameByAssetId(rfq.swap.send_asset))
                          else ""
 
                 receive: if (rfq !== undefined )
                              qsTr("Receive %1 %2")
-                                .arg(fromSatoshi(rfq.swap.buy_amount, root.selectedReceive.precision))
-                                .arg(assetsNameByAssetId(rfq.swap.buy_asset))
+                                .arg(fromSatoshi(rfq.swap.recv_amount, root.recvAsset.precision))
+                                .arg(assetsNameByAssetId(rfq.swap.recv_asset))
                          else ""
             }
 
@@ -553,6 +543,7 @@ TabBase {
                 Layout.alignment: Qt.AlignCenter
 
                 CustRectButton {
+                    id: btnRejectSwap
                     Layout.preferredWidth: 190
                     Layout.preferredHeight: 120 + 40 * btns.preferredSize
                     iconSize: 60 + 20 * btns.preferredSize
@@ -597,11 +588,19 @@ TabBase {
         Item{}
 
         onVisibleChanged: {
+            if (!visible) {
+                return;
+            }
+
             if (currentIndex === tabs.swapRequest)
                 amount.forceActiveFocus();
             else if (currentIndex === tabs.success) {
                 root.changeTab(tabs.swapRequest)
             }
+
+            if (root.bEmptyWalletConfig && settingsHelper.showWizard)
+                addWallet.open();
+            settingsHelper.showWizard = false;
         }
         Component.onCompleted: amount.forceActiveFocus();
     }
@@ -624,9 +623,9 @@ TabBase {
                 progressSigning.to = root.rfq.expires_at - root.rfq.created_at
                 progressSigning.value = new Date() - root.rfq.created_at;
                 if (encDialog.visible) {
-                    progressConfirm.from = progressSigning.from
-                    progressConfirm.to = progressSigning.to
-                    progressConfirm.value = progressSigning.value
+                    encDialog.progress.from = progressSigning.from
+                    encDialog.progress.to = progressSigning.to
+                    encDialog.progress.value = progressSigning.value
                 }
                 if (progressSigning.value >= progressSigning.to) stop();
             } else if (currentOrder !== undefined) {
@@ -646,6 +645,28 @@ TabBase {
 
         onAccepted: netManager.setPassword(passphrase);
         onCanceled: netManager.cancelPassword();
+    }
+
+    DialogBubble {
+        id: addWallet
+
+        property int index: -1
+        property bool activateAction: true
+
+        highlightCancel: false
+        bubbleMode: false
+        parent: contentLyt
+        content: {
+            "msg_type": "Question",
+            "title" : qsTr("Connect your wallet"),
+            "msg" : qsTr("To conduct swaps, you need to setup your liquid wallet. Do you wish to do so now?")
+        }
+
+        onCanceled: close()
+        onAccepted: {
+            close();
+            walletWizard.open();
+        }
     }
 
     function getAppCurrency(nodeCurrency) {
@@ -675,21 +696,8 @@ TabBase {
     }
 
     function update_fee(stateInfo) {
-        let lbtcOut = ({});
-        if (selectedDelivery.ticker === "L-BTC") {
-            lbtcOut = stateInfo.own_outputs;
-        } else {
-            lbtcOut = stateInfo.contra_outputs;
-        }
-
-        for ( let i in lbtcOut ) {
-            const out = lbtcOut[i];
-            if (out.output_type === "NetworkFee") {
-                root.networkFee = Number(out.amount);
-            } else if (out.output_type === "ServerFee"){
-                root.serverFee = Number(out.amount);
-            }
-        }
+        root.networkFee = Number(stateInfo.network_fee)
+        root.serverFee = Number(stateInfo.server_fee)
     }
 
     function changeTab(newIndex) {

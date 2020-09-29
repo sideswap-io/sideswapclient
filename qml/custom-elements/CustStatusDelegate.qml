@@ -18,7 +18,7 @@ Item {
         CustTextDelegate {
             id: cont
             anchors.centerIn: parent
-            color: if (text === "Insufficient amount" || text === "Failed")
+            color: if (text === "Insufficient amount" || text === "Failed" || text === "Cancelled")
                        return Style.stat.statusInsufficientAmount
                    else if (text === "Processing" || text.startsWith("Broadcast") || text.indexOf("/2") !== -1)
                        return Style.stat.statusProcessing

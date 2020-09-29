@@ -5,6 +5,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QFont>
+#include <QIcon>
 #include "netmanager.h"
 #include "addressverificationhelper.h"
 #include "clipboardhelper.h"

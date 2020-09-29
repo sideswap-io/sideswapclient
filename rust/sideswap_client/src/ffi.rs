@@ -1,11 +1,11 @@
 use super::worker::Action;
 use super::*;
+use sideswap_common::rpc;
 use std::sync::mpsc::Sender;
 
 #[cxx::bridge(namespace = lsw)]
 pub mod ffi {
-    #[derive(Clone)]
-    pub struct RpcServer {
+    struct RpcServer {
         host: String,
         port: u16,
         login: String,
@@ -18,8 +18,6 @@ pub mod ffi {
         use_tls: bool,
         mainnet: bool,
         db_path: String,
-        is_dealer: bool,
-        elements: RpcServer,
     }
 
     extern "C" {
@@ -47,8 +45,7 @@ pub mod ffi {
         fn get_qr_code(addr: &str) -> String;
 
         fn rfq(client: &Client, deliver_asset: String, deliver_amount: i64, receive_asset: String);
-        fn quote(client: &Client, order_id: String, proposal: i64);
-        fn rfq_cancel(client: &Client, order_id: String);
+        fn rfq_cancel(client: &Client);
 
         fn swap_cancel(client: &Client);
         fn swap_accept(client: &Client);
@@ -64,13 +61,11 @@ pub struct Client {
 }
 
 fn create(params: ffi::StartParams) -> Box<Client> {
-    if std::env::var_os("RUST_LOG").is_none() {
+    if cfg!(debug_assertions) && std::env::var_os("RUST_LOG").is_none() {
         std::env::set_var("RUST_LOG", "debug,hyper=info");
     }
     env_logger::init();
     info!("started");
-
-    let params = super::settings::parse_args(params);
 
     let (sender, receiver) = std::sync::mpsc::channel::<Action>();
 
@@ -154,7 +149,13 @@ fn swap_accept(client: &Client) {
 }
 
 fn try_and_apply(client: &Client, rpc_params: ffi::RpcServer) {
-    client.sender.send(Action::TryAndApply(rpc_params)).unwrap();
+    let rpc_server = rpc::RpcServer {
+        host: rpc_params.host,
+        port: rpc_params.port,
+        login: rpc_params.login,
+        password: rpc_params.password,
+    };
+    client.sender.send(Action::TryAndApply(rpc_server)).unwrap();
 }
 
 fn apply_config(client: &Client, index: i32) {
@@ -183,15 +184,8 @@ fn rfq(client: &Client, deliver_asset: String, deliver_amount: i64, receive_asse
         .unwrap();
 }
 
-fn quote(client: &Client, order_id: String, proposal: i64) {
-    client
-        .sender
-        .send(Action::MatchQuote(order_id, proposal))
-        .unwrap();
-}
-
-fn rfq_cancel(client: &Client, order_id: String) {
-    client.sender.send(Action::MatchCancel(order_id)).unwrap();
+fn rfq_cancel(client: &Client) {
+    client.sender.send(Action::MatchCancel).unwrap();
 }
 
 fn cancel_passphrase(client: &Client) {
@@ -230,16 +224,5 @@ fn get_qr_code(addr: &str) -> String {
 impl Drop for Client {
     fn drop(&mut self) {
         debug!("stopped");
-    }
-}
-
-impl std::fmt::Debug for ffi::RpcServer {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("RpcServer")
-            .field("host", &self.host)
-            .field("port", &self.port)
-            .field("login", &self.login)
-            .field("password", &self.password)
-            .finish()
     }
 }

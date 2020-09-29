@@ -1,15 +1,28 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(PROJECT_NAME sideswap)
+if(APPLE)
+    set(PROJECT_NAME SideSwap)
+elseif (WIN32)
+    set(PROJECT_NAME SideSwap)
+else ()
+    set(PROJECT_NAME sideswap)
+endif()
 project(${PROJECT_NAME})
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Widgets Qml REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets Quick Qml Gui REQUIRED)
+
+option(STATIC_QT_BUILD "Use static Qt build" OFF)
+
+if (STATIC_QT_BUILD)
+    set(SOURCES cpp/qt_plugins.cpp)
+endif()
 
 set(SOURCES
+    ${SOURCES}
     cpp/main.cpp
     cpp/addressverificationhelper.cpp
     cpp/clipboardhelper.cpp
@@ -24,18 +37,15 @@ if (APPLE)
     set( BUNDLE_NAME ${PROJECT_NAME} )
     set( MACOSX_BUNDLE_BUNDLE_NAME ${BUNDLE_NAME} )
     set( MACOSX_BUNDLE_GUI_IDENTIFIER "com.sideswap" )
-    set( MACOSX_BUNDLE_BUNDLE_VERSION "1.0.0")
+    set( MACOSX_BUNDLE_BUNDLE_VERSION "0.1.0")
     set( MACOSX_BUNDLE_SHORT_VERSION_STRING ${MACOSX_BUNDLE_BUNDLE_VERSION})
     set( MACOSX_BUNDLE_LONG_VERSION_STRING ${MACOSX_BUNDLE_BUNDLE_VERSION})
 
-    set( MACOSX_BUNDLE_ICON_FILE "side_swap_logo" )
+    set( MACOSX_BUNDLE_ICON_FILE "app_icon.icns" )
 
-    set(LOGO_ICNS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/deploy_assets/side_swap_logo.icns")
-    set_source_files_properties( ${LOGO_ICNS_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-    add_executable(${PROJECT_NAME} MACOSX_BUNDLE
-        ${LOGO_ICNS_FILE}
-        ${SOURCES}
-    )
+    set(LOGO_ICNS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/deploy_assets/app_icon.icns")
+    set_source_files_properties( ${LOGO_ICNS_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    add_executable( ${PROJECT_NAME} MACOSX_BUNDLE ${SOURCES} ${LOGO_ICNS_FILE} )
     set_target_properties( ${PROJECT_NAME} PROPERTIES OUTPUT_NAME "${BUNDLE_NAME}" )
 elseif (WIN32)
     add_executable(${PROJECT_NAME} WIN32
@@ -84,6 +94,8 @@ target_include_directories(${PROJECT_NAME}
     PRIVATE ${CMAKE_BINARY_DIR}
 )
 
+get_filename_component(QT_ROOT_DIR "${Qt5_DIR}/../../.." ABSOLUTE)
+
 if (WIN32)
     target_link_libraries(${PROJECT_NAME}
         ${CARGO_BUILD_OUTPUT}
@@ -104,12 +116,37 @@ elseif(APPLE)
         "-framework Security"
     )
 else ()
+    if (STATIC_QT_BUILD)
+        set(STATIC_QT_PLUGINS
+            ${QT_ROOT_DIR}/qml/QtQuick/Controls.2/libqtquickcontrols2plugin.a
+            ${QT_ROOT_DIR}/qml/QtQuick.2/libqtquick2plugin.a
+            ${QT_ROOT_DIR}/qml/QtQuick/Layouts/libqquicklayoutsplugin.a
+            ${QT_ROOT_DIR}/qml/Qt/labs/platform/libqtlabsplatformplugin.a
+            ${QT_ROOT_DIR}/qml/QtQuick/Window.2/libwindowplugin.a
+            ${QT_ROOT_DIR}/qml/QtGraphicalEffects/libqtgraphicaleffectsplugin.a
+            ${QT_ROOT_DIR}/qml/QtQuick/Templates.2/libqtquicktemplates2plugin.a
+            ${QT_ROOT_DIR}/qml/QtGraphicalEffects/private/libqtgraphicaleffectsprivate.a
+            ${QT_ROOT_DIR}/qml/Qt/labs/qmlmodels/liblabsmodelsplugin.a
+            ${QT_ROOT_DIR}/lib/libQt5QuickControls2.a
+            ${QT_ROOT_DIR}/lib/libQt5QuickTemplates2.a
+            ${QT_ROOT_DIR}/lib/libQt5QmlWorkerScript.a
+            ${QT_ROOT_DIR}/lib/libQt5QuickTemplates2.a
+
+            Qt5::QXcbIntegrationPlugin
+        )
+    endif()
+
     target_link_libraries(${PROJECT_NAME}
         ${CARGO_BUILD_OUTPUT}
-        Qt5::Widgets
+        ${STATIC_QT_PLUGINS}
+        Qt5::Quick
         Qt5::Qml
-        pthread dl
+        Qt5::Widgets
+        Qt5::Core
+        pthread
+        dl
     )
+
 endif()
 
 add_custom_command(

@@ -11,7 +11,6 @@ Item {
         { "name" : qsTr("Peg In/Out"), "component" : "./tabs/PegContent.qml"      , "highlight" : false , "debugOnly" : false },
         { "name" : qsTr("Swap"),       "component" : "./tabs/SwapContent.qml"     , "highlight" : false , "debugOnly" : false },
         { "name" : qsTr("History"),    "component" : "./tabs/HistoryContent.qml"  , "highlight" : false , "debugOnly" : false },
-        { "name" : qsTr("Dealing"),    "component" : "./tabs/DealingContent.qml"  , "highlight" : false , "debugOnly" : true }
     ]
 
     ColumnLayout {

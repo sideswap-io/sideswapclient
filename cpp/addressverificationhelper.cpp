@@ -12,7 +12,7 @@ void AddressVerificationHelper::checkXBTAddress(const QString &btcAddress, QJSVa
 {
     auto str = btcAddress.toStdString();
     QJSValueList args;
-    args << QJSValue(lsw::check_xbt_address(str, AppSettings::get()->mainnet()));
+    args << QJSValue(lsw::check_xbt_address(str, BuildData::mainnet));
     jsCallback.call(args);
 }
 
@@ -20,7 +20,7 @@ void AddressVerificationHelper::checkLBTCAddress(const QString &lbtcAddress, QJS
 {
     auto str = lbtcAddress.toStdString();
     QJSValueList args;
-    args << QJSValue(lsw::check_elements_address(str, AppSettings::get()->mainnet()));
+    args << QJSValue(lsw::check_elements_address(str, BuildData::mainnet));
     jsCallback.call(args);
 }
 

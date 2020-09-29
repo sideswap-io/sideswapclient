@@ -7,6 +7,7 @@ TextField {
     id: root
 
     property alias underscore: undersc.visible
+    property bool showDecoration: false
 
     color: Style.dyn.fontColor
     verticalAlignment: Qt.AlignVCenter
@@ -20,8 +21,10 @@ TextField {
     selectByMouse: true
 
     background: Rectangle {
-        border.width: 0
-        color: "transparent"
+        border.width: root.showDecoration ? 2 : 0
+        border.color: Style.getShade("55")
+        color: root.showDecoration ? Style.getShade("3e") : "transparent"
+        radius: 5
 
         Rectangle {
             id: undersc
@@ -30,18 +33,6 @@ TextField {
             height: 1
             visible: false
             color: Style.dyn.baseGrey
-        }
-    }
-
-
-    function changeTextReadonly(newText) {
-        if (readOnly) {
-            readOnly = false;
-            text = newText;
-            readOnly = true;
-        }
-        else {
-            text = newText;
         }
     }
 
@@ -103,6 +94,19 @@ TextField {
                     root.text = clipboardHelper.get()
                 }
             }
+        }
+    }
+
+    onPressed: forceActiveFocus()
+
+    function changeTextReadonly(newText) {
+        if (readOnly) {
+            readOnly = false;
+            text = newText;
+            readOnly = true;
+        }
+        else {
+            text = newText;
         }
     }
 }

@@ -1,0 +1,18 @@
+[package]
+name = "sideswap_dealer_example"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+sideswap_api = { version = "*", path = "../sideswap_api" }
+sideswap_common = { version = "*", path = "../sideswap_common" }
+clap = { version = "3.0.0-beta.1", default-features = false, features = ["std", "derive"] }
+log = "*"
+env_logger = "*"
+serde_json = "*"
+reqwest = { version = "*", features = ["blocking", "json"] }
+anyhow = "*"
+serde = { version = "1.0", features = ["derive"] }
+config = "*"
+zmq = { version = "*", features = ["vendored"] }
+log4rs = "*"

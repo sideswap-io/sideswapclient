@@ -1,6 +1,6 @@
 use super::*;
-use sideswap_api::*;
 use serde::Serialize;
+use sideswap_api::*;
 use std::vec::Vec;
 
 #[derive(Serialize, Clone)]
@@ -13,12 +13,22 @@ pub struct Peg {
 }
 
 #[derive(Serialize, Clone)]
+pub enum UiSwapStatus {
+    Pending,
+    Cancelled,
+    Timeout,
+    Broadcast,
+    Failed,
+    Settled,
+}
+
+#[derive(Serialize, Clone)]
 pub struct Swap {
-    pub status: SwapStatus,
-    pub buy_amount: i64,
-    pub buy_asset: String,
-    pub sell_amount: i64,
-    pub sell_asset: String,
+    pub status: UiSwapStatus,
+    pub recv_amount: i64,
+    pub recv_asset: String,
+    pub send_amount: i64,
+    pub send_asset: String,
     pub txid: Option<String>,
 }
 
@@ -53,20 +63,30 @@ fn new_item_peg(order: &models::Order, amount: i64, status: &str) -> Item {
 }
 
 fn new_item_swap(status: &SwapStatusResponse) -> Item {
+    let ui_status = match status.status {
+        SwapStatus::Pending => UiSwapStatus::Pending,
+        SwapStatus::Cancelled => UiSwapStatus::Cancelled,
+        SwapStatus::Timeout => UiSwapStatus::Timeout,
+        SwapStatus::ServerError => UiSwapStatus::Failed,
+        SwapStatus::DealerError => UiSwapStatus::Failed,
+        SwapStatus::ClientError => UiSwapStatus::Failed,
+        SwapStatus::Broadcast => UiSwapStatus::Broadcast,
+        SwapStatus::Settled => UiSwapStatus::Settled,
+    };
     Item {
         created_at: status.created_at,
         data: Data::Swap(Swap {
-            status: status.status,
-            buy_amount: status.swap.buy_amount,
-            buy_asset: status.swap.buy_asset.clone(),
-            sell_amount: status.swap.sell_amount,
-            sell_asset: status.swap.sell_asset.clone(),
+            status: ui_status,
+            recv_amount: status.swap.recv_amount,
+            recv_asset: status.swap.recv_asset.clone(),
+            send_amount: status.swap.send_amount,
+            send_asset: status.swap.send_asset.clone(),
             txid: status.txid.clone(),
         }),
     }
 }
 
-pub fn update_ui(hist: &worker::DBData, ui_sender: &ui::Sender) {
+pub fn update_ui(hist: &worker::DbData, ui_sender: &ui::Sender) {
     let mut orders = Vec::<Item>::new();
     for (_, order) in hist.peg_orders.iter() {
         let latest_status = hist.peg_status_map.get(&order.id);

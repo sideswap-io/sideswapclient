@@ -6,54 +6,14 @@ SettingsHelper::SettingsHelper(QObject *parent)
 {
 }
 
-QString SettingsHelper::host() const
+bool SettingsHelper::showWizard() const
 {
-    return AppSettings::get()->host();
+    return AppSettings::get()->showWizard();
 }
 
-int SettingsHelper::port() const
+void SettingsHelper::setShowWizard(bool value)
 {
-   return AppSettings::get()->port();
+    Q_UNUSED(value);
+    AppSettings::get()->setWizardShowed();
 }
 
-bool SettingsHelper::useTls() const
-{
-   return AppSettings::get()->useTls();
-}
-
-bool SettingsHelper::mainnet() const
-{
-    return AppSettings::get()->mainnet();
-}
-
-void SettingsHelper::setHost(QString host)
-{
-    if (AppSettings::get()->host() != host) {
-        AppSettings::get()->setHost(host);
-        emit hostChanged();
-    }
-}
-
-void SettingsHelper::setPort(int port)
-{
-    if (AppSettings::get()->port() != port) {
-        AppSettings::get()->setPort(port);
-        emit portChanged();
-    }
-}
-
-void SettingsHelper::setUseTls(bool value)
-{
-   if (AppSettings::get()->useTls() != value) {
-       AppSettings::get()->setUseTls(value);
-       emit useTlsChanged();
-   }
-}
-
-void SettingsHelper::setMainnet(bool value)
-{
-    if (AppSettings::get()->mainnet() != value) {
-        AppSettings::get()->setMainnet(value);
-        emit mainnetChanged();
-    }
-}

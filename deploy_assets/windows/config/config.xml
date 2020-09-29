@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://doc.qt.io/qtinstallerframework/ifw-globalconfig.html -->
+<Installer>
+    <Name>SideSwap</Name>
+    <Version>0.1.0</Version>
+    <Title>SideSwap Installer</Title>
+    <Publisher>SideSwap</Publisher>
+    <StartMenuDir>SideSwap</StartMenuDir>
+    <TargetDir>@ApplicationsDir@/SideSwap</TargetDir>
+	<InstallerWindowIcon>icon</InstallerWindowIcon>
+    <InstallerApplicationIcon>icon</InstallerApplicationIcon>
+	<WizardStyle>Modern</WizardStyle>
+	<Watermark>watermark.png</Watermark>
+	<WizardDefaultWidth>600</WizardDefaultWidth>
+    <WizardDefaultHeight>400</WizardDefaultHeight>
+	<ControlScript>controller.qs</ControlScript>
+</Installer>

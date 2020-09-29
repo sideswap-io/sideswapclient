@@ -4,13 +4,7 @@
 #include "client_rs_gen.h"
 
 #include <memory>
-#include <variant>
-#include <functional>
 #include <QObject>
-#include <QJSValue>
-
-using BoolCb = std::function<void(bool)>;
-using VariantCb= std::variant<BoolCb>;
 
 class NetManager : public QObject
 {
@@ -53,14 +47,9 @@ public:
                  receiveCurrency.toStdString());
     }
 
-    Q_INVOKABLE void quoteRfq(QString orderId, qint64 proposal)
+    Q_INVOKABLE void cancelRfq()
     {
-        lsw::quote(**client_, orderId.toStdString(), static_cast<int64_t>(proposal));
-    }
-
-    Q_INVOKABLE void cancelRfq(QString orderId)
-    {
-        lsw::rfq_cancel(**client_, orderId.toStdString());
+        lsw::rfq_cancel(**client_);
     }
 
     Q_INVOKABLE void swapCancel()

@@ -9,6 +9,7 @@ Popup {
 
     property var content
     property bool bubbleMode: true
+    property bool highlightCancel: true
 
     signal canceled()
     signal accepted()
@@ -20,7 +21,7 @@ Popup {
     closePolicy: bubbleMode ? Popup.CloseOnPressOutside : Popup.NoAutoClose
     
     width: 450
-    height: 300
+    height: bubbleMode ? 300 : 320
     
     background: Rectangle {
         id: bckgrnd
@@ -33,12 +34,13 @@ Popup {
                       } else {
                           return Style.stat.general
                       }
-        color: Style.getShade("23")
+        color: Style.dyn.baseGrey
         radius: 5
     }
     
     contentItem: Item {
-        
+        id: contentRoot
+
         MouseArea {
             anchors.fill: root.bubbleMode ? parent : undefined
             onClicked: root.close();
@@ -96,11 +98,13 @@ Popup {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
                 Layout.topMargin: 0
-                font.pixelSize: 20
+                Layout.leftMargin: 20
+                Layout.rightMargin: 20
+                font.pixelSize: 18
                 text: content.msg
                 verticalAlignment: Qt.AlignVCenter
                 horizontalAlignment: Qt.AlignHCenter
-                wrapMode: Text.WordWrap
+                wrapMode: Text.Wrap
                 font.bold: false
                 elide: Text.ElideRight
             }
@@ -111,6 +115,7 @@ Popup {
             RowLayout {
                 Layout.fillHeight: true
                 Layout.fillWidth: true
+                Layout.bottomMargin: 20
 
                 visible: !root.bubbleMode
 
@@ -118,39 +123,69 @@ Popup {
 
                 Item { Layout.fillWidth: true }
 
-                CustButton {
-                    id: cancelPass
+                CustShadow {
                     Layout.preferredWidth: 100
                     Layout.preferredHeight: 40
 
-                    font.pixelSize: 16
-                    text: qsTr("CANCEL")
-                    baseColor: Style.dyn.baseGrey
+                    controlItem: CustButton {
+                        id: cancelPass
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
 
-                    onClicked: root.canceled()
+                        font.pixelSize: 16
+                        text: qsTr("CANCEL")
+                        baseColor: root.highlightCancel ? Style.dyn.baseActive : Style.dyn.baseGrey
+
+                        onClicked: root.canceled()
+                    }
                 }
 
-                CustButton {
-                    id: acceptPass
+                CustShadow {
                     Layout.preferredWidth: 100
                     Layout.preferredHeight: 40
 
-                    font.pixelSize: 16
-                    text: qsTr("ACCEPT")
-                    baseColor: Style.dyn.baseActive
+                    controlItem: CustButton {
+                        id: acceptPass
+
+                        Layout.fillHeight: true
+                        Layout.fillWidth: true
+
+                        font.pixelSize: 16
+                        text: qsTr("ACCEPT")
+                        baseColor: !root.highlightCancel ? Style.dyn.baseActive : Style.dyn.baseGrey
 
 
-                    onClicked: root.accepted()
+                        onClicked: root.accepted()
+                    }
                 }
+
+
 
                 Item { Layout.fillWidth: true }
             }
+        }
+
+        Keys.onPressed: {
+            if (root.bubbleMode) {
+                close();
+                return;
+            }
+
+            if (event.key !== Qt.Key_Enter && event.key !== Qt.Key_Return) {
+                return;
+            }
+            if (root.highlightCancel)
+                cancelPass.clicked();
+            else
+                acceptPass.clicked();
         }
     }
     
     onAboutToShow: {
         if (root.bubbleMode)
             timeout.start()
+
+        contentRoot.forceActiveFocus();
     }
     onAboutToHide: if (timeout.running) timeout.stop();
         

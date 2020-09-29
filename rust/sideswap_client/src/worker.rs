@@ -1,19 +1,23 @@
 use super::*;
-use ffi::ffi::*;
+use rpc::RpcServer;
 use sideswap_api::*;
+use sideswap_common::*;
 use std::sync::mpsc::{Receiver, Sender};
+use types::XbtAmount;
 
 const CLIENT_API_KEY: &str = "f8b7a12ee96aa68ee2b12ebfc51d804a4a404c9732652c298d24099a3d922a84";
-const DEALER_API_KEY: &str = "74b1331e904f354a1db3133ba6b21d52a4b99c7dfbbf677fa1c58bcbd602976c";
 
 const USER_AGENT: &str = "SideSwapGUI";
 
 const SETTING_COOKIE: &str = "cookie";
 
+type BalanceResult = Result<rpc::GetWalletInfo, reqwest::StatusCode>;
+
 #[derive(Debug)]
 pub enum Action {
     ServerResponse(ws::WrappedResponse),
     UpdateBalanceTicker,
+    UpdateBalanceResult(BalanceResult),
     CheckServerConnection,
 
     PegToggle,
@@ -23,8 +27,7 @@ pub enum Action {
     CancelPassword,
 
     MatchRfq(String, i64, String),
-    MatchQuote(String, i64),
-    MatchCancel(String),
+    MatchCancel,
 
     SwapCancel,
     SwapAccept,
@@ -33,42 +36,50 @@ pub enum Action {
     RemoveConfig(i32),
 }
 
-#[derive(
-    Eq,
-    PartialEq,
-    Debug,
-    derive_more::Add,
-    derive_more::Sub,
-    derive_more::Display,
-    Copy,
-    Clone,
-    PartialOrd,
-    Ord,
-)]
-pub struct XbtAmount(pub i64);
+enum BalanceUpdate {
+    Update(RpcServer),
+}
 
-const BALANCE_DIVIDER: i64 = 100_000_000;
+pub struct ActiveRfq {
+    rfq: MatchRfq,
+    inputs: Vec<rpc::RawTxInputs>,
+    total_utxos_amount: XbtAmount,
+}
 
-impl XbtAmount {
-    pub fn from_satoshi(value: i64) -> Self {
-        XbtAmount(value)
-    }
+pub struct InternalState {
+    active_rfq: Option<ActiveRfq>,
+    tx_info: Option<Swap>,
+    psbt: Option<String>,
+    assets: Vec<Asset>,
+    active_order_id: Option<OrderId>,
+}
 
-    pub fn from_bitcoins(value: f64) -> Self {
-        XbtAmount((value * BALANCE_DIVIDER as f64).round() as i64)
-    }
+fn is_bitcoin(asset_id: &str, assets: &Assets) -> bool {
+    assets
+        .iter()
+        .find(|reg_asset| reg_asset.asset_id == asset_id)
+        .expect("asset must exists")
+        .ticker
+        == TICKER_BITCOIN
+}
 
-    pub fn to_satoshi(&self) -> i64 {
-        self.0
-    }
-
-    pub fn to_bitcoin(&self) -> f64 {
-        (self.0 as f64) / (BALANCE_DIVIDER as f64)
-    }
+fn rfq_price(state: &InternalState, rfq_update: &MatchRfqUpdate) -> Option<f64> {
+    rfq_update.recv_amount.map(|bid_amount| {
+        let active_rfq = &state
+            .active_rfq
+            .as_ref()
+            .expect("active_rfq must be set")
+            .rfq;
+        if is_bitcoin(&active_rfq.send_asset, &state.assets) {
+            bid_amount as f64 / active_rfq.send_amount as f64
+        } else {
+            active_rfq.send_amount as f64 / bid_amount as f64
+        }
+    })
 }
 
 #[derive(Default)]
-pub struct DBData {
+pub struct DbData {
     pub peg_orders: std::collections::BTreeMap<i32, models::Order>,
     pub peg_address_map: std::collections::BTreeMap<String, i32>,
     pub peg_status_map: std::collections::BTreeMap<i32, PegStatus>,
@@ -87,37 +98,34 @@ pub fn init_swap_state() -> ui::SwapState {
         status: ui::SwapStatus::Failed,
         rfq_offer: Offer {
             swap: Swap {
-                order_id: OrderId("".into()),
-                sell_asset: "".into(),
-                sell_amount: 0,
-                buy_asset: "".into(),
-                buy_amount: 0,
+                send_asset: "".into(),
+                send_amount: 0,
+                recv_asset: "".into(),
+                recv_amount: 0,
+                network_fee: 0,
+                server_fee: 0,
             },
             created_at: 0,
             expires_at: 0,
+            accept_required: true,
         },
         tx_id: "".into(),
-        psb_to_sign: "".into(),
         asset_labels: rpc::AssetLabels::new(),
-        own_outputs: SwapOutputs::new(),
-        contra_outputs: SwapOutputs::new(),
         canceled_by_me: false,
-        stage_accepted_by_me: false,
+        network_fee: 0,
+        server_fee: 0,
+        swap_in_progress: false,
+        unconfirmed_balances: "".into(),
+        price: None,
+        deliver_amount: None,
     }
 }
 
-fn is_default_rpc(rpc_server: &rpc::RpcServer) -> bool {
-    rpc_server.host == "localhost"
-        && rpc_server.port == 7041
-        && rpc_server.login.is_empty()
-        && rpc_server.password.is_empty()
-}
-
-fn fill_last_active(rpc_server: &mut rpc::RpcServer, hist: &mut DBData) {
+fn fill_last_active(rpc_server: &mut rpc::RpcServer, hist: &DbData) {
     for wallet in hist.wallets.iter() {
         if wallet.is_active {
             rpc_server.host = wallet.host.clone();
-            rpc_server.port = wallet.port.parse::<u16>().unwrap();
+            rpc_server.port = wallet.port.parse::<u16>().unwrap_or_default();
             rpc_server.login = wallet.user_name.clone();
             rpc_server.password = wallet.user_pass.clone();
             break;
@@ -125,39 +133,17 @@ fn fill_last_active(rpc_server: &mut rpc::RpcServer, hist: &mut DBData) {
     }
 }
 
-fn fill_default_rpc(rpc_server: &mut rpc::RpcServer) {
-    rpc_server.host = "localhost".into();
-    rpc_server.port = 7041;
+fn is_current_node_default(hist: &DbData) -> bool {
+    let mut current = RpcServer {
+        host: String::new(),
+        port: 0,
+        login: String::new(),
+        password: String::new(),
+    };
 
-    let mut is_linux = false;
-    let mut conf_path = match std::env::consts::FAMILY {
-        "unix" => match std::env::consts::OS {
-            "macos" => dirs::config_dir(),
-            _ => {
-                is_linux = true;
-                dirs::home_dir()
-            }
-        },
-        _ => dirs::config_dir(),
-    }
-    .unwrap();
+    fill_last_active(&mut current, &hist);
 
-    if is_linux {
-        conf_path.push(".elements");
-    } else {
-        conf_path.push("Elements");
-    }
-
-    conf_path.push("liquidv1");
-    conf_path.push(".cookie");
-
-    let cookie = std::fs::read_to_string(conf_path).unwrap_or_default();
-
-    let credential: Vec<&str> = cookie.split(':').collect();
-    if credential.len() >= 2 {
-        rpc_server.login = credential[0].into();
-        rpc_server.password = credential[1].into();
-    }
+    rpc::is_default_rpc(&current)
 }
 
 fn update_wallet_data(
@@ -166,7 +152,7 @@ fn update_wallet_data(
     rpc_server: &mut rpc::RpcServer,
     ui_sender: &Sender<ui::Update>,
     conn_state: &mut ui::ConnectionState,
-    hist: &mut DBData,
+    hist: &mut DbData,
 ) {
     if conn_state.rpc_last_call_success {
         state.encryption =
@@ -174,7 +160,7 @@ fn update_wallet_data(
                 == reqwest::StatusCode::OK;
 
         update_asset_labels(state, &http_client, &rpc_server);
-        update_wallet_balances(state, &http_client, &rpc_server, &ui_sender, conn_state);
+        update_wallet_balances(state, &http_client, rpc_server, &ui_sender, conn_state);
     } else {
         state.encryption = false;
         state.asset_labels = rpc::AssetLabels::new();
@@ -191,7 +177,7 @@ fn update_wallet_data(
 fn save_wallet(
     rpc_server: &mut rpc::RpcServer,
     db: &db::Db,
-    hist: &mut DBData,
+    hist: &mut DbData,
     is_default: bool,
 ) -> bool {
     let result = db.create_wallet(&mut models::NewWallet {
@@ -220,6 +206,36 @@ fn save_wallet(
     }
 }
 
+fn try_to_reconnect_rpc(
+    state: &mut ui::SwapState,
+    http_client: &reqwest::blocking::Client,
+    rpc_server: &mut rpc::RpcServer,
+    ui_sender: &Sender<ui::Update>,
+    conn_state: &mut ui::ConnectionState,
+    db: &db::Db,
+    hist: &mut DbData,
+) -> bool {
+    let mut new_config = true;
+    if rpc_server.host.is_empty() {
+        fill_last_active(rpc_server, hist);
+        new_config = rpc_server.host.is_empty();
+    }
+
+    let is_default = rpc_server.host.is_empty() || rpc::is_default_rpc(rpc_server);
+
+    conn_state.rpc_last_error_code =
+        rpc::make_rpc_call_status(&http_client, &rpc_server, &rpc::ping()).as_u16();
+    conn_state.rpc_last_call_success = conn_state.rpc_last_error_code == reqwest::StatusCode::OK;
+
+    if conn_state.rpc_last_call_success && new_config {
+        save_wallet(rpc_server, db, hist, is_default);
+    }
+
+    update_wallet_data(state, http_client, rpc_server, ui_sender, conn_state, hist);
+
+    new_config
+}
+
 fn check_rpc_init(
     state: &mut ui::SwapState,
     http_client: &reqwest::blocking::Client,
@@ -227,32 +243,20 @@ fn check_rpc_init(
     ui_sender: &Sender<ui::Update>,
     conn_state: &mut ui::ConnectionState,
     db: &db::Db,
-    hist: &mut DBData,
-    is_dealer: bool,
+    hist: &mut DbData,
 ) {
-    let mut new_config = true;
-    if rpc_server.host.is_empty() && !is_dealer {
-        fill_last_active(rpc_server, hist);
-        new_config = rpc_server.host.is_empty();
-    }
-
-    let is_default = rpc_server.host.is_empty() || is_default_rpc(rpc_server);
-    if is_default {
-        fill_default_rpc(rpc_server);
-    }
-
-    conn_state.rpc_last_error_code =
-        rpc::make_rpc_call_status(&http_client, &rpc_server, &rpc::ping()).as_u16();
-    conn_state.rpc_last_call_success = conn_state.rpc_last_error_code == reqwest::StatusCode::OK;
-
-    if conn_state.rpc_last_call_success && new_config && !is_dealer {
-        save_wallet(rpc_server, db, hist, is_default);
-    }
-
-    update_wallet_data(state, http_client, rpc_server, ui_sender, conn_state, hist);
+    let new_config = try_to_reconnect_rpc(
+        state,
+        http_client,
+        rpc_server,
+        ui_sender,
+        conn_state,
+        db,
+        hist,
+    );
 
     let msg = (|| {
-        if !conn_state.rpc_last_call_success && !new_config {
+        if !conn_state.rpc_last_call_success && !new_config && !hist.wallets.is_empty() {
             if conn_state.rpc_last_error_code == 401 {
                 return ui::MSG_NODE_RPC_NOT_CONNECTED_AUTH;
             } else {
@@ -264,7 +268,7 @@ fn check_rpc_init(
     })();
 
     ui::show_notification(
-        ui::TITLE_NODE_RPC_CONN,
+        ui::TITLE_NODE_OFFLINE,
         msg,
         ui::NotificationType::Error,
         conn_state,
@@ -280,15 +284,13 @@ fn try_new_rpc(
     ui_sender: &Sender<ui::Update>,
     conn_state: &mut ui::ConnectionState,
     db: &db::Db,
-    hist: &mut DBData,
+    hist: &mut DbData,
 ) {
-    let is_default = is_default_rpc(new_server);
-
-    if is_default {
-        fill_default_rpc(new_server);
-    }
+    let is_default = rpc::is_default_rpc(new_server);
 
     let try_code = rpc::make_rpc_call_status(&http_client, &new_server, &rpc::ping()).as_u16();
+
+    let mut msg = "".into();
 
     let response = if try_code == 401 {
         ui::WalletApplyStatus::IncorrectCredential
@@ -304,11 +306,21 @@ fn try_new_rpc(
             conn_state.rpc_last_call_success = true;
             update_wallet_data(state, http_client, rpc_server, ui_sender, conn_state, hist);
 
+            msg = ui::MSG_NODE_RPC_CONNECTED;
+
             ui::WalletApplyStatus::Applied
         } else {
             ui::WalletApplyStatus::WalletExists
         }
     };
+
+    ui::show_notification(
+        ui::TITLE_NODE_ONLINE,
+        msg,
+        ui::NotificationType::Info,
+        conn_state,
+        &ui_sender,
+    );
 
     ui::send_wallet_apply_result(ui::ApplyResult { result: response }, &ui_sender);
 }
@@ -321,7 +333,7 @@ fn rpc_apply(
     ui_sender: &Sender<ui::Update>,
     conn_state: &mut ui::ConnectionState,
     db: &db::Db,
-    hist: &mut DBData,
+    hist: &mut DbData,
 ) {
     if index < 0 || index as usize >= hist.wallets.len() {
         return;
@@ -329,10 +341,6 @@ fn rpc_apply(
 
     hist.wallets = db.mark_wallet_as_active(hist.wallets[index as usize].id);
     fill_last_active(rpc_server, hist);
-
-    if is_default_rpc(rpc_server) {
-        fill_default_rpc(rpc_server);
-    }
 
     conn_state.rpc_last_error_code =
         rpc::make_rpc_call_status(&http_client, &rpc_server, &rpc::ping()).as_u16();
@@ -358,13 +366,13 @@ fn rpc_apply(
         ui::NotificationType::Info
     };
 
-    ui::show_notification(
-        ui::TITLE_NODE_RPC_CONN,
-        msg,
-        msg_type,
-        conn_state,
-        &ui_sender,
-    );
+    let title = if !conn_state.rpc_last_call_success {
+        ui::TITLE_NODE_OFFLINE
+    } else {
+        ui::TITLE_NODE_ONLINE
+    };
+
+    ui::show_notification(title, msg, msg_type, conn_state, &ui_sender);
 }
 
 fn rpc_remove(
@@ -375,7 +383,7 @@ fn rpc_remove(
     ui_sender: &Sender<ui::Update>,
     conn_state: &mut ui::ConnectionState,
     db: &db::Db,
-    hist: &mut DBData,
+    hist: &mut DbData,
 ) {
     if index < 0 || index as usize >= hist.wallets.len() {
         return;
@@ -384,10 +392,6 @@ fn rpc_remove(
 
     if !hist.wallets.is_empty() {
         fill_last_active(rpc_server, hist);
-
-        if is_default_rpc(rpc_server) {
-            fill_default_rpc(rpc_server);
-        }
 
         conn_state.rpc_last_error_code =
             rpc::make_rpc_call_status(&http_client, &rpc_server, &rpc::ping()).as_u16();
@@ -400,7 +404,7 @@ fn rpc_remove(
     update_wallet_data(state, http_client, rpc_server, ui_sender, conn_state, hist);
 
     ui::show_notification(
-        ui::TITLE_NODE_RPC_CONN,
+        ui::TITLE_NODE_OFFLINE,
         "".into(),
         ui::NotificationType::Error,
         conn_state,
@@ -425,22 +429,38 @@ fn update_asset_labels(
     };
 }
 
-fn update_wallet_balances(
-    state: &mut ui::SwapState,
+fn get_wallet_balance(
     http_client: &reqwest::blocking::Client,
     rpc_server: &rpc::RpcServer,
-    ui_sender: &Sender<ui::Update>,
-    conn_state: &mut ui::ConnectionState,
-) {
-    let wallet_balance = rpc::make_rpc_call_silent::<rpc::GetWalletInfo>(
+) -> BalanceResult {
+    rpc::make_rpc_call_silent::<rpc::GetWalletInfo>(
         &http_client,
         &rpc_server,
         &rpc::get_wallet_info(),
-    );
+    )
+    .map_err(|_e| rpc::make_rpc_call_status(&http_client, &rpc_server, &rpc::ping()))
+}
 
+fn update_wallet_balances(
+    state: &mut ui::SwapState,
+    http_client: &reqwest::blocking::Client,
+    rpc_server: &mut rpc::RpcServer,
+    ui_sender: &Sender<ui::Update>,
+    conn_state: &mut ui::ConnectionState,
+) {
+    let balance = get_wallet_balance(&http_client, &rpc_server);
+    update_wallet_balances_impl(state, ui_sender, conn_state, balance);
+}
+
+fn update_wallet_balances_impl(
+    state: &mut ui::SwapState,
+    ui_sender: &Sender<ui::Update>,
+    conn_state: &mut ui::ConnectionState,
+    wallet_balance: BalanceResult,
+) {
     let bal = match wallet_balance {
         Ok(info) => {
-            let mut balances = std::collections::HashMap::<String, i64>::new();
+            let mut balances = std::collections::BTreeMap::<String, i64>::new();
             for (label, amount) in &info.balance {
                 let balance_code = match state.asset_labels.get(label) {
                     Some(code) => code,
@@ -448,44 +468,51 @@ fn update_wallet_balances(
                 };
                 balances.insert(
                     balance_code.clone(),
-                    XbtAmount::from_bitcoins(amount.clone()).to_satoshi(),
+                    XbtAmount::from_bitcoin(amount.clone()).to_satoshi(),
                 );
             }
             serde_json::to_string(&balances).unwrap()
         }
-        Err(_e) => {
+        Err(status) => {
             if conn_state.rpc_last_call_success {
                 conn_state.rpc_last_call_success = false;
 
-                conn_state.rpc_last_error_code =
-                    rpc::make_rpc_call_status(&http_client, &rpc_server, &rpc::ping()).as_u16();
+                conn_state.rpc_last_error_code = status.as_u16();
                 conn_state.rpc_last_call_success =
                     conn_state.rpc_last_error_code == reqwest::StatusCode::OK;
 
-                let msg = if conn_state.rpc_last_error_code == 401 {
-                    ui::MSG_NODE_RPC_NOT_CONNECTED_AUTH
-                } else {
-                    ui::MSG_NODE_RPC_NOT_CONNECTED_NETWORK
-                };
+                if !conn_state.rpc_last_call_success {
+                    let msg = if conn_state.rpc_last_error_code == 401 {
+                        ui::MSG_NODE_RPC_NOT_CONNECTED_AUTH
+                    } else {
+                        ui::MSG_NODE_RPC_NOT_CONNECTED_NETWORK
+                    };
 
-                ui::show_notification(
-                    ui::TITLE_NODE_RPC_CONN,
-                    msg,
-                    ui::NotificationType::Error,
-                    conn_state,
-                    &ui_sender,
-                );
+                    ui::show_notification(
+                        ui::TITLE_NODE_OFFLINE,
+                        msg,
+                        ui::NotificationType::Error,
+                        conn_state,
+                        &ui_sender,
+                    );
+                }
             }
             String::new()
         }
     };
 
-    state.balances = bal;
+    state.balances = if !state.unconfirmed_balances.is_empty() && bal == state.unconfirmed_balances
+    {
+        String::new()
+    } else {
+        state.unconfirmed_balances.clear();
+        bal
+    };
     ui::send_swap_update(&state, &ui_sender);
 }
 
 fn add_history_peg_order(
-    hist: &mut DBData,
+    hist: &mut DbData,
     order: models::Order,
     conn: &ws::Sender,
     connected: bool,
@@ -501,7 +528,7 @@ fn add_history_peg_order(
 }
 
 fn add_history_swap_order_id(
-    hist: &mut DBData,
+    hist: &mut DbData,
     order: models::Swap,
     conn: &ws::Sender,
     connected: bool,
@@ -518,11 +545,11 @@ fn add_history_swap_order_id(
 }
 
 fn add_history_swap_update(
-    hist: &mut DBData,
+    hist: &mut DbData,
     order: SwapStatusResponse,
     ui_sender: &Sender<ui::Update>,
 ) {
-    hist.swaps.insert(order.swap.order_id.to_string(), order);
+    hist.swaps.insert(order.order_id.to_string(), order);
     hist::update_ui(&hist, &ui_sender);
 }
 
@@ -549,76 +576,38 @@ fn send_request(conn: &ws::Sender, r: Request) -> RequestId {
     request_id
 }
 
-fn request_all_orders_history(hist: &DBData, conn: &ws::Sender) {
+fn request_all_orders_history(hist: &DbData, conn: &ws::Sender) {
     for (_, order) in hist.peg_orders.iter() {
         request_order_history(order, conn);
     }
 }
 
 fn accept_swap(
-    state: &mut ui::SwapState,
+    state: &InternalState,
     conn_state: &mut ui::ConnectionState,
-    http_client: &reqwest::blocking::Client,
-    rpc_server: &rpc::RpcServer,
     conn: &ws::Sender,
     db: &db::Db,
-    hist: &mut worker::DBData,
-    ui_sender: &Sender<ui::Update>,
+    hist: &mut worker::DbData,
 ) {
+    let active_order_id = state
+        .active_order_id
+        .as_ref()
+        .expect("active_order_id must be set");
+    send_request(
+        &conn,
+        Request::Swap(SwapRequest {
+            order_id: active_order_id.clone(),
+            action: SwapAction::Accept,
+        }),
+    );
+
     let order = db.create_swap(models::NewSwap {
-        order_id: state.rfq_offer.swap.order_id.to_string(),
+        order_id: active_order_id.clone().0,
     });
     add_history_swap_order_id(hist, order, &conn, conn_state.server_connected);
-
-    let asset_labels_res = rpc::make_rpc_call::<rpc::AssetLabels>(
-        &http_client,
-        &rpc_server,
-        &rpc::dump_asset_labels(),
-    );
-    let is_sell_bitcoin = match asset_labels_res {
-        Ok(res) => {
-            let mut is_bitcoin = false;
-            for (k, v) in res {
-                if k == "bitcoin" {
-                    is_bitcoin = v == *state.rfq_offer.swap.sell_asset;
-                }
-            }
-            is_bitcoin
-        }
-        Err(e) => {
-            ui::show_notification(
-                ui::TITLE_SWAP,
-                &e.to_string(),
-                ui::NotificationType::Error,
-                conn_state,
-                &ui_sender,
-            );
-            return;
-        }
-    };
-
-    if !is_sell_bitcoin {
-        send_psbt(
-            &state,
-            conn_state,
-            &http_client,
-            &rpc_server,
-            &conn,
-            &ui_sender,
-        );
-    } else {
-        send_psbt_with_fee(
-            &state,
-            conn_state,
-            &http_client,
-            &rpc_server,
-            &conn,
-            &ui_sender,
-        );
-    }
 }
 
-fn process_status_update(hist: &mut DBData, status: PegStatus, ui_sender: &Sender<ui::Update>) {
+fn process_status_update(hist: &mut DbData, status: PegStatus, ui_sender: &Sender<ui::Update>) {
     let order_id = match hist.peg_address_map.get(&status.addr) {
         Some(v) => v,
         None => {
@@ -645,8 +634,9 @@ fn process_server_status_update(
     ui::send_peg_update(&state, &ui_sender);
 }
 
-fn send_own_txinfo(
-    state: &ui::SwapState,
+fn send_psbt(
+    ui: &ui::SwapState,
+    state: &InternalState,
     conn_state: &mut ui::ConnectionState,
     http_client: &reqwest::blocking::Client,
     rpc_server: &rpc::RpcServer,
@@ -681,121 +671,22 @@ fn send_own_txinfo(
         }
     };
 
-    let sell_amount = XbtAmount::from_satoshi(state.rfq_offer.swap.sell_amount);
-    let sell_asset = &state.rfq_offer.swap.sell_asset;
-
-    let list_unspend_req = rpc::list_unspent(&sell_amount.to_bitcoin().to_string(), &sell_asset);
-    let list_unspend_res =
-        rpc::make_rpc_call::<Vec<rpc::RawUtxo>>(&http_client, &rpc_server, &list_unspend_req);
-    let utxos = match list_unspend_res {
-        Ok(res) => res,
-        Err(e) => {
-            ui::show_notification(
-                ui::TITLE_SWAP,
-                &e.to_string(),
-                ui::NotificationType::Error,
-                conn_state,
-                &ui_sender,
-            );
-            return;
-        }
-    };
-
-    let mut total_utxos_amount = XbtAmount::from_bitcoins(0.0);
-    let mut inputs = Vec::new();
-    for utxo in utxos {
-        total_utxos_amount = total_utxos_amount + XbtAmount::from_bitcoins(utxo.amount);
-        inputs.push(rpc::RawTxInputs {
-            txid: utxo.txid,
-            vout: utxo.vout,
-        })
-    }
-
-    let has_change = total_utxos_amount != sell_amount;
-
-    send_request(
-        &conn,
-        Request::Swap(SwapRequest {
-            order_id: state.rfq_offer.swap.order_id.clone(),
-            action: SwapAction::TxInfo(SwapTxInfo {
-                recv_address: new_addr,
-                utxo_count: inputs.len() as i32,
-                with_change: has_change,
-            }),
-        }),
-    );
-}
-
-fn send_psbt(
-    state: &ui::SwapState,
-    conn_state: &mut ui::ConnectionState,
-    http_client: &reqwest::blocking::Client,
-    rpc_server: &rpc::RpcServer,
-    conn: &ws::Sender,
-    ui_sender: &Sender<ui::Update>,
-) {
-    if !conn_state.server_connected {
-        ui::show_notification(
-            ui::TITLE_SERVER_CONN,
-            ui::MSG_NOT_CONNECTED,
-            ui::NotificationType::Error,
-            conn_state,
-            &ui_sender,
-        );
-        return;
-    }
-
-    let sell_amount = XbtAmount::from_satoshi(state.rfq_offer.swap.sell_amount);
-    let sell_asset = &state.rfq_offer.swap.sell_asset;
-
-    let list_unspend_req = rpc::list_unspent(&sell_amount.to_bitcoin().to_string(), &sell_asset);
-    let list_unspend_res =
-        rpc::make_rpc_call::<Vec<rpc::RawUtxo>>(&http_client, &rpc_server, &list_unspend_req);
-    let utxos = match list_unspend_res {
-        Ok(res) => res,
-        Err(e) => {
-            ui::show_notification(
-                ui::TITLE_SWAP,
-                &e.to_string(),
-                ui::NotificationType::Error,
-                conn_state,
-                &ui_sender,
-            );
-            return;
-        }
-    };
-
-    let mut inputs = Vec::new();
-    let mut total_utxos_amount = XbtAmount::from_bitcoins(0.0);
-    for utxo in utxos {
-        total_utxos_amount = total_utxos_amount + XbtAmount::from_bitcoins(utxo.amount);
-        inputs.push(rpc::RawTxInputs {
-            txid: utxo.txid,
-            vout: utxo.vout,
-        })
-    }
+    let sell_amount = XbtAmount::from_satoshi(ui.rfq_offer.swap.send_amount);
+    let sell_asset = &ui.rfq_offer.swap.send_asset;
 
     let mut out_amount = rpc::RawTxOutputsAmounts::new();
     let mut out_asset = rpc::RawTxOutputsAssets::new();
 
-    for output in &state.own_outputs {
-        match output.output_type {
-            OutputType::ContraOutput => {
-                let addr = match output.addr.clone() {
-                    Some(res) => res,
-                    None => "".into(),
-                };
-                out_amount.insert(
-                    addr.clone(),
-                    XbtAmount::from_satoshi(output.amount.clone()).to_bitcoin(),
-                );
-                out_asset.insert(addr.clone(), output.asset.clone());
-            }
-            _ => {}
-        }
-    }
+    let tx_info = state.tx_info.as_ref().expect("tx_info must exists");
 
-    let change_amount = total_utxos_amount - sell_amount;
+    out_amount.insert(
+        new_addr.clone(),
+        XbtAmount::from_satoshi(tx_info.recv_amount).to_bitcoin(),
+    );
+    out_asset.insert(new_addr, tx_info.recv_asset.clone());
+
+    let active_rfq = state.active_rfq.as_ref().expect("active rfq must exists");
+    let change_amount = active_rfq.total_utxos_amount - sell_amount;
     if change_amount.to_satoshi() < 0 {
         ui::show_notification(
             ui::TITLE_SWAP,
@@ -828,7 +719,7 @@ fn send_psbt(
         out_asset.insert(change.clone(), sell_asset.clone());
     }
 
-    let raw_tx_request = rpc::create_raw_tx(&inputs, &out_amount, 0, false, &out_asset);
+    let raw_tx_request = rpc::create_raw_tx(&active_rfq.inputs, &out_amount, 0, false, &out_asset);
     let raw_tx_res = rpc::make_rpc_call::<String>(&http_client, &rpc_server, &raw_tx_request);
     let raw_tx = match raw_tx_res {
         Ok(res) => res,
@@ -882,187 +773,23 @@ fn send_psbt(
         }
     };
 
+    let active_order_id = state
+        .active_order_id
+        .as_ref()
+        .expect("active_order_id must be set");
     send_request(
         &conn,
         Request::Swap(SwapRequest {
-            order_id: state.rfq_offer.swap.order_id.clone(),
-            action: SwapAction::Psbt(psbt_tx),
-        }),
-    );
-}
-
-fn send_psbt_with_fee(
-    state: &ui::SwapState,
-    conn_state: &mut ui::ConnectionState,
-    http_client: &reqwest::blocking::Client,
-    rpc_server: &rpc::RpcServer,
-    conn: &ws::Sender,
-    ui_sender: &Sender<ui::Update>,
-) {
-    if !conn_state.server_connected {
-        ui::show_notification(
-            ui::TITLE_SERVER_CONN,
-            ui::MSG_NOT_CONNECTED,
-            ui::NotificationType::Error,
-            conn_state,
-            &ui_sender,
-        );
-        return;
-    }
-
-    let sell_amount = XbtAmount::from_satoshi(state.rfq_offer.swap.sell_amount);
-    let sell_asset = &state.rfq_offer.swap.sell_asset;
-
-    let list_unspend_req = rpc::list_unspent(&sell_amount.to_bitcoin().to_string(), &sell_asset);
-    let list_unspend_res =
-        rpc::make_rpc_call::<Vec<rpc::RawUtxo>>(&http_client, &rpc_server, &list_unspend_req);
-    let utxos = match list_unspend_res {
-        Ok(res) => res,
-        Err(e) => {
-            ui::show_notification(
-                ui::TITLE_SWAP,
-                &e.to_string(),
-                ui::NotificationType::Error,
-                conn_state,
-                &ui_sender,
-            );
-            return;
-        }
-    };
-
-    let mut total_utxos_amount = XbtAmount::from_bitcoins(0.0);
-    let mut inputs = Vec::new();
-    for utxo in utxos {
-        total_utxos_amount = total_utxos_amount + XbtAmount::from_bitcoins(utxo.amount);
-        inputs.push(rpc::RawTxInputs {
-            txid: utxo.txid,
-            vout: utxo.vout,
-        })
-    }
-
-    let mut out_amount = rpc::RawTxOutputsAmounts::new();
-    let mut out_asset = rpc::RawTxOutputsAssets::new();
-
-    for output in &state.own_outputs {
-        match output.output_type {
-            OutputType::NetworkFee => {
-                out_amount.insert(
-                    "fee".into(),
-                    XbtAmount::from_satoshi(output.amount.clone()).to_bitcoin(),
-                );
-            }
-            _ => {
-                let addr = match output.addr.clone() {
-                    Some(res) => res,
-                    None => "".into(),
-                };
-                out_amount.insert(
-                    addr.clone(),
-                    XbtAmount::from_satoshi(output.amount.clone()).to_bitcoin(),
-                );
-                out_asset.insert(addr.clone(), output.asset.clone());
-            }
-        }
-    }
-
-    let change_amount = total_utxos_amount - sell_amount;
-    if change_amount.to_satoshi() < 0 {
-        ui::show_notification(
-            ui::TITLE_SWAP,
-            ui::MSG_NO_UTXO_BUY,
-            ui::NotificationType::Error,
-            conn_state,
-            &ui_sender,
-        );
-        return;
-    }
-    if change_amount.to_satoshi() > 0 {
-        let change_res =
-            rpc::make_rpc_call::<String>(&http_client, &rpc_server, &rpc::get_new_address());
-        let change = match change_res {
-            Ok(addr) => addr,
-            Err(e) => {
-                let error = e.to_string();
-                ui::show_notification(
-                    ui::TITLE_SWAP,
-                    &error,
-                    ui::NotificationType::Error,
-                    conn_state,
-                    &ui_sender,
-                );
-                return;
-            }
-        };
-
-        out_amount.insert(change.clone(), change_amount.to_bitcoin());
-        out_asset.insert(change.clone(), sell_asset.clone());
-    }
-
-    let raw_tx_request = rpc::create_raw_tx(&inputs, &out_amount, 0, false, &out_asset);
-    let raw_tx_res = rpc::make_rpc_call::<String>(&http_client, &rpc_server, &raw_tx_request);
-    let raw_tx = match raw_tx_res {
-        Ok(res) => res,
-        Err(e) => {
-            let error = e.to_string();
-            ui::show_notification(
-                ui::TITLE_SWAP,
-                &error,
-                ui::NotificationType::Error,
-                conn_state,
-                &ui_sender,
-            );
-            return;
-        }
-    };
-
-    let conv_psbt_tx_res =
-        rpc::make_rpc_call::<String>(&http_client, &rpc_server, &rpc::convert_to_psbt(&raw_tx));
-    let conv_psbt_tx = match conv_psbt_tx_res {
-        Ok(res) => res,
-        Err(e) => {
-            let error = e.to_string();
-            ui::show_notification(
-                ui::TITLE_SWAP,
-                &error,
-                ui::NotificationType::Error,
-                conn_state,
-                &ui_sender,
-            );
-            return;
-        }
-    };
-
-    let psbt_tx_res = rpc::make_rpc_call::<rpc::PsbtTx>(
-        &http_client,
-        &rpc_server,
-        &rpc::fill_psbt_data(&conv_psbt_tx),
-    );
-    let psbt_tx = match psbt_tx_res {
-        Ok(res) => res.psbt,
-        Err(e) => {
-            let error = e.to_string();
-            ui::show_notification(
-                ui::TITLE_SWAP,
-                &error,
-                ui::NotificationType::Error,
-                conn_state,
-                &ui_sender,
-            );
-            return;
-        }
-    };
-
-    send_request(
-        &conn,
-        Request::Swap(SwapRequest {
-            order_id: state.rfq_offer.swap.order_id.clone(),
+            order_id: active_order_id.clone(),
             action: SwapAction::Psbt(psbt_tx),
         }),
     );
 }
 
 fn sign_psbt(
-    state: &ui::SwapState,
+    state: &InternalState,
+    psbt: &str,
+    ui: &mut ui::SwapState,
     conn_state: &mut ui::ConnectionState,
     http_client: &reqwest::blocking::Client,
     rpc_server: &rpc::RpcServer,
@@ -1080,11 +807,8 @@ fn sign_psbt(
         return;
     }
 
-    let signed_tx_res = rpc::make_rpc_call::<rpc::PsbtTx>(
-        &http_client,
-        &rpc_server,
-        &rpc::sign_psbt(&state.psb_to_sign),
-    );
+    let signed_tx_res =
+        rpc::make_rpc_call::<rpc::PsbtTx>(&http_client, &rpc_server, &rpc::sign_psbt(&psbt));
     let signed_tx = match signed_tx_res {
         Ok(res) => res.psbt,
         Err(e) => {
@@ -1100,10 +824,16 @@ fn sign_psbt(
         }
     };
 
+    ui.unconfirmed_balances = ui.balances.clone();
+
+    let active_order_id = state
+        .active_order_id
+        .as_ref()
+        .expect("active_order_id must be set");
     send_request(
         &conn,
         Request::Swap(SwapRequest {
-            order_id: state.rfq_offer.swap.order_id.clone(),
+            order_id: active_order_id.clone(),
             action: SwapAction::Sign(signed_tx),
         }),
     );
@@ -1112,61 +842,48 @@ fn sign_psbt(
 fn cleanup_swap_state(state: &mut ui::SwapState) {
     state.rfq_offer = Offer {
         swap: Swap {
-            order_id: OrderId("".into()),
-            sell_asset: "".into(),
-            sell_amount: 0,
-            buy_asset: "".into(),
-            buy_amount: 0,
+            send_asset: "".into(),
+            send_amount: 0,
+            recv_asset: "".into(),
+            recv_amount: 0,
+            server_fee: 0,
+            network_fee: 0,
         },
         created_at: 0,
         expires_at: 0,
+        accept_required: false,
     };
-    state.psb_to_sign = "".into();
-    state.own_outputs.clear();
-    state.contra_outputs.clear();
     state.rfq_offer.created_at = 0;
     state.rfq_offer.expires_at = 0;
     state.canceled_by_me = false;
-    state.stage_accepted_by_me = false;
     state.show_password_prompt = false;
 }
 
 fn process_swap_update(
-    state: &mut ui::SwapState,
+    state: &mut InternalState,
+    ui: &mut ui::SwapState,
     order_id: OrderId,
     msg: SwapState,
     conn_state: &mut ui::ConnectionState,
     http_client: &reqwest::blocking::Client,
-    rpc_server: &rpc::RpcServer,
+    rpc_server: &mut rpc::RpcServer,
     conn: &ws::Sender,
-    db: &db::Db,
-    hist: &mut worker::DBData,
     ui_sender: &Sender<ui::Update>,
-    is_dealer: bool,
 ) {
     match msg {
-        SwapState::OfferSent(offer) => {
-            info!("offer sent {}", &order_id);
-            state.status = ui::SwapStatus::OfferSent;
-            state.rfq_offer = offer.clone();
-        }
-        SwapState::OfferRecv(offer) => {
+        SwapState::ReviewOffer(offer) => {
             info!("offer recv {}", &order_id);
-            state.status = ui::SwapStatus::OfferRecv;
-            state.rfq_offer = offer.clone();
-            send_request(
-                &conn,
-                Request::Swap(SwapRequest {
-                    order_id: state.rfq_offer.swap.order_id.clone(),
-                    action: SwapAction::Accept,
-                }),
-            );
+            ui.status = ui::SwapStatus::ReviewOffer;
+            ui.server_fee = offer.swap.server_fee;
+            ui.network_fee = offer.swap.network_fee;
+            ui.rfq_offer = offer.clone();
+            ui.swap_in_progress = false;
+            state.tx_info = Some(offer.swap);
         }
-        SwapState::WaitTxInfo => {
-            info!("sending tx info for {}", &order_id);
-            state.status = ui::SwapStatus::WaitTxInfo;
-            state.stage_accepted_by_me = true;
-            send_own_txinfo(
+        SwapState::WaitPsbt => {
+            ui.status = ui::SwapStatus::WaitPsbt;
+            send_psbt(
+                &ui,
                 &state,
                 conn_state,
                 &http_client,
@@ -1175,37 +892,16 @@ fn process_swap_update(
                 &ui_sender,
             );
         }
-        SwapState::WaitPsbt(outputs) => {
-            let swap_outputs = outputs.own;
-            let swap_outputs_contra = outputs.peer;
-            state.status = ui::SwapStatus::WaitPsbt;
-            state.own_outputs = swap_outputs.clone();
-            state.contra_outputs = swap_outputs_contra.clone();
-            state.stage_accepted_by_me = false;
-
-            if is_dealer {
-                accept_swap(
-                    state,
-                    conn_state,
-                    &http_client,
-                    &rpc_server,
-                    &conn,
-                    &db,
-                    hist,
-                    &ui_sender,
-                );
-            }
-        }
         SwapState::WaitSign(psbt) => {
-            state.status = ui::SwapStatus::WaitSign;
-            state.psb_to_sign = psbt;
-            if state.encryption {
-                state.stage_accepted_by_me = false;
-                state.show_password_prompt = true;
+            ui.status = ui::SwapStatus::WaitSign;
+            if ui.encryption {
+                state.psbt = Some(psbt);
+                ui.show_password_prompt = true;
             } else {
-                state.stage_accepted_by_me = true;
                 sign_psbt(
                     &state,
+                    &psbt,
+                    ui,
                     conn_state,
                     &http_client,
                     &rpc_server,
@@ -1216,44 +912,32 @@ fn process_swap_update(
         }
         SwapState::Failed(e) => {
             error!("swap {} failed: {:?}", &order_id, e);
-            let mut msg_type = ui::NotificationType::Error;
-            let ui_message = match state.status {
-                ui::SwapStatus::WaitTxInfo => ui::MSG_RESP_NO_UTXO,
-                ui::SwapStatus::WaitPsbt => {
-                    if state.stage_accepted_by_me {
-                        ui::MSG_RESP_NO_PSBT
-                    } else {
-                        msg_type = ui::NotificationType::Info;
-                        ui::MSG_OWN_NO_PSBT
-                    }
-                }
-                ui::SwapStatus::WaitSign => {
-                    if state.stage_accepted_by_me {
-                        ui::MSG_RESP_NO_SIGN
-                    } else {
-                        msg_type = ui::NotificationType::Info;
-                        ui::MSG_OWN_NO_SIGN
-                    }
-                }
-                _ => ui::MSG_RFQ_CANCELLED,
+            let msg_type = ui::NotificationType::Error;
+            let ui_message = match e {
+                SwapError::Cancelled => ui::MSG_CANCELLED,
+                SwapError::Timeout => ui::MSG_TIMEOUT,
+                SwapError::ServerError => ui::MSG_SERVER_ERROR,
+                SwapError::DealerError => ui::MSG_DEALER_ERROR,
+                SwapError::ClientError => ui::MSG_CLIENT_ERROR,
             };
-
-            if !state.canceled_by_me {
+            if e != SwapError::Cancelled {
                 ui::show_notification(ui::TITLE_SWAP, ui_message, msg_type, conn_state, &ui_sender);
             }
-
-            state.status = ui::SwapStatus::Failed;
-            cleanup_swap_state(state);
+            ui.status = ui::SwapStatus::Failed;
+            ui.swap_in_progress = false;
+            cleanup_swap_state(ui);
+            ui.unconfirmed_balances.clear();
         }
         SwapState::Done(tx_id) => {
             info!("swap {} succeed, txid: {}", &order_id, &tx_id);
-            state.status = ui::SwapStatus::Done;
-            state.tx_id = tx_id;
-            cleanup_swap_state(state);
-            update_wallet_balances(state, &http_client, &rpc_server, &ui_sender, conn_state);
+            ui.status = ui::SwapStatus::Done;
+            ui.tx_id = tx_id;
+            ui.swap_in_progress = false;
+            cleanup_swap_state(ui);
+            update_wallet_balances(ui, &http_client, rpc_server, &ui_sender, conn_state);
         }
     }
-    ui::send_swap_update(&state, &ui_sender);
+    ui::send_swap_update(&ui, &ui_sender);
 }
 
 fn process_swap_disconnected(state: &mut ui::SwapState, ui_sender: &Sender<ui::Update>) {
@@ -1265,7 +949,7 @@ pub fn start_processing(
     sender: Sender<Action>,
     receiver: Receiver<Action>,
     ui_sender: Sender<ui::Update>,
-    mut params: StartParams,
+    params: ffi::ffi::StartParams,
 ) {
     let (conn, srv_rx) = ws::start(params.host.clone(), params.port, params.use_tls);
     let sender_copy = sender.clone();
@@ -1309,24 +993,29 @@ pub fn start_processing(
     };
 
     let rpc_http_client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(10))
+        .timeout(std::time::Duration::from_secs(5))
         .build()
         .expect("http client construction failed");
 
-    let mut hist = DBData::default();
+    let mut hist = DbData::default();
     hist.wallets = db.load_wallets();
 
     let mut swaps_state = worker::init_swap_state();
 
+    let mut active_rpc = RpcServer {
+        host: "".to_owned(),
+        port: 0,
+        login: "".to_owned(),
+        password: "".to_owned(),
+    };
     check_rpc_init(
         &mut swaps_state,
         &rpc_http_client,
-        &mut params.elements,
+        &mut active_rpc,
         &ui_sender,
         &mut conn_state,
         &db,
         &mut hist,
-        params.is_dealer,
     );
 
     let balance_updater = sender.clone();
@@ -1342,6 +1031,30 @@ pub fn start_processing(
     });
 
     let mut peg_addr = None;
+
+    let mut state = InternalState {
+        active_rfq: None,
+        tx_info: None,
+        psbt: None,
+        assets: Vec::new(),
+        active_order_id: None,
+    };
+
+    let rpc_http_client_copy = rpc_http_client.clone();
+    let (bal_tx, bal_rx) = std::sync::mpsc::channel::<BalanceUpdate>();
+    let sender_copy = sender.clone();
+    std::thread::spawn(move || {
+        for msg in bal_rx {
+            match msg {
+                BalanceUpdate::Update(addr) => {
+                    let balance = get_wallet_balance(&rpc_http_client_copy, &addr);
+                    sender_copy
+                        .send(Action::UpdateBalanceResult(balance))
+                        .unwrap();
+                }
+            }
+        }
+    });
 
     while let Ok(a) = receiver.recv() {
         debug!("new request: {:?}", &a);
@@ -1402,7 +1115,7 @@ pub fn start_processing(
                     &mut new_rpc,
                     &mut swaps_state,
                     &rpc_http_client,
-                    &mut params.elements,
+                    &mut active_rpc,
                     &ui_sender,
                     &mut conn_state,
                     &db,
@@ -1415,7 +1128,7 @@ pub fn start_processing(
                     index,
                     &mut swaps_state,
                     &rpc_http_client,
-                    &mut params.elements,
+                    &mut active_rpc,
                     &ui_sender,
                     &mut conn_state,
                     &db,
@@ -1428,7 +1141,7 @@ pub fn start_processing(
                     index,
                     &mut swaps_state,
                     &rpc_http_client,
-                    &mut params.elements,
+                    &mut active_rpc,
                     &ui_sender,
                     &mut conn_state,
                     &db,
@@ -1440,18 +1153,20 @@ pub fn start_processing(
                 // Stores the wallet decryption key in memory for 120 seconds.
                 let is_decrypted = rpc::make_rpc_call_status(
                     &rpc_http_client,
-                    &params.elements,
+                    &mut active_rpc,
                     &rpc::set_wallet_passphrase(&pass, 120),
                 ) == reqwest::StatusCode::OK;
                 if is_decrypted {
                     swaps_state.show_password_prompt = false;
-                    swaps_state.stage_accepted_by_me = true;
                     ui::send_swap_update(&swaps_state, &ui_sender);
+                    let psbt = state.psbt.as_ref().expect("psbt must exists");
                     sign_psbt(
-                        &swaps_state,
+                        &state,
+                        &psbt,
+                        &mut swaps_state,
                         &mut conn_state,
                         &rpc_http_client,
-                        &params.elements,
+                        &active_rpc,
                         &conn,
                         &ui_sender,
                     );
@@ -1479,10 +1194,14 @@ pub fn start_processing(
                     );
                     continue;
                 }
+                let active_order_id = state
+                    .active_order_id
+                    .as_ref()
+                    .expect("active_order_id must be set");
                 send_request(
                     &conn,
                     Request::Swap(SwapRequest {
-                        order_id: swaps_state.rfq_offer.swap.order_id.clone(),
+                        order_id: active_order_id.clone(),
                         action: SwapAction::Cancel,
                     }),
                 );
@@ -1500,19 +1219,61 @@ pub fn start_processing(
                     continue;
                 }
 
+                let sell_amount = XbtAmount::from_satoshi(deliver_amount);
+                let sell_asset = &deliver_asset;
+
+                let list_unspend_req =
+                    rpc::list_unspent(&sell_amount.to_bitcoin().to_string(), &sell_asset);
+                let list_unspend_res = rpc::make_rpc_call::<Vec<rpc::RawUtxo>>(
+                    &rpc_http_client,
+                    &active_rpc,
+                    &list_unspend_req,
+                );
+                let utxos = match list_unspend_res {
+                    Ok(res) => res,
+                    Err(e) => {
+                        ui::show_notification(
+                            ui::TITLE_SWAP,
+                            &e.to_string(),
+                            ui::NotificationType::Error,
+                            &conn_state,
+                            &ui_sender,
+                        );
+                        return;
+                    }
+                };
+
+                let mut total_utxos_amount = XbtAmount::from_bitcoin(0.0);
+                let mut inputs = Vec::new();
+                for utxo in utxos {
+                    total_utxos_amount = total_utxos_amount + XbtAmount::from_bitcoin(utxo.amount);
+                    inputs.push(rpc::RawTxInputs {
+                        txid: utxo.txid,
+                        vout: utxo.vout,
+                    })
+                }
+                let with_change = total_utxos_amount != sell_amount;
+                let rfq = MatchRfq {
+                    send_asset: deliver_asset,
+                    send_amount: deliver_amount,
+                    recv_asset: receive_asset,
+                    utxo_count: inputs.len() as i32,
+                    with_change,
+                };
+
                 send_request(
                     &conn,
-                    Request::MatchRfq(MatchRfqRequest {
-                        rfq: MatchRfq {
-                            sell_asset: deliver_asset,
-                            sell_amount: deliver_amount,
-                            buy_asset: receive_asset,
-                        },
-                    }),
+                    Request::MatchRfq(MatchRfqRequest { rfq: rfq.clone() }),
                 );
+
+                state.active_rfq = Some(ActiveRfq {
+                    inputs,
+                    total_utxos_amount,
+                    rfq,
+                });
             }
 
-            Action::MatchQuote(order_id, deliver_amount) => {
+            Action::MatchCancel => {
                 if !conn_state.server_connected {
                     ui::show_notification(
                         ui::TITLE_SERVER_CONN,
@@ -1524,33 +1285,14 @@ pub fn start_processing(
                     continue;
                 }
 
-                send_request(
-                    &conn,
-                    Request::MatchQuote(MatchQuoteRequest {
-                        quote: MatchQuote {
-                            order_id: OrderId(order_id.clone()),
-                            bid_amount: deliver_amount,
-                        },
-                    }),
-                );
-            }
-
-            Action::MatchCancel(order_id) => {
-                if !conn_state.server_connected {
-                    ui::show_notification(
-                        ui::TITLE_SERVER_CONN,
-                        ui::MSG_NOT_CONNECTED,
-                        ui::NotificationType::Error,
-                        &conn_state,
-                        &ui_sender,
-                    );
-                    continue;
-                }
-
+                let active_order_id = state
+                    .active_order_id
+                    .as_ref()
+                    .expect("active_order_id must be set");
                 send_request(
                     &conn,
                     Request::MatchRfqCancel(MatchCancelRequest {
-                        order_id: OrderId(order_id.clone()),
+                        order_id: active_order_id.clone(),
                     }),
                 );
             }
@@ -1567,10 +1309,15 @@ pub fn start_processing(
                     continue;
                 }
                 swaps_state.canceled_by_me = true;
+
+                let active_order_id = state
+                    .active_order_id
+                    .as_ref()
+                    .expect("active_order_id must be set");
                 send_request(
                     &conn,
                     Request::Swap(SwapRequest {
-                        order_id: swaps_state.rfq_offer.swap.order_id.clone(),
+                        order_id: active_order_id.clone(),
                         action: SwapAction::Cancel,
                     }),
                 );
@@ -1588,28 +1335,45 @@ pub fn start_processing(
                     continue;
                 }
 
-                swaps_state.stage_accepted_by_me = true;
-                accept_swap(
-                    &mut swaps_state,
-                    &mut conn_state,
-                    &rpc_http_client,
-                    &params.elements,
-                    &conn,
-                    &db,
-                    &mut hist,
-                    &ui_sender,
-                );
+                accept_swap(&state, &mut conn_state, &conn, &db, &mut hist);
+                swaps_state.swap_in_progress = true;
             }
 
             Action::UpdateBalanceTicker => {
-                update_wallet_balances(
-                    &mut swaps_state,
-                    &rpc_http_client,
-                    &params.elements,
-                    &ui_sender,
-                    &mut conn_state,
-                );
+                bal_tx
+                    .send(BalanceUpdate::Update(active_rpc.clone()))
+                    .unwrap();
             }
+            Action::UpdateBalanceResult(result) => {
+                update_wallet_balances_impl(&mut swaps_state, &ui_sender, &mut conn_state, result);
+
+                if !conn_state.rpc_last_call_success
+                    && !hist.wallets.is_empty()
+                    && is_current_node_default(&hist)
+                {
+                    active_rpc.host.clear();
+                    try_to_reconnect_rpc(
+                        &mut swaps_state,
+                        &rpc_http_client,
+                        &mut active_rpc,
+                        &ui_sender,
+                        &mut conn_state,
+                        &db,
+                        &mut hist,
+                    );
+
+                    if conn_state.rpc_last_call_success {
+                        ui::show_notification(
+                            ui::TITLE_NODE_ONLINE,
+                            ui::MSG_NODE_RPC_CONNECTED,
+                            ui::NotificationType::Info,
+                            &conn_state,
+                            &ui_sender,
+                        );
+                    }
+                }
+            }
+
             Action::CheckServerConnection => {
                 if !conn_state.server_connected {
                     ui::show_notification(
@@ -1625,32 +1389,23 @@ pub fn start_processing(
             Action::ServerResponse(response) => match response {
                 ws::WrappedResponse::Connected => {
                     info!("connected to server");
-                    if params.is_dealer {
-                        send_request(
-                            &conn,
-                            Request::LoginDealer(LoginDealerRequest {
-                                api_key: DEALER_API_KEY.into(),
-                            }),
-                        );
-                    } else {
-                        let cookie = db.get_setting(&SETTING_COOKIE);
-                        let pkg_version = env!("CARGO_PKG_VERSION");
-                        let git_hash = env!("GIT_HASH").to_owned();
-                        let version = format!("{}-{}", &pkg_version, &git_hash);
-                        send_request(
-                            &conn,
-                            Request::LoginClient(LoginClientRequest {
-                                api_key: CLIENT_API_KEY.into(),
-                                cookie,
-                                user_agent: Some(USER_AGENT.to_owned()),
-                                version: Some(version),
-                            }),
-                        );
-                    }
+                    let cookie = db.get_setting(&SETTING_COOKIE);
+                    let pkg_version = env!("CARGO_PKG_VERSION");
+                    let git_hash = env!("GIT_HASH").to_owned();
+                    let version = format!("{}-{}", &pkg_version, &git_hash);
+                    send_request(
+                        &conn,
+                        Request::LoginClient(LoginClientRequest {
+                            api_key: CLIENT_API_KEY.into(),
+                            cookie,
+                            user_agent: USER_AGENT.to_owned(),
+                            version: version,
+                        }),
+                    );
 
                     conn_state.server_connected = true;
                     request_all_orders_history(&hist, &conn);
-                    send_request(&conn, Request::ServerStatus);
+                    send_request(&conn, Request::ServerStatus(None));
                     ui::send_peg_update(&peg_state, &ui_sender);
                     ui::show_notification(
                         ui::TITLE_SERVER_CONN,
@@ -1730,15 +1485,17 @@ pub fn start_processing(
                         Ok(Response::ServerStatus(s)) => {
                             process_server_status_update(&mut peg_state, &s, &ui_sender);
                         }
-                        Ok(Response::Assets(assets)) => {
-                            ui::send_assets_update(&assets, &ui_sender);
+                        Ok(Response::Assets(assets_resp)) => {
+                            ui::send_assets_update(&assets_resp, &ui_sender);
+                            state.assets = assets_resp.assets;
                         }
                         Ok(Response::Swap(_)) => {}
                         Ok(Response::MatchRfq(msg)) => {
+                            state.active_order_id = Some(msg.order_id.clone());
                             let upd = MatchRfqUpdate {
                                 order_id: msg.order_id,
                                 status: MatchRfqStatus::Pending,
-                                buy_amount: None,
+                                recv_amount: None,
                                 created_at: msg.created_at,
                                 expires_at: msg.expires_at,
                             };
@@ -1748,7 +1505,7 @@ pub fn start_processing(
                             let upd = MatchRfqUpdate {
                                 order_id: OrderId("".into()),
                                 status: MatchRfqStatus::Expired,
-                                buy_amount: None,
+                                recv_amount: None,
                                 created_at: 0,
                                 expires_at: 0,
                             };
@@ -1759,7 +1516,7 @@ pub fn start_processing(
                         Ok(Response::LoginClient(response)) => {
                             db.update_setting(&SETTING_COOKIE, &response.cookie);
 
-                            send_request(&conn, Request::Assets);
+                            send_request(&conn, Request::Assets(None));
                             for order in db.load_orders() {
                                 add_history_peg_order(
                                     &mut hist,
@@ -1779,7 +1536,7 @@ pub fn start_processing(
                             }
                         }
                         Ok(Response::LoginDealer(_)) => {
-                            send_request(&conn, Request::Assets);
+                            send_request(&conn, Request::Assets(None));
                             for order in db.load_orders() {
                                 add_history_peg_order(
                                     &mut hist,
@@ -1828,17 +1585,15 @@ pub fn start_processing(
                         }
                         Notification::Swap(msg) => {
                             process_swap_update(
+                                &mut state,
                                 &mut swaps_state,
                                 msg.order_id,
                                 msg.state,
                                 &mut conn_state,
                                 &rpc_http_client,
-                                &params.elements,
+                                &mut active_rpc,
                                 &conn,
-                                &db,
-                                &mut hist,
                                 &ui_sender,
-                                params.is_dealer,
                             );
                         }
                         Notification::RfqCreated(msg) => {
@@ -1852,6 +1607,16 @@ pub fn start_processing(
                         }
                         Notification::MatchRfq(msg) => {
                             ui::send_rfq_update_client(&msg, &ui_sender);
+
+                            let active_rfq = &state
+                                .active_rfq
+                                .as_ref()
+                                .expect("active_rfq must be set")
+                                .rfq;
+                            swaps_state.price = rfq_price(&state, &msg);
+                            swaps_state.deliver_amount = Some(active_rfq.send_amount);
+                            ui::send_swap_update(&swaps_state, &ui_sender);
+
                             if msg.status == MatchRfqStatus::Expired {
                                 ui::show_notification(
                                     ui::TITLE_SWAP,

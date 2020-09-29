@@ -50,7 +50,6 @@
         <file>qml/custom-elements/CustVerDelimeter.qml</file>
         <file>qml/style/qmldir</file>
         <file>qml/style/Style.qml</file>
-        <file>qml/tabs/DealingContent.qml</file>
         <file>qml/tabs/HistoryContent.qml</file>
         <file>qml/tabs/PegContent.qml</file>
         <file>qml/tabs/SwapContent.qml</file>
@@ -65,5 +64,7 @@
         <file>assets/question.png</file>
         <file>assets/remove.png</file>
         <file>assets/switch_on.png</file>
+        <file>assets/wallet.png</file>
+        <file>qml/custom-elements/CustSpinner.qml</file>
     </qresource>
 </RCC>

@@ -79,23 +79,13 @@ TabBase {
                         horizontalAlignment: Qt.AlignCenter
                         font.pixelSize: 28
                         wrapMode: Text.WordWrap
-                        text: qsTr("You haven't completed any swaps yet")
+                        text: qsTr("You haven't completed any transactions yet")
                     }
 
                     CustRoundIcon {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 220
                         source: "qrc:/assets/empty_history.png"
-                    }
-
-                    CustButton {
-                        text: qsTr("GO TO SWAP")
-                        Layout.alignment: Qt.AlignCenter
-                        implicitHeight: 60
-                        implicitWidth: 220
-                        baseColor: Style.dyn.baseActive
-                        font.pixelSize: 18
-                        onClicked: contentItemRoot.goToSwap()
                     }
                 }
             }
@@ -180,18 +170,18 @@ TabBase {
                                 expandingDataOwn.header = !isPegin ? "BTC" : "L-BTC"
                                 expandingDataOwn.content = rowData.own_addr
                             } else {
-                                const sell_asset = assetsList[rowData.sell_asset];
-                                const buy_asset = assetsList[rowData.buy_asset];
-                                const isSoldLBTC = sell_asset.ticker === "L-BTC"
+                                const send_asset = assetsList[rowData.send_asset];
+                                const recv_asset = assetsList[rowData.recv_asset];
+                                const isSoldLBTC = send_asset.ticker === "L-BTC"
 
-                                sourceIcon.source = "data:image/png;base64," + sell_asset.icon;
-                                destIcon.source = "data:image/png;base64," + buy_asset.icon;
+                                sourceIcon.source = "data:image/png;base64," + send_asset.icon;
+                                destIcon.source = "data:image/png;base64," + recv_asset.icon;
 
                                 typeDelegate.text = qsTr("Swap")
 
                                 amountDelegate.text = String("%1 %2")
-                                                            .arg(fromSatoshi(rowData.buy_amount, buy_asset.precision))
-                                                            .arg(buy_asset.ticker);
+                                                            .arg(fromSatoshi(rowData.recv_amount, recv_asset.precision))
+                                                            .arg(recv_asset.ticker);
 
                                 statusDelegate.text = rowData.status;
 
@@ -208,22 +198,22 @@ TabBase {
                                 let currContra = "";
 
                                 if (isSoldLBTC) {
-                                    price = toPrice(Number(rowData.buy_amount) / Number(rowData.sell_amount));
+                                    price = toPrice(Number(rowData.recv_amount) / Number(rowData.send_amount));
 
-                                    amountOwn = fromSatoshi(-1 * Number(rowData.sell_amount), sell_asset.precision);
-                                    currOwn = sell_asset.ticker;
+                                    amountOwn = fromSatoshi(-1 * Number(rowData.send_amount), send_asset.precision);
+                                    currOwn = send_asset.ticker;
 
-                                    amountContra = fromSatoshi(rowData.buy_amount, buy_asset.precision);
-                                    currContra = buy_asset.ticker
+                                    amountContra = fromSatoshi(rowData.recv_amount, recv_asset.precision);
+                                    currContra = recv_asset.ticker
 
                                 } else {
-                                    price = toPrice(Number(rowData.sell_amount) / Number(rowData.buy_amount));
+                                    price = toPrice(Number(rowData.send_amount) / Number(rowData.recv_amount));
 
-                                    amountOwn = fromSatoshi(rowData.buy_amount, buy_asset.precision);
-                                    currOwn = buy_asset.ticker;
+                                    amountOwn = fromSatoshi(rowData.recv_amount, recv_asset.precision);
+                                    currOwn = recv_asset.ticker;
 
-                                    amountContra = fromSatoshi(-1 * Number(rowData.sell_amount), sell_asset.precision);
-                                    currContra = sell_asset.ticker;
+                                    amountContra = fromSatoshi(-1 * Number(rowData.send_amount), send_asset.precision);
+                                    currContra = send_asset.ticker;
                                 }
 
                                 expandingDataOwn.rowModel = [

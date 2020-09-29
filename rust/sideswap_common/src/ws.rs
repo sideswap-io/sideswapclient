@@ -77,7 +77,8 @@ async fn run(
                                 },
                             }
                         },
-                        tungstenite::Message::Ping(_) => {
+                        tungstenite::Message::Ping(data) => {
+                            let _ = ws_stream.send(tungstenite::Message::Pong(data)).await;
                         },
                         _ => {
                         },

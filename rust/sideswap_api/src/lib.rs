@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 
+pub const TICKER_BITCOIN: &str = "L-BTC";
+
 pub static PATH_JSON_RPC: &str = "json-rpc";
 pub static PATH_RUST_RPC: &str = "rust-rpc";
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
@@ -24,9 +26,11 @@ pub struct Asset {
     pub precision: u8,
 }
 
+pub type Assets = Vec<Asset>;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetsResponse {
-    pub assets: Vec<Asset>,
+    pub assets: Assets,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -72,11 +76,12 @@ pub struct SwapStatusRequest {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Swap {
-    pub order_id: OrderId,
-    pub sell_asset: String,
-    pub sell_amount: i64,
-    pub buy_asset: String,
-    pub buy_amount: i64,
+    pub send_asset: String,
+    pub send_amount: i64,
+    pub recv_asset: String,
+    pub recv_amount: i64,
+    pub server_fee: i64,
+    pub network_fee: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -84,13 +89,7 @@ pub struct Offer {
     pub swap: Swap,
     pub created_at: Timestamp,
     pub expires_at: Timestamp,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SwapTxInfo {
-    pub recv_address: String,
-    pub utxo_count: i32,
-    pub with_change: bool,
+    pub accept_required: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -98,48 +97,30 @@ pub struct SwapTxInfo {
 pub enum SwapAction {
     Accept,
     Cancel,
-    TxInfo(SwapTxInfo),
     Psbt(String),
     Sign(String),
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub enum SwapError {
-    ServerError,
     Cancelled,
     Timeout,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub enum OutputType {
-    ContraOutput,
-    ServerFee,
-    NetworkFee,
+    ServerError,
+    DealerError,
+    ClientError,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SwapOutput {
-    pub output_type: OutputType,
+pub struct AssetAmount {
     pub asset: String,
-    pub addr: Option<String>,
     pub amount: i64,
-}
-
-pub type SwapOutputs = Vec<SwapOutput>;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct AllSwapOutputs {
-    pub own: SwapOutputs,
-    pub peer: SwapOutputs,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum SwapState {
-    OfferSent(Offer),
-    OfferRecv(Offer),
-    WaitTxInfo,
-    WaitPsbt(AllSwapOutputs),
+    ReviewOffer(Offer),
+    WaitPsbt,
     WaitSign(String),
     Failed(SwapError),
     Done(String),
@@ -159,15 +140,19 @@ pub struct SwapNotification {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct MatchRfq {
-    pub sell_asset: String,
-    pub sell_amount: i64,
-    pub buy_asset: String,
+    pub send_asset: String,
+    pub send_amount: i64,
+    pub recv_asset: String,
+    pub utxo_count: i32,
+    pub with_change: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MatchQuote {
     pub order_id: OrderId,
-    pub bid_amount: i64,
+    pub send_amount: i64,
+    pub utxo_count: i32,
+    pub with_change: bool,
 }
 
 // In milliseconds since UNIX epoch
@@ -210,7 +195,7 @@ pub struct RfqCreatedNotification {
     pub expires_at: Timestamp,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum RfqStatus {
     Expired,
     Cancelled,
@@ -228,7 +213,7 @@ pub struct RfqRemovedNotification {
 pub struct MatchRfqUpdate {
     pub order_id: OrderId,
     pub status: MatchRfqStatus,
-    pub buy_amount: Option<i64>,
+    pub recv_amount: Option<i64>,
     pub created_at: Timestamp,
     pub expires_at: Timestamp,
 }
@@ -245,8 +230,11 @@ pub enum PegTxState {
 pub enum SwapStatus {
     Pending,
     Cancelled,
+    Timeout,
+    ServerError,
+    DealerError,
+    ClientError,
     Broadcast,
-    Failed,
     Settled,
 }
 
@@ -283,6 +271,7 @@ pub struct PegStatus {
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct SwapStatusResponse {
+    pub order_id: OrderId,
     pub swap: Swap,
     pub status: SwapStatus,
     pub txid: Option<String>,
@@ -307,8 +296,8 @@ pub struct ServerStatus {
 pub struct LoginClientRequest {
     pub api_key: String,
     pub cookie: Option<String>,
-    pub user_agent: Option<String>,
-    pub version: Option<String>,
+    pub user_agent: String,
+    pub version: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -322,9 +311,13 @@ pub struct LoginDealerRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub enum EmptyValue {}
+pub type Empty = Option<EmptyValue>;
+
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Request {
-    ServerStatus,
-    Assets,
+    ServerStatus(Empty),
+    Assets(Empty),
     PegIn(PegInRequest),
     PegOut(PegOutRequest),
     PegInStatus(PegInStatusRequest),
@@ -348,13 +341,13 @@ pub enum Response {
     PegInStatus(PegStatus),
     PegOutStatus(PegStatus),
     MatchRfq(MatchRfqResponse),
-    MatchRfqCancel(()),
-    MatchQuote(()),
-    MatchQuoteCancel(()),
-    Swap(()),
+    MatchRfqCancel(Empty),
+    MatchQuote(Empty),
+    MatchQuoteCancel(Empty),
+    Swap(Empty),
     SwapStatus(SwapStatusResponse),
     LoginClient(LoginClientResponse),
-    LoginDealer(()),
+    LoginDealer(Empty),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

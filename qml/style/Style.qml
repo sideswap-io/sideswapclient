@@ -29,7 +29,7 @@ Item {
 
         // message box
         readonly property color info: "#3498db"
-        readonly property color critical: "#FF0000"
+        readonly property color critical: "#fe3427"
         readonly property color general: "#222222"
 
         // status colors
@@ -42,7 +42,7 @@ Item {
         // shaders
         readonly property color halfToneShader: "#10000000"
         readonly property color fullToneShader: "#20000000"
-        readonly property color shadowShader:   "#20000000"
+        readonly property color shadowShader:   "#80000000"
         readonly property color inputElementShader: "#c0222222"
     }
 

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- https://doc.qt.io/qtinstallerframework/ifw-component-description.html -->
+<Package>
+    <DisplayName>SideSwap</DisplayName>
+    <Description>Install SideSwap application</Description>
+    <Version>0.1.0</Version>
+    <ReleaseDate>2020-09-10</ReleaseDate>
+    <Licenses>
+        <License name="License Agreement" file="LICENSE" />
+    </Licenses>
+	<Essential>true</Essential>
+	<Default>true</Default>
+	<RequiresAdminRights>true</RequiresAdminRights>
+	<Script>installscript.qs</Script>
+	<UserInterfaces>
+		<UserInterface>DoneCustom.ui</UserInterface>
+	</UserInterfaces>
+</Package>

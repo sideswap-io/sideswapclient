@@ -6,12 +6,13 @@ import QtGraphicalEffects 1.12
 import QtQuick.Window 2.13
 import "./custom-elements"
 import "./style"
+import "./dialogs"
 
 ApplicationWindow {
     id: mainWindow
 
-    visible: true
     title: qsTr("SideSwap")
+    visible: false
 
     minimumWidth: 800
     minimumHeight: 600
@@ -83,12 +84,24 @@ ApplicationWindow {
 
         x = Screen.virtualX + ((Screen.width < minimumWidth) ? 0 : (Screen.width - width) / 2);
         y = Screen.virtualY + ((Screen.height < minimumHeight) ? 0 : (Screen.height - height) / 2);
+        mainWindow.visible = true
+
+        // Workaround for "QSystemTrayIcon::setVisible: No Icon set" error (set icon first)
+        trayIcon.icon.mask = false
+        trayIcon.icon.source = "qrc:/assets/side_swap_logo.png"
+        trayIcon.visible = true
     }
 
     TrayIcon {
         id: trayIcon
-        visible: true
+        visible: false
     }
+
+    WizardAddWallet {
+        id: walletWizard
+        parent: mainWindowLyt
+    }
+
 
     function showMessage(_message, _color) {
         statusBar.showMessage(_message, _color);

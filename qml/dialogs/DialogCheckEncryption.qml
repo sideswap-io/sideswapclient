@@ -5,7 +5,9 @@ import "../custom-elements"
 import "../style"
 
 Popup {
-    id: encDialog
+    id: root
+
+    property alias progress: progressConfirm
 
     signal canceled()
     signal accepted(string passphrase)

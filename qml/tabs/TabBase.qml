@@ -31,6 +31,10 @@ Item {
         return Number(answ).toLocaleString(Qt.locale(), 'f', precision);
     }
 
+    function formatString(str) {
+        return Number.fromLocaleString(Qt.locale(), str) * 100000000;
+    }
+
     function refreshFocus() {
         pegContent.ensureFocus();
     }

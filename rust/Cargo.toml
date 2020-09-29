@@ -2,5 +2,7 @@
 
 members = [
     "sideswap_api",
+    "sideswap_common",
     "sideswap_client",
+    "sideswap_dealer_example",
 ]

@@ -9,11 +9,6 @@ import "./style"
 SystemTrayIcon {
     id: trayIcon
     
-    icon {
-        mask: true;
-        source: "qrc:/assets/side_swap_logo.png";
-    }
-    
     menu: Menu {
         
         MenuItem {
