@@ -13,11 +13,9 @@ sideswap_common = { version = "*", path = "../sideswap_common" }
 cxx = "*"
 elements = "*"
 bitcoin = "*"
-tungstenite = { version = "*" }
-url = "*"
 openssl = { version = "*", features = ["vendored"] }
-serde = { version = "*", features = ["derive"] }
-serde_json = "*"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 reqwest = { version = "*", features = ["blocking", "json"] }
 log = "*"
 anyhow = "*"
@@ -26,11 +24,5 @@ diesel = { version = "*", features = ["sqlite"] }
 diesel_migrations = "*"
 libsqlite3-sys = { version = "0.9.1", features = ["bundled"] }
 qrcode = { version = "*", default-features = false, features = [] }
-async-tungstenite = { version = "*", features = ["tokio-native-tls"] }
-tokio = "*"
-futures = "*"
-futures-util = "*"
 derive_more = "*"
-clap = { version = "3.0.0-beta.1", default-features = false, features = ["std", "derive"] }
 dirs = "3.0.1"
-log4rs = "*"

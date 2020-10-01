@@ -3,7 +3,7 @@ use rpc::RpcServer;
 use sideswap_api::*;
 use sideswap_common::*;
 use std::sync::mpsc::{Receiver, Sender};
-use types::XbtAmount;
+use types::Amount;
 
 const CLIENT_API_KEY: &str = "f8b7a12ee96aa68ee2b12ebfc51d804a4a404c9732652c298d24099a3d922a84";
 
@@ -43,7 +43,7 @@ enum BalanceUpdate {
 pub struct ActiveRfq {
     rfq: MatchRfq,
     inputs: Vec<rpc::RawTxInputs>,
-    total_utxos_amount: XbtAmount,
+    total_utxos_amount: Amount,
 }
 
 pub struct InternalState {
@@ -466,10 +466,7 @@ fn update_wallet_balances_impl(
                     Some(code) => code,
                     None => label,
                 };
-                balances.insert(
-                    balance_code.clone(),
-                    XbtAmount::from_bitcoin(amount.clone()).to_satoshi(),
-                );
+                balances.insert(balance_code.clone(), Amount::from_rpc(&amount).to_sat());
             }
             serde_json::to_string(&balances).unwrap()
         }
@@ -671,7 +668,7 @@ fn send_psbt(
         }
     };
 
-    let sell_amount = XbtAmount::from_satoshi(ui.rfq_offer.swap.send_amount);
+    let sell_amount = Amount::from_sat(ui.rfq_offer.swap.send_amount);
     let sell_asset = &ui.rfq_offer.swap.send_asset;
 
     let mut out_amount = rpc::RawTxOutputsAmounts::new();
@@ -681,13 +678,13 @@ fn send_psbt(
 
     out_amount.insert(
         new_addr.clone(),
-        XbtAmount::from_satoshi(tx_info.recv_amount).to_bitcoin(),
+        Amount::from_sat(tx_info.recv_amount).to_rpc(),
     );
     out_asset.insert(new_addr, tx_info.recv_asset.clone());
 
     let active_rfq = state.active_rfq.as_ref().expect("active rfq must exists");
     let change_amount = active_rfq.total_utxos_amount - sell_amount;
-    if change_amount.to_satoshi() < 0 {
+    if change_amount.to_sat() < 0 {
         ui::show_notification(
             ui::TITLE_SWAP,
             ui::MSG_NO_UTXO_SELL,
@@ -697,7 +694,7 @@ fn send_psbt(
         );
         return;
     }
-    if change_amount.to_satoshi() > 0 {
+    if change_amount.to_sat() > 0 {
         let change_res =
             rpc::make_rpc_call::<String>(&http_client, &rpc_server, &rpc::get_new_address());
         let change = match change_res {
@@ -715,7 +712,7 @@ fn send_psbt(
             }
         };
 
-        out_amount.insert(change.clone(), change_amount.to_bitcoin());
+        out_amount.insert(change.clone(), change_amount.to_rpc());
         out_asset.insert(change.clone(), sell_asset.clone());
     }
 
@@ -1219,7 +1216,7 @@ pub fn start_processing(
                     continue;
                 }
 
-                let sell_amount = XbtAmount::from_satoshi(deliver_amount);
+                let sell_amount = Amount::from_sat(deliver_amount);
                 let sell_asset = &deliver_asset;
 
                 let list_unspend_req =
@@ -1243,10 +1240,10 @@ pub fn start_processing(
                     }
                 };
 
-                let mut total_utxos_amount = XbtAmount::from_bitcoin(0.0);
+                let mut total_utxos_amount = Amount::from_bitcoin(0.0);
                 let mut inputs = Vec::new();
                 for utxo in utxos {
-                    total_utxos_amount = total_utxos_amount + XbtAmount::from_bitcoin(utxo.amount);
+                    total_utxos_amount = total_utxos_amount + Amount::from_rpc(&utxo.amount);
                     inputs.push(rpc::RawTxInputs {
                         txid: utxo.txid,
                         vout: utxo.vout,

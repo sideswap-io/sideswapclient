@@ -3,14 +3,14 @@ server_port = 443
 server_use_tls = true
 api_key = "<YOUR_DEALER_API_KEY>"
 log_settings = "config/dealer_example_logs.yml"
-bitcoin_mainnet = false
-max_trade_size = 0.1
+max_trade_size = 0.001 # 0.001 L-BTC
+profit_ratio = 1.015 # 1.5%
 
 [rpc]
 host = "localhost"
-port = 38501
-login = ""
-password = 1231
+port = 38503
+login = "dealer"
+password = "<YOUR_RPC_PASSWORD>"
 
 [zmq]
 host = "localhost"

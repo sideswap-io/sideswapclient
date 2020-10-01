@@ -1,17 +1,18 @@
-#![recursion_limit = "1024"]
-
 use clap::{App, Arg};
 use rpc::RpcServer;
 use serde::Deserialize;
 use sideswap_api::*;
 use sideswap_common::*;
 use std::collections::{BTreeMap, BTreeSet};
-use types::{TxOut, XbtAmount};
+use types::{Amount, TxOut};
 
 mod btc_zmq;
+mod prices;
 
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate anyhow;
 
 const TICKER_BITCOIN: &str = "L-BTC";
 const TICKER_TETHER: &str = "USDt";
@@ -20,11 +21,12 @@ const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_se
 
 const UNSPENT_MIN_CONF: i32 = 1;
 
-#[derive(Debug, Deserialize)]
-struct Args {
-    log_settings: String,
+// Sanity check
+const MIN_PROFIT_RATIO: f64 = 1.002;
 
-    bitcoin_mainnet: bool,
+#[derive(Debug, Deserialize)]
+struct Settings {
+    log_settings: String,
 
     max_trade_size: f64,
 
@@ -37,6 +39,8 @@ struct Args {
     api_key: String,
 
     zmq: btc_zmq::Server,
+
+    profit_ratio: f64,
 }
 
 enum Msg {
@@ -84,16 +88,22 @@ fn main() {
         .expect("can't load config");
     conf.merge(config::Environment::with_prefix("app").separator("_"))
         .expect("reading env failed");
-    let args: Args = conf.try_into().expect("invalid config");
+    let settings: Settings = conf.try_into().expect("invalid config");
 
-    log4rs::init_file(&args.log_settings, Default::default()).expect("can't open log settings");
+    log4rs::init_file(&settings.log_settings, Default::default()).expect("can't open log settings");
 
     let (msg_tx, msg_rx) = std::sync::mpsc::channel::<Msg>();
-    let (ws_tx, ws_rx) = ws::start(args.server_host, args.server_port, args.server_use_tls);
+    let (ws_tx, ws_rx) = ws::start(
+        settings.server_host,
+        settings.server_port,
+        settings.server_use_tls,
+    );
     let current_request_id = std::sync::Arc::new(std::sync::atomic::AtomicI64::new(0));
     let (resp_tx, resp_rx) = std::sync::mpsc::channel::<Result<Response, Error>>();
     let current_request_id_copy = std::sync::Arc::clone(&current_request_id);
-    let max_trade_amount = XbtAmount::from_bitcoin(args.max_trade_size);
+    let max_trade_amount = Amount::from_bitcoin(settings.max_trade_size);
+
+    assert!(settings.profit_ratio >= MIN_PROFIT_RATIO);
 
     let msg_tx_copy = msg_tx.clone();
     std::thread::spawn(move || {
@@ -144,7 +154,7 @@ fn main() {
     };
 
     let msg_tx_copy = msg_tx.clone();
-    btc_zmq::connect(&args.zmq, move |topic, _| {
+    btc_zmq::connect(&settings.zmq, move |topic, _| {
         match topic {
             btc_zmq::BtcTopic::PubHashBlock => {
                 msg_tx_copy.send(Msg::NewBlock).unwrap();
@@ -184,7 +194,7 @@ fn main() {
                 send_request!(
                     LoginDealer,
                     LoginDealerRequest {
-                        api_key: args.api_key.clone(),
+                        api_key: settings.api_key.clone(),
                     }
                 )
                 .expect("dealer login failed");
@@ -221,10 +231,12 @@ fn main() {
                     let other_asset = if sell_bitcoin { asset_buy } else { asset_sell };
 
                     let md_price = if other_asset.ticker == TICKER_TETHER {
-                        if sell_bitcoin {
-                            11000.0
-                        } else {
-                            9000.0
+                        match prices::download_bitcoin_last_usd_price() {
+                            Ok(v) => v,
+                            Err(e) => {
+                                error!("getting bitcoin price failed: {}", &e);
+                                continue;
+                            }
                         }
                     } else {
                         warn!("unknown asset: {}", &other_asset.ticker);
@@ -232,22 +244,22 @@ fn main() {
                     };
 
                     let proposal = if sell_bitcoin {
-                        rfq.rfq.send_amount / (md_price * 1.005) as i64
+                        rfq.rfq.send_amount / (md_price * settings.profit_ratio) as i64
                     } else {
-                        rfq.rfq.send_amount * (md_price * 0.995) as i64
+                        rfq.rfq.send_amount * (md_price / settings.profit_ratio) as i64
                     };
                     let bitcoin_amount = if sell_bitcoin {
-                        XbtAmount::from_bitcoin(
-                            XbtAmount::from_satoshi(rfq.rfq.send_amount).to_bitcoin() / md_price,
+                        Amount::from_bitcoin(
+                            Amount::from_sat(rfq.rfq.send_amount).to_bitcoin() / md_price,
                         )
                     } else {
-                        XbtAmount::from_satoshi(rfq.rfq.send_amount)
+                        Amount::from_sat(rfq.rfq.send_amount)
                     };
 
                     if bitcoin_amount > max_trade_amount {
                         info!(
                             "amount to trade is more than allowed: {} > {}",
-                            XbtAmount::from_satoshi(rfq.rfq.send_amount).to_bitcoin(),
+                            Amount::from_sat(rfq.rfq.send_amount).to_bitcoin(),
                             max_trade_amount.to_bitcoin()
                         );
                         continue;
@@ -334,7 +346,7 @@ fn main() {
                             let sw = active_swap.swap.as_ref().expect("swap must be set");
                             let new_address = rpc::make_rpc_call::<String>(
                                 &rpc_http_client,
-                                &args.rpc,
+                                &settings.rpc,
                                 &rpc::get_new_address(),
                             )
                             .expect("getting new address failed");
@@ -344,25 +356,26 @@ fn main() {
                                 .filter(|utxo| utxo.reserve.as_ref() == Some(&swap.order_id))
                                 .map(|utxo| utxo.item.tx_out())
                                 .collect();
-                            let mut outputs_amounts: BTreeMap<String, f64> = BTreeMap::new();
+                            let mut outputs_amounts: BTreeMap<String, serde_json::Value> =
+                                BTreeMap::new();
                             let mut outputs_assets: BTreeMap<String, String> = BTreeMap::new();
 
                             outputs_amounts.insert(
                                 new_address.clone(),
-                                XbtAmount::from_satoshi(sw.recv_amount).to_bitcoin(),
+                                Amount::from_sat(sw.recv_amount).to_rpc(),
                             );
                             outputs_assets.insert(new_address.clone(), sw.recv_asset.clone());
 
                             if active_swap.change_amount > 0 {
                                 let change_address = rpc::make_rpc_call::<String>(
                                     &rpc_http_client,
-                                    &args.rpc,
+                                    &settings.rpc,
                                     &rpc::get_new_address(),
                                 )
                                 .expect("getting new address failed");
                                 outputs_amounts.insert(
                                     change_address.clone(),
-                                    XbtAmount::from_satoshi(active_swap.change_amount).to_bitcoin(),
+                                    Amount::from_sat(active_swap.change_amount).to_rpc(),
                                 );
                                 outputs_assets
                                     .insert(change_address, active_swap.sell_asset.clone());
@@ -370,7 +383,7 @@ fn main() {
 
                             let raw_tx = rpc::make_rpc_call::<String>(
                                 &rpc_http_client,
-                                &args.rpc,
+                                &settings.rpc,
                                 &rpc::create_raw_tx(
                                     &inputs,
                                     &outputs_amounts,
@@ -383,14 +396,14 @@ fn main() {
 
                             let psbt = rpc::make_rpc_call::<String>(
                                 &rpc_http_client,
-                                &args.rpc,
+                                &settings.rpc,
                                 &rpc::convert_to_psbt(&raw_tx),
                             )
                             .expect("converting PSBT failed");
 
                             let psbt = rpc::make_rpc_call::<rpc::FillPsbtData>(
                                 &rpc_http_client,
-                                &args.rpc,
+                                &settings.rpc,
                                 &rpc::fill_psbt_data(&psbt),
                             )
                             .expect("converting PSBT failed");
@@ -407,7 +420,7 @@ fn main() {
                         SwapState::WaitSign(psbt) => {
                             let result = rpc::make_rpc_call::<rpc::WalletSignPsbt>(
                                 &rpc_http_client,
-                                &args.rpc,
+                                &settings.rpc,
                                 &rpc::wallet_sign_psbt(&psbt),
                             )
                             .expect("signing PSBT failed");
@@ -437,7 +450,7 @@ fn main() {
                 debug!("new block detected");
                 let unspent_with_zc = rpc::make_rpc_call::<rpc::ListUnspent>(
                     &rpc_http_client,
-                    &args.rpc,
+                    &settings.rpc,
                     &rpc::list_unspent2(0),
                 )
                 .expect("list_unspent failed");
@@ -450,7 +463,7 @@ fn main() {
                 let new_keys: BTreeSet<_> = unspent.iter().map(|item| item.tx_out()).collect();
                 for item in unspent {
                     utxos.entry(item.tx_out()).or_insert(Utxo {
-                        amount: XbtAmount::from_bitcoin(item.amount).to_satoshi(),
+                        amount: Amount::from_rpc(&item.amount).to_sat(),
                         item,
                         reserve: None,
                     });

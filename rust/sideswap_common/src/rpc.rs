@@ -150,7 +150,7 @@ pub fn make_rpc_call_status(
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetWalletInfo {
-    pub balance: HashMap<String, f64>,
+    pub balance: HashMap<String, serde_json::Number>,
     pub private_keys_enabled: bool,
 }
 
@@ -205,12 +205,12 @@ pub struct RawUtxo {
     pub txid: String,
     pub vout: i32,
     pub asset: String,
-    pub amount: f64,
+    pub amount: serde_json::Number,
 }
 
 pub type RawTxInputs = crate::types::TxOut;
 
-pub type RawTxOutputsAmounts = BTreeMap<String, f64>;
+pub type RawTxOutputsAmounts = BTreeMap<String, serde_json::Value>;
 pub type RawTxOutputsAssets = BTreeMap<String, String>;
 
 pub fn create_raw_tx(
@@ -327,16 +327,6 @@ pub fn decode_raw_tx(tx: &str) -> RpcRequest {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct BlindInputInfo {
-    pub txid: String,
-    pub vout: i64,
-    pub amount: f64,
-    pub asset: String,
-    pub amountblinder: String,
-    pub assetblinder: String,
-}
-
 pub fn list_unspent(minimum_amount: &String, asset: &String) -> RpcRequest {
     let mut data = Vec::<serde_json::value::Value>::new();
     let mut input_data = BTreeMap::<String, String>::new();
@@ -367,7 +357,7 @@ pub struct UnspentItem {
     pub txid: String,
     pub vout: i32,
     pub address: String,
-    pub amount: f64,
+    pub amount: serde_json::Number,
     pub confirmations: i32,
     pub asset: String,
 }
@@ -379,27 +369,6 @@ impl UnspentItem {
             txid: self.txid.clone(),
             vout: self.vout,
         }
-    }
-}
-
-pub fn blind_raw_tx(
-    funded_tx: &str,
-    amountblinders: &Vec<String>,
-    amounts: &Vec<f64>,
-    assets: &Vec<String>,
-    assetblinders: &Vec<String>,
-) -> RpcRequest {
-    let mut data = Vec::<serde_json::value::Value>::new();
-
-    data.push(serde_json::json!(funded_tx));
-    data.push(serde_json::json!(amountblinders));
-    data.push(serde_json::json!(amounts));
-    data.push(serde_json::json!(assets));
-    data.push(serde_json::json!(assetblinders));
-
-    RpcRequest {
-        method: "rawblindrawtransaction".into(),
-        params: data,
     }
 }
 

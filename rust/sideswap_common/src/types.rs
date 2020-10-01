@@ -11,25 +11,38 @@
     Ord,
     Default,
 )]
-pub struct XbtAmount(pub i64);
+pub struct Amount(pub i64);
 
-const BALANCE_DIVIDER: i64 = 100_000_000;
+const COIN: i64 = 100_000_000;
 
-impl XbtAmount {
-    pub fn from_satoshi(value: i64) -> Self {
-        XbtAmount(value)
+impl Amount {
+    pub fn from_sat(value: i64) -> Self {
+        Amount(value)
+    }
+
+    pub fn from_rpc(value: &serde_json::Number) -> Self {
+        let amount =
+            bitcoin::SignedAmount::from_str_in(&value.to_string(), bitcoin::Denomination::Bitcoin)
+                .expect("invalid bitcoin value");
+        Amount::from_sat(amount.as_sat())
     }
 
     pub fn from_bitcoin(value: f64) -> Self {
-        XbtAmount((value * BALANCE_DIVIDER as f64).round() as i64)
+        Amount((value * COIN as f64).round() as i64)
     }
 
-    pub fn to_satoshi(&self) -> i64 {
+    pub fn to_sat(&self) -> i64 {
         self.0
     }
 
     pub fn to_bitcoin(&self) -> f64 {
-        (self.0 as f64) / (BALANCE_DIVIDER as f64)
+        (self.0 as f64) / (COIN as f64)
+    }
+
+    pub fn to_rpc(&self) -> serde_json::Value {
+        serde_json::Value::String(
+            bitcoin::SignedAmount::from_sat(self.0).to_string_in(bitcoin::Denomination::Bitcoin),
+        )
     }
 }
 
