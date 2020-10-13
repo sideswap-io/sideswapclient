@@ -1,10 +1,10 @@
 use super::*;
-use ffi::Env;
 use rpc::RpcServer;
 use sideswap_api::*;
 use sideswap_common::*;
 use std::sync::mpsc::{Receiver, Sender};
 use types::Amount;
+use types::Env;
 
 const CLIENT_API_KEY: &str = "f8b7a12ee96aa68ee2b12ebfc51d804a4a404c9732652c298d24099a3d922a84";
 
@@ -943,42 +943,6 @@ fn process_swap_disconnected(state: &mut ui::SwapState, ui_sender: &Sender<ui::U
     ui::send_swap_update(&state, &ui_sender);
 }
 
-struct EnvData {
-    host: &'static str,
-    port: u16,
-    use_tls: bool,
-    db_name: &'static str,
-}
-
-const ENV_PROD: EnvData = EnvData {
-    host: "api.sideswap.io",
-    port: 443,
-    use_tls: true,
-    db_name: "data.db",
-};
-
-const ENV_STAGING: EnvData = EnvData {
-    host: "api-test.sideswap.io",
-    port: 443,
-    use_tls: true,
-    db_name: "staging.db",
-};
-
-const ENV_LOCAL: EnvData = EnvData {
-    host: "localhost",
-    port: 4001,
-    use_tls: false,
-    db_name: "local.db",
-};
-
-fn env_data(env: Env) -> &'static EnvData {
-    match env {
-        Env::Prod => &ENV_PROD,
-        Env::Staging => &ENV_STAGING,
-        Env::Local => &ENV_LOCAL,
-    }
-}
-
 pub fn start_processing(
     env: Env,
     sender: Sender<Action>,
@@ -986,7 +950,7 @@ pub fn start_processing(
     ui_sender: Sender<ui::Update>,
     params: ffi::ffi::StartParams,
 ) {
-    let env_data = env_data(env);
+    let env_data = types::env_data(env);
     let (conn, srv_rx) = ws::start(env_data.host.to_owned(), env_data.port, env_data.use_tls);
     let sender_copy = sender.clone();
     std::thread::spawn(move || {
@@ -1527,6 +1491,7 @@ pub fn start_processing(
                             process_server_status_update(&mut peg_state, &s, &ui_sender);
                         }
                         Ok(Response::Assets(assets_resp)) => {
+                            types::check_assets(env, &assets_resp.assets);
                             ui::send_assets_update(&assets_resp, &ui_sender);
                             state.assets = assets_resp.assets;
                         }

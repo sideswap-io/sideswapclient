@@ -1,4 +1,6 @@
-## Build instuctions
+## Client build instuctions
+
+For dealer example build instructions see [dealer.md](dealer.md)
 
 ### Ubuntu/Debian
 
@@ -31,7 +33,7 @@ cargo --version
 #### Install cxxbridge CLI
 
 ```bash
-cargo install cxxbridge-cmd
+cargo install cxxbridge-cmd --version 0.4.7
 ```
 
 Make sure `cxxbridge` is available in PATH

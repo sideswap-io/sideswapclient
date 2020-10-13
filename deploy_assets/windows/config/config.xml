@@ -2,7 +2,7 @@
 <!-- https://doc.qt.io/qtinstallerframework/ifw-globalconfig.html -->
 <Installer>
     <Name>SideSwap</Name>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Title>SideSwap Installer</Title>
     <Publisher>SideSwap</Publisher>
     <StartMenuDir>SideSwap</StartMenuDir>

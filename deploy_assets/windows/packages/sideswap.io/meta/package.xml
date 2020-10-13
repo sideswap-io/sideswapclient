@@ -3,8 +3,8 @@
 <Package>
     <DisplayName>SideSwap</DisplayName>
     <Description>Install SideSwap application</Description>
-    <Version>0.1.0</Version>
-    <ReleaseDate>2020-09-10</ReleaseDate>
+    <Version>0.1.1</Version>
+    <ReleaseDate>2020-10-13</ReleaseDate>
     <Licenses>
         <License name="License Agreement" file="LICENSE" />
     </Licenses>

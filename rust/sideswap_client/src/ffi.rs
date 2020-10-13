@@ -1,7 +1,7 @@
 use super::worker::Action;
 use super::*;
 use clap::{App, Arg};
-use sideswap_common::rpc;
+use sideswap_common::{rpc, types::Env};
 use std::sync::mpsc::Sender;
 
 #[cxx::bridge(namespace = lsw)]
@@ -51,13 +51,6 @@ pub mod ffi {
         fn apply_config(client: &Client, index: i32);
         fn remove_config(client: &Client, index: i32);
     }
-}
-
-#[derive(Eq, PartialEq, Copy, Clone)]
-pub enum Env {
-    Prod,
-    Staging,
-    Local,
 }
 
 pub struct Client {

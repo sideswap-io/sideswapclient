@@ -2,7 +2,7 @@ Source: sideswap
 Section: net
 Priority: optional
 Maintainer: SideSwap <hello@sideswap.io>
-Version: 0.1.0
+Version: 0.1.1
 Homepage: https://sideswap.io
 Package: sideswap
 Architecture: amd64

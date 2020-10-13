@@ -1,7 +1,13 @@
-#!/bin/sh
-if ! brew ls --versions create-dmg > /dev/null; then
-  brew install create-dmg
-fi
+#!/bin/bash
+
+set -o errexit -o pipefail -o noclobber -o nounset
+
+rm -rf package
+mkdir package
+
+cp -r ../../build/SideSwap.app ./package/
+
+macdeployqt ./package/SideSwap.app -qmldir=../../qml
 
 rm -rf SideSwap_installer.dmg
 create-dmg \

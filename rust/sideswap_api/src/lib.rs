@@ -2,9 +2,8 @@ use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 
 pub const TICKER_BITCOIN: &str = "L-BTC";
+pub const TICKER_TETHER: &str = "USDt";
 
-pub static PATH_JSON_RPC: &str = "json-rpc";
-pub static PATH_RUST_RPC: &str = "rust-rpc";
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";
 

@@ -1601,14 +1601,14 @@ dependencies = [
 
 [[package]]
 name = "sideswap_api"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde 1.0.116",
 ]
 
 [[package]]
 name = "sideswap_client"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "bitcoin",
@@ -1633,7 +1633,7 @@ dependencies = [
 
 [[package]]
 name = "sideswap_common"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "async-tungstenite",
@@ -1653,7 +1653,7 @@ dependencies = [
 
 [[package]]
 name = "sideswap_dealer_example"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "clap",

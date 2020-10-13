@@ -7,15 +7,13 @@ use std::collections::{BTreeMap, BTreeSet};
 use types::{Amount, TxOut};
 
 mod btc_zmq;
+mod dealer;
 mod prices;
 
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate anyhow;
-
-const TICKER_BITCOIN: &str = "L-BTC";
-const TICKER_TETHER: &str = "USDt";
 
 const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 
@@ -25,21 +23,13 @@ const UNSPENT_MIN_CONF: i32 = 1;
 const MIN_PROFIT_RATIO: f64 = 1.002;
 
 #[derive(Debug, Deserialize)]
-struct Settings {
+pub struct Settings {
     log_settings: String,
-
     max_trade_size: f64,
-
-    server_host: String,
-    server_port: u16,
-    server_use_tls: bool,
-
+    env: types::Env,
     rpc: RpcServer,
-
     api_key: String,
-
     zmq: btc_zmq::Server,
-
     profit_ratio: f64,
 }
 
@@ -93,10 +83,11 @@ fn main() {
     log4rs::init_file(&settings.log_settings, Default::default()).expect("can't open log settings");
 
     let (msg_tx, msg_rx) = std::sync::mpsc::channel::<Msg>();
+    let env_data = types::env_data(settings.env);
     let (ws_tx, ws_rx) = ws::start(
-        settings.server_host,
-        settings.server_port,
-        settings.server_use_tls,
+        env_data.host.to_owned(),
+        env_data.port.to_owned(),
+        env_data.use_tls,
     );
     let current_request_id = std::sync::Arc::new(std::sync::atomic::AtomicI64::new(0));
     let (resp_tx, resp_rx) = std::sync::mpsc::channel::<Result<Response, Error>>();
@@ -202,6 +193,7 @@ fn main() {
                 assets = send_request!(Assets, None)
                     .expect("loading assets failed")
                     .assets;
+                types::check_assets(settings.env, &assets);
             }
 
             Msg::Disconnected => {
@@ -210,57 +202,56 @@ fn main() {
 
             Msg::Notification(notification) => match notification {
                 Notification::RfqCreated(rfq) => {
-                    let asset_sell = assets
+                    let rfq_recv_asset = assets
                         .iter()
                         .find(|v| v.asset_id == rfq.rfq.recv_asset)
                         .expect("buy_asset must be known");
-                    let asset_buy = assets
+                    let ref_send_asset = assets
                         .iter()
                         .find(|v| v.asset_id == rfq.rfq.send_asset)
                         .expect("sell_asset must be known");
                     info!(
                         "new RFQ received, order_id: {}, dealer deleiver: {}, dealer receive: {}",
-                        &rfq.order_id, &asset_sell.ticker, &asset_buy.ticker
+                        &rfq.order_id, &rfq_recv_asset.ticker, &ref_send_asset.ticker
                     );
 
                     assert!(
-                        asset_sell.ticker == TICKER_BITCOIN || asset_buy.ticker == TICKER_BITCOIN
+                        rfq_recv_asset.ticker == TICKER_BITCOIN
+                            || ref_send_asset.ticker == TICKER_BITCOIN
                     );
 
-                    let sell_bitcoin = asset_sell.ticker == TICKER_BITCOIN;
-                    let other_asset = if sell_bitcoin { asset_buy } else { asset_sell };
+                    let dealer_send_bitcoin = rfq_recv_asset.ticker == TICKER_BITCOIN;
+                    let other_asset = if dealer_send_bitcoin {
+                        ref_send_asset
+                    } else {
+                        rfq_recv_asset
+                    };
+                    let rfq_send_amount = Amount::from_sat(rfq.rfq.send_amount);
 
-                    let md_price = if other_asset.ticker == TICKER_TETHER {
-                        match prices::download_bitcoin_last_usd_price() {
-                            Ok(v) => v,
-                            Err(e) => {
-                                error!("getting bitcoin price failed: {}", &e);
-                                continue;
-                            }
+                    let proposal = dealer::get_proposal(
+                        &settings,
+                        rfq_send_amount,
+                        &other_asset,
+                        dealer_send_bitcoin,
+                    );
+                    let proposal = match proposal {
+                        Ok(v) => v,
+                        Err(e) => {
+                            error!("can't get proposal: {}", e);
+                            continue;
                         }
-                    } else {
-                        warn!("unknown asset: {}", &other_asset.ticker);
-                        continue;
                     };
 
-                    let proposal = if sell_bitcoin {
-                        rfq.rfq.send_amount / (md_price * settings.profit_ratio) as i64
+                    let bitcoin_amount = if dealer_send_bitcoin {
+                        proposal
                     } else {
-                        rfq.rfq.send_amount * (md_price / settings.profit_ratio) as i64
-                    };
-                    let bitcoin_amount = if sell_bitcoin {
-                        Amount::from_bitcoin(
-                            Amount::from_sat(rfq.rfq.send_amount).to_bitcoin() / md_price,
-                        )
-                    } else {
-                        Amount::from_sat(rfq.rfq.send_amount)
+                        rfq_send_amount
                     };
 
                     if bitcoin_amount > max_trade_amount {
                         info!(
                             "amount to trade is more than allowed: {} > {}",
-                            Amount::from_sat(rfq.rfq.send_amount).to_bitcoin(),
-                            max_trade_amount.to_bitcoin()
+                            bitcoin_amount, max_trade_amount
                         );
                         continue;
                     }
@@ -268,12 +259,12 @@ fn main() {
                     let available_utxos: Vec<i64> = utxos
                         .values()
                         .filter(|utxo| {
-                            utxo.item.asset == asset_sell.asset_id && utxo.reserve.is_none()
+                            utxo.item.asset == rfq_recv_asset.asset_id && utxo.reserve.is_none()
                         })
                         .map(|utxo| utxo.amount)
                         .collect();
                     let total: i64 = available_utxos.iter().sum();
-                    if total < proposal {
+                    if total < proposal.to_sat() {
                         info!(
                             "not enough amount to make proposal: {}, required: {}",
                             total, proposal
@@ -281,8 +272,8 @@ fn main() {
                         continue;
                     }
 
-                    let result = types::select_utxo(available_utxos, proposal);
-                    let change_amount = result.iter().sum::<i64>() - proposal;
+                    let result = types::select_utxo(available_utxos, proposal.to_sat());
+                    let change_amount = result.iter().sum::<i64>() - proposal.to_sat();
                     assert!(change_amount >= 0);
 
                     info!("sending quote: {}", proposal);
@@ -291,7 +282,7 @@ fn main() {
                         MatchQuoteRequest {
                             quote: MatchQuote {
                                 order_id: rfq.order_id.clone(),
-                                send_amount: proposal,
+                                send_amount: proposal.to_sat(),
                                 utxo_count: result.len() as i32,
                                 with_change: change_amount > 0,
                             },
@@ -307,7 +298,7 @@ fn main() {
                         let utxo = utxos
                             .values_mut()
                             .find(|utxo| {
-                                utxo.item.asset == asset_sell.asset_id
+                                utxo.item.asset == rfq_recv_asset.asset_id
                                     && utxo.reserve.is_none()
                                     && utxo.amount == amount
                             })
@@ -318,9 +309,9 @@ fn main() {
                     swaps.insert(
                         rfq.order_id,
                         ActiveSwap {
-                            proposal,
+                            proposal: proposal.to_sat(),
                             change_amount,
-                            sell_asset: asset_sell.asset_id.clone(),
+                            sell_asset: rfq_recv_asset.asset_id.clone(),
                             swap: None,
                         },
                     );

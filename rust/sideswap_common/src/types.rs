@@ -79,6 +79,98 @@ pub fn select_utxo(mut inputs: Vec<i64>, amount: i64) -> Vec<i64> {
     result
 }
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone, serde::Serialize, serde::Deserialize)]
+pub enum Env {
+    Prod,
+    Staging,
+    Local,
+}
+
+pub struct EnvData {
+    pub host: &'static str,
+    pub port: u16,
+    pub use_tls: bool,
+    pub db_name: &'static str,
+    pub mainnet: bool,
+}
+
+const ENV_PROD: EnvData = EnvData {
+    host: "api.sideswap.io",
+    port: 443,
+    use_tls: true,
+    db_name: "data.db",
+    mainnet: true,
+};
+
+const ENV_STAGING: EnvData = EnvData {
+    host: "api-test.sideswap.io",
+    port: 443,
+    use_tls: true,
+    db_name: "staging.db",
+    mainnet: true,
+};
+
+const ENV_LOCAL: EnvData = EnvData {
+    host: "localhost",
+    port: 4001,
+    use_tls: false,
+    db_name: "local.db",
+    mainnet: false,
+};
+
+fn known_asset_id(mainnet: bool, ticker: &str) -> Option<&'static str> {
+    match (mainnet, ticker) {
+        // Liquid
+        (true, sideswap_api::TICKER_BITCOIN) => {
+            Some("6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d")
+        }
+        (true, sideswap_api::TICKER_TETHER) => {
+            Some("ce091c998b83c78bb71a632313ba3760f1763d9cfcffae02258ffa9865a37bd2")
+        }
+        // Regtest
+        (false, sideswap_api::TICKER_BITCOIN) => {
+            Some("2684bbac0fa7ad544ec8eee43c35156346e5d641d24a4b9d5d8f183e3f2d8fb9")
+        }
+        (false, sideswap_api::TICKER_TETHER) => {
+            Some("ac1775bb717c60a9a4adc3587bd166350e016938b1e34f4b8e2e490dfd03817a")
+        }
+        _ => None,
+    }
+}
+
+pub fn env_data(env: Env) -> &'static EnvData {
+    match env {
+        Env::Prod => &ENV_PROD,
+        Env::Staging => &ENV_STAGING,
+        Env::Local => &ENV_LOCAL,
+    }
+}
+
+// Check that known asset IDs are valid
+pub fn check_assets(env: Env, assets: &sideswap_api::Assets) {
+    let mainnet = env_data(env).mainnet;
+
+    let bitcoin_asset = assets
+        .iter()
+        .find(|asset| asset.ticker == sideswap_api::TICKER_BITCOIN)
+        .expect("can't find bitcoin ticker");
+    assert!(
+        bitcoin_asset.asset_id
+            == known_asset_id(mainnet, &sideswap_api::TICKER_BITCOIN).expect("can't find L-BTC")
+    );
+
+    assets
+        .iter()
+        .find(|asset| asset.ticker == sideswap_api::TICKER_TETHER)
+        .map(|asset| {
+            assert!(
+                asset.asset_id
+                    == known_asset_id(mainnet, &sideswap_api::TICKER_TETHER)
+                        .expect("can't find L-BTC")
+            );
+        });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
