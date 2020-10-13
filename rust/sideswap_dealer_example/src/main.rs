@@ -31,7 +31,7 @@ struct Settings {
     max_trade_size: f64,
 
     server_host: String,
-    server_port: i32,
+    server_port: u16,
     server_use_tls: bool,
 
     rpc: RpcServer,

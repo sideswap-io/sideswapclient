@@ -6,11 +6,6 @@
 #include <QJsonArray>
 
 namespace BuildData {
-    const std::string host = "api.sideswap.io";
-    const int port = 443;
-    const bool useTls = true;
-    const bool mainnet = true;
-
 #ifdef QT_DEBUG
     const bool isDebug = true;
 #else

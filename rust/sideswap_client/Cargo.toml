@@ -26,3 +26,4 @@ libsqlite3-sys = { version = "0.9.1", features = ["bundled"] }
 qrcode = { version = "*", default-features = false, features = [] }
 derive_more = "*"
 dirs = "3.0.1"
+clap = "*"

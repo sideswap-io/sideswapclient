@@ -1,5 +1,6 @@
 use super::worker::Action;
 use super::*;
+use clap::{App, Arg};
 use sideswap_common::rpc;
 use std::sync::mpsc::Sender;
 
@@ -13,11 +14,7 @@ pub mod ffi {
     }
 
     struct StartParams {
-        host: String,
-        port: i32,
-        use_tls: bool,
-        mainnet: bool,
-        db_path: String,
+        data_path: String,
     }
 
     extern "C" {
@@ -35,8 +32,8 @@ pub mod ffi {
     extern "Rust" {
         type Client;
         fn create(params: StartParams) -> Box<Client>;
-        fn check_xbt_address(addr: &str, mainnet: bool) -> bool;
-        fn check_elements_address(addr: &str, mainnet: bool) -> bool;
+        fn check_bitcoin_address(client: &Client, addr: &str) -> bool;
+        fn check_elements_address(client: &Client, addr: &str) -> bool;
         fn pegin_toggle(client: &Client);
         fn start_peg(client: &Client, addr: String);
         fn peg_back(client: &Client);
@@ -56,8 +53,16 @@ pub mod ffi {
     }
 }
 
+#[derive(Eq, PartialEq, Copy, Clone)]
+pub enum Env {
+    Prod,
+    Staging,
+    Local,
+}
+
 pub struct Client {
     sender: Sender<Action>,
+    env: Env,
 }
 
 fn create(params: ffi::StartParams) -> Box<Client> {
@@ -66,6 +71,27 @@ fn create(params: ffi::StartParams) -> Box<Client> {
     }
     env_logger::init();
     info!("started");
+
+    let matches = App::new("sideswap")
+        .arg(
+            Arg::with_name("staging")
+                .long("staging")
+                .conflicts_with("local"),
+        )
+        .arg(
+            Arg::with_name("local")
+                .long("local")
+                .conflicts_with("staging"),
+        )
+        .get_matches();
+
+    let env = if matches.is_present("staging") {
+        Env::Staging
+    } else if matches.is_present("local") {
+        Env::Local
+    } else {
+        Env::Prod
+    };
 
     let (sender, receiver) = std::sync::mpsc::channel::<Action>();
 
@@ -122,10 +148,10 @@ fn create(params: ffi::StartParams) -> Box<Client> {
 
     let sender_copy = sender.clone();
     std::thread::spawn(move || {
-        super::worker::start_processing(sender_copy, receiver, ui_sender, params);
+        super::worker::start_processing(env, sender_copy, receiver, ui_sender, params);
     });
 
-    Box::new(Client { sender })
+    Box::new(Client { sender, env })
 }
 
 fn pegin_toggle(client: &Client) {
@@ -192,25 +218,28 @@ fn cancel_passphrase(client: &Client) {
     client.sender.send(Action::CancelPassword).unwrap();
 }
 
-fn check_xbt_address(addr: &str, mainnet: bool) -> bool {
-    match addr.parse::<bitcoin::Address>() {
-        Ok(a) => a.network == bitcoin::Network::Bitcoin || !mainnet,
-        Err(_) => false,
+fn check_bitcoin_address(client: &Client, addr: &str) -> bool {
+    let addr = match addr.parse::<bitcoin::Address>() {
+        Ok(a) => a,
+        Err(_) => return false,
+    };
+    match client.env {
+        Env::Local => addr.network == bitcoin::Network::Regtest,
+        Env::Prod | Env::Staging => addr.network == bitcoin::Network::Bitcoin,
     }
 }
 
-fn check_elements_address(addr_str: &str, mainnet: bool) -> bool {
-    let addr = match addr_str.parse::<elements::Address>() {
+fn check_elements_address(client: &Client, addr: &str) -> bool {
+    let addr = match addr.parse::<elements::Address>() {
         Ok(v) => v,
         Err(_) => return false,
     };
     if !addr.is_blinded() {
         return false;
     }
-    if mainnet {
-        *addr.params == elements::AddressParams::LIQUID
-    } else {
-        *addr.params == elements::AddressParams::ELEMENTS
+    match client.env {
+        Env::Local => *addr.params == elements::AddressParams::ELEMENTS,
+        Env::Prod | Env::Staging => *addr.params == elements::AddressParams::LIQUID,
     }
 }
 

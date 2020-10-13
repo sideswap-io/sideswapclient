@@ -127,6 +127,32 @@ pub fn make_rpc_call<T: serde::de::DeserializeOwned>(
     make_rpc_call_silent(http_client, rpc_server, req)
 }
 
+pub async fn make_rpc_call_async<T: serde::de::DeserializeOwned>(
+    http_client: &reqwest::Client,
+    rpc_server: &RpcServer,
+    req: &RpcRequest,
+) -> Result<T, anyhow::Error> {
+    let endpoint = format!("http://{}:{}", &rpc_server.host, rpc_server.port);
+    let res = http_client
+        .post(&endpoint)
+        .basic_auth(&rpc_server.login, Some(&rpc_server.password))
+        .json(&req)
+        .send()
+        .await?
+        .text()
+        .await?;
+    let response: RpcResult<T> = serde_json::from_str(&res)?;
+    if let Some(error) = response.error {
+        debug!("rpc failed: {}", error.message);
+        Err(anyhow!("RPC failed: {}", error.message))
+    } else if let Some(result) = response.result {
+        Ok(result)
+    } else {
+        error!("empty RPC response");
+        Err(anyhow!("empty RPC response"))
+    }
+}
+
 pub fn make_rpc_call_status_silent(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,

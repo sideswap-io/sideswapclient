@@ -1612,6 +1612,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bitcoin",
+ "clap",
  "cxx",
  "derive_more",
  "diesel",

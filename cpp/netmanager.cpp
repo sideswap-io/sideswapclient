@@ -19,14 +19,11 @@ namespace {
     }
 
     lsw::StartParams params() {
-        auto dbPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)).filePath("data.db");
+        auto dataPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+        dataPath.mkpath(".");
 
         lsw::StartParams result;
-        result.host = BuildData::host;
-        result.port = BuildData::port;
-        result.use_tls = BuildData::useTls;
-        result.mainnet = BuildData::mainnet;
-        result.db_path = dbPath.toStdString();
+        result.data_path = dataPath.absolutePath().toStdString();
         return result;
     }
 }

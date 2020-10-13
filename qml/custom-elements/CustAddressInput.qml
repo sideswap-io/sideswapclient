@@ -37,17 +37,13 @@ CustTextInput {
 
         address = "";
         if (root.liquidCheck) {
-            addrHelper.checkLBTCAddress(root.text.trim(), function(result){
-                if (result) {
-                    address = root.text.trim();
-                }
-            });
+            if (netManager.checkBitcoinAddress(root.text.trim())) {
+                address = root.text.trim();
+            }
         } else {
-            addrHelper.checkXBTAddress(root.text.trim(), function(result){
-                if (result) {
-                    address = root.text.trim();
-                }
-            });
+            if (netManager.checkElementsAddress(root.text.trim())) {
+                address = root.text.trim();
+            }
         }
     }
 

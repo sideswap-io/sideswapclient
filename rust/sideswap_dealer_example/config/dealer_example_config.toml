@@ -1,14 +1,14 @@
-server_host = "api.sideswap.io"
+server_host = "api-test.sideswap.io"
 server_port = 443
 server_use_tls = true
-api_key = "<YOUR_DEALER_API_KEY>"
+api_key = "74b1331e904f354a1db3133ba6b21d52a4b99c7dfbbf677fa1c58bcbd602976c"
 log_settings = "config/dealer_example_logs.yml"
 max_trade_size = 0.001 # 0.001 L-BTC
 profit_ratio = 1.015 # 1.5%
 
 [rpc]
 host = "localhost"
-port = 38503
+port = 7041
 login = "dealer"
 password = "<YOUR_RPC_PASSWORD>"
 

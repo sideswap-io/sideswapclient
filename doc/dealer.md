@@ -1,8 +1,9 @@
 SideSwap dealer example
 =======================
 
-To be able connect as dealer you should have own dealer's API key. More details at [sideswap.io](https://sideswap.io/).
-Example dealer uses [https://blockchain.info/ticker](https://blockchain.info/ticker) to get quoting price for demonstration purposes.
+To be able connect as dealer to production server you will need own API key. More details at [sideswap.io](https://sideswap.io/).
+
+Example dealer connects to staging server (`api-test.sideswap.io`) and uses [https://blockchain.info/ticker](https://blockchain.info/ticker) to get quoting price for demonstration purposes.
 
 1. Download elements node:
 
@@ -12,7 +13,7 @@ Download server from https://github.com/ElementsProject/elements/releases
 
 ```shell
 /path/to/elementsd -conf=/dev/null -daemon=0 -server=1 -datadir=/path/to/datadir -validatepegin=0 \
-    -rpcport=38503 -rpcuser=dealer -rpcpassword=<YOUR_RPC_PASSWORD> -zmqpubhashblock=tcp://0.0.0.0:14356
+    -rpcport=7041 -rpcuser=dealer -rpcpassword=<YOUR_RPC_PASSWORD> -zmqpubhashblock=tcp://0.0.0.0:14356
 ```
 
 Dealer funds will be stored in the node wallet.
@@ -27,18 +28,19 @@ Please use instructions at [https://rustup.rs/](https://rustup.rs/)
 
 4. Update dealer config:
 
+
 ```
-server_host = "api.sideswap.io"
+server_host = "api-test.sideswap.io"
 server_port = 443
 server_use_tls = true
-api_key = "<YOUR_DEALER_API_KEY>"
+api_key = "74b1331e904f354a1db3133ba6b21d52a4b99c7dfbbf677fa1c58bcbd602976c"
 log_settings = "config/dealer_example_logs.yml"
 max_trade_size = 0.001 # 0.001 L-BTC
 profit_ratio = 1.015 # 1.5%
 
 [rpc]
 host = "localhost"
-port = 38503
+port = 7041
 login = "dealer"
 password = "<YOUR_RPC_PASSWORD>"
 
@@ -57,3 +59,11 @@ cargo run -- config/dealer_example_config.toml
 ```
 
 Note that you will compete with other dealers and your profit_ratio value will affect outbids.
+
+6. Connect client to the staging server:
+
+```shell
+./sideswap --staging
+```
+
+Please note that you need to use separate elements node for the client.

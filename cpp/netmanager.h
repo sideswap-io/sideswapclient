@@ -62,6 +62,18 @@ public:
         lsw::swap_accept(**client_);
     }
 
+    Q_INVOKABLE bool checkBitcoinAddress(const QString &btcAddress)
+    {
+       auto addr = btcAddress.toStdString();
+       return lsw::check_bitcoin_address(**client_, addr);
+    }
+
+    Q_INVOKABLE bool checkElementsAddress(const QString &lbtcAddress)
+    {
+       auto addr = lbtcAddress.toStdString();
+       return lsw::check_elements_address(**client_, addr);
+    }
+
     Q_INVOKABLE void tryAndApply(QString host, int port, QString user, QString pass);
     Q_INVOKABLE void applyConfig(int index);
     Q_INVOKABLE void removeConfig(int index);

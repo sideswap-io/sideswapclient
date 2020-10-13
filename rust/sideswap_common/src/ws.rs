@@ -25,7 +25,7 @@ pub fn next_request_id() -> RequestId {
 
 async fn run(
     host: String,
-    port: i32,
+    port: u16,
     use_tls: bool,
     req_rx: std::sync::mpsc::Receiver<WrappedRequest>,
     resp_tx: std::sync::mpsc::Sender<WrappedResponse>,
@@ -103,7 +103,7 @@ async fn run(
     }
 }
 
-pub fn start(host: String, port: i32, use_tls: bool) -> (Sender, Receiver) {
+pub fn start(host: String, port: u16, use_tls: bool) -> (Sender, Receiver) {
     let (req_tx, req_rx) = std::sync::mpsc::channel::<WrappedRequest>();
     let (resp_tx, resp_rx) = std::sync::mpsc::channel::<WrappedResponse>();
     std::thread::spawn(move || {

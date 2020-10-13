@@ -1,4 +1,5 @@
 use super::*;
+use ffi::Env;
 use rpc::RpcServer;
 use sideswap_api::*;
 use sideswap_common::*;
@@ -942,13 +943,51 @@ fn process_swap_disconnected(state: &mut ui::SwapState, ui_sender: &Sender<ui::U
     ui::send_swap_update(&state, &ui_sender);
 }
 
+struct EnvData {
+    host: &'static str,
+    port: u16,
+    use_tls: bool,
+    db_name: &'static str,
+}
+
+const ENV_PROD: EnvData = EnvData {
+    host: "api.sideswap.io",
+    port: 443,
+    use_tls: true,
+    db_name: "data.db",
+};
+
+const ENV_STAGING: EnvData = EnvData {
+    host: "api-test.sideswap.io",
+    port: 443,
+    use_tls: true,
+    db_name: "staging.db",
+};
+
+const ENV_LOCAL: EnvData = EnvData {
+    host: "localhost",
+    port: 4001,
+    use_tls: false,
+    db_name: "local.db",
+};
+
+fn env_data(env: Env) -> &'static EnvData {
+    match env {
+        Env::Prod => &ENV_PROD,
+        Env::Staging => &ENV_STAGING,
+        Env::Local => &ENV_LOCAL,
+    }
+}
+
 pub fn start_processing(
+    env: Env,
     sender: Sender<Action>,
     receiver: Receiver<Action>,
     ui_sender: Sender<ui::Update>,
     params: ffi::ffi::StartParams,
 ) {
-    let (conn, srv_rx) = ws::start(params.host.clone(), params.port, params.use_tls);
+    let env_data = env_data(env);
+    let (conn, srv_rx) = ws::start(env_data.host.to_owned(), env_data.port, env_data.use_tls);
     let sender_copy = sender.clone();
     std::thread::spawn(move || {
         while let Ok(response) = srv_rx.recv() {
@@ -974,7 +1013,12 @@ pub fn start_processing(
         rpc_last_error_code: 0,
     };
 
-    let db = match db::Db::new(&params.db_path) {
+    let db_path = std::path::Path::new(&params.data_path)
+        .join(env_data.db_name)
+        .to_str()
+        .expect("invalid db_path")
+        .to_owned();
+    let db = match db::Db::new(&db_path) {
         Ok(v) => v,
         Err(e) => {
             ui::show_notification(
