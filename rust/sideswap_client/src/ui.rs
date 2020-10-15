@@ -108,13 +108,12 @@ pub enum Update {
     PegUpdate(PegState),
     SwapState(SwapState),
     AssetUpdate(AssetsResponse),
-    RfqCreated(RfqCreatedNotification),
-    RfqRemoved(RfqRemovedNotification),
     RfqUpdateClient(MatchRfqUpdate),
     Notification(Notification),
     History(hist::State),
     WalletListUpdate(Wallets),
     WalletApplyResult(ApplyResult),
+    AssetImage(String, Vec<u8>),
 }
 
 pub static TITLE_NODE_OFFLINE: &'static str = "Elements node offline";
@@ -190,4 +189,8 @@ pub fn send_wallet_apply_result(apply_status: ApplyResult, ui_sender: &Sender) {
     ui_sender
         .send(Update::WalletApplyResult(apply_status))
         .unwrap();
+}
+
+pub fn send_update_image_asset(name: String, image: Vec<u8>, ui_sender: &Sender) {
+    ui_sender.send(Update::AssetImage(name, image)).unwrap();
 }

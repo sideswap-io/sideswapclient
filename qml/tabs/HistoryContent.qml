@@ -174,8 +174,8 @@ TabBase {
                                 const recv_asset = assetsList[rowData.recv_asset];
                                 const isSoldLBTC = send_asset.ticker === "L-BTC"
 
-                                sourceIcon.source = "data:image/png;base64," + send_asset.icon;
-                                destIcon.source = "data:image/png;base64," + recv_asset.icon;
+                                sourceIcon.source = "image://assets/" + send_asset.asset_id;
+                                destIcon.source = "image://assets/" + recv_asset.asset_id;
 
                                 typeDelegate.text = qsTr("Swap")
 

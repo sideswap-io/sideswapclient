@@ -1491,6 +1491,14 @@ pub fn start_processing(
                             process_server_status_update(&mut peg_state, &s, &ui_sender);
                         }
                         Ok(Response::Assets(assets_resp)) => {
+                            for asset in assets_resp.assets.iter() {
+                                let image = base64::decode(&asset.icon).expect("invalid image");
+                                ui::send_update_image_asset(
+                                    asset.asset_id.clone(),
+                                    image,
+                                    &ui_sender,
+                                )
+                            }
                             types::check_assets(env, &assets_resp.assets);
                             ui::send_assets_update(&assets_resp, &ui_sender);
                             state.assets = assets_resp.assets;
@@ -1602,12 +1610,8 @@ pub fn start_processing(
                                 &ui_sender,
                             );
                         }
-                        Notification::RfqCreated(msg) => {
-                            ui_sender.send(ui::Update::RfqCreated(msg)).unwrap();
-                        }
-                        Notification::RfqRemoved(msg) => {
-                            ui_sender.send(ui::Update::RfqRemoved(msg)).unwrap();
-                        }
+                        Notification::RfqCreated(_) => {}
+                        Notification::RfqRemoved(_) => {}
                         Notification::SwapStatus(msg) => {
                             add_history_swap_update(&mut hist, msg, &ui_sender);
                         }

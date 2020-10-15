@@ -6,6 +6,9 @@
 #include <memory>
 #include <QObject>
 
+class ImageProvider;
+class QQmlImageProviderBase;
+
 class NetManager : public QObject
 {
     Q_OBJECT
@@ -13,6 +16,8 @@ class NetManager : public QObject
 public:
     NetManager(QObject *parent = nullptr);
     ~NetManager() override;
+
+    QQmlImageProviderBase *imageProvider();
 
     Q_INVOKABLE void toggle()
     {
@@ -93,6 +98,7 @@ signals:
 
 private:
     std::unique_ptr<rust::Box<lsw::Client>> client_;
+    ImageProvider *imageProvider_{};
 };
 
 #endif // SWAPNETWORKMANAGER_H

@@ -55,7 +55,12 @@ void update_wallets_list(rust::Str data)
 }
 
 void apply_wallets_result(rust::Str data) {
-    g_callbacks.applyWalletsResult(data);
+   g_callbacks.applyWalletsResult(data);
+}
+
+void update_asset_image(rust::Str name, rust::Slice<uint8_t> image)
+{
+   g_callbacks.updateAssetImage(name, image);
 }
 
 }

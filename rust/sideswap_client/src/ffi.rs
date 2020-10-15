@@ -27,6 +27,7 @@ pub mod ffi {
         fn update_rfq_client(data: &str);
         fn update_wallets_list(data: &str);
         fn apply_wallets_result(data: &str);
+        fn update_asset_image(name: &str, image: &[u8]);
     }
 
     extern "Rust" {
@@ -133,8 +134,9 @@ fn create(params: ffi::StartParams) -> Box<Client> {
                     debug!("wallet apply status info: {}", &data);
                     ffi::apply_wallets_result(&data);
                 }
-                ui::Update::RfqCreated(_) => {}
-                ui::Update::RfqRemoved(_) => {}
+                ui::Update::AssetImage(name, image) => {
+                    ffi::update_asset_image(&name, &image);
+                }
             }
         }
     });

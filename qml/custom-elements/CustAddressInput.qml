@@ -37,11 +37,11 @@ CustTextInput {
 
         address = "";
         if (root.liquidCheck) {
-            if (netManager.checkBitcoinAddress(root.text.trim())) {
+            if (netManager.checkElementsAddress(root.text.trim())) {
                 address = root.text.trim();
             }
         } else {
-            if (netManager.checkElementsAddress(root.text.trim())) {
+            if (netManager.checkBitcoinAddress(root.text.trim())) {
                 address = root.text.trim();
             }
         }

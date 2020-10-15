@@ -16,11 +16,16 @@
 void initQMLData(QQmlApplicationEngine &engine, QGuiApplication &app)
 {
     auto *rootCtx = engine.rootContext();
-    rootCtx->setContextProperty("netManager", (new NetManager(rootCtx)));
-    rootCtx->setContextProperty("addrHelper", (new AddressVerificationHelper(rootCtx)));
-    rootCtx->setContextProperty("clipboardHelper", (new ClipboardHelper(rootCtx)));
-    rootCtx->setContextProperty("settingsHelper", (new SettingsHelper(rootCtx)));
+
+    auto netManager = new NetManager(rootCtx);
+
+    rootCtx->setContextProperty("netManager", netManager);
+    rootCtx->setContextProperty("addrHelper", new AddressVerificationHelper(rootCtx));
+    rootCtx->setContextProperty("clipboardHelper", new ClipboardHelper(rootCtx));
+    rootCtx->setContextProperty("settingsHelper", new SettingsHelper(rootCtx));
     rootCtx->setContextProperty("debug", BuildData::isDebug);
+
+    engine.addImageProvider(QStringLiteral("assets"), netManager->imageProvider());
 
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

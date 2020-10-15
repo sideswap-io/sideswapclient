@@ -56,7 +56,7 @@ ComboBox {
             sourceSize.height: height
             Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
             source: if (root.model !== undefined && root.count !== 0 && root.currentIndex !== -1)
-                        "data:image/png;base64," + root.model[root.currentIndex].icon
+                        "image://assets/" + root.model[root.currentIndex].asset_id
                     else ""
         }
 
@@ -92,7 +92,7 @@ ComboBox {
                 sourceSize.height: height
                 Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
                 source: if (root.model !== undefined)
-                            "data:image/png;base64," + modelData.icon
+                            "image://assets/" + modelData.asset_id
                         else ""
             }
 

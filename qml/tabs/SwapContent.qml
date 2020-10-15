@@ -278,7 +278,7 @@ TabBase {
                             anchors.right: parent.right
                             anchors.rightMargin: 20
                             anchors.verticalCenter: parent.verticalCenter
-                            source: root.hasDelivery ? "data:image/png;base64," + selectedDelivery.icon : ""
+                            source: root.hasDelivery ? "image://assets/" + selectedDelivery.asset_id : ""
                         }
                     }
 
@@ -382,8 +382,8 @@ TabBase {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: 160 + 20 * mainWindow.dynHeightMult
 
-                sourceIcon: (root.sendAsset !== undefined) ? "data:image/png;base64," + root.sendAsset.icon : ""
-                destIcon: (root.recvAsset !== undefined) ? "data:image/png;base64," + root.recvAsset.icon : ""
+                sourceIcon: (root.sendAsset !== undefined) ? "image://assets/" + root.sendAsset.asset_id : ""
+                destIcon: (root.recvAsset !== undefined) ? "image://assets/" + root.recvAsset.asset_id : ""
                 price: root.price
                 deliver: if (root.sendAsset !== undefined && root.deliverAmount !== undefined)
                              qsTr("Deliver %1 %2")
@@ -465,8 +465,8 @@ TabBase {
                 Layout.alignment: Qt.AlignCenter
                 Layout.preferredHeight: 160 + 20 * mainWindow.dynHeightMult
 
-                sourceIcon: (root.sendAsset !== undefined) ? "data:image/png;base64," + root.sendAsset.icon : ""
-                destIcon: (root.recvAsset !== undefined) ? "data:image/png;base64," + root.recvAsset.icon : ""
+                sourceIcon: (root.sendAsset !== undefined) ? "image://assets/" + root.sendAsset.asset_id : ""
+                destIcon: (root.recvAsset !== undefined) ? "image://assets/" + root.recvAsset.asset_id : ""
                 price: root.price
                 deliver: if (rfq !== undefined )
                              qsTr("Deliver %1 %2")

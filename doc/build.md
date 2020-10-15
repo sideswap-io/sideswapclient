@@ -33,7 +33,7 @@ cargo --version
 #### Install cxxbridge CLI
 
 ```bash
-cargo install cxxbridge-cmd --version 0.4.7
+cargo install cxxbridge-cmd --version 0.5.1
 ```
 
 Make sure `cxxbridge` is available in PATH
@@ -42,7 +42,7 @@ Make sure `cxxbridge` is available in PATH
 cxxbridge --version
 ```
 
-`cxxbridge` CLI version must be `0.4.7` (other versions might result in build errors).
+`cxxbridge` CLI version must be `0.5.1` (other versions might result in build errors).
 
 #### Clone repository
 

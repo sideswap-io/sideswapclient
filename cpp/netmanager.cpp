@@ -1,7 +1,8 @@
 #include "netmanager.h"
 
 #include <QDir>
-#include <QJSValue>
+#include <QDebug>
+#include <QQuickImageProvider>
 #include <QStandardPaths>
 
 #include "appsettings.h"
@@ -9,27 +10,57 @@
 
 
 namespace {
-    lsw::RpcServer elements(const QString& host, int port, const QString& user, const QString& pass) {
-        lsw::RpcServer elements;
-        elements.host = host.toStdString();
-        elements.port = uint16_t(port);
-        elements.login = user.toStdString();
-        elements.password = pass.toStdString();
-        return elements;
-    }
 
-    lsw::StartParams params() {
-        auto dataPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-        dataPath.mkpath(".");
-
-        lsw::StartParams result;
-        result.data_path = dataPath.absolutePath().toStdString();
-        return result;
-    }
+lsw::RpcServer elements(const QString& host, int port, const QString& user, const QString& pass) {
+    lsw::RpcServer elements;
+    elements.host = host.toStdString();
+    elements.port = uint16_t(port);
+    elements.login = user.toStdString();
+    elements.password = pass.toStdString();
+    return elements;
 }
+
+lsw::StartParams params() {
+    auto dataPath = QDir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    dataPath.mkpath(".");
+
+    lsw::StartParams result;
+    result.data_path = dataPath.absolutePath().toStdString();
+    return result;
+}
+
+} // namespace
+
+class ImageProvider : public QQuickImageProvider
+{
+public:
+    ImageProvider() : QQuickImageProvider(QQuickImageProvider::Image)
+    {
+    }
+
+    QImage requestImage(const QString &id, QSize *size, const QSize& requestedSize) override
+    {
+        auto imageIt = images_.find(id.toStdString());
+        if (imageIt == images_.end()) {
+            return QImage();
+        }
+        const auto &image = imageIt->second;
+
+        if (size) {
+            *size = image.size();
+        }
+        auto actualSize = QSize(requestedSize.width() > 0 ? requestedSize.width() : image.width(),
+                                requestedSize.height() > 0 ? requestedSize.height() : image.height());
+        return image.scaled(actualSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    }
+
+    std::map<std::string, QImage> images_;
+
+};
 
 NetManager::NetManager(QObject *parent)
     : QObject(parent)
+    , imageProvider_(new ImageProvider)
 {
     lsw::Callbacks callbacks;
 
@@ -103,10 +134,27 @@ NetManager::NetManager(QObject *parent)
         });
     };
 
+    callbacks.updateAssetImage = [this](rust::Str name, rust::Slice<uint8_t> image) {
+        QImage img;
+        bool result = img.loadFromData(image.data(), static_cast<int>(image.size()));
+        if (!result) {
+            qDebug() << "loading image failed";
+            return;
+        }
+
+        QMetaObject::invokeMethod(this, [this, img = std::move(img), nameCopy = std::string(name)] {
+            imageProvider_->images_[nameCopy] = img;
+        });
+    };
 
     lsw::registerCallbacks(std::move(callbacks));
 
     client_ = std::make_unique<rust::Box<lsw::Client>>(lsw::create(params()));
+}
+
+QQmlImageProviderBase *NetManager::imageProvider()
+{
+    return imageProvider_;
 }
 
 NetManager::~NetManager() = default;

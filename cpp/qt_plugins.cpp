@@ -1,6 +1,12 @@
 #include <QtPlugin>
 
-Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
+#ifdef __linux__
+    Q_IMPORT_PLUGIN(QXcbIntegrationPlugin)
+#elif _WIN32
+	Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#else
+#endif
+
 Q_IMPORT_PLUGIN(QtQuick2Plugin)
 Q_IMPORT_PLUGIN(QtQuickControls2Plugin)
 Q_IMPORT_PLUGIN(QtQuickLayoutsPlugin)

@@ -1,6 +1,6 @@
 [package]
 name = "sideswap_client"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2018"
 
 [lib]
@@ -27,3 +27,4 @@ qrcode = { version = "*", default-features = false, features = [] }
 derive_more = "*"
 dirs = "3.0.1"
 clap = "*"
+base64 = "*"

@@ -7,8 +7,11 @@
 namespace lsw {
 
 enum class MessageType : uint8_t;
+struct Asset;
 
 using StringCallback = std::function<void(rust::Str state)>;
+
+using UpdateAssetImageCallback = std::function<void(rust::Str state, rust::Slice<uint8_t> image)>;
 
 struct Callbacks {
     StringCallback updateStateCb;
@@ -21,6 +24,7 @@ struct Callbacks {
     StringCallback updateRfqClient;
     StringCallback updateWalletsList;
     StringCallback applyWalletsResult;
+    UpdateAssetImageCallback updateAssetImage;
 };
 
 void registerCallbacks(Callbacks callbacks);
@@ -33,5 +37,7 @@ void tx_broadcasted(rust::Str data);
 void update_assets(rust::Str data);
 void update_orders(rust::Str data);
 void update_rfq_client(rust::Str data);
+void update_asset_image(rust::Str name, rust::Slice<uint8_t> image);
+
 
 }
