@@ -12,7 +12,7 @@ pub fn get_proposal(
 ) -> Result<types::Amount, anyhow::Error> {
     let bitcoin_price = match other_asset.ticker.as_ref() {
         // For USDt use download_bitcoin_last_usd_price to get bitcoin price
-        TICKER_TETHER => super::prices::download_bitcoin_last_usd_price()
+        TICKER_USDT => super::prices::download_bitcoin_last_usd_price()
             .map_err(|e| anyhow!("download price failed: {}", e))?,
         // Ignore all other assets
         _ => bail!("unknown asset: {}", &other_asset.ticker),

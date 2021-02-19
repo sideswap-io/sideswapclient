@@ -63,6 +63,7 @@ impl TxOut {
 pub type TxOuts = Vec<TxOut>;
 
 pub fn select_utxo(mut inputs: Vec<i64>, amount: i64) -> Vec<i64> {
+    assert!(amount > 0);
     let mut amount_remain = amount;
     let mut result = Vec::new();
     while amount_remain > 0 {
@@ -83,6 +84,7 @@ pub fn select_utxo(mut inputs: Vec<i64>, amount: i64) -> Vec<i64> {
 pub enum Env {
     Prod,
     Staging,
+    Regtest,
     Local,
 }
 
@@ -90,7 +92,7 @@ pub struct EnvData {
     pub host: &'static str,
     pub port: u16,
     pub use_tls: bool,
-    pub db_name: &'static str,
+    pub name: &'static str,
     pub mainnet: bool,
 }
 
@@ -98,7 +100,7 @@ const ENV_PROD: EnvData = EnvData {
     host: "api.sideswap.io",
     port: 443,
     use_tls: true,
-    db_name: "data.db",
+    name: "prod",
     mainnet: true,
 };
 
@@ -106,33 +108,34 @@ const ENV_STAGING: EnvData = EnvData {
     host: "api-test.sideswap.io",
     port: 443,
     use_tls: true,
-    db_name: "staging.db",
+    name: "staging",
     mainnet: true,
 };
 
+const ENV_REGTEST: EnvData = EnvData {
+    host: "api.sideswap.io",
+    port: 10401,
+    use_tls: false,
+    name: "regtest",
+    mainnet: false,
+};
+
 const ENV_LOCAL: EnvData = EnvData {
-    host: "localhost",
+    host: "192.168.71.50",
     port: 4001,
     use_tls: false,
-    db_name: "local.db",
+    name: "local",
     mainnet: false,
 };
 
 fn known_asset_id(mainnet: bool, ticker: &str) -> Option<&'static str> {
     match (mainnet, ticker) {
         // Liquid
-        (true, sideswap_api::TICKER_BITCOIN) => {
+        (true, sideswap_api::TICKER_LBTC) => {
             Some("6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d")
         }
-        (true, sideswap_api::TICKER_TETHER) => {
+        (true, sideswap_api::TICKER_USDT) => {
             Some("ce091c998b83c78bb71a632313ba3760f1763d9cfcffae02258ffa9865a37bd2")
-        }
-        // Regtest
-        (false, sideswap_api::TICKER_BITCOIN) => {
-            Some("2684bbac0fa7ad544ec8eee43c35156346e5d641d24a4b9d5d8f183e3f2d8fb9")
-        }
-        (false, sideswap_api::TICKER_TETHER) => {
-            Some("ac1775bb717c60a9a4adc3587bd166350e016938b1e34f4b8e2e490dfd03817a")
         }
         _ => None,
     }
@@ -142,6 +145,7 @@ pub fn env_data(env: Env) -> &'static EnvData {
     match env {
         Env::Prod => &ENV_PROD,
         Env::Staging => &ENV_STAGING,
+        Env::Regtest => &ENV_REGTEST,
         Env::Local => &ENV_LOCAL,
     }
 }
@@ -149,26 +153,46 @@ pub fn env_data(env: Env) -> &'static EnvData {
 // Check that known asset IDs are valid
 pub fn check_assets(env: Env, assets: &sideswap_api::Assets) {
     let mainnet = env_data(env).mainnet;
+    if !mainnet {
+        return;
+    }
 
     let bitcoin_asset = assets
         .iter()
-        .find(|asset| asset.ticker == sideswap_api::TICKER_BITCOIN)
+        .find(|asset| asset.ticker == sideswap_api::TICKER_LBTC)
         .expect("can't find bitcoin ticker");
     assert!(
         bitcoin_asset.asset_id
-            == known_asset_id(mainnet, &sideswap_api::TICKER_BITCOIN).expect("can't find L-BTC")
+            == known_asset_id(mainnet, &sideswap_api::TICKER_LBTC).expect("can't find L-BTC")
     );
 
     assets
         .iter()
-        .find(|asset| asset.ticker == sideswap_api::TICKER_TETHER)
+        .find(|asset| asset.ticker == sideswap_api::TICKER_USDT)
         .map(|asset| {
             assert!(
                 asset.asset_id
-                    == known_asset_id(mainnet, &sideswap_api::TICKER_TETHER)
+                    == known_asset_id(mainnet, &sideswap_api::TICKER_USDT)
                         .expect("can't find L-BTC")
             );
         });
+}
+
+const VSIZE_FIXED: i64 = 23;
+const VSIZE_VIN: i64 = 108;
+const VSIZE_VOUT: i64 = 1192;
+
+pub fn expected_network_fee(vin_count: i32, vout_count: i32, fee_rate: f64) -> Amount {
+    let expected_vsize =
+        VSIZE_FIXED + vin_count as i64 * VSIZE_VIN + vout_count as i64 * VSIZE_VOUT;
+    Amount::from_bitcoin(expected_vsize as f64 * fee_rate / 1024.0 * 1.1)
+}
+
+pub fn timestamp_now() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as i64
 }
 
 #[cfg(test)]

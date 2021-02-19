@@ -1,230 +1,246 @@
-use super::worker::Action;
-use super::*;
-use clap::{App, Arg};
-use sideswap_common::{rpc, types::Env};
-use std::sync::mpsc::Sender;
+use prost::Message;
+use sideswap_common::types::Env;
+use std::ffi::{CStr, CString};
+use std::os::raw::c_char;
+use std::sync::mpsc::{Receiver, Sender};
+use std::sync::Once;
 
-#[cxx::bridge(namespace = lsw)]
-pub mod ffi {
-    struct RpcServer {
-        host: String,
-        port: u16,
-        login: String,
-        password: String,
-    }
+pub mod proto {
+    include!(concat!(env!("OUT_DIR"), "/sideswap.proto.rs"));
+}
 
-    struct StartParams {
-        data_path: String,
-    }
+pub type ToMsg = proto::to::Msg;
+pub type FromMsg = proto::from::Msg;
 
-    extern "C" {
-        fn update_state(data: &str);
-        fn update_history(data: &str);
-        fn update_walletinfo(data: &str);
-        fn show_notification(data: &str);
-        fn tx_broadcasted(data: &str);
-        fn update_assets(data: &str);
-        fn update_rfq_client(data: &str);
-        fn update_wallets_list(data: &str);
-        fn apply_wallets_result(data: &str);
-        fn update_asset_image(name: &str, image: &[u8]);
-    }
+static INIT_LOGGER_FLAG: Once = Once::new();
 
-    extern "Rust" {
-        type Client;
-        fn create(params: StartParams) -> Box<Client>;
-        fn check_bitcoin_address(client: &Client, addr: &str) -> bool;
-        fn check_elements_address(client: &Client, addr: &str) -> bool;
-        fn pegin_toggle(client: &Client);
-        fn start_peg(client: &Client, addr: String);
-        fn peg_back(client: &Client);
-        fn wallet_password(client: &Client, password: String);
-        fn cancel_passphrase(client: &Client);
-        fn get_qr_code(addr: &str) -> String;
-
-        fn rfq(client: &Client, deliver_asset: String, deliver_amount: i64, receive_asset: String);
-        fn rfq_cancel(client: &Client);
-
-        fn swap_cancel(client: &Client);
-        fn swap_accept(client: &Client);
-
-        fn try_and_apply(client: &Client, rpc_params: RpcServer);
-        fn apply_config(client: &Client, index: i32);
-        fn remove_config(client: &Client, index: i32);
-    }
+pub struct StartParams {
+    pub work_dir: String,
+    pub version: String,
 }
 
 pub struct Client {
-    sender: Sender<Action>,
+    to_sender: Sender<ToMsg>,
+    to_receiver: Option<Receiver<ToMsg>>,
     env: Env,
 }
 
-fn create(params: ffi::StartParams) -> Box<Client> {
-    if cfg!(debug_assertions) && std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "debug,hyper=info");
+pub struct RecvMessage(Vec<u8>);
+
+// Send pointers to Dart as u64 (even on 32-bit platforms)
+pub type IntPtr = u64;
+
+// NOTE: Do not use usize for ffi, use u64 instead.
+// Uisng usize breaks generated code on 32 builds (arm7).
+
+#[no_mangle]
+pub extern "C" fn sideswap_client_create(env: i32) -> IntPtr {
+    let client = create(env);
+    let client = Box::into_raw(client);
+    client as IntPtr
+}
+
+fn get_string(str: *const c_char) -> String {
+    let str = unsafe { std::ffi::CStr::from_ptr(str) };
+    str.to_str().unwrap().to_owned()
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_client_start(
+    client: IntPtr,
+    work_dir: *const c_char,
+    version: *const c_char,
+    dart_port: i64,
+) {
+    let client = unsafe { &mut *(client as *mut Client) };
+    let start_params = StartParams {
+        work_dir: get_string(work_dir),
+        version: get_string(version),
+    };
+    start(client, start_params, dart_port);
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_send_request(client: IntPtr, data: *const u8, len: u64) {
+    assert!(client != 0);
+    assert!(data != std::ptr::null());
+    let client = unsafe { &mut *(client as *mut Client) };
+    let slice = unsafe { std::slice::from_raw_parts(data, len as usize) };
+    let to = proto::To::decode(slice).expect("message decode failed");
+    let msg = to.msg.expect("empty to message");
+    client
+        .to_sender
+        .send(msg)
+        .expect("sending to message failed");
+}
+
+pub const SIDESWAP_BITCOIN: i32 = 1;
+pub const SIDESWAP_ELEMENTS: i32 = 2;
+
+pub const SIDESWAP_ENV_PROD: i32 = 0;
+pub const SIDESWAP_ENV_STAGING: i32 = 1;
+pub const SIDESWAP_ENV_REGTEST: i32 = 2;
+pub const SIDESWAP_ENV_LOCAL: i32 = 3;
+
+#[no_mangle]
+pub extern "C" fn sideswap_check_addr(client: IntPtr, addr: *const c_char, addr_type: i32) -> bool {
+    assert!(client != 0);
+    assert!(addr != std::ptr::null());
+    let addr = unsafe { CStr::from_ptr(addr) }
+        .to_str()
+        .expect("invalid c-str");
+    let client = unsafe { &mut *(client as *mut Client) };
+    match addr_type {
+        SIDESWAP_BITCOIN => check_bitcoin_address(client.env, addr),
+        SIDESWAP_ELEMENTS => check_elements_address(client.env, addr),
+        _ => panic!("unexpected type"),
+    }
+}
+
+const INVALID_AMOUNT: i64 = i64::MIN;
+
+#[no_mangle]
+pub extern "C" fn sideswap_parse_bitcoin_amount(amount: *const c_char) -> i64 {
+    let amount = unsafe { CStr::from_ptr(amount) }
+        .to_str()
+        .expect("invalid c-str");
+    bitcoin::SignedAmount::from_str_in(amount, bitcoin::Denomination::Bitcoin)
+        .map(|value| value.as_sat())
+        .unwrap_or(INVALID_AMOUNT)
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_parsed_amount_valid(amount: i64) -> bool {
+    amount != INVALID_AMOUNT
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_msg_ptr(msg: IntPtr) -> *const u8 {
+    assert!(msg != 0);
+    let msg = unsafe { &*(msg as *const RecvMessage) };
+    msg.0.as_ptr()
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_msg_len(msg: IntPtr) -> u64 {
+    assert!(msg != 0);
+    let msg = unsafe { &*(msg as *const RecvMessage) };
+    msg.0.len() as u64
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_msg_free(msg: IntPtr) {
+    assert!(msg != 0);
+    let msg = unsafe { Box::from_raw(msg as *mut RecvMessage) };
+    std::mem::drop(msg);
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_generate_mnemonic12() -> *mut c_char {
+    let str = sideswap_libwally::generate_mnemonic12();
+    let value = CString::new(str).unwrap();
+    value.into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_verify_mnemonic(mnemonic: *const c_char) -> bool {
+    let mnemonic = unsafe { CStr::from_ptr(mnemonic) };
+    sideswap_libwally::verify_mnemonic(&mnemonic.to_str().unwrap())
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_string_free(str: *mut c_char) {
+    unsafe {
+        CString::from_raw(str);
+    }
+}
+
+const LOG_FILTER: &str = "debug,hyper=info,rustls=info";
+
+#[cfg(target_os = "android")]
+fn init_log() {
+    android_logger::init_once(
+        android_logger::Config::default()
+            .with_min_level(log::Level::Debug)
+            .with_filter(
+                android_logger::FilterBuilder::new()
+                    .parse(LOG_FILTER)
+                    .build(),
+            ),
+    );
+}
+
+#[cfg(not(target_os = "android"))]
+fn init_log() {
+    if std::env::var_os("RUST_LOG").is_none() {
+        std::env::set_var("RUST_LOG", LOG_FILTER);
     }
     env_logger::init();
+}
+
+fn create(env: i32) -> Box<Client> {
+    INIT_LOGGER_FLAG.call_once(|| {
+        init_log();
+    });
+
     info!("started");
 
-    let matches = App::new("sideswap")
-        .arg(
-            Arg::with_name("staging")
-                .long("staging")
-                .conflicts_with("local"),
-        )
-        .arg(
-            Arg::with_name("local")
-                .long("local")
-                .conflicts_with("staging"),
-        )
-        .get_matches();
-
-    let env = if matches.is_present("staging") {
-        Env::Staging
-    } else if matches.is_present("local") {
-        Env::Local
-    } else {
-        Env::Prod
+    let env = match env {
+        SIDESWAP_ENV_PROD => Env::Prod,
+        SIDESWAP_ENV_STAGING => Env::Staging,
+        SIDESWAP_ENV_REGTEST => Env::Regtest,
+        SIDESWAP_ENV_LOCAL => Env::Local,
+        _ => panic!("unknown env"),
     };
 
-    let (sender, receiver) = std::sync::mpsc::channel::<Action>();
+    let (to_sender, to_receiver) = std::sync::mpsc::channel::<ToMsg>();
 
-    let (ui_sender, ui_receiver) = std::sync::mpsc::channel::<ui::Update>();
+    Box::new(Client {
+        env,
+        to_sender,
+        to_receiver: Some(to_receiver),
+    })
+}
+
+fn start(client: &mut Client, params: StartParams, dart_port: i64) {
+    std::panic::set_hook(Box::new(|i| {
+        error!("sideswap panic detected: {:?}", i);
+        std::process::abort();
+    }));
+
+    let env = client.env;
+    let to_receiver = client.to_receiver.take().unwrap();
+    let (from_sender, from_receiver) = std::sync::mpsc::channel::<FromMsg>();
+    std::thread::spawn(move || {
+        super::worker::start_processing(env, to_receiver, from_sender, params);
+    });
 
     std::thread::spawn(move || {
-        for msg in ui_receiver {
-            match msg {
-                ui::Update::PegUpdate(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("state: {}", &data);
-                    ffi::update_state(&data);
-                }
-                ui::Update::SwapState(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("swap state: {}", &data);
-                    ffi::update_walletinfo(&data);
-                }
-                ui::Update::AssetUpdate(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("assets info: {}", &data);
-                    ffi::update_assets(&data);
-                }
-                ui::Update::RfqUpdateClient(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("match orders info: {}", &data);
-                    ffi::update_rfq_client(&data);
-                }
-                ui::Update::Notification(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("show msg: {}", &data);
-                    ffi::show_notification(&data);
-                }
-                ui::Update::History(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("history: {}", &data);
-                    ffi::update_history(&data);
-                }
-                ui::Update::WalletListUpdate(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("wallet list info: {}", &data);
-                    ffi::update_wallets_list(&data);
-                }
-                ui::Update::WalletApplyResult(v) => {
-                    let data = serde_json::to_string(&v).unwrap();
-                    debug!("wallet apply status info: {}", &data);
-                    ffi::apply_wallets_result(&data);
-                }
-                ui::Update::AssetImage(name, image) => {
-                    ffi::update_asset_image(&name, &image);
-                }
-            }
+        let port = allo_isolate::Isolate::new(dart_port);
+        for msg in from_receiver {
+            let from = proto::From { msg: Some(msg) };
+            let mut buf = Vec::new();
+            from.encode(&mut buf).expect("encoding message failed");
+            let msg = std::boxed::Box::new(RecvMessage(buf));
+            let msg_ptr = Box::into_raw(msg) as IntPtr;
+            let result = port.post(msg_ptr);
+            assert!(result == true);
         }
     });
-
-    let sender_copy = sender.clone();
-    std::thread::spawn(move || {
-        super::worker::start_processing(env, sender_copy, receiver, ui_sender, params);
-    });
-
-    Box::new(Client { sender, env })
 }
 
-fn pegin_toggle(client: &Client) {
-    client.sender.send(Action::PegToggle).unwrap();
-}
-
-fn start_peg(client: &Client, addr: String) {
-    client.sender.send(Action::StartPeg(addr)).unwrap();
-}
-
-fn peg_back(client: &Client) {
-    client.sender.send(Action::PegBack).unwrap();
-}
-
-fn swap_cancel(client: &Client) {
-    client.sender.send(Action::SwapCancel).unwrap();
-}
-
-fn swap_accept(client: &Client) {
-    client.sender.send(Action::SwapAccept).unwrap();
-}
-
-fn try_and_apply(client: &Client, rpc_params: ffi::RpcServer) {
-    let rpc_server = rpc::RpcServer {
-        host: rpc_params.host,
-        port: rpc_params.port,
-        login: rpc_params.login,
-        password: rpc_params.password,
-    };
-    client.sender.send(Action::TryAndApply(rpc_server)).unwrap();
-}
-
-fn apply_config(client: &Client, index: i32) {
-    client.sender.send(Action::ApplyConfig(index)).unwrap();
-}
-
-fn remove_config(client: &Client, index: i32) {
-    client.sender.send(Action::RemoveConfig(index)).unwrap();
-}
-
-fn wallet_password(client: &Client, password: String) {
-    client
-        .sender
-        .send(Action::WalletPassword(password))
-        .unwrap();
-}
-
-fn rfq(client: &Client, deliver_asset: String, deliver_amount: i64, receive_asset: String) {
-    client
-        .sender
-        .send(Action::MatchRfq(
-            deliver_asset,
-            deliver_amount,
-            receive_asset,
-        ))
-        .unwrap();
-}
-
-fn rfq_cancel(client: &Client) {
-    client.sender.send(Action::MatchCancel).unwrap();
-}
-
-fn cancel_passphrase(client: &Client) {
-    client.sender.send(Action::CancelPassword).unwrap();
-}
-
-fn check_bitcoin_address(client: &Client, addr: &str) -> bool {
+fn check_bitcoin_address(env: Env, addr: &str) -> bool {
     let addr = match addr.parse::<bitcoin::Address>() {
         Ok(a) => a,
         Err(_) => return false,
     };
-    match client.env {
-        Env::Local => addr.network == bitcoin::Network::Regtest,
+    match env {
+        Env::Local | Env::Regtest => addr.network == bitcoin::Network::Regtest,
         Env::Prod | Env::Staging => addr.network == bitcoin::Network::Bitcoin,
     }
 }
 
-fn check_elements_address(client: &Client, addr: &str) -> bool {
+fn check_elements_address(env: Env, addr: &str) -> bool {
     let addr = match addr.parse::<elements::Address>() {
         Ok(v) => v,
         Err(_) => return false,
@@ -232,21 +248,8 @@ fn check_elements_address(client: &Client, addr: &str) -> bool {
     if !addr.is_blinded() {
         return false;
     }
-    match client.env {
-        Env::Local => *addr.params == elements::AddressParams::ELEMENTS,
+    match env {
+        Env::Local | Env::Regtest => *addr.params == elements::AddressParams::ELEMENTS,
         Env::Prod | Env::Staging => *addr.params == elements::AddressParams::LIQUID,
-    }
-}
-
-fn get_qr_code(addr: &str) -> String {
-    use qrcode::QrCode;
-    let code = QrCode::new(addr).unwrap();
-
-    code.render().light_color("0").dark_color("1").build()
-}
-
-impl Drop for Client {
-    fn drop(&mut self) {
-        debug!("stopped");
     }
 }

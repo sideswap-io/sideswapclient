@@ -5,4 +5,6 @@ members = [
     "sideswap_common",
     "sideswap_client",
     "sideswap_dealer_example",
+    "gdk_rust",
+    "sideswap_libwally",
 ]

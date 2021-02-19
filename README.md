@@ -1,6 +1,8 @@
 SideSwap client
 ===============
 
+SideSwap is released under the terms of the GNU General Public License. See [LICENSE](LICENSE) for more information.
+
 GUI client and example dealer
 
 Client build instructions: [doc/build.md](doc/build.md).

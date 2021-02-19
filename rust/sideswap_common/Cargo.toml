@@ -8,13 +8,11 @@ sideswap_api = { version = "*", path = "../sideswap_api" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["arbitrary_precision"] }
 anyhow = "*"
-dirs = "3.0.1"
-reqwest = { version = "*", features = ["blocking", "json"] }
 log = "*"
-async-tungstenite = { version = "*", features = ["tokio-native-tls"] }
+async-tungstenite = { version = "0.9.3", features = ["tokio-runtime", "tokio-rustls"] }
 futures = "*"
 futures-util = "*"
-tokio = "*"
-tungstenite = { version = "*" }
+tokio = { version = "0.2", features = ["macros", "sync", "time", "stream"] }
+tungstenite = { version = "*", default-features = false, features = [] }
 derive_more = "*"
 bitcoin = "*"

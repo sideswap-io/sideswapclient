@@ -1,0 +1,4 @@
+flutter_icons:
+  android: "notification_icon"
+  image_path: "assets/icon/notification.png"
+  ios: false

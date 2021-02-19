@@ -9,6 +9,7 @@ use types::{Amount, TxOut};
 mod btc_zmq;
 mod dealer;
 mod prices;
+mod rpc;
 
 #[macro_use]
 extern crate log;
@@ -216,11 +217,11 @@ fn main() {
                     );
 
                     assert!(
-                        rfq_recv_asset.ticker == TICKER_BITCOIN
-                            || ref_send_asset.ticker == TICKER_BITCOIN
+                        rfq_recv_asset.ticker == TICKER_LBTC
+                            || ref_send_asset.ticker == TICKER_LBTC
                     );
 
-                    let dealer_send_bitcoin = rfq_recv_asset.ticker == TICKER_BITCOIN;
+                    let dealer_send_bitcoin = rfq_recv_asset.ticker == TICKER_LBTC;
                     let other_asset = if dealer_send_bitcoin {
                         ref_send_asset
                     } else {
@@ -280,12 +281,12 @@ fn main() {
                     let quote_result = send_request!(
                         MatchQuote,
                         MatchQuoteRequest {
-                            quote: MatchQuote {
-                                order_id: rfq.order_id.clone(),
+                            order_id: rfq.order_id.clone(),
+                            quote: Ok(MatchQuote {
                                 send_amount: proposal.to_sat(),
                                 utxo_count: result.len() as i32,
                                 with_change: change_amount > 0,
-                            },
+                            }),
                         }
                     );
                     if let Err(e) = quote_result {
@@ -326,14 +327,10 @@ fn main() {
                 Notification::Swap(swap) => {
                     let active_swap = swaps.get_mut(&swap.order_id).expect("swap must exists");
                     match &swap.state {
-                        SwapState::ReviewOffer(offer) => {
-                            info!("waiting user offer accept");
-                            assert!(!offer.accept_required);
-                            assert!(offer.swap.send_asset == active_swap.sell_asset);
-                            assert!(offer.swap.send_amount == active_swap.proposal);
-                            active_swap.swap = Some(offer.swap.clone());
-                        }
-                        SwapState::WaitPsbt => {
+                        SwapState::WaitPsbt(psbt) => {
+                            assert!(psbt.send_asset == active_swap.sell_asset);
+                            assert!(psbt.send_amount == active_swap.proposal);
+                            active_swap.swap = Some(psbt.clone());
                             let sw = active_swap.swap.as_ref().expect("swap must be set");
                             let new_address = rpc::make_rpc_call::<String>(
                                 &rpc_http_client,
@@ -399,14 +396,16 @@ fn main() {
                             )
                             .expect("converting PSBT failed");
 
-                            send_request!(
+                            let _ = send_request!(
                                 Swap,
                                 SwapRequest {
                                     order_id: swap.order_id.clone(),
                                     action: SwapAction::Psbt(psbt.psbt),
                                 }
                             )
-                            .expect("sending psbt failed");
+                            .map_err(|e| {
+                                error!("sending PSBT failed: {}", e);
+                            });
                         }
                         SwapState::WaitSign(psbt) => {
                             let result = rpc::make_rpc_call::<rpc::WalletSignPsbt>(
@@ -416,14 +415,16 @@ fn main() {
                             )
                             .expect("signing PSBT failed");
 
-                            send_request!(
+                            let _ = send_request!(
                                 Swap,
                                 SwapRequest {
                                     order_id: swap.order_id.clone(),
                                     action: SwapAction::Sign(result.psbt),
                                 }
                             )
-                            .expect("sending signed PSBT failed");
+                            .map_err(|e| {
+                                error!("sending signed PSBT failed: {}", e);
+                            });
                         }
                         SwapState::Failed(error) => {
                             info!("swap failed: {:?}", error);

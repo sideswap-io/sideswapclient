@@ -1,0 +1,84 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "SideSwap: README task",
+			"type": "shell",
+			"command": "echo To deploy please run vscode then SHIFT + P - Tasks: Run Task and choose task - SideSwap: deploy",
+			"runOptions": {
+				"runOn": "folderOpen"
+			},
+		},
+		{
+			"label": "SideSwap: deploy",
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"SideSwap: flutter pub get",
+				"SideSwap: generate notification icon",
+				"SideSwap: generate app icon",
+				"SideSwap: flutter pub run build_runner build",
+			],
+		},
+		{
+			"label": "SideSwap: generate app icon",
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"pub",
+				"run",
+				"flutter_launcher_icons:main",
+				"-f",
+				"application_icon.yaml"
+			],
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"SideSwap: generate notification icon", 
+			]
+		},
+		{
+			"label": "SideSwap: generate notification icon",
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"pub",
+				"run",
+				"flutter_launcher_icons:main",
+				"-f",
+				"notification_icon.yaml"
+			],
+			"dependsOrder": "sequence",
+		},
+		{
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"pub",
+				"get"
+			],
+			"problemMatcher": [],
+			"label": "SideSwap: flutter pub get",
+			"dependsOrder": "sequence"
+		},
+		{
+			"type": "flutter",
+			"command": "flutter",
+			"args": [
+				"pub",
+				"run",
+				"build_runner",
+				"build",
+				"--delete-conflicting-outputs"
+			],
+			"problemMatcher": [
+				"$dart-build_runner"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "SideSwap: flutter pub run build_runner build",
+			"dependsOrder": "sequence",
+			"dependsOn":["SideSwap: flutter pub get"]
+		},
+	]
+}

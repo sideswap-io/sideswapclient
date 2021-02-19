@@ -1,0 +1,8 @@
+  # to refresh notification icon please run:
+  # flutter pub run flutter_launcher_icons:main -f notification_icon.yaml
+  # and then flutter pub run flutter_launcher_icons:main -f application_icon.yaml
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon/icon.png"
+  image_path_ios: "assets/icon/icon_ios.png"

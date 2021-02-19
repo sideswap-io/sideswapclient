@@ -1,0 +1,45 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/common/widgets/custom_app_bar.dart';
+import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
+
+class PegInAddress extends StatelessWidget {
+  const PegInAddress({Key key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SideSwapScaffold(
+      appBar: CustomAppBar(),
+      body: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 8.h),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                width: 215.w,
+                height: 36.h,
+                child: Text(
+                  'Please send BTC to the following address:',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.roboto(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF00C5FF),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: AssetReceiveWidget(
+              isPegIn: true,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

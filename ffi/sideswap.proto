@@ -1,0 +1,184 @@
+syntax = "proto2";
+package sideswap.proto;
+
+message Empty {
+}
+
+message Address {
+  required string addr = 1;
+}
+
+message Balance {
+  required string ticker = 1;
+  required int64 amount = 2;
+}
+
+message Asset {
+  required string asset_id = 1;
+  required string name = 2;
+  required string ticker = 3;
+  required string icon = 4;
+  required uint32 precision = 5;
+}
+
+message Tx {
+  repeated Balance balances = 1;
+  required string txid = 2;
+  required int64 network_fee = 3;
+  required string memo = 4;
+}
+
+message Peg {
+  required bool is_peg_in = 1;
+  required int64 amount_send = 2;
+  required int64 amount_recv = 3;
+  required string addr_send = 4;
+  required string addr_recv = 5;
+  required string txid_send = 6;
+  required int32 vout_send = 7;
+  optional string txid_recv = 8;
+}
+
+message Confs {
+  required uint32 count = 1;
+  required uint32 total = 2;
+}
+
+message TransItem {
+  required string id = 1;
+  required int64 created_at = 2;
+  optional Confs confs = 3;
+
+  oneof item {
+    Tx tx = 10;
+    Peg peg = 11;
+  }
+}
+
+message ServerStatus {
+  required int64 min_peg_in_amount = 1;
+  required int64 min_peg_out_amount = 2;
+  required double server_fee_percent_peg_in = 3;
+  required double server_fee_percent_peg_out = 4;
+}
+
+message To {
+  message Login {
+    required string mnemonic = 1;
+  }
+
+  message SwapRequest {
+    required string send_ticker = 2;
+    required string recv_ticker = 3;
+    required int64 send_amount = 4;
+  }
+
+  message SwapAccept {
+    optional string recv_addr = 1;
+  }
+
+  message CreateTx {
+    required string addr = 1;
+    required Balance balance = 2;
+  }
+
+  message SendTx {
+    required string memo = 1;
+  }
+
+  message SetMemo {
+    required string txid = 1;
+    required string memo = 2;
+  }
+
+  message UpdatePushToken {
+    required string token = 1;
+  }
+
+  oneof msg {
+    Login login = 1;
+    Empty logout = 2;
+    UpdatePushToken update_push_token = 3;
+
+    SetMemo set_memo = 10;
+    Empty get_recv_address = 11;
+    CreateTx create_tx = 12;
+    SendTx send_tx = 13;
+
+    SwapRequest swap_request = 20;
+    Empty swap_cancel = 21;
+    SwapAccept swap_accept = 22;
+    Empty peg_request = 23;
+  }
+}
+
+message From {
+  message RemovedTx {
+    required string id = 1;
+  }
+
+  message SwapReview {
+    required string send_ticker = 1;
+    required string recv_ticker = 2;
+    required int64 send_amount = 3;
+    optional int64 recv_amount = 4;
+    optional int64 network_fee = 5;
+    optional string error = 7;
+  }
+
+  message SwapWaitTx {
+    required string send_ticker = 1;
+    required string recv_ticker = 2;
+    //required int64 send_amount = 3;
+    //required int64 recv_amount = 4;
+    required string peg_addr = 5;
+    required string recv_addr = 6;
+  }
+
+  message SwapSucceed {
+    required int64 created_at = 1;
+    required int64 sent_amount = 2;
+    // recv_amount could be 0 for external pegs that is lower than min. amount
+    required int64 recv_amount = 3;
+    required string txid = 4;
+    optional string recv_addr = 5;
+  }
+
+  message CreateTxResult {
+    oneof result {
+      string error_msg = 1;
+      int64 network_fee = 2;
+    }
+  }
+
+  message SendResult {
+    oneof result {
+      string error_msg = 1;
+      TransItem tx_item = 2;
+    }
+  }
+
+  message PriceUpdate {
+    required string asset = 1;
+    required double bid = 2;
+    required double ask = 3;
+  }
+
+  oneof msg {
+    TransItem updated_tx = 1;
+    RemovedTx removed_tx = 2;
+    Asset new_asset = 3;
+    Balance balance_update = 4;
+    ServerStatus server_status = 5;
+    PriceUpdate price_update = 6;
+
+    SwapReview swap_review = 20;
+    SwapWaitTx swap_wait_tx = 21;
+    TransItem swap_succeed = 22;
+    string swap_failed = 23;
+
+    Address recv_address = 30;
+    CreateTxResult create_tx_result = 31;
+    SendResult send_result = 32;
+  }
+}

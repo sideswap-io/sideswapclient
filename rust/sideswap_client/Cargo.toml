@@ -5,26 +5,30 @@ edition = "2018"
 
 [lib]
 name = "sideswap_client"
-crate-type = ["staticlib"]
+crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 sideswap_api = { version = "*", path = "../sideswap_api" }
 sideswap_common = { version = "*", path = "../sideswap_common" }
-cxx = "*"
+sideswap_libwally = { version = "*", path = "../sideswap_libwally" }
 elements = "*"
 bitcoin = "*"
-openssl = { version = "*", features = ["vendored"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-reqwest = { version = "*", features = ["blocking", "json"] }
 log = "*"
 anyhow = "*"
 env_logger = "*"
-diesel = { version = "*", features = ["sqlite"] }
-diesel_migrations = "*"
-libsqlite3-sys = { version = "0.9.1", features = ["bundled"] }
-qrcode = { version = "*", default-features = false, features = [] }
+android_logger = "*"
 derive_more = "*"
-dirs = "3.0.1"
-clap = "*"
 base64 = "*"
+gdk-rust = { path = "../gdk_rust" }
+gdk-electrum = { path = "../gdk_rust/gdk_electrum" }
+gdk-common = { path = "../gdk_rust/gdk_common" }
+libc = "*"
+prost = "0.6.1"
+bytes = "*"
+allo-isolate = "*"
+chrono = "*"
+
+[build-dependencies]
+prost-build = "0.6.1"

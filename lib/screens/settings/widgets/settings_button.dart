@@ -1,0 +1,121 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sideswap/common/screen_utils.dart';
+
+enum SettingsButtonType {
+  recovery,
+  shield,
+  about,
+  delete,
+}
+
+class SettingsButton extends StatefulWidget {
+  const SettingsButton({
+    Key key,
+    this.transparent = false,
+    this.type = SettingsButtonType.recovery,
+    @required this.text,
+    this.onPressed,
+  }) : super(key: key);
+
+  final bool transparent;
+  final SettingsButtonType type;
+  final String text;
+  final VoidCallback onPressed;
+
+  @override
+  _SettingsButtonState createState() => _SettingsButtonState();
+}
+
+class _SettingsButtonState extends State<SettingsButton> {
+  Widget _icon;
+
+  @override
+  void initState() {
+    super.initState();
+
+    switch (widget.type) {
+      case SettingsButtonType.recovery:
+        _icon = SvgPicture.asset(
+          'assets/recovery.svg',
+          width: 24.w,
+          height: 24.w,
+        );
+        break;
+      case SettingsButtonType.shield:
+        _icon = SvgPicture.asset(
+          'assets/shield.svg',
+          width: 24.w,
+          height: 24.w,
+        );
+        break;
+      case SettingsButtonType.about:
+        _icon = SvgPicture.asset(
+          'assets/about.svg',
+          width: 24.w,
+          height: 24.w,
+        );
+        break;
+      case SettingsButtonType.delete:
+        _icon = SvgPicture.asset(
+          'assets/delete.svg',
+          width: 24.w,
+          height: 24.w,
+        );
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60.w,
+      width: double.infinity,
+      child: TextButton(
+        onPressed: widget.onPressed,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.only(left: 17.w),
+              child: _icon,
+            ),
+            Padding(
+              padding: EdgeInsets.only(left: 12.w),
+              child: Text(
+                widget.text,
+                style: GoogleFonts.roboto(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            Spacer(),
+            Padding(
+              padding: EdgeInsets.only(right: 16.w),
+              child: Icon(Icons.keyboard_arrow_right),
+            ),
+          ],
+        ),
+        style: TextButton.styleFrom(
+          primary: Colors.white,
+          backgroundColor:
+              widget.transparent ? Colors.transparent : Color(0xFF135579),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(8.w),
+            ),
+          ),
+          side: BorderSide(
+            color: Color(0xFF135579),
+            width: 1,
+            style: BorderStyle.solid,
+          ),
+        ),
+      ),
+    );
+  }
+}

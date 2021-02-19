@@ -7,18 +7,10 @@ For dealer example build instructions see [dealer.md](dealer.md)
 #### Install build dependencies
 
 ```bash
-sudo apt-get install build-essential cmake mesa-common-dev git
+sudo apt-get install build-essential cmake git
 ```
 
-#### Download and install Qt
-
-Qt 5.14 or newer required - http://download.qt.io/official_releases/qt/5.14/
-
-Make sure `qmake` is available in PATH
-
-```bash
-qmake --version
-```
+#### Install Flutter
 
 #### Install Rust
 
@@ -30,19 +22,24 @@ Make sure `cargo` is available in PATH
 cargo --version
 ```
 
-#### Install cxxbridge CLI
+#### Build libwally-core
 
-```bash
-cargo install cxxbridge-cmd --version 0.5.1
+Checkout libwally-core from https://github.com/sideswap-io/libwally-core (fix_pset_load branch)
+
+make sure that this installed:
+
+```
+sudo apt-get install build-essential autoconf automake libtool
 ```
 
-Make sure `cxxbridge` is available in PATH
-
 ```bash
-cxxbridge --version
+git clone https://github.com/sideswap-io/libwally-core
+cd libwally-core
+git checkout fix_pset_load
+./tools/autogen.sh
+export ANDROID_NDK_ROOT=$HOME/android-sdk/ndk-bundle
+/path/to/sideswapclient/deploy/libwally.sh
 ```
-
-`cxxbridge` CLI version must be `0.5.1` (other versions might result in build errors).
 
 #### Clone repository
 
@@ -51,19 +48,14 @@ git clone https://github.com/sideswap-io/sideswapclient
 cd sideswapclient
 ```
 
-#### Check building Rust
+#### Build rust libs
 
 ```bash
-cd rust
-cargo build
+/path/to/sideswapclient/deploy/libsideswap_client.sh
 ```
 
-#### Build
+#### Build app
 
 ```bash
-cd ..
-mkdir build
-cd build
-cmake ..
-make -j
+flutter build apk --target-platform android-arm64 --split-per-abi
 ```

@@ -1,0 +1,183 @@
+name: sideswap
+description: A new Flutter project.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  pedantic: ^1.9.2
+  ffi: ^0.1.3
+  share: ^0.6.5
+  url_launcher: ^5.7.10
+  shared_preferences: ^0.5.12+4
+  #provider: ^4.3.2
+  protobuf: ^1.1.0
+  fixnum: ^0.10.11
+  path_provider: ^1.6.22
+  animations: ^1.1.2
+  qr_flutter: ^3.1.0
+  delayed_display: ^1.0.3
+  flutter_svg: ^0.19.1
+  qr_code_scanner:
+    git:
+      url: git://github.com/juliuscanute/qr_code_scanner.git
+      ref: 243188bd9e8b82a2de9e4e7ee887cc8e076ac927
+  easy_localization: ^3.0.0-dev.1
+  # background
+  path_drawing: ^0.4.1+1
+  # fonts
+  google_fonts: ^1.1.1
+  # screen scaling
+  flutter_screenutil: ^3.2.0
+  # icon generator
+  flutter_launcher_icons: ^0.8.1
+  # testing only - remove if not used
+  faker: ^1.3.0
+  # switch
+  flutter_switch: ^0.1.5
+  # sliding tx list
+  sliding_panel: ^1.3.2
+  # rxdart
+  rxdart: ^0.25.0
+  # enumerable - group, sort, orderby
+  enumerable: ^0.1.3
+  # dash line
+  fdottedline: ^1.0.1
+  # logger
+  logger: ^0.9.4
+  # provider
+  flutter_hooks: ^0.14.0
+  hooks_riverpod: ^0.12.1
+  # mnemonic words suggestions
+  flutter_typeahead: ^2.0.0
+  package_info: ^0.4.3+2
+  # Replace non-existent ScaffoldMessenger in ver. 1.22.6
+  flushbar: ^1.10.4
+  # marqee text
+  marquee: ^1.7.0
+  #notifications
+  flutter_local_notifications: ^4.0.1+1
+  #firebase notifications
+  firebase_messaging: ^7.0.3
+  # dynamic links
+  firebase_dynamic_links: ^0.6.3
+  # notification payload parsing
+  freezed_annotation: ^0.12.0
+  json_annotation: ^3.1.1
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^1.11.1
+  freezed: ^0.12.7
+  json_serializable: ^3.5.1
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter.
+flutter:
+
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  assets:
+    - LICENSE
+    - images/icon_btc.png
+    - images/check_mark.svg
+    - images/swap.svg
+    - assets/wordlist.txt
+    - assets/translations/
+    - assets/btc_logo.svg
+    - assets/usdt_logo.svg
+    - assets/lbtc_logo.svg
+    - assets/accounts.svg
+    - assets/accounts_active.svg
+    - assets/home.svg
+    - assets/home_active.svg
+    - assets/requests.svg
+    - assets/requests_active.svg
+    - assets/swap.svg
+    - assets/swap_active.svg
+    - assets/logo.svg
+    - assets/settings.svg
+    - assets/top_right_arrow.svg
+    - assets/bottom_left_arrow.svg
+    - assets/qr_code_scan.svg
+    - assets/qr_icon.svg
+    - assets/filter.svg
+    - assets/back_arrow.svg
+    - assets/search.svg
+    - assets/mini_button.svg
+    - assets/tx_peg_in.svg
+    - assets/tx_swap.svg
+    - assets/share.svg
+    - assets/share2.svg
+    - assets/copy.svg
+    - assets/close.svg
+    - assets/swap_arrows.svg
+    - assets/info.svg
+    - assets/error.svg
+    - assets/success.svg
+    - assets/recovery.svg
+    - assets/shield.svg
+    - assets/about.svg
+    - assets/delete.svg
+    - assets/shield_big.svg
+    - assets/locker.svg
+    - assets/exclamationMark.svg
+    - assets/web_icon.svg
+    - assets/github_icon.svg
+    - assets/twitter_icon.svg
+    - assets/telegram_icon.svg
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware.
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages

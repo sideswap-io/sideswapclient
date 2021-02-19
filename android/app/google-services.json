@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "283004570085",
+    "project_id": "sideswap-1268b",
+    "storage_bucket": "sideswap-1268b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283004570085:android:bc9a81cefa880fd9d5c70c",
+        "android_client_info": {
+          "package_name": "io.sideswap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "283004570085-ll55bubn926ue10p9ggtun0sarrg0889.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsAFprhD1wTTkeZGMVIGGscTWyp5rFT8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "283004570085-ll55bubn926ue10p9ggtun0sarrg0889.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

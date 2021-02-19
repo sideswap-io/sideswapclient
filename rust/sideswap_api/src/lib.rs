@@ -1,11 +1,27 @@
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 
-pub const TICKER_BITCOIN: &str = "L-BTC";
-pub const TICKER_TETHER: &str = "USDt";
+pub const TICKER_BTC: &str = "BTC";
+pub const TICKER_LBTC: &str = "L-BTC";
+pub const TICKER_USDT: &str = "USDt";
+pub const TICKER_EURX: &str = "EURx";
 
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";
+
+pub const OS_TYPE_OTHER: i32 = 0;
+pub const OS_TYPE_ANDROID: i32 = 1;
+pub const OS_TYPE_IOS: i32 = 2;
+
+pub fn get_os_type() -> i32 {
+    if cfg!(target_os = "android") {
+        OS_TYPE_ANDROID
+    } else if cfg!(target_os = "ios") {
+        OS_TYPE_IOS
+    } else {
+        OS_TYPE_OTHER
+    }
+}
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct OrderId(pub String);
@@ -16,7 +32,7 @@ impl std::fmt::Display for OrderId {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct Asset {
     pub asset_id: String,
     pub name: String,
@@ -33,39 +49,37 @@ pub struct AssetsResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PegInRequest {
-    pub elements_addr: String,
+pub struct PegFeeRequest {
+    pub send_amount: i64,
+    pub peg_in: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PegInResponse {
+pub struct PegFeeResponse {
+    pub recv_amount: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PegRequest {
+    pub recv_addr: String,
+    pub send_amount: Option<i64>,
+    pub peg_in: bool,
+    pub device_key: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PegResponse {
     pub order_id: OrderId,
-    pub mainchain_addr: String,
+    pub peg_addr: String,
     pub created_at: Timestamp,
     pub expires_at: Timestamp,
+    pub recv_amount: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct PegOutRequest {
-    pub mainchain_addr: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PegOutResponse {
+pub struct PegStatusRequest {
     pub order_id: OrderId,
-    pub elements_addr: String,
-    pub created_at: Timestamp,
-    pub expires_at: Timestamp,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PegInStatusRequest {
-    pub order_id: OrderId,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PegOutStatusRequest {
-    pub order_id: OrderId,
+    pub peg_in: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -79,23 +93,12 @@ pub struct Swap {
     pub send_amount: i64,
     pub recv_asset: String,
     pub recv_amount: i64,
-    pub server_fee: i64,
     pub network_fee: i64,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct Offer {
-    pub swap: Swap,
-    pub created_at: Timestamp,
-    pub expires_at: Timestamp,
-    pub accept_required: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum SwapAction {
-    Accept,
-    Cancel,
     Psbt(String),
     Sign(String),
 }
@@ -110,16 +113,9 @@ pub enum SwapError {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct AssetAmount {
-    pub asset: String,
-    pub amount: i64,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum SwapState {
-    ReviewOffer(Offer),
-    WaitPsbt,
+    WaitPsbt(Swap),
     WaitSign(String),
     Failed(SwapError),
     Done(String),
@@ -146,9 +142,8 @@ pub struct MatchRfq {
     pub with_change: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct MatchQuote {
-    pub order_id: OrderId,
     pub send_amount: i64,
     pub utxo_count: i32,
     pub with_change: bool,
@@ -165,13 +160,23 @@ pub struct MatchRfqRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MatchRfqResponse {
     pub order_id: OrderId,
-    pub created_at: Timestamp,
-    pub expires_at: Timestamp,
 }
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum RfqRejectReason {
+    ServerError,
+    NoDealer,
+    AmountLow,
+    AmountHigh,
+}
+
+pub type SentQuote = Result<MatchQuote, RfqRejectReason>;
+
+pub type RecvQuote = Result<MatchRfqQuote, RfqRejectReason>;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MatchQuoteRequest {
-    pub quote: MatchQuote,
+    pub order_id: OrderId,
+    pub quote: SentQuote,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -179,24 +184,43 @@ pub struct MatchCancelRequest {
     pub order_id: OrderId,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum MatchRfqStatus {
-    Pending,
-    Expired,
-    Succeed,
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq)]
+pub struct PricePair {
+    pub bid: f64,
+    pub ask: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PriceUpdateBroadcast {
+    pub asset: String,
+    pub price: PricePair,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PriceUpdateSubscribe {
+    pub asset: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PriceUpdateNotification {
+    pub asset: String,
+    pub price: PricePair,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MatchRfqAcceptRequest {
+    pub order_id: OrderId,
+    pub recv_amount: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct RfqCreatedNotification {
     pub order_id: OrderId,
     pub rfq: MatchRfq,
-    pub created_at: Timestamp,
-    pub expires_at: Timestamp,
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum RfqStatus {
-    Expired,
     Cancelled,
     Rejected,
     Accepted,
@@ -208,13 +232,16 @@ pub struct RfqRemovedNotification {
     pub status: RfqStatus,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct MatchRfqQuote {
+    pub recv_amount: i64,
+    pub network_fee: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct MatchRfqUpdate {
     pub order_id: OrderId,
-    pub status: MatchRfqStatus,
-    pub recv_amount: Option<i64>,
-    pub created_at: Timestamp,
-    pub expires_at: Timestamp,
+    pub quote: RecvQuote,
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
@@ -252,35 +279,34 @@ pub struct TxStatus {
     pub vout: i32,
     pub status: String,
     pub amount: i64,
+    pub payout: Option<i64>,
     pub tx_state: PegTxState,
     pub tx_state_code: i32,
     pub detected_confs: Option<i32>,
     pub total_confs: Option<i32>,
     pub created_at: Timestamp,
+    // Must be set if tx_state is PegTxState::Done
+    pub payout_txid: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PegStatus {
     pub order_id: OrderId,
+    pub peg_in: bool,
     pub addr: String,
+    pub addr_recv: String,
     pub list: Vec<TxStatus>,
     pub created_at: Timestamp,
     pub expires_at: Timestamp,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
-pub struct SwapStatusResponse {
-    pub order_id: OrderId,
-    pub swap: Swap,
-    pub status: SwapStatus,
-    pub txid: Option<String>,
-    pub created_at: Timestamp,
-}
+pub type RequestIdInt = i64;
+pub type RequestIdString = String;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub enum RequestId {
-    String(String),
-    Int(i64),
+    String(RequestIdString),
+    Int(RequestIdInt),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -289,6 +315,7 @@ pub struct ServerStatus {
     pub min_peg_out_amount: i64,
     pub server_fee_percent_peg_in: f64,
     pub server_fee_percent_peg_out: f64,
+    pub elements_fee_rate: f64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -310,55 +337,99 @@ pub struct LoginDealerRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub enum EmptyValue {}
-pub type Empty = Option<EmptyValue>;
+pub enum DeviceState {
+    Unregistered,
+    Registered,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VerifyDeviceRequest {
+    pub device_key: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VerifyDeviceResponse {
+    pub device_state: DeviceState,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RegisterDeviceRequest {
+    pub os_type: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RegisterDeviceResponse {
+    pub device_key: String,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RegisterAddressesRequest {
+    pub device_key: String,
+    pub addresses: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdatePushTokenRequest {
+    pub device_key: String,
+    pub push_token: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum Void {}
+pub type Empty = Option<Void>;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Request {
     ServerStatus(Empty),
     Assets(Empty),
-    PegIn(PegInRequest),
-    PegOut(PegOutRequest),
-    PegInStatus(PegInStatusRequest),
-    PegOutStatus(PegOutStatusRequest),
+    PegFee(PegFeeRequest),
+    Peg(PegRequest),
+    PegStatus(PegStatusRequest),
     MatchRfq(MatchRfqRequest),
     MatchRfqCancel(MatchCancelRequest),
+    MatchRfqAccept(MatchRfqAcceptRequest),
     MatchQuote(MatchQuoteRequest),
-    MatchQuoteCancel(MatchCancelRequest),
+    PriceUpdateBroadcast(PriceUpdateBroadcast),
+    PriceUpdateSubscribe(PriceUpdateSubscribe),
     Swap(SwapRequest),
-    SwapStatus(SwapStatusRequest),
     LoginClient(LoginClientRequest),
     LoginDealer(LoginDealerRequest),
+    VerifyDevice(VerifyDeviceRequest),
+    RegisterDevice(RegisterDeviceRequest),
+    RegisterAddresses(RegisterAddressesRequest),
+    UpdatePushToken(UpdatePushTokenRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Response {
     ServerStatus(ServerStatus),
     Assets(AssetsResponse),
-    PegIn(PegInResponse),
-    PegOut(PegOutResponse),
-    PegInStatus(PegStatus),
-    PegOutStatus(PegStatus),
+    PegFee(PegFeeResponse),
+    Peg(PegResponse),
+    PegStatus(PegStatus),
     MatchRfq(MatchRfqResponse),
     MatchRfqCancel(Empty),
+    MatchRfqAccept(Empty),
     MatchQuote(Empty),
-    MatchQuoteCancel(Empty),
+    PriceUpdateBroadcast(Empty),
+    PriceUpdateSubscribe(Empty),
     Swap(Empty),
-    SwapStatus(SwapStatusResponse),
     LoginClient(LoginClientResponse),
     LoginDealer(Empty),
+    VerifyDevice(VerifyDeviceResponse),
+    RegisterDevice(RegisterDeviceResponse),
+    RegisterAddresses(Empty),
+    UpdatePushToken(Empty),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Notification {
     ServerStatus(ServerStatus),
-    PegInStatus(PegStatus),
-    PegOutStatus(PegStatus),
+    PegStatus(PegStatus),
     Swap(SwapNotification),
     MatchRfq(MatchRfqUpdate),
     RfqCreated(RfqCreatedNotification),
     RfqRemoved(RfqRemovedNotification),
-    SwapStatus(SwapStatusResponse),
+    PriceUpdate(PriceUpdateNotification),
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
@@ -405,4 +476,38 @@ pub enum RequestMessage {
 pub enum ResponseMessage {
     Response(Option<RequestId>, Result<Response, Error>),
     Notification(Notification),
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum TxType {
+    Send,
+    Recv,
+    Swap,
+    Redeposit,
+    Unknown,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FcmMessageTx {
+    pub txid: String,
+    pub tx_type: TxType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FcmMessagePeg {
+    pub order_id: OrderId,
+    pub peg_in: bool,
+    pub tx_hash: String,
+    pub vout: i32,
+    pub created_at: Timestamp,
+    pub payout_txid: Option<String>,
+    pub payout: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum FcmMessage {
+    Tx(FcmMessageTx),
+    PegDetected(FcmMessagePeg),
+    PegPayout(FcmMessagePeg),
 }
