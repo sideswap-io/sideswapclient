@@ -27,6 +27,7 @@ pub struct RpcResult<T> {
     pub error: Option<RpcError>,
 }
 
+#[allow(dead_code)]
 fn make_rpc_impl(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
@@ -43,6 +44,7 @@ fn make_rpc_impl(
     Ok((data, status))
 }
 
+#[allow(dead_code)]
 pub fn make_rpc(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
@@ -51,6 +53,7 @@ pub fn make_rpc(
     make_rpc_impl(http_client, &rpc_server, &req)
 }
 
+#[allow(dead_code)]
 pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
@@ -69,6 +72,7 @@ pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
     }
 }
 
+#[allow(dead_code)]
 pub fn make_rpc_call<T: serde::de::DeserializeOwned>(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,

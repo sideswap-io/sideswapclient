@@ -10,6 +10,8 @@
     PartialOrd,
     Ord,
     Default,
+    serde::Deserialize,
+    serde::Serialize,
 )]
 pub struct Amount(pub i64);
 

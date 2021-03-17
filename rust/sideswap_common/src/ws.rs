@@ -99,7 +99,10 @@ async fn run(
                 }
 
                 client_result = req_rx_async.next() => {
-                    let client_result = client_result.unwrap();
+                    let client_result = match client_result {
+                        Some(v) => v,
+                        None => return,
+                    };
                     match client_result {
                         WrappedRequest::Request(req) => {
                             let text = serde_json::to_string(&req).unwrap();
