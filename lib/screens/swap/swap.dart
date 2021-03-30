@@ -332,7 +332,7 @@ class _SwapMainState extends State<SwapMain> {
           },
           onAddressTap: () async {
             final value = await Clipboard.getData(Clipboard.kTextPlain);
-            if (value.text != null) {
+            if (value?.text != null) {
               var text = value.text.replaceAll('\n', '');
               text = text.replaceAll(' ', '');
               final wallet = context.read(walletProvider);
@@ -439,15 +439,17 @@ class _SwapMainState extends State<SwapMain> {
         context.read(swapProvider).swapReset();
       },
       onPegPressed: () {
-        context.read(swapProvider).setSwapPeg(true);
+        final swap = context.read(swapProvider);
+        final wallet = context.read(walletProvider);
+        swap.setSwapPeg(true);
 
         // always set as peg-in
-        context.read(swapProvider).setSelectedLeftAsset(kBitcoinTicker);
-        context.read(swapProvider).setSelectedRightAsset(kLiquidBitcoinTicker);
+        swap.setSelectedLeftAsset(wallet.bitcoinAssetId());
+        swap.setSelectedRightAsset(wallet.liquidAssetId());
 
         clearAddressController();
         _swapAmountController.clear();
-        context.read(swapProvider).swapReset();
+        swap.swapReset();
       },
     );
   }

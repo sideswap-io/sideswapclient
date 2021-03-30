@@ -12,5 +12,5 @@ extension DoubleSizeExtension on num {
   double get h => ScreenUtil().setHeight(this).toDouble();
   double get sp => ScreenUtil().setSp(this).toDouble();
   double get ssp =>
-      ScreenUtil().setSp(this, allowFontScalingSelf: true).toDouble();
+      ScreenUtil().setSp(this, allowFontScalingSelf: false).toDouble();
 }

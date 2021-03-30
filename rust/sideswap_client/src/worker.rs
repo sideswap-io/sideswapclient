@@ -25,7 +25,7 @@ const SERVER_REQUEST_POOL_PERIOD: std::time::Duration = std::time::Duration::fro
 
 //const RFQ_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
 
-const BALANCE_MIN_BLOCK_HEIGHT: u32 = 0;
+const BALANCE_NUM_CONFS: u32 = 0;
 
 const LIQUID_FEE_RATE: f64 = 100.0 / 1000.0; // sat/kbyte
 
@@ -46,13 +46,13 @@ enum AddrType {
 struct SendTx {
     tx: TransactionMeta,
     send_all: bool,
-    ticker: String,
+    asset_id: AssetId,
     amount: i64,
 }
 
 pub struct Context {
     session: ElectrumSession,
-    last_balances: BTreeMap<String, Amount>,
+    last_balances: BTreeMap<AssetId, Amount>,
     used_utxos: BTreeSet<types::TxOut>,
 
     pegs: BTreeMap<OrderId, PegStatus>,
@@ -69,8 +69,6 @@ pub struct Context {
 }
 
 pub struct ServerResp(Option<RequestId>, Result<Response, Error>);
-
-pub type AssetId = String;
 
 fn get_tx_out(utxo: &UnspentOutput) -> types::TxOut {
     types::TxOut {
@@ -94,7 +92,7 @@ pub struct Data {
     env: Env,
     assets: BTreeMap<AssetId, Asset>,
     assets_old: Vec<Asset>,
-    tickers: BTreeMap<String, AssetId>,
+    tickers: BTreeMap<Ticker, AssetId>,
     from_sender: Sender<ffi::FromMsg>,
     ws_sender: Sender<ws::WrappedRequest>,
     resp_receiver: Receiver<ServerResp>,
@@ -103,12 +101,14 @@ pub struct Data {
     ctx: Option<Context>,
     settings: settings::Settings,
     push_token: Option<String>,
+    liquid_asset_id: String,
+    bitcoin_asset_id: String,
 }
 
 pub struct ActiveSwap {
     order_id: OrderId,
-    send_ticker: String,
-    recv_ticker: String,
+    send_asset: AssetId,
+    recv_asset: AssetId,
     send_amount: i64,
     recv_amount: Option<i64>,
     inputs: Vec<gdk_common::model::UnspentOutput>,
@@ -163,10 +163,13 @@ impl Data {
             .iter()
             .filter_map(|(asset_id, balance)| {
                 // filter only known assets
-                self.assets.get(asset_id).map(|asset| ffi::proto::Balance {
-                    ticker: asset.ticker.clone(),
-                    amount: balance.clone(),
-                })
+                // FIXME: Do not filter known only assets
+                self.assets
+                    .get(&AssetId(asset_id.clone()))
+                    .map(|asset| ffi::proto::Balance {
+                        asset_id: asset.asset_id.0.clone(),
+                        amount: balance.clone(),
+                    })
             })
             .collect();
         let tx_details = ffi::proto::Tx {
@@ -318,45 +321,50 @@ impl Data {
     }
 
     fn update_balances(&mut self) {
-        if self.assets.is_empty() || self.ctx.is_none() {
-            return;
-        }
-        let ctx = self.ctx.as_mut().expect("wallet must be set");
-        let mut balances = ctx
-            .session
-            .get_unspent_outputs(&serde_json::Value::Null)
-            .expect("getting unspent outputs failed")
-            .0;
+        let ctx = match self.ctx.as_mut() {
+            Some(v) => v,
+            None => return,
+        };
+        let mut balances = match ctx.session.get_balance(BALANCE_NUM_CONFS, None) {
+            Ok(v) => v,
+            Err(_) => return,
+        };
 
         // Create empty entries for old balances
-        for (ticker, _) in ctx.last_balances.iter() {
-            let asset_id = self.tickers.get(ticker).expect("unknown ticker");
-            let asset = self.assets.get(asset_id);
-            if let Some(asset) = asset {
-                balances.entry(asset.asset_id.clone()).or_default();
+        for (asset_id, _) in ctx.last_balances.iter() {
+            balances.entry(asset_id.0.clone()).or_default();
+        }
+
+        for asset_id in balances.keys() {
+            let asset_id = AssetId(asset_id.clone());
+            if self.assets.get(&asset_id).is_none() {
+                let asset_id = asset_id.clone();
+                let asset = Asset {
+                    asset_id: asset_id.clone(),
+                    name: format!("{:0.8}...", &asset_id.0),
+                    ticker: Ticker(format!("{:0.4}...", &asset_id.0)),
+                    icon: base64::encode(include_bytes!("../images/icon_blank.png")),
+                    precision: 8,
+                };
+                self.register_asset(asset);
             }
         }
-        for (asset, utxos) in balances.into_iter() {
-            let utxos = utxos
-                .into_iter()
-                .filter(|v| v.block_height >= BALANCE_MIN_BLOCK_HEIGHT)
-                .filter(|v| ctx.used_utxos.get(&get_tx_out(v)).is_none())
-                .collect::<Vec<_>>();
-            let amount = utxos.iter().map(|utxo| utxo.satoshi as i64).sum();
-            let asset = self.assets.get(&asset);
-            if let Some(asset) = asset {
-                let last_amount = ctx.last_balances.get(&asset.ticker).cloned();
-                if last_amount != Some(Amount::from_sat(amount)) {
-                    let balance_copy = ffi::proto::Balance {
-                        ticker: asset.ticker.clone(),
-                        amount,
-                    };
-                    self.from_sender
-                        .send(ffi::proto::from::Msg::BalanceUpdate(balance_copy))
-                        .unwrap();
-                    ctx.last_balances
-                        .insert(asset.ticker.clone(), Amount::from_sat(amount));
-                }
+
+        let ctx = self.ctx.as_mut().unwrap();
+        for (asset_id, balance) in balances.into_iter() {
+            let asset_id = AssetId(asset_id);
+            let last_amount = ctx.last_balances.get(&asset_id).cloned();
+            if last_amount != Some(Amount::from_sat(balance)) {
+                let balance_copy = ffi::proto::Balance {
+                    asset_id: asset_id.0.clone(),
+                    amount: balance,
+                };
+
+                self.from_sender
+                    .send(ffi::proto::from::Msg::BalanceUpdate(balance_copy))
+                    .unwrap();
+                ctx.last_balances
+                    .insert(asset_id, Amount::from_sat(balance));
             }
         }
     }
@@ -382,7 +390,7 @@ impl Data {
         self.get_data_path().join("cache")
     }
 
-    fn subscribe_price_update(&self, ticker: &str) {
+    fn subscribe_price_update(&self, ticker: &Ticker) {
         let asset_id = match self.tickers.get(ticker) {
             Some(v) => v,
             None => return,
@@ -432,7 +440,7 @@ impl Data {
         self.update_tx_list();
         self.resume_peg_monitoring();
         for asset in self.assets.values() {
-            if asset.ticker != TICKER_LBTC {
+            if asset.ticker.0 != TICKER_LBTC {
                 self.subscribe_price_update(&asset.ticker);
             }
         }
@@ -525,8 +533,8 @@ impl Data {
             .map(|s| s.to_owned());
 
         let swap_review = ffi::proto::from::SwapReview {
-            send_ticker: active_swap.send_ticker.clone(),
-            recv_ticker: active_swap.recv_ticker.clone(),
+            send_asset: active_swap.send_asset.0.clone(),
+            recv_asset: active_swap.recv_asset.0.clone(),
             send_amount: active_swap.send_amount,
             recv_amount,
             network_fee,
@@ -576,8 +584,8 @@ impl Data {
             .ok_or_else(|| anyhow!("no active swap"))?;
 
         let psbt_info = PsbtInfo {
-            send_asset: tx_info.send_asset.clone(),
-            recv_asset: tx_info.recv_asset.clone(),
+            send_asset: tx_info.send_asset.0.clone(),
+            recv_asset: tx_info.recv_asset.0.clone(),
             recv_amount: tx_info.recv_amount,
             change_amount: active_swap.change_amount.to_sat(),
             utxos: active_swap.inputs.clone(),
@@ -661,11 +669,11 @@ impl Data {
         let ctx = self.ctx.as_mut().expect("wallet must be set");
         let active_swap = ctx.active_swap.as_ref().expect("must be set");
         let send_balance = ffi::proto::Balance {
-            ticker: active_swap.send_ticker.clone(),
+            asset_id: active_swap.send_asset.0.clone(),
             amount: -active_swap.send_amount,
         };
         let recv_balance = ffi::proto::Balance {
-            ticker: active_swap.recv_ticker.clone(),
+            asset_id: active_swap.recv_asset.0.clone(),
             amount: active_swap.recv_amount.unwrap_or_default(),
         };
         let tx_details = ffi::proto::Tx {
@@ -700,7 +708,7 @@ impl Data {
             None => return,
         };
         let price_update = ffi::proto::from::PriceUpdate {
-            asset: asset.ticker.clone(),
+            asset: asset.asset_id.0.clone(),
             bid: msg.price.bid,
             ask: msg.price.ask,
         };
@@ -730,8 +738,8 @@ impl Data {
         req: ffi::proto::to::SwapRequest,
     ) -> Result<ffi::proto::from::SwapReview, anyhow::Error> {
         let send_amount = req.send_amount;
-        let send_ticker = req.send_ticker;
-        let recv_ticker = req.recv_ticker;
+        let send_asset = req.send_asset;
+        let recv_asset = req.recv_asset;
 
         let ctx = self.ctx.as_ref().ok_or(anyhow!("no context found"))?;
         let wallet = ctx
@@ -739,10 +747,6 @@ impl Data {
             .wallet
             .as_ref()
             .ok_or(anyhow!("wallet is not set"))?;
-        let send_asset = self
-            .tickers
-            .get(TICKER_LBTC)
-            .ok_or(anyhow!("unknown send asset"))?;
         ensure!(self.connected, "not connected");
         let server_status = self
             .server_status
@@ -755,12 +759,12 @@ impl Data {
             .unwrap();
         let asset_utxos = all_utxos
             .0
-            .remove(send_asset)
+            .remove(&send_asset)
             .ok_or_else(|| anyhow!("not enough UTXO"))?;
 
         let mut asset_utxos = asset_utxos
             .into_iter()
-            .filter(|v| v.block_height >= BALANCE_MIN_BLOCK_HEIGHT)
+            .filter(|v| v.block_height >= BALANCE_NUM_CONFS)
             .filter(|v| ctx.used_utxos.get(&get_tx_out(v)).is_none())
             .collect::<Vec<_>>();
 
@@ -837,8 +841,8 @@ impl Data {
         });
 
         Ok(ffi::proto::from::SwapReview {
-            send_ticker,
-            recv_ticker,
+            send_asset,
+            recv_asset,
             send_amount,
             recv_amount: Some(recv_amount),
             network_fee: Some(network_fee),
@@ -876,8 +880,8 @@ impl Data {
         self.add_peg_monitoring(resp.order_id.clone(), PegDir::In);
 
         let msg = ffi::proto::from::SwapWaitTx {
-            send_ticker: TICKER_BTC.to_owned(),
-            recv_ticker: TICKER_LBTC.to_owned(),
+            send_asset: self.bitcoin_asset_id.clone(),
+            recv_asset: self.liquid_asset_id.clone(),
             peg_addr: resp.peg_addr,
             recv_addr: recv_addr.clone(),
         };
@@ -910,18 +914,14 @@ impl Data {
         let send_amount = req.send_amount;
         info!(
             "start swap request: send: {}, recv: {}, amount: {}",
-            &req.send_ticker, &req.recv_ticker, send_amount
+            &req.send_asset, &req.recv_asset, send_amount
         );
         ensure!(self.connected, "not connected");
+        let send_asset_id = AssetId(req.send_asset);
+        let recv_asset_id = AssetId(req.recv_asset);
         let ctx = self.ctx.as_mut().expect("wallet must be set");
-        let send_asset = self
-            .tickers
-            .get(&req.send_ticker)
-            .expect("unknown send asset");
-        let recv_asset = self
-            .tickers
-            .get(&req.recv_ticker)
-            .expect("unknown recv asset");
+        let send_asset = self.assets.get(&send_asset_id).expect("unknown send asset");
+        let recv_asset = self.assets.get(&recv_asset_id).expect("unknown recv asset");
 
         let mut all_utxos = ctx
             .session
@@ -929,12 +929,12 @@ impl Data {
             .unwrap();
         let asset_utxos = all_utxos
             .0
-            .remove(send_asset)
+            .remove(&send_asset.asset_id.0)
             .ok_or_else(|| anyhow!("not enough UTXO"))?;
 
         let mut asset_utxos = asset_utxos
             .into_iter()
-            .filter(|v| v.block_height >= BALANCE_MIN_BLOCK_HEIGHT)
+            .filter(|v| v.block_height >= BALANCE_NUM_CONFS)
             .filter(|v| ctx.used_utxos.get(&get_tx_out(v)).is_none())
             .collect::<Vec<_>>();
 
@@ -960,9 +960,9 @@ impl Data {
         let with_change = change_amount != 0;
 
         let rfq = MatchRfq {
-            send_asset: send_asset.clone(),
+            send_asset: send_asset.asset_id.clone(),
             send_amount,
-            recv_asset: recv_asset.clone(),
+            recv_asset: recv_asset.asset_id.clone(),
             utxo_count: selected_utxos.len() as i32,
             with_change,
         };
@@ -976,8 +976,8 @@ impl Data {
         let wallet = self.ctx.as_mut().expect("wallet must be set");
         wallet.active_swap = Some(ActiveSwap {
             order_id: rfq_resp.order_id.clone(),
-            send_ticker: req.send_ticker.clone(),
-            recv_ticker: req.recv_ticker.clone(),
+            send_asset: send_asset.asset_id.clone(),
+            recv_asset: recv_asset.asset_id.clone(),
             send_amount,
             recv_amount: None,
             inputs: selected_utxos,
@@ -987,8 +987,8 @@ impl Data {
         });
 
         Ok(ffi::proto::from::SwapReview {
-            send_ticker: req.send_ticker.clone(),
-            recv_ticker: req.recv_ticker.clone(),
+            send_asset: send_asset.asset_id.clone().0,
+            recv_asset: recv_asset.asset_id.clone().0,
             send_amount: send_amount,
             recv_amount: None,
             network_fee: None,
@@ -997,10 +997,13 @@ impl Data {
     }
 
     fn process_swap_request(&mut self, req: ffi::proto::to::SwapRequest) {
-        let result = if req.send_ticker == TICKER_LBTC && req.recv_ticker == TICKER_BTC {
+        let result = if req.send_asset == self.liquid_asset_id
+            && req.recv_asset == self.bitcoin_asset_id
+        {
             self.process_pegout_request_local(req.clone())
                 .map(|v| ffi::proto::from::Msg::SwapReview(v))
-        } else if req.send_ticker == TICKER_BTC && req.recv_ticker == TICKER_LBTC {
+        } else if req.send_asset == self.bitcoin_asset_id && req.recv_asset == self.liquid_asset_id
+        {
             panic!("unexpected swap request");
         } else {
             self.process_swap_request_atomic(req.clone())
@@ -1010,8 +1013,8 @@ impl Data {
         let result = result.unwrap_or_else(|e| {
             error!("request failed: {}", e.to_string());
             ffi::proto::from::Msg::SwapReview(ffi::proto::from::SwapReview {
-                send_ticker: req.send_ticker.clone(),
-                recv_ticker: req.recv_ticker.clone(),
+                send_asset: req.send_asset.clone(),
+                recv_asset: req.recv_asset.clone(),
                 send_amount: req.send_amount,
                 recv_amount: None,
                 network_fee: None,
@@ -1091,17 +1094,20 @@ impl Data {
 
             let mut tx = data.tx;
             let target_addr = resp.peg_addr.clone();
-            let lbtc_asset_id = self.tickers.get(TICKER_LBTC).expect("unknown ticker");
+            let lbtc_asset_id = self
+                .tickers
+                .get(&Ticker(TICKER_LBTC.to_owned()))
+                .expect("unknown ticker");
             let amount = gdk_common::model::AddressAmount {
                 address: target_addr.clone(),
                 satoshi: data.tx_amount as u64,
-                asset_tag: Some(lbtc_asset_id.clone()),
+                asset_tag: Some(lbtc_asset_id.0.clone()),
             };
 
             tx.add_output(
                 &target_addr,
                 data.tx_amount as u64,
-                Some(lbtc_asset_id.clone()),
+                Some(lbtc_asset_id.0.clone()),
             )
             .unwrap();
 
@@ -1114,7 +1120,7 @@ impl Data {
                 tx.add_output(
                     &change_addr,
                     data.change_amount as u64,
-                    Some(lbtc_asset_id.clone()),
+                    Some(lbtc_asset_id.0.clone()),
                 )
                 .unwrap();
             }
@@ -1220,19 +1226,17 @@ impl Data {
 
     fn create_tx(&mut self, req: ffi::proto::to::CreateTx) -> Result<i64, anyhow::Error> {
         let ctx = self.ctx.as_mut().expect("wallet must be set");
-        let send_ticker = &req.balance.ticker;
+        let send_asset = AssetId(req.balance.asset_id);
         let send_amount = req.balance.amount;
-        let asset_id = self.tickers.get(send_ticker).expect("unknown ticker");
-        let asset = self.assets.get(asset_id).expect("unknown asset");
         let amount = gdk_common::model::AddressAmount {
             address: req.addr,
             satoshi: req.balance.amount as u64,
-            asset_tag: Some(asset.asset_id.clone()),
+            asset_tag: Some(send_asset.0.clone()),
         };
         let balance = ctx
             .last_balances
-            .get(send_ticker)
-            .ok_or(anyhow!("unknown ticker: {}", send_ticker))?;
+            .get(&send_asset)
+            .ok_or(anyhow!("unknown asset: {}", send_asset.0))?;
         ensure!(send_amount > 0, "invalid send amount");
         ensure!(balance.to_sat() >= send_amount, "not enough UTXO");
         let send_all = balance.to_sat() == send_amount;
@@ -1254,7 +1258,7 @@ impl Data {
         ctx.send_tx = Some(SendTx {
             tx: tx_detail_unsigned,
             send_all,
-            ticker: send_ticker.clone(),
+            asset_id: send_asset.clone(),
             amount: send_amount,
         });
         Ok(network_fee)
@@ -1283,6 +1287,14 @@ impl Data {
             error!("setting memo failed: {}", e);
         }
 
+        let lbtc_asset = self
+            .assets
+            .iter()
+            .find(|(_, asset)| asset.ticker.0 == TICKER_LBTC)
+            .expect("L-BTC asset must be know")
+            .1
+            .asset_id
+            .clone();
         let wallet = ctx.session.wallet.as_ref().expect("wallet must be set");
         let store_read = wallet.store.read().expect("store must be set");
         let be_tx =
@@ -1293,26 +1305,26 @@ impl Data {
         let mut balances = Vec::new();
         if is_redeposit {
             balances.push(ffi::proto::Balance {
-                ticker: TICKER_LBTC.to_owned(),
+                asset_id: lbtc_asset.0.to_owned(),
                 amount: -network_fee,
             });
-        } else if send_tx.ticker != TICKER_LBTC {
+        } else if send_tx.asset_id != lbtc_asset {
             balances.push(ffi::proto::Balance {
-                ticker: send_tx.ticker.clone(),
+                asset_id: send_tx.asset_id.0.clone(),
                 amount: -send_tx.amount,
             });
             balances.push(ffi::proto::Balance {
-                ticker: TICKER_LBTC.to_owned(),
+                asset_id: lbtc_asset.0.clone(),
                 amount: -network_fee,
             });
         } else if send_tx.send_all {
             balances.push(ffi::proto::Balance {
-                ticker: TICKER_LBTC.to_owned(),
+                asset_id: lbtc_asset.0.clone(),
                 amount: -send_tx.amount,
             });
         } else {
             balances.push(ffi::proto::Balance {
-                ticker: TICKER_LBTC.to_owned(),
+                asset_id: lbtc_asset.0.clone(),
                 amount: -send_tx.amount - network_fee,
             });
         }
@@ -1534,25 +1546,28 @@ impl Data {
         }
     }
 
+    pub fn register_asset(&mut self, asset: Asset) {
+        let asset_id = asset.asset_id.clone();
+        let asset_copy = ffi::proto::Asset {
+            asset_id: asset.asset_id.0.clone(),
+            name: asset.name.clone(),
+            ticker: asset.ticker.0.clone(),
+            icon: asset.icon.clone(),
+            precision: asset.precision as u32,
+        };
+
+        self.assets.insert(asset_id.clone(), asset.clone());
+        self.tickers.insert(asset.ticker.clone(), asset_id);
+
+        self.from_sender
+            .send(ffi::proto::from::Msg::NewAsset(asset_copy))
+            .unwrap();
+    }
+
     pub fn register_assets(&mut self, assets: Assets) {
         types::check_assets(self.env, &assets);
-
         for asset in assets {
-            let asset_id = asset.asset_id.clone();
-            let asset_copy = ffi::proto::Asset {
-                asset_id: asset.asset_id.clone(),
-                name: asset.name.clone(),
-                ticker: asset.ticker.clone(),
-                icon: asset.icon.clone(),
-                precision: asset.precision as u32,
-            };
-
-            self.assets.insert(asset_id.clone(), asset.clone());
-            self.tickers.insert(asset.ticker.clone(), asset_id);
-
-            self.from_sender
-                .send(ffi::proto::from::Msg::NewAsset(asset_copy))
-                .unwrap();
+            self.register_asset(asset);
         }
     }
 
@@ -1768,6 +1783,17 @@ pub fn start_processing(
     let settings_path = Data::data_path(env, &params.work_dir);
     let settings = settings::load_settings(&settings_path).unwrap_or_default();
 
+    let liquid_asset_id = match env {
+        Env::Prod | Env::Staging => {
+            "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d"
+        }
+        Env::Regtest => "2e16b12daf1244332a438e829ca7ce209195f8e1c54199770cd8b327710a8ab2",
+        Env::Local => "2684bbac0fa7ad544ec8eee43c35156346e5d641d24a4b9d5d8f183e3f2d8fb9",
+    }
+    .to_owned();
+    let bitcoin_asset_id =
+        "0000000000000000000000000000000000000000000000000000000000000000".to_owned();
+
     let mut state = Data {
         connected: false,
         server_status: None,
@@ -1783,6 +1809,8 @@ pub fn start_processing(
         resp_receiver,
         settings,
         push_token: None,
+        liquid_asset_id,
+        bitcoin_asset_id,
     };
 
     if let Err(e) = state.load_assets() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -45,6 +46,7 @@ class TxDetailsColumn extends StatelessWidget {
           padding: EdgeInsets.only(top: 10.h),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             children: [
               Flexible(
                 child: Text(

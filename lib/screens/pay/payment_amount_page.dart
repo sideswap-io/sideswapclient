@@ -8,7 +8,6 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
-import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/pay/widgets/payment_amount_receiver_field.dart';
@@ -31,7 +30,7 @@ class PaymentAmountPage extends StatefulWidget {
 
 class _PaymentAmountPageState extends State<PaymentAmountPage> {
   String _dollarConversion;
-  String _ticker;
+  String _assetId;
   bool _enabled;
   String _amount = '0';
   TextEditingController _tickerAmountController;
@@ -49,28 +48,29 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
     color: Color(0xFF709EBA),
   );
 
-  String getSelectedTicker() {
-    final ticker = context.read(walletProvider).selectedWalletAsset;
-    if (ticker != null) {
-      return ticker;
+  String getSelectedAssetId() {
+    final wallet = context.read(walletProvider);
+    final assetId = wallet.selectedWalletAsset;
+    if (assetId != null) {
+      return assetId;
     }
-    final balances = context.read(walletProvider).balances;
-    if (balances[kLiquidBitcoinTicker] != 0) {
-      return kLiquidBitcoinTicker;
+    final balances = wallet.balances;
+    if (balances[wallet.liquidAssetId()] != 0) {
+      return wallet.liquidAssetId();
     }
     final nonZeroAsset = balances.entries
         .firstWhere((item) => item.value > 0, orElse: () => null);
     if (nonZeroAsset != null) {
       return nonZeroAsset.key;
     }
-    return kLiquidBitcoinTicker;
+    return wallet.liquidAssetId();
   }
 
   @override
   void initState() {
     super.initState();
     _dollarConversion = '0.0';
-    _ticker = getSelectedTicker();
+    _assetId = getSelectedAssetId();
     _enabled = false;
     _tickerAmountController = TextEditingController()
       ..addListener(() {
@@ -101,9 +101,9 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
       return;
     }
 
-    final balance = context.read(walletProvider).balances[_ticker];
+    final balance = context.read(walletProvider).balances[_assetId];
     final newValue = value.replaceAll(' ', '');
-    final amount = double.tryParse(newValue).toDouble();
+    final amount = double.tryParse(newValue)?.toDouble();
     final realBalance = double.tryParse(amountStr(balance ?? 0));
     if (amount == null || realBalance == null) {
       setState(() {
@@ -199,8 +199,10 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                     final showError = watch(paymentProvider).insufficientFunds;
                     final amount = double.tryParse(_amount) ?? 0;
                     if (_amount != null) {
+                      final assetId =
+                          watch(walletProvider).getAssetById(_assetId)?.assetId;
                       _dollarConversion = watch(walletProvider)
-                          .getAmountUsd(_ticker, amount)
+                          .getAmountUsd(assetId, amount)
                           .toStringAsFixed(2);
                       _dollarConversion = replaceCharacterOnPosition(
                           input: _dollarConversion, currencyChar: '\$');
@@ -251,19 +253,19 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                 padding: EdgeInsets.only(top: 10.h),
                 child: Consumer(
                   builder: (context, watch, child) {
+                    final wallet = watch(walletProvider);
                     return TickerAmountTextField(
                       focusNode: _tickerAmountFocusNode,
                       controller: _tickerAmountController,
                       showError: watch(paymentProvider).insufficientFunds,
-                      availableAssets:
-                          context.read(swapProvider).swapSendAssets(),
+                      availableAssets: wallet.sendAssets(),
                       onDropdownChanged: (value) {
                         setState(() {
-                          _ticker = value;
+                          _assetId = value;
                           _tickerAmountController.text = '';
                         });
                       },
-                      dropdownValue: _ticker,
+                      dropdownValue: _assetId,
                       onChanged: (value) {
                         validate(value);
                         final newValue = replaceCharacterOnPosition(
@@ -286,7 +288,8 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                   children: [
                     Consumer(
                       builder: (context, watch, child) {
-                        final balance = watch(walletProvider).balances[_ticker];
+                        final balance =
+                            watch(walletProvider).balances[_assetId];
                         return Text(
                           'PAYMENT_BALANCE',
                           style: _approximateStyle,
@@ -317,7 +320,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                           setState(() {
                             final text = amountStr(context
                                     .read(walletProvider)
-                                    .balances[_ticker] ??
+                                    .balances[_assetId] ??
                                 0);
                             _tickerAmountController.value =
                                 _tickerAmountController.value.copyWith(
@@ -364,7 +367,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                               .result
                               .address,
                           _amount.toString(),
-                          _ticker,
+                          _assetId,
                         );
                   }
                 : null,

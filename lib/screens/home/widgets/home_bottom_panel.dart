@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/models/payment_provider.dart';
@@ -73,9 +72,9 @@ class HomeBottomPanel extends StatelessWidget {
               ),
               RoundedButtonWithLabel(
                 onTap: () {
-                  context.read(walletProvider).selectedWalletAsset =
-                      kLiquidBitcoinTicker;
-                  context.read(walletProvider).selectPaymentPage();
+                  final wallet = context.read(walletProvider);
+                  wallet.selectedWalletAsset = wallet.liquidAssetId();
+                  wallet.selectPaymentPage();
                 },
                 label: 'Pay'.tr(),
                 child: SvgPicture.asset(

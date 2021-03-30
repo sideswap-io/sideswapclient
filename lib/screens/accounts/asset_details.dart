@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/models/tx_item.dart';
@@ -33,7 +32,7 @@ class _AssetDetailsState extends State<AssetDetails>
   bool _isExpanded = false;
   PanelController _panelController;
 
-  String _ticker;
+  String _assetId;
   Map<String, List<TxItem>> _txItemMap;
 
   double normalize(double value, double min, double max) {
@@ -48,7 +47,7 @@ class _AssetDetailsState extends State<AssetDetails>
   void initState() {
     super.initState();
     _panelController = PanelController();
-    _ticker = context.read(walletProvider).selectedWalletAsset;
+    _assetId = context.read(walletProvider).selectedWalletAsset;
     _txItemMap = context.read(walletProvider).txItemMap;
   }
 
@@ -97,11 +96,11 @@ class _AssetDetailsState extends State<AssetDetails>
                       padding: EdgeInsets.only(top: logoPadding),
                       child: Consumer(
                         builder: (context, watch, child) {
-                          final ticker =
-                              watch(walletProvider).selectedWalletAsset ??
-                                  kLiquidBitcoinTicker;
+                          final wallet = watch(walletProvider);
+                          final assetId = wallet.selectedWalletAsset ??
+                              wallet.bitcoinAssetId();
                           final assetImagesBig =
-                              watch(walletProvider).assetImagesBig[ticker];
+                              watch(walletProvider).assetImagesBig[assetId];
                           return Container(
                             width: logoHeight,
                             height: logoHeight,
@@ -127,9 +126,9 @@ class _AssetDetailsState extends State<AssetDetails>
         ),
         Consumer(
           builder: (context, watch, child) {
-            _ticker = watch(walletProvider).selectedWalletAsset;
+            _assetId = watch(walletProvider).selectedWalletAsset;
             _txItemMap = watch(walletProvider).txItemMap;
-            final assetList = _txItemMap[_ticker] ?? <TxItem>[];
+            final assetList = _txItemMap[_assetId] ?? <TxItem>[];
 
             return SlidingPanel(
               panelController: _panelController,
@@ -222,7 +221,7 @@ class _AssetDetailsState extends State<AssetDetails>
                         (index) => Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.w),
                           child: TxListItem(
-                            ticker: _ticker,
+                            assetId: _assetId,
                             txItem: assetList[index],
                           ),
                         ),

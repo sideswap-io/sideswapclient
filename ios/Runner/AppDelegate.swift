@@ -11,7 +11,7 @@ public func dummyMethodToEnforceBundling() {
     store_dart_post_cobject()
 
     sideswap_client_create(0)
-    sideswap_client_start(0, "", 0)
+    sideswap_client_start(0, "", "", 0)
     sideswap_send_request(0, "", 0)
     sideswap_parse_bitcoin_amount("")
     sideswap_parsed_amount_valid(0)
@@ -62,6 +62,9 @@ public func dummyMethodToEnforceBundling() {
             }
         })
 
+        if #available(iOS 10.0, *) {
+          UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
+        }
         GeneratedPluginRegistrant.register(with: self)
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }

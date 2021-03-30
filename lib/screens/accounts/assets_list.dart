@@ -36,15 +36,15 @@ class AssetSelectList extends StatelessWidget {
                     Expanded(
                       child: Consumer(
                         builder: (context, watch, child) {
-                          final _filteredToggleTickers =
-                              watch(walletProvider).filteredToggleTickers;
+                          final _filteredToggleAssetIds =
+                              watch(walletProvider).filteredToggleAssetIds;
                           final _assets = watch(walletProvider).assets;
                           return ListView(
                             children: List<Widget>.generate(
-                              _filteredToggleTickers.length,
+                              _filteredToggleAssetIds.length,
                               (index) {
-                                final ticker = _filteredToggleTickers[index];
-                                final asset = _assets[ticker];
+                                final assetId = _filteredToggleAssetIds[index];
+                                final asset = _assets[assetId];
                                 return AssetSelectItem(asset: asset);
                               },
                             ),

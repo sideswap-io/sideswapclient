@@ -56,24 +56,22 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final _recvAddress = widget.isPegIn
-        ? context.read(swapProvider).swapPegAddressServer
-        : context.read(walletProvider).recvAddress;
+    final swap = context.read(swapProvider);
+    final wallet = context.read(walletProvider);
+    final _recvAddress =
+        widget.isPegIn ? swap.swapPegAddressServer : wallet.recvAddress;
     final _recvAsset = widget.isPegIn
-        ? useProvider(swapProvider).swapSendAsset ?? kLiquidBitcoinTicker
-        : useProvider(walletProvider).selectedWalletAsset ??
-            kLiquidBitcoinTicker;
-    final _swapRecvAddr = useProvider(swapProvider).swapRecvAddressExternal;
+        ? swap.swapSendAsset ?? wallet.liquidAssetId()
+        : wallet.selectedWalletAsset ?? wallet.liquidAssetId();
+    final _swapRecvAddr = swap.swapRecvAddressExternal;
 
-    final _assetSend = useProvider(swapProvider).swapSendAsset ?? '';
-    final serverFeePercentPegIn =
-        useProvider(walletProvider).serverStatus?.serverFeePercentPegIn;
-    final serverFeePercentPegOut =
-        useProvider(walletProvider).serverStatus?.serverFeePercentPegOut;
+    final _assetSend = swap.swapSendAsset ?? '';
+    final serverFeePercentPegIn = wallet.serverStatus?.serverFeePercentPegIn;
+    final serverFeePercentPegOut = wallet.serverStatus?.serverFeePercentPegOut;
     var _percentConversion =
         (serverFeePercentPegIn == null || serverFeePercentPegOut == null)
             ? 0
-            : _assetSend == kLiquidBitcoinTicker
+            : _assetSend == wallet.liquidAssetId()
                 ? 100 - serverFeePercentPegOut
                 : 100 - serverFeePercentPegIn;
 
@@ -244,13 +242,13 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                               heigh: 39.h,
                               borderRadius: BorderRadius.circular(8.w),
                               child: Text(
-                                'address copied',
+                                'Bitcoin address copied',
                                 style: GoogleFonts.roboto(
                                   fontSize: 16.sp,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
-                              ).tr(args: [_recvAsset]),
+                              ).tr(),
                             ),
                           ),
                         ),
@@ -292,7 +290,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                         heigh: 39.h,
                         borderRadius: BorderRadius.circular(8.w),
                         child: Text(
-                          'address copied',
+                          'Liquid address copied',
                           style: GoogleFonts.roboto(
                             fontSize: 16.sp,
                             fontWeight: FontWeight.bold,

@@ -40,43 +40,35 @@ class SwapMiddleIcon extends ConsumerWidget {
               padding: EdgeInsets.only(left: 8.w),
               child: Consumer(
                 builder: (context, watch, _) {
-                  final serverFeePercentPegIn = watch(walletProvider)
-                          .serverStatus
-                          ?.serverFeePercentPegIn ??
-                      0;
-                  final serverFeePercentPegOut = watch(walletProvider)
-                          .serverStatus
-                          ?.serverFeePercentPegOut ??
-                      0;
+                  final wallet = watch(walletProvider);
+                  final swap = watch(swapProvider);
 
-                  final _recvAmount = watch(swapProvider).swapRecvAmount ?? 0;
-                  final _assetSend = watch(swapProvider).swapSendAsset ?? '';
-                  final _assetRecv = watch(swapProvider).swapRecvAsset ?? '';
-                  final _sendAmount = watch(swapProvider).swapSendAmount ?? 0;
-                  final _networkFee = watch(swapProvider).swapNetworkFee ?? 0;
-                  final _amountBitcoin = _assetSend == kLiquidBitcoinTicker
-                      ? _sendAmount
-                      : _recvAmount;
+                  final serverFeePercentPegIn =
+                      wallet.serverStatus?.serverFeePercentPegIn ?? 0;
+                  final serverFeePercentPegOut =
+                      wallet.serverStatus?.serverFeePercentPegOut ?? 0;
+
+                  final _recvAmount = swap.swapRecvAmount ?? 0;
+                  final _assetSend = swap.swapSendAsset ?? '';
+                  final _assetRecv = swap.swapRecvAsset ?? '';
+                  final _sendLiquid = _assetSend == wallet.liquidAssetId();
+                  final _sendAmount = swap.swapSendAmount ?? 0;
+                  final _networkFee = swap.swapNetworkFee ?? 0;
+                  final _amountBitcoin =
+                      _sendLiquid ? _sendAmount : _recvAmount;
                   // Client is paying network fees, show price that the dealer will get
-                  final _amountBitcoinAdjusted =
-                      _assetSend == kLiquidBitcoinTicker
-                          ? _amountBitcoin - _networkFee
-                          : _amountBitcoin + _networkFee;
-                  final _amountAsset = _assetSend != kLiquidBitcoinTicker
-                      ? _sendAmount
-                      : _recvAmount;
+                  final _amountBitcoinAdjusted = _sendLiquid
+                      ? _amountBitcoin - _networkFee
+                      : _amountBitcoin + _networkFee;
+                  final _amountAsset = !_sendLiquid ? _sendAmount : _recvAmount;
                   final _priceSwap = _amountBitcoinAdjusted != 0
                       ? _amountAsset / _amountBitcoinAdjusted
                       : 0.0;
 
-                  final _asset = _assetSend != kLiquidBitcoinTicker
-                      ? _assetSend
-                      : _assetRecv;
-                  final _assetPrice = watch(walletProvider).prices[_asset];
+                  final _asset = !_sendLiquid ? _assetSend : _assetRecv;
+                  final _assetPrice = wallet.prices[_asset];
                   final _priceBroadcast = _assetPrice != null
-                      ? (_assetSend != kLiquidBitcoinTicker
-                          ? _assetPrice.ask
-                          : _assetPrice.bid)
+                      ? (!_sendLiquid ? _assetPrice.ask : _assetPrice.bid)
                       : 0.0;
 
                   final _price = _priceSwap != 0 ? _priceSwap : _priceBroadcast;
@@ -91,17 +83,19 @@ class SwapMiddleIcon extends ConsumerWidget {
                     _precision = 6;
                   }
                   final _priceStr = _price.toStringAsFixed(_precision);
-                  final _swapType = context.read(swapProvider).swapType();
-                  final _tickerAsset = _assetSend != kLiquidBitcoinTicker
+                  final _swapType = swap.swapType();
+                  final _assetId = _assetSend != wallet.liquidAssetId()
                       ? _assetSend
                       : _assetRecv;
+                  final _assetTicker =
+                      wallet.getAssetById(_assetId)?.ticker ?? kUnknownTicker;
                   final _swapText =
-                      '1 $kLiquidBitcoinTicker = $_priceStr $_tickerAsset';
+                      '1 $kLiquidBitcoinTicker = $_priceStr $_assetTicker';
                   var _percentConversion =
                       _sendAmount != 0 ? 100.0 * _recvAmount / _sendAmount : 0;
                   if (_swapType != SwapType.atomic && _percentConversion == 0) {
                     // display conversion for peg in/out
-                    _percentConversion = _assetSend == kLiquidBitcoinTicker
+                    _percentConversion = _sendLiquid
                         ? 100 - serverFeePercentPegOut
                         : 100 - serverFeePercentPegIn;
                   }

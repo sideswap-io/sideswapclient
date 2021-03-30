@@ -340,7 +340,14 @@ class _WalletImportState extends State<WalletImport> {
                         },
                         itemBuilder: (context, suggestion) {
                           return ListTile(
-                            title: Text(suggestion),
+                            title: Text(
+                              suggestion,
+                              style: GoogleFonts.roboto(
+                                fontSize: 17.sp,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
+                              ),
+                            ),
                           );
                         },
                         onSuggestionSelected: (suggestion) {

@@ -10,12 +10,12 @@ pub fn get_proposal(
     other_asset: &Asset,
     dealer_send_bitcoin: bool,
 ) -> Result<types::Amount, anyhow::Error> {
-    let bitcoin_price = match other_asset.ticker.as_ref() {
+    let bitcoin_price = match other_asset.ticker.0.as_str() {
         // For USDt use download_bitcoin_last_usd_price to get bitcoin price
         TICKER_USDT => super::prices::download_bitcoin_last_usd_price()
             .map_err(|e| anyhow!("download price failed: {}", e))?,
         // Ignore all other assets
-        _ => bail!("unknown asset: {}", &other_asset.ticker),
+        _ => bail!("unknown asset: {}", &other_asset.ticker.0),
     };
 
     // Please note that this does not take into account server and network fee (will be applied to bitcoin receiver)

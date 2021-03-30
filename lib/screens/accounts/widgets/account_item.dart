@@ -28,7 +28,7 @@ class AccountItem extends ConsumerWidget {
             uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments
                 .copyWith(
                     navigationItem: WalletMainNavigationItem.assetDetails);
-            context.read(walletProvider).selectAssetDetails(asset.ticker);
+            context.read(walletProvider).selectAssetDetails(asset.assetId);
           },
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -37,7 +37,7 @@ class AccountItem extends ConsumerWidget {
                 Container(
                   width: 48.w,
                   height: 48.w,
-                  child: watch(walletProvider).assetImagesBig[asset.ticker],
+                  child: watch(walletProvider).assetImagesBig[asset.assetId],
                 ),
                 Expanded(
                   child: Padding(

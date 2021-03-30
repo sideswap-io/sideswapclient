@@ -243,6 +243,7 @@ pub struct SignedTx {
     pub hex: String,
 }
 
+#[allow(dead_code)]
 pub fn sendtoaddress_generic(
     addr: &str,
     amount: f64,
@@ -269,6 +270,7 @@ pub fn sendtoaddress_generic(
         ],
     }
 }
+#[allow(dead_code)]
 pub fn sendtoaddress_asset(addr: &str, amount: f64, assetlabel: &str) -> RpcRequest {
     sendtoaddress_generic(
         addr,
@@ -282,7 +284,9 @@ pub fn sendtoaddress_asset(addr: &str, amount: f64, assetlabel: &str) -> RpcRequ
         Some(assetlabel),
     )
 }
+#[allow(dead_code)]
 pub fn sendtoaddress_bitcoin(addr: &str, amount: f64) -> RpcRequest {
     sendtoaddress_generic(addr, amount, None, None, None, None, None, None, None)
 }
+#[allow(dead_code)]
 pub type SendToAddressResult = String;

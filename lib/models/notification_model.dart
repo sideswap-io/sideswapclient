@@ -130,3 +130,39 @@ abstract class FCMMessage with _$FCMMessage {
   factory FCMMessage.fromJson(Map<String, Object> json) =>
       _$FCMMessageFromJson(json);
 }
+
+// ================ IOS ================
+
+@freezed
+abstract class FCMIOSAps with _$FCMIOSAps {
+  const factory FCMIOSAps({
+    @nullable FCMNotification alert,
+    @nullable String category,
+  }) = _FCMIOSAps;
+
+  factory FCMIOSAps.fromJson(Map<String, Object> json) =>
+      _$FCMIOSApsFromJson(json);
+}
+
+@freezed
+abstract class FCMIOSMessage with _$FCMIOSMessage {
+  const factory FCMIOSMessage({
+    @nullable FCMIOSAps aps,
+    @nullable @JsonKey(name: 'google.c.sender.id') String googleCSenderId,
+    @nullable FCMDetails details,
+  }) = _FCMIOSMessage;
+
+  factory FCMIOSMessage.fromJson(Map<String, Object> json) =>
+      FCMIOSMessage.createFromJson(json);
+
+  factory FCMIOSMessage.createFromJson(Map<String, Object> json) {
+    if (json['details'] != null && json['details'] is String) {
+      final details = (json['details'] as String)
+          .replaceAll(r'\', '')
+          .replaceAll(r"'", '"');
+      json['details'] = jsonDecode(details) as Map<String, Object>;
+    }
+
+    return _$FCMIOSMessageFromJson(json);
+  }
+}

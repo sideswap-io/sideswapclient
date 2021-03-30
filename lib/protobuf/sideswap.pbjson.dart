@@ -19,7 +19,7 @@ const Address$json = const {
 const Balance$json = const {
   '1': 'Balance',
   '2': const [
-    const {'1': 'ticker', '3': 1, '4': 2, '5': 9, '10': 'ticker'},
+    const {'1': 'asset_id', '3': 1, '4': 2, '5': 9, '10': 'assetId'},
     const {'1': 'amount', '3': 2, '4': 2, '5': 3, '10': 'amount'},
   ],
 };
@@ -122,8 +122,8 @@ const To_Login$json = const {
 const To_SwapRequest$json = const {
   '1': 'SwapRequest',
   '2': const [
-    const {'1': 'send_ticker', '3': 2, '4': 2, '5': 9, '10': 'sendTicker'},
-    const {'1': 'recv_ticker', '3': 3, '4': 2, '5': 9, '10': 'recvTicker'},
+    const {'1': 'send_asset', '3': 2, '4': 2, '5': 9, '10': 'sendAsset'},
+    const {'1': 'recv_asset', '3': 3, '4': 2, '5': 9, '10': 'recvAsset'},
     const {'1': 'send_amount', '3': 4, '4': 2, '5': 3, '10': 'sendAmount'},
   ],
 };
@@ -198,8 +198,8 @@ const From_RemovedTx$json = const {
 const From_SwapReview$json = const {
   '1': 'SwapReview',
   '2': const [
-    const {'1': 'send_ticker', '3': 1, '4': 2, '5': 9, '10': 'sendTicker'},
-    const {'1': 'recv_ticker', '3': 2, '4': 2, '5': 9, '10': 'recvTicker'},
+    const {'1': 'send_asset', '3': 1, '4': 2, '5': 9, '10': 'sendAsset'},
+    const {'1': 'recv_asset', '3': 2, '4': 2, '5': 9, '10': 'recvAsset'},
     const {'1': 'send_amount', '3': 3, '4': 2, '5': 3, '10': 'sendAmount'},
     const {'1': 'recv_amount', '3': 4, '4': 1, '5': 3, '10': 'recvAmount'},
     const {'1': 'network_fee', '3': 5, '4': 1, '5': 3, '10': 'networkFee'},
@@ -210,8 +210,8 @@ const From_SwapReview$json = const {
 const From_SwapWaitTx$json = const {
   '1': 'SwapWaitTx',
   '2': const [
-    const {'1': 'send_ticker', '3': 1, '4': 2, '5': 9, '10': 'sendTicker'},
-    const {'1': 'recv_ticker', '3': 2, '4': 2, '5': 9, '10': 'recvTicker'},
+    const {'1': 'send_asset', '3': 1, '4': 2, '5': 9, '10': 'sendAsset'},
+    const {'1': 'recv_asset', '3': 2, '4': 2, '5': 9, '10': 'recvAsset'},
     const {'1': 'peg_addr', '3': 5, '4': 2, '5': 9, '10': 'pegAddr'},
     const {'1': 'recv_addr', '3': 6, '4': 2, '5': 9, '10': 'recvAddr'},
   ],

@@ -139,10 +139,21 @@ class __RootWidgetState extends State<_RootWidget> {
         return [
           MaterialPage<Widget>(child: PreLaunchPage()),
         ];
-      case Status.reviewLicense:
+      case Status.reviewLicenseCreateWallet:
         return [
-          MaterialPage<Widget>(child: FirstLaunch()),
-          MyPopupPage<Widget>(child: LicenseTerms()),
+          MyPopupPage<Widget>(
+            child: LicenseTerms(
+              nextStep: LicenseNextStep.createWallet,
+            ),
+          ),
+        ];
+      case Status.reviewLicenseImportWallet:
+        return [
+          MyPopupPage<Widget>(
+            child: LicenseTerms(
+              nextStep: LicenseNextStep.importWallet,
+            ),
+          ),
         ];
       case Status.noWallet:
         return [
@@ -297,7 +308,7 @@ class __RootWidgetState extends State<_RootWidget> {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context,
-        designSize: Size(375, 667), allowFontScaling: true);
+        designSize: Size(375, 667), allowFontScaling: false);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light

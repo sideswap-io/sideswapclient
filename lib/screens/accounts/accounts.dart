@@ -55,16 +55,15 @@ class Accounts extends StatelessWidget {
               padding: EdgeInsets.only(top: 16.h),
               child: Consumer(
                 builder: (context, watch, child) {
-                  final length =
-                      watch(walletProvider).enabledAssetTickers.length;
+                  final length = watch(walletProvider).enabledAssetIds.length;
                   return ListView(
                     children: List<Widget>.generate(
                       length,
                       (index) {
-                        final ticker =
-                            watch(walletProvider).enabledAssetTickers[index];
-                        final asset = watch(walletProvider).assets[ticker];
-                        final balance = watch(walletProvider).balances[ticker];
+                        final assetId =
+                            watch(walletProvider).enabledAssetIds[index];
+                        final asset = watch(walletProvider).assets[assetId];
+                        final balance = watch(walletProvider).balances[assetId];
                         return AccountItem(
                           asset: asset,
                           balance: balance,

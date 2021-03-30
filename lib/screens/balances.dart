@@ -64,10 +64,10 @@ String txTypeName(TxType type) {
   throw Exception('unknown type');
 }
 
-int txAssetAmount(Tx tx, String ticker) {
+int txAssetAmount(Tx tx, String assetId) {
   var sum = 0;
   for (var balance in tx.balances) {
-    if (balance.ticker == ticker) {
+    if (balance.assetId == assetId) {
       sum += balance.amount.toInt();
     }
   }

@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:rxdart/subjects.dart';
@@ -17,6 +19,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
+// Currently not working - remove?
 Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
   logger.e('onBackgroundNotification: $message');
 
@@ -84,7 +87,7 @@ class NotificationService {
 
   final didReceiveLocalNotificationSubject =
       BehaviorSubject<ReceivedNotification>();
-  final selectNotificationSubject = BehaviorSubject<String>();
+  final selectNotificationSubject = BehaviorSubject<FCMPayload>();
 
   String _selectedNotificationPayload;
   String get selectedNotificationPayload => _selectedNotificationPayload;
@@ -103,11 +106,21 @@ class NotificationService {
 
   BuildContext _context;
 
-  final _delayedNotifications = <FCMMessage>[];
+  final _delayedNotifications = <FCMPayload>[];
 
   Future<void> init(BuildContext context) async {
     _context = context;
     _firebaseMessaging.requestNotificationPermissions();
+    if (Platform.isIOS) {
+      await _flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()
+          .requestPermissions(
+            sound: true,
+            alert: true,
+            badge: true,
+          );
+    }
 
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
@@ -116,7 +129,7 @@ class NotificationService {
 
     _firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        logger.e('onMessage: ${jsonEncode(message)}');
+        logger.d('onMessage: $message');
         _handleIncomingNotification(
           context,
           IncomingNotificationType.message,
@@ -126,7 +139,7 @@ class NotificationService {
       // Set the background handler only when fcm notification is sent without notification in json!
       onBackgroundMessage: null,
       onLaunch: (Map<String, dynamic> message) async {
-        logger.e('onLaunch: $message');
+        logger.d('onLaunch: $message');
         _handleIncomingNotification(
           context,
           IncomingNotificationType.launch,
@@ -134,7 +147,7 @@ class NotificationService {
         );
       },
       onResume: (Map<String, dynamic> message) async {
-        logger.e('onResume: $message');
+        logger.d('onResume: $message');
         _handleIncomingNotification(
           context,
           IncomingNotificationType.resume,
@@ -162,7 +175,9 @@ class NotificationService {
       initializationSettings,
       onSelectNotification: (String payload) async {
         _selectedNotificationPayload = payload;
-        selectNotificationSubject.add(payload);
+        final json = jsonDecode(payload) as Map<String, Object>;
+        final fcmPayload = FCMPayload.fromJson(json);
+        selectNotificationSubject.add(fcmPayload);
       },
     );
 
@@ -182,34 +197,26 @@ class NotificationService {
 
     if (transItem.tx != null) {
       final txid = transItem.tx.txid;
-      final fcmMessage = _delayedNotifications.firstWhere(
-          (e) => e.data?.details?.tx?.txId == txid,
+      final fcmPayload = _delayedNotifications.firstWhere((e) => e.txid == txid,
           orElse: () => null);
 
-      if (fcmMessage != null) {
+      if (fcmPayload != null) {
         logger.d('Delayed found: ${transItem.toDebugString()}');
-        final payloadType = _getPayloadType(fcmMessage.data.details.tx.txType);
-        final payload = FCMPayload(type: payloadType, txid: txid);
-        _onNotificationData(payload.toJsonString());
-        _delayedNotifications
-            .removeWhere((e) => e.data.details.tx.txId == txid);
+        _onNotificationData(fcmPayload);
+        _delayedNotifications.removeWhere((e) => e.txid == txid);
         return;
       }
     }
 
     if (transItem.peg != null && transItem.peg.isPegIn) {
       final txid = transItem.peg.txidRecv;
-      final fcmMessage = _delayedNotifications.firstWhere(
-          (e) => e.data.details.pegDetected.txHash == txid,
+      final fcmPayload = _delayedNotifications.firstWhere((e) => e.txid == txid,
           orElse: () => null);
 
-      if (fcmMessage != null) {
+      if (fcmPayload != null) {
         logger.d('Delayed found: ${transItem.toDebugString()}');
-        final payloadType = FCMPayloadType.pegin;
-        final payload = FCMPayload(type: payloadType, txid: txid);
-        _onNotificationData(payload.toJsonString());
-        _delayedNotifications
-            .removeWhere((e) => e.data.details.tx.txId == txid);
+        _onNotificationData(fcmPayload);
+        _delayedNotifications.removeWhere((e) => e.txid == txid);
         return;
       }
     }
@@ -255,9 +262,9 @@ class NotificationService {
         AndroidInitializationSettings('@mipmap/notification_icon');
 
     final initializationSettingsIOS = IOSInitializationSettings(
-      requestAlertPermission: false,
-      requestBadgePermission: false,
-      requestSoundPermission: false,
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
       onDidReceiveLocalNotification: onDidReceiveLocalNotification,
     );
 
@@ -271,7 +278,26 @@ class NotificationService {
 
   void _handleIncomingNotification(BuildContext context,
       IncomingNotificationType type, Map<String, Object> message) {
-    final fcmMessage = FCMMessage.fromJson(message);
+    FCMMessage fcmMessage;
+    if (Platform.isIOS) {
+      final fcmIosMessage = FCMIOSMessage.fromJson(message);
+
+      if (fcmIosMessage?.details == null) {
+        return;
+      }
+
+      // map to default notification used in app
+      fcmMessage = FCMMessage(
+        notification: fcmIosMessage.aps.alert,
+        data: FCMData(
+          details: fcmIosMessage.details,
+        ),
+      );
+    }
+
+    if (Platform.isAndroid) {
+      fcmMessage = FCMMessage.fromJson(message);
+    }
 
     if (fcmMessage?.data?.details == null) {
       return;
@@ -279,41 +305,59 @@ class NotificationService {
 
     switch (type) {
       case IncomingNotificationType.message:
-        _onForegroundNotification(fcmMessage);
+        _onForegroundNotification(fcmMessage, fcmMessage.data.details.tx);
         break;
       case IncomingNotificationType.resume:
-        _onResumeNotification(fcmMessage);
+        _onResumeNotification(fcmMessage.data.details.tx);
         break;
       case IncomingNotificationType.launch:
         logger.d('Adding delayed: $fcmMessage');
-        _delayedNotifications.add(fcmMessage);
+        final payload = _createPayload(fcmMessage);
+        if (payload != null) {
+          _delayedNotifications.add(payload);
+        } else {
+          logger.w('Empty payload: $fcmMessage');
+        }
         break;
     }
   }
 
-  Future<void> _onResumeNotification(FCMMessage fcmMessage) async {
-    final fcmTx = fcmMessage?.data?.details?.tx;
-    if (fcmTx == null) {
-      return;
-    }
-
-    final payloadType = _getPayloadType(fcmTx.txType);
-    final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
-    _onNotificationData(payload.toJsonString());
-  }
-
-  Future<void> _onForegroundNotification(FCMMessage fcmMessage) async {
+  FCMPayload _createPayload(FCMMessage fcmMessage) {
     final fcmTx = fcmMessage?.data?.details?.tx;
 
     if (fcmTx != null) {
-      return await _onTxNotification(fcmMessage);
+      final payloadType = _getPayloadType(fcmTx.txType);
+      final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
+      return payload;
     }
 
-    final peg = fcmMessage.data.details.pegDetected ??
-        fcmMessage.data.details.pegPayout;
-    if (peg != null) {
+    final pegDetected = fcmMessage?.data?.details?.pegDetected;
+
+    if (pegDetected != null) {
       final payloadType = FCMPayloadType.pegin;
-      final payload = FCMPayload(type: payloadType, txid: peg.txHash);
+      final payload = FCMPayload(type: payloadType, txid: pegDetected.txHash);
+      return payload;
+    }
+
+    return null;
+  }
+
+  Future<void> _onResumeNotification(FCMTx fcmTx) async {
+    final payloadType = _getPayloadType(fcmTx.txType);
+    final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
+    _onNotificationData(payload);
+  }
+
+  Future<void> _onForegroundNotification(
+      FCMMessage fcmMessage, FCMTx fcmTx) async {
+    if (fcmTx != null) {
+      return await _onTxNotification(fcmMessage, fcmTx);
+    }
+
+    final pegDetected = fcmMessage.data.details.pegDetected;
+    if (pegDetected != null) {
+      final payloadType = FCMPayloadType.pegin;
+      final payload = FCMPayload(type: payloadType, txid: pegDetected.txHash);
       await _onDefaultNotification(
         title: fcmMessage.notification.title,
         body: fcmMessage.notification.body,
@@ -347,9 +391,8 @@ class NotificationService {
     return payloadType;
   }
 
-  Future<void> _onTxNotification(FCMMessage fcmMessage) async {
+  Future<void> _onTxNotification(FCMMessage fcmMessage, FCMTx fcmTx) async {
     final allTxs = _context.read(walletProvider).allTxs;
-    final fcmTx = fcmMessage.data.details.tx;
 
     logger.d(fcmTx.txType.toString());
 
@@ -379,12 +422,9 @@ class NotificationService {
     }
   }
 
-  void _onNotificationData(String payload) async {
-    logger.d('Notification data: $payload');
+  void _onNotificationData(FCMPayload fcmPayload) async {
+    logger.d('Notification data: $fcmPayload');
 
-    // handle Android notification here
-    final json = jsonDecode(payload) as Map<String, Object>;
-    final fcmPayload = FCMPayload.fromJson(json);
     final txid = fcmPayload.txid;
 
     final allTxs = _context.read(walletProvider).allTxs;
@@ -410,7 +450,10 @@ class NotificationService {
         break;
     }
 
-    logger.d('onNotificationData payload not found: $payload');
+    logger.d('onNotificationData payload not found: $fcmPayload');
+    // can't display now, push as delayed notification
+    // and wait for data from server
+    _delayedNotifications.add(fcmPayload);
   }
 
   void _oniOSNotification(ReceivedNotification receivedNotification) async {
@@ -550,13 +593,19 @@ class NotificationService {
   }
 
   void refreshToken() async {
-    // TODO: Catch platform exceptions
-    final token = await _firebaseMessaging.getToken();
-    _context.read(walletProvider).updatePushToken(token);
+    try {
+      final token = await _firebaseMessaging.getToken();
+      logger.d('Firebase token $token');
+      _context.read(walletProvider).updatePushToken(token);
 
-    FirebaseMessaging().onTokenRefresh.listen((newToken) {
-      logger.d('Firebase token: $token');
-      _context.read(walletProvider).updatePushToken(newToken);
-    });
+      FirebaseMessaging().onTokenRefresh.listen((newToken) {
+        logger.d('Firebase token: $token');
+        _context.read(walletProvider).updatePushToken(newToken);
+      });
+    } on PlatformException catch (err) {
+      logger.e('PlatformException: $err');
+    } catch (err) {
+      logger.e('Generic error: $err');
+    }
   }
 }

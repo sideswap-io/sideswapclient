@@ -95,7 +95,7 @@ class _PaymentPageState extends State<PaymentPage> {
                     onTap: () async {
                       final value =
                           await Clipboard.getData(Clipboard.kTextPlain);
-                      if (value.text != null) {
+                      if (value?.text != null) {
                         var text = value.text.replaceAll('\n', '');
                         text = text.replaceAll(' ', '');
                         final wallet = context.read(walletProvider);

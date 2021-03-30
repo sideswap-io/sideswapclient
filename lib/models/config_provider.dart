@@ -55,14 +55,12 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  List<String> get disabledAssetTickers {
+  List<String> get disabledAssetIds {
     return _prefs.getStringList(disabledAssetsField) ?? [];
   }
 
-  Future<void> setDisabledAssetTickers(
-      List<String> disabledAssetTickers) async {
-    await _prefs.setStringList(
-        disabledAssetsField, disabledAssetTickers.toList());
+  Future<void> setDisabledAssetIds(List<String> value) async {
+    await _prefs.setStringList(disabledAssetsField, value.toList());
     notifyListeners();
   }
 

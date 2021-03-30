@@ -94,7 +94,7 @@ class _FirstLaunchState extends State<FirstLaunch> {
                               onPressed: () {
                                 context
                                     .read(walletProvider)
-                                    .selectLicenseAccepted();
+                                    .setReviewLicenseCreateWallet();
                               },
                             ),
                           ),
@@ -113,7 +113,7 @@ class _FirstLaunchState extends State<FirstLaunch> {
                               onPressed: () {
                                 context
                                     .read(walletProvider)
-                                    .startMnemonicImport();
+                                    .setReviewLicenseImportWallet();
                               },
                             ),
                           ),

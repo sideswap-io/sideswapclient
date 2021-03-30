@@ -79,7 +79,7 @@ class Address extends $pb.GeneratedMessage {
 
 class Balance extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Balance', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ticker')
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetId')
     ..a<$fixnum.Int64>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amount', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
   ;
 
@@ -107,13 +107,13 @@ class Balance extends $pb.GeneratedMessage {
   static Balance _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get ticker => $_getSZ(0);
+  $core.String get assetId => $_getSZ(0);
   @$pb.TagNumber(1)
-  set ticker($core.String v) { $_setString(0, v); }
+  set assetId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasTicker() => $_has(0);
+  $core.bool hasAssetId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearTicker() => clearField(1);
+  void clearAssetId() => clearField(1);
 
   @$pb.TagNumber(2)
   $fixnum.Int64 get amount => $_getI64(1);
@@ -628,8 +628,8 @@ class To_Login extends $pb.GeneratedMessage {
 
 class To_SwapRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.SwapRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendTicker')
-    ..aQS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvTicker')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendAsset')
+    ..aQS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAsset')
     ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendAmount', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
   ;
 
@@ -657,22 +657,22 @@ class To_SwapRequest extends $pb.GeneratedMessage {
   static To_SwapRequest _defaultInstance;
 
   @$pb.TagNumber(2)
-  $core.String get sendTicker => $_getSZ(0);
+  $core.String get sendAsset => $_getSZ(0);
   @$pb.TagNumber(2)
-  set sendTicker($core.String v) { $_setString(0, v); }
+  set sendAsset($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(2)
-  $core.bool hasSendTicker() => $_has(0);
+  $core.bool hasSendAsset() => $_has(0);
   @$pb.TagNumber(2)
-  void clearSendTicker() => clearField(2);
+  void clearSendAsset() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.String get recvTicker => $_getSZ(1);
+  $core.String get recvAsset => $_getSZ(1);
   @$pb.TagNumber(3)
-  set recvTicker($core.String v) { $_setString(1, v); }
+  set recvAsset($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(3)
-  $core.bool hasRecvTicker() => $_has(1);
+  $core.bool hasRecvAsset() => $_has(1);
   @$pb.TagNumber(3)
-  void clearRecvTicker() => clearField(3);
+  void clearRecvAsset() => clearField(3);
 
   @$pb.TagNumber(4)
   $fixnum.Int64 get sendAmount => $_getI64(2);
@@ -1130,8 +1130,8 @@ class From_RemovedTx extends $pb.GeneratedMessage {
 
 class From_SwapReview extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.SwapReview', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendTicker')
-    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvTicker')
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendAsset')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAsset')
     ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendAmount', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aInt64(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAmount')
     ..aInt64(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'networkFee')
@@ -1162,22 +1162,22 @@ class From_SwapReview extends $pb.GeneratedMessage {
   static From_SwapReview _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get sendTicker => $_getSZ(0);
+  $core.String get sendAsset => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sendTicker($core.String v) { $_setString(0, v); }
+  set sendAsset($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasSendTicker() => $_has(0);
+  $core.bool hasSendAsset() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSendTicker() => clearField(1);
+  void clearSendAsset() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get recvTicker => $_getSZ(1);
+  $core.String get recvAsset => $_getSZ(1);
   @$pb.TagNumber(2)
-  set recvTicker($core.String v) { $_setString(1, v); }
+  set recvAsset($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasRecvTicker() => $_has(1);
+  $core.bool hasRecvAsset() => $_has(1);
   @$pb.TagNumber(2)
-  void clearRecvTicker() => clearField(2);
+  void clearRecvAsset() => clearField(2);
 
   @$pb.TagNumber(3)
   $fixnum.Int64 get sendAmount => $_getI64(2);
@@ -1218,8 +1218,8 @@ class From_SwapReview extends $pb.GeneratedMessage {
 
 class From_SwapWaitTx extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.SwapWaitTx', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendTicker')
-    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvTicker')
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendAsset')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAsset')
     ..aQS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pegAddr')
     ..aQS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAddr')
   ;
@@ -1248,22 +1248,22 @@ class From_SwapWaitTx extends $pb.GeneratedMessage {
   static From_SwapWaitTx _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get sendTicker => $_getSZ(0);
+  $core.String get sendAsset => $_getSZ(0);
   @$pb.TagNumber(1)
-  set sendTicker($core.String v) { $_setString(0, v); }
+  set sendAsset($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasSendTicker() => $_has(0);
+  $core.bool hasSendAsset() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSendTicker() => clearField(1);
+  void clearSendAsset() => clearField(1);
 
   @$pb.TagNumber(2)
-  $core.String get recvTicker => $_getSZ(1);
+  $core.String get recvAsset => $_getSZ(1);
   @$pb.TagNumber(2)
-  set recvTicker($core.String v) { $_setString(1, v); }
+  set recvAsset($core.String v) { $_setString(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasRecvTicker() => $_has(1);
+  $core.bool hasRecvAsset() => $_has(1);
   @$pb.TagNumber(2)
-  void clearRecvTicker() => clearField(2);
+  void clearRecvAsset() => clearField(2);
 
   @$pb.TagNumber(5)
   $core.String get pegAddr => $_getSZ(2);

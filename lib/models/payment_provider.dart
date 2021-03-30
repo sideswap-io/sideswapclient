@@ -62,8 +62,8 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void selectPaymentSend(String address, String amount, String ticker) {
-    read(walletProvider).selectedWalletAsset = ticker;
+  void selectPaymentSend(String address, String amount, String assetId) {
+    read(walletProvider).selectedWalletAsset = assetId;
     if (!read(walletProvider).isAddrValid(address, AddrType.elements)) {
       logger.e('Invalid address $address');
       return;
@@ -89,7 +89,7 @@ class PaymentProvider with ChangeNotifier {
     msg.createTx.addr = sendAddrParsed;
     msg.createTx.balance = Balance();
     msg.createTx.balance.amount = Int64(sendAmountParsed);
-    msg.createTx.balance.ticker = read(walletProvider).selectedWalletAsset;
+    msg.createTx.balance.assetId = read(walletProvider).selectedWalletAsset;
     read(walletProvider).sendMsg(msg);
 
     notifyListeners();

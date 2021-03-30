@@ -61,7 +61,7 @@ class PaymentSendPopup extends StatelessWidget {
                     amountStr(watch(paymentProvider).sendAmountParsed));
                 amount ??= .0;
                 _dollarConversion = watch(walletProvider)
-                    .getAmountUsd(asset.ticker, amount)
+                    .getAmountUsd(asset.assetId, amount)
                     .toStringAsFixed(2);
 
                 _dollarConversion = replaceCharacterOnPosition(
@@ -80,67 +80,82 @@ class PaymentSendPopup extends StatelessWidget {
               },
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 8.h),
-            child: FDottedLine(
-              color: Color(0xFF2B6F95),
-              width: double.infinity,
-              dottedLength: 1.0,
-              space: 0.0,
+          Flexible(
+            child: Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: FDottedLine(
+                color: Color(0xFF2B6F95),
+                width: double.infinity,
+                dottedLength: 1.0,
+                space: 0.0,
+              ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 16.h),
-            child: Consumer(
-              builder: (context, watch, child) => TxDetailsColumn(
-                description: 'To'.tr(),
-                details: watch(paymentProvider).sendAddrParsed,
-                detailsStyle: GoogleFonts.roboto(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.white,
+          Flexible(
+            flex: 3,
+            child: Padding(
+              padding: EdgeInsets.only(top: 16.h),
+              child: Consumer(
+                builder: (context, watch, child) => TxDetailsColumn(
+                  description: 'To'.tr(),
+                  details: watch(paymentProvider).sendAddrParsed,
+                  detailsStyle: GoogleFonts.roboto(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 16.h),
-            child: FDottedLine(
-              color: Color(0xFF2B6F95),
-              width: double.infinity,
-              dottedLength: 1.0,
-              space: 0.0,
+          Flexible(
+            child: Padding(
+              padding: EdgeInsets.only(top: 16.h),
+              child: FDottedLine(
+                color: Color(0xFF2B6F95),
+                width: double.infinity,
+                dottedLength: 1.0,
+                space: 0.0,
+              ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 20.h),
-            child: Consumer(
-              builder: (context, watch, child) => TxDetailsColumn(
-                description: 'Network Fee'.tr(),
-                details:
-                    '${amountStr(watch(paymentProvider).sendNetworkFee)} $kLiquidBitcoinTicker',
-                detailsStyle: GoogleFonts.roboto(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.white,
+          Flexible(
+            flex: 2,
+            child: Padding(
+              padding: EdgeInsets.only(top: 20.h),
+              child: Consumer(
+                builder: (context, watch, child) => TxDetailsColumn(
+                  description: 'Network Fee'.tr(),
+                  details:
+                      '${amountStr(watch(paymentProvider).sendNetworkFee)} $kLiquidBitcoinTicker',
+                  detailsStyle: GoogleFonts.roboto(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 16.h),
-            child: FDottedLine(
-              color: Color(0xFF2B6F95),
-              width: double.infinity,
-              dottedLength: 1.0,
-              space: 0.0,
+          Flexible(
+            child: Padding(
+              padding: EdgeInsets.only(top: 16.h),
+              child: FDottedLine(
+                color: Color(0xFF2B6F95),
+                width: double.infinity,
+                dottedLength: 1.0,
+                space: 0.0,
+              ),
             ),
           ),
-          Spacer(),
+          Expanded(
+            flex: 6,
+            child: Container(),
+          ),
           Padding(
-            padding: EdgeInsets.only(bottom: 40.h),
+            padding: EdgeInsets.only(top: 40.h, bottom: 40.h),
             child: CustomBigButton(
-              width: double.infinity,
+              width: MediaQuery.of(context).size.width,
               height: 54.h,
               backgroundColor: Color(0xFF00C5FF),
               text: 'SEND'.tr(),

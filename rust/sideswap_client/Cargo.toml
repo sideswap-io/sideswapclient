@@ -12,7 +12,7 @@ sideswap_api = { version = "*", path = "../sideswap_api" }
 sideswap_common = { version = "*", path = "../sideswap_common" }
 sideswap_libwally = { version = "*", path = "../sideswap_libwally" }
 elements = "*"
-bitcoin = "*"
+bitcoin = "0.25"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 log = "*"

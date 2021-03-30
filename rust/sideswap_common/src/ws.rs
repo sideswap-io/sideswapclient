@@ -80,7 +80,7 @@ async fn run(
                     };
                     last_recv_timestamp = Instant::now();
                     match server_msg {
-                        tungstenite::Message::Text(text) => {
+                        async_tungstenite::tungstenite::Message::Text(text) => {
                             let server_msg = serde_json::from_str::<ResponseMessage>(&text);
                             match server_msg {
                                 Ok(v) => {
@@ -91,8 +91,8 @@ async fn run(
                                 }
                             }
                         }
-                        tungstenite::Message::Ping(data) => {
-                            let _ = ws_stream.send(tungstenite::Message::Pong(data)).await;
+                        async_tungstenite::tungstenite::Message::Ping(data) => {
+                            let _ = ws_stream.send(async_tungstenite::tungstenite::Message::Pong(data)).await;
                         }
                         _ => {}
                     }
@@ -106,7 +106,7 @@ async fn run(
                     match client_result {
                         WrappedRequest::Request(req) => {
                             let text = serde_json::to_string(&req).unwrap();
-                            let _ = ws_stream.send(tungstenite::Message::text(&text)).await;
+                            let _ = ws_stream.send(async_tungstenite::tungstenite::Message::text(&text)).await;
                         }
                     }
                 }
@@ -118,7 +118,7 @@ async fn run(
                         break;
                     }
                     if last_recv_duration > PING_PERIOD {
-                        let _ = ws_stream.send(tungstenite::Message::Ping(Vec::new())).await;
+                        let _ = ws_stream.send(async_tungstenite::tungstenite::Message::Ping(Vec::new())).await;
                     }
                 }
             }

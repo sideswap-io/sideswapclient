@@ -8,7 +8,16 @@ import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
+enum LicenseNextStep {
+  createWallet,
+  importWallet,
+}
+
 class LicenseTerms extends StatelessWidget {
+  final LicenseNextStep nextStep;
+
+  const LicenseTerms({Key key, @required this.nextStep}) : super(key: key);
+
   Future<String> loadLicense() async {
     return await rootBundle.loadString('LICENSE');
   }
@@ -44,25 +53,21 @@ class LicenseTerms extends StatelessWidget {
                     shadowColor: Color(0xFF1E6389),
                     child: Container(
                       height: 421.h,
+                      width: MediaQuery.of(context).size.width,
                       child: Padding(
                         padding: EdgeInsets.only(
-                            left: 16.w, right: 8.w, top: 8.w, bottom: 8.w),
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 8.w),
-                          child: Wrap(
-                            direction: Axis.horizontal,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              Text(
-                                snapshot.data as String,
-                                textScaleFactor: 0.89,
-                                style: GoogleFonts.roboto(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
+                            left: 8.w, right: 8.w, top: 8.w, bottom: 8.w),
+                        child: SingleChildScrollView(
+                          child: Center(
+                            child: Text(
+                              snapshot.data as String,
+                              textScaleFactor: 1.03,
+                              style: GoogleFonts.robotoMono(
+                                fontSize: 8.sp,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -86,9 +91,16 @@ class LicenseTerms extends StatelessWidget {
                     backgroundColor: Color(0xFF00C5FF),
                     onPressed: () async {
                       await context.read(walletProvider).setLicenseAccepted();
-                      await context
-                          .read(walletProvider)
-                          .newWalletBiometricPrompt();
+                      if (nextStep == LicenseNextStep.createWallet) {
+                        await context
+                            .read(walletProvider)
+                            .newWalletBiometricPrompt();
+                        return;
+                      }
+
+                      if (nextStep == LicenseNextStep.importWallet) {
+                        context.read(walletProvider).startMnemonicImport();
+                      }
                     },
                   ),
                 ),

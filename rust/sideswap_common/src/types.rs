@@ -161,19 +161,19 @@ pub fn check_assets(env: Env, assets: &sideswap_api::Assets) {
 
     let bitcoin_asset = assets
         .iter()
-        .find(|asset| asset.ticker == sideswap_api::TICKER_LBTC)
+        .find(|asset| asset.ticker.0 == sideswap_api::TICKER_LBTC)
         .expect("can't find bitcoin ticker");
     assert!(
-        bitcoin_asset.asset_id
+        bitcoin_asset.asset_id.0
             == known_asset_id(mainnet, &sideswap_api::TICKER_LBTC).expect("can't find L-BTC")
     );
 
     assets
         .iter()
-        .find(|asset| asset.ticker == sideswap_api::TICKER_USDT)
+        .find(|asset| asset.ticker.0 == sideswap_api::TICKER_USDT)
         .map(|asset| {
             assert!(
-                asset.asset_id
+                asset.asset_id.0
                     == known_asset_id(mainnet, &sideswap_api::TICKER_USDT)
                         .expect("can't find L-BTC")
             );

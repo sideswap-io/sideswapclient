@@ -65,14 +65,14 @@ class MnemonicTable extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
-                        Flexible(
-                          flex: 1,
-                          child: Padding(
-                            padding: EdgeInsets.only(left: 8.w),
+                        Padding(
+                          padding: EdgeInsets.only(left: 6.w),
+                          child: Container(
+                            width: 16.w,
                             child: Text(
                               '${index + 1}',
                               style: GoogleFonts.roboto(
-                                fontSize: 14.sp,
+                                fontSize: 13.sp,
                                 fontWeight: FontWeight.normal,
                                 color: Color(0xFF00C5FF),
                               ),
@@ -80,12 +80,9 @@ class MnemonicTable extends StatelessWidget {
                           ),
                         ),
                         Flexible(
-                          flex: 3,
                           child: Padding(
-                            padding:
-                                EdgeInsets.only(left: index > 8 ? 4.w : 8.w),
+                            padding: EdgeInsets.only(left: 3.w),
                             child: Container(
-                              width: _itemWidth - 31.w,
                               child: ValueListenableBuilder(
                                 valueListenable: words[index],
                                 builder: (_, String __, ___) => Text(
@@ -94,7 +91,7 @@ class MnemonicTable extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
                                   style: GoogleFonts.roboto(
-                                    fontSize: 14.sp,
+                                    fontSize: 13.sp,
                                     fontWeight: FontWeight.normal,
                                     color: Colors.white,
                                   ),

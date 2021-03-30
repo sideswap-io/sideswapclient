@@ -26,9 +26,9 @@ class AssetDetailsHeader extends ConsumerWidget {
         children: [
           Consumer(
             builder: (context, watch, child) {
-              final asset = watch(walletProvider).assets[
-                  watch(walletProvider).selectedWalletAsset ??
-                      kLiquidBitcoinTicker];
+              final wallet = watch(walletProvider);
+              final asset = wallet
+                  .assets[wallet.selectedWalletAsset ?? wallet.liquidAssetId()];
               return Text(
                 asset.name,
                 style: GoogleFonts.roboto(
@@ -43,12 +43,11 @@ class AssetDetailsHeader extends ConsumerWidget {
             padding: EdgeInsets.only(top: 8.h),
             child: Consumer(
               builder: (context, watch, child) {
-                final balance = watch(walletProvider).balances[
-                    watch(walletProvider).selectedWalletAsset ??
-                        kLiquidBitcoinTicker];
-                final asset = watch(walletProvider).assets[
-                    watch(walletProvider).selectedWalletAsset ??
-                        kLiquidBitcoinTicker];
+                final wallet = watch(walletProvider);
+                final balance = wallet.balances[
+                    wallet.selectedWalletAsset ?? wallet.liquidAssetId()];
+                final asset = wallet.assets[
+                    wallet.selectedWalletAsset ?? wallet.liquidAssetId()];
 
                 final ticker = asset.ticker ?? kLiquidBitcoinTicker;
                 final balanceStr = '${amountStr(balance ?? 0)} $ticker';
@@ -67,17 +66,15 @@ class AssetDetailsHeader extends ConsumerWidget {
             padding: EdgeInsets.only(top: 4.h),
             child: Consumer(
               builder: (context, watch, child) {
-                final asset = watch(walletProvider).assets[
-                    watch(walletProvider).selectedWalletAsset ??
-                        kLiquidBitcoinTicker];
-                final balance = double.tryParse(amountStr(
-                        watch(walletProvider).balances[
-                                watch(walletProvider).selectedWalletAsset ??
-                                    kLiquidBitcoinTicker] ??
-                            0)) ??
+                final wallet = watch(walletProvider);
+                final asset = wallet.assets[
+                    wallet.selectedWalletAsset ?? wallet.liquidAssetId()];
+                final balance = double.tryParse(amountStr(wallet.balances[
+                            wallet.selectedWalletAsset ??
+                                wallet.liquidAssetId()] ??
+                        0)) ??
                     .0;
-                final amountUsd =
-                    watch(walletProvider).getAmountUsd(asset.ticker, balance);
+                final amountUsd = wallet.getAmountUsd(asset.assetId, balance);
                 _dollarConversion = amountUsd.toStringAsFixed(2);
                 _dollarConversion = replaceCharacterOnPosition(
                     input: _dollarConversion, currencyChar: '\$');

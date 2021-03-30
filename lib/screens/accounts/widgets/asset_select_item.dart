@@ -25,7 +25,7 @@ class AssetSelectItem extends StatelessWidget {
             onTap: () async {
               await context
                   .read(walletProvider)
-                  .toggleAssetVisibility(asset.ticker);
+                  .toggleAssetVisibility(asset.assetId);
             },
             child: AbsorbPointer(
               child: Padding(
@@ -40,7 +40,7 @@ class AssetSelectItem extends StatelessWidget {
                           return Container(
                             width: 45.w,
                             height: 45.w,
-                            child: _assetImagesBig[asset.ticker],
+                            child: _assetImagesBig[asset.assetId],
                           );
                         },
                       ),
@@ -78,8 +78,8 @@ class AssetSelectItem extends StatelessWidget {
                       Consumer(
                         builder: (context, watch, child) {
                           final _selected = watch(configProvider)
-                              .disabledAssetTickers
-                              .contains(asset.ticker);
+                              .disabledAssetIds
+                              .contains(asset.assetId);
                           return FlutterSwitch(
                             value: !_selected,
                             onToggle: (val) {},

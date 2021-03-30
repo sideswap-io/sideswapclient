@@ -5,19 +5,24 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
+import 'package:sideswap/models/wallet.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class TxItemPeg extends StatelessWidget {
-  TxItemPeg({Key key, this.transItem, this.ticker}) : super(key: key);
+  TxItemPeg({Key key, this.transItem, this.assetId}) : super(key: key);
 
   final TransItem transItem;
-  final String ticker;
+  final String assetId;
 
   static final double itemHeight = 46.h;
 
   @override
   Widget build(BuildContext context) {
     final _status = txItemToStatus(transItem);
-    final payout = amountStrNamed(transItem.peg.amountRecv.toInt(), ticker);
+    final wallet = context.read(walletProvider);
+    final asset = wallet.getAssetById(assetId);
+    final payout =
+        amountStrNamed(transItem.peg.amountRecv.toInt(), asset.ticker);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,

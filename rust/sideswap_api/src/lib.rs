@@ -26,6 +26,12 @@ pub fn get_os_type() -> i32 {
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct OrderId(pub String);
 
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct AssetId(pub String);
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct Ticker(pub String);
+
 impl std::fmt::Display for OrderId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
@@ -34,9 +40,9 @@ impl std::fmt::Display for OrderId {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct Asset {
-    pub asset_id: String,
+    pub asset_id: AssetId,
     pub name: String,
-    pub ticker: String,
+    pub ticker: Ticker,
     pub icon: String, // PNG in base64
     pub precision: u8,
 }
@@ -89,9 +95,9 @@ pub struct SwapStatusRequest {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Swap {
-    pub send_asset: String,
+    pub send_asset: AssetId,
     pub send_amount: i64,
-    pub recv_asset: String,
+    pub recv_asset: AssetId,
     pub recv_amount: i64,
     pub network_fee: i64,
 }
@@ -135,9 +141,9 @@ pub struct SwapNotification {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct MatchRfq {
-    pub send_asset: String,
+    pub send_asset: AssetId,
     pub send_amount: i64,
-    pub recv_asset: String,
+    pub recv_asset: AssetId,
     pub utxo_count: i32,
     pub with_change: bool,
 }
@@ -192,18 +198,18 @@ pub struct PricePair {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PriceUpdateBroadcast {
-    pub asset: String,
+    pub asset: AssetId,
     pub price: PricePair,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PriceUpdateSubscribe {
-    pub asset: String,
+    pub asset: AssetId,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PriceUpdateNotification {
-    pub asset: String,
+    pub asset: AssetId,
     pub price: PricePair,
 }
 

@@ -9,7 +9,7 @@ message Address {
 }
 
 message Balance {
-  required string ticker = 1;
+  required string asset_id = 1;
   required int64 amount = 2;
 }
 
@@ -68,8 +68,8 @@ message To {
   }
 
   message SwapRequest {
-    required string send_ticker = 2;
-    required string recv_ticker = 3;
+    required string send_asset = 2;
+    required string recv_asset = 3;
     required int64 send_amount = 4;
   }
 
@@ -118,8 +118,8 @@ message From {
   }
 
   message SwapReview {
-    required string send_ticker = 1;
-    required string recv_ticker = 2;
+    required string send_asset = 1;
+    required string recv_asset = 2;
     required int64 send_amount = 3;
     optional int64 recv_amount = 4;
     optional int64 network_fee = 5;
@@ -127,8 +127,8 @@ message From {
   }
 
   message SwapWaitTx {
-    required string send_ticker = 1;
-    required string recv_ticker = 2;
+    required string send_asset = 1;
+    required string recv_asset = 2;
     //required int64 send_amount = 3;
     //required int64 recv_amount = 4;
     required string peg_addr = 5;

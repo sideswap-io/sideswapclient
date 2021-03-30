@@ -139,41 +139,41 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   // Functions //
 
   List<String> swapSendAssets() {
+    final wallet = read(walletProvider);
     if (swapPeg) {
-      return [kBitcoinTicker, kLiquidBitcoinTicker];
+      return [wallet.bitcoinAssetId(), wallet.liquidAssetId()];
     }
-    return read(walletProvider)
-        .assets
-        .keys
-        .where((element) => element != kBitcoinTicker)
+    return wallet.assets.keys
+        .where((element) => element != wallet.bitcoinAssetId())
         .toList();
   }
 
   List<String> swapRecvAssets() {
+    final wallet = read(walletProvider);
     if (swapPeg) {
-      if (swapSendAsset == kLiquidBitcoinTicker) {
-        return [kBitcoinTicker];
+      if (swapSendAsset == wallet.liquidAssetId()) {
+        return [wallet.bitcoinAssetId()];
       }
-      return [kLiquidBitcoinTicker];
+      return [wallet.liquidAssetId()];
     }
-    if (swapSendAsset != kLiquidBitcoinTicker) {
-      return [kLiquidBitcoinTicker];
+    if (swapSendAsset != wallet.liquidAssetId()) {
+      return [wallet.liquidAssetId()];
     }
-    return read(walletProvider)
-        .assets
-        .keys
+    return wallet.assets.keys
         .where((element) =>
-            element != kLiquidBitcoinTicker && element != kBitcoinTicker)
+            element != wallet.liquidAssetId() &&
+            element != wallet.bitcoinAssetId())
         .toList();
   }
 
   SwapType swapType() {
-    if (swapSendAsset == kBitcoinTicker &&
-        swapRecvAsset == kLiquidBitcoinTicker) {
+    final wallet = read(walletProvider);
+    if (swapSendAsset == wallet.bitcoinAssetId() &&
+        swapRecvAsset == wallet.liquidAssetId()) {
       return SwapType.pegIn;
     }
-    if (swapSendAsset == kLiquidBitcoinTicker &&
-        swapRecvAsset == kBitcoinTicker) {
+    if (swapSendAsset == wallet.liquidAssetId() &&
+        swapRecvAsset == wallet.bitcoinAssetId()) {
       return SwapType.pegOut;
     }
     return SwapType.atomic;
@@ -249,20 +249,21 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     swapActive = true;
     final msg = To();
     msg.swapRequest = To_SwapRequest();
-    msg.swapRequest.sendTicker = swapSendAsset;
-    msg.swapRequest.recvTicker = swapRecvAsset;
+    msg.swapRequest.sendAsset = swapSendAsset;
+    msg.swapRequest.recvAsset = swapRecvAsset;
     msg.swapRequest.sendAmount = Int64(amount);
     read(walletProvider).sendMsg(msg);
   }
 
   void checkSelectedAsset() {
-    if (read(walletProvider).assets.length < 3) {
+    final wallet = read(walletProvider);
+    if (wallet.assets.length < 3) {
       return;
     }
     if (swapSendAsset == null) {
       swapPeg = false;
-      swapSendAsset = kLiquidBitcoinTicker;
-      swapRecvAsset = kTetherTicker;
+      swapSendAsset = wallet.liquidAssetId();
+      swapRecvAsset = wallet.tetherAssetId();
     }
     final sendAssetsAllowed = swapSendAssets();
     if (!sendAssetsAllowed.contains(swapSendAsset)) {
@@ -282,17 +283,17 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
   }
 
-  void setSelectedLeftAsset(String ticker) {
+  void setSelectedLeftAsset(String asset) {
     swapReset();
-    swapSendAsset = ticker;
+    swapSendAsset = asset;
     didAssetReplaced = true;
     checkSelectedAsset();
     notifyListeners();
   }
 
-  void setSelectedRightAsset(String ticker) {
+  void setSelectedRightAsset(String asset) {
     swapReset();
-    swapRecvAsset = ticker;
+    swapRecvAsset = asset;
     didAssetReplaced = true;
     checkSelectedAsset();
     notifyListeners();
@@ -456,7 +457,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
           ),
           child: ShowPegInfoWidget(
             text:
-                'Larger peg-In transactions may need 102 confirmations before your L-BTC are released'
+                'Larger peg-In transactions may need 102 confirmations before your L-BTC are released.'
                     .tr(),
             onChanged: (value) {
               prefs.setBool(hidePegInInfo, value);
@@ -483,7 +484,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
           ),
           child: ShowPegInfoWidget(
             text:
-                'Peg-Outs will be supported once our Peg-out Authorization Key is activated by Blockstream'
+                'Peg-Outs will be supported once our Peg-out Authorization Key is activated by the Liquid Federation.'
                     .tr(),
             onChanged: (value) {
               prefs.setBool(hidePegOutInfo, value);

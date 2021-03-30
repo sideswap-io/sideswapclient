@@ -213,15 +213,15 @@ fn main() {
                         .expect("sell_asset must be known");
                     info!(
                         "new RFQ received, order_id: {}, dealer deleiver: {}, dealer receive: {}",
-                        &rfq.order_id, &rfq_recv_asset.ticker, &ref_send_asset.ticker
+                        &rfq.order_id, &rfq_recv_asset.ticker.0, &ref_send_asset.ticker.0
                     );
 
                     assert!(
-                        rfq_recv_asset.ticker == TICKER_LBTC
-                            || ref_send_asset.ticker == TICKER_LBTC
+                        rfq_recv_asset.ticker.0 == TICKER_LBTC
+                            || ref_send_asset.ticker.0 == TICKER_LBTC
                     );
 
-                    let dealer_send_bitcoin = rfq_recv_asset.ticker == TICKER_LBTC;
+                    let dealer_send_bitcoin = rfq_recv_asset.ticker.0 == TICKER_LBTC;
                     let other_asset = if dealer_send_bitcoin {
                         ref_send_asset
                     } else {
@@ -260,7 +260,7 @@ fn main() {
                     let available_utxos: Vec<i64> = utxos
                         .values()
                         .filter(|utxo| {
-                            utxo.item.asset == rfq_recv_asset.asset_id && utxo.reserve.is_none()
+                            utxo.item.asset == rfq_recv_asset.asset_id.0 && utxo.reserve.is_none()
                         })
                         .map(|utxo| utxo.amount)
                         .collect();
@@ -299,7 +299,7 @@ fn main() {
                         let utxo = utxos
                             .values_mut()
                             .find(|utxo| {
-                                utxo.item.asset == rfq_recv_asset.asset_id
+                                utxo.item.asset == rfq_recv_asset.asset_id.0
                                     && utxo.reserve.is_none()
                                     && utxo.amount == amount
                             })
@@ -312,7 +312,7 @@ fn main() {
                         ActiveSwap {
                             proposal: proposal.to_sat(),
                             change_amount,
-                            sell_asset: rfq_recv_asset.asset_id.clone(),
+                            sell_asset: rfq_recv_asset.asset_id.0.clone(),
                             swap: None,
                         },
                     );
@@ -328,7 +328,7 @@ fn main() {
                     let active_swap = swaps.get_mut(&swap.order_id).expect("swap must exists");
                     match &swap.state {
                         SwapState::WaitPsbt(psbt) => {
-                            assert!(psbt.send_asset == active_swap.sell_asset);
+                            assert!(psbt.send_asset.0 == active_swap.sell_asset);
                             assert!(psbt.send_amount == active_swap.proposal);
                             active_swap.swap = Some(psbt.clone());
                             let sw = active_swap.swap.as_ref().expect("swap must be set");
@@ -352,7 +352,7 @@ fn main() {
                                 new_address.clone(),
                                 Amount::from_sat(sw.recv_amount).to_rpc(),
                             );
-                            outputs_assets.insert(new_address.clone(), sw.recv_asset.clone());
+                            outputs_assets.insert(new_address.clone(), sw.recv_asset.0.clone());
 
                             if active_swap.change_amount > 0 {
                                 let change_address = rpc::make_rpc_call::<String>(

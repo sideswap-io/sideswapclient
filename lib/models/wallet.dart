@@ -30,7 +30,8 @@ import 'package:package_info/package_info.dart';
 
 enum Status {
   loading,
-  reviewLicense,
+  reviewLicenseCreateWallet,
+  reviewLicenseImportWallet,
   noWallet,
   selectEnv,
   lockedWalet,
@@ -126,7 +127,7 @@ class WalletChangeNotifier with ChangeNotifier {
   final _encryption = Encryption();
 
   String _mnemonic;
-  final enabledAssetTickers = <String>[];
+  final enabledAssetIds = <String>[];
 
   GlobalKey<NavigatorState> navigatorKey;
 
@@ -150,7 +151,7 @@ class WalletChangeNotifier with ChangeNotifier {
   Map<int, List<String>> backupCheckAllWords;
   Map<int, int> backupCheckSelectedWords;
 
-  final _assetTickers = <String>[];
+  final _assetIds = <String>[];
   var assets = <String, Asset>{};
   var assetImagesBig = <String, Image>{};
   var assetImagesSmall = <String, Image>{};
@@ -164,7 +165,7 @@ class WalletChangeNotifier with ChangeNotifier {
   var balances = <String, int>{};
 
   // Toggle assets page
-  var filteredToggleTickers = <String>[];
+  var filteredToggleAssetIds = <String>[];
 
   TransItem txDetails;
 
@@ -260,11 +261,11 @@ class WalletChangeNotifier with ChangeNotifier {
     await notificationService.handleDynamicLinks();
   }
 
-  void _addTxItem(TransItem item, String ticker) {
-    if (allAssets[ticker] == null) {
-      allAssets[ticker] = [];
+  void _addTxItem(TransItem item, String assetId) {
+    if (allAssets[assetId] == null) {
+      allAssets[assetId] = [];
     }
-    allAssets[ticker].add(TxItem(item: item));
+    allAssets[assetId].add(TxItem(item: item));
   }
 
   void refreshTxs() {
@@ -274,11 +275,11 @@ class WalletChangeNotifier with ChangeNotifier {
         case TransItem_Item.tx:
           var tx = item.tx;
           for (var balance in tx.balances) {
-            _addTxItem(item, balance.ticker);
+            _addTxItem(item, balance.assetId);
           }
           break;
         case TransItem_Item.peg:
-          _addTxItem(item, kLiquidBitcoinTicker);
+          _addTxItem(item, liquidAssetId());
           break;
         case TransItem_Item.notSet:
           throw Exception('invalid message');
@@ -314,14 +315,15 @@ class WalletChangeNotifier with ChangeNotifier {
         _addAsset(from.newAsset, assetIcon);
         break;
       case From_Msg.balanceUpdate:
-        balances[from.balanceUpdate.ticker] = from.balanceUpdate.amount.toInt();
+        balances[from.balanceUpdate.assetId] =
+            from.balanceUpdate.amount.toInt();
         notifyListeners();
         break;
 
       case From_Msg.swapReview:
         if (read(swapProvider).swapActive) {
-          read(swapProvider).swapSendAsset = from.swapReview.sendTicker;
-          read(swapProvider).swapRecvAsset = from.swapReview.recvTicker;
+          read(swapProvider).swapSendAsset = from.swapReview.sendAsset;
+          read(swapProvider).swapRecvAsset = from.swapReview.recvAsset;
           read(swapProvider).swapSendAmount =
               from.swapReview.sendAmount.toInt();
           read(swapProvider).swapRecvAmount =
@@ -352,8 +354,8 @@ class WalletChangeNotifier with ChangeNotifier {
         read(swapProvider).swapRecvAddressExternal = from.swapWaitTx.recvAddr;
         //read(swapProvider).swapSendAmount = from.swapWaitTx.sendAmount.toInt();
         //read(swapProvider).swapRecvAmount = from.swapWaitTx.recvAmount.toInt();
-        read(swapProvider).swapSendAsset = from.swapWaitTx.sendTicker;
-        read(swapProvider).swapRecvAsset = from.swapWaitTx.recvTicker;
+        read(swapProvider).swapSendAsset = from.swapWaitTx.sendAsset;
+        read(swapProvider).swapRecvAsset = from.swapWaitTx.recvAsset;
         notifyListeners();
         break;
 
@@ -365,8 +367,8 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.createTxResult:
         switch (from.createTxResult.whichResult()) {
           case From_CreateTxResult_Result.errorMsg:
-            final balance = balances[kLiquidBitcoinTicker];
-            if (selectedWalletAsset != kLiquidBitcoinTicker && balance == 0) {
+            final balance = balances[liquidAssetId()];
+            if (selectedWalletAsset != liquidAssetId() && balance == 0) {
               showInsufficientBalanceDialog(
                   navigatorKey.currentContext, kLiquidBitcoinTicker);
             } else {
@@ -421,6 +423,8 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> _addBtcAsset() async {
     final bitcoinAsset = Asset();
     bitcoinAsset.name = 'Bitcoin';
+    bitcoinAsset.assetId =
+        '0000000000000000000000000000000000000000000000000000000000000000';
     bitcoinAsset.ticker = kBitcoinTicker;
     bitcoinAsset.precision = kDefaultPrecision;
     final icon = await BitmapHelper.getPngBufferFromSvgAsset(
@@ -429,26 +433,35 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _addAsset(Asset asset, Uint8List assetIcon) {
-    if (assets[asset.ticker] == null) {
-      _assetTickers.add(asset.ticker);
-      assets[asset.ticker] = asset;
-      assetImagesBig[asset.ticker] = Image.memory(
+    if (assets[asset.assetId] == null) {
+      _assetIds.add(asset.assetId);
+      assets[asset.assetId] = asset;
+      assetImagesBig[asset.assetId] = Image.memory(
         assetIcon,
         width: 75,
         height: 75,
         filterQuality: FilterQuality.high,
       );
-      assetImagesSmall[asset.ticker] = Image.memory(
+      assetImagesSmall[asset.assetId] = Image.memory(
         assetIcon,
         width: 32,
         height: 32,
         filterQuality: FilterQuality.high,
       );
+      if (asset.ticker == kLiquidBitcoinTicker) {
+        _liquidAssetId = asset.assetId;
+      }
+      if (asset.ticker == kBitcoinTicker) {
+        _bitcoinAssetId = asset.assetId;
+      }
+      if (asset.ticker == kTetherTicker) {
+        _tetherAssetId = asset.assetId;
+      }
       updateEnabledAssetIds();
     }
     // Make sure we don't have null values
-    if (balances[asset.ticker] == null) {
-      balances[asset.ticker] = 0;
+    if (balances[asset.assetId] == null) {
+      balances[asset.assetId] = 0;
     }
     read(swapProvider).checkSelectedAsset();
     notifyListeners();
@@ -479,21 +492,35 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void updateEnabledAssetIds() {
-    enabledAssetTickers.clear();
-    for (var ticker in _assetTickers) {
-      if (!read(configProvider).disabledAssetTickers.contains(ticker) &&
-          ticker != kBitcoinTicker) {
-        enabledAssetTickers.add(ticker);
+    enabledAssetIds.clear();
+    for (var assetId in _assetIds) {
+      if (!read(configProvider).disabledAssetIds.contains(assetId) &&
+          assetId != bitcoinAssetId()) {
+        enabledAssetIds.add(assetId);
       }
     }
+    notifyListeners();
   }
 
   List<String> getMnemonicWords() {
     return _mnemonic?.split(' ');
   }
 
-  void selectLicenseAccepted() {
-    status = Status.reviewLicense;
+  void setReviewLicenseCreateWallet() {
+    if (read(configProvider).licenseAccepted) {
+      newWalletBiometricPrompt();
+    } else {
+      status = Status.reviewLicenseCreateWallet;
+    }
+    notifyListeners();
+  }
+
+  void setReviewLicenseImportWallet() {
+    if (read(configProvider).licenseAccepted) {
+      startMnemonicImport();
+    } else {
+      status = Status.reviewLicenseImportWallet;
+    }
     notifyListeners();
   }
 
@@ -524,7 +551,8 @@ class WalletChangeNotifier with ChangeNotifier {
   void startMnemonicImport() {
     assert(status == Status.noWallet ||
         status == Status.importWallet ||
-        status == Status.importWalletError);
+        status == Status.importWalletError ||
+        status == Status.reviewLicenseImportWallet);
     status = Status.importWallet;
     notifyListeners();
   }
@@ -662,6 +690,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.importWalletSuccess:
       case Status.importWallet:
       case Status.selectEnv:
+      case Status.reviewLicenseImportWallet:
         status = Status.noWallet;
         break;
       case Status.assetsSelect:
@@ -718,8 +747,6 @@ class WalletChangeNotifier with ChangeNotifier {
         status = Status.newWalletBackupPrompt;
         break;
       case Status.newWalletBiometricPrompt:
-        status = Status.reviewLicense;
-        break;
       case Status.importWalletBiometricPrompt:
         // don't use Status.importWallet here as it breaks text fields
         // user will need to start over
@@ -728,7 +755,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.newWalletBackupPrompt:
         status = Status.newWalletBiometricPrompt;
         break;
-      case Status.reviewLicense:
+      case Status.reviewLicenseCreateWallet:
         status = Status.noWallet;
         break;
 
@@ -907,26 +934,26 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void setToggleAssetFilter(String filter) {
     final filterLowerCase = filter.toLowerCase();
-    final filteredToggleTickersNew = <String>[];
-    for (var ticker in _assetTickers) {
-      if (_showAsset(assets[ticker], filterLowerCase)) {
-        filteredToggleTickersNew.add(ticker);
+    final filteredToggleAssetIdsNew = <String>[];
+    for (var assetId in _assetIds) {
+      if (_showAsset(assets[assetId], filterLowerCase)) {
+        filteredToggleAssetIdsNew.add(assetId);
       }
     }
-    if (!listEquals(filteredToggleTickersNew, filteredToggleTickers)) {
-      filteredToggleTickers = filteredToggleTickersNew;
+    if (!listEquals(filteredToggleAssetIdsNew, filteredToggleAssetIds)) {
+      filteredToggleAssetIds = filteredToggleAssetIdsNew;
       notifyListeners();
     }
   }
 
-  Future<void> toggleAssetVisibility(String ticker) async {
-    final disableAssetTickers = read(configProvider).disabledAssetTickers;
-    if (disableAssetTickers.contains(ticker)) {
-      disableAssetTickers.remove(ticker);
+  Future<void> toggleAssetVisibility(String assetId) async {
+    final disableAssetIds = read(configProvider).disabledAssetIds;
+    if (disableAssetIds.contains(assetId)) {
+      disableAssetIds.remove(assetId);
     } else {
-      disableAssetTickers.add(ticker);
+      disableAssetIds.add(assetId);
     }
-    await read(configProvider).setDisabledAssetTickers(disableAssetTickers);
+    await read(configProvider).setDisabledAssetIds(disableAssetIds);
     updateEnabledAssetIds();
     notifyListeners();
   }
@@ -1161,31 +1188,68 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  double getPriceBitcoin(String ticker) {
-    if (ticker == kLiquidBitcoinTicker) {
+  double _getPriceBitcoin(String assetId) {
+    if (assetId == liquidAssetId()) {
       return 1;
     }
-    final price = _prices[ticker];
+    final price = _prices[assetId];
     if (price == null) {
       return 0;
     }
     return (price.bid + price.ask) / 2;
   }
 
-  double getPrice(String num, String den) {
-    final priceNum = getPriceBitcoin(num);
-    final priceDen = getPriceBitcoin(den);
+  double _getPrice(String num, String den) {
+    final priceNum = _getPriceBitcoin(num);
+    final priceDen = _getPriceBitcoin(den);
     if (priceDen == 0 || priceNum == 0) {
       return 0;
     }
     return priceNum / priceDen;
   }
 
-  double getPriceUsd(String den) {
-    return getPrice(kTetherTicker, den);
+  double _getPriceUsd(String den) {
+    return _getPrice(tetherAssetId(), den);
   }
 
-  double getAmountUsd(String den, double amount) {
-    return amount * getPriceUsd(den);
+  double getAmountUsd(String assetId, double amount) {
+    return amount * _getPriceUsd(assetId);
+  }
+
+  Asset getAssetByTicker(String ticker) {
+    for (var asset in assets.values) {
+      if (asset.ticker == ticker) {
+        return asset;
+      }
+    }
+    return null;
+  }
+
+  Asset getAssetById(String assetId) {
+    for (var asset in assets.values) {
+      if (asset.assetId == assetId) {
+        return asset;
+      }
+    }
+    return null;
+  }
+
+  String _liquidAssetId;
+  String liquidAssetId() {
+    return _liquidAssetId;
+  }
+
+  String _bitcoinAssetId;
+  String bitcoinAssetId() {
+    return _bitcoinAssetId;
+  }
+
+  String _tetherAssetId;
+  String tetherAssetId() {
+    return _tetherAssetId;
+  }
+
+  List<String> sendAssets() {
+    return assets.keys.where((element) => element != bitcoinAssetId()).toList();
   }
 }

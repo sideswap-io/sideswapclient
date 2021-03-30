@@ -1180,9 +1180,23 @@ impl Syncer {
                                 vout,
                             };
 
-                            match self.try_unblind(outpoint, output.clone()) {
-                                Ok(unblinded) => unblinds.push((outpoint, unblinded)),
-                                Err(_) => info!("{} cannot unblind, ignoring (could be sender messed up with the blinding process)", outpoint),
+                            match (output.asset, output.value) {
+                                (confidential::Asset::Explicit(asset), confidential::Value::Explicit(amount)) => {
+                                    unblinds.push((outpoint, Unblinded {
+                                        asset: asset.into_inner().0,
+                                        abf: [0; 32],
+                                        vbf: [0; 32],
+                                        value: amount,
+                                    }));
+                                }
+                                _ => {
+                                    match self.try_unblind(outpoint, output.clone()) {
+                                        Ok(unblinded) => {
+                                            unblinds.push((outpoint, unblinded));
+                                        },
+                                        Err(_) => info!("{} cannot unblind, ignoring (could be sender messed up with the blinding process)", outpoint),
+                                    }
+                                },
                             }
                         }
                     }

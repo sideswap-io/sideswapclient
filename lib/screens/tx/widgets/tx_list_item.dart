@@ -9,9 +9,9 @@ import 'package:sideswap/screens/tx/widgets/tx_item_peg.dart';
 import 'package:sideswap/screens/tx/widgets/tx_item_transaction.dart';
 
 class TxListItem extends StatelessWidget {
-  final String ticker;
+  final String assetId;
   final TxItem txItem;
-  TxListItem({this.ticker, this.txItem});
+  TxListItem({this.assetId, this.txItem});
 
   static final itemHeight = 46.h;
   static final itemWithDateHeight = 95.h;
@@ -38,11 +38,11 @@ class TxListItem extends StatelessWidget {
                   },
                   child: txItem.item.whichItem() == TransItem_Item.tx
                       ? TxItemTransaction(
-                          ticker: ticker,
+                          assetId: assetId,
                           transItem: txItem.item,
                         )
                       : TxItemPeg(
-                          ticker: ticker,
+                          assetId: assetId,
                           transItem: txItem.item,
                         ),
                 ),

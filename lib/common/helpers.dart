@@ -14,6 +14,7 @@ const int kDefaultPrecision = 8;
 const String kBitcoinTicker = 'BTC';
 const String kLiquidBitcoinTicker = 'L-BTC';
 const String kTetherTicker = 'USDt';
+const String kUnknownTicker = '???';
 
 String amountStr(int amount, {bool forceSign = false}) {
   if (amount == null) {
@@ -125,7 +126,7 @@ void setMaxAmount(TextEditingController controller, int amount) {
 
 Future<void> pasteFromClipboard(TextEditingController controller) async {
   final value = await Clipboard.getData(Clipboard.kTextPlain);
-  if (value.text != null) {
+  if (value?.text != null) {
     var text = value.text.replaceAll('\n', '');
     text = text.replaceAll(' ', '');
     setValue(controller, text);

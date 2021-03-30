@@ -108,8 +108,8 @@ class SwapSummary extends StatelessWidget {
         ] else ...[
           ...List<Widget>.generate(balances.length, (index) {
             final balance = balances[index];
-            final asset = context.read(walletProvider).assets[balance.ticker];
-            final ticker = asset != null ? asset.ticker : '???';
+            final asset = context.read(walletProvider).assets[balance.assetId];
+            final ticker = asset != null ? asset.ticker : kUnknownTicker;
             final balanceStr = amountStr(balance.amount.toInt());
             return TxDetailsRow(
               description: 'Amount'.tr(),

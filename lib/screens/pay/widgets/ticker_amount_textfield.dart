@@ -140,7 +140,10 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                                     width: 8.w,
                                   ),
                                   Text(
-                                    widget.dropdownValue,
+                                    context
+                                        .read(walletProvider)
+                                        .getAssetById(widget.dropdownValue)
+                                        .ticker,
                                     style: _dropdownTextStyle,
                                   ),
                                 ],
@@ -156,11 +159,11 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                             children: [
                               if (context
                                       .read(walletProvider)
-                                      .assetImagesSmall[_asset?.ticker] !=
+                                      .assetImagesSmall[_asset?.assetId] !=
                                   null) ...[
                                 context
                                     .read(walletProvider)
-                                    .assetImagesSmall[_asset.ticker],
+                                    .assetImagesSmall[_asset.assetId],
                               ],
                               Container(
                                 width: 8.w,

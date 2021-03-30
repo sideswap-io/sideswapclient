@@ -13,8 +13,9 @@ class TxDetailsPopup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final _transItem = watch(walletProvider).txDetails;
-    final _ticker =
-        watch(walletProvider).selectedWalletAsset ?? kLiquidBitcoinTicker;
+    final wallet = watch(walletProvider);
+    final _ticker = wallet.getAssetById(wallet.selectedWalletAsset)?.ticker ??
+        kLiquidBitcoinTicker;
 
     return SideSwapPopup(
       child: Builder(
@@ -34,24 +35,30 @@ class TxDetailsPopup extends ConsumerWidget {
                   _transItem.tx.balances.firstWhere((e) => e.amount < 0);
               final _balanceReceived =
                   _transItem.tx.balances.firstWhere((e) => e.amount >= 0);
-
               _delivered =
                   '${amountStr(_balanceDelivered.amount.toInt().abs())}';
+
+              final _assetSentTicker =
+                  wallet.getAssetById(_balanceDelivered.assetId)?.ticker ??
+                      kUnknownTicker;
+              final _assetRecvTicker =
+                  wallet.getAssetById(_balanceReceived.assetId)?.ticker ??
+                      kUnknownTicker;
+              '${amountStr(_balanceDelivered.amount.toInt().abs())}';
               _delivered = replaceCharacterOnPosition(
                 input: _delivered,
-                currencyChar: _balanceDelivered.ticker,
+                currencyChar: _assetSentTicker,
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
               _received = '${amountStr(_balanceReceived.amount.toInt())}';
               _received = replaceCharacterOnPosition(
                 input: _received,
-                currencyChar: _balanceReceived.ticker,
+                currencyChar: _assetRecvTicker,
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
 
               final precision = 2;
-              final sentBitcoin =
-                  _balanceDelivered.ticker == kLiquidBitcoinTicker;
+              final sentBitcoin = _assetSentTicker == kLiquidBitcoinTicker;
               final bitcoinAmountFull = (sentBitcoin
                       ? _balanceDelivered.amount
                       : _balanceReceived.amount)
@@ -68,15 +75,14 @@ class TxDetailsPopup extends ConsumerWidget {
                   : bitcoinAmountFull + networkFee;
               final price = assetAmount / bitcoinAmountAjusted;
               _price = price.toStringAsFixed(precision);
-              final assetTicker = sentBitcoin
-                  ? _balanceReceived.ticker
-                  : _balanceDelivered.ticker;
+              final assetTicker =
+                  sentBitcoin ? _assetRecvTicker : _assetSentTicker;
               _price = replaceCharacterOnPosition(
                 input: _price,
                 currencyChar: assetTicker,
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
-              _price = '1 ${_balanceDelivered.ticker} = $_price';
+              _price = '1 ${kLiquidBitcoinTicker} = $_price';
             }
 
             final _balances = _transItem?.tx?.balances;
