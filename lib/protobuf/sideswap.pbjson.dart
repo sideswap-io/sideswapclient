@@ -105,8 +105,10 @@ const To$json = const {
     const {'1': 'swap_cancel', '3': 21, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'swapCancel'},
     const {'1': 'swap_accept', '3': 22, '4': 1, '5': 11, '6': '.sideswap.proto.To.SwapAccept', '9': 0, '10': 'swapAccept'},
     const {'1': 'peg_request', '3': 23, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'pegRequest'},
+    const {'1': 'register_phone', '3': 40, '4': 1, '5': 11, '6': '.sideswap.proto.To.RegisterPhone', '9': 0, '10': 'registerPhone'},
+    const {'1': 'verify_phone', '3': 41, '4': 1, '5': 11, '6': '.sideswap.proto.To.VerifyPhone', '9': 0, '10': 'verifyPhone'},
   ],
-  '3': const [To_Login$json, To_SwapRequest$json, To_SwapAccept$json, To_CreateTx$json, To_SendTx$json, To_SetMemo$json, To_UpdatePushToken$json],
+  '3': const [To_Login$json, To_SwapRequest$json, To_SwapAccept$json, To_CreateTx$json, To_SendTx$json, To_SetMemo$json, To_UpdatePushToken$json, To_RegisterPhone$json, To_VerifyPhone$json],
   '8': const [
     const {'1': 'msg'},
   ],
@@ -165,6 +167,21 @@ const To_UpdatePushToken$json = const {
   ],
 };
 
+const To_RegisterPhone$json = const {
+  '1': 'RegisterPhone',
+  '2': const [
+    const {'1': 'number', '3': 1, '4': 2, '5': 9, '10': 'number'},
+  ],
+};
+
+const To_VerifyPhone$json = const {
+  '1': 'VerifyPhone',
+  '2': const [
+    const {'1': 'phone_key', '3': 1, '4': 2, '5': 9, '10': 'phoneKey'},
+    const {'1': 'code', '3': 2, '4': 2, '5': 9, '10': 'code'},
+  ],
+};
+
 const From$json = const {
   '1': 'From',
   '2': const [
@@ -181,8 +198,10 @@ const From$json = const {
     const {'1': 'recv_address', '3': 30, '4': 1, '5': 11, '6': '.sideswap.proto.Address', '9': 0, '10': 'recvAddress'},
     const {'1': 'create_tx_result', '3': 31, '4': 1, '5': 11, '6': '.sideswap.proto.From.CreateTxResult', '9': 0, '10': 'createTxResult'},
     const {'1': 'send_result', '3': 32, '4': 1, '5': 11, '6': '.sideswap.proto.From.SendResult', '9': 0, '10': 'sendResult'},
+    const {'1': 'register_phone', '3': 40, '4': 1, '5': 11, '6': '.sideswap.proto.From.RegisterPhone', '9': 0, '10': 'registerPhone'},
+    const {'1': 'verify_phone', '3': 41, '4': 1, '5': 11, '6': '.sideswap.proto.From.VerifyPhone', '9': 0, '10': 'verifyPhone'},
   ],
-  '3': const [From_RemovedTx$json, From_SwapReview$json, From_SwapWaitTx$json, From_SwapSucceed$json, From_CreateTxResult$json, From_SendResult$json, From_PriceUpdate$json],
+  '3': const [From_RemovedTx$json, From_SwapReview$json, From_SwapWaitTx$json, From_SwapSucceed$json, From_CreateTxResult$json, From_SendResult$json, From_PriceUpdate$json, From_RegisterPhone$json, From_VerifyPhone$json],
   '8': const [
     const {'1': 'msg'},
   ],
@@ -256,6 +275,28 @@ const From_PriceUpdate$json = const {
     const {'1': 'asset', '3': 1, '4': 2, '5': 9, '10': 'asset'},
     const {'1': 'bid', '3': 2, '4': 2, '5': 1, '10': 'bid'},
     const {'1': 'ask', '3': 3, '4': 2, '5': 1, '10': 'ask'},
+  ],
+};
+
+const From_RegisterPhone$json = const {
+  '1': 'RegisterPhone',
+  '2': const [
+    const {'1': 'phone_key', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'phoneKey'},
+    const {'1': 'error_msg', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'errorMsg'},
+  ],
+  '8': const [
+    const {'1': 'result'},
+  ],
+};
+
+const From_VerifyPhone$json = const {
+  '1': 'VerifyPhone',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'success'},
+    const {'1': 'error_msg', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'errorMsg'},
+  ],
+  '8': const [
+    const {'1': 'result'},
   ],
 };
 

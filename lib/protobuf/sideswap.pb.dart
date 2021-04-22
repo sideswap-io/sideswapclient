@@ -897,6 +897,92 @@ class To_UpdatePushToken extends $pb.GeneratedMessage {
   void clearToken() => clearField(1);
 }
 
+class To_RegisterPhone extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.RegisterPhone', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'number')
+  ;
+
+  To_RegisterPhone._() : super();
+  factory To_RegisterPhone() => create();
+  factory To_RegisterPhone.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_RegisterPhone.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_RegisterPhone clone() => To_RegisterPhone()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_RegisterPhone copyWith(void Function(To_RegisterPhone) updates) => super.copyWith((message) => updates(message as To_RegisterPhone)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_RegisterPhone create() => To_RegisterPhone._();
+  To_RegisterPhone createEmptyInstance() => create();
+  static $pb.PbList<To_RegisterPhone> createRepeated() => $pb.PbList<To_RegisterPhone>();
+  @$core.pragma('dart2js:noInline')
+  static To_RegisterPhone getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_RegisterPhone>(create);
+  static To_RegisterPhone _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get number => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set number($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasNumber() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNumber() => clearField(1);
+}
+
+class To_VerifyPhone extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.VerifyPhone', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneKey')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'code')
+  ;
+
+  To_VerifyPhone._() : super();
+  factory To_VerifyPhone() => create();
+  factory To_VerifyPhone.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_VerifyPhone.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_VerifyPhone clone() => To_VerifyPhone()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_VerifyPhone copyWith(void Function(To_VerifyPhone) updates) => super.copyWith((message) => updates(message as To_VerifyPhone)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_VerifyPhone create() => To_VerifyPhone._();
+  To_VerifyPhone createEmptyInstance() => create();
+  static $pb.PbList<To_VerifyPhone> createRepeated() => $pb.PbList<To_VerifyPhone>();
+  @$core.pragma('dart2js:noInline')
+  static To_VerifyPhone getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_VerifyPhone>(create);
+  static To_VerifyPhone _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get phoneKey => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phoneKey($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhoneKey() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhoneKey() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get code => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set code($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCode() => clearField(2);
+}
+
 enum To_Msg {
   login, 
   logout, 
@@ -909,6 +995,8 @@ enum To_Msg {
   swapCancel, 
   swapAccept, 
   pegRequest, 
+  registerPhone, 
+  verifyPhone, 
   notSet
 }
 
@@ -925,10 +1013,12 @@ class To extends $pb.GeneratedMessage {
     21 : To_Msg.swapCancel,
     22 : To_Msg.swapAccept,
     23 : To_Msg.pegRequest,
+    40 : To_Msg.registerPhone,
+    41 : To_Msg.verifyPhone,
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23])
+    ..oo(0, [1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23, 40, 41])
     ..aOM<To_Login>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
@@ -940,6 +1030,8 @@ class To extends $pb.GeneratedMessage {
     ..aOM<Empty>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapCancel', subBuilder: Empty.create)
     ..aOM<To_SwapAccept>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapAccept', subBuilder: To_SwapAccept.create)
     ..aOM<Empty>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pegRequest', subBuilder: Empty.create)
+    ..aOM<To_RegisterPhone>(40, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registerPhone', subBuilder: To_RegisterPhone.create)
+    ..aOM<To_VerifyPhone>(41, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifyPhone', subBuilder: To_VerifyPhone.create)
   ;
 
   To._() : super();
@@ -1088,6 +1180,28 @@ class To extends $pb.GeneratedMessage {
   void clearPegRequest() => clearField(23);
   @$pb.TagNumber(23)
   Empty ensurePegRequest() => $_ensure(10);
+
+  @$pb.TagNumber(40)
+  To_RegisterPhone get registerPhone => $_getN(11);
+  @$pb.TagNumber(40)
+  set registerPhone(To_RegisterPhone v) { setField(40, v); }
+  @$pb.TagNumber(40)
+  $core.bool hasRegisterPhone() => $_has(11);
+  @$pb.TagNumber(40)
+  void clearRegisterPhone() => clearField(40);
+  @$pb.TagNumber(40)
+  To_RegisterPhone ensureRegisterPhone() => $_ensure(11);
+
+  @$pb.TagNumber(41)
+  To_VerifyPhone get verifyPhone => $_getN(12);
+  @$pb.TagNumber(41)
+  set verifyPhone(To_VerifyPhone v) { setField(41, v); }
+  @$pb.TagNumber(41)
+  $core.bool hasVerifyPhone() => $_has(12);
+  @$pb.TagNumber(41)
+  void clearVerifyPhone() => clearField(41);
+  @$pb.TagNumber(41)
+  To_VerifyPhone ensureVerifyPhone() => $_ensure(12);
 }
 
 class From_RemovedTx extends $pb.GeneratedMessage {
@@ -1549,6 +1663,136 @@ class From_PriceUpdate extends $pb.GeneratedMessage {
   void clearAsk() => clearField(3);
 }
 
+enum From_RegisterPhone_Result {
+  phoneKey, 
+  errorMsg, 
+  notSet
+}
+
+class From_RegisterPhone extends $pb.GeneratedMessage {
+  static const $core.Map<$core.int, From_RegisterPhone_Result> _From_RegisterPhone_ResultByTag = {
+    1 : From_RegisterPhone_Result.phoneKey,
+    2 : From_RegisterPhone_Result.errorMsg,
+    0 : From_RegisterPhone_Result.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.RegisterPhone', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2])
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneKey')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMsg')
+    ..hasRequiredFields = false
+  ;
+
+  From_RegisterPhone._() : super();
+  factory From_RegisterPhone() => create();
+  factory From_RegisterPhone.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_RegisterPhone.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_RegisterPhone clone() => From_RegisterPhone()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_RegisterPhone copyWith(void Function(From_RegisterPhone) updates) => super.copyWith((message) => updates(message as From_RegisterPhone)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_RegisterPhone create() => From_RegisterPhone._();
+  From_RegisterPhone createEmptyInstance() => create();
+  static $pb.PbList<From_RegisterPhone> createRepeated() => $pb.PbList<From_RegisterPhone>();
+  @$core.pragma('dart2js:noInline')
+  static From_RegisterPhone getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_RegisterPhone>(create);
+  static From_RegisterPhone _defaultInstance;
+
+  From_RegisterPhone_Result whichResult() => _From_RegisterPhone_ResultByTag[$_whichOneof(0)];
+  void clearResult() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  $core.String get phoneKey => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phoneKey($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhoneKey() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhoneKey() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorMsg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorMsg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorMsg() => clearField(2);
+}
+
+enum From_VerifyPhone_Result {
+  success, 
+  errorMsg, 
+  notSet
+}
+
+class From_VerifyPhone extends $pb.GeneratedMessage {
+  static const $core.Map<$core.int, From_VerifyPhone_Result> _From_VerifyPhone_ResultByTag = {
+    1 : From_VerifyPhone_Result.success,
+    2 : From_VerifyPhone_Result.errorMsg,
+    0 : From_VerifyPhone_Result.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.VerifyPhone', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2])
+    ..aOM<Empty>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success', subBuilder: Empty.create)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMsg')
+    ..hasRequiredFields = false
+  ;
+
+  From_VerifyPhone._() : super();
+  factory From_VerifyPhone() => create();
+  factory From_VerifyPhone.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_VerifyPhone.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_VerifyPhone clone() => From_VerifyPhone()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_VerifyPhone copyWith(void Function(From_VerifyPhone) updates) => super.copyWith((message) => updates(message as From_VerifyPhone)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_VerifyPhone create() => From_VerifyPhone._();
+  From_VerifyPhone createEmptyInstance() => create();
+  static $pb.PbList<From_VerifyPhone> createRepeated() => $pb.PbList<From_VerifyPhone>();
+  @$core.pragma('dart2js:noInline')
+  static From_VerifyPhone getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_VerifyPhone>(create);
+  static From_VerifyPhone _defaultInstance;
+
+  From_VerifyPhone_Result whichResult() => _From_VerifyPhone_ResultByTag[$_whichOneof(0)];
+  void clearResult() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  Empty get success => $_getN(0);
+  @$pb.TagNumber(1)
+  set success(Empty v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+  @$pb.TagNumber(1)
+  Empty ensureSuccess() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get errorMsg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorMsg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorMsg() => clearField(2);
+}
+
 enum From_Msg {
   updatedTx, 
   removedTx, 
@@ -1563,6 +1807,8 @@ enum From_Msg {
   recvAddress, 
   createTxResult, 
   sendResult, 
+  registerPhone, 
+  verifyPhone, 
   notSet
 }
 
@@ -1581,10 +1827,12 @@ class From extends $pb.GeneratedMessage {
     30 : From_Msg.recvAddress,
     31 : From_Msg.createTxResult,
     32 : From_Msg.sendResult,
+    40 : From_Msg.registerPhone,
+    41 : From_Msg.verifyPhone,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 20, 21, 22, 23, 30, 31, 32])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 20, 21, 22, 23, 30, 31, 32, 40, 41])
     ..aOM<TransItem>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedTx', subBuilder: TransItem.create)
     ..aOM<From_RemovedTx>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'removedTx', subBuilder: From_RemovedTx.create)
     ..aOM<Asset>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newAsset', subBuilder: Asset.create)
@@ -1598,6 +1846,8 @@ class From extends $pb.GeneratedMessage {
     ..aOM<Address>(30, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAddress', subBuilder: Address.create)
     ..aOM<From_CreateTxResult>(31, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createTxResult', subBuilder: From_CreateTxResult.create)
     ..aOM<From_SendResult>(32, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendResult', subBuilder: From_SendResult.create)
+    ..aOM<From_RegisterPhone>(40, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registerPhone', subBuilder: From_RegisterPhone.create)
+    ..aOM<From_VerifyPhone>(41, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifyPhone', subBuilder: From_VerifyPhone.create)
   ;
 
   From._() : super();
@@ -1766,5 +2016,27 @@ class From extends $pb.GeneratedMessage {
   void clearSendResult() => clearField(32);
   @$pb.TagNumber(32)
   From_SendResult ensureSendResult() => $_ensure(12);
+
+  @$pb.TagNumber(40)
+  From_RegisterPhone get registerPhone => $_getN(13);
+  @$pb.TagNumber(40)
+  set registerPhone(From_RegisterPhone v) { setField(40, v); }
+  @$pb.TagNumber(40)
+  $core.bool hasRegisterPhone() => $_has(13);
+  @$pb.TagNumber(40)
+  void clearRegisterPhone() => clearField(40);
+  @$pb.TagNumber(40)
+  From_RegisterPhone ensureRegisterPhone() => $_ensure(13);
+
+  @$pb.TagNumber(41)
+  From_VerifyPhone get verifyPhone => $_getN(14);
+  @$pb.TagNumber(41)
+  set verifyPhone(From_VerifyPhone v) { setField(41, v); }
+  @$pb.TagNumber(41)
+  $core.bool hasVerifyPhone() => $_has(14);
+  @$pb.TagNumber(41)
+  void clearVerifyPhone() => clearField(41);
+  @$pb.TagNumber(41)
+  From_VerifyPhone ensureVerifyPhone() => $_ensure(14);
 }
 

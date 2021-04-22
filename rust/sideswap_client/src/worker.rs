@@ -1480,6 +1480,39 @@ impl Data {
         self.update_push_token();
     }
 
+    fn process_register_phone(&mut self, req: ffi::proto::to::RegisterPhone) {
+        let register_req = RegisterPhoneRequest { number: req.number };
+        let resp = send_request!(self, RegisterPhone, register_req);
+        let result = match resp {
+            Ok(v) => ffi::proto::from::register_phone::Result::PhoneKey(v.phone_key.0),
+            Err(e) => ffi::proto::from::register_phone::Result::ErrorMsg(e.to_string()),
+        };
+        let from = ffi::proto::from::RegisterPhone {
+            result: Some(result),
+        };
+        self.from_sender
+            .send(ffi::proto::from::Msg::RegisterPhone(from))
+            .unwrap();
+    }
+
+    fn process_verify_phone(&mut self, req: ffi::proto::to::VerifyPhone) {
+        let verify_req = VerifyPhoneRequest {
+            phone_key: PhoneKey(req.phone_key),
+            code: req.code,
+        };
+        let resp = send_request!(self, VerifyPhone, verify_req);
+        let result = match resp {
+            Ok(_) => ffi::proto::from::verify_phone::Result::Success(ffi::proto::Empty {}),
+            Err(e) => ffi::proto::from::verify_phone::Result::ErrorMsg(e.to_string()),
+        };
+        let from = ffi::proto::from::VerifyPhone {
+            result: Some(result),
+        };
+        self.from_sender
+            .send(ffi::proto::from::Msg::VerifyPhone(from))
+            .unwrap();
+    }
+
     // message processing
 
     fn send_request(&self, request: Request) -> Result<Response, anyhow::Error> {
@@ -1531,6 +1564,8 @@ impl Data {
             ffi::proto::to::Msg::SendTx(req) => self.process_send_tx(req),
             ffi::proto::to::Msg::SetMemo(req) => self.process_set_memo(req),
             ffi::proto::to::Msg::UpdatePushToken(req) => self.process_update_push_token(req),
+            ffi::proto::to::Msg::RegisterPhone(req) => self.process_register_phone(req),
+            ffi::proto::to::Msg::VerifyPhone(req) => self.process_verify_phone(req),
         }
     }
 

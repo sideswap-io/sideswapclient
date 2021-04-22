@@ -1,7 +1,6 @@
 use bitcoin::blockdata::script::Builder;
 use bitcoin::hash_types::PubkeyHash;
 use bitcoin::hashes::Hash;
-use bitcoin::secp256k1::SecretKey;
 use bitcoin::util::bip32::DerivationPath;
 use bitcoin::{PublicKey, Script};
 use ffi::size_t;
@@ -419,10 +418,11 @@ pub fn sign_psbt(
 
 const ENTROPY_SIZE_MNEMONIC12: usize = 16;
 
-pub fn generate_mnemonic12() -> String {
+fn generate_mnemonic12_from_rng<R: rand::RngCore + rand::CryptoRng>(rng: &mut R) -> String {
+    let mut key: [u8; ENTROPY_SIZE_MNEMONIC12] = [0; ENTROPY_SIZE_MNEMONIC12];
+    rng.try_fill_bytes(&mut key)
+        .expect("generating random bytes failed");
     let mut output = null_mut();
-    let key = SecretKey::new(&mut rand::thread_rng());
-    assert!(key.len() >= ENTROPY_SIZE_MNEMONIC12);
     unsafe {
         check(ffi::bip39_mnemonic_from_bytes(
             null(),
@@ -437,6 +437,11 @@ pub fn generate_mnemonic12() -> String {
         ffi::wally_free_string(output);
         result
     }
+}
+
+pub fn generate_mnemonic12() -> String {
+    let mut rng = rand::rngs::OsRng::new().expect("creating OsRng failed");
+    generate_mnemonic12_from_rng(&mut rng)
 }
 
 pub fn verify_mnemonic(mnemonic: &str) -> bool {

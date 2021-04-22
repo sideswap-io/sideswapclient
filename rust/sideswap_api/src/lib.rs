@@ -27,6 +27,9 @@ pub fn get_os_type() -> i32 {
 pub struct OrderId(pub String);
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct PhoneKey(pub String);
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct AssetId(pub String);
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
@@ -380,6 +383,22 @@ pub struct UpdatePushTokenRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct RegisterPhoneRequest {
+    pub number: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RegisterPhoneResponse {
+    pub phone_key: PhoneKey,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VerifyPhoneRequest {
+    pub phone_key: PhoneKey,
+    pub code: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Void {}
 pub type Empty = Option<Void>;
 
@@ -403,6 +422,8 @@ pub enum Request {
     RegisterDevice(RegisterDeviceRequest),
     RegisterAddresses(RegisterAddressesRequest),
     UpdatePushToken(UpdatePushTokenRequest),
+    RegisterPhone(RegisterPhoneRequest),
+    VerifyPhone(VerifyPhoneRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -425,6 +446,8 @@ pub enum Response {
     RegisterDevice(RegisterDeviceResponse),
     RegisterAddresses(Empty),
     UpdatePushToken(Empty),
+    RegisterPhone(RegisterPhoneResponse),
+    VerifyPhone(Empty),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

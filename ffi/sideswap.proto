@@ -95,6 +95,15 @@ message To {
     required string token = 1;
   }
 
+  message RegisterPhone {
+    required string number = 1;
+  }
+
+  message VerifyPhone {
+    required string phone_key = 1;
+    required string code = 2;
+  }
+
   oneof msg {
     Login login = 1;
     Empty logout = 2;
@@ -109,6 +118,9 @@ message To {
     Empty swap_cancel = 21;
     SwapAccept swap_accept = 22;
     Empty peg_request = 23;
+
+    RegisterPhone register_phone = 40;
+    VerifyPhone verify_phone = 41;
   }
 }
 
@@ -164,6 +176,20 @@ message From {
     required double ask = 3;
   }
 
+  message RegisterPhone {
+    oneof result {
+      string phone_key = 1;
+      string error_msg = 2;
+    }
+  }
+
+  message VerifyPhone {
+    oneof result {
+      Empty success = 1;
+      string error_msg = 2;
+    }
+  }
+
   oneof msg {
     TransItem updated_tx = 1;
     RemovedTx removed_tx = 2;
@@ -180,5 +206,8 @@ message From {
     Address recv_address = 30;
     CreateTxResult create_tx_result = 31;
     SendResult send_result = 32;
+
+    RegisterPhone register_phone = 40;
+    VerifyPhone verify_phone = 41;
   }
 }

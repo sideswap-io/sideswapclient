@@ -415,6 +415,39 @@ class WalletChangeNotifier with ChangeNotifier {
         notifyListeners();
         break;
 
+      case From_Msg.registerPhone:
+        switch (from.registerPhone.whichResult()) {
+          case From_RegisterPhone_Result.phoneKey:
+            // FIXME: Process result
+            var phoneKey = From_RegisterPhone_Result.phoneKey;
+            logger.d('got phone key: $phoneKey');
+            break;
+          case From_RegisterPhone_Result.errorMsg:
+            // FIXME: Process error result
+            var errorMsg = From_RegisterPhone_Result.errorMsg;
+            logger.d('registration failed: $errorMsg');
+            break;
+          case From_RegisterPhone_Result.notSet:
+            throw Exception('invalid registerPhone message');
+        }
+        break;
+
+      case From_Msg.verifyPhone:
+        switch (from.verifyPhone.whichResult()) {
+          case From_VerifyPhone_Result.success:
+            // FIXME: Process success verification
+            logger.d('phone verification succeed');
+            break;
+          case From_VerifyPhone_Result.errorMsg:
+            // FIXME: Process error result
+            var errorMsg = From_VerifyPhone_Result.errorMsg;
+            logger.d('verification failed: $errorMsg');
+            break;
+          case From_VerifyPhone_Result.notSet:
+            throw Exception('invalid verifyPhone message');
+        }
+        break;
+
       case From_Msg.notSet:
         throw Exception('invalid empty message');
     }
@@ -465,6 +498,21 @@ class WalletChangeNotifier with ChangeNotifier {
     }
     read(swapProvider).checkSelectedAsset();
     notifyListeners();
+  }
+
+  void registerPhone(String number) {
+    final msg = To();
+    msg.registerPhone = To_RegisterPhone();
+    msg.registerPhone.number = number;
+    sendMsg(msg);
+  }
+
+  void verifyPhone(String phoneKey, String code) {
+    final msg = To();
+    msg.verifyPhone = To_VerifyPhone();
+    msg.verifyPhone.phoneKey = phoneKey;
+    msg.verifyPhone.code = code;
+    sendMsg(msg);
   }
 
   int parseBitcoinAmount(String value) {
