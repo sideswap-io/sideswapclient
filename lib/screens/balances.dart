@@ -74,12 +74,37 @@ int txAssetAmount(Tx tx, String assetId) {
   return sum;
 }
 
-class WalletTxMemo extends StatelessWidget {
+class WalletTxMemo extends StatefulWidget {
+  @override
+  _WalletTxMemoState createState() => _WalletTxMemoState();
+}
+
+class _WalletTxMemoState extends State<WalletTxMemo> {
+  FocusNode _focusNode;
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void afterBuild(BuildContext context) {
+    FocusScope.of(context).requestFocus(_focusNode);
+  }
+
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       body: SafeArea(
         child: Container(
+          width: double.maxFinite,
+          height: 176.h,
           child: Column(
             children: [
               CustomAppBar(),
@@ -118,7 +143,7 @@ class WalletTxMemo extends StatelessWidget {
                           final tx = watch(walletProvider).txDetails.tx;
                           final initialValue = watch(walletProvider).txMemo(tx);
                           return TextFormField(
-                            autofocus: true,
+                            focusNode: _focusNode,
                             initialValue: initialValue,
                             onChanged: (value) => context
                                 .read(walletProvider)

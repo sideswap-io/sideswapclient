@@ -73,24 +73,15 @@ class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
                 color: Color(0xFF357CA4),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 11.h),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  CustomCheckBox(
-                    onChanged: widget.onChanged,
-                  ),
-                  Text(
-                    "Don't show again".tr(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+            CustomCheckBox(
+              onChanged: widget.onChanged,
+              child: Text(
+                "Don't show again".tr(),
+                style: GoogleFonts.roboto(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                ),
               ),
             ),
             Divider(

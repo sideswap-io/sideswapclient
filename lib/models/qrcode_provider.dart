@@ -14,8 +14,15 @@ enum QrCodeResultType {
   client,
 }
 
+enum QrCodeAddressType {
+  elements,
+  bitcoin,
+  other,
+}
+
 class QrCodeResult {
   String address;
+  QrCodeAddressType addressType;
   QrCodeResultType type;
   double amount;
   String asset;
@@ -24,9 +31,11 @@ class QrCodeResult {
   int bitMask;
   bool error;
   String errorMessage;
+  String orderId;
 
   QrCodeResult({
     this.address,
+    this.addressType,
     this.amount,
     this.asset,
     this.message,
@@ -38,6 +47,7 @@ class QrCodeResult {
 
   QrCodeResult copyWith({
     String address,
+    QrCodeAddressType addressType,
     double amount,
     String asset,
     String message,
@@ -48,6 +58,7 @@ class QrCodeResult {
   }) {
     return QrCodeResult(
       address: address ?? this.address,
+      addressType: addressType ?? this.addressType,
       amount: amount ?? this.amount,
       asset: asset ?? this.asset,
       message: message ?? this.message,
@@ -60,7 +71,7 @@ class QrCodeResult {
 
   @override
   String toString() {
-    return 'QrCodeResult(address: $address, amount: $amount, asset: $asset, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage)';
+    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, asset: $asset, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage)';
   }
 
   @override
@@ -69,6 +80,7 @@ class QrCodeResult {
 
     return o is QrCodeResult &&
         o.address == address &&
+        o.addressType == addressType &&
         o.amount == amount &&
         o.asset == asset &&
         o.message == message &&
@@ -81,6 +93,7 @@ class QrCodeResult {
   @override
   int get hashCode {
     return address.hashCode ^
+        addressType.hashCode ^
         amount.hashCode ^
         asset.hashCode ^
         message.hashCode ^
@@ -114,9 +127,16 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     // check is it static qr code
     final wallet = read(walletProvider);
-    if (wallet.isAddrValid(qrCode, AddrType.bitcoin) ||
-        wallet.isAddrValid(qrCode, AddrType.elements)) {
+    if (wallet.isAddrValid(qrCode, AddrType.bitcoin)) {
       _result.address = qrCode;
+      _result.addressType = QrCodeAddressType.bitcoin;
+      notifyListeners();
+      return _result;
+    }
+
+    if (wallet.isAddrValid(qrCode, AddrType.elements)) {
+      _result.address = qrCode;
+      _result.addressType = QrCodeAddressType.elements;
       notifyListeners();
       return _result;
     }
@@ -129,6 +149,15 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     if (url.scheme == 'sideswap') {
       return parseSideSwapAddress(qrCode);
+    }
+
+    final orderId = url.queryParameters['order_id'];
+    if (url.scheme == 'https' &&
+        url.host == 'sideswap.io' &&
+        url.path == '/app/submit' &&
+        orderId != null) {
+      _result.orderId = orderId;
+      return _result;
     }
 
     _emitError('Invalid QR code'.tr());
@@ -150,6 +179,7 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     }
 
     _result.address = url.path;
+    _result.addressType = QrCodeAddressType.other;
     if (_result.address.isEmpty) {
       logger.w('Empty qr code address');
       return _emitError('Invalid QR code'.tr());
@@ -220,6 +250,7 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     }
 
     _result.address = btcUrl.path;
+    _result.addressType = QrCodeAddressType.bitcoin;
 
     logger.d(_result);
     notifyListeners();

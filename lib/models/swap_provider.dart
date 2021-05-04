@@ -32,7 +32,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   SwapChangeNotifierProvider(this.read);
 
   static const hidePegInInfo = 'hide_peg_in_info';
-  static const hidePegOutInfo = 'hide_peg_out_info';
+  static const hidePegOutInfo = 'hide_peg_out_info_new';
 
   bool _showInsufficientFunds = false;
   bool get showInsufficientFunds => _showInsufficientFunds;
@@ -179,7 +179,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     return SwapType.atomic;
   }
 
-  void swapAccept(BuildContext context) async {
+  void swapAccept(BuildContext context, int recvAmount) async {
     final type = swapType();
 
     if (type == SwapType.pegIn) {
@@ -214,18 +214,13 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       return;
     }
 
-    if (type == SwapType.pegOut) {
-      if (!await read(walletProvider).isAuthenticated()) {
-        return;
-      }
-    }
-
     swapActive = false;
     final msg = To();
     msg.swapAccept = To_SwapAccept();
     if (swapRecvWallet == SwapWallet.extern) {
       msg.swapAccept.recvAddr = swapRecvAddressExternal;
     }
+    msg.swapAccept.recvAmount = Int64(recvAmount);
     read(walletProvider).sendMsg(msg);
 
     swapReset();
@@ -483,9 +478,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
             borderRadius: BorderRadius.circular(8.w),
           ),
           child: ShowPegInfoWidget(
-            text:
-                'Peg-Outs will be supported once our Peg-out Authorization Key is activated by the Liquid Federation.'
-                    .tr(),
+            text: 'PEGOUT_WARNING'.tr(),
             onChanged: (value) {
               prefs.setBool(hidePegOutInfo, value);
             },

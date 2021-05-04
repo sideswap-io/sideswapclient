@@ -1,12 +1,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.sideswap">
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    
+    <!-- Enable this if you want to access to all default packages (like camera) in sdk>=30 -->
+    <!-- <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/> -->
+
+    <!-- advertise Google Play that your application depends on having a camera but not required it -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <category android:name="android.intent.category.BROWSABLE" />
             <data android:scheme="https" />
+        </intent>
+        <!-- if targetSdkVer and compileSdkVer >= 30 this action needs to be added for opening system camera -->
+        <!-- [If you don't want to display in your app that a camera is not available]-->
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
         </intent>
     </queries>
 
@@ -15,6 +29,7 @@
         android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
         android:name=".Application"
+        android:requestLegacyExternalStorage="true"
         >
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

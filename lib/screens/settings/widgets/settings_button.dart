@@ -8,6 +8,7 @@ enum SettingsButtonType {
   shield,
   about,
   delete,
+  userDetails,
 }
 
 class SettingsButton extends StatefulWidget {
@@ -60,6 +61,13 @@ class _SettingsButtonState extends State<SettingsButton> {
       case SettingsButtonType.delete:
         _icon = SvgPicture.asset(
           'assets/delete.svg',
+          width: 24.w,
+          height: 24.w,
+        );
+        break;
+      case SettingsButtonType.userDetails:
+        _icon = SvgPicture.asset(
+          'assets/user_details.svg',
           width: 24.w,
           height: 24.w,
         );

@@ -49,7 +49,7 @@ class TxDetailsColumn extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               Flexible(
-                child: Text(
+                child: SelectableText(
                   details,
                   style: _detailsStyle,
                 ),

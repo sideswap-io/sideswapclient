@@ -1,3 +1,4 @@
+use crate::be::BEBlockHash;
 use crate::mnemonic::Mnemonic;
 use crate::model::*;
 use crate::password::Password;
@@ -27,7 +28,7 @@ pub trait Session<E> {
     fn get_transactions(&self, opt: &GetTransactionsOpt) -> Result<TxsResult, E>;
     fn get_transaction_details(&self, txid: &str) -> Result<Value, E>;
     fn get_balance(&self, num_confs: u32, subaccount: Option<u32>) -> Result<Balances, E>;
-    fn set_transaction_memo(&self, txid: &str, memo: &str, memo_type: u32) -> Result<(), E>;
+    fn set_transaction_memo(&self, txid: &str, memo: &str) -> Result<(), E>;
     fn create_transaction(&mut self, details: &mut CreateTransaction)
         -> Result<TransactionMeta, E>;
     fn sign_transaction(&self, tx_detail_unsigned: &TransactionMeta) -> Result<TransactionMeta, E>;
@@ -40,7 +41,7 @@ pub trait Session<E> {
     fn get_settings(&self) -> Result<Settings, E>;
     fn change_settings(&mut self, settings: &Settings) -> Result<(), E>;
     fn refresh_assets(&self, details: &RefreshAssets) -> Result<Value, E>;
-    fn block_status(&self) -> Result<(u32, bitcoin::BlockHash), E>;
+    fn block_status(&self) -> Result<(u32, BEBlockHash), E>;
     fn tx_status(&self) -> Result<u64, E>;
     fn set_pin(&self, details: &PinSetDetails) -> Result<PinGetDetails, E>;
     fn get_unspent_outputs(&self, details: &Value) -> Result<GetUnspentOutputs, E>;

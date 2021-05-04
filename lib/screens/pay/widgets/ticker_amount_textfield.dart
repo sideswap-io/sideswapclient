@@ -220,6 +220,7 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       return Container(
                         height: 42.h,
                         child: TextField(
+                          autofocus: false,
                           readOnly: widget.readOnly,
                           controller: widget.controller,
                           focusNode: _textfieldFocusNode,

@@ -1,18 +1,17 @@
-use bitcoin::hashes::hex::FromHex;
-use bitcoin::{self, Amount, BlockHash, Txid};
+use bitcoin::{self, Amount};
 use bitcoincore_rpc::{Auth, Client, RpcApi};
 use chrono::Utc;
 use electrum_client::raw_client::{ElectrumPlaintextStream, RawClient};
 use electrum_client::ElectrumApi;
 use elements;
-use gdk_common::be::{BEAddress, BETransaction, DUST_VALUE};
+use gdk_common::be::{BEAddress, BEBlockHash, BETransaction, BETxid, DUST_VALUE};
 use gdk_common::mnemonic::Mnemonic;
 use gdk_common::model::*;
 use gdk_common::session::Session;
 use gdk_common::Network;
 use gdk_common::{ElementsNetwork, NetworkId};
 use gdk_electrum::error::Error;
-use gdk_electrum::{determine_electrum_url_from_net, ElectrumSession};
+use gdk_electrum::{determine_electrum_url_from_net, spv, ElectrumSession};
 use log::LevelFilter;
 use log::{info, warn, Metadata, Record};
 use serde_json::Value;
@@ -35,9 +34,9 @@ pub struct TestSession {
     node: Client,
     electrs: RawClient<ElectrumPlaintextStream>,
     electrs_header: RawClient<ElectrumPlaintextStream>,
-    session: ElectrumSession,
+    pub session: ElectrumSession,
     tx_status: u64,
-    block_status: (u32, BlockHash),
+    block_status: (u32, BEBlockHash),
     node_process: Child,
     electrs_process: Child,
     node_work_dir: TempDir,
@@ -45,6 +44,8 @@ pub struct TestSession {
     db_root_dir: TempDir,
     network_id: NetworkId,
     network: Network,
+    pub p2p_port: u16,
+    pub electrs_url: String,
 }
 
 //TODO duplicated why I cannot import?
@@ -69,8 +70,10 @@ static START: Once = Once::new();
 pub fn setup(
     is_liquid: bool,
     is_debug: bool,
-    electrs_exec: String,
-    node_exec: String,
+    electrs_exec: &str,
+    node_exec: &str,
+    num_client: u16,
+    network_conf: impl FnOnce(&mut Network),
 ) -> TestSession {
     START.call_once(|| {
         let filter = if is_debug {
@@ -85,10 +88,11 @@ pub fn setup(
 
     let node_work_dir = TempDir::new("electrum_integration_tests").unwrap();
     let node_work_dir_str = format!("{}", &node_work_dir.path().display());
-    let sum_port = is_liquid as u16;
+    let sum_port = num_client * 10 + is_liquid as u16;
 
     let rpc_port = 55363u16 + sum_port;
     let p2p_port = 34975u16 + sum_port;
+    let monitor_port = 28901u16 + sum_port;
     let socket = format!("127.0.0.1:{}", rpc_port);
     let node_url = format!("http://{}", socket);
 
@@ -145,6 +149,7 @@ pub fn setup(
     let electrs_work_dir_str = format!("{}", &electrs_work_dir.path().display());
     let electrs_url = format!("127.0.0.1:{}", electrs_port);
     let daemon_url = format!("127.0.0.1:{}", rpc_port);
+    let monitor_url = format!("127.0.0.1:{}", monitor_port);
     let mut args: Vec<&str> = vec![
         "--db-dir",
         &electrs_work_dir_str,
@@ -154,10 +159,13 @@ pub fn setup(
         &electrs_url,
         "--daemon-rpc-addr",
         &daemon_url,
+        "--monitoring-addr",
+        &monitor_url,
         "--network",
         par_network,
         "--cookie",
         &cookie_value,
+        "--jsonrpc-import",
     ];
     if is_debug {
         args.push("-v");
@@ -174,7 +182,7 @@ pub fn setup(
     let electrs_header = loop {
         assert!(i > 0, "1 minute without updates");
         i -= 1;
-        match RawClient::new(&electrs_url) {
+        match RawClient::new(&electrs_url, None) {
             Ok(c) => {
                 let header = c.block_headers_subscribe_raw().unwrap();
                 if header.height == 101 {
@@ -183,11 +191,11 @@ pub fn setup(
             }
             Err(e) => {
                 warn!("{:?}", e);
-                thread::sleep(Duration::from_millis(500));
             }
         }
+        thread::sleep(Duration::from_millis(500));
     };
-    let electrs = RawClient::new(&electrs_url).unwrap();
+    let electrs = RawClient::new(&electrs_url, None).unwrap();
     info!("done creating electrs client");
 
     let mut network = Network::default();
@@ -203,6 +211,9 @@ pub fn setup(
         network.policy_asset =
             Some("5ac9f65c0efcc4775e0baec4ec03abdde22473cd3cf33c0419ca290e0751b225".into());
     }
+
+    network_conf(&mut network);
+
     let db_root_dir = TempDir::new("electrum_integration_tests").unwrap();
 
     let db_root = format!("{}", db_root_dir.path().display());
@@ -250,12 +261,14 @@ pub fn setup(
         db_root_dir,
         network_id,
         network,
+        p2p_port,
+        electrs_url,
     }
 }
 
 impl TestSession {
     /// wait gdk session block status to change (max 1 min)
-    fn wait_tx_status_change(&mut self) {
+    pub fn wait_tx_status_change(&mut self) {
         for _ in 0..120 {
             if let Ok(new_status) = self.session.tx_status() {
                 if self.tx_status != new_status {
@@ -268,7 +281,7 @@ impl TestSession {
     }
 
     /// wait gdk session tx status to change (max 1 min)
-    fn wait_block_status_change(&mut self) {
+    pub fn wait_block_status_change(&mut self) {
         for _ in 0..120 {
             if let Ok(new_status) = self.session.block_status() {
                 if self.block_status != new_status {
@@ -426,9 +439,8 @@ impl TestSession {
 
     pub fn test_set_get_memo(&mut self, txid: &str, old: &str, new: &str) {
         assert_eq!(self.get_tx_from_list(txid).memo, old);
-        assert!(self.session.set_transaction_memo(txid, new, 1).is_err());
-        assert!(self.session.set_transaction_memo(txid, &"a".repeat(1025), 0).is_err());
-        assert!(self.session.set_transaction_memo(txid, new, 0).is_ok());
+        assert!(self.session.set_transaction_memo(txid, &"a".repeat(1025)).is_err());
+        assert!(self.session.set_transaction_memo(txid, new).is_ok());
         assert_eq!(self.get_tx_from_list(txid).memo, new);
     }
 
@@ -445,7 +457,7 @@ impl TestSession {
         self.list_tx_contains(&txid, &[address], true);
     }
 
-    fn get_tx_from_list(&mut self, txid: &str) -> TxListItem {
+    pub fn get_tx_from_list(&mut self, txid: &str) -> TxListItem {
         let mut opt = GetTransactionsOpt::default();
         opt.count = 100;
         let list = self.session.get_transactions(&opt).unwrap().0;
@@ -743,14 +755,24 @@ impl TestSession {
         node_getnewaddress(&self.node, kind)
     }
 
-    fn node_sendtoaddress(&self, address: &str, satoshi: u64, asset: Option<String>) -> String {
+    pub fn node_sendtoaddress(&self, address: &str, satoshi: u64, asset: Option<String>) -> String {
         node_sendtoaddress(&self.node, address, satoshi, asset)
     }
     fn node_issueasset(&self, satoshi: u64) -> String {
         node_issueasset(&self.node, satoshi)
     }
-    fn node_generate(&self, block_num: u32) {
+    pub fn node_generate(&self, block_num: u32) {
         node_generate(&self.node, block_num)
+    }
+    pub fn node_connect(&self, port: u16) {
+        self.node.call::<Value>("clearbanned", &[]).unwrap();
+        self.node
+            .call::<Value>("addnode", &[format!("127.0.0.1:{}", port).into(), "add".into()])
+            .unwrap();
+    }
+    pub fn node_disconnect_all(&self) {
+        // if we disconnect without banning, the other peer will connect back to us
+        self.node.call::<Value>("setban", &["127.0.0.1".into(), "add".into()]).unwrap();
     }
 
     pub fn check_fee_rate(&self, req_rate: u64, tx_meta: &TransactionMeta, max_perc_diff: f64) {
@@ -916,8 +938,40 @@ impl TestSession {
         let cache = self.session.export_cache().unwrap();
         assert_eq!(cache.tip.0, tip);
         for txid in txids {
-            assert!(cache.all_txs.get(&Txid::from_hex(txid).unwrap()).is_some())
+            assert!(cache
+                .all_txs
+                .get(&BETxid::from_hex(txid, self.network.id()).unwrap())
+                .is_some())
         }
+    }
+
+    pub fn get_spv_cross_validation(&self) -> Option<spv::CrossValidationResult> {
+        let store = self.session.get_wallet().unwrap().store.read().unwrap();
+        store.cache.cross_validation_result.clone()
+    }
+
+    /// wait for the spv cross validation status to change (max 1 min)
+    pub fn wait_spv_cross_validation_change(&self, wait_for: bool) -> spv::CrossValidationResult {
+        for _ in 0..120 {
+            if let Some(result) = self.get_spv_cross_validation() {
+                if result.is_valid() == wait_for {
+                    return result;
+                }
+            }
+            thread::sleep(Duration::from_millis(500));
+        }
+        panic!("1 minute with on spv cross-validation change");
+    }
+
+    /// wait for the spv validation status of a transaction to change (max 1 min)
+    pub fn wait_tx_spv_change(&mut self, txid: &str, wait_for: &str) {
+        for _ in 0..120 {
+            if self.get_tx_from_list(txid).spv_verified == wait_for {
+                return;
+            }
+            thread::sleep(Duration::from_millis(500));
+        }
+        panic!("1 minute with no tx spv change");
     }
 }
 fn node_sendtoaddress(

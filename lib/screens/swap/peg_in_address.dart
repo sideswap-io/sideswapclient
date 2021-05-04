@@ -15,7 +15,8 @@ class PegInAddress extends StatelessWidget {
       body: Stack(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 8.h),
+            padding:
+                EdgeInsets.only(top: 8.h + MediaQuery.of(context).padding.top),
             child: Align(
               alignment: Alignment.topCenter,
               child: Container(

@@ -81,6 +81,14 @@ const TransItem$json = const {
   ],
 };
 
+const GenericResponse$json = const {
+  '1': 'GenericResponse',
+  '2': const [
+    const {'1': 'success', '3': 1, '4': 2, '5': 8, '10': 'success'},
+    const {'1': 'error_msg', '3': 2, '4': 1, '5': 9, '10': 'errorMsg'},
+  ],
+};
+
 const ServerStatus$json = const {
   '1': 'ServerStatus',
   '2': const [
@@ -91,24 +99,38 @@ const ServerStatus$json = const {
   ],
 };
 
+const Contact$json = const {
+  '1': 'Contact',
+  '2': const [
+    const {'1': 'name', '3': 1, '4': 2, '5': 9, '10': 'name'},
+    const {'1': 'phone', '3': 2, '4': 2, '5': 9, '10': 'phone'},
+  ],
+};
+
 const To$json = const {
   '1': 'To',
   '2': const [
     const {'1': 'login', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.To.Login', '9': 0, '10': 'login'},
     const {'1': 'logout', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'logout'},
     const {'1': 'update_push_token', '3': 3, '4': 1, '5': 11, '6': '.sideswap.proto.To.UpdatePushToken', '9': 0, '10': 'updatePushToken'},
+    const {'1': 'encrypt_pin', '3': 4, '4': 1, '5': 11, '6': '.sideswap.proto.To.EncryptPin', '9': 0, '10': 'encryptPin'},
+    const {'1': 'decrypt_pin', '3': 5, '4': 1, '5': 11, '6': '.sideswap.proto.To.DecryptPin', '9': 0, '10': 'decryptPin'},
     const {'1': 'set_memo', '3': 10, '4': 1, '5': 11, '6': '.sideswap.proto.To.SetMemo', '9': 0, '10': 'setMemo'},
     const {'1': 'get_recv_address', '3': 11, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'getRecvAddress'},
     const {'1': 'create_tx', '3': 12, '4': 1, '5': 11, '6': '.sideswap.proto.To.CreateTx', '9': 0, '10': 'createTx'},
     const {'1': 'send_tx', '3': 13, '4': 1, '5': 11, '6': '.sideswap.proto.To.SendTx', '9': 0, '10': 'sendTx'},
+    const {'1': 'blinded_values', '3': 14, '4': 1, '5': 11, '6': '.sideswap.proto.To.BlindedValues', '9': 0, '10': 'blindedValues'},
     const {'1': 'swap_request', '3': 20, '4': 1, '5': 11, '6': '.sideswap.proto.To.SwapRequest', '9': 0, '10': 'swapRequest'},
     const {'1': 'swap_cancel', '3': 21, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'swapCancel'},
     const {'1': 'swap_accept', '3': 22, '4': 1, '5': 11, '6': '.sideswap.proto.To.SwapAccept', '9': 0, '10': 'swapAccept'},
     const {'1': 'peg_request', '3': 23, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'pegRequest'},
     const {'1': 'register_phone', '3': 40, '4': 1, '5': 11, '6': '.sideswap.proto.To.RegisterPhone', '9': 0, '10': 'registerPhone'},
     const {'1': 'verify_phone', '3': 41, '4': 1, '5': 11, '6': '.sideswap.proto.To.VerifyPhone', '9': 0, '10': 'verifyPhone'},
+    const {'1': 'upload_avatar', '3': 42, '4': 1, '5': 11, '6': '.sideswap.proto.To.UploadAvatar', '9': 0, '10': 'uploadAvatar'},
+    const {'1': 'upload_contacts', '3': 43, '4': 1, '5': 11, '6': '.sideswap.proto.To.UploadContacts', '9': 0, '10': 'uploadContacts'},
+    const {'1': 'link_order', '3': 50, '4': 1, '5': 11, '6': '.sideswap.proto.To.LinkOrder', '9': 0, '10': 'linkOrder'},
   ],
-  '3': const [To_Login$json, To_SwapRequest$json, To_SwapAccept$json, To_CreateTx$json, To_SendTx$json, To_SetMemo$json, To_UpdatePushToken$json, To_RegisterPhone$json, To_VerifyPhone$json],
+  '3': const [To_Login$json, To_EncryptPin$json, To_DecryptPin$json, To_SwapRequest$json, To_SwapAccept$json, To_SetMemo$json, To_CreateTx$json, To_SendTx$json, To_BlindedValues$json, To_UpdatePushToken$json, To_RegisterPhone$json, To_VerifyPhone$json, To_UploadAvatar$json, To_UploadContacts$json, To_LinkOrder$json],
   '8': const [
     const {'1': 'msg'},
   ],
@@ -118,6 +140,24 @@ const To_Login$json = const {
   '1': 'Login',
   '2': const [
     const {'1': 'mnemonic', '3': 1, '4': 2, '5': 9, '10': 'mnemonic'},
+  ],
+};
+
+const To_EncryptPin$json = const {
+  '1': 'EncryptPin',
+  '2': const [
+    const {'1': 'pin', '3': 1, '4': 2, '5': 9, '10': 'pin'},
+    const {'1': 'mnemonic', '3': 2, '4': 2, '5': 9, '10': 'mnemonic'},
+  ],
+};
+
+const To_DecryptPin$json = const {
+  '1': 'DecryptPin',
+  '2': const [
+    const {'1': 'pin', '3': 1, '4': 2, '5': 9, '10': 'pin'},
+    const {'1': 'salt', '3': 2, '4': 2, '5': 9, '10': 'salt'},
+    const {'1': 'encrypted_data', '3': 3, '4': 2, '5': 9, '10': 'encryptedData'},
+    const {'1': 'pin_identifier', '3': 4, '4': 2, '5': 9, '10': 'pinIdentifier'},
   ],
 };
 
@@ -134,6 +174,15 @@ const To_SwapAccept$json = const {
   '1': 'SwapAccept',
   '2': const [
     const {'1': 'recv_addr', '3': 1, '4': 1, '5': 9, '10': 'recvAddr'},
+    const {'1': 'recv_amount', '3': 2, '4': 1, '5': 3, '10': 'recvAmount'},
+  ],
+};
+
+const To_SetMemo$json = const {
+  '1': 'SetMemo',
+  '2': const [
+    const {'1': 'txid', '3': 1, '4': 2, '5': 9, '10': 'txid'},
+    const {'1': 'memo', '3': 2, '4': 2, '5': 9, '10': 'memo'},
   ],
 };
 
@@ -152,11 +201,10 @@ const To_SendTx$json = const {
   ],
 };
 
-const To_SetMemo$json = const {
-  '1': 'SetMemo',
+const To_BlindedValues$json = const {
+  '1': 'BlindedValues',
   '2': const [
     const {'1': 'txid', '3': 1, '4': 2, '5': 9, '10': 'txid'},
-    const {'1': 'memo', '3': 2, '4': 2, '5': 9, '10': 'memo'},
   ],
 };
 
@@ -182,6 +230,29 @@ const To_VerifyPhone$json = const {
   ],
 };
 
+const To_UploadAvatar$json = const {
+  '1': 'UploadAvatar',
+  '2': const [
+    const {'1': 'phone_key', '3': 1, '4': 2, '5': 9, '10': 'phoneKey'},
+    const {'1': 'text', '3': 2, '4': 2, '5': 9, '10': 'text'},
+  ],
+};
+
+const To_UploadContacts$json = const {
+  '1': 'UploadContacts',
+  '2': const [
+    const {'1': 'phone_key', '3': 1, '4': 2, '5': 9, '10': 'phoneKey'},
+    const {'1': 'contacts', '3': 2, '4': 3, '5': 11, '6': '.sideswap.proto.Contact', '10': 'contacts'},
+  ],
+};
+
+const To_LinkOrder$json = const {
+  '1': 'LinkOrder',
+  '2': const [
+    const {'1': 'order_id', '3': 1, '4': 2, '5': 9, '10': 'orderId'},
+  ],
+};
+
 const From$json = const {
   '1': 'From',
   '2': const [
@@ -191,6 +262,8 @@ const From$json = const {
     const {'1': 'balance_update', '3': 4, '4': 1, '5': 11, '6': '.sideswap.proto.Balance', '9': 0, '10': 'balanceUpdate'},
     const {'1': 'server_status', '3': 5, '4': 1, '5': 11, '6': '.sideswap.proto.ServerStatus', '9': 0, '10': 'serverStatus'},
     const {'1': 'price_update', '3': 6, '4': 1, '5': 11, '6': '.sideswap.proto.From.PriceUpdate', '9': 0, '10': 'priceUpdate'},
+    const {'1': 'encrypt_pin', '3': 10, '4': 1, '5': 11, '6': '.sideswap.proto.From.EncryptPin', '9': 0, '10': 'encryptPin'},
+    const {'1': 'decrypt_pin', '3': 11, '4': 1, '5': 11, '6': '.sideswap.proto.From.DecryptPin', '9': 0, '10': 'decryptPin'},
     const {'1': 'swap_review', '3': 20, '4': 1, '5': 11, '6': '.sideswap.proto.From.SwapReview', '9': 0, '10': 'swapReview'},
     const {'1': 'swap_wait_tx', '3': 21, '4': 1, '5': 11, '6': '.sideswap.proto.From.SwapWaitTx', '9': 0, '10': 'swapWaitTx'},
     const {'1': 'swap_succeed', '3': 22, '4': 1, '5': 11, '6': '.sideswap.proto.TransItem', '9': 0, '10': 'swapSucceed'},
@@ -198,12 +271,48 @@ const From$json = const {
     const {'1': 'recv_address', '3': 30, '4': 1, '5': 11, '6': '.sideswap.proto.Address', '9': 0, '10': 'recvAddress'},
     const {'1': 'create_tx_result', '3': 31, '4': 1, '5': 11, '6': '.sideswap.proto.From.CreateTxResult', '9': 0, '10': 'createTxResult'},
     const {'1': 'send_result', '3': 32, '4': 1, '5': 11, '6': '.sideswap.proto.From.SendResult', '9': 0, '10': 'sendResult'},
+    const {'1': 'blinded_values', '3': 33, '4': 1, '5': 11, '6': '.sideswap.proto.From.BlindedValues', '9': 0, '10': 'blindedValues'},
     const {'1': 'register_phone', '3': 40, '4': 1, '5': 11, '6': '.sideswap.proto.From.RegisterPhone', '9': 0, '10': 'registerPhone'},
     const {'1': 'verify_phone', '3': 41, '4': 1, '5': 11, '6': '.sideswap.proto.From.VerifyPhone', '9': 0, '10': 'verifyPhone'},
+    const {'1': 'upload_avatar', '3': 42, '4': 1, '5': 11, '6': '.sideswap.proto.GenericResponse', '9': 0, '10': 'uploadAvatar'},
+    const {'1': 'upload_contacts', '3': 43, '4': 1, '5': 11, '6': '.sideswap.proto.GenericResponse', '9': 0, '10': 'uploadContacts'},
+    const {'1': 'show_message', '3': 50, '4': 1, '5': 11, '6': '.sideswap.proto.From.ShowMessage', '9': 0, '10': 'showMessage'},
   ],
-  '3': const [From_RemovedTx$json, From_SwapReview$json, From_SwapWaitTx$json, From_SwapSucceed$json, From_CreateTxResult$json, From_SendResult$json, From_PriceUpdate$json, From_RegisterPhone$json, From_VerifyPhone$json],
+  '3': const [From_EncryptPin$json, From_DecryptPin$json, From_RemovedTx$json, From_SwapReview$json, From_SwapWaitTx$json, From_SwapSucceed$json, From_CreateTxResult$json, From_SendResult$json, From_BlindedValues$json, From_PriceUpdate$json, From_RegisterPhone$json, From_VerifyPhone$json, From_ShowMessage$json],
   '8': const [
     const {'1': 'msg'},
+  ],
+};
+
+const From_EncryptPin$json = const {
+  '1': 'EncryptPin',
+  '2': const [
+    const {'1': 'error', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'error'},
+    const {'1': 'data', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.From.EncryptPin.Data', '9': 0, '10': 'data'},
+  ],
+  '3': const [From_EncryptPin_Data$json],
+  '8': const [
+    const {'1': 'result'},
+  ],
+};
+
+const From_EncryptPin_Data$json = const {
+  '1': 'Data',
+  '2': const [
+    const {'1': 'salt', '3': 2, '4': 2, '5': 9, '10': 'salt'},
+    const {'1': 'encrypted_data', '3': 3, '4': 2, '5': 9, '10': 'encryptedData'},
+    const {'1': 'pin_identifier', '3': 4, '4': 2, '5': 9, '10': 'pinIdentifier'},
+  ],
+};
+
+const From_DecryptPin$json = const {
+  '1': 'DecryptPin',
+  '2': const [
+    const {'1': 'error', '3': 1, '4': 1, '5': 9, '9': 0, '10': 'error'},
+    const {'1': 'mnemonic', '3': 2, '4': 1, '5': 9, '9': 0, '10': 'mnemonic'},
+  ],
+  '8': const [
+    const {'1': 'result'},
   ],
 };
 
@@ -269,6 +378,14 @@ const From_SendResult$json = const {
   ],
 };
 
+const From_BlindedValues$json = const {
+  '1': 'BlindedValues',
+  '2': const [
+    const {'1': 'txid', '3': 1, '4': 2, '5': 9, '10': 'txid'},
+    const {'1': 'blinded_values', '3': 2, '4': 1, '5': 9, '10': 'blindedValues'},
+  ],
+};
+
 const From_PriceUpdate$json = const {
   '1': 'PriceUpdate',
   '2': const [
@@ -297,6 +414,13 @@ const From_VerifyPhone$json = const {
   ],
   '8': const [
     const {'1': 'result'},
+  ],
+};
+
+const From_ShowMessage$json = const {
+  '1': 'ShowMessage',
+  '2': const [
+    const {'1': 'text', '3': 1, '4': 2, '5': 9, '10': 'text'},
   ],
 };
 

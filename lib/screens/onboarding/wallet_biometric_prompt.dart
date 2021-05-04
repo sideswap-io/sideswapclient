@@ -37,6 +37,18 @@ class WalletBiometricPrompt extends StatelessWidget {
                   ),
                 ),
               ),
+              Padding(
+                padding: EdgeInsets.only(top: 12.h),
+                child: Text(
+                  'Protect your keys by enabling biometric authentication'.tr(),
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.roboto(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
               Spacer(),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -56,6 +68,7 @@ class WalletBiometricPrompt extends StatelessWidget {
                     width: double.infinity,
                     height: 54.h,
                     text: 'NOT NOW'.tr(),
+                    textColor: Color(0xFF00C5FF),
                     backgroundColor: Colors.transparent,
                     onPressed: onNoPressed,
                   ),

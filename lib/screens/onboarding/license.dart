@@ -1,6 +1,10 @@
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -14,9 +18,9 @@ enum LicenseNextStep {
 }
 
 class LicenseTerms extends StatelessWidget {
-  final LicenseNextStep nextStep;
+  const LicenseTerms({Key key, this.nextStep}) : super(key: key);
 
-  const LicenseTerms({Key key, @required this.nextStep}) : super(key: key);
+  final LicenseNextStep nextStep;
 
   Future<String> loadLicense() async {
     return await rootBundle.loadString('LICENSE');
@@ -25,7 +29,7 @@ class LicenseTerms extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SideSwapPopup(
-      useDefaultHorizontalPadding: false,
+      enableInsideHorizontalPadding: false,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,25 +45,25 @@ class LicenseTerms extends StatelessWidget {
               ),
             ),
           ),
-          FutureBuilder(
-            future: loadLicense(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Padding(
-                  padding: EdgeInsets.only(top: 24.h),
-                  child: Material(
-                    elevation: 3.0,
-                    color: Colors.transparent,
-                    shadowColor: Color(0xFF1E6389),
-                    child: Container(
-                      height: 421.h,
-                      width: MediaQuery.of(context).size.width,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                            left: 8.w, right: 8.w, top: 8.w, bottom: 8.w),
-                        child: SingleChildScrollView(
-                          child: Center(
-                            child: Text(
+          Padding(
+            padding: EdgeInsets.only(top: 24.h),
+            child: Material(
+              elevation: 3.0,
+              color: Colors.transparent,
+              shadowColor: Color(0xFF1E6389),
+              child: Container(
+                height: 421.h,
+                width: MediaQuery.of(context).size.width,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                      left: 8.w, right: 8.w, top: 8.w, bottom: 8.w),
+                  child: SingleChildScrollView(
+                    child: Center(
+                      child: FutureBuilder(
+                        future: loadLicense(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Text(
                               snapshot.data as String,
                               textScaleFactor: 1.03,
                               style: GoogleFonts.robotoMono(
@@ -67,44 +71,45 @@ class LicenseTerms extends StatelessWidget {
                                 fontWeight: FontWeight.normal,
                                 color: Colors.white,
                               ),
+                            );
+                          }
+
+                          return Padding(
+                            padding: EdgeInsets.only(top: 32.h),
+                            child: SpinKitThreeBounce(
+                              color: Colors.white,
+                              size: 24.w,
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                     ),
                   ),
-                );
-              }
-
-              return Container();
-            },
-          ),
-          Expanded(
-            child: Container(
-              child: Center(
-                child: Padding(
-                  padding: EdgeInsets.only(left: 16.w, right: 16.w),
-                  child: CustomBigButton(
-                    width: double.infinity,
-                    height: 54.h,
-                    text: 'I AGREE'.tr(),
-                    backgroundColor: Color(0xFF00C5FF),
-                    onPressed: () async {
-                      await context.read(walletProvider).setLicenseAccepted();
-                      if (nextStep == LicenseNextStep.createWallet) {
-                        await context
-                            .read(walletProvider)
-                            .newWalletBiometricPrompt();
-                        return;
-                      }
-
-                      if (nextStep == LicenseNextStep.importWallet) {
-                        context.read(walletProvider).startMnemonicImport();
-                      }
-                    },
-                  ),
                 ),
               ),
+            ),
+          ),
+          Spacer(),
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
+            child: CustomBigButton(
+              width: double.infinity,
+              height: 54.h,
+              text: 'I AGREE'.tr(),
+              backgroundColor: Color(0xFF00C5FF),
+              onPressed: () async {
+                await context.read(walletProvider).setLicenseAccepted();
+                if (nextStep == LicenseNextStep.createWallet) {
+                  await context
+                      .read(walletProvider)
+                      .setReviewLicenseCreateWallet();
+                  return;
+                }
+
+                if (nextStep == LicenseNextStep.importWallet) {
+                  context.read(walletProvider).startMnemonicImport();
+                }
+              },
             ),
           ),
         ],

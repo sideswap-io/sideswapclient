@@ -1,11 +1,9 @@
 use crate::error::*;
 use crate::headers::compute_merkle_root;
-use bitcoin::blockdata::constants::{
-    genesis_block, max_target, DIFFCHANGE_INTERVAL, DIFFCHANGE_TIMESPAN,
-};
+use crate::spv::calc_difficulty_retarget;
+use bitcoin::blockdata::constants::{genesis_block, DIFFCHANGE_INTERVAL};
 use bitcoin::consensus::{deserialize, serialize};
 use bitcoin::hashes::hex::FromHex;
-use bitcoin::util::uint::Uint256;
 use bitcoin::{BlockHash, Txid};
 use bitcoin::{BlockHeader, Network};
 use electrum_client::GetMerkleRes;
@@ -76,7 +74,7 @@ impl HeadersChain {
 
     /// to handle reorgs, it's necessary to remove some of the last headers
     pub fn remove(&mut self, headers_to_remove: u32) -> Result<(), Error> {
-        let headers_to_remove = headers_to_remove.min(self.height - 1);
+        let headers_to_remove = headers_to_remove.min(self.height);
         let new_height = self.height - headers_to_remove;
         let new_size = (new_height + 1) as u64 * 80;
         let file = OpenOptions::new().write(true).open(&self.path)?;
@@ -92,6 +90,7 @@ impl HeadersChain {
 
     /// write new headers to the file if checks are passed
     pub fn push(&mut self, new_headers: Vec<BlockHeader>) -> Result<(), Error> {
+        let mut curr_bits = self.tip().bits;
         let mut serialized = vec![];
         for new_header in new_headers {
             let new_height = self.height + 1;
@@ -104,16 +103,14 @@ impl HeadersChain {
             if new_height % DIFFCHANGE_INTERVAL == 0 {
                 self.flush(&mut serialized)?;
                 let first = self.get(new_height - DIFFCHANGE_INTERVAL)?;
-
-                let timespan = self.last.time - first.time;
-                let timespan = timespan.min(DIFFCHANGE_TIMESPAN * 4);
-                let timespan = timespan.max(DIFFCHANGE_TIMESPAN / 4);
-
-                let new_target = self.last.target() * Uint256::from_u64(timespan as u64).unwrap()
-                    / Uint256::from_u64(DIFFCHANGE_TIMESPAN as u64).unwrap();
-                let new_target = new_target.min(max_target(Network::Bitcoin));
+                let new_target = calc_difficulty_retarget(&first, &self.last);
 
                 if new_header.bits != BlockHeader::compact_target_from_u256(&new_target) {
+                    return Err(Error::InvalidHeaders);
+                }
+                curr_bits = new_header.bits;
+            } else {
+                if new_header.bits != curr_bits {
                     return Err(Error::InvalidHeaders);
                 }
             }
@@ -186,7 +183,7 @@ fn get_checkpoints(network: Network) -> HashMap<u32, BlockHash> {
             i(1_000_000, "0000000000478e259a3eda2fafbeeb0106626f946347955e99278fe6cc848414");
             i(1_700_000, "000000000000fdd6e3e379abdfda6e82b47b51eb154f193ce3f066877f37b0af");
         }
-        Network::Regtest => (),
+        Network::Regtest | Network::Signet => (),
     };
     checkpoints
 }

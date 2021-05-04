@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,6 +28,7 @@ class _SwapMainState extends State<SwapMain> {
   String _lastSwapAmountValue;
   FocusNode _deliverFocusNode;
   FocusNode _receiveFocusNode;
+  FocusNode _receiveAddressFocusNode;
   String _swapAmount = '';
   // Do not delete - for future use
   final bool _visibleToggles = false;
@@ -44,6 +47,7 @@ class _SwapMainState extends State<SwapMain> {
     _swapAddressRecvController = TextEditingController();
     _deliverFocusNode = FocusNode();
     _receiveFocusNode = FocusNode();
+    _receiveAddressFocusNode = FocusNode();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_deliverFocusNode);
     });
@@ -55,6 +59,7 @@ class _SwapMainState extends State<SwapMain> {
     _swapAddressRecvController.dispose();
     _deliverFocusNode.dispose();
     _receiveFocusNode.dispose();
+    _receiveAddressFocusNode.dispose();
     super.dispose();
   }
 
@@ -144,6 +149,7 @@ class _SwapMainState extends State<SwapMain> {
       setState(() {
         _addressErrorText = null;
         addressLabelVisible = true;
+        FocusManager.instance.primaryFocus.unfocus();
       });
     } else {
       setState(() {
@@ -267,8 +273,14 @@ class _SwapMainState extends State<SwapMain> {
             enabled: _enabled,
             backgroundColor: Color(0xFF00C5FF),
             onPressed: _enabled && _addressErrorText == null
-                ? () {
-                    context.read(swapProvider).swapAccept(context);
+                ? () async {
+                    final recvAmount =
+                        context.read(swapProvider).swapRecvAmount;
+                    if (await context.read(walletProvider).isAuthenticated()) {
+                      context
+                          .read(swapProvider)
+                          .swapAccept(context, recvAmount);
+                    }
                   }
                 : null,
           );
@@ -314,6 +326,7 @@ class _SwapMainState extends State<SwapMain> {
           labelGroupValue: _swapRecvWallet,
           addressErrorText: _addressErrorText,
           focusNode: _receiveFocusNode,
+          receiveAddressFocusNode: _receiveAddressFocusNode,
           isAddressLabelVisible: addressLabelVisible,
           localLabelOnChanged: (value) =>
               context.read(swapProvider).setRecvRadioCb(SwapWallet.local),
@@ -331,6 +344,7 @@ class _SwapMainState extends State<SwapMain> {
             );
           },
           onAddressTap: () async {
+            _receiveAddressFocusNode.unfocus();
             final value = await Clipboard.getData(Clipboard.kTextPlain);
             if (value?.text != null) {
               var text = value.text.replaceAll('\n', '');
@@ -340,6 +354,10 @@ class _SwapMainState extends State<SwapMain> {
                 await pasteFromClipboard(_swapAddressRecvController);
               }
               validateAddress(_swapAddressRecvController.text);
+            }
+
+            if (!addressLabelVisible) {
+              _receiveAddressFocusNode.requestFocus();
             }
           },
           onAddressEditingCompleted: () async {

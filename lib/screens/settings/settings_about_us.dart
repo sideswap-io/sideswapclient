@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info/package_info.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/screens/settings/settings_licenses.dart';
 import 'package:sideswap/screens/settings/widgets/url_link_button.dart';
 
 class SettingsAboutUs extends StatelessWidget {
@@ -20,6 +22,7 @@ class SettingsAboutUs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // PackageInfo packageInfo = await PackageInfo.fromPlatform();
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'About us'.tr(),
@@ -30,19 +33,28 @@ class SettingsAboutUs extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.only(top: 90.h),
-              child: Text(
-                'ABOUT_MESSAGE',
-                style: GoogleFonts.roboto(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.white,
-                ),
-              ).tr(),
+              child: FutureBuilder<void>(
+                future: PackageInfo.fromPlatform(),
+                builder: (context, snapshot) {
+                  final packageInfo = snapshot.data as PackageInfo;
+                  if (snapshot.hasData) {
+                    return Text(
+                      'VERSION'.tr(args: [packageInfo?.version ?? '']),
+                      style: GoogleFonts.roboto(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF00C5FF),
+                      ),
+                    );
+                  }
+                  return Container();
+                },
+              ),
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 30.h),
             Container(
               width: double.maxFinite,
-              height: 248.h,
+              height: 312.h,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -81,6 +93,20 @@ class SettingsAboutUs extends StatelessWidget {
                       width: 24.w,
                       height: 24.w,
                     ),
+                  ),
+                  UrlLinkButton(
+                    text: 'Licenses',
+                    icon: Icon(
+                      Icons.copyright,
+                      size: 24.w,
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push<void>(
+                        MaterialPageRoute(
+                          builder: (context) => SettingsLicenses(),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

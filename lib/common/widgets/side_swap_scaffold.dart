@@ -61,9 +61,10 @@ class SideSwapScaffold extends StatefulWidget {
 class _SideSwapScaffoldState extends State<SideSwapScaffold> {
   @override
   Widget build(BuildContext context) {
+    final statusBarTopPadding = MediaQuery.of(context).padding.top;
     final body = widget.sideSwapBackground
         ? CustomPaint(
-            painter: BackgroundPainter(),
+            painter: BackgroundPainter(topPadding: statusBarTopPadding),
             child: widget.body,
           )
         : widget.body;

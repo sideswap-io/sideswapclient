@@ -2,14 +2,15 @@ import 'dart:ui' as _ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:marquee/marquee.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets.dart';
+import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
@@ -36,6 +37,7 @@ class SwapSideAmount extends StatefulHookWidget {
     this.padding = EdgeInsets.zero,
     this.balance = '0.00',
     this.focusNode,
+    this.receiveAddressFocusNode,
     this.visibleToggles = false,
     this.onAddressTap,
     this.onAddressEditingCompleted,
@@ -64,6 +66,7 @@ class SwapSideAmount extends StatefulHookWidget {
   final EdgeInsetsGeometry padding;
   final String balance;
   final FocusNode focusNode;
+  final FocusNode receiveAddressFocusNode;
   final bool visibleToggles;
   final VoidCallback onAddressTap;
   final VoidCallback onAddressEditingCompleted;
@@ -259,23 +262,25 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                     widget.labelGroupValue == SwapWallet.extern) ...[
                   Flexible(
                     child: ShareCopyScanTextFormField(
+                      focusNode: widget.receiveAddressFocusNode,
                       errorText: widget.addressErrorText,
                       controller:
                           widget.addressController, //_addressController,
                       onChanged: widget.onAddressChanged,
                       onScanTap: () async {
-                        await SystemChannels.textInput
-                            .invokeMethod<void>('TextInput.hide');
+                        FocusManager.instance.primaryFocus.unfocus();
                         await Navigator.of(context, rootNavigator: true)
                             .push<void>(
                           MaterialPageRoute(
                             builder: (context) => AddressQrScanner(
-                              resultCb: (value) {
+                              resultCb: (value) async {
                                 widget.addressController.text = value.address;
                               },
+                              expectedAddress: QrCodeAddressType.bitcoin,
                             ),
                           ),
                         );
+                        logger.d('Scanner Done');
                       },
                       onTap: widget.onAddressTap,
                       onEditingCompleted: widget.onAddressEditingCompleted,

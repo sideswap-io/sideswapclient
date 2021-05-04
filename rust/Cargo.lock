@@ -268,12 +268,12 @@ dependencies = [
 [[package]]
 name = "bitcoin"
 version = "0.26.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ec5f88a446d66e7474a3b8fa2e348320b574463fb78d799d90ba68f79f48e0e"
+source = "git+https://github.com/rust-bitcoin/rust-bitcoin?rev=5bd61967b231939626dd847fd82cc5da33052dc1#5bd61967b231939626dd847fd82cc5da33052dc1"
 dependencies = [
  "bech32",
  "bitcoin_hashes 0.9.4",
  "secp256k1 0.20.1",
+ "serde 1.0.124",
 ]
 
 [[package]]
@@ -654,11 +654,11 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
 name = "electrum-client"
-version = "0.3.0-beta.1"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb3817250d6404c58acfb2ad9e083090f493456171ca6bb90c0596cfd48120fe"
+checksum = "4cab4d90cc575a7daab4cfed9e315912a88071bc47462e6be57516a2f01ccc89"
 dependencies = [
- "bitcoin 0.25.2",
+ "bitcoin 0.26.0",
  "log 0.4.14",
  "rustls 0.16.0",
  "serde 1.0.124",
@@ -670,25 +670,13 @@ dependencies = [
 
 [[package]]
 name = "elements"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8550a7279d75568178505c7f79eabc16d5ea4b10afcb90e8478eac77656fbc46"
-dependencies = [
- "bitcoin 0.25.2",
- "bitcoin_hashes 0.9.4",
- "serde 1.0.124",
- "serde_json 0.9.10",
- "slip21",
-]
-
-[[package]]
-name = "elements"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e77124f1ecdbeb92691beae289c44553df24c94c86dd3bc07a7037c2064ac3d3"
 dependencies = [
  "bitcoin 0.26.0",
  "bitcoin_hashes 0.9.4",
+ "serde 1.0.124",
  "serde_json 0.9.10",
  "slip21",
 ]
@@ -892,9 +880,9 @@ dependencies = [
 name = "gdk-common"
 version = "0.1.0"
 dependencies = [
- "bitcoin 0.25.2",
+ "bitcoin 0.26.0",
  "chrono",
- "elements 0.13.0",
+ "elements",
  "hex 0.4.3",
  "libc",
  "log 0.4.14",
@@ -911,18 +899,18 @@ dependencies = [
  "aes 0.3.2",
  "aes-gcm-siv",
  "android_logger 0.8.6",
- "bitcoin 0.25.2",
+ "bitcoin 0.26.0",
  "block-modes",
  "chrono",
  "electrum-client",
- "elements 0.13.0",
+ "elements",
  "gdk-common",
  "hex 0.4.3",
  "lazy_static",
  "libc",
  "log 0.4.14",
  "rand 0.6.5",
- "secp256k1 0.19.0",
+ "secp256k1 0.20.1",
  "serde 1.0.124",
  "serde_cbor",
  "serde_json 1.0.64",
@@ -936,12 +924,12 @@ name = "gdk-rust"
 version = "0.1.0"
 dependencies = [
  "android_logger 0.8.6",
- "bitcoin 0.25.2",
+ "bitcoin 0.26.0",
  "bitcoincore-rpc",
  "chrono",
  "dirs",
  "electrum-client",
- "elements 0.13.0",
+ "elements",
  "gdk-common",
  "gdk-electrum",
  "hex 0.4.3",
@@ -2250,7 +2238,6 @@ version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c6179428c22c73ac0fbb7b5579a56353ce78ba29759b3b8575183336ea74cdfb"
 dependencies = [
- "rand 0.6.5",
  "secp256k1-sys 0.3.0",
  "serde 1.0.124",
 ]
@@ -2261,7 +2248,9 @@ version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "733b114f058f260c0af7591434eef4272ae1a8ec2751766d3cb89c6df8d5e450"
 dependencies = [
+ "rand 0.6.5",
  "secp256k1-sys 0.4.0",
+ "serde 1.0.124",
 ]
 
 [[package]]
@@ -2477,15 +2466,16 @@ dependencies = [
  "android_logger 0.10.0",
  "anyhow",
  "base64 0.13.0",
- "bitcoin 0.25.2",
+ "bitcoin 0.26.0",
  "bytes 1.0.1",
  "chrono",
  "derive_more",
- "elements 0.16.0",
+ "elements",
  "env_logger 0.8.3",
  "gdk-common",
  "gdk-electrum",
  "gdk-rust",
+ "hex 0.3.2",
  "libc",
  "log 0.4.14",
  "prost",
@@ -2503,7 +2493,7 @@ version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-tungstenite",
- "bitcoin 0.25.2",
+ "bitcoin 0.26.0",
  "derive_more",
  "futures",
  "futures-util",
@@ -2537,8 +2527,8 @@ name = "sideswap_libwally"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "bitcoin 0.25.2",
- "elements 0.13.0",
+ "bitcoin 0.26.0",
+ "elements",
  "gdk-common",
  "gdk-electrum",
  "gdk-rust",

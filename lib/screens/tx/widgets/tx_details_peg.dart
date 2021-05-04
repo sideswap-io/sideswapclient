@@ -9,6 +9,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_bottom_buttons.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
+import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 
 class TxDetailsPeg extends StatefulWidget {
   TxDetailsPeg({
@@ -35,7 +36,7 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
 
   @override
   Widget build(BuildContext context) {
-    _status = txItemToStatus(widget.transItem);
+    _status = txItemToStatus(widget.transItem, isPeg: true);
     final _amountSend =
         double.tryParse(amountStr(widget.transItem.peg.amountSend.toInt()));
     final _amountRecv =
@@ -98,9 +99,10 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
           child: TxDetailsRow(
             description: isPegIn ? 'L-BTC received'.tr() : 'BTC received'.tr(),
             details: amountStrNamed(
-              widget.transItem.peg.amountRecv.toInt(),
-              recvTicker,
-            ),
+                  widget.transItem.peg.amountRecv.toInt(),
+                  recvTicker,
+                ) +
+                (isPegIn ? '' : ' - txFee'),
           ),
         ),
         Padding(
@@ -133,7 +135,7 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
           child: TxDetailsColumn(
             description: isPegIn
                 ? 'BTC Peg-in address'.tr()
-                : 'L-BTC receiving address'.tr(),
+                : 'L-BTC delivery address'.tr(),
             details: widget.transItem.peg.addrSend,
           ),
         ),
@@ -158,8 +160,10 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
         Padding(
           padding: EdgeInsets.only(bottom: 40.h),
           child: TxDetailsBottomButtons(
-            id: widget.transItem.peg.txidSend,
-            isLiquid: !isPegIn,
+            id: widget.transItem.peg.txidRecv,
+            isLiquid: isPegIn,
+            blindType: BlindType.unblinded,
+            enabled: widget.transItem.peg.hasTxidRecv(),
           ),
         ),
       ],

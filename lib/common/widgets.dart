@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flushbar/flushbar.dart';
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
@@ -15,8 +15,9 @@ import 'package:sideswap/models/wallet.dart';
 
 class AddressQrScanner extends StatefulWidget {
   final ValueChanged<QrCodeResult> resultCb;
+  final QrCodeAddressType expectedAddress;
 
-  AddressQrScanner({this.resultCb});
+  AddressQrScanner({this.resultCb, this.expectedAddress});
 
   @override
   State<StatefulWidget> createState() =>
@@ -33,9 +34,7 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
 
   Future<bool> popup() async {
     done = true;
-    Navigator.of(context.read(walletProvider).navigatorKey.currentContext,
-            rootNavigator: true)
-        .pop();
+    Navigator.of(context).pop();
     return true;
   }
 
@@ -59,7 +58,9 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
           children: <Widget>[
             QRView(
               key: _qrKey,
-              onQRViewCreated: _onQrViewCreated,
+              onQRViewCreated: (value) {
+                _onQrViewCreated(value, widget.expectedAddress);
+              },
               overlay: QrScannerOverlayShape(
                 borderColor: Colors.white,
                 borderRadius: 10,
@@ -74,7 +75,8 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
     );
   }
 
-  void _onQrViewCreated(QRViewController controller) {
+  void _onQrViewCreated(
+      QRViewController controller, QrCodeAddressType expectedAddress) {
     _qrController = controller;
 
     String input;
@@ -104,6 +106,26 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
             duration: Duration(seconds: 3),
             backgroundColor: Color(0xFF135579),
           );
+
+          await flushbar.show(context);
+
+          done = false;
+          return;
+        }
+
+        if (expectedAddress != null && result.addressType != expectedAddress) {
+          final flushbar = Flushbar<Widget>(
+            messageText: Text(
+              'Invalid QR code'.tr(),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodyText1
+                  .copyWith(color: Colors.white),
+            ),
+            duration: Duration(seconds: 3),
+            backgroundColor: Color(0xFF135579),
+          );
+
           await flushbar.show(context);
 
           done = false;
@@ -142,7 +164,8 @@ class ShareTxidButtons extends StatelessWidget {
           child: SizedBox(
             height: 50,
             child: ElevatedButton(
-              onPressed: () => openTxidUrl(txid, isLiquid),
+              onPressed: () =>
+                  context.read(walletProvider).openTxUrl(txid, isLiquid, true),
               child: Text('LINK TO EXTERNAL EXPLORER').tr(),
             ),
           ),

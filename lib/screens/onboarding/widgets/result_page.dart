@@ -14,6 +14,7 @@ class ResultPage extends StatelessWidget {
     Key key,
     this.header,
     this.description,
+    this.descriptionWidget,
     this.button,
     this.onPressed,
     @required this.resultType,
@@ -24,6 +25,7 @@ class ResultPage extends StatelessWidget {
 
   final String header;
   final String description;
+  final Widget descriptionWidget;
   final String button;
   final VoidCallback onPressed;
   final ResultPageType resultType;
@@ -81,15 +83,17 @@ class ResultPage extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 12.h),
-            child: Text(
-              description ?? '',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                fontSize: 16.sp,
-                fontWeight: FontWeight.normal,
-                color: Colors.white,
-              ),
-            ),
+            child: description != null
+                ? Text(
+                    description ?? '',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.roboto(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white,
+                    ),
+                  )
+                : descriptionWidget ?? Container(),
           ),
           Spacer(),
           Padding(

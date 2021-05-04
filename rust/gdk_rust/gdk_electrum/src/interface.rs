@@ -1,15 +1,15 @@
-use bitcoin::blockdata::script::Script;
 use bitcoin::blockdata::transaction::Transaction;
-use bitcoin::hashes::{hex::FromHex, Hash};
+use bitcoin::hashes::Hash;
 use bitcoin::secp256k1::{self, All, Message, Secp256k1};
 use bitcoin::util::address::{Address, Payload};
 use bitcoin::util::bip32::{ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey};
-use bitcoin::{BlockHash, PublicKey, SigHashType, Txid};
+use bitcoin::{PublicKey, SigHashType};
 use elements;
 use gdk_common::model::{AddressAmount, Balances, GetTransactionsOpt, SPVVerifyResult};
 use hex;
 use log::{info, trace};
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
 use gdk_common::mnemonic::Mnemonic;
 use gdk_common::model::{AddressPointer, CreateTransaction, Settings, TransactionMeta};
@@ -21,8 +21,7 @@ use crate::error::*;
 use crate::store::*;
 
 use bitcoin::util::bip143::SigHashCache;
-use electrum_client::raw_client::RawClient;
-use electrum_client::Client;
+use electrum_client::{Client, ConfigBuilder};
 use elements::confidential::{Asset, Nonce, Value};
 use gdk_common::be::{self, *};
 use std::cmp::Ordering;
@@ -41,7 +40,7 @@ pub struct WalletCtx {
     pub change_max_deriv: u32,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub enum ElectrumUrl {
     Tls(String, bool), // the bool value indicates if the domain name should be validated
     Plaintext(String),
@@ -49,16 +48,45 @@ pub enum ElectrumUrl {
 
 impl ElectrumUrl {
     pub fn build_client(&self) -> Result<Client, Error> {
-        match self {
+        self.build_config(ConfigBuilder::new())
+    }
+
+    pub fn build_config(&self, config: ConfigBuilder) -> Result<Client, Error> {
+        let (url, config) = match self {
             ElectrumUrl::Tls(url, validate) => {
-                let client = RawClient::new_ssl(url.as_str(), *validate)?;
-                Ok(Client::SSL(client))
+                (format!("ssl://{}", url), config.validate_domain(*validate))
             }
-            ElectrumUrl::Plaintext(url) => {
-                let client = RawClient::new(&url)?;
-                Ok(Client::TCP(client))
-            }
+            ElectrumUrl::Plaintext(url) => (format!("tcp://{}", url), config),
+        };
+        Ok(Client::from_config(&url, config.build())?)
+    }
+
+    pub fn url(&self) -> &str {
+        match self {
+            ElectrumUrl::Tls(url, _) => url,
+            ElectrumUrl::Plaintext(url) => url,
         }
+    }
+}
+
+// Parse the standard <host>:<port>:<t|s> string format,
+// with an optional non-standard `:noverify` suffix to skip tls validation
+impl FromStr for ElectrumUrl {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Error> {
+        let mk_err = || Error::InvalidElectrumUrl(s.into());
+        let mut parts = s.split(":");
+        let hostname = parts.next().ok_or_else(mk_err)?;
+        let port: u16 = parts.next().ok_or_else(mk_err)?.parse().map_err(|_| mk_err())?;
+        let proto = parts.next().unwrap_or("t");
+        let validate_tls = parts.next() != Some("noverify");
+
+        let url = format!("{}:{}", hostname, port);
+        Ok(match proto {
+            "s" => ElectrumUrl::Tls(url, validate_tls),
+            "t" => ElectrumUrl::Plaintext(url),
+            _ => return Err(mk_err()),
+        })
     }
 }
 
@@ -104,7 +132,7 @@ impl WalletCtx {
                     .master_blinding
                     .as_ref()
                     .expect("we are in elements but master blinding is None");
-                let script = p2shwpkh_script(&derived.public_key);
+                let script = p2shwpkh_script(&derived.public_key).into_elements();
                 let blinding_key =
                     asset_blinding_key_to_ec_private_key(&master_blinding_key, &script);
                 let public_key = ec_public_key_from_private_key(blinding_key);
@@ -129,7 +157,7 @@ impl WalletCtx {
         Ok(())
     }
 
-    pub fn get_tip(&self) -> Result<(u32, BlockHash), Error> {
+    pub fn get_tip(&self) -> Result<(u32, BEBlockHash), Error> {
         Ok(self.store.read()?.cache.tip)
     }
 
@@ -137,7 +165,7 @@ impl WalletCtx {
         let store_read = self.store.read()?;
 
         let mut txs = vec![];
-        let mut my_txids: Vec<(&Txid, &Option<u32>)> = store_read.cache.heights.iter().collect();
+        let mut my_txids: Vec<(&BETxid, &Option<u32>)> = store_read.cache.heights.iter().collect();
         my_txids.sort_by(|a, b| {
             let height_cmp = b.1.unwrap_or(std::u32::MAX).cmp(&a.1.unwrap_or(std::u32::MAX));
             match height_cmp {
@@ -207,12 +235,7 @@ impl WalletCtx {
             };
 
             let spv_verified = if self.network.spv_enabled.unwrap_or(false) {
-                store_read
-                    .cache
-                    .txs_verif
-                    .get(*tx_id)
-                    .unwrap_or(&SPVVerifyResult::InProgress)
-                    .clone()
+                store_read.spv_verification_status(tx_id)
             } else {
                 SPVVerifyResult::Disabled
             };
@@ -269,7 +292,7 @@ impl WalletCtx {
                         store_read
                             .cache
                             .paths
-                            .get(&output.script_pubkey)
+                            .get(&(&output.script_pubkey).into())
                             .map(|path| (vout, output, path))
                     })
                     .filter(|(outpoint, _, _)| !spent.contains(&outpoint))
@@ -279,7 +302,7 @@ impl WalletCtx {
                             UTXOInfo::new(
                                 "btc".to_string(),
                                 output.value,
-                                output.script_pubkey,
+                                output.script_pubkey.into(),
                                 height.clone(),
                                 path.clone(),
                             ),
@@ -299,7 +322,7 @@ impl WalletCtx {
                             store_read
                                 .cache
                                 .paths
-                                .get(&output.script_pubkey)
+                                .get(&(&output.script_pubkey).into())
                                 .map(|path| (vout, output, path))
                         })
                         .filter(|(outpoint, _, _)| !spent.contains(&outpoint))
@@ -318,7 +341,7 @@ impl WalletCtx {
                                         UTXOInfo::new(
                                             unblinded.asset_hex(),
                                             unblinded.value,
-                                            output.script_pubkey,
+                                            output.script_pubkey.into(),
                                             height.clone(),
                                             path.clone(),
                                         ),
@@ -618,7 +641,7 @@ impl WalletCtx {
         input_index: usize,
         path: &DerivationPath,
         value: u64,
-    ) -> (Script, Vec<Vec<u8>>) {
+    ) -> (bitcoin::Script, Vec<Vec<u8>>) {
         let xprv = self.xprv.derive_priv(&self.secp, &path).unwrap();
         let private_key = &xprv.private_key;
         let public_key = &PublicKey::from_private_key(&self.secp, private_key);
@@ -654,12 +677,12 @@ impl WalletCtx {
         input_index: usize,
         derivation_path: &DerivationPath,
         value: Value,
-    ) -> (Script, Vec<Vec<u8>>) {
+    ) -> (elements::Script, Vec<Vec<u8>>) {
         let xprv = self.xprv.derive_priv(&self.secp, &derivation_path).unwrap();
         let private_key = &xprv.private_key;
         let public_key = &PublicKey::from_private_key(&self.secp, private_key);
 
-        let script_code = p2pkh_script(public_key);
+        let script_code = p2pkh_script(public_key).into_elements();
         let sighash = tx_get_elements_signature_hash(
             &tx,
             input_index,
@@ -673,7 +696,7 @@ impl WalletCtx {
         let mut signature = signature.serialize_der().to_vec();
         signature.push(SigHashType::All as u8);
 
-        let script_sig = p2shwpkh_script_sig(public_key);
+        let script_sig = p2shwpkh_script_sig(public_key).into_elements();
         let witness = vec![signature, public_key.to_bytes()];
         info!(
             "added size len: script_sig:{} witness:{}",
@@ -699,7 +722,7 @@ impl WalletCtx {
                     let derivation_path: DerivationPath = store_read
                         .cache
                         .paths
-                        .get(&out.script_pubkey)
+                        .get(&out.script_pubkey.into())
                         .ok_or_else(|| Error::Generic("can't find derivation path".into()))?
                         .clone();
                     info!(
@@ -733,7 +756,7 @@ impl WalletCtx {
                     let derivation_path: DerivationPath = store_read
                         .cache
                         .paths
-                        .get(&out.script_pubkey)
+                        .get(&out.script_pubkey.into())
                         .ok_or_else(|| Error::Generic("can't find derivation path".into()))?
                         .clone();
 
@@ -774,7 +797,8 @@ impl WalletCtx {
         }
 
         if let Some(memo) = request.create_transaction.as_ref().and_then(|c| c.memo.as_ref()) {
-            store_write.insert_memo(Txid::from_hex(&betx.txid)?, memo)?;
+            let txid = BETxid::from_hex(&betx.txid, self.network.id())?;
+            store_write.insert_memo(txid, memo)?;
         }
 
         Ok(betx)

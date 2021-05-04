@@ -88,10 +88,10 @@ class _WalletImportState extends State<WalletImport> {
 
     _listScrollController = ScrollController();
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       // focus first TextField
-      await _loadWordList();
       _focusNodeList[_selectedItem].requestFocus();
+      await _loadWordList();
     });
   }
 
@@ -171,7 +171,7 @@ class _WalletImportState extends State<WalletImport> {
     setState(() {});
   }
 
-  void validateFinal() {
+  void validateFinal() async {
     var index = 0;
     words.forEach((text) {
       final suggestionList = getSuggestions(text.value);
@@ -188,7 +188,7 @@ class _WalletImportState extends State<WalletImport> {
     final wrongIndex = _errorField.indexWhere((e) => e == true);
 
     if (wrongIndex == -1) {
-      nextPage();
+      await nextPage();
       return;
     }
 
@@ -211,7 +211,11 @@ class _WalletImportState extends State<WalletImport> {
     return false;
   }
 
-  void nextPage() {
+  void nextPage() async {
+    _focusNodeList.forEach((e) {
+      e.unfocus();
+    });
+    FocusManager.instance.primaryFocus.unfocus();
     final mnemonic = getMnemonic();
     final wallet = context.read(walletProvider);
     if (!wallet.validateMnemonic(mnemonic)) {
@@ -229,7 +233,7 @@ class _WalletImportState extends State<WalletImport> {
       body: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 10.h, left: 54.w, right: 54.w),
+            padding: EdgeInsets.only(top: 20.h, left: 54.w, right: 54.w),
             child: Text(
               'Enter your 12 word recovery phrase'.tr(),
               textAlign: TextAlign.center,
@@ -240,7 +244,7 @@ class _WalletImportState extends State<WalletImport> {
               ),
             ),
           ),
-          SizedBox(height: 40.h),
+          SizedBox(height: 32.h),
           Container(
             height: 54.h,
             width: MediaQuery.of(context).size.width,
@@ -322,16 +326,16 @@ class _WalletImportState extends State<WalletImport> {
                           onTap: () {
                             _jumpTo(index, unfocus: false);
                           },
-                          onSubmitted: (value) {
+                          onSubmitted: (value) async {
                             _jumpTo(index + 1);
                             if (index >= 11) {
-                              validateFinal();
+                              await validateFinal();
                             }
                           },
-                          onEditingComplete: () {
+                          onEditingComplete: () async {
                             _jumpTo(index + 1);
                             if (index >= 11) {
-                              validateFinal();
+                              await validateFinal();
                             }
                           },
                         ),
@@ -350,14 +354,14 @@ class _WalletImportState extends State<WalletImport> {
                             ),
                           );
                         },
-                        onSuggestionSelected: (suggestion) {
+                        onSuggestionSelected: (suggestion) async {
                           _textEditingControllerList[index].text = suggestion;
                           setState(() {
                             _focusNodeList[index].unfocus();
                           });
                           _jumpTo(index + 1);
                           if (index >= 11) {
-                            validateFinal();
+                            await validateFinal();
                           }
                         },
                         onSaved: (value) {},

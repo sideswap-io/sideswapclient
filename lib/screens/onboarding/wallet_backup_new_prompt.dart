@@ -57,12 +57,26 @@ class WalletBackupNewPrompt extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 119.h),
+              padding: EdgeInsets.only(top: 12.h, left: 16.w, right: 16.w),
+              child: Text(
+                'Protect your assets by ensuring you save the 12 work recovery phrase which can restore your wallet'
+                    .tr(),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.roboto(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ),
+            Spacer(),
+            Padding(
+              padding: EdgeInsets.only(bottom: 32.h),
               child: PageDots(
                 maxSelectedDots: 1,
               ),
             ),
-            Spacer(),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
               child: CustomBigButton(
@@ -83,6 +97,7 @@ class WalletBackupNewPrompt extends StatelessWidget {
                   width: double.infinity,
                   height: 54.h,
                   text: 'NOT NOW'.tr(),
+                  textColor: Color(0xFF00C5FF),
                   backgroundColor: Colors.transparent,
                   onPressed: () async {
                     showWalletBackupDialog(context);

@@ -15,4 +15,4 @@ futures-util = "*"
 tokio = { version = "0.2", features = ["macros", "sync", "time", "stream"] }
 tungstenite = { version = "*", default-features = false, features = [] }
 derive_more = "*"
-bitcoin = "0.25"
+bitcoin = { version = "0.26" }

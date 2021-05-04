@@ -6,6 +6,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/swap/widgets/quote_expired_dialog.dart';
+
+final kErrorQuoteExpired = 'quote expired';
 
 final utilsProvider = Provider((ref) => UtilsProvider(ref.read));
 
@@ -16,6 +19,11 @@ class UtilsProvider {
 
   void showErrorDialog(String text) {
     if (text == null) {
+      return;
+    }
+
+    if (text == kErrorQuoteExpired) {
+      showQuoteExpiredDialog(read(walletProvider).navigatorKey.currentContext);
       return;
     }
 

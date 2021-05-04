@@ -12,7 +12,7 @@ class WalletBackup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SideSwapPopup(
-      useDefaultHorizontalPadding: false,
+      enableInsideHorizontalPadding: false,
       child: Column(
         children: [
           Padding(

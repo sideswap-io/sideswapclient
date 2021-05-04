@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 #[derive(Debug)]
 pub enum WrappedRequest {
     Request(RequestMessage),
+    Restart,
 }
 
 #[derive(Debug)]
@@ -24,7 +25,15 @@ pub fn next_request_id() -> RequestId {
     RequestId::Int(GLOBAL_REQUEST_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
 }
 
-const RECONNECT_WAIT_PERIOD: Duration = Duration::from_secs(10);
+const RECONNECT_WAIT_PERIODS: [Duration; 5] = [
+    Duration::from_secs(0),
+    Duration::from_secs(1),
+    Duration::from_secs(3),
+    Duration::from_secs(6),
+    Duration::from_secs(9),
+];
+const RECONNECT_WAIT_MAX_PERIOD: Duration = Duration::from_secs(12);
+
 const PING_PERIOD: Duration = Duration::from_secs(30);
 const PONG_TIMEOUT: Duration = Duration::from_secs(90);
 
@@ -44,6 +53,7 @@ async fn run(
         }
     });
 
+    let mut reconnect_count = 0;
     loop {
         let protocol = if use_tls { "wss" } else { "ws" };
         let url = format!("{}://{}:{}/{}", protocol, &host, port, PATH_JSON_RUST_WS);
@@ -55,13 +65,18 @@ async fn run(
             Ok((ws_stream, _)) => ws_stream,
             Err(e) => {
                 error!("connection to the server failed: {}", e);
-                tokio::time::delay_for(RECONNECT_WAIT_PERIOD).await;
+                let delay = RECONNECT_WAIT_PERIODS
+                    .get(reconnect_count)
+                    .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
+                tokio::time::delay_for(*delay).await;
+                reconnect_count += 1;
                 continue;
             }
         };
+        reconnect_count = 0;
 
         // Drop old messages
-        while let Ok(_) = req_rx_async.try_recv() {}
+        while req_rx_async.try_recv().is_ok() {}
 
         resp_tx.send(WrappedResponse::Connected).unwrap();
 
@@ -108,6 +123,7 @@ async fn run(
                             let text = serde_json::to_string(&req).unwrap();
                             let _ = ws_stream.send(async_tungstenite::tungstenite::Message::text(&text)).await;
                         }
+                        WrappedRequest::Restart => break,
                     }
                 }
 
@@ -125,8 +141,6 @@ async fn run(
         }
 
         resp_tx.send(WrappedResponse::Disconnected).unwrap();
-
-        tokio::time::delay_for(RECONNECT_WAIT_PERIOD).await;
     }
 }
 

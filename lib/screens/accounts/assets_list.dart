@@ -30,7 +30,7 @@ class AssetSelectList extends StatelessWidget {
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(bottom: 29.h),
+                      padding: EdgeInsets.only(top: 18.h, bottom: 29.h),
                       child: AssetSearchTextField(),
                     ),
                     Expanded(

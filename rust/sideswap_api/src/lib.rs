@@ -46,12 +46,18 @@ pub struct Asset {
     pub asset_id: AssetId,
     pub name: String,
     pub ticker: Ticker,
-    pub icon: String, // PNG in base64
+    pub icon: Option<String>, // PNG in base64
     pub precision: u8,
+    pub icon_url: Option<String>,
 }
 
 pub type Assets = Vec<Asset>;
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AssetsRequestParam {
+    pub embedded_icons: bool,
+}
+pub type AssetsRequest = Option<AssetsRequestParam>;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetsResponse {
     pub assets: Assets,
@@ -402,13 +408,162 @@ pub struct VerifyPhoneRequest {
 pub enum Void {}
 pub type Empty = Option<Void>;
 
+////////////////////////////////////////////////////////////////////////////////
+// New API
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
+pub enum OrderSide {
+    Requestor,
+    Responder,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PriceOrder {
+    pub asset: AssetId,
+    pub bitcoin_amount: f64,
+    pub price: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AmountOrder {
+    pub req_asset: AssetId,
+    pub req_amount: i64,
+    pub resp_asset: AssetId,
+    pub resp_amount: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LoadPricesRequest {
+    pub asset: AssetId,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LoadPricesResponse {
+    pub asset: AssetId,
+    pub ind: Option<f64>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CancelPricesRequest {
+    pub asset: AssetId,
+}
+pub type CancelPricesResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubmitRequest {
+    pub order: PriceOrder,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubmitResponse {
+    pub order_id: OrderId,
+    pub submit_link: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct EditRequest {
+    pub order_id: OrderId,
+    pub price: f64,
+}
+pub type EditResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CancelRequest {
+    pub order_id: OrderId,
+}
+pub type CancelResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubscribeRequest {
+    pub session_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubscribeResponse {
+    pub session_id: String,
+    pub orders: Vec<OrderCreatedNotification>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubscribePriceRequest {
+    pub asset_id: AssetId,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SubscribePriceResponse {
+    pub asset_id: AssetId,
+    pub price: Option<f64>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UnsubscribePriceRequest {
+    pub asset_id: AssetId,
+}
+pub type UnsubscribePriceResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OrderCreatedNotification {
+    pub order_id: OrderId,
+    pub submit_link: String,
+    pub order: PriceOrder,
+    pub created_at: Timestamp,
+    pub expires_at: Timestamp,
+    pub own: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct OrderRemovedNotification {
+    pub order_id: OrderId,
+    pub submit_link: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LinkRequest {
+    pub order_id: OrderId,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LinkResponse {
+    pub order: AmountOrder,
+    pub submitted: PriceOrder,
+    pub side: OrderSide,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AddrRequest {
+    pub order_id: OrderId,
+    pub pset: String,
+    pub recv_addr: String,
+    pub change_addr: String,
+}
+pub type AddrResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SignNotification {
+    pub order_id: OrderId,
+    pub pset: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SignRequest {
+    pub order_id: OrderId,
+    pub signed_pset: String,
+    pub side: OrderSide,
+}
+pub type SignResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CompleteNotification {
+    pub order_id: OrderId,
+    pub txid: Option<String>,
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Request {
     ServerStatus(Empty),
-    Assets(Empty),
+    Assets(AssetsRequest),
     PegFee(PegFeeRequest),
     Peg(PegRequest),
     PegStatus(PegStatusRequest),
+
     MatchRfq(MatchRfqRequest),
     MatchRfqCancel(MatchCancelRequest),
     MatchRfqAccept(MatchRfqAcceptRequest),
@@ -418,12 +573,24 @@ pub enum Request {
     Swap(SwapRequest),
     LoginClient(LoginClientRequest),
     LoginDealer(LoginDealerRequest),
+
     VerifyDevice(VerifyDeviceRequest),
     RegisterDevice(RegisterDeviceRequest),
     RegisterAddresses(RegisterAddressesRequest),
     UpdatePushToken(UpdatePushTokenRequest),
+
     RegisterPhone(RegisterPhoneRequest),
     VerifyPhone(VerifyPhoneRequest),
+
+    LoadPrices(LoadPricesRequest),
+    CancelPrices(CancelPricesRequest),
+    Submit(SubmitRequest),
+    Edit(EditRequest),
+    Cancel(CancelRequest),
+    Subscribe(SubscribeRequest),
+    Link(LinkRequest),
+    Addr(AddrRequest),
+    Sign(SignRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -433,6 +600,7 @@ pub enum Response {
     PegFee(PegFeeResponse),
     Peg(PegResponse),
     PegStatus(PegStatus),
+
     MatchRfq(MatchRfqResponse),
     MatchRfqCancel(Empty),
     MatchRfqAccept(Empty),
@@ -442,12 +610,24 @@ pub enum Response {
     Swap(Empty),
     LoginClient(LoginClientResponse),
     LoginDealer(Empty),
+
     VerifyDevice(VerifyDeviceResponse),
     RegisterDevice(RegisterDeviceResponse),
     RegisterAddresses(Empty),
     UpdatePushToken(Empty),
+
     RegisterPhone(RegisterPhoneResponse),
     VerifyPhone(Empty),
+
+    LoadPrices(LoadPricesResponse),
+    CancelPrices(CancelPricesResponse),
+    Submit(SubmitResponse),
+    Edit(EditResponse),
+    Cancel(CancelResponse),
+    Subscribe(SubscribeResponse),
+    Link(LinkResponse),
+    Addr(AddrResponse),
+    Sign(SignResponse),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -459,6 +639,12 @@ pub enum Notification {
     RfqCreated(RfqCreatedNotification),
     RfqRemoved(RfqRemovedNotification),
     PriceUpdate(PriceUpdateNotification),
+
+    UpdatePrices(LoadPricesResponse),
+    OrderCreated(OrderCreatedNotification),
+    OrderRemoved(OrderRemovedNotification),
+    Sign(SignNotification),
+    Complete(CompleteNotification),
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]

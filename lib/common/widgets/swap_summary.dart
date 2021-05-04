@@ -143,14 +143,14 @@ class SwapSummary extends StatelessWidget {
         if (tx != null && type != TxType.swap) ...[
           // notes
           Padding(
-            padding: EdgeInsets.only(top: 20.5.h),
+            padding: EdgeInsets.only(top: 20.h),
             child: TxDetailsRowNotes(
               tx: tx,
             ),
           ),
         ],
         Padding(
-          padding: EdgeInsets.only(top: 20.5.h),
+          padding: EdgeInsets.only(top: 20.h),
           child: FDottedLine(
             color: Colors.white,
             width: MediaQuery.of(context).size.width,
@@ -166,10 +166,14 @@ class SwapSummary extends StatelessWidget {
         ),
         Spacer(),
         Padding(
-          padding: EdgeInsets.only(bottom: 40.h),
-          child: TxDetailsBottomButtons(
-            id: txId,
-            isLiquid: true,
+          padding: EdgeInsets.only(bottom: 16.h),
+          child: Container(
+            width: double.maxFinite,
+            height: 54.h,
+            child: TxDetailsBottomButtons(
+              id: txId,
+              isLiquid: true,
+            ),
           ),
         ),
       ],

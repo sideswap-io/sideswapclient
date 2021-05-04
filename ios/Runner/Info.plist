@@ -28,10 +28,14 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSContactsUsageDescription</key>  
+	<string>We will only use this information to show you which of your friends are using SideSwap to simplify payments.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app requires access to the camera to scan a QR code when you need it</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Use biometric authentication for wallet protection</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires access to photos to setup user avatar</string>
     <key>UIBackgroundModes</key>
     <array>
 	    <string>fetch</string>

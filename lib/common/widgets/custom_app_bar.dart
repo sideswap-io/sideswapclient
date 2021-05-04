@@ -39,7 +39,9 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Padding(
-                      padding: EdgeInsets.only(top: 4.h, right: 22.w),
+                      padding: EdgeInsets.only(
+                          top: 4.h + MediaQuery.of(context).padding.top,
+                          right: 22.w),
                       child: CustomBackButton(
                         width: 18.w,
                         height: 18.w,
@@ -54,7 +56,6 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                   child: Align(
                     alignment: Alignment.center,
                     child: Container(
-                      height: 100.h,
                       width: 260.w,
                       child: Text(
                         title ?? '',

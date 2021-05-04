@@ -520,6 +520,54 @@ class TransItem extends $pb.GeneratedMessage {
   Peg ensurePeg() => $_ensure(4);
 }
 
+class GenericResponse extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'GenericResponse', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..a<$core.bool>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'success', $pb.PbFieldType.QB)
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'errorMsg')
+  ;
+
+  GenericResponse._() : super();
+  factory GenericResponse() => create();
+  factory GenericResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory GenericResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  GenericResponse clone() => GenericResponse()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  GenericResponse copyWith(void Function(GenericResponse) updates) => super.copyWith((message) => updates(message as GenericResponse)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static GenericResponse create() => GenericResponse._();
+  GenericResponse createEmptyInstance() => create();
+  static $pb.PbList<GenericResponse> createRepeated() => $pb.PbList<GenericResponse>();
+  @$core.pragma('dart2js:noInline')
+  static GenericResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<GenericResponse>(create);
+  static GenericResponse _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool v) { $_setBool(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get errorMsg => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set errorMsg($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorMsg() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorMsg() => clearField(2);
+}
+
 class ServerStatus extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'ServerStatus', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'minPegInAmount', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
@@ -588,6 +636,54 @@ class ServerStatus extends $pb.GeneratedMessage {
   void clearServerFeePercentPegOut() => clearField(4);
 }
 
+class Contact extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Contact', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phone')
+  ;
+
+  Contact._() : super();
+  factory Contact() => create();
+  factory Contact.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Contact.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  Contact clone() => Contact()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  Contact copyWith(void Function(Contact) updates) => super.copyWith((message) => updates(message as Contact)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static Contact create() => Contact._();
+  Contact createEmptyInstance() => create();
+  static $pb.PbList<Contact> createRepeated() => $pb.PbList<Contact>();
+  @$core.pragma('dart2js:noInline')
+  static Contact getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Contact>(create);
+  static Contact _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get name => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set name($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasName() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearName() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get phone => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set phone($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPhone() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPhone() => clearField(2);
+}
+
 class To_Login extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.Login', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mnemonic')
@@ -624,6 +720,122 @@ class To_Login extends $pb.GeneratedMessage {
   $core.bool hasMnemonic() => $_has(0);
   @$pb.TagNumber(1)
   void clearMnemonic() => clearField(1);
+}
+
+class To_EncryptPin extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.EncryptPin', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mnemonic')
+  ;
+
+  To_EncryptPin._() : super();
+  factory To_EncryptPin() => create();
+  factory To_EncryptPin.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_EncryptPin.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_EncryptPin clone() => To_EncryptPin()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_EncryptPin copyWith(void Function(To_EncryptPin) updates) => super.copyWith((message) => updates(message as To_EncryptPin)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_EncryptPin create() => To_EncryptPin._();
+  To_EncryptPin createEmptyInstance() => create();
+  static $pb.PbList<To_EncryptPin> createRepeated() => $pb.PbList<To_EncryptPin>();
+  @$core.pragma('dart2js:noInline')
+  static To_EncryptPin getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_EncryptPin>(create);
+  static To_EncryptPin _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get pin => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set pin($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPin() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPin() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get mnemonic => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set mnemonic($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMnemonic() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMnemonic() => clearField(2);
+}
+
+class To_DecryptPin extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.DecryptPin', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pin')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'salt')
+    ..aQS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'encryptedData')
+    ..aQS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pinIdentifier')
+  ;
+
+  To_DecryptPin._() : super();
+  factory To_DecryptPin() => create();
+  factory To_DecryptPin.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_DecryptPin.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_DecryptPin clone() => To_DecryptPin()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_DecryptPin copyWith(void Function(To_DecryptPin) updates) => super.copyWith((message) => updates(message as To_DecryptPin)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_DecryptPin create() => To_DecryptPin._();
+  To_DecryptPin createEmptyInstance() => create();
+  static $pb.PbList<To_DecryptPin> createRepeated() => $pb.PbList<To_DecryptPin>();
+  @$core.pragma('dart2js:noInline')
+  static To_DecryptPin getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_DecryptPin>(create);
+  static To_DecryptPin _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get pin => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set pin($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPin() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPin() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get salt => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set salt($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSalt() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSalt() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get encryptedData => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set encryptedData($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEncryptedData() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEncryptedData() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get pinIdentifier => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set pinIdentifier($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPinIdentifier() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPinIdentifier() => clearField(4);
 }
 
 class To_SwapRequest extends $pb.GeneratedMessage {
@@ -687,6 +899,7 @@ class To_SwapRequest extends $pb.GeneratedMessage {
 class To_SwapAccept extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.SwapAccept', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAddr')
+    ..aInt64(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAmount')
     ..hasRequiredFields = false
   ;
 
@@ -721,6 +934,63 @@ class To_SwapAccept extends $pb.GeneratedMessage {
   $core.bool hasRecvAddr() => $_has(0);
   @$pb.TagNumber(1)
   void clearRecvAddr() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get recvAmount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set recvAmount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRecvAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRecvAmount() => clearField(2);
+}
+
+class To_SetMemo extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.SetMemo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txid')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memo')
+  ;
+
+  To_SetMemo._() : super();
+  factory To_SetMemo() => create();
+  factory To_SetMemo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_SetMemo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_SetMemo clone() => To_SetMemo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_SetMemo copyWith(void Function(To_SetMemo) updates) => super.copyWith((message) => updates(message as To_SetMemo)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_SetMemo create() => To_SetMemo._();
+  To_SetMemo createEmptyInstance() => create();
+  static $pb.PbList<To_SetMemo> createRepeated() => $pb.PbList<To_SetMemo>();
+  @$core.pragma('dart2js:noInline')
+  static To_SetMemo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_SetMemo>(create);
+  static To_SetMemo _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get txid => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set txid($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTxid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTxid() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get memo => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set memo($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMemo() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMemo() => clearField(2);
 }
 
 class To_CreateTx extends $pb.GeneratedMessage {
@@ -811,34 +1081,33 @@ class To_SendTx extends $pb.GeneratedMessage {
   void clearMemo() => clearField(1);
 }
 
-class To_SetMemo extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.SetMemo', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+class To_BlindedValues extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.BlindedValues', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txid')
-    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'memo')
   ;
 
-  To_SetMemo._() : super();
-  factory To_SetMemo() => create();
-  factory To_SetMemo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory To_SetMemo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  To_BlindedValues._() : super();
+  factory To_BlindedValues() => create();
+  factory To_BlindedValues.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_BlindedValues.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  To_SetMemo clone() => To_SetMemo()..mergeFromMessage(this);
+  To_BlindedValues clone() => To_BlindedValues()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  To_SetMemo copyWith(void Function(To_SetMemo) updates) => super.copyWith((message) => updates(message as To_SetMemo)); // ignore: deprecated_member_use
+  To_BlindedValues copyWith(void Function(To_BlindedValues) updates) => super.copyWith((message) => updates(message as To_BlindedValues)); // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
-  static To_SetMemo create() => To_SetMemo._();
-  To_SetMemo createEmptyInstance() => create();
-  static $pb.PbList<To_SetMemo> createRepeated() => $pb.PbList<To_SetMemo>();
+  static To_BlindedValues create() => To_BlindedValues._();
+  To_BlindedValues createEmptyInstance() => create();
+  static $pb.PbList<To_BlindedValues> createRepeated() => $pb.PbList<To_BlindedValues>();
   @$core.pragma('dart2js:noInline')
-  static To_SetMemo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_SetMemo>(create);
-  static To_SetMemo _defaultInstance;
+  static To_BlindedValues getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_BlindedValues>(create);
+  static To_BlindedValues _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get txid => $_getSZ(0);
@@ -848,15 +1117,6 @@ class To_SetMemo extends $pb.GeneratedMessage {
   $core.bool hasTxid() => $_has(0);
   @$pb.TagNumber(1)
   void clearTxid() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get memo => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set memo($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasMemo() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearMemo() => clearField(2);
 }
 
 class To_UpdatePushToken extends $pb.GeneratedMessage {
@@ -983,20 +1243,154 @@ class To_VerifyPhone extends $pb.GeneratedMessage {
   void clearCode() => clearField(2);
 }
 
+class To_UploadAvatar extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.UploadAvatar', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneKey')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'text')
+  ;
+
+  To_UploadAvatar._() : super();
+  factory To_UploadAvatar() => create();
+  factory To_UploadAvatar.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_UploadAvatar.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_UploadAvatar clone() => To_UploadAvatar()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_UploadAvatar copyWith(void Function(To_UploadAvatar) updates) => super.copyWith((message) => updates(message as To_UploadAvatar)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_UploadAvatar create() => To_UploadAvatar._();
+  To_UploadAvatar createEmptyInstance() => create();
+  static $pb.PbList<To_UploadAvatar> createRepeated() => $pb.PbList<To_UploadAvatar>();
+  @$core.pragma('dart2js:noInline')
+  static To_UploadAvatar getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_UploadAvatar>(create);
+  static To_UploadAvatar _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get phoneKey => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phoneKey($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhoneKey() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhoneKey() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get text => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set text($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasText() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearText() => clearField(2);
+}
+
+class To_UploadContacts extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.UploadContacts', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'phoneKey')
+    ..pc<Contact>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'contacts', $pb.PbFieldType.PM, subBuilder: Contact.create)
+  ;
+
+  To_UploadContacts._() : super();
+  factory To_UploadContacts() => create();
+  factory To_UploadContacts.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_UploadContacts.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_UploadContacts clone() => To_UploadContacts()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_UploadContacts copyWith(void Function(To_UploadContacts) updates) => super.copyWith((message) => updates(message as To_UploadContacts)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_UploadContacts create() => To_UploadContacts._();
+  To_UploadContacts createEmptyInstance() => create();
+  static $pb.PbList<To_UploadContacts> createRepeated() => $pb.PbList<To_UploadContacts>();
+  @$core.pragma('dart2js:noInline')
+  static To_UploadContacts getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_UploadContacts>(create);
+  static To_UploadContacts _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get phoneKey => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set phoneKey($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasPhoneKey() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearPhoneKey() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.List<Contact> get contacts => $_getList(1);
+}
+
+class To_LinkOrder extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.LinkOrder', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderId')
+  ;
+
+  To_LinkOrder._() : super();
+  factory To_LinkOrder() => create();
+  factory To_LinkOrder.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_LinkOrder.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_LinkOrder clone() => To_LinkOrder()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_LinkOrder copyWith(void Function(To_LinkOrder) updates) => super.copyWith((message) => updates(message as To_LinkOrder)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_LinkOrder create() => To_LinkOrder._();
+  To_LinkOrder createEmptyInstance() => create();
+  static $pb.PbList<To_LinkOrder> createRepeated() => $pb.PbList<To_LinkOrder>();
+  @$core.pragma('dart2js:noInline')
+  static To_LinkOrder getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_LinkOrder>(create);
+  static To_LinkOrder _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get orderId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set orderId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+}
+
 enum To_Msg {
   login, 
   logout, 
   updatePushToken, 
+  encryptPin, 
+  decryptPin, 
   setMemo, 
   getRecvAddress, 
   createTx, 
   sendTx, 
+  blindedValues, 
   swapRequest, 
   swapCancel, 
   swapAccept, 
   pegRequest, 
   registerPhone, 
   verifyPhone, 
+  uploadAvatar, 
+  uploadContacts, 
+  linkOrder, 
   notSet
 }
 
@@ -1005,33 +1399,45 @@ class To extends $pb.GeneratedMessage {
     1 : To_Msg.login,
     2 : To_Msg.logout,
     3 : To_Msg.updatePushToken,
+    4 : To_Msg.encryptPin,
+    5 : To_Msg.decryptPin,
     10 : To_Msg.setMemo,
     11 : To_Msg.getRecvAddress,
     12 : To_Msg.createTx,
     13 : To_Msg.sendTx,
+    14 : To_Msg.blindedValues,
     20 : To_Msg.swapRequest,
     21 : To_Msg.swapCancel,
     22 : To_Msg.swapAccept,
     23 : To_Msg.pegRequest,
     40 : To_Msg.registerPhone,
     41 : To_Msg.verifyPhone,
+    42 : To_Msg.uploadAvatar,
+    43 : To_Msg.uploadContacts,
+    50 : To_Msg.linkOrder,
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 10, 11, 12, 13, 20, 21, 22, 23, 40, 41])
+    ..oo(0, [1, 2, 3, 4, 5, 10, 11, 12, 13, 14, 20, 21, 22, 23, 40, 41, 42, 43, 50])
     ..aOM<To_Login>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
+    ..aOM<To_EncryptPin>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'encryptPin', subBuilder: To_EncryptPin.create)
+    ..aOM<To_DecryptPin>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'decryptPin', subBuilder: To_DecryptPin.create)
     ..aOM<To_SetMemo>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'setMemo', subBuilder: To_SetMemo.create)
     ..aOM<Empty>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'getRecvAddress', subBuilder: Empty.create)
     ..aOM<To_CreateTx>(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createTx', subBuilder: To_CreateTx.create)
     ..aOM<To_SendTx>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendTx', subBuilder: To_SendTx.create)
+    ..aOM<To_BlindedValues>(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'blindedValues', subBuilder: To_BlindedValues.create)
     ..aOM<To_SwapRequest>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapRequest', subBuilder: To_SwapRequest.create)
     ..aOM<Empty>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapCancel', subBuilder: Empty.create)
     ..aOM<To_SwapAccept>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapAccept', subBuilder: To_SwapAccept.create)
     ..aOM<Empty>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pegRequest', subBuilder: Empty.create)
     ..aOM<To_RegisterPhone>(40, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registerPhone', subBuilder: To_RegisterPhone.create)
     ..aOM<To_VerifyPhone>(41, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifyPhone', subBuilder: To_VerifyPhone.create)
+    ..aOM<To_UploadAvatar>(42, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadAvatar', subBuilder: To_UploadAvatar.create)
+    ..aOM<To_UploadContacts>(43, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadContacts', subBuilder: To_UploadContacts.create)
+    ..aOM<To_LinkOrder>(50, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkOrder', subBuilder: To_LinkOrder.create)
   ;
 
   To._() : super();
@@ -1093,115 +1499,368 @@ class To extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   To_UpdatePushToken ensureUpdatePushToken() => $_ensure(2);
 
+  @$pb.TagNumber(4)
+  To_EncryptPin get encryptPin => $_getN(3);
+  @$pb.TagNumber(4)
+  set encryptPin(To_EncryptPin v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasEncryptPin() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEncryptPin() => clearField(4);
+  @$pb.TagNumber(4)
+  To_EncryptPin ensureEncryptPin() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  To_DecryptPin get decryptPin => $_getN(4);
+  @$pb.TagNumber(5)
+  set decryptPin(To_DecryptPin v) { setField(5, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasDecryptPin() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDecryptPin() => clearField(5);
+  @$pb.TagNumber(5)
+  To_DecryptPin ensureDecryptPin() => $_ensure(4);
+
   @$pb.TagNumber(10)
-  To_SetMemo get setMemo => $_getN(3);
+  To_SetMemo get setMemo => $_getN(5);
   @$pb.TagNumber(10)
   set setMemo(To_SetMemo v) { setField(10, v); }
   @$pb.TagNumber(10)
-  $core.bool hasSetMemo() => $_has(3);
+  $core.bool hasSetMemo() => $_has(5);
   @$pb.TagNumber(10)
   void clearSetMemo() => clearField(10);
   @$pb.TagNumber(10)
-  To_SetMemo ensureSetMemo() => $_ensure(3);
+  To_SetMemo ensureSetMemo() => $_ensure(5);
 
   @$pb.TagNumber(11)
-  Empty get getRecvAddress => $_getN(4);
+  Empty get getRecvAddress => $_getN(6);
   @$pb.TagNumber(11)
   set getRecvAddress(Empty v) { setField(11, v); }
   @$pb.TagNumber(11)
-  $core.bool hasGetRecvAddress() => $_has(4);
+  $core.bool hasGetRecvAddress() => $_has(6);
   @$pb.TagNumber(11)
   void clearGetRecvAddress() => clearField(11);
   @$pb.TagNumber(11)
-  Empty ensureGetRecvAddress() => $_ensure(4);
+  Empty ensureGetRecvAddress() => $_ensure(6);
 
   @$pb.TagNumber(12)
-  To_CreateTx get createTx => $_getN(5);
+  To_CreateTx get createTx => $_getN(7);
   @$pb.TagNumber(12)
   set createTx(To_CreateTx v) { setField(12, v); }
   @$pb.TagNumber(12)
-  $core.bool hasCreateTx() => $_has(5);
+  $core.bool hasCreateTx() => $_has(7);
   @$pb.TagNumber(12)
   void clearCreateTx() => clearField(12);
   @$pb.TagNumber(12)
-  To_CreateTx ensureCreateTx() => $_ensure(5);
+  To_CreateTx ensureCreateTx() => $_ensure(7);
 
   @$pb.TagNumber(13)
-  To_SendTx get sendTx => $_getN(6);
+  To_SendTx get sendTx => $_getN(8);
   @$pb.TagNumber(13)
   set sendTx(To_SendTx v) { setField(13, v); }
   @$pb.TagNumber(13)
-  $core.bool hasSendTx() => $_has(6);
+  $core.bool hasSendTx() => $_has(8);
   @$pb.TagNumber(13)
   void clearSendTx() => clearField(13);
   @$pb.TagNumber(13)
-  To_SendTx ensureSendTx() => $_ensure(6);
+  To_SendTx ensureSendTx() => $_ensure(8);
+
+  @$pb.TagNumber(14)
+  To_BlindedValues get blindedValues => $_getN(9);
+  @$pb.TagNumber(14)
+  set blindedValues(To_BlindedValues v) { setField(14, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasBlindedValues() => $_has(9);
+  @$pb.TagNumber(14)
+  void clearBlindedValues() => clearField(14);
+  @$pb.TagNumber(14)
+  To_BlindedValues ensureBlindedValues() => $_ensure(9);
 
   @$pb.TagNumber(20)
-  To_SwapRequest get swapRequest => $_getN(7);
+  To_SwapRequest get swapRequest => $_getN(10);
   @$pb.TagNumber(20)
   set swapRequest(To_SwapRequest v) { setField(20, v); }
   @$pb.TagNumber(20)
-  $core.bool hasSwapRequest() => $_has(7);
+  $core.bool hasSwapRequest() => $_has(10);
   @$pb.TagNumber(20)
   void clearSwapRequest() => clearField(20);
   @$pb.TagNumber(20)
-  To_SwapRequest ensureSwapRequest() => $_ensure(7);
+  To_SwapRequest ensureSwapRequest() => $_ensure(10);
 
   @$pb.TagNumber(21)
-  Empty get swapCancel => $_getN(8);
+  Empty get swapCancel => $_getN(11);
   @$pb.TagNumber(21)
   set swapCancel(Empty v) { setField(21, v); }
   @$pb.TagNumber(21)
-  $core.bool hasSwapCancel() => $_has(8);
+  $core.bool hasSwapCancel() => $_has(11);
   @$pb.TagNumber(21)
   void clearSwapCancel() => clearField(21);
   @$pb.TagNumber(21)
-  Empty ensureSwapCancel() => $_ensure(8);
+  Empty ensureSwapCancel() => $_ensure(11);
 
   @$pb.TagNumber(22)
-  To_SwapAccept get swapAccept => $_getN(9);
+  To_SwapAccept get swapAccept => $_getN(12);
   @$pb.TagNumber(22)
   set swapAccept(To_SwapAccept v) { setField(22, v); }
   @$pb.TagNumber(22)
-  $core.bool hasSwapAccept() => $_has(9);
+  $core.bool hasSwapAccept() => $_has(12);
   @$pb.TagNumber(22)
   void clearSwapAccept() => clearField(22);
   @$pb.TagNumber(22)
-  To_SwapAccept ensureSwapAccept() => $_ensure(9);
+  To_SwapAccept ensureSwapAccept() => $_ensure(12);
 
   @$pb.TagNumber(23)
-  Empty get pegRequest => $_getN(10);
+  Empty get pegRequest => $_getN(13);
   @$pb.TagNumber(23)
   set pegRequest(Empty v) { setField(23, v); }
   @$pb.TagNumber(23)
-  $core.bool hasPegRequest() => $_has(10);
+  $core.bool hasPegRequest() => $_has(13);
   @$pb.TagNumber(23)
   void clearPegRequest() => clearField(23);
   @$pb.TagNumber(23)
-  Empty ensurePegRequest() => $_ensure(10);
+  Empty ensurePegRequest() => $_ensure(13);
 
   @$pb.TagNumber(40)
-  To_RegisterPhone get registerPhone => $_getN(11);
+  To_RegisterPhone get registerPhone => $_getN(14);
   @$pb.TagNumber(40)
   set registerPhone(To_RegisterPhone v) { setField(40, v); }
   @$pb.TagNumber(40)
-  $core.bool hasRegisterPhone() => $_has(11);
+  $core.bool hasRegisterPhone() => $_has(14);
   @$pb.TagNumber(40)
   void clearRegisterPhone() => clearField(40);
   @$pb.TagNumber(40)
-  To_RegisterPhone ensureRegisterPhone() => $_ensure(11);
+  To_RegisterPhone ensureRegisterPhone() => $_ensure(14);
 
   @$pb.TagNumber(41)
-  To_VerifyPhone get verifyPhone => $_getN(12);
+  To_VerifyPhone get verifyPhone => $_getN(15);
   @$pb.TagNumber(41)
   set verifyPhone(To_VerifyPhone v) { setField(41, v); }
   @$pb.TagNumber(41)
-  $core.bool hasVerifyPhone() => $_has(12);
+  $core.bool hasVerifyPhone() => $_has(15);
   @$pb.TagNumber(41)
   void clearVerifyPhone() => clearField(41);
   @$pb.TagNumber(41)
-  To_VerifyPhone ensureVerifyPhone() => $_ensure(12);
+  To_VerifyPhone ensureVerifyPhone() => $_ensure(15);
+
+  @$pb.TagNumber(42)
+  To_UploadAvatar get uploadAvatar => $_getN(16);
+  @$pb.TagNumber(42)
+  set uploadAvatar(To_UploadAvatar v) { setField(42, v); }
+  @$pb.TagNumber(42)
+  $core.bool hasUploadAvatar() => $_has(16);
+  @$pb.TagNumber(42)
+  void clearUploadAvatar() => clearField(42);
+  @$pb.TagNumber(42)
+  To_UploadAvatar ensureUploadAvatar() => $_ensure(16);
+
+  @$pb.TagNumber(43)
+  To_UploadContacts get uploadContacts => $_getN(17);
+  @$pb.TagNumber(43)
+  set uploadContacts(To_UploadContacts v) { setField(43, v); }
+  @$pb.TagNumber(43)
+  $core.bool hasUploadContacts() => $_has(17);
+  @$pb.TagNumber(43)
+  void clearUploadContacts() => clearField(43);
+  @$pb.TagNumber(43)
+  To_UploadContacts ensureUploadContacts() => $_ensure(17);
+
+  @$pb.TagNumber(50)
+  To_LinkOrder get linkOrder => $_getN(18);
+  @$pb.TagNumber(50)
+  set linkOrder(To_LinkOrder v) { setField(50, v); }
+  @$pb.TagNumber(50)
+  $core.bool hasLinkOrder() => $_has(18);
+  @$pb.TagNumber(50)
+  void clearLinkOrder() => clearField(50);
+  @$pb.TagNumber(50)
+  To_LinkOrder ensureLinkOrder() => $_ensure(18);
+}
+
+class From_EncryptPin_Data extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.EncryptPin.Data', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'salt')
+    ..aQS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'encryptedData')
+    ..aQS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'pinIdentifier')
+  ;
+
+  From_EncryptPin_Data._() : super();
+  factory From_EncryptPin_Data() => create();
+  factory From_EncryptPin_Data.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_EncryptPin_Data.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_EncryptPin_Data clone() => From_EncryptPin_Data()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_EncryptPin_Data copyWith(void Function(From_EncryptPin_Data) updates) => super.copyWith((message) => updates(message as From_EncryptPin_Data)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_EncryptPin_Data create() => From_EncryptPin_Data._();
+  From_EncryptPin_Data createEmptyInstance() => create();
+  static $pb.PbList<From_EncryptPin_Data> createRepeated() => $pb.PbList<From_EncryptPin_Data>();
+  @$core.pragma('dart2js:noInline')
+  static From_EncryptPin_Data getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_EncryptPin_Data>(create);
+  static From_EncryptPin_Data _defaultInstance;
+
+  @$pb.TagNumber(2)
+  $core.String get salt => $_getSZ(0);
+  @$pb.TagNumber(2)
+  set salt($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSalt() => $_has(0);
+  @$pb.TagNumber(2)
+  void clearSalt() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get encryptedData => $_getSZ(1);
+  @$pb.TagNumber(3)
+  set encryptedData($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEncryptedData() => $_has(1);
+  @$pb.TagNumber(3)
+  void clearEncryptedData() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get pinIdentifier => $_getSZ(2);
+  @$pb.TagNumber(4)
+  set pinIdentifier($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPinIdentifier() => $_has(2);
+  @$pb.TagNumber(4)
+  void clearPinIdentifier() => clearField(4);
+}
+
+enum From_EncryptPin_Result {
+  error, 
+  data, 
+  notSet
+}
+
+class From_EncryptPin extends $pb.GeneratedMessage {
+  static const $core.Map<$core.int, From_EncryptPin_Result> _From_EncryptPin_ResultByTag = {
+    1 : From_EncryptPin_Result.error,
+    2 : From_EncryptPin_Result.data,
+    0 : From_EncryptPin_Result.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.EncryptPin', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2])
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'error')
+    ..aOM<From_EncryptPin_Data>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'data', subBuilder: From_EncryptPin_Data.create)
+  ;
+
+  From_EncryptPin._() : super();
+  factory From_EncryptPin() => create();
+  factory From_EncryptPin.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_EncryptPin.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_EncryptPin clone() => From_EncryptPin()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_EncryptPin copyWith(void Function(From_EncryptPin) updates) => super.copyWith((message) => updates(message as From_EncryptPin)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_EncryptPin create() => From_EncryptPin._();
+  From_EncryptPin createEmptyInstance() => create();
+  static $pb.PbList<From_EncryptPin> createRepeated() => $pb.PbList<From_EncryptPin>();
+  @$core.pragma('dart2js:noInline')
+  static From_EncryptPin getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_EncryptPin>(create);
+  static From_EncryptPin _defaultInstance;
+
+  From_EncryptPin_Result whichResult() => _From_EncryptPin_ResultByTag[$_whichOneof(0)];
+  void clearResult() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  $core.String get error => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set error($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasError() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearError() => clearField(1);
+
+  @$pb.TagNumber(2)
+  From_EncryptPin_Data get data => $_getN(1);
+  @$pb.TagNumber(2)
+  set data(From_EncryptPin_Data v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasData() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearData() => clearField(2);
+  @$pb.TagNumber(2)
+  From_EncryptPin_Data ensureData() => $_ensure(1);
+}
+
+enum From_DecryptPin_Result {
+  error, 
+  mnemonic, 
+  notSet
+}
+
+class From_DecryptPin extends $pb.GeneratedMessage {
+  static const $core.Map<$core.int, From_DecryptPin_Result> _From_DecryptPin_ResultByTag = {
+    1 : From_DecryptPin_Result.error,
+    2 : From_DecryptPin_Result.mnemonic,
+    0 : From_DecryptPin_Result.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.DecryptPin', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2])
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'error')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mnemonic')
+    ..hasRequiredFields = false
+  ;
+
+  From_DecryptPin._() : super();
+  factory From_DecryptPin() => create();
+  factory From_DecryptPin.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_DecryptPin.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_DecryptPin clone() => From_DecryptPin()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_DecryptPin copyWith(void Function(From_DecryptPin) updates) => super.copyWith((message) => updates(message as From_DecryptPin)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_DecryptPin create() => From_DecryptPin._();
+  From_DecryptPin createEmptyInstance() => create();
+  static $pb.PbList<From_DecryptPin> createRepeated() => $pb.PbList<From_DecryptPin>();
+  @$core.pragma('dart2js:noInline')
+  static From_DecryptPin getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_DecryptPin>(create);
+  static From_DecryptPin _defaultInstance;
+
+  From_DecryptPin_Result whichResult() => _From_DecryptPin_ResultByTag[$_whichOneof(0)];
+  void clearResult() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  $core.String get error => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set error($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasError() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearError() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get mnemonic => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set mnemonic($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasMnemonic() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMnemonic() => clearField(2);
 }
 
 class From_RemovedTx extends $pb.GeneratedMessage {
@@ -1605,6 +2264,54 @@ class From_SendResult extends $pb.GeneratedMessage {
   TransItem ensureTxItem() => $_ensure(1);
 }
 
+class From_BlindedValues extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.BlindedValues', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txid')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'blindedValues')
+  ;
+
+  From_BlindedValues._() : super();
+  factory From_BlindedValues() => create();
+  factory From_BlindedValues.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_BlindedValues.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_BlindedValues clone() => From_BlindedValues()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_BlindedValues copyWith(void Function(From_BlindedValues) updates) => super.copyWith((message) => updates(message as From_BlindedValues)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_BlindedValues create() => From_BlindedValues._();
+  From_BlindedValues createEmptyInstance() => create();
+  static $pb.PbList<From_BlindedValues> createRepeated() => $pb.PbList<From_BlindedValues>();
+  @$core.pragma('dart2js:noInline')
+  static From_BlindedValues getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_BlindedValues>(create);
+  static From_BlindedValues _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get txid => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set txid($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTxid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTxid() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get blindedValues => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set blindedValues($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBlindedValues() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBlindedValues() => clearField(2);
+}
+
 class From_PriceUpdate extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.PriceUpdate', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'asset')
@@ -1793,6 +2500,44 @@ class From_VerifyPhone extends $pb.GeneratedMessage {
   void clearErrorMsg() => clearField(2);
 }
 
+class From_ShowMessage extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.ShowMessage', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'text')
+  ;
+
+  From_ShowMessage._() : super();
+  factory From_ShowMessage() => create();
+  factory From_ShowMessage.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_ShowMessage.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_ShowMessage clone() => From_ShowMessage()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_ShowMessage copyWith(void Function(From_ShowMessage) updates) => super.copyWith((message) => updates(message as From_ShowMessage)); // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_ShowMessage create() => From_ShowMessage._();
+  From_ShowMessage createEmptyInstance() => create();
+  static $pb.PbList<From_ShowMessage> createRepeated() => $pb.PbList<From_ShowMessage>();
+  @$core.pragma('dart2js:noInline')
+  static From_ShowMessage getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_ShowMessage>(create);
+  static From_ShowMessage _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get text => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set text($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasText() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearText() => clearField(1);
+}
+
 enum From_Msg {
   updatedTx, 
   removedTx, 
@@ -1800,6 +2545,8 @@ enum From_Msg {
   balanceUpdate, 
   serverStatus, 
   priceUpdate, 
+  encryptPin, 
+  decryptPin, 
   swapReview, 
   swapWaitTx, 
   swapSucceed, 
@@ -1807,8 +2554,12 @@ enum From_Msg {
   recvAddress, 
   createTxResult, 
   sendResult, 
+  blindedValues, 
   registerPhone, 
   verifyPhone, 
+  uploadAvatar, 
+  uploadContacts, 
+  showMessage, 
   notSet
 }
 
@@ -1820,6 +2571,8 @@ class From extends $pb.GeneratedMessage {
     4 : From_Msg.balanceUpdate,
     5 : From_Msg.serverStatus,
     6 : From_Msg.priceUpdate,
+    10 : From_Msg.encryptPin,
+    11 : From_Msg.decryptPin,
     20 : From_Msg.swapReview,
     21 : From_Msg.swapWaitTx,
     22 : From_Msg.swapSucceed,
@@ -1827,18 +2580,24 @@ class From extends $pb.GeneratedMessage {
     30 : From_Msg.recvAddress,
     31 : From_Msg.createTxResult,
     32 : From_Msg.sendResult,
+    33 : From_Msg.blindedValues,
     40 : From_Msg.registerPhone,
     41 : From_Msg.verifyPhone,
+    42 : From_Msg.uploadAvatar,
+    43 : From_Msg.uploadContacts,
+    50 : From_Msg.showMessage,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 20, 21, 22, 23, 30, 31, 32, 40, 41])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 10, 11, 20, 21, 22, 23, 30, 31, 32, 33, 40, 41, 42, 43, 50])
     ..aOM<TransItem>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedTx', subBuilder: TransItem.create)
     ..aOM<From_RemovedTx>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'removedTx', subBuilder: From_RemovedTx.create)
     ..aOM<Asset>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newAsset', subBuilder: Asset.create)
     ..aOM<Balance>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'balanceUpdate', subBuilder: Balance.create)
     ..aOM<ServerStatus>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serverStatus', subBuilder: ServerStatus.create)
     ..aOM<From_PriceUpdate>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'priceUpdate', subBuilder: From_PriceUpdate.create)
+    ..aOM<From_EncryptPin>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'encryptPin', subBuilder: From_EncryptPin.create)
+    ..aOM<From_DecryptPin>(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'decryptPin', subBuilder: From_DecryptPin.create)
     ..aOM<From_SwapReview>(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapReview', subBuilder: From_SwapReview.create)
     ..aOM<From_SwapWaitTx>(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapWaitTx', subBuilder: From_SwapWaitTx.create)
     ..aOM<TransItem>(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapSucceed', subBuilder: TransItem.create)
@@ -1846,8 +2605,12 @@ class From extends $pb.GeneratedMessage {
     ..aOM<Address>(30, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAddress', subBuilder: Address.create)
     ..aOM<From_CreateTxResult>(31, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createTxResult', subBuilder: From_CreateTxResult.create)
     ..aOM<From_SendResult>(32, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendResult', subBuilder: From_SendResult.create)
+    ..aOM<From_BlindedValues>(33, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'blindedValues', subBuilder: From_BlindedValues.create)
     ..aOM<From_RegisterPhone>(40, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'registerPhone', subBuilder: From_RegisterPhone.create)
     ..aOM<From_VerifyPhone>(41, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'verifyPhone', subBuilder: From_VerifyPhone.create)
+    ..aOM<GenericResponse>(42, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadAvatar', subBuilder: GenericResponse.create)
+    ..aOM<GenericResponse>(43, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'uploadContacts', subBuilder: GenericResponse.create)
+    ..aOM<From_ShowMessage>(50, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'showMessage', subBuilder: From_ShowMessage.create)
   ;
 
   From._() : super();
@@ -1942,101 +2705,167 @@ class From extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   From_PriceUpdate ensurePriceUpdate() => $_ensure(5);
 
+  @$pb.TagNumber(10)
+  From_EncryptPin get encryptPin => $_getN(6);
+  @$pb.TagNumber(10)
+  set encryptPin(From_EncryptPin v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasEncryptPin() => $_has(6);
+  @$pb.TagNumber(10)
+  void clearEncryptPin() => clearField(10);
+  @$pb.TagNumber(10)
+  From_EncryptPin ensureEncryptPin() => $_ensure(6);
+
+  @$pb.TagNumber(11)
+  From_DecryptPin get decryptPin => $_getN(7);
+  @$pb.TagNumber(11)
+  set decryptPin(From_DecryptPin v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasDecryptPin() => $_has(7);
+  @$pb.TagNumber(11)
+  void clearDecryptPin() => clearField(11);
+  @$pb.TagNumber(11)
+  From_DecryptPin ensureDecryptPin() => $_ensure(7);
+
   @$pb.TagNumber(20)
-  From_SwapReview get swapReview => $_getN(6);
+  From_SwapReview get swapReview => $_getN(8);
   @$pb.TagNumber(20)
   set swapReview(From_SwapReview v) { setField(20, v); }
   @$pb.TagNumber(20)
-  $core.bool hasSwapReview() => $_has(6);
+  $core.bool hasSwapReview() => $_has(8);
   @$pb.TagNumber(20)
   void clearSwapReview() => clearField(20);
   @$pb.TagNumber(20)
-  From_SwapReview ensureSwapReview() => $_ensure(6);
+  From_SwapReview ensureSwapReview() => $_ensure(8);
 
   @$pb.TagNumber(21)
-  From_SwapWaitTx get swapWaitTx => $_getN(7);
+  From_SwapWaitTx get swapWaitTx => $_getN(9);
   @$pb.TagNumber(21)
   set swapWaitTx(From_SwapWaitTx v) { setField(21, v); }
   @$pb.TagNumber(21)
-  $core.bool hasSwapWaitTx() => $_has(7);
+  $core.bool hasSwapWaitTx() => $_has(9);
   @$pb.TagNumber(21)
   void clearSwapWaitTx() => clearField(21);
   @$pb.TagNumber(21)
-  From_SwapWaitTx ensureSwapWaitTx() => $_ensure(7);
+  From_SwapWaitTx ensureSwapWaitTx() => $_ensure(9);
 
   @$pb.TagNumber(22)
-  TransItem get swapSucceed => $_getN(8);
+  TransItem get swapSucceed => $_getN(10);
   @$pb.TagNumber(22)
   set swapSucceed(TransItem v) { setField(22, v); }
   @$pb.TagNumber(22)
-  $core.bool hasSwapSucceed() => $_has(8);
+  $core.bool hasSwapSucceed() => $_has(10);
   @$pb.TagNumber(22)
   void clearSwapSucceed() => clearField(22);
   @$pb.TagNumber(22)
-  TransItem ensureSwapSucceed() => $_ensure(8);
+  TransItem ensureSwapSucceed() => $_ensure(10);
 
   @$pb.TagNumber(23)
-  $core.String get swapFailed => $_getSZ(9);
+  $core.String get swapFailed => $_getSZ(11);
   @$pb.TagNumber(23)
-  set swapFailed($core.String v) { $_setString(9, v); }
+  set swapFailed($core.String v) { $_setString(11, v); }
   @$pb.TagNumber(23)
-  $core.bool hasSwapFailed() => $_has(9);
+  $core.bool hasSwapFailed() => $_has(11);
   @$pb.TagNumber(23)
   void clearSwapFailed() => clearField(23);
 
   @$pb.TagNumber(30)
-  Address get recvAddress => $_getN(10);
+  Address get recvAddress => $_getN(12);
   @$pb.TagNumber(30)
   set recvAddress(Address v) { setField(30, v); }
   @$pb.TagNumber(30)
-  $core.bool hasRecvAddress() => $_has(10);
+  $core.bool hasRecvAddress() => $_has(12);
   @$pb.TagNumber(30)
   void clearRecvAddress() => clearField(30);
   @$pb.TagNumber(30)
-  Address ensureRecvAddress() => $_ensure(10);
+  Address ensureRecvAddress() => $_ensure(12);
 
   @$pb.TagNumber(31)
-  From_CreateTxResult get createTxResult => $_getN(11);
+  From_CreateTxResult get createTxResult => $_getN(13);
   @$pb.TagNumber(31)
   set createTxResult(From_CreateTxResult v) { setField(31, v); }
   @$pb.TagNumber(31)
-  $core.bool hasCreateTxResult() => $_has(11);
+  $core.bool hasCreateTxResult() => $_has(13);
   @$pb.TagNumber(31)
   void clearCreateTxResult() => clearField(31);
   @$pb.TagNumber(31)
-  From_CreateTxResult ensureCreateTxResult() => $_ensure(11);
+  From_CreateTxResult ensureCreateTxResult() => $_ensure(13);
 
   @$pb.TagNumber(32)
-  From_SendResult get sendResult => $_getN(12);
+  From_SendResult get sendResult => $_getN(14);
   @$pb.TagNumber(32)
   set sendResult(From_SendResult v) { setField(32, v); }
   @$pb.TagNumber(32)
-  $core.bool hasSendResult() => $_has(12);
+  $core.bool hasSendResult() => $_has(14);
   @$pb.TagNumber(32)
   void clearSendResult() => clearField(32);
   @$pb.TagNumber(32)
-  From_SendResult ensureSendResult() => $_ensure(12);
+  From_SendResult ensureSendResult() => $_ensure(14);
+
+  @$pb.TagNumber(33)
+  From_BlindedValues get blindedValues => $_getN(15);
+  @$pb.TagNumber(33)
+  set blindedValues(From_BlindedValues v) { setField(33, v); }
+  @$pb.TagNumber(33)
+  $core.bool hasBlindedValues() => $_has(15);
+  @$pb.TagNumber(33)
+  void clearBlindedValues() => clearField(33);
+  @$pb.TagNumber(33)
+  From_BlindedValues ensureBlindedValues() => $_ensure(15);
 
   @$pb.TagNumber(40)
-  From_RegisterPhone get registerPhone => $_getN(13);
+  From_RegisterPhone get registerPhone => $_getN(16);
   @$pb.TagNumber(40)
   set registerPhone(From_RegisterPhone v) { setField(40, v); }
   @$pb.TagNumber(40)
-  $core.bool hasRegisterPhone() => $_has(13);
+  $core.bool hasRegisterPhone() => $_has(16);
   @$pb.TagNumber(40)
   void clearRegisterPhone() => clearField(40);
   @$pb.TagNumber(40)
-  From_RegisterPhone ensureRegisterPhone() => $_ensure(13);
+  From_RegisterPhone ensureRegisterPhone() => $_ensure(16);
 
   @$pb.TagNumber(41)
-  From_VerifyPhone get verifyPhone => $_getN(14);
+  From_VerifyPhone get verifyPhone => $_getN(17);
   @$pb.TagNumber(41)
   set verifyPhone(From_VerifyPhone v) { setField(41, v); }
   @$pb.TagNumber(41)
-  $core.bool hasVerifyPhone() => $_has(14);
+  $core.bool hasVerifyPhone() => $_has(17);
   @$pb.TagNumber(41)
   void clearVerifyPhone() => clearField(41);
   @$pb.TagNumber(41)
-  From_VerifyPhone ensureVerifyPhone() => $_ensure(14);
+  From_VerifyPhone ensureVerifyPhone() => $_ensure(17);
+
+  @$pb.TagNumber(42)
+  GenericResponse get uploadAvatar => $_getN(18);
+  @$pb.TagNumber(42)
+  set uploadAvatar(GenericResponse v) { setField(42, v); }
+  @$pb.TagNumber(42)
+  $core.bool hasUploadAvatar() => $_has(18);
+  @$pb.TagNumber(42)
+  void clearUploadAvatar() => clearField(42);
+  @$pb.TagNumber(42)
+  GenericResponse ensureUploadAvatar() => $_ensure(18);
+
+  @$pb.TagNumber(43)
+  GenericResponse get uploadContacts => $_getN(19);
+  @$pb.TagNumber(43)
+  set uploadContacts(GenericResponse v) { setField(43, v); }
+  @$pb.TagNumber(43)
+  $core.bool hasUploadContacts() => $_has(19);
+  @$pb.TagNumber(43)
+  void clearUploadContacts() => clearField(43);
+  @$pb.TagNumber(43)
+  GenericResponse ensureUploadContacts() => $_ensure(19);
+
+  @$pb.TagNumber(50)
+  From_ShowMessage get showMessage => $_getN(20);
+  @$pb.TagNumber(50)
+  set showMessage(From_ShowMessage v) { setField(50, v); }
+  @$pb.TagNumber(50)
+  $core.bool hasShowMessage() => $_has(20);
+  @$pb.TagNumber(50)
+  void clearShowMessage() => clearField(50);
+  @$pb.TagNumber(50)
+  From_ShowMessage ensureShowMessage() => $_ensure(20);
 }
 

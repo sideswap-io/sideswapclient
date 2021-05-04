@@ -55,6 +55,11 @@ message TransItem {
   }
 }
 
+message GenericResponse {
+  required bool success = 1;
+  optional string error_msg = 2;
+}
+
 message ServerStatus {
   required int64 min_peg_in_amount = 1;
   required int64 min_peg_out_amount = 2;
@@ -62,9 +67,26 @@ message ServerStatus {
   required double server_fee_percent_peg_out = 4;
 }
 
+message Contact {
+  required string name = 1;
+  required string phone = 2;
+}
+
 message To {
   message Login {
     required string mnemonic = 1;
+  }
+
+  message EncryptPin {
+    required string pin = 1;
+    required string mnemonic = 2;
+  }
+
+  message DecryptPin {
+    required string pin = 1;
+    required string salt = 2;
+    required string encrypted_data = 3;
+    required string pin_identifier = 4;
   }
 
   message SwapRequest {
@@ -75,6 +97,12 @@ message To {
 
   message SwapAccept {
     optional string recv_addr = 1;
+    optional int64 recv_amount = 2;
+  }
+
+  message SetMemo {
+    required string txid = 1;
+    required string memo = 2;
   }
 
   message CreateTx {
@@ -86,9 +114,8 @@ message To {
     required string memo = 1;
   }
 
-  message SetMemo {
+  message BlindedValues {
     required string txid = 1;
-    required string memo = 2;
   }
 
   message UpdatePushToken {
@@ -104,15 +131,32 @@ message To {
     required string code = 2;
   }
 
+  message UploadAvatar {
+    required string phone_key = 1;
+    required string text = 2;
+  }
+
+  message UploadContacts {
+    required string phone_key = 1;
+    repeated Contact contacts = 2;
+  }
+
+  message LinkOrder {
+    required string order_id = 1;
+  }
+
   oneof msg {
     Login login = 1;
     Empty logout = 2;
     UpdatePushToken update_push_token = 3;
+    EncryptPin encrypt_pin = 4;
+    DecryptPin decrypt_pin = 5;
 
     SetMemo set_memo = 10;
     Empty get_recv_address = 11;
     CreateTx create_tx = 12;
     SendTx send_tx = 13;
+    BlindedValues blinded_values = 14;
 
     SwapRequest swap_request = 20;
     Empty swap_cancel = 21;
@@ -121,10 +165,33 @@ message To {
 
     RegisterPhone register_phone = 40;
     VerifyPhone verify_phone = 41;
+    UploadAvatar upload_avatar = 42;
+    UploadContacts upload_contacts = 43;
+
+    LinkOrder link_order = 50;
   }
 }
 
 message From {
+  message EncryptPin {
+    message Data {
+      required string salt = 2;
+      required string encrypted_data = 3;
+      required string pin_identifier = 4;
+    }
+    oneof result {
+      string error = 1;
+      Data data = 2;
+    }
+  }
+
+  message DecryptPin {
+    oneof result {
+      string error = 1;
+      string mnemonic = 2;
+    }
+  }
+
   message RemovedTx {
     required string id = 1;
   }
@@ -170,6 +237,11 @@ message From {
     }
   }
 
+  message BlindedValues {
+    required string txid = 1;
+    optional string blinded_values = 2;
+  }
+
   message PriceUpdate {
     required string asset = 1;
     required double bid = 2;
@@ -190,6 +262,10 @@ message From {
     }
   }
 
+  message ShowMessage {
+    required string text = 1;
+  }
+
   oneof msg {
     TransItem updated_tx = 1;
     RemovedTx removed_tx = 2;
@@ -197,6 +273,9 @@ message From {
     Balance balance_update = 4;
     ServerStatus server_status = 5;
     PriceUpdate price_update = 6;
+
+    EncryptPin encrypt_pin = 10;
+    DecryptPin decrypt_pin = 11;
 
     SwapReview swap_review = 20;
     SwapWaitTx swap_wait_tx = 21;
@@ -206,8 +285,13 @@ message From {
     Address recv_address = 30;
     CreateTxResult create_tx_result = 31;
     SendResult send_result = 32;
+    BlindedValues blinded_values = 33;
 
     RegisterPhone register_phone = 40;
     VerifyPhone verify_phone = 41;
+    GenericResponse upload_avatar = 42;
+    GenericResponse upload_contacts = 43;
+
+    ShowMessage show_message = 50;
   }
 }

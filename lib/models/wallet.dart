@@ -1,16 +1,20 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:package_info/package_info.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/bitmap_helper.dart';
 import 'package:sideswap/common/encryption.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -18,15 +22,19 @@ import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/insufficient_balance_dialog.dart';
 import 'package:sideswap/models/assets_precache.dart';
 import 'package:sideswap/models/config_provider.dart';
+import 'package:sideswap/models/contact_provider.dart';
 import 'package:sideswap/models/notifications_service.dart';
 import 'package:sideswap/models/payment_provider.dart';
+import 'package:sideswap/models/phone_provider.dart';
+import 'package:sideswap/models/pin_protection_provider.dart';
+import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
-import 'package:package_info/package_info.dart';
 
 enum Status {
   loading,
@@ -46,6 +54,17 @@ enum Status {
   importWalletBiometricPrompt,
   importWalletError,
   importWalletSuccess,
+  importAvatar,
+  importAvatarSuccess,
+  associatePhoneWelcome,
+  confirmPhone,
+  confirmPhoneSuccess,
+  importContacts,
+  importContactsSuccess,
+  newWalletPinWelcome,
+  pinWelcome,
+  pinSetup,
+  pinSuccess,
 
   registered,
   assetsSelect,
@@ -63,22 +82,20 @@ enum Status {
   settingsBackup,
   settingsAboutUs,
   settingsSecurity,
+  settingsUserDetails,
 
   paymentPage,
   paymentAmountPage,
-  paymentSend
+  paymentSend,
+
+  orderPopup,
+  orderSuccess,
 }
 
 enum AddrType {
   bitcoin,
   elements,
 }
-
-const mnemnicEncryptedField = 'mnemonic_encrypted';
-const useBiometricProtectionField = 'biometric_protection';
-const licenseAcceptedField = 'license_accepted';
-const disabledAssetsField = 'disabled_assets';
-const envField = 'env';
 
 const envValues = [
   SIDESWAP_ENV_PROD,
@@ -99,6 +116,32 @@ String envName(int env) {
       return 'Local';
   }
   throw Exception('unexpected env value');
+}
+
+class PinData {
+  final String salt;
+  final String encryptedData;
+  final String pinIdentifier;
+  final String error;
+
+  PinData({this.salt, this.encryptedData, this.pinIdentifier, this.error});
+
+  @override
+  String toString() {
+    return 'PinData(salt: $salt, encryptedData: $encryptedData, pinIdentifier: $pinIdentifier, error: $error)';
+  }
+}
+
+class PinDecryptedData {
+  final String error;
+  final bool success;
+  final String mnemonic;
+
+  PinDecryptedData(this.success, {this.mnemonic, this.error});
+
+  @override
+  String toString() =>
+      'PinDecryptedData(error: $error, success: $success, mnemonic: $mnemonic)';
 }
 
 class Lib {
@@ -158,6 +201,8 @@ class WalletChangeNotifier with ChangeNotifier {
 
   final allTxs = <String, TransItem>{};
   final newTransItemSubject = BehaviorSubject<TransItem>();
+  StreamSubscription<TransItem> txDetailsSubscription;
+
   // Cached version of allTxs
   final allAssets = <String, List<TxItem>>{};
   Map<String, List<TxItem>> txItemMap = {};
@@ -173,6 +218,13 @@ class WalletChangeNotifier with ChangeNotifier {
   String _currentTxMemoUpdate;
 
   bool settingsBiometricAvailable = false;
+
+  OrderDetailsData orderDetailsData;
+  PublishSubject<String> explorerUrlSubject = PublishSubject<String>();
+
+  PublishSubject<PinData> pinEncryptDataSubject = PublishSubject<PinData>();
+  PublishSubject<PinDecryptedData> pinDecryptDataSubject =
+      PublishSubject<PinDecryptedData>();
 
   void sendMsg(To to) {
     if (kDebugMode) {
@@ -201,7 +253,9 @@ class WalletChangeNotifier with ChangeNotifier {
       // }
 
       await read(assetsPrecacheChangeNotifier).precache();
-      await startClient();
+      Future.delayed(Duration(seconds: 1), () {
+        startClient();
+      });
     });
   }
 
@@ -249,8 +303,12 @@ class WalletChangeNotifier with ChangeNotifier {
         await unlockWallet();
       }
     } else {
-      status = Status.noWallet;
-      notifyListeners();
+      if (read(configProvider).usePinProtection) {
+        await unlockWallet();
+      } else {
+        status = Status.noWallet;
+        notifyListeners();
+      }
     }
 
     if (status == Status.lockedWalet) {
@@ -404,6 +462,12 @@ class WalletChangeNotifier with ChangeNotifier {
         }
         break;
 
+      case From_Msg.blindedValues:
+        final url = generateTxidUrl(
+            from.blindedValues.txid, true, from.blindedValues.blindedValues);
+        explorerUrlSubject.add(url);
+        break;
+
       case From_Msg.serverStatus:
         _serverStatus = from.serverStatus;
         // TODO: Allow pegs only after that
@@ -418,14 +482,16 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.registerPhone:
         switch (from.registerPhone.whichResult()) {
           case From_RegisterPhone_Result.phoneKey:
-            // FIXME: Process result
             var phoneKey = From_RegisterPhone_Result.phoneKey;
             logger.d('got phone key: $phoneKey');
+            await read(phoneProvider)
+                .receivedRegisterState(phoneKey: from.registerPhone.phoneKey);
             break;
           case From_RegisterPhone_Result.errorMsg:
-            // FIXME: Process error result
             var errorMsg = From_RegisterPhone_Result.errorMsg;
             logger.d('registration failed: $errorMsg');
+            await read(phoneProvider)
+                .receivedRegisterState(errorMsg: from.registerPhone.errorMsg);
             break;
           case From_RegisterPhone_Result.notSet:
             throw Exception('invalid registerPhone message');
@@ -435,22 +501,81 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.verifyPhone:
         switch (from.verifyPhone.whichResult()) {
           case From_VerifyPhone_Result.success:
-            // FIXME: Process success verification
             logger.d('phone verification succeed');
+            read(phoneProvider).receivedVerifyState();
             break;
           case From_VerifyPhone_Result.errorMsg:
-            // FIXME: Process error result
             var errorMsg = From_VerifyPhone_Result.errorMsg;
             logger.d('verification failed: $errorMsg');
+            read(phoneProvider)
+                .receivedVerifyState(errorMsg: from.verifyPhone.errorMsg);
             break;
           case From_VerifyPhone_Result.notSet:
             throw Exception('invalid verifyPhone message');
         }
         break;
 
+      case From_Msg.uploadAvatar:
+        if (from.uploadAvatar.success) {
+          logger.d('Upload avatar success');
+        } else {
+          logger.e('Upload avatar error: ${from.uploadAvatar.errorMsg}');
+        }
+        break;
+      case From_Msg.uploadContacts:
+        if (from.uploadContacts.success) {
+          read(contactProvider).onDone();
+        } else {
+          read(contactProvider).onError(error: from.uploadContacts.errorMsg);
+        }
+        break;
+
+      case From_Msg.showMessage:
+        read(utilsProvider).showErrorDialog(from.showMessage.text);
+        break;
+
+      case From_Msg.encryptPin:
+        if (from.encryptPin.hasError()) {
+          final pinData = PinData(error: from.encryptPin.error);
+          pinEncryptDataSubject.add(pinData);
+        } else {
+          final data = from.encryptPin.data;
+          final pinData = PinData(
+              salt: data.salt,
+              encryptedData: data.encryptedData,
+              pinIdentifier: data.pinIdentifier);
+          await read(configProvider).setPinData(pinData);
+          pinEncryptDataSubject.add(pinData);
+        }
+        break;
+
+      case From_Msg.decryptPin:
+        if (from.decryptPin.hasError()) {
+          pinDecryptDataSubject
+              .add(PinDecryptedData(false, error: from.decryptPin.error));
+        } else {
+          _mnemonic = from.decryptPin.mnemonic;
+          pinDecryptDataSubject
+              .add(PinDecryptedData(true, mnemonic: _mnemonic));
+        }
+
+        break;
+
       case From_Msg.notSet:
         throw Exception('invalid empty message');
     }
+  }
+
+  void openTxUrl(String txid, bool isLiquid, bool unblinded) {
+    if (!isLiquid || !unblinded) {
+      final url = generateTxidUrl(txid, isLiquid, null);
+      explorerUrlSubject.add(url);
+      return;
+    }
+    final msg = To();
+    msg.blindedValues = To_BlindedValues();
+    msg.blindedValues.txid = txid;
+    sendMsg(msg);
   }
 
   Future<void> _addBtcAsset() async {
@@ -554,9 +679,14 @@ class WalletChangeNotifier with ChangeNotifier {
     return _mnemonic?.split(' ');
   }
 
-  void setReviewLicenseCreateWallet() {
+  Future<void> setReviewLicenseCreateWallet() async {
     if (read(configProvider).licenseAccepted) {
-      newWalletBiometricPrompt();
+      if (await _encryption.canAuthenticate()) {
+        await newWalletBiometricPrompt();
+        return;
+      }
+
+      await setNewWalletPinWelcome();
     } else {
       status = Status.reviewLicenseCreateWallet;
     }
@@ -605,8 +735,9 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> importMnemonic(String mnemonic) async {
-    assert(status == Status.importWallet);
+  void importMnemonic(String mnemonic) {
+    assert(
+        status == Status.importWallet || status == Status.importWalletSuccess);
     _mnemonic = mnemonic;
 
     setImportWalletResult(true);
@@ -618,11 +749,20 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<bool> walletBiometricEnable() async {
-    return await _registerWallet(true);
+    return _registerWallet(true);
+  }
+
+  Future<bool> walletPinEnable() async {
+    if (await _registerWallet(false)) {
+      await enablePinProtection();
+      return true;
+    }
+
+    return false;
   }
 
   Future<bool> walletBiometricSkip() async {
-    return await _registerWallet(false);
+    return _registerWallet(false);
   }
 
   Future<bool> _registerWallet(bool enableBiometric) async {
@@ -639,6 +779,7 @@ class WalletChangeNotifier with ChangeNotifier {
         return false;
       }
       await read(configProvider).setUseBiometricProtection(true);
+      await read(configProvider).setUsePinProtection(false);
     } else {
       await read(configProvider)
           .setMnemonicEncrypted(await _encryption.encryptFallback(_mnemonic));
@@ -738,14 +879,39 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.importWalletSuccess:
       case Status.importWallet:
       case Status.selectEnv:
+      case Status.importAvatar:
+      case Status.associatePhoneWelcome:
       case Status.reviewLicenseImportWallet:
+      case Status.newWalletBackupPrompt:
         status = Status.noWallet;
+        break;
+
+      // pages without back
+      case Status.confirmPhoneSuccess:
+      case Status.importAvatarSuccess:
+      case Status.importContacts:
+      case Status.importContactsSuccess:
+      case Status.pinWelcome:
+      case Status.newWalletPinWelcome:
+      case Status.pinSetup:
+      case Status.pinSuccess:
+        return false;
+        break;
+
+      case Status.confirmPhone:
+        status = Status.associatePhoneWelcome;
         break;
       case Status.assetsSelect:
         status = Status.registered;
         break;
       case Status.assetDetails:
         status = Status.registered;
+        final uiStateArgs = read(uiStateArgsProvider);
+        uiStateArgs.walletMainArguments =
+            uiStateArgs.walletMainArguments.copyWith(
+          currentIndex: 0,
+          navigationItem: WalletMainNavigationItem.home,
+        );
         break;
       case Status.txDetails:
         status = Status.assetDetails;
@@ -765,6 +931,8 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case Status.swapTxDetails:
       case Status.assetReceiveFromWalletMain:
+      case Status.orderPopup:
+      case Status.orderSuccess:
         status = Status.registered;
         final uiStateArgs = read(uiStateArgsProvider);
         uiStateArgs.walletMainArguments =
@@ -786,6 +954,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.settingsBackup:
       case Status.settingsSecurity:
       case Status.settingsAboutUs:
+      case Status.settingsUserDetails:
         status = Status.settingsPage;
         break;
       case Status.settingsPage:
@@ -800,16 +969,14 @@ class WalletChangeNotifier with ChangeNotifier {
         // user will need to start over
         status = Status.noWallet;
         break;
-      case Status.newWalletBackupPrompt:
-        status = Status.newWalletBiometricPrompt;
-        break;
       case Status.reviewLicenseCreateWallet:
         status = Status.noWallet;
         break;
-
+      case Status.registered:
+        status = Status.registered;
+        break;
       case Status.loading:
       case Status.noWallet:
-      case Status.registered:
       case Status.lockedWalet:
         return true;
       case Status.paymentPage:
@@ -890,13 +1057,29 @@ class WalletChangeNotifier with ChangeNotifier {
   void showTxDetails(TransItem tx) {
     status = Status.txDetails;
     txDetails = tx;
+
+    _listenTxDetailsChanges();
+
     notifyListeners();
   }
 
   void showSwapTxDetails(TransItem tx) {
     status = Status.swapTxDetails;
     txDetails = tx;
+
+    _listenTxDetailsChanges();
+
     notifyListeners();
+  }
+
+  void _listenTxDetailsChanges() {
+    txDetailsSubscription?.cancel();
+    txDetailsSubscription = newTransItemSubject.listen((value) {
+      if (value.id == txDetails.id) {
+        txDetails = value;
+        notifyListeners();
+      }
+    });
   }
 
   static int convertAddrType(AddrType type) {
@@ -1039,6 +1222,16 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsViewBackup() async {
+    if (read(configProvider).usePinProtection) {
+      if (await read(pinProtectionProvider).pinBlockadeUnlocked()) {
+        status = Status.settingsBackup;
+        notifyListeners();
+        return;
+      }
+
+      return;
+    }
+
     final mnemonic = read(configProvider).useBiometricProtection
         ? await _encryption
             .decryptBiometric(read(configProvider).mnemonicEncrypted)
@@ -1050,6 +1243,11 @@ class WalletChangeNotifier with ChangeNotifier {
       status = Status.settingsBackup;
       notifyListeners();
     }
+  }
+
+  Future<void> settingsUserDetails() async {
+    status = Status.settingsUserDetails;
+    notifyListeners();
   }
 
   void settingsViewPage() {
@@ -1072,6 +1270,10 @@ class WalletChangeNotifier with ChangeNotifier {
     return read(configProvider).useBiometricProtection;
   }
 
+  bool isPinEnabled() {
+    return read(configProvider).usePinProtection;
+  }
+
   Future<bool> isBiometricAvailable() async {
     settingsBiometricAvailable = await _encryption.canAuthenticate();
     return settingsBiometricAvailable;
@@ -1087,6 +1289,19 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> unlockWallet() async {
+    if (read(configProvider).usePinProtection) {
+      if (await read(pinProtectionProvider).pinBlockadeUnlocked()) {
+        _login(_mnemonic);
+        status = Status.registered;
+        notifyListeners();
+        return;
+      }
+
+      status = Status.lockedWalet;
+      notifyListeners();
+      return;
+    }
+
     if (read(configProvider).useBiometricProtection) {
       _mnemonic = await _encryption
           .decryptBiometric(read(configProvider).mnemonicEncrypted);
@@ -1186,6 +1401,10 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<bool> isAuthenticated() async {
+    if (read(configProvider).usePinProtection) {
+      return read(pinProtectionProvider).pinBlockadeUnlocked();
+    }
+
     if (read(configProvider).useBiometricProtection) {
       _mnemonic = await _encryption
           .decryptBiometric(read(configProvider).mnemonicEncrypted);
@@ -1211,7 +1430,7 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void walletSuccessfulyImported() async {
+  Future<void> setImportWalletBiometricPrompt() async {
     final canAuthenticate = await _encryption.canAuthenticate();
     if (canAuthenticate) {
       status = Status.importWalletBiometricPrompt;
@@ -1299,5 +1518,171 @@ class WalletChangeNotifier with ChangeNotifier {
 
   List<String> sendAssets() {
     return assets.keys.where((element) => element != bitcoinAssetId()).toList();
+  }
+
+  void setImportAvatar() {
+    status = Status.importAvatar;
+    notifyListeners();
+  }
+
+  void setImportAvatarSuccess() {
+    status = Status.importAvatarSuccess;
+    notifyListeners();
+  }
+
+  void setAssociatePhoneWelcome() {
+    status = Status.associatePhoneWelcome;
+    notifyListeners();
+  }
+
+  void setConfirmPhone() {
+    status = Status.confirmPhone;
+    notifyListeners();
+  }
+
+  void setConfirmPhoneSuccess() {
+    status = Status.confirmPhoneSuccess;
+    notifyListeners();
+  }
+
+  void setImportContacts() {
+    status = Status.importContacts;
+    notifyListeners();
+  }
+
+  void setImportContactsSuccess() {
+    status = Status.importContactsSuccess;
+    notifyListeners();
+  }
+
+  void setOrder({@required OrderDetailsData orderDetailsData}) {
+    status = Status.orderPopup;
+    this.orderDetailsData = orderDetailsData;
+    notifyListeners();
+  }
+
+  void setPlaceOrderSuccess() {
+    status = Status.orderSuccess;
+    notifyListeners();
+  }
+
+  void setExecuteOrderSuccess() {
+    // TODO: add code
+    status = Status.registered;
+    notifyListeners();
+  }
+
+  void linkOrder(String orderId) {
+    final msg = To();
+    msg.linkOrder = To_LinkOrder();
+    msg.linkOrder.orderId = orderId;
+    sendMsg(msg);
+  }
+
+  void uploadDeviceContacts({@required List<Contact> contacts}) {
+    final uploadContacts = To_UploadContacts();
+    uploadContacts.phoneKey = read(configProvider).phoneKey;
+    final serverContactList = uploadContacts.contacts;
+    for (var c in contacts) {
+      serverContactList.add(c);
+    }
+
+    final msg = To();
+    msg.uploadContacts = uploadContacts;
+    sendMsg(msg);
+  }
+
+  void uploadAvatar({@required String avatar}) {
+    final uploadAvatar = To_UploadAvatar();
+    uploadAvatar.phoneKey = read(configProvider).phoneKey;
+    uploadAvatar.text = avatar;
+
+    final msg = To();
+    msg.uploadAvatar = uploadAvatar;
+    sendMsg(msg);
+  }
+
+  Future<void> setNewWalletPinWelcome() async {
+    _mnemonic = getNewMnemonic();
+    read(pinSetupProvider).isNewWallet = true;
+    status = Status.newWalletPinWelcome;
+    notifyListeners();
+  }
+
+  void setPinWelcome() async {
+    if (await _encryption.canAuthenticate()) {
+      await setImportWalletBiometricPrompt();
+      return;
+    }
+    status = Status.pinWelcome;
+    notifyListeners();
+  }
+
+  void setPinSetup({
+    @required void Function(BuildContext context) onSuccessCallback,
+    @required void Function(BuildContext context) onBackCallback,
+  }) {
+    read(pinSetupProvider).init(
+      onSuccessCallback: onSuccessCallback,
+      onBackCallback: onBackCallback,
+    );
+    status = Status.pinSetup;
+    notifyListeners();
+  }
+
+  void sendEncryptPin(String pin) async {
+    final msg = To();
+    msg.encryptPin = To_EncryptPin();
+    msg.encryptPin.pin = pin;
+    msg.encryptPin.mnemonic = _mnemonic;
+    sendMsg(msg);
+  }
+
+  void sendDecryptPin(String pin) {
+    final pinData = read(configProvider).pinData;
+
+    final msg = To();
+    msg.decryptPin = To_DecryptPin();
+    msg.decryptPin.pin = pin;
+    msg.decryptPin.salt = pinData.salt;
+    msg.decryptPin.encryptedData = pinData.encryptedData;
+    msg.decryptPin.pinIdentifier = pinData.pinIdentifier;
+    sendMsg(msg);
+  }
+
+  Future<void> setPinSuccess() async {
+    await enablePinProtection();
+    status = Status.pinSuccess;
+    notifyListeners();
+  }
+
+  Future<bool> disablePinProtection() async {
+    if (!await read(configProvider).usePinProtection) {
+      // already disabled
+      return true;
+    }
+
+    final pinDecryptedSubscription = read(walletProvider)
+        .pinDecryptDataSubject
+        .listen((pinDecryptedData) async {
+      if (pinDecryptedData.success) {
+        // turn off pin and save encrypted mnemonic
+        await read(configProvider).setUsePinProtection(false);
+        notifyListeners();
+
+        await read(configProvider).setMnemonicEncrypted(
+            await _encryption.encryptFallback(pinDecryptedData.mnemonic));
+      }
+    });
+
+    final ret = await read(pinProtectionProvider).pinBlockadeUnlocked();
+    await pinDecryptedSubscription?.cancel();
+
+    return ret;
+  }
+
+  Future<void> enablePinProtection() async {
+    await read(configProvider).setUsePinProtection(true);
+    notifyListeners();
   }
 }

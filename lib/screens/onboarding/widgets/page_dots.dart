@@ -24,7 +24,9 @@ class PageDots extends StatelessWidget {
               height: 10.w,
               decoration: BoxDecoration(
                 color: i < maxSelectedDots
-                    ? Color(0xFF00C5FF)
+                    ? i < maxSelectedDots - 1
+                        ? Color(0xFF167399)
+                        : Color(0xFF00C5FF)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(5.w),
                 border: Border.all(

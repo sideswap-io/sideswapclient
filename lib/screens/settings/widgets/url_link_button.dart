@@ -4,13 +4,18 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class UrlLinkButton extends StatelessWidget {
-  const UrlLinkButton(
-      {Key key, @required this.text, @required this.url, @required this.icon})
-      : super(key: key);
+  const UrlLinkButton({
+    Key key,
+    @required this.text,
+    this.url,
+    this.icon,
+    this.onPressed,
+  }) : super(key: key);
 
   final String url;
   final String text;
   final Widget icon;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +24,12 @@ class UrlLinkButton extends StatelessWidget {
       height: 56.h,
       child: TextButton(
         onPressed: () async {
-          await openUrl(url);
+          if (url != null) {
+            await openUrl(url);
+            return;
+          }
+
+          onPressed();
         },
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -27,18 +37,24 @@ class UrlLinkButton extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.only(left: 16.w),
-              child: icon,
+              child: Container(
+                width: 24.w,
+                height: 24.w,
+                child: icon,
+              ),
             ),
             Padding(
               padding: EdgeInsets.only(left: 17.w),
               child: Text(
-                text,
+                text ?? '',
                 style: GoogleFonts.roboto(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.normal,
                   color: Color(0xFF00C5FF),
                   textStyle: TextStyle(
-                    decoration: TextDecoration.underline,
+                    decoration: url != null
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
                   ),
                 ),
               ),

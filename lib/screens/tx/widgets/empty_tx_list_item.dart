@@ -89,21 +89,46 @@ class EmptyTxListItem extends StatelessWidget {
   }
 }
 
-class EmptyTextContainer extends StatelessWidget {
-  const EmptyTextContainer({Key key, this.width = 26}) : super(key: key);
+class EmptyTextContainer extends StatefulWidget {
+  EmptyTextContainer({
+    Key key,
+    this.color = const Color(0xFF135579),
+    this.width = 26,
+    this.height,
+    this.radius,
+  }) : super(key: key);
 
+  final Color color;
   final double width;
+  final double height;
+  final double radius;
+
+  @override
+  _EmptyTextContainerState createState() => _EmptyTextContainerState();
+}
+
+class _EmptyTextContainerState extends State<EmptyTextContainer> {
+  double height;
+  double radius;
+
+  @override
+  void initState() {
+    super.initState();
+    height = widget.height ?? 10.h;
+    radius = widget.radius ?? 8.w;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        width: width,
-        height: 10.h,
-        decoration: BoxDecoration(
-          color: Color(0xFF135579),
-          borderRadius: BorderRadius.all(
-            Radius.circular(8.w),
-          ),
-        ));
+      width: widget.width,
+      height: height,
+      decoration: BoxDecoration(
+        color: widget.color,
+        borderRadius: BorderRadius.all(
+          Radius.circular(radius),
+        ),
+      ),
+    );
   }
 }

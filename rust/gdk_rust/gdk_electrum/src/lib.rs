@@ -6,6 +6,9 @@ extern crate serde_json;
 #[macro_use]
 extern crate lazy_static;
 
+#[macro_use]
+extern crate gdk_common;
+
 use log::{debug, info, trace, warn};
 use serde_json::Value;
 
@@ -13,15 +16,14 @@ pub mod error;
 pub mod headers;
 pub mod interface;
 pub mod pin;
+pub mod spv;
 
 use crate::error::Error;
 use crate::interface::{ElectrumUrl, WalletCtx};
 use crate::store::*;
 
-use bitcoin::hashes::{hex::FromHex, sha256, Hash};
 use bitcoin::secp256k1::{self, Secp256k1, SecretKey};
 use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey, ExtendedPubKey};
-use bitcoin::{BlockHash, Script, Txid};
 
 use electrum_client::GetHistoryRes;
 use gdk_common::be::*;
@@ -48,6 +50,7 @@ use crate::headers::bitcoin::HeadersChain;
 use crate::headers::liquid::Verifier;
 use crate::headers::ChainOrVerifier;
 use crate::pin::PinManager;
+use crate::spv::SpvCrossValidator;
 use aes::Aes256;
 use bitcoin::blockdata::constants::DIFFCHANGE_INTERVAL;
 use block_modes::block_padding::Pkcs7;
@@ -61,6 +64,8 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::Hasher;
 use std::sync::{mpsc, Arc, RwLock};
 use std::thread::JoinHandle;
+
+const CROSS_VALIDATION_RATE: u8 = 4; // Once every 4 thread loop runs, or roughly 28 seconds
 
 type Aes256Cbc = Cbc<Aes256, Pkcs7>;
 
@@ -78,6 +83,7 @@ pub struct Tipper {
 pub struct Headers {
     pub store: Store,
     pub checker: ChainOrVerifier,
+    pub cross_validator: Option<SpvCrossValidator>,
 }
 
 #[derive(Clone)]
@@ -144,6 +150,12 @@ fn notify_fee(notif: NativeNotif, fees: &[FeeEstimate]) {
     let data = json!({"fees":fees,"event":"fees"});
     notify(notif, data);
 }
+fn notify_updated_txs(notif: NativeNotif) {
+    // This is used as a signal to trigger syncing via get_transactions, the transaction
+    // list contained here is ignored and can be just a mock.
+    let mockup_json = json!({"event":"transaction","transaction":{"subaccounts":[0]}});
+    notify(notif, mockup_json);
+}
 
 fn determine_electrum_url(
     url: &Option<String>,
@@ -194,6 +206,33 @@ impl ElectrumSession {
 
     pub fn get_wallet_mut(&mut self) -> Result<&mut WalletCtx, Error> {
         self.wallet.as_mut().ok_or_else(|| Error::Generic("wallet not initialized".into()))
+    }
+
+    pub fn decrypt_pin(pin: String, details: &PinGetDetails) -> Result<Mnemonic, Error> {
+        let manager = PinManager::new()?;
+        let client_key = SecretKey::from_slice(&hex::decode(&details.pin_identifier)?)?;
+        let server_key = manager.get_pin(pin.as_bytes(), &client_key)?;
+        let iv = hex::decode(&details.salt)?;
+        let decipher = Aes256Cbc::new_var(&server_key[..], &iv)?;
+        let mnemonic = decipher.decrypt_vec(&hex::decode(&details.encrypted_data)?)?;
+        let mnemonic = std::string::String::from_utf8(mnemonic)?;
+        Ok(Mnemonic::from(mnemonic))
+    }
+
+    pub fn encrypt_pin(details: &PinSetDetails) -> Result<PinGetDetails, Error> {
+        let manager = PinManager::new()?;
+        let client_key = SecretKey::new(&mut thread_rng());
+        let server_key = manager.set_pin(details.pin.as_bytes(), &client_key)?;
+        let iv = thread_rng().gen::<[u8; 16]>();
+        let cipher = Aes256Cbc::new_var(&server_key[..], &iv)?;
+        let encrypted = cipher.encrypt_vec(details.mnemonic.as_bytes());
+
+        let result = PinGetDetails {
+            salt: hex::encode(&iv),
+            encrypted_data: hex::encode(&encrypted),
+            pin_identifier: hex::encode(&client_key[..]),
+        };
+        Ok(result)
     }
 }
 
@@ -343,8 +382,9 @@ impl Session<Error> for ElectrumSession {
         let coin_type: u32 = match self.network.id() {
             NetworkId::Bitcoin(bitcoin_network) => match bitcoin_network {
                 bitcoin::Network::Bitcoin => 0,
-                bitcoin::Network::Testnet => 1,
-                bitcoin::Network::Regtest => 1,
+                bitcoin::Network::Testnet
+                | bitcoin::Network::Regtest
+                | bitcoin::Network::Signet => 1,
             },
             NetworkId::Elements(elements_network) => match elements_network {
                 ElementsNetwork::Liquid => 1776,
@@ -358,8 +398,7 @@ impl Session<Error> for ElectrumSession {
         let xprv = xprv.derive_priv(&secp, &path)?;
         let xpub = ExtendedPubKey::from_private(&secp, &xprv);
 
-        let wallet_desc = format!("{}{:?}", xpub, self.network);
-        let wallet_id = hex::encode(sha256::Hash::hash(wallet_desc.as_bytes()));
+        let wallet_id = self.network.unique_id(&xpub);
         let sync_interval = self.network.sync_interval.unwrap_or(7);
 
         let master_blinding = if self.network.liquid {
@@ -372,7 +411,7 @@ impl Session<Error> for ElectrumSession {
         if !path.exists() {
             std::fs::create_dir_all(&path)?;
         }
-        path.push(wallet_id);
+        path.push(hex::encode(wallet_id));
         info!("Store root path: {:?}", path);
         let store = match self.get_wallet() {
             Ok(wallet) => wallet.store.clone(),
@@ -416,17 +455,22 @@ impl Session<Error> for ElectrumSession {
                 }
             };
 
+            let cross_validator = SpvCrossValidator::from_network(&self.network)?;
+
             let mut headers = Headers {
                 store: store.clone(),
                 checker,
+                cross_validator,
             };
 
             let headers_url = self.url.clone();
             let (close_headers, r) = channel();
             self.closer.senders.push(close_headers);
-            let mut chunk_size = DIFFCHANGE_INTERVAL as usize;
+            let notify_headers = self.notify.clone();
+            let chunk_size = DIFFCHANGE_INTERVAL as usize;
             let headers_handle = thread::spawn(move || {
                 info!("starting headers thread");
+                let mut round = 0u8;
 
                 'outer: loop {
                     if wait_or_close(&r, sync_interval) {
@@ -442,13 +486,14 @@ impl Session<Error> for ElectrumSession {
                             }
                             match headers.ask(chunk_size, &client) {
                                 Ok(headers_found) => {
-                                    if headers_found == 0 {
-                                        chunk_size = 1
+                                    if headers_found < chunk_size {
+                                        break;
                                     } else {
                                         info!("headers found: {}", headers_found);
                                     }
                                 }
                                 Err(Error::InvalidHeaders) => {
+                                    warn!("invalid headers");
                                     // this should handle reorgs and also broke IO writes update
                                     headers.store.write().unwrap().cache.txs_verif.clear();
                                     if let Err(e) = headers.remove(144) {
@@ -458,20 +503,9 @@ impl Session<Error> for ElectrumSession {
                                     // XXX clear affected blocks/txs more surgically?
                                 }
                                 Err(e) => {
-                                    // usual error is because I reached the tip, trying asking half
-                                    //TODO this is due to an esplora electrs bug, according to spec it should
-                                    // just return available headers, remove when fix is deployed and change previous
-                                    // break condition to headers_found < chunk_size
-                                    info!("error while asking headers {}", e);
-                                    if chunk_size > 1 {
-                                        chunk_size /= 2
-                                    } else {
-                                        break;
-                                    }
+                                    warn!("error while asking headers {}", e);
+                                    thread::sleep(Duration::from_millis(500));
                                 }
-                            }
-                            if chunk_size == 1 {
-                                break;
                             }
                         }
 
@@ -483,6 +517,15 @@ impl Session<Error> for ElectrumSession {
                             }
                             Err(e) => warn!("error in getting proofs {:?}", e),
                         }
+
+                        if round % CROSS_VALIDATION_RATE == 0 {
+                            let status_changed = headers.cross_validate();
+                            if status_changed {
+                                notify_updated_txs(notify_headers.clone());
+                            }
+                        }
+
+                        round = round.wrapping_add(1);
                     }
                 }
             });
@@ -556,8 +599,7 @@ impl Session<Error> for ElectrumSession {
                         Ok(new_txs) => {
                             if new_txs {
                                 info!("there are new transactions");
-                                let mockup_json = json!({"event":"transaction","transaction":{"subaccounts":[0]}});
-                                notify(notify_txs.clone(), mockup_json);
+                                notify_updated_txs(notify_txs.clone());
                             }
                         }
                         Err(e) => warn!("Error during sync, {:?}", e),
@@ -644,15 +686,11 @@ impl Session<Error> for ElectrumSession {
         self.get_wallet()?.balance()
     }
 
-    fn set_transaction_memo(&self, txid: &str, memo: &str, memo_type: u32) -> Result<(), Error> {
-        if memo_type != 0 {
-            // GA_MEMO_USER == 0
-            return Err(Error::Generic("Only memo_type GA_MEMO_USER(0) is supported".into()));
-        }
-        let txid = Txid::from_hex(txid)?;
+    fn set_transaction_memo(&self, txid: &str, memo: &str) -> Result<(), Error> {
         if memo.len() > 1024 {
             return Err(Error::Generic("Too long memo (max 1024)".into()));
         }
+        let txid = BETxid::from_hex(txid, self.network.id())?;
         self.get_wallet()?.store.write()?.insert_memo(txid, memo)?;
 
         Ok(())
@@ -824,7 +862,7 @@ impl Session<Error> for ElectrumSession {
         Ok(Value::Object(map))
     }
 
-    fn block_status(&self) -> Result<(u32, BlockHash), Error> {
+    fn block_status(&self) -> Result<(u32, BEBlockHash), Error> {
         let tip = self.get_wallet()?.get_tip()?;
         info!("tip={:?}", tip);
         Ok(tip)
@@ -934,7 +972,7 @@ impl Headers {
 
         // find unconfirmed transactions that were previously confirmed and had
         // their SPV validation cached, to be cleared below
-        let remove_proof: Vec<Txid> = store_read
+        let remove_proof: Vec<BETxid> = store_read
             .cache
             .heights
             .iter()
@@ -943,7 +981,7 @@ impl Headers {
             .collect();
 
         // find confirmed transactions with no SPV validation cache
-        let needs_proof: Vec<(Txid, u32)> = store_read
+        let needs_proof: Vec<(BETxid, u32)> = store_read
             .cache
             .heights
             .iter()
@@ -955,26 +993,29 @@ impl Headers {
 
         let mut txs_verified = HashMap::new();
         for (txid, height) in needs_proof {
-            let verified = match client.transaction_get_merkle(&txid, height as usize) {
-                Ok(proof) => match &self.checker {
-                    ChainOrVerifier::Chain(chain) => {
-                        chain.verify_tx_proof(&txid, height, proof).is_ok()
-                    }
-                    ChainOrVerifier::Verifier(verifier) => {
-                        if let Some(BEBlockHeader::Elements(header)) =
-                            self.store.read()?.cache.headers.get(&height)
-                        {
-                            verifier.verify_tx_proof(&txid, proof, &header).is_ok()
-                        } else {
-                            false
+            let verified =
+                match client.transaction_get_merkle(&txid.into_bitcoin(), height as usize) {
+                    Ok(proof) => match &self.checker {
+                        ChainOrVerifier::Chain(chain) => chain
+                            .verify_tx_proof(txid.ref_bitcoin().unwrap(), height, proof)
+                            .is_ok(),
+                        ChainOrVerifier::Verifier(verifier) => {
+                            if let Some(BEBlockHeader::Elements(header)) =
+                                self.store.read()?.cache.headers.get(&height)
+                            {
+                                verifier
+                                    .verify_tx_proof(txid.ref_elements().unwrap(), proof, &header)
+                                    .is_ok()
+                            } else {
+                                false
+                            }
                         }
+                    },
+                    Err(e) => {
+                        warn!("failed fetching merkle inclusion proof for {}: {:?}", txid, e);
+                        false
                     }
-                },
-                Err(e) => {
-                    warn!("failed fetching merkle inclusion proof for {}: {:?}", txid, e);
-                    false
-                }
-            };
+                };
 
             if verified {
                 info!("proof for {} verified!", txid);
@@ -999,11 +1040,34 @@ impl Headers {
         }
         Ok(())
     }
+
+    pub fn cross_validate(&mut self) -> bool {
+        if let (Some(cross_validator), ChainOrVerifier::Chain(chain)) =
+            (&mut self.cross_validator, &self.checker)
+        {
+            let was_valid = {
+                let store = self.store.read().unwrap();
+                store.cache.cross_validation_result.as_ref().map(|r| r.is_valid())
+            };
+
+            let result = cross_validator.validate(chain);
+            debug!("cross validation result: {:?}", result);
+
+            let changed = was_valid.map_or(true, |was_valid| was_valid != result.is_valid());
+
+            let mut store = self.store.write().unwrap();
+            store.cache.cross_validation_result = Some(result);
+
+            changed
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Default)]
 struct DownloadTxResult {
-    txs: Vec<(Txid, BETransaction)>,
+    txs: Vec<(BETxid, BETransaction)>,
     unblinds: Vec<(elements::OutPoint, Unblinded)>,
 }
 
@@ -1012,9 +1076,9 @@ impl Syncer {
         debug!("start sync");
         let start = Instant::now();
 
-        let mut history_txs_id = HashSet::new();
+        let mut history_txs_id = HashSet::<BETxid>::new();
         let mut heights_set = HashSet::new();
-        let mut txid_height = HashMap::new();
+        let mut txid_height = HashMap::<BETxid, _>::new();
         let mut scripts = HashMap::new();
 
         let mut last_used = Indexes::default();
@@ -1024,8 +1088,11 @@ impl Syncer {
             let mut batch_count = 0;
             loop {
                 let batch = self.store.read()?.get_script_batch(i, batch_count)?;
+                // convert the BEScript into bitcoin::Script for electrum-client
+                let b_scripts =
+                    batch.value.iter().map(|e| e.0.clone().into_bitcoin()).collect::<Vec<_>>();
                 let result: Vec<Vec<GetHistoryRes>> =
-                    client.batch_script_get_history(batch.value.iter().map(|e| &e.0))?;
+                    client.batch_script_get_history(b_scripts.iter())?;
                 if !batch.cached {
                     scripts.extend(batch.value);
                 }
@@ -1050,6 +1117,8 @@ impl Syncer {
                     break;
                 }
 
+                let net = self.network.id();
+
                 for el in flattened {
                     // el.height = -1 means unconfirmed with unconfirmed parents
                     // el.height =  0 means unconfirmed with confirmed parents
@@ -1057,12 +1126,12 @@ impl Syncer {
                     let height = el.height.max(0);
                     heights_set.insert(height as u32);
                     if height == 0 {
-                        txid_height.insert(el.tx_hash, None);
+                        txid_height.insert(el.tx_hash.into_net(net), None);
                     } else {
-                        txid_height.insert(el.tx_hash, Some(height as u32));
+                        txid_height.insert(el.tx_hash.into_net(net), Some(height as u32));
                     }
 
-                    history_txs_id.insert(el.tx_hash);
+                    history_txs_id.insert(el.tx_hash.into_net(net));
                 }
 
                 batch_count += 1;
@@ -1087,7 +1156,7 @@ impl Syncer {
         {
             info!(
                 "There are changes in the store new_txs:{:?} headers:{:?} txid_height:{:?}",
-                new_txs.txs.iter().map(|tx| tx.0).collect::<Vec<Txid>>(),
+                new_txs.txs.iter().map(|tx| tx.0).collect::<Vec<_>>(),
                 headers,
                 txid_height
             );
@@ -1145,17 +1214,19 @@ impl Syncer {
 
     fn download_txs(
         &self,
-        history_txs_id: &HashSet<Txid>,
-        scripts: &HashMap<Script, DerivationPath>,
+        history_txs_id: &HashSet<BETxid>,
+        scripts: &HashMap<BEScript, DerivationPath>,
         client: &Client,
     ) -> Result<DownloadTxResult, Error> {
         let mut txs = vec![];
         let mut unblinds = vec![];
 
         let mut txs_in_db = self.store.read()?.cache.all_txs.keys().cloned().collect();
-        let txs_to_download: Vec<&Txid> = history_txs_id.difference(&txs_in_db).collect();
+        // BETxid has to be converted into bitcoin::Txid for rust-electrum-client
+        let txs_to_download: Vec<bitcoin::Txid> =
+            history_txs_id.difference(&txs_in_db).map(BETxidConvert::into_bitcoin).collect();
         if !txs_to_download.is_empty() {
-            let txs_bytes_downloaded = client.batch_transaction_get_raw(txs_to_download)?;
+            let txs_bytes_downloaded = client.batch_transaction_get_raw(txs_to_download.iter())?;
             let mut txs_downloaded: Vec<BETransaction> = vec![];
             for vec in txs_bytes_downloaded {
                 let tx = BETransaction::deserialize(&vec, self.network.id())?;
@@ -1170,9 +1241,10 @@ impl Syncer {
                 if let BETransaction::Elements(tx) = &tx {
                     info!("compute OutPoint Unblinded");
                     for (i, output) in tx.output.iter().enumerate() {
+                        let be_script = output.script_pubkey.clone().into_be();
                         // could be the searched script it's not yet in the store, because created in the current run, thus it's searched also in the `scripts`
-                        if self.store.read()?.cache.paths.contains_key(&output.script_pubkey)
-                            || scripts.contains_key(&output.script_pubkey)
+                        if self.store.read()?.cache.paths.contains_key(&be_script)
+                            || scripts.contains_key(&be_script)
                         {
                             let vout = i as u32;
                             let outpoint = elements::OutPoint {
@@ -1210,10 +1282,14 @@ impl Syncer {
                 txs.push((txid, tx));
             }
 
-            let txs_to_download: Vec<&Txid> =
-                previous_txs_to_download.difference(&txs_in_db).collect();
+            let txs_to_download: Vec<bitcoin::Txid> = previous_txs_to_download
+                .difference(&txs_in_db)
+                .map(BETxidConvert::into_bitcoin)
+                .collect();
+
             if !txs_to_download.is_empty() {
-                let txs_bytes_downloaded = client.batch_transaction_get_raw(txs_to_download)?;
+                let txs_bytes_downloaded =
+                    client.batch_transaction_get_raw(txs_to_download.iter())?;
                 for vec in txs_bytes_downloaded {
                     let mut tx = BETransaction::deserialize(&vec, self.network.id())?;
                     tx.strip_witness();

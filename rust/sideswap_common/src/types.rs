@@ -74,7 +74,7 @@ pub fn select_utxo(mut inputs: Vec<i64>, amount: i64) -> Vec<i64> {
         result.push(selected);
         amount_remain -= selected;
     }
-    result.sort();
+    result.sort_unstable();
     result.reverse();
     while result.iter().sum::<i64>() - result.last().unwrap() > amount {
         result.pop();
@@ -115,9 +115,9 @@ const ENV_STAGING: EnvData = EnvData {
 };
 
 const ENV_REGTEST: EnvData = EnvData {
-    host: "api.sideswap.io",
-    port: 10401,
-    use_tls: false,
+    host: "api-regtest.sideswap.io",
+    port: 443,
+    use_tls: true,
     name: "regtest",
     mainnet: false,
 };

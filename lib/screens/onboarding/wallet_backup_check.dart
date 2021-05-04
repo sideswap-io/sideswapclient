@@ -35,7 +35,7 @@ class _WalletBackupCheckState extends State<WalletBackupCheck> {
   @override
   Widget build(BuildContext context) {
     return SideSwapPopup(
-      useDefaultTopPadding: false,
+      enableInsideTopPadding: false,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

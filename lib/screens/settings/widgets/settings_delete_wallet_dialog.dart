@@ -68,7 +68,8 @@ void showDeleteWalletDialog(BuildContext context) {
                     height: 88.h,
                     child: SingleChildScrollView(
                       child: Text(
-                        '',
+                        'Please make sure you have backed up your wallet before proceeding.'
+                            .tr(),
                         style: GoogleFonts.roboto(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.normal,
@@ -86,16 +87,18 @@ void showDeleteWalletDialog(BuildContext context) {
                   text: 'YES'.tr(),
                   backgroundColor: Color(0xFF00C5FF),
                   onPressed: () async {
-                    await context
-                        .read(walletProvider)
-                        .settingsDeletePromptConfirm();
-                    Navigator.of(
-                            context
-                                .read(walletProvider)
-                                .navigatorKey
-                                .currentContext,
-                            rootNavigator: true)
-                        .pop();
+                    if (await context.read(walletProvider).isAuthenticated()) {
+                      await context
+                          .read(walletProvider)
+                          .settingsDeletePromptConfirm();
+                      Navigator.of(
+                              context
+                                  .read(walletProvider)
+                                  .navigatorKey
+                                  .currentContext,
+                              rootNavigator: true)
+                          .pop();
+                    }
                   },
                 ),
                 Padding(

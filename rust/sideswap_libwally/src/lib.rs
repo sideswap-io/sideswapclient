@@ -71,15 +71,19 @@ pub fn generate_psbt(
 
     let txs = wallet.list_tx(&opt).unwrap();
 
-    let new_address = session
-        .get_receive_address(&serde_json::Value::Null)
-        .unwrap();
-    let main_output = Output {
-        addr: new_address,
-        amount: psbt_info.recv_amount,
-        asset: psbt_info.recv_asset.clone(),
-    };
-    let mut outputs = vec![main_output];
+    let mut outputs = vec![];
+
+    if psbt_info.recv_amount > 0 {
+        let new_address = session
+            .get_receive_address(&serde_json::Value::Null)
+            .unwrap();
+        let recv_output = Output {
+            addr: new_address,
+            amount: psbt_info.recv_amount,
+            asset: psbt_info.recv_asset.clone(),
+        };
+        outputs.push(recv_output);
+    }
 
     if psbt_info.change_amount > 0 {
         let change_address = session
@@ -165,7 +169,7 @@ pub fn generate_psbt(
 
             let store = wallet.store.read().unwrap();
             let outpoint = elements::OutPoint {
-                txid: bitcoin::hash_types::Txid::from_str(&utxo.txhash).unwrap(),
+                txid: elements::hash_types::Txid::from_str(&utxo.txhash).unwrap(),
                 vout: utxo.pt_idx,
             };
             let unblineded = store.cache.unblinded.get(&outpoint).unwrap();
@@ -219,6 +223,7 @@ pub fn generate_psbt(
             let output_ptr = (*psbt).outputs.offset(index as isize);
 
             let script_code = gdk_common::scripts::p2shwpkh_script(public_key);
+            let script_code = elements::Script::from(script_code.as_bytes().to_owned());
             let private_blinding_key = gdk_common::wally::asset_blinding_key_to_ec_private_key(
                 wallet.master_blinding.as_ref().unwrap(),
                 &script_code,
@@ -475,6 +480,8 @@ pub fn get_network(env: Env) -> gdk_common::Network {
             validate_domain: None,
             ct_min_value: None,
             sync_interval: None,
+            spv_cross_validation: None,
+            spv_cross_validation_servers: None,
         },
         Env::Regtest => gdk_common::Network {
             name: "Electrum Liquid Regtest".to_owned(),
@@ -497,6 +504,8 @@ pub fn get_network(env: Env) -> gdk_common::Network {
             validate_domain: None,
             ct_min_value: None,
             sync_interval: None,
+            spv_cross_validation: None,
+            spv_cross_validation_servers: None,
         },
         Env::Prod => gdk_common::Network {
             name: "Electrum Liquid".to_owned(),
@@ -519,6 +528,8 @@ pub fn get_network(env: Env) -> gdk_common::Network {
             validate_domain: None,
             ct_min_value: None,
             sync_interval: None,
+            spv_cross_validation: None,
+            spv_cross_validation_servers: None,
         },
     }
 }
@@ -546,6 +557,8 @@ pub fn get_bitcoin_network(env: Env) -> gdk_common::Network {
             validate_domain: None,
             ct_min_value: None,
             sync_interval: None,
+            spv_cross_validation: None,
+            spv_cross_validation_servers: None,
         },
     }
 }

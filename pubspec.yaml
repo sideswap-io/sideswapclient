@@ -15,10 +15,15 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.2+14
+version: 1.0.3+17
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
+
+# remove overrides after moving to null safety
+dependency_overrides:
+  #sunny_dart: ^0.6.0+4
+  timezone: ^0.6.1
 
 dependencies:
   flutter:
@@ -56,7 +61,7 @@ dependencies:
   # sliding tx list
   sliding_panel: ^1.3.2
   # rxdart
-  rxdart: ^0.25.0
+  rxdart: ^0.24.0
   # enumerable - group, sort, orderby
   enumerable: ^0.1.3
   # dash line
@@ -68,13 +73,13 @@ dependencies:
   hooks_riverpod: ^0.12.1
   # mnemonic words suggestions
   flutter_typeahead: ^2.0.0
-  package_info: ^0.4.3+2
+  package_info: ^0.4.3+4
   # Replace non-existent ScaffoldMessenger in ver. 1.22.6
-  flushbar: ^1.10.4
+  another_flushbar: ^1.10.11
   # marqee text
   marquee: ^1.7.0
   #notifications
-  flutter_local_notifications: ^4.0.1+1
+  flutter_local_notifications: ^4.0.1+2
   #firebase notifications
   firebase_messaging: ^7.0.3
   # dynamic links
@@ -82,6 +87,21 @@ dependencies:
   # notification payload parsing
   freezed_annotation: ^0.12.0
   json_annotation: ^3.1.1
+  # avatar
+  image_picker: ^0.6.7+22
+  flutter_plugin_android_lifecycle: ^1.0.2
+  image: ^2.1.19
+  # pin
+  pinput: ^1.0.0
+  # contacts
+  flutter_contact: ^0.6.5+1
+  # permissions (contacts)
+  permission_handler: ^5.1.0+2
+  # license loading indicator
+  flutter_spinkit: ^4.1.2+1
+  enum_to_string: ^1.0.14
+  # secure recovery page
+  secure_application: ^3.5.3
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -108,6 +128,8 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - LICENSE
+    - assets/licenses/libwally-core-license.txt
+    - assets/licenses/gdk-license.txt
     - images/icon_btc.png
     - images/check_mark.svg
     - images/swap.svg
@@ -138,6 +160,7 @@ flutter:
     - assets/tx_swap.svg
     - assets/share.svg
     - assets/share2.svg
+    - assets/share3.svg
     - assets/copy.svg
     - assets/close.svg
     - assets/swap_arrows.svg
@@ -150,11 +173,24 @@ flutter:
     - assets/delete.svg
     - assets/shield_big.svg
     - assets/locker.svg
+    - assets/locker2.svg
     - assets/exclamationMark.svg
     - assets/web_icon.svg
     - assets/github_icon.svg
     - assets/twitter_icon.svg
     - assets/telegram_icon.svg
+    - assets/avatar.svg
+    - assets/associate_phone.svg
+    - assets/phone.svg
+    - assets/edit.svg
+    - assets/user_details.svg
+    - assets/male1.svg
+    - assets/male2.svg
+    - assets/female1.svg
+    - assets/device_frame.svg
+    - assets/blinded.svg
+    - assets/unblinded.svg
+    - assets/link.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

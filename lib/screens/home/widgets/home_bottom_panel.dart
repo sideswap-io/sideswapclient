@@ -52,6 +52,12 @@ class HomeBottomPanel extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => AddressQrScanner(
                         resultCb: (value) {
+                          if (value.orderId != null) {
+                            context
+                                .read(walletProvider)
+                                .linkOrder(value.orderId);
+                            return;
+                          }
                           context.read(paymentProvider).selectPaymentAmountPage(
                                 PaymentAmountPageArguments(
                                   result: value,
@@ -72,9 +78,11 @@ class HomeBottomPanel extends StatelessWidget {
               ),
               RoundedButtonWithLabel(
                 onTap: () {
-                  final wallet = context.read(walletProvider);
-                  wallet.selectedWalletAsset = wallet.liquidAssetId();
-                  wallet.selectPaymentPage();
+                  final liquidAssetId =
+                      context.read(walletProvider).liquidAssetId();
+                  context.read(walletProvider).selectedWalletAsset =
+                      liquidAssetId;
+                  context.read(walletProvider).selectPaymentPage();
                 },
                 label: 'Pay'.tr(),
                 child: SvgPicture.asset(

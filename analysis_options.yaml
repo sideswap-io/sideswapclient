@@ -9,6 +9,7 @@ analyzer:
     - "lib/protobuf/**"
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - "lib/common/utils/country_codes.dart"
   errors:
     implicit_dynamic_parameter: warning
     

@@ -91,8 +91,8 @@ class _FirstLaunchState extends State<FirstLaunch> {
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                               ),
-                              onPressed: () {
-                                context
+                              onPressed: () async {
+                                await context
                                     .read(walletProvider)
                                     .setReviewLicenseCreateWallet();
                               },

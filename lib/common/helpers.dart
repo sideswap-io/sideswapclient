@@ -1,8 +1,9 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share/share.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
@@ -15,6 +16,10 @@ const String kBitcoinTicker = 'BTC';
 const String kLiquidBitcoinTicker = 'L-BTC';
 const String kTetherTicker = 'USDt';
 const String kUnknownTicker = '???';
+
+const String kPackageSideswap = 'sideswap';
+const String kPackageLibwally = 'libwally-core';
+const String kPackageGdk = 'GDK';
 
 String amountStr(int amount, {bool forceSign = false}) {
   if (amount == null) {
@@ -73,12 +78,16 @@ void showMessage(BuildContext context, String title, String message) {
   );
 }
 
-String txItemToStatus(TransItem transItem) {
-  return !transItem.hasConfs()
+String txItemToStatus(TransItem transItem, {bool isPeg = false}) {
+  if (isPeg && !transItem.hasConfs()) {
+    return !transItem.peg.hasTxidRecv() ? 'Initiated'.tr() : 'Complete'.tr();
+  }
+  var status = !transItem.hasConfs()
       ? 'Confirmed'.tr()
       : transItem.confs.count == 0
           ? 'Unconfirmed'.tr()
           : '${transItem.confs.count} / ${transItem.confs.total}';
+  return status;
 }
 
 class CustomTitle extends StatelessWidget {
@@ -136,14 +145,19 @@ Future<void> pasteFromClipboard(TextEditingController controller) async {
 Future<void> openUrl(String url) async {
   // Skip canLaunch(url) check because it fails to open twitter link if twitter client is installed
   // More details here - https://github.com/flutter/flutter/issues/63727
+  logger.d('Opening url: $url');
   await launch(url);
 }
 
-Future<void> openTxidUrl(String txid, bool isLiquid) async {
-  final url = isLiquid
+String generateTxidUrl(String txid, bool isLiquid, String blindedValues) {
+  var url = isLiquid
       ? 'https://blockstream.info/liquid/tx/$txid'
       : 'https://blockstream.info/tx/$txid';
-  await openUrl(url);
+  if (blindedValues != null) {
+    url = url + '/#blinded=' + blindedValues;
+  }
+
+  return url;
 }
 
 Future<void> shareTxid(String txid) async {
@@ -151,6 +165,7 @@ Future<void> shareTxid(String txid) async {
 }
 
 Future<void> shareAddress(String address) async {
+  logger.d('Sharing address: $address');
   await Share.share(address);
 }
 

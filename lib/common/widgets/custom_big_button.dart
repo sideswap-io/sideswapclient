@@ -15,7 +15,14 @@ class CustomBigButton extends StatelessWidget {
     this.textStyle,
     this.buttonStyle,
     this.textColor,
-  }) : super(key: key);
+    OutlinedBorder shape,
+  })  : shape = shape ??
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(8.w),
+              ),
+            ),
+        super(key: key);
 
   final String text;
   final VoidCallback onPressed;
@@ -27,6 +34,7 @@ class CustomBigButton extends StatelessWidget {
   final TextStyle textStyle;
   final ButtonStyle buttonStyle;
   final Color textColor;
+  final OutlinedBorder shape;
 
   @override
   Widget build(BuildContext context) {
@@ -64,7 +72,10 @@ class CustomBigButton extends StatelessWidget {
                   padding: text != null
                       ? EdgeInsets.only(right: 16.w)
                       : EdgeInsets.zero,
-                  child: icon,
+                  child: Opacity(
+                    opacity: enabled ? 1.0 : 0.5,
+                    child: icon,
+                  ),
                 ),
               ),
             ],
@@ -79,13 +90,11 @@ class CustomBigButton extends StatelessWidget {
                       Colors.white.withOpacity(0.5),
               backgroundColor: enabled
                   ? backgroundColor ?? const Color(0xFF2A6D92)
-                  : backgroundColor?.withOpacity(0.5) ??
-                      const Color(0xFF2A6D92).withOpacity(0.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8.w),
-                ),
-              ),
+                  : backgroundColor == Colors.transparent
+                      ? Colors.transparent
+                      : backgroundColor?.withOpacity(0.5) ??
+                          const Color(0xFF2A6D92).withOpacity(0.5),
+              shape: shape,
             ),
       ),
     );

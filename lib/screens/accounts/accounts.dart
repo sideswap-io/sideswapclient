@@ -18,7 +18,7 @@ class Accounts extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 24.h),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Accounts',
@@ -27,11 +27,11 @@ class Accounts extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ).tr(),
-                Container(
-                  width: 22.w,
-                  height: 21.h,
-                  child: FlatButton(
-                    onPressed: () {
+                Spacer(),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
                       final uiStateArgs = context.read(uiStateArgsProvider);
                       uiStateArgs.walletMainArguments =
                           uiStateArgs.walletMainArguments.copyWith(
@@ -40,13 +40,29 @@ class Accounts extends StatelessWidget {
 
                       context.read(walletProvider).selectAvailableAssets();
                     },
-                    padding: EdgeInsets.zero,
-                    child: SvgPicture.asset(
-                      'assets/filter.svg',
-                      fit: BoxFit.fill,
+                    borderRadius: BorderRadius.circular(21.w),
+                    child: Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      child: Row(
+                        children: [
+                          Spacer(),
+                          Padding(
+                            padding: EdgeInsets.only(right: 6.w),
+                            child: SvgPicture.asset(
+                              'assets/filter.svg',
+                              width: 22.w,
+                              height: 21.h,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),

@@ -38,6 +38,7 @@ impl_error!(&str);
 impl_error!(bitcoin::util::base58::Error);
 //impl_error!(sled::Error);
 impl_error!(bitcoin::hashes::error::Error);
+impl_error!(bitcoin::hashes::hex::Error);
 impl_error!(bitcoin::consensus::encode::Error);
 impl_error!(bitcoin::util::bip32::Error);
 impl_error!(std::array::TryFromSliceError);
@@ -45,3 +46,33 @@ impl_error!(elements::encode::Error);
 impl_error!(elements::address::AddressError);
 impl_error!(hex::FromHexError);
 impl_error!(bitcoin::util::address::Error);
+
+#[macro_export]
+macro_rules! bail {
+    ($err:expr $(,)?) => {
+        return Err($err.into());
+    };
+}
+
+#[macro_export]
+macro_rules! ensure {
+    ($cond:expr, $err:expr $(,)?) => {
+        if !$cond {
+            bail!($err);
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! impl_error_variant {
+    ($name:ident, $enum:ident) => {
+        impl_from_variant!($name, $enum, $name);
+    };
+    ($struct:path, $enum:ident, $variant:ident) => {
+        impl From<$struct> for $enum {
+            fn from(v: $struct) -> Self {
+                $enum::$variant(v)
+            }
+        }
+    };
+}

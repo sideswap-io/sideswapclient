@@ -18,7 +18,7 @@ class TxItemPeg extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _status = txItemToStatus(transItem);
+    final _status = txItemToStatus(transItem, isPeg: true);
     final wallet = context.read(walletProvider);
     final asset = wallet.getAssetById(assetId);
     final payout =

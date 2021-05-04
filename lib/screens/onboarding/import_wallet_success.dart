@@ -16,14 +16,14 @@ class ImportWalletSuccess extends StatelessWidget {
       },
       hideCloseButton: true,
       child: ResultPage(
-        resultType: ResultPageType.success,
-        header: 'Success!'.tr(),
-        description:
-            'You have successfully imported your wallet to this device'.tr(),
-        button: 'START TO USE'.tr(),
-        onPressed: () =>
-            context.read(walletProvider).walletSuccessfulyImported(),
-      ),
+          resultType: ResultPageType.success,
+          header: 'Success!'.tr(),
+          description:
+              'You have successfully imported your wallet to this device'.tr(),
+          button: 'CONTINUE'.tr(),
+          onPressed: () async {
+            await context.read(walletProvider).setPinWelcome();
+          }),
     );
   }
 }

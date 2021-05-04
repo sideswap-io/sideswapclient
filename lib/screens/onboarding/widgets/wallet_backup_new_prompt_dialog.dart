@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 
 void showWalletBackupDialog(BuildContext context) {
   showDialog<void>(
@@ -110,7 +111,15 @@ void showWalletBackupDialog(BuildContext context) {
                               rootNavigator: true)
                           .pop();
 
-                      await context.read(walletProvider).loginAndLoadMainPage();
+                      if (FlavorConfig.isProduction() &&
+                          FlavorConfig
+                              .instance.values.enableOnboardingUserFeatures) {
+                        await context.read(walletProvider).setImportAvatar();
+                      } else {
+                        await context
+                            .read(walletProvider)
+                            .loginAndLoadMainPage();
+                      }
                     },
                   ),
                 ),

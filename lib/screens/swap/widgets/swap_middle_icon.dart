@@ -11,11 +11,13 @@ class SwapMiddleIcon extends ConsumerWidget {
   SwapMiddleIcon({
     @required this.visibleToggles,
     this.onTap,
+    this.visible = true,
   });
 
   final _swapIconSize = 48.w;
   final bool visibleToggles;
   final VoidCallback onTap;
+  final bool visible;
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -106,7 +108,9 @@ class SwapMiddleIcon extends ConsumerWidget {
                       : _conversionText;
 
                   return Visibility(
-                    visible: _swapType != SwapType.atomic || _price != 0,
+                    visible: (_swapType != SwapType.atomic || _price != 0) &&
+                        visible &&
+                        (wallet.serverStatus != null),
                     child: RoundedTextLabel(
                       text: _priceText,
                     ),
