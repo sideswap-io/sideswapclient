@@ -82,27 +82,6 @@ extern "C" {
         output: *mut *const WallyTx,
     ) -> c_int;
 
-    //WALLY_CORE_API int wally_tx_get_elements_signature_hash(
-    //  const struct wally_tx *tx,
-    //  size_t index,
-    //  const unsigned char *script, size_t script_len,
-    //  const unsigned char *value, size_t value_len,
-    //  uint32_t sighash, uint32_t flags,
-    //  unsigned char *bytes_out, size_t len)
-    #[allow(unused)]
-    pub fn wally_tx_get_elements_signature_hash(
-        tx: *const WallyTx,
-        index: usize,
-        script: *const c_uchar,
-        script_len: usize,
-        value: *const c_uchar,
-        value_len: usize,
-        sighash: u32,
-        flags: u32,
-        bytes_out: *mut c_uchar,
-        len: usize,
-    ) -> c_int;
-
     //WALLY_CORE_API int wally_asset_blinding_key_from_seed(
     //    const unsigned char *bytes,
     //    size_t bytes_len,
@@ -169,6 +148,26 @@ extern "C" {
     pub fn wally_ec_public_key_from_private_key(
         priv_key: *const c_uchar,
         priv_key_len: size_t,
+        bytes_out: *mut c_uchar,
+        len: size_t,
+    ) -> c_int;
+
+    //WALLY_CORE_API int wally_pbkdf2_hmac_sha512(
+    //    const unsigned char *pass,
+    //    size_t pass_len,
+    //    const unsigned char *salt,
+    //    size_t salt_len,
+    //    uint32_t flags,
+    //    uint32_t cost,
+    //    unsigned char *bytes_out,
+    //    size_t len);
+    pub fn wally_pbkdf2_hmac_sha512(
+        pass: *const c_uchar,
+        pass_len: size_t,
+        salt: *const c_uchar,
+        salt_len: size_t,
+        flags: u32,
+        cost: u32,
         bytes_out: *mut c_uchar,
         len: size_t,
     ) -> c_int;

@@ -3,30 +3,30 @@ import 'package:sideswap/protobuf/sideswap.pb.dart';
 class TxItem implements Comparable<TxItem> {
   final TransItem item;
   final bool showDate;
-  int createdAt;
+  final int _createdAt;
+
+  int get createdAt => _createdAt;
 
   TxItem({
-    this.item,
+    required this.item,
     this.showDate = false,
-    this.createdAt,
-  }) {
-    createdAt = item.createdAt.toInt();
-  }
+    int? createdAt,
+  }) : _createdAt = item.createdAt.toInt();
 
   @override
   int compareTo(TxItem other) {
-    return createdAt.compareTo(other.createdAt);
+    return _createdAt.compareTo(other._createdAt);
   }
 
   TxItem copyWith({
-    TransItem item,
-    int createdAt,
-    bool showDate,
+    TransItem? item,
+    bool? showDate,
+    int? createdAt,
   }) {
     return TxItem(
       item: item ?? this.item,
       showDate: showDate ?? this.showDate,
-      createdAt: createdAt ?? this.createdAt,
+      createdAt: createdAt ?? _createdAt,
     );
   }
 
@@ -37,13 +37,13 @@ class TxItem implements Comparable<TxItem> {
     return o is TxItem &&
         o.item == item &&
         o.showDate == showDate &&
-        o.createdAt == createdAt;
+        o._createdAt == _createdAt;
   }
 
   @override
-  int get hashCode => item.hashCode ^ showDate.hashCode ^ createdAt.hashCode;
+  int get hashCode => item.hashCode ^ showDate.hashCode ^ _createdAt.hashCode;
 
   @override
   String toString() =>
-      'TxItem(item: $item, showDate: $showDate, createdAt: $createdAt)';
+      'TxItem(item: $item, showDate: $showDate, createdAt: $_createdAt)';
 }

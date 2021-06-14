@@ -1,35 +1,36 @@
-import 'package:fdottedline/fdottedline.dart';
+import 'package:dotted_line/dotted_line.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_bottom_buttons.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row_notes.dart';
-import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class SwapSummary extends StatelessWidget {
   SwapSummary({
-    Key key,
-    this.ticker,
-    this.delivered,
-    this.received,
-    this.price,
-    this.type,
-    this.txCircleImageType,
-    this.timestampStr,
-    this.status,
-    this.balances,
-    this.networkFee,
-    this.confs,
-    this.tx,
-    this.txId,
+    Key? key,
+    required this.ticker,
+    required this.delivered,
+    required this.received,
+    required this.price,
+    required this.type,
+    required this.txCircleImageType,
+    required this.timestampStr,
+    required this.status,
+    required this.balances,
+    required this.networkFee,
+    required this.confs,
+    required this.tx,
+    required this.txId,
   }) : super(key: key);
 
   final String ticker;
@@ -110,7 +111,8 @@ class SwapSummary extends StatelessWidget {
             final balance = balances[index];
             final asset = context.read(walletProvider).assets[balance.assetId];
             final ticker = asset != null ? asset.ticker : kUnknownTicker;
-            final balanceStr = amountStr(balance.amount.toInt());
+            final balanceStr = amountStr(balance.amount.toInt(),
+                precision: asset?.precision ?? 8);
             return TxDetailsRow(
               description: 'Amount'.tr(),
               details: '$balanceStr $ticker',
@@ -134,13 +136,11 @@ class SwapSummary extends StatelessWidget {
           padding: EdgeInsets.only(top: 12.h),
           child: TxDetailsRow(
             description: 'Status'.tr(),
-            details: status ?? '',
-            detailsColor: (confs != null && confs?.count != 0)
-                ? Color(0xFF709EBA)
-                : Colors.white,
+            details: status,
+            detailsColor: (confs.count != 0) ? Color(0xFF709EBA) : Colors.white,
           ),
         ),
-        if (tx != null && type != TxType.swap) ...[
+        if (type != TxType.swap) ...[
           // notes
           Padding(
             padding: EdgeInsets.only(top: 20.h),
@@ -151,9 +151,9 @@ class SwapSummary extends StatelessWidget {
         ],
         Padding(
           padding: EdgeInsets.only(top: 20.h),
-          child: FDottedLine(
-            color: Colors.white,
-            width: MediaQuery.of(context).size.width,
+          child: DottedLine(
+            dashColor: Colors.white,
+            dashGapColor: Colors.transparent,
           ),
         ),
         Padding(

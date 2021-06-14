@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class LabeledRadio<T> extends StatelessWidget {
   LabeledRadio({
-    this.label,
-    this.groupValue,
-    this.value,
+    required this.label,
+    required this.groupValue,
+    required this.value,
     this.onChanged,
   });
 
   final String label;
   final T groupValue;
   final T value;
-  final ValueChanged<T> onChanged;
+  final ValueChanged<T>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class LabeledRadio<T> extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(left: 12.w),
       child: InkWell(
-        onTap: onChanged == null ? null : () => onChanged(value),
+        onTap: onChanged == null ? null : () => onChanged!(value),
         child: Row(
           children: <Widget>[
             Container(
@@ -36,8 +37,13 @@ class LabeledRadio<T> extends StatelessWidget {
                   activeColor: Color(0xFF00C5FF),
                   groupValue: groupValue,
                   value: value,
-                  onChanged:
-                      onChanged == null ? null : (value) => onChanged(value),
+                  onChanged: onChanged == null
+                      ? null
+                      : (value) {
+                          if (value != null) {
+                            onChanged!(value);
+                          }
+                        },
                 ),
               ),
             ),

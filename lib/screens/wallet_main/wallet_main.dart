@@ -1,9 +1,10 @@
 import 'package:another_flushbar/flushbar.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/swap_provider.dart';
@@ -22,38 +23,28 @@ class WalletMain extends StatefulWidget {
 }
 
 class _WalletMainState extends State<WalletMain> {
-  DateTime currentBackPressTime;
+  DateTime currentBackPressTime = DateTime.now();
 
   Widget getChild(WalletMainNavigationItem navigationItem) {
     switch (navigationItem) {
       case WalletMainNavigationItem.home:
         return Home();
-        break;
       case WalletMainNavigationItem.homeAssetReceive:
       case WalletMainNavigationItem.assetReceive:
         return AssetReceivePopup();
-        break;
       case WalletMainNavigationItem.accounts:
         return Accounts();
-        break;
       case WalletMainNavigationItem.assetSelect:
         return AssetSelectList();
-        break;
       case WalletMainNavigationItem.assetDetails:
         return AssetDetails();
-        break;
       case WalletMainNavigationItem.transactions:
         return Container();
-        break;
       case WalletMainNavigationItem.requests:
         return Container();
-        break;
       case WalletMainNavigationItem.swap:
         return SwapMain();
-        break;
     }
-
-    throw Exception('unexpected mainPage');
   }
 
   Future<bool> closeApp() async {
@@ -75,9 +66,8 @@ class _WalletMainState extends State<WalletMain> {
             if (_currentPageIndex == 0 &&
                 _navigationItem == WalletMainNavigationItem.home) {
               final now = DateTime.now();
-              if (currentBackPressTime == null ||
-                  now.difference(currentBackPressTime) >
-                      Duration(seconds: 2, milliseconds: 700)) {
+              if (now.difference(currentBackPressTime) >
+                  Duration(seconds: 2, milliseconds: 700)) {
                 currentBackPressTime = now;
                 final flushbar = Flushbar<Widget>(
                   messageText: Text(
@@ -93,16 +83,13 @@ class _WalletMainState extends State<WalletMain> {
                   backgroundColor: Color(0xFF0F4766),
                   onTap: (flushbar) {
                     flushbar.dismiss();
-                    currentBackPressTime = null;
-                    return false;
                   },
-                  onStatusChanged: (status) {
-                    if (status == FlushbarStatus.DISMISSED &&
-                        currentBackPressTime != null) {
+                  onStatusChanged: (status) async {
+                    if (status == FlushbarStatus.DISMISSED) {
                       final now = DateTime.now();
                       if (now.difference(currentBackPressTime) <
                           Duration(seconds: 3)) {
-                        return closeApp();
+                        await closeApp();
                       }
                     }
                   },

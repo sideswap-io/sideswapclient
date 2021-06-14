@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class PinTextField extends StatefulWidget {
   PinTextField({
-    Key key,
-    this.pin,
+    Key? key,
+    this.pin = '',
     this.focusNode,
     this.onTap,
     this.enabled = true,
@@ -14,8 +15,8 @@ class PinTextField extends StatefulWidget {
   }) : super(key: key);
 
   final String pin;
-  final FocusNode focusNode;
-  final VoidCallback onTap;
+  final FocusNode? focusNode;
+  final VoidCallback? onTap;
   final bool enabled;
   final bool error;
   final String errorMessage;
@@ -25,7 +26,7 @@ class PinTextField extends StatefulWidget {
 }
 
 class _PinTextFieldState extends State<PinTextField> {
-  TextEditingController controller;
+  late TextEditingController controller;
 
   @override
   void initState() {

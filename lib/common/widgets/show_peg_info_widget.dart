@@ -1,18 +1,17 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
-import 'package:sideswap/models/wallet.dart';
 
 class ShowPegInfoWidget extends StatefulWidget {
   const ShowPegInfoWidget({
-    Key key,
-    @required this.onChanged,
-    @required this.text,
+    Key? key,
+    required this.onChanged,
+    required this.text,
   }) : super(key: key);
 
   final ValueChanged<bool> onChanged;
@@ -23,6 +22,8 @@ class ShowPegInfoWidget extends StatefulWidget {
 }
 
 class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
+  bool internalValue = false;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -74,13 +75,22 @@ class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
               ),
             ),
             CustomCheckBox(
-              onChanged: widget.onChanged,
-              child: Text(
-                "Don't show again".tr(),
-                style: GoogleFonts.roboto(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.white,
+              onChanged: (value) {
+                widget.onChanged(value);
+                setState(() {
+                  internalValue = value;
+                });
+              },
+              value: internalValue,
+              child: Padding(
+                padding: EdgeInsets.only(left: 8.w),
+                child: Text(
+                  "Don't show again".tr(),
+                  style: GoogleFonts.roboto(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -98,13 +108,7 @@ class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
                 text: 'OK'.tr(),
                 backgroundColor: Color(0xFF00C5FF),
                 onPressed: () {
-                  Navigator.of(
-                          context
-                              .read(walletProvider)
-                              .navigatorKey
-                              .currentContext,
-                          rootNavigator: true)
-                      .pop();
+                  Navigator.of(context, rootNavigator: true).pop();
                 },
               ),
             ),

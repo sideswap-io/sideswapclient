@@ -4,7 +4,7 @@ class CustomButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
 
-  CustomButton({@required this.text, @required this.onPressed});
+  CustomButton({required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -12,8 +12,8 @@ class CustomButton extends StatelessWidget {
       width: 180,
       height: 40,
       child: ElevatedButton(
-        child: Text(text.toUpperCase()),
         onPressed: onPressed,
+        child: Text(text.toUpperCase()),
         //style: ElevatedButton.styleFrom(primary: Colors.),
       ),
     );

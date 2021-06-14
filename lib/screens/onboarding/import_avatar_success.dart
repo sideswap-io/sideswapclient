@@ -1,22 +1,23 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/avatar_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class ImportAvatarSuccess extends StatefulWidget {
-  const ImportAvatarSuccess({Key key}) : super(key: key);
+  const ImportAvatarSuccess({Key? key}) : super(key: key);
 
   @override
   _ImportAvatarSuccessState createState() => _ImportAvatarSuccessState();
 }
 
 class _ImportAvatarSuccessState extends State<ImportAvatarSuccess> {
-  Image avatar;
+  Image? avatar;
 
   @override
   void initState() {
@@ -52,7 +53,7 @@ class _ImportAvatarSuccessState extends State<ImportAvatarSuccess> {
                     ),
                   ),
                   child: CircleAvatar(
-                    backgroundImage: avatar.image,
+                    backgroundImage: avatar?.image,
                   ),
                 ),
               ),

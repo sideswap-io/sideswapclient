@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 enum SettingsButtonType {
@@ -9,28 +10,29 @@ enum SettingsButtonType {
   about,
   delete,
   userDetails,
+  network,
 }
 
 class SettingsButton extends StatefulWidget {
   const SettingsButton({
-    Key key,
+    Key? key,
     this.transparent = false,
     this.type = SettingsButtonType.recovery,
-    @required this.text,
+    required this.text,
     this.onPressed,
   }) : super(key: key);
 
   final bool transparent;
   final SettingsButtonType type;
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   _SettingsButtonState createState() => _SettingsButtonState();
 }
 
 class _SettingsButtonState extends State<SettingsButton> {
-  Widget _icon;
+  late Widget _icon;
 
   @override
   void initState() {
@@ -72,6 +74,13 @@ class _SettingsButtonState extends State<SettingsButton> {
           height: 24.w,
         );
         break;
+      case SettingsButtonType.network:
+        _icon = SvgPicture.asset(
+          'assets/network.svg',
+          width: 24.w,
+          height: 24.w,
+        );
+        break;
     }
   }
 
@@ -82,6 +91,21 @@ class _SettingsButtonState extends State<SettingsButton> {
       width: double.infinity,
       child: TextButton(
         onPressed: widget.onPressed,
+        style: TextButton.styleFrom(
+          primary: Colors.white,
+          backgroundColor:
+              widget.transparent ? Colors.transparent : Color(0xFF135579),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(8.w),
+            ),
+          ),
+          side: BorderSide(
+            color: Color(0xFF135579),
+            width: 1,
+            style: BorderStyle.solid,
+          ),
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.start,
@@ -107,21 +131,6 @@ class _SettingsButtonState extends State<SettingsButton> {
               child: Icon(Icons.keyboard_arrow_right),
             ),
           ],
-        ),
-        style: TextButton.styleFrom(
-          primary: Colors.white,
-          backgroundColor:
-              widget.transparent ? Colors.transparent : Color(0xFF135579),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8.w),
-            ),
-          ),
-          side: BorderSide(
-            color: Color(0xFF135579),
-            width: 1,
-            style: BorderStyle.solid,
-          ),
         ),
       ),
     );

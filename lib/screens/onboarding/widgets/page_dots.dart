@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class PageDots extends StatelessWidget {
   const PageDots({
-    Key key,
+    Key? key,
     this.maxSelectedDots = 0,
   }) : super(key: key);
 

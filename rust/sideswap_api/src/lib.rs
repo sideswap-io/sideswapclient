@@ -5,6 +5,8 @@ pub const TICKER_BTC: &str = "BTC";
 pub const TICKER_LBTC: &str = "L-BTC";
 pub const TICKER_USDT: &str = "USDt";
 pub const TICKER_EURX: &str = "EURx";
+pub const TICKER_LCAD: &str = "LCAD";
+pub const TICKER_AUDL: &str = "AUDL";
 
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";
@@ -80,6 +82,7 @@ pub struct PegRequest {
     pub send_amount: Option<i64>,
     pub peg_in: bool,
     pub device_key: Option<String>,
+    pub blocks: Option<i32>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -94,7 +97,7 @@ pub struct PegResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PegStatusRequest {
     pub order_id: OrderId,
-    pub peg_in: bool,
+    pub peg_in: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -325,12 +328,21 @@ pub enum RequestId {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub struct FeeRate {
+    pub blocks: i32,
+    pub value: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ServerStatus {
     pub min_peg_in_amount: i64,
     pub min_peg_out_amount: i64,
     pub server_fee_percent_peg_in: f64,
     pub server_fee_percent_peg_out: f64,
+    pub min_submit_amount: i64,
+    pub price_band: f64,
     pub elements_fee_rate: f64,
+    pub bitcoin_fee_rates: Vec<FeeRate>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -417,19 +429,23 @@ pub enum OrderSide {
     Responder,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Details {
+    pub asset: AssetId,
+    pub bitcoin_amount: i64,
+    pub asset_amount: i64,
+    pub price: f64,
+    pub server_fee: i64,
+    pub side: OrderSide,
+    pub send_bitcoins: bool,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PriceOrder {
     pub asset: AssetId,
     pub bitcoin_amount: f64,
-    pub price: f64,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct AmountOrder {
-    pub req_asset: AssetId,
-    pub req_amount: i64,
-    pub resp_asset: AssetId,
-    pub resp_amount: i64,
+    pub price: Option<f64>,
+    pub index_price: Option<f64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -451,17 +467,19 @@ pub type CancelPricesResponse = Empty;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubmitRequest {
     pub order: PriceOrder,
+    pub session_id: Option<String>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubmitResponse {
     pub order_id: OrderId,
-    pub submit_link: String,
+    pub details: Details,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct EditRequest {
     pub order_id: OrderId,
-    pub price: f64,
+    pub price: Option<f64>,
+    pub index_price: Option<f64>,
 }
 pub type EditResponse = Empty;
 
@@ -472,57 +490,61 @@ pub struct CancelRequest {
 pub type CancelResponse = Empty;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SubscribeRequest {
+pub struct LoginRequest {
     pub session_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SubscribeResponse {
+pub struct LoginResponse {
     pub session_id: String,
     pub orders: Vec<OrderCreatedNotification>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SubscribePriceRequest {
-    pub asset_id: AssetId,
+pub struct SubscribeRequest {
+    pub asset: AssetId,
 }
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SubscribePriceResponse {
-    pub asset_id: AssetId,
-    pub price: Option<f64>,
+pub struct SubscribeResponse {
+    pub asset: AssetId,
+    pub orders: Vec<OrderCreatedNotification>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UnsubscribePriceRequest {
-    pub asset_id: AssetId,
+pub struct UnsubscribeRequest {
+    pub asset: AssetId,
 }
-pub type UnsubscribePriceResponse = Empty;
+pub type UnsubscribeResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Own {
+    pub index_price: Option<f64>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderCreatedNotification {
     pub order_id: OrderId,
-    pub submit_link: String,
-    pub order: PriceOrder,
+    pub details: Details,
     pub created_at: Timestamp,
     pub expires_at: Timestamp,
-    pub own: bool,
+    pub own: Option<Own>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderRemovedNotification {
     pub order_id: OrderId,
-    pub submit_link: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LinkRequest {
     pub order_id: OrderId,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LinkResponse {
-    pub order: AmountOrder,
-    pub submitted: PriceOrder,
-    pub side: OrderSide,
+    pub order_id: OrderId,
+    pub details: Details,
+    pub index_price: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -531,6 +553,7 @@ pub struct AddrRequest {
     pub pset: String,
     pub recv_addr: String,
     pub change_addr: String,
+    pub price: f64,
 }
 pub type AddrResponse = Empty;
 
@@ -538,6 +561,7 @@ pub type AddrResponse = Empty;
 pub struct SignNotification {
     pub order_id: OrderId,
     pub pset: String,
+    pub details: Details,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -547,6 +571,16 @@ pub struct SignRequest {
     pub side: OrderSide,
 }
 pub type SignResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetSignRequest {
+    pub order_id: OrderId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetSignResponse {
+    pub data: SignNotification,
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CompleteNotification {
@@ -587,10 +621,13 @@ pub enum Request {
     Submit(SubmitRequest),
     Edit(EditRequest),
     Cancel(CancelRequest),
+    Login(LoginRequest),
     Subscribe(SubscribeRequest),
+    Unsubscribe(UnsubscribeRequest),
     Link(LinkRequest),
     Addr(AddrRequest),
     Sign(SignRequest),
+    GetSign(GetSignRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -624,10 +661,13 @@ pub enum Response {
     Submit(SubmitResponse),
     Edit(EditResponse),
     Cancel(CancelResponse),
+    Login(LoginResponse),
     Subscribe(SubscribeResponse),
+    Unsubscribe(UnsubscribeResponse),
     Link(LinkResponse),
     Addr(AddrResponse),
     Sign(SignResponse),
+    GetSign(GetSignResponse),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -720,9 +760,15 @@ pub struct FcmMessagePeg {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct FcmMessageSign {
+    pub order_id: OrderId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum FcmMessage {
     Tx(FcmMessageTx),
     PegDetected(FcmMessagePeg),
     PegPayout(FcmMessagePeg),
+    Sign(FcmMessageSign),
 }

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/balances.dart';
 
@@ -16,7 +17,7 @@ enum TxCircleImageType {
   unknown
 }
 
-TxCircleImageType txTypeToImageType({@required TxType type}) {
+TxCircleImageType txTypeToImageType({required TxType type}) {
   TxCircleImageType txCircleImageType;
 
   switch (type) {
@@ -39,16 +40,16 @@ TxCircleImageType txTypeToImageType({@required TxType type}) {
 
 class TxCircleImage extends StatefulWidget {
   TxCircleImage({
-    Key key,
-    this.txCircleImageType,
+    Key? key,
+    required this.txCircleImageType,
     this.width,
     this.height,
     this.fake = false,
   }) : super(key: key);
 
   final TxCircleImageType txCircleImageType;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final bool fake;
 
   @override
@@ -56,11 +57,11 @@ class TxCircleImage extends StatefulWidget {
 }
 
 class _TxCircleImageState extends State<TxCircleImage> {
-  double _width;
-  double _height;
-  double _largeWidth;
-  double _smallWidth;
-  double _swapWidth;
+  double _width = 0;
+  double _height = 0;
+  double _largeWidth = 0;
+  double _smallWidth = 0;
+  double _swapWidth = 0;
   final Color _fakeFrameColor = const Color(0xFF00C5FF);
   final Color _fakeIconColor = const Color(0xFFFF996E);
 
@@ -77,7 +78,7 @@ class _TxCircleImageState extends State<TxCircleImage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget image;
+    late Widget image;
     Color frameColor;
     switch (widget.txCircleImageType) {
       case TxCircleImageType.pegIn:
@@ -151,8 +152,8 @@ class _TxCircleImageState extends State<TxCircleImage> {
         ),
       ),
       child: CircleAvatar(
-        child: image,
         backgroundColor: Colors.transparent,
+        child: image,
       ),
     );
   }

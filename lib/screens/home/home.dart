@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/home/widgets/home_bottom_panel.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class Home extends StatelessWidget {
-  Home({Key key}) : super(key: key);
+  Home({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -52,14 +53,6 @@ class Home extends StatelessWidget {
                   Expanded(
                     child: Container(),
                   ),
-                  // TODO: Notification test - remove after tests
-                  // CustomBigButton(
-                  //   onPressed: () {
-                  //     context
-                  //         .read(notificationsProvider)
-                  //         .parsePayload("")
-                  //   },
-                  // ),
                   HomeBottomPanel()
                 ],
               ),

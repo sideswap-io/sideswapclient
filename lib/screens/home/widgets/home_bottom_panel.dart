@@ -1,7 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/models/payment_provider.dart';
@@ -11,7 +12,7 @@ import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
 class HomeBottomPanel extends StatelessWidget {
   HomeBottomPanel({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -39,12 +40,12 @@ class HomeBottomPanel extends StatelessWidget {
                       .selectAssetReceiveFromWalletMain();
                 },
                 label: 'Receive'.tr(),
+                buttonBackground: Colors.white,
                 child: SvgPicture.asset(
                   'assets/bottom_left_arrow.svg',
                   width: 28.w,
                   height: 28.w,
                 ),
-                buttonBackground: Colors.white,
               ),
               RoundedButtonWithLabel(
                 onTap: () {
@@ -69,28 +70,28 @@ class HomeBottomPanel extends StatelessWidget {
                   );
                 },
                 label: 'QR'.tr(),
+                buttonBackground: Colors.white,
                 child: SvgPicture.asset(
                   'assets/qr_code_scan.svg',
                   width: 28.w,
                   height: 28.w,
                 ),
-                buttonBackground: Colors.white,
               ),
               RoundedButtonWithLabel(
                 onTap: () {
                   final liquidAssetId =
                       context.read(walletProvider).liquidAssetId();
                   context.read(walletProvider).selectedWalletAsset =
-                      liquidAssetId;
+                      liquidAssetId ?? '';
                   context.read(walletProvider).selectPaymentPage();
                 },
                 label: 'Pay'.tr(),
+                buttonBackground: Colors.white,
                 child: SvgPicture.asset(
                   'assets/top_right_arrow.svg',
                   width: 28.w,
                   height: 28.w,
                 ),
-                buttonBackground: Colors.white,
               ),
             ],
           ),

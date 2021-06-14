@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 
 class RoundedButtonWithLabel extends StatelessWidget {
   RoundedButtonWithLabel({
-    Key key,
+    Key? key,
     this.onTap,
     this.label,
     this.child,
     this.buttonBackground,
   }) : super(key: key);
-  final VoidCallback onTap;
-  final String label;
-  final Widget child;
-  final Color buttonBackground;
+  final VoidCallback? onTap;
+  final String? label;
+  final Widget? child;
+  final Color? buttonBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +24,9 @@ class RoundedButtonWithLabel extends StatelessWidget {
         RoundedButton(
           width: 72.w,
           heigh: 72.w,
-          child: child,
           onTap: onTap,
           color: buttonBackground,
+          child: child,
         ),
         Padding(
           padding: EdgeInsets.only(top: 12.h),

@@ -1,13 +1,14 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class PaymentAmountReceiverField extends StatelessWidget {
   PaymentAmountReceiverField({
-    Key key,
-    @required this.labelStyle,
-    this.text,
+    Key? key,
+    required this.labelStyle,
+    this.text = '',
   }) : super(key: key);
 
   final TextStyle labelStyle;

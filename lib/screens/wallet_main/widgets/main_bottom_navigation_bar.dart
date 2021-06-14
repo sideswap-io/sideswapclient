@@ -1,12 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class MainBottomNavigationBar extends StatefulWidget {
-  MainBottomNavigationBar({Key key, this.onTap, this.currentIndex})
-      : super(key: key);
+  MainBottomNavigationBar({
+    Key? key,
+    required this.onTap,
+    required this.currentIndex,
+  }) : super(key: key);
 
   final ValueChanged<int> onTap;
   final int currentIndex;

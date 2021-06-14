@@ -188,7 +188,7 @@ fn get_checkpoints(network: Network) -> HashMap<u32, BlockHash> {
     checkpoints
 }
 
-#[cfg(disabled)]
+#[cfg(test)]
 mod test {
     use crate::headers::bitcoin::HeadersChain;
     use bitcoin::consensus::encode::Decodable;

@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::vec::Vec;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -27,7 +27,6 @@ pub struct RpcResult<T> {
     pub error: Option<RpcError>,
 }
 
-#[allow(dead_code)]
 fn make_rpc_impl(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
@@ -44,7 +43,6 @@ fn make_rpc_impl(
     Ok((data, status))
 }
 
-#[allow(dead_code)]
 pub fn make_rpc(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
@@ -53,7 +51,6 @@ pub fn make_rpc(
     make_rpc_impl(http_client, &rpc_server, &req)
 }
 
-#[allow(dead_code)]
 pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
@@ -62,7 +59,7 @@ pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
     let response = make_rpc(&http_client, &rpc_server, &req)?;
     let response = serde_json::from_str::<RpcResult<T>>(&response.0)?;
     if let Some(error) = response.error {
-        debug!("rpc failed: {}", error.message);
+        error!("rpc failed: {}", error.message);
         Err(anyhow!("RPC failed: {}", error.message))
     } else if let Some(result) = response.result {
         Ok(result)
@@ -72,27 +69,33 @@ pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
     }
 }
 
-#[allow(dead_code)]
 pub fn make_rpc_call<T: serde::de::DeserializeOwned>(
     http_client: &reqwest::blocking::Client,
     rpc_server: &RpcServer,
     req: &RpcRequest,
 ) -> Result<T, anyhow::Error> {
-    debug!("make request: {:?}", req);
+    trace!("make request: {:?}", req);
     make_rpc_call_silent(http_client, rpc_server, req)
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct GetWalletInfo {
-    pub balance: HashMap<String, serde_json::Number>,
+    pub balance: BTreeMap<String, f64>,
+    pub unconfirmed_balance: BTreeMap<String, f64>,
+    pub immature_balance: BTreeMap<String, f64>,
     pub private_keys_enabled: bool,
+}
+pub fn get_wallet_info() -> RpcRequest {
+    RpcRequest {
+        method: "getwalletinfo".to_owned(),
+        params: vec![],
+    }
 }
 
 pub fn get_new_address() -> RpcRequest {
     get_new_address_with_type(Some(AddressType::P2SH))
 }
 
-#[allow(dead_code)]
 #[derive(Copy, Clone)]
 pub enum AddressType {
     Legacy,
@@ -127,7 +130,7 @@ pub struct RawUtxo {
     pub amount: serde_json::Number,
 }
 
-pub type RawTxInputs = crate::types::TxOut;
+pub type RawTxInputs = sideswap_common::types::TxOut;
 
 pub type RawTxOutputsAmounts = BTreeMap<String, serde_json::Value>;
 pub type RawTxOutputsAssets = BTreeMap<String, String>;
@@ -211,7 +214,7 @@ pub struct DecodedRawTx {
     pub vin: Vec<TxInputKey>,
 }
 
-pub fn list_unspent2(minconf: i32) -> RpcRequest {
+pub fn listunspent(minconf: i32) -> RpcRequest {
     // minconf
     RpcRequest {
         method: "listunspent".to_owned(),
@@ -230,8 +233,8 @@ pub struct UnspentItem {
 pub type ListUnspent = Vec<UnspentItem>;
 
 impl UnspentItem {
-    pub fn tx_out(&self) -> crate::types::TxOut {
-        crate::types::TxOut {
+    pub fn tx_out(&self) -> sideswap_common::types::TxOut {
+        sideswap_common::types::TxOut {
             txid: self.txid.clone(),
             vout: self.vout,
         }
@@ -243,7 +246,6 @@ pub struct SignedTx {
     pub hex: String,
 }
 
-#[allow(dead_code)]
 pub fn sendtoaddress_generic(
     addr: &str,
     amount: f64,
@@ -270,7 +272,7 @@ pub fn sendtoaddress_generic(
         ],
     }
 }
-#[allow(dead_code)]
+
 pub fn sendtoaddress_asset(addr: &str, amount: f64, assetlabel: &str) -> RpcRequest {
     sendtoaddress_generic(
         addr,
@@ -284,9 +286,8 @@ pub fn sendtoaddress_asset(addr: &str, amount: f64, assetlabel: &str) -> RpcRequ
         Some(assetlabel),
     )
 }
-#[allow(dead_code)]
+
 pub fn sendtoaddress_bitcoin(addr: &str, amount: f64) -> RpcRequest {
     sendtoaddress_generic(addr, amount, None, None, None, None, None, None, None)
 }
-#[allow(dead_code)]
 pub type SendToAddressResult = String;

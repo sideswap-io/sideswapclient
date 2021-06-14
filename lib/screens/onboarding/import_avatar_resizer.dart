@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:easy_localization/easy_localization.dart';
@@ -16,29 +15,28 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/avatar_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-typedef ImageBytesCallback = void Function(Uint8List context);
 typedef ImageFakeCanvas = Future<void> Function();
 typedef OnBack = Future<void> Function(BuildContext context);
 typedef OnSave = Future<void> Function(BuildContext context);
 
 class ImportAvatarResizerData {
-  final OnBack onBack;
-  final OnSave onSave;
+  final OnBack? onBack;
+  final OnSave? onSave;
 
   ImportAvatarResizerData({this.onBack, this.onSave});
 }
 
 class ImportAvatarResizer extends StatefulWidget {
-  ImportAvatarResizer({Key key, this.resizerData}) : super(key: key);
+  ImportAvatarResizer({Key? key, this.resizerData}) : super(key: key);
 
-  final ImportAvatarResizerData resizerData;
+  final ImportAvatarResizerData? resizerData;
 
   @override
   _ImportAvatarResizerState createState() => _ImportAvatarResizerState();
 }
 
 class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
-  ImportAvatarResizerData resizerData;
+  late ImportAvatarResizerData resizerData;
 
   @override
   void initState() {
@@ -46,21 +44,24 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
     if (widget.resizerData == null) {
       resizerData = ImportAvatarResizerData(
         onBack: (context) async {
-          await Navigator.of(context).pop();
-          await context.read(walletProvider).setImportAvatar();
+          Navigator.of(context).pop();
+          context.read(walletProvider).setImportAvatar();
         },
         onSave: (context) async {
-          await Navigator.of(context).pop();
-          await context.read(walletProvider).setImportAvatarSuccess();
+          Navigator.of(context).pop();
+          context.read(walletProvider).setImportAvatarSuccess();
         },
       );
     } else {
-      resizerData = widget.resizerData;
+      resizerData = widget.resizerData!;
     }
   }
 
   Future<void> generateThumbnail() async {
-    final data = await context.read(avatarProvider).userAvatarData;
+    final data = context.read(avatarProvider).userAvatarData;
+    if (data.uiImage == null) {
+      return;
+    }
 
     final position = data.position;
     final size = Size(MediaQuery.of(context).size.width, 375.h);
@@ -68,7 +69,7 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
     final drawOutput =
         Rect.fromLTWH(position.dx, position.dy, size.width, size.height);
     final imageSize =
-        Size(data.uiImage.width.toDouble(), data.uiImage.height.toDouble());
+        Size(data.uiImage!.width.toDouble(), data.uiImage!.height.toDouble());
     final sizes = applyBoxFit(BoxFit.contain, imageSize,
         Size(size.width * data.zoom, size.height * data.zoom));
     final inputSubrect =
@@ -79,13 +80,21 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder, outputSubrect);
 
-    canvas.drawImageRect(data.uiImage, inputSubrect, outputSubrect, Paint());
+    canvas.drawImageRect(data.uiImage!, inputSubrect, outputSubrect, Paint());
 
     final picture = recorder.endRecording();
     final img = await picture.toImage(size.width.floor(), size.height.floor());
     final pngBytes = await img.toByteData(format: ui.ImageByteFormat.png);
+    if (pngBytes == null) {
+      return;
+    }
+
     final bytes = pngBytes.buffer.asUint8List();
-    final outputImage = await image.decodeImage(bytes.toList());
+    final outputImage = image.decodeImage(bytes.toList());
+    if (outputImage == null) {
+      return;
+    }
+
     final thumbnail = image.copyResize(outputImage, width: 256);
     await context.read(avatarProvider).saveUserAvatarThumbnail(thumbnail);
   }
@@ -97,7 +106,9 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
       sized: false,
       child: SideSwapScaffold(
         onWillPop: () async {
-          await resizerData.onBack(context);
+          if (resizerData.onBack != null) {
+            await resizerData.onBack!(context);
+          }
           return false;
         },
         sideSwapBackground: false,
@@ -105,7 +116,9 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
         appBar: CustomAppBar(
           title: 'Size setting'.tr(),
           onPressed: () async {
-            await resizerData.onBack(context);
+            if (resizerData.onBack != null) {
+              await resizerData.onBack!(context);
+            }
           },
         ),
         body: Column(
@@ -129,7 +142,9 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
                       .getUserAvatarThumbnail();
                   if (thumbnail != null) {
                     await context.read(avatarProvider).uploadAvatar();
-                    await resizerData.onSave(context);
+                    if (resizerData.onSave != null) {
+                      await resizerData.onSave!(context);
+                    }
                   }
                 },
               ),
@@ -146,7 +161,7 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
 
 class AvatarResizer extends StatelessWidget {
   AvatarResizer({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -161,17 +176,18 @@ class AvatarResizer extends StatelessWidget {
 }
 
 class DragImage extends StatefulWidget {
-  DragImage({this.position, this.imageBytesCallback});
+  DragImage({
+    required this.position,
+  });
 
   final Offset position;
-  final ImageBytesCallback imageBytesCallback;
 
   @override
   DragImageState createState() => DragImageState();
 }
 
 class DragImageState extends State<DragImage> {
-  UserAvatarData _data;
+  late UserAvatarData _data;
 
   @override
   void initState() {
@@ -188,7 +204,7 @@ class DragImageState extends State<DragImage> {
     return Consumer(
       builder: (context, watch, child) {
         _data = watch(avatarProvider).userAvatarData;
-        if (_data == null) {
+        if (_data.uiImage == null) {
           return Container();
         }
 

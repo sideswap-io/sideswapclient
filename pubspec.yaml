@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -15,111 +15,104 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.3+17
+version: 1.0.4+25
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
-
-# remove overrides after moving to null safety
-dependency_overrides:
-  #sunny_dart: ^0.6.0+4
-  timezone: ^0.6.1
+  sdk: ">=2.13.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  pedantic: ^1.9.2
-  ffi: ^0.1.3
-  share: ^0.6.5
-  url_launcher: ^5.7.10
-  shared_preferences: ^0.5.12+4
-  #provider: ^4.3.2
-  protobuf: ^1.1.0
-  fixnum: ^0.10.11
-  path_provider: ^1.6.22
-  animations: ^1.1.2
-  qr_flutter: ^3.1.0
-  delayed_display: ^1.0.3
-  flutter_svg: ^0.19.1
-  qr_code_scanner:
-    git:
-      url: git://github.com/juliuscanute/qr_code_scanner.git
-      ref: 243188bd9e8b82a2de9e4e7ee887cc8e076ac927
-  easy_localization: ^3.0.0-dev.1
-  # background
-  path_drawing: ^0.4.1+1
-  # fonts
-  google_fonts: ^1.1.1
-  # screen scaling
-  flutter_screenutil: ^3.2.0
-  # icon generator
-  flutter_launcher_icons: ^0.8.1
-  # testing only - remove if not used
-  faker: ^1.3.0
-  # switch
-  flutter_switch: ^0.1.5
-  # sliding tx list
-  sliding_panel: ^1.3.2
-  # rxdart
-  rxdart: ^0.24.0
-  # enumerable - group, sort, orderby
-  enumerable: ^0.1.3
-  # dash line
-  fdottedline: ^1.0.1
-  # logger
-  logger: ^0.9.4
-  # provider
-  flutter_hooks: ^0.14.0
-  hooks_riverpod: ^0.12.1
-  # mnemonic words suggestions
-  flutter_typeahead: ^2.0.0
-  package_info: ^0.4.3+4
-  # Replace non-existent ScaffoldMessenger in ver. 1.22.6
-  another_flushbar: ^1.10.11
-  # marqee text
-  marquee: ^1.7.0
-  #notifications
-  flutter_local_notifications: ^4.0.1+2
-  #firebase notifications
-  firebase_messaging: ^7.0.3
-  # dynamic links
-  firebase_dynamic_links: ^0.6.3
-  # notification payload parsing
-  freezed_annotation: ^0.12.0
-  json_annotation: ^3.1.1
-  # avatar
-  image_picker: ^0.6.7+22
-  flutter_plugin_android_lifecycle: ^1.0.2
-  image: ^2.1.19
-  # pin
-  pinput: ^1.0.0
-  # contacts
-  flutter_contact: ^0.6.5+1
-  # permissions (contacts)
-  permission_handler: ^5.1.0+2
-  # license loading indicator
-  flutter_spinkit: ^4.1.2+1
-  enum_to_string: ^1.0.14
   # secure recovery page
-  secure_application: ^3.5.3
+  secure_application: ^3.7.3
+  animations: ^2.0.0
+  another_flushbar: ^1.10.23
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.0
+  cupertino_icons: ^1.0.3
+  delayed_display: ^2.0.0
+  dotted_line: ^3.0.0
+  easy_localization: ^3.0.0
+  enum_to_string: ^2.0.1
+  # testing only - remove if not used
+  faker: ^2.0.0
+  ffi: ^1.1.2
+  # dynamic links
+  firebase_dynamic_links: ^2.0.5
+  #firebase notifications
+  firebase_messaging: ^10.0.1
+  fixnum: ^1.0.0
+  # contacts
+  flutter_contact: ^0.8.1+2
+  # provider
+  flutter_hooks: ^0.17.0
+  # icon generator
+  flutter_launcher_icons: ^0.9.0
+  #notifications
+  flutter_local_notifications: ^6.0.0
+  flutter_plugin_android_lifecycle: ^2.0.2
+  # screen scaling
+  flutter_screenutil: ^5.0.0+2
+  # license loading indicator
+  flutter_spinkit: ^5.0.0
+  flutter_svg: ^0.22.0
+  # switch
+  flutter_switch: ^0.3.1
+  # mnemonic words suggestions
+  flutter_typeahead: ^3.1.3
+  # notification payload parsing
+  freezed_annotation: ^0.14.2
+  # fonts
+  google_fonts: ^2.1.0
+  hooks_riverpod: ^0.14.0+4
+  image: ^3.0.2
+  # avatar
+  image_picker: ^0.7.5+3
+  json_annotation: ^4.0.1
+  # logger
+  logger: ^1.0.0
+  # marqee text
+  marquee: ^2.1.0
+  package_info: ^2.0.2
+  # background
+  path_drawing: ^0.5.1
+  path_provider: ^2.0.2
+  pedantic: ^1.11.0
+  # permissions (contacts)
+  permission_handler: ^8.0.1
+  # pin
+  pinput: ^1.2.0
+  #provider: ^4.3.2
+  protobuf: ^2.0.0
+  qr_code_scanner: ^0.4.0
+  qr_flutter: ^4.0.0
+  # rxdart
+  rxdart: ^0.26.0
+  share: ^2.0.4
+  shared_preferences: ^2.0.6
+  # sliding tx list
+  sliding_up_panel: ^2.0.0+1
+  # deep/app links
+  uni_links: ^0.5.1
+  url_launcher: ^6.0.6
+  # sound notification
+  flutter_ringtone_player: ^3.0.0
+  vibration: ^1.7.4-nullsafety.0
+  move_to_background: ^1.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^1.11.1
-  freezed: ^0.12.7
-  json_serializable: ^3.5.1
+  analyzer: 1.5.0
+  build_runner: ^2.0.4
+  freezed: ^0.14.2
+  json_serializable: ^4.1.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
 # The following section is specific to Flutter.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -191,13 +184,13 @@ flutter:
     - assets/blinded.svg
     - assets/unblinded.svg
     - assets/link.svg
+    - assets/network.svg
+    - assets/restart.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
-
   # For details regarding adding assets from package dependencies, see
   # https://flutter.dev/assets-and-images/#from-packages
-
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a

@@ -60,11 +60,17 @@ message GenericResponse {
   optional string error_msg = 2;
 }
 
+message FeeRate {
+  required int32 blocks = 1;
+  required double value = 2;
+}
+
 message ServerStatus {
   required int64 min_peg_in_amount = 1;
   required int64 min_peg_out_amount = 2;
   required double server_fee_percent_peg_in = 3;
   required double server_fee_percent_peg_out = 4;
+  repeated FeeRate bitcoin_fee_rates = 5;
 }
 
 message Contact {
@@ -93,6 +99,7 @@ message To {
     required string send_asset = 2;
     required string recv_asset = 3;
     required int64 send_amount = 4;
+    optional int32 blocks = 5;
   }
 
   message SwapAccept {
@@ -141,8 +148,22 @@ message To {
     repeated Contact contacts = 2;
   }
 
+  message SubmitOrder {
+    required string session_id = 1;
+    required string asset_id = 2;
+    required double bitcoin_amount = 3;
+    required double price = 4;
+    optional double index_price = 5;
+  }
+
   message LinkOrder {
     required string order_id = 1;
+  }
+
+  message SubmitDecision {
+    required string order_id = 1;
+    required bool accept = 2;
+    optional bool auto_sign = 3;
   }
 
   oneof msg {
@@ -151,6 +172,7 @@ message To {
     UpdatePushToken update_push_token = 3;
     EncryptPin encrypt_pin = 4;
     DecryptPin decrypt_pin = 5;
+    string push_message = 6;
 
     SetMemo set_memo = 10;
     Empty get_recv_address = 11;
@@ -168,7 +190,9 @@ message To {
     UploadAvatar upload_avatar = 42;
     UploadContacts upload_contacts = 43;
 
+    SubmitOrder submit_order = 49;
     LinkOrder link_order = 50;
+    SubmitDecision submit_decision = 51;
   }
 }
 
@@ -214,15 +238,6 @@ message From {
     required string recv_addr = 6;
   }
 
-  message SwapSucceed {
-    required int64 created_at = 1;
-    required int64 sent_amount = 2;
-    // recv_amount could be 0 for external pegs that is lower than min. amount
-    required int64 recv_amount = 3;
-    required string txid = 4;
-    optional string recv_addr = 5;
-  }
-
   message CreateTxResult {
     oneof result {
       string error_msg = 1;
@@ -266,6 +281,33 @@ message From {
     required string text = 1;
   }
 
+  message SubmitReview {
+    enum Step {
+      SUBMIT = 1;
+      QUOTE = 2;
+      SIGN = 3;
+    }
+
+    required string order_id = 1;
+    required string asset = 2;
+    required int64 bitcoin_amount = 3;
+    required int64 server_fee = 8;
+    required int64 asset_amount = 4;
+    required double price = 5;
+    required bool sell_bitcoin = 6;
+    required Step step = 7;
+    required bool index_price = 9;
+  }
+
+  message SubmitResult {
+    oneof result {
+      Empty submit_succeed = 1;
+      TransItem swap_succeed = 2;
+      string error = 3;
+    }
+    required bool minimize_app = 4;
+  }
+
   oneof msg {
     TransItem updated_tx = 1;
     RemovedTx removed_tx = 2;
@@ -273,6 +315,7 @@ message From {
     Balance balance_update = 4;
     ServerStatus server_status = 5;
     PriceUpdate price_update = 6;
+    Empty wallet_loaded = 7;
 
     EncryptPin encrypt_pin = 10;
     DecryptPin decrypt_pin = 11;
@@ -293,5 +336,7 @@ message From {
     GenericResponse upload_contacts = 43;
 
     ShowMessage show_message = 50;
+    SubmitReview submit_review = 51;
+    SubmitResult submit_result = 52;
   }
 }

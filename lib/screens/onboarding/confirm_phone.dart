@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
@@ -13,21 +14,21 @@ import 'package:sideswap/screens/onboarding/widgets/country_phone_number.dart';
 import 'package:sideswap/screens/onboarding/widgets/sms_digit_code.dart';
 
 class ConfirmPhone extends StatefulWidget {
-  ConfirmPhone({Key key}) : super(key: key);
+  ConfirmPhone({Key? key}) : super(key: key);
 
   @override
   _ConfirmPhoneState createState() => _ConfirmPhoneState();
 }
 
 class _ConfirmPhoneState extends State<ConfirmPhone> {
-  FocusNode _numberFocusNode;
-  ConfirmPhoneData confirmPhoneData;
+  FocusNode _numberFocusNode = FocusNode();
+  ConfirmPhoneData? confirmPhoneData;
 
   @override
   void initState() {
     super.initState();
     _numberFocusNode = FocusNode();
-    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
 
     if (context.read(phoneProvider).getConfirmPhoneData() == null) {
       context.read(phoneProvider).setConfirmPhoneData(
@@ -39,7 +40,7 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
                 context.read(walletProvider).setConfirmPhoneSuccess();
               },
               onDone: (context) async {
-                await context.read(walletProvider).setImportContacts();
+                context.read(walletProvider).setImportContacts();
               },
             ),
           );
@@ -73,10 +74,14 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
   Widget build(BuildContext context) {
     return SideSwapPopup(
       onClose: () async {
-        await confirmPhoneData.onBack(context);
+        if (confirmPhoneData != null) {
+          await confirmPhoneData!.onBack(context);
+        }
       },
       onWillPop: () async {
-        await confirmPhoneData.onBack(context);
+        if (confirmPhoneData != null) {
+          await confirmPhoneData!.onBack(context);
+        }
         return false;
       },
       enableInsideTopPadding: false,

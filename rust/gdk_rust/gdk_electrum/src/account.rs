@@ -1,0 +1,1253 @@
+use std::cmp::Ordering;
+use std::collections::{HashMap, HashSet};
+use std::convert::TryInto;
+use std::str::FromStr;
+
+use log::{debug, info, trace};
+use rand::Rng;
+
+use bitcoin::blockdata::script;
+use bitcoin::hashes::Hash;
+use bitcoin::secp256k1::{self, Message};
+use bitcoin::util::address::Payload;
+use bitcoin::util::bip143::SigHashCache;
+use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey, ExtendedPubKey};
+use bitcoin::{PublicKey, SigHashType};
+use elements::confidential::Value;
+
+use gdk_common::be::{
+    BEAddress, BEOutPoint, BEScript, BEScriptConvert, BETransaction, BETxid, ScriptBatch, UTXOInfo,
+    Utxos, DUST_VALUE,
+};
+use gdk_common::error::fn_err;
+use gdk_common::model::{
+    AccountInfo, AddressAmount, AddressPointer, Balances, CreateTransaction, GetTransactionsOpt,
+    SPVVerifyResult, TransactionMeta, UpdateAccountOpt,
+};
+use gdk_common::scripts::{p2pkh_script, p2shwpkh_script, p2shwpkh_script_sig, ScriptType};
+use gdk_common::wally::{
+    asset_blinding_key_to_ec_private_key, ec_public_key_from_private_key, MasterBlindingKey,
+};
+use gdk_common::{ElementsNetwork, Network, NetworkId};
+
+use crate::error::Error;
+use crate::interface::ElectrumUrl;
+use crate::store::{Store, BATCH_SIZE};
+
+// The number of account types, including these reserved for future use.
+// Currently only 3 are used: P2SH-P2WPKH, P2WPKH and P2PKH
+const NUM_RESERVED_ACCOUNT_TYPES: u32 = 16;
+
+lazy_static! {
+    static ref EC: secp256k1::Secp256k1<secp256k1::All> = secp256k1::Secp256k1::new();
+}
+
+pub struct Account {
+    account_num: u32,
+    script_type: ScriptType,
+    pub xprv: ExtendedPrivKey,
+    chains: [ExtendedPubKey; 2],
+    network: Network,
+    pub store: Store,
+    // elements only
+    master_blinding: Option<MasterBlindingKey>,
+    _path: DerivationPath,
+    _xpub: ExtendedPubKey,
+}
+
+impl Account {
+    pub fn new(
+        network: Network,
+        master_xprv: &ExtendedPrivKey,
+        master_blinding: Option<MasterBlindingKey>,
+        store: Store,
+        account_num: u32,
+    ) -> Result<Self, Error> {
+        let (script_type, path) = get_account_derivation(account_num, network.id())?;
+
+        let xprv = master_xprv.derive_priv(&EC, &path)?;
+        let xpub = ExtendedPubKey::from_private(&EC, &xprv);
+
+        // cache internal/external chains
+        let chains = [xpub.ckd_pub(&EC, 0.into())?, xpub.ckd_pub(&EC, 1.into())?];
+
+        store.write().unwrap().make_account_cache(account_num);
+
+        info!("initialized account #{} path={} type={:?}", account_num, path, script_type);
+
+        Ok(Self {
+            network,
+            account_num,
+            script_type,
+            xprv,
+            chains,
+            store,
+            master_blinding,
+            // currently unused, but seems useful to have around
+            _path: path,
+            _xpub: xpub,
+        })
+    }
+
+    pub fn num(&self) -> u32 {
+        self.account_num
+    }
+
+    pub fn info(&self, num_confs: u32) -> Result<AccountInfo, Error> {
+        let settings = self.store.read()?.get_account_settings(self.account_num).cloned();
+
+        Ok(AccountInfo {
+            account_num: self.account_num,
+            script_type: self.script_type,
+            settings: settings.unwrap_or_default(),
+            has_transactions: self.has_transactions(),
+            satoshi: self.balance(num_confs, false)?,
+        })
+    }
+
+    pub fn set_settings(&self, opt: UpdateAccountOpt) -> Result<(), Error> {
+        let mut store_write = self.store.write()?;
+        let mut settings =
+            store_write.get_account_settings(self.account_num).cloned().unwrap_or_default();
+        if let Some(name) = opt.name {
+            settings.name = name;
+        }
+        if let Some(hidden) = opt.hidden {
+            settings.hidden = hidden;
+        }
+        store_write.set_account_settings(self.account_num, settings);
+        Ok(())
+    }
+
+    pub fn set_name(&self, name: &str) -> Result<(), Error> {
+        self.set_settings(UpdateAccountOpt {
+            name: Some(name.into()),
+            ..Default::default()
+        })
+    }
+
+    pub fn derive_address(&self, is_change: bool, index: u32) -> Result<BEAddress, Error> {
+        derive_address(
+            &self.chains[is_change as usize],
+            index,
+            self.script_type,
+            self.network.id(),
+            self.master_blinding.as_ref(),
+        )
+    }
+
+    pub fn get_next_address(&self) -> Result<AddressPointer, Error> {
+        let pointer = {
+            let store = &mut self.store.write()?;
+            let acc_store = store.account_cache_mut(self.account_num)?;
+            acc_store.indexes.external += 1;
+            acc_store.indexes.external
+        };
+        let address = self.derive_address(false, pointer)?.to_string();
+        Ok(AddressPointer {
+            address,
+            pointer,
+        })
+    }
+
+    pub fn list_tx(&self, opt: &GetTransactionsOpt) -> Result<Vec<TransactionMeta>, Error> {
+        let store = self.store.read()?;
+        let acc_store = store.account_cache(self.account_num)?;
+
+        let tip_height = store.cache.tip.0;
+        let num_confs = opt.num_confs.unwrap_or(0);
+
+        let mut txs = vec![];
+        let mut my_txids: Vec<(&BETxid, &Option<u32>)> = acc_store
+            .heights
+            .iter()
+            .filter(|(_, height)| num_confs <= height.map_or(0, |height| tip_height - height + 1))
+            .collect();
+        my_txids.sort_by(|a, b| {
+            let height_cmp = b.1.unwrap_or(std::u32::MAX).cmp(&a.1.unwrap_or(std::u32::MAX));
+            match height_cmp {
+                Ordering::Equal => b.0.cmp(a.0),
+                h @ _ => h,
+            }
+        });
+
+        for (tx_id, height) in my_txids.iter().skip(opt.first).take(opt.count) {
+            trace!("tx_id {}", tx_id);
+
+            let tx = acc_store
+                .all_txs
+                .get(*tx_id)
+                .ok_or_else(fn_err(&format!("list_tx no tx {}", tx_id)))?;
+            let header = height.map(|h| store.cache.headers.get(&h)).flatten();
+            trace!("tx_id {} header {:?}", tx_id, header);
+            let mut addressees = vec![];
+            for i in 0..tx.output_len() as u32 {
+                let script = tx.output_script(i);
+                if !script.is_empty() && !acc_store.paths.contains_key(&script) {
+                    let address = tx.output_address(i, self.network.id());
+                    trace!("tx_id {}:{} not my script, address {:?}", tx_id, i, address);
+                    addressees.push(AddressAmount {
+                        address: address.unwrap_or_else(|| "".to_string()),
+                        satoshi: 0, // apparently not needed in list_tx addressees
+                        asset_tag: None,
+                    });
+                }
+            }
+            let memo = store.get_memo(tx_id).cloned();
+
+            let create_transaction = CreateTransaction {
+                addressees,
+                memo,
+                ..Default::default()
+            };
+
+            let fee = tx.fee(
+                &acc_store.all_txs,
+                &acc_store.unblinded,
+                &self.network.policy_asset().ok(),
+            )?;
+            trace!("tx_id {} fee {}", tx_id, fee);
+
+            let satoshi =
+                tx.my_balance_changes(&acc_store.all_txs, &acc_store.paths, &acc_store.unblinded);
+            trace!("tx_id {} balances {:?}", tx_id, satoshi);
+
+            // We define an incoming txs if there are more assets received by the wallet than spent
+            // when they are equal it's an outgoing tx because the special asset liquid BTC
+            // is negative due to the fee being paid
+            // TODO how do we label issuance tx?
+            let negatives = satoshi.iter().filter(|(_, v)| **v < 0).count();
+            let positives = satoshi.iter().filter(|(_, v)| **v > 0).count();
+            let (type_, user_signed) = match (
+                positives > negatives,
+                tx.is_redeposit(&acc_store.paths, &acc_store.all_txs),
+            ) {
+                (_, true) => ("redeposit", true),
+                (true, false) => ("incoming", false),
+                (false, false) => ("outgoing", true),
+            };
+
+            let spv_verified = if self.network.spv_enabled.unwrap_or(false) {
+                store.spv_verification_status(self.num(), tx_id)
+            } else {
+                SPVVerifyResult::Disabled
+            };
+
+            trace!(
+                "tx_id {} type {} user_signed {} spv_verified {:?}",
+                tx_id,
+                type_,
+                user_signed,
+                spv_verified
+            );
+
+            let tx_meta = TransactionMeta::new(
+                tx.clone(),
+                **height,
+                header.map(|h| h.time()),
+                satoshi,
+                fee,
+                self.network.id().get_bitcoin_network().unwrap_or(bitcoin::Network::Bitcoin),
+                type_.to_string(),
+                create_transaction,
+                user_signed,
+                spv_verified,
+            );
+
+            txs.push(tx_meta);
+        }
+        info!("list_tx {:?}", txs.iter().map(|e| &e.txid).collect::<Vec<&String>>());
+
+        Ok(txs)
+    }
+
+    pub fn utxos(&self, num_confs: u32, confidential_utxos_only: bool) -> Result<Utxos, Error> {
+        info!("start utxos");
+        let store_read = self.store.read()?;
+        let acc_store = store_read.account_cache(self.account_num)?;
+
+        let tip_height = store_read.cache.tip.0;
+
+        let mut utxos = vec![];
+        let spent = self.spent()?;
+        for (tx_id, height) in acc_store.heights.iter() {
+            if num_confs > height.map_or(0, |height| tip_height - height + 1) {
+                continue;
+            }
+
+            let tx = acc_store
+                .all_txs
+                .get(tx_id)
+                .ok_or_else(fn_err(&format!("utxos no tx {}", tx_id)))?;
+            let tx_utxos: Vec<(BEOutPoint, UTXOInfo)> = match tx {
+                BETransaction::Bitcoin(tx) => tx
+                    .output
+                    .clone()
+                    .into_iter()
+                    .enumerate()
+                    .filter(|(_, output)| output.value > DUST_VALUE)
+                    .map(|(vout, output)| (BEOutPoint::new_bitcoin(tx.txid(), vout as u32), output))
+                    .filter_map(|(vout, output)| {
+                        acc_store
+                            .paths
+                            .get(&(&output.script_pubkey).into())
+                            .map(|path| (vout, output, path))
+                    })
+                    .filter(|(outpoint, _, _)| !spent.contains(&outpoint))
+                    .map(|(outpoint, output, path)| {
+                        (
+                            outpoint,
+                            UTXOInfo::new(
+                                "btc".to_string(),
+                                output.value,
+                                output.script_pubkey.into(),
+                                height.clone(),
+                                path.clone(),
+                            ),
+                        )
+                    })
+                    .collect(),
+                BETransaction::Elements(tx) => {
+                    let policy_asset = self.network.policy_asset_id()?;
+                    tx.output
+                        .clone()
+                        .into_iter()
+                        .enumerate()
+                        .map(|(vout, output)| {
+                            (BEOutPoint::new_elements(tx.txid(), vout as u32), output)
+                        })
+                        .filter_map(|(vout, output)| {
+                            acc_store
+                                .paths
+                                .get(&(&output.script_pubkey).into())
+                                .map(|path| (vout, output, path))
+                        })
+                        .filter(|(outpoint, _, _)| !spent.contains(&outpoint))
+                        .filter_map(|(outpoint, output, path)| {
+                            if let BEOutPoint::Elements(el_outpoint) = outpoint {
+                                if let Some(unblinded) = acc_store.unblinded.get(&el_outpoint) {
+                                    if unblinded.value < DUST_VALUE
+                                        && unblinded.asset == policy_asset
+                                    {
+                                        return None;
+                                    }
+                                    if confidential_utxos_only && !unblinded.confidential() {
+                                        return None;
+                                    }
+                                    return Some((
+                                        outpoint,
+                                        UTXOInfo::new(
+                                            unblinded.asset_hex(),
+                                            unblinded.value,
+                                            output.script_pubkey.into(),
+                                            height.clone(),
+                                            path.clone(),
+                                        ),
+                                    ));
+                                }
+                            }
+                            None
+                        })
+                        .collect()
+                }
+            };
+            utxos.extend(tx_utxos);
+        }
+        utxos.sort_by(|a, b| (b.1).value.cmp(&(a.1).value));
+
+        Ok(utxos)
+    }
+
+    fn spent(&self) -> Result<HashSet<BEOutPoint>, Error> {
+        let store_read = self.store.read()?;
+        let acc_store = store_read.account_cache(self.account_num)?;
+        let mut result = HashSet::new();
+        for tx in acc_store.all_txs.values() {
+            let outpoints: Vec<BEOutPoint> = match tx {
+                BETransaction::Bitcoin(tx) => {
+                    tx.input.iter().map(|i| BEOutPoint::Bitcoin(i.previous_output)).collect()
+                }
+                BETransaction::Elements(tx) => {
+                    tx.input.iter().map(|i| BEOutPoint::Elements(i.previous_output)).collect()
+                }
+            };
+            result.extend(outpoints.into_iter());
+        }
+        Ok(result)
+    }
+
+    pub fn balance(
+        &self,
+        num_confs: u32,
+        confidential_utxos_only: bool,
+    ) -> Result<Balances, Error> {
+        info!("start balance");
+        let mut result = HashMap::new();
+        match self.network.id() {
+            NetworkId::Bitcoin(_) => result.entry("btc".to_string()).or_insert(0),
+            NetworkId::Elements(_) => {
+                result.entry(self.network.policy_asset.as_ref().unwrap().clone()).or_insert(0)
+            }
+        };
+        for (_, info) in self.utxos(num_confs, confidential_utxos_only)?.iter() {
+            *result.entry(info.asset.clone()).or_default() += info.value as i64;
+        }
+        Ok(result)
+    }
+
+    pub fn has_transactions(&self) -> bool {
+        let store_read = self.store.read().unwrap();
+        let acc_store = store_read.account_cache(self.account_num).unwrap();
+        !acc_store.heights.is_empty()
+    }
+
+    pub fn create_tx(&self, request: &mut CreateTransaction) -> Result<TransactionMeta, Error> {
+        if request.subaccount != self.account_num {
+            return Err(Error::InvalidSubaccount(request.subaccount));
+        }
+        create_tx(self, request)
+    }
+
+    // TODO when we can serialize psbt
+    //pub fn sign(&self, psbt: PartiallySignedTransaction) -> Result<PartiallySignedTransaction, Error> { Err(Error::Generic("NotImplemented".to_string())) }
+    pub fn sign(&self, request: &TransactionMeta) -> Result<TransactionMeta, Error> {
+        info!("sign");
+        let be_tx = BETransaction::deserialize(&hex::decode(&request.hex)?, self.network.id())?;
+        let store_read = self.store.read()?;
+        let acc_store = store_read.account_cache(self.account_num)?;
+
+        let mut betx: TransactionMeta = match be_tx {
+            BETransaction::Bitcoin(tx) => {
+                let mut out_tx = tx.clone();
+
+                for i in 0..tx.input.len() {
+                    let prev_output = tx.input[i].previous_output;
+                    info!("input#{} prev_output:{:?}", i, prev_output);
+                    let prev_tx = acc_store.get_bitcoin_tx(&prev_output.txid)?;
+                    let out = prev_tx.output[prev_output.vout as usize].clone();
+                    let derivation_path: DerivationPath = acc_store
+                        .paths
+                        .get(&out.script_pubkey.into())
+                        .ok_or_else(|| Error::Generic("can't find derivation path".into()))?
+                        .clone();
+                    info!(
+                        "input#{} prev_output:{:?} derivation_path:{:?}",
+                        i, prev_output, derivation_path
+                    );
+
+                    let (script_sig, witness) = internal_sign_bitcoin(
+                        &tx,
+                        i,
+                        &self.xprv,
+                        &derivation_path,
+                        out.value,
+                        self.script_type,
+                    );
+
+                    out_tx.input[i].script_sig = script_sig;
+                    out_tx.input[i].witness = witness;
+                }
+                let tx = BETransaction::Bitcoin(out_tx);
+                info!(
+                    "transaction final size is {} bytes and {} vbytes",
+                    tx.serialize().len(),
+                    tx.get_weight() / 4
+                );
+                info!("FINALTX inputs:{} outputs:{}", tx.input_len(), tx.output_len());
+                tx.into()
+            }
+            BETransaction::Elements(mut tx) => {
+                blind_tx(self, &mut tx)?;
+
+                for i in 0..tx.input.len() {
+                    let prev_output = tx.input[i].previous_output;
+                    info!("input#{} prev_output:{:?}", i, prev_output);
+                    let prev_tx = acc_store.get_liquid_tx(&prev_output.txid)?;
+                    let out = prev_tx.output[prev_output.vout as usize].clone();
+                    let derivation_path: DerivationPath = acc_store
+                        .paths
+                        .get(&out.script_pubkey.into())
+                        .ok_or_else(|| Error::Generic("can't find derivation path".into()))?
+                        .clone();
+
+                    let (script_sig, witness) = internal_sign_elements(
+                        &tx,
+                        i,
+                        &self.xprv,
+                        &derivation_path,
+                        out.value,
+                        self.script_type,
+                    );
+
+                    tx.input[i].script_sig = script_sig;
+                    tx.input[i].witness.script_witness = witness;
+                }
+
+                let fee: u64 =
+                    tx.output.iter().filter(|o| o.is_fee()).map(|o| o.minimum_value()).sum();
+                let tx = BETransaction::Elements(tx);
+                info!(
+                    "transaction final size is {} bytes and {} vbytes and fee is {}",
+                    tx.serialize().len(),
+                    tx.get_weight() / 4,
+                    fee
+                );
+                info!("FINALTX inputs:{} outputs:{}", tx.input_len(), tx.output_len());
+                tx.into()
+            }
+        };
+
+        betx.fee = request.fee;
+        betx.create_transaction = request.create_transaction.clone();
+
+        drop(acc_store);
+        drop(store_read);
+        let mut store_write = self.store.write()?;
+        let mut acc_store = store_write.account_cache_mut(self.account_num)?;
+
+        let changes_used = request.changes_used.unwrap_or(0);
+        if changes_used > 0 {
+            info!("tx used {} changes", changes_used);
+            // The next sync would update the internal index but we increment the internal index also
+            // here after sign so that if we immediately create another tx we are not reusing addresses
+            // This implies signing multiple times without broadcasting leads to gaps in the internal chain
+            acc_store.indexes.internal += changes_used;
+        }
+
+        if let Some(memo) = request.create_transaction.as_ref().and_then(|c| c.memo.as_ref()) {
+            let txid = BETxid::from_hex(&betx.txid, self.network.id())?;
+            store_write.insert_memo(txid, memo)?;
+        }
+
+        Ok(betx)
+    }
+
+    pub fn get_script_batch(&self, is_change: bool, batch: u32) -> Result<ScriptBatch, Error> {
+        let store = self.store.read()?;
+        let acc_store = store.account_cache(self.account_num)?;
+
+        let mut result = ScriptBatch::default();
+        result.cached = true;
+
+        let start = batch * BATCH_SIZE;
+        let end = start + BATCH_SIZE;
+        for j in start..end {
+            let path = DerivationPath::from(&[(is_change as u32).into(), j.into()][..]);
+            let script = acc_store.scripts.get(&path).cloned().map_or_else(
+                || -> Result<BEScript, Error> {
+                    result.cached = false;
+                    Ok(self.derive_address(is_change, j)?.script_pubkey())
+                },
+                Ok,
+            )?;
+            result.value.push((script, path));
+        }
+        Ok(result)
+    }
+}
+
+/// Return the last (if any) and next account numbers for the given script type
+pub fn get_last_next_account_nums(
+    existing: HashSet<u32>,
+    script_type: ScriptType,
+) -> (Option<u32>, u32) {
+    let first_account_num = script_type.first_account_num();
+    let last_account = (first_account_num..)
+        .step_by(NUM_RESERVED_ACCOUNT_TYPES as usize)
+        .take_while(|n| existing.contains(n))
+        .last();
+    let next_account =
+        last_account.map_or(first_account_num, |last| last + NUM_RESERVED_ACCOUNT_TYPES);
+    (last_account, next_account)
+}
+
+pub fn get_account_script_purpose(account_num: u32) -> Result<(ScriptType, u32), Error> {
+    Ok(match account_num % NUM_RESERVED_ACCOUNT_TYPES {
+        0 => (ScriptType::P2shP2wpkh, 49),
+        1 => (ScriptType::P2wpkh, 84),
+        2 => (ScriptType::P2pkh, 44),
+        _ => return Err(Error::InvalidSubaccount(account_num)),
+    })
+}
+
+fn get_account_derivation(
+    account_num: u32,
+    network_id: NetworkId,
+) -> Result<(ScriptType, DerivationPath), Error> {
+    let coin_type = get_coin_type(network_id);
+    let (script_type, purpose) = get_account_script_purpose(account_num)?;
+    let bip32_account_num = account_num / NUM_RESERVED_ACCOUNT_TYPES;
+
+    // BIP44: m / purpose' / coin_type' / account' / change / address_index
+    let path: DerivationPath =
+        format!("m/{}'/{}'/{}'", purpose, coin_type, bip32_account_num).parse().unwrap();
+
+    info!("derivation path for account {}: {}", account_num, path);
+
+    Ok((script_type, path))
+}
+
+fn get_coin_type(network_id: NetworkId) -> u32 {
+    // coin_type = 0 bitcoin, 1 testnet, 1776 liquid bitcoin as defined in https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+    // slip44 suggest 1 for every testnet, so we are using it also for regtest
+    match network_id {
+        NetworkId::Bitcoin(bitcoin_network) => match bitcoin_network {
+            bitcoin::Network::Bitcoin => 0,
+            bitcoin::Network::Testnet => 1,
+            bitcoin::Network::Regtest => 1,
+            bitcoin::Network::Signet => 1,
+        },
+        NetworkId::Elements(elements_network) => match elements_network {
+            ElementsNetwork::Liquid => 1776,
+            ElementsNetwork::ElementsRegtest => 1,
+        },
+    }
+}
+
+fn derive_address(
+    xpub: &ExtendedPubKey,
+    index: u32,
+    script_type: ScriptType,
+    network_id: NetworkId,
+    master_blinding: Option<&MasterBlindingKey>,
+) -> Result<BEAddress, Error> {
+    let child_key = xpub.ckd_pub(&EC, index.into())?;
+    match network_id {
+        NetworkId::Bitcoin(network) => {
+            let address = bitcoin_address(&child_key.public_key, script_type, network);
+            Ok(BEAddress::Bitcoin(address))
+        }
+        NetworkId::Elements(network) => {
+            let address = elements_address(
+                &child_key.public_key,
+                master_blinding.expect("we are in elements but master blinding is None"),
+                script_type,
+                network,
+            );
+            Ok(BEAddress::Elements(address))
+        }
+    }
+}
+
+fn bitcoin_address(
+    public_key: &PublicKey,
+    script_type: ScriptType,
+    net: bitcoin::Network,
+) -> bitcoin::Address {
+    use bitcoin::Address;
+    match script_type {
+        ScriptType::P2shP2wpkh => Address::p2shwpkh(public_key, net).expect("no compressed keys"),
+        ScriptType::P2wpkh => Address::p2wpkh(public_key, net).expect("no compressed keys"),
+        ScriptType::P2pkh => Address::p2pkh(public_key, net),
+    }
+}
+
+fn elements_address(
+    public_key: &PublicKey,
+    master_blinding_key: &MasterBlindingKey,
+    script_type: ScriptType,
+    net: ElementsNetwork,
+) -> elements::Address {
+    use elements::Address;
+    let script = p2shwpkh_script(public_key).into_elements();
+    let blinding_key = asset_blinding_key_to_ec_private_key(&master_blinding_key, &script);
+    let blinding_pub = ec_public_key_from_private_key(blinding_key);
+    let addr_params = elements_address_params(net);
+
+    match script_type {
+        ScriptType::P2shP2wpkh => Address::p2shwpkh(public_key, Some(blinding_pub), addr_params),
+        ScriptType::P2wpkh => Address::p2wpkh(public_key, Some(blinding_pub), addr_params),
+        ScriptType::P2pkh => Address::p2pkh(public_key, Some(blinding_pub), addr_params),
+    }
+}
+
+fn elements_address_params(net: ElementsNetwork) -> &'static elements::AddressParams {
+    match net {
+        ElementsNetwork::Liquid => &elements::AddressParams::LIQUID,
+        ElementsNetwork::ElementsRegtest => &elements::AddressParams::ELEMENTS,
+    }
+}
+
+// Discover all the available accounts as per BIP 44:
+// https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki#Account_discovery
+pub fn discover_accounts(
+    master_xprv: &ExtendedPrivKey,
+    network_id: NetworkId,
+    electrum_url: &ElectrumUrl,
+    proxy: Option<&str>,
+    master_blinding: Option<&MasterBlindingKey>,
+) -> Result<Vec<u32>, Error> {
+    use electrum_client::ElectrumApi;
+
+    // build our own client so that the subscriptions are dropped at the end
+    let client = electrum_url.build_client(proxy)?;
+
+    // the batch size is the effective gap limit for our purposes. in reality it is a lower bound.
+    let gap_limit = BATCH_SIZE;
+    let num_types = NUM_RESERVED_ACCOUNT_TYPES as usize;
+    let mut discovered_accounts: Vec<u32> = vec![];
+
+    for script_type in ScriptType::types() {
+        debug!("discovering script type {:?}", script_type);
+        'next_account: for account_num in (script_type.first_account_num()..).step_by(num_types) {
+            let (_, path) = get_account_derivation(account_num, network_id).unwrap();
+            let recv_xprv = master_xprv.derive_priv(&EC, &path.child(0.into()))?;
+            let recv_xpub = ExtendedPubKey::from_private(&EC, &recv_xprv);
+            for child_code in 0..gap_limit {
+                let script = derive_address(
+                    &recv_xpub,
+                    child_code,
+                    *script_type,
+                    network_id,
+                    master_blinding,
+                )
+                .unwrap()
+                .script_pubkey();
+                if client.script_subscribe(&script.into_bitcoin())?.is_some() {
+                    debug!("found account {:?} #{}", script_type, account_num);
+                    discovered_accounts.push(account_num);
+                    continue 'next_account;
+                }
+            }
+            debug!("no activity found for account {:?} #{}", script_type, account_num);
+            break;
+        }
+    }
+    info!("discovered accounts: {:?}", discovered_accounts);
+
+    Ok(discovered_accounts)
+}
+
+fn random32() -> Vec<u8> {
+    rand::thread_rng().gen::<[u8; 32]>().to_vec()
+}
+
+#[allow(clippy::cognitive_complexity)]
+pub fn create_tx(
+    account: &Account,
+    request: &mut CreateTransaction,
+) -> Result<TransactionMeta, Error> {
+    info!("create_tx {:?}", request);
+
+    let network = &account.network;
+
+    // TODO put checks into CreateTransaction::validate, add check asset_tag are valid asset hex
+    // eagerly check for address validity
+    for address in request.addressees.iter().map(|a| &a.address) {
+        match network.id() {
+            NetworkId::Bitcoin(network) => {
+                if let Ok(address) = bitcoin::Address::from_str(address) {
+                    info!("address.network:{} network:{}", address.network, network);
+                    if address.network == network
+                        || (address.network == bitcoin::Network::Testnet
+                            && network == bitcoin::Network::Regtest)
+                    {
+                        continue;
+                    }
+                    if let Payload::WitnessProgram {
+                        version: v,
+                        program: _p,
+                    } = &address.payload
+                    {
+                        // Do not support segwit greater than v0
+                        if v.to_u8() > 0 {
+                            return Err(Error::InvalidAddress);
+                        }
+                    }
+                }
+                return Err(Error::InvalidAddress);
+            }
+            NetworkId::Elements(network) => {
+                if let Ok(address) = elements::Address::from_str(address) {
+                    info!(
+                        "address.params:{:?} address_params(network):{:?}",
+                        address.params,
+                        elements_address_params(network)
+                    );
+                    if address.params == elements_address_params(network) {
+                        continue;
+                    }
+                }
+                return Err(Error::InvalidAddress);
+            }
+        }
+    }
+
+    if request.addressees.is_empty() {
+        return Err(Error::EmptyAddressees);
+    }
+
+    if !request.previous_transaction.is_empty() {
+        return Err(Error::Generic("bump not supported".into()));
+    }
+
+    let send_all = request.send_all.unwrap_or(false);
+    request.send_all = Some(send_all); // accept default false, but always return the value
+    if !send_all && request.addressees.iter().any(|a| a.satoshi == 0) {
+        return Err(Error::InvalidAmount);
+    }
+
+    if !send_all {
+        for address_amount in request.addressees.iter() {
+            if address_amount.satoshi <= DUST_VALUE {
+                match network.id() {
+                    NetworkId::Bitcoin(_) => return Err(Error::InvalidAmount),
+                    NetworkId::Elements(_) => {
+                        if address_amount.asset_tag == network.policy_asset {
+                            // we apply dust rules for liquid bitcoin as elements do
+                            return Err(Error::InvalidAmount);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if let NetworkId::Elements(_) = network.id() {
+        if request.addressees.iter().any(|a| a.asset_tag.is_none()) {
+            return Err(Error::AssetEmpty);
+        }
+    }
+
+    // convert from satoshi/kbyte to satoshi/byte
+    let default_value = match network.id() {
+        NetworkId::Bitcoin(_) => 1000,
+        NetworkId::Elements(_) => 100,
+    };
+    let fee_rate = (request.fee_rate.unwrap_or(default_value) as f64) / 1000.0;
+    info!("target fee_rate {:?} satoshi/byte", fee_rate);
+
+    let utxos = match &request.utxos {
+        None => account.utxos(
+            request.num_confs.unwrap_or(0),
+            request.confidential_utxos_only.unwrap_or(false),
+        )?,
+        Some(utxos) => utxos.try_into()?,
+    };
+    info!("utxos len:{} utxos:{:?}", utxos.len(), utxos);
+
+    if send_all {
+        // send_all works by creating a dummy tx with all utxos, estimate the fee and set the
+        // sending amount to `total_amount_utxos - estimated_fee`
+        info!("send_all calculating total_amount");
+        if request.addressees.len() != 1 {
+            return Err(Error::SendAll);
+        }
+        let asset = request.addressees[0].asset_tag.as_deref().unwrap_or("btc");
+        let all_utxos: Vec<&(BEOutPoint, UTXOInfo)> =
+            utxos.iter().filter(|(_, i)| i.asset == asset).collect();
+        let total_amount_utxos: u64 = all_utxos.iter().map(|(_, i)| i.value).sum();
+
+        let to_send = if asset == "btc" || Some(asset.to_string()) == network.policy_asset {
+            let mut dummy_tx = BETransaction::new(network.id());
+            for utxo in all_utxos.iter() {
+                dummy_tx.add_input(utxo.0.clone());
+            }
+            let out = &request.addressees[0]; // safe because we checked we have exactly one recipient
+            dummy_tx
+                .add_output(&out.address, out.satoshi, out.asset_tag.clone())
+                .map_err(|_| Error::InvalidAddress)?;
+            // estimating 2 satoshi more as estimating less would later result in InsufficientFunds
+            let estimated_fee = dummy_tx.estimated_fee(fee_rate, 0, account.script_type) + 2;
+            total_amount_utxos.checked_sub(estimated_fee).ok_or_else(|| Error::InsufficientFunds)?
+        } else {
+            total_amount_utxos
+        };
+
+        info!("send_all asset: {} to_send:{}", asset, to_send);
+
+        request.addressees[0].satoshi = to_send;
+    }
+
+    let mut tx = BETransaction::new(network.id());
+    // transaction is created in 3 steps:
+    // 1) adding requested outputs to tx outputs
+    // 2) adding enough utxso to inputs such that tx outputs and estimated fees are covered
+    // 3) adding change(s)
+
+    // STEP 1) add the outputs requested for this transactions
+    for out in request.addressees.iter() {
+        tx.add_output(&out.address, out.satoshi, out.asset_tag.clone())
+            .map_err(|_| Error::InvalidAddress)?;
+    }
+
+    // STEP 2) add utxos until tx outputs are covered (including fees) or fail
+    let store_read = account.store.read()?;
+    let acc_store = store_read.account_cache(account.num())?;
+    let mut used_utxo: HashSet<BEOutPoint> = HashSet::new();
+    loop {
+        let mut needs = tx.needs(
+            fee_rate,
+            send_all,
+            network.policy_asset.clone(),
+            &acc_store.all_txs,
+            &acc_store.unblinded,
+            account.script_type,
+        ); // Vec<(asset_string, satoshi)  "policy asset" is last, in bitcoin asset_string="btc" and max 1 element
+        info!("needs: {:?}", needs);
+        if needs.is_empty() {
+            // SUCCESS tx doesn't need other inputs
+            break;
+        }
+        let current_need = needs.pop().unwrap(); // safe to unwrap just checked it's not empty
+
+        // taking only utxos of current asset considered, filters also utxos used in this loop
+        let mut asset_utxos: Vec<&(BEOutPoint, UTXOInfo)> = utxos
+            .iter()
+            .filter(|(o, i)| i.asset == current_need.asset && !used_utxo.contains(o))
+            .collect();
+
+        // sort by biggest utxo, random maybe another option, but it should be deterministically random (purely random breaks send_all algorithm)
+        asset_utxos.sort_by(|a, b| (a.1).value.cmp(&(b.1).value));
+        let utxo = asset_utxos.pop().ok_or(Error::InsufficientFunds)?;
+
+        match network.id() {
+            NetworkId::Bitcoin(_) => {
+                // UTXO with same script must be spent together
+                for other_utxo in utxos.iter() {
+                    if (other_utxo.1).script == (utxo.1).script {
+                        used_utxo.insert(other_utxo.0.clone());
+                        tx.add_input(other_utxo.0.clone());
+                    }
+                }
+            }
+            NetworkId::Elements(_) => {
+                // Don't spend same script together in liquid. This would allow an attacker
+                // to cheaply send assets without value to the target, which will have to
+                // waste fees for the extra tx inputs and (eventually) outputs.
+                // While blinded address are required and not public knowledge,
+                // they are still available to whom transacted with us in the past
+                used_utxo.insert(utxo.0.clone());
+                tx.add_input(utxo.0.clone());
+            }
+        }
+    }
+
+    // STEP 3) adding change(s)
+    let estimated_fee = tx.estimated_fee(
+        fee_rate,
+        tx.estimated_changes(send_all, &acc_store.all_txs, &acc_store.unblinded),
+        account.script_type,
+    );
+    let changes = tx.changes(
+        estimated_fee,
+        network.policy_asset.clone(),
+        &acc_store.all_txs,
+        &acc_store.unblinded,
+    ); // Vec<Change> asset, value
+    for (i, change) in changes.iter().enumerate() {
+        let change_index = acc_store.indexes.internal + i as u32 + 1;
+        let change_address = account.derive_address(true, change_index)?.to_string();
+        info!(
+            "adding change to {} of {} asset {:?}",
+            &change_address, change.satoshi, change.asset
+        );
+        tx.add_output(&change_address, change.satoshi, Some(change.asset.clone()))?;
+    }
+
+    // randomize inputs and outputs, BIP69 has been rejected because lacks wallets adoption
+    tx.scramble();
+
+    let policy_asset = network.policy_asset().ok();
+    let fee_val = tx.fee(&acc_store.all_txs, &acc_store.unblinded, &policy_asset)?; // recompute exact fee_val from built tx
+    tx.add_fee_if_elements(fee_val, &policy_asset)?;
+
+    info!("created tx fee {:?}", fee_val);
+
+    let mut satoshi =
+        tx.my_balance_changes(&acc_store.all_txs, &acc_store.paths, &acc_store.unblinded);
+
+    for (_, v) in satoshi.iter_mut() {
+        *v = v.abs();
+    }
+
+    let mut created_tx = TransactionMeta::new(
+        tx,
+        None,
+        None,
+        satoshi,
+        fee_val,
+        network.id().get_bitcoin_network().unwrap_or(bitcoin::Network::Bitcoin),
+        "outgoing".to_string(),
+        request.clone(),
+        true,
+        SPVVerifyResult::InProgress,
+    );
+    created_tx.changes_used = Some(changes.len() as u32);
+    info!("returning: {:?}", created_tx);
+
+    Ok(created_tx)
+}
+
+fn internal_sign_bitcoin(
+    tx: &bitcoin::Transaction,
+    input_index: usize,
+    xprv: &ExtendedPrivKey,
+    path: &DerivationPath,
+    value: u64,
+    script_type: ScriptType,
+) -> (bitcoin::Script, Vec<Vec<u8>>) {
+    let xprv = xprv.derive_priv(&EC, &path).unwrap();
+    let private_key = &xprv.private_key;
+    let public_key = &PublicKey::from_private_key(&EC, private_key);
+    let script_code = p2pkh_script(public_key);
+
+    let hash = if script_type.is_segwit() {
+        SigHashCache::new(tx).signature_hash(input_index, &script_code, value, SigHashType::All)
+    } else {
+        tx.signature_hash(input_index, &script_code, SigHashType::All as u32)
+    };
+
+    let message = Message::from_slice(&hash.into_inner()[..]).unwrap();
+    let signature = EC.sign(&message, &private_key.key);
+
+    let mut signature = signature.serialize_der().to_vec();
+    signature.push(SigHashType::All as u8);
+
+    prepare_input(&public_key, signature, script_type)
+}
+
+fn internal_sign_elements(
+    tx: &elements::Transaction,
+    input_index: usize,
+    xprv: &ExtendedPrivKey,
+    path: &DerivationPath,
+    value: Value,
+    script_type: ScriptType,
+) -> (elements::Script, Vec<Vec<u8>>) {
+    let xprv = xprv.derive_priv(&EC, &path).unwrap();
+    let private_key = &xprv.private_key;
+    let public_key = &PublicKey::from_private_key(&EC, private_key);
+
+    let script_code = p2pkh_script(public_key).into_elements();
+    let sighash = if script_type.is_segwit() {
+        elements::sighash::SigHashCache::new(tx).segwitv0_sighash(
+            input_index,
+            &script_code,
+            value,
+            elements::SigHashType::All,
+        )
+    } else {
+        elements::sighash::SigHashCache::new(tx).legacy_sighash(
+            input_index,
+            &script_code,
+            elements::SigHashType::All,
+        )
+    };
+    let message = secp256k1::Message::from_slice(&sighash[..]).unwrap();
+    let signature = EC.sign(&message, &private_key.key);
+    let mut signature = signature.serialize_der().to_vec();
+    signature.push(SigHashType::All as u8);
+
+    let (script_sig, witness) = prepare_input(&public_key, signature, script_type);
+    (script_sig.into_elements(), witness)
+}
+
+// Get the input's script sig and witness data
+fn prepare_input(
+    public_key: &PublicKey,
+    signature: Vec<u8>,
+    script_type: ScriptType,
+) -> (bitcoin::Script, Vec<Vec<u8>>) {
+    let pk = public_key.to_bytes();
+
+    match script_type {
+        ScriptType::P2shP2wpkh => (p2shwpkh_script_sig(public_key), vec![signature, pk]),
+        ScriptType::P2wpkh => (bitcoin::Script::new(), vec![signature, pk]),
+        ScriptType::P2pkh => (
+            script::Builder::new()
+                .push_slice(signature.as_slice())
+                .push_slice(pk.as_slice())
+                .into_script(),
+            vec![],
+        ),
+    }
+}
+
+fn blind_tx(account: &Account, tx: &mut elements::Transaction) -> Result<(), Error> {
+    use elements::confidential::{Asset, Nonce};
+    use gdk_common::wally::{
+        asset_final_vbf, asset_generator_from_bytes, asset_rangeproof, asset_surjectionproof,
+        asset_value_commitment,
+    };
+
+    info!("blind_tx {}", tx.txid());
+
+    let store_read = account.store.read()?;
+    let acc_store = store_read.account_cache(account.num())?;
+
+    let mut input_assets = vec![];
+    let mut input_abfs = vec![];
+    let mut input_vbfs = vec![];
+    let mut input_ags = vec![];
+    let mut input_values = vec![];
+
+    for input in tx.input.iter() {
+        info!("input {:?}", input);
+
+        let unblinded = acc_store
+            .unblinded
+            .get(&input.previous_output)
+            .ok_or_else(|| Error::Generic("cannot find unblinded values".into()))?;
+        info!("unblinded value: {} asset:{}", unblinded.value, hex::encode(&unblinded.asset[..]));
+
+        input_values.push(unblinded.value);
+        input_assets.extend(unblinded.asset.to_vec());
+        input_abfs.extend(unblinded.abf.to_vec());
+        input_vbfs.extend(unblinded.vbf.to_vec());
+        let input_asset = asset_generator_from_bytes(&unblinded.asset, &unblinded.abf);
+        input_ags.extend(elements::encode::serialize(&input_asset));
+    }
+
+    let ct_exp = account.network.ct_exponent.expect("ct_exponent not set in network");
+    let ct_bits = account.network.ct_bits.expect("ct_bits not set in network");
+    info!("ct params ct_exp:{}, ct_bits:{}", ct_exp, ct_bits);
+
+    let mut output_blinded_values = vec![];
+    for output in tx.output.iter() {
+        if !output.is_fee() {
+            output_blinded_values.push(output.minimum_value());
+        }
+    }
+    info!("output_blinded_values {:?}", output_blinded_values);
+    let mut all_values = vec![];
+    all_values.extend(input_values);
+    all_values.extend(output_blinded_values);
+    let in_num = tx.input.len();
+    let out_num = tx.output.len();
+
+    let output_abfs: Vec<Vec<u8>> = (0..out_num - 1).map(|_| random32()).collect();
+    let mut output_vbfs: Vec<Vec<u8>> = (0..out_num - 2).map(|_| random32()).collect();
+
+    let mut all_abfs = vec![];
+    all_abfs.extend(input_abfs.to_vec());
+    all_abfs.extend(output_abfs.iter().cloned().flatten().collect::<Vec<u8>>());
+
+    let mut all_vbfs = vec![];
+    all_vbfs.extend(input_vbfs.to_vec());
+    all_vbfs.extend(output_vbfs.iter().cloned().flatten().collect::<Vec<u8>>());
+
+    let last_vbf = asset_final_vbf(all_values, in_num as u32, all_abfs, all_vbfs);
+    output_vbfs.push(last_vbf.to_vec());
+
+    let mut rng = rand::thread_rng();
+    for (i, mut output) in tx.output.iter_mut().enumerate() {
+        info!("output {:?}", output);
+        if !output.is_fee() {
+            match (output.value, output.asset, output.nonce) {
+                (Value::Explicit(value), Asset::Explicit(asset), Nonce::Confidential(_, _)) => {
+                    info!("value: {}", value);
+                    let nonce = elements::encode::serialize(&output.nonce);
+                    let blinding_pubkey = PublicKey::from_slice(&nonce).unwrap();
+                    let ephemeral_sk = secp256k1::SecretKey::new(&mut rng);
+                    let ephemeral_pk = secp256k1::PublicKey::from_secret_key(&EC, &ephemeral_sk);
+                    let mut output_abf = [0u8; 32];
+                    output_abf.copy_from_slice(&(&output_abfs[i])[..]);
+                    let mut output_vbf = [0u8; 32];
+                    output_vbf.copy_from_slice(&(&output_vbfs[i])[..]);
+                    let asset = asset.clone().into_inner();
+
+                    let output_generator =
+                        asset_generator_from_bytes(&asset.into_inner(), &output_abf);
+                    let output_value_commitment =
+                        asset_value_commitment(value, output_vbf, output_generator);
+                    let min_value = if output.script_pubkey.is_provably_unspendable() {
+                        0
+                    } else {
+                        1
+                    };
+
+                    let rangeproof = asset_rangeproof(
+                        value,
+                        blinding_pubkey.key,
+                        ephemeral_sk,
+                        asset.into_inner(),
+                        output_abf,
+                        output_vbf,
+                        output_value_commitment,
+                        &output.script_pubkey,
+                        output_generator,
+                        min_value,
+                        ct_exp,
+                        ct_bits,
+                    );
+                    trace!("asset: {}", hex::encode(&asset));
+                    trace!("output_abf: {}", hex::encode(&output_abf));
+                    trace!(
+                        "output_generator: {}",
+                        hex::encode(&elements::encode::serialize(&output_generator))
+                    );
+                    trace!("input_assets: {}", hex::encode(&input_assets));
+                    trace!("input_abfs: {}", hex::encode(&input_abfs));
+                    trace!("input_ags: {}", hex::encode(&input_ags));
+                    trace!("in_num: {}", in_num);
+
+                    let surjectionproof = asset_surjectionproof(
+                        asset.into_inner(),
+                        output_abf,
+                        output_generator,
+                        output_abf,
+                        &input_assets,
+                        &input_abfs,
+                        &input_ags,
+                        in_num,
+                    );
+                    trace!("surjectionproof: {}", hex::encode(&surjectionproof));
+
+                    let bytes = ephemeral_pk.serialize();
+                    let byte32: [u8; 32] = bytes[1..].as_ref().try_into().unwrap();
+                    output.nonce = elements::confidential::Nonce::Confidential(bytes[0], byte32);
+                    output.asset = output_generator;
+                    output.value = output_value_commitment;
+                    info!(
+                        "added size len: surjectionproof:{} rangeproof:{}",
+                        surjectionproof.len(),
+                        rangeproof.len()
+                    );
+                    output.witness.surjection_proof = surjectionproof;
+                    output.witness.rangeproof = rangeproof;
+                }
+                _ => panic!("create_tx created things not right"),
+            }
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    const NETWORK: NetworkId = NetworkId::Bitcoin(bitcoin::Network::Regtest);
+
+    fn test_derivation(account_num: u32, expected_type: ScriptType, expected_path: &str) {
+        let (script_type, path) = get_account_derivation(account_num, NETWORK).unwrap();
+        assert_eq!(script_type, expected_type);
+        assert_eq!(path.to_string(), expected_path);
+    }
+
+    fn test_derivation_fails(account_num: u32) {
+        assert!(get_account_derivation(account_num, NETWORK).is_err());
+    }
+
+    #[test]
+    fn account_derivation() {
+        test_derivation(0, ScriptType::P2shP2wpkh, "m/49'/1'/0'");
+        test_derivation(1, ScriptType::P2wpkh, "m/84'/1'/0'");
+        test_derivation(2, ScriptType::P2pkh, "m/44'/1'/0'");
+
+        // reserved for future use, currently rejected
+        for n in 3..=15 {
+            test_derivation_fails(n);
+        }
+
+        test_derivation(16, ScriptType::P2shP2wpkh, "m/49'/1'/1'");
+        test_derivation(17, ScriptType::P2wpkh, "m/84'/1'/1'");
+        test_derivation(18, ScriptType::P2pkh, "m/44'/1'/1'");
+        test_derivation_fails(19);
+
+        test_derivation(160, ScriptType::P2shP2wpkh, "m/49'/1'/10'");
+        test_derivation(161, ScriptType::P2wpkh, "m/84'/1'/10'");
+        test_derivation(162, ScriptType::P2pkh, "m/44'/1'/10'");
+    }
+}

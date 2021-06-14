@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 
@@ -11,27 +12,27 @@ enum ResultPageType {
 
 class ResultPage extends StatelessWidget {
   ResultPage({
-    Key key,
-    this.header,
-    this.description,
+    Key? key,
+    this.header = '',
+    this.description = '',
     this.descriptionWidget,
-    this.button,
+    this.button = '',
     this.onPressed,
-    @required this.resultType,
+    required this.resultType,
     this.visibleSecondButton = false,
-    this.secondButton,
+    this.secondButton = '',
     this.onSecondButtonPressed,
   }) : super(key: key);
 
   final String header;
   final String description;
-  final Widget descriptionWidget;
+  final Widget? descriptionWidget;
   final String button;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final ResultPageType resultType;
   final bool visibleSecondButton;
   final String secondButton;
-  final VoidCallback onSecondButtonPressed;
+  final VoidCallback? onSecondButtonPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +74,7 @@ class ResultPage extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 32.h),
             child: Text(
-              header ?? '',
+              header,
               style: GoogleFonts.roboto(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
@@ -83,9 +84,9 @@ class ResultPage extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 12.h),
-            child: description != null
+            child: description.isNotEmpty
                 ? Text(
-                    description ?? '',
+                    description,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.roboto(
                       fontSize: 16.sp,
@@ -101,7 +102,7 @@ class ResultPage extends StatelessWidget {
             child: CustomBigButton(
               width: double.infinity,
               height: 54.h,
-              text: button ?? '',
+              text: button,
               backgroundColor: Color(0xFF00C5FF),
               onPressed: onPressed,
             ),
@@ -113,7 +114,7 @@ class ResultPage extends StatelessWidget {
               child: CustomBigButton(
                 width: double.infinity,
                 height: 54.h,
-                text: secondButton ?? '',
+                text: secondButton,
                 backgroundColor: Colors.transparent,
                 onPressed: onSecondButtonPressed,
               ),

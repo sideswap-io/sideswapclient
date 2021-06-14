@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class RoundedTextLabel extends StatelessWidget {
   RoundedTextLabel({
-    Key key,
-    this.text,
+    Key? key,
+    required this.text,
     this.color = const Color(0xFFA8D6EA),
     this.allRectRadius = false,
     this.height,
@@ -14,7 +15,7 @@ class RoundedTextLabel extends StatelessWidget {
   final String text;
   final Color color;
   final bool allRectRadius;
-  final double height;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,7 @@ class RoundedTextLabel extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
             child: Text(
-              text ?? '',
+              text,
               style: GoogleFonts.roboto(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.normal,

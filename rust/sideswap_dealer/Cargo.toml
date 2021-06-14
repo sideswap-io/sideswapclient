@@ -1,0 +1,13 @@
+[package]
+name = "sideswap_dealer"
+version = "0.1.2"
+edition = "2018"
+
+[dependencies]
+sideswap_api = { version = "*", path = "../sideswap_api" }
+sideswap_common = { version = "*", path = "../sideswap_common" }
+log = "*"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "*", features = ["blocking", "json"] }
+anyhow = "*"

@@ -41,12 +41,15 @@ class BitmapHelper {
 
     final pngSizedBytes =
         await sizedSvgImage.toByteData(format: ui.ImageByteFormat.png);
+    if (pngSizedBytes == null) {
+      return Uint8List(0);
+    }
     return pngSizedBytes.buffer.asUint8List();
   }
 
   static Future<ui.Image> getSvgImageFromAssets(String svgAssertLink) async {
     final svgString = await rootBundle.loadString(svgAssertLink);
-    final drawableRoot = await svg.fromSvgString(svgString, null);
+    final drawableRoot = await svg.fromSvgString(svgString, '');
     final picture = drawableRoot.toPicture();
     final image = await picture.toImage(drawableRoot.viewport.width.toInt(),
         drawableRoot.viewport.height.toInt());
@@ -55,7 +58,7 @@ class BitmapHelper {
 
   static Future<ui.Image> getSvgImageFromString(
       String svgString, double width, double height) async {
-    final drawableRoot = await svg.fromSvgString(svgString, null);
+    final drawableRoot = await svg.fromSvgString(svgString, '');
     final picture = drawableRoot.toPicture(size: Size(width, height));
     final image = await picture.toImage(width.toInt(), height.toInt());
     return image;

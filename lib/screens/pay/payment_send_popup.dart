@@ -1,18 +1,19 @@
-import 'package:fdottedline/fdottedline.dart';
+import 'package:dotted_line/dotted_line.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 
 class PaymentSendPopup extends StatelessWidget {
-  PaymentSendPopup({Key key}) : super(key: key);
+  PaymentSendPopup({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +36,14 @@ class PaymentSendPopup extends StatelessWidget {
             padding: EdgeInsets.only(top: 10.h),
             child: Consumer(
               builder: (context, watch, child) {
-                final sendAmountStr =
-                    amountStr(watch(paymentProvider).sendAmountParsed);
                 final asset = watch(walletProvider)
                     .assets[watch(walletProvider).selectedWalletAsset];
+                final precision = context
+                    .read(walletProvider)
+                    .getPrecisionForAssetId(assetId: asset?.assetId);
+                final sendAmountStr = amountStr(
+                    watch(paymentProvider).sendAmountParsed,
+                    precision: precision);
                 final amount = '$sendAmountStr ${asset?.ticker}';
                 return Text(
                   amount,
@@ -57,11 +62,15 @@ class PaymentSendPopup extends StatelessWidget {
               builder: (context, watch, child) {
                 final asset = watch(walletProvider)
                     .assets[watch(walletProvider).selectedWalletAsset];
-                var amount = double.tryParse(
-                    amountStr(watch(paymentProvider).sendAmountParsed));
-                amount ??= .0;
+                final precision = context
+                    .read(walletProvider)
+                    .getPrecisionForAssetId(assetId: asset?.assetId);
+                var amount = double.tryParse(amountStr(
+                        watch(paymentProvider).sendAmountParsed,
+                        precision: precision)) ??
+                    0;
                 _dollarConversion = watch(walletProvider)
-                    .getAmountUsd(asset.assetId, amount)
+                    .getAmountUsd(asset?.assetId ?? '', amount)
                     .toStringAsFixed(2);
 
                 _dollarConversion = replaceCharacterOnPosition(
@@ -83,11 +92,11 @@ class PaymentSendPopup extends StatelessWidget {
           Flexible(
             child: Padding(
               padding: EdgeInsets.only(top: 8.h),
-              child: FDottedLine(
-                color: Color(0xFF2B6F95),
-                width: double.infinity,
-                dottedLength: 1.0,
-                space: 0.0,
+              child: DottedLine(
+                dashColor: Color(0xFF2B6F95),
+                dashGapColor: Colors.transparent,
+                dashLength: 1.0,
+                dashGapLength: 0.0,
               ),
             ),
           ),
@@ -111,11 +120,11 @@ class PaymentSendPopup extends StatelessWidget {
           Flexible(
             child: Padding(
               padding: EdgeInsets.only(top: 16.h),
-              child: FDottedLine(
-                color: Color(0xFF2B6F95),
-                width: double.infinity,
-                dottedLength: 1.0,
-                space: 0.0,
+              child: DottedLine(
+                dashColor: Color(0xFF2B6F95),
+                dashGapColor: Colors.transparent,
+                dashLength: 1.0,
+                dashGapLength: 0.0,
               ),
             ),
           ),
@@ -140,11 +149,11 @@ class PaymentSendPopup extends StatelessWidget {
           Flexible(
             child: Padding(
               padding: EdgeInsets.only(top: 16.h),
-              child: FDottedLine(
-                color: Color(0xFF2B6F95),
-                width: double.infinity,
-                dottedLength: 1.0,
-                space: 0.0,
+              child: DottedLine(
+                dashColor: Color(0xFF2B6F95),
+                dashGapColor: Colors.transparent,
+                dashLength: 1.0,
+                dashGapLength: 0.0,
               ),
             ),
           ),

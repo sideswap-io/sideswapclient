@@ -23,9 +23,9 @@ const CLIENT_API_KEY: &str = "f8b7a12ee96aa68ee2b12ebfc51d804a4a404c9732652c298d
 const USER_AGENT: &str = "sideswap";
 
 const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
-const SERVER_REQUEST_POOL_PERIOD: std::time::Duration = std::time::Duration::from_secs(1);
+const SERVER_REQUEST_POLL_PERIOD: std::time::Duration = std::time::Duration::from_secs(1);
 
-//const RFQ_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(10);
+const ACCOUNT: u32 = 0;
 
 const BALANCE_NUM_CONFS: u32 = 0;
 
@@ -36,12 +36,14 @@ const MAX_REGISTER_ADDRESS_COUNT: u32 = 100;
 
 const DEFAULT_ICON: &[u8] = include_bytes!("../images/icon_blank.png");
 
+const AUTO_SIGN_ALLOWED_INDEX_PRICE_CHANGE: f64 = 0.1;
+
 #[derive(serde::Deserialize, Debug)]
 struct GdkAsset {
     asset_id: AssetId,
-    name: String,
+    name: Option<String>,
     precision: Option<u8>,
-    ticker: Ticker,
+    ticker: Option<Ticker>,
 }
 
 #[derive(serde::Deserialize, Debug, Default)]
@@ -85,18 +87,24 @@ pub struct Context {
     session: ElectrumSession,
     last_balances: BTreeMap<AssetId, Amount>,
     used_utxos: BTreeSet<types::TxOut>,
+    sync_complete: bool,
+    wallet_loaded_sent: bool,
 
     pegs: BTreeMap<OrderId, PegStatus>,
     txs: Vec<gdk_common::model::TxListItem>,
     sent_txs: BTreeMap<String, ffi::proto::TransItem>,
+    succeed_swap: Option<String>,
 
     active_swap: Option<ActiveSwap>,
     psbt: Option<String>,
-    psbt_keys: Option<PsbtKeys>,
+    psbt_utxos: Option<Vec<gdk_common::model::UnspentOutput>>,
 
     send_tx: Option<SendTx>,
     internal_peg: Option<InternalPeg>,
     active_extern_peg: Option<ActivePeg>,
+
+    active_submit: Option<LinkResponse>,
+    active_sign: Option<SignNotification>,
 }
 
 pub struct ServerResp(Option<RequestId>, Result<Response, Error>);
@@ -110,12 +118,23 @@ fn get_tx_out(utxo: &UnspentOutput) -> types::TxOut {
 
 struct InternalPeg {
     send_amount: i64,
+    blocks: i32,
 }
 
 struct SubmitData {
     order_id: OrderId,
     side: OrderSide,
-    keys: PsbtKeys,
+    asset: AssetId,
+    bitcoin_amount: Amount,
+    asset_amount: Amount,
+    server_fee: Amount,
+    price: f64,
+    asset_precision: u8,
+    sell_bitcoin: bool,
+    txouts: BTreeSet<TxOut>,
+    auto_sign: bool,
+    txid: Option<String>,
+    index_price: bool,
 }
 
 pub struct Data {
@@ -133,9 +152,17 @@ pub struct Data {
     ctx: Option<Context>,
     settings: settings::Settings,
     push_token: Option<String>,
-    liquid_asset_id: String,
+    liquid_asset_id: AssetId,
     bitcoin_asset_id: String,
-    submit_data: Option<SubmitData>,
+    submit_data: BTreeMap<OrderId, SubmitData>,
+    pending_signs: BTreeSet<OrderId>,
+    visible_submit: Option<OrderId>,
+    processed_signs: BTreeSet<OrderId>,
+    mobile_submits: BTreeSet<OrderId>,
+    pending_sign_requests: std::collections::VecDeque<SignNotification>,
+    pending_submits: Vec<ffi::proto::to::SubmitOrder>,
+    pending_links: Vec<ffi::proto::to::LinkOrder>,
+    utxos_resp: BTreeMap<OrderId, settings::StoredUtxo>,
 }
 
 pub struct ActiveSwap {
@@ -145,7 +172,6 @@ pub struct ActiveSwap {
     send_amount: Amount,
     recv_amount_accepted: Option<Amount>,
     inputs: Vec<gdk_common::model::UnspentOutput>,
-    change_amount: Amount,
     network_fee: Option<i64>,
 }
 
@@ -304,27 +330,41 @@ impl Data {
                     refresh: true,
                 })
                 .unwrap_or_default();
-            let gdk_assets = serde_json::from_value::<GdkAssets>(assets).unwrap_or_default();
+            let gdk_assets = match serde_json::from_value::<GdkAssets>(assets) {
+                Ok(v) => {
+                    info!(
+                        "gdk assets loaded: {}, icons: {}",
+                        v.assets.len(),
+                        v.icons.len()
+                    );
+                    v
+                }
+                Err(e) => {
+                    error!("assets parsing failed: {}", e);
+                    GdkAssets::default()
+                }
+            };
             for asset_id in new_asset_ids.iter() {
                 let icon = gdk_assets
                     .icons
                     .get(asset_id)
                     .cloned()
                     .unwrap_or_else(|| base64::encode(DEFAULT_ICON));
+                let default_ticker = || Ticker(format!("{:0.4}...", &asset_id.0));
+                let default_name = || format!("{:0.8}...", &asset_id.0);
                 let asset = match gdk_assets.assets.get(asset_id) {
-                    // FIXME: Fix precision handling and remove the check
-                    Some(v) if v.precision == Some(8) => Asset {
+                    Some(v) => Asset {
                         asset_id: asset_id.clone(),
-                        name: v.name.clone(),
-                        ticker: v.ticker.clone(),
+                        name: v.name.clone().unwrap_or_else(default_name),
+                        ticker: v.ticker.clone().unwrap_or_else(default_ticker),
                         icon: Some(icon),
                         precision: v.precision.unwrap_or_default(),
                         icon_url: None,
                     },
-                    _ => Asset {
+                    None => Asset {
                         asset_id: asset_id.clone(),
-                        name: format!("{:0.8}...", &asset_id.0),
-                        ticker: Ticker(format!("{:0.4}...", &asset_id.0)),
+                        name: default_name(),
+                        ticker: default_ticker(),
                         icon: Some(base64::encode(DEFAULT_ICON)),
                         precision: 8,
                         icon_url: None,
@@ -345,11 +385,32 @@ impl Data {
         }
     }
 
+    fn send_wallet_loaded(&mut self) {
+        if let Some(ctx) = self.ctx.as_mut() {
+            if !ctx.wallet_loaded_sent {
+                ctx.wallet_loaded_sent = true;
+                self.from_sender
+                    .send(ffi::proto::from::Msg::WalletLoaded(ffi::proto::Empty {}))
+                    .unwrap();
+            }
+        }
+    }
+
+    fn sync_complete(&mut self) {
+        if let Some(ctx) = self.ctx.as_mut() {
+            if !ctx.sync_complete {
+                ctx.sync_complete = true;
+                self.send_wallet_loaded();
+                self.process_pending_requests();
+            }
+        }
+    }
+
     fn resume_peg_monitoring(&mut self) {
         if self.assets.is_empty() || self.ctx.is_none() || !self.connected {
             return;
         }
-        for peg in self.settings.pegs.iter() {
+        for peg in self.settings.pegs.iter().flatten() {
             self.start_peg_monitoring(peg);
         }
     }
@@ -387,10 +448,23 @@ impl Data {
 
     fn get_blinded_values(&self, txid: &str) -> Result<String, anyhow::Error> {
         let ctx = self.ctx.as_ref().expect("wallet must be set");
-        let wallet = ctx.session.wallet.as_ref().expect("wallet must be set");
+        let wallet = ctx
+            .session
+            .wallet
+            .as_ref()
+            .expect("wallet must be set")
+            .read()
+            .unwrap();
         let txid = gdk_common::be::BETxid::Elements(elements::Txid::from_str(txid)?);
         let store = wallet.store.read().unwrap();
-        let tx = store.cache.all_txs.get(&txid).ok_or(anyhow!("not found"))?;
+        let tx = store
+            .cache
+            .accounts
+            .get(&ACCOUNT)
+            .unwrap()
+            .all_txs
+            .get(&txid)
+            .ok_or(anyhow!("not found"))?;
         let tx = match tx {
             gdk_common::be::BETransaction::Bitcoin(_) => bail!("unexpected tx type"),
             gdk_common::be::BETransaction::Elements(v) => v,
@@ -411,6 +485,9 @@ impl Data {
             .flat_map(|out_point| {
                 store
                     .cache
+                    .accounts
+                    .get(&ACCOUNT)
+                    .unwrap()
                     .unblinded
                     .get(out_point)
                     .map(Data::get_blinded_value)
@@ -420,7 +497,8 @@ impl Data {
     }
 
     fn try_sync_tx_list(&mut self) -> Result<(), anyhow::Error> {
-        let ctx = self.ctx.as_ref().expect("ctx must be set");
+        // TODO: Ignore confirmed transactions
+        let ctx = self.ctx.as_mut().expect("ctx must be set");
         let (top_block, _) = ctx
             .session
             .block_status()
@@ -447,10 +525,41 @@ impl Data {
                 self.from_sender
                     .send(ffi::proto::from::Msg::UpdatedTx(item.clone()))
                     .unwrap();
+                if ctx.succeed_swap.as_ref() == Some(&id) {
+                    ctx.succeed_swap.take();
+                    self.from_sender
+                        .send(ffi::proto::from::Msg::SwapSucceed(item.clone()))
+                        .unwrap();
+                }
+
+                let submit_data = self
+                    .submit_data
+                    .values()
+                    .find(|submit_data| submit_data.txid.as_ref() == Some(&id));
+                if let Some(submit_data) = submit_data {
+                    if self.visible_submit.as_ref() == Some(&submit_data.order_id) {
+                        self.from_sender
+                            .send(ffi::proto::from::Msg::SubmitResult(
+                                ffi::proto::from::SubmitResult {
+                                    result: Some(
+                                        ffi::proto::from::submit_result::Result::SwapSucceed(
+                                            item.clone(),
+                                        ),
+                                    ),
+                                    minimize_app: false,
+                                },
+                            ))
+                            .unwrap();
+                        self.visible_submit = None;
+                    }
+                }
             }
         }
         ctx.sent_txs = new_list;
         self.update_address_registrations();
+        if self.visible_submit.is_none() {
+            self.process_pending_sign_requests();
+        }
         Ok(())
     }
 
@@ -465,7 +574,12 @@ impl Data {
             Some(v) => v,
             None => return,
         };
-        let mut balances = match ctx.session.get_balance(BALANCE_NUM_CONFS, None) {
+        let balance_opts = gdk_common::model::GetBalanceOpt {
+            subaccount: ACCOUNT,
+            num_confs: BALANCE_NUM_CONFS,
+            confidential_utxos_only: None,
+        };
+        let mut balances = match ctx.session.get_balance(&balance_opts) {
             Ok(v) => v,
             Err(_) => return,
         };
@@ -609,6 +723,7 @@ impl Data {
             return;
         }
         self.connected = true;
+        self.process_pending_requests();
         self.resume_peg_monitoring();
         self.update_push_token();
         self.update_address_registrations();
@@ -633,11 +748,20 @@ impl Data {
     }
 
     fn process_server_status(&mut self, resp: ServerStatus) {
+        let bitcoin_fee_rates = resp
+            .bitcoin_fee_rates
+            .iter()
+            .map(|item| ffi::proto::FeeRate {
+                blocks: item.blocks,
+                value: item.value,
+            })
+            .collect();
         let status_copy = ffi::proto::ServerStatus {
             min_peg_in_amount: resp.min_peg_in_amount,
             min_peg_out_amount: resp.min_peg_out_amount,
             server_fee_percent_peg_in: resp.server_fee_percent_peg_in,
             server_fee_percent_peg_out: resp.server_fee_percent_peg_out,
+            bitcoin_fee_rates,
         };
         self.from_sender
             .send(ffi::proto::from::Msg::ServerStatus(status_copy))
@@ -706,15 +830,14 @@ impl Data {
         let wallet = self.ctx.as_mut().expect("wallet must be set");
         wallet.active_swap = None;
         wallet.psbt = None;
-        wallet.psbt_keys = None;
         wallet.send_tx = None;
         wallet.internal_peg = None;
         wallet.active_extern_peg = None;
     }
 
     fn swap_send_psbt(&mut self, tx_info: Swap) -> Result<(), anyhow::Error> {
-        let wallet = self.ctx.as_ref().ok_or_else(|| anyhow!("no wallet"))?;
-        let active_swap = wallet
+        let ctx = self.ctx.as_ref().ok_or_else(|| anyhow!("no wallet"))?;
+        let active_swap = ctx
             .active_swap
             .as_ref()
             .ok_or_else(|| anyhow!("no active swap"))?;
@@ -722,12 +845,16 @@ impl Data {
         let psbt_info = PsbtInfo {
             send_asset: tx_info.send_asset.0.clone(),
             recv_asset: tx_info.recv_asset.0.clone(),
+            send_amount: active_swap.send_amount.to_sat(),
             recv_amount: tx_info.recv_amount,
-            change_amount: active_swap.change_amount.to_sat(),
-            utxos: active_swap.inputs.clone(),
         };
 
-        let (psbt, keys) = generate_psbt(&wallet.session, &psbt_info)?;
+        let psbt = generate_psbt(
+            &ctx.session.wallet.as_ref().unwrap().read().unwrap(),
+            &psbt_info,
+            &active_swap.inputs,
+            ACCOUNT,
+        )?;
 
         send_request!(
             self,
@@ -737,8 +864,9 @@ impl Data {
                 action: SwapAction::Psbt(psbt),
             }
         )?;
+        let utxos = active_swap.inputs.clone();
         let wallet = self.ctx.as_mut().expect("wallet must be set");
-        wallet.psbt_keys = Some(keys);
+        wallet.psbt_utxos = Some(utxos);
         Ok(())
     }
 
@@ -753,23 +881,37 @@ impl Data {
 
     fn swap_send_sign(&mut self, psbt: String) -> Result<(), anyhow::Error> {
         let ctx = self.ctx.as_ref().ok_or_else(|| anyhow!("no wallet"))?;
-        let keys = ctx
-            .psbt_keys
-            .as_ref()
-            .ok_or_else(|| anyhow!("not keys found"))?;
-        let signed_psbt = sign_psbt(&psbt, &ctx.session.wallet.as_ref().unwrap(), &keys)?;
         let active_swap = ctx
             .active_swap
             .as_ref()
             .ok_or_else(|| anyhow!("no active swap"))?
             .clone();
+        let utxos = ctx
+            .psbt_utxos
+            .as_ref()
+            .ok_or_else(|| anyhow!("no keys found"))?;
+        let psbt_info = PsbtInfo {
+            send_asset: active_swap.send_asset.0.clone(),
+            recv_asset: active_swap.recv_asset.0.clone(),
+            send_amount: active_swap.send_amount.to_sat(),
+            recv_amount: active_swap
+                .recv_amount_accepted
+                .unwrap_or_default()
+                .to_sat(),
+        };
+        let signed_psbt = sign_psbt(
+            &ctx.session.wallet.as_ref().unwrap().read().unwrap(),
+            &psbt_info,
+            &utxos,
+            &psbt,
+            ACCOUNT,
+        )?;
 
-        let order_id = active_swap.order_id.clone();
         send_request!(
             self,
             Swap,
             SwapRequest {
-                order_id,
+                order_id: active_swap.order_id.clone(),
                 action: SwapAction::Sign(signed_psbt),
             }
         )?;
@@ -803,39 +945,10 @@ impl Data {
     fn swap_succeed(&mut self, txid: String) {
         let ctx = self.ctx.as_mut().expect("wallet must be set");
         let active_swap = ctx.active_swap.as_ref().expect("must be set");
-        let send_balance = ffi::proto::Balance {
-            asset_id: active_swap.send_asset.0.clone(),
-            amount: -active_swap.send_amount.0,
-        };
-        let recv_balance = ffi::proto::Balance {
-            asset_id: active_swap.recv_asset.0.clone(),
-            amount: active_swap
-                .recv_amount_accepted
-                .unwrap_or_default()
-                .to_sat(),
-        };
-        let tx_details = ffi::proto::Tx {
-            txid: txid.clone(),
-            network_fee: active_swap.network_fee.unwrap_or_default(),
-            memo: "".to_owned(),
-            balances: vec![send_balance, recv_balance],
-        };
-        let swap_succeed = ffi::proto::TransItem {
-            id: txid.clone(),
-            created_at: timestamp_now(),
-            confs: Some(ffi::proto::Confs {
-                count: 0,
-                total: TX_CONF_COUNT,
-            }),
-            item: Some(ffi::proto::trans_item::Item::Tx(tx_details)),
-        };
         for utxo in active_swap.inputs.iter() {
             ctx.used_utxos.insert(get_tx_out(utxo));
         }
-
-        self.from_sender
-            .send(ffi::proto::from::Msg::SwapSucceed(swap_succeed))
-            .unwrap();
+        ctx.succeed_swap = Some(txid);
         self.cleanup_swaps();
         // FIXME: Update balances (remove consumed UTXOs)
     }
@@ -863,9 +976,8 @@ impl Data {
             .as_str()
             .expect("expected string event");
         match event {
-            "transaction" | "block" => {
-                self.update_tx_list();
-            }
+            "transaction" | "block" => self.update_tx_list(),
+            "sync_complete" => self.sync_complete(),
             _ => {}
         }
     }
@@ -878,6 +990,7 @@ impl Data {
         let send_asset = req.send_asset;
         let recv_asset = req.recv_asset;
         ensure!(self.connected, "not connected");
+        let blocks = req.blocks.ok_or_else(|| anyhow!("blocks must be set"))?;
         let ctx = self.ctx.as_mut().ok_or(anyhow!("no context found"))?;
         let server_status = self
             .server_status
@@ -892,7 +1005,10 @@ impl Data {
                 .to_bitcoin()
                 .to_string()
         );
-        ctx.internal_peg = Some(InternalPeg { send_amount });
+        ctx.internal_peg = Some(InternalPeg {
+            send_amount,
+            blocks,
+        });
         Ok(ffi::proto::from::SwapReview {
             send_asset,
             recv_asset,
@@ -914,7 +1030,10 @@ impl Data {
             .clone();
         let recv_addr = ctx
             .session
-            .get_receive_address(&serde_json::Value::Null)
+            .get_receive_address(&gdk_common::model::GetAddressOpt {
+                subaccount: ACCOUNT,
+                address_type: None,
+            })
             .expect("can't get new address")
             .address;
         let request = Request::Peg(PegRequest {
@@ -922,6 +1041,7 @@ impl Data {
             send_amount: None,
             peg_in: true,
             device_key: Some(device_key),
+            blocks: None,
         });
         let resp = self.send_request(request);
         let resp = match resp {
@@ -934,7 +1054,7 @@ impl Data {
 
         let msg = ffi::proto::from::SwapWaitTx {
             send_asset: self.bitcoin_asset_id.clone(),
-            recv_asset: self.liquid_asset_id.clone(),
+            recv_asset: self.liquid_asset_id.clone().0,
             peg_addr: resp.peg_addr,
             recv_addr: recv_addr.clone(),
         };
@@ -978,7 +1098,12 @@ impl Data {
 
         let mut all_utxos = ctx
             .session
-            .get_unspent_outputs(&serde_json::Value::Null)
+            .get_unspent_outputs(&gdk_common::model::GetUnspentOpt {
+                subaccount: ACCOUNT,
+                num_confs: Some(BALANCE_NUM_CONFS),
+                confidential_utxos_only: None,
+                all_coins: None,
+            })
             .map_err(|_| anyhow!("getting unspent outputs failed"))?;
         let asset_utxos = all_utxos
             .0
@@ -1025,15 +1150,14 @@ impl Data {
             Err(e) => bail!("request failed: {}", e.to_string()),
         };
 
-        let wallet = self.ctx.as_mut().expect("wallet must be set");
-        wallet.active_swap = Some(ActiveSwap {
+        let ctx = self.ctx.as_mut().expect("wallet must be set");
+        ctx.active_swap = Some(ActiveSwap {
             order_id: rfq_resp.order_id.clone(),
             send_asset: send_asset.asset_id.clone(),
             recv_asset: recv_asset.asset_id.clone(),
             send_amount: Amount::from_sat(send_amount),
             recv_amount_accepted: None,
             inputs: selected_utxos,
-            change_amount: Amount::from_sat(change_amount),
             network_fee: None,
         });
 
@@ -1048,12 +1172,13 @@ impl Data {
     }
 
     fn process_swap_request(&mut self, req: ffi::proto::to::SwapRequest) {
-        let result = if req.send_asset == self.liquid_asset_id
+        let result = if req.send_asset == self.liquid_asset_id.0
             && req.recv_asset == self.bitcoin_asset_id
         {
             self.process_pegout_request_local(req.clone())
                 .map(|v| ffi::proto::from::Msg::SwapReview(v))
-        } else if req.send_asset == self.bitcoin_asset_id && req.recv_asset == self.liquid_asset_id
+        } else if req.send_asset == self.bitcoin_asset_id
+            && req.recv_asset == self.liquid_asset_id.0
         {
             panic!("unexpected swap request");
         } else {
@@ -1141,6 +1266,7 @@ impl Data {
                     send_amount: None,
                     peg_in: false,
                     device_key: Some(device_key),
+                    blocks: Some(data.blocks),
                 }),
             };
             let is_peg_in = false;
@@ -1169,11 +1295,13 @@ impl Data {
             let mut details = gdk_common::model::CreateTransaction {
                 addressees: vec![amount],
                 fee_rate: None,
-                subaccount: None,
+                subaccount: ACCOUNT,
                 send_all: send_all_opt,
                 previous_transaction: HashMap::new(),
                 memo: None,
                 utxos: None,
+                num_confs: None,
+                confidential_utxos_only: None,
             };
             let tx_detail_unsigned = ctx
                 .session
@@ -1263,7 +1391,10 @@ impl Data {
         let wallet = self.ctx.as_mut().expect("wallet must be set");
         let addr = wallet
             .session
-            .get_receive_address(&serde_json::Value::Null)
+            .get_receive_address(&gdk_common::model::GetAddressOpt {
+                subaccount: ACCOUNT,
+                address_type: None,
+            })
             .expect("can't get new address")
             .address;
         let addr = ffi::proto::Address { addr };
@@ -1292,11 +1423,13 @@ impl Data {
         let mut details = gdk_common::model::CreateTransaction {
             addressees: vec![amount],
             fee_rate: None,
-            subaccount: None,
+            subaccount: ACCOUNT,
             send_all: send_all_opt,
             previous_transaction: HashMap::new(),
             memo: None,
             utxos: None,
+            num_confs: None,
+            confidential_utxos_only: None,
         };
         let tx_detail_unsigned = ctx
             .session
@@ -1340,12 +1473,21 @@ impl Data {
             .1
             .asset_id
             .clone();
-        let wallet = ctx.session.wallet.as_ref().expect("wallet must be set");
+        let wallet = ctx
+            .session
+            .wallet
+            .as_ref()
+            .expect("wallet must be set")
+            .read()
+            .unwrap();
         let store_read = wallet.store.read().expect("store must be set");
         let be_tx =
             gdk_common::be::BETransaction::from_hex(&tx_detail_signed.hex, wallet.network.id())
                 .expect("tx decode failed");
-        let is_redeposit = be_tx.is_redeposit(&store_read.cache.paths, &store_read.cache.all_txs);
+        let is_redeposit = be_tx.is_redeposit(
+            &store_read.cache.accounts.get(&ACCOUNT).unwrap().paths,
+            &store_read.cache.accounts.get(&ACCOUNT).unwrap().all_txs,
+        );
 
         let mut balances = Vec::new();
         if is_redeposit {
@@ -1450,7 +1592,8 @@ impl Data {
         let cache_path = self.cache_path();
         let cache_path = cache_path.to_str().expect("invalid data path");
 
-        let mut session = ElectrumSession::new_session(parsed_network, &cache_path, url).unwrap();
+        let mut session =
+            ElectrumSession::new_session(parsed_network, &cache_path, None, url).unwrap();
 
         session.notify = NativeNotif(Some((
             notification_callback,
@@ -1465,7 +1608,7 @@ impl Data {
 
         let ctx = Context {
             psbt: None,
-            psbt_keys: None,
+            psbt_utxos: None,
             session,
             sent_txs: BTreeMap::new(),
             pegs: BTreeMap::new(),
@@ -1476,21 +1619,36 @@ impl Data {
             active_swap: None,
             internal_peg: None,
             active_extern_peg: None,
+            active_submit: None,
+            active_sign: None,
+            succeed_swap: None,
+            sync_complete: false,
+            wallet_loaded_sent: false,
         };
 
         self.ctx = Some(ctx);
 
+        if self.skip_wallet_sync() {
+            info!("skip wallet sync delay");
+            self.send_wallet_loaded();
+        }
+
+        self.process_pending_requests();
         self.update_tx_list();
         self.resume_peg_monitoring();
         self.update_address_registrations();
+    }
+
+    fn restart_websocket(&mut self) {
+        self.connected = false;
+        self.ws_sender.send(ws::WrappedRequest::Restart).unwrap();
     }
 
     fn process_logout_request(&mut self) {
         debug!("process logout request...");
         self.ctx = None;
         self.settings = settings::Settings::default();
-        self.connected = false;
-        self.ws_sender.send(ws::WrappedRequest::Restart).unwrap();
+        self.restart_websocket();
         self.save_settings();
     }
 
@@ -1634,45 +1792,169 @@ impl Data {
             .unwrap();
     }
 
-    fn try_process_link_order(
+    fn try_process_submit_order(
         &mut self,
-        req: ffi::proto::to::LinkOrder,
+        req: ffi::proto::to::SubmitOrder,
     ) -> Result<(), anyhow::Error> {
-        let order_id = OrderId(req.order_id);
+        let order = PriceOrder {
+            asset: AssetId(req.asset_id),
+            bitcoin_amount: req.bitcoin_amount,
+            price: Some(req.price),
+            index_price: req.index_price,
+        };
+        let submit_req = SubmitRequest {
+            order,
+            session_id: Some(req.session_id),
+        };
+        let resp = send_request!(self, Submit, submit_req)?;
+
+        self.mobile_submits.insert(resp.order_id.clone());
+        self.try_process_link_order(resp.order_id)
+    }
+
+    fn try_process_link_order(&mut self, order_id: OrderId) -> Result<(), anyhow::Error> {
         let link_req = LinkRequest {
             order_id: order_id.clone(),
         };
         let resp = send_request!(self, Link, link_req)?;
-
-        // TODO: Show user prompt to verify details
-
-        let side = resp.side;
-        let (send_asset, send_amount, recv_asset) = match side {
-            OrderSide::Requestor => (
-                resp.order.req_asset,
-                resp.order.req_amount,
-                resp.order.resp_asset,
-            ),
-            OrderSide::Responder => (
-                resp.order.resp_asset,
-                resp.order.resp_amount,
-                resp.order.req_asset,
-            ),
-        };
+        let details = &resp.details;
 
         let ctx = self.ctx.as_ref().ok_or(anyhow!("no context found"))?;
+        let (send_amount, send_asset) = if details.send_bitcoins {
+            (
+                details.bitcoin_amount + details.server_fee,
+                &self.liquid_asset_id,
+            )
+        } else {
+            (details.asset_amount, &details.asset)
+        };
+        let available_balance = ctx
+            .last_balances
+            .get(send_asset)
+            .cloned()
+            .unwrap_or_default();
+        ensure!(
+            available_balance.to_sat() >= send_amount,
+            "Insufficient funds"
+        );
+
+        let step = if details.side == OrderSide::Requestor {
+            ffi::proto::from::submit_review::Step::Submit
+        } else {
+            ffi::proto::from::submit_review::Step::Quote
+        };
+        let submit_review = ffi::proto::from::SubmitReview {
+            order_id: order_id.0.clone(),
+            asset: details.asset.0.clone(),
+            bitcoin_amount: details.bitcoin_amount,
+            asset_amount: details.asset_amount,
+            price: details.price,
+            sell_bitcoin: details.send_bitcoins,
+            server_fee: details.server_fee,
+            step: step as i32,
+            index_price: resp.index_price,
+        };
+        self.from_sender
+            .send(ffi::proto::from::Msg::SubmitReview(submit_review))
+            .unwrap();
+        self.visible_submit = Some(order_id.clone());
+        let ctx = self.ctx.as_mut().ok_or(anyhow!("no context found"))?;
+        ctx.active_submit = Some(resp);
+        Ok(())
+    }
+
+    fn process_submit_order(&mut self, req: ffi::proto::to::SubmitOrder) {
+        // Fix problem with iOS when app is resumed from background
+        self.restart_websocket();
+        self.pending_submits.push(req);
+        self.process_pending_requests();
+    }
+
+    fn process_link_order(&mut self, req: ffi::proto::to::LinkOrder) {
+        self.pending_links.push(req);
+        self.process_pending_requests();
+    }
+
+    fn try_process_submit_decision(
+        &mut self,
+        req: ffi::proto::to::SubmitDecision,
+    ) -> Result<bool, anyhow::Error> {
+        if !req.accept {
+            return Ok(true);
+        }
+        let ctx = self.ctx.as_mut().ok_or(anyhow!("no context found"))?;
+        let is_sign = ctx
+            .active_sign
+            .as_ref()
+            .map(|sign| sign.order_id.0 == req.order_id)
+            .unwrap_or(false);
+        if is_sign {
+            let sign_msg = ctx.active_sign.take().unwrap();
+            return self.try_sign(sign_msg);
+        }
+        let resp = ctx.active_submit.take().ok_or(anyhow!("data not found"))?;
+        let index_price = resp.index_price;
+        let details = resp.details;
+        let side = details.side;
+        let order_id = OrderId(req.order_id);
+        let bitcoin_amount = Amount::from_sat(details.bitcoin_amount);
+        let asset = self
+            .assets
+            .get(&details.asset)
+            .ok_or(anyhow!("unknown asset"))?;
+        ensure!(asset.asset_id.0 != self.bitcoin_asset_id);
+        ensure!(details.price > 0.0);
+        ensure!(details.bitcoin_amount > 0);
+        ensure!(details.server_fee > 0);
+        ensure!(details.server_fee < details.bitcoin_amount);
+        let expected_asset_amount =
+            types::asset_amount(bitcoin_amount.to_sat(), details.price, asset.precision);
+        ensure!(expected_asset_amount == details.asset_amount);
+        let asset_amount = Amount::from_sat(details.asset_amount);
+        let bitcoin_asset = self.liquid_asset_id.clone();
+        let (send_asset, send_amount, recv_asset) = if details.send_bitcoins {
+            (
+                bitcoin_asset,
+                details.bitcoin_amount + details.server_fee,
+                details.asset.clone(),
+            )
+        } else {
+            (details.asset.clone(), asset_amount.to_sat(), bitcoin_asset)
+        };
+
         let mut all_utxos = ctx
             .session
-            .get_unspent_outputs(&serde_json::Value::Null)
+            .get_unspent_outputs(&gdk_common::model::GetUnspentOpt {
+                subaccount: ACCOUNT,
+                num_confs: Some(BALANCE_NUM_CONFS),
+                confidential_utxos_only: None,
+                all_coins: None,
+            })
             .map_err(|_| anyhow!("getting unspent outputs failed"))?;
-        let mut asset_utxos = all_utxos
+        let all_asset_utxos = all_utxos
             .0
             .remove(&send_asset.0)
-            .ok_or_else(|| anyhow!("not enough UTXO"))?;
+            .ok_or_else(|| anyhow!("Insufficient funds"))?;
+        let reserved_txouts = self
+            .submit_data
+            .values()
+            .flat_map(|item| item.txouts.iter())
+            .collect::<BTreeSet<_>>();
+        let filtered_utxos = all_asset_utxos
+            .iter()
+            .filter(|utxo| reserved_txouts.get(&get_tx_out(utxo)).is_none())
+            .cloned()
+            .collect::<Vec<_>>();
+        let filtered_amount = filtered_utxos.iter().map(|utxo| utxo.satoshi).sum::<u64>() as i64;
+        let mut asset_utxos = if filtered_amount >= send_amount {
+            filtered_utxos
+        } else {
+            all_asset_utxos
+        };
 
         let utxo_amounts: Vec<_> = asset_utxos.iter().map(|v| v.satoshi as i64).collect();
         let total: i64 = utxo_amounts.iter().sum();
-        ensure!(total >= send_amount, "not enough UTXO");
+        ensure!(total >= send_amount, "Insufficient funds");
 
         let selected = types::select_utxo(utxo_amounts, send_amount);
         let selected_amount: i64 = selected.iter().cloned().sum();
@@ -1688,23 +1970,37 @@ impl Data {
         }
 
         let psbt_info = PsbtInfo {
-            send_asset: send_asset.0,
+            send_asset: send_asset.0.clone(),
             recv_asset: recv_asset.0,
             recv_amount: 0,
-            change_amount: 0,
-            utxos: selected_utxos,
+            send_amount: selected_amount,
         };
+        let pset = generate_psbt(
+            &ctx.session.wallet.as_ref().unwrap().read().unwrap(),
+            &psbt_info,
+            &selected_utxos,
+            ACCOUNT,
+        )?;
 
-        let (pset, keys) = generate_psbt(&ctx.session, &psbt_info)?;
+        let txouts = selected_utxos
+            .iter()
+            .map(get_tx_out)
+            .collect::<BTreeSet<_>>();
 
         let recv_addr = ctx
             .session
-            .get_receive_address(&serde_json::Value::Null)
+            .get_receive_address(&gdk_common::model::GetAddressOpt {
+                subaccount: ACCOUNT,
+                address_type: None,
+            })
             .unwrap()
             .address;
         let change_addr = ctx
             .session
-            .get_receive_address(&serde_json::Value::Null)
+            .get_receive_address(&gdk_common::model::GetAddressOpt {
+                subaccount: ACCOUNT,
+                address_type: None,
+            })
             .unwrap()
             .address;
 
@@ -1713,57 +2009,261 @@ impl Data {
             pset,
             recv_addr,
             change_addr,
+            price: details.price,
         };
         send_request!(self, Addr, addr_req)?;
 
-        self.submit_data = Some(SubmitData {
-            order_id,
+        let bitcoin_amount = Amount::from_sat(details.bitcoin_amount);
+        let sell_bitcoin = details.send_bitcoins;
+        let price = details.price;
+        let server_fee = Amount::from_sat(details.server_fee);
+        let auto_sign = req.auto_sign.unwrap_or(false) && side == OrderSide::Requestor;
+
+        let submit_data = SubmitData {
+            order_id: order_id.clone(),
             side,
-            keys,
-        });
+            asset: details.asset,
+            bitcoin_amount,
+            asset_amount,
+            server_fee,
+            price,
+            sell_bitcoin,
+            txouts,
+            asset_precision: asset.precision,
+            auto_sign,
+            txid: None,
+            index_price,
+        };
+        self.submit_data
+            .insert(submit_data.order_id.clone(), submit_data);
+        let done = side == OrderSide::Requestor;
 
-        Ok(())
-    }
-
-    fn process_link_order(&mut self, req: ffi::proto::to::LinkOrder) {
-        let result = self.try_process_link_order(req);
-        match result {
-            Ok(_) => self.show_message("submit succeed"),
-            Err(e) => self.show_message(&format!("failed: {}", e.to_string())),
+        let stored_utxo = settings::StoredUtxo {
+            utxos: selected_utxos,
+            created_at: std::time::SystemTime::now(),
+        };
+        if side == OrderSide::Requestor {
+            self.settings
+                .utxos_req
+                .get_or_insert_with(|| BTreeMap::new())
+                .insert(order_id, stored_utxo);
+            self.save_settings();
+        } else {
+            self.utxos_resp.insert(order_id, stored_utxo);
         }
+
+        Ok(done)
     }
 
-    fn try_process_sign(&mut self, msg: SignNotification) -> Result<(), anyhow::Error> {
-        let order_id = msg.order_id;
+    fn process_submit_decision(&mut self, req: ffi::proto::to::SubmitDecision) {
+        let order_id = OrderId(req.order_id.clone());
+        let minimize_app = self.mobile_submits.remove(&order_id);
+        let result = self.try_process_submit_decision(req);
+        let result = match result {
+            Ok(true) => {
+                ffi::proto::from::submit_result::Result::SubmitSucceed(ffi::proto::Empty {})
+            }
+            Ok(false) => {
+                // TODO: Add timer
+                return;
+            }
+            Err(e) => {
+                error!("submit failed: {}", e);
+                ffi::proto::from::submit_result::Result::Error(e.to_string())
+            }
+        };
+        let from = ffi::proto::from::SubmitResult {
+            result: Some(result),
+            minimize_app,
+        };
+        self.from_sender
+            .send(ffi::proto::from::Msg::SubmitResult(from))
+            .unwrap();
+        self.visible_submit = None;
+        self.process_pending_sign_requests();
+    }
+
+    fn try_sign(&mut self, msg: SignNotification) -> Result<bool, anyhow::Error> {
         let ctx = self.ctx.as_ref().ok_or_else(|| anyhow!("no wallet"))?;
         let submit_data = self
             .submit_data
-            .as_ref()
-            .ok_or_else(|| anyhow!("not keys found"))?;
-        ensure!(submit_data.order_id == order_id, "unexpected order_id");
+            .get(&msg.order_id)
+            .ok_or_else(|| anyhow!("no keys found"))?;
+        ensure!(submit_data.order_id == msg.order_id, "unexpected order_id");
         let pset = msg.pset;
+        let psbt_info = if submit_data.sell_bitcoin {
+            PsbtInfo {
+                send_asset: self.liquid_asset_id.clone().0,
+                recv_asset: submit_data.asset.clone().0,
+                send_amount: (submit_data.bitcoin_amount + submit_data.server_fee).to_sat(),
+                recv_amount: submit_data.asset_amount.to_sat(),
+            }
+        } else {
+            PsbtInfo {
+                send_asset: submit_data.asset.clone().0,
+                recv_asset: self.liquid_asset_id.clone().0,
+                send_amount: submit_data.asset_amount.to_sat(),
+                recv_amount: (submit_data.bitcoin_amount - submit_data.server_fee).to_sat(),
+            }
+        };
+
+        let utxos = if msg.details.side == OrderSide::Requestor {
+            let utxos = self
+                .settings
+                .utxos_req
+                .get_or_insert_with(|| BTreeMap::new())
+                .remove(&msg.order_id);
+            self.save_settings();
+            utxos
+        } else {
+            self.utxos_resp.remove(&msg.order_id)
+        };
+        let utxos = utxos.ok_or_else(|| anyhow!("not utxos found"))?;
+
         let signed_pset = sign_psbt(
+            &ctx.session.wallet.as_ref().unwrap().read().unwrap(),
+            &psbt_info,
+            &utxos.utxos,
             &pset,
-            &ctx.session.wallet.as_ref().unwrap(),
-            &submit_data.keys,
+            ACCOUNT,
         )?;
         send_request!(
             self,
             Sign,
             SignRequest {
-                order_id: order_id.clone(),
+                order_id: msg.order_id.clone(),
                 signed_pset,
                 side: submit_data.side,
             }
         )?;
+        //self.show_message("sign succeed");
+        Ok(false)
+    }
+
+    fn try_process_sign(&mut self, msg: SignNotification) -> Result<(), anyhow::Error> {
+        self.processed_signs.insert(msg.order_id.clone());
+        let order_id = msg.order_id.clone();
+        let ctx = self.ctx.as_mut().ok_or_else(|| anyhow!("no wallet"))?;
+        let submit_data = self
+            .submit_data
+            .get_mut(&msg.order_id)
+            .ok_or_else(|| anyhow!("no keys found"))?;
+        ensure!(order_id == submit_data.order_id);
+        let price_change = f64::abs(msg.details.price - submit_data.price) / submit_data.price;
+        ensure!(submit_data.sell_bitcoin == msg.details.send_bitcoins);
+        ensure!(submit_data.asset == msg.details.asset);
+        ensure!(submit_data.bitcoin_amount.to_sat() == msg.details.bitcoin_amount);
+        ensure!(submit_data.server_fee.to_sat() == msg.details.server_fee);
+        ensure!(submit_data.side == msg.details.side);
+        ensure!(msg.details.price > 0.0);
+        ensure!(msg.details.asset_amount > 0);
+        ensure!(price_change == 0.0 || submit_data.side != OrderSide::Responder);
+        let expected_asset_amount = types::asset_amount(
+            submit_data.bitcoin_amount.to_sat(),
+            msg.details.price,
+            submit_data.asset_precision,
+        );
+        ensure!(expected_asset_amount == msg.details.asset_amount);
+        submit_data.price = msg.details.price;
+        submit_data.asset_amount = Amount::from_sat(msg.details.asset_amount);
+        // Maker: Auto-sign is only allowed if price do not change (or change within 10% for price tracking orders).
+        // Taker: Auto-sign is always used because price was already reviewed earlier (and can't change since that).
+        let allowed_price_change = if submit_data.index_price {
+            AUTO_SIGN_ALLOWED_INDEX_PRICE_CHANGE
+        } else {
+            0.0
+        };
+        let auto_sign_allowed = submit_data.side == OrderSide::Responder
+            || (submit_data.side == OrderSide::Requestor
+                && submit_data.auto_sign
+                && price_change <= allowed_price_change);
+        if !auto_sign_allowed {
+            let step = ffi::proto::from::submit_review::Step::Sign;
+            let submit_review = ffi::proto::from::SubmitReview {
+                order_id: order_id.0.clone(),
+                asset: submit_data.asset.clone().0,
+                bitcoin_amount: submit_data.bitcoin_amount.to_sat(),
+                asset_amount: submit_data.asset_amount.to_sat(),
+                price: submit_data.price,
+                server_fee: submit_data.server_fee.to_sat(),
+                sell_bitcoin: submit_data.sell_bitcoin,
+                step: step as i32,
+                index_price: false,
+            };
+            self.from_sender
+                .send(ffi::proto::from::Msg::SubmitReview(submit_review))
+                .unwrap();
+            self.visible_submit = Some(order_id.clone());
+            ctx.active_sign = Some(msg);
+        } else {
+            // Show swap tx after auto-sign
+            if self.visible_submit.is_none() && submit_data.side == OrderSide::Requestor {
+                self.visible_submit = Some(msg.order_id.clone());
+            }
+            self.try_sign(msg)?;
+        }
         Ok(())
     }
 
     fn process_sign(&mut self, msg: SignNotification) {
-        let result = self.try_process_sign(msg);
-        match result {
-            Ok(_) => self.show_message("sign succeed"),
-            Err(e) => self.show_message(&format!("sign failed: {}", e.to_string())),
+        if msg.details.side == OrderSide::Responder {
+            let result = self.try_process_sign(msg);
+            if let Err(e) = result {
+                self.show_message(&format!("sign failed: {}", e.to_string()));
+            }
+            return;
+        }
+
+        self.pending_sign_requests.push_back(msg);
+        self.process_pending_sign_requests();
+    }
+
+    fn process_pending_sign_requests(&mut self) {
+        loop {
+            if self.visible_submit.is_some() {
+                return;
+            }
+            let msg = self.pending_sign_requests.pop_front();
+            let msg = match msg {
+                Some(v) => v,
+                None => return,
+            };
+            if self.processed_signs.get(&msg.order_id).is_some() {
+                continue;
+            }
+            let result = self.try_process_sign(msg);
+            if let Err(e) = result {
+                self.show_message(&format!("sign failed: {}", e.to_string()));
+            }
+        }
+    }
+
+    fn process_complete(&mut self, msg: CompleteNotification) {
+        match msg.txid {
+            Some(v) => {
+                let submit_data = match self.submit_data.get_mut(&msg.order_id) {
+                    Some(v) => v,
+                    None => return,
+                };
+                submit_data.txid = Some(v)
+            }
+            None => {
+                if self.visible_submit.as_ref() == Some(&msg.order_id) {
+                    self.from_sender
+                        .send(ffi::proto::from::Msg::SubmitResult(
+                            ffi::proto::from::SubmitResult {
+                                result: Some(ffi::proto::from::submit_result::Result::Error(
+                                    "Order has been cancelled".to_owned(),
+                                )),
+                                minimize_app: false,
+                            },
+                        ))
+                        .unwrap();
+                    self.visible_submit = None;
+                    self.process_pending_sign_requests();
+                }
+                self.submit_data.remove(&msg.order_id);
+            }
         }
     }
 
@@ -1780,7 +2280,7 @@ impl Data {
 
         let started = std::time::Instant::now();
         loop {
-            let resp = self.resp_receiver.recv_timeout(SERVER_REQUEST_POOL_PERIOD);
+            let resp = self.resp_receiver.recv_timeout(SERVER_REQUEST_POLL_PERIOD);
             match resp {
                 Ok(ServerResp(Some(request_id), result)) => {
                     if request_id != active_request_id {
@@ -1815,12 +2315,147 @@ impl Data {
             .unwrap();
     }
 
+    fn process_push_message(&mut self, req: String) {
+        let msg = match serde_json::from_str::<FcmMessage>(&req) {
+            Ok(v) => v,
+            Err(e) => {
+                error!("parsing FCM message failed: {}", e);
+                return;
+            }
+        };
+        match msg {
+            FcmMessage::Sign(data) => {
+                info!("sign request received, order_id: {}", data.order_id);
+                self.pending_signs.insert(data.order_id);
+                self.process_pending_requests();
+            }
+            _ => {}
+        }
+    }
+
+    fn download_sign_request(&mut self, order_id: OrderId) -> Result<(), anyhow::Error> {
+        let sign = send_request!(
+            self,
+            GetSign,
+            GetSignRequest {
+                order_id: order_id.clone()
+            }
+        )?;
+
+        if self.submit_data.get(&order_id).is_none() {
+            let asset = self
+                .assets
+                .get(&sign.data.details.asset)
+                .ok_or(anyhow!("unknown asset"))?;
+            ensure!(asset.asset_id.0 != self.bitcoin_asset_id);
+            ensure!(sign.data.details.price > 0.0);
+            ensure!(sign.data.details.bitcoin_amount > 0);
+            ensure!(sign.data.details.server_fee > 0);
+            ensure!(sign.data.details.server_fee < sign.data.details.bitcoin_amount);
+            let expected_asset_amount = types::asset_amount(
+                sign.data.details.bitcoin_amount,
+                sign.data.details.price,
+                asset.precision,
+            );
+            ensure!(expected_asset_amount == sign.data.details.asset_amount);
+            let asset_amount = Amount::from_sat(sign.data.details.asset_amount);
+            let bitcoin_amount = Amount::from_sat(sign.data.details.bitcoin_amount);
+            let sell_bitcoin = sign.data.details.send_bitcoins;
+            let price = sign.data.details.price;
+            let server_fee = Amount::from_sat(sign.data.details.server_fee);
+
+            let submit_data = SubmitData {
+                order_id,
+                side: OrderSide::Requestor,
+                asset: sign.data.details.asset.clone(),
+                bitcoin_amount,
+                asset_amount,
+                server_fee,
+                price,
+                sell_bitcoin,
+                txouts: BTreeSet::new(),
+                asset_precision: asset.precision,
+                auto_sign: false,
+                txid: None,
+                index_price: false,
+            };
+            self.submit_data
+                .insert(submit_data.order_id.clone(), submit_data);
+        }
+
+        self.process_sign(sign.data);
+
+        Ok(())
+    }
+
+    fn skip_wallet_sync(&self) -> bool {
+        self.pending_submits.is_empty() && self.pending_links.is_empty()
+    }
+
+    fn process_pending_requests(&mut self) {
+        debug!(
+            "process pending requests, signs: {}, submits: {}, links: {}, connected: {}",
+            self.pending_signs.len(),
+            self.pending_submits.len(),
+            self.pending_links.len(),
+            self.connected,
+        );
+        if !self.connected {
+            return;
+        }
+        let ctx = match self.ctx.as_ref() {
+            Some(v) => v,
+            None => return,
+        };
+        let sync_complete = ctx.sync_complete;
+
+        let pending_signs = std::mem::replace(&mut self.pending_signs, BTreeSet::new());
+        for order_id in pending_signs.into_iter() {
+            if self.processed_signs.get(&order_id).is_none() {
+                let result = self.download_sign_request(order_id);
+                if let Err(e) = result {
+                    self.show_message(&format!("sign failed: {}", e));
+                }
+            }
+        }
+
+        if !sync_complete {
+            return;
+        }
+
+        let pending_submits = std::mem::replace(&mut self.pending_submits, Vec::new());
+        for req in pending_submits.into_iter() {
+            let result = self.try_process_submit_order(req);
+            if let Err(e) = result {
+                self.from_sender
+                    .send(ffi::proto::from::Msg::SubmitResult(
+                        ffi::proto::from::SubmitResult {
+                            result: Some(ffi::proto::from::submit_result::Result::Error(
+                                e.to_string(),
+                            )),
+                            minimize_app: true,
+                        },
+                    ))
+                    .unwrap();
+            }
+        }
+
+        let pending_links = std::mem::replace(&mut self.pending_links, Vec::new());
+        for req in pending_links.into_iter() {
+            let result = self.try_process_link_order(OrderId(req.order_id));
+            if let Err(e) = result {
+                self.show_message(&e.to_string());
+            }
+        }
+    }
+
     fn process_ui(&mut self, msg: ffi::ToMsg) {
         match msg {
             ffi::proto::to::Msg::Login(req) => self.process_login_request(req),
             ffi::proto::to::Msg::Logout(_) => self.process_logout_request(),
             ffi::proto::to::Msg::EncryptPin(req) => self.process_encrypt_pin(req),
             ffi::proto::to::Msg::DecryptPin(req) => self.process_decrypt_pin(req),
+            ffi::proto::to::Msg::PushMessage(req) => self.process_push_message(req),
             ffi::proto::to::Msg::PegRequest(_) => self.process_peg_request_external(),
             ffi::proto::to::Msg::SwapRequest(req) => self.process_swap_request(req),
             ffi::proto::to::Msg::SwapCancel(_) => self.process_swap_cancel(),
@@ -1835,7 +2470,9 @@ impl Data {
             ffi::proto::to::Msg::VerifyPhone(req) => self.process_verify_phone(req),
             ffi::proto::to::Msg::UploadAvatar(req) => self.process_upload_avatar(req),
             ffi::proto::to::Msg::UploadContacts(req) => self.process_upload_contacts(req),
+            ffi::proto::to::Msg::SubmitOrder(req) => self.process_submit_order(req),
             ffi::proto::to::Msg::LinkOrder(req) => self.process_link_order(req),
+            ffi::proto::to::Msg::SubmitDecision(req) => self.process_submit_decision(req),
         }
     }
 
@@ -1847,6 +2484,7 @@ impl Data {
             Notification::Swap(msg) => self.process_swap_notification(msg),
             Notification::PriceUpdate(msg) => self.process_price_update(msg),
             Notification::Sign(msg) => self.process_sign(msg),
+            Notification::Complete(msg) => self.process_complete(msg),
             _ => {}
         }
     }
@@ -1909,11 +2547,11 @@ impl Data {
         let request = match peg.dir {
             PegDir::In => Request::PegStatus(PegStatusRequest {
                 order_id: peg.order_id.clone(),
-                peg_in: true,
+                peg_in: None,
             }),
             PegDir::Out => Request::PegStatus(PegStatusRequest {
                 order_id: peg.order_id.clone(),
-                peg_in: false,
+                peg_in: None,
             }),
         };
         let active_request_id = ws::next_request_id();
@@ -1930,7 +2568,10 @@ impl Data {
         if self.connected {
             self.start_peg_monitoring(&peg);
         }
-        self.settings.pegs.push(peg);
+        self.settings
+            .pegs
+            .get_or_insert_with(|| Vec::new())
+            .push(peg);
         self.save_settings();
     }
 
@@ -1955,12 +2596,15 @@ impl Data {
         addr_type: AddrType,
         pointer: u32,
     ) -> String {
-        let addr_type = match addr_type {
-            AddrType::External => 0,
-            AddrType::Internal => 1,
+        let is_change = match addr_type {
+            AddrType::External => false,
+            AddrType::Internal => true,
         };
         let addr = wallet
-            .derive_address(&wallet.xpub, [addr_type, pointer])
+            .accounts
+            .get(&ACCOUNT)
+            .unwrap()
+            .derive_address(is_change, pointer)
             .expect("address derive must succeed");
         let addr = match addr {
             gdk_common::be::BEAddress::Bitcoin(_) => panic!("unexpected addr type"),
@@ -1975,10 +2619,18 @@ impl Data {
                 // Register in batches
                 let wallet = ctx.session.wallet.as_ref().expect("wallet must be set");
                 let indices = wallet
+                    .read()
+                    .unwrap()
+                    .accounts
+                    .get(&ACCOUNT)
+                    .unwrap()
                     .store
                     .read()
                     .expect("read store must succeed")
                     .cache
+                    .accounts
+                    .get(&ACCOUNT)
+                    .unwrap()
                     .indexes
                     .clone();
                 let last_external = self.settings.last_external.unwrap_or_default();
@@ -1994,10 +2646,18 @@ impl Data {
                 );
                 let mut addresses = std::vec::Vec::<String>::new();
                 for pointer in last_external..new_external {
-                    addresses.push(Data::get_address(wallet, AddrType::External, pointer));
+                    addresses.push(Data::get_address(
+                        &wallet.read().unwrap(),
+                        AddrType::External,
+                        pointer,
+                    ));
                 }
                 for pointer in last_internal..new_internal {
-                    addresses.push(Data::get_address(wallet, AddrType::Internal, pointer));
+                    addresses.push(Data::get_address(
+                        &wallet.read().unwrap(),
+                        AddrType::Internal,
+                        pointer,
+                    ));
                 }
                 if addresses.is_empty() {
                     break;
@@ -2090,16 +2750,10 @@ pub fn start_processing(
     let notif_context = Box::into_raw(notif_context);
 
     let settings_path = Data::data_path(env, &params.work_dir);
-    let settings = settings::load_settings(&settings_path).unwrap_or_default();
+    let mut settings = settings::load_settings(&settings_path).unwrap_or_default();
+    settings::prune(&mut settings);
 
-    let liquid_asset_id = match env {
-        Env::Prod | Env::Staging => {
-            "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d"
-        }
-        Env::Regtest => "2e16b12daf1244332a438e829ca7ce209195f8e1c54199770cd8b327710a8ab2",
-        Env::Local => "2684bbac0fa7ad544ec8eee43c35156346e5d641d24a4b9d5d8f183e3f2d8fb9",
-    }
-    .to_owned();
+    let liquid_asset_id = AssetId(types::env_data(env).bitcoin_asset_id.to_owned());
     let bitcoin_asset_id =
         "0000000000000000000000000000000000000000000000000000000000000000".to_owned();
 
@@ -2120,7 +2774,15 @@ pub fn start_processing(
         push_token: None,
         liquid_asset_id,
         bitcoin_asset_id,
-        submit_data: None,
+        submit_data: BTreeMap::new(),
+        pending_signs: BTreeSet::new(),
+        visible_submit: None,
+        processed_signs: BTreeSet::new(),
+        mobile_submits: BTreeSet::new(),
+        pending_sign_requests: std::collections::VecDeque::new(),
+        pending_submits: Vec::new(),
+        pending_links: Vec::new(),
+        utxos_resp: BTreeMap::new(),
     };
 
     if let Err(e) = state.load_assets() {

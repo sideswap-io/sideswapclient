@@ -1,16 +1,18 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:fixnum/fixnum.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/show_peg_info_widget.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
-import 'package:sideswap/protobuf/sideswap.pb.dart';
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 final swapProvider = ChangeNotifierProvider<SwapChangeNotifierProvider>(
     (ref) => SwapChangeNotifierProvider(ref.read));
@@ -26,6 +28,11 @@ enum SwapWallet {
   extern,
 }
 
+enum SwapState {
+  idle,
+  sent,
+}
+
 class SwapChangeNotifierProvider with ChangeNotifier {
   final Reader read;
 
@@ -33,6 +40,13 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   static const hidePegInInfo = 'hide_peg_in_info';
   static const hidePegOutInfo = 'hide_peg_out_info_new';
+
+  SwapState _swapState = SwapState.idle;
+  SwapState get swapState => _swapState;
+  set swapState(SwapState value) {
+    _swapState = value;
+    notifyListeners();
+  }
 
   bool _showInsufficientFunds = false;
   bool get showInsufficientFunds => _showInsufficientFunds;
@@ -44,18 +58,17 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
   }
 
-  String _swapSendAsset;
-  String get swapSendAsset => _swapSendAsset;
-  set swapSendAsset(String swapSendAsset) {
+  String? _swapSendAsset;
+  String? get swapSendAsset => _swapSendAsset;
+  set swapSendAsset(String? swapSendAsset) {
     _swapSendAsset = swapSendAsset;
     notifyListeners();
   }
 
-  String _swapRecvAsset;
+  String? _swapRecvAsset;
+  String? get swapRecvAsset => _swapRecvAsset;
 
-  String get swapRecvAsset => _swapRecvAsset;
-
-  set swapRecvAsset(String swapRecvAsset) {
+  set swapRecvAsset(String? swapRecvAsset) {
     _swapRecvAsset = swapRecvAsset;
     notifyListeners();
   }
@@ -81,50 +94,49 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int _swapSendAmount;
+  int _swapSendAmount = 0;
   int get swapSendAmount => _swapSendAmount;
   set swapSendAmount(int swapSendAmount) {
     _swapSendAmount = swapSendAmount;
     notifyListeners();
   }
 
-  int _swapRecvAmount;
+  int _swapRecvAmount = 0;
   int get swapRecvAmount => _swapRecvAmount;
   set swapRecvAmount(int swapRecvAmount) {
     _swapRecvAmount = swapRecvAmount;
     notifyListeners();
   }
 
-  int _swapNetworkFee;
+  int _swapNetworkFee = 0;
   int get swapNetworkFee => _swapNetworkFee;
   set swapNetworkFee(int swapNetworkFee) {
     _swapNetworkFee = swapNetworkFee;
     notifyListeners();
   }
 
-  String _swapRecvAddressExternal;
+  String _swapRecvAddressExternal = '';
   String get swapRecvAddressExternal => _swapRecvAddressExternal;
   set swapRecvAddressExternal(String swapRecvAddressExternal) {
     _swapRecvAddressExternal = swapRecvAddressExternal;
     notifyListeners();
   }
 
-  bool _swapActive = false;
-  bool get swapActive => _swapActive;
-  set swapActive(bool swapActive) {
-    _swapActive = swapActive;
-  }
+  bool swapActive = false;
 
-  String _swapNetworkError;
+  String _swapNetworkError = '';
   String get swapNetworkError => _swapNetworkError;
   set swapNetworkError(String swapNetworkError) {
     _swapNetworkError = swapNetworkError;
+    if (swapNetworkError.isNotEmpty) {
+      swapState = SwapState.idle;
+    }
     notifyListeners();
   }
 
-  String _swapPegAddressServer;
-  String get swapPegAddressServer => _swapPegAddressServer;
-  set swapPegAddressServer(String swapPegAddressServer) {
+  String? _swapPegAddressServer;
+  String? get swapPegAddressServer => _swapPegAddressServer;
+  set swapPegAddressServer(String? swapPegAddressServer) {
     _swapPegAddressServer = swapPegAddressServer;
     notifyListeners();
   }
@@ -141,7 +153,17 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   List<String> swapSendAssets() {
     final wallet = read(walletProvider);
     if (swapPeg) {
-      return [wallet.bitcoinAssetId(), wallet.liquidAssetId()];
+      final swapPegList = <String>[];
+
+      if (wallet.bitcoinAssetId() != null) {
+        swapPegList.add(wallet.bitcoinAssetId()!);
+      }
+
+      if (wallet.liquidAssetId() != null) {
+        swapPegList.add(wallet.liquidAssetId()!);
+      }
+
+      return swapPegList;
     }
     return wallet.assets.keys
         .where((element) => element != wallet.bitcoinAssetId())
@@ -151,14 +173,19 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   List<String> swapRecvAssets() {
     final wallet = read(walletProvider);
     if (swapPeg) {
-      if (swapSendAsset == wallet.liquidAssetId()) {
-        return [wallet.bitcoinAssetId()];
+      if (swapSendAsset == wallet.liquidAssetId() &&
+          wallet.bitcoinAssetId() != null) {
+        return [wallet.bitcoinAssetId()!];
+      } else if (wallet.liquidAssetId() != null) {
+        return [wallet.liquidAssetId()!];
       }
-      return [wallet.liquidAssetId()];
     }
-    if (swapSendAsset != wallet.liquidAssetId()) {
-      return [wallet.liquidAssetId()];
+
+    if (swapSendAsset != wallet.liquidAssetId() &&
+        wallet.liquidAssetId() != null) {
+      return [wallet.liquidAssetId()!];
     }
+
     return wallet.assets.keys
         .where((element) =>
             element != wallet.liquidAssetId() &&
@@ -186,16 +213,17 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       final msg = To();
       msg.pegRequest = Empty();
       read(walletProvider).sendMsg(msg);
+      swapState = SwapState.sent;
       return;
     }
 
     final maxBalance = swapSendWallet == SwapWallet.local
-        ? read(walletProvider).balances[swapSendAsset]
+        ? read(walletProvider).balances[swapSendAsset] ?? 0
         : kMaxCoins;
-    if (swapSendAmount == null ||
-        swapSendAmount <= 0 ||
-        swapSendAmount > maxBalance) {
-      read(utilsProvider).showErrorDialog('Please enter correct amount'.tr());
+    if (swapSendAmount <= 0 || swapSendAmount > maxBalance) {
+      await read(utilsProvider)
+          .showErrorDialog('Please enter correct amount'.tr());
+      swapState = SwapState.idle;
       return;
     }
 
@@ -203,14 +231,16 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       final addrType = swapAddrType(swapType());
       if (!read(walletProvider)
           .isAddrValid(swapRecvAddressExternal, addrType)) {
-        read(utilsProvider).showErrorDialog('PLEASE_ENTER_CORRECT_ADDRESS'
+        await read(utilsProvider).showErrorDialog('PLEASE_ENTER_CORRECT_ADDRESS'
             .tr(args: ['${addrTypeStr(addrType)}']));
+        swapState = SwapState.idle;
         return;
       }
     }
 
     if (!swapActive) {
-      read(utilsProvider).showErrorDialog('Nothing to accept');
+      await read(utilsProvider).showErrorDialog('Nothing to accept');
+      swapState = SwapState.idle;
       return;
     }
 
@@ -222,31 +252,36 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
     msg.swapAccept.recvAmount = Int64(recvAmount);
     read(walletProvider).sendMsg(msg);
-
-    swapReset();
+    swapState = SwapState.sent;
   }
 
-  void setSwapAmount(int amount) {
+  void setSwapAmount(int amount, int blocks) {
     swapCancel();
 
-    swapNetworkError = null;
+    swapNetworkError = '';
     notifyListeners();
 
-    if (amount == null || amount <= 0) {
+    if (amount <= 0) {
       return;
     }
 
-    var balanceAvailable = read(walletProvider).balances[swapSendAsset].toInt();
+    var balanceAvailable =
+        read(walletProvider).balances[swapSendAsset]?.toInt() ?? 0;
     if (swapSendWallet == SwapWallet.local && amount > balanceAvailable) {
       return;
+    }
+
+    if (swapSendAsset == null || swapRecvAsset == null) {
+      logger.w('Expected non null asset: $swapSendAsset and $swapRecvAsset');
     }
 
     swapActive = true;
     final msg = To();
     msg.swapRequest = To_SwapRequest();
-    msg.swapRequest.sendAsset = swapSendAsset;
-    msg.swapRequest.recvAsset = swapRecvAsset;
+    msg.swapRequest.sendAsset = swapSendAsset!;
+    msg.swapRequest.recvAsset = swapRecvAsset!;
     msg.swapRequest.sendAmount = Int64(amount);
+    msg.swapRequest.blocks = blocks;
     read(walletProvider).sendMsg(msg);
   }
 
@@ -298,16 +333,18 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     swapCancel();
 
     showInsufficientFunds = false;
-    swapNetworkError = null;
-    swapSendAmount = null;
-    swapRecvAmount = null;
-    swapNetworkFee = null;
+    swapNetworkError = '';
+    swapSendAmount = 0;
+    swapRecvAmount = 0;
+    swapNetworkFee = 0;
     notifyListeners();
+
+    swapState = SwapState.idle;
   }
 
   void swapCancel() {
-    swapRecvAmount = null;
-    swapNetworkFee = null;
+    swapRecvAmount = 0;
+    swapNetworkFee = 0;
     notifyListeners();
 
     if (swapActive) {
@@ -315,6 +352,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       final msg = To();
       msg.swapCancel = Empty();
       read(walletProvider).sendMsg(msg);
+      swapState = SwapState.idle;
     }
   }
 
@@ -322,10 +360,10 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     final sendAsset = read(walletProvider).assets[swapSendAsset];
     final recvAsset = read(walletProvider).assets[swapRecvAsset];
 
-    Asset nonBtcAsset;
+    Asset? nonBtcAsset;
     int btcAmount;
     int nonBtcAmount;
-    if (sendAsset.ticker == kLiquidBitcoinTicker) {
+    if (sendAsset?.ticker == kLiquidBitcoinTicker) {
       nonBtcAsset = recvAsset;
       nonBtcAmount = swapRecvAmount;
       btcAmount = swapSendAmount;
@@ -335,17 +373,17 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       btcAmount = swapRecvAmount;
     }
     var priceStr = '-';
-    if (btcAmount != null && nonBtcAmount != null && btcAmount != 0) {
+    if (btcAmount != 0) {
       final price = nonBtcAmount.toDouble() / btcAmount.toDouble();
-      priceStr = price.toStringAsFixed(nonBtcAsset.precision.toInt());
+      priceStr = price.toStringAsFixed(nonBtcAsset?.precision.toInt() ?? 0);
     }
-    return '1 ${kLiquidBitcoinTicker} = $priceStr ${nonBtcAsset.ticker}';
+    return '1 $kLiquidBitcoinTicker = $priceStr ${nonBtcAsset?.ticker ?? ''}';
   }
 
   String swapConversionRateStr() {
-    final rate = 100 * (swapRecvAmount ?? 0) / (swapSendAmount ?? 0);
+    final rate = 100 * (swapRecvAmount / swapSendAmount);
     final rateStr = rate.toStringAsFixed(1);
-    return '${rateStr}%';
+    return '$rateStr%';
   }
 
   List<SwapWallet> allowedSendWallets() {
@@ -357,7 +395,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       case SwapType.pegOut:
         return [SwapWallet.local];
     }
-    throw Exception('unexpected state');
   }
 
   List<SwapWallet> allowedRecvWallets() {
@@ -369,7 +406,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       case SwapType.pegOut:
         return [SwapWallet.extern];
     }
-    throw Exception('unexpected state');
   }
 
   void setSendRadioCb(SwapWallet v) {
@@ -421,7 +457,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       case AddrType.elements:
         return 'Liquid';
     }
-    throw Exception('unexpected value');
   }
 
   String swapTypeStr(SwapType swapType) {
@@ -433,7 +468,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       case SwapType.pegOut:
         return 'Peg-Out'.tr();
     }
-    throw Exception('unexpected value');
   }
 
   void showPegInInformation() async {
@@ -443,8 +477,14 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       return;
     }
 
+    final context = read(walletProvider).navigatorKey.currentContext;
+    if (context == null) {
+      logger.w('Context cannot be null');
+      return;
+    }
+
     await showDialog<void>(
-      context: read(walletProvider).navigatorKey.currentContext,
+      context: context,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -470,8 +510,14 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       return;
     }
 
+    final context = read(walletProvider).navigatorKey.currentContext;
+    if (context == null) {
+      logger.w('Context cannot be null');
+      return;
+    }
+
     await showDialog<void>(
-      context: read(walletProvider).navigatorKey.currentContext,
+      context: context,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -479,8 +525,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
           ),
           child: ShowPegInfoWidget(
             text: 'PEGOUT_WARNING'.tr(),
-            onChanged: (value) {
-              prefs.setBool(hidePegOutInfo, value);
+            onChanged: (value) async {
+              await prefs.setBool(hidePegOutInfo, value);
             },
           ),
         );

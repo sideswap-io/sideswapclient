@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class AssetSelectItem extends StatelessWidget {
-  final Asset asset;
+  final Asset? asset;
   AssetSelectItem({this.asset});
 
   @override
@@ -25,7 +26,7 @@ class AssetSelectItem extends StatelessWidget {
             onTap: () async {
               await context
                   .read(walletProvider)
-                  .toggleAssetVisibility(asset.assetId);
+                  .toggleAssetVisibility(asset?.assetId);
             },
             child: AbsorbPointer(
               child: Padding(
@@ -40,7 +41,7 @@ class AssetSelectItem extends StatelessWidget {
                           return Container(
                             width: 45.w,
                             height: 45.w,
-                            child: _assetImagesBig[asset.assetId],
+                            child: _assetImagesBig[asset?.assetId],
                           );
                         },
                       ),
@@ -53,7 +54,7 @@ class AssetSelectItem extends StatelessWidget {
                             Padding(
                               padding: EdgeInsets.only(bottom: 4.h),
                               child: Text(
-                                asset.name,
+                                asset?.name ?? '',
                                 style: GoogleFonts.roboto(
                                   fontSize: 17.sp,
                                   fontWeight: FontWeight.normal,
@@ -62,7 +63,7 @@ class AssetSelectItem extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              asset.ticker,
+                              asset?.ticker ?? '',
                               style: GoogleFonts.roboto(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.normal,
@@ -79,7 +80,7 @@ class AssetSelectItem extends StatelessWidget {
                         builder: (context, watch, child) {
                           final _selected = watch(configProvider)
                               .disabledAssetIds
-                              .contains(asset.assetId);
+                              .contains(asset?.assetId);
                           return FlutterSwitch(
                             value: !_selected,
                             onToggle: (val) {},

@@ -22,8 +22,8 @@ class CommaTextInputFormatter extends TextInputFormatter {
 
 // From https://stackoverflow.com/a/54456978
 class DecimalTextInputFormatter extends TextInputFormatter {
-  DecimalTextInputFormatter({this.decimalRange})
-      : assert(decimalRange == null || decimalRange > 0);
+  DecimalTextInputFormatter({required this.decimalRange})
+      : assert(decimalRange > 0);
 
   final int decimalRange;
 
@@ -35,28 +35,69 @@ class DecimalTextInputFormatter extends TextInputFormatter {
     var newSelection = newValue.selection;
     var truncated = newValue.text;
 
-    if (decimalRange != null) {
-      var value = newValue.text;
+    var value = newValue.text;
 
-      if (value.contains('.') &&
-          value.substring(value.indexOf('.') + 1).length > decimalRange) {
-        truncated = oldValue.text;
-        newSelection = oldValue.selection;
-      } else if (value == '.') {
-        truncated = '0.';
+    if (value.contains('.') &&
+        value.substring(value.indexOf('.') + 1).length > decimalRange) {
+      truncated = oldValue.text;
+      newSelection = oldValue.selection;
+    } else if (value == '.') {
+      truncated = '0.';
 
-        newSelection = newValue.selection.copyWith(
-          baseOffset: min(truncated.length, truncated.length + 1),
-          extentOffset: min(truncated.length, truncated.length + 1),
-        );
-      }
-
-      return TextEditingValue(
-        text: truncated,
-        selection: newSelection,
-        composing: TextRange.empty,
+      newSelection = newValue.selection.copyWith(
+        baseOffset: min(truncated.length, truncated.length + 1),
+        extentOffset: min(truncated.length, truncated.length + 1),
       );
     }
-    return newValue;
+
+    return TextEditingValue(
+      text: truncated,
+      selection: newSelection,
+      composing: TextRange.empty,
+    );
+  }
+}
+
+class DecimalCutterTextInputFormatter extends TextInputFormatter {
+  DecimalCutterTextInputFormatter(
+      {int decimalRange = 8,
+      int range = 8,
+      bool activatedNegativeValues = false})
+      : decimalRange = decimalRange {
+    final dp = decimalRange > 0 ? '([.][0-9]{0,$decimalRange}){0,1}' : '';
+    var number = '[0-9]*$dp';
+    if (range > 0) {
+      number = '([0-9]{0,$range})$dp';
+    }
+
+    if (activatedNegativeValues) {
+      _exp = RegExp('^((((-){0,1})|((-){0,1}[0-9]$number))){0,1}\$');
+    } else {
+      _exp = RegExp('^($number){0,1}\$');
+    }
+  }
+
+  late RegExp _exp;
+  int decimalRange;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (_exp.hasMatch(newValue.text)) {
+      return newValue;
+    }
+
+    final splitted = oldValue.text.split('.');
+    if (splitted.length > 1) {
+      splitted[1] = splitted[1].substring(0, decimalRange);
+      final changedText = '${splitted[0]}.${splitted[1]}';
+      return TextEditingValue(
+          text: changedText,
+          selection: TextSelection.fromPosition(
+              TextPosition(offset: changedText.length)));
+    }
+    return oldValue;
   }
 }

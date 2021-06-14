@@ -22,7 +22,10 @@ use std::os::raw::c_char;
 use std::sync::Once;
 use std::time::{Duration, SystemTime};
 
-use gdk_common::model::{GDKRUST_json, GetTransactionsOpt, SPVVerifyTx};
+use gdk_common::model::{
+    CreateAccountOpt, GDKRUST_json, GetNextAccountOpt, GetTransactionsOpt, RenameAccountOpt,
+    SPVVerifyTx, SetAccountHiddenOpt, UpdateAccountOpt,
+};
 use gdk_common::session::Session;
 
 use crate::error::Error;
@@ -33,6 +36,7 @@ use std::str::FromStr;
 
 pub const GA_OK: i32 = 0;
 pub const GA_ERROR: i32 = -1;
+pub const GA_NOT_AUTHORIZED: i32 = -5;
 
 pub struct GdkSession {
     pub backend: GdkBackend,
@@ -197,6 +201,7 @@ fn create_session(network: &Value) -> Result<GdkSession, Value> {
     let parsed_network = parsed_network.unwrap();
 
     let db_root = network["db_root"].as_str().unwrap_or("");
+    let proxy = network["proxy"].as_str();
 
     match network["server_type"].as_str() {
         // Some("rpc") => GDKRUST_session::Rpc( GDKRPC_session::create_session(parsed_network.unwrap()).unwrap() ),
@@ -204,8 +209,8 @@ fn create_session(network: &Value) -> Result<GdkSession, Value> {
             let url = gdk_electrum::determine_electrum_url_from_net(&parsed_network)
                 .map_err(|x| json!(x))?;
 
-            let session =
-                ElectrumSession::new_session(parsed_network, db_root, url).map_err(|x| json!(x))?;
+            let session = ElectrumSession::new_session(parsed_network, db_root, proxy, url)
+                .map_err(|x| json!(x))?;
             let backend = GdkBackend::Electrum(session);
 
             // some time in the past
@@ -228,12 +233,17 @@ fn fetch_cached_exchange_rates(sess: &mut GdkSession) -> Option<Vec<Ticker>> {
         debug!("hit exchange rate cache");
     } else {
         info!("missed exchange rate cache");
-        let rates = fetch_exchange_rates();
-        // still record time even if we get no results
-        sess.last_xr_fetch = SystemTime::now();
-        if !rates.is_empty() {
-            // only set last_xr if we got new non-empty rates
-            sess.last_xr = Some(rates);
+        let agent = match sess.backend {
+            GdkBackend::Electrum(ref s) => s.build_request_agent(),
+        };
+        if let Ok(agent) = agent {
+            let rates = fetch_exchange_rates(agent);
+            // still record time even if we get no results
+            sess.last_xr_fetch = SystemTime::now();
+            if !rates.is_empty() {
+                // only set last_xr if we got new non-empty rates
+                sess.last_xr = Some(rates);
+            }
         }
     }
 
@@ -275,9 +285,13 @@ pub extern "C" fn GDKRUST_call_session(
         // GdkSession::Rpc(ref s) => handle_call(s, method),
     };
 
-    let mut res_string = format!("{:?}", res);
-    res_string.truncate(200);
-    info!("GDKRUST_call_session {} output {:?}", method, res_string);
+    let mut output_redacted = if method == "get_mnemonic" {
+        "redacted".to_string()
+    } else {
+        format!("{:?}", res)
+    };
+    output_redacted.truncate(200);
+    info!("GDKRUST_call_session {} output {:?}", method, output_redacted);
 
     match res {
         Ok(ref val) => json_res!(output, val, GA_OK),
@@ -285,8 +299,9 @@ pub extern "C" fn GDKRUST_call_session(
             let code = e.to_gdk_code();
             let desc = e.gdk_display();
 
-            let ret_val = match code.as_str() {
-                "id_invalid_pin" => -5,
+            let ret_val = match e {
+                Error::Electrum(gdk_electrum::error::Error::InvalidPin) => GA_NOT_AUTHORIZED,
+                Error::Electrum(gdk_electrum::error::Error::PinError) => GA_ERROR,
                 _ => GA_OK,
             };
 
@@ -314,9 +329,9 @@ pub extern "C" fn GDKRUST_set_notification_handler(
     GA_OK
 }
 
-fn fetch_exchange_rates() -> Vec<Ticker> {
+fn fetch_exchange_rates(agent: ureq::Agent) -> Vec<Ticker> {
     if let Ok(result) =
-        ureq::get("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD").call().into_json()
+        agent.get("https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD").call().into_json()
     {
         if let Value::Array(array) = result {
             if let Some(Value::Array(array)) = array.get(0) {
@@ -375,13 +390,43 @@ where
 
         "get_subaccount" => get_subaccount(session, input),
 
+        "create_subaccount" => {
+            let opt: CreateAccountOpt = serde_json::from_value(input.clone())?;
+            session
+                .create_subaccount(opt)
+                .map(|x| serialize::subaccount_value(&x))
+                .map_err(Into::into)
+        }
+        "get_next_subaccount" => {
+            let opt: GetNextAccountOpt = serde_json::from_value(input.clone())?;
+            session
+                .get_next_subaccount(opt)
+                .map(|next_subaccount| json!(next_subaccount))
+                .map_err(Into::into)
+        }
+        "rename_subaccount" => {
+            let opt: RenameAccountOpt = serde_json::from_value(input.clone())?;
+            session.rename_subaccount(opt).map(|_| json!(true)).map_err(Into::into)
+        }
+        "set_subaccount_hidden" => {
+            let opt: SetAccountHiddenOpt = serde_json::from_value(input.clone())?;
+            session.set_subaccount_hidden(opt).map(|_| json!(true)).map_err(Into::into)
+        }
+        "update_subaccount" => {
+            let opt: UpdateAccountOpt = serde_json::from_value(input.clone())?;
+            session.update_subaccount(opt).map(|_| json!(true)).map_err(Into::into)
+        }
+
         "get_transactions" => {
             let opt: GetTransactionsOpt = serde_json::from_value(input.clone())?;
             session.get_transactions(&opt).map(|x| txs_result_value(&x)).map_err(Into::into)
         }
 
         "get_transaction_details" => get_transaction_details(session, input),
-        "get_balance" => serialize::get_balance(session, input),
+        "get_balance" => session
+            .get_balance(&serde_json::from_value(input.clone())?)
+            .map(|v| json!(v))
+            .map_err(Into::into),
         "set_transaction_memo" => set_transaction_memo(session, input),
         "create_transaction" => serialize::create_transaction(session, input),
         "sign_transaction" => session
@@ -403,17 +448,16 @@ where
 
         "get_receive_address" => {
             let a = session
-                .get_receive_address(input)
+                .get_receive_address(&serde_json::from_value(input.clone())?)
                 .map(|x| serde_json::to_value(&x).unwrap())
                 .map_err(Into::into);
             info!("gdk_rust get_receive_address returning {:?}", a);
             a
         }
 
-        "get_mnemonic" => session
-            .get_mnemonic()
-            .map(|m| Value::String(m.clone().get_mnemonic_str()))
-            .map_err(Into::into),
+        "get_mnemonic" => {
+            session.get_mnemonic().map(|m| Value::String(m.get_mnemonic_str())).map_err(Into::into)
+        }
 
         "get_fee_estimates" => {
             session.get_fee_estimates().map_err(Into::into).and_then(|x| fee_estimate_values(&x))
@@ -430,9 +474,10 @@ where
             .refresh_assets(&serde_json::from_value(input.clone())?)
             .map(|v| json!(v))
             .map_err(Into::into),
-        "get_unspent_outputs" => {
-            session.get_unspent_outputs(input).map(|v| json!(v)).map_err(Into::into)
-        }
+        "get_unspent_outputs" => session
+            .get_unspent_outputs(&serde_json::from_value(input.clone())?)
+            .map(|v| json!(v))
+            .map_err(Into::into),
 
         // "auth_handler_get_status" => Ok(auth_handler.to_json()),
         _ => Err(Error::Other(format!("handle_call method not found: {}", method))),

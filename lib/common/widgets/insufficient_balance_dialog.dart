@@ -1,16 +1,22 @@
-import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
-void showInsufficientBalanceDialog(BuildContext context, String ticker) {
+void showInsufficientBalanceDialog(BuildContext? context, String ticker) {
+  if (context == null) {
+    logger.w('Context is null');
+    return;
+  }
+
   showDialog<void>(
-    context: context.read(walletProvider).navigatorKey.currentContext,
+    context: context,
     builder: (BuildContext context) {
       return Dialog(
         insetPadding: EdgeInsets.zero,
@@ -83,13 +89,7 @@ void showInsufficientBalanceDialog(BuildContext context, String ticker) {
                   text: 'SWAP NOW'.tr(),
                   backgroundColor: Color(0xFF00C5FF),
                   onPressed: () {
-                    Navigator.of(
-                            context
-                                .read(walletProvider)
-                                .navigatorKey
-                                .currentContext,
-                            rootNavigator: true)
-                        .pop();
+                    Navigator.of(context, rootNavigator: true).pop();
 
                     context.read(swapProvider).selectSwap();
                   },
@@ -102,13 +102,7 @@ void showInsufficientBalanceDialog(BuildContext context, String ticker) {
                     text: 'CANCEL'.tr(),
                     backgroundColor: Colors.transparent,
                     onPressed: () async {
-                      Navigator.of(
-                              context
-                                  .read(walletProvider)
-                                  .navigatorKey
-                                  .currentContext,
-                              rootNavigator: true)
-                          .pop();
+                      Navigator.of(context, rootNavigator: true).pop();
                     },
                   ),
                 ),

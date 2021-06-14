@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:path_drawing/path_drawing.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 String svgPath =

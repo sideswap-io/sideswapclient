@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:another_flushbar/flushbar.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/permission_handler.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_button.dart';
@@ -15,9 +18,9 @@ import 'package:sideswap/models/wallet.dart';
 
 class AddressQrScanner extends StatefulWidget {
   final ValueChanged<QrCodeResult> resultCb;
-  final QrCodeAddressType expectedAddress;
+  final QrCodeAddressType? expectedAddress;
 
-  AddressQrScanner({this.resultCb, this.expectedAddress});
+  AddressQrScanner({required this.resultCb, this.expectedAddress});
 
   @override
   State<StatefulWidget> createState() =>
@@ -25,17 +28,49 @@ class AddressQrScanner extends StatefulWidget {
 }
 
 class _AddressQrScannerState extends State<AddressQrScanner> {
-  QRViewController _qrController;
+  QRViewController? _qrController;
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
   final ValueChanged<QrCodeResult> resultCb;
 
-  _AddressQrScannerState({this.resultCb});
+  _AddressQrScannerState({required this.resultCb});
   bool done = false;
+  bool hasCameraPermission = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+  }
+
+  void afterBuild(BuildContext context) async {
+    if (!await PermissionHandler.hasCameraPermission()) {
+      hasCameraPermission = await PermissionHandler.requestCameraPermission();
+    } else {
+      hasCameraPermission = true;
+    }
+
+    setState(() {});
+
+    if (!hasCameraPermission) {
+      logger.w('Requesting camera permission failed');
+      await popup();
+    }
+  }
 
   Future<bool> popup() async {
     done = true;
     Navigator.of(context).pop();
     return true;
+  }
+
+  @override
+  void reassemble() {
+    super.reassemble();
+    if (Platform.isAndroid) {
+      _qrController?.pauseCamera();
+    } else if (Platform.isIOS) {
+      _qrController?.resumeCamera();
+    }
   }
 
   @override
@@ -56,33 +91,42 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
       body: SafeArea(
         child: Stack(
           children: <Widget>[
-            QRView(
-              key: _qrKey,
-              onQRViewCreated: (value) {
-                _onQrViewCreated(value, widget.expectedAddress);
-              },
-              overlay: QrScannerOverlayShape(
-                borderColor: Colors.white,
-                borderRadius: 10,
-                borderLength: 30,
-                borderWidth: 5,
-                cutOutSize: 250,
+            if (hasCameraPermission) ...[
+              QRView(
+                key: _qrKey,
+                onQRViewCreated: (value) {
+                  _onQrViewCreated(value, widget.expectedAddress);
+                },
+                onPermissionSet: onPermissionSet,
+                overlay: QrScannerOverlayShape(
+                  borderColor: Colors.white,
+                  borderRadius: 10,
+                  borderLength: 30,
+                  borderWidth: 5,
+                  cutOutSize: 250,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),
     );
   }
 
+  void onPermissionSet(QRViewController controller, bool isPermissionSet) {
+    if (!isPermissionSet) {
+      popup();
+    }
+  }
+
   void _onQrViewCreated(
-      QRViewController controller, QrCodeAddressType expectedAddress) {
+      QRViewController controller, QrCodeAddressType? expectedAddress) {
     _qrController = controller;
 
-    String input;
+    var input = '';
     controller.scannedDataStream.where((e) {
-      final ret = e != input;
-      input = e;
+      final ret = e.code != input;
+      input = e.code;
       return ret;
     }).listen((scanData) async {
       Future<void>.delayed(Duration(seconds: 2), () {
@@ -91,17 +135,17 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
 
       if (!done) {
         done = true;
-        logger.d('Scanned data: $scanData');
+        logger.d('Scanned data: ${scanData.code}');
         final result =
-            context.read(qrcodeProvider).parseDynamicQrCode(scanData);
+            context.read(qrcodeProvider).parseDynamicQrCode(scanData.code);
         if (result.error != null) {
           final flushbar = Flushbar<Widget>(
             messageText: Text(
-              result.errorMessage,
+              result.errorMessage ?? '',
               style: Theme.of(context)
                   .textTheme
                   .bodyText1
-                  .copyWith(color: Colors.white),
+                  ?.copyWith(color: Colors.white),
             ),
             duration: Duration(seconds: 3),
             backgroundColor: Color(0xFF135579),
@@ -120,7 +164,7 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
               style: Theme.of(context)
                   .textTheme
                   .bodyText1
-                  .copyWith(color: Colors.white),
+                  ?.copyWith(color: Colors.white),
             ),
             duration: Duration(seconds: 3),
             backgroundColor: Color(0xFF135579),
@@ -132,10 +176,7 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
           return;
         }
 
-        if (resultCb != null) {
-          resultCb(result);
-        }
-
+        resultCb(result);
         await popup();
       }
     });
@@ -152,7 +193,7 @@ class ShareTxidButtons extends StatelessWidget {
   final bool isLiquid;
   final String txid;
 
-  ShareTxidButtons({@required this.txid, @required this.isLiquid});
+  ShareTxidButtons({required this.txid, required this.isLiquid});
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +228,7 @@ class ShareTxidButtons extends StatelessWidget {
 
 class ShareAddress extends StatelessWidget {
   ShareAddress({
-    @required this.addr,
+    required this.addr,
   });
 
   final String addr;
@@ -213,7 +254,7 @@ class ShareAddress extends StatelessWidget {
 class CopyButton extends StatelessWidget {
   final String value;
 
-  CopyButton({@required this.value});
+  CopyButton({required this.value});
 
   @override
   Widget build(BuildContext context) {

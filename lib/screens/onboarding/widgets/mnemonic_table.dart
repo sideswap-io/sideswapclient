@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class MnemonicTable extends StatelessWidget {
   const MnemonicTable({
-    Key key,
-    @required this.onCheckField,
+    Key? key,
+    required this.onCheckField,
     this.onTapIndex,
-    @required this.onCheckError,
-    @required this.currentSelectedItem,
-    @required this.words,
+    required this.onCheckError,
+    required this.currentSelectedItem,
+    required this.words,
   }) : super(key: key);
 
   final bool Function(int index) onCheckField;
-  final void Function(int index) onTapIndex;
+  final void Function(int index)? onTapIndex;
   final bool Function(int index) onCheckError;
   final int currentSelectedItem;
   final List<ValueNotifier<String>> words;
@@ -42,7 +43,7 @@ class MnemonicTable extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     if (onTapIndex != null) {
-                      onTapIndex(index);
+                      onTapIndex!(index);
                     }
                   },
                   child: Container(

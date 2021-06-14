@@ -1,6 +1,5 @@
 use crate::Error;
 use aes::Aes256;
-use bitcoin::hashes::core::fmt::Formatter;
 use bitcoin::hashes::hex::FromHex;
 use bitcoin::hashes::{sha256, Hash, HashEngine, Hmac, HmacEngine};
 use bitcoin::secp256k1::{self, ecdh, All, Message, Secp256k1, SecretKey, Signature};
@@ -50,6 +49,7 @@ pub struct PinManager {
     response_encryption_key: ShaHmac,
     response_hmac_key: ShaHmac,
     rng: ThreadRng,
+    agent: ureq::Agent,
 }
 
 enum PinOp {
@@ -58,24 +58,25 @@ enum PinOp {
 }
 
 impl PinManager {
-    pub fn new() -> Result<Self, Error> {
+    pub fn new(agent: ureq::Agent) -> Result<Self, Error> {
         info!("PinManager new()");
-        let data = Self::handshake_request()?;
-        Self::with_handshake(data)
+        let data = Self::handshake_request(&agent)?;
+        Self::with_handshake(data, agent)
     }
 
     /// `set_pin` consume self, because handshake must be done for every request
     pub fn set_pin(self, pin_secret: &[u8], private_key: &SecretKey) -> Result<Vec<u8>, Error> {
-        self.server_call(pin_secret, private_key, PinOp::Set)
+        self.server_call(pin_secret, private_key, PinOp::Set).map_err(|_| Error::PinError)
     }
 
     /// `get_pin` consume self, because handshake must be done for every request
     pub fn get_pin(self, pin_secret: &[u8], private_key: &SecretKey) -> Result<Vec<u8>, Error> {
-        self.server_call(pin_secret, private_key, PinOp::Get)
+        self.server_call(pin_secret, private_key, PinOp::Get).map_err(|_| Error::PinError)
     }
 
-    fn handshake_request() -> Result<Handshake, Error> {
-        let response = ureq::post(&format!("{}/start_handshake", PINSERVER_URL))
+    fn handshake_request(agent: &ureq::Agent) -> Result<Handshake, Error> {
+        let response = agent
+            .post(&format!("{}/start_handshake", PINSERVER_URL))
             .set("content-length", "0")
             .call();
         if !response.ok() {
@@ -85,7 +86,7 @@ impl PinManager {
         Ok(data)
     }
 
-    fn with_handshake(data: Handshake) -> Result<Self, Error> {
+    fn with_handshake(data: Handshake, agent: ureq::Agent) -> Result<Self, Error> {
         let mut rng = rand::thread_rng();
         let pinserver_pubkey = PublicKey::from_str(PINSERVER_PUBKEY).unwrap();
 
@@ -109,6 +110,7 @@ impl PinManager {
             request_hmac_key: Self::derive(1, &shared_secret),
             response_encryption_key: Self::derive(2, &shared_secret),
             response_hmac_key: Self::derive(3, &shared_secret),
+            agent,
         })
     }
 
@@ -165,7 +167,9 @@ impl PinManager {
             hmac_encrypted_data: hex::encode(&hmac[..]),
         };
 
-        let response = ureq::post(&format!("{}/{}", PINSERVER_URL, op))
+        let response = self
+            .agent
+            .post(&format!("{}/{}", PINSERVER_URL, op))
             .send_json(serde_json::to_value(&req).unwrap());
 
         if !response.ok() {
@@ -214,7 +218,7 @@ impl Handshake {
 }
 
 impl Display for PinOp {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self {
             PinOp::Get => write!(f, "get_pin"),
             PinOp::Set => write!(f, "set_pin"),
@@ -235,10 +239,10 @@ mod test {
         let mut rng = rand::thread_rng();
         let secret_key = SecretKey::new(&mut rng);
 
-        let manager = PinManager::new().unwrap();
+        let manager = PinManager::new(ureq::Agent::new()).unwrap();
         let pin_key_set = manager.set_pin(&[0u8; 4], &secret_key).unwrap();
 
-        let manager = PinManager::new().unwrap();
+        let manager = PinManager::new(ureq::Agent::new()).unwrap();
         let pin_key_get = manager.get_pin(&[0u8; 4], &secret_key).unwrap();
         assert_eq!(pin_key_get, pin_key_set);
     }
@@ -247,7 +251,7 @@ mod test {
     fn test_handshake() {
         // test vector taken from a random response from the production pin server
         let data = Handshake { sig: "004a58b09b6b4b6585536c5fbd662fb729a277426875a644fa56f5d05d6724281576f9d7844fc131102cd9d4fd56ca0b7f3cf9872379510407b3075f5c862c70".to_string(), ske: "032541c31f808a28750daf386e52ad70f16db153fa9e8375a6178021a0c7a74c09".to_string() };
-        assert!(PinManager::with_handshake(data).is_ok());
+        assert!(PinManager::with_handshake(data, ureq::Agent::new()).is_ok());
     }
 
     #[test]

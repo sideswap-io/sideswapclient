@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/pin_welcome.dart';
 
 class NewWalletPinWelcome extends StatelessWidget {
-  const NewWalletPinWelcome({Key key}) : super(key: key);
+  const NewWalletPinWelcome({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

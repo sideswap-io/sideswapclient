@@ -1,16 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 void showWalletBackupDialog(BuildContext context) {
   showDialog<void>(
-    context: context.read(walletProvider).navigatorKey.currentContext,
+    context: context,
     builder: (BuildContext context) {
       return Dialog(
         insetPadding: EdgeInsets.zero,
@@ -84,13 +85,7 @@ void showWalletBackupDialog(BuildContext context) {
                   text: 'BACKUP MY WALLET'.tr(),
                   backgroundColor: Color(0xFF00C5FF),
                   onPressed: () {
-                    Navigator.of(
-                            context
-                                .read(walletProvider)
-                                .navigatorKey
-                                .currentContext,
-                            rootNavigator: true)
-                        .pop();
+                    Navigator.of(context, rootNavigator: true).pop();
 
                     context.read(walletProvider).backupNewWalletEnable();
                   },
@@ -103,18 +98,12 @@ void showWalletBackupDialog(BuildContext context) {
                     text: 'SKIP FOR NOW'.tr(),
                     backgroundColor: Colors.transparent,
                     onPressed: () async {
-                      Navigator.of(
-                              context
-                                  .read(walletProvider)
-                                  .navigatorKey
-                                  .currentContext,
-                              rootNavigator: true)
-                          .pop();
+                      Navigator.of(context, rootNavigator: true).pop();
 
                       if (FlavorConfig.isProduction() &&
                           FlavorConfig
                               .instance.values.enableOnboardingUserFeatures) {
-                        await context.read(walletProvider).setImportAvatar();
+                        context.read(walletProvider).setImportAvatar();
                       } else {
                         await context
                             .read(walletProvider)

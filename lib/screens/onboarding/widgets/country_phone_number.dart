@@ -1,11 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/utils/country_code.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/common/utils/country_codes.dart';
+import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/models/countries_provider.dart';
 import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/wait_sms_confirmation.dart';
@@ -14,23 +14,23 @@ typedef PhoneNumberCallback = void Function(CountryCode, String);
 
 class CountryPhoneNumber extends StatefulWidget {
   const CountryPhoneNumber({
-    Key key,
-    @required this.phoneNumberCallback,
+    Key? key,
+    required this.phoneNumberCallback,
     this.focusNode,
   }) : super(key: key);
 
   final PhoneNumberCallback phoneNumberCallback;
-  final FocusNode focusNode;
+  final FocusNode? focusNode;
 
   @override
   _CountryPhoneNumberState createState() => _CountryPhoneNumberState();
 }
 
 class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
-  CountryCode _visibleCountryCode;
-  String _visiblePhoneNumber;
-  FocusNode _phoneFocusNode;
-  TextEditingController _controller;
+  late CountryCode visibleCountryCode;
+  String visiblePhoneNumber = '';
+  late FocusNode phoneFocusNode;
+  TextEditingController controller = TextEditingController();
   int _counter = 0;
 
   final TextStyle _flagStyle = GoogleFonts.roboto(
@@ -44,21 +44,21 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
   );
 
   List<DropdownMenuItem<CountryCode>> _menuItems =
-      List<DropdownMenuItem<CountryCode>>(codes.length);
+      <DropdownMenuItem<CountryCode>>[];
 
   @override
   void initState() {
     super.initState();
 
-    _phoneFocusNode = widget.focusNode;
-    _controller = TextEditingController();
+    phoneFocusNode = widget.focusNode ?? FocusNode();
 
-    _visibleCountryCode = context.read(phoneProvider).countryCode;
+    visibleCountryCode = context.read(phoneProvider).countryCode;
     _menuItems = context
         .read(countriesProvider)
         .countries
         .map(
           (e) => DropdownMenuItem<CountryCode>(
+            value: e,
             child: Row(
               children: [
                 Text(
@@ -68,33 +68,32 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                 Padding(
                   padding: EdgeInsets.only(left: 8.w),
                   child: Text(
-                    e.iso3Code,
+                    e.iso3Code ?? '',
                     style: _defaultTextStyle,
                   ),
                 ),
               ],
             ),
-            value: e,
           ),
         )
         .toList();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    controller.dispose();
     super.dispose();
   }
 
   void afterBuild(BuildContext context) {
-    final phoneNumber = context.read(phoneProvider).phoneNumber ?? '';
-    _visiblePhoneNumber = phoneNumber;
-    _controller.clear();
-    _controller.text = phoneNumber;
+    final phoneNumber = context.read(phoneProvider).phoneNumber;
+    visiblePhoneNumber = phoneNumber;
+    controller.clear();
+    controller.text = phoneNumber;
     setState(() {
-      _visibleCountryCode = context.read(phoneProvider).countryCode;
+      visibleCountryCode = context.read(phoneProvider).countryCode;
       _counter = context.read(phoneProvider).getSmsDelay();
     });
   }
@@ -137,18 +136,22 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                           alignedDropdown: true,
                           child: DropdownButton<CountryCode>(
                             dropdownColor: Colors.white,
-                            value: _visibleCountryCode,
+                            value: visibleCountryCode,
                             icon: Icon(
                               Icons.keyboard_arrow_down,
                               color: const Color(0xFF00B4E9),
                             ),
                             items: _menuItems,
                             onChanged: (value) {
+                              if (value == null) {
+                                return;
+                              }
+
                               setState(() {
-                                _visibleCountryCode = value;
+                                visibleCountryCode = value;
                               });
                               widget.phoneNumberCallback(
-                                  _visibleCountryCode, _visiblePhoneNumber);
+                                  visibleCountryCode, visiblePhoneNumber);
                             },
                           ),
                         ),
@@ -164,7 +167,7 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        FocusScope.of(context).requestFocus(_phoneFocusNode);
+                        FocusScope.of(context).requestFocus(phoneFocusNode);
                       },
                       child: Container(
                         child: Center(
@@ -173,7 +176,7 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                             child: Container(
                               width: 56.w,
                               child: Text(
-                                '+${_visibleCountryCode.dialCode}',
+                                '+${visibleCountryCode.dialCode}',
                                 style: _defaultTextStyle,
                               ),
                             ),
@@ -186,8 +189,8 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                         padding: EdgeInsets.only(right: 16.w),
                         child: Container(
                           child: TextField(
-                            controller: _controller,
-                            focusNode: _phoneFocusNode,
+                            controller: controller,
+                            focusNode: phoneFocusNode,
                             cursorColor: Colors.black,
                             style: _defaultTextStyle,
                             autofillHints: [
@@ -207,19 +210,19 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                               disabledBorder: InputBorder.none,
                             ),
                             onChanged: (value) {
-                              _controller.value =
+                              controller.value =
                                   FilteringTextInputFormatter.deny(
                                           RegExp('[\\-|,.\\ ]'))
                                       .formatEditUpdate(
-                                          _controller.value, _controller.value);
-                              _controller.value =
+                                          controller.value, controller.value);
+                              controller.value =
                                   FilteringTextInputFormatter.allow(
                                           RegExp('[0-9]'))
                                       .formatEditUpdate(
-                                          _controller.value, _controller.value);
-                              _visiblePhoneNumber = _controller.value.text;
+                                          controller.value, controller.value);
+                              visiblePhoneNumber = controller.value.text;
                               widget.phoneNumberCallback(
-                                  _visibleCountryCode, _visiblePhoneNumber);
+                                  visibleCountryCode, visiblePhoneNumber);
                             },
                           ),
                         ),
@@ -230,8 +233,8 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                 Consumer(
                   builder: (context, watch, child) {
                     final barier = watch(phoneProvider).barier;
-                    if (barier && _phoneFocusNode.hasPrimaryFocus) {
-                      _phoneFocusNode.unfocus();
+                    if (barier && phoneFocusNode.hasPrimaryFocus) {
+                      phoneFocusNode.unfocus();
                     }
                     return Visibility(
                       visible: barier,

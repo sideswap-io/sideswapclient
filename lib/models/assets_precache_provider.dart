@@ -1,22 +1,21 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/utils/custom_logger.dart';
 
-final assetsPrecacheChangeNotifier =
-    ChangeNotifierProvider<AssetsPrecacheChangeNotifier>((ref) {
-  return AssetsPrecacheChangeNotifier(ref.read);
+final assetsPrecacheChangeNotifier = Provider<AssetsPrecacheProvider>((ref) {
+  return AssetsPrecacheProvider(ref.read);
 });
 
-class AssetsPrecacheChangeNotifier extends ChangeNotifier {
+class AssetsPrecacheProvider {
   final Reader read;
 
-  AssetsPrecacheChangeNotifier(this.read);
+  AssetsPrecacheProvider(this.read);
 
-  Future<void> precache() async {
+  Future<bool> precache() async {
     final manifestContent = await rootBundle.loadString('AssetManifest.json');
     final manifestMap = json.decode(manifestContent) as Map<String, dynamic>;
 
@@ -35,6 +34,6 @@ class AssetsPrecacheChangeNotifier extends ChangeNotifier {
       }
     }
 
-    notifyListeners();
+    return true;
   }
 }

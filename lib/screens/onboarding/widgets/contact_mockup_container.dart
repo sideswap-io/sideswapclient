@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 
@@ -18,7 +19,7 @@ class EmptyLineData {
 }
 
 class ContactMockupContainer extends StatelessWidget {
-  const ContactMockupContainer({Key key, this.icon = ContactMockupIcon.male1})
+  const ContactMockupContainer({Key? key, this.icon = ContactMockupIcon.male1})
       : super(key: key);
 
   final ContactMockupIcon icon;

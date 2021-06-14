@@ -1,15 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 
 class WaitSmsConfirmation extends ImplicitlyAnimatedWidget {
   const WaitSmsConfirmation({
-    Key key,
-    @required Duration duration,
-    VoidCallback onEnd,
-    @required this.counter,
+    Key? key,
+    required Duration duration,
+    VoidCallback? onEnd,
+    required this.counter,
   }) : super(duration: duration, onEnd: onEnd, key: key);
 
   final int counter;
@@ -21,17 +22,19 @@ class WaitSmsConfirmation extends ImplicitlyAnimatedWidget {
 
 class _WaitSmsConfirmationState
     extends AnimatedWidgetBaseState<WaitSmsConfirmation> {
-  IntTween _intTween;
+  IntTween? _intTween;
 
   @override
-  void forEachTween(TweenVisitor visitor) {
+  void forEachTween(visitor) {
     _intTween = visitor(_intTween, widget.counter,
         (dynamic value) => IntTween(begin: widget.counter)) as IntTween;
   }
 
   @override
   Widget build(BuildContext context) {
-    final seconds = widget.counter - _intTween?.evaluate(animation) ?? 0;
+    final seconds = _intTween == null
+        ? widget.counter
+        : widget.counter - _intTween!.evaluate(animation);
     final duration = Duration(seconds: seconds);
     final percent = widget.counter == 0 ? 0 : seconds * 100 ~/ widget.counter;
     return Container(

@@ -1,7 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 
@@ -11,9 +12,9 @@ class MnemonicCheckRow extends StatelessWidget {
   final void Function(int) onTap;
 
   MnemonicCheckRow({
-    this.wordIndex,
-    this.words,
-    @required this.onTap,
+    required this.wordIndex,
+    required this.words,
+    required this.onTap,
   });
 
   @override

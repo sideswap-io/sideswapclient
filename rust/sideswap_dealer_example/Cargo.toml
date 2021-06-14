@@ -6,6 +6,7 @@ edition = "2018"
 [dependencies]
 sideswap_api = { version = "*", path = "../sideswap_api" }
 sideswap_common = { version = "*", path = "../sideswap_common" }
+sideswap_dealer = { version = "*", path = "../sideswap_dealer" }
 clap = { version = "*" }
 log = "*"
 serde_json = "1.0"
@@ -13,5 +14,4 @@ reqwest = { version = "*", features = ["blocking", "json"] }
 anyhow = "*"
 serde = { version = "1.0", features = ["derive"] }
 config = "*"
-zmq = { version = "*", features = ["vendored"] }
 log4rs = "*"

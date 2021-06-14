@@ -7,6 +7,13 @@ class AnyModeFilter extends log.LogFilter {
   }
 }
 
+class ConsoleLogOutput extends log.ConsoleOutput {
+  @override
+  void output(log.OutputEvent event) {
+    super.output(event);
+  }
+}
+
 CustomLogger logger = CustomLogger();
 
 class CustomLogger {
@@ -22,29 +29,30 @@ class CustomLogger {
 
   log.Logger internalLogger = log.Logger(
     printer: log.SimplePrinter(printTime: true),
+    output: ConsoleLogOutput(),
   );
 
-  void v(dynamic message, [dynamic error, StackTrace stackTrace]) {
+  void v(dynamic message, [dynamic error, StackTrace? stackTrace]) {
     internalLogger.v('$appName: $message', error, stackTrace);
   }
 
-  void d(dynamic message, [dynamic error, StackTrace stackTrace]) {
+  void d(dynamic message, [dynamic error, StackTrace? stackTrace]) {
     internalLogger.d('$appName: $message', error, stackTrace);
   }
 
-  void i(dynamic message, [dynamic error, StackTrace stackTrace]) {
+  void i(dynamic message, [dynamic error, StackTrace? stackTrace]) {
     internalLogger.i('$appName: $message', error, stackTrace);
   }
 
-  void w(dynamic message, [dynamic error, StackTrace stackTrace]) {
+  void w(dynamic message, [dynamic error, StackTrace? stackTrace]) {
     internalLogger.w('$appName: $message', error, stackTrace);
   }
 
-  void e(dynamic message, [dynamic error, StackTrace stackTrace]) {
+  void e(dynamic message, [dynamic error, StackTrace? stackTrace]) {
     internalLogger.e('$appName: $message', error, stackTrace);
   }
 
-  void wtf(dynamic message, [dynamic error, StackTrace stackTrace]) {
+  void wtf(dynamic message, [dynamic error, StackTrace? stackTrace]) {
     internalLogger.wtf('$appName: $message', error, stackTrace);
   }
 }

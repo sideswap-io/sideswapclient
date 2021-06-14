@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_check_row.dart';
 
 class WalletBackupCheck extends StatefulWidget {
@@ -19,16 +20,8 @@ class _WalletBackupCheckState extends State<WalletBackupCheck> {
   void validate(BuildContext context) {
     final selectedWords = context.read(walletProvider).backupCheckSelectedWords;
 
-    final isAllWordsSelected = selectedWords.values.any((e) {
-      if (e == null) {
-        return false;
-      }
-
-      return true;
-    });
-
     setState(() {
-      _canContinue = isAllWordsSelected && selectedWords.length == 4;
+      _canContinue = selectedWords.length == 4;
     });
   }
 
@@ -59,8 +52,7 @@ class _WalletBackupCheckState extends State<WalletBackupCheck> {
             child: Consumer(
               builder: (context, watch, child) {
                 final wordIndices =
-                    watch(walletProvider).backupCheckAllWords?.keys?.toList() ??
-                        [];
+                    watch(walletProvider).backupCheckAllWords.keys.toList();
 
                 return Column(
                   children: List<Widget>.generate(
@@ -68,8 +60,9 @@ class _WalletBackupCheckState extends State<WalletBackupCheck> {
                     (int index) {
                       final wordIndex = wordIndices[index];
                       final words = context
-                          .read(walletProvider)
-                          .backupCheckAllWords[wordIndex];
+                              .read(walletProvider)
+                              .backupCheckAllWords[wordIndex] ??
+                          [];
                       return Padding(
                         padding: EdgeInsets.only(top: 32.h),
                         child: MnemonicCheckRow(

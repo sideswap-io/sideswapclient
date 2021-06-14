@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -15,14 +15,14 @@ import 'package:sideswap/screens/onboarding/widgets/import_contacts_image.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
 class ImportContacts extends StatefulWidget {
-  ImportContacts({Key key}) : super(key: key);
+  ImportContacts({Key? key}) : super(key: key);
 
   @override
   _ImportContactsState createState() => _ImportContactsState();
 }
 
 class _ImportContactsState extends State<ImportContacts> {
-  StreamSubscription<int> percentageLoadedSubscription;
+  StreamSubscription<int>? percentageLoadedSubscription;
   int percent = 0;
 
   @override

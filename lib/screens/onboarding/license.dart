@@ -1,16 +1,17 @@
 import 'dart:ui';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 enum LicenseNextStep {
   createWallet,
@@ -18,7 +19,10 @@ enum LicenseNextStep {
 }
 
 class LicenseTerms extends StatelessWidget {
-  const LicenseTerms({Key key, this.nextStep}) : super(key: key);
+  const LicenseTerms({
+    Key? key,
+    required this.nextStep,
+  }) : super(key: key);
 
   final LicenseNextStep nextStep;
 

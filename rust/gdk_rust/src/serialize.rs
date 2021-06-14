@@ -1,28 +1,17 @@
 use crate::error::Error;
 
-use bitcoin::util::address::AddressType;
 use gdk_common::model::*;
 use gdk_common::session::Session;
-use gdk_electrum::error::Error::PinError;
 use serde_json::Value;
 
 pub fn balance_result_value(bal: &Balances) -> Value {
     json!(bal)
 }
 
-pub fn address_type_str(addr_type: AddressType) -> &'static str {
-    match addr_type {
-        AddressType::P2pkh => "p2pkh",
-        AddressType::P2sh => "p2sh",
-        AddressType::P2wpkh => "p2wpkh",
-        AddressType::P2wsh => "p2wsh",
-    }
-}
-
 pub fn address_io_value(addr: &AddressIO) -> Value {
     json!({
         "address": addr.address,
-        "address_type": address_type_str(addr.address_type),
+        "address_type": addr.address_type.to_string(),
         "addressee": addr.addressee,
         "is_output": addr.is_output,
         "is_relevant": addr.is_relevant,
@@ -82,17 +71,18 @@ pub fn txs_result_value(txs: &TxsResult) -> Value {
     Value::Array(txs.0.iter().map(txitem_value).collect())
 }
 
-pub fn subaccounts_value(subaccounts: &[Subaccount]) -> Value {
+pub fn subaccounts_value(subaccounts: &[AccountInfo]) -> Value {
     Value::Array(subaccounts.iter().map(subaccount_value).collect())
 }
 
-pub fn subaccount_value(subaccount: &Subaccount) -> Value {
+pub fn subaccount_value(subaccount: &AccountInfo) -> Value {
     json!({
-        "type": subaccount.type_,
-        "pointer": 0,
+        "type": subaccount.script_type,
+        "pointer": subaccount.account_num,
         "required_ca": 0,
         "receiving_id": "",
-        "name": subaccount.name,
+        "name": subaccount.settings.name,
+        "hidden": subaccount.settings.hidden,
         "has_transactions": subaccount.has_transactions,
         "satoshi": balance_result_value(&subaccount.satoshi)
     })
@@ -112,7 +102,7 @@ where
 
     session
         .login(&mnemonic_str.into(), pass_str.map(Into::into))
-        .map(notification_values)
+        .map(|x| serde_json::to_value(&x).unwrap())
         .map_err(Into::into)
 }
 
@@ -128,8 +118,8 @@ where
     let pin_data: PinGetDetails = serde_json::from_value(input["pin_data"].clone())?;
     session
         .login_with_pin(pin, pin_data)
-        .map(notification_values)
-        .map_err(|_| Error::Electrum(PinError))
+        .map(|x| serde_json::to_value(&x).unwrap())
+        .map_err(Into::into)
 }
 
 pub fn get_subaccount<S, E>(session: &S, input: &Value) -> Result<Value, Error>
@@ -186,17 +176,6 @@ where
     })
 }
 
-pub fn notification_values(notifications: Vec<Notification>) -> Value {
-    Value::Array(notifications.iter().map(|note| notification_value(&note)).collect())
-}
-
-pub fn notification_value(notification: &Notification) -> Value {
-    match notification {
-        Notification::Block(ref header) => json!({ "block": header }),
-        Notification::Transaction(ref tx) => json!({ "transaction": tx }),
-    }
-}
-
 pub fn set_transaction_memo<S, E>(session: &S, input: &Value) -> Result<Value, Error>
 where
     E: Into<Error>,
@@ -212,20 +191,6 @@ where
         .ok_or_else(|| Error::Other("get_transaction_details: missing memo".into()))?;
 
     session.set_transaction_memo(txid, memo).map(|v| json!(v)).map_err(Into::into)
-}
-
-pub fn get_balance<S, E>(session: &S, input: &Value) -> Result<Value, Error>
-where
-    E: Into<Error>,
-    S: Session<E>,
-{
-    let num_confs = input["num_confs"].as_u64().unwrap_or(0);
-
-    let subaccount = input["subaccount"].as_u64().map(|x| x as u32);
-
-    let bal = session.get_balance(num_confs as u32, subaccount).map_err(Into::into)?;
-
-    Ok(balance_result_value(&bal))
 }
 
 pub fn fee_estimate_values(estimates: &[FeeEstimate]) -> Result<Value, Error> {

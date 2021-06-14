@@ -1,11 +1,12 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class EmptyTxListItem extends StatelessWidget {
-  EmptyTxListItem({Key key}) : super(key: key);
+  EmptyTxListItem({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +92,7 @@ class EmptyTxListItem extends StatelessWidget {
 
 class EmptyTextContainer extends StatefulWidget {
   EmptyTextContainer({
-    Key key,
+    Key? key,
     this.color = const Color(0xFF135579),
     this.width = 26,
     this.height,
@@ -100,16 +101,16 @@ class EmptyTextContainer extends StatefulWidget {
 
   final Color color;
   final double width;
-  final double height;
-  final double radius;
+  final double? height;
+  final double? radius;
 
   @override
   _EmptyTextContainerState createState() => _EmptyTextContainerState();
 }
 
 class _EmptyTextContainerState extends State<EmptyTextContainer> {
-  double height;
-  double radius;
+  double height = 0;
+  double radius = 0;
 
   @override
   void initState() {

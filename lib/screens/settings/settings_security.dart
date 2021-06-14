@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class SettingsSecurity extends StatelessWidget {
   const SettingsSecurity({
-    Key key,
+    Key? key,
     this.value = false,
     this.onTap,
     this.icon = Icons.fingerprint,
-    this.description,
+    this.description = '',
   }) : super(key: key);
 
   final bool value;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData icon;
   final String description;
 
@@ -28,6 +29,20 @@ class SettingsSecurity extends StatelessWidget {
             height: 60.w,
             child: TextButton(
               onPressed: () {},
+              style: TextButton.styleFrom(
+                primary: Colors.white,
+                backgroundColor: Color(0xFF135579),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(8.w),
+                  ),
+                ),
+                side: BorderSide(
+                  color: Color(0xFF135579),
+                  width: 1,
+                  style: BorderStyle.solid,
+                ),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
@@ -67,20 +82,6 @@ class SettingsSecurity extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-              style: TextButton.styleFrom(
-                primary: Colors.white,
-                backgroundColor: Color(0xFF135579),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(8.w),
-                  ),
-                ),
-                side: BorderSide(
-                  color: Color(0xFF135579),
-                  width: 1,
-                  style: BorderStyle.solid,
-                ),
               ),
             ),
           ),

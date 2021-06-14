@@ -8,7 +8,6 @@ use bitcoin::secp256k1;
 use std::fmt;
 
 use crate::be::AssetId;
-use bitcoin::hashes::{sha256d, Hash};
 use elements::confidential::{Asset, Value};
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
@@ -43,7 +42,12 @@ pub fn bip39_mnemonic_from_bytes(entropy: &[u8]) -> String {
 
 /// Validate the validity of a BIP-39 mnemonic.
 pub fn bip39_mnemonic_validate(mnemonic: &str) -> bool {
-    let ret = unsafe { ffi::bip39_mnemonic_validate(ptr::null(), make_str(mnemonic)) };
+    let c_mnemonic = make_str(mnemonic);
+    let ret = unsafe {
+        let ret = ffi::bip39_mnemonic_validate(ptr::null(), c_mnemonic);
+        let _ = CString::from_raw(c_mnemonic);
+        ret
+    };
     ret == ffi::WALLY_OK
 }
 
@@ -57,13 +61,15 @@ pub fn bip39_mnemonic_to_bytes(mnemonic: &str) -> Option<Vec<u8>> {
     let mut out = Vec::with_capacity(BIP39_MAX_ENTROPY_BYTES);
     let mut written = 0usize;
     let ret = unsafe {
-        ffi::bip39_mnemonic_to_bytes(
+        let ret = ffi::bip39_mnemonic_to_bytes(
             ptr::null(),
             c_mnemonic,
             out.as_mut_ptr(),
             BIP39_MAX_ENTROPY_BYTES,
             &mut written,
-        )
+        );
+        let _ = CString::from_raw(c_mnemonic);
+        ret
     };
     assert_eq!(ret, ffi::WALLY_OK);
     assert!(written <= BIP39_MAX_ENTROPY_BYTES);
@@ -84,73 +90,20 @@ pub fn bip39_mnemonic_to_seed(mnemonic: &str, passphrase: &str) -> Option<[u8; B
     let mut out = [0u8; BIP39_SEED_BYTES];
     let mut written = 0usize;
     let ret = unsafe {
-        ffi::bip39_mnemonic_to_seed(
+        let ret = ffi::bip39_mnemonic_to_seed(
             c_mnemonic,
             c_passphrase,
             out.as_mut_ptr(),
             BIP39_SEED_BYTES,
             &mut written,
-        )
+        );
+        let _ = CString::from_raw(c_mnemonic);
+        let _ = CString::from_raw(c_passphrase);
+        ret
     };
     assert_eq!(ret, ffi::WALLY_OK);
     assert_eq!(written, BIP39_SEED_BYTES);
     Some(out)
-}
-
-/// Calculate the signature hash for a specific index of
-/// an Elements transaction.
-pub fn tx_get_elements_signature_hash(
-    tx: &elements::Transaction,
-    index: usize,
-    script_code: &elements::Script,
-    value: &elements::confidential::Value,
-    sighash: u32,
-    segwit: bool,
-) -> sha256d::Hash {
-    let flags = if segwit {
-        ffi::WALLY_TX_FLAG_USE_WITNESS
-    } else {
-        0
-    };
-
-    let tx_bytes = elements::encode::serialize(tx);
-    let mut wally_tx = ptr::null();
-    let ret = unsafe {
-        ffi::wally_tx_from_bytes(
-            tx_bytes.as_ptr(),
-            tx_bytes.len(),
-            flags | ffi::WALLY_TX_FLAG_USE_ELEMENTS,
-            &mut wally_tx,
-        )
-    };
-    assert_eq!(ret, ffi::WALLY_OK, "can't serialize");
-
-    let value = elements::encode::serialize(value);
-    let mut out = [0u8; sha256d::Hash::LEN];
-
-    let (script_ptr, script_len) = if script_code == &elements::Script::default() {
-        (ptr::null(), 0)
-    } else {
-        (script_code.as_bytes().as_ptr(), script_code.as_bytes().len())
-    };
-
-    let ret = unsafe {
-        ffi::wally_tx_get_elements_signature_hash(
-            wally_tx,
-            index,
-            script_ptr,
-            script_len,
-            value.as_ptr(),
-            value.len(),
-            sighash,
-            flags,
-            out.as_mut_ptr(),
-            sha256d::Hash::LEN,
-        )
-    };
-    assert_eq!(ret, ffi::WALLY_OK, "can't get signature_hash");
-    //TODO(stevenroose) use from_inner with hashes 0.7 in bitcoin 0.19
-    sha256d::Hash::from_slice(&out[..]).unwrap()
 }
 
 pub fn asset_blinding_key_from_seed(seed: &[u8]) -> MasterBlindingKey {
@@ -176,14 +129,17 @@ pub fn confidential_addr_from_addr(
     let mut out = ptr::null();
     let pub_key = pub_key.serialize();
 
+    let c_address = make_str(address);
     let ret = unsafe {
-        ffi::wally_confidential_addr_from_addr(
-            make_str(address),
+        let ret = ffi::wally_confidential_addr_from_addr(
+            c_address,
             prefix,
             pub_key.as_ptr(),
             pub_key.len(),
             &mut out,
-        )
+        );
+        let _ = CString::from_raw(c_address);
+        ret
     };
     assert_eq!(ret, ffi::WALLY_OK);
     read_str(out)
@@ -303,6 +259,26 @@ pub fn ec_public_key_from_private_key(priv_key: secp256k1::SecretKey) -> secp256
     };
     assert_eq!(ret, ffi::WALLY_OK);
     secp256k1::PublicKey::from_slice(&pub_key[..]).unwrap() // TODO return Result?
+}
+
+pub fn pbkdf2_hmac_sha512_256(password: Vec<u8>, salt: Vec<u8>, cost: u32) -> [u8; 32] {
+    let mut tmp = [0; 64];
+    let mut out = [0; 32];
+    let ret = unsafe {
+        ffi::wally_pbkdf2_hmac_sha512(
+            password.as_ptr(),
+            password.len(),
+            salt.as_ptr(),
+            salt.len(),
+            0,
+            cost,
+            tmp.as_mut_ptr(),
+            tmp.len(),
+        )
+    };
+    assert_eq!(ret, ffi::WALLY_OK);
+    out.copy_from_slice(&tmp[..32]);
+    out
 }
 
 pub fn asset_generator_from_bytes(asset: &AssetId, abf: &[u8; 32]) -> Asset {
@@ -474,7 +450,7 @@ pub fn asset_surjectionproof(
     proof[..proof_size].to_vec()
 }
 
-pub fn make_str<'a, S: Into<Cow<'a, str>>>(data: S) -> *const c_char {
+pub fn make_str<'a, S: Into<Cow<'a, str>>>(data: S) -> *mut c_char {
     CString::new(data.into().into_owned()).unwrap().into_raw()
 }
 
@@ -711,25 +687,6 @@ mod tests {
     }
 
     #[test]
-    fn test_sighash() {
-        //from test_elements_tx.c
-        let tx_hex =
-            include_str!("0ae624340f0cd7969d7ff70486f855ecfae62cc85061872076fd1744ca0c90c0.hex")
-                .trim();
-        let tx_sighash_hex = "450f330746507f7a53b805895b6026dd5947cbf65a7b49eeb850c32e9de17cd9";
-
-        let tx: elements::Transaction =
-            elements::encode::deserialize(&hex::decode(tx_hex).unwrap()).unwrap();
-
-        let sighash_all = 1;
-        let value = Value::Explicit(1000);
-        let result =
-            tx_get_elements_signature_hash(&tx, 0, &Script::default(), &value, sighash_all, true);
-
-        assert_eq!(tx_sighash_hex, hex::encode(&result.into_inner()));
-    }
-
-    #[test]
     fn test_rangeproofsize() {
         //from test_elements_tx.c
         let tx_hex =
@@ -743,5 +700,20 @@ mod tests {
             println!("surj size: {}", output.witness.surjection_proof.len());
             println!("rangeproof size: {}", output.witness.rangeproof.len());
         }
+    }
+
+    #[test]
+    fn test_pbkdf2() {
+        // abandon abandon ... about
+        // expected value got from a session with server_type green
+        let xpub = bitcoin::util::bip32::ExtendedPubKey::from_str("tpubD6NzVbkrYhZ4XYa9MoLt4BiMZ4gkt2faZ4BcmKu2a9te4LDpQmvEz2L2yDERivHxFPnxXXhqDRkUNnQCpZggCyEZLBktV7VaSmwayqMJy1s").unwrap();
+        let password = xpub.encode().to_vec();
+        let salt = "testnet".as_bytes().to_vec();
+        let cost = 2048;
+        let bytes = pbkdf2_hmac_sha512_256(password, salt, cost);
+        assert_eq!(
+            hex::encode(bytes),
+            "657a9de33d1f7753edbb86c90b0ba064bd1b986570f1a5019ed80459877b013b"
+        );
     }
 }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/onboarding/widgets/contact_mockup_container.dart';
 
 class ImportContactsImage extends StatelessWidget {
   const ImportContactsImage({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

@@ -1,10 +1,13 @@
+import 'dart:math';
+
 import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share/share.dart';
-import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 const int kCoin = 100000000;
@@ -21,10 +24,11 @@ const String kPackageSideswap = 'sideswap';
 const String kPackageLibwally = 'libwally-core';
 const String kPackageGdk = 'GDK';
 
-String amountStr(int amount, {bool forceSign = false}) {
-  if (amount == null) {
-    return '-';
-  }
+double toFloat(int amount, {int precision = 8}) {
+  return amount / pow(10, precision);
+}
+
+String amountStr(int amount, {bool forceSign = false, int precision = 8}) {
   var sign = '';
   if (amount < 0) {
     sign = '-';
@@ -35,11 +39,14 @@ String amountStr(int amount, {bool forceSign = false}) {
   final bitAmount = amount ~/ kCoin;
   final satAmount = amount % kCoin;
   final satAmountStr = satAmount.toString().padLeft(8, '0');
-  return '${sign}${bitAmount}.${satAmountStr}';
+  final newAmount = double.tryParse('$sign$bitAmount$satAmountStr') ?? 0;
+  return (newAmount / pow(10, precision)).toString();
 }
 
-String amountStrNamed(int amount, String ticker, {bool forceSign = false}) {
-  final valueStr = amountStr(amount, forceSign: forceSign);
+String amountStrNamed(int amount, String ticker,
+    {bool forceSign = false, int precision = 8}) {
+  final valueStr =
+      amountStr(amount, forceSign: forceSign, precision: precision);
   return '$valueStr $ticker';
 }
 
@@ -63,10 +70,10 @@ void showMessage(BuildContext context, String title, String message) {
   final alert =
       AlertDialog(title: Text(title), content: Text(message), actions: <Widget>[
     TextButton(
-      child: Text('OK').tr(),
       onPressed: () {
         Navigator.of(context, rootNavigator: true).pop();
       },
+      child: Text('OK').tr(),
     ),
   ]);
 
@@ -114,7 +121,7 @@ Future<void> copyToClipboard(BuildContext context, String addr,
     {bool displaySnackbar = true}) async {
   await Clipboard.setData(ClipboardData(text: addr));
   if (displaySnackbar) {
-    final flushbar = Flushbar<Widget>(
+    final flushbar = Flushbar<void>(
       messageText: Text('Copied'),
       duration: Duration(seconds: 3),
       backgroundColor: Color(0xFF135579),
@@ -129,14 +136,10 @@ void setValue(TextEditingController controller, String value) {
       TextSelection.fromPosition(TextPosition(offset: value.length));
 }
 
-void setMaxAmount(TextEditingController controller, int amount) {
-  setValue(controller, amountStr(amount ?? 0));
-}
-
-Future<void> pasteFromClipboard(TextEditingController controller) async {
+Future<void> pasteFromClipboard(TextEditingController? controller) async {
   final value = await Clipboard.getData(Clipboard.kTextPlain);
-  if (value?.text != null) {
-    var text = value.text.replaceAll('\n', '');
+  if (value?.text != null && controller != null) {
+    var text = value!.text!.replaceAll('\n', '');
     text = text.replaceAll(' ', '');
     setValue(controller, text);
   }
@@ -149,11 +152,15 @@ Future<void> openUrl(String url) async {
   await launch(url);
 }
 
-String generateTxidUrl(String txid, bool isLiquid, String blindedValues) {
+String generateTxidUrl(
+  String txid,
+  bool isLiquid, {
+  String blindedValues = '',
+}) {
   var url = isLiquid
       ? 'https://blockstream.info/liquid/tx/$txid'
       : 'https://blockstream.info/tx/$txid';
-  if (blindedValues != null) {
+  if (blindedValues.isNotEmpty) {
     url = url + '/#blinded=' + blindedValues;
   }
 
@@ -174,17 +181,30 @@ enum CurrencyCharAlignment {
   end,
 }
 
+String strip(String str, String charactersToRemove) {
+  final escapedChars = RegExp.escape(charactersToRemove);
+  final regex = RegExp(r'^[' + escapedChars + r']+|[' + escapedChars + r']+$');
+  final newStr = str.replaceAll(regex, '').trim();
+  return newStr;
+}
+
 String replaceCharacterOnPosition({
-  @required String input,
+  required String input,
   String char = ' ',
   int position = 3,
   String currencyChar = '',
   CurrencyCharAlignment currencyCharAlignment = CurrencyCharAlignment.begin,
   bool useDecimal = false,
+  bool stripLeadingZeros = false,
 }) {
   var newValue = input.replaceAll(' ', '').replaceAll(currencyChar, '');
   final dotIndex = newValue.indexOf('.');
   var firstPart = newValue;
+
+  if (stripLeadingZeros) {
+    firstPart = strip(firstPart, '0');
+  }
+
   var secondPart = '';
 
   if (dotIndex > 0) {

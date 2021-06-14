@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/config_provider.dart';
@@ -17,9 +18,9 @@ typedef OnDone = Future<void> Function(BuildContext context);
 
 class ConfirmPhoneData {
   ConfirmPhoneData({
-    @required this.onBack,
-    @required this.onSuccess,
-    @required this.onDone,
+    required this.onBack,
+    required this.onSuccess,
+    required this.onDone,
   });
 
   final OnBack onBack;
@@ -59,15 +60,15 @@ class PhoneProvider with ChangeNotifier {
 
   final Reader read;
 
-  String _phoneNumber;
-  CountryCode _countryCode;
-  String _smsCode;
+  String _phoneNumber = '';
+  CountryCode _countryCode = CountryCode();
+  String _smsCode = '';
   PhoneRegisterStep _phoneRegisterStep = PhoneRegisterStep.init;
   SmsCodeStep _smsCodeStep = SmsCodeStep.hidden;
-  DateTime _phoneRegisterTime;
+  DateTime? _phoneRegisterTime;
   bool barier = false;
-  String _phoneKey;
-  ConfirmPhoneData _confirmPhoneData;
+  String _phoneKey = '';
+  ConfirmPhoneData? _confirmPhoneData;
 
   String get countryPhoneNumber {
     if (_phoneNumber.isNotEmpty) {
@@ -88,11 +89,11 @@ class PhoneProvider with ChangeNotifier {
     return _smsCodeStep;
   }
 
-  void setConfirmPhoneData({ConfirmPhoneData confirmPhoneData}) {
+  void setConfirmPhoneData({ConfirmPhoneData? confirmPhoneData}) {
     _confirmPhoneData = confirmPhoneData;
   }
 
-  ConfirmPhoneData getConfirmPhoneData() {
+  ConfirmPhoneData? getConfirmPhoneData() {
     return _confirmPhoneData;
   }
 
@@ -171,7 +172,8 @@ class PhoneProvider with ChangeNotifier {
     }
 
     if (errorMsg.isNotEmpty) {
-      read(utilsProvider).showErrorDialog('Wrong phone number: $errorMsg'.tr());
+      await read(utilsProvider)
+          .showErrorDialog('Wrong phone number: $errorMsg'.tr());
       _phoneRegisterStep = PhoneRegisterStep.phoneNumberError;
       _smsCodeStep = SmsCodeStep.hidden;
       notifyListeners();
@@ -189,7 +191,13 @@ class PhoneProvider with ChangeNotifier {
     _smsCodeStep = SmsCodeStep.hidden;
     barier = false;
     notifyListeners();
-    _confirmPhoneData
-        .onSuccess(read(walletProvider).navigatorKey.currentContext);
+    final context = read(walletProvider).navigatorKey.currentContext;
+    if (context == null) {
+      return;
+    }
+
+    if (_confirmPhoneData != null) {
+      _confirmPhoneData!.onSuccess(context);
+    }
   }
 }

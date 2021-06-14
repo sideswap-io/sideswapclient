@@ -6,9 +6,9 @@ cd "$(dirname "$0")/../rust/sideswap_client"
 
 function build() {
     BASE_PATH=$(dirname "$0")
-    WALLI_DIR="$BASE_PATH/../distr/libwally/$WALLI_ARCH_NAME/lib"
-    export WALLI_DIR=$(realpath "$WALLI_DIR")
-    echo "Using WALLI_DIR: $WALLI_DIR"
+    WALLY_DIR="$BASE_PATH/../distr/libwally/$WALLI_ARCH_NAME/lib"
+    export WALLY_DIR=$(realpath "$WALLY_DIR")
+    echo "Using WALLY_DIR: $WALLY_DIR"
     cargo build --release --target=$ARCH
 }
 

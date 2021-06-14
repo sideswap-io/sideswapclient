@@ -90,12 +90,23 @@ pub enum Env {
     Local,
 }
 
+impl Env {
+    pub fn data(&self) -> &'static EnvData {
+        env_data(*self)
+    }
+
+    pub fn is_mainnet(&self) -> bool {
+        self.data().mainnet
+    }
+}
+
 pub struct EnvData {
     pub host: &'static str,
     pub port: u16,
     pub use_tls: bool,
     pub name: &'static str,
     pub mainnet: bool,
+    pub bitcoin_asset_id: &'static str,
 }
 
 const ENV_PROD: EnvData = EnvData {
@@ -104,6 +115,7 @@ const ENV_PROD: EnvData = EnvData {
     use_tls: true,
     name: "prod",
     mainnet: true,
+    bitcoin_asset_id: "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
 };
 
 const ENV_STAGING: EnvData = EnvData {
@@ -112,6 +124,7 @@ const ENV_STAGING: EnvData = EnvData {
     use_tls: true,
     name: "staging",
     mainnet: true,
+    bitcoin_asset_id: "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
 };
 
 const ENV_REGTEST: EnvData = EnvData {
@@ -120,6 +133,7 @@ const ENV_REGTEST: EnvData = EnvData {
     use_tls: true,
     name: "regtest",
     mainnet: false,
+    bitcoin_asset_id: "2e16b12daf1244332a438e829ca7ce209195f8e1c54199770cd8b327710a8ab2",
 };
 
 const ENV_LOCAL: EnvData = EnvData {
@@ -128,6 +142,7 @@ const ENV_LOCAL: EnvData = EnvData {
     use_tls: false,
     name: "local",
     mainnet: false,
+    bitcoin_asset_id: "2684bbac0fa7ad544ec8eee43c35156346e5d641d24a4b9d5d8f183e3f2d8fb9",
 };
 
 fn known_asset_id(mainnet: bool, ticker: &str) -> Option<&'static str> {
@@ -187,7 +202,7 @@ const VSIZE_VOUT: i64 = 1192;
 pub fn expected_network_fee(vin_count: i32, vout_count: i32, fee_rate: f64) -> Amount {
     let expected_vsize =
         VSIZE_FIXED + vin_count as i64 * VSIZE_VIN + vout_count as i64 * VSIZE_VOUT;
-    Amount::from_bitcoin(expected_vsize as f64 * fee_rate / 1024.0 * 1.1)
+    Amount::from_bitcoin(expected_vsize as f64 * fee_rate / 1000.0 * 1.075)
 }
 
 pub fn timestamp_now() -> i64 {
@@ -195,6 +210,29 @@ pub fn timestamp_now() -> i64 {
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_millis() as i64
+}
+
+pub const MIN_BITCOIN_AMOUNT: Amount = Amount(2000);
+pub const MIN_SERVER_FEE: Amount = Amount(500);
+pub const SERVER_FEE_RATE: f64 = 0.001;
+
+pub fn get_server_fee(bitcoin_amount: Amount) -> Amount {
+    let server_fee = Amount::from_bitcoin(bitcoin_amount.to_bitcoin() * SERVER_FEE_RATE);
+    std::cmp::max(server_fee, MIN_SERVER_FEE)
+}
+
+pub fn asset_scale(asset_precision: u8) -> f64 {
+    10i64.checked_pow(asset_precision as u32).unwrap() as f64
+}
+
+pub fn asset_amount(bitcoin_amount: i64, price: f64, asset_precision: u8) -> i64 {
+    let scale = asset_scale(asset_precision);
+    let asset_amount = Amount::from_sat(bitcoin_amount).to_bitcoin() * price * scale;
+    f64::round(asset_amount) as i64
+}
+
+pub fn asset_float_amount(asset_amount: i64, asset_precision: u8) -> f64 {
+    asset_amount as f64 / asset_scale(asset_precision)
 }
 
 #[cfg(test)]
@@ -210,5 +248,21 @@ mod tests {
         assert_eq!(select_utxo(vec![5000, 10, 5], 16), vec![5000]);
         assert_eq!(select_utxo(vec![1000, 100, 10, 1], 101), vec![100, 1]);
         assert_eq!(select_utxo(vec![1000, 100, 10, 1], 102), vec![100, 10]);
+    }
+
+    #[test]
+    fn test_asset_amount() {
+        assert_eq!(
+            asset_amount(Amount::from_bitcoin(1.0).to_sat(), 12345.67, 8),
+            1234567000000
+        );
+        assert_eq!(
+            asset_amount(Amount::from_bitcoin(1.0).to_sat(), 12345.67, 2),
+            1234567
+        );
+        assert_eq!(
+            asset_amount(Amount::from_bitcoin(1.0).to_sat(), 12345.67, 0),
+            12346
+        );
     }
 }

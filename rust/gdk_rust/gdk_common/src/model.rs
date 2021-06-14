@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::error::Error;
-use bitcoin::hashes::core::fmt::Formatter;
+use crate::scripts::ScriptType;
 use bitcoin::util::bip32::{ChildNumber, DerivationPath};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde_json::Value;
@@ -93,41 +93,73 @@ pub struct AddressAmount {
     pub asset_tag: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub struct BlockNotification {
-    //pub block_hash: bitcoin::BlockHash,
-    pub block_height: u32,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct TransactionNotification {
-    pub transaction_hash: bitcoin::Txid,
-}
-
-#[derive(Debug)]
-pub enum Notification {
-    Block(BlockNotification),
-    Transaction(TransactionNotification),
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct LoginData {
+    pub wallet_hash_id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct CreateTransaction {
     pub addressees: Vec<AddressAmount>,
     pub fee_rate: Option<u64>, // in satoshi/kbyte
-    pub subaccount: Option<u32>,
+    pub subaccount: u32,
     pub send_all: Option<bool>,
     #[serde(default)]
     pub previous_transaction: HashMap<String, Value>,
     pub memo: Option<String>,
     pub utxos: Option<GetUnspentOutputs>,
+    /// Minimum number of confirmations for coin selection
+    pub num_confs: Option<u32>,
+    pub confidential_utxos_only: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetTransactionsOpt {
     pub first: usize,
     pub count: usize,
-    pub subaccount: usize,
-    pub num_confs: Option<usize>,
+    pub subaccount: u32,
+    pub num_confs: Option<u32>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct GetBalanceOpt {
+    pub subaccount: u32,
+    pub num_confs: u32,
+    #[serde(rename = "confidential")]
+    pub confidential_utxos_only: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct GetUnspentOpt {
+    pub subaccount: u32,
+    pub num_confs: Option<u32>,
+    #[serde(rename = "confidential")]
+    pub confidential_utxos_only: Option<bool>,
+    pub all_coins: Option<usize>, // unused
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct GetAddressOpt {
+    pub subaccount: u32,
+    pub address_type: Option<String>, // unused
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CreateAccountOpt {
+    pub subaccount: u32,
+    pub name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetNextAccountOpt {
+    #[serde(rename = "type")]
+    pub script_type: ScriptType,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct RenameAccountOpt {
+    pub subaccount: u32,
+    pub new_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -280,9 +312,14 @@ pub struct TxListItem {
     pub transaction_weight: usize,
 }
 
-pub struct Subaccount {
-    pub type_: String,
-    pub name: String,
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AccountInfo {
+    #[serde(rename = "pointer")]
+    pub account_num: u32,
+    #[serde(rename = "type")]
+    pub script_type: ScriptType,
+    #[serde(flatten)]
+    pub settings: AccountSettings,
     pub has_transactions: bool,
     pub satoshi: Balances,
 }
@@ -323,6 +360,25 @@ pub struct Settings {
     pub sound: bool,
 }
 
+#[derive(Default, Serialize, Deserialize, Clone, Debug)]
+pub struct AccountSettings {
+    pub name: String,
+    pub hidden: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct UpdateAccountOpt {
+    pub subaccount: u32,
+    pub name: Option<String>,
+    pub hidden: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct SetAccountHiddenOpt {
+    pub subaccount: u32,
+    pub hidden: bool,
+}
+
 /// {"icons":true,"assets":false,"refresh":false}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RefreshAssets {
@@ -357,7 +413,7 @@ impl Default for Settings {
         Settings {
             unit: "BTC".to_string(),
             required_num_blocks: 12,
-            altimeout: 600,
+            altimeout: 5,
             pricing,
             sound: false,
         }
@@ -402,7 +458,7 @@ impl SPVVerifyResult {
 }
 
 impl Display for SPVVerifyResult {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SPVVerifyResult::InProgress => write!(f, "in_progress"),
             SPVVerifyResult::Verified => write!(f, "verified"),

@@ -1,24 +1,25 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_screenutil/screenutil.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_table.dart';
 
 extension Utility on BuildContext {
   void nextEditableTextFocus() {
     do {
       FocusScope.of(this).nextFocus();
-    } while (FocusScope.of(this).focusedChild.context.widget is! EditableText);
+    } while (
+        FocusScope.of(this).focusedChild?.context?.widget is! EditableText);
   }
 }
 
@@ -35,15 +36,15 @@ class _WalletImportState extends State<WalletImport> {
 
   final _textEditingControllerList = <TextEditingController>[];
   final _focusNodeList = <FocusNode>[];
-  ScrollController _listScrollController;
+  ScrollController? _listScrollController;
   final _suggestionsBoxController = SuggestionsBoxController();
   final _scaffoldKey = GlobalKey();
 
   var _selectedItem = 0;
 
-  double _textFieldWidth;
-  double _textFieldPadding;
-  double _textFieldLeftPadding;
+  double _textFieldWidth = 0;
+  double _textFieldPadding = 0;
+  double _textFieldLeftPadding = 0;
 
   String getMnemonic() {
     final result = words.fold<String>('',
@@ -77,9 +78,10 @@ class _WalletImportState extends State<WalletImport> {
 
     _textFieldWidth = 270.w;
     _textFieldPadding = 10.w;
-    _textFieldLeftPadding =
-        (ScreenUtil().screenWidth - _textFieldWidth - (2 * _textFieldPadding)) /
-            2;
+    _textFieldLeftPadding = (SideSwapScreenUtil.screenWidth -
+            _textFieldWidth -
+            (2 * _textFieldPadding)) /
+        2;
 
     for (var i = 0; i < 12; i++) {
       _textEditingControllerList.add(TextEditingController());
@@ -88,7 +90,7 @@ class _WalletImportState extends State<WalletImport> {
 
     _listScrollController = ScrollController();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
       // focus first TextField
       _focusNodeList[_selectedItem].requestFocus();
       await _loadWordList();
@@ -105,7 +107,7 @@ class _WalletImportState extends State<WalletImport> {
       e.dispose();
     });
 
-    _listScrollController.dispose();
+    _listScrollController?.dispose();
     _suggestionsBoxController.close();
 
     super.dispose();
@@ -131,13 +133,13 @@ class _WalletImportState extends State<WalletImport> {
     // animate instead jumpTo may cause bugs
     if (index == 0) {
       _listScrollController
-          .jumpTo(_listScrollController.position.minScrollExtent);
+          ?.jumpTo(_listScrollController?.position.minScrollExtent ?? 0);
     } else if (index == 11) {
       _listScrollController
-          .jumpTo(_listScrollController.position.maxScrollExtent);
+          ?.jumpTo(_listScrollController?.position.maxScrollExtent ?? 0);
     } else {
       _listScrollController
-          .jumpTo((_textFieldWidth * index + _additionalPadding));
+          ?.jumpTo((_textFieldWidth * index + _additionalPadding));
     }
 
     if (index < _focusNodeList.length) {
@@ -171,7 +173,7 @@ class _WalletImportState extends State<WalletImport> {
     setState(() {});
   }
 
-  void validateFinal() async {
+  Future<void> validateFinal() async {
     var index = 0;
     words.forEach((text) {
       final suggestionList = getSuggestions(text.value);
@@ -211,11 +213,11 @@ class _WalletImportState extends State<WalletImport> {
     return false;
   }
 
-  void nextPage() async {
+  Future<void> nextPage() async {
     _focusNodeList.forEach((e) {
       e.unfocus();
     });
-    FocusManager.instance.primaryFocus.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
     final mnemonic = getMnemonic();
     final wallet = context.read(walletProvider);
     if (!wallet.validateMnemonic(mnemonic)) {

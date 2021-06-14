@@ -5,7 +5,7 @@ fn main() {
 
     prost_build::compile_protos(&["../../ffi/sideswap.proto"], &["../../ffi"]).unwrap();
 
-    let wally_dir = env::var("WALLI_DIR").unwrap();
+    let wally_dir = env::var("WALLY_DIR").unwrap();
     println!("cargo:rustc-link-lib=static=wallycore");
     if !target.contains("apple") {
         println!("cargo:rustc-link-lib=static=secp256k1");

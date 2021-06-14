@@ -5,23 +5,33 @@ import 'dart:ffi' as ffi;
 
 /// SideSwap FFI
 class NativeLibrary {
-  /// Holds the Dynamic library.
-  final ffi.DynamicLibrary _dylib;
+  /// Holds the symbol lookup function.
+  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+      _lookup;
 
   /// The symbols are looked up in [dynamicLibrary].
-  NativeLibrary(ffi.DynamicLibrary dynamicLibrary) : _dylib = dynamicLibrary;
+  NativeLibrary(ffi.DynamicLibrary dynamicLibrary)
+      : _lookup = dynamicLibrary.lookup;
+
+  /// The symbols are looked up with [lookup].
+  NativeLibrary.fromLookup(
+      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+          lookup)
+      : _lookup = lookup;
 
   int sideswap_client_create(
     int env,
   ) {
-    _sideswap_client_create ??= _dylib.lookupFunction<_c_sideswap_client_create,
-        _dart_sideswap_client_create>('sideswap_client_create');
     return _sideswap_client_create(
       env,
     );
   }
 
-  _dart_sideswap_client_create _sideswap_client_create;
+  late final _sideswap_client_create_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_client_create>>(
+          'sideswap_client_create');
+  late final _dart_sideswap_client_create _sideswap_client_create =
+      _sideswap_client_create_ptr.asFunction<_dart_sideswap_client_create>();
 
   void sideswap_client_start(
     int client,
@@ -29,8 +39,6 @@ class NativeLibrary {
     ffi.Pointer<ffi.Int8> version,
     int dart_port,
   ) {
-    _sideswap_client_start ??= _dylib.lookupFunction<_c_sideswap_client_start,
-        _dart_sideswap_client_start>('sideswap_client_start');
     return _sideswap_client_start(
       client,
       work_dir,
@@ -39,15 +47,17 @@ class NativeLibrary {
     );
   }
 
-  _dart_sideswap_client_start _sideswap_client_start;
+  late final _sideswap_client_start_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_client_start>>(
+          'sideswap_client_start');
+  late final _dart_sideswap_client_start _sideswap_client_start =
+      _sideswap_client_start_ptr.asFunction<_dart_sideswap_client_start>();
 
   void sideswap_send_request(
     int client,
     ffi.Pointer<ffi.Uint8> data,
     int len,
   ) {
-    _sideswap_send_request ??= _dylib.lookupFunction<_c_sideswap_send_request,
-        _dart_sideswap_send_request>('sideswap_send_request');
     return _sideswap_send_request(
       client,
       data,
@@ -55,15 +65,17 @@ class NativeLibrary {
     );
   }
 
-  _dart_sideswap_send_request _sideswap_send_request;
+  late final _sideswap_send_request_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_send_request>>(
+          'sideswap_send_request');
+  late final _dart_sideswap_send_request _sideswap_send_request =
+      _sideswap_send_request_ptr.asFunction<_dart_sideswap_send_request>();
 
   bool sideswap_check_addr(
     int client,
     ffi.Pointer<ffi.Int8> addr,
     int addr_type,
   ) {
-    _sideswap_check_addr ??= _dylib.lookupFunction<_c_sideswap_check_addr,
-        _dart_sideswap_check_addr>('sideswap_check_addr');
     return _sideswap_check_addr(
           client,
           addr,
@@ -72,111 +84,128 @@ class NativeLibrary {
         0;
   }
 
-  _dart_sideswap_check_addr _sideswap_check_addr;
+  late final _sideswap_check_addr_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_check_addr>>(
+          'sideswap_check_addr');
+  late final _dart_sideswap_check_addr _sideswap_check_addr =
+      _sideswap_check_addr_ptr.asFunction<_dart_sideswap_check_addr>();
 
   int sideswap_parse_bitcoin_amount(
     ffi.Pointer<ffi.Int8> amount,
   ) {
-    _sideswap_parse_bitcoin_amount ??= _dylib.lookupFunction<
-        _c_sideswap_parse_bitcoin_amount,
-        _dart_sideswap_parse_bitcoin_amount>('sideswap_parse_bitcoin_amount');
     return _sideswap_parse_bitcoin_amount(
       amount,
     );
   }
 
-  _dart_sideswap_parse_bitcoin_amount _sideswap_parse_bitcoin_amount;
+  late final _sideswap_parse_bitcoin_amount_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_parse_bitcoin_amount>>(
+          'sideswap_parse_bitcoin_amount');
+  late final _dart_sideswap_parse_bitcoin_amount
+      _sideswap_parse_bitcoin_amount = _sideswap_parse_bitcoin_amount_ptr
+          .asFunction<_dart_sideswap_parse_bitcoin_amount>();
 
   bool sideswap_parsed_amount_valid(
     int amount,
   ) {
-    _sideswap_parsed_amount_valid ??= _dylib.lookupFunction<
-        _c_sideswap_parsed_amount_valid,
-        _dart_sideswap_parsed_amount_valid>('sideswap_parsed_amount_valid');
     return _sideswap_parsed_amount_valid(
           amount,
         ) !=
         0;
   }
 
-  _dart_sideswap_parsed_amount_valid _sideswap_parsed_amount_valid;
+  late final _sideswap_parsed_amount_valid_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_parsed_amount_valid>>(
+          'sideswap_parsed_amount_valid');
+  late final _dart_sideswap_parsed_amount_valid _sideswap_parsed_amount_valid =
+      _sideswap_parsed_amount_valid_ptr
+          .asFunction<_dart_sideswap_parsed_amount_valid>();
 
   ffi.Pointer<ffi.Uint8> sideswap_msg_ptr(
     int msg,
   ) {
-    _sideswap_msg_ptr ??=
-        _dylib.lookupFunction<_c_sideswap_msg_ptr, _dart_sideswap_msg_ptr>(
-            'sideswap_msg_ptr');
     return _sideswap_msg_ptr(
       msg,
     );
   }
 
-  _dart_sideswap_msg_ptr _sideswap_msg_ptr;
+  late final _sideswap_msg_ptr_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_msg_ptr>>('sideswap_msg_ptr');
+  late final _dart_sideswap_msg_ptr _sideswap_msg_ptr =
+      _sideswap_msg_ptr_ptr.asFunction<_dart_sideswap_msg_ptr>();
 
   int sideswap_msg_len(
     int msg,
   ) {
-    _sideswap_msg_len ??=
-        _dylib.lookupFunction<_c_sideswap_msg_len, _dart_sideswap_msg_len>(
-            'sideswap_msg_len');
     return _sideswap_msg_len(
       msg,
     );
   }
 
-  _dart_sideswap_msg_len _sideswap_msg_len;
+  late final _sideswap_msg_len_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_msg_len>>('sideswap_msg_len');
+  late final _dart_sideswap_msg_len _sideswap_msg_len =
+      _sideswap_msg_len_ptr.asFunction<_dart_sideswap_msg_len>();
 
   void sideswap_msg_free(
     int msg,
   ) {
-    _sideswap_msg_free ??=
-        _dylib.lookupFunction<_c_sideswap_msg_free, _dart_sideswap_msg_free>(
-            'sideswap_msg_free');
     return _sideswap_msg_free(
       msg,
     );
   }
 
-  _dart_sideswap_msg_free _sideswap_msg_free;
+  late final _sideswap_msg_free_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_msg_free>>('sideswap_msg_free');
+  late final _dart_sideswap_msg_free _sideswap_msg_free =
+      _sideswap_msg_free_ptr.asFunction<_dart_sideswap_msg_free>();
 
   ffi.Pointer<ffi.Int8> sideswap_generate_mnemonic12() {
-    _sideswap_generate_mnemonic12 ??= _dylib.lookupFunction<
-        _c_sideswap_generate_mnemonic12,
-        _dart_sideswap_generate_mnemonic12>('sideswap_generate_mnemonic12');
     return _sideswap_generate_mnemonic12();
   }
 
-  _dart_sideswap_generate_mnemonic12 _sideswap_generate_mnemonic12;
+  late final _sideswap_generate_mnemonic12_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_generate_mnemonic12>>(
+          'sideswap_generate_mnemonic12');
+  late final _dart_sideswap_generate_mnemonic12 _sideswap_generate_mnemonic12 =
+      _sideswap_generate_mnemonic12_ptr
+          .asFunction<_dart_sideswap_generate_mnemonic12>();
 
   bool sideswap_verify_mnemonic(
     ffi.Pointer<ffi.Int8> mnemonic,
   ) {
-    _sideswap_verify_mnemonic ??= _dylib.lookupFunction<
-        _c_sideswap_verify_mnemonic,
-        _dart_sideswap_verify_mnemonic>('sideswap_verify_mnemonic');
     return _sideswap_verify_mnemonic(
           mnemonic,
         ) !=
         0;
   }
 
-  _dart_sideswap_verify_mnemonic _sideswap_verify_mnemonic;
+  late final _sideswap_verify_mnemonic_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_verify_mnemonic>>(
+          'sideswap_verify_mnemonic');
+  late final _dart_sideswap_verify_mnemonic _sideswap_verify_mnemonic =
+      _sideswap_verify_mnemonic_ptr
+          .asFunction<_dart_sideswap_verify_mnemonic>();
 
   void sideswap_string_free(
     ffi.Pointer<ffi.Int8> str,
   ) {
-    _sideswap_string_free ??= _dylib.lookupFunction<_c_sideswap_string_free,
-        _dart_sideswap_string_free>('sideswap_string_free');
     return _sideswap_string_free(
       str,
     );
   }
 
-  _dart_sideswap_string_free _sideswap_string_free;
+  late final _sideswap_string_free_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_string_free>>(
+          'sideswap_string_free');
+  late final _dart_sideswap_string_free _sideswap_string_free =
+      _sideswap_string_free_ptr.asFunction<_dart_sideswap_string_free>();
 }
 
-class __fsid_t extends ffi.Struct {}
+class __fsid_t extends ffi.Struct {
+  @ffi.Array.multi([2])
+  external ffi.Array<ffi.Int32> __val;
+}
 
 abstract class idtype_t {
   static const int P_ALL = 0;
@@ -186,80 +215,179 @@ abstract class idtype_t {
 
 class div_t extends ffi.Struct {
   @ffi.Int32()
-  int quot;
+  external int quot;
 
   @ffi.Int32()
-  int rem;
+  external int rem;
 }
 
 class ldiv_t extends ffi.Struct {
   @ffi.Int64()
-  int quot;
+  external int quot;
 
   @ffi.Int64()
-  int rem;
+  external int rem;
 }
 
 class lldiv_t extends ffi.Struct {
   @ffi.Int64()
-  int quot;
+  external int quot;
 
   @ffi.Int64()
-  int rem;
+  external int rem;
 }
 
-class __sigset_t extends ffi.Struct {}
+class __sigset_t extends ffi.Struct {
+  @ffi.Array.multi([16])
+  external ffi.Array<ffi.Uint64> __val;
+}
 
 class timeval extends ffi.Struct {
   @ffi.Int64()
-  int tv_sec;
+  external int tv_sec;
 
   @ffi.Int64()
-  int tv_usec;
+  external int tv_usec;
 }
 
 class timespec extends ffi.Struct {
   @ffi.Int64()
-  int tv_sec;
+  external int tv_sec;
 
   @ffi.Int64()
-  int tv_nsec;
+  external int tv_nsec;
 }
 
-class fd_set extends ffi.Struct {}
-
-class __pthread_rwlock_arch_t extends ffi.Struct {}
+class fd_set extends ffi.Struct {
+  @ffi.Array.multi([16])
+  external ffi.Array<ffi.Int64> __fds_bits;
+}
 
 class __pthread_list_t extends ffi.Struct {
-  ffi.Pointer<__pthread_list_t> __prev;
+  external ffi.Pointer<__pthread_list_t> __prev;
 
-  ffi.Pointer<__pthread_list_t> __next;
+  external ffi.Pointer<__pthread_list_t> __next;
 }
 
-class __pthread_mutex_s extends ffi.Struct {}
+class __pthread_slist_t extends ffi.Struct {
+  external ffi.Pointer<__pthread_slist_t> __next;
+}
 
-class __pthread_cond_s extends ffi.Struct {}
+class __pthread_mutex_s extends ffi.Struct {
+  @ffi.Int32()
+  external int __lock;
+
+  @ffi.Uint32()
+  external int __count;
+
+  @ffi.Int32()
+  external int __owner;
+
+  @ffi.Uint32()
+  external int __nusers;
+
+  @ffi.Int32()
+  external int __kind;
+
+  @ffi.Int16()
+  external int __spins;
+
+  @ffi.Int16()
+  external int __elision;
+
+  external __pthread_list_t __list;
+}
+
+class __pthread_rwlock_arch_t extends ffi.Struct {
+  @ffi.Uint32()
+  external int __readers;
+
+  @ffi.Uint32()
+  external int __writers;
+
+  @ffi.Uint32()
+  external int __wrphase_futex;
+
+  @ffi.Uint32()
+  external int __writers_futex;
+
+  @ffi.Uint32()
+  external int __pad3;
+
+  @ffi.Uint32()
+  external int __pad4;
+
+  @ffi.Int32()
+  external int __cur_writer;
+
+  @ffi.Int32()
+  external int __shared;
+
+  @ffi.Int8()
+  external int __rwelision;
+
+  @ffi.Array.multi([7])
+  external ffi.Array<ffi.Uint8> __pad1;
+
+  @ffi.Uint64()
+  external int __pad2;
+
+  @ffi.Uint32()
+  external int __flags;
+}
+
+class __pthread_cond_s extends ffi.Struct {
+  @ffi.Array.multi([2])
+  external ffi.Array<ffi.Uint32> __g_refs;
+
+  @ffi.Array.multi([2])
+  external ffi.Array<ffi.Uint32> __g_size;
+
+  @ffi.Uint32()
+  external int __g1_orig_size;
+
+  @ffi.Uint32()
+  external int __wrefs;
+
+  @ffi.Array.multi([2])
+  external ffi.Array<ffi.Uint32> __g_signals;
+}
 
 class random_data extends ffi.Struct {
-  ffi.Pointer<ffi.Int32> fptr;
+  external ffi.Pointer<ffi.Int32> fptr;
 
-  ffi.Pointer<ffi.Int32> rptr;
+  external ffi.Pointer<ffi.Int32> rptr;
 
-  ffi.Pointer<ffi.Int32> state;
-
-  @ffi.Int32()
-  int rand_type;
+  external ffi.Pointer<ffi.Int32> state;
 
   @ffi.Int32()
-  int rand_deg;
+  external int rand_type;
 
   @ffi.Int32()
-  int rand_sep;
+  external int rand_deg;
 
-  ffi.Pointer<ffi.Int32> end_ptr;
+  @ffi.Int32()
+  external int rand_sep;
+
+  external ffi.Pointer<ffi.Int32> end_ptr;
 }
 
-class drand48_data extends ffi.Struct {}
+class drand48_data extends ffi.Struct {
+  @ffi.Array.multi([3])
+  external ffi.Array<ffi.Uint16> __x;
+
+  @ffi.Array.multi([3])
+  external ffi.Array<ffi.Uint16> __old_x;
+
+  @ffi.Uint16()
+  external int __c;
+
+  @ffi.Uint16()
+  external int __init;
+
+  @ffi.Uint64()
+  external int __a;
+}
 
 const int __GNUC_VA_LIST = 1;
 
@@ -274,6 +402,8 @@ const int _STDINT_H = 1;
 const int _FEATURES_H = 1;
 
 const int _DEFAULT_SOURCE = 1;
+
+const int __GLIBC_USE_ISOC2X = 1;
 
 const int __USE_ISOC11 = 1;
 
@@ -307,6 +437,8 @@ const int __USE_FORTIFY_LEVEL = 0;
 
 const int __GLIBC_USE_DEPRECATED_GETS = 0;
 
+const int __GLIBC_USE_DEPRECATED_SCANF = 0;
+
 const int _STDC_PREDEF_H = 1;
 
 const int __STDC_IEC_559__ = 1;
@@ -319,7 +451,7 @@ const int __GNU_LIBRARY__ = 6;
 
 const int __GLIBC__ = 2;
 
-const int __GLIBC_MINOR__ = 28;
+const int __GLIBC_MINOR__ = 31;
 
 const int _SYS_CDEFS_H = 1;
 
@@ -331,17 +463,25 @@ const int __WORDSIZE_TIME64_COMPAT32 = 1;
 
 const int __SYSCALL_WORDSIZE = 64;
 
+const int __LONG_DOUBLE_USES_FLOAT128 = 0;
+
 const int __HAVE_GENERIC_SELECTION = 0;
 
 const int __GLIBC_USE_LIB_EXT2 = 1;
 
 const int __GLIBC_USE_IEC_60559_BFP_EXT = 1;
 
+const int __GLIBC_USE_IEC_60559_BFP_EXT_C2X = 1;
+
 const int __GLIBC_USE_IEC_60559_FUNCS_EXT = 1;
+
+const int __GLIBC_USE_IEC_60559_FUNCS_EXT_C2X = 1;
 
 const int __GLIBC_USE_IEC_60559_TYPES_EXT = 1;
 
 const int _BITS_TYPES_H = 1;
+
+const int __TIMESIZE = 64;
 
 const int _BITS_TYPESIZES_H = 1;
 
@@ -351,7 +491,11 @@ const int __INO_T_MATCHES_INO64_T = 1;
 
 const int __RLIM_T_MATCHES_RLIM64_T = 1;
 
+const int __STATFS_MATCHES_STATFS64 = 1;
+
 const int __FD_SETSIZE = 1024;
+
+const int _BITS_TIME64_H = 1;
 
 const int _BITS_WCHAR_H = 1;
 
@@ -551,11 +695,15 @@ const int __BIT_TYPES_DEFINED__ = 1;
 
 const int _ENDIAN_H = 1;
 
+const int _BITS_ENDIAN_H = 1;
+
 const int __LITTLE_ENDIAN = 1234;
 
 const int __BIG_ENDIAN = 4321;
 
 const int __PDP_ENDIAN = 3412;
+
+const int _BITS_ENDIANNESS_H = 1;
 
 const int __BYTE_ORDER = 1234;
 
@@ -615,19 +763,11 @@ const int __SIZEOF_PTHREAD_RWLOCKATTR_T = 8;
 
 const int __SIZEOF_PTHREAD_BARRIERATTR_T = 4;
 
-const int __PTHREAD_MUTEX_LOCK_ELISION = 1;
-
-const int __PTHREAD_MUTEX_NUSERS_AFTER_KIND = 0;
-
-const int __PTHREAD_MUTEX_USE_UNION = 0;
-
-const int __PTHREAD_RWLOCK_ELISION_EXTRA = 0;
-
-const int __PTHREAD_RWLOCK_INT_FLAGS_SHARED = 1;
-
-const int __PTHREAD_SPINS = 0;
+const int _THREAD_MUTEX_INTERNAL_H = 1;
 
 const int __PTHREAD_MUTEX_HAVE_PREV = 1;
+
+const int __PTHREAD_RWLOCK_ELISION_EXTRA = 0;
 
 const int __have_pthread_attr_t = 1;
 

@@ -1,16 +1,15 @@
-#env = "Prod"
-env = "Staging"
-api_key = "74b1331e904f354a1db3133ba6b21d52a4b99c7dfbbf677fa1c58bcbd602976c"
+env = "Prod"
 log_settings = "config/dealer_example_logs.yml"
-max_trade_size = 0.001 # 0.001 L-BTC
-profit_ratio = 1.015 # 1.5%
+
+bitcoin_amount_submit = 0.0001
+bitcoin_amount_min = 0.0001
+bitcoin_amount_max = 0.001
+
+interest_submit = 1.01
+interest_sign = 1.005
 
 [rpc]
 host = "localhost"
 port = 7041
 login = "dealer"
 password = "<YOUR_RPC_PASSWORD>"
-
-[zmq]
-host = "localhost"
-port = 14356

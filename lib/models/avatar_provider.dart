@@ -7,19 +7,20 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as image;
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class UserAvatarData {
-  double zoom;
-  double previousZoom;
-  Offset previousOffset;
-  Offset position;
-  Image image;
-  ui.Image uiImage;
+  double zoom = 0;
+  double previousZoom = 0;
+  Offset previousOffset = Offset.zero;
+  Offset position = Offset.zero;
+  Image? image;
+  ui.Image? uiImage;
 
   @override
   String toString() {
@@ -38,11 +39,11 @@ class AvatarProvider with ChangeNotifier {
   final Reader read;
 
   final _picker = ImagePicker();
-  Object avatarProviderError;
+  Object? avatarProviderError;
 
-  PickedFile pickedFile;
-  UserAvatarData userAvatarData;
-  image.Image _userThumbnail;
+  PickedFile? pickedFile;
+  UserAvatarData userAvatarData = UserAvatarData();
+  image.Image? _userThumbnail;
 
   Future<bool> loadCameraImage() async {
     pickedFile = await _loadImage(
@@ -68,11 +69,11 @@ class AvatarProvider with ChangeNotifier {
     return false;
   }
 
-  Future<PickedFile> _loadImage({
-    ImageSource source,
+  Future<PickedFile?> _loadImage({
+    ImageSource source = ImageSource.camera,
     CameraDevice preferredCameraDevice = CameraDevice.front,
   }) async {
-    PickedFile pickedFile;
+    PickedFile? pickedFile;
     avatarProviderError = null;
 
     try {
@@ -91,8 +92,12 @@ class AvatarProvider with ChangeNotifier {
   }
 
   Future<UserAvatarData> getUserAvatarData() async {
-    imageCache.clearLiveImages();
-    final uintList = await File(pickedFile.path).readAsBytes();
+    imageCache?.clearLiveImages();
+    if (pickedFile?.path == null) {
+      return UserAvatarData();
+    }
+
+    final uintList = await File(pickedFile!.path).readAsBytes();
     final codec = await ui.instantiateImageCodec(uintList);
     final uiImage = (await codec.getNextFrame()).image;
     final image = Image.memory(uintList);
@@ -101,7 +106,7 @@ class AvatarProvider with ChangeNotifier {
       ..uiImage = uiImage
       ..position = Offset.zero
       ..previousOffset = Offset.zero
-      ..previousZoom = null
+      ..previousZoom = 0
       ..zoom = 1.0;
 
     setUserAvatarData(data);
@@ -120,6 +125,9 @@ class AvatarProvider with ChangeNotifier {
 
     if (_userThumbnail != null) {
       final storageDirectory = await getExternalStorageDirectory();
+      if (storageDirectory == null) {
+        return;
+      }
 
       final file = File('${storageDirectory.path}/avatar.jpg');
       file.writeAsBytesSync(image.encodeJpg(thumbnail));
@@ -127,13 +135,17 @@ class AvatarProvider with ChangeNotifier {
     }
   }
 
-  Future<image.Image> getUserAvatarImage() async {
+  Future<image.Image?> getUserAvatarImage() async {
     if (_userThumbnail != null) {
       logger.d('Loading user avatar from memory');
       return _userThumbnail;
     }
 
     final storageDirectory = await getExternalStorageDirectory();
+    if (storageDirectory == null) {
+      return _userThumbnail;
+    }
+
     logger.d('Loading user avatar from disk: ${storageDirectory.path}');
     final file = File('${storageDirectory.path}/avatar.jpg');
     _userThumbnail = image.decodeJpg(file.readAsBytesSync().toList());
@@ -141,14 +153,22 @@ class AvatarProvider with ChangeNotifier {
     return _userThumbnail;
   }
 
-  Future<Image> getUserAvatarThumbnail() async {
+  Future<Image?> getUserAvatarThumbnail() async {
     final thumbnail = await getUserAvatarImage();
+    if (thumbnail == null) {
+      return null;
+    }
+
     final bytes = Uint8List.fromList(image.encodeJpg(thumbnail));
     return Image.memory(bytes);
   }
 
-  void uploadAvatar() async {
+  Future<void> uploadAvatar() async {
     final img = await getUserAvatarImage();
+    if (img == null) {
+      return;
+    }
+
     final bytes = image.encodeJpg(img);
     final avatarString = base64Encode(bytes);
     read(walletProvider).uploadAvatar(avatar: avatarString);

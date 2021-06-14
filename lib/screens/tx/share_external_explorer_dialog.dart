@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 enum ShareIconType {
@@ -16,9 +17,9 @@ enum BlindType {
 
 class ShareExternalExplorerDialog extends StatelessWidget {
   const ShareExternalExplorerDialog({
-    Key key,
-    this.onBlindedPressed,
-    this.onUnblindedPressed,
+    Key? key,
+    required this.onBlindedPressed,
+    required this.onUnblindedPressed,
     this.shareIconType = ShareIconType.share,
     this.blindType = BlindType.both,
   }) : super(key: key);
@@ -97,10 +98,10 @@ enum BlindedButtonType {
 
 class BlindedButton extends StatelessWidget {
   const BlindedButton({
-    Key key,
+    Key? key,
     this.type = BlindedButtonType.blinded,
-    this.onPressed,
-    this.shareIconType,
+    required this.onPressed,
+    required this.shareIconType,
   }) : super(key: key);
 
   final BlindedButtonType type;

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/common/utils/country_codes.dart';
 
@@ -12,7 +13,7 @@ class CountriesProvider with ChangeNotifier {
   }
 
   Reader read;
-  List<CountryCode> countries = List<CountryCode>(codes.length);
+  List<CountryCode> countries = <CountryCode>[];
 
   void _loadCountries() {
     final countryCodeList = codes
@@ -36,7 +37,7 @@ class CountriesProvider with ChangeNotifier {
 
   CountryCode getSystemDefaultCountry() {
     final defaultCountryCode =
-        WidgetsBinding.instance.window.locales.first.countryCode;
+        WidgetsBinding.instance?.window.locales.first.countryCode;
     final countryCode = countries.firstWhere(
         (e) => e.countryCode == defaultCountryCode,
         orElse: () => countries.first);

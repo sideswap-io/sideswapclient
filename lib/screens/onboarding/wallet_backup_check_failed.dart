@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';

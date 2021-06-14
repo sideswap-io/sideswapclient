@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class FirstLaunch extends StatefulWidget {
   @override
@@ -35,6 +36,13 @@ class _FirstLaunchState extends State<FirstLaunch> {
                       child: Column(
                         children: [
                           GestureDetector(
+                            onTap: () {
+                              tapCount += 1;
+                              if (tapCount > 7) {
+                                tapCount = 0;
+                                context.read(walletProvider).selectEnv();
+                              }
+                            },
                             child: Column(
                               children: [
                                 Padding(
@@ -70,13 +78,6 @@ class _FirstLaunchState extends State<FirstLaunch> {
                                 ),
                               ],
                             ),
-                            onTap: () {
-                              tapCount += 1;
-                              if (tapCount > 7) {
-                                tapCount = 0;
-                                context.read(walletProvider).selectEnv();
-                              }
-                            },
                           ),
                           Expanded(
                             child: Container(),

@@ -30,5 +30,5 @@ root:
     - file
 
 loggers:
-  hyper:
+  reqwest:
     level: info

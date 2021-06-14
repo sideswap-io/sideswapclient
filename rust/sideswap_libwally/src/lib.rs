@@ -4,14 +4,15 @@ use bitcoin::hashes::Hash;
 use bitcoin::util::bip32::DerivationPath;
 use bitcoin::{PublicKey, Script};
 use ffi::size_t;
-use gdk_common::session::Session;
-use gdk_electrum::{interface::WalletCtx, ElectrumSession};
+use gdk_electrum::interface::WalletCtx;
 use std::collections::BTreeMap;
 use std::ptr::{null, null_mut};
 use std::str::FromStr;
 
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate anyhow;
 
 mod ffi;
 
@@ -34,13 +35,8 @@ pub type RedeemScript = Vec<u8>;
 pub struct PsbtInfo {
     pub send_asset: String,
     pub recv_asset: String,
+    pub send_amount: i64,
     pub recv_amount: i64,
-    pub change_amount: i64,
-    pub utxos: Vec<gdk_common::model::UnspentOutput>,
-}
-
-pub struct PsbtKeys {
-    pub priv_keys: BTreeMap<RedeemScript, bitcoin::PrivateKey>,
 }
 
 pub fn redeem_script(public_key: &PublicKey) -> Script {
@@ -51,9 +47,11 @@ pub fn redeem_script(public_key: &PublicKey) -> Script {
 }
 
 pub fn generate_psbt(
-    session: &ElectrumSession,
+    wallet: &WalletCtx,
     psbt_info: &PsbtInfo,
-) -> Result<(String, PsbtKeys), anyhow::Error> {
+    utxos: &Vec<gdk_common::model::UnspentOutput>,
+    account: u32,
+) -> Result<String, anyhow::Error> {
     struct Output {
         addr: gdk_common::model::AddressPointer,
         amount: i64,
@@ -63,20 +61,12 @@ pub fn generate_psbt(
     let mut opt = gdk_common::model::GetTransactionsOpt::default();
     opt.count = 10000;
 
-    let mut keys = PsbtKeys {
-        priv_keys: BTreeMap::new(),
-    };
-
-    let wallet = session.wallet.as_ref().unwrap();
-
     let txs = wallet.list_tx(&opt).unwrap();
 
     let mut outputs = vec![];
 
     if psbt_info.recv_amount > 0 {
-        let new_address = session
-            .get_receive_address(&serde_json::Value::Null)
-            .unwrap();
+        let new_address = wallet.get_next_address(account).unwrap();
         let recv_output = Output {
             addr: new_address,
             amount: psbt_info.recv_amount,
@@ -85,19 +75,19 @@ pub fn generate_psbt(
         outputs.push(recv_output);
     }
 
-    if psbt_info.change_amount > 0 {
-        let change_address = session
-            .get_receive_address(&serde_json::Value::Null)
-            .unwrap();
+    let input_amount = utxos.iter().map(|utxo| utxo.satoshi).sum::<u64>() as i64;
+    let change_amount = input_amount - psbt_info.send_amount;
+    if change_amount > 0 {
+        let change_address = wallet.get_next_address(account).unwrap();
         let change_output = Output {
             addr: change_address,
-            amount: psbt_info.change_amount,
+            amount: change_amount,
             asset: psbt_info.send_asset.clone(),
         };
         outputs.push(change_output);
     }
 
-    let inputs_allocation_len = psbt_info.utxos.len() as size_t;
+    let inputs_allocation_len = utxos.len() as size_t;
     let outputs_allocation_len = outputs.len() as size_t;
 
     let psbt_version = 0;
@@ -125,7 +115,7 @@ pub fn generate_psbt(
         check(ffi::wally_psbt_set_global_tx(psbt, tx));
 
         let mut psbt_tx_input = null_mut();
-        for (index, utxo) in psbt_info.utxos.iter().enumerate() {
+        for (index, utxo) in utxos.iter().enumerate() {
             let prev_tx_meta = txs.iter().find(|t| t.txid == utxo.txhash).unwrap();
             let prev_tx_hash = reversed(hex::decode(&prev_tx_meta.txid).unwrap());
             let asset_id_unprefixed = reversed(hex::decode(&psbt_info.send_asset).unwrap());
@@ -172,18 +162,27 @@ pub fn generate_psbt(
                 txid: elements::hash_types::Txid::from_str(&utxo.txhash).unwrap(),
                 vout: utxo.pt_idx,
             };
-            let unblineded = store.cache.unblinded.get(&outpoint).unwrap();
+            let unblineded = store
+                .cache
+                .accounts
+                .get(&account)
+                .unwrap()
+                .unblinded
+                .get(&outpoint)
+                .unwrap();
 
             let path = DerivationPath::from_str(&utxo.derivation_path).unwrap();
-            let xprv = wallet.xprv.derive_priv(&wallet.secp, &path).unwrap();
-            let private_key = &xprv.private_key;
-            let public_key = &bitcoin::PublicKey::from_private_key(&wallet.secp, private_key);
+            let xprv = wallet
+                .accounts
+                .get(&account)
+                .unwrap()
+                .xprv
+                .derive_priv(&wallet.secp, &path)
+                .unwrap();
+            let public_key = &xprv.private_key.public_key(&wallet.secp);
             let redeem_script = redeem_script(public_key);
             let redeem_script = redeem_script.as_bytes();
             let input = (*psbt).inputs.offset(index as isize);
-
-            keys.priv_keys
-                .insert(redeem_script.to_vec(), private_key.clone());
 
             check(ffi::wally_psbt_input_set_abf(
                 input,
@@ -215,7 +214,13 @@ pub fn generate_psbt(
         for (index, output) in outputs.iter().enumerate() {
             let path =
                 DerivationPath::from_str(&format!("m/{}/{}", 0, output.addr.pointer)).unwrap();
-            let xprv = wallet.xprv.derive_priv(&wallet.secp, &path).unwrap();
+            let xprv = wallet
+                .accounts
+                .get(&account)
+                .unwrap()
+                .xprv
+                .derive_priv(&wallet.secp, &path)
+                .unwrap();
             let private_key = &xprv.private_key;
             let public_key = &bitcoin::PublicKey::from_private_key(&wallet.secp, private_key);
             let redeem_script = redeem_script(public_key);
@@ -294,44 +299,194 @@ pub fn generate_psbt(
             .to_owned();
     }
 
-    Ok((psbt_str_copy, keys))
+    Ok(psbt_str_copy)
 }
 
 pub fn sign_psbt(
-    psbt: &str,
     wallet: &WalletCtx,
-    details: &PsbtKeys,
+    psbt_info: &PsbtInfo,
+    utxos: &Vec<gdk_common::model::UnspentOutput>,
+    psbt: &str,
+    account: u32,
 ) -> Result<String, anyhow::Error> {
     let psbt_str_copy;
+    let master_blinding_key = wallet.master_blinding.as_ref().unwrap();
+
+    let mut fee_amount: u64 = 0;
+    let mut input_amount: u64 = 0;
+    let mut recv_amount: u64 = 0;
+    let mut change_amount: u64 = 0;
+
+    let send_asset = reversed(hex::decode(&psbt_info.send_asset).unwrap());
+    let recv_asset = reversed(hex::decode(&psbt_info.recv_asset).unwrap());
 
     unsafe {
         let psbt_str = std::ffi::CString::new(psbt.as_bytes()).unwrap();
         let mut psbt = null_mut();
-        check(ffi::wally_psbt_from_base64(psbt_str.as_ptr(), &mut psbt));
+        let result = ffi::wally_psbt_from_base64(psbt_str.as_ptr(), &mut psbt);
+        ensure!(result == ffi::WALLY_OK as i32, "decoding PSET failed");
+        ensure!((*psbt).inputs_allocation_len == (*(*psbt).tx).inputs_allocation_len);
+        ensure!((*psbt).outputs_allocation_len == (*(*psbt).tx).outputs_allocation_len);
 
         let mut witness_copy = BTreeMap::new();
 
         let output_count = (*psbt).outputs_allocation_len as usize;
+        // exactly one output must be unblinded (fee output)
         for output_index in 0..output_count {
-            let tx_out = (*(*psbt).tx).outputs.offset(output_index as isize);
-            let psbt_out = (*psbt).outputs.offset(output_index as isize);
-            (*tx_out).asset = (*psbt_out).asset_commitment;
-            (*tx_out).value = (*psbt_out).value_commitment;
-            (*tx_out).nonce = (*psbt_out).nonce;
-            (*tx_out).asset_len = (*psbt_out).asset_commitment_len;
-            (*tx_out).value_len = (*psbt_out).value_commitment_len;
-            (*tx_out).nonce_len = (*psbt_out).nonce_len;
+            let tx_output = &mut *(*(*psbt).tx).outputs.offset(output_index as isize);
+            let output = &mut *(*psbt).outputs.offset(output_index as isize);
+
+            ensure!(tx_output.asset_len == ffi::WALLY_TX_ASSET_CT_ASSET_LEN as ffi::size_t);
+            let asset = std::slice::from_raw_parts(
+                tx_output.asset.offset(1),
+                tx_output.asset_len as usize - 1,
+            )
+            .to_vec();
+            let mut amount = 0;
+            let result = ffi::wally_tx_confidential_value_to_satoshi(
+                tx_output.value,
+                tx_output.value_len,
+                &mut amount,
+            );
+            ensure!(
+                result == ffi::WALLY_OK as i32,
+                "wally_tx_confidential_value_to_satoshi failed"
+            );
+
+            if tx_output.script_len != 0 {
+                let mut priv_key = [0; 32];
+                let result = ffi::wally_asset_blinding_key_to_ec_private_key(
+                    master_blinding_key.0.as_ptr(),
+                    master_blinding_key.0.len() as ffi::size_t,
+                    tx_output.script,
+                    tx_output.script_len,
+                    priv_key.as_mut_ptr(),
+                    priv_key.len() as ffi::size_t,
+                );
+                ensure!(
+                    result == ffi::WALLY_OK as i32,
+                    "wally_asset_blinding_key_to_ec_private_key failed"
+                );
+
+                let mut asset_out = [0u8; 32];
+                let mut abf_out = [0u8; 32];
+                let mut vbf_out = [0u8; 32];
+                let mut value_out = 0u64;
+                let result = ffi::wally_asset_unblind(
+                    output.nonce,
+                    output.nonce_len,
+                    priv_key.as_ptr(),
+                    priv_key.len() as ffi::size_t,
+                    output.rangeproof,
+                    output.rangeproof_len,
+                    output.value_commitment,
+                    output.value_commitment_len,
+                    tx_output.script,
+                    tx_output.script_len,
+                    output.asset_commitment,
+                    output.asset_commitment_len,
+                    asset_out.as_mut_ptr(),
+                    asset_out.len() as ffi::size_t,
+                    abf_out.as_mut_ptr(),
+                    abf_out.len() as ffi::size_t,
+                    vbf_out.as_mut_ptr(),
+                    vbf_out.len() as ffi::size_t,
+                    &mut value_out,
+                );
+                if result == ffi::WALLY_OK as i32 {
+                    ensure!(value_out == amount);
+                    ensure!(asset_out == asset.as_slice());
+                    if asset == recv_asset {
+                        recv_amount = recv_amount.checked_add(amount).unwrap();
+                    } else if asset == send_asset {
+                        change_amount = change_amount.checked_add(amount).unwrap();
+                    } else {
+                        bail!("unexpected output asset: {}", hex::encode(asset));
+                    }
+                }
+            }
+
+            tx_output.asset = output.asset_commitment;
+            tx_output.value = output.value_commitment;
+            tx_output.nonce = output.nonce;
+            tx_output.asset_len = output.asset_commitment_len;
+            tx_output.value_len = output.value_commitment_len;
+            tx_output.nonce_len = output.nonce_len;
+
+            if tx_output.script_len != 0 {
+                ensure!(output.abf_len != 0);
+                ensure!(output.vbf_len != 0);
+                let mut asset_commitment_expected = [0; 33];
+                let mut value_commitment_expected = [0; 33];
+                let result = ffi::wally_asset_generator_from_bytes(
+                    asset.as_ptr(),
+                    asset.len() as ffi::size_t,
+                    output.abf,
+                    output.abf_len,
+                    asset_commitment_expected.as_mut_ptr(),
+                    asset_commitment_expected.len() as ffi::size_t,
+                );
+                ensure!(
+                    result == ffi::WALLY_OK as i32,
+                    "wally_asset_generator_from_bytes failed"
+                );
+                let asset_commitment_actual = std::slice::from_raw_parts(
+                    output.asset_commitment,
+                    output.asset_commitment_len as usize,
+                );
+                ensure!(asset_commitment_expected == asset_commitment_actual);
+
+                let result = ffi::wally_asset_value_commitment(
+                    amount,
+                    output.vbf,
+                    output.vbf_len,
+                    asset_commitment_expected.as_ptr(),
+                    asset_commitment_expected.len() as ffi::size_t,
+                    value_commitment_expected.as_mut_ptr(),
+                    value_commitment_expected.len() as ffi::size_t,
+                );
+                ensure!(
+                    result == ffi::WALLY_OK as i32,
+                    "wally_asset_value_commitment failed"
+                );
+                let value_commitment_actual = std::slice::from_raw_parts(
+                    output.value_commitment,
+                    output.value_commitment_len as usize,
+                );
+                ensure!(value_commitment_expected == value_commitment_actual);
+            } else {
+                fee_amount += amount;
+            }
         }
+        ensure!(fee_amount != 0);
 
         let input_count = (*psbt).inputs_allocation_len as usize;
         for input_index in 0..input_count {
-            let input = (*psbt).inputs.offset(input_index as isize);
-            let redeem_script = std::slice::from_raw_parts(
-                (*input).redeem_script,
-                (*input).redeem_script_len as usize,
-            );
-            if let Some(private_key) = details.priv_keys.get(redeem_script) {
-                info!("found key for input {}", input_index);
+            let input = &mut *(*psbt).inputs.offset(input_index as isize);
+            let tx_input = &mut *(*(*psbt).tx).inputs.offset(input_index as isize);
+            ensure!(input.sighash == 0 || input.sighash == ffi::WALLY_SIGHASH_ALL);
+            input.sighash = ffi::WALLY_SIGHASH_ALL;
+            let txhash = hex::encode(reversed(tx_input.txhash.to_vec()));
+            let vout = tx_input.index;
+
+            if let Some(utxo) = utxos
+                .iter()
+                .find(|utxo| utxo.txhash == txhash && utxo.pt_idx == vout)
+            {
+                let utxo_asset = std::slice::from_raw_parts(input.asset, input.asset_len as usize);
+                ensure!(utxo_asset == send_asset);
+
+                debug!("found key for input {}", input_index);
+                input_amount = input_amount.checked_add(utxo.satoshi).unwrap();
+                let path = DerivationPath::from_str(&utxo.derivation_path).unwrap();
+                let xprv = wallet
+                    .accounts
+                    .get(&account)
+                    .unwrap()
+                    .xprv
+                    .derive_priv(&wallet.secp, &path)
+                    .unwrap();
+                let private_key = &xprv.private_key;
                 let public_key =
                     bitcoin::PublicKey::from_private_key(&wallet.secp, private_key).to_bytes();
                 let private_key = private_key.to_bytes();
@@ -353,30 +508,50 @@ pub fn sign_psbt(
                 ));
                 check(ffi::wally_psbt_finalize(psbt));
 
-                let witness = *(*(*input).final_witness).items;
+                let witness = *(*input.final_witness).items;
                 let witness =
                     std::slice::from_raw_parts(witness.witness, witness.witness_len as usize)
                         .to_vec();
-                info!("witness {}: {}", input_index, hex::encode(&witness));
+                debug!("witness {}: {}", input_index, hex::encode(&witness));
                 witness_copy.insert(input_index, witness);
             }
         }
+
+        ensure!(input_amount > change_amount);
+        let send_amount = input_amount - change_amount;
+        debug!(
+            "input_amount: {}, change_amount: {}, send_amount: {}, recv_amount: {}, fee_amount: {}, expected send_amount: {}, expected recv_amount: {}",
+            input_amount, change_amount, send_amount, recv_amount, fee_amount, psbt_info.send_amount, psbt_info.recv_amount,
+        );
+        ensure!(send_amount == psbt_info.send_amount as u64);
+        ensure!(recv_amount == psbt_info.recv_amount as u64);
 
         let mut psbt = null_mut();
         check(ffi::wally_psbt_from_base64(psbt_str.as_ptr(), &mut psbt));
 
         let input_count = (*psbt).inputs_allocation_len as usize;
         for input_index in 0..input_count {
+            let tx_input = (*(*psbt).tx).inputs.offset(input_index as isize);
+            let txhash = hex::encode(reversed((*tx_input).txhash.to_vec()));
+            let vout = (*tx_input).index;
             let input = (*psbt).inputs.offset(input_index as isize);
-            let redeem_script = std::slice::from_raw_parts(
-                (*input).redeem_script,
-                (*input).redeem_script_len as usize,
-            );
-            if let Some(private_key) = details.priv_keys.get(redeem_script) {
-                info!("found key for input {}", input_index);
+            if let Some(utxo) = utxos
+                .iter()
+                .find(|utxo| utxo.txhash == txhash && utxo.pt_idx == vout)
+            {
+                debug!("found key for input {}", input_index);
+                let path = DerivationPath::from_str(&utxo.derivation_path).unwrap();
+                let xprv = wallet
+                    .accounts
+                    .get(&account)
+                    .unwrap()
+                    .xprv
+                    .derive_priv(&wallet.secp, &path)
+                    .unwrap();
+                let private_key = xprv.private_key.to_bytes();
                 let public_key =
-                    bitcoin::PublicKey::from_private_key(&wallet.secp, private_key).to_bytes();
-                let private_key = private_key.to_bytes();
+                    bitcoin::PublicKey::from_private_key(&wallet.secp, &xprv.private_key)
+                        .to_bytes();
                 let mut map = null_mut();
                 check(ffi::wally_map_init_alloc(1, &mut map));
                 check(ffi::wally_map_add(
@@ -401,7 +576,6 @@ pub fn sign_psbt(
             if let Some(witness_copy) = witness_copy.get_mut(&input_index) {
                 let input = (*psbt).inputs.offset(input_index as isize);
                 let mut witness = &mut *(*(*input).final_witness).items;
-                info!("copy witness...");
                 witness.witness = witness_copy.as_mut_ptr();
                 witness.witness_len = witness_copy.len() as size_t;
             }
@@ -414,8 +588,6 @@ pub fn sign_psbt(
             .to_str()
             .unwrap()
             .to_owned();
-
-        info!("success");
     }
 
     Ok(psbt_str_copy)
@@ -525,36 +697,7 @@ pub fn get_network(env: Env) -> gdk_common::Network {
             ),
             ct_exponent: Some(0),
             ct_bits: Some(52),
-            validate_domain: None,
-            ct_min_value: None,
-            sync_interval: None,
-            spv_cross_validation: None,
-            spv_cross_validation_servers: None,
-        },
-    }
-}
-
-pub fn get_bitcoin_network(env: Env) -> gdk_common::Network {
-    match env {
-        Env::Local => unimplemented!(),
-        Env::Regtest => unimplemented!(),
-        Env::Prod => gdk_common::Network {
-            name: "Bitcoin".to_owned(),
-            network: "mainnet".to_owned(),
-            spv_enabled: Some(false),
-            asset_registry_url: None,
-            asset_registry_onion_url: None,
-            tls: Some(true),
-            mainnet: true,
-            liquid: false,
-            development: false,
-            tx_explorer_url: "https://blockstream.info/tx/".to_owned(),
-            address_explorer_url: "https://blockstream.info/address/".to_owned(),
-            electrum_url: Some("blockstream.info:700".to_owned()),
-            policy_asset: None,
-            ct_exponent: None,
-            ct_bits: None,
-            validate_domain: None,
+            validate_domain: Some(true),
             ct_min_value: None,
             sync_interval: None,
             spv_cross_validation: None,

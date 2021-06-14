@@ -17,8 +17,13 @@ pub enum Error {
     AssetEmpty,
     InvalidHeaders,
     InvalidSubaccount(u32),
+    AccountGapsDisallowed,
     SendAll,
     PinError,
+    /// An invalid pin attempt. Should trigger an increment to the caller counter as after 3
+    /// consecutive wrong guesses the server will delete the corresponding key. Other errors should
+    /// leave such counter unchanged.
+    InvalidPin,
     AddrParse(String),
     InvalidElectrumUrl(String),
     Bitcoin(bitcoin::util::Error),
@@ -51,6 +56,9 @@ impl Display for Error {
             Error::EmptyAddressees => write!(f, "addressees cannot be empty"),
             Error::AssetEmpty => write!(f, "asset_tag cannot be empty in liquid"),
             Error::InvalidSubaccount(sub) => write!(f, "invalid subaccount {}", sub),
+            Error::AccountGapsDisallowed => {
+                write!(f, "cannot create a new subaccount while the last one is unused")
+            }
             Error::UnknownCall => write!(f, "unknown call"),
             Error::Bitcoin(ref btcerr) => write!(f, "bitcoin: {}", btcerr),
             Error::BitcoinHashes(ref btcerr) => write!(f, "bitcoin_hashes: {}", btcerr),
@@ -67,6 +75,7 @@ impl Display for Error {
             Error::Encryption(ref send_err) => write!(f, "encryption_err: {:?}", send_err),
             Error::Secp256k1(ref err) => write!(f, "Secp256k1_err: {:?}", err),
             Error::PinError => write!(f, "PinError"),
+            Error::InvalidPin => write!(f, "invalid pin"),
             Error::InvalidElectrumUrl(url) => write!(f, "Invalid Electrum URL: {}", url),
         }
     }
@@ -218,6 +227,12 @@ impl From<PoisonError<RwLockWriteGuard<'_, StoreMeta>>> for Error {
 
 impl From<aead::Error> for Error {
     fn from(err: aead::Error) -> Self {
+        Error::Generic(err.to_string())
+    }
+}
+
+impl From<ureq::Error> for Error {
+    fn from(err: ureq::Error) -> Self {
         Error::Generic(err.to_string())
     }
 }

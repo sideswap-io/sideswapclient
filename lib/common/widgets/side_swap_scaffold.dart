@@ -1,12 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/background/background_painter.dart';
 
 class SideSwapScaffold extends StatefulWidget {
   SideSwapScaffold({
-    Key key,
+    Key? key,
     this.onWillPop,
     this.extendBody = false,
     this.extendBodyBehindAppBar = false,
@@ -32,25 +33,25 @@ class SideSwapScaffold extends StatefulWidget {
   }) : super(key: key);
 
   final bool sideSwapBackground;
-  final WillPopCallback onWillPop;
+  final WillPopCallback? onWillPop;
   final bool extendBody;
   final bool extendBodyBehindAppBar;
-  final PreferredSizeWidget appBar;
-  final Widget body;
-  final Widget floatingActionButton;
-  final FloatingActionButtonLocation floatingActionButtonLocation;
-  final FloatingActionButtonAnimator floatingActionButtonAnimator;
-  final List<Widget> persistentFooterButtons;
-  final Widget drawer;
-  final Widget endDrawer;
-  final Color drawerScrimColor;
-  final Color backgroundColor;
-  final Widget bottomNavigationBar;
-  final Widget bottomSheet;
-  final bool resizeToAvoidBottomInset;
+  final PreferredSizeWidget? appBar;
+  final Widget? body;
+  final Widget? floatingActionButton;
+  final FloatingActionButtonLocation? floatingActionButtonLocation;
+  final FloatingActionButtonAnimator? floatingActionButtonAnimator;
+  final List<Widget>? persistentFooterButtons;
+  final Widget? drawer;
+  final Widget? endDrawer;
+  final Color? drawerScrimColor;
+  final Color? backgroundColor;
+  final Widget? bottomNavigationBar;
+  final Widget? bottomSheet;
+  final bool? resizeToAvoidBottomInset;
   final bool primary;
   final DragStartBehavior drawerDragStartBehavior;
-  final double drawerEdgeDragWidth;
+  final double? drawerEdgeDragWidth;
   final bool drawerEnableOpenDragGesture;
   final bool endDrawerEnableOpenDragGesture;
 

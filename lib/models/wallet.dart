@@ -10,17 +10,22 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:package_info/package_info.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:vibration/vibration.dart';
+import 'package:move_to_background/move_to_background.dart';
 
 import 'package:sideswap/common/bitmap_helper.dart';
 import 'package:sideswap/common/encryption.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/common/widgets/insufficient_balance_dialog.dart';
-import 'package:sideswap/models/assets_precache.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/contact_provider.dart';
 import 'package:sideswap/models/notifications_service.dart';
@@ -31,6 +36,7 @@ import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
+import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
@@ -43,6 +49,7 @@ enum Status {
   noWallet,
   selectEnv,
   lockedWalet,
+  walletLoading,
 
   newWalletBackupPrompt,
   newWalletBackupView,
@@ -83,6 +90,7 @@ enum Status {
   settingsAboutUs,
   settingsSecurity,
   settingsUserDetails,
+  settingsNetwork,
 
   paymentPage,
   paymentAmountPage,
@@ -90,6 +98,7 @@ enum Status {
 
   orderPopup,
   orderSuccess,
+  orderResponseSuccess,
 }
 
 enum AddrType {
@@ -124,7 +133,12 @@ class PinData {
   final String pinIdentifier;
   final String error;
 
-  PinData({this.salt, this.encryptedData, this.pinIdentifier, this.error});
+  PinData({
+    this.salt = '',
+    this.encryptedData = '',
+    this.pinIdentifier = '',
+    this.error = '',
+  });
 
   @override
   String toString() {
@@ -137,7 +151,7 @@ class PinDecryptedData {
   final bool success;
   final String mnemonic;
 
-  PinDecryptedData(this.success, {this.mnemonic, this.error});
+  PinDecryptedData(this.success, {this.mnemonic = '', this.error = ''});
 
   @override
   String toString() =>
@@ -169,10 +183,10 @@ class WalletChangeNotifier with ChangeNotifier {
 
   final _encryption = Encryption();
 
-  String _mnemonic;
+  String _mnemonic = '';
   final enabledAssetIds = <String>[];
 
-  GlobalKey<NavigatorState> navigatorKey;
+  late GlobalKey<NavigatorState> navigatorKey;
 
   Status _status = Status.loading;
   Status get status => _status;
@@ -182,17 +196,17 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  ServerStatus _serverStatus;
-  ServerStatus get serverStatus => _serverStatus;
+  ServerStatus? _serverStatus;
+  ServerStatus? get serverStatus => _serverStatus;
 
   final Map<String, From_PriceUpdate> _prices = {};
   Map<String, From_PriceUpdate> get prices => _prices;
 
-  String selectedWalletAsset;
-  String recvAddress;
+  String selectedWalletAsset = '';
+  String recvAddress = '';
 
-  Map<int, List<String>> backupCheckAllWords;
-  Map<int, int> backupCheckSelectedWords;
+  Map<int, List<String>> backupCheckAllWords = {};
+  Map<int, int> backupCheckSelectedWords = {};
 
   final _assetIds = <String>[];
   var assets = <String, Asset>{};
@@ -201,7 +215,9 @@ class WalletChangeNotifier with ChangeNotifier {
 
   final allTxs = <String, TransItem>{};
   final newTransItemSubject = BehaviorSubject<TransItem>();
-  StreamSubscription<TransItem> txDetailsSubscription;
+  StreamSubscription<TransItem>? txDetailsSubscription;
+
+  final _recvSubject = PublishSubject<From>();
 
   // Cached version of allTxs
   final allAssets = <String, List<TxItem>>{};
@@ -212,14 +228,18 @@ class WalletChangeNotifier with ChangeNotifier {
   // Toggle assets page
   var filteredToggleAssetIds = <String>[];
 
-  TransItem txDetails;
+  var pendingPushMessages = <String>[];
+
+  var clientReady = false;
+
+  late TransItem txDetails;
 
   final _txMemoUpdates = <String, String>{};
-  String _currentTxMemoUpdate;
+  String _currentTxMemoUpdate = '';
 
   bool settingsBiometricAvailable = false;
 
-  OrderDetailsData orderDetailsData;
+  OrderDetailsData orderDetailsData = OrderDetailsData.empty();
   PublishSubject<String> explorerUrlSubject = PublishSubject<String>();
 
   PublishSubject<PinData> pinEncryptDataSubject = PublishSubject<PinData>();
@@ -234,38 +254,27 @@ class WalletChangeNotifier with ChangeNotifier {
       throw ErrorDescription('client is not initialized');
     }
     final buf = to.writeToBuffer();
-    final pointer = allocate<ffi.Uint8>(count: buf.length);
+    // final pointer = allocate<ffi.Uint8>(count: buf.length);
+    final pointer = calloc<ffi.Uint8>(buf.length);
     for (var i = 0; i < buf.length; i++) {
       pointer[i] = buf[i];
     }
     Lib.lib.sideswap_send_request(_client, pointer.cast(), buf.length);
-    free(pointer);
+    calloc.free(pointer);
   }
 
-  WalletChangeNotifier(this.read) {
-    Future.microtask(() async {
-      await read(configProvider).init();
+  WalletChangeNotifier(this.read);
 
-      // TODO: temporary commented
-      // final savedTxs = read(configProvider).allTxs;
-      // for (var key in savedTxs.keys) {
-      //   allTxs[key] = savedTxs[key];
-      // }
-
-      await read(assetsPrecacheChangeNotifier).precache();
-      Future.delayed(Duration(seconds: 1), () {
-        startClient();
-      });
-    });
-  }
-
-  ReceivePort _receivePort;
+  late ReceivePort _receivePort;
 
   Future<void> startClient() async {
+    _recvSubject.listen((value) async {
+      await _recvMsg(value);
+    });
+
     final storeDartPostCObject = Lib.dynLib
         .lookupFunction<dartPostCObject, dartPostCObject>(
             'store_dart_post_cobject');
-    assert(storeDartPostCObject != null);
     storeDartPostCObject(ffi.NativeApi.postCObject);
 
     final env = read(configProvider).env;
@@ -276,7 +285,7 @@ class WalletChangeNotifier with ChangeNotifier {
     _receivePort = ReceivePort();
 
     final workDir = await getApplicationSupportDirectory();
-    final workPath = Utf8.toUtf8(workDir.absolute.path);
+    final workPath = workDir.absolute.path.toNativeUtf8();
 
     final packageInfo =
         !Platform.isLinux ? await PackageInfo.fromPlatform() : null;
@@ -285,15 +294,26 @@ class WalletChangeNotifier with ChangeNotifier {
         : '';
 
     Lib.lib.sideswap_client_start(_client, workPath.cast(),
-        Utf8.toUtf8(version).cast(), _receivePort.sendPort.nativePort);
+        version.toNativeUtf8().cast(), _receivePort.sendPort.nativePort);
 
     _receivePort.listen((dynamic msgPtr) async {
       final ptr = Lib.lib.sideswap_msg_ptr(msgPtr as int);
-      final len = Lib.lib.sideswap_msg_len(msgPtr as int);
+      final len = Lib.lib.sideswap_msg_len(msgPtr);
       final msg = From.fromBuffer(ptr.asTypedList(len));
-      Lib.lib.sideswap_msg_free(msgPtr as int);
-      await _recvMsg(msg);
+      Lib.lib.sideswap_msg_free(msgPtr);
+      _recvSubject.add(msg);
     });
+
+    // check initial deep link
+    // process links before login request for loading screen to work properly
+    final initialUri = read(universalLinkProvider).initialUri;
+    if (initialUri != null) {
+      logger.d('Initial uri found: $initialUri');
+      read(universalLinkProvider).handleSubmitOrder(initialUri);
+    }
+
+    clientReady = true;
+    processPendingPushMessages();
 
     if (read(configProvider).mnemonicEncrypted.isNotEmpty) {
       if (await _encryption.canAuthenticate() &&
@@ -319,11 +339,22 @@ class WalletChangeNotifier with ChangeNotifier {
     await notificationService.handleDynamicLinks();
   }
 
-  void _addTxItem(TransItem item, String assetId) {
+  @override
+  void notifyListeners() {
+    logger.d('notifyListeners()');
+    super.notifyListeners();
+  }
+
+  void _addTxItem(TransItem item, String? assetId) {
+    if (assetId == null) {
+      logger.e('AssetId is null for txitem: $item');
+      return;
+    }
+
     if (allAssets[assetId] == null) {
       allAssets[assetId] = [];
     }
-    allAssets[assetId].add(TxItem(item: item));
+    allAssets[assetId]?.add(TxItem(item: item));
   }
 
   void refreshTxs() {
@@ -347,7 +378,6 @@ class WalletChangeNotifier with ChangeNotifier {
     Future.microtask(() async => await buildTxList(allAssets));
   }
 
-  // TODO: temporary commented
   Future<void> addTxItem(TransItem item) async {
     allTxs[item.id] = item;
     newTransItemSubject.add(item);
@@ -396,7 +426,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.swapFailed:
         logger.w('Swap failed: ${from.swapFailed}');
         read(swapProvider).swapNetworkError = from.swapFailed;
-        read(utilsProvider)
+        await read(utilsProvider)
             .showErrorDialog(read(swapProvider).swapNetworkError);
         break;
 
@@ -404,6 +434,7 @@ class WalletChangeNotifier with ChangeNotifier {
         var txItem = from.swapSucceed;
         await addTxItem(txItem);
         showSwapTxDetails(txItem);
+        read(swapProvider).swapReset();
         break;
 
       case From_Msg.swapWaitTx:
@@ -430,7 +461,8 @@ class WalletChangeNotifier with ChangeNotifier {
               showInsufficientBalanceDialog(
                   navigatorKey.currentContext, kLiquidBitcoinTicker);
             } else {
-              read(utilsProvider).showErrorDialog(from.createTxResult.errorMsg);
+              await read(utilsProvider)
+                  .showErrorDialog(from.createTxResult.errorMsg);
             }
             break;
           case From_CreateTxResult_Result.networkFee:
@@ -464,7 +496,10 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.blindedValues:
         final url = generateTxidUrl(
-            from.blindedValues.txid, true, from.blindedValues.blindedValues);
+          from.blindedValues.txid,
+          true,
+          blindedValues: from.blindedValues.blindedValues,
+        );
         explorerUrlSubject.add(url);
         break;
 
@@ -475,8 +510,14 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.priceUpdate:
-        _prices[from.priceUpdate.asset] = from.priceUpdate;
-        notifyListeners();
+        final oldPrice = _prices[from.priceUpdate.asset];
+        final newPrice = from.priceUpdate;
+        if (oldPrice == null ||
+            oldPrice.ask != newPrice.ask ||
+            oldPrice.bid != newPrice.bid) {
+          _prices[from.priceUpdate.asset] = from.priceUpdate;
+          notifyListeners();
+        }
         break;
 
       case From_Msg.registerPhone:
@@ -531,7 +572,8 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.showMessage:
-        read(utilsProvider).showErrorDialog(from.showMessage.text);
+        await read(utilsProvider).showErrorDialog(from.showMessage.text,
+            buttonText: 'CONTINUE'.tr());
         break;
 
       case From_Msg.encryptPin:
@@ -561,6 +603,103 @@ class WalletChangeNotifier with ChangeNotifier {
 
         break;
 
+      case From_Msg.submitReview:
+        logger.d('new submit {}', from.submitReview);
+
+        final sellBitcoin = from.submitReview.sellBitcoin;
+
+        var orderType = OrderType.submit;
+        switch (from.submitReview.step) {
+          case (From_SubmitReview_Step.SUBMIT):
+            orderType = OrderType.submit;
+            break;
+          case (From_SubmitReview_Step.QUOTE):
+            orderType = OrderType.quote;
+            break;
+          case (From_SubmitReview_Step.SIGN):
+            orderType = OrderType.sign;
+            break;
+        }
+
+        final fromSr = from.submitReview;
+        final assetAmount = fromSr.assetAmount;
+        final assetId = fromSr.asset;
+        final bitcoinAmount = fromSr.bitcoinAmount;
+        final assetPrecision = getPrecisionForAssetId(assetId: assetId);
+        final bitcoinPrecision =
+            getPrecisionForTicker(ticker: kLiquidBitcoinTicker);
+        final orderId = fromSr.orderId;
+        final price = fromSr.price;
+        final fee = amountStr(from.submitReview.serverFee.toInt(),
+            precision: bitcoinPrecision);
+        final indexPrice = from.submitReview.indexPrice;
+
+        final priceStr = DecimalCutterTextInputFormatter(
+          decimalRange: 2,
+        )
+            .formatEditUpdate(TextEditingValue(text: price.toString()),
+                TextEditingValue(text: price.toString()))
+            .text;
+
+        orderDetailsData = OrderDetailsData(
+          bitcoinAmount:
+              amountStr(bitcoinAmount.toInt(), precision: bitcoinPrecision),
+          priceAmount: priceStr,
+          assetAmount:
+              amountStr(assetAmount.toInt(), precision: assetPrecision),
+          assetId: assetId,
+          orderId: orderId,
+          orderType: orderType,
+          sellBitcoin: sellBitcoin,
+          fee: fee.toString(),
+          indexPrice: indexPrice,
+        );
+
+        await setOrder();
+        break;
+
+      case From_Msg.submitResult:
+        switch (from.submitResult.whichResult()) {
+          case From_SubmitResult_Result.submitSucceed:
+            if (!orderDetailsData.accept) {
+              return;
+            }
+
+            if (orderDetailsData.orderType == OrderType.submit) {
+              setRegistered();
+              if (from.submitResult.minimizeApp) {
+                minimizeApp();
+              }
+            } else if (orderDetailsData.orderType == OrderType.quote) {
+              setResponseSuccess();
+            } else if (orderDetailsData.orderType == OrderType.sign) {
+              setRegistered();
+            }
+            break;
+
+          case From_SubmitResult_Result.swapSucceed:
+            var txItem = from.submitResult.swapSucceed;
+            await addTxItem(txItem);
+            showSwapTxDetails(txItem);
+            break;
+
+          case From_SubmitResult_Result.error:
+            await read(utilsProvider).showErrorDialog(from.submitResult.error,
+                buttonText: 'CONTINUE'.tr());
+            setRegistered();
+            if (from.submitResult.minimizeApp) {
+              minimizeApp();
+            }
+            break;
+          case From_SubmitResult_Result.notSet:
+            throw Exception('invalid SubmitResult message');
+        }
+        break;
+
+      case From_Msg.walletLoaded:
+        setRegistered();
+        break;
+
       case From_Msg.notSet:
         throw Exception('invalid empty message');
     }
@@ -568,7 +707,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void openTxUrl(String txid, bool isLiquid, bool unblinded) {
     if (!isLiquid || !unblinded) {
-      final url = generateTxidUrl(txid, isLiquid, null);
+      final url = generateTxidUrl(txid, isLiquid);
       explorerUrlSubject.add(url);
       return;
     }
@@ -640,13 +779,13 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  int parseBitcoinAmount(String value) {
+  int? parseBitcoinAmount(String? value) {
     if (value == null) {
       return null;
     }
 
     final amount =
-        Lib.lib.sideswap_parse_bitcoin_amount(Utf8.toUtf8(value).cast());
+        Lib.lib.sideswap_parse_bitcoin_amount(value.toNativeUtf8().cast());
     if (!Lib.lib.sideswap_parsed_amount_valid(amount)) {
       return null;
     }
@@ -655,13 +794,17 @@ class WalletChangeNotifier with ChangeNotifier {
 
   String getNewMnemonic() {
     final mnemonicPtr = Lib.lib.sideswap_generate_mnemonic12();
-    final mnemonic = Utf8.fromUtf8(mnemonicPtr.cast());
+    final mnemonic = mnemonicPtr.cast<Utf8>().toDartString();
     Lib.lib.sideswap_string_free(mnemonicPtr);
     return mnemonic;
   }
 
   bool validateMnemonic(String mnemonic) {
-    return Lib.lib.sideswap_verify_mnemonic(Utf8.toUtf8(mnemonic).cast());
+    if (mnemonic.isEmpty) {
+      return false;
+    }
+
+    return Lib.lib.sideswap_verify_mnemonic(mnemonic.toNativeUtf8().cast());
   }
 
   void updateEnabledAssetIds() {
@@ -676,7 +819,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   List<String> getMnemonicWords() {
-    return _mnemonic?.split(' ');
+    return _mnemonic.split(' ');
   }
 
   Future<void> setReviewLicenseCreateWallet() async {
@@ -766,7 +909,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<bool> _registerWallet(bool enableBiometric) async {
-    if (_mnemonic == null || _mnemonic.isEmpty) {
+    if (_mnemonic.isEmpty) {
       logger.e('Mnemonic is empty!');
       return false;
     }
@@ -784,9 +927,10 @@ class WalletChangeNotifier with ChangeNotifier {
       await read(configProvider)
           .setMnemonicEncrypted(await _encryption.encryptFallback(_mnemonic));
       // Should not happen, something is very wrong
-      if (read(configProvider).mnemonicEncrypted == null) {
+      if (read(configProvider).mnemonicEncrypted.isEmpty) {
         return false;
       }
+
       await read(configProvider).setUseBiometricProtection(false);
     }
 
@@ -796,8 +940,6 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> loginAndLoadMainPage() async {
     _login(_mnemonic);
     read(swapProvider).checkSelectedAsset();
-    status = Status.registered;
-    notifyListeners();
   }
 
   Future<void> acceptLicense() async {
@@ -841,12 +983,16 @@ class WalletChangeNotifier with ChangeNotifier {
     final allWords = _mnemonic.split(' ');
     for (var wordIndex in backupCheckAllWords.keys) {
       final correctWord = allWords[wordIndex];
-      assert(correctWord != null);
       final selectedWordIndex = backupCheckSelectedWords[wordIndex];
       if (selectedWordIndex == null) {
         return false;
       }
+
       final wordList = backupCheckAllWords[wordIndex];
+      if (wordList == null) {
+        return false;
+      }
+
       final selectedWord = wordList[selectedWordIndex];
       if (selectedWord != correctWord) {
         return false;
@@ -896,7 +1042,6 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.pinSetup:
       case Status.pinSuccess:
         return false;
-        break;
 
       case Status.confirmPhone:
         status = Status.associatePhoneWelcome;
@@ -933,6 +1078,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.assetReceiveFromWalletMain:
       case Status.orderPopup:
       case Status.orderSuccess:
+      case Status.orderResponseSuccess:
         status = Status.registered;
         final uiStateArgs = read(uiStateArgsProvider);
         uiStateArgs.walletMainArguments =
@@ -955,6 +1101,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.settingsSecurity:
       case Status.settingsAboutUs:
       case Status.settingsUserDetails:
+      case Status.settingsNetwork:
         status = Status.settingsPage;
         break;
       case Status.settingsPage:
@@ -976,6 +1123,7 @@ class WalletChangeNotifier with ChangeNotifier {
         status = Status.registered;
         break;
       case Status.loading:
+      case Status.walletLoading:
       case Status.noWallet:
       case Status.lockedWalet:
         return true;
@@ -999,12 +1147,15 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.login = To_Login();
     msg.login.mnemonic = mnemonic;
     sendMsg(msg);
+
+    status = Status.walletLoading;
+    notifyListeners();
   }
 
   void _logout() {
     balances = {};
-    read(swapProvider).swapSendAsset = null;
-    read(swapProvider).swapRecvAsset = null;
+    read(swapProvider).swapSendAsset = '';
+    read(swapProvider).swapRecvAsset = '';
 
     final msg = To();
     msg.logout = Empty();
@@ -1018,7 +1169,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void prepareAssetReceive() {
-    recvAddress = null;
+    recvAddress = '';
 
     final msg = To();
     msg.getRecvAddress = Empty();
@@ -1089,25 +1240,24 @@ class WalletChangeNotifier with ChangeNotifier {
       case AddrType.elements:
         return SIDESWAP_ELEMENTS;
     }
-    throw Exception('unexpected value');
   }
 
   bool isAddrValid(String addr, AddrType addrType) {
-    if (addr == null || addr.isEmpty || _client == 0) {
+    if (addr.isEmpty || _client == 0) {
       return false;
     }
 
-    final addrPtr = Utf8.toUtf8(addr);
+    final addrPtr = addr.toNativeUtf8();
     return Lib.lib.sideswap_check_addr(
         _client, addrPtr.cast(), convertAddrType(addrType));
   }
 
   String commonAddrErrorStr(String addr, AddrType addrType) {
-    if (addr == null || addr == '') {
-      return null;
+    if (addr.isEmpty) {
+      return addr;
     }
 
-    return isAddrValid(addr, addrType) ? null : 'Invalid address'.tr();
+    return isAddrValid(addr, addrType) ? '' : 'Invalid address'.tr();
   }
 
   String elementsAddrErrorStr(String addr) {
@@ -1119,8 +1269,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   String amountErrorStr(String value, int min, int max) {
-    if (value == null || value == '') {
-      return null;
+    if (value.isEmpty) {
+      return value;
     }
 
     var amount = parseBitcoinAmount(value);
@@ -1136,7 +1286,7 @@ class WalletChangeNotifier with ChangeNotifier {
       return 'Amount is too high'.tr();
     }
 
-    return null;
+    return '';
   }
 
   void assetSendConfirm() {
@@ -1167,7 +1317,12 @@ class WalletChangeNotifier with ChangeNotifier {
     final filterLowerCase = filter.toLowerCase();
     final filteredToggleAssetIdsNew = <String>[];
     for (var assetId in _assetIds) {
-      if (_showAsset(assets[assetId], filterLowerCase)) {
+      final asset = assets[assetId];
+      if (asset == null) {
+        continue;
+      }
+
+      if (_showAsset(asset, filterLowerCase)) {
         filteredToggleAssetIdsNew.add(assetId);
       }
     }
@@ -1177,7 +1332,11 @@ class WalletChangeNotifier with ChangeNotifier {
     }
   }
 
-  Future<void> toggleAssetVisibility(String assetId) async {
+  Future<void> toggleAssetVisibility(String? assetId) async {
+    if (assetId == null) {
+      return;
+    }
+
     final disableAssetIds = read(configProvider).disabledAssetIds;
     if (disableAssetIds.contains(assetId)) {
       disableAssetIds.remove(assetId);
@@ -1186,7 +1345,6 @@ class WalletChangeNotifier with ChangeNotifier {
     }
     await read(configProvider).setDisabledAssetIds(disableAssetIds);
     updateEnabledAssetIds();
-    notifyListeners();
   }
 
   void editTxMemo(Object arguments) {
@@ -1195,12 +1353,16 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  String txMemo(Tx tx) {
-    final updatedMemo = _txMemoUpdates[tx?.txid];
+  String txMemo(Tx? tx) {
+    if (tx == null) {
+      return '';
+    }
+
+    final updatedMemo = _txMemoUpdates[tx.txid];
     if (updatedMemo != null) {
       return updatedMemo;
     }
-    return tx?.memo;
+    return tx.memo;
   }
 
   void onTxMemoChanged(String value) {
@@ -1208,17 +1370,16 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _applyTxMemoChange() {
-    if (_currentTxMemoUpdate != null && txDetails.tx != null) {
-      _txMemoUpdates[txDetails.tx.txid] = _currentTxMemoUpdate;
+    final txid = txDetails.tx.txid;
+    _txMemoUpdates[txid] = _currentTxMemoUpdate;
 
-      var msg = To();
-      msg.setMemo = To_SetMemo();
-      msg.setMemo.txid = txDetails.tx.txid;
-      msg.setMemo.memo = _currentTxMemoUpdate;
-      sendMsg(msg);
+    var msg = To();
+    msg.setMemo = To_SetMemo();
+    msg.setMemo.txid = txid;
+    msg.setMemo.memo = _currentTxMemoUpdate;
+    sendMsg(msg);
 
-      _currentTxMemoUpdate;
-    }
+    _currentTxMemoUpdate;
   }
 
   Future<void> settingsViewBackup() async {
@@ -1237,9 +1398,7 @@ class WalletChangeNotifier with ChangeNotifier {
             .decryptBiometric(read(configProvider).mnemonicEncrypted)
         : await _encryption
             .decryptFallback(read(configProvider).mnemonicEncrypted);
-    if (mnemonic != null &&
-        mnemonic == _mnemonic &&
-        validateMnemonic(mnemonic)) {
+    if (mnemonic == _mnemonic && validateMnemonic(mnemonic)) {
       status = Status.settingsBackup;
       notifyListeners();
     }
@@ -1257,6 +1416,11 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void settingsViewAboutUs() {
     status = Status.settingsAboutUs;
+    notifyListeners();
+  }
+
+  void settingsNetwork() {
+    status = Status.settingsNetwork;
     notifyListeners();
   }
 
@@ -1292,8 +1456,6 @@ class WalletChangeNotifier with ChangeNotifier {
     if (read(configProvider).usePinProtection) {
       if (await read(pinProtectionProvider).pinBlockadeUnlocked()) {
         _login(_mnemonic);
-        status = Status.registered;
-        notifyListeners();
         return;
       }
 
@@ -1309,9 +1471,8 @@ class WalletChangeNotifier with ChangeNotifier {
       _mnemonic = await _encryption
           .decryptFallback(read(configProvider).mnemonicEncrypted);
     }
-    if (_mnemonic != null && validateMnemonic(_mnemonic)) {
+    if (validateMnemonic(_mnemonic)) {
       _login(_mnemonic);
-      status = Status.registered;
     } else {
       // TODO: Show error
       status = Status.lockedWalet;
@@ -1322,13 +1483,16 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> settingsEnableBiometric() async {
     final mnemonic = await _encryption
         .decryptFallback(read(configProvider).mnemonicEncrypted);
-    if (mnemonic == null) {
+
+    if (mnemonic.isEmpty) {
       return;
     }
+
     final mnemonicEncrypted = await _encryption.encryptBiometric(mnemonic);
-    if (mnemonicEncrypted == null) {
+    if (mnemonicEncrypted.isEmpty) {
       return;
     }
+
     await read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
     _mnemonic = mnemonic;
     await read(configProvider).setUseBiometricProtection(true);
@@ -1338,13 +1502,15 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> settingsDisableBiometric() async {
     final mnemonic = await _encryption
         .decryptBiometric(read(configProvider).mnemonicEncrypted);
-    if (mnemonic == null) {
+    if (mnemonic.isEmpty) {
       return;
     }
+
     final mnemonicEncrypted = await _encryption.encryptFallback(mnemonic);
-    if (mnemonicEncrypted == null) {
+    if (mnemonicEncrypted.isEmpty) {
       return;
     }
+
     await read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
     _mnemonic = mnemonic;
     await read(configProvider).setUseBiometricProtection(false);
@@ -1355,24 +1521,27 @@ class WalletChangeNotifier with ChangeNotifier {
     final _dateFormat = DateFormat('yyyy-MM-dd');
 
     value.keys.forEach((key) {
-      value[key] = value[key]
-        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      final listItems = value[key];
+      if (listItems != null) {
+        value[key] = listItems..sort((a, b) => b.compareTo(a));
 
-      final tempAssets = <TxItem>[];
-      value[key].forEach((e) {
-        if (tempAssets.isEmpty) {
-          tempAssets.add(e.copyWith(showDate: true));
-        } else {
-          final last = DateTime.parse(_dateFormat.format(
-              DateTime.fromMillisecondsSinceEpoch(tempAssets.last.createdAt)));
-          final current = DateTime.parse(_dateFormat
-              .format(DateTime.fromMillisecondsSinceEpoch(e.createdAt)));
-          final diff = last.difference(current).inDays;
-          tempAssets.add(e.copyWith(showDate: diff != 0));
-        }
-      });
+        final tempAssets = <TxItem>[];
+        listItems.forEach((e) {
+          if (tempAssets.isEmpty) {
+            tempAssets.add(e.copyWith(showDate: true));
+          } else {
+            final last = DateTime.parse(_dateFormat.format(
+                DateTime.fromMillisecondsSinceEpoch(
+                    tempAssets.last.createdAt)));
+            final current = DateTime.parse(_dateFormat
+                .format(DateTime.fromMillisecondsSinceEpoch(e.createdAt)));
+            final diff = last.difference(current).inDays;
+            tempAssets.add(e.copyWith(showDate: diff != 0));
+          }
+        });
 
-      value[key] = tempAssets;
+        value[key] = tempAssets;
+      }
     });
 
     txItemMap = value;
@@ -1413,7 +1582,7 @@ class WalletChangeNotifier with ChangeNotifier {
           .decryptFallback(read(configProvider).mnemonicEncrypted);
     }
 
-    if (_mnemonic != null && validateMnemonic(_mnemonic)) {
+    if (validateMnemonic(_mnemonic)) {
       return true;
     }
 
@@ -1448,14 +1617,18 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void updatePushToken(String token) {
+  void updatePushToken(String? token) {
+    if (token == null) {
+      return;
+    }
+
     var msg = To();
     msg.updatePushToken = To_UpdatePushToken();
     msg.updatePushToken.token = token;
     sendMsg(msg);
   }
 
-  double _getPriceBitcoin(String assetId) {
+  double _getPriceBitcoin(String? assetId) {
     if (assetId == liquidAssetId()) {
       return 1;
     }
@@ -1466,24 +1639,28 @@ class WalletChangeNotifier with ChangeNotifier {
     return (price.bid + price.ask) / 2;
   }
 
-  double _getPrice(String num, String den) {
-    final priceNum = _getPriceBitcoin(num);
-    final priceDen = _getPriceBitcoin(den);
-    if (priceDen == 0 || priceNum == 0) {
+  double _getPrice(String? priceNum, String priceDen) {
+    final _priceNum = _getPriceBitcoin(priceNum);
+    final _priceDen = _getPriceBitcoin(priceDen);
+    if (_priceDen == 0 || _priceNum == 0) {
       return 0;
     }
-    return priceNum / priceDen;
+    return _priceNum / _priceDen;
   }
 
-  double _getPriceUsd(String den) {
-    return _getPrice(tetherAssetId(), den);
+  double _getPriceUsd(String assetId) {
+    return _getPrice(tetherAssetId(), assetId);
   }
 
-  double getAmountUsd(String assetId, double amount) {
+  double getAmountUsd(String? assetId, double amount) {
+    if (assetId == null) {
+      return 0;
+    }
+
     return amount * _getPriceUsd(assetId);
   }
 
-  Asset getAssetByTicker(String ticker) {
+  Asset? getAssetByTicker(String ticker) {
     for (var asset in assets.values) {
       if (asset.ticker == ticker) {
         return asset;
@@ -1492,7 +1669,7 @@ class WalletChangeNotifier with ChangeNotifier {
     return null;
   }
 
-  Asset getAssetById(String assetId) {
+  Asset? getAssetById(String assetId) {
     for (var asset in assets.values) {
       if (asset.assetId == assetId) {
         return asset;
@@ -1501,18 +1678,18 @@ class WalletChangeNotifier with ChangeNotifier {
     return null;
   }
 
-  String _liquidAssetId;
-  String liquidAssetId() {
+  String? _liquidAssetId;
+  String? liquidAssetId() {
     return _liquidAssetId;
   }
 
-  String _bitcoinAssetId;
-  String bitcoinAssetId() {
+  String? _bitcoinAssetId;
+  String? bitcoinAssetId() {
     return _bitcoinAssetId;
   }
 
-  String _tetherAssetId;
-  String tetherAssetId() {
+  String? _tetherAssetId;
+  String? tetherAssetId() {
     return _tetherAssetId;
   }
 
@@ -1555,31 +1732,69 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void setOrder({@required OrderDetailsData orderDetailsData}) {
+  Future<void> setOrder() async {
     status = Status.orderPopup;
-    this.orderDetailsData = orderDetailsData;
     notifyListeners();
+
+    if (orderDetailsData.orderType == OrderType.sign) {
+      unawaited(FlutterRingtonePlayer.playNotification());
+      unawaited(Vibration.vibrate());
+    }
   }
 
-  void setPlaceOrderSuccess() {
+  void setSubmitDecision({
+    required bool autosign,
+    bool accept = false,
+  }) {
+    orderDetailsData = orderDetailsData.copyWith(accept: accept);
+    if (orderDetailsData.orderId.isEmpty) {
+      return;
+    }
+
+    final msg = To();
+    msg.submitDecision = To_SubmitDecision();
+    msg.submitDecision.orderId = orderDetailsData.orderId;
+    msg.submitDecision.accept = accept;
+    msg.submitDecision.autoSign = autosign;
+    sendMsg(msg);
+  }
+
+  void setOrderSuccess() {
     status = Status.orderSuccess;
     notifyListeners();
   }
 
-  void setExecuteOrderSuccess() {
-    // TODO: add code
-    status = Status.registered;
+  void setResponseSuccess() {
+    status = Status.orderResponseSuccess;
     notifyListeners();
   }
 
-  void linkOrder(String orderId) {
+  void submitOrder(String sessionId, String assetId, double bitcoinAmount,
+      double price, double? indexPrice) {
+    final msg = To();
+    msg.submitOrder = To_SubmitOrder();
+    msg.submitOrder.sessionId = sessionId;
+    msg.submitOrder.assetId = assetId;
+    msg.submitOrder.bitcoinAmount = bitcoinAmount;
+    msg.submitOrder.price = price;
+    if (indexPrice != null) {
+      msg.submitOrder.indexPrice = indexPrice;
+    }
+    sendMsg(msg);
+  }
+
+  void linkOrder(String? orderId) {
+    if (orderId == null || orderId.isEmpty) {
+      return;
+    }
+
     final msg = To();
     msg.linkOrder = To_LinkOrder();
     msg.linkOrder.orderId = orderId;
     sendMsg(msg);
   }
 
-  void uploadDeviceContacts({@required List<Contact> contacts}) {
+  void uploadDeviceContacts({required List<Contact> contacts}) {
     final uploadContacts = To_UploadContacts();
     uploadContacts.phoneKey = read(configProvider).phoneKey;
     final serverContactList = uploadContacts.contacts;
@@ -1592,7 +1807,7 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  void uploadAvatar({@required String avatar}) {
+  void uploadAvatar({required String avatar}) {
     final uploadAvatar = To_UploadAvatar();
     uploadAvatar.phoneKey = read(configProvider).phoneKey;
     uploadAvatar.text = avatar;
@@ -1609,7 +1824,7 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void setPinWelcome() async {
+  Future<void> setPinWelcome() async {
     if (await _encryption.canAuthenticate()) {
       await setImportWalletBiometricPrompt();
       return;
@@ -1619,8 +1834,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setPinSetup({
-    @required void Function(BuildContext context) onSuccessCallback,
-    @required void Function(BuildContext context) onBackCallback,
+    required void Function(BuildContext context) onSuccessCallback,
+    required void Function(BuildContext context) onBackCallback,
   }) {
     read(pinSetupProvider).init(
       onSuccessCallback: onSuccessCallback,
@@ -1657,7 +1872,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<bool> disablePinProtection() async {
-    if (!await read(configProvider).usePinProtection) {
+    if (!read(configProvider).usePinProtection) {
       // already disabled
       return true;
     }
@@ -1676,7 +1891,7 @@ class WalletChangeNotifier with ChangeNotifier {
     });
 
     final ret = await read(pinProtectionProvider).pinBlockadeUnlocked();
-    await pinDecryptedSubscription?.cancel();
+    await pinDecryptedSubscription.cancel();
 
     return ret;
   }
@@ -1684,5 +1899,54 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> enablePinProtection() async {
     await read(configProvider).setUsePinProtection(true);
     notifyListeners();
+  }
+
+  int getPrecisionForAssetId({String? assetId}) {
+    if (assetId == null) {
+      return 8;
+    }
+
+    return assets[assetId]?.precision ?? 8;
+  }
+
+  int getPrecisionForTicker({String ticker = ''}) {
+    var precision = 8;
+    try {
+      final asset =
+          assets.values.firstWhere((e) => e.ticker == kLiquidBitcoinTicker);
+      precision = asset.precision;
+    } on StateError {
+      logger.w('Cant set precision for ticker: $ticker');
+    }
+
+    return precision;
+  }
+
+  void processPendingPushMessages() {
+    // Delay processing until client is started.
+    // Fix "Unhandled Exception: client is not initialized" error
+    // openning push notification when app is stopped.
+    if (!clientReady) {
+      return;
+    }
+
+    for (final details in pendingPushMessages) {
+      final msg = To();
+      msg.pushMessage = details;
+      sendMsg(msg);
+    }
+    pendingPushMessages.clear();
+  }
+
+  void gotPushMessage(String details) {
+    logger.d('got push notification: $details');
+    pendingPushMessages.add(details);
+    processPendingPushMessages();
+  }
+
+  void minimizeApp() {
+    if (Platform.isAndroid) {
+      unawaited(MoveToBackground.moveTaskToBack());
+    }
   }
 }

@@ -11,18 +11,18 @@ class CountryCode {
     this.iso3Code,
   });
 
-  final String name;
-  final String english;
-  final String countryCode;
-  final String dialCode;
-  final String currencyCode;
-  final String currencyName;
-  final String iso3Code;
+  final String? name;
+  final String? english;
+  final String? countryCode;
+  final String? dialCode;
+  final String? currencyCode;
+  final String? currencyName;
+  final String? iso3Code;
 
   // Transform a country acronym to an emoji flag
   static final OFFSET = 127397;
 
-  String isoUnicode(String value) {
+  String isoUnicode(String? value) {
     if (value == null) {
       logger.d(name);
     }
@@ -31,7 +31,7 @@ class CountryCode {
     //   throw Exception(
     //       'argument must be an ISO 3166-1 alpha-2 string, but got ${countryCode.runtimeType} instead.');
     // }
-    final chars = [...value.toUpperCase().codeUnits].map((e) => e + OFFSET);
+    final chars = [...value!.toUpperCase().codeUnits].map((e) => e + OFFSET);
     return String.fromCharCodes(chars);
   }
 

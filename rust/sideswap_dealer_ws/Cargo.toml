@@ -1,0 +1,22 @@
+[package]
+name = "sideswap_dealer_ws"
+version = "0.1.2"
+edition = "2018"
+
+[dependencies]
+sideswap_api = { version = "*", path = "../sideswap_api" }
+sideswap_common = { version = "*", path = "../sideswap_common" }
+sideswap_dealer = { version = "*", path = "../sideswap_dealer" }
+clap = { version = "*" }
+log = "*"
+serde_json = "1.0"
+anyhow = "*"
+serde = { version = "1.0", features = ["derive"] }
+config = "*"
+log4rs = "*"
+tokio-tungstenite = { version = "*", features = [ "stream" ] }
+futures = "*"
+tokio = { version = "1.0", features = ["full"] }
+futures-channel = "*"
+futures-util = "*"
+tungstenite = "0.13"

@@ -1,5 +1,4 @@
 import 'package:enum_to_string/enum_to_string.dart';
-import 'package:flutter/foundation.dart';
 
 enum Flavor {
   fdroid,
@@ -9,7 +8,7 @@ enum Flavor {
 class FlavorValues {
   bool enableOnboardingUserFeatures;
   FlavorValues({
-    @required this.enableOnboardingUserFeatures,
+    required this.enableOnboardingUserFeatures,
   });
 }
 
@@ -17,15 +16,14 @@ class FlavorConfig {
   final Flavor flavor;
   final FlavorValues values;
   final String name;
-  static FlavorConfig _instance;
+  static late FlavorConfig _instance;
 
   factory FlavorConfig({
-    @required Flavor flavor,
-    @required FlavorValues values,
+    required Flavor flavor,
+    required FlavorValues values,
   }) {
-    _instance ??= FlavorConfig._internal(
+    return _instance = FlavorConfig._internal(
         flavor, values, EnumToString.convertToString(flavor));
-    return _instance;
   }
 
   FlavorConfig._internal(this.flavor, this.values, this.name);

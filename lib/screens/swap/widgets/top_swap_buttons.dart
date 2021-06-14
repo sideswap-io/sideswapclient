@@ -1,15 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/swap_provider.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class TopSwapButtons extends StatelessWidget {
   TopSwapButtons({
-    Key key,
-    this.onSwapPressed,
-    this.onPegPressed,
+    Key? key,
+    required this.onSwapPressed,
+    required this.onPegPressed,
   }) : super(key: key);
 
   final _colorToggleBackground = Color(0xFF043857);

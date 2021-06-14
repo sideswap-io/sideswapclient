@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 
 class PegInAddress extends StatelessWidget {
-  const PegInAddress({Key key}) : super(key: key);
+  const PegInAddress({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

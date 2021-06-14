@@ -1,14 +1,14 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
 import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/screens/pin/pin_protection.dart';
 
 final pinProtectionProvider = ChangeNotifierProvider<PinProtectionProvider>(
     (ref) => PinProtectionProvider(ref.read));
@@ -24,28 +24,22 @@ class PinProtectionProvider extends ChangeNotifier {
 
   PinProtectionProvider(this.read);
 
-  Future<bool> pinBlockadeUnlocked({BuildContext context}) async {
-    final internalContext =
-        context ?? read(walletProvider).navigatorKey.currentContext;
-    final ret = await showDialog<bool>(
-      context: internalContext,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return PinProtection();
-      },
-    );
-    internalContext.read(pinProtectionProvider).deinit();
-    return ret;
+  Future<bool> Function() onPinBlockadeCallback = () async {
+    return false;
+  };
+
+  Future<bool> pinBlockadeUnlocked() async {
+    return await onPinBlockadeCallback();
   }
 
-  VoidCallback onUnlock;
-  StreamSubscription<PinDecryptedData> pinDecryptedSubscription;
+  VoidCallback onUnlock = () {};
+  StreamSubscription<PinDecryptedData>? pinDecryptedSubscription;
   PinProtectionState state = PinProtectionState.idle;
 
   String pinCode = '';
   String errorMessage = '';
 
-  void init({@required VoidCallback onUnlockCallback}) {
+  void init({required VoidCallback onUnlockCallback}) {
     pinCode = '';
     state = PinProtectionState.idle;
     onUnlock = onUnlockCallback;

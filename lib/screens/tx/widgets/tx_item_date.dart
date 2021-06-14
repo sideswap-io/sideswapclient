@@ -1,10 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class TxItemDate extends StatelessWidget {
-  TxItemDate({Key key, @required this.createdAt}) : super(key: key);
+  TxItemDate({
+    Key? key,
+    required this.createdAt,
+  }) : super(key: key);
 
   final int createdAt;
 

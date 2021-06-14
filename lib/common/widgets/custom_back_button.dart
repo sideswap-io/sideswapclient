@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/wallet.dart';
 
 enum CustomBackButtonType {
   backArrow,
@@ -11,7 +12,7 @@ enum CustomBackButtonType {
 
 class CustomBackButton extends StatefulWidget {
   CustomBackButton({
-    Key key,
+    Key? key,
     this.onPressed,
     this.buttonType = CustomBackButtonType.backArrow,
     this.width,
@@ -19,10 +20,10 @@ class CustomBackButton extends StatefulWidget {
     this.color = const Color(0xFFAED7FF),
   }) : super(key: key);
 
-  final void Function() onPressed;
+  final void Function()? onPressed;
   final CustomBackButtonType buttonType;
-  final double width;
-  final double height;
+  final double? width;
+  final double? height;
   final Color color;
 
   @override
@@ -30,8 +31,8 @@ class CustomBackButton extends StatefulWidget {
 }
 
 class _CustomBackButtonState extends State<CustomBackButton> {
-  double _width;
-  double _height;
+  double _width = 0;
+  double _height = 0;
   final double _padding = 16;
 
   @override
@@ -51,6 +52,11 @@ class _CustomBackButtonState extends State<CustomBackButton> {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(_width + _padding / 2),
+          onTap: widget.onPressed ??
+              () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                context.read(walletProvider).goBack();
+              },
           child: Container(
             width: _width + _padding,
             height: _height + _padding,
@@ -81,11 +87,6 @@ class _CustomBackButtonState extends State<CustomBackButton> {
               ),
             ),
           ),
-          onTap: widget.onPressed ??
-              () {
-                FocusManager.instance.primaryFocus.unfocus();
-                context.read(walletProvider).goBack();
-              },
         ),
       ),
     );

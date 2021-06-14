@@ -1,11 +1,12 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 
 class Accounts extends StatelessWidget {
@@ -79,7 +80,8 @@ class Accounts extends StatelessWidget {
                         final assetId =
                             watch(walletProvider).enabledAssetIds[index];
                         final asset = watch(walletProvider).assets[assetId];
-                        final balance = watch(walletProvider).balances[assetId];
+                        final balance =
+                            watch(walletProvider).balances[assetId] ?? 0;
                         return AccountItem(
                           asset: asset,
                           balance: balance,

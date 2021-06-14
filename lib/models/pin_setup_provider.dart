@@ -1,8 +1,9 @@
 import 'dart:async';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -32,7 +33,7 @@ class PinSetupProvider extends ChangeNotifier {
   PinFieldState fieldState = PinFieldState.firstPin;
   PinSetupState state = PinSetupState.idle;
 
-  StreamSubscription<PinData> pinEnryptedSubscription;
+  StreamSubscription<PinData>? pinEnryptedSubscription;
 
   String _firstPin = '';
   String get firstPin => _firstPin;
@@ -77,20 +78,26 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   bool isNewWallet = false;
-  VoidCallback onSuccess;
-  VoidCallback onBack;
+  VoidCallback onSuccess = () {};
+  VoidCallback onBack = () {};
 
   String errorMessage = '';
 
   void init({
-    @required void Function(BuildContext context) onSuccessCallback,
-    @required void Function(BuildContext context) onBackCallback,
+    required void Function(BuildContext context) onSuccessCallback,
+    required void Function(BuildContext context) onBackCallback,
   }) {
+    final context = read(walletProvider).navigatorKey.currentContext;
+    if (context == null) {
+      logger.w('Context cannot be null');
+      return;
+    }
+
     onSuccess = () {
-      onSuccessCallback(read(walletProvider).navigatorKey.currentContext);
+      onSuccessCallback(context);
     };
     onBack = () {
-      onBackCallback(read(walletProvider).navigatorKey.currentContext);
+      onBackCallback(context);
     };
 
     _clearStates();
@@ -259,7 +266,7 @@ class PinSetupProvider extends ChangeNotifier {
     await pinEnryptedSubscription?.cancel();
     logger.d(pinData);
 
-    if (pinData.error != null) {
+    if (pinData.error.isNotEmpty) {
       errorMessage = 'Error setup new PIN code'.tr();
       state = PinSetupState.error;
       notifyListeners();

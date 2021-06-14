@@ -1,10 +1,11 @@
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:fixnum/fixnum.dart';
+
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
 final paymentProvider = Provider((ref) => PaymentProvider(ref.read));
 
@@ -20,7 +21,7 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String _sendAddrParsed;
+  String _sendAddrParsed = '';
   String get sendAddrParsed => _sendAddrParsed;
   set sendAddrParsed(String sendAddrParsed) {
     _sendAddrParsed = sendAddrParsed;
@@ -34,7 +35,7 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String _sendResultError;
+  String _sendResultError = '';
   String get sendResultError => _sendResultError;
   set sendResultError(String sendResultError) {
     _sendResultError = sendResultError;
@@ -48,13 +49,8 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  PaymentAmountPageArguments _paymentAmountPageArguments;
-  PaymentAmountPageArguments get paymentAmountPageArguments =>
-      _paymentAmountPageArguments;
-  set paymentAmountPageArguments(
-      PaymentAmountPageArguments paymentAmountPageArguments) {
-    _paymentAmountPageArguments = paymentAmountPageArguments;
-  }
+  PaymentAmountPageArguments paymentAmountPageArguments =
+      PaymentAmountPageArguments();
 
   void selectPaymentAmountPage(PaymentAmountPageArguments arguments) {
     paymentAmountPageArguments = arguments;
@@ -62,7 +58,12 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void selectPaymentSend(String address, String amount, String assetId) {
+  void selectPaymentSend(String? address, String amount, String assetId) {
+    if (address == null) {
+      logger.e('Address is null');
+      return;
+    }
+
     read(walletProvider).selectedWalletAsset = assetId;
     if (!read(walletProvider).isAddrValid(address, AddrType.elements)) {
       logger.e('Invalid address $address');

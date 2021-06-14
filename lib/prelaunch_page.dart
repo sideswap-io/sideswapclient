@@ -1,12 +1,17 @@
 import 'dart:math' as math show sin, pi;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/initialize_app_provider.dart';
 
 class PreLaunchPage extends StatefulWidget {
   PreLaunchPage({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -18,7 +23,7 @@ class _PreLaunchPageState extends State<PreLaunchPage>
   final _counter = 5;
   final _color = Color(0xFF00C5FF);
   final List<double> delays = [.0, .25, .5, .75, 1.0];
-  AnimationController _controller;
+  late AnimationController _controller;
 
   @override
   void initState() {
@@ -28,6 +33,9 @@ class _PreLaunchPageState extends State<PreLaunchPage>
         AnimationController(vsync: this, duration: Duration(milliseconds: 1200))
           ..addListener(() => setState(() {}))
           ..repeat();
+
+    // initialize app
+    context.read(initializeAppProvider);
   }
 
   @override
@@ -52,9 +60,20 @@ class _PreLaunchPageState extends State<PreLaunchPage>
                 ),
               ),
             ),
+            Padding(
+              padding: EdgeInsets.only(top: 30.h),
+              child: Text(
+                'Wallet loading...',
+                style: GoogleFonts.roboto(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                ),
+              ),
+            ),
             Center(
               child: Padding(
-                padding: EdgeInsets.only(top: 269.h),
+                padding: EdgeInsets.only(top: 239.h),
                 child: Container(
                   width: 66.w,
                   height: 10.w,
@@ -90,7 +109,7 @@ class _PreLaunchPageState extends State<PreLaunchPage>
 }
 
 class DelayTween extends Tween<double> {
-  DelayTween({double begin, double end, this.delay})
+  DelayTween({double? begin, double? end, required this.delay})
       : super(begin: begin, end: end);
 
   final double delay;

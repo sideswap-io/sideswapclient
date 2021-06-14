@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class SwapButton extends StatelessWidget {
   const SwapButton({
-    Key key,
+    Key? key,
     this.color,
-    this.text,
+    required this.text,
     this.textColor,
     this.onPressed,
   }) : super(key: key);
 
-  final Color color;
-  final Color textColor;
+  final Color? color;
+  final Color? textColor;
   final String text;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,14 @@ class SwapButton extends StatelessWidget {
           color: color,
         ),
         child: TextButton(
+          onPressed: onPressed,
+          style: TextButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(8.w),
+              ),
+            ),
+          ),
           child: Container(
             height: double.infinity,
             child: Center(
@@ -39,14 +48,6 @@ class SwapButton extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                   color: textColor,
                 ),
-              ),
-            ),
-          ),
-          onPressed: onPressed,
-          style: TextButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(8.w),
               ),
             ),
           ),

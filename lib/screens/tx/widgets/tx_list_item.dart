@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -11,7 +12,7 @@ import 'package:sideswap/screens/tx/widgets/tx_item_transaction.dart';
 class TxListItem extends StatelessWidget {
   final String assetId;
   final TxItem txItem;
-  TxListItem({this.assetId, this.txItem});
+  TxListItem({required this.assetId, required this.txItem});
 
   static final itemHeight = 46.h;
   static final itemWithDateHeight = 95.h;

@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 
 class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
-  final String title;
-  final VoidCallback onPressed;
-  final Color backButtonColor;
-  final PreferredSizeWidget bottom;
+  final String? title;
+  final VoidCallback? onPressed;
+  final Color? backButtonColor;
+  final PreferredSizeWidget? bottom;
   final double toolbarHeight;
   final Color backgroundColor;
   final bool rightCloseButton;
-  final VoidCallback onRightCloseButtonPressed;
+  final VoidCallback? onRightCloseButtonPressed;
 
   CustomAppBar({
     this.title,
@@ -23,7 +24,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
     this.rightCloseButton = false,
     this.onRightCloseButtonPressed,
   }) : preferredSize = Size.fromHeight(
-            toolbarHeight + (bottom?.preferredSize?.height ?? 0.0));
+            toolbarHeight + (bottom?.preferredSize.height ?? 0.0));
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
                         width: 18.w,
                         height: 18.w,
                         buttonType: CustomBackButtonType.close,
-                        color: backButtonColor,
+                        color: backButtonColor ?? Colors.white,
                         onPressed: onRightCloseButtonPressed,
                       ),
                     ),
@@ -74,7 +75,7 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
           : null,
       leading: CustomBackButton(
         onPressed: onPressed,
-        color: backButtonColor,
+        color: backButtonColor ?? Colors.white,
       ),
     );
   }

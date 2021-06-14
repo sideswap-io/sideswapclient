@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class TxDetailsRowNotes extends ConsumerWidget {
-  TxDetailsRowNotes({Key key, @required this.tx}) : super(key: key);
+  TxDetailsRowNotes({
+    Key? key,
+    required this.tx,
+  }) : super(key: key);
 
   final Tx tx;
 
@@ -60,14 +64,14 @@ class TxDetailsRowNotes extends ConsumerWidget {
                     onPressed: () {
                       context.read(walletProvider).editTxMemo(tx);
                     },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                    ),
                     child: SvgPicture.asset(
                       'assets/copy.svg',
                       width: 18.w,
                       height: 18.w,
                       color: Color(0xFF00C5FF),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
                     ),
                   ),
                 ),

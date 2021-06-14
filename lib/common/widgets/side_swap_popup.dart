@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+
+import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/wallet.dart';
 
 class SideSwapPopup extends StatelessWidget {
   SideSwapPopup({
-    Key key,
+    Key? key,
     this.child,
     this.appBar,
-    Color backgroundColor,
+    Color? backgroundColor,
     this.enableInsideTopPadding = true,
     this.enableInsideHorizontalPadding = true,
     this.onClose,
@@ -21,17 +24,17 @@ class SideSwapPopup extends StatelessWidget {
   })  : _backgroundColor = backgroundColor ?? Color(0xFF135579),
         super(key: key);
 
-  final Widget child;
-  final AppBar appBar;
+  final Widget? child;
+  final AppBar? appBar;
   final Color _backgroundColor;
   final bool enableInsideTopPadding;
   final bool enableInsideHorizontalPadding;
   final EdgeInsetsGeometry padding;
-  final VoidCallback onClose;
-  final WillPopCallback onWillPop;
+  final VoidCallback? onClose;
+  final WillPopCallback? onWillPop;
   final bool hideCloseButton;
   final bool sideSwapBackground;
-  final Color backgroundCoverColor;
+  final Color? backgroundCoverColor;
   final bool extendBodyBehindAppBar;
 
   @override
@@ -85,7 +88,13 @@ class SideSwapPopup extends StatelessWidget {
                                   width: 18.w,
                                   height: 18.w,
                                   buttonType: CustomBackButtonType.close,
-                                  onPressed: onClose,
+                                  onPressed: () {
+                                    if (onClose != null) {
+                                      onClose!();
+                                    } else {
+                                      context.read(walletProvider).goBack();
+                                    }
+                                  },
                                 ),
                               ),
                             ),

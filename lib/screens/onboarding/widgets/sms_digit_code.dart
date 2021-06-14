@@ -1,15 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pinput/pin_put/pin_put.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:pinput/pin_put/pin_put.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/phone_provider.dart';
 
 class SmsDigitCode extends StatefulWidget {
   SmsDigitCode({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override

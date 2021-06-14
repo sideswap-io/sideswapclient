@@ -10,8 +10,8 @@ class PreloadBackgroundPainter extends CustomPainter {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        const Color(0xFF005474), //const Color(0xFF005778),
-        const Color(0xFF00203F), //const Color(0xFF00203f),
+        const Color(0xFF005474),
+        const Color(0xFF00203F),
       ],
       stops: [0.0, 1.0],
     ).createShader(rect);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 final Map<int, Color> _customAppMaterialColor = {

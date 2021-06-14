@@ -2,15 +2,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/screenutil.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
+
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/theme.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/notifications_service.dart';
+import 'package:sideswap/models/pin_protection_provider.dart';
+import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/prelaunch_page.dart';
 import 'package:sideswap/screens/background/preload_background_painter.dart';
@@ -24,9 +27,9 @@ import 'package:sideswap/screens/onboarding/import_avatar.dart';
 import 'package:sideswap/screens/onboarding/import_avatar_success.dart';
 import 'package:sideswap/screens/onboarding/import_contacts.dart';
 import 'package:sideswap/screens/onboarding/import_contacts_success.dart';
-import 'package:sideswap/screens/onboarding/widgets/import_wallet_biometric_prompt.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_error.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_success.dart';
+import 'package:sideswap/screens/onboarding/license.dart';
 import 'package:sideswap/screens/onboarding/pin_setup.dart';
 import 'package:sideswap/screens/onboarding/pin_welcome.dart';
 import 'package:sideswap/screens/onboarding/wallet_backup.dart';
@@ -35,6 +38,7 @@ import 'package:sideswap/screens/onboarding/wallet_backup_check_failed.dart';
 import 'package:sideswap/screens/onboarding/wallet_backup_check_succeed.dart';
 import 'package:sideswap/screens/onboarding/wallet_backup_new_prompt.dart';
 import 'package:sideswap/screens/onboarding/wallet_import.dart';
+import 'package:sideswap/screens/onboarding/widgets/import_wallet_biometric_prompt.dart';
 import 'package:sideswap/screens/onboarding/widgets/new_wallet_biometric_prompt.dart';
 import 'package:sideswap/screens/onboarding/widgets/new_wallet_pin_welcome.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_success.dart';
@@ -43,21 +47,20 @@ import 'package:sideswap/screens/order/order_success.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/payment_page.dart';
 import 'package:sideswap/screens/pay/payment_send_popup.dart';
+import 'package:sideswap/screens/pin/pin_protection.dart';
+import 'package:sideswap/screens/register.dart';
 import 'package:sideswap/screens/settings/settings.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
+import 'package:sideswap/screens/settings/settings_custom_host.dart';
+import 'package:sideswap/screens/settings/settings_network.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/settings_user_details.dart';
 import 'package:sideswap/screens/settings/settings_view_backup.dart';
 import 'package:sideswap/screens/swap/peg_in_address.dart';
 import 'package:sideswap/screens/tx/tx_details_popup.dart';
 import 'package:sideswap/screens/wallet_main/wallet_main.dart';
-import 'package:sideswap/screens/onboarding/license.dart';
-import 'package:sideswap/screens/register.dart';
 
-final initProvider = FutureProvider<void>((ref) async {
-  final config = ref.watch(configProvider);
-  await config.init();
-
+final initProvider = FutureProvider<bool>((ref) async {
   LicenseRegistry.addLicense(() async* {
     var license = await rootBundle
         .loadString('assets/licenses/libwally-core-license.txt');
@@ -65,11 +68,14 @@ final initProvider = FutureProvider<void>((ref) async {
     license = await rootBundle.loadString('assets/licenses/gdk-license.txt');
     yield LicenseEntryWithLineBreaks([kPackageGdk], license);
   });
+
+  final config = ref.read(configProvider);
+  return await config.init();
 });
 
 class AppMain extends StatelessWidget {
   const AppMain({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -90,7 +96,7 @@ class AppMain extends StatelessWidget {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
@@ -101,31 +107,36 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     notificationService.init(context);
+    context.read(universalLinkProvider).handleIncomingLinks();
+    context.read(universalLinkProvider).handleInitialUri();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SideSwap',
-      debugShowCheckedModeBanner: false,
-      theme: appTheme,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
-      locale: context.locale,
-      home: SecureApplication(
-        nativeRemoveDelay: 100,
-        onNeedUnlock: (secureApplicationController) async {
-          secureApplicationController.unlock();
-          return null;
-        },
-        child: _RootWidget(),
+    return ScreenUtilInit(
+      designSize: Size(375, 667),
+      builder: () => MaterialApp(
+        title: 'SideSwap',
+        debugShowCheckedModeBanner: false,
+        theme: appTheme,
+        localizationsDelegates: context.localizationDelegates,
+        supportedLocales: context.supportedLocales,
+        locale: context.locale,
+        home: SecureApplication(
+          nativeRemoveDelay: 100,
+          onNeedUnlock: (secureApplicationController) async {
+            secureApplicationController?.unlock();
+            return SecureApplicationAuthenticationStatus.NONE;
+          },
+          child: _RootWidget(),
+        ),
       ),
     );
   }
 }
 
 class MyPopupPage<T> extends Page<T> {
-  MyPopupPage({this.child});
+  MyPopupPage({required this.child});
   final Widget child;
   @override
   Route<T> createRoute(BuildContext context) {
@@ -136,9 +147,8 @@ class MyPopupPage<T> extends Page<T> {
 class _MyPopupPageRoute<T> extends PageRoute<T>
     with MaterialRouteTransitionMixin<T> {
   _MyPopupPageRoute({
-    @required MyPopupPage<T> page,
-  })  : assert(page != null),
-        super(settings: page);
+    required MyPopupPage<T> page,
+  }) : super(settings: page);
 
   MyPopupPage<T> get _page => settings as MyPopupPage<T>;
 
@@ -166,6 +176,7 @@ class __RootWidgetState extends State<_RootWidget> {
   List<Page<dynamic>> pages(Status status) {
     switch (status) {
       case Status.loading:
+      case Status.walletLoading:
         return [
           MaterialPage<Widget>(child: PreLaunchPage()),
         ];
@@ -302,7 +313,6 @@ class __RootWidgetState extends State<_RootWidget> {
         return [
           MyPopupPage<Widget>(child: TxDetailsPopup()),
         ];
-        break;
       case Status.settingsPage:
         return [
           MaterialPage<Widget>(child: Settings()),
@@ -326,6 +336,11 @@ class __RootWidgetState extends State<_RootWidget> {
           MaterialPage<Widget>(child: Settings()),
           MaterialPage<Widget>(child: SettingsAboutUs()),
         ];
+      case Status.settingsNetwork:
+        return [
+          MaterialPage<Widget>(child: Settings()),
+          MaterialPage<Widget>(child: SettingsNetwork()),
+        ];
       case Status.settingsSecurity:
         return [
           MaterialPage<Widget>(child: Settings()),
@@ -345,13 +360,19 @@ class __RootWidgetState extends State<_RootWidget> {
         ];
       case Status.orderPopup:
         return [
-          MaterialPage<Widget>(child: WalletMain()),
           MyPopupPage<Widget>(child: OrderPopup()),
         ];
       case Status.orderSuccess:
         return [
-          MaterialPage<Widget>(child: WalletMain()),
           MyPopupPage<Widget>(child: OrderSuccess()),
+        ];
+      case Status.orderResponseSuccess:
+        return [
+          MyPopupPage<Widget>(
+            child: OrderSuccess(
+              isResponse: true,
+            ),
+          ),
         ];
       case Status.newWalletPinWelcome:
         return [
@@ -370,10 +391,7 @@ class __RootWidgetState extends State<_RootWidget> {
         return [
           MyPopupPage<Widget>(child: PinSuccess()),
         ];
-
-        break;
     }
-    throw UnimplementedError('unexpecteded state');
   }
 
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
@@ -387,23 +405,30 @@ class __RootWidgetState extends State<_RootWidget> {
     ));
 
     context.read(walletProvider).navigatorKey = _navigatorKey;
+    context.read(pinProtectionProvider).onPinBlockadeCallback = onPinBlockade;
+  }
+
+  Future<bool> onPinBlockade() async {
+    final ret = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return PinProtection();
+      },
+    );
+    context.read(pinProtectionProvider).deinit();
+    return ret ?? false;
   }
 
   @override
   Widget build(BuildContext context) {
-    ScreenUtil.init(context,
-        designSize: Size(375, 667), allowFontScaling: false);
-
     return Stack(
       children: [
         WillPopScope(
           onWillPop: () async {
             // https://github.com/flutter/flutter/issues/66349
-            return !await context
-                .read(walletProvider)
-                .navigatorKey
-                .currentState
-                .maybePop();
+            final ret = await _navigatorKey.currentState?.maybePop() ?? false;
+            return !ret;
           },
           child: Consumer(
             builder: (context, watch, child) {
@@ -424,41 +449,38 @@ class __RootWidgetState extends State<_RootWidget> {
         ),
         Consumer(
           builder: (context, watch, child) {
-            final initialized = watch(initProvider);
-            return initialized.when(
-              data: (value) {
-                final env = watch(configProvider).env;
-                return Visibility(
-                  visible: env != 0,
-                  child: Align(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          top: MediaQuery.of(context).padding.top,
-                        ),
-                        child: Text(
-                          envName(env),
-                          style: GoogleFonts.roboto(
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.white,
-                          ),
+            final initProviderValue = watch(initProvider);
+            return initProviderValue.map(data: (_) {
+              final env = watch(configProvider).env;
+              return Visibility(
+                visible: env != 0,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top,
+                      ),
+                      child: Text(
+                        envName(env),
+                        style: GoogleFonts.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white,
                         ),
                       ),
                     ),
-                    alignment: Alignment.topCenter,
                   ),
-                );
-              },
-              loading: () {
-                return Container();
-              },
-              error: (error, stackTrace) {
-                logger.e('$error $stackTrace');
-                return Container();
-              },
-            );
+                ),
+              );
+            }, loading: (_) {
+              logger.d('loading');
+              return Container();
+            }, error: (_) {
+              logger.e('Env error :${_.error.toString()}');
+              return Container();
+            });
           },
         ),
       ],

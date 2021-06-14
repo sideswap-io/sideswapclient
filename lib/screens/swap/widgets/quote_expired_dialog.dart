@@ -1,21 +1,20 @@
-import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/wallet.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/common/widgets/custom_big_button.dart';
 
 void showQuoteExpiredDialog(BuildContext context) {
   showDialog<void>(
-    context: context.read(walletProvider).navigatorKey.currentContext,
+    context: context,
     builder: (BuildContext context) {
       return Dialog(
         insetPadding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.w),
-        ), //this right here
+        ),
         child: Container(
           width: 343.w,
           height: 417.h,
@@ -87,13 +86,7 @@ void showQuoteExpiredDialog(BuildContext context) {
                   text: 'Continue'.tr(),
                   backgroundColor: Color(0xFF00C5FF),
                   onPressed: () async {
-                    Navigator.of(
-                            context
-                                .read(walletProvider)
-                                .navigatorKey
-                                .currentContext,
-                            rootNavigator: true)
-                        .pop();
+                    Navigator.of(context, rootNavigator: true).pop();
                   },
                 ),
               ],

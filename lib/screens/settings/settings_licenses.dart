@@ -1,17 +1,18 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info/package_info.dart';
-import 'package:easy_localization/easy_localization.dart';
+
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 
 class SettingsLicenses extends StatefulWidget {
-  const SettingsLicenses({Key key}) : super(key: key);
+  const SettingsLicenses({Key? key}) : super(key: key);
 
   @override
   _SettingsLicensesState createState() => _SettingsLicensesState();
@@ -33,14 +34,14 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
     await for (final LicenseEntry license in LicenseRegistry.licenses) {
       var tempSubWidget = <Widget>[];
       final paragraphs =
-          await SchedulerBinding.instance.scheduleTask<List<LicenseParagraph>>(
+          await SchedulerBinding.instance?.scheduleTask<List<LicenseParagraph>>(
         license.paragraphs.toList,
         Priority.animation,
         debugLabel: 'License',
       );
 
       if (_licenseContent.containsKey(license.packages.join(', '))) {
-        tempSubWidget = _licenseContent[license.packages.join(', ')];
+        tempSubWidget = _licenseContent[license.packages.join(', ')] ?? [];
       }
 
       tempSubWidget.add(const Padding(
@@ -51,31 +52,33 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
         ),
       ));
 
-      for (var paragraph in paragraphs) {
-        if (paragraph.indent == LicenseParagraph.centeredIndent) {
-          tempSubWidget.add(
-            Padding(
-              padding: EdgeInsets.only(top: 16.h),
-              child: Text(
-                paragraph.text,
-                style: GoogleFonts.roboto(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.bold,
+      if (paragraphs != null) {
+        for (var paragraph in paragraphs) {
+          if (paragraph.indent == LicenseParagraph.centeredIndent) {
+            tempSubWidget.add(
+              Padding(
+                padding: EdgeInsets.only(top: 16.h),
+                child: Text(
+                  paragraph.text,
+                  style: GoogleFonts.roboto(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
-          );
-        } else {
-          tempSubWidget.add(
-            Padding(
-              padding: EdgeInsetsDirectional.only(
-                  top: 8.0, start: 16.0 * paragraph.indent),
-              child: Text(
-                paragraph.text,
+            );
+          } else {
+            tempSubWidget.add(
+              Padding(
+                padding: EdgeInsetsDirectional.only(
+                    top: 8.0, start: 16.0 * paragraph.indent),
+                child: Text(
+                  paragraph.text,
+                ),
               ),
-            ),
-          );
+            );
+          }
         }
       }
 
@@ -88,9 +91,12 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
     for (var packageName in _licenseContent.keys.toList()) {
       var count = 0;
       final value = _licenseContent[packageName];
-      value.forEach((element) {
-        if (element.runtimeType == Divider) count += 1;
-      });
+
+      if (value != null) {
+        value.forEach((element) {
+          if (element.runtimeType == Divider) count += 1;
+        });
+      }
 
       final widget = Theme(
         data: Theme.of(context).copyWith(
@@ -110,9 +116,11 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
               color: Colors.white,
             ),
           ),
-          children: <Widget>[
-            ...value,
-          ],
+          children: value != null
+              ? <Widget>[
+                  ...value,
+                ]
+              : [],
         ),
       );
 
@@ -172,15 +180,19 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
                         child: FutureBuilder(
                           future: PackageInfo.fromPlatform(),
                           builder: (context, snapshot) {
-                            final packageInfo = snapshot.data as PackageInfo;
-                            return Text(
-                              'VERSION'.tr(args: [packageInfo?.version ?? '']),
-                              style: GoogleFonts.roboto(
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            );
+                            if (snapshot.hasData) {
+                              final packageInfo = snapshot.data as PackageInfo;
+                              return Text(
+                                'VERSION'.tr(args: [packageInfo.version]),
+                                style: GoogleFonts.roboto(
+                                  fontSize: 16.sp,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                ),
+                              );
+                            }
+
+                            return Container();
                           },
                         ),
                       ),

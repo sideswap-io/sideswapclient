@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -13,7 +14,7 @@ import 'package:sideswap/screens/onboarding/widgets/pin_keyboard.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_text_field.dart';
 
 class PinProtection extends StatelessWidget {
-  const PinProtection({Key key}) : super(key: key);
+  const PinProtection({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +54,7 @@ class PinProtection extends StatelessWidget {
 
 class PinProtectionBody extends StatefulWidget {
   PinProtectionBody({
-    Key key,
+    Key? key,
   }) : super(key: key);
 
   @override
@@ -62,7 +63,7 @@ class PinProtectionBody extends StatefulWidget {
 
 class _PinProtectionBodyState extends State<PinProtectionBody> {
   final pinFocusNode = FocusNode();
-  StreamSubscription<PinKey> keyPressedSubscription;
+  StreamSubscription<PinKey>? keyPressedSubscription;
 
   @override
   void initState() {

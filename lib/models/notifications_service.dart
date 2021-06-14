@@ -1,16 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:rxdart/subjects.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:rxdart/subjects.dart';
+
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/notification_model.dart';
 import 'package:sideswap/models/payment_provider.dart';
@@ -49,22 +50,22 @@ enum IncomingNotificationType {
 
 class ReceivedNotification {
   ReceivedNotification({
-    @required this.id,
-    @required this.title,
-    @required this.body,
-    @required this.payload,
+    required this.id,
+    this.title,
+    this.body,
+    this.payload,
   });
 
   final int id;
-  final String title;
-  final String body;
-  final String payload;
+  final String? title;
+  final String? body;
+  final String? payload;
 }
 
 const String _groupKey = 'com.android.sideswap.GENERAL_NOTIFICATION';
 const String _groupChannelId = 'sideswap_channel_id';
-const String _groupChannelName = 'SideSwapChannel';
-const String _groupChannelDescription = 'SideSwapChannelDescription';
+const String _groupChannelName = 'Main';
+const String _groupChannelDescription = 'All notifications';
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   _groupChannelId, // id
@@ -89,33 +90,28 @@ class NotificationService {
       BehaviorSubject<ReceivedNotification>();
   final selectNotificationSubject = BehaviorSubject<FCMPayload>();
 
-  String _selectedNotificationPayload;
+  String _selectedNotificationPayload = '';
   String get selectedNotificationPayload => _selectedNotificationPayload;
 
   int _notificationId = 0;
 
-  String _dynamicLinkAddress = '';
-  String get dynamicLinkAddress => _dynamicLinkAddress;
-
-  set dynamicLinkAddress(String dynamicLinkAddress) {
-    _dynamicLinkAddress = dynamicLinkAddress;
-  }
+  String dynamicLinkAddress = '';
 
   final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
 
-  BuildContext _context;
+  BuildContext? _context;
 
   final _delayedNotifications = <FCMPayload>[];
 
   Future<void> init(BuildContext context) async {
     _context = context;
-    _firebaseMessaging.requestNotificationPermissions();
+    await FirebaseMessaging.instance.requestPermission();
+
     if (Platform.isIOS) {
       await _flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
-          .requestPermissions(
+          ?.requestPermissions(
             sound: true,
             alert: true,
             badge: true,
@@ -127,38 +123,43 @@ class NotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(channel);
 
-    _firebaseMessaging.configure(
-      onMessage: (Map<String, dynamic> message) async {
-        logger.d('onMessage: $message');
-        _handleIncomingNotification(
-          context,
-          IncomingNotificationType.message,
-          message,
-        );
-      },
-      // Set the background handler only when fcm notification is sent without notification in json!
-      onBackgroundMessage: null,
-      onLaunch: (Map<String, dynamic> message) async {
-        logger.d('onLaunch: $message');
-        _handleIncomingNotification(
-          context,
-          IncomingNotificationType.launch,
-          message,
-        );
-      },
-      onResume: (Map<String, dynamic> message) async {
-        logger.d('onResume: $message');
-        _handleIncomingNotification(
-          context,
-          IncomingNotificationType.resume,
-          message,
-        );
-      },
-    );
+    // resume?
+    await FirebaseMessaging.instance
+        .getInitialMessage()
+        .then((RemoteMessage? message) {
+      if (message == null) {
+        return;
+      }
+
+      logger.d('onResume: $message');
+      _handleIncomingNotification(
+        context,
+        IncomingNotificationType.resume,
+        message,
+      );
+    });
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      logger.d('onMessage: $message');
+      _handleIncomingNotification(
+        context,
+        IncomingNotificationType.message,
+        message,
+      );
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      logger.d('onLaunch: $message');
+      _handleIncomingNotification(
+        context,
+        IncomingNotificationType.launch,
+        message,
+      );
+    });
 
     final initializationSettings = _getInitializationSettings(
       onDidReceiveLocalNotification:
-          (int id, String title, String body, String payload) async {
+          (int id, String? title, String? body, String? payload) async {
         didReceiveLocalNotificationSubject.add(
           ReceivedNotification(
             id: id,
@@ -173,11 +174,20 @@ class NotificationService {
     // initialise the plugin.
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onSelectNotification: (String payload) async {
-        _selectedNotificationPayload = payload;
-        final json = jsonDecode(payload) as Map<String, Object>;
-        final fcmPayload = FCMPayload.fromJson(json);
-        selectNotificationSubject.add(fcmPayload);
+      onSelectNotification: (String? payload) async {
+        if (payload == null) {
+          logger.w('Empty notification payload');
+          return;
+        }
+
+        try {
+          _selectedNotificationPayload = payload;
+          final json = jsonDecode(payload) as Map<String, dynamic>;
+          final fcmPayload = FCMPayload.fromJson(json);
+          selectNotificationSubject.add(fcmPayload);
+        } catch (e) {
+          logger.e('Cannot parse payload: $e');
+        }
       },
     );
 
@@ -190,46 +200,50 @@ class NotificationService {
         .listen(_onNewTransItem);
   }
 
-  void _onNewTransItem(TransItem transItem) {
+  bool _onNewTransItem(TransItem transItem) {
     if (_delayedNotifications.isEmpty) {
-      return;
+      return true;
     }
 
-    if (transItem.tx != null) {
-      final txid = transItem.tx.txid;
-      final fcmPayload = _delayedNotifications.firstWhere((e) => e.txid == txid,
-          orElse: () => null);
+    if (transItem.tx.hasTxid()) {
+      try {
+        final txid = transItem.tx.txid;
+        final fcmPayload =
+            _delayedNotifications.firstWhere((e) => e.txid == txid);
 
-      if (fcmPayload != null) {
         logger.d('Delayed found: ${transItem.toDebugString()}');
         _onNotificationData(fcmPayload);
         _delayedNotifications.removeWhere((e) => e.txid == txid);
-        return;
+        return true;
+      } on StateError {
+        return false;
       }
     }
 
-    if (transItem.peg != null && transItem.peg.isPegIn) {
-      final txid = transItem.peg.txidRecv;
-      final fcmPayload = _delayedNotifications.firstWhere((e) => e.txid == txid,
-          orElse: () => null);
+    if (transItem.peg.isPegIn) {
+      try {
+        final txid = transItem.peg.txidRecv;
+        final fcmPayload =
+            _delayedNotifications.firstWhere((e) => e.txid == txid);
 
-      if (fcmPayload != null) {
         logger.d('Delayed found: ${transItem.toDebugString()}');
         _onNotificationData(fcmPayload);
         _delayedNotifications.removeWhere((e) => e.txid == txid);
-        return;
+        return true;
+      } on StateError {
+        return false;
       }
     }
 
     logger.d('Delayed not found found!');
+    return false;
   }
 
   NotificationDetails _getNotificationDetails({
     NotificationVisibility visibility = NotificationVisibility.public,
-    StyleInformation styleInformation,
+    StyleInformation styleInformation =
+        const DefaultStyleInformation(true, true),
   }) {
-    styleInformation ??= DefaultStyleInformation(true, true);
-
     final androidPlatformChannelSpecifics = AndroidNotificationDetails(
       _groupChannelId,
       _groupChannelName,
@@ -255,7 +269,7 @@ class NotificationService {
   }
 
   InitializationSettings _getInitializationSettings({
-    Future<dynamic> Function(int, String, String, String)
+    Future<dynamic> Function(int, String?, String?, String?)?
         onDidReceiveLocalNotification,
   }) {
     const initializationSettingsAndroid =
@@ -277,44 +291,50 @@ class NotificationService {
   }
 
   void _handleIncomingNotification(BuildContext context,
-      IncomingNotificationType type, Map<String, Object> message) {
-    FCMMessage fcmMessage;
-    if (Platform.isIOS) {
-      final fcmIosMessage = FCMIOSMessage.fromJson(message);
-
-      if (fcmIosMessage?.details == null) {
-        return;
-      }
-
-      // map to default notification used in app
-      fcmMessage = FCMMessage(
-        notification: fcmIosMessage.aps.alert,
-        data: FCMData(
-          details: fcmIosMessage.details,
-        ),
-      );
+      IncomingNotificationType type, RemoteMessage message) {
+    dynamic details = message.data['details'];
+    if (details is String) {
+      context.read(walletProvider).gotPushMessage(details);
     }
 
-    if (Platform.isAndroid) {
-      fcmMessage = FCMMessage.fromJson(message);
-    }
+    final messageJson = {
+      'notification': {
+        'body': message.notification?.body,
+        'title': message.notification?.title,
+      },
+      'data': message.data,
+    };
 
-    if (fcmMessage?.data?.details == null) {
+    final fcmMessage = FCMMessage.fromJson(messageJson);
+
+    if (fcmMessage.data?.details == null) {
       return;
     }
 
+    final fcmTx = fcmMessage.data?.details?.tx;
+
     switch (type) {
       case IncomingNotificationType.message:
-        _onForegroundNotification(fcmMessage, fcmMessage.data.details.tx);
+        if (fcmTx != null) {
+          _onForegroundNotification(fcmMessage, fcmTx);
+        }
         break;
       case IncomingNotificationType.resume:
-        _onResumeNotification(fcmMessage.data.details.tx);
+        if (fcmTx != null) {
+          _onResumeNotification(fcmTx);
+        }
         break;
       case IncomingNotificationType.launch:
         logger.d('Adding delayed: $fcmMessage');
         final payload = _createPayload(fcmMessage);
         if (payload != null) {
           _delayedNotifications.add(payload);
+          // check if we already have txid on list
+          context.read(walletProvider).allTxs.values.forEach((tx) {
+            if (_onNewTransItem(tx)) {
+              return;
+            }
+          });
         } else {
           logger.w('Empty payload: $fcmMessage');
         }
@@ -322,16 +342,17 @@ class NotificationService {
     }
   }
 
-  FCMPayload _createPayload(FCMMessage fcmMessage) {
-    final fcmTx = fcmMessage?.data?.details?.tx;
+  FCMPayload? _createPayload(FCMMessage fcmMessage) {
+    final fcmTx = fcmMessage.data?.details?.tx;
+    final fcmTxType = fcmTx?.txType;
 
-    if (fcmTx != null) {
-      final payloadType = _getPayloadType(fcmTx.txType);
+    if (fcmTx != null && fcmTxType != null) {
+      final payloadType = _getPayloadType(fcmTxType);
       final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
       return payload;
     }
 
-    final pegDetected = fcmMessage?.data?.details?.pegDetected;
+    final pegDetected = fcmMessage.data?.details?.pegDetected;
 
     if (pegDetected != null) {
       final payloadType = FCMPayloadType.pegin;
@@ -343,28 +364,33 @@ class NotificationService {
   }
 
   Future<void> _onResumeNotification(FCMTx fcmTx) async {
-    final payloadType = _getPayloadType(fcmTx.txType);
+    final fcmTxType = fcmTx.txType;
+    if (fcmTxType == null) {
+      return;
+    }
+
+    final payloadType = _getPayloadType(fcmTxType);
     final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
     _onNotificationData(payload);
   }
 
   Future<void> _onForegroundNotification(
       FCMMessage fcmMessage, FCMTx fcmTx) async {
-    if (fcmTx != null) {
-      return await _onTxNotification(fcmMessage, fcmTx);
-    }
-
-    final pegDetected = fcmMessage.data.details.pegDetected;
+    final pegDetected = fcmMessage.data?.details?.pegDetected;
     if (pegDetected != null) {
       final payloadType = FCMPayloadType.pegin;
       final payload = FCMPayload(type: payloadType, txid: pegDetected.txHash);
+      final title = fcmMessage.notification?.title ?? '';
+      final body = fcmMessage.notification?.body ?? '';
       await _onDefaultNotification(
-        title: fcmMessage.notification.title,
-        body: fcmMessage.notification.body,
+        title: title,
+        body: body,
         payload: payload,
       );
       return;
     }
+
+    return await _onTxNotification(fcmMessage, fcmTx);
   }
 
   FCMPayloadType _getPayloadType(FCMTxType txType) {
@@ -392,19 +418,28 @@ class NotificationService {
   }
 
   Future<void> _onTxNotification(FCMMessage fcmMessage, FCMTx fcmTx) async {
-    final allTxs = _context.read(walletProvider).allTxs;
+    if (_context == null) {
+      return;
+    }
+
+    final allTxs = _context!.read(walletProvider).allTxs;
 
     logger.d(fcmTx.txType.toString());
 
-    final payloadType = _getPayloadType(fcmTx.txType);
+    final fcmTxType = fcmTx.txType;
+    if (fcmTxType == null) {
+      return;
+    }
+
+    final payloadType = _getPayloadType(fcmTxType);
     final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
 
     // display only recv notification when app is opened
     if (!allTxs.containsKey(fcmTx.txId) && fcmTx.txType == FCMTxType.recv) {
       // no tx item in internal list or unhandled type - let's display that what we're received
       await _onDefaultNotification(
-        title: fcmMessage.notification.title,
-        body: fcmMessage.notification.body,
+        title: fcmMessage.notification?.title ?? '',
+        body: fcmMessage.notification?.body ?? '',
         payload: payload,
       );
 
@@ -413,8 +448,8 @@ class NotificationService {
 
     if (fcmTx.txType == FCMTxType.recv) {
       await _onDefaultNotification(
-        title: fcmMessage.notification.title,
-        body: fcmMessage.notification.body,
+        title: fcmMessage.notification?.title ?? '',
+        body: fcmMessage.notification?.body ?? '',
         payload: payload,
       );
 
@@ -425,11 +460,19 @@ class NotificationService {
   void _onNotificationData(FCMPayload fcmPayload) async {
     logger.d('Notification data: $fcmPayload');
 
+    if (_context == null) {
+      return;
+    }
+
     final txid = fcmPayload.txid;
 
-    final allTxs = _context.read(walletProvider).allTxs;
+    final allTxs = _context!.read(walletProvider).allTxs;
+    final fcmTxType = fcmPayload.type;
+    if (fcmTxType == null) {
+      return;
+    }
 
-    switch (fcmPayload.type) {
+    switch (fcmTxType) {
       case FCMPayloadType.pegin:
       case FCMPayloadType.pegout:
       case FCMPayloadType.send:
@@ -437,13 +480,17 @@ class NotificationService {
       case FCMPayloadType.redeposit:
         if (allTxs.containsKey(txid)) {
           final tx = allTxs[txid];
-          _context.read(walletProvider).showTxDetails(tx);
+          if (tx != null) {
+            _context!.read(walletProvider).showTxDetails(tx);
+          }
         }
         break;
       case FCMPayloadType.swap:
         if (allTxs.containsKey(txid)) {
           final tx = allTxs[txid];
-          _context.read(walletProvider).showSwapTxDetails(tx);
+          if (tx != null) {
+            _context!.read(walletProvider).showSwapTxDetails(tx);
+          }
         }
         break;
       case FCMPayloadType.unknown:
@@ -461,14 +508,18 @@ class NotificationService {
       'Notification iOS data: ${receivedNotification.id} ${receivedNotification.title} ${receivedNotification.body} ${receivedNotification.payload}',
     );
 
+    if (_context == null) {
+      return;
+    }
+
     await showDialog<void>(
-      context: _context,
+      context: _context!,
       builder: (BuildContext context) => CupertinoAlertDialog(
         title: receivedNotification.title != null
-            ? Text(receivedNotification.title)
+            ? Text(receivedNotification.title ?? '')
             : null,
         content: receivedNotification.body != null
-            ? Text(receivedNotification.body)
+            ? Text(receivedNotification.body ?? '')
             : null,
         actions: <Widget>[
           CupertinoDialogAction(
@@ -498,9 +549,9 @@ class NotificationService {
   Future<void> showNotification(
     String title,
     String body, {
-    String payload,
+    String payload = '',
     NotificationVisibility visibility = NotificationVisibility.public,
-    NotificationDetails notificationDetails,
+    NotificationDetails? notificationDetails,
   }) async {
     final activeNotifications = await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
@@ -525,14 +576,14 @@ class NotificationService {
   }
 
   Future<void> _onDefaultNotification(
-      {String title, String body, FCMPayload payload}) async {
+      {String? title, String? body, FCMPayload? payload}) async {
     final notificationDetails = _getNotificationDetails();
 
     await showNotification(
-      title,
-      body,
+      title ?? '',
+      body ?? '',
       notificationDetails: notificationDetails,
-      payload: payload.toJsonString(),
+      payload: payload?.toJsonString() ?? '',
     );
   }
 
@@ -542,20 +593,20 @@ class NotificationService {
     _handleDeepLink(data);
 
     FirebaseDynamicLinks.instance.onLink(
-        onSuccess: (PendingDynamicLinkData dynamicLink) async {
+        onSuccess: (PendingDynamicLinkData? dynamicLink) async {
       _handleDeepLink(dynamicLink);
     }, onError: (OnLinkErrorException e) async {
       logger.e('Link Failed: ${e.message}');
     });
   }
 
-  void _handleDeepLink(PendingDynamicLinkData data) {
+  void _handleDeepLink(PendingDynamicLinkData? data) {
     final deepLink = data?.link;
     if (deepLink != null) {
       logger.d('_handleDeepLink | deeplink: $deepLink');
 
-      if (deepLink.queryParameters.containsKey('address')) {
-        _context.read(paymentProvider).selectPaymentAmountPage(
+      if (deepLink.queryParameters.containsKey('address') && _context != null) {
+        _context!.read(paymentProvider).selectPaymentAmountPage(
               PaymentAmountPageArguments(
                 result:
                     QrCodeResult(address: deepLink.queryParameters['address']),
@@ -565,7 +616,7 @@ class NotificationService {
     }
   }
 
-  Future<Uri> createShortDynamicLink({String address}) async {
+  Future<Uri> createShortDynamicLink({String address = ''}) async {
     final parameters = DynamicLinkParameters(
       uriPrefix: 'https://sideswap.page.link',
       link: Uri.parse('https://sideswap.io/share?address=$address'),
@@ -583,7 +634,8 @@ class NotificationService {
 
     final shortDynamicLink = await parameters.buildShortLink();
 
-    if (shortDynamicLink.warnings.isNotEmpty) {
+    if (shortDynamicLink.warnings != null &&
+        shortDynamicLink.warnings!.isNotEmpty) {
       logger.w(shortDynamicLink.warnings);
     }
 
@@ -592,15 +644,19 @@ class NotificationService {
     return shortDynamicLink.shortUrl;
   }
 
-  void refreshToken() async {
+  Future<void> refreshToken() async {
     try {
-      final token = await _firebaseMessaging.getToken();
+      final token = await FirebaseMessaging.instance.getToken();
       logger.d('Firebase token $token');
-      _context.read(walletProvider).updatePushToken(token);
+      if (_context != null) {
+        _context!.read(walletProvider).updatePushToken(token);
+      }
 
-      FirebaseMessaging().onTokenRefresh.listen((newToken) {
+      FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
         logger.d('Firebase token: $token');
-        _context.read(walletProvider).updatePushToken(newToken);
+        if (_context != null) {
+          _context!.read(walletProvider).updatePushToken(newToken);
+        }
       });
     } on PlatformException catch (err) {
       logger.e('PlatformException: $err');

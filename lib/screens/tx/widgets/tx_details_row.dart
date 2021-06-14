@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class TxDetailsRow extends StatelessWidget {
   TxDetailsRow({
-    Key key,
-    @required this.description,
-    @required this.details,
+    Key? key,
+    required this.description,
+    required this.details,
     this.detailsColor = Colors.white,
   }) : super(key: key);
 

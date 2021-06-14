@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class RoundedButton extends StatefulWidget {
   RoundedButton({
-    Key key,
+    Key? key,
     this.onTap,
     this.color = const Color(0xFF0D5574),
     this.child,
@@ -12,21 +13,21 @@ class RoundedButton extends StatefulWidget {
     this.borderRadius,
   }) : super(key: key);
 
-  final VoidCallback onTap;
-  final Color color;
-  final Widget child;
-  final double width;
-  final double heigh;
-  final BorderRadiusGeometry borderRadius;
+  final VoidCallback? onTap;
+  final Color? color;
+  final Widget? child;
+  final double? width;
+  final double? heigh;
+  final BorderRadiusGeometry? borderRadius;
 
   @override
   _RoundedButtonState createState() => _RoundedButtonState();
 }
 
 class _RoundedButtonState extends State<RoundedButton> {
-  double _width;
-  double _height;
-  BorderRadiusGeometry _borderRadius;
+  late double _width;
+  late double _height;
+  late BorderRadiusGeometry _borderRadius;
 
   @override
   void initState() {

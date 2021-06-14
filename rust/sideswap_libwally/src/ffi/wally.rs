@@ -167,6 +167,11 @@ pub const WALLY_ENOMEM: i32 = -3;
 pub const WALLY_SECP_RANDOMIZE_LEN: u32 = 32;
 pub const BASE58_FLAG_CHECKSUM: u32 = 1;
 pub const BASE58_CHECKSUM_LEN: u32 = 4;
+pub const ASSET_TAG_LEN: u32 = 32;
+pub const BLINDING_FACTOR_LEN: u32 = 32;
+pub const ASSET_GENERATOR_LEN: u32 = 33;
+pub const ASSET_COMMITMENT_LEN: u32 = 33;
+pub const ASSET_RANGEPROOF_MAX_LEN: u32 = 5134;
 pub const BIP39_ENTROPY_LEN_128: u32 = 16;
 pub const BIP39_ENTROPY_LEN_160: u32 = 20;
 pub const BIP39_ENTROPY_LEN_192: u32 = 24;
@@ -2556,6 +2561,378 @@ extern "C" {
     #[doc = ""]
     #[doc = " :param written: 1 if the library supports elements, otherwise 0."]
     pub fn wally_is_elements_build(written: *mut size_t) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Create a blinded Asset Generator from an Asset Tag and Asset Blinding Factor."]
+    #[doc = ""]
+    #[doc = " :param asset: Asset Tag to create a blinding generator for."]
+    #[doc = " :param asset_len: Length of ``asset`` in bytes. Must be ``ASSET_TAG_LEN``."]
+    #[doc = " :param abf: Asset Blinding Factor (Random entropy to blind with)."]
+    #[doc = " :param abf_len: Length of ``abf`` in bytes. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param bytes_out: Destination for the resulting Asset Generator."]
+    #[doc = " :param len: The length of ``bytes_out`` in bytes. Must be ``ASSET_GENERATOR_LEN``."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_generator_from_bytes(
+        asset: *const ::std::os::raw::c_uchar,
+        asset_len: size_t,
+        abf: *const ::std::os::raw::c_uchar,
+        abf_len: size_t,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Generate the final value blinding factor required for blinding a confidential transaction."]
+    #[doc = ""]
+    #[doc = " :param values: Array of transaction input values in satoshi"]
+    #[doc = " :param values_len: Length of ``values``, also the number of elements in all three of the input arrays, which is equal"]
+    #[doc = "|     to ``num_inputs`` plus the number of outputs."]
+    #[doc = " :param num_inputs: Number of elements in the input arrays that represent transaction inputs. The number of outputs is"]
+    #[doc = "|     implicitly ``values_len`` - ``num_inputs``."]
+    #[doc = " :param abf:  Array of bytes representing ``values_len`` asset blinding factors."]
+    #[doc = " :param abf_len: Length of ``abf`` in bytes. Must be ``values_len`` * ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param vbf: Array of bytes representing (``values_len`` - 1) value blinding factors."]
+    #[doc = " :param vbf_len: Length of ``vbf`` in bytes. Must be (``values_len`` - 1) * ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param bytes_out: Buffer to receive the final value blinding factor."]
+    #[doc = " :param len: Length of ``bytes_out``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_final_vbf(
+        values: *const u64,
+        values_len: size_t,
+        num_inputs: size_t,
+        abf: *const ::std::os::raw::c_uchar,
+        abf_len: size_t,
+        vbf: *const ::std::os::raw::c_uchar,
+        vbf_len: size_t,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Calculate the value commitment for a transaction output."]
+    #[doc = ""]
+    #[doc = " :param value: Output value in satoshi."]
+    #[doc = " :param vbf: Value Blinding Factor."]
+    #[doc = " :param vbf_len: Length of ``vbf``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param generator: Asset generator from `wally_asset_generator_from_bytes`."]
+    #[doc = " :param generator_len: Length of ``generator``. Must be ``ASSET_GENERATOR_LEN``."]
+    #[doc = " :param bytes_out: Buffer to receive value commitment."]
+    #[doc = " :param len: Length of ``bytes_out``. Must be ``ASSET_COMMITMENT_LEN``."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_value_commitment(
+        value: u64,
+        vbf: *const ::std::os::raw::c_uchar,
+        vbf_len: size_t,
+        generator: *const ::std::os::raw::c_uchar,
+        generator_len: size_t,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    pub fn wally_asset_rangeproof_with_nonce(
+        value: u64,
+        nonce_hash: *const ::std::os::raw::c_uchar,
+        nonce_hash_len: size_t,
+        asset: *const ::std::os::raw::c_uchar,
+        asset_len: size_t,
+        abf: *const ::std::os::raw::c_uchar,
+        abf_len: size_t,
+        vbf: *const ::std::os::raw::c_uchar,
+        vbf_len: size_t,
+        commitment: *const ::std::os::raw::c_uchar,
+        commitment_len: size_t,
+        extra: *const ::std::os::raw::c_uchar,
+        extra_len: size_t,
+        generator: *const ::std::os::raw::c_uchar,
+        generator_len: size_t,
+        min_value: u64,
+        exp: ::std::os::raw::c_int,
+        min_bits: ::std::os::raw::c_int,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+        written: *mut size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Generate a rangeproof for a transaction output."]
+    #[doc = ""]
+    #[doc = " :param value: Value of the output in satoshi."]
+    #[doc = " :param pub_key: Public blinding key for the output. See `wally_confidential_addr_to_ec_public_key`."]
+    #[doc = " :param pub_key_len: Length of ``pub_key``. Must be ``EC_PUBLIC_KEY_LEN``"]
+    #[doc = " :param priv_key: Pivate ephemeral key. Should be randomly generated for each output."]
+    #[doc = " :param priv_key_length: Length of ``priv_key``."]
+    #[doc = " :param asset: Asset id of output."]
+    #[doc = " :param asset_len: Length of ``asset``. Must be ``ASSET_TAG_LEN``."]
+    #[doc = " :param abf: Asset blinding factor. Randomly generated for each output."]
+    #[doc = " :param abf_len: Length of ``abf``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param vbf: Value blinding factor. Randomly generated for each output except the last, which is generate by calling"]
+    #[doc = "|     `wally_asset_final_vbf`."]
+    #[doc = " :param vbf_len: Length of ``vbf``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param commitment: Value commitment from `wally_asset_value_commitment`."]
+    #[doc = " :param commitment_len: Length of ``commitment``. Must be ``ASSET_COMMITMENT_LEN``."]
+    #[doc = " :param extra: Set this to the script pubkey of the output."]
+    #[doc = " :param extra_len: Length of ``extra``, i.e. script pubkey."]
+    #[doc = " :param generator: Asset generator from `wally_asset_generator_from_bytes`."]
+    #[doc = " :param generator_len: Length of ``generator`. Must be ``ASSET_GENERATOR_LEN``."]
+    #[doc = " :param min_value: Recommended value 1."]
+    #[doc = " :param exp: Exponent value. -1 >= ``exp`` >= 18. Recommended value 0."]
+    #[doc = " :param min_bits: 0 >= min_bits >= 64. Recommended value 52."]
+    #[doc = " :param bytes_out: Buffer to receive rangeproof."]
+    #[doc = " :param len: Length of ``bytes_out``. See ``ASSET_RANGEPROOF_MAX_LEN``."]
+    #[doc = " :param written: Number of bytes actually written to ``bytes_out``."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_rangeproof(
+        value: u64,
+        pub_key: *const ::std::os::raw::c_uchar,
+        pub_key_len: size_t,
+        priv_key: *const ::std::os::raw::c_uchar,
+        priv_key_len: size_t,
+        asset: *const ::std::os::raw::c_uchar,
+        asset_len: size_t,
+        abf: *const ::std::os::raw::c_uchar,
+        abf_len: size_t,
+        vbf: *const ::std::os::raw::c_uchar,
+        vbf_len: size_t,
+        commitment: *const ::std::os::raw::c_uchar,
+        commitment_len: size_t,
+        extra: *const ::std::os::raw::c_uchar,
+        extra_len: size_t,
+        generator: *const ::std::os::raw::c_uchar,
+        generator_len: size_t,
+        min_value: u64,
+        exp: ::std::os::raw::c_int,
+        min_bits: ::std::os::raw::c_int,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+        written: *mut size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Return the required buffer size for receiving a surjection proof"]
+    #[doc = ""]
+    #[doc = " :param num_inputs: Number of transaction inputs."]
+    #[doc = " :param written: Destination for the surjection proof size."]
+    pub fn wally_asset_surjectionproof_size(
+        num_inputs: size_t,
+        written: *mut size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Generate a surjection proof for a transaction output"]
+    #[doc = ""]
+    #[doc = " :param output_asset: asset id for the output."]
+    #[doc = " :param output_asset_len: Length of ``asset``. Must be ``ASSET_TAG_LEN``."]
+    #[doc = " :param output_abf: Asset blinding factor for the output. Generated randomly for each output."]
+    #[doc = " :param output_abf_len: Length of ``output_abf``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param output_generator: Asset generator from `wally_asset_generator_from_bytes`."]
+    #[doc = " :param output_generator_len: Length of ``output_generator`. Must be ``ASSET_GENERATOR_LEN``."]
+    #[doc = " :param bytes: Must be generated randomly for each output."]
+    #[doc = " :param bytes_len: Length of ``bytes``. Must be 32."]
+    #[doc = " :param asset: Array of input asset tags."]
+    #[doc = " :param asset_len: Length of ``asset`. Must be ``ASSET_TAG_LEN`` * number of inputs."]
+    #[doc = " :param abf: Array of asset blinding factors from the transaction inputs."]
+    #[doc = " :param abf_len: Length of ``abf``. Must be ``BLINDING_FACTOR_LEN`` * number of inputs."]
+    #[doc = " :param generator: Array of asset generators from transaction inputs."]
+    #[doc = " :param generator_len: Length of ``generator``. Must be ``ASSET_GENERATOR_LEN`` * number of inputs."]
+    #[doc = " :param bytes_out: Buffer to receive surjection proof."]
+    #[doc = " :param bytes_out_len: Length of ``bytes_out``. See `wally_asset_surjectionproof_size`."]
+    #[doc = " :param written: Number of bytes actually written to ``bytes_out``."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_surjectionproof(
+        output_asset: *const ::std::os::raw::c_uchar,
+        output_asset_len: size_t,
+        output_abf: *const ::std::os::raw::c_uchar,
+        output_abf_len: size_t,
+        output_generator: *const ::std::os::raw::c_uchar,
+        output_generator_len: size_t,
+        bytes: *const ::std::os::raw::c_uchar,
+        bytes_len: size_t,
+        asset: *const ::std::os::raw::c_uchar,
+        asset_len: size_t,
+        abf: *const ::std::os::raw::c_uchar,
+        abf_len: size_t,
+        generator: *const ::std::os::raw::c_uchar,
+        generator_len: size_t,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+        written: *mut size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Unblind a confidential transaction output."]
+    #[doc = ""]
+    #[doc = " :param nonce_hash: SHA-256 hash of the generated nonce."]
+    #[doc = " :param nonce_hash_len: Length of ``nonce_hash``. Must be ``SHA256_LEN``."]
+    #[doc = " :param proof: Rangeproof from :c:func:`wally_tx_get_output_rangeproof`."]
+    #[doc = " :param proof_len: Length of ``proof``."]
+    #[doc = " :param commitment: Value commitment from :c:func:`wally_tx_get_output_value`."]
+    #[doc = " :param commitment_len: Length of ``commitment``."]
+    #[doc = " :param extra: Script pubkey from :c:func:`wally_tx_get_output_script`."]
+    #[doc = " :param extra_len: Length of ``extra``."]
+    #[doc = " :param generator: Asset generator from :c:func:`wally_tx_get_output_asset`."]
+    #[doc = " :param generator_len: Length of ``generator``. Must be ``ASSET_GENERATOR_LEN``."]
+    #[doc = " :param asset_out: Buffer to receive unblinded asset id."]
+    #[doc = " :param asset_out_len: Length of ``asset_out``. Must be ``ASSET_TAG_LEN``."]
+    #[doc = " :param abf_out: Buffer to receive asset blinding factor."]
+    #[doc = " :param abf_out_len: Length of ``abf_out``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param vbf_out: Buffer to receive asset blinding factor."]
+    #[doc = " :param vbf_out_len: Length of ``vbf_out``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param value_out: Destination for unblinded transaction output value."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_unblind_with_nonce(
+        nonce_hash: *const ::std::os::raw::c_uchar,
+        nonce_hash_len: size_t,
+        proof: *const ::std::os::raw::c_uchar,
+        proof_len: size_t,
+        commitment: *const ::std::os::raw::c_uchar,
+        commitment_len: size_t,
+        extra: *const ::std::os::raw::c_uchar,
+        extra_len: size_t,
+        generator: *const ::std::os::raw::c_uchar,
+        generator_len: size_t,
+        asset_out: *mut ::std::os::raw::c_uchar,
+        asset_out_len: size_t,
+        abf_out: *mut ::std::os::raw::c_uchar,
+        abf_out_len: size_t,
+        vbf_out: *mut ::std::os::raw::c_uchar,
+        vbf_out_len: size_t,
+        value_out: *mut u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Unblind a confidential transaction output."]
+    #[doc = ""]
+    #[doc = " :param pub_key: From :c:func:`wally_tx_get_output_nonce`."]
+    #[doc = " :param pub_key_len: Length of ``pub_key``. Must be ``EC_PUBLIC_KEY_LEN``."]
+    #[doc = " :param priv_key: Private blinding key corresponding to public blinding key used to generate destination address. See"]
+    #[doc = "|     :c:func:`wally_asset_blinding_key_to_ec_private_key`."]
+    #[doc = " :param proof: Rangeproof from :c:func:`wally_tx_get_output_rangeproof`."]
+    #[doc = " :param proof_len: Length of ``proof``."]
+    #[doc = " :param commitment: Value commitment from :c:func:`wally_tx_get_output_value`."]
+    #[doc = " :param commitment_len: Length of ``commitment``."]
+    #[doc = " :param extra: Script pubkey from :c:func:`wally_tx_get_output_script`."]
+    #[doc = " :param extra_len: Length of ``extra``."]
+    #[doc = " :param generator: Asset generator from :c:func:`wally_tx_get_output_asset`."]
+    #[doc = " :param generator_len: Length of ``generator``. Must be ``ASSET_GENERATOR_LEN``."]
+    #[doc = " :param asset_out: Buffer to receive unblinded asset id."]
+    #[doc = " :param asset_out_len: Length of ``asset_out``. Must be ``ASSET_TAG_LEN``."]
+    #[doc = " :param abf_out: Buffer to receive asset blinding factor."]
+    #[doc = " :param abf_out_len: Length of ``abf_out``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param vbf_out: Buffer to receive asset blinding factor."]
+    #[doc = " :param vbf_out_len: Length of ``vbf_out``. Must be ``BLINDING_FACTOR_LEN``."]
+    #[doc = " :param value_out: Destination for unblinded transaction output value."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_unblind(
+        pub_key: *const ::std::os::raw::c_uchar,
+        pub_key_len: size_t,
+        priv_key: *const ::std::os::raw::c_uchar,
+        priv_key_len: size_t,
+        proof: *const ::std::os::raw::c_uchar,
+        proof_len: size_t,
+        commitment: *const ::std::os::raw::c_uchar,
+        commitment_len: size_t,
+        extra: *const ::std::os::raw::c_uchar,
+        extra_len: size_t,
+        generator: *const ::std::os::raw::c_uchar,
+        generator_len: size_t,
+        asset_out: *mut ::std::os::raw::c_uchar,
+        asset_out_len: size_t,
+        abf_out: *mut ::std::os::raw::c_uchar,
+        abf_out_len: size_t,
+        vbf_out: *mut ::std::os::raw::c_uchar,
+        vbf_out_len: size_t,
+        value_out: *mut u64,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Generate a master blinding key from a seed as specified in SLIP-0077."]
+    #[doc = ""]
+    #[doc = " :param bytes: Seed value. See :c:func:`bip39_mnemonic_to_seed`."]
+    #[doc = " :param bytes_len: Length of ``seed``. Must be one of ``BIP32_ENTROPY_LEN_128``, ``BIP32_ENTROPY_LEN_256`` or"]
+    #[doc = "|     ``BIP32_ENTROPY_LEN_512``."]
+    #[doc = " :param bytes_out: Buffer to receive master blinding key. The master blinding key can be used to generate blinding"]
+    #[doc = "|     keys for specific outputs by passing it to `wally_asset_blinding_key_to_ec_private_key`."]
+    #[doc = " :param len: Length of ``bytes_out``. Must be ``HMAC_SHA512_LEN``."]
+    pub fn wally_asset_blinding_key_from_seed(
+        bytes: *const ::std::os::raw::c_uchar,
+        bytes_len: size_t,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Generate a blinding key for a script pubkey."]
+    #[doc = ""]
+    #[doc = " :param bytes: Master blinding key from `wally_asset_blinding_key_from_seed`."]
+    #[doc = " :param bytes_len: Length of ``bytes``. Must be ``HMAC_SHA512_LEN``."]
+    #[doc = " :param script: The script pubkey for the confidential output address."]
+    #[doc = " :param script_len: Length of ``script``."]
+    #[doc = " :param bytes_out: Buffer to receive blinding key."]
+    #[doc = " :param len: Length of ``bytes_out``. Must be ``EC_PRIVATE_KEY_LEN``."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_blinding_key_to_ec_private_key(
+        bytes: *const ::std::os::raw::c_uchar,
+        bytes_len: size_t,
+        script: *const ::std::os::raw::c_uchar,
+        script_len: size_t,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Calculate the size in bytes of the whitelist proof."]
+    #[doc = ""]
+    #[doc = " :param num_keys: The number of offline/online keys."]
+    #[doc = " :param written: Destination for the number of bytes needed for the proof."]
+    pub fn wally_asset_pak_whitelistproof_size(
+        num_keys: size_t,
+        written: *mut size_t,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Generate the whitelist proof for the pegout script."]
+    #[doc = ""]
+    #[doc = " :param online_keys: The list of online keys."]
+    #[doc = " :param online_keys_len: Length of ``online_keys_len`` in bytes. Must be a multiple of ``EC_PUBLIC_KEY_LEN``."]
+    #[doc = " :param offline_keys: The list of offline keys."]
+    #[doc = " :param offline_keys_len: Length of ``offline_keys_len`` in bytes. Must be a multiple of ``EC_PUBLIC_KEY_LEN``."]
+    #[doc = " :param key_index: The index in the PAK list of the key signing this whitelist proof"]
+    #[doc = " :param sub_pubkey: The key to be whitelisted."]
+    #[doc = " :param sub_pubkey_len: Length of ``sub_pubkey`` in bytes. Must be ``EC_PUBLIC_KEY_LEN``."]
+    #[doc = " :param online_priv_key: The secret key to the signer's online pubkey."]
+    #[doc = " :param online_priv_key_len: Length of ``online_priv_key`` in bytes. Must be ``EC_PRIVATE_KEY_LEN``."]
+    #[doc = " :param summed_key: The secret key to the sum of (whitelisted key, signer's offline pubkey)."]
+    #[doc = " :param summed_key_len: Length of ``summed_key`` in bytes. Must be ``EC_PRIVATE_KEY_LEN``."]
+    #[doc = " :param bytes_out: Destination for the resulting whitelist proof."]
+    #[doc = " :param len: Length of ``bytes_out`` in bytes."]
+    #[doc = " :param written: Number of bytes actually written to ``bytes_out``."]
+    #[doc = ""]
+    #[doc = " .. note:: This function requires external locking if called from multiple threads."]
+    pub fn wally_asset_pak_whitelistproof(
+        online_keys: *const ::std::os::raw::c_uchar,
+        online_keys_len: size_t,
+        offline_keys: *const ::std::os::raw::c_uchar,
+        offline_keys_len: size_t,
+        key_index: size_t,
+        sub_pubkey: *const ::std::os::raw::c_uchar,
+        sub_pubkey_len: size_t,
+        online_priv_key: *const ::std::os::raw::c_uchar,
+        online_priv_key_len: size_t,
+        summed_key: *const ::std::os::raw::c_uchar,
+        summed_key_len: size_t,
+        bytes_out: *mut ::std::os::raw::c_uchar,
+        len: size_t,
+        written: *mut size_t,
+    ) -> ::std::os::raw::c_int;
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

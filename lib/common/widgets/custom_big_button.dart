@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class CustomBigButton extends StatelessWidget {
   CustomBigButton({
-    Key key,
+    Key? key,
     this.text,
     this.onPressed,
-    this.icon,
     this.width,
     this.height,
     this.backgroundColor,
@@ -15,7 +15,8 @@ class CustomBigButton extends StatelessWidget {
     this.textStyle,
     this.buttonStyle,
     this.textColor,
-    OutlinedBorder shape,
+    OutlinedBorder? shape,
+    this.child,
   })  : shape = shape ??
             RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
@@ -24,17 +25,17 @@ class CustomBigButton extends StatelessWidget {
             ),
         super(key: key);
 
-  final String text;
-  final VoidCallback onPressed;
-  final Widget icon;
-  final double width;
-  final double height;
-  final Color backgroundColor;
+  final String? text;
+  final VoidCallback? onPressed;
+  final double? width;
+  final double? height;
+  final Color? backgroundColor;
   final bool enabled;
-  final TextStyle textStyle;
-  final ButtonStyle buttonStyle;
-  final Color textColor;
-  final OutlinedBorder shape;
+  final TextStyle? textStyle;
+  final ButtonStyle? buttonStyle;
+  final Color? textColor;
+  final OutlinedBorder? shape;
+  final Widget? child;
 
   @override
   Widget build(BuildContext context) {
@@ -42,48 +43,10 @@ class CustomBigButton extends StatelessWidget {
       width: width ?? 60.w,
       height: height ?? 54.w,
       child: TextButton(
-        child: Stack(
-          children: [
-            if (text != null) ...[
-              Align(
-                alignment:
-                    icon != null ? Alignment.centerLeft : Alignment.center,
-                child: Padding(
-                  padding: icon != null
-                      ? EdgeInsets.only(left: 16.w)
-                      : EdgeInsets.zero,
-                  child: Text(
-                    text ?? '',
-                    overflow: TextOverflow.fade,
-                    style: textStyle ??
-                        GoogleFonts.roboto(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.normal,
-                        ),
-                  ),
-                ),
-              ),
-            ],
-            if (icon != null) ...[
-              Align(
-                alignment:
-                    text != null ? Alignment.centerRight : Alignment.center,
-                child: Padding(
-                  padding: text != null
-                      ? EdgeInsets.only(right: 16.w)
-                      : EdgeInsets.zero,
-                  child: Opacity(
-                    opacity: enabled ? 1.0 : 0.5,
-                    child: icon,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
         onPressed: enabled ? onPressed : null,
         style: buttonStyle ??
             TextButton.styleFrom(
+              padding: EdgeInsets.zero,
               primary: enabled
                   ? textColor ?? Colors.white
                   : textColor?.withOpacity(0.5) ??
@@ -96,6 +59,20 @@ class CustomBigButton extends StatelessWidget {
                           const Color(0xFF2A6D92).withOpacity(0.5),
               shape: shape,
             ),
+        child: child != null
+            ? Opacity(
+                opacity: enabled ? 1.0 : 0.5,
+                child: child,
+              )
+            : Text(
+                text ?? '',
+                overflow: TextOverflow.fade,
+                style: textStyle ??
+                    GoogleFonts.roboto(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.normal,
+                    ),
+              ),
       ),
     );
   }

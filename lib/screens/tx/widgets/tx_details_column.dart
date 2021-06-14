@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class TxDetailsColumn extends StatelessWidget {
   TxDetailsColumn({
-    Key key,
-    @required this.description,
-    @required this.details,
+    Key? key,
+    required this.description,
+    required this.details,
     this.isCopyVisible = false,
-    TextStyle descriptionStyle,
-    TextStyle detailsStyle,
+    TextStyle? descriptionStyle,
+    TextStyle? detailsStyle,
   })  : _descriptionStyle = descriptionStyle ??
             GoogleFonts.roboto(
               fontSize: 15.sp,
@@ -60,8 +61,8 @@ class TxDetailsColumn extends StatelessWidget {
                   child: Container(
                     width: 26.w,
                     height: 26.w,
-                    child: FlatButton(
-                      padding: EdgeInsets.zero,
+                    child: TextButton(
+                      style: TextButton.styleFrom(padding: EdgeInsets.zero),
                       onPressed: () async {
                         await copyToClipboard(context, details);
                       },

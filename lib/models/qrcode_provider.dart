@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:easy_localization/easy_localization.dart';
+
+import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/wallet.dart';
 
@@ -17,77 +19,87 @@ enum QrCodeResultType {
 enum QrCodeAddressType {
   elements,
   bitcoin,
+  liquidnetwork,
   other,
 }
 
 class QrCodeResult {
-  String address;
-  QrCodeAddressType addressType;
-  QrCodeResultType type;
-  double amount;
-  String asset;
-  String message;
-  String label;
-  int bitMask;
-  bool error;
-  String errorMessage;
-  String orderId;
+  String? address;
+  QrCodeAddressType? addressType;
+  QrCodeResultType? type;
+  double? amount;
+  String? ticker;
+  String? message;
+  String? label;
+  int? bitMask;
+  bool? error;
+  String? errorMessage;
+  String? orderId;
+  String? assetId;
 
   QrCodeResult({
     this.address,
     this.addressType,
     this.amount,
-    this.asset,
+    this.ticker,
     this.message,
     this.label,
     this.bitMask,
     this.error,
     this.errorMessage,
+    this.orderId,
+    this.assetId,
   });
 
   QrCodeResult copyWith({
-    String address,
-    QrCodeAddressType addressType,
-    double amount,
-    String asset,
-    String message,
-    String label,
-    int bitMask,
-    bool error,
-    String errorMessage,
+    String? address,
+    QrCodeAddressType? addressType,
+    double? amount,
+    String? ticker,
+    String? message,
+    String? label,
+    int? bitMask,
+    bool? error,
+    String? errorMessage,
+    String? orderId,
+    String? assetId,
   }) {
     return QrCodeResult(
       address: address ?? this.address,
       addressType: addressType ?? this.addressType,
       amount: amount ?? this.amount,
-      asset: asset ?? this.asset,
+      ticker: ticker ?? this.ticker,
       message: message ?? this.message,
       label: label ?? this.label,
       bitMask: bitMask ?? this.bitMask,
       error: error ?? this.error,
       errorMessage: errorMessage ?? this.errorMessage,
+      orderId: orderId ?? this.orderId,
+      assetId: assetId ?? this.assetId,
     );
   }
 
   @override
   String toString() {
-    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, asset: $asset, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage)';
+    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, ticker: $ticker, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage, orderId: $orderId, assetId: $assetId)';
   }
 
   @override
-  bool operator ==(Object o) {
-    if (identical(this, o)) return true;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
 
-    return o is QrCodeResult &&
-        o.address == address &&
-        o.addressType == addressType &&
-        o.amount == amount &&
-        o.asset == asset &&
-        o.message == message &&
-        o.label == label &&
-        o.bitMask == bitMask &&
-        o.error == error &&
-        o.errorMessage == errorMessage;
+    return other is QrCodeResult &&
+        other.address == address &&
+        other.addressType == addressType &&
+        other.amount == amount &&
+        other.ticker == ticker &&
+        other.message == message &&
+        other.label == label &&
+        other.bitMask == bitMask &&
+        other.error == error &&
+        other.errorMessage == errorMessage &&
+        other.orderId == orderId &&
+        other.assetId == assetId;
   }
 
   @override
@@ -95,12 +107,14 @@ class QrCodeResult {
     return address.hashCode ^
         addressType.hashCode ^
         amount.hashCode ^
-        asset.hashCode ^
+        ticker.hashCode ^
         message.hashCode ^
         label.hashCode ^
         bitMask.hashCode ^
         error.hashCode ^
-        errorMessage.hashCode;
+        errorMessage.hashCode ^
+        orderId.hashCode ^
+        assetId.hashCode;
   }
 }
 
@@ -114,12 +128,12 @@ class QrCodeResult {
 
 class QrCodeNotifierProvider extends ChangeNotifier {
   final Reader read;
-  QrCodeResult _result;
+  QrCodeResult _result = QrCodeResult();
 
   QrCodeNotifierProvider(this.read);
 
   QrCodeResult parseDynamicQrCode(String qrCode) {
-    if (qrCode == null) {
+    if (qrCode.isEmpty) {
       return _emitError('Empty qr code'.tr());
     }
 
@@ -141,10 +155,20 @@ class QrCodeNotifierProvider extends ChangeNotifier {
       return _result;
     }
 
-    final url = Uri.parse(qrCode ?? '');
+    final url = Uri.parse(qrCode);
 
     if (url.scheme == 'bitcoin') {
-      return parseBitcoinAddress(qrCode);
+      return parseBIP21(qrCode: qrCode, addressType: QrCodeAddressType.bitcoin);
+    }
+
+    if (url.scheme == 'liquidnetwork') {
+      return parseBIP21(
+          qrCode: qrCode, addressType: QrCodeAddressType.liquidnetwork);
+    }
+
+    // check other bip21 schemes
+    if (url.scheme != 'sideswap' && url.scheme != 'https') {
+      return parseBIP21(qrCode: qrCode, addressType: QrCodeAddressType.other);
     }
 
     if (url.scheme == 'sideswap') {
@@ -153,8 +177,8 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     final orderId = url.queryParameters['order_id'];
     if (url.scheme == 'https' &&
-        url.host == 'sideswap.io' &&
-        url.path == '/app/submit' &&
+        url.host == 'app.sideswap.io' &&
+        url.path == '/submit/' &&
         orderId != null) {
       _result.orderId = orderId;
       return _result;
@@ -180,12 +204,12 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     _result.address = url.path;
     _result.addressType = QrCodeAddressType.other;
-    if (_result.address.isEmpty) {
+    if (_result.address != null && _result.address!.isEmpty) {
       logger.w('Empty qr code address');
       return _emitError('Invalid QR code'.tr());
     }
 
-    String data;
+    String? data;
 
     if (queryParams.containsKey('T')) {
       data = queryParams['T'];
@@ -218,7 +242,7 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     try {
       _result.amount = double.tryParse(dataList[1]);
-      _result.asset = dataList[2].isNotEmpty ? dataList[2] : null;
+      _result.ticker = dataList[2].isNotEmpty ? dataList[2] : null;
       final decodedMessage = utf8.decode(base64Decode(dataList[3])).toString();
       _result.message = decodedMessage.isNotEmpty ? decodedMessage : null;
       _result.bitMask = int.tryParse(dataList[4]);
@@ -233,24 +257,33 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     return QrCodeResult();
   }
 
-  QrCodeResult parseBitcoinAddress(String qrCode) {
-    final btcUrl = Uri.parse(qrCode);
-    final btcParams = btcUrl.queryParameters;
+  QrCodeResult parseBIP21({
+    required String qrCode,
+    required QrCodeAddressType addressType,
+  }) {
+    final url = Uri.parse(qrCode);
+    final params = url.queryParameters;
 
-    if (btcParams.containsKey('amount')) {
-      _result.amount = double.tryParse(btcParams['amount']);
+    if (params.containsKey('amount')) {
+      _result.amount = double.tryParse(params['amount'] ?? '0');
     }
 
-    if (btcParams.containsKey('label')) {
-      _result.label = btcParams['label'];
+    if (params.containsKey('label')) {
+      _result.label = params['label'];
     }
 
-    if (btcParams.containsKey('message')) {
-      _result.message = btcParams['message'];
+    if (params.containsKey('message')) {
+      _result.message = params['message'];
     }
 
-    _result.address = btcUrl.path;
-    _result.addressType = QrCodeAddressType.bitcoin;
+    if (params.containsKey('assetid')) {
+      _result.assetId = params['assetid'];
+      final asset = read(walletProvider).assets[_result.assetId];
+      _result.ticker = asset != null ? asset.ticker : kUnknownTicker;
+    }
+
+    _result.address = url.path;
+    _result.addressType = addressType;
 
     logger.d(_result);
     notifyListeners();
@@ -267,11 +300,11 @@ class QrCodeNotifierProvider extends ChangeNotifier {
   }
 
   String createDynamicQrCodeUrl({
-    @required String address,
+    required String address,
     QrCodeResultType type = QrCodeResultType.client,
-    double amount,
-    String asset,
-    String message,
+    double? amount,
+    String? asset,
+    String? message,
     int bitMask = 0,
   }) {
     final dataList = <String>[];

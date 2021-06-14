@@ -1,13 +1,14 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
-import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/protobuf/sideswap.pb.dart';
-import 'package:sideswap/common/widgets/custom_app_bar.dart';
-import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/common/widgets/custom_app_bar.dart';
+import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 enum TxType { received, sent, swap, unknown }
 
@@ -47,7 +48,6 @@ IconData txIcon(TxType type) {
     case TxType.unknown:
       return Icons.device_unknown;
   }
-  throw Exception('unknown type');
 }
 
 String txTypeName(TxType type) {
@@ -61,7 +61,6 @@ String txTypeName(TxType type) {
     case TxType.unknown:
       return 'Unknown'.tr();
   }
-  throw Exception('unknown type');
 }
 
 int txAssetAmount(Tx tx, String assetId) {
@@ -80,12 +79,12 @@ class WalletTxMemo extends StatefulWidget {
 }
 
 class _WalletTxMemoState extends State<WalletTxMemo> {
-  FocusNode _focusNode;
+  late FocusNode _focusNode;
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
-    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
   }
 
   @override

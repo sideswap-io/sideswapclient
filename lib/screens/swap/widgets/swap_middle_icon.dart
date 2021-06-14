@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/swap_provider.dart';
@@ -9,14 +10,14 @@ import 'package:sideswap/screens/swap/widgets/swap_arrows_button.dart';
 
 class SwapMiddleIcon extends ConsumerWidget {
   SwapMiddleIcon({
-    @required this.visibleToggles,
+    required this.visibleToggles,
     this.onTap,
     this.visible = true,
   });
 
   final _swapIconSize = 48.w;
   final bool visibleToggles;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool visible;
 
   @override
@@ -50,12 +51,12 @@ class SwapMiddleIcon extends ConsumerWidget {
                   final serverFeePercentPegOut =
                       wallet.serverStatus?.serverFeePercentPegOut ?? 0;
 
-                  final _recvAmount = swap.swapRecvAmount ?? 0;
+                  final _recvAmount = swap.swapRecvAmount;
                   final _assetSend = swap.swapSendAsset ?? '';
                   final _assetRecv = swap.swapRecvAsset ?? '';
                   final _sendLiquid = _assetSend == wallet.liquidAssetId();
-                  final _sendAmount = swap.swapSendAmount ?? 0;
-                  final _networkFee = swap.swapNetworkFee ?? 0;
+                  final _sendAmount = swap.swapSendAmount;
+                  final _networkFee = swap.swapNetworkFee;
                   final _amountBitcoin =
                       _sendLiquid ? _sendAmount : _recvAmount;
                   // Client is paying network fees, show price that the dealer will get
@@ -102,7 +103,7 @@ class SwapMiddleIcon extends ConsumerWidget {
                         : 100 - serverFeePercentPegIn;
                   }
                   var _conversionStr = _percentConversion.toStringAsFixed(2);
-                  var _conversionText = 'Conversion rate ${_conversionStr}%';
+                  var _conversionText = 'Conversion rate $_conversionStr%';
                   final _priceText = _swapType == SwapType.atomic
                       ? _swapText
                       : _conversionText;

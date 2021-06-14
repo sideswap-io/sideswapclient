@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapProgressBar extends StatefulWidget {
   SideSwapProgressBar({
-    Key key,
+    Key? key,
     this.percent = 0,
     this.displayText = true,
     this.duration = const Duration(milliseconds: 500),
@@ -14,7 +15,7 @@ class SideSwapProgressBar extends StatefulWidget {
   final int percent;
   final bool displayText;
   final Duration duration;
-  final String text;
+  final String? text;
 
   @override
   _SideSwapProgressBarState createState() => _SideSwapProgressBarState();
@@ -22,12 +23,12 @@ class SideSwapProgressBar extends StatefulWidget {
 
 class _SideSwapProgressBarState extends State<SideSwapProgressBar> {
   final _containerKey = GlobalKey();
-  double _maxWidth;
+  double _maxWidth = 0;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
   }
 
   void afterBuild(BuildContext context) {
@@ -37,9 +38,12 @@ class _SideSwapProgressBarState extends State<SideSwapProgressBar> {
   }
 
   double getMaxWidth() {
-    final renderBox =
-        _containerKey.currentContext.findRenderObject() as RenderBox;
-    return renderBox.size.width;
+    final renderBox = _containerKey.currentContext?.findRenderObject();
+    if (renderBox == null) {
+      return 0;
+    }
+
+    return (renderBox as RenderBox).size.width;
   }
 
   @override
@@ -61,7 +65,7 @@ class _SideSwapProgressBarState extends State<SideSwapProgressBar> {
             ),
             child: Row(
               children: [
-                if (_maxWidth != null) ...[
+                if (_maxWidth != 0) ...[
                   AnimatedContainer(
                     duration: widget.duration,
                     width: _maxWidth * (widget.percent / 100),

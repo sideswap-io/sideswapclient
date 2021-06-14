@@ -1,6 +1,7 @@
-import 'package:flutter/services.dart';
-import 'dart:typed_data';
 import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:flutter/services.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 
@@ -18,29 +19,27 @@ class Encryption {
     }
 
     final result = await platform.invokeMethod<bool>('canAuthenticate');
-    return result;
+    return result ?? false;
   }
 
   Future<Uint8List> encryptBiometric(String data) async {
     final dataCopy = Uint8List.fromList(data.codeUnits);
-    final result = await _process('encryptBiometric', dataCopy);
-    return result;
+    return await _process('encryptBiometric', dataCopy);
   }
 
   Future<String> decryptBiometric(Uint8List data) async {
     final result = await _process('decryptBiometric', data);
-    return result == null ? null : String.fromCharCodes(result);
+    return String.fromCharCodes(result);
   }
 
   Future<Uint8List> encryptFallback(String data) async {
     final dataCopy = Uint8List.fromList(data.codeUnits);
-    final result = await _process('encryptFallback', dataCopy);
-    return result;
+    return await _process('encryptFallback', dataCopy);
   }
 
   Future<String> decryptFallback(Uint8List data) async {
     final result = await _process('decryptFallback', data);
-    return result == null ? null : String.fromCharCodes(result);
+    return String.fromCharCodes(result);
   }
 
   Future<Uint8List> _process(String methodName, Uint8List data) async {
@@ -51,12 +50,12 @@ class Encryption {
 
     try {
       final result = await platform.invokeMethod<Uint8List>(methodName, data);
-      return result;
+      return result ?? Uint8List(0);
     } on PlatformException catch (e) {
       logger.e('failed: $e');
     } on MissingPluginException catch (e) {
       logger.e('not avaialble: $e');
     }
-    return null;
+    return Uint8List(0);
   }
 }
