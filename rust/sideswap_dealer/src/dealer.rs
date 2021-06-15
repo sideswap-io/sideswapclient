@@ -815,7 +815,7 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
             },
 
             Msg::Timer => {
-                if server_connected && !params.env.is_mainnet() {
+                if server_connected {
                     for (key, own) in own_orders.iter_mut() {
                         update_price(
                             own,

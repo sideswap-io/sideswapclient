@@ -1290,13 +1290,12 @@ impl Data {
                 asset_tag: Some(lbtc_asset_id.0.clone()),
             };
             let send_all = balance.to_sat() == data.send_amount;
-            let send_all_opt = if send_all { Some(true) } else { None };
 
             let mut details = gdk_common::model::CreateTransaction {
                 addressees: vec![amount],
                 fee_rate: None,
                 subaccount: ACCOUNT,
-                send_all: send_all_opt,
+                send_all: Some(send_all),
                 previous_transaction: HashMap::new(),
                 memo: None,
                 utxos: None,

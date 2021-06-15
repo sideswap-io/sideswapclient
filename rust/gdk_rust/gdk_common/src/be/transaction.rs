@@ -300,7 +300,8 @@ impl BETransaction {
 
                 tx.output.push(elements::TxOut::default()); // mockup for the explicit fee output
                 let vbytes = tx.get_weight() as f64 / 4.0;
-                let fee_val = (vbytes * fee_rate * 1.03) as u64; // increasing estimated fee by 3% to stay over relay fee, TODO improve fee estimation and lower this
+                // SIDESWAP: Set to 1.04 as some users still report relay fee errors
+                let fee_val = (vbytes * fee_rate * 1.04) as u64; // increasing estimated fee by 3% to stay over relay fee, TODO improve fee estimation and lower this
                 info!(
                     "DUMMYTX inputs:{} outputs:{} num_changes:{} vbytes:{} sur_size:{} fee_val:{}",
                     tx.input.len(),

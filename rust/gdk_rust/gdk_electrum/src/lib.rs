@@ -607,7 +607,12 @@ impl Session<Error> for ElectrumSession {
 
         // Recover BIP 44 accounts on the first login
         if !store.read().unwrap().cache.accounts_recovered {
-            wallet.write().unwrap().recover_accounts(&self.url, self.proxy.as_deref())?;
+            // SIDESWAP: This cause issues on the first start without working connection to electrum.
+            // Ignore errors because we don't yet use accounts.
+            let result = wallet.write().unwrap().recover_accounts(&self.url, self.proxy.as_deref());
+            if let Err(e) = result {
+                warn!("accounts recovering failed: {}", e);
+            }
             store.write().unwrap().cache.accounts_recovered = true;
         }
 
