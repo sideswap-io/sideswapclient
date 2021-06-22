@@ -23,7 +23,9 @@ class AccountItem extends ConsumerWidget {
       context.read(walletProvider).balances[asset?.assetId] ?? 0,
       precision: precision,
     );
-    final amount = double.tryParse(amountString) ?? .0;
+    final amount = precision == 0
+        ? int.tryParse(amountString) ?? 0
+        : double.tryParse(amountString) ?? .0;
     final amountUsd =
         context.read(walletProvider).getAmountUsd(asset?.assetId, amount);
     var _dollarConversion = '0.0';

@@ -1652,7 +1652,7 @@ class WalletChangeNotifier with ChangeNotifier {
     return _getPrice(tetherAssetId(), assetId);
   }
 
-  double getAmountUsd(String? assetId, double amount) {
+  double getAmountUsd(String? assetId, num amount) {
     if (assetId == null) {
       return 0;
     }

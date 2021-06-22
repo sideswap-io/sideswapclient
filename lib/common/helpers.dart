@@ -40,6 +40,10 @@ String amountStr(int amount, {bool forceSign = false, int precision = 8}) {
   final satAmount = amount % kCoin;
   final satAmountStr = satAmount.toString().padLeft(8, '0');
   final newAmount = double.tryParse('$sign$bitAmount$satAmountStr') ?? 0;
+  final amountWithPrecision = newAmount / pow(10, precision);
+  if (precision == 0) {
+    return amountWithPrecision.toInt().toString();
+  }
   return (newAmount / pow(10, precision)).toString();
 }
 
