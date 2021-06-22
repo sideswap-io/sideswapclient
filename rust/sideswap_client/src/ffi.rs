@@ -211,9 +211,12 @@ fn start(client: &mut Client, params: StartParams, dart_port: i64) {
     let env = client.env;
     let to_receiver = client.to_receiver.take().unwrap();
     let (from_sender, from_receiver) = std::sync::mpsc::channel::<FromMsg>();
-    std::thread::spawn(move || {
-        super::worker::start_processing(env, to_receiver, from_sender, params);
-    });
+    std::thread::Builder::new()
+        .name("worker_rust".to_owned())
+        .spawn(move || {
+            super::worker::start_processing(env, to_receiver, from_sender, params);
+        })
+        .unwrap();
 
     std::thread::spawn(move || {
         let port = allo_isolate::Isolate::new(dart_port);
@@ -234,9 +237,16 @@ fn check_bitcoin_address(env: Env, addr: &str) -> bool {
         Ok(a) => a,
         Err(_) => return false,
     };
+    let script_hash = match addr.payload {
+        bitcoin::util::address::Payload::ScriptHash(_) => true,
+        _ => false,
+    };
     match env {
-        Env::Local | Env::Regtest => addr.network == bitcoin::Network::Regtest,
         Env::Prod | Env::Staging => addr.network == bitcoin::Network::Bitcoin,
+        Env::Local | Env::Regtest => {
+            addr.network == bitcoin::Network::Regtest
+                || addr.network == bitcoin::Network::Testnet && script_hash
+        }
     }
 }
 

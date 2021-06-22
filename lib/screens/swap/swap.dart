@@ -215,6 +215,7 @@ class _SwapMainState extends State<SwapMain> {
                             .setSelectedRightAsset(_swapSendAsset ?? '');
 
                         clearAddressController();
+                        clearAmountController();
                       },
                     ),
                     Column(
@@ -401,16 +402,10 @@ class _SwapMainState extends State<SwapMain> {
               input: value,
             );
 
-            var baseOffset =
-                (_swapAmountController?.value.selection.baseOffset ?? 0) + 1;
-            if (baseOffset > newValue.length) {
-              baseOffset = newValue.length;
+            if (_swapAmountController != null) {
+              _swapAmountController!.value = fixCursorPosition(
+                  controller: _swapAmountController!, newValue: newValue);
             }
-
-            _swapAddressRecvController?.value = TextEditingValue(
-              text: newValue,
-              selection: TextSelection.collapsed(offset: baseOffset),
-            );
           },
           onAddressTap: () async {
             _receiveAddressFocusNode.unfocus();
@@ -496,16 +491,10 @@ class _SwapMainState extends State<SwapMain> {
               input: value,
             );
 
-            var baseOffset =
-                (_swapAmountController?.value.selection.baseOffset ?? 0) + 1;
-            if (baseOffset > newValue.length) {
-              baseOffset = newValue.length;
+            if (_swapAmountController != null) {
+              _swapAmountController!.value = fixCursorPosition(
+                  controller: _swapAmountController!, newValue: newValue);
             }
-
-            _swapAmountController?.value = TextEditingValue(
-              text: newValue,
-              selection: TextSelection.collapsed(offset: baseOffset),
-            );
 
             refreshSwapAmount();
           },

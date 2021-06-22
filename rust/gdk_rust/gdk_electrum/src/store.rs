@@ -24,6 +24,13 @@ pub const BATCH_SIZE: u32 = 20;
 
 pub type Store = Arc<RwLock<StoreMeta>>;
 
+pub static REGTEST_ENV: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+fn is_regtest() -> bool {
+    // Workaround for failed cache loading on regtest
+    REGTEST_ENV.load(std::sync::atomic::Ordering::Relaxed)
+}
+
 /// RawCache is a persisted and encrypted cache of wallet data, contains stuff like wallet transactions
 /// It is fully reconstructable from xpub and data from electrum server (plus master blinding for elements)
 #[derive(Default, Serialize, Deserialize)]
@@ -134,7 +141,11 @@ impl RawCache {
 
     fn try_new<P: AsRef<Path>>(path: P, cipher: &Aes256GcmSiv) -> Result<Self, Error> {
         let decrypted = load_decrypt("cache", path, cipher)?;
-        let store = serde_cbor::from_slice(&decrypted)?;
+        let store = if is_regtest() {
+            ron::de::from_bytes(&decrypted).map_err(|e| Error::Generic(e.to_string()))?
+        } else {
+            serde_cbor::from_slice(&decrypted)?
+        };
         Ok(store)
     }
 }
@@ -232,12 +243,24 @@ impl StoreMeta {
         })
     }
 
-    fn flush_serializable<T: serde::Serialize>(&self, name: &str, value: &T) -> Result<(), Error> {
+    fn flush_serializable<T: serde::Serialize>(
+        &self,
+        name: &str,
+        value: &T,
+        use_ron: bool,
+    ) -> Result<(), Error> {
         let now = Instant::now();
         let mut nonce_bytes = [0u8; 12];
         thread_rng().fill(&mut nonce_bytes);
         let nonce = GenericArray::from_slice(&nonce_bytes);
-        let mut plaintext = serde_cbor::to_vec(value)?;
+        let mut plaintext = if use_ron {
+            ron::ser::to_string(&value)
+                .map_err(|e| Error::Generic(e.to_string()))?
+                .as_bytes()
+                .to_owned()
+        } else {
+            serde_cbor::to_vec(value)?
+        };
 
         self.cipher.encrypt_in_place(nonce, b"", &mut plaintext)?;
         let ciphertext = plaintext;
@@ -259,12 +282,12 @@ impl StoreMeta {
     }
 
     fn flush_store(&self) -> Result<(), Error> {
-        self.flush_serializable("store", &self.store)?;
+        self.flush_serializable("store", &self.store, false)?;
         Ok(())
     }
 
     fn flush_cache(&self) -> Result<(), Error> {
-        self.flush_serializable("cache", &self.cache)?;
+        self.flush_serializable("cache", &self.cache, is_regtest())?;
         Ok(())
     }
 

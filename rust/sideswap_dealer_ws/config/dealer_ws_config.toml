@@ -1,6 +1,9 @@
 env = "Prod"
 log_settings = "config/dealer_ws_logs.yml"
 
+ws_listen_addr = "localhost:9002"
+ws_secret = "123"
+
 bitcoin_amount_submit = 0.0001
 bitcoin_amount_min = 0.0001
 bitcoin_amount_max = 0.001

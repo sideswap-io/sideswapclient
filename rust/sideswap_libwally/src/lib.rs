@@ -56,7 +56,7 @@ pub fn generate_psbt(
         addr: gdk_common::model::AddressPointer,
         amount: i64,
         asset: String,
-    };
+    }
 
     let mut opt = gdk_common::model::GetTransactionsOpt::default();
     opt.count = 10000;

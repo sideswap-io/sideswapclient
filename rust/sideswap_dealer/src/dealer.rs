@@ -16,6 +16,8 @@ const RECREATE_ORDER_AMOUNT_FRACTION: f64 = 0.05;
 
 const MIN_BITCOIN_AMOUNT: f64 = 0.0001;
 
+const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs(60);
+
 #[derive(Debug, Clone)]
 pub struct Params {
     pub env: types::Env,
@@ -54,13 +56,14 @@ pub struct ToLimitBalance {
 pub enum To {
     Price(ToPrice),
     LimitBalance(ToLimitBalance),
+    ResetPrices(Empty),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum From {
     Swap(SwapSucceed),
-    WalletBalanceUpdated,
+    WalletBalanceUpdated(Empty),
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SwapSucceed {
@@ -812,6 +815,9 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                     }
                     msg_tx.send(Msg::Timer).unwrap();
                 }
+                To::ResetPrices(_) => {
+                    index_prices.clear();
+                }
             },
 
             Msg::Timer => {
@@ -878,10 +884,21 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                         if wallet_balance.as_ref() != Some(&v) {
                             wallet_balance = Some(v);
                             msg_tx.send(Msg::ReloadUtxo).unwrap();
-                            from_tx.send(From::WalletBalanceUpdated).unwrap();
+                            from_tx.send(From::WalletBalanceUpdated(None)).unwrap();
                         }
                     }
                     Err(e) => error!("wallet balance loading failed: {}", e),
+                }
+
+                let now = std::time::Instant::now();
+                let expired = index_prices
+                    .iter()
+                    .filter(|(_, price)| now.duration_since(price.timestamp) > PRICE_EXPIRATON_TIME)
+                    .map(|(ticker, _)| *ticker)
+                    .collect::<Vec<_>>();
+                for ticker in expired {
+                    warn!("remove expired ticker: {}", ticker.0);
+                    index_prices.remove(&ticker);
                 }
             }
         }

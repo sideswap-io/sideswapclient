@@ -839,6 +839,7 @@ dependencies = [
  "libc",
  "log 0.4.14",
  "rand 0.6.5",
+ "ron",
  "secp256k1",
  "serde 1.0.124",
  "serde_cbor",
@@ -2032,6 +2033,17 @@ dependencies = [
  "untrusted",
  "web-sys",
  "winapi 0.3.9",
+]
+
+[[package]]
+name = "ron"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "064ea8613fb712a19faf920022ec8ddf134984f100090764a4e1d768f3827f1f"
+dependencies = [
+ "base64 0.13.0",
+ "bitflags",
+ "serde 1.0.124",
 ]
 
 [[package]]

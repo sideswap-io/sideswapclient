@@ -1660,6 +1660,18 @@ class WalletChangeNotifier with ChangeNotifier {
     return amount * _getPriceUsd(assetId);
   }
 
+  bool isAmountUsdAvailable(String? assetId) {
+    if (assetId == liquidAssetId()) {
+      return true;
+    }
+
+    if (_prices[assetId] != null) {
+      return true;
+    }
+
+    return false;
+  }
+
   Asset? getAssetByTicker(String ticker) {
     for (var asset in assets.values) {
       if (asset.ticker == ticker) {

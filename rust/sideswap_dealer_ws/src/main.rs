@@ -1,3 +1,4 @@
+use anyhow::{bail, ensure};
 use clap::{App, Arg};
 use futures_util::{SinkExt, StreamExt};
 use log::*;
@@ -13,6 +14,10 @@ pub struct Settings {
     log_settings: String,
     env: types::Env,
     rpc: RpcServer,
+
+    ws_listen_addr: String,
+    ws_secret: String,
+
     bitcoin_amount_submit: f64,
     bitcoin_amount_max: f64,
     bitcoin_amount_min: f64,
@@ -22,12 +27,13 @@ pub struct Settings {
 }
 
 async fn accept_connection(
+    secret_expected: String,
     peer: SocketAddr,
     stream: TcpStream,
     clients: Clients,
     dealer_tx: std::sync::mpsc::Sender<To>,
 ) {
-    if let Err(e) = handle_connection(peer, stream, &clients, dealer_tx).await {
+    if let Err(e) = handle_connection(secret_expected, peer, stream, &clients, dealer_tx).await {
         error!("error: {}", e);
     }
 }
@@ -48,8 +54,39 @@ fn parse_message(msg: &tungstenite::Message) -> Result<To, anyhow::Error> {
 struct ErrorMsg {
     error_msg: String,
 }
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum StartRequest {
+    Authorize(String),
+}
+
+async fn read_loop(
+    mut stream: futures_util::stream::SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>,
+    dealer_tx: std::sync::mpsc::Sender<To>,
+    send_tx: tokio::sync::mpsc::UnboundedSender<String>,
+) -> Result<(), anyhow::Error> {
+    while let Some(msg) = stream.next().await {
+        let msg = msg?;
+        if msg.is_text() || msg.is_binary() {
+            let parsed_msg = parse_message(&msg);
+            match parsed_msg {
+                Ok(v) => dealer_tx.send(v).unwrap(),
+                Err(e) => {
+                    error!("invalid message: {:?}: {}", &msg, e.to_string());
+                    let error = ErrorMsg {
+                        error_msg: e.to_string(),
+                    };
+                    let error_msg = serde_json::to_string(&error).unwrap();
+                    send_tx.send(error_msg)?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
 
 async fn handle_connection(
+    secret_expected: String,
     peer: SocketAddr,
     stream: TcpStream,
     clients: &Clients,
@@ -58,6 +95,19 @@ async fn handle_connection(
     info!("new connection: {}", peer);
     let ws_stream = accept_async(stream).await?;
     let (mut sink, mut stream) = ws_stream.split();
+
+    let start_request = match stream.next().await {
+        Some(x) => x?,
+        None => bail!("no login request received"),
+    };
+    let start_request = match start_request {
+        tungstenite::Message::Text(v) => serde_json::from_str::<StartRequest>(&v)?,
+        tungstenite::Message::Binary(v) => serde_json::from_slice::<StartRequest>(&v)?,
+        _ => bail!("expecting authorize request"),
+    };
+    let StartRequest::Authorize(secret_user) = start_request;
+    ensure!(secret_expected == secret_user);
+    info!("client successfully authorized: {}", peer);
 
     let (send_tx, mut send_rx) = tokio::sync::mpsc::unbounded_channel::<String>();
     tokio::spawn(async move {
@@ -76,31 +126,36 @@ async fn handle_connection(
 
     clients.sinks.lock().unwrap().push(send_tx.clone());
 
-    while let Some(msg) = stream.next().await {
-        let msg = msg?;
-        if msg.is_text() || msg.is_binary() {
-            let parsed_msg = parse_message(&msg);
-            match parsed_msg {
-                Ok(v) => dealer_tx.send(v).unwrap(),
-                Err(e) => {
-                    error!("invalid message: {:?}: {}", &msg, e.to_string());
-                    let error = ErrorMsg {
-                        error_msg: e.to_string(),
-                    };
-                    let error_msg = serde_json::to_string(&error).unwrap();
-                    send_tx.send(error_msg)?;
-                }
-            }
-        }
+    let dealer_tx_copy = dealer_tx.clone();
+    let result = read_loop(stream, dealer_tx_copy, send_tx.clone()).await;
+    if let Err(e) = result {
+        error!("reading failed: {}", e);
     }
+
     debug!("stop writing thread: {}", peer);
+
+    clients
+        .sinks
+        .lock()
+        .unwrap()
+        .retain(|v| !v.same_channel(&send_tx));
+
+    debug!("reset prices");
+    dealer_tx.send(To::ResetPrices(None)).unwrap();
+
     Ok(())
 }
 
-async fn start_processing(clients: Clients, dealer_tx: std::sync::mpsc::Sender<To>) {
-    let addr = "127.0.0.1:9002";
-    let listener = TcpListener::bind(&addr).await.expect("Can't listen");
-    info!("Listening on: {}", addr);
+async fn start_processing(
+    ws_listen_addr: String,
+    secret_expected: String,
+    clients: Clients,
+    dealer_tx: std::sync::mpsc::Sender<To>,
+) {
+    let listener = TcpListener::bind(&ws_listen_addr)
+        .await
+        .expect("bind failed");
+    info!("listening on {}", ws_listen_addr);
 
     while let Ok((stream, _)) = listener.accept().await {
         let peer = stream
@@ -109,7 +164,9 @@ async fn start_processing(clients: Clients, dealer_tx: std::sync::mpsc::Sender<T
         info!("peer address: {}", peer);
 
         let clients_copy = clients.clone();
+        let secret_expected_copy = secret_expected.clone();
         tokio::spawn(accept_connection(
+            secret_expected_copy,
             peer,
             stream,
             clients_copy,
@@ -173,12 +230,19 @@ fn main() {
 
     let clients_copy = clients.clone();
     let dealer_tx_copy = dealer_tx.clone();
+    let ws_listen_addr = settings.ws_listen_addr.clone();
+    let secret_expected = settings.ws_secret.clone();
     std::thread::spawn(move || {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(start_processing(clients_copy, dealer_tx_copy));
+        rt.block_on(start_processing(
+            ws_listen_addr,
+            secret_expected,
+            clients_copy,
+            dealer_tx_copy,
+        ));
     });
 
     loop {

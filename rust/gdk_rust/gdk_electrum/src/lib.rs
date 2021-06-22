@@ -1,4 +1,4 @@
-mod store;
+pub mod store;
 
 #[macro_use]
 extern crate serde_json;

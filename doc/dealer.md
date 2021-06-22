@@ -1,55 +1,61 @@
-SideSwap dealer example
-=======================
+# SideSwap dealer example
 
-To be able connect as dealer to production server you will need own API key. More details at [sideswap.io](https://sideswap.io/).
+## Build instructions
 
-Example dealer connects to staging server (`api-test.sideswap.io`) and uses [https://blockchain.info/ticker](https://blockchain.info/ticker) to get quoting price for demonstration purposes.
+Example dealer connects to the production server and uses [https://blockchain.info/ticker](https://blockchain.info/ticker) to get index price for demonstration purposes.
 
-1. Download elements node:
+1. Start Liquid node:
 
-Download server from https://github.com/ElementsProject/elements/releases
+Download server from [https://github.com/ElementsProject/elements/releases](https://github.com/ElementsProject/elements/releases)
 
-2. Start elements node:
+Linux/macOS:
 
 ```shell
 /path/to/elementsd -conf=/dev/null -daemon=0 -server=1 -datadir=/path/to/datadir -validatepegin=0 \
-    -rpcport=7041 -rpcuser=dealer -rpcpassword=<YOUR_RPC_PASSWORD> -zmqpubhashblock=tcp://0.0.0.0:14356
+    -rpcuser=dealer -rpcpassword=<YOUR_RPC_PASSWORD>
 ```
 
-Dealer funds will be stored in the node wallet.
+Wait until node fully syncs blockchain.
+RPC connection from the automated dealer to `elementsd` is used by retreive UTXO list and construct/sign PSET.
+Dealing funds will be stored in the node's wallet.
 
-`rpcport`/`rpcuser`/`rpcpassword` are used for dealer connection to retreive UTXO list and construct/sign PSBT (using `rpcauth` is recommened for better security, please see elements instructions on how set it up).
+More details [https://help.blockstream.com/hc/en-us/articles/900002026026-How-do-I-set-up-a-Liquid-node-](https://help.blockstream.com/hc/en-us/articles/900002026026-How-do-I-set-up-a-Liquid-node-).
 
-`zmqpubhashblock` is used to detect new blocks and refresh UTXO list.
+2. Receive dealer's address.
 
-3. Download and install rust compiler:
+```shell
+elements-cli -rpcpassword=<YOUR_RPC_PASSWORD> getnewaddress
+```
 
-Please use instructions at [https://rustup.rs/](https://rustup.rs/)
+Send some balance to the dealer's address (0.0002 L-BTC should be enough for the test).
 
-4. Update dealer config:
+Check that the dealer received it:
 
+```shell
+elements-cli -rpcpassword=<YOUR_RPC_PASSWORD> getwalletinfo
+```
+
+Output:
 
 ```
-server_host = "api-test.sideswap.io"
-server_port = 443
-server_use_tls = true
-api_key = "74b1331e904f354a1db3133ba6b21d52a4b99c7dfbbf677fa1c58bcbd602976c"
-log_settings = "config/dealer_example_logs.yml"
-max_trade_size = 0.001 # 0.001 L-BTC
-profit_ratio = 1.015 # 1.5%
+{
+  "balance": {
+    "bitcoin": 0.00020000
+  },
+  ...
+}
+```
 
-[rpc]
-host = "localhost"
-port = 7041
-login = "dealer"
+3. Update dealer's config (`rust/sideswap_dealer_example/config/dealer_example_config.toml`):
+
+```
+...
 password = "<YOUR_RPC_PASSWORD>"
-
-[zmq]
-host = "localhost"
-port = 14356
 ```
 
-Change `api_key` and rpc `password`.
+Change RPC `password` here.
+
+4. Download and install Rust compiler. Please use instructions at [https://rustup.rs/](https://rustup.rs/).
 
 5. Start dealer
 
@@ -58,12 +64,4 @@ cd rust/sideswap_dealer_example
 cargo run -- config/dealer_example_config.toml
 ```
 
-Note that you will compete with other dealers and your profit_ratio value will affect outbids.
-
-6. Connect client to the staging server:
-
-```shell
-./sideswap --staging
-```
-
-Please note that you need to use separate elements node for the client.
+6. Open `https://sideswap.io` to see your orders. The dealer will submit own and quote other's orders.

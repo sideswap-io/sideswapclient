@@ -249,3 +249,32 @@ String replaceCharacterOnPosition({
 
   return newValue;
 }
+
+TextEditingValue fixCursorPosition({
+  required TextEditingController controller,
+  required String newValue,
+}) {
+  var baseOffset = controller.value.selection.baseOffset;
+  var additionalOffset = 0;
+  var breakOffset = 0;
+  for (var i = 0; i < newValue.length; i++) {
+    if (newValue[i] == ' ') {
+      additionalOffset++;
+    } else {
+      breakOffset++;
+    }
+
+    if (breakOffset == baseOffset) {
+      break;
+    }
+  }
+  baseOffset = baseOffset + additionalOffset;
+  if (baseOffset > newValue.length) {
+    baseOffset = newValue.length;
+  }
+
+  return TextEditingValue(
+    text: newValue,
+    selection: TextSelection.collapsed(offset: baseOffset),
+  );
+}

@@ -343,8 +343,13 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                               TextInputType.numberWithOptions(decimal: true),
                           inputFormatters: [
                             CommaTextInputFormatter(),
-                            FilteringTextInputFormatter.deny(
-                                RegExp('[\\-|,\\ ]')),
+                            if (assetPrecision == 0) ...[
+                              FilteringTextInputFormatter.deny(
+                                  RegExp('[\\-|,\\ .]')),
+                            ] else ...[
+                              FilteringTextInputFormatter.deny(
+                                  RegExp('[\\-|,\\ ]')),
+                            ],
                             DecimalTextInputFormatter(
                                 decimalRange: assetPrecision),
                           ],

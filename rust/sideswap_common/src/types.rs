@@ -17,6 +17,9 @@ pub struct Amount(pub i64);
 
 const COIN: i64 = 100_000_000;
 
+pub const ELEMENTS_CONFIRMED_BLOCKS: i32 = 2;
+pub const BITCOIN_CONFIRMED_BLOCKS: i32 = 6;
+
 impl Amount {
     pub fn from_sat(value: i64) -> Self {
         Amount(value)

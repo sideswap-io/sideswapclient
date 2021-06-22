@@ -69,7 +69,7 @@ class TxDetailsPopup extends ConsumerWidget {
               final pricePrecision = 2;
               final sentBitcoin = _assetSentTicker == kLiquidBitcoinTicker;
               final assetPrecision =
-                  sentBitcoin ? _deliveredPrecision : _receivedPrecision;
+                  sentBitcoin ? _receivedPrecision : _deliveredPrecision;
               final bitcoinAmountFull = (sentBitcoin
                       ? _balanceDelivered.amount
                       : _balanceReceived.amount)

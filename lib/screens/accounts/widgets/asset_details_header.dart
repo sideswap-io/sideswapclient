@@ -96,8 +96,12 @@ class AssetDetailsHeader extends ConsumerWidget {
                 _dollarConversion = amountUsd.toStringAsFixed(2);
                 _dollarConversion = replaceCharacterOnPosition(
                     input: _dollarConversion, currencyChar: '\$');
+                final visibleConversion = context
+                    .read(walletProvider)
+                    .isAmountUsdAvailable(asset?.assetId);
+
                 return Text(
-                  '≈ $_dollarConversion',
+                  visibleConversion ? '≈ $_dollarConversion' : '',
                   style: GoogleFonts.roboto(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.normal,

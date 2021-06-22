@@ -100,7 +100,7 @@ fn main() {
             From::Swap(swap) => {
                 info!("swap succeed: {}", swap.bitcoin_amount.to_bitcoin());
             }
-            From::WalletBalanceUpdated => {
+            From::WalletBalanceUpdated(_) => {
                 info!("wallet balance updated");
             }
         }

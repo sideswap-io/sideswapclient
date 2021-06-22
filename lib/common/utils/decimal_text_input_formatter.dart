@@ -22,8 +22,7 @@ class CommaTextInputFormatter extends TextInputFormatter {
 
 // From https://stackoverflow.com/a/54456978
 class DecimalTextInputFormatter extends TextInputFormatter {
-  DecimalTextInputFormatter({required this.decimalRange})
-      : assert(decimalRange > 0);
+  DecimalTextInputFormatter({required this.decimalRange});
 
   final int decimalRange;
 
@@ -32,6 +31,13 @@ class DecimalTextInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
+    if (decimalRange == 0) {
+      return TextEditingValue(
+        text: newValue.text,
+        selection: newValue.selection,
+        composing: TextRange.empty,
+      );
+    }
     var newSelection = newValue.selection;
     var truncated = newValue.text;
 

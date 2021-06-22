@@ -227,9 +227,12 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                     final amount = double.tryParse(_amount) ?? 0;
                     final assetId =
                         watch(walletProvider).getAssetById(_assetId)?.assetId;
-                    _dollarConversion = watch(walletProvider)
-                        .getAmountUsd(assetId, amount)
-                        .toStringAsFixed(2);
+                    final usdAmount =
+                        watch(walletProvider).getAmountUsd(assetId, amount);
+                    _dollarConversion = usdAmount.toStringAsFixed(2);
+                    final visibleConversion = context
+                        .read(walletProvider)
+                        .isAmountUsdAvailable(assetId);
                     _dollarConversion = replaceCharacterOnPosition(
                         input: _dollarConversion, currencyChar: '\$');
                     return Column(
@@ -238,9 +241,12 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              Text(
-                                '≈ $_dollarConversion',
-                                style: _approximateStyle,
+                              Visibility(
+                                visible: visibleConversion,
+                                child: Text(
+                                  '≈ $_dollarConversion',
+                                  style: _approximateStyle,
+                                ),
                               ),
                             ],
                           ),
@@ -262,9 +268,12 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                                 ),
                               ),
                             ] else ...[
-                              Text(
-                                '≈ $_dollarConversion',
-                                style: _approximateStyle,
+                              Visibility(
+                                visible: visibleConversion,
+                                child: Text(
+                                  '≈ $_dollarConversion',
+                                  style: _approximateStyle,
+                                ),
                               ),
                             ],
                           ],

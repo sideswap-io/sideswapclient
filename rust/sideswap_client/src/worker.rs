@@ -676,10 +676,13 @@ impl Data {
         self.process_server_status(server_status);
 
         self.update_tx_list();
-        for asset in self.assets.values() {
-            if asset.ticker.0 != TICKER_LBTC {
-                self.subscribe_price_update(&asset.ticker);
-            }
+        // Subscribe to only registered assets on the server (where icon_url is set)
+        for asset in self
+            .assets
+            .values()
+            .filter(|asset| asset.icon_url.is_some() && asset.ticker.0 != TICKER_LBTC)
+        {
+            self.subscribe_price_update(&asset.ticker);
         }
 
         // verify device key if exists
@@ -2638,7 +2641,11 @@ impl Data {
                     indices.external + EXTRA_ADDRESS_COUNT,
                     last_external + MAX_REGISTER_ADDRESS_COUNT,
                 );
-                let external_count = new_external - last_external;
+                let external_count = if new_external > last_external {
+                    new_external - last_external
+                } else {
+                    0
+                };
                 let new_internal = std::cmp::min(
                     indices.internal + EXTRA_ADDRESS_COUNT,
                     last_internal + MAX_REGISTER_ADDRESS_COUNT - external_count,
@@ -2699,6 +2706,8 @@ pub fn start_processing(
     from_sender: Sender<ffi::FromMsg>,
     params: ffi::StartParams,
 ) {
+    gdk_electrum::store::REGTEST_ENV.store(!env.is_mainnet(), std::sync::atomic::Ordering::Relaxed);
+
     let env_data = types::env_data(env);
     let (msg_sender, msg_receiver) = std::sync::mpsc::channel::<Message>();
     let (resp_sender, resp_receiver) = std::sync::mpsc::channel::<ServerResp>();

@@ -45,16 +45,10 @@ class _PaymentSendAmountState extends State<PaymentSendAmount> {
               input: value,
             );
 
-            var baseOffset =
-                (widget.controller?.value.selection.baseOffset ?? 0) + 1;
-            if (baseOffset > newValue.length) {
-              baseOffset = newValue.length;
+            if (widget.controller != null) {
+              widget.controller!.value = fixCursorPosition(
+                  controller: widget.controller!, newValue: newValue);
             }
-
-            widget.controller?.value = TextEditingValue(
-              text: newValue,
-              selection: TextSelection.collapsed(offset: baseOffset),
-            );
           },
         );
       },

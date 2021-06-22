@@ -101,8 +101,14 @@ class _PaymentPageState extends State<PaymentPage> {
                         final wallet = context.read(walletProvider);
                         if (wallet.isAddrValid(text, AddrType.bitcoin) ||
                             wallet.isAddrValid(text, AddrType.elements)) {
-                          await pasteFromClipboard(_addressController);
-                          validate();
+                          // paste only valid address
+                          if (context
+                              .read(walletProvider)
+                              .commonAddrErrorStr(text, addrType)
+                              .isEmpty) {
+                            await pasteFromClipboard(_addressController);
+                            validate();
+                          }
                         }
                       }
                     },
