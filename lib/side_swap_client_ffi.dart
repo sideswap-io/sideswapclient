@@ -90,37 +90,6 @@ class NativeLibrary {
   late final _dart_sideswap_check_addr _sideswap_check_addr =
       _sideswap_check_addr_ptr.asFunction<_dart_sideswap_check_addr>();
 
-  int sideswap_parse_bitcoin_amount(
-    ffi.Pointer<ffi.Int8> amount,
-  ) {
-    return _sideswap_parse_bitcoin_amount(
-      amount,
-    );
-  }
-
-  late final _sideswap_parse_bitcoin_amount_ptr =
-      _lookup<ffi.NativeFunction<_c_sideswap_parse_bitcoin_amount>>(
-          'sideswap_parse_bitcoin_amount');
-  late final _dart_sideswap_parse_bitcoin_amount
-      _sideswap_parse_bitcoin_amount = _sideswap_parse_bitcoin_amount_ptr
-          .asFunction<_dart_sideswap_parse_bitcoin_amount>();
-
-  bool sideswap_parsed_amount_valid(
-    int amount,
-  ) {
-    return _sideswap_parsed_amount_valid(
-          amount,
-        ) !=
-        0;
-  }
-
-  late final _sideswap_parsed_amount_valid_ptr =
-      _lookup<ffi.NativeFunction<_c_sideswap_parsed_amount_valid>>(
-          'sideswap_parsed_amount_valid');
-  late final _dart_sideswap_parsed_amount_valid _sideswap_parsed_amount_valid =
-      _sideswap_parsed_amount_valid_ptr
-          .asFunction<_dart_sideswap_parsed_amount_valid>();
-
   ffi.Pointer<ffi.Uint8> sideswap_msg_ptr(
     int msg,
   ) {
@@ -829,22 +798,6 @@ typedef _dart_sideswap_check_addr = int Function(
   int client,
   ffi.Pointer<ffi.Int8> addr,
   int addr_type,
-);
-
-typedef _c_sideswap_parse_bitcoin_amount = ffi.Int64 Function(
-  ffi.Pointer<ffi.Int8> amount,
-);
-
-typedef _dart_sideswap_parse_bitcoin_amount = int Function(
-  ffi.Pointer<ffi.Int8> amount,
-);
-
-typedef _c_sideswap_parsed_amount_valid = ffi.Uint8 Function(
-  ffi.Int64 amount,
-);
-
-typedef _dart_sideswap_parsed_amount_valid = int Function(
-  int amount,
 );
 
 typedef _c_sideswap_msg_ptr = ffi.Pointer<ffi.Uint8> Function(

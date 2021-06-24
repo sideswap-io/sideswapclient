@@ -78,8 +78,13 @@ class PaymentSendPopup extends StatelessWidget {
                   currencyChar: '\$',
                   currencyCharAlignment: CurrencyCharAlignment.begin,
                 );
+                final visibleConversion = context
+                    .read(walletProvider)
+                    .isAmountUsdAvailable(asset?.assetId);
+                ;
+
                 return Text(
-                  '≈ $_dollarConversion',
+                  visibleConversion ? '≈ $_dollarConversion' : '',
                   style: GoogleFonts.roboto(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.normal,

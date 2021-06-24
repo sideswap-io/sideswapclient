@@ -87,7 +87,14 @@ class _SwapMainState extends State<SwapMain> {
     }
     _lastSwapAmountValue = value;
 
-    final amount = context.read(walletProvider).parseBitcoinAmount(value) ?? 0;
+    final swapSendAsset = context.read(swapProvider).swapSendAsset ?? '';
+    final precision = context
+        .read(walletProvider)
+        .getPrecisionForAssetId(assetId: swapSendAsset);
+    final amount = context
+            .read(walletProvider)
+            .parseAssetAmount(value, precision: precision) ??
+        0;
     context.read(swapProvider).setSwapAmount(amount, blocks);
   }
 
@@ -128,7 +135,15 @@ class _SwapMainState extends State<SwapMain> {
 
     final value = _swapAmount;
     validateSwapSendAsset();
-    final amount = context.read(walletProvider).parseBitcoinAmount(value) ?? 0;
+
+    final swapSendAsset = context.read(swapProvider).swapSendAsset ?? '';
+    final precision = context
+        .read(walletProvider)
+        .getPrecisionForAssetId(assetId: swapSendAsset);
+    final amount = context
+            .read(walletProvider)
+            .parseAssetAmount(value, precision: precision) ??
+        0;
     context.read(swapProvider).setSwapAmount(amount, blocks);
   }
 

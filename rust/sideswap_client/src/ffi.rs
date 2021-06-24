@@ -97,23 +97,6 @@ pub extern "C" fn sideswap_check_addr(client: IntPtr, addr: *const c_char, addr_
     }
 }
 
-const INVALID_AMOUNT: i64 = i64::MIN;
-
-#[no_mangle]
-pub extern "C" fn sideswap_parse_bitcoin_amount(amount: *const c_char) -> i64 {
-    let amount = unsafe { CStr::from_ptr(amount) }
-        .to_str()
-        .expect("invalid c-str");
-    bitcoin::SignedAmount::from_str_in(amount, bitcoin::Denomination::Bitcoin)
-        .map(|value| value.as_sat())
-        .unwrap_or(INVALID_AMOUNT)
-}
-
-#[no_mangle]
-pub extern "C" fn sideswap_parsed_amount_valid(amount: i64) -> bool {
-    amount != INVALID_AMOUNT
-}
-
 #[no_mangle]
 pub extern "C" fn sideswap_msg_ptr(msg: IntPtr) -> *const u8 {
     assert!(msg != 0);

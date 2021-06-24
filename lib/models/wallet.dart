@@ -6,6 +6,7 @@ import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
@@ -779,17 +780,26 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  int? parseBitcoinAmount(String? value) {
-    if (value == null) {
+  int? parseAssetAmount(String value, {required int precision}) {
+    if (precision < 0 || precision > 8) {
       return null;
     }
 
-    final amount =
-        Lib.lib.sideswap_parse_bitcoin_amount(value.toNativeUtf8().cast());
-    if (!Lib.lib.sideswap_parsed_amount_valid(amount)) {
+    final amount = Decimal.tryParse(value);
+
+    if (amount == null) {
       return null;
     }
-    return amount;
+
+    final amountDec = amount * Decimal.fromInt(pow(10, precision).toInt());
+
+    final amountInt = amountDec.toInt();
+
+    if (Decimal.fromInt(amountInt) != amountDec) {
+      return null;
+    }
+
+    return amountInt;
   }
 
   String getNewMnemonic() {
@@ -1266,27 +1276,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
   String bitcoinAddrErrorStr(String addr) {
     return commonAddrErrorStr(addr, AddrType.bitcoin);
-  }
-
-  String amountErrorStr(String value, int min, int max) {
-    if (value.isEmpty) {
-      return value;
-    }
-
-    var amount = parseBitcoinAmount(value);
-    if (amount == null) {
-      return 'Invalid amount'.tr();
-    }
-
-    if (amount < min) {
-      return 'Amount is too low'.tr();
-    }
-
-    if (amount > max) {
-      return 'Amount is too high'.tr();
-    }
-
-    return '';
   }
 
   void assetSendConfirm() {

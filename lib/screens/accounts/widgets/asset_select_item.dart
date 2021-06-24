@@ -31,21 +31,22 @@ class AssetSelectItem extends StatelessWidget {
             child: AbsorbPointer(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 14.w),
-                child: Container(
-                  child: Row(
-                    children: [
-                      Consumer(
-                        builder: (context, watch, child) {
-                          final _assetImagesBig =
-                              watch(walletProvider).assetImagesBig;
-                          return Container(
-                            width: 45.w,
-                            height: 45.w,
-                            child: _assetImagesBig[asset?.assetId],
-                          );
-                        },
-                      ),
-                      Padding(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Consumer(
+                      builder: (context, watch, child) {
+                        final _assetImagesBig =
+                            watch(walletProvider).assetImagesBig;
+                        return Container(
+                          width: 45.w,
+                          height: 45.w,
+                          child: _assetImagesBig[asset?.assetId],
+                        );
+                      },
+                    ),
+                    Expanded(
+                      child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.w),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -55,6 +56,9 @@ class AssetSelectItem extends StatelessWidget {
                               padding: EdgeInsets.only(bottom: 4.h),
                               child: Text(
                                 asset?.name ?? '',
+                                overflow: TextOverflow.clip,
+                                maxLines: 1,
+                                textAlign: TextAlign.left,
                                 style: GoogleFonts.roboto(
                                   fontSize: 17.sp,
                                   fontWeight: FontWeight.normal,
@@ -64,6 +68,7 @@ class AssetSelectItem extends StatelessWidget {
                             ),
                             Text(
                               asset?.ticker ?? '',
+                              textAlign: TextAlign.right,
                               style: GoogleFonts.roboto(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.normal,
@@ -73,29 +78,26 @@ class AssetSelectItem extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: Container(),
-                      ),
-                      Consumer(
-                        builder: (context, watch, child) {
-                          final _selected = watch(configProvider)
-                              .disabledAssetIds
-                              .contains(asset?.assetId);
-                          return FlutterSwitch(
-                            value: !_selected,
-                            onToggle: (val) {},
-                            width: 51.h,
-                            height: 31.h,
-                            toggleSize: 27.h,
-                            padding: 2.h,
-                            activeColor: Color(0xFF00C5FF),
-                            inactiveColor: Color(0xFF164D6A),
-                            toggleColor: Colors.white,
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                    ),
+                    Consumer(
+                      builder: (context, watch, child) {
+                        final _selected = watch(configProvider)
+                            .disabledAssetIds
+                            .contains(asset?.assetId);
+                        return FlutterSwitch(
+                          value: !_selected,
+                          onToggle: (val) {},
+                          width: 51.h,
+                          height: 31.h,
+                          toggleSize: 27.h,
+                          padding: 2.h,
+                          activeColor: Color(0xFF00C5FF),
+                          inactiveColor: Color(0xFF164D6A),
+                          toggleColor: Colors.white,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -74,20 +74,29 @@ class AccountItem extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              asset?.name ?? '',
-                              style: GoogleFonts.roboto(
-                                fontSize: 17.sp,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
+                            Expanded(
+                              child: Text(
+                                asset?.name ?? '',
+                                overflow: TextOverflow.clip,
+                                maxLines: 1,
+                                textAlign: TextAlign.left,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 17.sp,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
-                            Text(
-                              amountString,
-                              style: GoogleFonts.roboto(
-                                fontSize: 17.sp,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
+                            Padding(
+                              padding: EdgeInsets.only(left: 8.w),
+                              child: Text(
+                                amountString,
+                                textAlign: TextAlign.right,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 17.sp,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ],

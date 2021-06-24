@@ -416,6 +416,28 @@ pub struct VerifyPhoneRequest {
     pub code: String,
 }
 
+pub type VerifyPhoneResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UploadAvatarRequest {
+    pub phone_key: PhoneKey,
+    pub image: String,
+}
+pub type UploadAvatarResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Contact {
+    pub name: String,
+    pub phone: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UploadContactsRequest {
+    pub phone_key: PhoneKey,
+    pub contacts: Vec<Contact>,
+}
+pub type UploadContactsResponse = Empty;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Void {}
 pub type Empty = Option<Void>;
@@ -615,6 +637,8 @@ pub enum Request {
 
     RegisterPhone(RegisterPhoneRequest),
     VerifyPhone(VerifyPhoneRequest),
+    UploadAvatar(UploadAvatarRequest),
+    UploadContacts(UploadContactsRequest),
 
     LoadPrices(LoadPricesRequest),
     CancelPrices(CancelPricesRequest),
@@ -654,7 +678,9 @@ pub enum Response {
     UpdatePushToken(Empty),
 
     RegisterPhone(RegisterPhoneResponse),
-    VerifyPhone(Empty),
+    VerifyPhone(VerifyPhoneResponse),
+    UploadAvatar(UploadAvatarResponse),
+    UploadContacts(UploadContactsResponse),
 
     LoadPrices(LoadPricesResponse),
     CancelPrices(CancelPricesResponse),
@@ -771,4 +797,18 @@ pub enum FcmMessage {
     PegDetected(FcmMessagePeg),
     PegPayout(FcmMessagePeg),
     Sign(FcmMessageSign),
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct GdkAsset {
+    pub asset_id: AssetId,
+    pub name: Option<String>,
+    pub precision: Option<u8>,
+    pub ticker: Option<Ticker>,
+}
+
+#[derive(serde::Deserialize, Debug, Default)]
+pub struct GdkAssets {
+    pub assets: std::collections::BTreeMap<AssetId, GdkAsset>,
+    pub icons: std::collections::BTreeMap<AssetId, String>,
 }

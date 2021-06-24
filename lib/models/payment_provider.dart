@@ -69,7 +69,11 @@ class PaymentProvider with ChangeNotifier {
       logger.e('Invalid address $address');
       return;
     }
-    final _amount = read(walletProvider).parseBitcoinAmount(amount);
+
+    final precision =
+        read(walletProvider).getPrecisionForAssetId(assetId: assetId);
+    final _amount =
+        read(walletProvider).parseAssetAmount(amount, precision: precision);
     final balance =
         read(walletProvider).balances[read(walletProvider).selectedWalletAsset];
     if (balance == null) {

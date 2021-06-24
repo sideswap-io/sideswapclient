@@ -38,20 +38,6 @@ const DEFAULT_ICON: &[u8] = include_bytes!("../images/icon_blank.png");
 
 const AUTO_SIGN_ALLOWED_INDEX_PRICE_CHANGE: f64 = 0.1;
 
-#[derive(serde::Deserialize, Debug)]
-struct GdkAsset {
-    asset_id: AssetId,
-    name: Option<String>,
-    precision: Option<u8>,
-    ticker: Option<Ticker>,
-}
-
-#[derive(serde::Deserialize, Debug, Default)]
-pub struct GdkAssets {
-    assets: BTreeMap<AssetId, GdkAsset>,
-    icons: BTreeMap<AssetId, String>,
-}
-
 fn network_type(mainnet: bool) -> &'static elements::AddressParams {
     if mainnet {
         &elements::AddressParams::LIQUID
@@ -953,7 +939,6 @@ impl Data {
         }
         ctx.succeed_swap = Some(txid);
         self.cleanup_swaps();
-        // FIXME: Update balances (remove consumed UTXOs)
     }
 
     fn process_price_update(&mut self, msg: PriceUpdateNotification) {

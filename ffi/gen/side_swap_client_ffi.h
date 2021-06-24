@@ -28,10 +28,6 @@ void sideswap_send_request(IntPtr client, const uint8_t *data, uint64_t len);
 
 bool sideswap_check_addr(IntPtr client, const char *addr, int32_t addr_type);
 
-int64_t sideswap_parse_bitcoin_amount(const char *amount);
-
-bool sideswap_parsed_amount_valid(int64_t amount);
-
 const uint8_t *sideswap_msg_ptr(IntPtr msg);
 
 uint64_t sideswap_msg_len(IntPtr msg);

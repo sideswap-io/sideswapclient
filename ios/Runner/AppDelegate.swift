@@ -13,15 +13,13 @@ public func dummyMethodToEnforceBundling() {
     sideswap_client_create(0)
     sideswap_client_start(0, "", "", 0)
     sideswap_send_request(0, "", 0)
-    sideswap_parse_bitcoin_amount("")
-    sideswap_parsed_amount_valid(0)
     sideswap_msg_ptr(0)
     sideswap_msg_len(0)
     sideswap_msg_free(0)
     sideswap_generate_mnemonic12()
     sideswap_verify_mnemonic("")
     sideswap_check_addr(0, "", 0)
-    
+
     let s = ""
     let cs = (s as NSString).utf8String
     let buffer = UnsafeMutablePointer<Int8>(mutating: cs)
