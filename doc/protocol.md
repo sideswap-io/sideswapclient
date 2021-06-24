@@ -1,6 +1,6 @@
 # SideSwap swap protocol
 
-TL;DR: SideSwap’s swap protocol is a working implementation for secure p2p swaps on the Liquid Network. It is designed to ensure the formation of orderly markets where (i) the party creating the offer may determine the terms of the trade, including time-to-live (ii) neither participant receives their counterparty’s signed UTXOs.
+TL;DR: SideSwap’s swap protocol is a working implementation for secure p2p swaps on the Liquid Network. It is designed to ensure the formation of orderly markets where (i) the party creating the offer may determine the terms of the trade, including time-to-live (ii) neither participant receives their counterparty’s signed UTXOs (iii) prices may be updated without re-submitting the order (iv) only eligle counterparties may view the Makers unblinded transaction.
 
 ## Liquid Network
 
@@ -22,7 +22,7 @@ The Liquid Swap Tool was created as a proof of concept implementation for demons
 
 A second atomic swap implementation, LiquidDEX (https://leocomandini.github.io/2021/06/15/liquidex.html), proposes a two-step approach where the Makers (Alice) proposal includes a receiving amount and a single UTXO which is signed utilizing SIGHASH_SINGLE | SIGHASH_ANYONECANPAY. This allows the Taker (Bob) to add more inputs and outputs without invalidating the Maker signature.
 
-LiquiDEX has a big benefit in that it only has two steps, which allows the Maker (Alice) to create the offer without having to be around to sign her inputs after the trade has been accepted by Bob. This model has many benefits and is ideal for multiple use-cases Including scenarios where Alice goes offline). The considerations of the model relate to (i) Alice having no way of withdrawing her offer without spending her UTXOs once she has shared her offer (ii) the model requiring the maker to always sell exactly one whole UTXO without any change (iii) an inability to update the swap price without re-submitting a signed order.
+LiquiDEX has a big benefit in that it only has two steps, which allows the Maker (Alice) to create the offer without having to be around to sign her inputs after the trade has been accepted by Bob. This model has many benefits and is ideal for multiple use-cases Including scenarios where Alice goes offline. The considerations of the model relate to (i) Alice having no way of withdrawing her offer without spending her UTXOs once she has shared her offer (ii) the model requiring the maker to always sell exactly one whole UTXO without any change (iii) an inability to update the swap price without re-submitting a signed order.
 
 ## SideSwap atomic swap protocol
 
@@ -32,4 +32,4 @@ The Maker (Alice) provides her input UTXOs (in PSET), a receiving address, recei
 
 ## Improvement
 
-The main drawback of the three-step model is the requirement placed on the Maker to both be online as well as being asked to sign for the transaction in a manner which is timely and fair on the Taker. SideSwap has implemented an auto-sign functionality where the UTXOs (PSET) offered may be automatically signed upon receipt of a signed offer which corresponds to the requested price and counter-quantity.
+The main drawback of the three-step model is the requirement placed on the Maker where Alice is asked to be both online and able to sign for the transaction in a manner which is timely and fair on the Taker. SideSwap has implemented an auto-sign functionality where the UTXOs (PSET) offered may be automatically signed upon receipt of a signed offer which corresponds to the requested price and counter-quantity.
