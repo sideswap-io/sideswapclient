@@ -265,7 +265,11 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     final params = url.queryParameters;
 
     if (params.containsKey('amount')) {
-      _result.amount = double.tryParse(params['amount'] ?? '0');
+      var amount = double.tryParse(params['amount'] ?? '0') ?? 0;
+      if (amount < 0) {
+        amount = 0;
+      }
+      _result.amount = amount;
     }
 
     if (params.containsKey('label')) {

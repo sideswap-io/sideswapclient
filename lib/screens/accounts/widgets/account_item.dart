@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -20,7 +21,7 @@ class AccountItem extends ConsumerWidget {
         .read(walletProvider)
         .getPrecisionForAssetId(assetId: asset?.assetId);
     final amountString = amountStr(
-      context.read(walletProvider).balances[asset?.assetId] ?? 0,
+      context.read(balancesProvider).balances[asset?.assetId] ?? 0,
       precision: precision,
     );
     final amount = precision == 0

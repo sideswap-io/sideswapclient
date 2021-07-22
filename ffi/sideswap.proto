@@ -78,6 +78,18 @@ message Contact {
   required string phone = 2;
 }
 
+message Order {
+  required string order_id = 1;
+  required string asset_id = 2;
+  required int64 bitcoin_amount = 3;
+  required int64 server_fee = 4;
+  required int64 asset_amount = 5;
+  required double price = 6;
+  required int64 created_at = 7;
+  required int64 expires_at = 8;
+  required bool private = 9;
+}
+
 message To {
   message Login {
     required string mnemonic = 1;
@@ -149,7 +161,7 @@ message To {
   }
 
   message SubmitOrder {
-    required string session_id = 1;
+    optional string session_id = 1;
     required string asset_id = 2;
     required double bitcoin_amount = 3;
     required double price = 4;
@@ -164,6 +176,16 @@ message To {
     required string order_id = 1;
     required bool accept = 2;
     optional bool auto_sign = 3;
+    optional bool private = 4;
+  }
+
+  message EditOrder {
+    required string order_id = 1;
+    required double price = 2;
+  }
+
+  message CancelOrder {
+    required string order_id = 1;
   }
 
   oneof msg {
@@ -193,6 +215,8 @@ message To {
     SubmitOrder submit_order = 49;
     LinkOrder link_order = 50;
     SubmitDecision submit_decision = 51;
+    EditOrder edit_order = 52;
+    CancelOrder cancel_order = 53;
   }
 }
 
@@ -308,6 +332,10 @@ message From {
     required bool minimize_app = 4;
   }
 
+  message OrderRemoved {
+    required string order_id = 1;
+  }
+
   oneof msg {
     TransItem updated_tx = 1;
     RemovedTx removed_tx = 2;
@@ -338,5 +366,12 @@ message From {
     ShowMessage show_message = 50;
     SubmitReview submit_review = 51;
     SubmitResult submit_result = 52;
+    GenericResponse edit_order = 53;
+    GenericResponse cancel_order = 54;
+
+    Empty server_connected = 60;
+    Empty server_disconnected = 61;
+    Order order_created = 62;
+    OrderRemoved order_removed = 63;
   }
 }

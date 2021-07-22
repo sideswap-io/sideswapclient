@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use std::convert::TryInto;
 use std::str::FromStr;
 
-use log::{debug, info, trace};
+use log::{debug, info, trace, warn};
 use rand::Rng;
 
 use bitcoin::blockdata::script;
@@ -11,7 +11,7 @@ use bitcoin::hashes::Hash;
 use bitcoin::secp256k1::{self, Message};
 use bitcoin::util::address::Payload;
 use bitcoin::util::bip143::SigHashCache;
-use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey, ExtendedPubKey};
+use bitcoin::util::bip32::{ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey};
 use bitcoin::{PublicKey, SigHashType};
 use elements::confidential::Value;
 
@@ -24,7 +24,7 @@ use gdk_common::model::{
     AccountInfo, AddressAmount, AddressPointer, Balances, CreateTransaction, GetTransactionsOpt,
     SPVVerifyResult, TransactionMeta, UpdateAccountOpt,
 };
-use gdk_common::scripts::{p2pkh_script, p2shwpkh_script, p2shwpkh_script_sig, ScriptType};
+use gdk_common::scripts::{p2pkh_script, p2shwpkh_script_sig, ScriptType};
 use gdk_common::wally::{
     asset_blinding_key_to_ec_private_key, ec_public_key_from_private_key, MasterBlindingKey,
 };
@@ -46,13 +46,14 @@ pub struct Account {
     account_num: u32,
     script_type: ScriptType,
     pub xprv: ExtendedPrivKey,
+    xpub: ExtendedPubKey,
     chains: [ExtendedPubKey; 2],
     network: Network,
     pub store: Store,
     // elements only
     master_blinding: Option<MasterBlindingKey>,
+
     _path: DerivationPath,
-    _xpub: ExtendedPubKey,
 }
 
 impl Account {
@@ -80,12 +81,12 @@ impl Account {
             account_num,
             script_type,
             xprv,
+            xpub,
             chains,
             store,
             master_blinding,
             // currently unused, but seems useful to have around
             _path: path,
-            _xpub: xpub,
         })
     }
 
@@ -174,10 +175,12 @@ impl Account {
         for (tx_id, height) in my_txids.iter().skip(opt.first).take(opt.count) {
             trace!("tx_id {}", tx_id);
 
-            let tx = acc_store
+            let txe = acc_store
                 .all_txs
                 .get(*tx_id)
                 .ok_or_else(fn_err(&format!("list_tx no tx {}", tx_id)))?;
+            let tx = &txe.tx;
+
             let header = height.map(|h| store.cache.headers.get(&h)).flatten();
             trace!("tx_id {} header {:?}", tx_id, header);
             let mut addressees = vec![];
@@ -189,7 +192,7 @@ impl Account {
                     addressees.push(AddressAmount {
                         address: address.unwrap_or_else(|| "".to_string()),
                         satoshi: 0, // apparently not needed in list_tx addressees
-                        asset_tag: None,
+                        asset_id: None,
                     });
                 }
             }
@@ -242,7 +245,7 @@ impl Account {
             );
 
             let tx_meta = TransactionMeta::new(
-                tx.clone(),
+                txe.clone(),
                 **height,
                 header.map(|h| h.time()),
                 satoshi,
@@ -275,10 +278,11 @@ impl Account {
                 continue;
             }
 
-            let tx = acc_store
+            let tx = &acc_store
                 .all_txs
                 .get(tx_id)
-                .ok_or_else(fn_err(&format!("utxos no tx {}", tx_id)))?;
+                .ok_or_else(fn_err(&format!("utxos no tx {}", tx_id)))?
+                .tx;
             let tx_utxos: Vec<(BEOutPoint, UTXOInfo)> = match tx {
                 BETransaction::Bitcoin(tx) => tx
                     .output
@@ -362,8 +366,8 @@ impl Account {
         let store_read = self.store.read()?;
         let acc_store = store_read.account_cache(self.account_num)?;
         let mut result = HashSet::new();
-        for tx in acc_store.all_txs.values() {
-            let outpoints: Vec<BEOutPoint> = match tx {
+        for txe in acc_store.all_txs.values() {
+            let outpoints: Vec<BEOutPoint> = match &txe.tx {
                 BETransaction::Bitcoin(tx) => {
                     tx.input.iter().map(|i| BEOutPoint::Bitcoin(i.previous_output)).collect()
                 }
@@ -544,6 +548,78 @@ impl Account {
         }
         Ok(result)
     }
+
+    /// Get the chain number for the given address (0 for receive or 1 for change)
+    pub fn get_wallet_chain_type(&self, script: &BEScript) -> Option<u32> {
+        let store_read = self.store.read().unwrap();
+        let acc_store = store_read.account_cache(self.account_num).unwrap();
+
+        if let Some(path) = acc_store.paths.get(&script) {
+            if let ChildNumber::Normal {
+                index,
+            } = path[0]
+            {
+                return Some(index);
+            }
+        }
+        None
+    }
+
+    /// Verify that our own (outgoing) transactions were properly signed by the wallet.
+    /// This is needed to prevent malicious servers from getting the user to fee-bump a
+    /// transaction that they never signed in the first place.
+    ///
+    /// Invalid transactions will be removed from the db and result in an Ok(false).
+    pub fn verify_own_txs(&self, txs: &[(BETxid, BETransaction)]) -> Result<bool, Error> {
+        let mut all_valid = true;
+        let mut store_write = self.store.write().unwrap();
+        let acc_store = store_write.account_cache_mut(self.account_num).unwrap();
+
+        for (txid, tx) in txs {
+            info!("verifying tx: {}", txid);
+            // Confirmed transactions and Elements transactions cannot be fee-bumped and therefore don't require verification
+            if !matches!(tx, BETransaction::Bitcoin(_))
+                || acc_store.heights.get(txid).map_or(true, |h| h.is_some())
+            {
+                continue;
+            }
+            let mut hashcache = None;
+            for (vin, outpoint) in tx.previous_outputs().iter().enumerate() {
+                let script = acc_store
+                    .all_txs
+                    .get_previous_output_script_pubkey(outpoint)
+                    .expect("prevout to be indexed");
+                let public_key = match acc_store.paths.get(&script) {
+                    Some(path) => self.xpub.derive_pub(&EC, path)?,
+                    // We only need to check wallet-owned inputs
+                    None => continue,
+                }
+                .public_key;
+                let value = acc_store
+                    .all_txs
+                    .get_previous_output_value(&outpoint, &acc_store.unblinded)
+                    .expect("own prevout to have known value");
+                if let Err(err) = tx.verify_input_sig(
+                    &EC,
+                    &mut hashcache,
+                    vin,
+                    &public_key,
+                    value,
+                    self.script_type,
+                ) {
+                    warn!("tx {} verification failed: {:?}", txid, err);
+                    acc_store.all_txs.remove(txid);
+                    acc_store.heights.remove(txid);
+                    all_valid = false;
+                    break;
+                }
+            }
+        }
+        if !all_valid {
+            store_write.flush()?;
+        }
+        Ok(all_valid)
+    }
 }
 
 /// Return the last (if any) and next account numbers for the given script type
@@ -648,17 +724,16 @@ fn elements_address(
     script_type: ScriptType,
     net: ElementsNetwork,
 ) -> elements::Address {
-    use elements::Address;
-    let script = p2shwpkh_script(public_key).into_elements();
-    let blinding_key = asset_blinding_key_to_ec_private_key(&master_blinding_key, &script);
-    let blinding_pub = ec_public_key_from_private_key(blinding_key);
     let addr_params = elements_address_params(net);
-
-    match script_type {
-        ScriptType::P2shP2wpkh => Address::p2shwpkh(public_key, Some(blinding_pub), addr_params),
-        ScriptType::P2wpkh => Address::p2wpkh(public_key, Some(blinding_pub), addr_params),
-        ScriptType::P2pkh => Address::p2pkh(public_key, Some(blinding_pub), addr_params),
-    }
+    let address = match script_type {
+        ScriptType::P2pkh => elements::Address::p2pkh(public_key, None, addr_params),
+        ScriptType::P2shP2wpkh => elements::Address::p2shwpkh(public_key, None, addr_params),
+        ScriptType::P2wpkh => elements::Address::p2wpkh(public_key, None, addr_params),
+    };
+    let script_pubkey = address.script_pubkey();
+    let blinding_prv = asset_blinding_key_to_ec_private_key(master_blinding_key, &script_pubkey);
+    let blinding_pub = ec_public_key_from_private_key(blinding_prv);
+    address.to_confidential(blinding_pub)
 }
 
 fn elements_address_params(net: ElementsNetwork) -> &'static elements::AddressParams {
@@ -731,7 +806,16 @@ pub fn create_tx(
 
     let network = &account.network;
 
-    // TODO put checks into CreateTransaction::validate, add check asset_tag are valid asset hex
+    let fee_rate_sat_kb = request.fee_rate.get_or_insert_with(|| match network.id() {
+        NetworkId::Bitcoin(_) => 1000,
+        NetworkId::Elements(_) => 100,
+    });
+
+    // convert from satoshi/kbyte to satoshi/byte
+    let fee_rate = (*fee_rate_sat_kb as f64) / 1000.0;
+    info!("target fee_rate {:?} satoshi/byte", fee_rate);
+
+    // TODO put checks into CreateTransaction::validate, add check asset_id are valid asset hex
     // eagerly check for address validity
     for address in request.addressees.iter().map(|a| &a.address) {
         match network.id() {
@@ -773,55 +857,97 @@ pub fn create_tx(
         }
     }
 
-    if request.addressees.is_empty() {
-        return Err(Error::EmptyAddressees);
-    }
-
-    if !request.previous_transaction.is_empty() {
-        return Err(Error::Generic("bump not supported".into()));
-    }
-
-    let send_all = request.send_all.unwrap_or(false);
-    request.send_all = Some(send_all); // accept default false, but always return the value
+    let send_all = request.send_all;
     if !send_all && request.addressees.iter().any(|a| a.satoshi == 0) {
         return Err(Error::InvalidAmount);
     }
 
-    if !send_all {
-        for address_amount in request.addressees.iter() {
-            if address_amount.satoshi <= DUST_VALUE {
-                match network.id() {
-                    NetworkId::Bitcoin(_) => return Err(Error::InvalidAmount),
-                    NetworkId::Elements(_) => {
-                        if address_amount.asset_tag == network.policy_asset {
-                            // we apply dust rules for liquid bitcoin as elements do
-                            return Err(Error::InvalidAmount);
+    let mut template_tx = None;
+    let mut change_addresses = HashMap::new();
+
+    // When a previous transaction is replaced, use it as a template for the new transaction
+    if let Some(ref prev_txitem) = request.previous_transaction {
+        if send_all || network.liquid {
+            return Err(Error::InvalidReplacementRequest);
+        }
+
+        let prev_tx = BETransaction::from_hex(&prev_txitem.transaction, network.id())?;
+        let policy_asset = network.policy_asset.as_deref().unwrap_or("btc");
+
+        let store_read = account.store.read()?;
+        let acc_store = store_read.account_cache(account.num())?;
+
+        // Strip the mining fee change output from the transaction, keeping the change address for reuse
+        template_tx = Some(prev_tx.filter_outputs(&acc_store.unblinded, |vout, script, asset| {
+            if asset.map_or(true, |a| a == policy_asset)
+                && account.get_wallet_chain_type(&script) == Some(1)
+            {
+                let change_address = prev_tx
+                    .output_address(vout, network.id())
+                    .expect("own change addresses to have address representation");
+                change_addresses.insert(policy_asset.to_string(), change_address);
+                false
+            } else {
+                true
+            }
+        }));
+
+        if let (Some(BETransaction::Bitcoin(tx)), NetworkId::Bitcoin(net)) =
+            (&template_tx, network.id())
+        {
+            request.addressees = tx
+                .output
+                .iter()
+                .filter_map(|o| {
+                    Some(AddressAmount {
+                        address: bitcoin::Address::from_script(&o.script_pubkey, net)?.to_string(),
+                        satoshi: o.value,
+                        asset_id: None,
+                    })
+                })
+                .collect();
+        } else {
+            return Err(Error::InvalidReplacementRequest);
+        }
+
+        // Keep the previous transaction memo
+        if request.memo.is_none() && !prev_txitem.memo.is_empty() {
+            request.memo = Some(prev_txitem.memo.clone());
+        }
+    } else {
+        if request.addressees.is_empty() {
+            return Err(Error::EmptyAddressees);
+        }
+
+        if !send_all && request.addressees.iter().any(|a| a.satoshi == 0) {
+            return Err(Error::InvalidAmount);
+        }
+
+        if !send_all {
+            for address_amount in request.addressees.iter() {
+                if address_amount.satoshi <= DUST_VALUE {
+                    match network.id() {
+                        NetworkId::Bitcoin(_) => return Err(Error::InvalidAmount),
+                        NetworkId::Elements(_) => {
+                            if address_amount.asset_id == network.policy_asset {
+                                // we apply dust rules for liquid bitcoin as elements do
+                                return Err(Error::InvalidAmount);
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    if let NetworkId::Elements(_) = network.id() {
-        if request.addressees.iter().any(|a| a.asset_tag.is_none()) {
-            return Err(Error::AssetEmpty);
+        if let NetworkId::Elements(_) = network.id() {
+            if request.addressees.iter().any(|a| a.asset_id.is_none()) {
+                return Err(Error::AssetEmpty);
+            }
         }
     }
 
-    // convert from satoshi/kbyte to satoshi/byte
-    let default_value = match network.id() {
-        NetworkId::Bitcoin(_) => 1000,
-        NetworkId::Elements(_) => 100,
-    };
-    let fee_rate = (request.fee_rate.unwrap_or(default_value) as f64) / 1000.0;
-    info!("target fee_rate {:?} satoshi/byte", fee_rate);
-
     let utxos = match &request.utxos {
-        None => account.utxos(
-            request.num_confs.unwrap_or(0),
-            request.confidential_utxos_only.unwrap_or(false),
-        )?,
+        None => account.utxos(request.num_confs, request.confidential_utxos_only)?,
         Some(utxos) => utxos.try_into()?,
     };
     info!("utxos len:{} utxos:{:?}", utxos.len(), utxos);
@@ -833,7 +959,7 @@ pub fn create_tx(
         if request.addressees.len() != 1 {
             return Err(Error::SendAll);
         }
-        let asset = request.addressees[0].asset_tag.as_deref().unwrap_or("btc");
+        let asset = request.addressees[0].asset_id.as_deref().unwrap_or("btc");
         let all_utxos: Vec<&(BEOutPoint, UTXOInfo)> =
             utxos.iter().filter(|(_, i)| i.asset == asset).collect();
         let total_amount_utxos: u64 = all_utxos.iter().map(|(_, i)| i.value).sum();
@@ -845,7 +971,7 @@ pub fn create_tx(
             }
             let out = &request.addressees[0]; // safe because we checked we have exactly one recipient
             dummy_tx
-                .add_output(&out.address, out.satoshi, out.asset_tag.clone())
+                .add_output(&out.address, out.satoshi, out.asset_id.clone())
                 .map_err(|_| Error::InvalidAddress)?;
             // estimating 2 satoshi more as estimating less would later result in InsufficientFunds
             let estimated_fee = dummy_tx.estimated_fee(fee_rate, 0, account.script_type) + 2;
@@ -859,17 +985,25 @@ pub fn create_tx(
         request.addressees[0].satoshi = to_send;
     }
 
-    let mut tx = BETransaction::new(network.id());
     // transaction is created in 3 steps:
-    // 1) adding requested outputs to tx outputs
+    // 1) adding requested outputs to tx outputs, or using the replaced transaction template
     // 2) adding enough utxso to inputs such that tx outputs and estimated fees are covered
     // 3) adding change(s)
 
-    // STEP 1) add the outputs requested for this transactions
-    for out in request.addressees.iter() {
-        tx.add_output(&out.address, out.satoshi, out.asset_tag.clone())
-            .map_err(|_| Error::InvalidAddress)?;
-    }
+    // STEP 1) add the requested outputs for newly created transactions,
+    //         or start with the replaced transaction (minus change) as a template
+    let mut tx = template_tx.map_or_else(
+        || -> Result<_, Error> {
+            let mut new_tx = BETransaction::new(network.id());
+            for out in request.addressees.iter() {
+                new_tx
+                    .add_output(&out.address, out.satoshi, out.asset_id.clone())
+                    .map_err(|_| Error::InvalidAddress)?;
+            }
+            Ok(new_tx)
+        },
+        Ok,
+    )?;
 
     // STEP 2) add utxos until tx outputs are covered (including fees) or fail
     let store_read = account.store.read()?;
@@ -936,8 +1070,13 @@ pub fn create_tx(
         &acc_store.unblinded,
     ); // Vec<Change> asset, value
     for (i, change) in changes.iter().enumerate() {
-        let change_index = acc_store.indexes.internal + i as u32 + 1;
-        let change_address = account.derive_address(true, change_index)?.to_string();
+        let change_address = change_addresses.remove(&change.asset).map_or_else(
+            || -> Result<_, Error> {
+                let change_index = acc_store.indexes.internal + i as u32 + 1;
+                Ok(account.derive_address(true, change_index)?.to_string())
+            },
+            Ok,
+        )?;
         info!(
             "adding change to {} of {} asset {:?}",
             &change_address, change.satoshi, change.asset
@@ -974,6 +1113,7 @@ pub fn create_tx(
         SPVVerifyResult::InProgress,
     );
     created_tx.changes_used = Some(changes.len() as u32);
+    created_tx.addressees_read_only = request.previous_transaction.is_some();
     info!("returning: {:?}", created_tx);
 
     Ok(created_tx)
@@ -1223,7 +1363,7 @@ mod test {
     fn test_derivation(account_num: u32, expected_type: ScriptType, expected_path: &str) {
         let (script_type, path) = get_account_derivation(account_num, NETWORK).unwrap();
         assert_eq!(script_type, expected_type);
-        assert_eq!(path.to_string(), expected_path);
+        assert_eq!(path, DerivationPath::from_str(expected_path).unwrap());
     }
 
     fn test_derivation_fails(account_num: u32) {

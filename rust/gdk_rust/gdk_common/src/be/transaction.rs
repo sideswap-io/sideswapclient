@@ -1,11 +1,17 @@
 use crate::be::*;
 use crate::error::Error;
 use crate::model::Balances;
-use crate::scripts::ScriptType;
+use crate::scripts::{p2pkh_script, ScriptType};
 use crate::wally::asset_surjectionproof_size;
+use crate::{bail, ensure};
 use crate::{ElementsNetwork, NetworkId};
+use bitcoin::blockdata::script::Instruction;
 use bitcoin::consensus::encode::deserialize as btc_des;
 use bitcoin::consensus::encode::serialize as btc_ser;
+use bitcoin::hashes::Hash;
+use bitcoin::secp256k1::{self, Message, Secp256k1, Signature};
+use bitcoin::util::bip143::SigHashCache;
+use bitcoin::{PublicKey, SigHashType};
 use elements::confidential::{Asset, Value};
 use elements::encode::deserialize as elm_des;
 use elements::encode::serialize as elm_ser;
@@ -192,6 +198,13 @@ impl BETransaction {
         }
     }
 
+    pub fn get_size(&self) -> usize {
+        match self {
+            Self::Bitcoin(tx) => tx.get_size(),
+            Self::Elements(tx) => tx.get_size(),
+        }
+    }
+
     /// asset is none for bitcoin, in liquid must be Some
     pub fn add_output(
         &mut self,
@@ -276,15 +289,16 @@ impl BETransaction {
             BETransaction::Elements(mut tx) => {
                 for input in tx.input.iter_mut() {
                     let mut tx_wit = TxInWitness::default();
-                    tx_wit.script_witness = vec![vec![0u8; 72], vec![0u8; 33]]; // considering signature sizes (72) and compressed public key (33)
+                    tx_wit.script_witness = script_type.mock_witness();
                     input.witness = tx_wit;
-                    input.script_sig = vec![0u8; 23].into(); // p2shwpkh redeem script size
+                    input.script_sig = script_type.mock_script_sig().into();
                 }
                 for _ in 0..more_changes {
                     let new_out = elements::TxOut {
                         asset: confidential::Asset::Confidential(0u8, [0u8; 32]),
                         value: confidential::Value::Confidential(0u8, [0u8; 32]),
                         nonce: confidential::Nonce::Confidential(0u8, [0u8; 32]),
+                        script_pubkey: script_type.mock_script_pubkey().into(),
                         ..Default::default()
                     };
                     tx.output.push(new_out);
@@ -295,10 +309,12 @@ impl BETransaction {
                         surjection_proof: vec![0u8; sur_size],
                         rangeproof: vec![0u8; 4174],
                     };
-                    output.script_pubkey = vec![0u8; 21].into();
                 }
 
-                tx.output.push(elements::TxOut::default()); // mockup for the explicit fee output
+                tx.output.push(elements::TxOut::new_fee(
+                    0,
+                    elements::issuance::AssetId::from_slice(&[0u8; 32]).unwrap(),
+                )); // mockup for the explicit fee output
                 let vbytes = tx.get_weight() as f64 / 4.0;
                 // SIDESWAP: Set to 1.04 as some users still report relay fee errors
                 let fee_val = (vbytes * fee_rate * 1.04) as u64; // increasing estimated fee by 3% to stay over relay fee, TODO improve fee estimation and lower this
@@ -704,6 +720,76 @@ impl BETransaction {
             }
         }
     }
+
+    /// Return a copy of the transaction with the outputs matched by `f` only
+    pub fn filter_outputs<F>(
+        &self,
+        all_unblinded: &HashMap<elements::OutPoint, Unblinded>,
+        mut f: F,
+    ) -> BETransaction
+    where
+        F: FnMut(u32, BEScript, Option<String>) -> bool,
+    {
+        let mut vout = 0u32;
+        let mut predicate = || {
+            let matched =
+                f(vout, self.output_script(vout), self.output_asset_hex(vout, all_unblinded));
+            vout += 1;
+            matched
+        };
+
+        let mut stripped_tx = self.clone();
+        match stripped_tx {
+            Self::Bitcoin(ref mut tx) => tx.output.retain(|_| predicate()),
+            Self::Elements(ref mut tx) => tx.output.retain(|_| predicate()),
+        }
+        stripped_tx
+    }
+
+    /// Verify the given transaction input. Only supports the script types that
+    /// can be managed using gdk-rust. Implemented for Bitcoin only.
+    ///
+    /// The `hashcache` argument should be initialized as None for every tx and
+    /// reused for its inputs.
+    pub fn verify_input_sig<'a>(
+        &'a self,
+        secp: &Secp256k1<impl secp256k1::Verification>,
+        hashcache: &mut Option<SigHashCache<&'a bitcoin::Transaction>>,
+        inv: usize,
+        public_key: &PublicKey,
+        value: u64,
+        script_type: ScriptType,
+    ) -> Result<(), Error> {
+        let tx = if let BETransaction::Bitcoin(tx) = self {
+            tx
+        } else {
+            // Signature verification is currently only used on Bitcoin
+            unimplemented!();
+        };
+        let script_code = p2pkh_script(public_key);
+        let hash = if script_type.is_segwit() {
+            let hashcache = hashcache.get_or_insert_with(|| SigHashCache::new(tx));
+            hashcache.signature_hash(inv, &script_code, value, SigHashType::All)
+        } else {
+            tx.signature_hash(inv, &script_code, SigHashType::All as u32)
+        };
+        let message = Message::from_slice(&hash.into_inner()[..]).unwrap();
+        let mut sig = match script_type {
+            ScriptType::P2wpkh | ScriptType::P2shP2wpkh => {
+                tx.input[inv].witness.get(0).cloned().ok_or(Error::InputValidationFailed)
+            }
+            ScriptType::P2pkh => match tx.input[inv].script_sig.instructions().next() {
+                Some(Ok(Instruction::PushBytes(sig))) => Ok(sig.to_vec()),
+                _ => Err(Error::InputValidationFailed),
+            },
+        }?;
+
+        // We only ever create SIGHASH_ALL transactions
+        ensure!(sig.pop() == Some(SigHashType::All as u8), Error::InputValidationFailed);
+
+        secp.verify(&message, &Signature::from_der(&sig)?, &public_key.key)?;
+        Ok(())
+    }
 }
 
 fn sum_inputs(tx: &bitcoin::Transaction, all_txs: &BETransactions) -> u64 {
@@ -715,10 +801,17 @@ fn sum_inputs(tx: &bitcoin::Transaction, all_txs: &BETransactions) -> u64 {
 }
 
 #[derive(Default, Serialize, Deserialize)]
-pub struct BETransactions(HashMap<BETxid, BETransaction>);
+pub struct BETransactions(HashMap<BETxid, BETransactionEntry>);
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BETransactionEntry {
+    pub tx: BETransaction,
+    pub size: usize,
+    pub weight: usize,
+}
 
 impl Deref for BETransactions {
-    type Target = HashMap<BETxid, BETransaction>;
+    type Target = HashMap<BETxid, BETransactionEntry>;
     fn deref(&self) -> &<Self as Deref>::Target {
         &self.0
     }
@@ -730,14 +823,14 @@ impl DerefMut for BETransactions {
 }
 impl BETransactions {
     pub fn get_previous_output_script_pubkey(&self, outpoint: &BEOutPoint) -> Option<BEScript> {
-        self.0.get(&outpoint.txid()).map(|tx| tx.output_script(outpoint.vout()))
+        self.0.get(&outpoint.txid()).map(|txe| txe.tx.output_script(outpoint.vout()))
     }
     pub fn get_previous_output_value(
         &self,
         outpoint: &BEOutPoint,
         all_unblinded: &HashMap<elements::OutPoint, Unblinded>,
     ) -> Option<u64> {
-        self.0.get(&outpoint.txid()).map(|tx| tx.output_value(outpoint.vout(), &all_unblinded))
+        self.0.get(&outpoint.txid()).map(|txe| txe.tx.output_value(outpoint.vout(), &all_unblinded))
     }
 
     pub fn get_previous_output_asset_hex(
@@ -747,7 +840,20 @@ impl BETransactions {
     ) -> Option<String> {
         self.0
             .get(&outpoint.txid.into())
-            .map(|tx| tx.output_asset_hex(outpoint.vout, &all_unblinded).unwrap())
+            .map(|txe| txe.tx.output_asset_hex(outpoint.vout, &all_unblinded).unwrap())
+    }
+}
+
+impl From<BETransaction> for BETransactionEntry {
+    fn from(mut tx: BETransaction) -> Self {
+        let size = tx.serialize().len();
+        let weight = tx.get_weight();
+        tx.strip_witness();
+        Self {
+            tx,
+            size,
+            weight,
+        }
     }
 }
 

@@ -171,7 +171,7 @@ pub fn generate_psbt(
                 .get(&outpoint)
                 .unwrap();
 
-            let path = DerivationPath::from_str(&utxo.derivation_path).unwrap();
+            let path = &utxo.derivation_path;
             let xprv = wallet
                 .accounts
                 .get(&account)
@@ -478,7 +478,7 @@ pub fn sign_psbt(
 
                 debug!("found key for input {}", input_index);
                 input_amount = input_amount.checked_add(utxo.satoshi).unwrap();
-                let path = DerivationPath::from_str(&utxo.derivation_path).unwrap();
+                let path = &utxo.derivation_path;
                 let xprv = wallet
                     .accounts
                     .get(&account)
@@ -540,7 +540,7 @@ pub fn sign_psbt(
                 .find(|utxo| utxo.txhash == txhash && utxo.pt_idx == vout)
             {
                 debug!("found key for input {}", input_index);
-                let path = DerivationPath::from_str(&utxo.derivation_path).unwrap();
+                let path = &utxo.derivation_path;
                 let xprv = wallet
                     .accounts
                     .get(&account)
@@ -634,74 +634,74 @@ pub fn get_network(env: Env) -> gdk_common::Network {
         Env::Local => gdk_common::Network {
             name: "Electrum Liquid Regtest".to_owned(),
             network: "liquid-electrum-regtest".to_owned(),
-            spv_enabled: Some(false),
-            asset_registry_url: Some("https://assets.blockstream.info".to_owned()),
-            asset_registry_onion_url: Some("http://vi5flmr4z3h3luup.onion".to_owned()),
-            tls: Some(false),
-            mainnet: false,
-            liquid: true,
             development: true,
+            liquid: true,
+            mainnet: false,
             tx_explorer_url: "https://blockstream.info/liquid/tx/".to_owned(),
             address_explorer_url: "https://blockstream.info/address/".to_owned(),
+            electrum_tls: Some(false),
             electrum_url: Some("192.168.71.50:51401".to_owned()),
+            validate_domain: None,
             policy_asset: Some(
                 "2684bbac0fa7ad544ec8eee43c35156346e5d641d24a4b9d5d8f183e3f2d8fb9".to_owned(),
             ),
-            ct_exponent: Some(0),
-            ct_bits: Some(52),
-            validate_domain: None,
-            ct_min_value: None,
             sync_interval: None,
-            spv_cross_validation: None,
-            spv_cross_validation_servers: None,
+            ct_bits: Some(52),
+            ct_exponent: Some(0),
+            ct_min_value: None,
+            spv_enabled: Some(false),
+            asset_registry_url: Some("http://192.168.71.50/assets".to_owned()),
+            asset_registry_onion_url: None,
+            spv_multi: None,
+            spv_servers: None,
         },
         Env::Regtest => gdk_common::Network {
             name: "Electrum Liquid Regtest".to_owned(),
             network: "liquid-electrum-regtest".to_owned(),
-            spv_enabled: Some(false),
-            asset_registry_url: Some("https://assets.blockstream.info".to_owned()),
-            asset_registry_onion_url: Some("http://vi5flmr4z3h3luup.onion".to_owned()),
-            tls: Some(false),
-            mainnet: false,
-            liquid: true,
             development: true,
+            liquid: true,
+            mainnet: false,
             tx_explorer_url: "https://blockstream.info/liquid/tx/".to_owned(),
             address_explorer_url: "https://blockstream.info/address/".to_owned(),
+            electrum_tls: Some(false),
             electrum_url: Some("api.sideswap.io:10402".to_owned()),
+            validate_domain: None,
             policy_asset: Some(
                 "2e16b12daf1244332a438e829ca7ce209195f8e1c54199770cd8b327710a8ab2".to_owned(),
             ),
-            ct_exponent: Some(0),
-            ct_bits: Some(52),
-            validate_domain: None,
-            ct_min_value: None,
             sync_interval: None,
-            spv_cross_validation: None,
-            spv_cross_validation_servers: None,
+            ct_bits: Some(52),
+            ct_exponent: Some(0),
+            ct_min_value: None,
+            spv_enabled: Some(false),
+            asset_registry_url: Some("https://regtest.sideswap.io/assets".to_owned()),
+            asset_registry_onion_url: None,
+            spv_multi: None,
+            spv_servers: None,
         },
         Env::Prod => gdk_common::Network {
             name: "Electrum Liquid".to_owned(),
             network: "liquid-electrum-mainnet".to_owned(),
-            spv_enabled: Some(false),
-            asset_registry_url: Some("https://assets.blockstream.info".to_owned()),
-            asset_registry_onion_url: Some("http://vi5flmr4z3h3luup.onion".to_owned()),
-            tls: Some(true),
-            mainnet: true,
-            liquid: true,
             development: false,
+            liquid: true,
+            mainnet: true,
             tx_explorer_url: "https://blockstream.info/liquid/tx/".to_owned(),
             address_explorer_url: "https://blockstream.info/address/".to_owned(),
+            electrum_tls: Some(true),
             electrum_url: Some("blockstream.info:995".to_owned()),
+            validate_domain: Some(true),
             policy_asset: Some(
                 "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d".to_owned(),
             ),
-            ct_exponent: Some(0),
-            ct_bits: Some(52),
-            validate_domain: Some(true),
-            ct_min_value: None,
             sync_interval: None,
-            spv_cross_validation: None,
-            spv_cross_validation_servers: None,
+            ct_bits: Some(52),
+            ct_exponent: Some(0),
+            ct_min_value: None,
+            spv_enabled: Some(false),
+            asset_registry_url: Some("https://assets.blockstream.info".to_owned()),
+            asset_registry_onion_url: Some("http://vi5flmr4z3h3luup.onion".to_owned()),
+            spv_multi: None,
+            spv_servers: None,
         },
     }
 }

@@ -13,6 +13,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -75,6 +76,7 @@ class _SwapMainState extends State<SwapMain> {
 
   void onFeeRateChanged(FeeRate feeRate) {
     blocks = feeRate.blocks;
+    refreshSwapAmount();
   }
 
   void onSwapAmountControllerChanged() {
@@ -106,7 +108,7 @@ class _SwapMainState extends State<SwapMain> {
 
     final precision =
         context.read(walletProvider).getPrecisionForAssetId(assetId: assetId);
-    final balance = context.read(walletProvider).balances[assetId];
+    final balance = context.read(balancesProvider).balances[assetId];
     final amount = double.tryParse(value);
     final realBalance =
         double.tryParse(amountStr(balance ?? 0, precision: precision));
@@ -364,7 +366,7 @@ class _SwapMainState extends State<SwapMain> {
         final _recvAmountStr = _recvAmount != 0
             ? amountStr(_recvAmount, precision: _precision)
             : '';
-        final _balance = watch(walletProvider).balances[_swapRecvAsset];
+        final _balance = watch(balancesProvider).balances[_swapRecvAsset];
         final _balanceStr = amountStr(_balance ?? 0, precision: _precision);
         final _swapType = watch(swapProvider).swapType();
 
@@ -462,7 +464,7 @@ class _SwapMainState extends State<SwapMain> {
     return Consumer(
       builder: (context, watch, child) {
         final _swapSendAsset = watch(swapProvider).swapSendAsset;
-        final _balance = watch(walletProvider).balances[_swapSendAsset];
+        final _balance = watch(balancesProvider).balances[_swapSendAsset];
         final _precision = context
             .read(walletProvider)
             .getPrecisionForAssetId(assetId: _swapSendAsset ?? '');

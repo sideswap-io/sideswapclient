@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 
@@ -46,7 +47,7 @@ class AssetDetailsHeader extends ConsumerWidget {
             child: Consumer(
               builder: (context, watch, child) {
                 final wallet = watch(walletProvider);
-                final balance = wallet.balances[
+                final balance = watch(balancesProvider).balances[
                     wallet.selectedWalletAsset.isNotEmpty
                         ? wallet.selectedWalletAsset
                         : wallet.liquidAssetId()];
@@ -85,9 +86,10 @@ class AssetDetailsHeader extends ConsumerWidget {
                     .read(walletProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
                 final balance = double.tryParse(amountStr(
-                      wallet.balances[wallet.selectedWalletAsset.isNotEmpty
-                              ? wallet.selectedWalletAsset
-                              : wallet.liquidAssetId()] ??
+                      context.read(balancesProvider).balances[
+                              wallet.selectedWalletAsset.isNotEmpty
+                                  ? wallet.selectedWalletAsset
+                                  : wallet.liquidAssetId()] ??
                           0,
                       precision: precision,
                     )) ??

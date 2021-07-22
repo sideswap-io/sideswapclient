@@ -1,4 +1,7 @@
-use crate::be::{AssetId, BEOutPoint, BETransaction, UTXOInfo, Utxos};
+use crate::be::{
+    AssetId, BEOutPoint, BEScript, BETransaction, BETransactionEntry, UTXOInfo, Utxos,
+};
+use crate::util::StringSerialized;
 use bitcoin::hashes::hex::FromHex;
 use bitcoin::Network;
 use core::mem::transmute;
@@ -7,13 +10,12 @@ use std::collections::HashMap;
 
 use crate::error::Error;
 use crate::scripts::ScriptType;
+use bitcoin::util::address::AddressType;
 use bitcoin::util::bip32::{ChildNumber, DerivationPath};
 use chrono::{DateTime, NaiveDateTime, Utc};
-use serde_json::Value;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::fmt::Display;
-use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug)]
@@ -90,7 +92,8 @@ impl ExchangeRateOk {
 pub struct AddressAmount {
     pub address: String, // could be bitcoin or elements
     pub satoshi: u64,
-    pub asset_tag: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub asset_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -100,17 +103,24 @@ pub struct LoginData {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct CreateTransaction {
+    #[serde(default)]
     pub addressees: Vec<AddressAmount>,
     pub fee_rate: Option<u64>, // in satoshi/kbyte
     pub subaccount: u32,
-    pub send_all: Option<bool>,
     #[serde(default)]
-    pub previous_transaction: HashMap<String, Value>,
+    pub send_all: bool,
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub previous_transaction: Option<TxListItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub memo: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub utxos: Option<GetUnspentOutputs>,
     /// Minimum number of confirmations for coin selection
-    pub num_confs: Option<u32>,
-    pub confidential_utxos_only: Option<bool>,
+    #[serde(default)]
+    pub num_confs: u32,
+    #[serde(default)]
+    pub confidential_utxos_only: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -174,6 +184,7 @@ pub struct SPVVerifyTx {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "snake_case")]
 pub enum SPVVerifyResult {
     Unconfirmed,
     InProgress,
@@ -189,12 +200,15 @@ pub struct TransactionMeta {
     pub create_transaction: Option<CreateTransaction>,
     #[serde(rename = "transaction")]
     pub hex: String,
+    #[serde(rename = "txhash")]
     pub txid: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub height: Option<u32>,
     pub timestamp: u32, // for confirmed tx is block time for unconfirmed is when created or when list_tx happens
     pub created_at: String, // yyyy-MM-dd HH:mm:ss of timestamp
     pub error: String,
     pub addressees_have_assets: bool,
+    pub addressees_read_only: bool,
     pub is_sweep: bool,
     pub satoshi: Balances,
     pub fee: u64,
@@ -205,6 +219,12 @@ pub struct TransactionMeta {
     pub rbf_optin: bool,
     pub user_signed: bool,
     pub spv_verified: SPVVerifyResult,
+    #[serde(rename = "transaction_weight")]
+    pub weight: usize,
+    #[serde(rename = "transaction_vsize")]
+    pub vsize: usize,
+    #[serde(rename = "transaction_size")]
+    pub size: usize,
 }
 
 impl From<BETransaction> for TransactionMeta {
@@ -213,6 +233,7 @@ impl From<BETransaction> for TransactionMeta {
         let hex = hex::encode(&transaction.serialize());
         let timestamp = now();
         let rbf_optin = transaction.rbf_optin();
+        let weight = transaction.get_weight();
 
         TransactionMeta {
             create_transaction: None,
@@ -223,6 +244,7 @@ impl From<BETransaction> for TransactionMeta {
             hex,
             error: "".to_string(),
             addressees_have_assets: false,
+            addressees_read_only: false,
             is_sweep: false,
             satoshi: HashMap::new(),
             fee: 0,
@@ -232,14 +254,24 @@ impl From<BETransaction> for TransactionMeta {
             user_signed: false,
             spv_verified: SPVVerifyResult::InProgress,
             rbf_optin,
+            weight,
+            vsize: (weight as f32 / 4.0) as usize,
+            size: transaction.get_size(),
         }
     }
 }
-
+impl From<BETransactionEntry> for TransactionMeta {
+    fn from(txe: BETransactionEntry) -> Self {
+        let mut txm: TransactionMeta = txe.tx.into();
+        txm.weight = txe.weight;
+        txm.size = txe.size;
+        txm
+    }
+}
 impl TransactionMeta {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        transaction: BETransaction,
+        transaction: impl Into<TransactionMeta>,
         height: Option<u32>,
         timestamp: Option<u32>,
         satoshi: Balances,
@@ -268,10 +300,10 @@ impl TransactionMeta {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AddressIO {
     pub address: String,
-    pub address_type: bitcoin::util::address::AddressType,
+    pub address_type: StringSerialized<AddressType>,
     pub addressee: String,
     pub is_output: String,
     pub is_relevant: String,
@@ -285,17 +317,19 @@ pub struct AddressIO {
 }
 
 // TODO remove TxListItem, make TransactionMeta compatible and automatically serialized
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct TxListItem {
     pub block_height: u32,
     pub created_at: String,
+    #[serde(rename = "type")]
     pub type_: String,
     pub memo: String,
     pub txhash: String,
     pub transaction: String,
+    #[serde(serialize_with = "serialize_tx_balances")]
     pub satoshi: Balances,
     pub rbf_optin: bool,
-    pub cap_cpfp: bool,
+    pub can_cpfp: bool,
     pub can_rbf: bool,
     pub has_payment_request: bool,
     pub server_signed: bool,
@@ -310,6 +344,20 @@ pub struct TxListItem {
     pub transaction_size: usize,
     pub transaction_vsize: usize,
     pub transaction_weight: usize,
+}
+
+// Negative (sent) amounts are expected to be provided as positive numbers.
+// The app side will use the 'type' field to try and determine whether its sent or received,
+// which works in the typical case but not with transactions that has mixed types. To be fixed later.
+fn serialize_tx_balances<S>(balances: &Balances, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let mut balances_abs = balances.clone();
+    for (_, v) in balances_abs.iter_mut() {
+        *v = v.abs();
+    }
+    balances_abs.serialize(serializer)
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -422,8 +470,8 @@ impl Default for Settings {
 
 impl AddressAmount {
     pub fn asset(&self) -> Option<AssetId> {
-        if let Some(asset_tag) = self.asset_tag.as_ref() {
-            let vec = hex::decode(asset_tag).ok();
+        if let Some(asset_id) = self.asset_id.as_ref() {
+            let vec = hex::decode(asset_id).ok();
             if let Some(mut vec) = vec {
                 vec.reverse();
                 return (&vec[..]).try_into().ok();
@@ -482,8 +530,10 @@ pub struct UnspentOutput {
     pub satoshi: u64,
     pub subaccount: u32,
     pub txhash: String,
-    pub derivation_path: String,  // not present in gdk-cpp
-    pub scriptpubkey_hex: String, // not present in gdk-cpp
+    #[serde(skip)]
+    pub derivation_path: DerivationPath,
+    #[serde(skip)]
+    pub scriptpubkey: BEScript,
 }
 
 impl UnspentOutput {
@@ -493,8 +543,8 @@ impl UnspentOutput {
         unspent_output.satoshi = info.value;
         unspent_output.txhash = format!("{}", outpoint.txid());
         unspent_output.pt_idx = outpoint.vout();
-        unspent_output.derivation_path = info.path.to_string();
-        unspent_output.scriptpubkey_hex = info.script.to_hex();
+        unspent_output.derivation_path = info.path.clone();
+        unspent_output.scriptpubkey = info.script.clone();
         let childs: Vec<ChildNumber> = info.path.clone().into();
         if let Some(ChildNumber::Normal {
             index,
@@ -518,17 +568,17 @@ impl TryFrom<&GetUnspentOutputs> for Utxos {
                     "btc" => BEOutPoint::new_bitcoin(bitcoin::Txid::from_hex(&e.txhash)?, e.pt_idx),
                     _ => BEOutPoint::new_elements(elements::Txid::from_hex(&e.txhash)?, e.pt_idx),
                 };
-                let script_raw = hex::decode(&e.scriptpubkey_hex)?;
-                let script = match outpoint {
-                    BEOutPoint::Bitcoin(_) => bitcoin::Script::from(script_raw).into(),
-                    BEOutPoint::Elements(_) => elements::Script::from(script_raw).into(),
-                };
                 let height = match e.block_height {
                     0 => None,
                     n => Some(n),
                 };
-                let path = DerivationPath::from_str(&e.derivation_path)?;
-                let utxo_info = UTXOInfo::new(asset.to_string(), e.satoshi, script, height, path);
+                let utxo_info = UTXOInfo::new(
+                    asset.to_string(),
+                    e.satoshi,
+                    e.scriptpubkey.clone(),
+                    height,
+                    e.derivation_path.clone(),
+                );
                 utxos.push((outpoint, utxo_info));
             }
         }
@@ -542,7 +592,7 @@ mod test {
 
     #[test]
     fn test_unspent() {
-        let json_str = r#"{"btc": [{"address_type": "p2wsh", "block_height": 1806588, "pointer": 3509, "pt_idx": 1, "satoshi": 3650144, "subaccount": 0, "txhash": "08711d45d4867d7834b133a425da065b252eb6a9b206d57e2bbb226a344c5d13", "derivation_path": "m", "scriptpubkey_hex": "51"}, {"address_type": "p2wsh", "block_height": 1835681, "pointer": 3510, "pt_idx": 0, "satoshi": 5589415, "subaccount": 0, "txhash": "fbd00e5b9e8152c04214c72c791a78a65fdbab68b5c6164ff0d8b22a006c5221", "derivation_path": "m", "scriptpubkey_hex": "51"}, {"address_type": "p2wsh", "block_height": 1835821, "pointer": 3511, "pt_idx": 0, "satoshi": 568158, "subaccount": 0, "txhash": "e5b358fb8366960130b97794062718d7f4fbe721bf274f47493a19326099b811", "derivation_path": "m", "scriptpubkey_hex": "51"}]}"#;
+        let json_str = r#"{"btc": [{"address_type": "p2wsh", "block_height": 1806588, "pointer": 3509, "pt_idx": 1, "satoshi": 3650144, "subaccount": 0, "txhash": "08711d45d4867d7834b133a425da065b252eb6a9b206d57e2bbb226a344c5d13"}, {"address_type": "p2wsh", "block_height": 1835681, "pointer": 3510, "pt_idx": 0, "satoshi": 5589415, "subaccount": 0, "txhash": "fbd00e5b9e8152c04214c72c791a78a65fdbab68b5c6164ff0d8b22a006c5221"}, {"address_type": "p2wsh", "block_height": 1835821, "pointer": 3511, "pt_idx": 0, "satoshi": 568158, "subaccount": 0, "txhash": "e5b358fb8366960130b97794062718d7f4fbe721bf274f47493a19326099b811"}]}"#;
         let json: GetUnspentOutputs = serde_json::from_str(json_str).unwrap();
         println!("{:#?}", json);
     }

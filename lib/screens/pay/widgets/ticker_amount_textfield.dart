@@ -93,10 +93,8 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
     super.didUpdateWidget(oldWidget);
     if (widget.feeRates != oldWidget.feeRates && widget.feeRates.isNotEmpty) {
       setState(() {
-        logger.d('OLD FEE: $_feeRate');
         final blocks = _feeRate?.blocks ?? 2;
         _feeRate = widget.feeRates.firstWhere((e) => e.blocks == blocks);
-        logger.d('NEW FEE: $_feeRate');
       });
     }
   }

@@ -8,6 +8,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -55,7 +56,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
     if (assetId.isNotEmpty) {
       return assetId;
     }
-    final balances = wallet.balances;
+    final balances = context.read(balancesProvider).balances;
     if (balances[wallet.liquidAssetId()] != 0) {
       return wallet.liquidAssetId() ?? '';
     }
@@ -126,7 +127,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
 
     final precision =
         context.read(walletProvider).getPrecisionForAssetId(assetId: _assetId);
-    final balance = context.read(walletProvider).balances[_assetId];
+    final balance = context.read(balancesProvider).balances[_assetId];
     final newValue = value.replaceAll(' ', '');
     final amount = double.tryParse(newValue)?.toDouble();
     final realBalance = double.tryParse(
@@ -303,20 +304,29 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Consumer(
-                      builder: (context, watch, child) {
-                        final balance =
-                            watch(walletProvider).balances[_assetId];
-                        final precision = context
-                            .read(walletProvider)
-                            .getPrecisionForAssetId(assetId: _assetId);
-                        return Text(
-                          'PAYMENT_BALANCE',
-                          style: _approximateStyle,
-                        ).tr(args: [
-                          '${amountStr(balance ?? 0, precision: precision)}'
-                        ]);
+                    ProviderListener<Balances>(
+                      provider: balancesProvider,
+                      onChange: (context, state) {
+                        if (_tickerAmountController != null &&
+                            _tickerAmountController!.text.isNotEmpty) {
+                          validate(_tickerAmountController?.text ?? '');
+                        }
                       },
+                      child: Consumer(
+                        builder: (context, watch, child) {
+                          final balance =
+                              watch(balancesProvider).balances[_assetId] ?? 0;
+                          final precision = context
+                              .read(walletProvider)
+                              .getPrecisionForAssetId(assetId: _assetId);
+                          return Text(
+                            'PAYMENT_BALANCE',
+                            style: _approximateStyle,
+                          ).tr(args: [
+                            '${amountStr(balance, precision: precision)}'
+                          ]);
+                        },
+                      ),
                     ),
                     Container(
                       width: 54.w,
@@ -337,7 +347,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                                 .getPrecisionForAssetId(assetId: _assetId);
                             final text = amountStr(
                                 context
-                                        .read(walletProvider)
+                                        .read(balancesProvider)
                                         .balances[_assetId] ??
                                     0,
                                 precision: precision);

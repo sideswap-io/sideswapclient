@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
@@ -81,7 +82,7 @@ class Accounts extends StatelessWidget {
                             watch(walletProvider).enabledAssetIds[index];
                         final asset = watch(walletProvider).assets[assetId];
                         final balance =
-                            watch(walletProvider).balances[assetId] ?? 0;
+                            watch(balancesProvider).balances[assetId] ?? 0;
                         return AccountItem(
                           asset: asset,
                           balance: balance,

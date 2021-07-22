@@ -181,7 +181,7 @@ fn determine_electrum_url(
 }
 
 pub fn determine_electrum_url_from_net(network: &Network) -> Result<ElectrumUrl, Error> {
-    determine_electrum_url(&network.electrum_url, network.tls, network.validate_domain)
+    determine_electrum_url(&network.electrum_url, network.electrum_tls, network.validate_domain)
 }
 
 fn socksify(proxy: Option<&str>) -> Option<String> {
@@ -201,13 +201,25 @@ fn socksify(proxy: Option<&str>) -> Option<String> {
 }
 
 impl ElectrumSession {
-    pub fn new_session(
+    pub fn create_session(
         network: Network,
         db_root: &str,
         proxy: Option<&str>,
         url: ElectrumUrl,
-    ) -> Result<Self, Error> {
-        Ok(Self::create_session(network, db_root, proxy, url))
+    ) -> Self {
+        Self {
+            data_root: db_root.to_string(),
+            proxy: socksify(proxy),
+            network,
+            url,
+            wallet: None,
+            notify: NativeNotif(None),
+            closer: Closer {
+                senders: vec![],
+                handles: vec![],
+            },
+            state: State::Disconnected,
+        }
     }
 
     pub fn decrypt_pin(pin: String, details: &PinGetDetails) -> Result<Mnemonic, Error> {
@@ -239,29 +251,6 @@ impl ElectrumSession {
             pin_identifier: hex::encode(&client_key[..]),
         };
         Ok(result)
-    }
-}
-
-impl ElectrumSession {
-    pub fn create_session(
-        network: Network,
-        db_root: &str,
-        proxy: Option<&str>,
-        url: ElectrumUrl,
-    ) -> Self {
-        Self {
-            data_root: db_root.to_string(),
-            proxy: socksify(proxy),
-            network,
-            url,
-            wallet: None,
-            notify: NativeNotif(None),
-            closer: Closer {
-                senders: vec![],
-                handles: vec![],
-            },
-            state: State::Disconnected,
-        }
     }
 
     pub fn get_wallet(&self) -> Result<sync::RwLockReadGuard<WalletCtx>, Error> {
@@ -305,8 +294,7 @@ fn try_get_fee_estimates(client: &Client) -> Result<Vec<FeeEstimate>, Error> {
 
 fn make_txlist_item(tx: &TransactionMeta) -> TxListItem {
     let type_ = tx.type_.clone();
-    let len = tx.hex.len() / 2;
-    let fee_rate = (tx.fee as f64 / len as f64) as u64;
+    let fee_rate = (tx.fee as f64 / tx.weight as f64 * 4000.0) as u64;
     let addressees = tx
         .create_transaction
         .as_ref()
@@ -315,6 +303,7 @@ fn make_txlist_item(tx: &TransactionMeta) -> TxListItem {
         .iter()
         .map(|e| e.address.clone())
         .collect();
+    let can_rbf = tx.height.is_none() && tx.rbf_optin;
 
     TxListItem {
         block_height: tx.height.unwrap_or_default(),
@@ -322,24 +311,24 @@ fn make_txlist_item(tx: &TransactionMeta) -> TxListItem {
         type_,
         memo: tx.create_transaction.as_ref().and_then(|c| c.memo.clone()).unwrap_or("".to_string()),
         txhash: tx.txid.clone(),
-        transaction_size: len,
         transaction: tx.hex.clone(), // FIXME
         satoshi: tx.satoshi.clone(),
         rbf_optin: tx.rbf_optin, // TODO: TransactionMeta -> TxListItem rbf_optin
-        cap_cpfp: false,         // TODO: TransactionMeta -> TxListItem cap_cpfp
-        can_rbf: false,          // TODO: TransactionMeta -> TxListItem can_rbf
+        can_cpfp: false,         // TODO: TransactionMeta -> TxListItem can_cpfp
+        can_rbf,
         has_payment_request: false, // TODO: TransactionMeta -> TxListItem has_payment_request
-        server_signed: false,    // TODO: TransactionMeta -> TxListItem server_signed
+        server_signed: false,       // TODO: TransactionMeta -> TxListItem server_signed
         user_signed: tx.user_signed,
         spv_verified: tx.spv_verified.to_string(),
         instant: false,
         fee: tx.fee,
         fee_rate,
-        addressees,              // notice the extra "e" -- its intentional
-        inputs: vec![],          // tx.input.iter().map(format_gdk_input).collect(),
-        outputs: vec![],         //tx.output.iter().map(format_gdk_output).collect(),
-        transaction_vsize: len,  //TODO
-        transaction_weight: len, //TODO
+        addressees,      // notice the extra "e" -- its intentional
+        inputs: vec![],  // tx.input.iter().map(format_gdk_input).collect(),
+        outputs: vec![], //tx.output.iter().map(format_gdk_output).collect(),
+        transaction_size: tx.size,
+        transaction_vsize: tx.vsize,
+        transaction_weight: tx.weight,
     }
 }
 
@@ -355,23 +344,10 @@ impl Session<Error> for ElectrumSession {
         Err(Error::Generic("implementme: ElectrumSession poll_session".into()))
     }
 
-    fn connect(&mut self, net_params: &Value) -> Result<(), Error> {
+    fn connect(&mut self, _net_params: &Value) -> Result<(), Error> {
         info!("connect network:{:?} state:{:?}", self.network, self.state);
 
         if self.state == State::Disconnected {
-            if self.data_root == "" {
-                self.data_root = net_params["state_dir"]
-                    .as_str()
-                    .map(|x| x.to_string())
-                    .unwrap_or_else(|| "".into());
-                info!("setting db_root to {:?}", self.data_root);
-            }
-
-            if self.proxy.is_none() {
-                self.proxy = socksify(net_params["proxy"].as_str());
-                info!("setting proxy to {:?}", self.proxy);
-            }
-
             let mnemonic = match self.get_mnemonic() {
                 Ok(mnemonic) => Some(mnemonic.clone()),
                 Err(_) => None,
@@ -481,7 +457,11 @@ impl Session<Error> for ElectrumSession {
         let mut tip_height = store.read()?.cache.tip.0;
         notify_block(self.notify.clone(), tip_height);
 
-        info!("building client");
+        info!(
+            "building client, url {}, proxy {}",
+            self.url.url(),
+            self.proxy.as_ref().unwrap_or(&"".to_string())
+        );
         if let Ok(fee_client) = self.url.build_client(self.proxy.as_deref()) {
             info!("building built end");
             let fee_store = store.clone();
@@ -800,12 +780,12 @@ impl Session<Error> for ElectrumSession {
         self.get_wallet()?.sign(create_tx)
     }
 
-    fn send_transaction(&mut self, tx: &TransactionMeta) -> Result<String, Error> {
+    fn send_transaction(&mut self, tx: &TransactionMeta) -> Result<TransactionMeta, Error> {
         info!("electrum send_transaction {:#?}", tx);
         let client = self.url.build_client(self.proxy.as_deref())?;
         let tx_bytes = hex::decode(&tx.hex)?;
-        let txid = client.transaction_broadcast_raw(&tx_bytes)?;
-        Ok(format!("{}", txid))
+        client.transaction_broadcast_raw(&tx_bytes)?;
+        Ok(tx.clone())
     }
 
     fn broadcast_transaction(&mut self, tx_hex: &str) -> Result<String, Error> {
@@ -1262,7 +1242,8 @@ impl Syncer {
             let store_indexes = acc_store.indexes.clone();
             let txs_heights_changed = txid_height
                 .iter()
-                .any(|(txid, height)| acc_store.heights.get(txid) != Some(height));
+                .any(|(txid, height)| acc_store.heights.get(txid) != Some(height))
+                || acc_store.heights.keys().any(|txid| txid_height.get(txid).is_none());
             drop(acc_store);
             drop(store_read);
 
@@ -1283,7 +1264,9 @@ impl Syncer {
 
                 let mut acc_store = store_write.account_cache_mut(account.num())?;
                 acc_store.indexes = last_used;
-                acc_store.all_txs.extend(new_txs.txs.into_iter());
+                acc_store
+                    .all_txs
+                    .extend(new_txs.txs.iter().cloned().map(|(txid, tx)| (txid, tx.into())));
                 acc_store.unblinded.extend(new_txs.unblinds);
 
                 // height map is used for the live list of transactions, since due to reorg or rbf tx
@@ -1294,8 +1277,13 @@ impl Syncer {
                 acc_store.paths.extend(scripts.into_iter());
 
                 store_write.flush()?;
+                drop(store_write);
 
                 updated_accounts.insert(account.num());
+
+                // the transactions are first indexed into the db and then verified so that all the prevouts
+                // and scripts are available for querying. invalid transactions will be removed by verify_own_txs.
+                account.verify_own_txs(&new_txs.txs)?;
                 true
             } else {
                 false
@@ -1368,7 +1356,7 @@ impl Syncer {
             }
             info!("txs_downloaded {:?}", txs_downloaded.len());
             let mut previous_txs_to_download = HashSet::new();
-            for mut tx in txs_downloaded.into_iter() {
+            for tx in txs_downloaded.into_iter() {
                 let txid = tx.txid();
                 txs_in_db.insert(txid);
 
@@ -1400,7 +1388,6 @@ impl Syncer {
                         previous_txs_to_download.insert(previous_txid);
                     }
                 }
-                tx.strip_witness();
                 txs.push((txid, tx));
             }
 

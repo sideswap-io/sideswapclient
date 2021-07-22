@@ -541,6 +541,7 @@ pub type UnsubscribeResponse = Empty;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Own {
     pub index_price: Option<f64>,
+    pub private: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -576,6 +577,7 @@ pub struct AddrRequest {
     pub recv_addr: String,
     pub change_addr: String,
     pub price: f64,
+    pub private: Option<bool>,
 }
 pub type AddrResponse = Empty;
 

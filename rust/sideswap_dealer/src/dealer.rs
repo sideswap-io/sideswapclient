@@ -306,6 +306,7 @@ fn get_pset(
         recv_addr,
         change_addr,
         price: details.price,
+        private: None,
     })
 }
 

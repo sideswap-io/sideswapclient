@@ -18,6 +18,7 @@ import 'package:package_info/package_info.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:vibration/vibration.dart';
 import 'package:move_to_background/move_to_background.dart';
 
@@ -224,8 +225,6 @@ class WalletChangeNotifier with ChangeNotifier {
   final allAssets = <String, List<TxItem>>{};
   Map<String, List<TxItem>> txItemMap = {};
 
-  var balances = <String, int>{};
-
   // Toggle assets page
   var filteredToggleAssetIds = <String>[];
 
@@ -304,14 +303,6 @@ class WalletChangeNotifier with ChangeNotifier {
       Lib.lib.sideswap_msg_free(msgPtr);
       _recvSubject.add(msg);
     });
-
-    // check initial deep link
-    // process links before login request for loading screen to work properly
-    final initialUri = read(universalLinkProvider).initialUri;
-    if (initialUri != null) {
-      logger.d('Initial uri found: $initialUri');
-      read(universalLinkProvider).handleSubmitOrder(initialUri);
-    }
 
     clientReady = true;
     processPendingPushMessages();
@@ -404,8 +395,9 @@ class WalletChangeNotifier with ChangeNotifier {
         _addAsset(from.newAsset, assetIcon);
         break;
       case From_Msg.balanceUpdate:
-        balances[from.balanceUpdate.assetId] =
-            from.balanceUpdate.amount.toInt();
+        read(balancesProvider.notifier).updateBalance(
+            key: from.balanceUpdate.assetId,
+            value: from.balanceUpdate.amount.toInt());
         notifyListeners();
         break;
 
@@ -457,7 +449,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.createTxResult:
         switch (from.createTxResult.whichResult()) {
           case From_CreateTxResult_Result.errorMsg:
-            final balance = balances[liquidAssetId()];
+            final balance = read(balancesProvider).balances[liquidAssetId()];
             if (selectedWalletAsset != liquidAssetId() && balance == 0) {
               showInsufficientBalanceDialog(
                   navigatorKey.currentContext, kLiquidBitcoinTicker);
@@ -699,6 +691,15 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.walletLoaded:
         setRegistered();
+
+        // check initial deep link
+        // process links before login request for loading screen to work properly
+        final initialUri = read(universalLinkProvider).initialUri;
+        if (initialUri != null) {
+          logger.d('Initial uri found: $initialUri');
+          read(universalLinkProvider).handleUri(initialUri);
+        }
+
         break;
 
       case From_Msg.notSet:
@@ -758,8 +759,9 @@ class WalletChangeNotifier with ChangeNotifier {
       updateEnabledAssetIds();
     }
     // Make sure we don't have null values
-    if (balances[asset.assetId] == null) {
-      balances[asset.assetId] = 0;
+    if (read(balancesProvider).balances[asset.assetId] == null) {
+      read(balancesProvider.notifier)
+          .updateBalance(key: asset.assetId, value: 0);
     }
     read(swapProvider).checkSelectedAsset();
     notifyListeners();
@@ -1163,7 +1165,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _logout() {
-    balances = {};
+    read(balancesProvider.notifier).clear();
     read(swapProvider).swapSendAsset = '';
     read(swapProvider).swapRecvAsset = '';
 
@@ -1602,6 +1604,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setRegistered() {
+    logger.d('REGISTERED');
     status = Status.registered;
     notifyListeners();
   }

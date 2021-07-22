@@ -20,7 +20,7 @@ pub struct Network {
     pub tx_explorer_url: String,
     pub address_explorer_url: String,
 
-    pub tls: Option<bool>,
+    pub electrum_tls: Option<bool>,
     pub electrum_url: Option<String>,
     pub validate_domain: Option<bool>,
     pub policy_asset: Option<String>,
@@ -34,8 +34,8 @@ pub struct Network {
 
     // These fields must NOT be encoded as part of the wallet identifier
     // to retain backwards compatibility.
-    pub spv_cross_validation: Option<bool>,
-    pub spv_cross_validation_servers: Option<Vec<String>>,
+    pub spv_multi: Option<bool>,
+    pub spv_servers: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -69,6 +69,7 @@ impl Network {
     pub fn id(&self) -> NetworkId {
         match (self.liquid, self.mainnet, self.development) {
             (true, true, false) => NetworkId::Elements(ElementsNetwork::Liquid),
+            (true, false, false) => NetworkId::Elements(ElementsNetwork::ElementsRegtest),
             (true, false, true) => NetworkId::Elements(ElementsNetwork::ElementsRegtest),
             (false, true, false) => NetworkId::Bitcoin(bitcoin::Network::Bitcoin),
             (false, false, false) => NetworkId::Bitcoin(bitcoin::Network::Testnet),

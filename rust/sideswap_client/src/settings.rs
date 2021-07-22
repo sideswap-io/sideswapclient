@@ -28,6 +28,7 @@ pub struct Settings {
     pub last_external: Option<u32>,
     pub last_internal: Option<u32>,
     pub utxos_req: Option<BTreeMap<OrderId, StoredUtxo>>,
+    pub session_id: Option<String>,
 }
 
 const SETTINGS_NAME: &str = "settings.json";

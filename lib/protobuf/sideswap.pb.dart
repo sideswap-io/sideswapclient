@@ -936,6 +936,164 @@ class Contact extends $pb.GeneratedMessage {
   void clearPhone() => clearField(2);
 }
 
+class Order extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Order', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderId')
+    ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetId')
+    ..a<$fixnum.Int64>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bitcoinAmount', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serverFee', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetAmount', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'price', $pb.PbFieldType.QD)
+    ..a<$fixnum.Int64>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'createdAt', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'expiresAt', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.bool>(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'private', $pb.PbFieldType.QB)
+  ;
+
+  Order._() : super();
+  factory Order({
+    $core.String? orderId,
+    $core.String? assetId,
+    $fixnum.Int64? bitcoinAmount,
+    $fixnum.Int64? serverFee,
+    $fixnum.Int64? assetAmount,
+    $core.double? price,
+    $fixnum.Int64? createdAt,
+    $fixnum.Int64? expiresAt,
+    $core.bool? private,
+  }) {
+    final _result = create();
+    if (orderId != null) {
+      _result.orderId = orderId;
+    }
+    if (assetId != null) {
+      _result.assetId = assetId;
+    }
+    if (bitcoinAmount != null) {
+      _result.bitcoinAmount = bitcoinAmount;
+    }
+    if (serverFee != null) {
+      _result.serverFee = serverFee;
+    }
+    if (assetAmount != null) {
+      _result.assetAmount = assetAmount;
+    }
+    if (price != null) {
+      _result.price = price;
+    }
+    if (createdAt != null) {
+      _result.createdAt = createdAt;
+    }
+    if (expiresAt != null) {
+      _result.expiresAt = expiresAt;
+    }
+    if (private != null) {
+      _result.private = private;
+    }
+    return _result;
+  }
+  factory Order.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Order.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  Order clone() => Order()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  Order copyWith(void Function(Order) updates) => super.copyWith((message) => updates(message as Order)) as Order; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static Order create() => Order._();
+  Order createEmptyInstance() => create();
+  static $pb.PbList<Order> createRepeated() => $pb.PbList<Order>();
+  @$core.pragma('dart2js:noInline')
+  static Order getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Order>(create);
+  static Order? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get orderId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set orderId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get assetId => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set assetId($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAssetId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAssetId() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get bitcoinAmount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set bitcoinAmount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBitcoinAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBitcoinAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get serverFee => $_getI64(3);
+  @$pb.TagNumber(4)
+  set serverFee($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasServerFee() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearServerFee() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get assetAmount => $_getI64(4);
+  @$pb.TagNumber(5)
+  set assetAmount($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasAssetAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAssetAmount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get price => $_getN(5);
+  @$pb.TagNumber(6)
+  set price($core.double v) { $_setDouble(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasPrice() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearPrice() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get createdAt => $_getI64(6);
+  @$pb.TagNumber(7)
+  set createdAt($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasCreatedAt() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCreatedAt() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $fixnum.Int64 get expiresAt => $_getI64(7);
+  @$pb.TagNumber(8)
+  set expiresAt($fixnum.Int64 v) { $_setInt64(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasExpiresAt() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearExpiresAt() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get private => $_getBF(8);
+  @$pb.TagNumber(9)
+  set private($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasPrivate() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearPrivate() => clearField(9);
+}
+
 class To_Login extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.Login', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'mnemonic')
@@ -1761,7 +1919,7 @@ class To_UploadContacts extends $pb.GeneratedMessage {
 
 class To_SubmitOrder extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.SubmitOrder', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
     ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetId')
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bitcoinAmount', $pb.PbFieldType.QD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'price', $pb.PbFieldType.QD)
@@ -1912,6 +2070,7 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderId')
     ..a<$core.bool>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'accept', $pb.PbFieldType.QB)
     ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoSign')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'private')
   ;
 
   To_SubmitDecision._() : super();
@@ -1919,6 +2078,7 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     $core.String? orderId,
     $core.bool? accept,
     $core.bool? autoSign,
+    $core.bool? private,
   }) {
     final _result = create();
     if (orderId != null) {
@@ -1929,6 +2089,9 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     }
     if (autoSign != null) {
       _result.autoSign = autoSign;
+    }
+    if (private != null) {
+      _result.private = private;
     }
     return _result;
   }
@@ -1979,6 +2142,121 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
   $core.bool hasAutoSign() => $_has(2);
   @$pb.TagNumber(3)
   void clearAutoSign() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get private => $_getBF(3);
+  @$pb.TagNumber(4)
+  set private($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasPrivate() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPrivate() => clearField(4);
+}
+
+class To_EditOrder extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.EditOrder', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderId')
+    ..a<$core.double>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'price', $pb.PbFieldType.QD)
+  ;
+
+  To_EditOrder._() : super();
+  factory To_EditOrder({
+    $core.String? orderId,
+    $core.double? price,
+  }) {
+    final _result = create();
+    if (orderId != null) {
+      _result.orderId = orderId;
+    }
+    if (price != null) {
+      _result.price = price;
+    }
+    return _result;
+  }
+  factory To_EditOrder.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_EditOrder.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_EditOrder clone() => To_EditOrder()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_EditOrder copyWith(void Function(To_EditOrder) updates) => super.copyWith((message) => updates(message as To_EditOrder)) as To_EditOrder; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_EditOrder create() => To_EditOrder._();
+  To_EditOrder createEmptyInstance() => create();
+  static $pb.PbList<To_EditOrder> createRepeated() => $pb.PbList<To_EditOrder>();
+  @$core.pragma('dart2js:noInline')
+  static To_EditOrder getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_EditOrder>(create);
+  static To_EditOrder? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get orderId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set orderId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get price => $_getN(1);
+  @$pb.TagNumber(2)
+  set price($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPrice() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPrice() => clearField(2);
+}
+
+class To_CancelOrder extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.CancelOrder', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderId')
+  ;
+
+  To_CancelOrder._() : super();
+  factory To_CancelOrder({
+    $core.String? orderId,
+  }) {
+    final _result = create();
+    if (orderId != null) {
+      _result.orderId = orderId;
+    }
+    return _result;
+  }
+  factory To_CancelOrder.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_CancelOrder.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_CancelOrder clone() => To_CancelOrder()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_CancelOrder copyWith(void Function(To_CancelOrder) updates) => super.copyWith((message) => updates(message as To_CancelOrder)) as To_CancelOrder; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_CancelOrder create() => To_CancelOrder._();
+  To_CancelOrder createEmptyInstance() => create();
+  static $pb.PbList<To_CancelOrder> createRepeated() => $pb.PbList<To_CancelOrder>();
+  @$core.pragma('dart2js:noInline')
+  static To_CancelOrder getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_CancelOrder>(create);
+  static To_CancelOrder? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get orderId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set orderId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
 }
 
 enum To_Msg {
@@ -2004,6 +2282,8 @@ enum To_Msg {
   submitOrder, 
   linkOrder, 
   submitDecision, 
+  editOrder, 
+  cancelOrder, 
   notSet
 }
 
@@ -2031,10 +2311,12 @@ class To extends $pb.GeneratedMessage {
     49 : To_Msg.submitOrder,
     50 : To_Msg.linkOrder,
     51 : To_Msg.submitDecision,
+    52 : To_Msg.editOrder,
+    53 : To_Msg.cancelOrder,
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 20, 21, 22, 23, 40, 41, 42, 43, 49, 50, 51])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 20, 21, 22, 23, 40, 41, 42, 43, 49, 50, 51, 52, 53])
     ..aOM<To_Login>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
@@ -2057,6 +2339,8 @@ class To extends $pb.GeneratedMessage {
     ..aOM<To_SubmitOrder>(49, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submitOrder', subBuilder: To_SubmitOrder.create)
     ..aOM<To_LinkOrder>(50, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'linkOrder', subBuilder: To_LinkOrder.create)
     ..aOM<To_SubmitDecision>(51, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submitDecision', subBuilder: To_SubmitDecision.create)
+    ..aOM<To_EditOrder>(52, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'editOrder', subBuilder: To_EditOrder.create)
+    ..aOM<To_CancelOrder>(53, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cancelOrder', subBuilder: To_CancelOrder.create)
   ;
 
   To._() : super();
@@ -2083,6 +2367,8 @@ class To extends $pb.GeneratedMessage {
     To_SubmitOrder? submitOrder,
     To_LinkOrder? linkOrder,
     To_SubmitDecision? submitDecision,
+    To_EditOrder? editOrder,
+    To_CancelOrder? cancelOrder,
   }) {
     final _result = create();
     if (login != null) {
@@ -2150,6 +2436,12 @@ class To extends $pb.GeneratedMessage {
     }
     if (submitDecision != null) {
       _result.submitDecision = submitDecision;
+    }
+    if (editOrder != null) {
+      _result.editOrder = editOrder;
+    }
+    if (cancelOrder != null) {
+      _result.cancelOrder = cancelOrder;
     }
     return _result;
   }
@@ -2416,6 +2708,28 @@ class To extends $pb.GeneratedMessage {
   void clearSubmitDecision() => clearField(51);
   @$pb.TagNumber(51)
   To_SubmitDecision ensureSubmitDecision() => $_ensure(21);
+
+  @$pb.TagNumber(52)
+  To_EditOrder get editOrder => $_getN(22);
+  @$pb.TagNumber(52)
+  set editOrder(To_EditOrder v) { setField(52, v); }
+  @$pb.TagNumber(52)
+  $core.bool hasEditOrder() => $_has(22);
+  @$pb.TagNumber(52)
+  void clearEditOrder() => clearField(52);
+  @$pb.TagNumber(52)
+  To_EditOrder ensureEditOrder() => $_ensure(22);
+
+  @$pb.TagNumber(53)
+  To_CancelOrder get cancelOrder => $_getN(23);
+  @$pb.TagNumber(53)
+  set cancelOrder(To_CancelOrder v) { setField(53, v); }
+  @$pb.TagNumber(53)
+  $core.bool hasCancelOrder() => $_has(23);
+  @$pb.TagNumber(53)
+  void clearCancelOrder() => clearField(53);
+  @$pb.TagNumber(53)
+  To_CancelOrder ensureCancelOrder() => $_ensure(23);
 }
 
 class From_EncryptPin_Data extends $pb.GeneratedMessage {
@@ -3649,6 +3963,52 @@ class From_SubmitResult extends $pb.GeneratedMessage {
   void clearMinimizeApp() => clearField(4);
 }
 
+class From_OrderRemoved extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.OrderRemoved', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderId')
+  ;
+
+  From_OrderRemoved._() : super();
+  factory From_OrderRemoved({
+    $core.String? orderId,
+  }) {
+    final _result = create();
+    if (orderId != null) {
+      _result.orderId = orderId;
+    }
+    return _result;
+  }
+  factory From_OrderRemoved.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_OrderRemoved.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_OrderRemoved clone() => From_OrderRemoved()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_OrderRemoved copyWith(void Function(From_OrderRemoved) updates) => super.copyWith((message) => updates(message as From_OrderRemoved)) as From_OrderRemoved; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_OrderRemoved create() => From_OrderRemoved._();
+  From_OrderRemoved createEmptyInstance() => create();
+  static $pb.PbList<From_OrderRemoved> createRepeated() => $pb.PbList<From_OrderRemoved>();
+  @$core.pragma('dart2js:noInline')
+  static From_OrderRemoved getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_OrderRemoved>(create);
+  static From_OrderRemoved? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get orderId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set orderId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+}
+
 enum From_Msg {
   updatedTx, 
   removedTx, 
@@ -3674,6 +4034,12 @@ enum From_Msg {
   showMessage, 
   submitReview, 
   submitResult, 
+  editOrder, 
+  cancelOrder, 
+  serverConnected, 
+  serverDisconnected, 
+  orderCreated, 
+  orderRemoved, 
   notSet
 }
 
@@ -3703,10 +4069,16 @@ class From extends $pb.GeneratedMessage {
     50 : From_Msg.showMessage,
     51 : From_Msg.submitReview,
     52 : From_Msg.submitResult,
+    53 : From_Msg.editOrder,
+    54 : From_Msg.cancelOrder,
+    60 : From_Msg.serverConnected,
+    61 : From_Msg.serverDisconnected,
+    62 : From_Msg.orderCreated,
+    63 : From_Msg.orderRemoved,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 22, 23, 30, 31, 32, 33, 40, 41, 42, 43, 50, 51, 52])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 10, 11, 20, 21, 22, 23, 30, 31, 32, 33, 40, 41, 42, 43, 50, 51, 52, 53, 54, 60, 61, 62, 63])
     ..aOM<TransItem>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedTx', subBuilder: TransItem.create)
     ..aOM<From_RemovedTx>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'removedTx', subBuilder: From_RemovedTx.create)
     ..aOM<Asset>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newAsset', subBuilder: Asset.create)
@@ -3731,6 +4103,12 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_ShowMessage>(50, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'showMessage', subBuilder: From_ShowMessage.create)
     ..aOM<From_SubmitReview>(51, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submitReview', subBuilder: From_SubmitReview.create)
     ..aOM<From_SubmitResult>(52, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submitResult', subBuilder: From_SubmitResult.create)
+    ..aOM<GenericResponse>(53, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'editOrder', subBuilder: GenericResponse.create)
+    ..aOM<GenericResponse>(54, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cancelOrder', subBuilder: GenericResponse.create)
+    ..aOM<Empty>(60, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serverConnected', subBuilder: Empty.create)
+    ..aOM<Empty>(61, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'serverDisconnected', subBuilder: Empty.create)
+    ..aOM<Order>(62, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderCreated', subBuilder: Order.create)
+    ..aOM<From_OrderRemoved>(63, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderRemoved', subBuilder: From_OrderRemoved.create)
   ;
 
   From._() : super();
@@ -3759,6 +4137,12 @@ class From extends $pb.GeneratedMessage {
     From_ShowMessage? showMessage,
     From_SubmitReview? submitReview,
     From_SubmitResult? submitResult,
+    GenericResponse? editOrder,
+    GenericResponse? cancelOrder,
+    Empty? serverConnected,
+    Empty? serverDisconnected,
+    Order? orderCreated,
+    From_OrderRemoved? orderRemoved,
   }) {
     final _result = create();
     if (updatedTx != null) {
@@ -3832,6 +4216,24 @@ class From extends $pb.GeneratedMessage {
     }
     if (submitResult != null) {
       _result.submitResult = submitResult;
+    }
+    if (editOrder != null) {
+      _result.editOrder = editOrder;
+    }
+    if (cancelOrder != null) {
+      _result.cancelOrder = cancelOrder;
+    }
+    if (serverConnected != null) {
+      _result.serverConnected = serverConnected;
+    }
+    if (serverDisconnected != null) {
+      _result.serverDisconnected = serverDisconnected;
+    }
+    if (orderCreated != null) {
+      _result.orderCreated = orderCreated;
+    }
+    if (orderRemoved != null) {
+      _result.orderRemoved = orderRemoved;
     }
     return _result;
   }
@@ -4120,5 +4522,71 @@ class From extends $pb.GeneratedMessage {
   void clearSubmitResult() => clearField(52);
   @$pb.TagNumber(52)
   From_SubmitResult ensureSubmitResult() => $_ensure(23);
+
+  @$pb.TagNumber(53)
+  GenericResponse get editOrder => $_getN(24);
+  @$pb.TagNumber(53)
+  set editOrder(GenericResponse v) { setField(53, v); }
+  @$pb.TagNumber(53)
+  $core.bool hasEditOrder() => $_has(24);
+  @$pb.TagNumber(53)
+  void clearEditOrder() => clearField(53);
+  @$pb.TagNumber(53)
+  GenericResponse ensureEditOrder() => $_ensure(24);
+
+  @$pb.TagNumber(54)
+  GenericResponse get cancelOrder => $_getN(25);
+  @$pb.TagNumber(54)
+  set cancelOrder(GenericResponse v) { setField(54, v); }
+  @$pb.TagNumber(54)
+  $core.bool hasCancelOrder() => $_has(25);
+  @$pb.TagNumber(54)
+  void clearCancelOrder() => clearField(54);
+  @$pb.TagNumber(54)
+  GenericResponse ensureCancelOrder() => $_ensure(25);
+
+  @$pb.TagNumber(60)
+  Empty get serverConnected => $_getN(26);
+  @$pb.TagNumber(60)
+  set serverConnected(Empty v) { setField(60, v); }
+  @$pb.TagNumber(60)
+  $core.bool hasServerConnected() => $_has(26);
+  @$pb.TagNumber(60)
+  void clearServerConnected() => clearField(60);
+  @$pb.TagNumber(60)
+  Empty ensureServerConnected() => $_ensure(26);
+
+  @$pb.TagNumber(61)
+  Empty get serverDisconnected => $_getN(27);
+  @$pb.TagNumber(61)
+  set serverDisconnected(Empty v) { setField(61, v); }
+  @$pb.TagNumber(61)
+  $core.bool hasServerDisconnected() => $_has(27);
+  @$pb.TagNumber(61)
+  void clearServerDisconnected() => clearField(61);
+  @$pb.TagNumber(61)
+  Empty ensureServerDisconnected() => $_ensure(27);
+
+  @$pb.TagNumber(62)
+  Order get orderCreated => $_getN(28);
+  @$pb.TagNumber(62)
+  set orderCreated(Order v) { setField(62, v); }
+  @$pb.TagNumber(62)
+  $core.bool hasOrderCreated() => $_has(28);
+  @$pb.TagNumber(62)
+  void clearOrderCreated() => clearField(62);
+  @$pb.TagNumber(62)
+  Order ensureOrderCreated() => $_ensure(28);
+
+  @$pb.TagNumber(63)
+  From_OrderRemoved get orderRemoved => $_getN(29);
+  @$pb.TagNumber(63)
+  set orderRemoved(From_OrderRemoved v) { setField(63, v); }
+  @$pb.TagNumber(63)
+  $core.bool hasOrderRemoved() => $_has(29);
+  @$pb.TagNumber(63)
+  void clearOrderRemoved() => clearField(63);
+  @$pb.TagNumber(63)
+  From_OrderRemoved ensureOrderRemoved() => $_ensure(29);
 }
 

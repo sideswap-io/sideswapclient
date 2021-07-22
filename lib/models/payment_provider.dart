@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
@@ -74,8 +75,8 @@ class PaymentProvider with ChangeNotifier {
         read(walletProvider).getPrecisionForAssetId(assetId: assetId);
     final _amount =
         read(walletProvider).parseAssetAmount(amount, precision: precision);
-    final balance =
-        read(walletProvider).balances[read(walletProvider).selectedWalletAsset];
+    final balance = read(balancesProvider)
+        .balances[read(walletProvider).selectedWalletAsset];
     if (balance == null) {
       logger.e('Wrong balance for selected wallet asset');
       return;

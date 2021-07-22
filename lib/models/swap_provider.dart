@@ -9,6 +9,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/show_peg_info_widget.dart';
+import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -218,7 +219,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
 
     final maxBalance = swapSendWallet == SwapWallet.local
-        ? read(walletProvider).balances[swapSendAsset] ?? 0
+        ? read(balancesProvider).balances[swapSendAsset] ?? 0
         : kMaxCoins;
     if (swapSendAmount <= 0 || swapSendAmount > maxBalance) {
       await read(utilsProvider)
@@ -266,7 +267,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
 
     var balanceAvailable =
-        read(walletProvider).balances[swapSendAsset]?.toInt() ?? 0;
+        read(balancesProvider).balances[swapSendAsset]?.toInt() ?? 0;
     if (swapSendWallet == SwapWallet.local && amount > balanceAvailable) {
       return;
     }
