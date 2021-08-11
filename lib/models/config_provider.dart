@@ -8,9 +8,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/models/network_access_provider.dart';
 
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/screens/settings/settings_security.dart';
 
 final configProvider =
     ChangeNotifierProvider<ConfigChangeNotifierProvider>((ref) {
@@ -87,6 +87,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   Future<void> setUseBiometricProtection(bool useBiometricProtection) async {
     await _prefs.setBool(useBiometricProtectionField, useBiometricProtection);
+    notifyListeners();
   }
 
   int get env {
@@ -101,13 +102,16 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   Future<void> deleteConfig() async {
     final currentEnv = env;
     await _prefs.clear();
-    read(phoneProvider).setConfirmPhoneData();
+    logger.d(phoneNumber);
+    read(phoneProvider)
+        .setConfirmPhoneData(confirmPhoneData: ConfirmPhoneData());
     await setEnv(currentEnv);
     notifyListeners();
   }
 
   Future<void> setPhoneKey(String phoneKey) async {
     await _prefs.setString(phoneKeyField, phoneKey);
+    notifyListeners();
   }
 
   String get phoneKey {
@@ -116,6 +120,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   Future<void> setPhoneNumber(String phoneNumber) async {
     await _prefs.setString(phoneNumberField, phoneNumber);
+    notifyListeners();
   }
 
   String get phoneNumber {
@@ -126,10 +131,12 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
     await _prefs.setString(pinSaltField, pinData.salt);
     await _prefs.setString(pinEncryptedDataField, pinData.encryptedData);
     await _prefs.setString(pinIdentifierField, pinData.pinIdentifier);
+    notifyListeners();
   }
 
   Future<void> setUsePinProtection(bool usePinProtection) async {
     await _prefs.setBool(usePinProtectionField, usePinProtection);
+    notifyListeners();
   }
 
   bool get usePinProtection {

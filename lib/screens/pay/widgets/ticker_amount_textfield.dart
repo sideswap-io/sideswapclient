@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -13,7 +12,7 @@ import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/swap/fee_suggestions.dart';
 
 class TickerAmountTextField extends StatefulWidget {
-  TickerAmountTextField({
+  const TickerAmountTextField({
     Key? key,
     this.onDropdownChanged,
     required this.dropdownValue,
@@ -28,6 +27,9 @@ class TickerAmountTextField extends StatefulWidget {
     this.showHintText = false,
     this.feeRates = const <FeeRate>[],
     this.onFeeRateChanged,
+    this.onSubmitted,
+    this.onEditingComplete,
+    this.textInputAction,
   }) : super(key: key);
 
   final void Function(String)? onDropdownChanged;
@@ -43,6 +45,9 @@ class TickerAmountTextField extends StatefulWidget {
   final bool showHintText;
   final List<FeeRate> feeRates;
   final void Function(FeeRate)? onFeeRateChanged;
+  final void Function(String)? onSubmitted;
+  final void Function()? onEditingComplete;
+  final TextInputAction? textInputAction;
 
   @override
   _TickerAmountTextFieldState createState() => _TickerAmountTextFieldState();
@@ -106,10 +111,10 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
       border: Border(
         bottom: BorderSide(
           color: (widget.showError && !widget.readOnly)
-              ? Color(0xFFFF7878)
+              ? const Color(0xFFFF7878)
               : (_textfieldFocusNode.hasFocus && !widget.readOnly)
-                  ? Color(0xFF00C5FF)
-                  : Color(0xFF2B6F95),
+                  ? const Color(0xFF00C5FF)
+                  : const Color(0xFF2B6F95),
           style: BorderStyle.solid,
           width: 1,
         ),
@@ -121,7 +126,7 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
       decoration: widget.feeRates.isNotEmpty ? null : borderDecoration,
       child: Column(
         children: [
-          Container(
+          SizedBox(
             height: 42.h,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -137,7 +142,7 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                               .read(walletProvider)
                               .assetImagesSmall[widget.dropdownValue];
 
-                          return Container(
+                          return SizedBox(
                             width: 32.w,
                             height: 32.w,
                             child: Center(child: _icon),
@@ -145,99 +150,113 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                         },
                       ),
                       Padding(
-                        padding: EdgeInsets.only(left: 8.w),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            icon: widget.dropdownReadOnly
-                                ? Container()
-                                : Icon(
-                                    Icons.keyboard_arrow_down,
-                                    color: Colors.white,
-                                  ),
-                            dropdownColor: Color(0xFF2B6F95),
-                            style: _dropdownTextStyle,
-                            onChanged: widget.dropdownReadOnly
-                                ? null
-                                : (value) {
-                                    if (widget.onDropdownChanged == null ||
-                                        value == null) {
-                                      return;
-                                    }
-                                    widget.onDropdownChanged!(value);
-                                  },
-                            disabledHint: widget.dropdownReadOnly
-                                ? Container(
-                                    width: 68.w,
+                          padding: EdgeInsets.only(left: 8.w),
+                          child: SizedBox(
+                            width: 90.w,
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                isExpanded: true,
+                                icon: widget.dropdownReadOnly
+                                    ? Container()
+                                    : const Icon(
+                                        Icons.keyboard_arrow_down,
+                                        color: Colors.white,
+                                      ),
+                                dropdownColor: const Color(0xFF2B6F95),
+                                style: _dropdownTextStyle,
+                                onChanged: widget.dropdownReadOnly
+                                    ? null
+                                    : (value) {
+                                        if (widget.onDropdownChanged == null ||
+                                            value == null) {
+                                          return;
+                                        }
+                                        widget.onDropdownChanged!(value);
+                                      },
+                                disabledHint: widget.dropdownReadOnly
+                                    ? Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              context
+                                                      .read(walletProvider)
+                                                      .getAssetById(
+                                                          widget.dropdownValue)
+                                                      ?.ticker ??
+                                                  '',
+                                              textAlign: TextAlign.left,
+                                              style: _dropdownTextStyle,
+                                              maxLines: 1,
+                                              softWrap: false,
+                                              overflow: TextOverflow.fade,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : null,
+                                value: widget.dropdownValue,
+                                items: widget.availableAssets.map((value) {
+                                  final _asset = context
+                                      .read(walletProvider)
+                                      .assets[value];
+                                  final image = context
+                                      .read(walletProvider)
+                                      .assetImagesSmall[_asset?.assetId];
+
+                                  return DropdownMenuItem<String>(
+                                    value: value,
                                     child: Row(
                                       children: [
+                                        if (image != null) ...[
+                                          image,
+                                        ],
                                         Container(
                                           width: 8.w,
                                         ),
-                                        Text(
-                                          context
-                                                  .read(walletProvider)
-                                                  .getAssetById(
-                                                      widget.dropdownValue)
-                                                  ?.ticker ??
-                                              '',
-                                          style: _dropdownTextStyle,
-                                        ),
+                                        if (_asset?.ticker != null) ...[
+                                          Expanded(
+                                            child: Text(
+                                              _asset?.ticker ?? '',
+                                              textAlign: TextAlign.left,
+                                              style: _dropdownTextStyle,
+                                              maxLines: 1,
+                                              softWrap: false,
+                                              overflow: TextOverflow.fade,
+                                            ),
+                                          ),
+                                        ],
                                       ],
                                     ),
-                                  )
-                                : null,
-                            value: widget.dropdownValue,
-                            items: widget.availableAssets.map((value) {
-                              final _asset =
-                                  context.read(walletProvider).assets[value];
-                              final image = context
-                                  .read(walletProvider)
-                                  .assetImagesSmall[_asset?.assetId];
+                                  );
+                                }).toList(),
+                                selectedItemBuilder: (context) {
+                                  return widget.availableAssets.map((value) {
+                                    final _asset = context
+                                        .read(walletProvider)
+                                        .assets[value];
+                                    if (_asset?.ticker == null) {
+                                      return Container();
+                                    }
 
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Row(
-                                  children: [
-                                    if (image != null) ...[
-                                      image,
-                                    ],
-                                    Container(
-                                      width: 8.w,
-                                    ),
-                                    if (_asset?.ticker != null) ...[
-                                      Text(
-                                        _asset?.ticker ?? '',
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                            selectedItemBuilder: (context) {
-                              return widget.availableAssets.map((value) {
-                                final _asset =
-                                    context.read(walletProvider).assets[value];
-                                return Container(
-                                  width: 68.w,
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 8.w,
-                                      ),
-                                      if (_asset?.ticker != null) ...[
-                                        Text(
-                                          _asset?.ticker ?? '',
-                                          style: _dropdownTextStyle,
+                                    return Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            _asset?.ticker ?? '',
+                                            textAlign: TextAlign.left,
+                                            style: _dropdownTextStyle,
+                                            maxLines: 1,
+                                            softWrap: false,
+                                            overflow: TextOverflow.fade,
+                                          ),
                                         ),
                                       ],
-                                    ],
-                                  ),
-                                );
-                              }).toList();
-                            },
-                          ),
-                        ),
-                      ),
+                                    );
+                                  }).toList();
+                                },
+                              ),
+                            ),
+                          )),
                     ],
                   ),
                 ),
@@ -279,7 +298,7 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                                 decoration: borderDecoration,
                                 child: Align(
                                   alignment: Alignment.centerLeft,
-                                  child: Container(
+                                  child: SizedBox(
                                     width: 225.w,
                                     height: 42.h,
                                     child: Padding(
@@ -327,7 +346,7 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                               ?.precision ??
                           kDefaultPrecision;
 
-                      return Container(
+                      return SizedBox(
                         height: 42.h,
                         child: TextField(
                           autofocus: false,
@@ -337,8 +356,8 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                           textAlign: TextAlign.end,
                           style: _textFieldStyle,
                           cursorColor: Colors.white,
-                          keyboardType:
-                              TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true),
                           inputFormatters: [
                             CommaTextInputFormatter(),
                             if (assetPrecision == 0) ...[
@@ -352,6 +371,9 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                                 decimalRange: assetPrecision),
                           ],
                           onChanged: widget.onChanged,
+                          onSubmitted: widget.onSubmitted,
+                          textInputAction: widget.textInputAction,
+                          onEditingComplete: widget.onEditingComplete,
                           decoration: InputDecoration(
                             contentPadding: EdgeInsets.zero,
                             border: InputBorder.none,
@@ -360,7 +382,7 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                             errorBorder: InputBorder.none,
                             disabledBorder: InputBorder.none,
                             hintText: _visibleHintText ? widget.hintText : '',
-                            hintStyle: _textFieldStyle,
+                            hintStyle: _textFieldStyle.copyWith(),
                           ),
                         ),
                       );

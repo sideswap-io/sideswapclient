@@ -12,10 +12,13 @@ Future<void> main() async {
 
   FlavorConfig(
     flavor: Flavor.production,
-    values: FlavorValues(enableOnboardingUserFeatures: false),
+    values: FlavorValues(
+      enableOnboardingUserFeatures: false,
+      enableNetworkSettings: true,
+    ),
   );
 
   runApp(
-    AppMain(),
+    const AppMain(),
   );
 }

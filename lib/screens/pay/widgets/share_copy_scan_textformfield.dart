@@ -8,7 +8,7 @@ import 'package:sideswap/common/screen_utils.dart';
 typedef ShareTapCallback = void Function(BuildContext context);
 
 class ShareCopyScanTextFormField extends StatefulWidget {
-  ShareCopyScanTextFormField({
+  const ShareCopyScanTextFormField({
     Key? key,
     this.textFormFieldKey,
     this.focusNode,
@@ -57,12 +57,12 @@ class _ShareCopyScanTextFormFieldState
   final _spaceBetween = 4;
   final _iconWidth = 24;
 
-  FocusNode _focusNode = FocusNode();
+  late FocusNode _focusNode;
   bool _emptySuffix = false;
   final TextStyle _defaultStyle = GoogleFonts.roboto(
     fontSize: 17.sp,
     fontWeight: FontWeight.normal,
-    color: Color(0xFF84ADC6),
+    color: const Color(0xFF84ADC6),
   );
 
   @override
@@ -79,6 +79,12 @@ class _ShareCopyScanTextFormFieldState
     _focusNode = widget.focusNode ?? FocusNode();
   }
 
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   void onTapSuffix({
     VoidCallback? onTap,
   }) {
@@ -92,7 +98,7 @@ class _ShareCopyScanTextFormFieldState
 
     onTap();
 
-    Future.delayed(Duration(milliseconds: 100), () {
+    Future.delayed(const Duration(milliseconds: 100), () {
       _focusNode.canRequestFocus = true;
     });
   }
@@ -124,7 +130,7 @@ class _ShareCopyScanTextFormFieldState
       enabled: widget.enabled,
       readOnly: widget.readOnly,
       onChanged: widget.onChanged,
-      toolbarOptions: ToolbarOptions(
+      toolbarOptions: const ToolbarOptions(
         copy: true,
         cut: true,
         paste: true,
@@ -145,20 +151,20 @@ class _ShareCopyScanTextFormFieldState
         errorStyle: GoogleFonts.roboto(
           fontSize: 14.sp,
           fontWeight: FontWeight.normal,
-          color: Color(0xFFFF7878),
+          color: const Color(0xFFFF7878),
         ),
         suffixIcon: _emptySuffix
             ? null
             : Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Container(
+                child: SizedBox(
                   width: _suffixWidth.w,
                   height: 24.h,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       if (widget.onCopyTap != null) ...[
-                        Container(
+                        SizedBox(
                           width: _gestureAreaWidth.w,
                           height: double.maxFinite,
                           child: InkWell(
@@ -170,14 +176,14 @@ class _ShareCopyScanTextFormFieldState
                                 'assets/copy.svg',
                                 width: _iconWidth.w,
                                 height: _iconWidth.w,
-                                color: Color(0xFF00B4E9),
+                                color: const Color(0xFF00B4E9),
                               ),
                             ),
                           ),
                         ),
                       ],
                       if (widget.onPasteTap != null) ...[
-                        Container(
+                        SizedBox(
                           width: _gestureAreaWidth.w,
                           height: double.maxFinite,
                           child: InkWell(
@@ -188,14 +194,14 @@ class _ShareCopyScanTextFormFieldState
                               child: Icon(
                                 Icons.content_paste,
                                 size: _iconWidth.h,
-                                color: Color(0xFF00B4E9),
+                                color: const Color(0xFF00B4E9),
                               ),
                             ),
                           ),
                         ),
                       ],
                       if (widget.onScanTap != null) ...[
-                        Container(
+                        SizedBox(
                           width: _gestureAreaWidth.w,
                           height: double.maxFinite,
                           child: Material(
@@ -211,7 +217,7 @@ class _ShareCopyScanTextFormFieldState
                                   'assets/qr_icon.svg',
                                   width: _iconWidth.w,
                                   height: _iconWidth.w,
-                                  color: Color(0xFF00B4E9),
+                                  color: const Color(0xFF00B4E9),
                                 ),
                               ),
                             ),
@@ -219,7 +225,7 @@ class _ShareCopyScanTextFormFieldState
                         )
                       ],
                       if (widget.onShareTap != null) ...[
-                        Container(
+                        SizedBox(
                           width: _gestureAreaWidth.w,
                           height: double.maxFinite,
                           child: Builder(
@@ -232,7 +238,8 @@ class _ShareCopyScanTextFormFieldState
                                         widget.onShareTap!(context);
                                       }
                                       Future.delayed(
-                                          Duration(milliseconds: 100), () {
+                                          const Duration(milliseconds: 100),
+                                          () {
                                         _focusNode.canRequestFocus = true;
                                       });
                                     }
@@ -242,8 +249,8 @@ class _ShareCopyScanTextFormFieldState
                                   Icons.share,
                                   size: _iconWidth.h,
                                   color: widget.shareEnabled
-                                      ? Color(0xFF00B4E9)
-                                      : Color(0xFFA5A9AF),
+                                      ? const Color(0xFF00B4E9)
+                                      : const Color(0xFFA5A9AF),
                                 ),
                               ),
                             ),

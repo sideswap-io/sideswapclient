@@ -10,6 +10,8 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_check_row.dart';
 
 class WalletBackupCheck extends StatefulWidget {
+  const WalletBackupCheck({Key? key}) : super(key: key);
+
   @override
   _WalletBackupCheckState createState() => _WalletBackupCheckState();
 }
@@ -34,7 +36,7 @@ class _WalletBackupCheckState extends State<WalletBackupCheck> {
         children: [
           Padding(
             padding: EdgeInsets.only(top: 38.h),
-            child: Container(
+            child: SizedBox(
               width: 303.w,
               height: 29.h,
               child: Text(
@@ -82,14 +84,14 @@ class _WalletBackupCheckState extends State<WalletBackupCheck> {
               },
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Padding(
             padding: EdgeInsets.only(bottom: 40.h),
             child: CustomBigButton(
               height: 54.h,
               width: double.maxFinite,
               text: 'CONFIRM'.tr(),
-              backgroundColor: Color(0xFF00C5FF),
+              backgroundColor: const Color(0xFF00C5FF),
               onPressed: _canContinue
                   ? () {
                       context.read(walletProvider).backupNewWalletVerify();

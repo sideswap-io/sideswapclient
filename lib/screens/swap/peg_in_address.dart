@@ -12,7 +12,7 @@ class PegInAddress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       body: Stack(
         children: [
           Padding(
@@ -20,7 +20,7 @@ class PegInAddress extends StatelessWidget {
                 EdgeInsets.only(top: 8.h + MediaQuery.of(context).padding.top),
             child: Align(
               alignment: Alignment.topCenter,
-              child: Container(
+              child: SizedBox(
                 width: 215.w,
                 height: 36.h,
                 child: Text(
@@ -29,13 +29,13 @@ class PegInAddress extends StatelessWidget {
                   style: GoogleFonts.roboto(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF00C5FF),
+                    color: const Color(0xFF00C5FF),
                   ),
                 ),
               ),
             ),
           ),
-          SafeArea(
+          const SafeArea(
             child: AssetReceiveWidget(
               isPegIn: true,
             ),

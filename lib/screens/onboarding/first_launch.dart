@@ -10,6 +10,8 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class FirstLaunch extends StatefulWidget {
+  const FirstLaunch({Key? key}) : super(key: key);
+
   @override
   _FirstLaunchState createState() => _FirstLaunchState();
 }
@@ -47,7 +49,7 @@ class _FirstLaunchState extends State<FirstLaunch> {
                               children: [
                                 Padding(
                                   padding: EdgeInsets.only(top: 48.h),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: 132.w,
                                     height: 130.h,
                                     child: SvgPicture.asset('assets/logo.svg'),
@@ -110,7 +112,7 @@ class _FirstLaunchState extends State<FirstLaunch> {
                                 fontWeight: FontWeight.bold,
                               ),
                               backgroundColor: Colors.transparent,
-                              textColor: Color(0xFF00C5FF),
+                              textColor: const Color(0xFF00C5FF),
                               onPressed: () {
                                 context
                                     .read(walletProvider)

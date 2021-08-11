@@ -8,7 +8,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class TxDetailsRowNotes extends ConsumerWidget {
-  TxDetailsRowNotes({
+  const TxDetailsRowNotes({
     Key? key,
     required this.tx,
   }) : super(key: key);
@@ -18,7 +18,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final memo = watch(walletProvider).txMemo(tx);
-    return Container(
+    return SizedBox(
       width: 343.w,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -28,7 +28,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
             style: GoogleFonts.roboto(
               fontSize: 15.sp,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF00C5FF),
+              color: const Color(0xFF00C5FF),
             ),
           ),
           Row(
@@ -37,7 +37,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
             children: [
               Padding(
                 padding: EdgeInsets.only(left: 8.w),
-                child: Container(
+                child: SizedBox(
                   width: 222.w,
                   child: Align(
                     alignment: Alignment.centerRight,
@@ -49,7 +49,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
                       style: GoogleFonts.roboto(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFF709EBA),
+                        color: const Color(0xFF709EBA),
                       ),
                     ),
                   ),
@@ -57,7 +57,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
               ),
               Padding(
                 padding: EdgeInsets.only(left: 8.w),
-                child: Container(
+                child: SizedBox(
                   width: 26.w,
                   height: 26.w,
                   child: TextButton(
@@ -71,7 +71,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
                       'assets/copy.svg',
                       width: 18.w,
                       height: 18.w,
-                      color: Color(0xFF00C5FF),
+                      color: const Color(0xFF00C5FF),
                     ),
                   ),
                 ),

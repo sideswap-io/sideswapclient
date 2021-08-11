@@ -20,7 +20,7 @@ class Balances {
 }
 
 class BalancesNotifier extends StateNotifier<Balances> {
-  BalancesNotifier() : super(Balances());
+  BalancesNotifier() : super(const Balances());
 
   void updateBalance({required String key, required int value}) {
     final _balances = Map<String, int>.from(state.balances);

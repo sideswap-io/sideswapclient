@@ -16,6 +16,7 @@ class CustomBigButton extends StatelessWidget {
     this.buttonStyle,
     this.textColor,
     OutlinedBorder? shape,
+    this.side,
     this.child,
   })  : shape = shape ??
             RoundedRectangleBorder(
@@ -35,11 +36,12 @@ class CustomBigButton extends StatelessWidget {
   final ButtonStyle? buttonStyle;
   final Color? textColor;
   final OutlinedBorder? shape;
+  final BorderSide? side;
   final Widget? child;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: width ?? 60.w,
       height: height ?? 54.w,
       child: TextButton(
@@ -58,6 +60,7 @@ class CustomBigButton extends StatelessWidget {
                       : backgroundColor?.withOpacity(0.5) ??
                           const Color(0xFF2A6D92).withOpacity(0.5),
               shape: shape,
+              side: side,
             ),
         child: child != null
             ? Opacity(

@@ -224,6 +224,24 @@ pub fn get_server_fee(bitcoin_amount: Amount) -> Amount {
     std::cmp::max(server_fee, MIN_SERVER_FEE)
 }
 
+pub fn get_max_bitcoin_amount(bitcoin_balance: Amount) -> Result<Amount, anyhow::Error> {
+    assert!(bitcoin_balance.to_sat() >= 0);
+    ensure!(
+        bitcoin_balance >= MIN_BITCOIN_AMOUNT + MIN_SERVER_FEE,
+        "balance is too low"
+    );
+    let network_fee_scaled =
+        Amount::from_bitcoin(bitcoin_balance.to_bitcoin() * (1. - 1. / (1. + SERVER_FEE_RATE)));
+    let network_fee = Amount::max(network_fee_scaled, MIN_SERVER_FEE);
+    let bitcoin_amount = bitcoin_balance - network_fee;
+    let actual_server_fee = get_server_fee(bitcoin_amount);
+    if bitcoin_balance < bitcoin_amount + actual_server_fee {
+        Ok(bitcoin_amount - Amount::from_sat(1))
+    } else {
+        Ok(bitcoin_amount)
+    }
+}
+
 pub fn asset_scale(asset_precision: u8) -> f64 {
     10i64.checked_pow(asset_precision as u32).unwrap() as f64
 }
@@ -234,8 +252,17 @@ pub fn asset_amount(bitcoin_amount: i64, price: f64, asset_precision: u8) -> i64
     f64::round(asset_amount) as i64
 }
 
+pub fn bitcoin_amount(asset_amount: i64, price: f64, asset_precision: u8) -> i64 {
+    let asset_amount = asset_float_amount(asset_amount, asset_precision);
+    Amount::from_bitcoin(asset_amount / price).to_sat()
+}
+
 pub fn asset_float_amount(asset_amount: i64, asset_precision: u8) -> f64 {
     asset_amount as f64 / asset_scale(asset_precision)
+}
+
+pub fn asset_int_amount(asset_amount: f64, asset_precision: u8) -> i64 {
+    f64::round(asset_amount * asset_scale(asset_precision)) as i64
 }
 
 #[cfg(test)]
@@ -266,6 +293,37 @@ mod tests {
         assert_eq!(
             asset_amount(Amount::from_bitcoin(1.0).to_sat(), 12345.67, 0),
             12346
+        );
+    }
+
+    #[test]
+    fn test_max_amount() {
+        use rand::Rng;
+        let mut rng = rand::thread_rng();
+        let mut less_count = 0;
+        let mut more_count = 0;
+        let test_count = 10000000;
+        for _ in 0..test_count {
+            let balance: i64 = rng.gen_range(
+                MIN_BITCOIN_AMOUNT.to_sat() + MIN_SERVER_FEE.to_sat()
+                    ..Amount::from_bitcoin(100.0).to_sat(),
+            );
+            let balance = Amount::from_sat(balance);
+            let amount = get_max_bitcoin_amount(balance).unwrap();
+            let server_fee = get_server_fee(amount);
+            if amount + server_fee > balance {
+                more_count += 1;
+            }
+            if amount + server_fee < balance {
+                less_count += 1;
+            }
+        }
+        assert!(more_count == 0);
+        assert!(
+            (less_count as f64) / (test_count as f64) < 0.002,
+            "less_count: {}, test_count: {}",
+            less_count,
+            test_count
         );
     }
 }

@@ -39,7 +39,7 @@ TxCircleImageType txTypeToImageType({required TxType type}) {
 }
 
 class TxCircleImage extends StatefulWidget {
-  TxCircleImage({
+  const TxCircleImage({
     Key? key,
     required this.txCircleImageType,
     this.width,
@@ -82,17 +82,15 @@ class _TxCircleImageState extends State<TxCircleImage> {
     Color frameColor;
     switch (widget.txCircleImageType) {
       case TxCircleImageType.pegIn:
-        frameColor = Color(0xFFB3FF85);
-        image = Container(
-          child: SvgPicture.asset(
-            'assets/tx_peg_in.svg',
-            width: _largeWidth,
-            color: widget.fake ? _fakeIconColor : frameColor,
-          ),
+        frameColor = const Color(0xFFB3FF85);
+        image = SvgPicture.asset(
+          'assets/tx_peg_in.svg',
+          width: _largeWidth,
+          color: widget.fake ? _fakeIconColor : frameColor,
         );
         break;
       case TxCircleImageType.pegOut:
-        frameColor = Color(0xFFFF7878);
+        frameColor = const Color(0xFFFF7878);
         image = Transform(
           transform: Matrix4.rotationX(-2 * pi / 2),
           alignment: Alignment.center,
@@ -104,7 +102,7 @@ class _TxCircleImageState extends State<TxCircleImage> {
         );
         break;
       case TxCircleImageType.swap:
-        frameColor = Color(0xFFFFE24B);
+        frameColor = const Color(0xFFFFE24B);
         image = SvgPicture.asset(
           'assets/tx_swap.svg',
           width: _swapWidth,
@@ -112,7 +110,7 @@ class _TxCircleImageState extends State<TxCircleImage> {
         );
         break;
       case TxCircleImageType.sent:
-        frameColor = Color(0xFFFF7878);
+        frameColor = const Color(0xFFFF7878);
         image = SvgPicture.asset(
           'assets/top_right_arrow.svg',
           width: _smallWidth,
@@ -120,7 +118,7 @@ class _TxCircleImageState extends State<TxCircleImage> {
         );
         break;
       case TxCircleImageType.received:
-        frameColor = Color(0xFFB3FF85);
+        frameColor = const Color(0xFFB3FF85);
         image = SvgPicture.asset(
           'assets/bottom_left_arrow.svg',
           width: _smallWidth,
@@ -128,10 +126,10 @@ class _TxCircleImageState extends State<TxCircleImage> {
         );
         break;
       case TxCircleImageType.sentAvatar:
-        frameColor = Color(0xFFFF7878);
+        frameColor = const Color(0xFFFF7878);
         break;
       case TxCircleImageType.receivedAvatar:
-        frameColor = Color(0xFFB3FF85);
+        frameColor = const Color(0xFFB3FF85);
         break;
       case TxCircleImageType.unknown:
         frameColor = Colors.redAccent;

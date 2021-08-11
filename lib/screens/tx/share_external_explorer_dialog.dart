@@ -52,7 +52,7 @@ class ShareExternalExplorerDialog extends StatelessWidget {
                   topLeft: Radius.circular(16.w),
                   topRight: Radius.circular(16.w),
                 ),
-                color: Color(0xFF1C6086),
+                color: const Color(0xFF1C6086),
               ),
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -67,7 +67,7 @@ class ShareExternalExplorerDialog extends StatelessWidget {
                         ),
                         Padding(
                           padding: EdgeInsets.symmetric(vertical: 16.h),
-                          child: Divider(
+                          child: const Divider(
                             thickness: 1,
                             height: 1,
                             color: Color(0xFF78AECC),
@@ -115,11 +115,11 @@ class BlindedButton extends StatelessWidget {
       child: InkWell(
         onTap: onPressed,
         borderRadius: BorderRadius.all(Radius.circular(8.w)),
-        child: Container(
+        child: SizedBox(
           height: 44.h,
           child: Column(
             children: [
-              Spacer(),
+              const Spacer(),
               Row(
                 children: [
                   Padding(
@@ -149,7 +149,7 @@ class BlindedButton extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Padding(
                     padding: EdgeInsets.only(right: 8.w),
                     child: shareIconType == ShareIconType.share
@@ -166,7 +166,7 @@ class BlindedButton extends StatelessWidget {
                   ),
                 ],
               ),
-              Spacer(),
+              const Spacer(),
             ],
           ),
         ),

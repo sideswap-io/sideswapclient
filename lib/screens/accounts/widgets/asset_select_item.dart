@@ -10,16 +10,16 @@ import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class AssetSelectItem extends StatelessWidget {
   final Asset? asset;
-  AssetSelectItem({this.asset});
+  const AssetSelectItem({Key? key, this.asset}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
-      child: Container(
+      child: SizedBox(
         height: 71.h,
         child: Material(
-          color: Color(0xFF135579),
+          color: const Color(0xFF135579),
           borderRadius: BorderRadius.circular(8),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
@@ -38,7 +38,7 @@ class AssetSelectItem extends StatelessWidget {
                       builder: (context, watch, child) {
                         final _assetImagesBig =
                             watch(walletProvider).assetImagesBig;
-                        return Container(
+                        return SizedBox(
                           width: 45.w,
                           height: 45.w,
                           child: _assetImagesBig[asset?.assetId],
@@ -72,7 +72,7 @@ class AssetSelectItem extends StatelessWidget {
                               style: GoogleFonts.roboto(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF6B91A8),
+                                color: const Color(0xFF6B91A8),
                               ),
                             ),
                           ],
@@ -91,8 +91,8 @@ class AssetSelectItem extends StatelessWidget {
                           height: 31.h,
                           toggleSize: 27.h,
                           padding: 2.h,
-                          activeColor: Color(0xFF00C5FF),
-                          inactiveColor: Color(0xFF164D6A),
+                          activeColor: const Color(0xFF00C5FF),
+                          inactiveColor: const Color(0xFF164D6A),
                           toggleColor: Colors.white,
                         );
                       },

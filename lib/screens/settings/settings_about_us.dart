@@ -11,6 +11,8 @@ import 'package:sideswap/screens/settings/settings_licenses.dart';
 import 'package:sideswap/screens/settings/widgets/url_link_button.dart';
 
 class SettingsAboutUs extends StatelessWidget {
+  const SettingsAboutUs({Key? key}) : super(key: key);
+
   static const String urlWeb = 'https://sideswap.io/';
   static const String urlWebText = 'sideswap.io';
   static const String urlTwitter = 'https://twitter.com/side_swap';
@@ -20,6 +22,8 @@ class SettingsAboutUs extends StatelessWidget {
   static const String urlGithubText = 'github.com/sideswap-io/sideswapclient';
   static const String urlTelegram = 'https://t.me/SideSwap_io';
   static const String urlTelegramText = 't.me/SideSwap_io';
+  static const String urlPrivacyPolicy = 'https://sideswap.io/privacy-policy/';
+  static const String urlPrivacyPolicyText = 'Privacy Policy';
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +48,7 @@ class SettingsAboutUs extends StatelessWidget {
                       style: GoogleFonts.roboto(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF00C5FF),
+                        color: const Color(0xFF00C5FF),
                       ),
                     );
                   }
@@ -53,9 +57,9 @@ class SettingsAboutUs extends StatelessWidget {
               ),
             ),
             SizedBox(height: 30.h),
-            Container(
+            SizedBox(
               width: double.maxFinite,
-              height: 312.h,
+              height: 376.h,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -104,10 +108,19 @@ class SettingsAboutUs extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).push<void>(
                         MaterialPageRoute(
-                          builder: (context) => SettingsLicenses(),
+                          builder: (context) => const SettingsLicenses(),
                         ),
                       );
                     },
+                  ),
+                  UrlLinkButton(
+                    url: urlPrivacyPolicy,
+                    text: urlPrivacyPolicyText,
+                    icon: SvgPicture.asset(
+                      'assets/web_icon.svg',
+                      width: 24.w,
+                      height: 24.w,
+                    ),
                   ),
                 ],
               ),

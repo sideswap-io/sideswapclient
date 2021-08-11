@@ -4,12 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class LabeledRadio<T> extends StatelessWidget {
-  LabeledRadio({
+  const LabeledRadio({
+    Key? key,
     required this.label,
     required this.groupValue,
     required this.value,
     this.onChanged,
-  });
+  }) : super(key: key);
 
   final String label;
   final T groupValue;
@@ -18,7 +19,8 @@ class LabeledRadio<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = (groupValue == value) ? Colors.white : Color(0xFF709EBA);
+    final textColor =
+        (groupValue == value) ? Colors.white : const Color(0xFF709EBA);
 
     return Padding(
       padding: EdgeInsets.only(left: 12.w),
@@ -26,15 +28,15 @@ class LabeledRadio<T> extends StatelessWidget {
         onTap: onChanged == null ? null : () => onChanged!(value),
         child: Row(
           children: <Widget>[
-            Container(
+            SizedBox(
               width: 22.w,
               height: 22.h,
               child: Theme(
                 data: Theme.of(context).copyWith(
-                  unselectedWidgetColor: Color(0xFF709EBA),
+                  unselectedWidgetColor: const Color(0xFF709EBA),
                 ),
                 child: Radio<T>(
-                  activeColor: Color(0xFF00C5FF),
+                  activeColor: const Color(0xFF00C5FF),
                   groupValue: groupValue,
                   value: value,
                   onChanged: onChanged == null

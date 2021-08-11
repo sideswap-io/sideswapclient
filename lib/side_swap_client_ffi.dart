@@ -19,28 +19,14 @@ class NativeLibrary {
           lookup)
       : _lookup = lookup;
 
-  int sideswap_client_create(
+  int sideswap_client_start(
     int env,
-  ) {
-    return _sideswap_client_create(
-      env,
-    );
-  }
-
-  late final _sideswap_client_create_ptr =
-      _lookup<ffi.NativeFunction<_c_sideswap_client_create>>(
-          'sideswap_client_create');
-  late final _dart_sideswap_client_create _sideswap_client_create =
-      _sideswap_client_create_ptr.asFunction<_dart_sideswap_client_create>();
-
-  void sideswap_client_start(
-    int client,
     ffi.Pointer<ffi.Int8> work_dir,
     ffi.Pointer<ffi.Int8> version,
     int dart_port,
   ) {
     return _sideswap_client_start(
-      client,
+      env,
       work_dir,
       version,
       dart_port,
@@ -70,6 +56,21 @@ class NativeLibrary {
           'sideswap_send_request');
   late final _dart_sideswap_send_request _sideswap_send_request =
       _sideswap_send_request_ptr.asFunction<_dart_sideswap_send_request>();
+
+  void sideswap_process_background(
+    ffi.Pointer<ffi.Int8> data,
+  ) {
+    return _sideswap_process_background(
+      data,
+    );
+  }
+
+  late final _sideswap_process_background_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_process_background>>(
+          'sideswap_process_background');
+  late final _dart_sideswap_process_background _sideswap_process_background =
+      _sideswap_process_background_ptr
+          .asFunction<_dart_sideswap_process_background>();
 
   bool sideswap_check_addr(
     int client,
@@ -754,23 +755,15 @@ const int SIDESWAP_ENV_REGTEST = 2;
 
 const int SIDESWAP_ENV_LOCAL = 3;
 
-typedef _c_sideswap_client_create = ffi.Uint64 Function(
+typedef _c_sideswap_client_start = ffi.Uint64 Function(
   ffi.Int32 env,
-);
-
-typedef _dart_sideswap_client_create = int Function(
-  int env,
-);
-
-typedef _c_sideswap_client_start = ffi.Void Function(
-  ffi.Uint64 client,
   ffi.Pointer<ffi.Int8> work_dir,
   ffi.Pointer<ffi.Int8> version,
   ffi.Int64 dart_port,
 );
 
-typedef _dart_sideswap_client_start = void Function(
-  int client,
+typedef _dart_sideswap_client_start = int Function(
+  int env,
   ffi.Pointer<ffi.Int8> work_dir,
   ffi.Pointer<ffi.Int8> version,
   int dart_port,
@@ -786,6 +779,14 @@ typedef _dart_sideswap_send_request = void Function(
   int client,
   ffi.Pointer<ffi.Uint8> data,
   int len,
+);
+
+typedef _c_sideswap_process_background = ffi.Void Function(
+  ffi.Pointer<ffi.Int8> data,
+);
+
+typedef _dart_sideswap_process_background = void Function(
+  ffi.Pointer<ffi.Int8> data,
 );
 
 typedef _c_sideswap_check_addr = ffi.Uint8 Function(

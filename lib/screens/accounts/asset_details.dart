@@ -17,7 +17,7 @@ import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 import 'package:sideswap/screens/tx/widgets/tx_list_item.dart';
 
 class AssetDetails extends StatefulWidget {
-  AssetDetails({Key? key}) : super(key: key);
+  const AssetDetails({Key? key}) : super(key: key);
 
   @override
   _AssetDetailsState createState() => _AssetDetailsState();
@@ -30,7 +30,8 @@ class _AssetDetailsState extends State<AssetDetails>
   final double _maxExtent = 0.8849;
   final double _minExtent = 0.4433;
 
-  bool _isExpanded = false;
+  double _panelPosition = .0;
+
   late PanelController _panelController;
 
   String _assetId = '';
@@ -76,53 +77,51 @@ class _AssetDetailsState extends State<AssetDetails>
             final logoPadding =
                 heightPercent(percent, logoPaddingMin, logoPaddingMax);
 
-            return Container(
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: 16.h),
-                    child: CustomBackButton(
-                      onPressed: () {
-                        final uiStateArgs = context.read(uiStateArgsProvider);
-                        uiStateArgs.walletMainArguments =
-                            uiStateArgs.walletMainArguments.copyWith(
-                                navigationItem:
-                                    WalletMainNavigationItem.accounts);
+            return Stack(
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(top: 16.h),
+                  child: CustomBackButton(
+                    onPressed: () {
+                      final uiStateArgs = context.read(uiStateArgsProvider);
+                      uiStateArgs.walletMainArguments =
+                          uiStateArgs.walletMainArguments.copyWith(
+                              navigationItem:
+                                  WalletMainNavigationItem.accounts);
+                    },
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: logoPadding),
+                    child: Consumer(
+                      builder: (context, watch, child) {
+                        final wallet = watch(walletProvider);
+                        final assetId = wallet.selectedWalletAsset.isNotEmpty
+                            ? wallet.selectedWalletAsset
+                            : wallet.bitcoinAssetId();
+                        final assetImagesBig =
+                            watch(walletProvider).assetImagesBig[assetId];
+                        return SizedBox(
+                          width: logoHeight,
+                          height: logoHeight,
+                          child: assetImagesBig,
+                        );
                       },
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(top: logoPadding),
-                      child: Consumer(
-                        builder: (context, watch, child) {
-                          final wallet = watch(walletProvider);
-                          final assetId = wallet.selectedWalletAsset.isNotEmpty
-                              ? wallet.selectedWalletAsset
-                              : wallet.bitcoinAssetId();
-                          final assetImagesBig =
-                              watch(walletProvider).assetImagesBig[assetId];
-                          return Container(
-                            width: logoHeight,
-                            height: logoHeight,
-                            child: assetImagesBig,
-                          );
-                        },
-                      ),
+                ),
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Padding(
+                    padding: EdgeInsets.only(top: 106.h),
+                    child: AssetDetailsHeader(
+                      percent: percent,
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 106.h),
-                      child: AssetDetailsHeader(
-                        percent: percent,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             );
           },
         ),
@@ -144,26 +143,18 @@ class _AssetDetailsState extends State<AssetDetails>
               minHeight: _minExtent * screenHeight - minimizedPadding,
               maxHeight: _maxExtent * screenHeight - maximizedPadding,
               onPanelSlide: (position) {
-                if (position == 1.0) {
-                  setState(() {
-                    _isExpanded = true;
-                  });
-                }
-
-                if (position == 0 && _isExpanded) {
-                  setState(() {
-                    _isExpanded = false;
-                  });
-                }
+                setState(() {
+                  _panelPosition = position;
+                });
 
                 _hightPercentController.add(1 - position);
               },
-              color: Color(0xFF135579),
+              color: const Color(0xFF135579),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16.w),
                 topRight: Radius.circular(16.w),
               ),
-              header: Container(
+              header: SizedBox(
                 height: 68.h,
                 width: MediaQuery.of(context).size.width,
                 child: Stack(
@@ -172,7 +163,7 @@ class _AssetDetailsState extends State<AssetDetails>
                       alignment: Alignment.centerLeft,
                       child: Padding(
                         padding: EdgeInsets.only(left: 16.w),
-                        child: Container(
+                        child: SizedBox(
                           height: assetList.isNotEmpty ? 28.h : 50.h,
                           width: MediaQuery.of(context).size.width,
                           child: Row(
@@ -199,7 +190,7 @@ class _AssetDetailsState extends State<AssetDetails>
                                           style: GoogleFonts.roboto(
                                             fontSize: 16.sp,
                                             fontWeight: FontWeight.normal,
-                                            color: Color(0xFFAED7FF),
+                                            color: const Color(0xFFAED7FF),
                                           ),
                                         ),
                                       ),
@@ -219,18 +210,12 @@ class _AssetDetailsState extends State<AssetDetails>
                         child: Padding(
                           padding: EdgeInsets.only(right: 3.w),
                           child: MaximizeListButton(
-                            isExpanded: _isExpanded,
+                            position: _panelPosition,
                             onPressed: () {
-                              if (_isExpanded) {
+                              if (_panelPosition == 1) {
                                 _panelController.close();
-                                setState(() {
-                                  _isExpanded = false;
-                                });
                               } else {
                                 _panelController.open();
-                                setState(() {
-                                  _isExpanded = true;
-                                });
                               }
                             },
                           ),
@@ -255,7 +240,7 @@ class _AssetDetailsState extends State<AssetDetails>
                                 txItem: assetList[index],
                               ),
                             )
-                          : EmptyTxListItem();
+                          : const EmptyTxListItem();
                     },
                   ),
                 );

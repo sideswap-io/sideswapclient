@@ -19,10 +19,18 @@ class EmptyLineData {
 }
 
 class ContactMockupContainer extends StatelessWidget {
-  const ContactMockupContainer({Key? key, this.icon = ContactMockupIcon.male1})
-      : super(key: key);
+  const ContactMockupContainer({
+    Key? key,
+    this.icon = ContactMockupIcon.male1,
+    this.width,
+    this.height,
+    this.radius,
+  }) : super(key: key);
 
   final ContactMockupIcon icon;
+  final double? width;
+  final double? height;
+  final Radius? radius;
 
   SvgPicture getIcon() {
     SvgPicture _icon;
@@ -43,26 +51,26 @@ class ContactMockupContainer extends StatelessWidget {
 
   List<EmptyLineData> getLineData() {
     final lineData = <EmptyLineData>[];
-    final height = 4.h;
-    final color = Color(0xFF00C5FF);
+    final lineHeight = 4.h;
+    const color = Color(0xFF00C5FF);
     switch (icon) {
       case ContactMockupIcon.male1:
         lineData
-          ..add(EmptyLineData(16.w, height, color))
-          ..add(EmptyLineData(34, height, color))
-          ..add(EmptyLineData(58.w, height, color));
+          ..add(EmptyLineData(16.w, lineHeight, color))
+          ..add(EmptyLineData(34, lineHeight, color))
+          ..add(EmptyLineData(58.w, lineHeight, color));
         break;
       case ContactMockupIcon.male2:
         lineData
-          ..add(EmptyLineData(28.w, height, color))
-          ..add(EmptyLineData(22, height, color))
-          ..add(EmptyLineData(51.w, height, color));
+          ..add(EmptyLineData(28.w, lineHeight, color))
+          ..add(EmptyLineData(22, lineHeight, color))
+          ..add(EmptyLineData(51.w, lineHeight, color));
         break;
       case ContactMockupIcon.female1:
         lineData
-          ..add(EmptyLineData(34.w, height, color))
-          ..add(EmptyLineData(21, height, color))
-          ..add(EmptyLineData(59.w, height, color));
+          ..add(EmptyLineData(34.w, lineHeight, color))
+          ..add(EmptyLineData(21, lineHeight, color))
+          ..add(EmptyLineData(59.w, lineHeight, color));
         break;
     }
 
@@ -71,27 +79,31 @@ class ContactMockupContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _width = width ?? 116.w;
+    final _height = height ?? 48.h;
+    final _radius = radius ?? Radius.circular(8.r);
+
     final lineData = getLineData();
     return Container(
-      width: 116.w,
-      height: 48.h,
+      width: _width,
+      height: _height,
       decoration: BoxDecoration(
-        color: Color(0xFFCAF3FF),
-        borderRadius: BorderRadius.all(Radius.circular(8.w)),
+        color: const Color(0xFFCAF3FF),
+        borderRadius: BorderRadius.all(_radius),
       ),
       child: Row(
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Container(
-              width: 32.w,
-              height: 32.w,
+              width: _width * 0.2758,
+              height: _width * 0.2758,
               decoration: BoxDecoration(
-                color: Color(0xFF00C5FF),
+                color: const Color(0xFF00C5FF),
                 shape: BoxShape.circle,
                 border: Border.all(
                   width: 2.w,
-                  color: Color(0xFF00C5FF),
+                  color: const Color(0xFF00C5FF),
                 ),
               ),
               child: getIcon(),

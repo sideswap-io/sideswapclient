@@ -10,7 +10,6 @@ let kErrorNegative = "negative"
 public func dummyMethodToEnforceBundling() {
     store_dart_post_cobject()
 
-    sideswap_client_create(0)
     sideswap_client_start(0, "", "", 0)
     sideswap_send_request(0, "", 0)
     sideswap_msg_ptr(0)
@@ -19,6 +18,7 @@ public func dummyMethodToEnforceBundling() {
     sideswap_generate_mnemonic12()
     sideswap_verify_mnemonic("")
     sideswap_check_addr(0, "", 0)
+    sideswap_process_background("");
 
     let s = ""
     let cs = (s as NSString).utf8String

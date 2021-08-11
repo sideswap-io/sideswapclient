@@ -27,7 +27,7 @@ class ImportAvatarResizerData {
 }
 
 class ImportAvatarResizer extends StatefulWidget {
-  ImportAvatarResizer({Key? key, this.resizerData}) : super(key: key);
+  const ImportAvatarResizer({Key? key, this.resizerData}) : super(key: key);
 
   final ImportAvatarResizerData? resizerData;
 
@@ -95,7 +95,7 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
       return;
     }
 
-    final thumbnail = image.copyResize(outputImage, width: 256);
+    final thumbnail = image.copyResize(outputImage, width: 256, height: 256);
     await context.read(avatarProvider).saveUserAvatarThumbnail(thumbnail);
   }
 
@@ -125,7 +125,7 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
           children: [
             Padding(
               padding: EdgeInsets.only(top: 40.h),
-              child: AvatarResizer(),
+              child: const AvatarResizer(),
             ),
             Expanded(child: Container()),
             Padding(
@@ -134,7 +134,7 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
                 width: double.maxFinite,
                 height: 54.h,
                 text: 'SAVE'.tr(),
-                backgroundColor: Color(0xFF00C5FF),
+                backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () async {
                   await generateThumbnail();
                   final thumbnail = await context
@@ -160,15 +160,15 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
 }
 
 class AvatarResizer extends StatelessWidget {
-  AvatarResizer({
+  const AvatarResizer({
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 375.h,
-      child: DragImage(
+      child: const DragImage(
         position: Offset(0, 0),
       ),
     );
@@ -176,9 +176,10 @@ class AvatarResizer extends StatelessWidget {
 }
 
 class DragImage extends StatefulWidget {
-  DragImage({
+  const DragImage({
+    Key? key,
     required this.position,
-  });
+  }) : super(key: key);
 
   final Offset position;
 
@@ -208,40 +209,37 @@ class DragImageState extends State<DragImage> {
           return Container();
         }
 
-        return Container(
-          child: GestureDetector(
-            onScaleStart: _handleScaleStart,
-            onScaleUpdate: _handleScaleUpdate,
-            onDoubleTap: _handleScaleReset,
-            child: Stack(
-              children: [
-                if (_data.image != null) ...[
-                  Positioned(
-                    left: _data.position.dx,
-                    top: _data.position.dy,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 375.h,
-                      color: Colors.red,
-                      child: Transform(
-                        transform: Matrix4.diagonal3(
-                            vector.Vector3(_data.zoom, _data.zoom, _data.zoom)),
-                        alignment: FractionalOffset.center,
-                        child: _data.image,
-                      ),
-                    ),
-                  ),
-                ],
-                IgnorePointer(
-                  child: ClipPath(
-                    clipper: InvertedCircleClipper(),
-                    child: Container(
-                      color: Colors.black.withOpacity(0.5),
+        return GestureDetector(
+          onScaleStart: _handleScaleStart,
+          onScaleUpdate: _handleScaleUpdate,
+          onDoubleTap: _handleScaleReset,
+          child: Stack(
+            children: [
+              if (_data.image != null) ...[
+                Positioned(
+                  left: _data.position.dx,
+                  top: _data.position.dy,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: 375.h,
+                    child: Transform(
+                      transform: Matrix4.diagonal3(
+                          vector.Vector3(_data.zoom, _data.zoom, _data.zoom)),
+                      alignment: FractionalOffset.center,
+                      child: _data.image,
                     ),
                   ),
                 ),
               ],
-            ),
+              IgnorePointer(
+                child: ClipPath(
+                  clipper: InvertedCircleClipper(),
+                  child: Container(
+                    color: Colors.black.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ],
           ),
         );
       },

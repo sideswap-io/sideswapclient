@@ -1,44 +1,58 @@
+import 'dart:ui';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
-import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/payment_provider.dart';
-import 'package:sideswap/models/qrcode_provider.dart';
+import 'package:sideswap/models/config_provider.dart';
+import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/screens/pay/payment_amount_page.dart';
-import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
+import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap/screens/pay/widgets/confirm_phone_bottom_panel.dart';
+import 'package:sideswap/screens/pay/widgets/friends_panel.dart';
+import 'package:sideswap/screens/pay/widgets/payment_continue_button.dart';
+import 'package:sideswap/screens/pay/widgets/whom_to_pay_text_field.dart';
 
 class PaymentPage extends StatefulWidget {
-  PaymentPage({Key? key}) : super(key: key);
+  const PaymentPage({Key? key}) : super(key: key);
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
 }
 
-class _PaymentPageState extends State<PaymentPage> {
-  TextEditingController? _addressController;
+class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
+  late TextEditingController addressController;
   String? errorText;
   AddrType addrType = AddrType.elements;
-  bool enabled = false;
+  bool continueEnabled = false;
+  bool isPhoneRegistered = false;
+  Friend? friend;
+  double overlap = .0;
 
   @override
   void initState() {
     super.initState();
-    _addressController = TextEditingController()..addListener(onAddressChanged);
+    WidgetsBinding.instance!.addObserver(this);
+    addressController = TextEditingController()..addListener(onAddressChanged);
+    isPhoneRegistered = context.read(configProvider).phoneKey.isNotEmpty;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    addressController.dispose();
+    super.dispose();
   }
 
   void onAddressChanged() {
-    if (_addressController?.text == null || _addressController!.text.isEmpty) {
+    if (addressController.text.isEmpty) {
       setState(() {
         errorText = null;
-        enabled = false;
+        continueEnabled = false;
+        friend = null;
       });
     }
   }
@@ -46,17 +60,27 @@ class _PaymentPageState extends State<PaymentPage> {
   bool validate() {
     final newErrorText = context
         .read(walletProvider)
-        .commonAddrErrorStr(_addressController?.text ?? '', addrType);
+        .commonAddrErrorStr(addressController.text, addrType);
     if (newErrorText.isNotEmpty) {
+      friend =
+          context.read(friendsProvider).getFriendByName(addressController.text);
+      if (friend != null) {
+        // friend found
+        setState(() {
+          errorText = null;
+          continueEnabled = false;
+        });
+        return true;
+      }
+
       setState(() {
         errorText = newErrorText;
-        enabled = false;
+        continueEnabled = false;
       });
-    } else if (_addressController != null &&
-        _addressController!.text.isNotEmpty) {
+    } else if (addressController.text.isNotEmpty) {
       setState(() {
         errorText = null;
-        enabled = true;
+        continueEnabled = true;
       });
       return true;
     }
@@ -72,104 +96,135 @@ class _PaymentPageState extends State<PaymentPage> {
   }
 
   @override
+  void didChangeMetrics() {
+    final renderObject = context.findRenderObject();
+    final renderBox = renderObject as RenderBox;
+    final offset = renderBox.localToGlobal(Offset.zero);
+    final widgetRect = Rect.fromLTWH(
+      offset.dx,
+      offset.dy,
+      renderBox.size.width,
+      renderBox.size.height,
+    );
+    final keyboardTopPixels =
+        window.physicalSize.height - window.viewInsets.bottom;
+    final keyboardTopPoints = keyboardTopPixels / window.devicePixelRatio;
+    overlap = widgetRect.bottom - keyboardTopPoints;
+    if (overlap >= 0) {
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Whom to pay'.tr(),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Padding(
-                padding: EdgeInsets.only(top: 32.h),
-                child: Container(
-                  height: 74.h,
-                  child: ShareCopyScanTextFormField(
-                    errorText: errorText,
-                    controller: _addressController,
-                    onChanged: (addr) {
-                      validate();
-                    },
-                    onTap: () async {
-                      final value =
-                          await Clipboard.getData(Clipboard.kTextPlain);
-                      if (value?.text != null) {
-                        var text = value?.text?.replaceAll('\n', '') ?? '';
-                        text = text.replaceAll(' ', '');
-                        final wallet = context.read(walletProvider);
-                        if (wallet.isAddrValid(text, AddrType.bitcoin) ||
-                            wallet.isAddrValid(text, AddrType.elements)) {
-                          // paste only valid address
-                          if (context
-                              .read(walletProvider)
-                              .commonAddrErrorStr(text, addrType)
-                              .isEmpty) {
-                            await pasteFromClipboard(_addressController);
-                            validate();
-                          }
-                        }
-                      }
-                    },
-                    onScanTap: () {
-                      Navigator.of(context, rootNavigator: true).push<void>(
-                        MaterialPageRoute(
-                          builder: (context) => AddressQrScanner(
-                            resultCb: (value) {
-                              _addressController?.text = value.address ?? '';
-                              if (validate()) {
-                                context
-                                    .read(paymentProvider)
-                                    .selectPaymentAmountPage(
-                                      PaymentAmountPageArguments(
-                                        result: QrCodeResult(
-                                            address: _addressController?.text),
-                                      ),
-                                    );
-                                return;
-                              }
+        child: Consumer(
+          builder: (context, watch, child) {
+            isPhoneRegistered = watch(configProvider).phoneKey.isNotEmpty;
 
-                              if (value.orderId != null) {
-                                context
-                                    .read(walletProvider)
-                                    .linkOrder(value.orderId);
-                                return;
-                              }
-                            },
+            if (FlavorConfig.isProduction() &&
+                FlavorConfig.instance.values.enableOnboardingUserFeatures) {
+              if (isPhoneRegistered) {
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding:
+                            EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
+                        child: WhomToPayTextField(
+                          validator: validate,
+                          addressController: addressController,
+                          errorText: errorText,
+                          addrType: addrType,
+                        ),
+                      ),
+                      if (continueEnabled) ...[
+                        Padding(
+                          padding: EdgeInsets.only(
+                              top: 24.h, left: 16.w, right: 16.w),
+                          child: PaymentContinueButton(
+                            enabled: continueEnabled,
+                            errorText: errorText,
+                            addressController: addressController,
                           ),
                         ),
-                      );
-                    },
+                      ],
+                      FriendsPanel(
+                        searchString:
+                            friend != null ? addressController.text : null,
+                      ),
+                    ],
                   ),
-                ),
-              ),
-            ),
-            Spacer(),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 16.h),
-                child: CustomBigButton(
-                  width: double.infinity,
-                  height: 54.h,
-                  backgroundColor: Color(0xFF00C5FF),
-                  text: 'CONTINUE'.tr(),
-                  enabled: enabled,
-                  onPressed: ((errorText != null) && (!enabled))
-                      ? null
-                      : () {
-                          context.read(paymentProvider).selectPaymentAmountPage(
-                                PaymentAmountPageArguments(
-                                  result: QrCodeResult(
-                                      address: _addressController?.text),
+                );
+              } else {
+                return Builder(
+                  builder: (context) {
+                    var bodyHeight = MediaQuery.of(context).size.height -
+                        Scaffold.of(context).appBarMaxHeight!.toDouble();
+                    return SingleChildScrollView(
+                      child: SizedBox(
+                        height: bodyHeight,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  top: 32.h, left: 16.w, right: 16.w),
+                              child: WhomToPayTextField(
+                                validator: validate,
+                                addressController: addressController,
+                                errorText: errorText,
+                              ),
+                            ),
+                            if (continueEnabled) ...[
+                              Padding(
+                                padding: EdgeInsets.only(
+                                    top: 24.h, left: 16.w, right: 16.w),
+                                child: PaymentContinueButton(
+                                  enabled: continueEnabled,
+                                  errorText: errorText,
+                                  addressController: addressController,
                                 ),
-                              );
-                        },
-                ),
-              ),
-            ),
-          ],
+                              ),
+                            ],
+                            const Spacer(),
+                            const ConfirmPhoneBottomPanel(),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+            } else {
+              return Column(
+                children: [
+                  Padding(
+                    padding:
+                        EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
+                    child: WhomToPayTextField(
+                      validator: validate,
+                      addressController: addressController,
+                      errorText: errorText,
+                    ),
+                  ),
+                  const Spacer(),
+                  Padding(
+                    padding:
+                        EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
+                    child: PaymentContinueButton(
+                      enabled: continueEnabled,
+                      errorText: errorText,
+                      addressController: addressController,
+                    ),
+                  ),
+                ],
+              );
+            }
+          },
         ),
       ),
     );

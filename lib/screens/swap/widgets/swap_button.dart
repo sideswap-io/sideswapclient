@@ -38,7 +38,7 @@ class SwapButton extends StatelessWidget {
               ),
             ),
           ),
-          child: Container(
+          child: SizedBox(
             height: double.infinity,
             child: Center(
               child: Text(

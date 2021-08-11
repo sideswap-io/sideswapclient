@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class CustomCheckBox extends StatefulWidget {
-  CustomCheckBox({
+  const CustomCheckBox({
     Key? key,
     required this.onChanged,
     required this.child,
@@ -79,8 +79,8 @@ class _CustomCheckBoxState extends State<CustomCheckBox>
                 setState(() {});
               });
 
-    backgroundColorController =
-        AnimationController(duration: Duration(milliseconds: 200), vsync: this);
+    backgroundColorController = AnimationController(
+        duration: const Duration(milliseconds: 200), vsync: this);
     backgroundColorCurve = CurvedAnimation(
         parent: backgroundColorController, curve: Curves.easeOut);
     backgroundColorAnimation = ColorTween(
@@ -90,8 +90,8 @@ class _CustomCheckBoxState extends State<CustomCheckBox>
             setState(() {});
           });
 
-    fadeController =
-        AnimationController(duration: Duration(milliseconds: 200), vsync: this);
+    fadeController = AnimationController(
+        duration: const Duration(milliseconds: 200), vsync: this);
     fadeCurve = CurvedAnimation(parent: fadeController, curve: Curves.easeOut);
     fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(fadeController)
       ..addListener(() {

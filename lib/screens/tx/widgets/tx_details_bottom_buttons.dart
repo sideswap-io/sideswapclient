@@ -14,7 +14,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 
 class TxDetailsBottomButtons extends StatefulWidget {
-  TxDetailsBottomButtons({
+  const TxDetailsBottomButtons({
     Key? key,
     required this.id,
     required this.isLiquid,
@@ -111,7 +111,7 @@ class _TxDetailsBottomButtonsState extends State<TxDetailsBottomButtons> {
                     'assets/back_arrow.svg',
                     width: 8.16.w,
                     height: 14.73.w,
-                    color: Color(0xFF00C5FF),
+                    color: const Color(0xFF00C5FF),
                   ),
                 ),
               ],
@@ -144,7 +144,7 @@ class _TxDetailsBottomButtonsState extends State<TxDetailsBottomButtons> {
             'assets/share2.svg',
             width: 22.w,
             height: 26.w,
-            color: Color(0xFF00C5FF),
+            color: const Color(0xFF00C5FF),
           ),
         ),
       ],

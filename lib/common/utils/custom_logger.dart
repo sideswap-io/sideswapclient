@@ -7,13 +7,6 @@ class AnyModeFilter extends log.LogFilter {
   }
 }
 
-class ConsoleLogOutput extends log.ConsoleOutput {
-  @override
-  void output(log.OutputEvent event) {
-    super.output(event);
-  }
-}
-
 CustomLogger logger = CustomLogger();
 
 class CustomLogger {
@@ -29,7 +22,7 @@ class CustomLogger {
 
   log.Logger internalLogger = log.Logger(
     printer: log.SimplePrinter(printTime: true),
-    output: ConsoleLogOutput(),
+    output: log.ConsoleOutput(),
   );
 
   void v(dynamic message, [dynamic error, StackTrace? stackTrace]) {

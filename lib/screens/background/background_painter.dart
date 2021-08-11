@@ -17,12 +17,12 @@ class BackgroundPainter extends CustomPainter {
     var rect = Offset.zero &
         Size(SideSwapScreenUtil.screenWidth, SideSwapScreenUtil.screenHeight);
 
-    paint.shader = LinearGradient(
+    paint.shader = const LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: [
-        const Color(0xFF005474), //const Color(0xFF005778),
-        const Color(0xFF00203F), //const Color(0xFF00203f),
+        Color(0xFF005474), //const Color(0xFF005778),
+        Color(0xFF00203F), //const Color(0xFF00203f),
       ],
       stops: [0.0, 1.0],
     ).createShader(rect);
@@ -31,8 +31,8 @@ class BackgroundPainter extends CustomPainter {
 
     paint = Paint();
     paint.shader = LinearGradient(
-      begin: Alignment(0.25, 0.0713),
-      end: Alignment(0.5, 1.0),
+      begin: const Alignment(0.25, 0.0713),
+      end: const Alignment(0.5, 1.0),
       colors: [
         const Color(0xFFE6F5FE).withOpacity(0.02),
         const Color(0xFFE6F5FE).withOpacity(0),

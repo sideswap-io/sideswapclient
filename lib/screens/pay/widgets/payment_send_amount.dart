@@ -7,7 +7,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 
 class PaymentSendAmount extends StatefulWidget {
-  PaymentSendAmount({
+  const PaymentSendAmount({
     Key? key,
     this.controller,
     required this.focusNode,

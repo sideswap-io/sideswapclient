@@ -13,6 +13,7 @@ import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/notifications_service.dart';
 import 'package:sideswap/models/pin_protection_provider.dart';
+import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/prelaunch_page.dart';
@@ -49,9 +50,11 @@ import 'package:sideswap/screens/pay/payment_page.dart';
 import 'package:sideswap/screens/pay/payment_send_popup.dart';
 import 'package:sideswap/screens/pin/pin_protection.dart';
 import 'package:sideswap/screens/register.dart';
+import 'package:sideswap/screens/markets/create_order_view.dart';
+import 'package:sideswap/screens/markets/order_entry.dart';
+import 'package:sideswap/screens/markets/create_order_success.dart';
 import 'package:sideswap/screens/settings/settings.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
-import 'package:sideswap/screens/settings/settings_custom_host.dart';
 import 'package:sideswap/screens/settings/settings_network.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/settings_user_details.dart';
@@ -83,13 +86,13 @@ class AppMain extends StatelessWidget {
     return CustomPaint(
       painter: PreloadBackgroundPainter(),
       child: EasyLocalization(
-        supportedLocales: [
+        supportedLocales: const [
           Locale('en', 'US'),
         ],
         path: 'assets/translations',
-        fallbackLocale: Locale('en', 'US'),
+        fallbackLocale: const Locale('en', 'US'),
         //preloaderColor: Colors.transparent,
-        child: ProviderScope(child: MyApp()),
+        child: const ProviderScope(child: MyApp()),
       ),
     );
   }
@@ -114,7 +117,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
-      designSize: Size(375, 667),
+      designSize: const Size(375, 667),
       builder: () => MaterialApp(
         title: 'SideSwap',
         debugShowCheckedModeBanner: false,
@@ -136,7 +139,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class MyPopupPage<T> extends Page<T> {
-  MyPopupPage({required this.child});
+  const MyPopupPage({required this.child});
   final Widget child;
   @override
   Route<T> createRoute(BuildContext context) {
@@ -178,11 +181,11 @@ class __RootWidgetState extends State<_RootWidget> {
       case Status.loading:
       case Status.walletLoading:
         return [
-          MaterialPage<Widget>(child: PreLaunchPage()),
+          const MaterialPage<Widget>(child: PreLaunchPage()),
         ];
       case Status.reviewLicenseCreateWallet:
         return [
-          MyPopupPage<Widget>(
+          const MyPopupPage<Widget>(
             child: LicenseTerms(
               nextStep: LicenseNextStep.createWallet,
             ),
@@ -190,7 +193,7 @@ class __RootWidgetState extends State<_RootWidget> {
         ];
       case Status.reviewLicenseImportWallet:
         return [
-          MyPopupPage<Widget>(
+          const MyPopupPage<Widget>(
             child: LicenseTerms(
               nextStep: LicenseNextStep.importWallet,
             ),
@@ -198,62 +201,62 @@ class __RootWidgetState extends State<_RootWidget> {
         ];
       case Status.noWallet:
         return [
-          MaterialPage<Widget>(child: FirstLaunch()),
+          const MaterialPage<Widget>(child: FirstLaunch()),
         ];
       case Status.selectEnv:
         return [
-          MaterialPage<Widget>(child: FirstLaunch()),
-          MyPopupPage<Widget>(child: SelectEnv()),
+          const MaterialPage<Widget>(child: FirstLaunch()),
+          const MyPopupPage<Widget>(child: SelectEnv()),
         ];
       case Status.lockedWalet:
         return [
-          MaterialPage<Widget>(child: WalletLocked()),
+          const MaterialPage<Widget>(child: WalletLocked()),
         ];
       case Status.importWallet:
         return [
-          MaterialPage<Widget>(child: FirstLaunch()),
-          MaterialPage<Widget>(child: WalletImport()),
+          const MaterialPage<Widget>(child: FirstLaunch()),
+          const MaterialPage<Widget>(child: WalletImport()),
         ];
       case Status.importWalletBiometricPrompt:
         return [
-          MaterialPage<Widget>(child: ImportWalletBiometricPrompt()),
+          const MaterialPage<Widget>(child: ImportWalletBiometricPrompt()),
         ];
       case Status.importWalletSuccess:
         return [
-          MyPopupPage<Widget>(child: ImportWalletSuccess()),
+          const MyPopupPage<Widget>(child: ImportWalletSuccess()),
         ];
       case Status.importWalletError:
         return [
-          MyPopupPage<Widget>(child: ImportWalletError()),
+          const MyPopupPage<Widget>(child: ImportWalletError()),
         ];
       case Status.newWalletBackupPrompt:
         return [
-          MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
         ];
       case Status.newWalletBackupView:
         return [
-          MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          MyPopupPage<Widget>(child: WalletBackup()),
+          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+          const MyPopupPage<Widget>(child: WalletBackup()),
         ];
       case Status.newWalletBackupCheck:
         return [
-          MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          MyPopupPage<Widget>(child: WalletBackup()),
-          MyPopupPage<Widget>(child: WalletBackupCheck()),
+          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+          const MyPopupPage<Widget>(child: WalletBackup()),
+          const MyPopupPage<Widget>(child: WalletBackupCheck()),
         ];
       case Status.newWalletBackupCheckFailed:
         return [
-          MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          MyPopupPage<Widget>(child: WalletBackupCheckFailed()),
+          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+          const MyPopupPage<Widget>(child: WalletBackupCheckFailed()),
         ];
       case Status.newWalletBackupCheckSucceed:
         return [
-          MaterialPage<Widget>(child: WalletBackupNewPrompt()),
-          MyPopupPage<Widget>(child: WalletBackupCheckSucceed()),
+          const MaterialPage<Widget>(child: WalletBackupNewPrompt()),
+          const MyPopupPage<Widget>(child: WalletBackupCheckSucceed()),
         ];
       case Status.newWalletBiometricPrompt:
         return [
-          MaterialPage<Widget>(child: NewWalletBiometricPrompt()),
+          const MaterialPage<Widget>(child: NewWalletBiometricPrompt()),
         ];
       case Status.importAvatar:
         return [
@@ -262,15 +265,15 @@ class __RootWidgetState extends State<_RootWidget> {
       case Status.importAvatarSuccess:
         return [
           MaterialPage<Widget>(child: ImportAvatar()),
-          MyPopupPage<Widget>(child: ImportAvatarSuccess()),
+          const MyPopupPage<Widget>(child: ImportAvatarSuccess()),
         ];
       case Status.associatePhoneWelcome:
         return [
-          MaterialPage<Widget>(child: AssociatePhoneWelcome()),
+          const MaterialPage<Widget>(child: AssociatePhoneWelcome()),
         ];
       case Status.confirmPhone:
         return [
-          MyPopupPage<Widget>(child: ConfirmPhone()),
+          const MyPopupPage<Widget>(child: ConfirmPhone()),
         ];
       case Status.confirmPhoneSuccess:
         return [
@@ -278,11 +281,11 @@ class __RootWidgetState extends State<_RootWidget> {
         ];
       case Status.importContacts:
         return [
-          MaterialPage<Widget>(child: ImportContacts()),
+          const MaterialPage<Widget>(child: ImportContacts()),
         ];
       case Status.importContactsSuccess:
         return [
-          MyPopupPage<Widget>(child: ImportContactsSuccess()),
+          const MyPopupPage<Widget>(child: ImportContactsSuccess()),
         ];
       // WalletMain has it's own navigation system because of
       // MainBottomNavigationBar
@@ -293,34 +296,34 @@ class __RootWidgetState extends State<_RootWidget> {
       case Status.assetReceive:
       case Status.assetReceiveFromWalletMain:
         return [
-          MaterialPage<Widget>(child: WalletMain()),
+          const MaterialPage<Widget>(child: WalletMain()),
         ];
       case Status.txDetails:
         return [
-          MyPopupPage<Widget>(child: TxDetailsPopup()),
+          const MyPopupPage<Widget>(child: TxDetailsPopup()),
         ];
       case Status.txEditMemo:
         return [
-          MaterialPage<Widget>(child: WalletTxMemo()),
+          const MaterialPage<Widget>(child: WalletTxMemo()),
         ];
 
       case Status.swapWaitPegTx:
         return [
-          MaterialPage<Widget>(child: WalletMain()),
-          MaterialPage<Widget>(child: PegInAddress()),
+          const MaterialPage<Widget>(child: WalletMain()),
+          const MaterialPage<Widget>(child: PegInAddress()),
         ];
       case Status.swapTxDetails:
         return [
-          MyPopupPage<Widget>(child: TxDetailsPopup()),
+          const MyPopupPage<Widget>(child: TxDetailsPopup()),
         ];
       case Status.settingsPage:
         return [
-          MaterialPage<Widget>(child: Settings()),
+          const MaterialPage<Widget>(child: Settings()),
         ];
       case Status.settingsBackup:
         return [
-          MaterialPage<Widget>(child: Settings()),
-          MaterialPage<Widget>(
+          const MaterialPage<Widget>(child: Settings()),
+          const MaterialPage<Widget>(
             child: SecureGate(
               child: SettingsViewBackup(),
             ),
@@ -328,47 +331,48 @@ class __RootWidgetState extends State<_RootWidget> {
         ];
       case Status.settingsUserDetails:
         return [
-          MaterialPage<Widget>(child: Settings()),
-          MaterialPage<Widget>(child: SettingsUserDetails()),
+          const MaterialPage<Widget>(child: Settings()),
+          const MaterialPage<Widget>(child: SettingsUserDetails()),
         ];
       case Status.settingsAboutUs:
         return [
-          MaterialPage<Widget>(child: Settings()),
-          MaterialPage<Widget>(child: SettingsAboutUs()),
+          const MaterialPage<Widget>(child: Settings()),
+          const MaterialPage<Widget>(child: SettingsAboutUs()),
         ];
       case Status.settingsNetwork:
         return [
-          MaterialPage<Widget>(child: Settings()),
-          MaterialPage<Widget>(child: SettingsNetwork()),
+          const MaterialPage<Widget>(child: Settings()),
+          const MaterialPage<Widget>(child: SettingsNetwork()),
         ];
       case Status.settingsSecurity:
         return [
-          MaterialPage<Widget>(child: Settings()),
-          MaterialPage<Widget>(child: SettingsSecurity()),
+          const MaterialPage<Widget>(child: Settings()),
+          const MaterialPage<Widget>(child: SettingsSecurity()),
         ];
       case Status.paymentPage:
         return [
-          MaterialPage<Widget>(child: PaymentPage()),
+          const MaterialPage<Widget>(child: PaymentPage()),
         ];
       case Status.paymentAmountPage:
         return [
-          MaterialPage<Widget>(child: PaymentAmountPage()),
+          const MaterialPage<Widget>(child: PaymentAmountPage()),
         ];
       case Status.paymentSend:
         return [
-          MyPopupPage<Widget>(child: PaymentSendPopup()),
+          const MyPopupPage<Widget>(child: PaymentSendPopup()),
         ];
       case Status.orderPopup:
         return [
-          MyPopupPage<Widget>(child: OrderPopup()),
+          const MaterialPage<Widget>(child: WalletMain()),
+          const MaterialPage<Widget>(child: OrderPopup()),
         ];
       case Status.orderSuccess:
         return [
-          MyPopupPage<Widget>(child: OrderSuccess()),
+          const MyPopupPage<Widget>(child: OrderSuccess()),
         ];
       case Status.orderResponseSuccess:
         return [
-          MyPopupPage<Widget>(
+          const MyPopupPage<Widget>(
             child: OrderSuccess(
               isResponse: true,
             ),
@@ -376,20 +380,41 @@ class __RootWidgetState extends State<_RootWidget> {
         ];
       case Status.newWalletPinWelcome:
         return [
-          MaterialPage<Widget>(child: NewWalletPinWelcome()),
+          const MaterialPage<Widget>(child: NewWalletPinWelcome()),
         ];
 
       case Status.pinWelcome:
         return [
-          MaterialPage<Widget>(child: PinWelcome()),
+          const MaterialPage<Widget>(child: PinWelcome()),
         ];
       case Status.pinSetup:
         return [
-          MaterialPage<Widget>(child: PinSetup()),
+          const MaterialPage<Widget>(child: PinSetup()),
         ];
       case Status.pinSuccess:
         return [
-          MyPopupPage<Widget>(child: PinSuccess()),
+          const MyPopupPage<Widget>(child: PinSuccess()),
+        ];
+      case Status.createOrderEntry:
+        return [
+          const MaterialPage<Widget>(child: OrderEntry()),
+        ];
+      case Status.createOrder:
+        return [
+          const MaterialPage<Widget>(child: CreateOrderView()),
+        ];
+      case Status.createOrderSuccess:
+        return [
+          const MyPopupPage<Widget>(child: CreateOrderSuccess()),
+        ];
+      case Status.orderRequestView:
+        return [
+          const MaterialPage<Widget>(child: WalletMain()),
+          MaterialPage<Widget>(
+              child: CreateOrderView(
+            requestOrder:
+                context.read(requestOrderProvider).currentRequestOrderView,
+          )),
         ];
     }
   }
@@ -400,7 +425,7 @@ class __RootWidgetState extends State<_RootWidget> {
   void initState() {
     super.initState();
 
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
     ));
 
@@ -413,7 +438,7 @@ class __RootWidgetState extends State<_RootWidget> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return PinProtection();
+        return const PinProtection();
       },
     );
     context.read(pinProtectionProvider).deinit();

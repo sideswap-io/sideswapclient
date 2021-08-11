@@ -3,16 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/friends_provider.dart';
+import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 
 class PaymentAmountReceiverField extends StatelessWidget {
-  PaymentAmountReceiverField({
+  const PaymentAmountReceiverField({
     Key? key,
     required this.labelStyle,
     this.text = '',
+    this.friend,
   }) : super(key: key);
 
   final TextStyle labelStyle;
   final String text;
+  final Friend? friend;
 
   @override
   Widget build(BuildContext context) {
@@ -26,29 +30,36 @@ class PaymentAmountReceiverField extends StatelessWidget {
             style: labelStyle,
           ).tr(),
         ),
-        Padding(
-          padding: EdgeInsets.only(top: 10.h),
-          child: TextField(
-            controller: TextEditingController()..text = text,
-            maxLines: null,
-            readOnly: true,
-            style: GoogleFonts.roboto(
-              fontSize: 16.sp,
-              fontWeight: FontWeight.normal,
-              color: Colors.white,
-            ),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8.w),
-                ),
-                borderSide: BorderSide.none,
+        if (friend != null) ...[
+          Padding(
+            padding: EdgeInsets.only(top: 10.h),
+            child: FriendWidget(friend: friend!),
+          ),
+        ] else ...[
+          Padding(
+            padding: EdgeInsets.only(top: 10.h),
+            child: TextField(
+              controller: TextEditingController()..text = text,
+              maxLines: null,
+              readOnly: true,
+              style: GoogleFonts.roboto(
+                fontSize: 16.sp,
+                fontWeight: FontWeight.normal,
+                color: Colors.white,
               ),
-              filled: true,
-              fillColor: Color(0xFF1D6389),
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(8.w),
+                  ),
+                  borderSide: BorderSide.none,
+                ),
+                filled: true,
+                fillColor: const Color(0xFF1D6389),
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
   }

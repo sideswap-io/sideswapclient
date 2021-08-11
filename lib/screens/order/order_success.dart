@@ -22,7 +22,7 @@ class OrderSuccess extends StatelessWidget {
       child: ResultPage(
         resultType: ResultPageType.success,
         header: isResponse ? 'Response submitted' : 'Order submitted'.tr(),
-        button: 'OK'.tr(),
+        buttonText: 'OK'.tr(),
         onPressed: () {
           context.read(walletProvider).goBack();
         },

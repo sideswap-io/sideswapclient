@@ -7,6 +7,8 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
 class WalletBackupCheckFailed extends StatelessWidget {
+  const WalletBackupCheckFailed({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SideSwapPopup(
@@ -15,10 +17,10 @@ class WalletBackupCheckFailed extends StatelessWidget {
         resultType: ResultPageType.error,
         header: 'Oops!'.tr(),
         description: 'You are selected the wrong words'.tr(),
-        button: 'RETRY'.tr(),
+        buttonText: 'RETRY'.tr(),
         onPressed: () => context.read(walletProvider).goBack(),
         visibleSecondButton: true,
-        secondButton: 'SEE MY 12 WORDS AGAIN'.tr(),
+        secondButtonText: 'SEE MY 12 WORDS AGAIN'.tr(),
         onSecondButtonPressed: () =>
             context.read(walletProvider).backupNewWalletEnable(),
       ),

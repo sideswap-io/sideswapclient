@@ -10,7 +10,7 @@ import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class TxItemPeg extends StatelessWidget {
-  TxItemPeg({
+  const TxItemPeg({
     Key? key,
     required this.transItem,
     required this.assetId,
@@ -32,7 +32,7 @@ class TxItemPeg extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Container(
+        SizedBox(
           height: itemHeight,
           child: Row(
             children: [
@@ -60,11 +60,11 @@ class TxItemPeg extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    '$payout',
+                    payout,
                     style: GoogleFonts.roboto(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.normal,
-                      color: Color(0xFFB3FF85),
+                      color: const Color(0xFFB3FF85),
                     ),
                   ),
                   Padding(
@@ -74,7 +74,7 @@ class TxItemPeg extends StatelessWidget {
                       style: GoogleFonts.roboto(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFF709EBA),
+                        color: const Color(0xFF709EBA),
                       ),
                     ),
                   ),

@@ -11,7 +11,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 
 class AssetDetailsHeader extends ConsumerWidget {
-  AssetDetailsHeader({
+  const AssetDetailsHeader({
     Key? key,
     required this.percent,
   }) : super(key: key);
@@ -107,7 +107,7 @@ class AssetDetailsHeader extends ConsumerWidget {
                   style: GoogleFonts.roboto(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.normal,
-                    color: Color(0xFF6B91A8),
+                    color: const Color(0xFF6B91A8),
                   ),
                 );
               },

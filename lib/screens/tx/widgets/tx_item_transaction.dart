@@ -10,7 +10,7 @@ import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class TxItemTransaction extends StatelessWidget {
-  TxItemTransaction({
+  const TxItemTransaction({
     Key? key,
     required this.transItem,
     required this.assetId,
@@ -31,7 +31,7 @@ class TxItemTransaction extends StatelessWidget {
     final balanceStr =
         '${amountStr(amount, forceSign: true, precision: precision)} $ticker';
     final balanceColor =
-        balanceStr.contains('+') ? Color(0xFFB3FF85) : Colors.white;
+        balanceStr.contains('+') ? const Color(0xFFB3FF85) : Colors.white;
     final type = txType(transItem.tx);
     final txCircleImageType = txTypeToImageType(type: type);
     final status = txItemToStatus(transItem);
@@ -39,7 +39,7 @@ class TxItemTransaction extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Container(
+        SizedBox(
           height: itemHeight,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -96,7 +96,7 @@ class TxItemTransaction extends StatelessWidget {
                               style: GoogleFonts.roboto(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF709EBA),
+                                color: const Color(0xFF709EBA),
                               ),
                             ),
                           ],

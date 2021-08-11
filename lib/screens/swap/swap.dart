@@ -22,6 +22,7 @@ import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 import 'package:sideswap/screens/swap/widgets/top_swap_buttons.dart';
 
 class SwapMain extends StatefulWidget {
+  const SwapMain({Key? key}) : super(key: key);
   @override
   _SwapMainState createState() => _SwapMainState();
 }
@@ -31,9 +32,9 @@ class _SwapMainState extends State<SwapMain> {
   TextEditingController? _swapAddressRecvController;
 
   String _lastSwapAmountValue = '';
-  FocusNode _deliverFocusNode = FocusNode();
-  FocusNode _receiveFocusNode = FocusNode();
-  FocusNode _receiveAddressFocusNode = FocusNode();
+  late FocusNode _deliverFocusNode;
+  late FocusNode _receiveFocusNode;
+  late FocusNode _receiveAddressFocusNode;
   String _swapAmount = '';
   // Do not delete - for future use
   final bool _visibleToggles = false;
@@ -242,7 +243,7 @@ class _SwapMainState extends State<SwapMain> {
                           padding: EdgeInsets.only(top: 237.h),
                           child: buildReceiveAmount(),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 16.w),
                           child: buildBottomButton(),
@@ -309,7 +310,7 @@ class _SwapMainState extends State<SwapMain> {
             width: double.infinity,
             height: 54.h,
             enabled: _enabled,
-            backgroundColor: Color(0xFF00C5FF),
+            backgroundColor: const Color(0xFF00C5FF),
             onPressed: _enabled && _addressErrorText == null
                 ? () async {
                     final recvAmount =
@@ -335,7 +336,7 @@ class _SwapMainState extends State<SwapMain> {
                 if (swapState == SwapState.sent) ...[
                   Padding(
                     padding: EdgeInsets.only(left: 84.w),
-                    child: Container(
+                    child: SizedBox(
                       width: 32.w,
                       height: 32.w,
                       child: SpinKitCircle(
@@ -380,6 +381,8 @@ class _SwapMainState extends State<SwapMain> {
                 serverStatus != null)
             ? serverStatus.bitcoinFeeRates
             : <FeeRate>[];
+        final showInsufficientFunds = watch(swapProvider).showInsufficientFunds;
+        final serverError = watch(swapProvider).swapNetworkError;
 
         return SwapSideAmount(
           text: 'Receive'.tr(),
@@ -408,6 +411,9 @@ class _SwapMainState extends State<SwapMain> {
           focusNode: _receiveFocusNode,
           receiveAddressFocusNode: _receiveAddressFocusNode,
           isAddressLabelVisible: addressLabelVisible,
+          swapType: _swapType,
+          showInsufficientFunds: showInsufficientFunds,
+          errorDescription: serverError,
           localLabelOnChanged: (value) =>
               context.read(swapProvider).setRecvRadioCb(SwapWallet.local),
           externalLabelOnChanged: (value) =>
@@ -473,6 +479,9 @@ class _SwapMainState extends State<SwapMain> {
         final _swapSendWallet = watch(swapProvider).swapSendWallet;
         var _isReadOnly = _swapSendWallet == SwapWallet.extern;
         final swapState = watch(swapProvider).swapState;
+        final _swapType = watch(swapProvider).swapType();
+        final showInsufficientFunds = watch(swapProvider).showInsufficientFunds;
+        final serverError = watch(swapProvider).swapNetworkError;
 
         if (watch(swapProvider).didAssetReplaced) {
           clearAmountController();
@@ -496,6 +505,9 @@ class _SwapMainState extends State<SwapMain> {
           dropdownValue: _swapSendAsset ?? '',
           availableAssets: _swapSendAssets,
           labelGroupValue: _swapSendWallet,
+          swapType: _swapType,
+          showInsufficientFunds: showInsufficientFunds,
+          errorDescription: serverError,
           localLabelOnChanged: (value) =>
               context.read(swapProvider).setSendRadioCb(SwapWallet.local),
           externalLabelOnChanged: (value) =>
@@ -571,7 +583,7 @@ class _SwapMainState extends State<SwapMain> {
                       : 205.h
                   : 205.h),
           child: Container(
-            color: Color(0xFF1C6086),
+            color: const Color(0xFF1C6086),
           ),
         );
       },
@@ -581,6 +593,8 @@ class _SwapMainState extends State<SwapMain> {
 
 // Do not delete this class yet
 class SwapWaitPegTx extends StatelessWidget {
+  const SwapWaitPegTx({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SideSwapPopup(
@@ -626,34 +640,34 @@ class SwapWaitPegTx extends StatelessWidget {
                   ),
                 ),
               ),
-              Spacer(),
-              Text(
+              const Spacer(),
+              const Text(
                 'SWAP_SEND_ASSET_RECEIVING_ADDRESS',
                 style: TextStyle(fontSize: 24),
-              ).tr(args: ['$_swapSendAsset']),
+              ).tr(args: [_swapSendAsset ?? '']),
               Text(_address),
               Visibility(
                 visible: _swapRecvWallet == SwapWallet.extern,
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'SWAP_RECV_ASSET_YOUR_ADDRESS',
                       style: TextStyle(fontSize: 24),
-                    ).tr(args: ['$_swapRecvAsset']),
+                    ).tr(args: [_swapRecvAsset ?? '']),
                     Text(_swapRecvAddressExternal),
                   ],
                 ),
               ),
-              Spacer(),
-              Text('SWAP_SEND_AMOUNT').tr(
-                args: ['$_sendAmount', '$_swapSendAsset'],
+              const Spacer(),
+              const Text('SWAP_SEND_AMOUNT').tr(
+                args: [_sendAmount, _swapSendAsset ?? ''],
               ),
-              Text('SWAP_RECV_AMOUNT').tr(
-                args: ['$_recvAmount', '$_swapRecvAsset'],
+              const Text('SWAP_RECV_AMOUNT').tr(
+                args: [_recvAmount, _swapRecvAsset ?? ''],
               ),
-              Spacer(),
+              const Spacer(),
               ShareAddress(addr: _address),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
             ],
           );
         },

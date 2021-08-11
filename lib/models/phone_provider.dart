@@ -13,19 +13,54 @@ import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 typedef OnBack = Future<void> Function(BuildContext context);
-typedef OnSuccess = Future<void> Function(BuildContext context);
-typedef OnDone = Future<void> Function(BuildContext context);
+typedef OnSuccess = OnBack;
+typedef OnDone = OnBack;
 
 class ConfirmPhoneData {
   ConfirmPhoneData({
-    required this.onBack,
-    required this.onSuccess,
-    required this.onDone,
-  });
+    this.onConfirmPhoneBack,
+    this.onConfirmPhoneSuccess,
+    this.onConfirmPhoneDone,
+    this.onImportContactsBack,
+    this.onImportContactsSuccess,
+    this.onImportContactsDone,
+  }) {
+    onConfirmPhoneBack ??= defaultConfirmPhoneBack;
+    onConfirmPhoneSuccess ??= defaultConfirmPhoneSuccess;
+    onConfirmPhoneDone ??= defaultConfirmPhoneDone;
+    onImportContactsBack ??= defaultImportContactsBack;
+    onImportContactsSuccess ??= defaultImportContactsSuccess;
+    onImportContactsDone ??= defaultImportContactsDone;
+  }
 
-  final OnBack onBack;
-  final OnSuccess onSuccess;
-  final OnDone onDone;
+  OnBack? onConfirmPhoneBack;
+  OnSuccess? onConfirmPhoneSuccess;
+  OnDone? onConfirmPhoneDone;
+
+  OnBack? onImportContactsBack;
+  OnSuccess? onImportContactsSuccess;
+  OnDone? onImportContactsDone;
+
+  Future<void> defaultConfirmPhoneBack(BuildContext context) async {
+    context.read(walletProvider).setAssociatePhoneWelcome();
+  }
+
+  Future<void> defaultConfirmPhoneSuccess(BuildContext context) async {
+    context.read(walletProvider).setConfirmPhoneSuccess();
+  }
+
+  Future<void> defaultConfirmPhoneDone(BuildContext context) async {
+    context.read(walletProvider).setImportContacts();
+  }
+
+  Future<void> defaultImportContactsBack(BuildContext context) async {}
+  Future<void> defaultImportContactsSuccess(BuildContext context) async {
+    context.read(walletProvider).setImportContactsSuccess();
+  }
+
+  Future<void> defaultImportContactsDone(BuildContext context) async {
+    await context.read(walletProvider).loginAndLoadMainPage();
+  }
 }
 
 enum PhoneRegisterStep {
@@ -48,12 +83,13 @@ enum SmsCodeStep {
 
 final phoneProvider = ChangeNotifierProvider<PhoneProvider>((ref) {
   logger.d('Init phone provider');
-  return PhoneProvider(ref.read);
+  return PhoneProvider(ref.read, ConfirmPhoneData());
 });
 
 class PhoneProvider with ChangeNotifier {
   PhoneProvider(
     this.read,
+    this._confirmPhoneData,
   ) {
     _countryCode = read(countriesProvider).getSystemDefaultCountry();
   }
@@ -61,14 +97,14 @@ class PhoneProvider with ChangeNotifier {
   final Reader read;
 
   String _phoneNumber = '';
-  CountryCode _countryCode = CountryCode();
+  CountryCode _countryCode = const CountryCode();
   String _smsCode = '';
   PhoneRegisterStep _phoneRegisterStep = PhoneRegisterStep.init;
   SmsCodeStep _smsCodeStep = SmsCodeStep.hidden;
   DateTime? _phoneRegisterTime;
   bool barier = false;
   String _phoneKey = '';
-  ConfirmPhoneData? _confirmPhoneData;
+  ConfirmPhoneData _confirmPhoneData;
 
   String get countryPhoneNumber {
     if (_phoneNumber.isNotEmpty) {
@@ -89,11 +125,11 @@ class PhoneProvider with ChangeNotifier {
     return _smsCodeStep;
   }
 
-  void setConfirmPhoneData({ConfirmPhoneData? confirmPhoneData}) {
+  void setConfirmPhoneData({required ConfirmPhoneData confirmPhoneData}) {
     _confirmPhoneData = confirmPhoneData;
   }
 
-  ConfirmPhoneData? getConfirmPhoneData() {
+  ConfirmPhoneData getConfirmPhoneData() {
     return _confirmPhoneData;
   }
 
@@ -130,7 +166,8 @@ class PhoneProvider with ChangeNotifier {
 
   int getSmsDelay() {
     final now = DateTime.now();
-    final maxDelay = _phoneRegisterTime?.add(Duration(seconds: 11)) ?? now;
+    final maxDelay =
+        _phoneRegisterTime?.add(const Duration(seconds: 11)) ?? now;
     if (now.isAfter(maxDelay) || now == maxDelay) {
       return 0;
     }
@@ -196,8 +233,18 @@ class PhoneProvider with ChangeNotifier {
       return;
     }
 
-    if (_confirmPhoneData != null) {
-      _confirmPhoneData!.onSuccess(context);
-    }
+    _confirmPhoneData.onConfirmPhoneSuccess!(context);
+  }
+
+  void clearData() {
+    _phoneNumber = '';
+    _countryCode = const CountryCode();
+    _smsCode = '';
+    _phoneRegisterStep = PhoneRegisterStep.init;
+    _smsCodeStep = SmsCodeStep.hidden;
+    _phoneRegisterTime = null;
+    barier = false;
+    _phoneKey = '';
+    _confirmPhoneData;
   }
 }

@@ -8,10 +8,13 @@ Future<void> main() async {
 
   FlavorConfig(
     flavor: Flavor.fdroid,
-    values: FlavorValues(enableOnboardingUserFeatures: false),
+    values: FlavorValues(
+      enableOnboardingUserFeatures: false,
+      enableNetworkSettings: true,
+    ),
   );
 
   runApp(
-    AppMain(),
+    const AppMain(),
   );
 }

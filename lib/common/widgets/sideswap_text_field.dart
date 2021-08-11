@@ -41,7 +41,7 @@ class _SideSwapTextFieldState extends State<SideSwapTextField> {
         GoogleFonts.roboto(
           fontSize: 17.sp,
           fontWeight: FontWeight.normal,
-          color: Color(0xFF84ADC6),
+          color: const Color(0xFF84ADC6),
         );
   }
 
@@ -51,7 +51,7 @@ class _SideSwapTextFieldState extends State<SideSwapTextField> {
     if (widget.errorText != null && widget.errorText!.isNotEmpty) {
       focusedBorder = OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: Colors.red),
+        borderSide: const BorderSide(color: Colors.red),
       );
     }
     return TextField(

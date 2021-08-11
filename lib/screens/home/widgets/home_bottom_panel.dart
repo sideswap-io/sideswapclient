@@ -11,7 +11,7 @@ import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
 class HomeBottomPanel extends StatelessWidget {
-  HomeBottomPanel({
+  const HomeBottomPanel({
     Key? key,
   }) : super(key: key);
 
@@ -20,14 +20,14 @@ class HomeBottomPanel extends StatelessWidget {
     return Container(
       height: 180.h,
       decoration: BoxDecoration(
-        color: Color(0xFF0F4766),
+        color: const Color(0xFF0F4766),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(16.w),
           topRight: Radius.circular(16.w),
         ),
       ),
       child: Center(
-        child: Container(
+        child: SizedBox(
           width: 268.w,
           height: 106.h,
           child: Row(

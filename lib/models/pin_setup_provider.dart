@@ -25,10 +25,13 @@ enum PinSetupState {
 class PinSetupProvider extends ChangeNotifier {
   final Reader read;
 
-  PinSetupProvider(this.read);
+  PinSetupProvider(this.read) {
+    onSuccess = _onDefaultSuccess;
+    onBack = _onDefaultBack;
+  }
 
-  static const MIN_PIN_LENGTH = 4;
-  static const MAX_PIN_LENGTH = 8;
+  static const minPinLength = 4;
+  static const maxPinLength = 8;
 
   PinFieldState fieldState = PinFieldState.firstPin;
   PinSetupState state = PinSetupState.idle;
@@ -78,10 +81,13 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   bool isNewWallet = false;
-  VoidCallback onSuccess = () {};
-  VoidCallback onBack = () {};
+  late VoidCallback onSuccess;
+  late VoidCallback onBack;
 
   String errorMessage = '';
+
+  void _onDefaultSuccess() {}
+  void _onDefaultBack() {}
 
   void init({
     required void Function(BuildContext context) onSuccessCallback,
@@ -174,7 +180,7 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   void _onFirstPinNumber(String number) {
-    if (firstPin.length == MAX_PIN_LENGTH) {
+    if (firstPin.length == maxPinLength) {
       return;
     }
 
@@ -187,7 +193,7 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   void _onSecondPinNumber(String number) {
-    if (secondPin.length == MAX_PIN_LENGTH) {
+    if (secondPin.length == maxPinLength) {
       return;
     }
 

@@ -9,7 +9,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/phone_provider.dart';
 
 class SmsDigitCode extends StatefulWidget {
-  SmsDigitCode({
+  const SmsDigitCode({
     Key? key,
   }) : super(key: key);
 
@@ -21,7 +21,7 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
   final TextStyle _defaultPinStyle = GoogleFonts.roboto(
     fontSize: 22.sp,
     fontWeight: FontWeight.normal,
-    color: Color(0xFF002241),
+    color: const Color(0xFF002241),
   );
 
   void validate(String value) {
@@ -30,7 +30,7 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 107.h,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,10 +41,10 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
             style: GoogleFonts.roboto(
               fontSize: 15.sp,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF00C5FF),
+              color: const Color(0xFF00C5FF),
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Consumer(
             builder: (context, watch, child) {
               final step = watch(phoneProvider).smsCodeStep;
@@ -58,7 +58,7 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
                   color: Colors.white,
                   border: Border.all(
                     color: step == SmsCodeStep.wrongCode
-                        ? Color(0xFFFF7878)
+                        ? const Color(0xFFFF7878)
                         : Colors.white,
                   ),
                 ),
@@ -71,10 +71,10 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
                     height: 40,
                     color: Colors.white,
                   ),
-                  separatorPositions: [1, 2, 3],
-                  separator: Container(
+                  separatorPositions: const [1, 2, 3],
+                  separator: SizedBox(
                     height: 54.h,
-                    child: VerticalDivider(
+                    child: const VerticalDivider(
                       width: 1,
                       thickness: 1,
                       color: Color(0xFFCCDEE9),
@@ -84,7 +84,8 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
                   eachFieldMargin: EdgeInsets.zero,
                   eachFieldPadding: EdgeInsets.zero,
                   textStyle: step == SmsCodeStep.wrongCode
-                      ? _defaultPinStyle.copyWith(color: Color(0xFFFF7878))
+                      ? _defaultPinStyle.copyWith(
+                          color: const Color(0xFFFF7878))
                       : _defaultPinStyle,
                   pinAnimationType: PinAnimationType.scale,
                   withCursor: true,
@@ -92,7 +93,7 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
                     '|',
                     style: _defaultPinStyle,
                   ),
-                  keyboardType: TextInputType.numberWithOptions(),
+                  keyboardType: const TextInputType.numberWithOptions(),
                   inputFormatters: [
                     FilteringTextInputFormatter.deny(
                       RegExp('[\\-|,.\\ ]'),
@@ -106,7 +107,7 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
           Consumer(
             builder: (context, watch, child) {
               final step = watch(phoneProvider).smsCodeStep;
-              return Container(
+              return SizedBox(
                 height: 23.h,
                 child: Visibility(
                   visible: step == SmsCodeStep.wrongCode,
@@ -117,7 +118,7 @@ class _SmsDigitCodeState extends State<SmsDigitCode> {
                       style: GoogleFonts.roboto(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFFFF7878),
+                        color: const Color(0xFFFF7878),
                       ),
                     ),
                   ),

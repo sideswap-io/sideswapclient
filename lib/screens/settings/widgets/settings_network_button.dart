@@ -4,7 +4,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/settings/widgets/settings_network_checkbox.dart';
 
 class SettingsNetworkButton extends StatefulWidget {
-  SettingsNetworkButton({
+  const SettingsNetworkButton({
     Key? key,
     required this.value,
     required this.onChanged,
@@ -24,7 +24,7 @@ class SettingsNetworkButton extends StatefulWidget {
 class _SettingsNetworkButtonState extends State<SettingsNetworkButton> {
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 80,
       width: double.infinity,
       child: TextButton(
@@ -33,14 +33,14 @@ class _SettingsNetworkButtonState extends State<SettingsNetworkButton> {
         },
         style: TextButton.styleFrom(
           primary: Colors.white,
-          backgroundColor: Color(0xFF135579),
+          backgroundColor: const Color(0xFF135579),
           padding: EdgeInsets.zero,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(8.w),
             ),
           ),
-          side: BorderSide(
+          side: const BorderSide(
             color: Color(0xFF135579),
             width: 1,
             style: BorderStyle.solid,
@@ -59,11 +59,11 @@ class _SettingsNetworkButtonState extends State<SettingsNetworkButton> {
                   title: widget.title,
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               if (widget.trailingIconVisible) ...[
                 Padding(
                   padding: EdgeInsets.only(right: 16.w),
-                  child: Icon(Icons.keyboard_arrow_right),
+                  child: const Icon(Icons.keyboard_arrow_right),
                 ),
               ],
             ],

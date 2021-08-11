@@ -10,12 +10,12 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/contact_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/import_contacts_image.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
 class ImportContacts extends StatefulWidget {
-  ImportContacts({Key? key}) : super(key: key);
+  const ImportContacts({Key? key}) : super(key: key);
 
   @override
   _ImportContactsState createState() => _ImportContactsState();
@@ -50,21 +50,26 @@ class _ImportContactsState extends State<ImportContacts> {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
+      onWillPop: () async {
+        return false;
+      },
       body: Center(
         child: Consumer(
           builder: (context, watch, child) {
             final contactsLoadingState =
                 watch(contactProvider).contactsLoadingState;
             if (contactsLoadingState == ContactsLoadingState.done) {
-              Future.microtask(() {
-                context.read(walletProvider).setImportContactsSuccess();
+              Future.microtask(() async {
+                final confirmPhoneData =
+                    context.read(phoneProvider).getConfirmPhoneData();
+                await confirmPhoneData.onImportContactsSuccess!(context);
               });
             }
             return Column(
               children: [
                 Padding(
                   padding: EdgeInsets.only(top: 56.h),
-                  child: ImportContactsImage(),
+                  child: const ImportContactsImage(),
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 32.h),
@@ -87,10 +92,10 @@ class _ImportContactsState extends State<ImportContacts> {
                     ),
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Padding(
                   padding: EdgeInsets.only(bottom: 32.h),
-                  child: PageDots(
+                  child: const PageDots(
                     maxSelectedDots: 4,
                   ),
                 ),
@@ -99,7 +104,7 @@ class _ImportContactsState extends State<ImportContacts> {
                   child: CustomBigButton(
                     width: double.maxFinite,
                     height: 54.h,
-                    backgroundColor: Color(0xFF00C5FF),
+                    backgroundColor: const Color(0xFF00C5FF),
                     text: 'YES'.tr(),
                     enabled:
                         contactsLoadingState != ContactsLoadingState.running,
@@ -117,13 +122,13 @@ class _ImportContactsState extends State<ImportContacts> {
                       height: 54.h,
                       backgroundColor: Colors.transparent,
                       text: 'NOT NOW'.tr(),
-                      textColor: Color(0xFF00C5FF),
+                      textColor: const Color(0xFF00C5FF),
                       enabled:
                           contactsLoadingState != ContactsLoadingState.running,
                       onPressed: () async {
-                        await context
-                            .read(walletProvider)
-                            .loginAndLoadMainPage();
+                        final confirmPhoneData =
+                            context.read(phoneProvider).getConfirmPhoneData();
+                        await confirmPhoneData.onImportContactsDone!(context);
                       },
                     ),
                   ),

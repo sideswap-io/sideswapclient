@@ -20,7 +20,7 @@ class CountryCode {
   final String? iso3Code;
 
   // Transform a country acronym to an emoji flag
-  static final OFFSET = 127397;
+  static const offset = 127397;
 
   String isoUnicode(String? value) {
     if (value == null) {
@@ -31,7 +31,7 @@ class CountryCode {
     //   throw Exception(
     //       'argument must be an ISO 3166-1 alpha-2 string, but got ${countryCode.runtimeType} instead.');
     // }
-    final chars = [...value!.toUpperCase().codeUnits].map((e) => e + OFFSET);
+    final chars = [...value!.toUpperCase().codeUnits].map((e) => e + offset);
     return String.fromCharCodes(chars);
   }
 

@@ -7,8 +7,11 @@ enum Flavor {
 
 class FlavorValues {
   bool enableOnboardingUserFeatures;
+  bool enableNetworkSettings;
+
   FlavorValues({
     required this.enableOnboardingUserFeatures,
+    required this.enableNetworkSettings,
   });
 }
 

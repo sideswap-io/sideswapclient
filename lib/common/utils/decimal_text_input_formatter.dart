@@ -66,10 +66,9 @@ class DecimalTextInputFormatter extends TextInputFormatter {
 
 class DecimalCutterTextInputFormatter extends TextInputFormatter {
   DecimalCutterTextInputFormatter(
-      {int decimalRange = 8,
+      {this.decimalRange = 8,
       int range = 8,
-      bool activatedNegativeValues = false})
-      : decimalRange = decimalRange {
+      bool activatedNegativeValues = false}) {
     final dp = decimalRange > 0 ? '([.][0-9]{0,$decimalRange}){0,1}' : '';
     var number = '[0-9]*$dp';
     if (range > 0) {
@@ -97,8 +96,13 @@ class DecimalCutterTextInputFormatter extends TextInputFormatter {
 
     final splitted = oldValue.text.split('.');
     if (splitted.length > 1) {
-      splitted[1] = splitted[1].substring(0, decimalRange);
-      final changedText = '${splitted[0]}.${splitted[1]}';
+      if (splitted[1].length < decimalRange) {
+        splitted[1] = splitted[1].substring(0, splitted[1].length);
+      } else {
+        splitted[1] = splitted[1].substring(0, decimalRange);
+      }
+      final changedText =
+          decimalRange == 0 ? splitted[0] : '${splitted[0]}.${splitted[1]}';
       return TextEditingValue(
           text: changedText,
           selection: TextSelection.fromPosition(

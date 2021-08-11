@@ -20,7 +20,7 @@ class UrlLinkButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.maxFinite,
       height: 56.h,
       child: TextButton(
@@ -35,13 +35,13 @@ class UrlLinkButton extends StatelessWidget {
         },
         style: TextButton.styleFrom(
           primary: Colors.white,
-          backgroundColor: Color(0xFF135579),
+          backgroundColor: const Color(0xFF135579),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(8.w),
             ),
           ),
-          side: BorderSide(
+          side: const BorderSide(
             color: Color(0xFF135579),
             width: 1,
             style: BorderStyle.solid,
@@ -53,7 +53,7 @@ class UrlLinkButton extends StatelessWidget {
           children: [
             Padding(
               padding: EdgeInsets.only(left: 16.w),
-              child: Container(
+              child: SizedBox(
                 width: 24.w,
                 height: 24.w,
                 child: icon,
@@ -66,7 +66,7 @@ class UrlLinkButton extends StatelessWidget {
                 style: GoogleFonts.roboto(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.normal,
-                  color: Color(0xFF00C5FF),
+                  color: const Color(0xFF00C5FF),
                   textStyle: TextStyle(
                     decoration: url.isNotEmpty
                         ? TextDecoration.underline

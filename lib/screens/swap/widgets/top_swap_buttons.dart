@@ -7,16 +7,16 @@ import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class TopSwapButtons extends StatelessWidget {
-  TopSwapButtons({
+  const TopSwapButtons({
     Key? key,
     required this.onSwapPressed,
     required this.onPegPressed,
   }) : super(key: key);
 
-  final _colorToggleBackground = Color(0xFF043857);
-  final _colorToggleOn = Color(0xFF1F7EB1);
-  final _colorToggleTextOn = Color(0xFFFFFFFF);
-  final _colorToggleTextOff = Color(0xFF709EBA);
+  final _colorToggleBackground = const Color(0xFF043857);
+  final _colorToggleOn = const Color(0xFF1F7EB1);
+  final _colorToggleTextOn = const Color(0xFFFFFFFF);
+  final _colorToggleTextOff = const Color(0xFF709EBA);
   final VoidCallback onSwapPressed;
   final VoidCallback onPegPressed;
 

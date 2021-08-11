@@ -11,6 +11,8 @@ import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_peg.dart';
 
 class TxDetailsPopup extends ConsumerWidget {
+  const TxDetailsPopup({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     final _transItem = watch(walletProvider).txDetails;
@@ -41,8 +43,8 @@ class TxDetailsPopup extends ConsumerWidget {
               final _deliveredPrecision = context
                   .read(walletProvider)
                   .getPrecisionForAssetId(assetId: _balanceDelivered.assetId);
-              _delivered =
-                  '${amountStr(_balanceDelivered.amount.toInt().abs(), precision: _deliveredPrecision)}';
+              _delivered = amountStr(_balanceDelivered.amount.toInt().abs(),
+                  precision: _deliveredPrecision);
 
               final _assetSentTicker =
                   wallet.getAssetById(_balanceDelivered.assetId)?.ticker ??
@@ -58,15 +60,15 @@ class TxDetailsPopup extends ConsumerWidget {
               final _receivedPrecision = context
                   .read(walletProvider)
                   .getPrecisionForAssetId(assetId: _balanceReceived.assetId);
-              _received =
-                  '${amountStr(_balanceReceived.amount.toInt(), precision: _receivedPrecision)}';
+              _received = amountStr(_balanceReceived.amount.toInt(),
+                  precision: _receivedPrecision);
               _received = replaceCharacterOnPosition(
                 input: _received,
                 currencyChar: _assetRecvTicker,
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
 
-              final pricePrecision = 2;
+              const pricePrecision = 2;
               final sentBitcoin = _assetSentTicker == kLiquidBitcoinTicker;
               final assetPrecision =
                   sentBitcoin ? _receivedPrecision : _deliveredPrecision;

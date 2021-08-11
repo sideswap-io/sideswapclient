@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class RoundedButton extends StatefulWidget {
-  RoundedButton({
+  const RoundedButton({
     Key? key,
     this.onTap,
     this.color = const Color(0xFF0D5574),
@@ -44,8 +44,8 @@ class _RoundedButtonState extends State<RoundedButton> {
       borderRadius: _borderRadius,
       child: InkWell(
         onTap: widget.onTap,
-        customBorder: widget.borderRadius == null ? CircleBorder() : null,
-        child: Container(
+        customBorder: widget.borderRadius == null ? const CircleBorder() : null,
+        child: SizedBox(
           width: _width,
           height: _height,
           child: Center(

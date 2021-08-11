@@ -21,7 +21,7 @@ import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 import 'package:sideswap/screens/swap/widgets/labeled_radio.dart';
 
 class SwapSideAmount extends StatefulHookWidget {
-  SwapSideAmount({
+  const SwapSideAmount({
     Key? key,
     required this.text,
     required this.controller,
@@ -31,7 +31,7 @@ class SwapSideAmount extends StatefulHookWidget {
     this.onMaxPressed,
     required this.dropdownValue,
     required this.availableAssets,
-    required this.labelGroupValue,
+    this.labelGroupValue = SwapWallet.local,
     this.localLabelOnChanged,
     this.externalLabelOnChanged,
     this.isMaxVisible = false,
@@ -52,6 +52,13 @@ class SwapSideAmount extends StatefulHookWidget {
     this.showHintText = false,
     this.feeRates = const <FeeRate>[],
     this.onFeeRateChanged,
+    required this.swapType,
+    this.showInsufficientFunds = false,
+    this.errorDescription = '',
+    this.onSubmitted,
+    this.onEditingCompleted,
+    this.dollarConversion = '',
+    this.textInputAction,
   }) : super(key: key);
 
   final String text;
@@ -83,6 +90,13 @@ class SwapSideAmount extends StatefulHookWidget {
   final bool showHintText;
   final List<FeeRate> feeRates;
   final void Function(FeeRate)? onFeeRateChanged;
+  final SwapType swapType;
+  final bool showInsufficientFunds;
+  final String errorDescription;
+  final void Function(String)? onSubmitted;
+  final void Function()? onEditingCompleted;
+  final String dollarConversion;
+  final TextInputAction? textInputAction;
 
   @override
   _SwapSideAmountState createState() => _SwapSideAmountState();
@@ -92,13 +106,13 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
   final _labelStyle = GoogleFonts.roboto(
     fontSize: 15.sp,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF00C5FF),
+    color: const Color(0xFF00C5FF),
   );
 
   final _balanceStyle = GoogleFonts.roboto(
     fontSize: 14.sp,
     fontWeight: FontWeight.normal,
-    color: Color(0xFF709EBA),
+    color: const Color(0xFF709EBA),
   );
 
   @override
@@ -112,19 +126,12 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
 
   @override
   Widget build(BuildContext context) {
-    final _swapType = useProvider(swapProvider).swapType();
-    final _insufficientFunds = useProvider(swapProvider).showInsufficientFunds;
-    var _serverError = useProvider(swapProvider).swapNetworkError;
-    if (_serverError.isNotEmpty) {
-      _serverError = _serverError.tr();
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: widget.padding,
-          child: Container(
+          child: SizedBox(
             height: 18.h,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -133,7 +140,7 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                   widget.text,
                   style: _labelStyle,
                 ).tr(),
-                if (_swapType == SwapType.pegOut &&
+                if (widget.swapType == SwapType.pegOut &&
                     widget.labelGroupValue == SwapWallet.extern &&
                     widget.feeRates.isNotEmpty) ...[
                   Padding(
@@ -143,37 +150,34 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                       style: _labelStyle,
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                 ] else ...[
-                  Consumer(
-                    builder: (context, watch, child) {
-                      if (_insufficientFunds && !widget.readOnly) {
-                        return Text(
-                          'Insufficient funds'.tr(),
-                          style: GoogleFonts.roboto(
-                            fontSize: 14.sp,
-                            fontWeight: FontWeight.normal,
-                            color: Color(0xFFFF7878),
-                          ),
-                        );
-                      }
-                      return Container();
-                    },
-                  ),
+                  if (widget.showInsufficientFunds && !widget.readOnly) ...[
+                    Text(
+                      'Insufficient funds'.tr(),
+                      style: GoogleFonts.roboto(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.normal,
+                        color: const Color(0xFFFF7878),
+                      ),
+                    ),
+                  ] else ...[
+                    Container(),
+                  ],
                 ],
-                if (_serverError.isNotEmpty && !widget.readOnly) ...[
-                  Container(
+                if (widget.errorDescription.isNotEmpty && !widget.readOnly) ...[
+                  SizedBox(
                     width: 280.w,
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final textStyle = GoogleFonts.roboto(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFFFF7878),
+                          color: const Color(0xFFFF7878),
                         );
                         final renderParagraph = RenderParagraph(
                           TextSpan(
-                            text: _serverError,
+                            text: widget.errorDescription,
                             style: textStyle,
                           ),
                           textDirection: _ui.TextDirection.ltr,
@@ -187,28 +191,28 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                             renderParagraph.constraints.maxWidth;
                         return textWidth > constraintsWidth
                             ? Marquee(
-                                text: _serverError,
+                                text: widget.errorDescription,
                                 style: textStyle,
                                 scrollAxis: Axis.horizontal,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 blankSpace: 200.0,
                                 velocity: 30.0,
-                                pauseAfterRound: Duration(seconds: 3),
+                                pauseAfterRound: const Duration(seconds: 3),
                                 showFadingOnlyWhenScrolling: true,
                                 fadingEdgeStartFraction: 0.1,
                                 fadingEdgeEndFraction: 0.1,
-                                numberOfRounds: 3,
                                 startPadding: 100.0,
-                                accelerationDuration: Duration(seconds: 3),
+                                accelerationDuration:
+                                    const Duration(seconds: 3),
                                 accelerationCurve: Curves.linear,
                                 decelerationDuration:
-                                    Duration(milliseconds: 500),
+                                    const Duration(milliseconds: 500),
                                 decelerationCurve: Curves.easeOut,
                               )
                             : Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
-                                  _serverError,
+                                  widget.errorDescription,
                                   style: textStyle,
                                 ),
                               );
@@ -224,12 +228,13 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
           padding: EdgeInsets.only(top: 10.h),
           child: Padding(
             padding: widget.padding,
-            child: Container(
+            child: SizedBox(
               height: 43.h,
               child: TickerAmountTextField(
                 readOnly: widget.readOnly,
                 dropdownReadOnly: widget.dropdownReadOnly,
-                showError: _insufficientFunds || _serverError.isNotEmpty,
+                showError: widget.showInsufficientFunds ||
+                    widget.errorDescription.isNotEmpty,
                 controller: widget.controller,
                 focusNode: widget.focusNode ?? FocusNode(),
                 dropdownValue: widget.dropdownValue,
@@ -240,14 +245,17 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                 showHintText: widget.showHintText,
                 feeRates: widget.feeRates,
                 onFeeRateChanged: widget.onFeeRateChanged,
+                onSubmitted: widget.onSubmitted,
+                onEditingComplete: widget.onEditingCompleted,
+                textInputAction: widget.textInputAction,
               ),
             ),
           ),
         ),
-        if (_swapType != SwapType.atomic && widget.visibleToggles) ...[
+        if (widget.swapType != SwapType.atomic && widget.visibleToggles) ...[
           Padding(
             padding: EdgeInsets.only(top: 14.h),
-            child: Container(
+            child: SizedBox(
               height: 18.h,
               child: Row(
                 children: [
@@ -269,14 +277,14 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
           ),
         ],
         Padding(
-          padding: EdgeInsets.only(top: 14.h),
+          padding: EdgeInsets.only(top: 10.h),
           child: Padding(
             padding: widget.padding,
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (_swapType != SwapType.atomic &&
+                if (widget.swapType != SwapType.atomic &&
                     !widget.isMaxVisible &&
                     !widget.isAddressLabelVisible &&
                     widget.labelGroupValue == SwapWallet.extern) ...[
@@ -308,14 +316,14 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                     ),
                   ),
                 ],
-                if (_swapType == SwapType.pegOut &&
+                if (widget.swapType == SwapType.pegOut &&
                     widget.labelGroupValue == SwapWallet.extern &&
                     widget.isAddressLabelVisible) ...[
                   Container(
                     width: 343.w,
                     height: 98.h,
                     decoration: BoxDecoration(
-                      color: Color(0xFF226F99),
+                      color: const Color(0xFF226F99),
                       borderRadius: BorderRadius.all(
                         Radius.circular(8.w),
                       ),
@@ -338,11 +346,11 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                             ),
                           ),
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Flexible(
                           flex: 10,
                           child: Material(
-                            color: Color(0xFF226F99),
+                            color: const Color(0xFF226F99),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(21.w),
                               onTap: widget.onAddressLabelClose,
@@ -368,27 +376,23 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                   )
                 ],
                 if (widget.labelGroupValue == SwapWallet.extern &&
-                    _swapType == SwapType.atomic) ...[
+                    widget.swapType == SwapType.atomic) ...[
                   Text(
                     'Balance: unknown',
                     style: _balanceStyle,
                   ).tr(),
                 ],
                 if (widget.labelGroupValue == SwapWallet.local &&
-                    (_swapType == SwapType.atomic ||
-                        _swapType == SwapType.pegOut)) ...[
-                  Consumer(
-                    builder: (context, watch, child) {
-                      return Text(
-                        'PAYMENT_BALANCE',
-                        style: _balanceStyle,
-                      ).tr(args: [widget.balance]);
-                    },
-                  ),
+                    (widget.swapType == SwapType.atomic ||
+                        widget.swapType == SwapType.pegOut)) ...[
+                  Text(
+                    'PAYMENT_BALANCE',
+                    style: _balanceStyle,
+                  ).tr(args: [widget.balance]),
                 ],
                 if (widget.labelGroupValue == SwapWallet.extern &&
-                    _swapType == SwapType.pegIn) ...[
-                  Container(
+                    widget.swapType == SwapType.pegIn) ...[
+                  SizedBox(
                     height: 36.h,
                     width: SideSwapScreenUtil.screenWidth -
                         widget.padding.horizontal,
@@ -398,14 +402,14 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                       style: GoogleFonts.roboto(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFF709EBA),
+                        color: const Color(0xFF709EBA),
                       ),
                     ),
                   ),
                 ],
                 if (widget.labelGroupValue == SwapWallet.local &&
-                    _swapType == SwapType.pegIn) ...[
-                  Container(
+                    widget.swapType == SwapType.pegIn) ...[
+                  SizedBox(
                     height: 36.h,
                     width: SideSwapScreenUtil.screenWidth -
                         widget.padding.horizontal,
@@ -415,45 +419,59 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                       style: GoogleFonts.roboto(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFF709EBA),
+                        color: const Color(0xFF709EBA),
                       ),
                     ),
                   ),
                 ],
-                if (widget.isMaxVisible &&
-                    widget.labelGroupValue != SwapWallet.extern) ...[
-                  Container(
-                    width: 54.w,
-                    height: 24.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.w),
-                      border: Border.all(
-                        color: Color(0xFF00C5FF),
-                        width: 1,
-                        style: BorderStyle.solid,
-                      ),
-                    ),
-                    child: TextButton(
-                      onPressed: widget.onMaxPressed,
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(8.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (widget.isMaxVisible &&
+                        widget.labelGroupValue != SwapWallet.extern) ...[
+                      Container(
+                        width: 54.w,
+                        height: 24.h,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.w),
+                          border: Border.all(
+                            color: const Color(0xFF00C5FF),
+                            width: 2,
+                            style: BorderStyle.solid,
+                          ),
+                        ),
+                        child: TextButton(
+                          onPressed: widget.onMaxPressed,
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(8.w),
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            'MAX',
+                            style: GoogleFonts.roboto(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.normal,
+                              color: const Color(0xFF00C5FF),
+                            ),
                           ),
                         ),
                       ),
-                      child: Text(
-                        'MAX',
-                        style: GoogleFonts.roboto(
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.normal,
-                          color: Color(0xFF00C5FF),
+                    ],
+                    if (widget.dollarConversion.isNotEmpty) ...[
+                      Padding(
+                        padding: EdgeInsets.only(top: 8.h),
+                        child: Text(
+                          '≈ ${widget.dollarConversion}',
+                          style: _balanceStyle,
                         ),
                       ),
-                    ),
-                  ),
-                ]
+                    ],
+                  ],
+                ),
               ],
             ),
           ),

@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class PinTextField extends StatefulWidget {
-  PinTextField({
+  const PinTextField({
     Key? key,
     this.pin = '',
     this.focusNode,
@@ -46,7 +46,7 @@ class _PinTextFieldState extends State<PinTextField> {
     controller.text = widget.pin;
     controller.selection = TextSelection.fromPosition(
         TextPosition(offset: controller.text.length));
-    return Container(
+    return SizedBox(
       height: widget.error && widget.errorMessage.isNotEmpty ? 75.h : 58.h,
       child: Column(
         children: [
@@ -84,7 +84,7 @@ class _PinTextFieldState extends State<PinTextField> {
                       focusedBorder: widget.error
                           ? OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.red),
+                              borderSide: const BorderSide(color: Colors.red),
                             )
                           : null,
                     ),

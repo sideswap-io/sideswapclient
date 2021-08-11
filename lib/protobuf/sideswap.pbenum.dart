@@ -9,6 +9,23 @@
 import 'dart:core' as $core;
 import 'package:protobuf/protobuf.dart' as $pb;
 
+class To_Subscribe_Market extends $pb.ProtobufEnum {
+  static const To_Subscribe_Market NONE = To_Subscribe_Market._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'NONE');
+  static const To_Subscribe_Market TOKENS = To_Subscribe_Market._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'TOKENS');
+  static const To_Subscribe_Market ASSET = To_Subscribe_Market._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'ASSET');
+
+  static const $core.List<To_Subscribe_Market> values = <To_Subscribe_Market> [
+    NONE,
+    TOKENS,
+    ASSET,
+  ];
+
+  static final $core.Map<$core.int, To_Subscribe_Market> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static To_Subscribe_Market? valueOf($core.int value) => _byValue[value];
+
+  const To_Subscribe_Market._($core.int v, $core.String n) : super(v, n);
+}
+
 class From_SubmitReview_Step extends $pb.ProtobufEnum {
   static const From_SubmitReview_Step SUBMIT = From_SubmitReview_Step._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SUBMIT');
   static const From_SubmitReview_Step QUOTE = From_SubmitReview_Step._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'QUOTE');

@@ -8,13 +8,13 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class AssetSearchTextField extends StatelessWidget {
-  AssetSearchTextField({
+  const AssetSearchTextField({
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 44.h,
       child: TextField(
         onChanged: (value) =>
@@ -22,36 +22,36 @@ class AssetSearchTextField extends StatelessWidget {
         style: GoogleFonts.roboto(
           fontSize: 17.sp,
           fontWeight: FontWeight.normal,
-          color: Color(0xFF055271),
+          color: const Color(0xFF055271),
         ),
         decoration: InputDecoration(
           isDense: true,
           filled: true,
           fillColor: Colors.white,
-          prefixIcon: Container(
+          prefixIcon: SizedBox(
             width: 41.w,
             child: Center(
               child: SvgPicture.asset(
                 'assets/search.svg',
                 width: 19.w,
                 height: 19.w,
-                color: Color(0xFF055271),
+                color: const Color(0xFF055271),
               ),
             ),
           ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: const BorderSide(color: Colors.white),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: const BorderSide(color: Colors.white),
           ),
           hintText: 'Search'.tr(),
           hintStyle: GoogleFonts.roboto(
             fontSize: 17.sp,
             fontWeight: FontWeight.normal,
-            color: Color(0xFF84ADC6),
+            color: const Color(0xFF84ADC6),
           ),
         ),
       ),

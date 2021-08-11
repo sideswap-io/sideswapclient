@@ -16,7 +16,7 @@ import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row_notes.dart';
 
 class SwapSummary extends StatelessWidget {
-  SwapSummary({
+  const SwapSummary({
     Key? key,
     required this.ticker,
     required this.delivered,
@@ -85,7 +85,7 @@ class SwapSummary extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.only(top: 18.h),
-          child: SizedBox(),
+          child: const SizedBox(),
         ),
         if (type == TxType.swap) ...[
           TxDetailsRow(
@@ -137,7 +137,8 @@ class SwapSummary extends StatelessWidget {
           child: TxDetailsRow(
             description: 'Status'.tr(),
             details: status,
-            detailsColor: (confs.count != 0) ? Color(0xFF709EBA) : Colors.white,
+            detailsColor:
+                (confs.count != 0) ? const Color(0xFF709EBA) : Colors.white,
           ),
         ),
         if (type != TxType.swap) ...[
@@ -151,7 +152,7 @@ class SwapSummary extends StatelessWidget {
         ],
         Padding(
           padding: EdgeInsets.only(top: 20.h),
-          child: DottedLine(
+          child: const DottedLine(
             dashColor: Colors.white,
             dashGapColor: Colors.transparent,
           ),
@@ -164,10 +165,10 @@ class SwapSummary extends StatelessWidget {
             isCopyVisible: true,
           ),
         ),
-        Spacer(),
+        const Spacer(),
         Padding(
           padding: EdgeInsets.only(bottom: 16.h),
-          child: Container(
+          child: SizedBox(
             width: double.maxFinite,
             height: 54.h,
             child: TxDetailsBottomButtons(

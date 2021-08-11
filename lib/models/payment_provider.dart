@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -59,7 +60,9 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void selectPaymentSend(String? address, String amount, String assetId) {
+  void selectPaymentSend(String amount, String assetId,
+      {Friend? friend, String? address}) {
+    // TODO: handle friend payment send
     if (address == null) {
       logger.e('Address is null');
       return;

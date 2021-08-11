@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
+import 'package:ffi/ffi.dart';
 
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -17,30 +18,9 @@ import 'package:sideswap/models/notification_model.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
-
-// Currently not working - remove?
-Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) async {
-  logger.e('onBackgroundNotification: $message');
-
-  await Firebase.initializeApp();
-  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  await flutterLocalNotificationsPlugin
-      .initialize(notificationService._getInitializationSettings());
-
-  if (message.containsKey('data')) {
-    // Handle data message
-    //final dynamic data = message['data'];
-  }
-
-  if (message.containsKey('notification')) {
-    // Handle notification message
-    //final dynamic notification = message['notification'];
-  }
-
-  // Or do other work.
-}
 
 enum IncomingNotificationType {
   message,
@@ -76,6 +56,14 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 
 NotificationService notificationService = NotificationService();
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  logger.d('onBackground: $message');
+  dynamic details = message.data['details'];
+  if (details is String) {
+    Lib.lib.sideswap_process_background(details.toNativeUtf8().cast());
+  }
+}
+
 class NotificationService {
   factory NotificationService() {
     return _notificationService;
@@ -106,6 +94,7 @@ class NotificationService {
   Future<void> init(BuildContext context) async {
     _context = context;
     await FirebaseMessaging.instance.requestPermission();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
     if (Platform.isIOS) {
       await _flutterLocalNotificationsPlugin
@@ -252,8 +241,8 @@ class NotificationService {
       priority: Priority.high,
       groupKey: _groupKey,
       enableLights: true,
-      color: Color.fromARGB(255, 87, 193, 251),
-      ledColor: Color.fromARGB(255, 0, 197, 255),
+      color: const Color.fromARGB(255, 87, 193, 251),
+      ledColor: const Color.fromARGB(255, 0, 197, 255),
       ledOnMs: 1000,
       ledOffMs: 500,
       visibility: visibility,
@@ -262,7 +251,7 @@ class NotificationService {
 
     final platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
-      iOS: IOSNotificationDetails(),
+      iOS: const IOSNotificationDetails(),
     );
 
     return platformChannelSpecifics;
@@ -355,7 +344,7 @@ class NotificationService {
     final pegDetected = fcmMessage.data?.details?.pegDetected;
 
     if (pegDetected != null) {
-      final payloadType = FCMPayloadType.pegin;
+      const payloadType = FCMPayloadType.pegin;
       final payload = FCMPayload(type: payloadType, txid: pegDetected.txHash);
       return payload;
     }
@@ -378,7 +367,7 @@ class NotificationService {
       FCMMessage fcmMessage, FCMTx fcmTx) async {
     final pegDetected = fcmMessage.data?.details?.pegDetected;
     if (pegDetected != null) {
-      final payloadType = FCMPayloadType.pegin;
+      const payloadType = FCMPayloadType.pegin;
       final payload = FCMPayload(type: payloadType, txid: pegDetected.txHash);
       final title = fcmMessage.notification?.title ?? '';
       final body = fcmMessage.notification?.body ?? '';
@@ -539,7 +528,7 @@ class NotificationService {
               logger.d('Cancel pressed');
               Navigator.of(context, rootNavigator: true).pop();
             },
-            child: Text('Cancel'),
+            child: const Text('Cancel'),
           ),
         ],
       ),

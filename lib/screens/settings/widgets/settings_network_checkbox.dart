@@ -4,7 +4,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 
 class SettingsNetworkCheckbox extends StatelessWidget {
-  SettingsNetworkCheckbox({
+  const SettingsNetworkCheckbox({
     Key? key,
     required this.value,
     required this.onChanged,
@@ -20,9 +20,9 @@ class SettingsNetworkCheckbox extends StatelessWidget {
     return CustomCheckBox(
       size: 24.w,
       radius: Radius.circular(12.w),
-      frameChecked: Color(0xFF00C5FF),
-      frameUnchecked: Color(0xFF046C93),
-      backgroundChecked: Color(0xFF00C5FF),
+      frameChecked: const Color(0xFF00C5FF),
+      frameUnchecked: const Color(0xFF046C93),
+      backgroundChecked: const Color(0xFF00C5FF),
       backgroundUnchecked: Colors.transparent,
       icon: Icon(
         Icons.check,

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sideswap_api::OrderId;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 #[derive(Eq, PartialEq, Serialize, Deserialize, Copy, Clone)]
 pub enum PegDir {
@@ -16,19 +16,33 @@ pub struct Peg {
 
 #[derive(Serialize, Deserialize)]
 pub struct StoredUtxo {
-    pub utxos: Vec<gdk_common::model::UnspentOutput>,
+    pub utxos: Vec<sideswap_libwally::UnspentOutput>,
     pub created_at: std::time::SystemTime,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+pub struct SettingsPersistent {
+    pub unregister_phone_requests: Option<BTreeSet<sideswap_api::PhoneKey>>,
 }
 
 // All will be cleared after new wallet import!
 #[derive(Serialize, Deserialize, Default)]
 pub struct Settings {
+    pub persistent: Option<SettingsPersistent>,
+
     pub pegs: Option<Vec<Peg>>,
     pub device_key: Option<String>,
     pub last_external: Option<u32>,
     pub last_internal: Option<u32>,
     pub utxos_req: Option<BTreeMap<OrderId, StoredUtxo>>,
     pub session_id: Option<String>,
+}
+
+impl Settings {
+    pub fn get_persistent(&mut self) -> &mut SettingsPersistent {
+        self.persistent
+            .get_or_insert_with(|| SettingsPersistent::default())
+    }
 }
 
 const SETTINGS_NAME: &str = "settings.json";

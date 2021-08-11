@@ -10,10 +10,11 @@ import 'package:sideswap/screens/swap/widgets/swap_arrows_button.dart';
 
 class SwapMiddleIcon extends ConsumerWidget {
   SwapMiddleIcon({
+    Key? key,
     required this.visibleToggles,
     this.onTap,
     this.visible = true,
-  });
+  }) : super(key: key);
 
   final _swapIconSize = 48.w;
   final bool visibleToggles;

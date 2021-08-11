@@ -1,0 +1,44 @@
+log_settings = "config/dealer_logs_regtest.yml"
+env = "Regtest"
+bitcoin_amount_submit = 0.005
+bitcoin_amount_min = 0.0001
+bitcoin_amount_max = 1.0
+apikey = ""
+proxy_port = 4101
+
+server_host = "api-regtest.sideswap.io"
+server_port = 443
+server_use_tls = true
+notificationurl = ""
+status_port = 4002
+
+bitfinexkey = "<YOUR_BITFINEX_KEY>"
+bitfinexsecret = "<YOUR_BITFINEX_SECRET>"
+
+bitfinex_bookname_usdt = "tTESTBTC:TESTUSD"
+bitfinex_bookname_eurx = "tBTCEUR"
+
+bitfinex_withdraw_address = ""
+bitfinex_fund_address = ""
+
+bitfinex_currency_btc = "TESTBTC"
+bitfinex_currency_lbtc = "TESTLBT"
+bitfinex_currency_usdt = "TESTUSD"
+bitfinex_currency_eur = "TESTEUR"
+
+storage_path = "config/storage_regtest.txt"
+balancing_enabled = false
+
+[rpc]
+host = "<YOUR_ELEMENTS_HOST>"
+port = 12345
+login = "<YOUR_ELEMENTS_LOGIN>"
+password = "<YOUR_ELEMENTS_PASSWORD>"
+
+[module]
+host = "localhost"
+port = 4101
+
+[notifications]
+# optional slack notifications url
+url = ""

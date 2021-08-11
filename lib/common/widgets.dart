@@ -20,19 +20,20 @@ class AddressQrScanner extends StatefulWidget {
   final ValueChanged<QrCodeResult> resultCb;
   final QrCodeAddressType? expectedAddress;
 
-  AddressQrScanner({required this.resultCb, this.expectedAddress});
+  const AddressQrScanner({
+    Key? key,
+    required this.resultCb,
+    this.expectedAddress,
+  }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() =>
-      _AddressQrScannerState(resultCb: resultCb);
+  State<StatefulWidget> createState() => _AddressQrScannerState();
 }
 
 class _AddressQrScannerState extends State<AddressQrScanner> {
   QRViewController? _qrController;
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
-  final ValueChanged<QrCodeResult> resultCb;
 
-  _AddressQrScannerState({required this.resultCb});
   bool done = false;
   bool hasCameraPermission = false;
 
@@ -129,7 +130,7 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
       input = e.code;
       return ret;
     }).listen((scanData) async {
-      Future<void>.delayed(Duration(seconds: 2), () {
+      Future<void>.delayed(const Duration(seconds: 2), () {
         input = '';
       });
 
@@ -147,8 +148,8 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
                   .bodyText1
                   ?.copyWith(color: Colors.white),
             ),
-            duration: Duration(seconds: 3),
-            backgroundColor: Color(0xFF135579),
+            duration: const Duration(seconds: 3),
+            backgroundColor: const Color(0xFF135579),
           );
 
           await flushbar.show(context);
@@ -166,8 +167,8 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
                   .bodyText1
                   ?.copyWith(color: Colors.white),
             ),
-            duration: Duration(seconds: 3),
-            backgroundColor: Color(0xFF135579),
+            duration: const Duration(seconds: 3),
+            backgroundColor: const Color(0xFF135579),
           );
 
           await flushbar.show(context);
@@ -176,7 +177,7 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
           return;
         }
 
-        resultCb(result);
+        widget.resultCb(result);
         await popup();
       }
     });
@@ -193,7 +194,11 @@ class ShareTxidButtons extends StatelessWidget {
   final bool isLiquid;
   final String txid;
 
-  ShareTxidButtons({required this.txid, required this.isLiquid});
+  const ShareTxidButtons({
+    Key? key,
+    required this.isLiquid,
+    required this.txid,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -201,18 +206,18 @@ class ShareTxidButtons extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
           child: SizedBox(
             height: 50,
             child: ElevatedButton(
               onPressed: () =>
                   context.read(walletProvider).openTxUrl(txid, isLiquid, true),
-              child: Text('LINK TO EXTERNAL EXPLORER').tr(),
+              child: const Text('LINK TO EXTERNAL EXPLORER').tr(),
             ),
           ),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
           child: SizedBox(
             height: 50,
             child: CustomButton(
@@ -227,9 +232,10 @@ class ShareTxidButtons extends StatelessWidget {
 }
 
 class ShareAddress extends StatelessWidget {
-  ShareAddress({
+  const ShareAddress({
+    Key? key,
     required this.addr,
-  });
+  }) : super(key: key);
 
   final String addr;
 
@@ -254,12 +260,15 @@ class ShareAddress extends StatelessWidget {
 class CopyButton extends StatelessWidget {
   final String value;
 
-  CopyButton({required this.value});
+  const CopyButton({
+    Key? key,
+    required this.value,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(
+      icon: const Icon(
         Icons.copy,
         size: 32,
       ),

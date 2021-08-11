@@ -2,8 +2,10 @@ use prost::Message;
 use sideswap_common::types::Env;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
-use std::sync::mpsc::{Receiver, Sender};
+use std::sync::mpsc::Sender;
 use std::sync::Once;
+
+use crate::worker;
 
 pub mod proto {
     include!(concat!(env!("OUT_DIR"), "/sideswap.proto.rs"));
@@ -20,8 +22,7 @@ pub struct StartParams {
 }
 
 pub struct Client {
-    to_sender: Sender<ToMsg>,
-    to_receiver: Option<Receiver<ToMsg>>,
+    msg_sender: Sender<worker::Message>,
     env: Env,
 }
 
@@ -33,12 +34,8 @@ pub type IntPtr = u64;
 // NOTE: Do not use usize for ffi, use u64 instead.
 // Uisng usize breaks generated code on 32 builds (arm7).
 
-#[no_mangle]
-pub extern "C" fn sideswap_client_create(env: i32) -> IntPtr {
-    let client = create(env);
-    let client = Box::into_raw(client);
-    client as IntPtr
-}
+// Client pointer to use from background notifications
+static GLOBAL_CLIENT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 
 fn get_string(str: *const c_char) -> String {
     let str = unsafe { std::ffi::CStr::from_ptr(str) };
@@ -47,17 +44,66 @@ fn get_string(str: *const c_char) -> String {
 
 #[no_mangle]
 pub extern "C" fn sideswap_client_start(
-    client: IntPtr,
+    env: i32,
     work_dir: *const c_char,
     version: *const c_char,
     dart_port: i64,
-) {
-    let client = unsafe { &mut *(client as *mut Client) };
+) -> IntPtr {
+    INIT_LOGGER_FLAG.call_once(|| {
+        init_log();
+    });
+
+    std::panic::set_hook(Box::new(|i| {
+        error!("sideswap panic detected: {:?}", i);
+        std::process::abort();
+    }));
+
+    info!("started");
+
+    let env = match env {
+        SIDESWAP_ENV_PROD => Env::Prod,
+        SIDESWAP_ENV_STAGING => Env::Staging,
+        SIDESWAP_ENV_REGTEST => Env::Regtest,
+        SIDESWAP_ENV_LOCAL => Env::Local,
+        _ => panic!("unknown env"),
+    };
+
     let start_params = StartParams {
         work_dir: get_string(work_dir),
         version: get_string(version),
     };
-    start(client, start_params, dart_port);
+
+    let (msg_sender, msg_receiver) = std::sync::mpsc::channel::<worker::Message>();
+    let (from_sender, from_receiver) = std::sync::mpsc::channel::<FromMsg>();
+
+    let client = Box::new(Client {
+        env,
+        msg_sender: msg_sender.clone(),
+    });
+
+    std::thread::Builder::new()
+        .name("worker_rust".to_owned())
+        .spawn(move || {
+            worker::start_processing(env, msg_sender, msg_receiver, from_sender, start_params);
+        })
+        .unwrap();
+
+    std::thread::spawn(move || {
+        let port = allo_isolate::Isolate::new(dart_port);
+        for msg in from_receiver {
+            let from = proto::From { msg: Some(msg) };
+            let mut buf = Vec::new();
+            from.encode(&mut buf).expect("encoding message failed");
+            let msg = std::boxed::Box::new(RecvMessage(buf));
+            let msg_ptr = Box::into_raw(msg) as IntPtr;
+            let result = port.post(msg_ptr);
+            assert!(result == true);
+        }
+    });
+
+    let client = Box::into_raw(client) as IntPtr;
+    GLOBAL_CLIENT.store(client, std::sync::atomic::Ordering::Relaxed);
+    client
 }
 
 #[no_mangle]
@@ -69,9 +115,42 @@ pub extern "C" fn sideswap_send_request(client: IntPtr, data: *const u8, len: u6
     let to = proto::To::decode(slice).expect("message decode failed");
     let msg = to.msg.expect("empty to message");
     client
-        .to_sender
-        .send(msg)
+        .msg_sender
+        .send(worker::Message::Ui(msg))
         .expect("sending to message failed");
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_process_background(data: *const c_char) {
+    let data = unsafe { CStr::from_ptr(data) }
+        .to_str()
+        .expect("invalid c-str")
+        .to_owned();
+
+    let client = GLOBAL_CLIENT.load(std::sync::atomic::Ordering::Relaxed);
+    info!(
+        "background message received, client: {}, data: {}",
+        client, data
+    );
+    if client == 0 {
+        return;
+    }
+    let client = unsafe { &mut *(client as *mut Client) };
+    let (sender, receiver) = std::sync::mpsc::channel::<()>();
+    let started = std::time::Instant::now();
+    client
+        .msg_sender
+        .send(worker::Message::BackgroundMessage(data, sender))
+        .expect("sending to message failed");
+    let wait_result = receiver.recv_timeout(std::time::Duration::from_secs(25));
+    let time = std::time::Instant::now().duration_since(started);
+    match wait_result {
+        Ok(_) => info!(
+            "background message processing done ({} seconds)",
+            time.as_secs()
+        ),
+        Err(_) => warn!("wait timeout"),
+    }
 }
 
 pub const SIDESWAP_BITCOIN: i32 = 1;
@@ -159,60 +238,6 @@ fn init_log() {
         std::env::set_var("RUST_LOG", LOG_FILTER);
     }
     env_logger::init();
-}
-
-fn create(env: i32) -> Box<Client> {
-    INIT_LOGGER_FLAG.call_once(|| {
-        init_log();
-    });
-
-    info!("started");
-
-    let env = match env {
-        SIDESWAP_ENV_PROD => Env::Prod,
-        SIDESWAP_ENV_STAGING => Env::Staging,
-        SIDESWAP_ENV_REGTEST => Env::Regtest,
-        SIDESWAP_ENV_LOCAL => Env::Local,
-        _ => panic!("unknown env"),
-    };
-
-    let (to_sender, to_receiver) = std::sync::mpsc::channel::<ToMsg>();
-
-    Box::new(Client {
-        env,
-        to_sender,
-        to_receiver: Some(to_receiver),
-    })
-}
-
-fn start(client: &mut Client, params: StartParams, dart_port: i64) {
-    std::panic::set_hook(Box::new(|i| {
-        error!("sideswap panic detected: {:?}", i);
-        std::process::abort();
-    }));
-
-    let env = client.env;
-    let to_receiver = client.to_receiver.take().unwrap();
-    let (from_sender, from_receiver) = std::sync::mpsc::channel::<FromMsg>();
-    std::thread::Builder::new()
-        .name("worker_rust".to_owned())
-        .spawn(move || {
-            super::worker::start_processing(env, to_receiver, from_sender, params);
-        })
-        .unwrap();
-
-    std::thread::spawn(move || {
-        let port = allo_isolate::Isolate::new(dart_port);
-        for msg in from_receiver {
-            let from = proto::From { msg: Some(msg) };
-            let mut buf = Vec::new();
-            from.encode(&mut buf).expect("encoding message failed");
-            let msg = std::boxed::Box::new(RecvMessage(buf));
-            let msg_ptr = Box::into_raw(msg) as IntPtr;
-            let result = port.post(msg_ptr);
-            assert!(result == true);
-        }
-    });
 }
 
 fn check_bitcoin_address(env: Env, addr: &str) -> bool {

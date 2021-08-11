@@ -307,6 +307,7 @@ fn get_pset(
         change_addr,
         price: details.price,
         private: None,
+        ttl_seconds: None,
     })
 }
 
@@ -416,11 +417,12 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                 SubmitRequest {
                     order: PriceOrder {
                         asset: asset.asset_id.clone(),
-                        bitcoin_amount: if send_bitcoins {
+                        bitcoin_amount: Some(if send_bitcoins {
                             -new_bitcoin_amount_normal.to_bitcoin()
                         } else {
                             new_bitcoin_amount_normal.to_bitcoin()
-                        },
+                        }),
+                        asset_amount: None,
                         price: Some(price),
                         index_price: None,
                     },
@@ -636,7 +638,7 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                         send_request,
                         Subscribe,
                         SubscribeRequest {
-                            asset: asset.asset_id.clone()
+                            asset: Some(asset.asset_id.clone()),
                         }
                     )
                     .expect("subscribing to order list failed");

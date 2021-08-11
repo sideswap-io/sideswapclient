@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
 class ImportContactsSuccess extends StatelessWidget {
@@ -33,9 +33,11 @@ class ImportContactsSuccess extends StatelessWidget {
             ),
           ),
         ),
-        button: 'CONTINUE'.tr(),
+        buttonText: 'CONTINUE'.tr(),
         onPressed: () async {
-          await context.read(walletProvider).loginAndLoadMainPage();
+          final confirmPhoneData =
+              context.read(phoneProvider).getConfirmPhoneData();
+          await confirmPhoneData.onImportContactsDone!(context);
         },
       ),
     );

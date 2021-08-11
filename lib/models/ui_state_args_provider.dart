@@ -9,7 +9,7 @@ enum WalletMainNavigationItem {
   assetDetails,
   assetReceive,
   transactions,
-  requests,
+  markets,
   swap,
 }
 
@@ -32,12 +32,11 @@ class WalletMainArguments {
         return copyWith(
             currentIndex: currentIndex,
             navigationItem: WalletMainNavigationItem.accounts);
-      // TODO: uncomment when request will be ready
-      // case 2:
-      //   return copyWith(
-      //       currentIndex: currentIndex,
-      //       navigationItem: WalletMainNavigationItem.requests);
       case 2:
+        return copyWith(
+            currentIndex: currentIndex,
+            navigationItem: WalletMainNavigationItem.markets);
+      case 3:
         return copyWith(
             currentIndex: currentIndex,
             navigationItem: WalletMainNavigationItem.swap);

@@ -12,6 +12,8 @@ import 'package:sideswap/screens/settings/widgets/settings_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_delete_wallet_dialog.dart';
 
 class Settings extends StatefulWidget {
+  const Settings({Key? key}) : super(key: key);
+
   @override
   _SettingsState createState() => _SettingsState();
 }
@@ -149,17 +151,19 @@ class _SettingsState extends State<Settings> {
                   );
                 },
               ),
-              // Padding(
-              //   padding: EdgeInsets.only(top: 8.h),
-              //   child: SettingsButton(
-              //     type: SettingsButtonType.network,
-              //     text: 'Network access'.tr(),
-              //     onPressed: () {
-              //       context.read(walletProvider).settingsNetwork();
-              //     },
-              //   ),
-              // ),
-              Spacer(),
+              if (FlavorConfig.instance.values.enableNetworkSettings) ...[
+                Padding(
+                  padding: EdgeInsets.only(top: 8.h),
+                  child: SettingsButton(
+                    type: SettingsButtonType.network,
+                    text: 'Network access'.tr(),
+                    onPressed: () {
+                      context.read(walletProvider).settingsNetwork();
+                    },
+                  ),
+                ),
+              ],
+              const Spacer(),
               Padding(
                 padding: EdgeInsets.only(bottom: 48.w),
                 child: SettingsButton(

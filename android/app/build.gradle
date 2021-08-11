@@ -58,8 +58,8 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "androidx.biometric:biometric:1.0.1"
-    implementation "com.google.firebase:firebase-messaging:21.0.1"
+    implementation "androidx.biometric:biometric:1.1.0"
+    implementation "com.google.firebase:firebase-messaging:22.0.0"
     implementation platform('com.google.firebase:firebase-bom:26.5.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
 }

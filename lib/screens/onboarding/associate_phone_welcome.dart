@@ -45,14 +45,14 @@ class AssociatePhoneWelcome extends StatelessWidget {
                       children: [
                         Stack(
                           children: [
-                            Container(
+                            SizedBox(
                               width: double.maxFinite,
                               child: ClipRect(
                                 clipper: AvatarClipper(),
                                 child: Padding(
                                   padding:
                                       EdgeInsets.only(top: 56.h, right: 75.w),
-                                  child: Container(
+                                  child: SizedBox(
                                     width: 192.w,
                                     height: 267.h,
                                     child: SvgPicture.asset(
@@ -82,10 +82,10 @@ class AssociatePhoneWelcome extends StatelessWidget {
                             ),
                           ],
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Padding(
                           padding: EdgeInsets.only(bottom: 32.h),
-                          child: PageDots(
+                          child: const PageDots(
                             maxSelectedDots: 3,
                           ),
                         ),
@@ -94,7 +94,7 @@ class AssociatePhoneWelcome extends StatelessWidget {
                           child: CustomBigButton(
                             width: double.maxFinite,
                             height: 54.h,
-                            backgroundColor: Color(0xFF00C5FF),
+                            backgroundColor: const Color(0xFF00C5FF),
                             text: 'YES'.tr(),
                             onPressed: () {
                               context.read(walletProvider).setConfirmPhone();
@@ -110,7 +110,7 @@ class AssociatePhoneWelcome extends StatelessWidget {
                               height: 54.h,
                               backgroundColor: Colors.transparent,
                               text: 'NOT NOW'.tr(),
-                              textColor: Color(0xFF00C5FF),
+                              textColor: const Color(0xFF00C5FF),
                               onPressed: () {
                                 context
                                     .read(walletProvider)

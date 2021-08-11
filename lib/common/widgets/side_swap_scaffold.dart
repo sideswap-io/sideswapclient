@@ -6,7 +6,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/background/background_painter.dart';
 
 class SideSwapScaffold extends StatefulWidget {
-  SideSwapScaffold({
+  const SideSwapScaffold({
     Key? key,
     this.onWillPop,
     this.extendBody = false,

@@ -24,15 +24,17 @@ class PinProtectionProvider extends ChangeNotifier {
 
   PinProtectionProvider(this.read);
 
-  Future<bool> Function() onPinBlockadeCallback = () async {
-    return false;
-  };
+  Future<bool> Function()? onPinBlockadeCallback;
 
   Future<bool> pinBlockadeUnlocked() async {
-    return await onPinBlockadeCallback();
+    if (onPinBlockadeCallback != null) {
+      return await onPinBlockadeCallback!();
+    }
+    return false;
   }
 
-  VoidCallback onUnlock = () {};
+  VoidCallback? onUnlock;
+
   StreamSubscription<PinDecryptedData>? pinDecryptedSubscription;
   PinProtectionState state = PinProtectionState.idle;
 
@@ -100,7 +102,7 @@ class PinProtectionProvider extends ChangeNotifier {
   }
 
   void _onNumber(String number) {
-    if (pinCode.length == PinSetupProvider.MAX_PIN_LENGTH) {
+    if (pinCode.length == PinSetupProvider.maxPinLength) {
       return;
     }
 
@@ -118,7 +120,7 @@ class PinProtectionProvider extends ChangeNotifier {
   }
 
   Future<void> _onEnter() async {
-    if (pinCode.length < PinSetupProvider.MIN_PIN_LENGTH) {
+    if (pinCode.length < PinSetupProvider.minPinLength) {
       state = PinProtectionState.error;
       pinCode = '';
       errorMessage = 'PIN code is too short'.tr();
@@ -145,7 +147,9 @@ class PinProtectionProvider extends ChangeNotifier {
     logger.d(pinDecryptedData);
 
     if (pinDecryptedData.success) {
-      onUnlock();
+      if (onUnlock != null) {
+        onUnlock!();
+      }
       return;
     }
 

@@ -12,6 +12,8 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_table.dart';
 
 class SettingsViewBackup extends StatefulWidget {
+  const SettingsViewBackup({Key? key}) : super(key: key);
+
   @override
   _SettingsViewBackupState createState() => _SettingsViewBackupState();
 }
@@ -63,10 +65,10 @@ class _SettingsViewBackupState extends State<SettingsViewBackup> {
               final words = List<ValueNotifier<String>>.generate(
                   12, (index) => ValueNotifier(''));
               var index = 0;
-              mnemonicWords.forEach((e) {
-                words[index].value = e;
+              for (var word in mnemonicWords) {
+                words[index].value = word;
                 index++;
-              });
+              }
               return MnemonicTable(
                 onCheckError: (index) {
                   return false;

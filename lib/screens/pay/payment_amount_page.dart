@@ -8,6 +8,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
@@ -18,36 +19,39 @@ import 'package:sideswap/screens/pay/widgets/payment_send_amount.dart';
 class PaymentAmountPageArguments {
   PaymentAmountPageArguments({
     this.result,
+    this.friend,
   });
 
   QrCodeResult? result;
+  Friend? friend;
 }
 
 class PaymentAmountPage extends StatefulWidget {
-  PaymentAmountPage({Key? key}) : super(key: key);
+  const PaymentAmountPage({Key? key}) : super(key: key);
 
   @override
   _PaymentAmountPageState createState() => _PaymentAmountPageState();
 }
 
 class _PaymentAmountPageState extends State<PaymentAmountPage> {
-  String _dollarConversion = '';
-  String _assetId = '';
-  bool _enabled = false;
-  String _amount = '0';
-  TextEditingController? _tickerAmountController;
-  FocusNode _tickerAmountFocusNode = FocusNode();
+  String dollarConversion = '';
+  String assetId = '';
+  bool enabled = false;
+  String amount = '0';
+  TextEditingController? tickerAmountController;
+  late FocusNode tickerAmountFocusNode;
+  Friend? friend;
 
   final _labelStyle = GoogleFonts.roboto(
     fontSize: 15.sp,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF00C5FF),
+    color: const Color(0xFF00C5FF),
   );
 
   final _approximateStyle = GoogleFonts.roboto(
     fontSize: 14.sp,
     fontWeight: FontWeight.normal,
-    color: Color(0xFF709EBA),
+    color: const Color(0xFF709EBA),
   );
 
   String getSelectedAssetId() {
@@ -73,15 +77,16 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
   @override
   void initState() {
     super.initState();
-    _dollarConversion = '0.0';
-    _amount = context
+
+    dollarConversion = '0.0';
+    amount = context
             .read(paymentProvider)
             .paymentAmountPageArguments
             .result
             ?.amount
             ?.toStringAsFixed(8) ??
         '0';
-    _assetId = context
+    assetId = context
             .read(walletProvider)
             .assets[context
                 .read(paymentProvider)
@@ -90,28 +95,29 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                 ?.assetId]
             ?.assetId ??
         getSelectedAssetId();
-    _enabled = false;
-    _tickerAmountController = TextEditingController()
+    enabled = false;
+    tickerAmountController = TextEditingController()
       ..addListener(() {
-        validate(_tickerAmountController?.text ?? '');
+        validate(tickerAmountController?.text ?? '');
       });
 
-    if (_amount != '0') {
-      _tickerAmountController?.text = _amount;
+    if (amount != '0') {
+      tickerAmountController?.text = amount;
     }
 
-    _tickerAmountFocusNode = FocusNode();
+    tickerAmountFocusNode = FocusNode();
 
     context.read(paymentProvider).insufficientFunds = false;
 
     WidgetsBinding.instance?.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(_tickerAmountFocusNode);
+      FocusScope.of(context).requestFocus(tickerAmountFocusNode);
     });
   }
 
   @override
   void dispose() {
-    _tickerAmountController?.dispose();
+    tickerAmountFocusNode.dispose();
+    tickerAmountController?.dispose();
     super.dispose();
   }
 
@@ -119,49 +125,49 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
     if (value.isEmpty) {
       context.read(paymentProvider).insufficientFunds = false;
       setState(() {
-        _enabled = false;
-        _amount = '0';
+        enabled = false;
+        amount = '0';
       });
       return;
     }
 
     final precision =
-        context.read(walletProvider).getPrecisionForAssetId(assetId: _assetId);
-    final balance = context.read(balancesProvider).balances[_assetId];
+        context.read(walletProvider).getPrecisionForAssetId(assetId: assetId);
+    final balance = context.read(balancesProvider).balances[assetId];
     final newValue = value.replaceAll(' ', '');
-    final amount = double.tryParse(newValue)?.toDouble();
+    final newAmount = double.tryParse(newValue)?.toDouble();
     final realBalance = double.tryParse(
       amountStr(balance ?? 0, precision: precision),
     );
-    if (amount == null || realBalance == null) {
+    if (newAmount == null || realBalance == null) {
       setState(() {
-        _enabled = false;
-        _amount = '0';
+        enabled = false;
+        amount = '0';
       });
       return;
     }
 
     setState(() {
-      _amount = newValue;
+      amount = newValue;
     });
 
-    if (amount <= 0) {
+    if (newAmount <= 0) {
       setState(() {
-        _enabled = false;
+        enabled = false;
       });
       return;
     }
 
-    if (amount <= realBalance) {
+    if (newAmount <= realBalance) {
       setState(() {
-        _enabled = true;
+        enabled = true;
       });
       context.read(paymentProvider).insufficientFunds = false;
       return;
     }
 
     setState(() {
-      _enabled = false;
+      enabled = false;
     });
     context.read(paymentProvider).insufficientFunds = true;
   }
@@ -171,8 +177,8 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Pay'.tr(),
-        rightCloseButton: true,
-        onRightCloseButtonPressed: () {
+        showTrailingButton: true,
+        onTrailingButtonPressed: () {
           context.read(walletProvider).setRegistered();
         },
       ),
@@ -210,6 +216,8 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
             children: [
               Consumer(
                 builder: (context, watch, child) {
+                  final friend =
+                      watch(paymentProvider).paymentAmountPageArguments.friend;
                   final address = watch(paymentProvider)
                       .paymentAmountPageArguments
                       .result
@@ -217,6 +225,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                   return PaymentAmountReceiverField(
                     text: address ?? '',
                     labelStyle: _labelStyle,
+                    friend: friend,
                   );
                 },
               ),
@@ -225,17 +234,17 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                 child: Consumer(
                   builder: (context, watch, child) {
                     final showError = watch(paymentProvider).insufficientFunds;
-                    final amount = double.tryParse(_amount) ?? 0;
-                    final assetId =
-                        watch(walletProvider).getAssetById(_assetId)?.assetId;
-                    final usdAmount =
-                        watch(walletProvider).getAmountUsd(assetId, amount);
-                    _dollarConversion = usdAmount.toStringAsFixed(2);
+                    final newAmount = double.tryParse(amount) ?? 0;
+                    final newAssetId =
+                        watch(walletProvider).getAssetById(assetId)?.assetId;
+                    final usdAmount = watch(walletProvider)
+                        .getAmountUsd(newAssetId, newAmount);
+                    dollarConversion = usdAmount.toStringAsFixed(2);
                     final visibleConversion = context
                         .read(walletProvider)
-                        .isAmountUsdAvailable(assetId);
-                    _dollarConversion = replaceCharacterOnPosition(
-                        input: _dollarConversion, currencyChar: '\$');
+                        .isAmountUsdAvailable(newAssetId);
+                    dollarConversion = replaceCharacterOnPosition(
+                        input: dollarConversion, currencyChar: '\$');
                     return Column(
                       children: [
                         if (showError) ...[
@@ -245,7 +254,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                               Visibility(
                                 visible: visibleConversion,
                                 child: Text(
-                                  '≈ $_dollarConversion',
+                                  '≈ $dollarConversion',
                                   style: _approximateStyle,
                                 ),
                               ),
@@ -265,14 +274,14 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                                 style: GoogleFonts.roboto(
                                   fontSize: 14.sp,
                                   fontWeight: FontWeight.normal,
-                                  color: Color(0xFFFF7878),
+                                  color: const Color(0xFFFF7878),
                                 ),
                               ),
                             ] else ...[
                               Visibility(
                                 visible: visibleConversion,
                                 child: Text(
-                                  '≈ $_dollarConversion',
+                                  '≈ $dollarConversion',
                                   style: _approximateStyle,
                                 ),
                               ),
@@ -287,14 +296,14 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
               Padding(
                 padding: EdgeInsets.only(top: 10.h),
                 child: PaymentSendAmount(
-                  controller: _tickerAmountController,
-                  dropdownValue: _assetId,
-                  focusNode: _tickerAmountFocusNode,
+                  controller: tickerAmountController,
+                  dropdownValue: assetId,
+                  focusNode: tickerAmountFocusNode,
                   validate: (value) => validate(value),
                   onDropdownChanged: (value) {
                     setState(() {
-                      _assetId = value;
-                      _tickerAmountController?.text = '';
+                      assetId = value;
+                      tickerAmountController?.text = '';
                     });
                   },
                 ),
@@ -307,23 +316,23 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                     ProviderListener<Balances>(
                       provider: balancesProvider,
                       onChange: (context, state) {
-                        if (_tickerAmountController != null &&
-                            _tickerAmountController!.text.isNotEmpty) {
-                          validate(_tickerAmountController?.text ?? '');
+                        if (tickerAmountController != null &&
+                            tickerAmountController!.text.isNotEmpty) {
+                          validate(tickerAmountController?.text ?? '');
                         }
                       },
                       child: Consumer(
                         builder: (context, watch, child) {
                           final balance =
-                              watch(balancesProvider).balances[_assetId] ?? 0;
+                              watch(balancesProvider).balances[assetId] ?? 0;
                           final precision = context
                               .read(walletProvider)
-                              .getPrecisionForAssetId(assetId: _assetId);
+                              .getPrecisionForAssetId(assetId: assetId);
                           return Text(
                             'PAYMENT_BALANCE',
                             style: _approximateStyle,
                           ).tr(args: [
-                            '${amountStr(balance, precision: precision)}'
+                            (amountStr(balance, precision: precision))
                           ]);
                         },
                       ),
@@ -334,7 +343,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.w),
                         border: Border.all(
-                          color: Color(0xFF00C5FF),
+                          color: const Color(0xFF00C5FF),
                           width: 1,
                           style: BorderStyle.solid,
                         ),
@@ -344,16 +353,16 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                           setState(() {
                             final precision = context
                                 .read(walletProvider)
-                                .getPrecisionForAssetId(assetId: _assetId);
+                                .getPrecisionForAssetId(assetId: assetId);
                             final text = amountStr(
                                 context
                                         .read(balancesProvider)
-                                        .balances[_assetId] ??
+                                        .balances[assetId] ??
                                     0,
                                 precision: precision);
-                            if (_tickerAmountController?.value != null) {
-                              _tickerAmountController!.value =
-                                  _tickerAmountController!.value.copyWith(
+                            if (tickerAmountController?.value != null) {
+                              tickerAmountController!.value =
+                                  tickerAmountController!.value.copyWith(
                                 text: text,
                                 selection: TextSelection(
                                     baseOffset: text.length,
@@ -376,7 +385,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                           style: GoogleFonts.roboto(
                             fontSize: 12.sp,
                             fontWeight: FontWeight.normal,
-                            color: Color(0xFF00C5FF),
+                            color: const Color(0xFF00C5FF),
                           ),
                         ),
                       ),
@@ -387,26 +396,27 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
             ],
           ),
         ),
-        Spacer(),
+        const Spacer(),
         Padding(
           padding:
               EdgeInsets.only(top: 36.h, bottom: 24.h, left: 16.w, right: 16.w),
           child: CustomBigButton(
             width: double.infinity,
             height: 54.h,
-            backgroundColor: Color(0xFF00C5FF),
+            backgroundColor: const Color(0xFF00C5FF),
             text: 'CONTINUE'.tr(),
-            enabled: _enabled,
-            onPressed: _enabled
+            enabled: enabled,
+            onPressed: enabled
                 ? () {
                     context.read(paymentProvider).selectPaymentSend(
-                          context
+                          amount.toString(),
+                          assetId,
+                          address: context
                               .read(paymentProvider)
                               .paymentAmountPageArguments
                               .result
                               ?.address,
-                          _amount.toString(),
-                          _assetId,
+                          friend: friend,
                         );
                   }
                 : null,

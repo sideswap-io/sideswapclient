@@ -19,6 +19,8 @@ message Asset {
   required string ticker = 3;
   required string icon = 4;
   required uint32 precision = 5;
+  required bool swap_market = 6;
+  optional string domain = 7;
 }
 
 message Tx {
@@ -73,26 +75,45 @@ message ServerStatus {
   repeated FeeRate bitcoin_fee_rates = 5;
 }
 
+message UploadContact {
+  required string identifier = 1;
+  required string name = 2;
+  repeated string phones = 3;
+}
+
 message Contact {
-  required string name = 1;
-  required string phone = 2;
+  required string contact_key = 1;
+  required string name = 2;
+  required string phone = 3;
+}
+
+message ContactTransaction {
+  required string txid = 1;
+  required string contact_key = 2;
 }
 
 message Order {
   required string order_id = 1;
   required string asset_id = 2;
   required int64 bitcoin_amount = 3;
+  required bool send_bitcoins = 10;
   required int64 server_fee = 4;
   required int64 asset_amount = 5;
   required double price = 6;
   required int64 created_at = 7;
   required int64 expires_at = 8;
   required bool private = 9;
+  required bool auto_sign = 11;
+  required bool own = 12;
+  required bool token_market = 13;
+  required bool new = 14;
+  optional double index_price = 15;
 }
 
 message To {
   message Login {
     required string mnemonic = 1;
+    optional string phone_key = 2;
   }
 
   message EncryptPin {
@@ -127,6 +148,7 @@ message To {
   message CreateTx {
     required string addr = 1;
     required Balance balance = 2;
+    required bool is_contact = 3;
   }
 
   message SendTx {
@@ -150,22 +172,27 @@ message To {
     required string code = 2;
   }
 
+  message UnregisterPhone {
+    required string phone_key = 1;
+  }
+
   message UploadAvatar {
     required string phone_key = 1;
-    required string text = 2;
+    required string image = 2;
   }
 
   message UploadContacts {
     required string phone_key = 1;
-    repeated Contact contacts = 2;
+    repeated UploadContact contacts = 2;
   }
 
   message SubmitOrder {
     optional string session_id = 1;
     required string asset_id = 2;
-    required double bitcoin_amount = 3;
-    required double price = 4;
-    optional double index_price = 5;
+    optional double bitcoin_amount = 3;
+    optional double asset_amount = 4;
+    required double price = 5;
+    optional double index_price = 6;
   }
 
   message LinkOrder {
@@ -177,15 +204,41 @@ message To {
     required bool accept = 2;
     optional bool auto_sign = 3;
     optional bool private = 4;
+    optional uint64 ttl_seconds = 5;
   }
 
   message EditOrder {
     required string order_id = 1;
-    required double price = 2;
+    oneof data {
+      double price = 2;
+      double index_price = 3;
+    }
   }
 
   message CancelOrder {
     required string order_id = 1;
+  }
+
+  message Subscribe {
+    enum Market {
+      NONE = 0;
+      TOKENS = 1;
+      ASSET = 2;
+    }
+    required Market market = 1;
+    optional string asset_id = 2;
+  }
+
+  message SubscribePrice {
+    required string asset_id = 2;
+  }
+
+  message UnsubscribePrice {
+    required string asset_id = 2;
+  }
+
+  message AssetDetails {
+    required string asset_id = 2;
   }
 
   oneof msg {
@@ -209,6 +262,7 @@ message To {
 
     RegisterPhone register_phone = 40;
     VerifyPhone verify_phone = 41;
+    UnregisterPhone unregister_phone = 44;
     UploadAvatar upload_avatar = 42;
     UploadContacts upload_contacts = 43;
 
@@ -217,6 +271,10 @@ message To {
     SubmitDecision submit_decision = 51;
     EditOrder edit_order = 52;
     CancelOrder cancel_order = 53;
+    Subscribe subscribe = 54;
+    SubscribePrice subscribe_price = 55;
+    UnsubscribePrice unsubscribe_price = 56;
+    AssetDetails asset_details = 57;
   }
 }
 
@@ -321,6 +379,8 @@ message From {
     required bool sell_bitcoin = 6;
     required Step step = 7;
     required bool index_price = 9;
+    required bool internal = 10;
+    required bool auto_sign = 11;
   }
 
   message SubmitResult {
@@ -329,11 +389,37 @@ message From {
       TransItem swap_succeed = 2;
       string error = 3;
     }
-    required bool minimize_app = 4;
+  }
+
+  message OrderCreated {
+    required Order order = 1;
   }
 
   message OrderRemoved {
     required string order_id = 1;
+  }
+
+  message IndexPrice {
+    required string asset_id = 1;
+    optional double ind = 2;
+  }
+
+  message ContactRemoved {
+    required string contact_key = 1;
+  }
+
+  message AccountStatus {
+    required bool registered = 1;
+  }
+
+  message AssetDetails {
+    message Stats {
+      required int64 issued_amount = 1;
+      required int64 burned_amount = 2;
+      required bool has_blinded_issuances = 3;
+    }
+    required string asset_id = 1;
+    optional Stats stats = 2;
   }
 
   oneof msg {
@@ -362,6 +448,10 @@ message From {
     VerifyPhone verify_phone = 41;
     GenericResponse upload_avatar = 42;
     GenericResponse upload_contacts = 43;
+    Contact contact_created = 44;
+    ContactRemoved contact_removed = 45;
+    ContactTransaction contact_transaction = 46;
+    AccountStatus account_status = 47;
 
     ShowMessage show_message = 50;
     SubmitReview submit_review = 51;
@@ -371,7 +461,9 @@ message From {
 
     Empty server_connected = 60;
     Empty server_disconnected = 61;
-    Order order_created = 62;
+    OrderCreated order_created = 62;
     OrderRemoved order_removed = 63;
+    IndexPrice index_price = 64;
+    AssetDetails asset_details = 65;
   }
 }

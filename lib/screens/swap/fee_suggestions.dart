@@ -63,7 +63,7 @@ class FeeRates extends StatelessWidget {
                       borderRadius: BorderRadius.all(
                         Radius.circular(8.w),
                       ),
-                      color: Color(0xFF135579),
+                      color: const Color(0xFF135579),
                     ),
                     child: Material(
                       color: Colors.transparent,

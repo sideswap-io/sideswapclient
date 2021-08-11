@@ -1,0 +1,35 @@
+[package]
+name = "sideswap_dealer_bitfinex"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+sideswap_api = { version = "*", path = "../sideswap_api" }
+sideswap_common = { version = "*", path = "../sideswap_common" }
+sideswap_dealer = { version = "*", path = "../sideswap_dealer" }
+clap = "*"
+log = "*"
+log4rs = { version = "*", features = ["gzip"] }
+serde_json = "*"
+reqwest = { version = "*", features = ["blocking", "json"] }
+anyhow = "*"
+serde = { version = "1.0", features = ["derive"] }
+config = "*"
+crossbeam-channel = "*"
+tungstenite = "*"
+url = "*"
+async-tungstenite = { version = "*", features = ["async-std-runtime", "async-tls"] }
+async-std = "*"
+async-tls = "*"
+rustls = { version = "*", features = ["dangerous_configuration"] }
+futures = "*"
+futures-util = "*"
+webpki = "*"
+tokio = { version = "1.0", features = ["full"] }
+prost = "0.7.0"
+libc = "*"
+signal-hook = "*"
+hyper = { version = "*", features = ["server"] }
+
+[build-dependencies]
+prost-build = "0.7.0"

@@ -41,7 +41,7 @@ class AvatarProvider with ChangeNotifier {
   final _picker = ImagePicker();
   Object? avatarProviderError;
 
-  PickedFile? pickedFile;
+  XFile? pickedFile;
   UserAvatarData userAvatarData = UserAvatarData();
   image.Image? _userThumbnail;
 
@@ -69,15 +69,15 @@ class AvatarProvider with ChangeNotifier {
     return false;
   }
 
-  Future<PickedFile?> _loadImage({
+  Future<XFile?> _loadImage({
     ImageSource source = ImageSource.camera,
     CameraDevice preferredCameraDevice = CameraDevice.front,
   }) async {
-    PickedFile? pickedFile;
+    XFile? pickedFile;
     avatarProviderError = null;
 
     try {
-      pickedFile = await _picker.getImage(
+      pickedFile = await _picker.pickImage(
         source: source,
         preferredCameraDevice: preferredCameraDevice,
       );
@@ -148,7 +148,9 @@ class AvatarProvider with ChangeNotifier {
 
     logger.d('Loading user avatar from disk: ${storageDirectory.path}');
     final file = File('${storageDirectory.path}/avatar.jpg');
-    _userThumbnail = image.decodeJpg(file.readAsBytesSync().toList());
+    if (await file.exists()) {
+      _userThumbnail = image.decodeJpg(file.readAsBytesSync().toList());
+    }
 
     return _userThumbnail;
   }

@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapProgressBar extends StatefulWidget {
-  SideSwapProgressBar({
+  const SideSwapProgressBar({
     Key? key,
     this.percent = 0,
     this.displayText = true,
@@ -52,7 +52,7 @@ class _SideSwapProgressBarState extends State<SideSwapProgressBar> {
       _maxWidth = getMaxWidth();
     });
 
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width,
       child: Column(
         children: [
@@ -71,7 +71,7 @@ class _SideSwapProgressBarState extends State<SideSwapProgressBar> {
                     width: _maxWidth * (widget.percent / 100),
                     height: 8.w,
                     decoration: BoxDecoration(
-                      color: Color(0xFF00C5FF),
+                      color: const Color(0xFF00C5FF),
                       borderRadius: BorderRadius.all(Radius.circular(2.w)),
                     ),
                   ),

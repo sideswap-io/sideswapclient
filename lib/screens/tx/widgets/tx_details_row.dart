@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class TxDetailsRow extends StatelessWidget {
-  TxDetailsRow({
+  const TxDetailsRow({
     Key? key,
     required this.description,
     required this.details,
@@ -25,7 +25,7 @@ class TxDetailsRow extends StatelessWidget {
           style: GoogleFonts.roboto(
             fontSize: 15.sp,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF00C5FF),
+            color: const Color(0xFF00C5FF),
           ),
         ),
         Text(

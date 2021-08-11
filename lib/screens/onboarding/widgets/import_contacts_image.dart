@@ -11,7 +11,7 @@ class ImportContactsImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 192.w,
       height: 202.h,
       child: Stack(
@@ -26,19 +26,19 @@ class ImportContactsImage extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 21.h),
-            child: ContactMockupContainer(
+            child: const ContactMockupContainer(
               icon: ContactMockupIcon.male1,
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 77.h, left: 76.w),
-            child: ContactMockupContainer(
+            child: const ContactMockupContainer(
               icon: ContactMockupIcon.female1,
             ),
           ),
           Padding(
             padding: EdgeInsets.only(top: 133.h),
-            child: ContactMockupContainer(
+            child: const ContactMockupContainer(
               icon: ContactMockupIcon.male2,
             ),
           ),

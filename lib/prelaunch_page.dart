@@ -10,7 +10,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/initialize_app_provider.dart';
 
 class PreLaunchPage extends StatefulWidget {
-  PreLaunchPage({
+  const PreLaunchPage({
     Key? key,
   }) : super(key: key);
 
@@ -21,7 +21,7 @@ class PreLaunchPage extends StatefulWidget {
 class _PreLaunchPageState extends State<PreLaunchPage>
     with SingleTickerProviderStateMixin {
   final _counter = 5;
-  final _color = Color(0xFF00C5FF);
+  final _color = const Color(0xFF00C5FF);
   final List<double> delays = [.0, .25, .5, .75, 1.0];
   late AnimationController _controller;
 
@@ -29,10 +29,10 @@ class _PreLaunchPageState extends State<PreLaunchPage>
   void initState() {
     super.initState();
 
-    _controller =
-        AnimationController(vsync: this, duration: Duration(milliseconds: 1200))
-          ..addListener(() => setState(() {}))
-          ..repeat();
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1200))
+      ..addListener(() => setState(() {}))
+      ..repeat();
 
     // initialize app
     context.read(initializeAppProvider);
@@ -53,7 +53,7 @@ class _PreLaunchPageState extends State<PreLaunchPage>
             Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 180.h),
-                child: Container(
+                child: SizedBox(
                   width: 110.w,
                   height: 108.h,
                   child: SvgPicture.asset('assets/logo.svg'),
@@ -74,7 +74,7 @@ class _PreLaunchPageState extends State<PreLaunchPage>
             Center(
               child: Padding(
                 padding: EdgeInsets.only(top: 239.h),
-                child: Container(
+                child: SizedBox(
                   width: 66.w,
                   height: 10.w,
                   child: Row(

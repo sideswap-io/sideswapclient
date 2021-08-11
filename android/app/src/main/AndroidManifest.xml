@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.sideswap">
     <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <!-- <uses-permission android:name="android.permission.READ_CONTACTS" /> -->
     <uses-permission android:name="android.permission.VIBRATE" />
-    
+
     <!-- Enable this if you want to access to all default packages (like camera) in sdk>=30 -->
     <!-- <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"/> -->
 
@@ -30,6 +30,7 @@
         android:allowBackup="false"
         android:name="io.flutter.app.FlutterApplication"
         android:requestLegacyExternalStorage="true"
+        android:extractNativeLibs="true"
         >
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"

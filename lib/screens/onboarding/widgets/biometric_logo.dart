@@ -27,7 +27,7 @@ class BiometricLogo extends StatelessWidget {
               child: Icon(
                 Icons.fingerprint,
                 size: 72.h,
-                color: Color(0xFFCAF3FF),
+                color: const Color(0xFFCAF3FF),
               ),
             ),
           ),
@@ -39,7 +39,7 @@ class BiometricLogo extends StatelessWidget {
             child: Container(
               width: 169.w,
               height: 28.h,
-              color: Color(0xFF135579).withOpacity(0.79),
+              color: const Color(0xFF135579).withOpacity(0.79),
             ),
           ),
         ),
@@ -49,7 +49,7 @@ class BiometricLogo extends StatelessWidget {
             child: Container(
               width: 259.w,
               height: 3.h,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Color(0xFFCAF3FF),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(4),
@@ -72,10 +72,10 @@ class BiometricLogo extends StatelessWidget {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFF418AA6).withOpacity(0.6),
+                      const Color(0xFF418AA6).withOpacity(0.6),
                       Colors.white.withOpacity(0),
                     ],
-                    stops: [-0.5, 1.0],
+                    stops: const [-0.5, 1.0],
                   ),
                 ),
               ),

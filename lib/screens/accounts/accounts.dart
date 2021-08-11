@@ -6,11 +6,15 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/balances_provider.dart';
+import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
+import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 
 class Accounts extends StatelessWidget {
+  const Accounts({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -20,7 +24,6 @@ class Accounts extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 24.h),
             child: Row(
-              // mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Accounts',
@@ -29,7 +32,40 @@ class Accounts extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ).tr(),
-                Spacer(),
+                const Spacer(),
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      final wallet = context.read(walletProvider);
+                      final list =
+                          exportTxList(wallet.allTxs.values, wallet.assets);
+                      final csv = convertToCsv(list);
+                      shareCsv(csv);
+                    },
+                    borderRadius: BorderRadius.circular(21.w),
+                    child: Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                      ),
+                      child: Row(
+                        children: [
+                          const Spacer(),
+                          Padding(
+                            padding: EdgeInsets.only(right: 6.w),
+                            child: SvgPicture.asset(
+                              'assets/export.svg',
+                              width: 22.w,
+                              height: 21.h,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                 Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -46,12 +82,12 @@ class Accounts extends StatelessWidget {
                     child: Container(
                       width: 42.w,
                       height: 42.w,
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                       ),
                       child: Row(
                         children: [
-                          Spacer(),
+                          const Spacer(),
                           Padding(
                             padding: EdgeInsets.only(right: 6.w),
                             child: SvgPicture.asset(
@@ -73,13 +109,27 @@ class Accounts extends StatelessWidget {
               padding: EdgeInsets.only(top: 16.h),
               child: Consumer(
                 builder: (context, watch, child) {
-                  final length = watch(walletProvider).enabledAssetIds.length;
+                  final availableAssets =
+                      watch(walletProvider).enabledAssetIds.where((e) {
+                    // always display liquid asset
+                    if (e == context.read(walletProvider).liquidAssetId()) {
+                      return true;
+                    }
+
+                    final transactions =
+                        watch(walletProvider).txItemMap[e] ?? <TxItem>[];
+                    // hide assets with empty transactions
+                    if (transactions.isEmpty) {
+                      return false;
+                    }
+
+                    return true;
+                  }).toList();
                   return ListView(
                     children: List<Widget>.generate(
-                      length,
+                      availableAssets.length,
                       (index) {
-                        final assetId =
-                            watch(walletProvider).enabledAssetIds[index];
+                        final assetId = availableAssets[index];
                         final asset = watch(walletProvider).assets[assetId];
                         final balance =
                             watch(balancesProvider).balances[assetId] ?? 0;

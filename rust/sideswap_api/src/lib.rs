@@ -15,6 +15,9 @@ pub const OS_TYPE_OTHER: i32 = 0;
 pub const OS_TYPE_ANDROID: i32 = 1;
 pub const OS_TYPE_IOS: i32 = 2;
 
+pub const CONTACT_ADDRESSES_UPLOAD_COUNT_DEFAULT: usize = 20;
+pub const CONTACT_ADDRESSES_UPLOAD_COUNT_MAX: usize = 20;
+
 pub fn get_os_type() -> i32 {
     if cfg!(target_os = "android") {
         OS_TYPE_ANDROID
@@ -36,6 +39,12 @@ pub struct AssetId(pub String);
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Ticker(pub String);
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct ContactKey(pub String);
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
+pub struct AvatarId(pub String);
 
 impl std::fmt::Display for OrderId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -403,6 +412,8 @@ pub struct UpdatePushTokenRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RegisterPhoneRequest {
     pub number: String,
+    pub wallet_hash_id: String,
+    pub addresses: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -419,6 +430,13 @@ pub struct VerifyPhoneRequest {
 pub type VerifyPhoneResponse = Empty;
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct UnregisterPhoneRequest {
+    pub phone_key: PhoneKey,
+}
+
+pub type UnregisterPhoneResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UploadAvatarRequest {
     pub phone_key: PhoneKey,
     pub image: String,
@@ -426,17 +444,86 @@ pub struct UploadAvatarRequest {
 pub type UploadAvatarResponse = Empty;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Contact {
+pub struct UploadContact {
+    pub identifier: String,
     pub name: String,
-    pub phone: String,
+    pub phones: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UploadContactsRequest {
     pub phone_key: PhoneKey,
-    pub contacts: Vec<Contact>,
+    pub contacts: Vec<UploadContact>,
 }
 pub type UploadContactsResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Contact {
+    pub contact_key: ContactKey,
+    pub name: String,
+    pub phone: String,
+    pub avatar: Option<AvatarId>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactTransaction {
+    pub contact_key: ContactKey,
+    pub txid: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DownloadContactsRequest {
+    pub phone_key: PhoneKey,
+}
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct DownloadContactsResponse {
+    pub registered: bool,
+    pub contacts: Vec<Contact>,
+    pub transactions: Vec<ContactTransaction>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactCreatedNotification {
+    pub contact: Contact,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactRemovedNotification {
+    pub contact_key: ContactKey,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactTransactionCreatedNotification {
+    pub tx: ContactTransaction,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AccountStatusNotification {
+    pub registered: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactAddrRequest {
+    pub phone_key: PhoneKey,
+    pub contact_key: ContactKey,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactAddrResponse {
+    pub addr: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactBroadcastRequest {
+    pub raw_tx: String,
+    pub phone_key: PhoneKey,
+    pub contact_key: ContactKey,
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ContactBroadcastResponse {
+    pub txid: String,
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Void {}
@@ -451,6 +538,12 @@ pub enum OrderSide {
     Responder,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
+pub enum OrderType {
+    Bitcoin,
+    Asset,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Details {
     pub asset: AssetId,
@@ -460,12 +553,14 @@ pub struct Details {
     pub server_fee: i64,
     pub side: OrderSide,
     pub send_bitcoins: bool,
+    pub order_type: OrderType,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PriceOrder {
     pub asset: AssetId,
-    pub bitcoin_amount: f64,
+    pub bitcoin_amount: Option<f64>,
+    pub asset_amount: Option<f64>,
     pub price: Option<f64>,
     pub index_price: Option<f64>,
 }
@@ -524,19 +619,22 @@ pub struct LoginResponse {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubscribeRequest {
-    pub asset: AssetId,
+    pub asset: Option<AssetId>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubscribeResponse {
-    pub asset: AssetId,
+    pub asset: Option<AssetId>,
     pub orders: Vec<OrderCreatedNotification>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UnsubscribeRequest {
-    pub asset: AssetId,
+    pub asset: Option<AssetId>,
 }
-pub type UnsubscribeResponse = Empty;
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UnsubscribeResponse {
+    pub asset: Option<AssetId>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Own {
@@ -578,6 +676,7 @@ pub struct AddrRequest {
     pub change_addr: String,
     pub price: f64,
     pub private: Option<bool>,
+    pub ttl_seconds: Option<u64>,
 }
 pub type AddrResponse = Empty;
 
@@ -606,6 +705,29 @@ pub struct GetSignResponse {
     pub data: SignNotification,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AssetDetailsRequest {
+    pub asset_id: AssetId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AssetStats {
+    pub issued_amount: i64,
+    pub burned_amount: i64,
+    pub has_blinded_issuances: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AssetDetailsResponse {
+    pub asset_id: AssetId,
+    pub name: String,
+    pub ticker: Ticker,
+    pub precision: u8,
+    pub icon_url: String,
+    pub domain: String,
+    pub chain_stats: Option<AssetStats>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CompleteNotification {
     pub order_id: OrderId,
@@ -616,6 +738,7 @@ pub struct CompleteNotification {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Request {
+    Ping(Empty),
     ServerStatus(Empty),
     Assets(AssetsRequest),
     PegFee(PegFeeRequest),
@@ -639,8 +762,13 @@ pub enum Request {
 
     RegisterPhone(RegisterPhoneRequest),
     VerifyPhone(VerifyPhoneRequest),
+    UnregisterPhone(UnregisterPhoneRequest),
+
     UploadAvatar(UploadAvatarRequest),
     UploadContacts(UploadContactsRequest),
+    DownloadContacts(DownloadContactsRequest),
+    ContactAddr(ContactAddrRequest),
+    ContactBroadcast(ContactBroadcastRequest),
 
     LoadPrices(LoadPricesRequest),
     CancelPrices(CancelPricesRequest),
@@ -654,10 +782,12 @@ pub enum Request {
     Addr(AddrRequest),
     Sign(SignRequest),
     GetSign(GetSignRequest),
+    AssetDetails(AssetDetailsRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Response {
+    Ping(Empty),
     ServerStatus(ServerStatus),
     Assets(AssetsResponse),
     PegFee(PegFeeResponse),
@@ -681,8 +811,13 @@ pub enum Response {
 
     RegisterPhone(RegisterPhoneResponse),
     VerifyPhone(VerifyPhoneResponse),
+    UnregisterPhone(UnregisterPhoneResponse),
+
     UploadAvatar(UploadAvatarResponse),
     UploadContacts(UploadContactsResponse),
+    DownloadContacts(DownloadContactsResponse),
+    ContactAddr(ContactAddrResponse),
+    ContactBroadcast(ContactBroadcastResponse),
 
     LoadPrices(LoadPricesResponse),
     CancelPrices(CancelPricesResponse),
@@ -696,6 +831,7 @@ pub enum Response {
     Addr(AddrResponse),
     Sign(SignResponse),
     GetSign(GetSignResponse),
+    AssetDetails(AssetDetailsResponse),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -713,6 +849,11 @@ pub enum Notification {
     OrderRemoved(OrderRemovedNotification),
     Sign(SignNotification),
     Complete(CompleteNotification),
+
+    ContactCreated(ContactCreatedNotification),
+    ContactRemoved(ContactRemovedNotification),
+    ContactTransaction(ContactTransactionCreatedNotification),
+    AccountStatus(AccountStatusNotification),
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
@@ -802,11 +943,17 @@ pub enum FcmMessage {
 }
 
 #[derive(serde::Deserialize, Debug)]
+pub struct GdkEntity {
+    pub domain: Option<String>,
+}
+
+#[derive(serde::Deserialize, Debug)]
 pub struct GdkAsset {
     pub asset_id: AssetId,
     pub name: Option<String>,
     pub precision: Option<u8>,
     pub ticker: Option<Ticker>,
+    pub entity: Option<GdkEntity>,
 }
 
 #[derive(serde::Deserialize, Debug, Default)]

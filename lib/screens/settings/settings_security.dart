@@ -25,19 +25,19 @@ class SettingsSecurity extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: AbsorbPointer(
-          child: Container(
+          child: SizedBox(
             height: 60.w,
             child: TextButton(
               onPressed: () {},
               style: TextButton.styleFrom(
                 primary: Colors.white,
-                backgroundColor: Color(0xFF135579),
+                backgroundColor: const Color(0xFF135579),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
                     Radius.circular(8.w),
                   ),
                 ),
-                side: BorderSide(
+                side: const BorderSide(
                   color: Color(0xFF135579),
                   width: 1,
                   style: BorderStyle.solid,
@@ -52,7 +52,7 @@ class SettingsSecurity extends StatelessWidget {
                     child: Icon(
                       icon,
                       size: 24.h,
-                      color: Color(0xFF00C5FF),
+                      color: const Color(0xFF00C5FF),
                     ),
                   ),
                   Padding(
@@ -66,7 +66,7 @@ class SettingsSecurity extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Padding(
                     padding: EdgeInsets.only(right: 19.w),
                     child: FlutterSwitch(
@@ -76,8 +76,8 @@ class SettingsSecurity extends StatelessWidget {
                       height: 31.h,
                       toggleSize: 27.h,
                       padding: 2.h,
-                      activeColor: Color(0xFF00C5FF),
-                      inactiveColor: Color(0xFF164D6A),
+                      activeColor: const Color(0xFF00C5FF),
+                      inactiveColor: const Color(0xFF164D6A),
                       toggleColor: Colors.white,
                     ),
                   ),

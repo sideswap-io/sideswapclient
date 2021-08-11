@@ -17,14 +17,14 @@
 
 typedef uint64_t IntPtr;
 
-IntPtr sideswap_client_create(int32_t env);
-
-void sideswap_client_start(IntPtr client,
-                           const char *work_dir,
-                           const char *version,
-                           int64_t dart_port);
+IntPtr sideswap_client_start(int32_t env,
+                             const char *work_dir,
+                             const char *version,
+                             int64_t dart_port);
 
 void sideswap_send_request(IntPtr client, const uint8_t *data, uint64_t len);
+
+void sideswap_process_background(const char *data);
 
 bool sideswap_check_addr(IntPtr client, const char *addr, int32_t addr_type);
 

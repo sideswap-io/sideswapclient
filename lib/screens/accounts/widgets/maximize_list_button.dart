@@ -5,14 +5,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class MaximizeListButton extends StatefulWidget {
-  MaximizeListButton({
+  const MaximizeListButton({
     Key? key,
-    this.isExpanded = false,
     this.onPressed,
+    required this.position,
   }) : super(key: key);
 
   final VoidCallback? onPressed;
-  final bool isExpanded;
+  final double position;
 
   @override
   _MaximizeListButtonState createState() => _MaximizeListButtonState();
@@ -26,19 +26,22 @@ class _MaximizeListButtonState extends State<MaximizeListButton> {
       child: InkWell(
         onTap: widget.onPressed,
         borderRadius: BorderRadius.circular(48.w),
-        child: Container(
+        child: SizedBox(
           width: 48.w,
           height: 48.w,
           child: Center(
             child: Transform(
-              transform:
-                  Matrix4.rotationX((widget.isExpanded ? 0 : -2) * pi / 2),
+              transform: Matrix4.rotationX(widget.position * pi),
               alignment: Alignment.center,
-              child: SvgPicture.asset(
-                'assets/mini_button.svg',
-                width: 22.w,
-                height: 13.h,
-                color: Colors.white,
+              child: Transform(
+                transform: Matrix4.rotationX(pi),
+                alignment: Alignment.center,
+                child: SvgPicture.asset(
+                  'assets/mini_button.svg',
+                  width: 22.w,
+                  height: 13.h,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),

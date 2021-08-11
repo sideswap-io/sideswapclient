@@ -8,7 +8,7 @@ import 'package:sideswap/screens/home/widgets/home_bottom_panel.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 
 class Home extends StatelessWidget {
-  Home({Key? key}) : super(key: key);
+  const Home({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,11 @@ class Home extends StatelessWidget {
                             onTap: () {
                               context.read(walletProvider).settingsViewPage();
                             },
-                            child: SvgPicture.asset('assets/settings.svg'),
+                            child: SvgPicture.asset(
+                              'assets/settings.svg',
+                              width: 24.w,
+                              height: 24.w,
+                            ),
                           ),
                         ),
                       ],
@@ -44,7 +48,7 @@ class Home extends StatelessWidget {
                   ),
                   Padding(
                     padding: EdgeInsets.only(top: 34.h),
-                    child: Container(
+                    child: SizedBox(
                       width: 156.w,
                       height: 152.h,
                       child: SvgPicture.asset('assets/logo.svg'),
@@ -53,7 +57,7 @@ class Home extends StatelessWidget {
                   Expanded(
                     child: Container(),
                   ),
-                  HomeBottomPanel()
+                  const HomeBottomPanel()
                 ],
               ),
             ),

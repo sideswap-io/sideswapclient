@@ -12,6 +12,7 @@ import 'package:rxdart/subjects.dart';
 
 import 'package:sideswap/common/permission_handler.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -35,11 +36,16 @@ class ContactProvider with ChangeNotifier {
   final Reader read;
 
   final BehaviorSubject<int> percentageLoaded = BehaviorSubject();
+  final BehaviorSubject<List<Friend>> friendsLoadedData = BehaviorSubject();
 
-  List<Contact> contactsData = <Contact>[];
+  List<Friend> friendsData = <Friend>[];
   ContactsLoadingState contactsLoadingState = ContactsLoadingState.idle;
 
   Future<void> loadContacts() async {
+    if (contactsLoadingState != ContactsLoadingState.idle) {
+      return;
+    }
+
     contactsLoadingState = ContactsLoadingState.idle;
     notifyListeners();
 
@@ -60,11 +66,13 @@ class ContactProvider with ChangeNotifier {
     notifyListeners();
 
     percentageLoaded.add(0);
-    contactsData.clear();
+    friendsData.clear();
 
     final deviceContacts = flutter_contacts.Contacts.listContacts();
     final total = await deviceContacts.length ?? 0;
     var counter = 0;
+
+    var uploadContacts = To_UploadContacts();
 
     while (await deviceContacts.moveNext()) {
       final contact = await deviceContacts.current;
@@ -84,11 +92,29 @@ class ContactProvider with ChangeNotifier {
         }
       }
 
+      final identifier = contact.identifier;
+      final displayName = contact.displayName;
+      if (identifier != null && displayName != null) {
+        var uploadContact = UploadContact();
+        uploadContact.identifier = identifier;
+        uploadContact.name = displayName;
+        for (final phone in contact.phones) {
+          final value = phone.value;
+          if (value != null) {
+            uploadContact.phones.add(value);
+          }
+        }
+        if (uploadContact.phones.isNotEmpty) {
+          uploadContacts.contacts.add(uploadContact);
+        }
+      }
+
       counter++;
       percentageLoaded.add(counter * 100 ~/ total);
     }
 
-    read(walletProvider).uploadDeviceContacts(contacts: contactsData);
+    read(walletProvider).uploadDeviceContacts(uploadContacts);
+    friendsLoadedData.add(friendsData);
   }
 
   void addContactToLocalList(
@@ -105,14 +131,14 @@ class ContactProvider with ChangeNotifier {
     try {
       // intentional used
       // ignore: unused_local_variable
-      final contact = contactsData.firstWhere((e) => e.phone == phone);
+      final contact = friendsData.firstWhere((e) => e.contact.phone == phone);
     } on StateError {
       // contact not found
       if (phone.isNotEmpty &&
           displayName.isNotEmpty &&
           !phone.startsWith('*')) {
         // ignore: unused_local_variable
-        String avatarString;
+        String? avatarString;
         if (avatar != null) {
           final img = image.decodeImage(avatar);
           if (img != null) {
@@ -124,9 +150,8 @@ class ContactProvider with ChangeNotifier {
         final contactData = Contact();
         contactData.phone = phone;
         contactData.name = displayName;
-        // TODO: add contact avatar when available
-        // contactData.avatar = avatarString;
-        contactsData.add(contactData);
+        var friendData = Friend(contact: contactData, avatar: avatarString);
+        friendsData.add(friendData);
       }
     }
   }
@@ -162,7 +187,7 @@ class ContactProvider with ChangeNotifier {
   }
 
   void _onIdle() {
-    Future<void>.delayed(Duration(milliseconds: 500), () {
+    Future<void>.delayed(const Duration(milliseconds: 500), () {
       contactsLoadingState = ContactsLoadingState.idle;
     });
   }

@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapInputDecoration extends InputDecoration {
-  SideSwapInputDecoration({
+  const SideSwapInputDecoration({
     Widget? icon,
     String? labelText,
     TextStyle? labelStyle,
@@ -102,7 +102,7 @@ class SideSwapInputDecoration extends InputDecoration {
       GoogleFonts.roboto(
         fontSize: 17.sp,
         fontWeight: FontWeight.normal,
-        color: Color(0xFF84ADC6),
+        color: const Color(0xFF84ADC6),
       );
 
   @override
@@ -128,7 +128,7 @@ class SideSwapInputDecoration extends InputDecoration {
         borderRadius: BorderRadius.all(
           Radius.circular(8.w),
         ),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: Colors.transparent,
         ),
       );
@@ -138,7 +138,7 @@ class SideSwapInputDecoration extends InputDecoration {
       super.focusedBorder ??
       OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(8.w)),
-        borderSide: BorderSide(
+        borderSide: const BorderSide(
           color: Colors.transparent,
         ),
       );

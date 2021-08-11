@@ -9,6 +9,7 @@ import 'dart:typed_data';
 import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:ffi/ffi.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +20,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:sideswap/models/balances_provider.dart';
+import 'package:sideswap/models/markets_provider.dart';
+import 'package:sideswap/models/request_order_provider.dart';
+import 'package:sideswap/models/token_market_provider.dart';
 import 'package:vibration/vibration.dart';
 import 'package:move_to_background/move_to_background.dart';
 
@@ -40,6 +44,7 @@ import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
+import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -101,6 +106,11 @@ enum Status {
   orderPopup,
   orderSuccess,
   orderResponseSuccess,
+
+  createOrderEntry,
+  createOrder,
+  createOrderSuccess,
+  orderRequestView,
 }
 
 enum AddrType {
@@ -160,14 +170,7 @@ class PinDecryptedData {
       'PinDecryptedData(error: $error, success: $success, mnemonic: $mnemonic)';
 }
 
-class Lib {
-  static var dynLib = (Platform.isIOS || Platform.isMacOS)
-      ? ffi.DynamicLibrary.process()
-      : ffi.DynamicLibrary.open('libsideswap_client.so');
-  static var lib = NativeLibrary(Lib.dynLib);
-}
-
-typedef dartPostCObject = ffi.Pointer Function(
+typedef DartPostCObject = ffi.Pointer Function(
     ffi.Pointer<
         ffi.NativeFunction<
             ffi.Int8 Function(ffi.Int64, ffi.Pointer<ffi.Dart_CObject>)>>);
@@ -218,6 +221,8 @@ class WalletChangeNotifier with ChangeNotifier {
   final allTxs = <String, TransItem>{};
   final newTransItemSubject = BehaviorSubject<TransItem>();
   StreamSubscription<TransItem>? txDetailsSubscription;
+
+  final serverConnection = BehaviorSubject<bool>();
 
   final _recvSubject = PublishSubject<From>();
 
@@ -273,16 +278,13 @@ class WalletChangeNotifier with ChangeNotifier {
     });
 
     final storeDartPostCObject = Lib.dynLib
-        .lookupFunction<dartPostCObject, dartPostCObject>(
+        .lookupFunction<DartPostCObject, DartPostCObject>(
             'store_dart_post_cobject');
     storeDartPostCObject(ffi.NativeApi.postCObject);
 
-    final env = read(configProvider).env;
-    _client = Lib.lib.sideswap_client_create(env);
-
-    await _addBtcAsset();
-
     _receivePort = ReceivePort();
+
+    final env = read(configProvider).env;
 
     final workDir = await getApplicationSupportDirectory();
     final workPath = workDir.absolute.path.toNativeUtf8();
@@ -293,8 +295,10 @@ class WalletChangeNotifier with ChangeNotifier {
         ? '${packageInfo.version}+${packageInfo.buildNumber}'
         : '';
 
-    Lib.lib.sideswap_client_start(_client, workPath.cast(),
+    _client = Lib.lib.sideswap_client_start(env, workPath.cast(),
         version.toNativeUtf8().cast(), _receivePort.sendPort.nativePort);
+
+    await _addBtcAsset();
 
     _receivePort.listen((dynamic msgPtr) async {
       final ptr = Lib.lib.sideswap_msg_ptr(msgPtr as int);
@@ -597,24 +601,27 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.submitReview:
-        logger.d('new submit {}', from.submitReview);
-
         final sellBitcoin = from.submitReview.sellBitcoin;
 
-        var orderType = OrderType.submit;
+        var orderType = OrderDetailsDataType.submit;
         switch (from.submitReview.step) {
           case (From_SubmitReview_Step.SUBMIT):
-            orderType = OrderType.submit;
+            orderType = OrderDetailsDataType.submit;
             break;
           case (From_SubmitReview_Step.QUOTE):
-            orderType = OrderType.quote;
+            orderType = OrderDetailsDataType.quote;
             break;
           case (From_SubmitReview_Step.SIGN):
-            orderType = OrderType.sign;
+            orderType = OrderDetailsDataType.sign;
             break;
         }
 
         final fromSr = from.submitReview;
+
+        if (!fromSr.internal) {
+          read(requestOrderProvider).insertExternalOrder(fromSr.orderId);
+        }
+
         final assetAmount = fromSr.assetAmount;
         final assetId = fromSr.asset;
         final bitcoinAmount = fromSr.bitcoinAmount;
@@ -622,10 +629,17 @@ class WalletChangeNotifier with ChangeNotifier {
         final bitcoinPrecision =
             getPrecisionForTicker(ticker: kLiquidBitcoinTicker);
         final orderId = fromSr.orderId;
-        final price = fromSr.price;
+        var price = fromSr.price;
+        final serverFee = from.submitReview.serverFee;
         final fee = amountStr(from.submitReview.serverFee.toInt(),
             precision: bitcoinPrecision);
         final indexPrice = from.submitReview.indexPrice;
+        const autoSign = true;
+
+        final isToken = read(requestOrderProvider).isAssetToken(assetId);
+        if (isToken) {
+          price = bitcoinAmount.toInt() / assetAmount.toInt();
+        }
 
         final priceStr = DecimalCutterTextInputFormatter(
           decimalRange: 2,
@@ -635,8 +649,11 @@ class WalletChangeNotifier with ChangeNotifier {
             .text;
 
         orderDetailsData = OrderDetailsData(
-          bitcoinAmount:
-              amountStr(bitcoinAmount.toInt(), precision: bitcoinPrecision),
+          bitcoinAmount: amountStr(
+              sellBitcoin
+                  ? bitcoinAmount.toInt() + serverFee.toInt()
+                  : bitcoinAmount.toInt() - serverFee.toInt(),
+              precision: bitcoinPrecision),
           priceAmount: priceStr,
           assetAmount:
               amountStr(assetAmount.toInt(), precision: assetPrecision),
@@ -645,10 +662,16 @@ class WalletChangeNotifier with ChangeNotifier {
           orderType: orderType,
           sellBitcoin: sellBitcoin,
           fee: fee.toString(),
-          indexPrice: indexPrice,
+          isTracking: indexPrice,
+          autoSign: autoSign,
         );
 
-        await setOrder();
+        if (read(requestOrderProvider).isOrderExternal(orderId) ||
+            orderType == OrderDetailsDataType.sign) {
+          await setOrder();
+        } else {
+          setCreateOrder();
+        }
         break;
 
       case From_Msg.submitResult:
@@ -658,14 +681,13 @@ class WalletChangeNotifier with ChangeNotifier {
               return;
             }
 
-            if (orderDetailsData.orderType == OrderType.submit) {
+            if (orderDetailsData.orderType == OrderDetailsDataType.submit) {
               setRegistered();
-              if (from.submitResult.minimizeApp) {
-                minimizeApp();
-              }
-            } else if (orderDetailsData.orderType == OrderType.quote) {
+            } else if (orderDetailsData.orderType ==
+                OrderDetailsDataType.quote) {
               setResponseSuccess();
-            } else if (orderDetailsData.orderType == OrderType.sign) {
+            } else if (orderDetailsData.orderType ==
+                OrderDetailsDataType.sign) {
               setRegistered();
             }
             break;
@@ -680,9 +702,6 @@ class WalletChangeNotifier with ChangeNotifier {
             await read(utilsProvider).showErrorDialog(from.submitResult.error,
                 buttonText: 'CONTINUE'.tr());
             setRegistered();
-            if (from.submitResult.minimizeApp) {
-              minimizeApp();
-            }
             break;
           case From_SubmitResult_Result.notSet:
             throw Exception('invalid SubmitResult message');
@@ -702,8 +721,107 @@ class WalletChangeNotifier with ChangeNotifier {
 
         break;
 
+      case From_Msg.contactCreated:
+        // TODO: Handle this case.
+        break;
+      case From_Msg.contactRemoved:
+        // TODO: Handle this case.
+        break;
+      case From_Msg.contactTransaction:
+        // TODO: Handle this case.
+        break;
+      case From_Msg.accountStatus:
+        if (!from.accountStatus.registered) {
+          removePhoneKey();
+        }
+        // TODO: Handle this case.
+        break;
+      case From_Msg.editOrder:
+        if (!from.editOrder.success) {
+          read(utilsProvider).showErrorDialog(from.editOrder.errorMsg,
+              buttonText: 'CLOSE'.tr());
+        }
+        break;
+      case From_Msg.cancelOrder:
+        if (!from.cancelOrder.success) {
+          read(utilsProvider).showErrorDialog(from.cancelOrder.errorMsg,
+              buttonText: 'CLOSE'.tr());
+        }
+        break;
+      case From_Msg.serverConnected:
+        serverConnection.add(true);
+        break;
+      case From_Msg.serverDisconnected:
+        serverConnection.add(false);
+        break;
+      case From_Msg.orderCreated:
+        final oc = from.orderCreated;
+        final sendBitcoins = !oc.order.sendBitcoins;
+        final isToken =
+            read(requestOrderProvider).isAssetToken(oc.order.assetId);
+        var price = oc.order.price;
+        if (isToken) {
+          price = oc.order.bitcoinAmount.toInt() / oc.order.assetAmount.toInt();
+        }
+
+        final order = RequestOrder(
+          orderId: oc.order.orderId,
+          assetId: oc.order.assetId,
+          bitcoinAmount: sendBitcoins
+              ? oc.order.bitcoinAmount.toInt() + oc.order.serverFee.toInt()
+              : oc.order.bitcoinAmount.toInt() - oc.order.serverFee.toInt(),
+          serverFee: oc.order.serverFee.toInt(),
+          assetAmount: oc.order.assetAmount.toInt(),
+          price: price,
+          createdAt: oc.order.createdAt.toInt(),
+          expiresAt: oc.order.expiresAt.toInt(),
+          private: oc.order.private,
+          sendBitcoins: sendBitcoins,
+          autoSign: oc.order.autoSign,
+          own: oc.order.own,
+          tokenMarket: oc.order.tokenMarket,
+          isNew: oc.order.new_14,
+          indexPrice: oc.order.indexPrice,
+        );
+
+        if (order.isNew && order.own) {
+          orderDetailsData = OrderDetailsData.fromRequestOrder(order, read);
+          read(walletProvider).setCreateOrderSuccess();
+        }
+
+        read(marketsProvider).insertOrder(order);
+
+        break;
+      case From_Msg.orderRemoved:
+        read(marketsProvider).removeOrder(from.orderRemoved.orderId);
+        break;
+
       case From_Msg.notSet:
         throw Exception('invalid empty message');
+      case From_Msg.indexPrice:
+        final ticker = read(requestOrderProvider)
+            .tickerForAssetId(from.indexPrice.assetId);
+        logger.d(
+            'INDEX PRICE: ${ticker.isEmpty ? from.indexPrice.assetId : ticker} ${from.indexPrice.ind}');
+        read(marketsProvider)
+            .setIndexPrice(from.indexPrice.assetId, from.indexPrice.ind);
+        break;
+      case From_Msg.assetDetails:
+        logger.d("Asset details: ${from.assetDetails}");
+        final hasStats = from.assetDetails.hasStats();
+        final assetDetailsData = AssetDetailsData(
+          assetId: from.assetDetails.assetId,
+          stats: hasStats
+              ? AssetDetailsStats(
+                  issuedAmount: from.assetDetails.stats.issuedAmount.toInt(),
+                  burnedAmount: from.assetDetails.stats.burnedAmount.toInt(),
+                  hasBlindedIssuances:
+                      from.assetDetails.stats.hasBlindedIssuances,
+                )
+              : null,
+        );
+        read(tokenMarketProvider).insertAssetDetails(assetDetailsData);
+        break;
     }
   }
 
@@ -756,6 +874,9 @@ class WalletChangeNotifier with ChangeNotifier {
       if (asset.ticker == kTetherTicker) {
         _tetherAssetId = asset.assetId;
       }
+      if (asset.ticker == kEurxTicker) {
+        _eurxAssetId = asset.assetId;
+      }
       updateEnabledAssetIds();
     }
     // Make sure we don't have null values
@@ -787,7 +908,8 @@ class WalletChangeNotifier with ChangeNotifier {
       return null;
     }
 
-    final amount = Decimal.tryParse(value);
+    final newValue = value.replaceAll(' ', '');
+    final amount = Decimal.tryParse(newValue);
 
     if (amount == null) {
       return null;
@@ -1053,6 +1175,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.newWalletPinWelcome:
       case Status.pinSetup:
       case Status.pinSuccess:
+      case Status.createOrderSuccess:
         return false;
 
       case Status.confirmPhone:
@@ -1088,7 +1211,6 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case Status.swapTxDetails:
       case Status.assetReceiveFromWalletMain:
-      case Status.orderPopup:
       case Status.orderSuccess:
       case Status.orderResponseSuccess:
         status = Status.registered;
@@ -1099,6 +1221,9 @@ class WalletChangeNotifier with ChangeNotifier {
           navigationItem: WalletMainNavigationItem.home,
         );
 
+        break;
+      case Status.orderPopup:
+        status = Status.registered;
         break;
       case Status.swapWaitPegTx:
         final uiStateArgs = read(uiStateArgsProvider);
@@ -1148,6 +1273,13 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.paymentSend:
         status = Status.paymentAmountPage;
         break;
+      case Status.createOrderEntry:
+      case Status.orderRequestView:
+        status = Status.registered;
+        break;
+      case Status.createOrder:
+        status = Status.createOrderEntry;
+        break;
     }
 
     notifyListeners();
@@ -1158,6 +1290,9 @@ class WalletChangeNotifier with ChangeNotifier {
     final msg = To();
     msg.login = To_Login();
     msg.login.mnemonic = mnemonic;
+    if (read(configProvider).phoneKey.isNotEmpty) {
+      msg.login.phoneKey = read(configProvider).phoneKey;
+    }
     sendMsg(msg);
 
     status = Status.walletLoading;
@@ -1435,8 +1570,10 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsDeletePromptConfirm() async {
+    unregisterPhone();
     _logout();
     await read(configProvider).deleteConfig();
+    read(phoneProvider).clearData();
     allTxs.clear();
     refreshTxs();
     status = Status.noWallet;
@@ -1511,29 +1648,29 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> buildTxList(Map<String, List<TxItem>> value) async {
     final _dateFormat = DateFormat('yyyy-MM-dd');
 
-    value.keys.forEach((key) {
+    for (var key in value.keys) {
       final listItems = value[key];
       if (listItems != null) {
         value[key] = listItems..sort((a, b) => b.compareTo(a));
 
         final tempAssets = <TxItem>[];
-        listItems.forEach((e) {
+        for (var item in listItems) {
           if (tempAssets.isEmpty) {
-            tempAssets.add(e.copyWith(showDate: true));
+            tempAssets.add(item.copyWith(showDate: true));
           } else {
             final last = DateTime.parse(_dateFormat.format(
                 DateTime.fromMillisecondsSinceEpoch(
                     tempAssets.last.createdAt)));
             final current = DateTime.parse(_dateFormat
-                .format(DateTime.fromMillisecondsSinceEpoch(e.createdAt)));
+                .format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)));
             final diff = last.difference(current).inDays;
-            tempAssets.add(e.copyWith(showDate: diff != 0));
+            tempAssets.add(item.copyWith(showDate: diff != 0));
           }
-        });
+        }
 
         value[key] = tempAssets;
       }
-    });
+    }
 
     txItemMap = value;
     notifyListeners();
@@ -1697,6 +1834,11 @@ class WalletChangeNotifier with ChangeNotifier {
     return _tetherAssetId;
   }
 
+  String? _eurxAssetId;
+  String? eurxAssetId() {
+    return _eurxAssetId;
+  }
+
   List<String> sendAssets() {
     return assets.keys.where((element) => element != bitcoinAssetId()).toList();
   }
@@ -1737,20 +1879,28 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> setOrder() async {
-    status = Status.orderPopup;
+    status = Status.registered;
     notifyListeners();
 
-    if (orderDetailsData.orderType == OrderType.sign) {
-      unawaited(FlutterRingtonePlayer.playNotification());
-      unawaited(Vibration.vibrate());
-    }
+    Future.microtask(() {
+      status = Status.orderPopup;
+      notifyListeners();
+
+      if (orderDetailsData.orderType == OrderDetailsDataType.sign) {
+        unawaited(FlutterRingtonePlayer.playNotification());
+        unawaited(Vibration.vibrate());
+      }
+    });
   }
 
   void setSubmitDecision({
     required bool autosign,
     bool accept = false,
+    bool private = true,
+    int ttlSeconds = kTenMinutes,
   }) {
-    orderDetailsData = orderDetailsData.copyWith(accept: accept);
+    orderDetailsData =
+        orderDetailsData.copyWith(accept: accept, private: private);
     if (orderDetailsData.orderId.isEmpty) {
       return;
     }
@@ -1760,6 +1910,8 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.submitDecision.orderId = orderDetailsData.orderId;
     msg.submitDecision.accept = accept;
     msg.submitDecision.autoSign = autosign;
+    msg.submitDecision.private = orderDetailsData.private;
+    msg.submitDecision.ttlSeconds = Int64(ttlSeconds);
     sendMsg(msg);
   }
 
@@ -1773,17 +1925,32 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void submitOrder(String sessionId, String assetId, double bitcoinAmount,
-      double price, double? indexPrice) {
+  void submitOrder(
+    String assetId,
+    double amount,
+    double price, {
+    bool isAssetAmount = false,
+    String? sessionId,
+    double? indexPrice,
+  }) {
     final msg = To();
     msg.submitOrder = To_SubmitOrder();
-    msg.submitOrder.sessionId = sessionId;
+    if (sessionId != null) {
+      msg.submitOrder.sessionId = sessionId;
+    }
     msg.submitOrder.assetId = assetId;
-    msg.submitOrder.bitcoinAmount = bitcoinAmount;
+
+    if (isAssetAmount) {
+      msg.submitOrder.assetAmount = amount;
+    } else {
+      msg.submitOrder.bitcoinAmount = amount;
+    }
     msg.submitOrder.price = price;
+
     if (indexPrice != null) {
       msg.submitOrder.indexPrice = indexPrice;
     }
+
     sendMsg(msg);
   }
 
@@ -1792,20 +1959,16 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
+    read(requestOrderProvider).insertExternalOrder(orderId);
+
     final msg = To();
     msg.linkOrder = To_LinkOrder();
     msg.linkOrder.orderId = orderId;
     sendMsg(msg);
   }
 
-  void uploadDeviceContacts({required List<Contact> contacts}) {
-    final uploadContacts = To_UploadContacts();
+  void uploadDeviceContacts(To_UploadContacts uploadContacts) {
     uploadContacts.phoneKey = read(configProvider).phoneKey;
-    final serverContactList = uploadContacts.contacts;
-    for (var c in contacts) {
-      serverContactList.add(c);
-    }
-
     final msg = To();
     msg.uploadContacts = uploadContacts;
     sendMsg(msg);
@@ -1814,7 +1977,7 @@ class WalletChangeNotifier with ChangeNotifier {
   void uploadAvatar({required String avatar}) {
     final uploadAvatar = To_UploadAvatar();
     uploadAvatar.phoneKey = read(configProvider).phoneKey;
-    uploadAvatar.text = avatar;
+    uploadAvatar.image = avatar;
 
     final msg = To();
     msg.uploadAvatar = uploadAvatar;
@@ -1952,5 +2115,71 @@ class WalletChangeNotifier with ChangeNotifier {
     if (Platform.isAndroid) {
       unawaited(MoveToBackground.moveTaskToBack());
     }
+  }
+
+  void setCreateOrderEntry() {
+    status = Status.createOrderEntry;
+    notifyListeners();
+  }
+
+  void setCreateOrder() {
+    status = Status.createOrder;
+    notifyListeners();
+  }
+
+  void setCreateOrderSuccess() {
+    status = Status.createOrderSuccess;
+    notifyListeners();
+  }
+
+  void unregisterPhone() {
+    final phoneKey = read(configProvider).phoneKey;
+    if (phoneKey.isNotEmpty) {
+      var msg = To();
+      msg.unregisterPhone = To_UnregisterPhone();
+      msg.unregisterPhone.phoneKey = phoneKey;
+      sendMsg(msg);
+
+      removePhoneKey();
+    }
+  }
+
+  void removePhoneKey() {
+    read(configProvider).setPhoneKey('');
+    read(configProvider).setPhoneNumber('');
+  }
+
+  void cancelOrder(String orderId) {
+    final msg = To();
+    msg.cancelOrder = To_CancelOrder();
+    msg.cancelOrder.orderId = orderId;
+    sendMsg(msg);
+  }
+
+  void modifyOrderPrice(
+    String orderId, {
+    double? price,
+    double? indexPrice,
+  }) {
+    orderDetailsData = OrderDetailsData.empty();
+    final msg = To();
+    msg.editOrder = To_EditOrder();
+    msg.editOrder.orderId = orderId;
+
+    if (indexPrice != null) {
+      msg.editOrder.indexPrice = indexPrice;
+    }
+
+    if (price != null) {
+      msg.editOrder.price = price;
+    }
+
+    sendMsg(msg);
+  }
+
+  void setOrderRequestView(RequestOrder requestOrder) {
+    read(requestOrderProvider).currentRequestOrderView = requestOrder;
+    status = Status.orderRequestView;
+    notifyListeners();
   }
 }

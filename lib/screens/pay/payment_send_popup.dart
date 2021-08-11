@@ -13,7 +13,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 
 class PaymentSendPopup extends StatelessWidget {
-  PaymentSendPopup({Key? key}) : super(key: key);
+  const PaymentSendPopup({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -81,89 +81,75 @@ class PaymentSendPopup extends StatelessWidget {
                 final visibleConversion = context
                     .read(walletProvider)
                     .isAmountUsdAvailable(asset?.assetId);
-                ;
 
                 return Text(
                   visibleConversion ? '≈ $_dollarConversion' : '',
                   style: GoogleFonts.roboto(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.normal,
-                    color: Color(0xFFD3E5F0),
+                    color: const Color(0xFFD3E5F0),
                   ),
                 );
               },
             ),
           ),
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.only(top: 8.h),
-              child: DottedLine(
-                dashColor: Color(0xFF2B6F95),
-                dashGapColor: Colors.transparent,
-                dashLength: 1.0,
-                dashGapLength: 0.0,
-              ),
+          Padding(
+            padding: EdgeInsets.only(top: 8.h),
+            child: const DottedLine(
+              dashColor: Color(0xFF2B6F95),
+              dashGapColor: Colors.transparent,
+              dashLength: 1.0,
+              dashGapLength: 0.0,
             ),
           ),
-          Flexible(
-            flex: 3,
-            child: Padding(
-              padding: EdgeInsets.only(top: 16.h),
-              child: Consumer(
-                builder: (context, watch, child) => TxDetailsColumn(
-                  description: 'To'.tr(),
-                  details: watch(paymentProvider).sendAddrParsed,
-                  detailsStyle: GoogleFonts.roboto(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
+          Padding(
+            padding: EdgeInsets.only(top: 16.h),
+            child: Consumer(
+              builder: (context, watch, child) => TxDetailsColumn(
+                description: 'To'.tr(),
+                details: watch(paymentProvider).sendAddrParsed,
+                detailsStyle: GoogleFonts.roboto(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.only(top: 16.h),
-              child: DottedLine(
-                dashColor: Color(0xFF2B6F95),
-                dashGapColor: Colors.transparent,
-                dashLength: 1.0,
-                dashGapLength: 0.0,
-              ),
+          Padding(
+            padding: EdgeInsets.only(top: 16.h),
+            child: const DottedLine(
+              dashColor: Color(0xFF2B6F95),
+              dashGapColor: Colors.transparent,
+              dashLength: 1.0,
+              dashGapLength: 0.0,
             ),
           ),
-          Flexible(
-            flex: 2,
-            child: Padding(
-              padding: EdgeInsets.only(top: 20.h),
-              child: Consumer(
-                builder: (context, watch, child) => TxDetailsColumn(
-                  description: 'Network Fee'.tr(),
-                  details:
-                      '${amountStr(watch(paymentProvider).sendNetworkFee)} $kLiquidBitcoinTicker',
-                  detailsStyle: GoogleFonts.roboto(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
+          Padding(
+            padding: EdgeInsets.only(top: 20.h),
+            child: Consumer(
+              builder: (context, watch, child) => TxDetailsColumn(
+                description: 'Network Fee'.tr(),
+                details:
+                    '${amountStr(watch(paymentProvider).sendNetworkFee)} $kLiquidBitcoinTicker',
+                detailsStyle: GoogleFonts.roboto(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
                 ),
               ),
             ),
           ),
-          Flexible(
-            child: Padding(
-              padding: EdgeInsets.only(top: 16.h),
-              child: DottedLine(
-                dashColor: Color(0xFF2B6F95),
-                dashGapColor: Colors.transparent,
-                dashLength: 1.0,
-                dashGapLength: 0.0,
-              ),
+          Padding(
+            padding: EdgeInsets.only(top: 16.h),
+            child: const DottedLine(
+              dashColor: Color(0xFF2B6F95),
+              dashGapColor: Colors.transparent,
+              dashLength: 1.0,
+              dashGapLength: 0.0,
             ),
           ),
           Expanded(
-            flex: 6,
             child: Container(),
           ),
           Padding(
@@ -171,7 +157,7 @@ class PaymentSendPopup extends StatelessWidget {
             child: CustomBigButton(
               width: MediaQuery.of(context).size.width,
               height: 54.h,
-              backgroundColor: Color(0xFF00C5FF),
+              backgroundColor: const Color(0xFF00C5FF),
               text: 'SEND'.tr(),
               enabled: true,
               onPressed: () async {

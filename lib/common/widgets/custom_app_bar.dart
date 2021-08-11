@@ -4,27 +4,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 
-class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
+class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
   final VoidCallback? onPressed;
   final Color? backButtonColor;
   final PreferredSizeWidget? bottom;
   final double toolbarHeight;
   final Color backgroundColor;
-  final bool rightCloseButton;
-  final VoidCallback? onRightCloseButtonPressed;
+  final bool showTrailingButton;
+  final VoidCallback? onTrailingButtonPressed;
+  final Widget? trailingWidget;
 
-  CustomAppBar({
+  const CustomAppBar({
+    Key? key,
     this.title,
     this.onPressed,
     this.backButtonColor,
     this.bottom,
-    this.toolbarHeight = 50,
+    this.toolbarHeight = kToolbarHeight,
     this.backgroundColor = Colors.transparent,
-    this.rightCloseButton = false,
-    this.onRightCloseButtonPressed,
-  }) : preferredSize = Size.fromHeight(
-            toolbarHeight + (bottom?.preferredSize.height ?? 0.0));
+    this.showTrailingButton = false,
+    this.onTrailingButtonPressed,
+    this.trailingWidget,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,43 +36,67 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
       centerTitle: false,
       automaticallyImplyLeading: false,
       flexibleSpace: title != null
-          ? Stack(
-              children: [
-                if (rightCloseButton) ...[
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                          top: 4.h + MediaQuery.of(context).padding.top,
-                          right: 22.w),
-                      child: CustomBackButton(
-                        width: 18.w,
-                        height: 18.w,
-                        buttonType: CustomBackButtonType.close,
-                        color: backButtonColor ?? Colors.white,
-                        onPressed: onRightCloseButtonPressed,
+          ? SafeArea(
+              child: SizedBox(
+                height: preferredSize.height,
+                child: Stack(
+                  children: [
+                    if (showTrailingButton) ...[
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            right: trailingWidget != null ? 10.w : 22.w,
+                          ),
+                          child: trailingWidget != null
+                              ? Material(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(42.w),
+                                  child: InkWell(
+                                    onTap: onTrailingButtonPressed,
+                                    borderRadius: BorderRadius.circular(42.w),
+                                    child: Container(
+                                      width: 48.w,
+                                      height: 48.w,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Center(
+                                        child: trailingWidget,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : CustomBackButton(
+                                  width: 18.w,
+                                  height: 18.w,
+                                  buttonType: CustomBackButtonType.close,
+                                  color: backButtonColor ?? Colors.white,
+                                  onPressed: onTrailingButtonPressed,
+                                ),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-                SafeArea(
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Container(
-                      width: 260.w,
-                      child: Text(
-                        title ?? '',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.roboto(
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    ],
+                    SafeArea(
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: 260.w,
+                          child: Text(
+                            title ?? '',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.roboto(
+                              fontSize: 22.sp,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             )
           : null,
       leading: CustomBackButton(
@@ -81,5 +107,6 @@ class CustomAppBar extends StatelessWidget with PreferredSizeWidget {
   }
 
   @override
-  final Size preferredSize;
+  Size get preferredSize =>
+      Size.fromHeight(toolbarHeight + (bottom?.preferredSize.height ?? 0.0));
 }

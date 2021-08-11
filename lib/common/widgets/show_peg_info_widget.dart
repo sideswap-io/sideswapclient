@@ -33,7 +33,7 @@ class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
         borderRadius: BorderRadius.all(
           Radius.circular(8.w),
         ),
-        color: Color(0xFF1C6086),
+        color: const Color(0xFF1C6086),
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
@@ -51,7 +51,7 @@ class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
             ),
             Padding(
               padding: EdgeInsets.only(top: 24.h),
-              child: Container(
+              child: SizedBox(
                 height: 66.h,
                 child: SingleChildScrollView(
                   child: Text(
@@ -68,7 +68,7 @@ class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
             ),
             Padding(
               padding: EdgeInsets.only(top: 22.h),
-              child: Divider(
+              child: const Divider(
                 height: 1,
                 thickness: 1,
                 color: Color(0xFF357CA4),
@@ -94,19 +94,19 @@ class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
                 ),
               ),
             ),
-            Divider(
+            const Divider(
               height: 1,
               thickness: 1,
               color: Color(0xFF357CA4),
             ),
-            Spacer(),
+            const Spacer(),
             Padding(
               padding: EdgeInsets.only(top: 32.h),
               child: CustomBigButton(
                 width: 295.w,
                 height: 54.h,
                 text: 'OK'.tr(),
-                backgroundColor: Color(0xFF00C5FF),
+                backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop();
                 },

@@ -22,7 +22,7 @@ void showQuoteExpiredDialog(BuildContext context) {
             borderRadius: BorderRadius.all(
               Radius.circular(8.w),
             ),
-            color: Color(0xFF1C6086),
+            color: const Color(0xFF1C6086),
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
@@ -33,9 +33,9 @@ void showQuoteExpiredDialog(BuildContext context) {
                   height: 56.h,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFF135579),
+                    color: const Color(0xFF135579),
                     border: Border.all(
-                      color: Color(0xFFFF7878),
+                      color: const Color(0xFFFF7878),
                       style: BorderStyle.solid,
                       width: 3,
                     ),
@@ -45,7 +45,7 @@ void showQuoteExpiredDialog(BuildContext context) {
                       'assets/error.svg',
                       width: 20.w,
                       height: 22.h,
-                      color: Color(0xFFFF7878),
+                      color: const Color(0xFFFF7878),
                     ),
                   ),
                 ),
@@ -63,7 +63,7 @@ void showQuoteExpiredDialog(BuildContext context) {
                 ),
                 Padding(
                   padding: EdgeInsets.only(top: 16.h),
-                  child: Container(
+                  child: SizedBox(
                     height: 88.h,
                     child: SingleChildScrollView(
                       child: Text(
@@ -79,12 +79,12 @@ void showQuoteExpiredDialog(BuildContext context) {
                     ),
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 CustomBigButton(
                   width: 279.w,
                   height: 54.h,
                   text: 'Continue'.tr(),
-                  backgroundColor: Color(0xFF00C5FF),
+                  backgroundColor: const Color(0xFF00C5FF),
                   onPressed: () async {
                     Navigator.of(context, rootNavigator: true).pop();
                   },

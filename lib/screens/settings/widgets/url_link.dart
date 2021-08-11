@@ -5,7 +5,7 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class UrlLink extends StatelessWidget {
   final String url;
-  UrlLink({this.url = ''});
+  const UrlLink({Key? key, this.url = ''}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class UrlLink extends StatelessWidget {
           }
         },
         child: Text(url,
-            style: TextStyle(
+            style: const TextStyle(
               decoration: TextDecoration.underline,
               color: Colors.blue,
               fontSize: 16,

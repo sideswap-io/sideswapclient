@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class BiometricShapeBorder extends ShapeBorder {
-  BiometricShapeBorder({
+  const BiometricShapeBorder({
     this.borderWidth = 6.0,
     this.borderLength = 41,
     this.borderRadius = 8,
@@ -62,7 +62,7 @@ class BiometricShapeBorder extends ShapeBorder {
       ..strokeCap = StrokeCap.round;
 
     final backgroundPaint = Paint()
-      ..color = Color(0xFF135579)
+      ..color = const Color(0xFF135579)
       ..style = PaintingStyle.fill;
 
     final topLeftX = rect.topLeft.dx + _halfBorderWidth;

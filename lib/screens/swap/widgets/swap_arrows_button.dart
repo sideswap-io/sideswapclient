@@ -19,11 +19,11 @@ class SwapArrowsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: color,
-      shape: CircleBorder(),
+      shape: const CircleBorder(),
       clipBehavior: Clip.hardEdge,
       child: InkResponse(
         onTap: onTap,
-        child: Container(
+        child: SizedBox(
           width: radius,
           height: radius,
           child: Center(

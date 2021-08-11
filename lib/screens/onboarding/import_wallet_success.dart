@@ -21,7 +21,7 @@ class ImportWalletSuccess extends StatelessWidget {
           header: 'Success!'.tr(),
           description:
               'You have successfully imported your wallet to this device'.tr(),
-          button: 'CONTINUE'.tr(),
+          buttonText: 'CONTINUE'.tr(),
           onPressed: () async {
             await context.read(walletProvider).setPinWelcome();
           }),

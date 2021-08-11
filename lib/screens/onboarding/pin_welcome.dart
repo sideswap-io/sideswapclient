@@ -96,11 +96,11 @@ class PinWelcomeBody extends StatelessWidget {
                 ),
               ),
             ),
-            Spacer(),
+            const Spacer(),
             CustomBigButton(
               width: double.maxFinite,
               height: 54.h,
-              backgroundColor: Color(0xFF00C5FF),
+              backgroundColor: const Color(0xFF00C5FF),
               text: 'YES'.tr(),
               onPressed: onYesPressed ??
                   () {
@@ -129,7 +129,7 @@ class PinWelcomeBody extends StatelessWidget {
                 height: 54.h,
                 backgroundColor: Colors.transparent,
                 text: 'NOT NOW'.tr(),
-                textColor: Color(0xFF00C5FF),
+                textColor: const Color(0xFF00C5FF),
                 onPressed: onNoPressed ??
                     () async {
                       await context

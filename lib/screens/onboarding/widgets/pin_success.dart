@@ -20,7 +20,7 @@ class PinSuccess extends StatelessWidget {
         resultType: ResultPageType.success,
         header: 'Wallet is protected'.tr(),
         description: 'PIN added successfully'.tr(),
-        button: 'CONTINUE'.tr(),
+        buttonText: 'CONTINUE'.tr(),
         onPressed: () {
           context.read(pinSetupProvider).onSuccess();
         },

@@ -8,7 +8,7 @@ class AssetReceivePopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SideSwapPopup(
+    return const SideSwapPopup(
       child: AssetReceiveWidget(),
     );
   }

@@ -7,6 +7,7 @@ members = [
     "sideswap_dealer",
     "sideswap_dealer_ws",
     "sideswap_dealer_example",
+    "sideswap_dealer_bitfinex",
     "gdk_rust",
     "sideswap_libwally",
 ]

@@ -26,7 +26,7 @@ class MnemonicTable extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Container(
+      child: SizedBox(
         width: double.maxFinite,
         height: 180.h,
         child: GridView.count(
@@ -51,14 +51,15 @@ class MnemonicTable extends StatelessWidget {
                     height: _itemHeight,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8.w),
-                      color:
-                          correctField ? Color(0xFF23729D) : Colors.transparent,
+                      color: correctField
+                          ? const Color(0xFF23729D)
+                          : Colors.transparent,
                       border: Border.all(
                         color: onCheckError(index)
                             ? Colors.red
                             : currentSelectedItem == index
-                                ? Color(0xFF00C5FF)
-                                : Color(0xFF23729D),
+                                ? const Color(0xFF00C5FF)
+                                : const Color(0xFF23729D),
                         width: 1,
                         style: BorderStyle.solid,
                       ),
@@ -68,14 +69,14 @@ class MnemonicTable extends StatelessWidget {
                       children: [
                         Padding(
                           padding: EdgeInsets.only(left: 6.w),
-                          child: Container(
+                          child: SizedBox(
                             width: 16.w,
                             child: Text(
                               '${index + 1}',
                               style: GoogleFonts.roboto(
                                 fontSize: 13.sp,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF00C5FF),
+                                color: const Color(0xFF00C5FF),
                               ),
                             ),
                           ),
@@ -83,19 +84,17 @@ class MnemonicTable extends StatelessWidget {
                         Flexible(
                           child: Padding(
                             padding: EdgeInsets.only(left: 3.w),
-                            child: Container(
-                              child: ValueListenableBuilder(
-                                valueListenable: words[index],
-                                builder: (_, String __, ___) => Text(
-                                  words[index].value,
-                                  textAlign: TextAlign.left,
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 13.sp,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white,
-                                  ),
+                            child: ValueListenableBuilder(
+                              valueListenable: words[index],
+                              builder: (_, String __, ___) => Text(
+                                words[index].value,
+                                textAlign: TextAlign.left,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 13.sp,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),

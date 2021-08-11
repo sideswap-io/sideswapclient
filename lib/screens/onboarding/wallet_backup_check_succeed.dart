@@ -8,6 +8,8 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
 class WalletBackupCheckSucceed extends StatelessWidget {
+  const WalletBackupCheckSucceed({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SideSwapPopup(
@@ -20,7 +22,7 @@ class WalletBackupCheckSucceed extends StatelessWidget {
         header: 'Success!'.tr(),
         description:
             'Store your 12 words in a safe place and do not show anyone'.tr(),
-        button: 'CONTINUE'.tr(),
+        buttonText: 'CONTINUE'.tr(),
         onPressed: () async {
           if (FlavorConfig.isProduction() &&
               FlavorConfig.instance.values.enableOnboardingUserFeatures) {

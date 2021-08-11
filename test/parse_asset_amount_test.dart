@@ -31,8 +31,8 @@ void main() {
     'parse asset amount',
     () {
       test('value: 0, precision: 0', () {
-        final value = '0';
-        final precision = 0;
+        const value = '0';
+        const precision = 0;
         expect(
             container
                 .read(walletProvider)
@@ -41,8 +41,8 @@ void main() {
       });
 
       test('value: 1, precision: 0', () {
-        final value = '1';
-        final precision = 0;
+        const value = '1';
+        const precision = 0;
         expect(
             container
                 .read(walletProvider)
@@ -51,8 +51,8 @@ void main() {
       });
 
       test('value: 1.0, precision: 0', () {
-        final value = '1.0';
-        final precision = 0;
+        const value = '1.0';
+        const precision = 0;
         expect(
             container
                 .read(walletProvider)
@@ -61,8 +61,8 @@ void main() {
       });
 
       test('value: 1.1, precision: 0', () {
-        final value = '1.1';
-        final precision = 0;
+        const value = '1.1';
+        const precision = 0;
         expect(
             container
                 .read(walletProvider)
@@ -71,8 +71,8 @@ void main() {
       });
 
       test('value: 1.00000001, precision: 0', () {
-        final value = '1.00000001';
-        final precision = 0;
+        const value = '1.00000001';
+        const precision = 0;
         expect(
             container
                 .read(walletProvider)
@@ -81,8 +81,8 @@ void main() {
       });
 
       test('value: 0, precision: 2', () {
-        final value = '0';
-        final precision = 2;
+        const value = '0';
+        const precision = 2;
         expect(
             container
                 .read(walletProvider)
@@ -91,8 +91,8 @@ void main() {
       });
 
       test('value: 1, precision: 2', () {
-        final value = '1';
-        final precision = 2;
+        const value = '1';
+        const precision = 2;
         expect(
             container
                 .read(walletProvider)
@@ -101,8 +101,8 @@ void main() {
       });
 
       test('value: 1.0, precision: 2', () {
-        final value = '1.0';
-        final precision = 2;
+        const value = '1.0';
+        const precision = 2;
         expect(
             container
                 .read(walletProvider)
@@ -111,8 +111,8 @@ void main() {
       });
 
       test('value: 1.1, precision: 2', () {
-        final value = '1.1';
-        final precision = 2;
+        const value = '1.1';
+        const precision = 2;
         expect(
             container
                 .read(walletProvider)
@@ -121,8 +121,8 @@ void main() {
       });
 
       test('value: 1.01, precision: 2', () {
-        final value = '1.01';
-        final precision = 2;
+        const value = '1.01';
+        const precision = 2;
         expect(
             container
                 .read(walletProvider)
@@ -131,8 +131,8 @@ void main() {
       });
 
       test('value: 1.00000001, precision: 2', () {
-        final value = '1.00000001';
-        final precision = 2;
+        const value = '1.00000001';
+        const precision = 2;
         expect(
             container
                 .read(walletProvider)
@@ -141,8 +141,8 @@ void main() {
       });
 
       test('value: 0, precision: 8', () {
-        final value = '0';
-        final precision = 8;
+        const value = '0';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)
@@ -151,8 +151,8 @@ void main() {
       });
 
       test('value: 1, precision: 8', () {
-        final value = '1';
-        final precision = 8;
+        const value = '1';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)
@@ -161,8 +161,8 @@ void main() {
       });
 
       test('value: 1.0, precision: 8', () {
-        final value = '1.0';
-        final precision = 8;
+        const value = '1.0';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)
@@ -171,8 +171,8 @@ void main() {
       });
 
       test('value: 1.1, precision: 8', () {
-        final value = '1.1';
-        final precision = 8;
+        const value = '1.1';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)
@@ -181,8 +181,8 @@ void main() {
       });
 
       test('value: 1.01, precision: 8', () {
-        final value = '1.01';
-        final precision = 8;
+        const value = '1.01';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)
@@ -191,8 +191,8 @@ void main() {
       });
 
       test('value: 1.00000001, precision: 8', () {
-        final value = '1.00000001';
-        final precision = 8;
+        const value = '1.00000001';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)
@@ -201,8 +201,8 @@ void main() {
       });
 
       test('value: 1.001, precision: 8', () {
-        final value = '1.001';
-        final precision = 8;
+        const value = '1.001';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)
@@ -211,8 +211,8 @@ void main() {
       });
 
       test('value: 1.0000000001, precision: 8', () {
-        final value = '1.0000000001';
-        final precision = 8;
+        const value = '1.0000000001';
+        const precision = 8;
         expect(
             container
                 .read(walletProvider)

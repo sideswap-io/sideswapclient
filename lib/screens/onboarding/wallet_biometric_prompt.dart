@@ -21,64 +21,62 @@ class WalletBiometricPrompt extends StatelessWidget {
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       body: SafeArea(
-        child: Container(
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(top: 56.h),
-                child: BiometricLogo(),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 32.h, left: 40.w, right: 40.w),
-                child: Text(
-                  'Do you wish to activate biometric authentication?'.tr(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.roboto(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.only(top: 56.h),
+              child: const BiometricLogo(),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 32.h, left: 40.w, right: 40.w),
+              child: Text(
+                'Do you wish to activate biometric authentication?'.tr(),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.roboto(
+                  fontSize: 22.sp,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 12.h),
-                child: Text(
-                  'Protect your keys by enabling biometric authentication'.tr(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(top: 12.h),
+              child: Text(
+                'Protect your keys by enabling biometric authentication'.tr(),
+                textAlign: TextAlign.center,
+                style: GoogleFonts.roboto(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
                 ),
               ),
-              Spacer(),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+            ),
+            const Spacer(),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: CustomBigButton(
+                width: double.infinity,
+                height: 54.h,
+                text: 'YES'.tr(),
+                backgroundColor: const Color(0xFF00C5FF),
+                onPressed: onYesPressed,
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Padding(
+                padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
                 child: CustomBigButton(
                   width: double.infinity,
                   height: 54.h,
-                  text: 'YES'.tr(),
-                  backgroundColor: Color(0xFF00C5FF),
-                  onPressed: onYesPressed,
+                  text: 'NOT NOW'.tr(),
+                  textColor: const Color(0xFF00C5FF),
+                  backgroundColor: Colors.transparent,
+                  onPressed: onNoPressed,
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Padding(
-                  padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
-                  child: CustomBigButton(
-                    width: double.infinity,
-                    height: 54.h,
-                    text: 'NOT NOW'.tr(),
-                    textColor: Color(0xFF00C5FF),
-                    backgroundColor: Colors.transparent,
-                    onPressed: onNoPressed,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -11,7 +11,7 @@ enum CustomBackButtonType {
 }
 
 class CustomBackButton extends StatefulWidget {
-  CustomBackButton({
+  const CustomBackButton({
     Key? key,
     this.onPressed,
     this.buttonType = CustomBackButtonType.backArrow,

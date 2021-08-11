@@ -12,7 +12,7 @@ import 'package:sideswap/screens/settings/settings_custom_host.dart';
 import 'package:sideswap/screens/settings/widgets/settings_network_button.dart';
 
 class SettingsNetwork extends StatefulWidget {
-  SettingsNetwork({Key? key}) : super(key: key);
+  const SettingsNetwork({Key? key}) : super(key: key);
 
   @override
   _SettingsNetworkState createState() => _SettingsNetworkState();
@@ -23,9 +23,9 @@ class _SettingsNetworkState extends State<SettingsNetwork> {
     context.read(utilsProvider).settingsErrorDialog(
           title: 'Network changes will take effect on restart'.tr(),
           buttonText: 'RESTART APP'.tr(),
-          onPressed: () {},
+          onPressed: (context) {},
           secondButtonText: 'CANCEL'.tr(),
-          onSecondPressed: () {
+          onSecondPressed: (context) {
             Navigator.of(context).pop();
           },
         );
@@ -110,7 +110,8 @@ class _SettingsNetworkState extends State<SettingsNetwork> {
                                 Navigator.of(context, rootNavigator: true)
                                     .push<void>(
                                   MaterialPageRoute(
-                                    builder: (context) => SettingsCustomHost(),
+                                    builder: (context) =>
+                                        const SettingsCustomHost(),
                                   ),
                                 );
                               },

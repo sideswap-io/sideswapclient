@@ -1,11 +1,16 @@
 import 'dart:math';
+import 'dart:io';
+import 'dart:collection';
+import 'package:csv/csv.dart';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share/share.dart';
+import 'package:sideswap/screens/balances.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -18,11 +23,34 @@ const int kDefaultPrecision = 8;
 const String kBitcoinTicker = 'BTC';
 const String kLiquidBitcoinTicker = 'L-BTC';
 const String kTetherTicker = 'USDt';
+const String kEurxTicker = 'EURx';
 const String kUnknownTicker = '???';
 
 const String kPackageSideswap = 'sideswap';
 const String kPackageLibwally = 'libwally-core';
 const String kPackageGdk = 'GDK';
+
+const int kOneMinute = 60;
+const int kTenMinutes = kOneMinute * 10;
+const int kHalfHour = kTenMinutes * 3;
+const int kOneHour = kHalfHour * 2;
+const int kSixHours = kOneHour * 6;
+const int kTwelveHours = kSixHours * 2;
+const int kOneDay = kSixHours * 4;
+
+double convertToNewRange({
+  required double value,
+  required double minValue,
+  required double maxValue,
+  required double newMin,
+  required double newMax,
+}) {
+  final converted =
+      ((((value - minValue) * (newMax - newMin)) / (maxValue - minValue)) +
+              newMin)
+          .toStringAsFixed(2);
+  return double.tryParse(converted) ?? 0;
+}
 
 double toFloat(int amount, {int precision = 8}) {
   return amount / pow(10, precision);
@@ -70,6 +98,11 @@ String txDateStrLong(DateTime timestamp) {
   return longFormat.format(timestamp);
 }
 
+String txDateCsvExport(int timestamp) {
+  final longFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+  return longFormat.format(DateTime.fromMillisecondsSinceEpoch(timestamp));
+}
+
 void showMessage(BuildContext context, String title, String message) {
   final alert =
       AlertDialog(title: Text(title), content: Text(message), actions: <Widget>[
@@ -77,7 +110,7 @@ void showMessage(BuildContext context, String title, String message) {
       onPressed: () {
         Navigator.of(context, rootNavigator: true).pop();
       },
-      child: Text('OK').tr(),
+      child: const Text('OK').tr(),
     ),
   ]);
 
@@ -104,18 +137,19 @@ String txItemToStatus(TransItem transItem, {bool isPeg = false}) {
 class CustomTitle extends StatelessWidget {
   final String data;
 
-  CustomTitle(this.data);
+  const CustomTitle(
+    Key? key,
+    this.data,
+  ) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Text(
-          data,
-          style: TextStyle(fontSize: 24),
-          textAlign: TextAlign.center,
-        ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Text(
+        data,
+        style: const TextStyle(fontSize: 24),
+        textAlign: TextAlign.center,
       ),
     );
   }
@@ -126,9 +160,9 @@ Future<void> copyToClipboard(BuildContext context, String addr,
   await Clipboard.setData(ClipboardData(text: addr));
   if (displaySnackbar) {
     final flushbar = Flushbar<void>(
-      messageText: Text('Copied'),
-      duration: Duration(seconds: 3),
-      backgroundColor: Color(0xFF135579),
+      messageText: const Text('Copied'),
+      duration: const Duration(seconds: 3),
+      backgroundColor: const Color(0xFF135579),
     );
     await flushbar.show(context);
   }
@@ -225,7 +259,7 @@ String replaceCharacterOnPosition({
     }
     buffer = '${String.fromCharCode(firstPart.runes.elementAt(i))}$buffer';
   }
-  firstPart = '$buffer';
+  firstPart = buffer;
 
   if (useDecimal && secondPart.isNotEmpty) {
     buffer = '';
@@ -244,9 +278,11 @@ String replaceCharacterOnPosition({
       : newValue = '$firstPart.$secondPart';
 
   if (newValue.isNotEmpty) {
-    if (currencyCharAlignment == CurrencyCharAlignment.begin) {
+    if (currencyCharAlignment == CurrencyCharAlignment.begin &&
+        currencyChar.isNotEmpty) {
       newValue = '$currencyChar $newValue';
-    } else if (currencyCharAlignment == CurrencyCharAlignment.end) {
+    } else if (currencyCharAlignment == CurrencyCharAlignment.end &&
+        currencyChar.isNotEmpty) {
       newValue = '$newValue $currencyChar';
     }
   }
@@ -281,4 +317,75 @@ TextEditingValue fixCursorPosition({
     text: newValue,
     selection: TextSelection.collapsed(offset: baseOffset),
   );
+}
+
+List<TransItem> selectTransactions(
+    int start, int end, Iterable<TransItem> allTxs) {
+  var result = <TransItem>[];
+  for (final tx in allTxs) {
+    if (tx.createdAt.toInt() >= start && tx.createdAt.toInt() < end) {
+      result.add(tx);
+    }
+  }
+  return result;
+}
+
+List<List<String>> exportTxList(
+    Iterable<TransItem> txs, Map<String, Asset> assets) {
+  var result = <List<String>>[];
+
+  var usedAssets = SplayTreeSet<String>();
+  for (final tx in txs) {
+    for (final balance in tx.tx.balances) {
+      usedAssets.add(balance.assetId);
+    }
+  }
+  // Keep only known assets where
+  usedAssets.remove((String asset) => !assets.containsKey(asset));
+
+  // Header
+  var line = <String>[];
+  line.add("txid");
+  line.add("type");
+  line.add("timestamp");
+  line.add("network fee");
+  line.add("memo");
+  for (final asset in usedAssets) {
+    line.add(assets[asset]!.name);
+  }
+  result.add(line);
+
+  // Items
+  var txsSorted = txs.toList();
+  txsSorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  for (var tx in txsSorted) {
+    var line = <String>[];
+    line.add(tx.tx.txid);
+    line.add(txTypeName(txType(tx.tx)));
+    line.add(txDateCsvExport(tx.createdAt.toInt()));
+    line.add(amountStr(tx.tx.networkFee.toInt()));
+    line.add(tx.tx.memo);
+    for (final assetId in usedAssets) {
+      final asset = assets[assetId]!;
+      var balance = 0;
+      tx.tx.balances
+          .where((balance) => balance.assetId == asset.assetId)
+          .forEach((item) => balance = item.amount.toInt());
+      line.add(amountStr(balance, precision: asset.precision));
+    }
+    result.add(line);
+  }
+
+  return result;
+}
+
+String convertToCsv(List<List<String>> values) {
+  return const ListToCsvConverter().convert(values);
+}
+
+Future<void> shareCsv(String data) async {
+  final dir = (await getApplicationSupportDirectory()).path;
+  final fileName = '$dir/data.csv';
+  await File(fileName).writeAsString(data);
+  Share.shareFiles([fileName], text: 'Transactions list');
 }

@@ -9,19 +9,18 @@ import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/phone_provider.dart';
-import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/country_phone_number.dart';
 import 'package:sideswap/screens/onboarding/widgets/sms_digit_code.dart';
 
 class ConfirmPhone extends StatefulWidget {
-  ConfirmPhone({Key? key}) : super(key: key);
+  const ConfirmPhone({Key? key}) : super(key: key);
 
   @override
   _ConfirmPhoneState createState() => _ConfirmPhoneState();
 }
 
 class _ConfirmPhoneState extends State<ConfirmPhone> {
-  FocusNode _numberFocusNode = FocusNode();
+  late FocusNode _numberFocusNode;
   ConfirmPhoneData? confirmPhoneData;
 
   @override
@@ -29,22 +28,6 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
     super.initState();
     _numberFocusNode = FocusNode();
     WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
-
-    if (context.read(phoneProvider).getConfirmPhoneData() == null) {
-      context.read(phoneProvider).setConfirmPhoneData(
-            confirmPhoneData: ConfirmPhoneData(
-              onBack: (context) async {
-                context.read(walletProvider).setAssociatePhoneWelcome();
-              },
-              onSuccess: (context) async {
-                context.read(walletProvider).setConfirmPhoneSuccess();
-              },
-              onDone: (context) async {
-                context.read(walletProvider).setImportContacts();
-              },
-            ),
-          );
-    }
 
     confirmPhoneData = context.read(phoneProvider).getConfirmPhoneData();
   }
@@ -75,12 +58,12 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
     return SideSwapPopup(
       onClose: () async {
         if (confirmPhoneData != null) {
-          await confirmPhoneData!.onBack(context);
+          await confirmPhoneData!.onConfirmPhoneBack!(context);
         }
       },
       onWillPop: () async {
         if (confirmPhoneData != null) {
-          await confirmPhoneData!.onBack(context);
+          await confirmPhoneData!.onConfirmPhoneBack!(context);
         }
         return false;
       },
@@ -112,14 +95,14 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
               if (step != SmsCodeStep.hidden) {
                 return Padding(
                   padding: EdgeInsets.only(top: 24.h),
-                  child: SmsDigitCode(),
+                  child: const SmsDigitCode(),
                 );
               } else {
                 return Container();
               }
             },
           ),
-          Spacer(),
+          const Spacer(),
           Consumer(
             builder: (context, watch, child) {
               final phoneStep = watch(phoneProvider).phoneRegisterStep;
@@ -136,7 +119,7 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
                     height: 54.h,
                     width: double.maxFinite,
                     enabled: phoneStep == PhoneRegisterStep.numberEntered,
-                    backgroundColor: Color(0xFF00C5FF),
+                    backgroundColor: const Color(0xFF00C5FF),
                     textColor: Colors.white,
                     text: 'SEND SMS WITH CODE'.tr(),
                     onPressed: () {
@@ -151,7 +134,7 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
                     height: 54.h,
                     width: double.maxFinite,
                     enabled: enabledSmsButton,
-                    backgroundColor: Color(0xFF00C5FF),
+                    backgroundColor: const Color(0xFF00C5FF),
                     textColor: Colors.white,
                     text: 'CONFIRM'.tr(),
                     onPressed: () {

@@ -100,7 +100,7 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 117.h,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -111,10 +111,10 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
             style: GoogleFonts.roboto(
               fontSize: 15.sp,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF00B4E9),
+              color: const Color(0xFF00B4E9),
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Container(
             height: 54.h,
             width: double.maxFinite,
@@ -128,7 +128,7 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
               children: [
                 Row(
                   children: [
-                    Container(
+                    SizedBox(
                       height: 54.h,
                       width: 112.w,
                       child: DropdownButtonHideUnderline(
@@ -137,9 +137,9 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                           child: DropdownButton<CountryCode>(
                             dropdownColor: Colors.white,
                             value: visibleCountryCode,
-                            icon: Icon(
+                            icon: const Icon(
                               Icons.keyboard_arrow_down,
-                              color: const Color(0xFF00B4E9),
+                              color: Color(0xFF00B4E9),
                             ),
                             items: _menuItems,
                             onChanged: (value) {
@@ -159,7 +159,7 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 16.w),
-                      child: VerticalDivider(
+                      child: const VerticalDivider(
                         width: 1,
                         thickness: 1,
                         color: Color(0xFFCCDEE9),
@@ -169,16 +169,14 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                       onTap: () {
                         FocusScope.of(context).requestFocus(phoneFocusNode);
                       },
-                      child: Container(
-                        child: Center(
-                          child: Padding(
-                            padding: EdgeInsets.only(left: 16.w),
-                            child: Container(
-                              width: 56.w,
-                              child: Text(
-                                '+${visibleCountryCode.dialCode}',
-                                style: _defaultTextStyle,
-                              ),
+                      child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 16.w),
+                          child: SizedBox(
+                            width: 56.w,
+                            child: Text(
+                              '+${visibleCountryCode.dialCode}',
+                              style: _defaultTextStyle,
                             ),
                           ),
                         ),
@@ -187,44 +185,41 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.only(right: 16.w),
-                        child: Container(
-                          child: TextField(
-                            controller: controller,
-                            focusNode: phoneFocusNode,
-                            cursorColor: Colors.black,
-                            style: _defaultTextStyle,
-                            autofillHints: [
-                              AutofillHints.telephoneNumberNational,
-                            ],
-                            keyboardType: TextInputType.numberWithOptions(),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.deny(
-                                  RegExp('[\\-|,.\\ ]')),
-                            ],
-                            decoration: InputDecoration(
-                              isDense: true,
-                              border: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                            ),
-                            onChanged: (value) {
-                              controller.value =
-                                  FilteringTextInputFormatter.deny(
-                                          RegExp('[\\-|,.\\ ]'))
-                                      .formatEditUpdate(
-                                          controller.value, controller.value);
-                              controller.value =
-                                  FilteringTextInputFormatter.allow(
-                                          RegExp('[0-9]'))
-                                      .formatEditUpdate(
-                                          controller.value, controller.value);
-                              visiblePhoneNumber = controller.value.text;
-                              widget.phoneNumberCallback(
-                                  visibleCountryCode, visiblePhoneNumber);
-                            },
+                        child: TextField(
+                          controller: controller,
+                          focusNode: phoneFocusNode,
+                          cursorColor: Colors.black,
+                          style: _defaultTextStyle,
+                          autofillHints: const [
+                            AutofillHints.telephoneNumberNational,
+                          ],
+                          keyboardType: const TextInputType.numberWithOptions(),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.deny(
+                                RegExp('[\\-|,.\\ ]')),
+                          ],
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            border: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
                           ),
+                          onChanged: (value) {
+                            controller.value = FilteringTextInputFormatter.deny(
+                                    RegExp('[\\-|,.\\ ]'))
+                                .formatEditUpdate(
+                                    controller.value, controller.value);
+                            controller.value =
+                                FilteringTextInputFormatter.allow(
+                                        RegExp('[0-9]'))
+                                    .formatEditUpdate(
+                                        controller.value, controller.value);
+                            visiblePhoneNumber = controller.value.text;
+                            widget.phoneNumberCallback(
+                                visibleCountryCode, visiblePhoneNumber);
+                          },
                         ),
                       ),
                     ),
@@ -239,7 +234,7 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                     return Visibility(
                       visible: barier,
                       child: Container(
-                        color: Color(0xFF135579).withOpacity(.5),
+                        color: const Color(0xFF135579).withOpacity(.5),
                       ),
                     );
                   },

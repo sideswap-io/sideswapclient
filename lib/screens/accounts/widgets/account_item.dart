@@ -12,7 +12,7 @@ import 'package:sideswap/protobuf/sideswap.pb.dart';
 class AccountItem extends ConsumerWidget {
   final Asset? asset;
   final int balance;
-  AccountItem({this.asset, this.balance = 0});
+  const AccountItem({Key? key, this.asset, this.balance = 0}) : super(key: key);
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
@@ -36,11 +36,11 @@ class AccountItem extends ConsumerWidget {
 
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
-      child: Container(
+      child: SizedBox(
         height: 80.h,
         child: TextButton(
           style: TextButton.styleFrom(
-            backgroundColor: Color(0xFF135579),
+            backgroundColor: const Color(0xFF135579),
             padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -59,14 +59,14 @@ class AccountItem extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: 14.w),
             child: Row(
               children: [
-                Container(
+                SizedBox(
                   width: 48.w,
                   height: 48.w,
                   child: assetImage,
                 ),
                 Padding(
                   padding: EdgeInsets.only(left: 10.w),
-                  child: Container(
+                  child: SizedBox(
                     width: 257.w,
                     height: 48.w,
                     child: Column(
@@ -110,7 +110,7 @@ class AccountItem extends ConsumerWidget {
                               style: GoogleFonts.roboto(
                                 fontSize: 15.sp,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF6B91A8),
+                                color: const Color(0xFF6B91A8),
                               ),
                             ),
                             if (amountUsd != 0) ...[
@@ -119,7 +119,7 @@ class AccountItem extends ConsumerWidget {
                                 style: GoogleFonts.roboto(
                                   fontSize: 15.sp,
                                   fontWeight: FontWeight.normal,
-                                  color: Color(0xFF6B91A8),
+                                  color: const Color(0xFF6B91A8),
                                 ),
                               ),
                             ],

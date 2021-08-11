@@ -12,7 +12,7 @@ class PageDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 66.w,
       height: 10.w,
       child: Row(
@@ -26,12 +26,12 @@ class PageDots extends StatelessWidget {
               decoration: BoxDecoration(
                 color: i < maxSelectedDots
                     ? i < maxSelectedDots - 1
-                        ? Color(0xFF167399)
-                        : Color(0xFF00C5FF)
+                        ? const Color(0xFF167399)
+                        : const Color(0xFF00C5FF)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(5.w),
                 border: Border.all(
-                  color: Color(0xFF00C5FF),
+                  color: const Color(0xFF00C5FF),
                   width: 1,
                   style: BorderStyle.solid,
                 ),

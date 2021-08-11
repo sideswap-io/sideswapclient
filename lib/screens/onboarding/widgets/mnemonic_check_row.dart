@@ -11,11 +11,12 @@ class MnemonicCheckRow extends StatelessWidget {
   final List<String> words;
   final void Function(int) onTap;
 
-  MnemonicCheckRow({
+  const MnemonicCheckRow({
+    Key? key,
     required this.wordIndex,
     required this.words,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +28,12 @@ class MnemonicCheckRow extends StatelessWidget {
           style: GoogleFonts.roboto(
             fontSize: 15.sp,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF00C5FF),
+            color: const Color(0xFF00C5FF),
           ),
         ),
         Padding(
           padding: EdgeInsets.only(top: 10.h),
-          child: Container(
+          child: SizedBox(
             height: 39.h,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -56,8 +57,9 @@ class MnemonicCheckRow extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8.w),
                           border: Border.all(
-                            color:
-                                isSelected ? Colors.white : Color(0xFF23729D),
+                            color: isSelected
+                                ? Colors.white
+                                : const Color(0xFF23729D),
                             width: 1,
                             style: BorderStyle.solid,
                           ),

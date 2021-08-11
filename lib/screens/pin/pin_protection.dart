@@ -19,7 +19,7 @@ class PinProtection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      backgroundColor: Color(0xFF135579),
+      backgroundColor: const Color(0xFF135579),
       sideSwapBackground: false,
       appBar: CustomAppBar(
         title: 'Unlock your wallet'.tr(),
@@ -40,7 +40,7 @@ class PinProtection extends StatelessWidget {
                   minWidth: constraints.maxWidth,
                   minHeight: constraints.maxHeight,
                 ),
-                child: IntrinsicHeight(
+                child: const IntrinsicHeight(
                   child: PinProtectionBody(),
                 ),
               ),
@@ -53,7 +53,7 @@ class PinProtection extends StatelessWidget {
 }
 
 class PinProtectionBody extends StatefulWidget {
-  PinProtectionBody({
+  const PinProtectionBody({
     Key? key,
   }) : super(key: key);
 
@@ -62,11 +62,13 @@ class PinProtectionBody extends StatefulWidget {
 }
 
 class _PinProtectionBodyState extends State<PinProtectionBody> {
-  final pinFocusNode = FocusNode();
+  late FocusNode pinFocusNode;
   StreamSubscription<PinKey>? keyPressedSubscription;
 
   @override
   void initState() {
+    pinFocusNode = FocusNode();
+
     keyPressedSubscription =
         context.read(pinKeyboardProvider).keyPressedSubject.listen((pinKey) {
       context.read(pinProtectionProvider).onKeyEntered(pinKey);
@@ -82,6 +84,7 @@ class _PinProtectionBodyState extends State<PinProtectionBody> {
   @override
   void dispose() {
     keyPressedSubscription?.cancel();
+    pinFocusNode.dispose();
     super.dispose();
   }
 
@@ -92,7 +95,7 @@ class _PinProtectionBodyState extends State<PinProtectionBody> {
         children: [
           Padding(
             padding: EdgeInsets.only(top: 24.h),
-            child: Divider(
+            child: const Divider(
               thickness: 1,
               height: 1,
               color: Color(0xFF23729D),
@@ -105,7 +108,7 @@ class _PinProtectionBodyState extends State<PinProtectionBody> {
               style: GoogleFonts.roboto(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF00C5FF),
+                color: const Color(0xFF00C5FF),
               ),
             ),
           ),
@@ -128,10 +131,10 @@ class _PinProtectionBodyState extends State<PinProtectionBody> {
               },
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Padding(
             padding: EdgeInsets.only(bottom: 32.h),
-            child: PinKeyboard(
+            child: const PinKeyboard(
               showUnlock: true,
             ),
           ),

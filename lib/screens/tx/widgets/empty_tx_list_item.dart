@@ -6,7 +6,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class EmptyTxListItem extends StatelessWidget {
-  EmptyTxListItem({Key? key}) : super(key: key);
+  const EmptyTxListItem({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class EmptyTxListItem extends StatelessWidget {
             width: double.infinity,
             height: 64.h,
             decoration: BoxDecoration(
-              color: Color(0xFF167399),
+              color: const Color(0xFF167399),
               borderRadius: BorderRadius.all(
                 Radius.circular(12.w),
               ),
@@ -47,7 +47,7 @@ class EmptyTxListItem extends StatelessWidget {
                         EmptyTextContainer(
                           width: 116.w,
                         ),
-                        Spacer(),
+                        const Spacer(),
                         Row(
                           children: [
                             EmptyTextContainer(
@@ -64,7 +64,7 @@ class EmptyTxListItem extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 19.h),
                     child: Column(
@@ -73,7 +73,7 @@ class EmptyTxListItem extends StatelessWidget {
                         EmptyTextContainer(
                           width: 116.w,
                         ),
-                        Spacer(),
+                        const Spacer(),
                         EmptyTextContainer(
                           width: 65.w,
                         ),
@@ -91,18 +91,20 @@ class EmptyTxListItem extends StatelessWidget {
 }
 
 class EmptyTextContainer extends StatefulWidget {
-  EmptyTextContainer({
+  const EmptyTextContainer({
     Key? key,
     this.color = const Color(0xFF135579),
     this.width = 26,
     this.height,
     this.radius,
+    this.border,
   }) : super(key: key);
 
   final Color color;
   final double width;
   final double? height;
   final double? radius;
+  final BoxBorder? border;
 
   @override
   _EmptyTextContainerState createState() => _EmptyTextContainerState();
@@ -129,6 +131,7 @@ class _EmptyTextContainerState extends State<EmptyTextContainer> {
         borderRadius: BorderRadius.all(
           Radius.circular(radius),
         ),
+        border: widget.border,
       ),
     );
   }

@@ -82,7 +82,7 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
         }
       }
 
-      tempSubWidget.add(Divider());
+      tempSubWidget.add(const Divider());
       _licenseContent[license.packages.join(', ')] = tempSubWidget;
     }
 
@@ -93,26 +93,26 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
       final value = _licenseContent[packageName];
 
       if (value != null) {
-        value.forEach((element) {
+        for (var element in value) {
           if (element.runtimeType == Divider) count += 1;
-        });
+        }
       }
 
       final widget = Theme(
         data: Theme.of(context).copyWith(
           dividerColor: Colors.transparent,
-          accentColor: Color(0xFF00C5FF),
+          accentColor: const Color(0xFF00C5FF),
         ),
         child: ExpansionTile(
           title: Text(
-            '$packageName',
-            style: TextStyle(
+            packageName,
+            style: const TextStyle(
               color: Colors.white,
             ),
           ),
           subtitle: Text(
             '$count licenses',
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
             ),
           ),
@@ -222,20 +222,19 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
                         )
                       ],
                       Expanded(
-                        child: Container(
+                        child: SizedBox(
                           height: 100,
                           child: Padding(
                             padding: EdgeInsets.only(top: 16.h),
-                            child: Container(
-                              child: ListView.separated(
-                                itemCount: _licenses.length,
-                                separatorBuilder: (context, index) => Divider(
-                                  color: Color(0xFF135579),
-                                ),
-                                itemBuilder: (context, index) {
-                                  return _licenses.elementAt(index);
-                                },
+                            child: ListView.separated(
+                              itemCount: _licenses.length,
+                              separatorBuilder: (context, index) =>
+                                  const Divider(
+                                color: Color(0xFF135579),
                               ),
+                              itemBuilder: (context, index) {
+                                return _licenses.elementAt(index);
+                              },
                             ),
                           ),
                         ),

@@ -14,7 +14,7 @@ enum SettingsDialogIcon {
   restart,
 }
 
-final kErrorQuoteExpired = 'quote expired';
+const kErrorQuoteExpired = 'quote expired';
 
 final utilsProvider = Provider((ref) => UtilsProvider(ref.read));
 
@@ -27,9 +27,9 @@ class UtilsProvider {
     required String title,
     String description = '',
     required String buttonText,
-    required VoidCallback onPressed,
+    required void Function(BuildContext context) onPressed,
     String secondButtonText = '',
-    VoidCallback? onSecondPressed,
+    void Function(BuildContext context)? onSecondPressed,
     SettingsDialogIcon icon = SettingsDialogIcon.error,
   }) async {
     final context = read(walletProvider).navigatorKey.currentContext;
@@ -46,18 +46,18 @@ class UtilsProvider {
           'assets/error.svg',
           width: 22.w,
           height: 22.w,
-          color: Color(0xFFFF7878),
+          color: const Color(0xFFFF7878),
         );
-        borderColor = Color(0xFFFF7878);
+        borderColor = const Color(0xFFFF7878);
         break;
       case SettingsDialogIcon.restart:
         iconWidget = SvgPicture.asset(
           'assets/restart.svg',
           width: 22.w,
           height: 22.w,
-          color: Color(0xFF00C5FF),
+          color: const Color(0xFF00C5FF),
         );
-        borderColor = Color(0xFF00C5FF);
+        borderColor = const Color(0xFF00C5FF);
         break;
     }
 
@@ -74,7 +74,7 @@ class UtilsProvider {
               borderRadius: BorderRadius.all(
                 Radius.circular(8.w),
               ),
-              color: Color(0xFF1C6086),
+              color: const Color(0xFF1C6086),
             ),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
@@ -129,8 +129,10 @@ class UtilsProvider {
                       width: double.maxFinite,
                       height: 54.h,
                       text: buttonText,
-                      backgroundColor: Color(0xFF00C5FF),
-                      onPressed: onPressed,
+                      backgroundColor: const Color(0xFF00C5FF),
+                      onPressed: () {
+                        onPressed(context);
+                      },
                     ),
                   ),
                   if (secondButtonText.isNotEmpty) ...[
@@ -141,8 +143,12 @@ class UtilsProvider {
                         height: 54.h,
                         text: secondButtonText,
                         backgroundColor: Colors.transparent,
-                        textColor: Color(0xFF00C5FF),
-                        onPressed: onSecondPressed,
+                        textColor: const Color(0xFF00C5FF),
+                        onPressed: () {
+                          if (onSecondPressed != null) {
+                            onSecondPressed(context);
+                          }
+                        },
                       ),
                     ),
                   ],
@@ -182,7 +188,7 @@ class UtilsProvider {
               borderRadius: BorderRadius.all(
                 Radius.circular(8.w),
               ),
-              color: Color(0xFF1C6086),
+              color: const Color(0xFF1C6086),
             ),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 32.h),
@@ -197,7 +203,7 @@ class UtilsProvider {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(60.w),
                         border: Border.all(
-                          color: Color(0xFFFF7878),
+                          color: const Color(0xFFFF7878),
                           width: 2,
                           style: BorderStyle.solid,
                         ),
@@ -207,7 +213,7 @@ class UtilsProvider {
                           'assets/error.svg',
                           width: 23.w,
                           height: 23.w,
-                          color: Color(0xFFFF7878),
+                          color: const Color(0xFFFF7878),
                         ),
                       ),
                     ),
@@ -216,7 +222,7 @@ class UtilsProvider {
                     flex: 6,
                     child: Padding(
                       padding: EdgeInsets.only(top: 32.h),
-                      child: Container(
+                      child: SizedBox(
                         height: 75.h,
                         child: SingleChildScrollView(
                           child: Text(
@@ -232,7 +238,7 @@ class UtilsProvider {
                       ),
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Flexible(
                     flex: 3,
                     child: Padding(
@@ -241,7 +247,7 @@ class UtilsProvider {
                         width: 279.w,
                         height: 54.h,
                         text: buttonText ?? 'TRY AGAIN'.tr(),
-                        backgroundColor: Color(0xFF00C5FF),
+                        backgroundColor: const Color(0xFF00C5FF),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).pop();
                         },

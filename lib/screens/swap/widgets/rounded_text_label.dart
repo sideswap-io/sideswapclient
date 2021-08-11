@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class RoundedTextLabel extends StatelessWidget {
-  RoundedTextLabel({
+  const RoundedTextLabel({
     Key? key,
     required this.text,
     this.color = const Color(0xFFA8D6EA),
@@ -40,7 +40,7 @@ class RoundedTextLabel extends StatelessWidget {
               style: GoogleFonts.roboto(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.normal,
-                color: Color(0xFF05202F),
+                color: const Color(0xFF05202F),
               ),
             ),
           ),

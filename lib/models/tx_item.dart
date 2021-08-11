@@ -31,13 +31,13 @@ class TxItem implements Comparable<TxItem> {
   }
 
   @override
-  bool operator ==(Object o) {
-    if (identical(this, o)) return true;
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
 
-    return o is TxItem &&
-        o.item == item &&
-        o.showDate == showDate &&
-        o._createdAt == _createdAt;
+    return other is TxItem &&
+        other.item == item &&
+        other.showDate == showDate &&
+        other._createdAt == _createdAt;
   }
 
   @override

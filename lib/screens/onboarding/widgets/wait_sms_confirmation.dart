@@ -37,7 +37,7 @@ class _WaitSmsConfirmationState
         : widget.counter - _intTween!.evaluate(animation);
     final duration = Duration(seconds: seconds);
     final percent = widget.counter == 0 ? 0 : seconds * 100 ~/ widget.counter;
-    return Container(
+    return SizedBox(
       height: 24.h,
       child: Visibility(
         visible: controller.isAnimating,
@@ -47,19 +47,19 @@ class _WaitSmsConfirmationState
             SideSwapProgressBar(
               percent: percent,
               displayText: false,
-              duration: Duration(seconds: 1),
+              duration: const Duration(seconds: 1),
             ),
             Padding(
               padding: EdgeInsets.only(top: 4.h),
               child: Text(
                 'WAIT_FOR_SMS_CONFIRMATION'.tr(args: [
                   '${duration.inMinutes}',
-                  '${(duration.inSeconds % 60).toString().padLeft(2, '0')}'
+                  ((duration.inSeconds % 60).toString().padLeft(2, '0'))
                 ]),
                 style: GoogleFonts.roboto(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.normal,
-                  color: Color(0xFF00C5FF),
+                  color: const Color(0xFF00C5FF),
                 ),
               ),
             ),

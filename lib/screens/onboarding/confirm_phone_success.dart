@@ -9,7 +9,9 @@ import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
 class ConfirmPhoneSuccess extends StatelessWidget {
-  ConfirmPhoneSuccess({Key? key}) : super(key: key);
+  ConfirmPhoneSuccess({
+    Key? key,
+  }) : super(key: key);
 
   final _defaultTextStyle = GoogleFonts.roboto(
     fontSize: 16.sp,
@@ -48,13 +50,11 @@ class ConfirmPhoneSuccess extends StatelessWidget {
             ],
           ),
         ),
-        button: 'CONTINUE'.tr(),
+        buttonText: 'CONTINUE'.tr(),
         onPressed: () async {
           final confirmPhoneData =
               context.read(phoneProvider).getConfirmPhoneData();
-          if (confirmPhoneData != null) {
-            await confirmPhoneData.onDone(context);
-          }
+          await confirmPhoneData.onConfirmPhoneDone!(context);
         },
       ),
     );

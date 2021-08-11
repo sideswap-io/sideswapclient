@@ -39,7 +39,7 @@ class ChooseAvatarImage extends StatelessWidget {
                 ),
               ),
               backgroundColor: Colors.white.withOpacity(0.92),
-              textColor: Color(0xFF007AFF),
+              textColor: const Color(0xFF007AFF),
               onPressed: () async {
                 Navigator.pop(context);
               },

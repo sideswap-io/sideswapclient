@@ -31,12 +31,12 @@ class ImportAvatar extends StatelessWidget {
                   width: avatarRadius,
                   height: avatarRadius,
                   decoration: BoxDecoration(
-                    color: Color(0xFF135579),
+                    color: const Color(0xFF135579),
                     borderRadius: BorderRadius.all(
                       Radius.circular(avatarRadius),
                     ),
                     border: Border.all(
-                      color: Color(0xFF00C5FF),
+                      color: const Color(0xFF00C5FF),
                       width: 6.w,
                     ),
                   ),
@@ -59,10 +59,10 @@ class ImportAvatar extends StatelessWidget {
                   ),
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Padding(
                 padding: EdgeInsets.only(bottom: 32.h),
-                child: PageDots(
+                child: const PageDots(
                   maxSelectedDots: 2,
                 ),
               ),
@@ -73,13 +73,13 @@ class ImportAvatar extends StatelessWidget {
                   width: double.maxFinite,
                   text: 'YES'.tr(),
                   textColor: Colors.white,
-                  backgroundColor: Color(0xFF00C5FF),
+                  backgroundColor: const Color(0xFF00C5FF),
                   onPressed: () async {
                     await showDialog<void>(
                       context: context,
                       barrierDismissible: false,
                       builder: (context) {
-                        return ChooseAvatarImage();
+                        return const ChooseAvatarImage();
                       },
                     );
                   },
@@ -93,7 +93,7 @@ class ImportAvatar extends StatelessWidget {
                     height: 54.h,
                     width: double.maxFinite,
                     text: 'NOT NOW'.tr(),
-                    textColor: Color(0xFF00C5FF),
+                    textColor: const Color(0xFF00C5FF),
                     backgroundColor: Colors.transparent,
                     onPressed: () {
                       context.read(walletProvider).setAssociatePhoneWelcome();

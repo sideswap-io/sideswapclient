@@ -24,6 +24,8 @@ extension Utility on BuildContext {
 }
 
 class WalletImport extends StatefulWidget {
+  const WalletImport({Key? key}) : super(key: key);
+
   @override
   _WalletImportState createState() => _WalletImportState();
 }
@@ -55,7 +57,7 @@ class _WalletImportState extends State<WalletImport> {
   Future<List<String>> _loadWordList() async {
     if (wordList.isEmpty) {
       await rootBundle.loadString('assets/wordlist.txt').then((q) {
-        for (var i in LineSplitter().convert(q)) {
+        for (var i in const LineSplitter().convert(q)) {
           wordList.add(i);
         }
       });
@@ -99,13 +101,13 @@ class _WalletImportState extends State<WalletImport> {
 
   @override
   void dispose() {
-    _textEditingControllerList.forEach((e) {
-      e.dispose();
-    });
+    for (var controller in _textEditingControllerList) {
+      controller.dispose();
+    }
 
-    _focusNodeList.forEach((e) {
-      e.dispose();
-    });
+    for (var focusNode in _focusNodeList) {
+      focusNode.dispose();
+    }
 
     _listScrollController?.dispose();
     _suggestionsBoxController.close();
@@ -153,8 +155,8 @@ class _WalletImportState extends State<WalletImport> {
 
   void validate() {
     var index = 0;
-    _textEditingControllerList.forEach((e) {
-      final text = e.text;
+    for (var controller in _textEditingControllerList) {
+      final text = controller.text;
       final suggestionList = getSuggestions(text);
 
       words[index].value = text;
@@ -168,24 +170,24 @@ class _WalletImportState extends State<WalletImport> {
       }
 
       index++;
-    });
+    }
 
     setState(() {});
   }
 
   Future<void> validateFinal() async {
     var index = 0;
-    words.forEach((text) {
-      final suggestionList = getSuggestions(text.value);
+    for (var word in words) {
+      final suggestionList = getSuggestions(word.value);
 
-      if (suggestionList.any((e) => e == text.value)) {
+      if (suggestionList.any((e) => e == word.value)) {
         _errorField[index] = false;
       } else {
         _errorField[index] = true;
       }
 
       index++;
-    });
+    }
 
     final wrongIndex = _errorField.indexWhere((e) => e == true);
 
@@ -214,9 +216,10 @@ class _WalletImportState extends State<WalletImport> {
   }
 
   Future<void> nextPage() async {
-    _focusNodeList.forEach((e) {
-      e.unfocus();
-    });
+    for (var focusNode in _focusNodeList) {
+      focusNode.unfocus();
+    }
+
     FocusManager.instance.primaryFocus?.unfocus();
     final mnemonic = getMnemonic();
     final wallet = context.read(walletProvider);
@@ -231,7 +234,7 @@ class _WalletImportState extends State<WalletImport> {
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       key: _scaffoldKey,
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       body: Column(
         children: [
           Padding(
@@ -247,7 +250,7 @@ class _WalletImportState extends State<WalletImport> {
             ),
           ),
           SizedBox(height: 32.h),
-          Container(
+          SizedBox(
             height: 54.h,
             width: MediaQuery.of(context).size.width,
             child: ListView(
@@ -282,7 +285,7 @@ class _WalletImportState extends State<WalletImport> {
                         suggestionsBoxController: _suggestionsBoxController,
                         suggestionsBoxDecoration: SuggestionsBoxDecoration(
                           constraints: BoxConstraints(maxHeight: 17.sp * 12),
-                          color: Color(0xFF1E6389),
+                          color: const Color(0xFF1E6389),
                         ),
                         textFieldConfiguration: TextFieldConfiguration(
                           controller: _textEditingControllerList[index],
@@ -304,7 +307,7 @@ class _WalletImportState extends State<WalletImport> {
                             enabledBorder: InputBorder.none,
                             errorBorder: InputBorder.none,
                             disabledBorder: InputBorder.none,
-                            contentPadding: EdgeInsets.only(
+                            contentPadding: const EdgeInsets.only(
                                 left: 10, bottom: 10, top: 10, right: 10),
                             prefixIcon: Padding(
                               padding: EdgeInsets.only(left: 16.w, right: 16.w),
@@ -313,12 +316,12 @@ class _WalletImportState extends State<WalletImport> {
                                 style: GoogleFonts.roboto(
                                   fontSize: 17.sp,
                                   fontWeight: FontWeight.normal,
-                                  color: Color(0xFF00C5FF),
+                                  color: const Color(0xFF00C5FF),
                                 ),
                               ),
                             ),
                             prefixIconConstraints:
-                                BoxConstraints(minWidth: 0, minHeight: 0),
+                                const BoxConstraints(minWidth: 0, minHeight: 0),
                             hintText: '',
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                           ),

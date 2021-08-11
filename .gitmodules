@@ -1,0 +1,3 @@
+[submodule "thirdparty/bitfinex-api-go"]
+	path = thirdparty/bitfinex-api-go
+	url = ../bitfinex-api-go.git

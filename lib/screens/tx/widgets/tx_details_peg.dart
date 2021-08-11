@@ -13,7 +13,7 @@ import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 
 class TxDetailsPeg extends StatefulWidget {
-  TxDetailsPeg({
+  const TxDetailsPeg({
     Key? key,
     required this.transItem,
   }) : super(key: key);
@@ -92,7 +92,7 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
         ),
         Padding(
           padding: EdgeInsets.only(top: 18.h),
-          child: SizedBox(),
+          child: const SizedBox(),
         ),
         TxDetailsRow(
           description:
@@ -126,13 +126,13 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
             description: 'Status'.tr(),
             details: _status,
             detailsColor: widget.transItem.confs.count != 0
-                ? Color(0xFF709EBA)
+                ? const Color(0xFF709EBA)
                 : Colors.white,
           ),
         ),
         Padding(
           padding: EdgeInsets.only(top: 12.5.h),
-          child: DottedLine(
+          child: const DottedLine(
             dashColor: Colors.white,
             dashGapColor: Colors.transparent,
           ),
@@ -163,7 +163,7 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
             isCopyVisible: true,
           ),
         ),
-        Spacer(),
+        const Spacer(),
         Padding(
           padding: EdgeInsets.only(bottom: 40.h),
           child: TxDetailsBottomButtons(

@@ -17,7 +17,7 @@ import 'package:sideswap/screens/onboarding/import_avatar_resizer.dart';
 import 'package:sideswap/screens/onboarding/widgets/choose_avatar_image.dart';
 
 class SettingsUserDetails extends StatefulWidget {
-  SettingsUserDetails({Key? key}) : super(key: key);
+  const SettingsUserDetails({Key? key}) : super(key: key);
 
   @override
   _SettingsUserDetailsState createState() => _SettingsUserDetailsState();
@@ -85,10 +85,10 @@ class _SettingsUserDetailsState extends State<SettingsUserDetails> {
                   onTap: () async {
                     context.read(phoneProvider).setConfirmPhoneData(
                           confirmPhoneData: ConfirmPhoneData(
-                            onBack: (context) async {
+                            onConfirmPhoneBack: (context) async {
                               Navigator.of(context).pop();
                             },
-                            onSuccess: (context) async {
+                            onConfirmPhoneSuccess: (context) async {
                               await Navigator.of(context, rootNavigator: true)
                                   .push<void>(
                                 MaterialPageRoute(
@@ -96,7 +96,7 @@ class _SettingsUserDetailsState extends State<SettingsUserDetails> {
                                 ),
                               );
                             },
-                            onDone: (context) async {
+                            onConfirmPhoneDone: (context) async {
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
                             },
@@ -105,12 +105,20 @@ class _SettingsUserDetailsState extends State<SettingsUserDetails> {
 
                     await Navigator.of(context, rootNavigator: true).push<void>(
                       MaterialPageRoute(
-                        builder: (context) => ConfirmPhone(),
+                        builder: (context) => const ConfirmPhone(),
                       ),
                     );
                   },
                 ),
-              )
+              ),
+              Padding(
+                  padding: EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
+                  child: TextButton(
+                    onPressed: () {
+                      context.read(walletProvider).unregisterPhone();
+                    },
+                    child: const Text('Logout'),
+                  ))
             ],
           ),
         ),
@@ -154,7 +162,7 @@ class PhoneNumberButton extends StatelessWidget {
                   width: iconRadius,
                   height: iconRadius,
                   decoration: BoxDecoration(
-                    color: Color(0xFF00C5FF),
+                    color: const Color(0xFF00C5FF),
                     borderRadius: BorderRadius.all(
                       Radius.circular(iconRadius),
                     ),
@@ -178,7 +186,7 @@ class PhoneNumberButton extends StatelessWidget {
                       style: GoogleFonts.roboto(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF00C5FF),
+                        color: const Color(0xFF00C5FF),
                       ),
                     ),
                     Padding(
@@ -188,7 +196,7 @@ class PhoneNumberButton extends StatelessWidget {
                         style: GoogleFonts.roboto(
                           fontSize: 17.sp,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFF002241),
+                          color: const Color(0xFF002241),
                         ),
                       ),
                     ),
@@ -200,7 +208,7 @@ class PhoneNumberButton extends StatelessWidget {
                   style: GoogleFonts.roboto(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF00C5FF),
+                    color: const Color(0xFF00C5FF),
                   ),
                 ),
               ],
@@ -223,7 +231,7 @@ class AvatarEditButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: avatarRadius,
       height: avatarRadius,
       child: Stack(
@@ -232,12 +240,12 @@ class AvatarEditButton extends StatelessWidget {
             width: avatarRadius,
             height: avatarRadius,
             decoration: BoxDecoration(
-              color: Color(0xFF00C5FF),
+              color: const Color(0xFF00C5FF),
               borderRadius: BorderRadius.all(
                 Radius.circular(avatarRadius),
               ),
               border: Border.all(
-                color: Color(0xFF00C5FF),
+                color: const Color(0xFF00C5FF),
                 width: 2.w,
               ),
             ),
@@ -258,12 +266,12 @@ class AvatarEditButton extends StatelessWidget {
               width: editRadius,
               height: editRadius,
               decoration: BoxDecoration(
-                color: Color(0xFF00C5FF),
+                color: const Color(0xFF00C5FF),
                 borderRadius: BorderRadius.all(
                   Radius.circular(editRadius),
                 ),
                 border: Border.all(
-                  color: Color(0xFF054160),
+                  color: const Color(0xFF054160),
                   width: 2.w,
                 ),
               ),

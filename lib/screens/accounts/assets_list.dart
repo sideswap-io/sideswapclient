@@ -11,6 +11,8 @@ import 'package:sideswap/screens/accounts/widgets/asset_search_text_field.dart';
 import 'package:sideswap/screens/accounts/widgets/asset_select_item.dart';
 
 class AssetSelectList extends StatelessWidget {
+  const AssetSelectList({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
@@ -32,7 +34,7 @@ class AssetSelectList extends StatelessWidget {
                   children: [
                     Padding(
                       padding: EdgeInsets.only(top: 18.h, bottom: 29.h),
-                      child: AssetSearchTextField(),
+                      child: const AssetSearchTextField(),
                     ),
                     Expanded(
                       child: Consumer(

@@ -54,8 +54,8 @@ class LicenseTerms extends StatelessWidget {
             child: Material(
               elevation: 3.0,
               color: Colors.transparent,
-              shadowColor: Color(0xFF1E6389),
-              child: Container(
+              shadowColor: const Color(0xFF1E6389),
+              child: SizedBox(
                 height: 421.h,
                 width: MediaQuery.of(context).size.width,
                 child: Padding(
@@ -93,14 +93,14 @@ class LicenseTerms extends StatelessWidget {
               ),
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Padding(
             padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
             child: CustomBigButton(
               width: double.infinity,
               height: 54.h,
               text: 'I AGREE'.tr(),
-              backgroundColor: Color(0xFF00C5FF),
+              backgroundColor: const Color(0xFF00C5FF),
               onPressed: () async {
                 await context.read(walletProvider).setLicenseAccepted();
                 if (nextStep == LicenseNextStep.createWallet) {

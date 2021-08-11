@@ -8,6 +8,8 @@ import 'package:sideswap/models/wallet.dart';
 
 // TODO: fix that - new ui
 class SelectEnv extends StatefulWidget {
+  const SelectEnv({Key? key}) : super(key: key);
+
   @override
   _SelectEnvState createState() => _SelectEnvState();
 }
@@ -32,16 +34,16 @@ class _SelectEnvState extends State<SelectEnv> {
                   children: [
                     IconButton(
                       onPressed: () => context.read(walletProvider).goBack(),
-                      icon: Icon(Icons.close),
+                      icon: const Icon(Icons.close),
                     ),
                   ],
                 ),
-                Spacer(),
-                Text(
+                const Spacer(),
+                const Text(
                   'Select env',
                   style: TextStyle(fontSize: 18),
                 ).tr(),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Column(
                   children: envValues
                       .map((e) => RadioListTile<int>(
@@ -74,7 +76,7 @@ class _SelectEnvState extends State<SelectEnv> {
                     ).tr()),
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
               ],
             ),
           ),

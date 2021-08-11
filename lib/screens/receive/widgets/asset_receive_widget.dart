@@ -37,7 +37,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
       _copyVisibilityTimer?.cancel();
     }
 
-    _copyVisibilityTimer = Timer(Duration(milliseconds: 1500), () {
+    _copyVisibilityTimer = Timer(const Duration(milliseconds: 1500), () {
       setState(() {
         _isCopyDescVisible = false;
       });
@@ -86,7 +86,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
         final _conversionText = 'Conversion rate $_conversionStr%';
 
         return _recvAddress == null || _recvAddress.isEmpty
-            ? Center(
+            ? const Center(
                 child: CircularProgressIndicator(),
               )
             : Column(
@@ -121,7 +121,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                         style: GoogleFonts.roboto(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w500,
-                          color: Color(0xFF00B4E9),
+                          color: const Color(0xFF00B4E9),
                         ),
                       ).tr(),
                     ),
@@ -138,7 +138,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                                 displaySnackbar: false);
                             showCopyInfo();
                           },
-                          child: Container(
+                          child: SizedBox(
                             width: 311.w,
                             height: 60.h,
                             child: Text(
@@ -205,7 +205,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             child: Container(
                               height: double.maxFinite,
                               width: double.maxFinite,
-                              color: Color(0xFF135579),
+                              color: const Color(0xFF135579),
                             ),
                           ),
                           Padding(
@@ -213,7 +213,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Container(
+                                SizedBox(
                                   width: 200.w,
                                   child: RoundedTextLabel(
                                     text: _conversionText,
@@ -232,7 +232,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                                 style: GoogleFonts.roboto(
                                   fontSize: 15.sp,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF00C5FF),
+                                  color: const Color(0xFF00C5FF),
                                 ),
                               ),
                             ),
@@ -243,9 +243,9 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                               padding: EdgeInsets.symmetric(horizontal: 16.w),
                               child: AnimatedOpacity(
                                 opacity: _isCopyDescVisible ? 1.0 : 0.0,
-                                duration: Duration(milliseconds: 500),
+                                duration: const Duration(milliseconds: 500),
                                 child: RoundedButton(
-                                  color: Color(0xFF002336),
+                                  color: const Color(0xFF002336),
                                   width: double.infinity,
                                   heigh: 39.h,
                                   borderRadius: BorderRadius.circular(8.w),
@@ -265,7 +265,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             padding: EdgeInsets.only(top: 120.h),
                             child: Align(
                               alignment: Alignment.topCenter,
-                              child: Container(
+                              child: SizedBox(
                                 width: 311.w,
                                 height: 60.h,
                                 child: Text(
@@ -291,9 +291,9 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                         padding: EdgeInsets.symmetric(horizontal: 16.w),
                         child: AnimatedOpacity(
                           opacity: _isCopyDescVisible ? 1.0 : 0.0,
-                          duration: Duration(milliseconds: 500),
+                          duration: const Duration(milliseconds: 500),
                           child: RoundedButton(
-                            color: Color(0xFF002336),
+                            color: const Color(0xFF002336),
                             width: double.infinity,
                             heigh: 39.h,
                             borderRadius: BorderRadius.circular(8.w),

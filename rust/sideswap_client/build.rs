@@ -11,4 +11,6 @@ fn main() {
         println!("cargo:rustc-link-lib=static=secp256k1");
     }
     println!("cargo:rustc-link-search=native={}", wally_dir);
+
+    println!("cargo:rerun-if-env-changed=WALLY_DIR");
 }

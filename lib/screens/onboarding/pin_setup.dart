@@ -14,19 +14,22 @@ import 'package:sideswap/screens/onboarding/widgets/pin_keyboard.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_text_field.dart';
 
 class PinSetup extends StatefulWidget {
-  PinSetup({Key? key}) : super(key: key);
+  const PinSetup({Key? key}) : super(key: key);
 
   @override
   _PinSetupState createState() => _PinSetupState();
 }
 
 class _PinSetupState extends State<PinSetup> {
-  final _firstPinFocusNode = FocusNode();
-  final _secondPinFocusNode = FocusNode();
+  late FocusNode _firstPinFocusNode;
+  late FocusNode _secondPinFocusNode;
   StreamSubscription<PinKey>? keyPressedSubscription;
 
   @override
   void initState() {
+    _firstPinFocusNode = FocusNode();
+    _secondPinFocusNode = FocusNode();
+
     keyPressedSubscription =
         context.read(pinKeyboardProvider).keyPressedSubject.listen((pinKey) {
       context.read(pinSetupProvider).onKeyEntered(pinKey);
@@ -45,7 +48,7 @@ class _PinSetupState extends State<PinSetup> {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      backgroundColor: Color(0xFF135579),
+      backgroundColor: const Color(0xFF135579),
       sideSwapBackground: false,
       appBar: CustomAppBar(
         title: 'Protect your wallet'.tr(),
@@ -71,7 +74,7 @@ class _PinSetupState extends State<PinSetup> {
                     children: [
                       Padding(
                         padding: EdgeInsets.only(top: 24.h),
-                        child: Divider(
+                        child: const Divider(
                           thickness: 1,
                           height: 1,
                           color: Color(0xFF23729D),
@@ -84,7 +87,7 @@ class _PinSetupState extends State<PinSetup> {
                           style: GoogleFonts.roboto(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF00C5FF),
+                            color: const Color(0xFF00C5FF),
                           ),
                         ),
                       ),
@@ -118,7 +121,7 @@ class _PinSetupState extends State<PinSetup> {
                           style: GoogleFonts.roboto(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF00C5FF),
+                            color: const Color(0xFF00C5FF),
                           ),
                         ),
                       ),
@@ -150,7 +153,7 @@ class _PinSetupState extends State<PinSetup> {
                           },
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       Padding(
                         padding: EdgeInsets.only(bottom: 32.h),
                         child: Consumer(

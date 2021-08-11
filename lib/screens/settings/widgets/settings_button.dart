@@ -86,7 +86,7 @@ class _SettingsButtonState extends State<SettingsButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 60.w,
       width: double.infinity,
       child: TextButton(
@@ -94,13 +94,13 @@ class _SettingsButtonState extends State<SettingsButton> {
         style: TextButton.styleFrom(
           primary: Colors.white,
           backgroundColor:
-              widget.transparent ? Colors.transparent : Color(0xFF135579),
+              widget.transparent ? Colors.transparent : const Color(0xFF135579),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(8.w),
             ),
           ),
-          side: BorderSide(
+          side: const BorderSide(
             color: Color(0xFF135579),
             width: 1,
             style: BorderStyle.solid,
@@ -125,10 +125,10 @@ class _SettingsButtonState extends State<SettingsButton> {
                 ),
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Padding(
               padding: EdgeInsets.only(right: 16.w),
-              child: Icon(Icons.keyboard_arrow_right),
+              child: const Icon(Icons.keyboard_arrow_right),
             ),
           ],
         ),

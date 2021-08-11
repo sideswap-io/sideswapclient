@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class TxItemDate extends StatelessWidget {
-  TxItemDate({
+  const TxItemDate({
     Key? key,
     required this.createdAt,
   }) : super(key: key);
@@ -14,7 +14,7 @@ class TxItemDate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 27.h,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,7 +32,7 @@ class TxItemDate extends StatelessWidget {
           Expanded(
             child: Container(),
           ),
-          Divider(
+          const Divider(
             height: 1,
             color: Color(0xFF2B6F95),
           ),

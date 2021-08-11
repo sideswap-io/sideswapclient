@@ -74,6 +74,8 @@ int txAssetAmount(Tx tx, String assetId) {
 }
 
 class WalletTxMemo extends StatefulWidget {
+  const WalletTxMemo({Key? key}) : super(key: key);
+
   @override
   _WalletTxMemoState createState() => _WalletTxMemoState();
 }
@@ -101,12 +103,12 @@ class _WalletTxMemoState extends State<WalletTxMemo> {
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       body: SafeArea(
-        child: Container(
+        child: SizedBox(
           width: double.maxFinite,
           height: 176.h,
           child: Column(
             children: [
-              CustomAppBar(),
+              const CustomAppBar(),
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
                 child: Column(
@@ -120,16 +122,16 @@ class _WalletTxMemoState extends State<WalletTxMemo> {
                             style: GoogleFonts.roboto(
                               fontSize: 15.sp,
                               fontWeight: FontWeight.normal,
-                              color: Color(0xFF00C5FF),
+                              color: const Color(0xFF00C5FF),
                             ),
                           ),
-                          Spacer(),
+                          const Spacer(),
                           Text(
                             'Only visible to you'.tr(),
                             style: GoogleFonts.roboto(
                               fontSize: 14.sp,
                               fontWeight: FontWeight.normal,
-                              color: Color(0xFF709EBA),
+                              color: const Color(0xFF709EBA),
                             ),
                           ),
                         ],
@@ -153,9 +155,9 @@ class _WalletTxMemoState extends State<WalletTxMemo> {
                             style: GoogleFonts.roboto(
                               fontSize: 17.sp,
                               fontWeight: FontWeight.normal,
-                              color: Color(0xFF002241),
+                              color: const Color(0xFF002241),
                             ),
-                            decoration: SideSwapInputDecoration(
+                            decoration: const SideSwapInputDecoration(
                               hintText: '',
                             ),
                           );

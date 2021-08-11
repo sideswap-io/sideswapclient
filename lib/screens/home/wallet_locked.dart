@@ -9,6 +9,8 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class WalletLocked extends StatelessWidget {
+  const WalletLocked({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
@@ -24,7 +26,7 @@ class WalletLocked extends StatelessWidget {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(top: 92.h),
-                    child: Container(
+                    child: SizedBox(
                       width: 158.w,
                       height: 158.w,
                       child: SvgPicture.asset('assets/logo.svg'),
@@ -35,7 +37,7 @@ class WalletLocked extends StatelessWidget {
                     child: Icon(
                       Icons.fingerprint,
                       size: 46.h,
-                      color: Color(0xFFC6E8FD),
+                      color: const Color(0xFFC6E8FD),
                     ),
                   ),
                   Padding(
@@ -45,7 +47,7 @@ class WalletLocked extends StatelessWidget {
                       style: GoogleFonts.roboto(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFFC6E8FD),
+                        color: const Color(0xFFC6E8FD),
                       ),
                     ),
                   ),

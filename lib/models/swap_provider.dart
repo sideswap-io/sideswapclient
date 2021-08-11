@@ -232,8 +232,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       final addrType = swapAddrType(swapType());
       if (!read(walletProvider)
           .isAddrValid(swapRecvAddressExternal, addrType)) {
-        await read(utilsProvider).showErrorDialog('PLEASE_ENTER_CORRECT_ADDRESS'
-            .tr(args: ['${addrTypeStr(addrType)}']));
+        await read(utilsProvider).showErrorDialog(
+            'PLEASE_ENTER_CORRECT_ADDRESS'.tr(args: [(addrTypeStr(addrType))]));
         swapState = SwapState.idle;
         return;
       }
@@ -412,7 +412,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   void setSendRadioCb(SwapWallet v) {
     final list = allowedSendWallets();
     if (!list.contains(v)) {
-      return null;
+      return;
     }
 
     swapSendWallet = v;
@@ -423,7 +423,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   void setRecvRadioCb(SwapWallet v) {
     final list = allowedRecvWallets();
     if (!list.contains(v)) {
-      return null;
+      return;
     }
     swapRecvWallet = v;
     checkSelectedAsset();

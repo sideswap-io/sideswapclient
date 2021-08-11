@@ -46,10 +46,18 @@ pub fn redeem_script(public_key: &PublicKey) -> Script {
         .into_script()
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct UnspentOutput {
+    pub txhash: String,
+    pub satoshi: u64,
+    pub pt_idx: u32,
+    pub derivation_path: DerivationPath,
+}
+
 pub fn generate_psbt(
     wallet: &WalletCtx,
     psbt_info: &PsbtInfo,
-    utxos: &Vec<gdk_common::model::UnspentOutput>,
+    utxos: &Vec<UnspentOutput>,
     account: u32,
 ) -> Result<String, anyhow::Error> {
     struct Output {
@@ -305,7 +313,7 @@ pub fn generate_psbt(
 pub fn sign_psbt(
     wallet: &WalletCtx,
     psbt_info: &PsbtInfo,
-    utxos: &Vec<gdk_common::model::UnspentOutput>,
+    utxos: &Vec<UnspentOutput>,
     psbt: &str,
     account: u32,
 ) -> Result<String, anyhow::Error> {
@@ -674,7 +682,7 @@ pub fn get_network(env: Env) -> gdk_common::Network {
             ct_exponent: Some(0),
             ct_min_value: None,
             spv_enabled: Some(false),
-            asset_registry_url: Some("https://regtest.sideswap.io/assets".to_owned()),
+            asset_registry_url: Some("https://staging.sideswap.io/assets".to_owned()),
             asset_registry_onion_url: None,
             spv_multi: None,
             spv_servers: None,

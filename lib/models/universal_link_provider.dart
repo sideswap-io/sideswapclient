@@ -100,8 +100,13 @@ class UniversalLinkProvider with ChangeNotifier {
       final bitcoinAmount = getDouble(uri, 'bitcoin_amount') ?? 0;
       final price = getDouble(uri, 'price') ?? 0;
       final indexPrice = getDouble(uri, 'index_price');
-      read(walletProvider)
-          .submitOrder(sessionId, assetId, bitcoinAmount, price, indexPrice);
+      read(walletProvider).submitOrder(
+        assetId,
+        bitcoinAmount,
+        price,
+        sessionId: sessionId,
+        indexPrice: indexPrice,
+      );
       return;
     }
   }

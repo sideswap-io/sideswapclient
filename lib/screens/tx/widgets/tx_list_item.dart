@@ -12,7 +12,8 @@ import 'package:sideswap/screens/tx/widgets/tx_item_transaction.dart';
 class TxListItem extends StatelessWidget {
   final String assetId;
   final TxItem txItem;
-  TxListItem({required this.assetId, required this.txItem});
+  const TxListItem({Key? key, required this.assetId, required this.txItem})
+      : super(key: key);
 
   static final itemHeight = 46.h;
   static final itemWithDateHeight = 95.h;
@@ -21,7 +22,7 @@ class TxListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
-      child: Container(
+      child: SizedBox(
         height: txItem.showDate ? itemWithDateHeight : itemHeight,
         child: Column(
           children: [

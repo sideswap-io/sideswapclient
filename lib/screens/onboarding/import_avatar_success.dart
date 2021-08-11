@@ -41,14 +41,14 @@ class _ImportAvatarSuccessState extends State<ImportAvatarSuccess> {
           children: [
             if (avatar != null) ...[
               Padding(
-                padding: EdgeInsets.only(top: 100),
+                padding: const EdgeInsets.only(top: 100),
                 child: Container(
                   width: 166.w,
                   height: 166.w,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Color(0xFF00C5FF),
+                      color: const Color(0xFF00C5FF),
                       width: 6.w,
                     ),
                   ),
@@ -79,14 +79,14 @@ class _ImportAvatarSuccessState extends State<ImportAvatarSuccess> {
                   ),
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Padding(
                 padding: EdgeInsets.only(bottom: 40.h),
                 child: CustomBigButton(
                   width: double.maxFinite,
                   height: 54.h,
                   text: 'CONTINUE'.tr(),
-                  backgroundColor: Color(0xFF00C5FF),
+                  backgroundColor: const Color(0xFF00C5FF),
                   onPressed: () {
                     context.read(walletProvider).setAssociatePhoneWelcome();
                   },

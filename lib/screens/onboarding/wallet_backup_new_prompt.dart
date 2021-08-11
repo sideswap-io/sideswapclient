@@ -8,10 +8,13 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 import 'package:sideswap/screens/onboarding/widgets/wallet_backup_new_prompt_dialog.dart';
 
 class WalletBackupNewPrompt extends StatelessWidget {
+  const WalletBackupNewPrompt({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
@@ -71,11 +74,14 @@ class WalletBackupNewPrompt extends StatelessWidget {
                 ),
               ),
             ),
-            Spacer(),
+            const Spacer(),
             Padding(
               padding: EdgeInsets.only(bottom: 32.h),
               child: PageDots(
-                maxSelectedDots: 1,
+                maxSelectedDots:
+                    FlavorConfig.instance.values.enableOnboardingUserFeatures
+                        ? 1
+                        : 4,
               ),
             ),
             Padding(
@@ -84,7 +90,7 @@ class WalletBackupNewPrompt extends StatelessWidget {
                 width: double.infinity,
                 height: 54.h,
                 text: 'YES'.tr(),
-                backgroundColor: Color(0xFF00C5FF),
+                backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () {
                   context.read(walletProvider).backupNewWalletEnable();
                 },
@@ -98,7 +104,7 @@ class WalletBackupNewPrompt extends StatelessWidget {
                   width: double.infinity,
                   height: 54.h,
                   text: 'NOT NOW'.tr(),
-                  textColor: Color(0xFF00C5FF),
+                  textColor: const Color(0xFF00C5FF),
                   backgroundColor: Colors.transparent,
                   onPressed: () async {
                     showWalletBackupDialog(context);

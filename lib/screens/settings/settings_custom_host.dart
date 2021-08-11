@@ -37,7 +37,7 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
     defaultTextStyle = GoogleFonts.roboto(
       fontSize: 15.sp,
       fontWeight: FontWeight.w500,
-      color: Color(0xFF00B4E9),
+      color: const Color(0xFF00B4E9),
     );
 
     hostController = TextEditingController()
@@ -88,7 +88,7 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
           description:
               'Connection to the Liquid network servers could not be established',
           buttonText: 'OK'.tr(),
-          onPressed: () {
+          onPressed: (context) {
             Navigator.of(context).pop();
           },
         );
@@ -167,7 +167,7 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                           controller: passwordController,
                           hintText: 'Password'.tr(),
                           obscureText: obscurePassword,
-                          suffixIcon: Container(
+                          suffixIcon: SizedBox(
                             width: 32.w,
                             height: 54.h,
                             child: Material(
@@ -182,12 +182,12 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                                   child: obscurePassword
                                       ? Icon(
                                           Icons.visibility_off,
-                                          color: Color(0xFF84ADC6),
+                                          color: const Color(0xFF84ADC6),
                                           size: 22.w,
                                         )
                                       : Icon(
                                           Icons.visibility,
-                                          color: Color(0xFF84ADC6),
+                                          color: const Color(0xFF84ADC6),
                                           size: 22.w,
                                         ),
                                 ),
@@ -224,7 +224,7 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                           },
                         ),
                       ),
-                      Spacer(
+                      const Spacer(
                         flex: 3,
                       ),
                       Flexible(
@@ -249,7 +249,7 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                                   .read(configProvider)
                                   .setSettingsPassword(passwordController.text);
                             },
-                            backgroundColor: Color(0xFF00C5FF),
+                            backgroundColor: const Color(0xFF00C5FF),
                             textColor: Colors.white,
                           ),
                         ),

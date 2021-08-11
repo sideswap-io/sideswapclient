@@ -7,9 +7,9 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class SideSwapPopup extends StatelessWidget {
-  SideSwapPopup({
+  const SideSwapPopup({
     Key? key,
-    this.child,
+    required this.child,
     this.appBar,
     Color? backgroundColor,
     this.enableInsideTopPadding = true,
@@ -21,7 +21,7 @@ class SideSwapPopup extends StatelessWidget {
     this.sideSwapBackground = true,
     this.backgroundCoverColor,
     this.extendBodyBehindAppBar = false,
-  })  : _backgroundColor = backgroundColor ?? Color(0xFF135579),
+  })  : _backgroundColor = backgroundColor ?? const Color(0xFF135579),
         super(key: key);
 
   final Widget? child;

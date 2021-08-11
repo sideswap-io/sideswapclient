@@ -10,6 +10,8 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_table.dart';
 
 class WalletBackup extends StatelessWidget {
+  const WalletBackup({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return SideSwapPopup(
@@ -18,7 +20,7 @@ class WalletBackup extends StatelessWidget {
         children: [
           Padding(
             padding: EdgeInsets.only(top: 38.h, left: 16.w, right: 56.w),
-            child: Container(
+            child: SizedBox(
               width: 303.w,
               height: 56.h,
               child: Text(
@@ -75,14 +77,14 @@ class WalletBackup extends StatelessWidget {
               },
             ),
           ),
-          Spacer(),
+          const Spacer(),
           Padding(
             padding: EdgeInsets.only(bottom: 40.h, left: 16.w, right: 16.w),
             child: CustomBigButton(
               width: double.maxFinite,
               height: 54.h,
               text: 'CONFIRM YOUR WORDS'.tr(),
-              backgroundColor: Color(0xFF00C5FF),
+              backgroundColor: const Color(0xFF00C5FF),
               onPressed: () {
                 context.read(walletProvider).backupNewWalletCheck();
               },

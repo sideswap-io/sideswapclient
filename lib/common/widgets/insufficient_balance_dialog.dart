@@ -30,7 +30,7 @@ void showInsufficientBalanceDialog(BuildContext? context, String ticker) {
             borderRadius: BorderRadius.all(
               Radius.circular(8.w),
             ),
-            color: Color(0xFF1C6086),
+            color: const Color(0xFF1C6086),
           ),
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
@@ -41,9 +41,9 @@ void showInsufficientBalanceDialog(BuildContext? context, String ticker) {
                   height: 56.h,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFF135579),
+                    color: const Color(0xFF135579),
                     border: Border.all(
-                      color: Color(0xFFFF7878),
+                      color: const Color(0xFFFF7878),
                       style: BorderStyle.solid,
                       width: 3,
                     ),
@@ -53,7 +53,7 @@ void showInsufficientBalanceDialog(BuildContext? context, String ticker) {
                       'assets/error.svg',
                       width: 20.w,
                       height: 22.h,
-                      color: Color(0xFFFF7878),
+                      color: const Color(0xFFFF7878),
                     ),
                   ),
                 ),
@@ -82,12 +82,12 @@ void showInsufficientBalanceDialog(BuildContext? context, String ticker) {
                     ),
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 CustomBigButton(
                   width: double.maxFinite,
                   height: 54.h,
                   text: 'SWAP NOW'.tr(),
-                  backgroundColor: Color(0xFF00C5FF),
+                  backgroundColor: const Color(0xFF00C5FF),
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).pop();
 
