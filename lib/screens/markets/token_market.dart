@@ -35,12 +35,22 @@ class _TokenMarketState extends State<TokenMarket> {
     tokenRequestOrders.addAll(context
         .read(tokenMarketProvider)
         .getTokenList(currentDropdownValue.assetId));
+
+    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
   }
 
   @override
   void dispose() {
     scrollController.dispose();
     super.dispose();
+  }
+
+  void afterBuild(BuildContext context) async {
+    subscribeToMarket();
+  }
+
+  void subscribeToMarket() {
+    context.read(marketsProvider).subscribeTokenMarket();
   }
 
   @override

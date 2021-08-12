@@ -28,6 +28,11 @@ enum IncomingNotificationType {
   resume,
 }
 
+enum NotificationChannelType {
+  main,
+  sign,
+}
+
 class ReceivedNotification {
   ReceivedNotification({
     required this.id,
@@ -43,14 +48,26 @@ class ReceivedNotification {
 }
 
 const String _groupKey = 'com.android.sideswap.GENERAL_NOTIFICATION';
-const String _groupChannelId = 'sideswap_channel_id';
-const String _groupChannelName = 'Main';
-const String _groupChannelDescription = 'All notifications';
 
-const AndroidNotificationChannel channel = AndroidNotificationChannel(
-  _groupChannelId, // id
-  _groupChannelName, // title
-  _groupChannelDescription, // description
+const String _notificationChannelId = 'sideswap_channel_id';
+const String _notificationChannelName = 'Main';
+const String _notificationChannelDescription = 'All notifications';
+
+const String _notificationSignChannelId = 'sideswap_channel_id_sign';
+const String _notificationSignChannelName = 'Sign';
+const String _notificationSignChannelDescription = 'Sign notifications';
+
+const AndroidNotificationChannel mainChannel = AndroidNotificationChannel(
+  _notificationChannelId, // id
+  _notificationChannelName, // title
+  _notificationChannelDescription, // description
+  importance: Importance.high,
+);
+
+const AndroidNotificationChannel signChannel = AndroidNotificationChannel(
+  _notificationSignChannelId,
+  _notificationSignChannelName,
+  _notificationSignChannelDescription,
   importance: Importance.high,
 );
 
@@ -107,10 +124,23 @@ class NotificationService {
           );
     }
 
+    // remove old notification channel
+    // TODO: This could be removed later
     await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(channel);
+        ?.deleteNotificationChannel(_notificationChannelId);
+
+    // create new notification channel
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(mainChannel);
+
+    await _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(signChannel);
 
     // resume?
     await FirebaseMessaging.instance
@@ -232,11 +262,27 @@ class NotificationService {
     NotificationVisibility visibility = NotificationVisibility.public,
     StyleInformation styleInformation =
         const DefaultStyleInformation(true, true),
+    NotificationChannelType type = NotificationChannelType.main,
   }) {
+    String channelId, channelName, channelDescription;
+
+    switch (type) {
+      case NotificationChannelType.main:
+        channelId = _notificationChannelId;
+        channelName = _notificationChannelName;
+        channelDescription = _notificationChannelDescription;
+        break;
+      case NotificationChannelType.sign:
+        channelId = _notificationSignChannelId;
+        channelName = _notificationSignChannelName;
+        channelDescription = _notificationSignChannelDescription;
+        break;
+    }
+
     final androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      _groupChannelId,
-      _groupChannelName,
-      _groupChannelDescription,
+      channelId,
+      channelName,
+      channelDescription,
       importance: Importance.max,
       priority: Priority.high,
       groupKey: _groupKey,
@@ -541,6 +587,7 @@ class NotificationService {
     String payload = '',
     NotificationVisibility visibility = NotificationVisibility.public,
     NotificationDetails? notificationDetails,
+    NotificationChannelType type = NotificationChannelType.main,
   }) async {
     final activeNotifications = await _flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<
@@ -551,7 +598,10 @@ class NotificationService {
       _notificationId = 0;
     }
 
-    notificationDetails ??= _getNotificationDetails(visibility: visibility);
+    notificationDetails ??= _getNotificationDetails(
+      visibility: visibility,
+      type: type,
+    );
 
     await _flutterLocalNotificationsPlugin.show(
       _notificationId,
@@ -564,15 +614,20 @@ class NotificationService {
     _notificationId = _notificationId + 1;
   }
 
-  Future<void> _onDefaultNotification(
-      {String? title, String? body, FCMPayload? payload}) async {
-    final notificationDetails = _getNotificationDetails();
+  Future<void> _onDefaultNotification({
+    String? title,
+    String? body,
+    FCMPayload? payload,
+    NotificationChannelType type = NotificationChannelType.main,
+  }) async {
+    final notificationDetails = _getNotificationDetails(type: type);
 
     await showNotification(
       title ?? '',
       body ?? '',
       notificationDetails: notificationDetails,
       payload: payload?.toJsonString() ?? '',
+      type: type,
     );
   }
 

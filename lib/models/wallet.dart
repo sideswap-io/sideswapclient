@@ -1886,7 +1886,10 @@ class WalletChangeNotifier with ChangeNotifier {
       status = Status.orderPopup;
       notifyListeners();
 
-      if (orderDetailsData.orderType == OrderDetailsDataType.sign) {
+      final instance = WidgetsBinding.instance;
+      if (orderDetailsData.orderType == OrderDetailsDataType.sign &&
+          instance != null &&
+          instance.lifecycleState == AppLifecycleState.resumed) {
         unawaited(FlutterRingtonePlayer.playNotification());
         unawaited(Vibration.vibrate());
       }

@@ -227,8 +227,6 @@ class MarketsProvider extends ChangeNotifier {
   }
 
   void subscribeTokenMarket() {
-    unsubscribeMarket();
-
     final msg = To();
     msg.subscribe = To_Subscribe();
     msg.subscribe.market = To_Subscribe_Market.TOKENS;
@@ -236,8 +234,6 @@ class MarketsProvider extends ChangeNotifier {
   }
 
   void subscribeSwapMarket(String assetId) {
-    unsubscribeMarket();
-
     if (assetId.isEmpty) {
       return;
     }

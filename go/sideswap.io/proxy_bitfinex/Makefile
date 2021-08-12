@@ -11,8 +11,5 @@ gen-proto:
 linux:
 	go build -buildmode c-archive -o libproxy_bitfinex_linux.a
 
-linux_race:
-	go build -buildmode c-archive -o libproxy_bitfinex_linux.a --race
-
 windows:
 	CC=x86_64-w64-mingw32-gcc CGO_ENABLED=1 GOOS=windows go build -buildmode c-archive -o libproxy_bitfinex_windows.a

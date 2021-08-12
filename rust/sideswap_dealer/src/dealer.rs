@@ -626,7 +626,6 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                     send_request!(send_request, Login, LoginRequest { session_id: None })
                         .expect("subscribing to order list failed");
                 assert!(login_resp.orders.is_empty());
-                orders.clear();
                 for asset in assets.iter().filter(|asset| {
                     params
                         .tickers
@@ -656,6 +655,9 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                 server_connected = false;
                 orders.clear();
                 taken_orders.clear();
+                for own_order in own_orders.values_mut() {
+                    *own_order = None;
+                }
             }
 
             Msg::Notification(msg) => match msg {

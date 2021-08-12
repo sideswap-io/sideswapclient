@@ -711,6 +711,10 @@ impl Data {
         };
 
         let assets = send_request!(self, Assets, None)?.assets;
+        for asset in assets.iter().filter(|asset| asset.ticker.0 != TICKER_LBTC) {
+            self.subscribe_price_update(&asset.ticker);
+        }
+
         if assets != self.assets_old {
             if let Err(e) = self.save_assets(&assets) {
                 error!("can't save assets file: {}", &e);
@@ -722,14 +726,6 @@ impl Data {
         self.process_server_status(server_status);
 
         self.update_tx_list();
-        // Subscribe to only registered assets on the server (where icon_url is set)
-        for asset in self
-            .assets
-            .values()
-            .filter(|asset| asset.icon_url.is_some() && asset.ticker.0 != TICKER_LBTC)
-        {
-            self.subscribe_price_update(&asset.ticker);
-        }
 
         // verify device key if exists
         if let Some(device_key) = &self.settings.device_key {
@@ -782,6 +778,7 @@ impl Data {
         info!("connected to server");
         if let Err(e) = self.try_process_ws_connected() {
             error!("connection failed: {}", &e);
+            self.restart_websocket();
             return;
         }
         self.connected = true;
@@ -2881,6 +2878,9 @@ impl Data {
     }
 
     fn check_connection(&mut self) {
+        if !self.connected {
+            return;
+        }
         let server_status = send_request!(self, ServerStatus, None);
         if server_status.is_err() {
             debug!("restart connection");

@@ -123,7 +123,10 @@ async fn run(
                             let text = serde_json::to_string(&req).unwrap();
                             let _ = ws_stream.send(async_tungstenite::tungstenite::Message::text(&text)).await;
                         }
-                        WrappedRequest::Restart => break,
+                        WrappedRequest::Restart => {
+                            info!("restart requested");
+                            break;
+                        },
                     }
                 }
 
