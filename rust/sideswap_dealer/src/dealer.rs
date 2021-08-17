@@ -531,6 +531,7 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
         params.server_host.clone(),
         params.server_port,
         params.server_use_tls,
+        false,
     );
 
     let (msg_tx, msg_rx) = std::sync::mpsc::channel::<Msg>();

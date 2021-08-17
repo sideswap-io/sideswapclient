@@ -29,7 +29,6 @@ class OrderTable extends StatelessWidget {
     final assets = context.read(walletProvider).assets;
     Image? assetIcon, bitcoinIcon;
     var assetTicker = '';
-    var isToken = false;
 
     var bitcoinTicker = '';
     for (var asset in assets.values) {
@@ -39,30 +38,32 @@ class OrderTable extends StatelessWidget {
         bitcoinTicker = asset.ticker;
       }
       if (asset.assetId == orderDetailsData.assetId) {
-        isToken =
-            context.read(requestOrderProvider).isAssetToken(asset.assetId);
         assetIcon =
             context.read(walletProvider).assetImagesSmall[asset.assetId];
         assetTicker = asset.ticker;
       }
     }
 
+    final isPricedInLiquid = context
+        .read(requestOrderProvider)
+        .isPricedInLiquid(orderDetailsData.assetId);
+
     final sellBitcoin = orderDetailsData.sellBitcoin;
     final deliverAmount = sellBitcoin
-        ? orderDetailsData.bitcoinAmount
-        : orderDetailsData.assetAmount;
+        ? orderDetailsData.bitcoinAmountWithFeeStr
+        : orderDetailsData.assetAmountStr;
     final deliverTicker = sellBitcoin ? bitcoinTicker : assetTicker;
     final deliverIcon = sellBitcoin ? bitcoinIcon : assetIcon;
     final receiveAmount = sellBitcoin
-        ? orderDetailsData.assetAmount
-        : orderDetailsData.bitcoinAmount;
+        ? orderDetailsData.assetAmountStr
+        : orderDetailsData.bitcoinAmountWithFeeStr;
     final receiveTicker = sellBitcoin ? assetTicker : bitcoinTicker;
     final receiveIcon = sellBitcoin ? assetIcon : bitcoinIcon;
-    final priceTicker = isToken ? bitcoinTicker : assetTicker;
-    final priceIcon = isToken ? bitcoinIcon : assetIcon;
-    final price = double.tryParse(orderDetailsData.priceAmount)?.toInt() ?? 0;
-    var priceAmount =
-        isToken ? amountStr(price, precision: 8) : orderDetailsData.priceAmount;
+    final priceTicker = isPricedInLiquid ? bitcoinTicker : assetTicker;
+    final priceIcon = isPricedInLiquid ? bitcoinIcon : assetIcon;
+    final priceAmount = !isPricedInLiquid
+        ? orderDetailsData.priceAmountStr
+        : orderDetailsData.priceAmountInvertedStr;
 
     final receiveAssetId =
         context.read(walletProvider).getAssetByTicker(receiveTicker)?.assetId ??
@@ -142,7 +143,7 @@ class OrderTable extends StatelessWidget {
         ] else ...[
           OrderTableRow(
             description: 'Fee'.tr(),
-            value: '${orderDetailsData.fee} $bitcoinTicker',
+            value: '${orderDetailsData.feeStr} $bitcoinTicker',
             icon: bitcoinIcon,
             orderTableRowType: orderTableRowType,
             enabled: enabled,

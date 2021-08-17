@@ -5,8 +5,9 @@ use std::time::{Duration, Instant};
 
 #[derive(Debug)]
 pub enum WrappedRequest {
+    Connect,
+    Disconnect,
     Request(RequestMessage),
-    Restart,
 }
 
 #[derive(Debug)]
@@ -41,6 +42,7 @@ async fn run(
     host: String,
     port: u16,
     use_tls: bool,
+    sync: bool,
     req_rx: std::sync::mpsc::Receiver<WrappedRequest>,
     resp_tx: std::sync::mpsc::Sender<WrappedResponse>,
 ) {
@@ -53,34 +55,53 @@ async fn run(
         }
     });
 
-    let mut reconnect_count = 0;
+    let protocol = if use_tls { "wss" } else { "ws" };
+    let url = format!("{}://{}:{}/{}", protocol, &host, port, PATH_JSON_RUST_WS);
+
     loop {
-        let protocol = if use_tls { "wss" } else { "ws" };
-        let url = format!("{}://{}:{}/{}", protocol, &host, port, PATH_JSON_RUST_WS);
-        let connect_result = connect_async(url).await;
-        let mut interval =
-            tokio::time::interval_at(tokio::time::Instant::now() + PING_PERIOD, PING_PERIOD);
-
-        let mut ws_stream = match connect_result {
-            Ok((ws_stream, _)) => ws_stream,
-            Err(e) => {
-                error!("connection to the server failed: {}", e);
-                let delay = RECONNECT_WAIT_PERIODS
-                    .get(reconnect_count)
-                    .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
-                tokio::time::delay_for(*delay).await;
-                reconnect_count += 1;
-                continue;
+        if sync {
+            loop {
+                let req = req_rx_async.recv().await;
+                match req {
+                    Some(WrappedRequest::Connect) => {
+                        info!("ws connect requested...");
+                        break;
+                    }
+                    Some(req) => {
+                        debug!("drop unexpected request: {:?}", &req);
+                    }
+                    None => {
+                        debug!("quit from ws connection loop");
+                        return;
+                    }
+                }
             }
-        };
-        reconnect_count = 0;
+        }
 
-        // Drop old messages
-        while req_rx_async.try_recv().is_ok() {}
+        let mut reconnect_count = 0;
+        let mut ws_stream = None;
+        while ws_stream.is_none() {
+            let connect_result = connect_async(&url).await;
+            match connect_result {
+                Ok((v, _)) => ws_stream = Some(v),
+                Err(e) => {
+                    error!("ws connection to the server failed: {}", e);
+                    let delay = RECONNECT_WAIT_PERIODS
+                        .get(reconnect_count)
+                        .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
+                    tokio::time::delay_for(*delay).await;
+                    reconnect_count += 1;
+                }
+            };
+        }
+        let mut ws_stream = ws_stream.unwrap();
 
+        debug!("ws connected");
         resp_tx.send(WrappedResponse::Connected).unwrap();
 
         let mut last_recv_timestamp = Instant::now();
+        let mut interval =
+            tokio::time::interval_at(tokio::time::Instant::now() + PING_PERIOD, PING_PERIOD);
 
         loop {
             tokio::select! {
@@ -89,7 +110,7 @@ async fn run(
                     let server_msg = match server_msg {
                         Ok(v) => v,
                         Err(_) => {
-                            error!("connection to the server closed");
+                            error!("ws connection to the server closed");
                             break;
                         }
                     };
@@ -116,24 +137,30 @@ async fn run(
                 client_result = req_rx_async.next() => {
                     let client_result = match client_result {
                         Some(v) => v,
-                        None => return,
+                        None => {
+                            info!("terminate ws connection loop");
+                            return;
+                        },
                     };
                     match client_result {
                         WrappedRequest::Request(req) => {
                             let text = serde_json::to_string(&req).unwrap();
                             let _ = ws_stream.send(async_tungstenite::tungstenite::Message::text(&text)).await;
                         }
-                        WrappedRequest::Restart => {
-                            info!("restart requested");
+                        WrappedRequest::Connect => {
+                            warn!("ignore unexpected ws connect request");
+                        }
+                        WrappedRequest::Disconnect => {
+                            info!("ws disconnect requested");
                             break;
-                        },
+                        }
                     }
                 }
 
                 _ = interval.tick() => {
                     let last_recv_duration = Instant::now().duration_since(last_recv_timestamp);
                     if last_recv_duration > PONG_TIMEOUT {
-                        error!("ping timeout detected");
+                        error!("ws ping timeout detected");
                         break;
                     }
                     if last_recv_duration > PING_PERIOD {
@@ -143,11 +170,12 @@ async fn run(
             }
         }
 
+        debug!("ws disconnected");
         resp_tx.send(WrappedResponse::Disconnected).unwrap();
     }
 }
 
-pub fn start(host: String, port: u16, use_tls: bool) -> (Sender, Receiver) {
+pub fn start(host: String, port: u16, use_tls: bool, sync: bool) -> (Sender, Receiver) {
     let (req_tx, req_rx) = std::sync::mpsc::channel::<WrappedRequest>();
     let (resp_tx, resp_rx) = std::sync::mpsc::channel::<WrappedResponse>();
     std::thread::spawn(move || {
@@ -156,7 +184,7 @@ pub fn start(host: String, port: u16, use_tls: bool) -> (Sender, Receiver) {
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(run(host, port, use_tls, req_rx, resp_tx));
+        rt.block_on(run(host, port, use_tls, sync, req_rx, resp_tx));
     });
     (req_tx, resp_rx)
 }

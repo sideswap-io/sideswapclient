@@ -46,8 +46,6 @@ class OrderPriceField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final precision = asset?.precision ?? 0;
-
     final isToken = context.read(requestOrderProvider).isDeliverToken();
     final indexPrice =
         context.read(marketsProvider).getIndexPriceStr(asset?.assetId ?? '');
@@ -140,7 +138,6 @@ class OrderPriceField extends StatelessWidget {
                 controller: controller,
                 focusNode: focusNode,
                 onEditingComplete: onEditingComplete,
-                precision: precision,
               ),
             ),
           ],

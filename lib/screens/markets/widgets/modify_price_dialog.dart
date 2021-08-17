@@ -95,10 +95,14 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
     }
 
     var price = widget.controller.text;
+    final pricedInLiquid = context
+        .read(requestOrderProvider)
+        .isPricedInLiquid(widget.orderDetailsData.assetId);
     context.read(requestOrderProvider).modifyOrderPrice(
           widget.orderDetailsData.orderId,
           isToken: isToken,
           price: price,
+          isPricedInLiquid: pricedInLiquid,
         );
     Navigator.of(context).pop();
   }

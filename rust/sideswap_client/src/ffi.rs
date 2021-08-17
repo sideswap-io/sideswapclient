@@ -49,8 +49,10 @@ pub extern "C" fn sideswap_client_start(
     version: *const c_char,
     dart_port: i64,
 ) -> IntPtr {
+    let work_dir = get_string(work_dir);
+    let version = get_string(version);
     INIT_LOGGER_FLAG.call_once(|| {
-        init_log();
+        init_log(&work_dir);
     });
 
     std::panic::set_hook(Box::new(|i| {
@@ -68,10 +70,7 @@ pub extern "C" fn sideswap_client_start(
         _ => panic!("unknown env"),
     };
 
-    let start_params = StartParams {
-        work_dir: get_string(work_dir),
-        version: get_string(version),
-    };
+    let start_params = StartParams { work_dir, version };
 
     let (msg_sender, msg_receiver) = std::sync::mpsc::channel::<worker::Message>();
     let (from_sender, from_receiver) = std::sync::mpsc::channel::<FromMsg>();
@@ -217,25 +216,31 @@ pub extern "C" fn sideswap_string_free(str: *mut c_char) {
     }
 }
 
-const LOG_FILTER: &str = "debug,hyper=info,rustls=info";
+const _LOG_FILTER: &str = "debug,hyper=info,rustls=info";
 
 #[cfg(target_os = "android")]
-fn init_log() {
+fn init_log(_work_dir: &str) {
     android_logger::init_once(
         android_logger::Config::default()
             .with_min_level(log::Level::Debug)
             .with_filter(
                 android_logger::FilterBuilder::new()
-                    .parse(LOG_FILTER)
+                    .parse(_LOG_FILTER)
                     .build(),
             ),
     );
 }
 
-#[cfg(not(target_os = "android"))]
-fn init_log() {
+#[cfg(target_os = "ios")]
+fn init_log(work_dir: &str) {
+    let path = format!("{}/{}", work_dir, "log.txt");
+    simple_logging::log_to_file(path, log::LevelFilter::Debug).unwrap();
+}
+
+#[cfg(all(not(target_os = "android"), not(target_os = "ios")))]
+fn init_log(_work_dir: &str) {
     if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", LOG_FILTER);
+        std::env::set_var("RUST_LOG", _LOG_FILTER);
     }
     env_logger::init();
 }

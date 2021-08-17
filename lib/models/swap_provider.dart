@@ -166,8 +166,9 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
       return swapPegList;
     }
-    return wallet.assets.keys
-        .where((element) => element != wallet.bitcoinAssetId())
+    return wallet.assets.entries
+        .where((e) => e.key == wallet.liquidAssetId() || e.value.swapMarket)
+        .map((e) => e.key)
         .toList();
   }
 
@@ -187,10 +188,9 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       return [wallet.liquidAssetId()!];
     }
 
-    return wallet.assets.keys
-        .where((element) =>
-            element != wallet.liquidAssetId() &&
-            element != wallet.bitcoinAssetId())
+    return wallet.assets.entries
+        .where((e) => e.value.swapMarket)
+        .map((e) => e.key)
         .toList();
   }
 

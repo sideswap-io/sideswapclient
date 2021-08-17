@@ -12,7 +12,7 @@ use std::sync::{
     Mutex,
 };
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::{BTreeMap, BTreeSet, VecDeque},
     str::FromStr,
 };
 use types::Amount;
@@ -178,11 +178,14 @@ pub struct Data {
     submit_data: BTreeMap<OrderId, SubmitData>,
     pending_signs: BTreeMap<OrderId, Option<PendingSign>>,
     visible_submit: Option<OrderId>,
+    waiting_submit: Option<OrderId>,
     processed_signs: BTreeSet<OrderId>,
-    shown_succeed: BTreeSet<OrderId>,
-    pending_sign_requests: std::collections::VecDeque<SignNotification>,
+    pending_sign_requests: VecDeque<SignNotification>,
+    pending_sign_prompts: VecDeque<SignNotification>,
     pending_submits: Vec<ffi::proto::to::SubmitOrder>,
     pending_links: Vec<ffi::proto::to::LinkOrder>,
+    shown_succeed: BTreeSet<OrderId>,
+    pending_succeed: VecDeque<ffi::proto::TransItem>,
     utxos_resp: BTreeMap<OrderId, settings::StoredUtxo>,
     internal: BTreeSet<OrderId>,
     orders_last: BTreeMap<OrderId, ffi::proto::Order>,
@@ -585,17 +588,7 @@ impl Data {
                 if let Some(submit_data) = submit_data {
                     let shown = self.shown_succeed.contains(&submit_data.order_id);
                     if !shown {
-                        self.from_sender
-                            .send(ffi::proto::from::Msg::SubmitResult(
-                                ffi::proto::from::SubmitResult {
-                                    result: Some(
-                                        ffi::proto::from::submit_result::Result::SwapSucceed(
-                                            item.clone(),
-                                        ),
-                                    ),
-                                },
-                            ))
-                            .unwrap();
+                        self.pending_succeed.push_back(item.clone());
                         self.shown_succeed.insert(submit_data.order_id.clone());
                     }
                 }
@@ -603,9 +596,7 @@ impl Data {
         }
         ctx.sent_txs = new_list;
         self.update_address_registrations();
-        if self.visible_submit.is_none() {
-            self.process_pending_sign_requests();
-        }
+        self.process_pending_succeed();
         Ok(())
     }
 
@@ -807,6 +798,10 @@ impl Data {
                 ffi::proto::Empty {},
             ))
             .unwrap();
+
+        if self.ctx.is_some() {
+            self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+        }
     }
 
     fn process_server_status(&mut self, resp: ServerStatus) {
@@ -1682,6 +1677,8 @@ impl Data {
     fn process_login_request(&mut self, req: ffi::proto::to::Login) {
         debug!("process login request...");
 
+        self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+
         let electrum_env = match self.env {
             Env::Prod | Env::Staging => sideswap_libwally::Env::Prod,
             Env::Local => sideswap_libwally::Env::Local,
@@ -1761,7 +1758,7 @@ impl Data {
 
     fn restart_websocket(&mut self) {
         self.connected = false;
-        self.ws_sender.send(ws::WrappedRequest::Restart).unwrap();
+        self.ws_sender.send(ws::WrappedRequest::Disconnect).unwrap();
     }
 
     fn process_logout_request(&mut self) {
@@ -2104,9 +2101,23 @@ impl Data {
             available_balance.to_sat(),
             send_amount
         );
+        let send_asset = if resp.details.send_bitcoins {
+            &self.liquid_asset_id
+        } else {
+            &resp.details.asset
+        };
+        let send_asset = self
+            .assets
+            .get(send_asset)
+            .ok_or_else(|| anyhow!("send asset not found"))?;
+        let available_balance_float =
+            types::asset_float_amount(available_balance.to_sat(), send_asset.precision);
+        let send_amount_float = types::asset_float_amount(send_amount, send_asset.precision);
         ensure!(
             available_balance.to_sat() >= send_amount,
-            "Insufficient funds"
+            "Insufficient funds\nAvailable: {}\nRequired: {}",
+            available_balance_float,
+            send_amount_float,
         );
 
         let step = if details.side == OrderSide::Requestor {
@@ -2133,6 +2144,7 @@ impl Data {
             internal,
             auto_sign,
         };
+        debug!("send for review quote prompt, order_id: {}", order_id.0);
         self.from_sender
             .send(ffi::proto::from::Msg::SubmitReview(submit_review))
             .unwrap();
@@ -2370,7 +2382,9 @@ impl Data {
                 ffi::proto::from::submit_result::Result::SubmitSucceed(ffi::proto::Empty {})
             }
             Ok(false) => {
-                // TODO: Add timer
+                self.waiting_submit = std::mem::replace(&mut self.visible_submit, None);
+                self.process_pending_sign_prompts();
+                self.process_pending_succeed();
                 return;
             }
             Err(e) => {
@@ -2385,7 +2399,8 @@ impl Data {
             .send(ffi::proto::from::Msg::SubmitResult(from))
             .unwrap();
         self.visible_submit = None;
-        self.process_pending_sign_requests();
+        self.process_pending_sign_prompts();
+        self.process_pending_succeed();
     }
 
     fn try_sign(&mut self, msg: SignNotification) -> Result<bool, anyhow::Error> {
@@ -2446,10 +2461,18 @@ impl Data {
     }
 
     fn try_process_sign(&mut self, msg: SignNotification) -> Result<(), anyhow::Error> {
-        self.verify_amounts(&msg.details)?;
+        let existing = self.processed_signs.contains(&msg.order_id);
+        debug!(
+            "try_process_sign, order_id: {}, existing: {}",
+            msg.order_id, existing
+        );
+        if existing {
+            return Ok(());
+        }
         self.processed_signs.insert(msg.order_id.clone());
+
+        self.verify_amounts(&msg.details)?;
         let order_id = msg.order_id.clone();
-        let ctx = self.ctx.as_mut().ok_or_else(|| anyhow!("no wallet"))?;
         let submit_data = self
             .submit_data
             .get_mut(&msg.order_id)
@@ -2471,14 +2494,13 @@ impl Data {
         ensure!(submit_data.side == msg.details.side);
         ensure!(price_change == 0.0 || submit_data.side != OrderSide::Responder);
 
-        // Maker: Auto-sign is only allowed if price do not change (or change within 10% for price tracking orders).
+        // Maker: Auto-sign is only allowed if price does not change (or changes within 10% for price tracking orders).
         // Taker: Auto-sign is always used because price was already reviewed earlier (and can't change since that).
-        let allowed_price_change =
-            if submit_data.index_price && submit_data.order_type == OrderType::Bitcoin {
-                AUTO_SIGN_ALLOWED_INDEX_PRICE_CHANGE
-            } else {
-                0.0
-            };
+        let allowed_price_change = if submit_data.index_price {
+            AUTO_SIGN_ALLOWED_INDEX_PRICE_CHANGE
+        } else {
+            0.0
+        };
         let auto_sign_allowed = submit_data.side == OrderSide::Responder
             || (submit_data.side == OrderSide::Requestor
                 && submit_data.auto_sign
@@ -2497,37 +2519,16 @@ impl Data {
         submit_data.bitcoin_amount = Amount::from_sat(msg.details.bitcoin_amount);
         submit_data.server_fee = Amount::from_sat(msg.details.server_fee);
         if !auto_sign_allowed {
-            let step = ffi::proto::from::submit_review::Step::Sign;
-            let internal = self.internal.get(&order_id).is_some();
-            let submit_review = ffi::proto::from::SubmitReview {
-                order_id: order_id.0.clone(),
-                asset: submit_data.asset.clone().0,
-                bitcoin_amount: submit_data.bitcoin_amount.to_sat(),
-                asset_amount: submit_data.asset_amount.to_sat(),
-                price: submit_data.price,
-                server_fee: submit_data.server_fee.to_sat(),
-                sell_bitcoin: submit_data.sell_bitcoin,
-                step: step as i32,
-                index_price: false,
-                internal,
-                auto_sign: submit_data.auto_sign,
-            };
-            self.from_sender
-                .send(ffi::proto::from::Msg::SubmitReview(submit_review))
-                .unwrap();
-            self.visible_submit = Some(order_id.clone());
-            ctx.active_sign = Some(msg);
+            self.pending_sign_prompts.push_back(msg);
+            self.process_pending_sign_prompts();
         } else {
-            // Show swap tx after auto-sign
-            if self.visible_submit.is_none() && submit_data.side == OrderSide::Requestor {
-                self.visible_submit = Some(msg.order_id.clone());
-            }
             self.try_sign(msg)?;
         }
         Ok(())
     }
 
     fn process_sign(&mut self, msg: SignNotification) {
+        debug!("process sign, order_id: {}", msg.order_id);
         if msg.details.side == OrderSide::Responder {
             let result = self.try_process_sign(msg);
             if let Err(e) = result {
@@ -2541,21 +2542,87 @@ impl Data {
     }
 
     fn process_pending_sign_requests(&mut self) {
-        loop {
-            if self.visible_submit.is_some() {
-                return;
-            }
-            let msg = self.pending_sign_requests.pop_front();
-            let msg = match msg {
-                Some(v) => v,
-                None => return,
-            };
+        debug!(
+            "process_pending_sign_requests, pending_sign_requests: {}",
+            self.pending_sign_requests.len()
+        );
+        while let Some(msg) = self.pending_sign_requests.pop_front() {
             if self.processed_signs.get(&msg.order_id).is_some() {
                 continue;
             }
             let result = self.try_process_sign(msg);
             if let Err(e) = result {
                 self.show_message(&format!("sign failed: {}", e.to_string()));
+            }
+        }
+    }
+
+    fn process_pending_sign_prompts(&mut self) {
+        debug!(
+            "process_pending_sign_prompts: sign_prompts: {}, visible_submit: {}",
+            self.pending_sign_prompts.len(),
+            self.visible_submit.is_some(),
+        );
+        let ctx = match self.ctx.as_mut() {
+            Some(v) => v,
+            None => return,
+        };
+        loop {
+            if self.visible_submit.is_some() {
+                return;
+            }
+            let msg = self.pending_sign_prompts.pop_front();
+            let msg = match msg {
+                Some(v) => v,
+                None => return,
+            };
+            let submit_data = match self.submit_data.get(&msg.order_id) {
+                Some(v) => v,
+                None => continue,
+            };
+            let step = ffi::proto::from::submit_review::Step::Sign;
+            let internal = self.internal.get(&msg.order_id).is_some();
+            let submit_review = ffi::proto::from::SubmitReview {
+                order_id: msg.order_id.0.clone(),
+                asset: submit_data.asset.clone().0,
+                bitcoin_amount: submit_data.bitcoin_amount.to_sat(),
+                asset_amount: submit_data.asset_amount.to_sat(),
+                price: submit_data.price,
+                server_fee: submit_data.server_fee.to_sat(),
+                sell_bitcoin: submit_data.sell_bitcoin,
+                step: step as i32,
+                index_price: submit_data.index_price,
+                internal,
+                auto_sign: submit_data.auto_sign,
+            };
+            debug!("send for review sign prompt for {}", msg.order_id.0);
+            self.from_sender
+                .send(ffi::proto::from::Msg::SubmitReview(submit_review))
+                .unwrap();
+            self.visible_submit = Some(msg.order_id.clone());
+            ctx.active_sign = Some(msg);
+        }
+    }
+
+    fn process_pending_succeed(&mut self) {
+        if self.visible_submit.is_some() {
+            return;
+        }
+        loop {
+            let item = self.pending_succeed.pop_front();
+            let item = match item {
+                Some(v) => v,
+                None => return,
+            };
+            self.from_sender
+                .send(ffi::proto::from::Msg::SubmitResult(
+                    ffi::proto::from::SubmitResult {
+                        result: Some(ffi::proto::from::submit_result::Result::SwapSucceed(item)),
+                    },
+                ))
+                .unwrap();
+            if !self.pending_succeed.is_empty() {
+                std::thread::sleep(std::time::Duration::from_secs(3));
             }
         }
     }
@@ -2706,7 +2773,10 @@ impl Data {
                 submit_data.txid = Some(v)
             }
             None => {
-                if self.visible_submit.as_ref() == Some(&msg.order_id) {
+                if self.visible_submit.as_ref() == Some(&msg.order_id)
+                    || (self.visible_submit.is_none()
+                        && self.waiting_submit.as_ref() == Some(&msg.order_id))
+                {
                     self.from_sender
                         .send(ffi::proto::from::Msg::SubmitResult(
                             ffi::proto::from::SubmitResult {
@@ -2717,7 +2787,8 @@ impl Data {
                         ))
                         .unwrap();
                     self.visible_submit = None;
-                    self.process_pending_sign_requests();
+                    self.process_pending_sign_prompts();
+                    self.process_pending_succeed();
                 }
                 self.submit_data.remove(&msg.order_id);
             }
@@ -2881,8 +2952,8 @@ impl Data {
         if !self.connected {
             return;
         }
-        let server_status = send_request!(self, ServerStatus, None);
-        if server_status.is_err() {
+        let ping_response = send_request!(self, Ping, None);
+        if ping_response.is_err() {
             debug!("restart connection");
             self.restart_websocket();
         }
@@ -2913,6 +2984,7 @@ impl Data {
     }
 
     fn download_sign_request(&mut self, order_id: OrderId) -> Result<(), anyhow::Error> {
+        debug!("download_sign_request, order_id: {}", order_id);
         let sign = send_request!(
             self,
             GetSign,
@@ -2965,10 +3037,12 @@ impl Data {
 
     fn process_pending_requests(&mut self) {
         debug!(
-            "process pending requests, signs: {}, submits: {}, links: {}, connected: {}",
+            "process_pending_requests, signs: {}, submits: {}, links: {}, sign_requests: {}, sign_prompts: {}, connected: {}",
             self.pending_signs.len(),
             self.pending_submits.len(),
             self.pending_links.len(),
+            self.pending_sign_requests.len(),
+            self.pending_sign_prompts.len(),
             self.connected,
         );
         if !self.connected {
@@ -2981,14 +3055,14 @@ impl Data {
         let sync_complete = ctx.sync_complete;
 
         let pending_signs = std::mem::replace(&mut self.pending_signs, BTreeMap::new());
-        for (order_id, pending_sing) in pending_signs.into_iter() {
+        for (order_id, pending_sign) in pending_signs.into_iter() {
             if self.processed_signs.get(&order_id).is_none() {
                 let result = self.download_sign_request(order_id);
                 if let Err(e) = result {
                     self.show_message(&format!("sign failed: {}", e));
                 }
-                if let Some(pending_sing) = pending_sing {
-                    let _ = pending_sing.send(());
+                if let Some(pending_sign) = pending_sign {
+                    let _ = pending_sign.send(());
                 }
             }
         }
@@ -3020,6 +3094,8 @@ impl Data {
                 self.show_message(&e.to_string());
             }
         }
+
+        self.process_pending_sign_prompts();
     }
 
     fn process_ui(&mut self, msg: ffi::ToMsg) {
@@ -3406,8 +3482,12 @@ pub fn start_processing(
 
     let env_data = types::env_data(env);
     let (resp_sender, resp_receiver) = std::sync::mpsc::channel::<ServerResp>();
-    let (ws_sender, ws_receiver) =
-        ws::start(env_data.host.to_owned(), env_data.port, env_data.use_tls);
+    let (ws_sender, ws_receiver) = ws::start(
+        env_data.host.to_owned(),
+        env_data.port,
+        env_data.use_tls,
+        true,
+    );
 
     let msg_sender_copy = msg_sender.clone();
     std::thread::spawn(move || {
@@ -3492,11 +3572,14 @@ pub fn start_processing(
         submit_data: BTreeMap::new(),
         pending_signs: BTreeMap::new(),
         visible_submit: None,
+        waiting_submit: None,
         processed_signs: BTreeSet::new(),
-        shown_succeed: BTreeSet::new(),
-        pending_sign_requests: std::collections::VecDeque::new(),
+        pending_sign_requests: VecDeque::new(),
+        pending_sign_prompts: VecDeque::new(),
         pending_submits: Vec::new(),
         pending_links: Vec::new(),
+        shown_succeed: BTreeSet::new(),
+        pending_succeed: VecDeque::new(),
         utxos_resp: BTreeMap::new(),
         internal: BTreeSet::new(),
         orders_last: BTreeMap::new(),

@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/swap_market_provider.dart';
@@ -18,6 +17,42 @@ final marketsProvider =
 enum RequestOrderType {
   order,
   payment,
+}
+
+extension RequestOrderEx on RequestOrder {
+  DateTime getCreatedAt() {
+    return DateTime.fromMillisecondsSinceEpoch(createdAt);
+  }
+
+  String getCreatedAtFormatted() {
+    final shortFormat = DateFormat('MMM d, yyyy');
+    return shortFormat.format(getCreatedAt());
+  }
+
+  Duration getExpiresAt() {
+    return DateTime.fromMillisecondsSinceEpoch(expiresAt)
+        .difference(DateTime.now());
+  }
+
+  bool isExpired() {
+    return getExpiresAt().isNegative;
+  }
+
+  String getExpireDescription() {
+    final expireAt = DateTime.fromMillisecondsSinceEpoch(expiresAt);
+    final duration = expireAt.difference(DateTime.now());
+    return duration.inHours.remainder(24) >= 1
+        ? duration.toHoursMinutes()
+        : duration.toMinutes();
+  }
+
+  int get bitcoinAmountWithFee {
+    return sendBitcoins ? bitcoinAmount + serverFee : bitcoinAmount - serverFee;
+  }
+
+  String get priceStr {
+    return price.toString();
+  }
 }
 
 class RequestOrder {
@@ -54,32 +89,6 @@ class RequestOrder {
     required this.indexPrice,
     required this.isNew,
   });
-
-  DateTime getCreatedAt() {
-    return DateTime.fromMillisecondsSinceEpoch(createdAt);
-  }
-
-  String getCreatedAtFormatted() {
-    final shortFormat = DateFormat('MMM d, yyyy');
-    return shortFormat.format(getCreatedAt());
-  }
-
-  Duration getExpiresAt() {
-    return DateTime.fromMillisecondsSinceEpoch(expiresAt)
-        .difference(DateTime.now());
-  }
-
-  bool isExpired() {
-    return getExpiresAt().isNegative;
-  }
-
-  String getExpireDescription() {
-    final expireAt = DateTime.fromMillisecondsSinceEpoch(expiresAt);
-    final duration = expireAt.difference(DateTime.now());
-    return duration.inHours.remainder(24) >= 1
-        ? duration.toHoursMinutes()
-        : duration.toMinutes();
-  }
 
   RequestOrder copyWith({
     String? orderId,
@@ -343,14 +352,17 @@ class MarketsProvider extends ChangeNotifier {
       return;
     }
 
-    final isToken =
-        read(requestOrderProvider).isAssetToken(requestOrder.assetId);
     final price = read(marketsProvider)
             .getRequestOrderById(requestOrder.orderId)
             ?.price ??
         0;
-    final priceStr =
-        isToken ? amountStr(price.toInt()) : price.toStringAsFixed(2);
+    var priceStr = price.toString();
+    final pricedInLiquid =
+        read(requestOrderProvider).isPricedInLiquid(requestOrder.assetId);
+    if (pricedInLiquid) {
+      priceStr = (1 / requestOrder.price).toString();
+    }
+
     final TextEditingController controller = TextEditingController()
       ..text = priceStr;
 

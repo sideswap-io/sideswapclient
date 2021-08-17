@@ -632,6 +632,7 @@ fn main() {
         args.server_host.clone(),
         args.server_port,
         args.server_use_tls,
+        false,
     );
     let (resp_tx, resp_rx) = std::sync::mpsc::channel::<Result<Response, Error>>();
 

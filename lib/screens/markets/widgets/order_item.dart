@@ -96,9 +96,13 @@ class _OrderItemState extends State<OrderItem> {
       }
     }
 
+    final isPricedInLiquid = context
+        .read(requestOrderProvider)
+        .isPricedInLiquid(widget.requestOrder.assetId);
+
     final sendBitcoins = widget.requestOrder.sendBitcoins;
     final deliverAmount = sendBitcoins
-        ? widget.requestOrder.bitcoinAmount
+        ? widget.requestOrder.bitcoinAmountWithFee
         : widget.requestOrder.assetAmount;
     final deliverTicker = sendBitcoins ? bitcoinTicker : assetTicker;
     final deliverPrecision = context
@@ -111,7 +115,9 @@ class _OrderItemState extends State<OrderItem> {
     final deliverIcon = sendBitcoins ? bitcoinIcon : assetIcon;
     final receiveAmount = sendBitcoins
         ? widget.requestOrder.assetAmount
-        : widget.requestOrder.bitcoinAmount;
+        : widget.useTokenMarketView
+            ? widget.requestOrder.bitcoinAmount
+            : widget.requestOrder.bitcoinAmountWithFee;
     final receiveTicker = sendBitcoins ? assetTicker : bitcoinTicker;
     final receivePrecision = context
             .read(walletProvider)
@@ -121,15 +127,16 @@ class _OrderItemState extends State<OrderItem> {
     final receiveAmountStr =
         amountStr(receiveAmount, precision: receivePrecision);
     final receiveIcon = sendBitcoins ? assetIcon : bitcoinIcon;
-    final priceTicker = isToken ? bitcoinTicker : assetTicker;
-    final priceIcon = isToken
-        ? bitcoinIcon
-        : sendBitcoins
+    final priceTicker = isPricedInLiquid ? bitcoinTicker : assetTicker;
+    final priceIcon = sendBitcoins
+        ? receiveIcon
+        : isPricedInLiquid
             ? receiveIcon
             : deliverIcon;
-    final priceAmount = isToken
-        ? amountStr(widget.requestOrder.price.toInt(), precision: 8)
-        : widget.requestOrder.price.toStringAsFixed(2);
+    var priceAmount = widget.requestOrder.priceStr;
+    if (isPricedInLiquid) {
+      priceAmount = (1 / widget.requestOrder.price).toString();
+    }
     final dollarConversion = context
         .read(requestOrderProvider)
         .dollarConversionFromString(

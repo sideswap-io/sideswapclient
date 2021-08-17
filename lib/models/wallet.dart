@@ -629,39 +629,20 @@ class WalletChangeNotifier with ChangeNotifier {
         final bitcoinPrecision =
             getPrecisionForTicker(ticker: kLiquidBitcoinTicker);
         final orderId = fromSr.orderId;
-        var price = fromSr.price;
-        final serverFee = from.submitReview.serverFee;
-        final fee = amountStr(from.submitReview.serverFee.toInt(),
-            precision: bitcoinPrecision);
         final indexPrice = from.submitReview.indexPrice;
         const autoSign = true;
 
-        final isToken = read(requestOrderProvider).isAssetToken(assetId);
-        if (isToken) {
-          price = bitcoinAmount.toInt() / assetAmount.toInt();
-        }
-
-        final priceStr = DecimalCutterTextInputFormatter(
-          decimalRange: 2,
-        )
-            .formatEditUpdate(TextEditingValue(text: price.toString()),
-                TextEditingValue(text: price.toString()))
-            .text;
-
         orderDetailsData = OrderDetailsData(
-          bitcoinAmount: amountStr(
-              sellBitcoin
-                  ? bitcoinAmount.toInt() + serverFee.toInt()
-                  : bitcoinAmount.toInt() - serverFee.toInt(),
-              precision: bitcoinPrecision),
-          priceAmount: priceStr,
-          assetAmount:
-              amountStr(assetAmount.toInt(), precision: assetPrecision),
+          bitcoinAmount: bitcoinAmount.toInt(),
+          bitcoinPrecision: bitcoinPrecision,
+          priceAmount: fromSr.price,
+          assetAmount: assetAmount.toInt(),
+          assetPrecision: assetPrecision,
           assetId: assetId,
           orderId: orderId,
           orderType: orderType,
           sellBitcoin: sellBitcoin,
-          fee: fee.toString(),
+          fee: from.submitReview.serverFee.toInt(),
           isTracking: indexPrice,
           autoSign: autoSign,
         );
@@ -757,19 +738,12 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.orderCreated:
         final oc = from.orderCreated;
         final sendBitcoins = !oc.order.sendBitcoins;
-        final isToken =
-            read(requestOrderProvider).isAssetToken(oc.order.assetId);
         var price = oc.order.price;
-        if (isToken) {
-          price = oc.order.bitcoinAmount.toInt() / oc.order.assetAmount.toInt();
-        }
 
         final order = RequestOrder(
           orderId: oc.order.orderId,
           assetId: oc.order.assetId,
-          bitcoinAmount: sendBitcoins
-              ? oc.order.bitcoinAmount.toInt() + oc.order.serverFee.toInt()
-              : oc.order.bitcoinAmount.toInt() - oc.order.serverFee.toInt(),
+          bitcoinAmount: oc.order.bitcoinAmount.toInt(),
           serverFee: oc.order.serverFee.toInt(),
           assetAmount: oc.order.assetAmount.toInt(),
           price: price,

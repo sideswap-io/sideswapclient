@@ -132,9 +132,11 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
                             .assets[widget.requestOrder.assetId];
                         final ticker = asset?.ticker ?? '';
                         final domain = asset?.domain ?? '';
-                        final circulatingAmount = stats == null
-                            ? 0
-                            : stats.issuedAmount - stats.burnedAmount;
+                        final circulatingAmount = (stats == null ||
+                                stats.hasBlindedIssuances)
+                            ? '-'
+                            : amountStr(stats.issuedAmount - stats.burnedAmount,
+                                precision: asset!.precision);
 
                         return Padding(
                           padding: EdgeInsets.only(

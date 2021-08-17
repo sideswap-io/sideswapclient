@@ -15,7 +15,7 @@ class OrderPriceTextField extends StatelessWidget {
     required this.controller,
     this.focusNode,
     this.onEditingComplete,
-    required this.precision,
+    this.precision = 8,
   }) : super(key: key);
 
   final Image? icon;

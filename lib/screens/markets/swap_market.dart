@@ -176,37 +176,39 @@ class _SwapMarketState extends State<SwapMarket> {
         Padding(
           padding: EdgeInsets.only(bottom: 15.h, left: 14.w, right: 14.w),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Amount'.tr(),
-                    style: headerStyle,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 99.w),
-                    child: Text(
-                      'Bid'.tr(),
-                      style: headerStyle,
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Text(
-                    'Offer'.tr(),
-                    style: headerStyle,
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(left: 83.w),
-                    child: Text(
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
                       'Amount'.tr(),
                       style: headerStyle,
                     ),
-                  ),
-                ],
+                    Text(
+                      'Bid'.tr(),
+                      style: headerStyle,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 11.w,
+              ),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Offer'.tr(),
+                      style: headerStyle,
+                    ),
+                    Text(
+                      'Amount'.tr(),
+                      style: headerStyle,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -322,11 +324,7 @@ class SwapAmountRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final amount = requestOrder.bitcoinAmount;
-    final serverFee = requestOrder.serverFee;
-    final fullAmount =
-        requestOrder.sendBitcoins ? amount - serverFee : amount + serverFee;
-    final amountString = amountStr(fullAmount);
+    final amountString = amountStr(requestOrder.bitcoinAmount);
     final price = requestOrder.price;
     final priceString =
         replaceCharacterOnPosition(input: price.toStringAsFixed(2));
@@ -440,7 +438,7 @@ class SwapAmountRowBackground extends CustomPainter {
     if (!displayTimer) {
       var expirePaint = Paint()..color = expireColor.withOpacity(0.14);
       if (type == SwapAmountRowType.ask) {
-        expirePaint = Paint()..color = expireColor.withOpacity(0.24);
+        expirePaint = Paint()..color = expireColor.withOpacity(0.14);
       }
       canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), expirePaint);
       return;

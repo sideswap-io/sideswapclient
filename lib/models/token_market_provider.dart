@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/balances_provider.dart';
 
 import 'package:sideswap/models/markets_provider.dart';

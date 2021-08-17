@@ -23,6 +23,7 @@ class SwapButton extends StatelessWidget {
       padding: EdgeInsets.all(2.0.w),
       child: Container(
         //width: 139.w,
+        height: 36.h,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(
             Radius.circular(8.0.w),
@@ -38,16 +39,16 @@ class SwapButton extends StatelessWidget {
               ),
             ),
           ),
-          child: SizedBox(
-            height: double.infinity,
-            child: Center(
-              child: Text(
-                text,
-                style: GoogleFonts.roboto(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: textColor,
-                ),
+          child: Center(
+            child: Text(
+              text,
+              maxLines: 1,
+              softWrap: false,
+              overflow: TextOverflow.fade,
+              style: GoogleFonts.roboto(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+                color: textColor,
               ),
             ),
           ),

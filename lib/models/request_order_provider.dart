@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -69,10 +70,26 @@ class RequestOrderProvider extends ChangeNotifier {
       return true;
     }
 
+    return !read(walletProvider).assets[assetId]!.swapMarket;
+  }
+
+  bool isZeroPrecision(String? assetId) {
     final precision =
         read(walletProvider).getPrecisionForAssetId(assetId: assetId);
 
     return precision == 0;
+  }
+
+  bool isPricedInLiquid(String? assetId) {
+    if ((assetId == read(walletProvider).tetherAssetId() ||
+        assetId == read(walletProvider).eurxAssetId())) {
+      return false;
+    } else if ((isAssetToken(assetId) && isZeroPrecision(assetId)) ||
+        assetId == read(walletProvider).liquidAssetId()) {
+      return true;
+    }
+
+    return false;
   }
 
   bool isDeliverToken() {
@@ -269,12 +286,11 @@ class RequestOrderProvider extends ChangeNotifier {
   Asset getPriceAsset({String? baseAssetId}) {
     baseAssetId ??= deliverAssetId;
 
-    var assetId = baseAssetId != read(walletProvider).liquidAssetId()
-        ? baseAssetId
-        : receiveAssetId;
-
-    if (isAssetToken(assetId)) {
-      assetId = read(walletProvider).liquidAssetId() ?? '';
+    var assetId = baseAssetId;
+    if (isPricedInLiquid(assetId)) {
+      assetId = receiveAssetId;
+    } else {
+      assetId = baseAssetId;
     }
 
     return read(walletProvider)
@@ -320,8 +336,7 @@ class RequestOrderProvider extends ChangeNotifier {
         Decimal.tryParse(deliverAmountStr) ?? Decimal.zero;
     final priceAmountParsed = Decimal.tryParse(priceAmountStr) ?? Decimal.zero;
 
-    if (deliverAssetId == read(walletProvider).liquidAssetId() ||
-        isAssetToken(deliverAssetId)) {
+    if (isPricedInLiquid(deliverAssetId)) {
       amountParsed = deliverAmountParsed * priceAmountParsed;
     } else {
       if (priceAmountParsed != Decimal.zero) {
@@ -364,8 +379,13 @@ class RequestOrderProvider extends ChangeNotifier {
         .ticker;
   }
 
-  void modifyOrderPrice(String orderId,
-      {bool isToken = false, String? price, double? indexPrice}) {
+  void modifyOrderPrice(
+    String orderId, {
+    bool isToken = false,
+    String? price,
+    double? indexPrice,
+    bool isPricedInLiquid = false,
+  }) {
     if (price == null) {
       if (indexPrice == null) {
         return;
@@ -380,8 +400,8 @@ class RequestOrderProvider extends ChangeNotifier {
       return;
     }
 
-    if (isToken) {
-      newPrice = 1 / newPrice;
+    if (isPricedInLiquid) {
+      newPrice = (1 / newPrice);
     }
 
     read(walletProvider).modifyOrderPrice(orderId, price: newPrice);

@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:csv/csv.dart';
 
 import 'package:another_flushbar/flushbar.dart';
+import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -67,12 +68,16 @@ String amountStr(int amount, {bool forceSign = false, int precision = 8}) {
   final bitAmount = amount ~/ kCoin;
   final satAmount = amount % kCoin;
   final satAmountStr = satAmount.toString().padLeft(8, '0');
-  final newAmount = double.tryParse('$sign$bitAmount$satAmountStr') ?? 0;
-  final amountWithPrecision = newAmount / pow(10, precision);
+  final newAmount =
+      Decimal.tryParse('$sign$bitAmount$satAmountStr') ?? Decimal.zero;
+  final power =
+      Decimal.tryParse(pow(10, precision).toStringAsFixed(precision)) ??
+          Decimal.zero;
+  final amountWithPrecision = newAmount / power;
   if (precision == 0) {
     return amountWithPrecision.toInt().toString();
   }
-  return (newAmount / pow(10, precision)).toString();
+  return (newAmount / power).toStringAsFixed(precision);
 }
 
 String amountStrNamed(int amount, String ticker,
@@ -80,6 +85,19 @@ String amountStrNamed(int amount, String ticker,
   final valueStr =
       amountStr(amount, forceSign: forceSign, precision: precision);
   return '$valueStr $ticker';
+}
+
+String priceStr(double price) {
+  if (price >= 1000000) {
+    return price.toStringAsFixed(0);
+  }
+  if (price >= 10000) {
+    return price.toStringAsFixed(2);
+  }
+  if (price >= 100) {
+    return price.toStringAsFixed(4);
+  }
+  return price.toString();
 }
 
 final shortFormat = DateFormat('MMM d, yyyy');

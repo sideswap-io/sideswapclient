@@ -216,15 +216,11 @@ class _OrderEntryState extends State<OrderEntry> {
       price = indexPrice;
     }
 
-    if (isLiquid) {
-      // selling bitcoin
-      amount = amount * -1;
-    }
-
-    if (isToken) {
-      if (price != 0) {
-        price = 1 / priceAmount;
-      }
+    final assetId = context.read(requestOrderProvider).deliverAssetId;
+    final pricedInLiquid =
+        context.read(requestOrderProvider).isPricedInLiquid(assetId);
+    if (pricedInLiquid) {
+      price = 1 / price;
     }
 
     if (isAssetAmount) {

@@ -19,6 +19,7 @@ log = "*"
 anyhow = "*"
 env_logger = "*"
 android_logger = "*"
+simple-logging = "*"
 derive_more = "*"
 base64 = "*"
 gdk-rust = { path = "../gdk_rust" }

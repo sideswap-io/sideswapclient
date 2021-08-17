@@ -176,7 +176,7 @@ class _RootWidget extends StatefulWidget {
 }
 
 class __RootWidgetState extends State<_RootWidget> {
-  List<Page<dynamic>> pages(Status status) {
+  List<Page<dynamic>> pages(BuildContext context, Status status) {
     switch (status) {
       case Status.loading:
       case Status.walletLoading:
@@ -362,9 +362,10 @@ class __RootWidgetState extends State<_RootWidget> {
           const MyPopupPage<Widget>(child: PaymentSendPopup()),
         ];
       case Status.orderPopup:
+        final orderId = context.read(walletProvider).orderDetailsData.orderId;
         return [
           const MaterialPage<Widget>(child: WalletMain()),
-          const MaterialPage<Widget>(child: OrderPopup()),
+          MaterialPage<Widget>(child: OrderPopup(key: Key(orderId))),
         ];
       case Status.orderSuccess:
         return [
@@ -460,7 +461,7 @@ class __RootWidgetState extends State<_RootWidget> {
               final status = watch(walletProvider).status;
               return Navigator(
                 key: _navigatorKey,
-                pages: pages(status),
+                pages: pages(context, status),
                 onPopPage: (route, dynamic result) {
                   logger.d('on pop page');
                   if (!route.didPop(result)) {
