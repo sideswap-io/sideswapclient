@@ -46,16 +46,15 @@ class OrderPriceField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isToken = context.read(requestOrderProvider).isDeliverToken();
+    final isToken =
+        context.read(requestOrderProvider).isAssetToken(asset?.assetId);
     final indexPrice =
         context.read(marketsProvider).getIndexPriceStr(asset?.assetId ?? '');
     var minPercent = -1;
     var maxPercent = 1;
-    var displaySlider = tracking;
     if (!tracking && (!isToken && indexPrice.isNotEmpty)) {
       minPercent = -3;
       maxPercent = 3;
-      displaySlider = true;
     }
 
     return SizedBox(

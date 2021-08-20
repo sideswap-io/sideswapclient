@@ -46,7 +46,7 @@ class OrderTrackingSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ticker = context.read(requestOrderProvider).priceAsset.ticker;
+    final ticker = asset!.ticker;
     return Container(
       height: 143.h,
       decoration: BoxDecoration(

@@ -88,16 +88,12 @@ String amountStrNamed(int amount, String ticker,
 }
 
 String priceStr(double price) {
-  if (price >= 1000000) {
-    return price.toStringAsFixed(0);
-  }
-  if (price >= 10000) {
-    return price.toStringAsFixed(2);
-  }
-  if (price >= 100) {
-    return price.toStringAsFixed(4);
-  }
-  return price.toString();
+  return price.toStringAsPrecision(7);
+}
+
+// Same as priceStr but without trailing zeros
+String priceStrForEdit(double price) {
+  return Decimal.parse(priceStr(price)).toString();
 }
 
 final shortFormat = DateFormat('MMM d, yyyy');

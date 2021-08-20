@@ -133,10 +133,9 @@ class _OrderItemState extends State<OrderItem> {
         : isPricedInLiquid
             ? receiveIcon
             : deliverIcon;
-    var priceAmount = widget.requestOrder.priceStr;
-    if (isPricedInLiquid) {
-      priceAmount = (1 / widget.requestOrder.price).toString();
-    }
+    var priceAmount = isPricedInLiquid
+        ? priceStr(1 / widget.requestOrder.price)
+        : priceStr(widget.requestOrder.price);
     final dollarConversion = context
         .read(requestOrderProvider)
         .dollarConversionFromString(

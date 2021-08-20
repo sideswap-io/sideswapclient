@@ -198,12 +198,12 @@ class _OrderEntryState extends State<OrderEntry> {
     // hide keyboard
     SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
 
-    final isLiquid = context.read(requestOrderProvider).isDeliverLiquid();
-    final isToken = context.read(requestOrderProvider).isDeliverToken();
-    final isAssetAmount = isToken || !isLiquid;
+    final isSendBitcoin = context.read(requestOrderProvider).isDeliverLiquid();
+    final isAssetAmount = !isSendBitcoin;
 
     var amountStr = deliverController.text;
-    var amount = double.tryParse(amountStr) ?? 0;
+    // We always sell
+    var amount = -(double.tryParse(amountStr) ?? 0);
 
     final priceAmount = double.tryParse(priceAmountController.text) ?? 0;
     var price = priceAmount;
@@ -216,19 +216,15 @@ class _OrderEntryState extends State<OrderEntry> {
       price = indexPrice;
     }
 
-    final assetId = context.read(requestOrderProvider).deliverAssetId;
+    final assetId = context.read(requestOrderProvider).tokenAssetId();
     final pricedInLiquid =
         context.read(requestOrderProvider).isPricedInLiquid(assetId);
     if (pricedInLiquid) {
       price = 1 / price;
     }
 
-    if (isAssetAmount) {
-      amount = amount * -1;
-    }
-
     context.read(walletProvider).submitOrder(
-          context.read(requestOrderProvider).tokenAssetId(),
+          assetId,
           amount,
           price,
           isAssetAmount: isAssetAmount,

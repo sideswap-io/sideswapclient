@@ -10,6 +10,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/markets/widgets/modify_price_dialog.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
+import 'package:sideswap/common/helpers.dart';
 
 final marketsProvider =
     ChangeNotifierProvider<MarketsProvider>((ref) => MarketsProvider(ref.read));
@@ -48,10 +49,6 @@ extension RequestOrderEx on RequestOrder {
 
   int get bitcoinAmountWithFee {
     return sendBitcoins ? bitcoinAmount + serverFee : bitcoinAmount - serverFee;
-  }
-
-  String get priceStr {
-    return price.toString();
   }
 }
 
@@ -356,12 +353,10 @@ class MarketsProvider extends ChangeNotifier {
             .getRequestOrderById(requestOrder.orderId)
             ?.price ??
         0;
-    var priceStr = price.toString();
     final pricedInLiquid =
         read(requestOrderProvider).isPricedInLiquid(requestOrder.assetId);
-    if (pricedInLiquid) {
-      priceStr = (1 / requestOrder.price).toString();
-    }
+    final priceStr =
+        pricedInLiquid ? priceStrForEdit(1 / price) : priceStrForEdit(price);
 
     final TextEditingController controller = TextEditingController()
       ..text = priceStr;
