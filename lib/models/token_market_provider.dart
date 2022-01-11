@@ -1,12 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/utils/custom_logger.dart';
-import 'package:sideswap/models/balances_provider.dart';
 
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 final tokenMarketProvider = ChangeNotifierProvider<TokenMarketProvider>(
     (ref) => TokenMarketProvider(read: ref.read));
@@ -21,72 +20,31 @@ class AssetDetailsStats {
     required this.burnedAmount,
     required this.hasBlindedIssuances,
   });
+}
 
-  AssetDetailsStats copyWith({
-    int? issuedAmount,
-    int? burnedAmount,
-    bool? hasBlindedIssuances,
-  }) {
-    return AssetDetailsStats(
-      issuedAmount: issuedAmount ?? this.issuedAmount,
-      burnedAmount: burnedAmount ?? this.burnedAmount,
-      hasBlindedIssuances: hasBlindedIssuances ?? this.hasBlindedIssuances,
-    );
-  }
+class AssetChartStats {
+  double low;
+  double high;
+  double last;
 
-  @override
-  String toString() =>
-      'AssetDetailsStats(issuedAmount: $issuedAmount, burnedAmount: $burnedAmount, hasBlindedIssuances: $hasBlindedIssuances)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is AssetDetailsStats &&
-        other.issuedAmount == issuedAmount &&
-        other.burnedAmount == burnedAmount &&
-        other.hasBlindedIssuances == hasBlindedIssuances;
-  }
-
-  @override
-  int get hashCode =>
-      issuedAmount.hashCode ^
-      burnedAmount.hashCode ^
-      hasBlindedIssuances.hashCode;
+  AssetChartStats({
+    required this.low,
+    required this.high,
+    required this.last,
+  });
 }
 
 class AssetDetailsData {
   String assetId;
   AssetDetailsStats? stats;
+  String? chartUrl;
+  AssetChartStats? chartStats;
   AssetDetailsData({
     required this.assetId,
     this.stats,
+    this.chartUrl,
+    this.chartStats,
   });
-
-  AssetDetailsData copyWith({
-    String? assetId,
-    AssetDetailsStats? stats,
-  }) {
-    return AssetDetailsData(
-      assetId: assetId ?? this.assetId,
-      stats: stats ?? this.stats,
-    );
-  }
-
-  @override
-  String toString() => 'AssetDetailsData(assetId: $assetId, stats: $stats)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is AssetDetailsData &&
-        other.assetId == assetId &&
-        other.stats == stats;
-  }
-
-  @override
-  int get hashCode => assetId.hashCode ^ stats.hashCode;
 }
 
 class TokenMarketDropdownValue {
@@ -136,19 +94,14 @@ class TokenMarketProvider extends ChangeNotifier {
 
   void updateTokenMarketOrders(List<RequestOrder> requestOrders) {
     final newOrders = requestOrders
-        .where((e) => !e.private && e.tokenMarket && !e.isExpired())
+        .where((e) =>
+            !e.private && (e.marketType == MarketType.token) && !e.isExpired())
         .toList();
 
     tokenMarketOrders.clear();
     tokenMarketOrders.addAll(newOrders);
 
     notifyListeners();
-  }
-
-  bool _isBalanceAvailable(RequestOrder requestOrder) {
-    final balanceAmount =
-        read(balancesProvider).balances[requestOrder.assetId] ?? 0;
-    return balanceAmount >= requestOrder.assetAmount;
   }
 
   Iterable<TokenMarketDropdownValue> getDropdownValues() {
@@ -179,7 +132,7 @@ class TokenMarketProvider extends ChangeNotifier {
 
   void requestAssetDetails({required String assetId}) {
     final msg = To();
-    msg.assetDetails = To_AssetDetails();
+    msg.assetDetails = AssetId();
     msg.assetDetails.assetId = assetId;
     read(walletProvider).sendMsg(msg);
   }

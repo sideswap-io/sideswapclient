@@ -1,12 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:xrange/xrange.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/markets/widgets/order_tracking_slider_thumb_shape.dart';
 import 'package:sideswap/screens/markets/widgets/order_tracking_slider_track_shape.dart';
@@ -22,6 +20,7 @@ class OrderTrackingSlider extends StatelessWidget {
     this.icon,
     this.price = '',
     this.dollarConversion = '',
+    required this.invertColors,
   }) : super(key: key);
 
   final double value;
@@ -32,6 +31,7 @@ class OrderTrackingSlider extends StatelessWidget {
   final Image? icon;
   final String price;
   final String dollarConversion;
+  final bool invertColors;
 
   final trackingValueStyle = GoogleFonts.roboto(
     fontSize: 14.sp,
@@ -47,6 +47,14 @@ class OrderTrackingSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ticker = asset!.ticker;
+
+    final startColor = invertColors ? positiveColor : negativeColor;
+    final endColor = invertColors ? negativeColor : positiveColor;
+    final circleStartColor =
+        invertColors ? circlePositiveColor : circleNegativeColor;
+    final circleEndColor =
+        invertColors ? circleNegativeColor : circlePositiveColor;
+
     return Container(
       height: 143.h,
       decoration: BoxDecoration(
@@ -129,16 +137,16 @@ class OrderTrackingSlider extends StatelessWidget {
                 thumbShape: OrderTrackingSliderThumbShape(
                   minValue: minPercent.toDouble(),
                   maxValue: maxPercent.toDouble(),
-                  negativeColor: negativeColor,
-                  positiveColor: positiveColor,
-                  circleNegativeColor: circleNegativeColor,
-                  circlePositiveColor: circlePositiveColor,
+                  negativeColor: startColor,
+                  positiveColor: endColor,
+                  circleNegativeColor: circleStartColor,
+                  circlePositiveColor: circleEndColor,
                 ),
                 trackShape: OrderTrackingSliderTrackShape(
                   minValue: minPercent.toDouble(),
                   maxValue: maxPercent.toDouble(),
-                  negativeColor: negativeColor,
-                  positiveColor: positiveColor,
+                  negativeColor: startColor,
+                  positiveColor: endColor,
                 ),
                 trackHeight: 10.h,
               ),
@@ -179,7 +187,7 @@ class OrderTrackingSlider extends StatelessWidget {
                 Text(
                   '$minPercent%',
                   style: trackingValueStyle.copyWith(
-                    color: negativeColor,
+                    color: startColor,
                   ),
                 ),
                 Text(
@@ -189,7 +197,7 @@ class OrderTrackingSlider extends StatelessWidget {
                 Text(
                   '$maxPercent%',
                   style: trackingValueStyle.copyWith(
-                    color: positiveColor,
+                    color: endColor,
                   ),
                 ),
               ],

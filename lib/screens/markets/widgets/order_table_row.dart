@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/request_order_provider.dart';
+import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 enum OrderTableRowType {
   normal,
@@ -21,6 +25,7 @@ class OrderTableRow extends StatefulWidget {
     this.enabled = true,
     this.style,
     this.customValue,
+    this.showAmpFlag = false,
   }) : super(key: key);
 
   final String description;
@@ -33,9 +38,44 @@ class OrderTableRow extends StatefulWidget {
   final bool enabled;
   final TextStyle? style;
   final Widget? customValue;
+  final bool showAmpFlag;
 
   @override
   _OrderTableRowState createState() => _OrderTableRowState();
+
+  static Widget assetAmount({
+    required String description,
+    required String assetId,
+    required int amount,
+    required OrderTableRowType orderTableRowType,
+    bool enabled = true,
+    bool displayDivider = true,
+    bool showDollarConversion = true,
+  }) {
+    return Builder(builder: (context) {
+      final wallet = context.read(walletProvider);
+
+      final icon = wallet.assetImagesSmall[assetId];
+      final asset = wallet.assets[assetId]!;
+      final ticker = asset.ticker;
+      final amount_ = amountStr(amount, precision: asset.precision);
+      final dollarConversion =
+          (wallet.liquidAssetId() == assetId && showDollarConversion)
+              ? (context.read(requestOrderProvider).dollarConversion(
+                  assetId, toFloat(amount, precision: asset.precision)))
+              : null;
+
+      return OrderTableRow(
+        description: description,
+        value: '$amount_ $ticker',
+        dollarConversion: dollarConversion,
+        icon: icon,
+        orderTableRowType: orderTableRowType,
+        displayDivider: displayDivider,
+        enabled: enabled,
+      );
+    });
+  }
 }
 
 class _OrderTableRowState extends State<OrderTableRow> {
@@ -57,32 +97,46 @@ class _OrderTableRowState extends State<OrderTableRow> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.description,
-                style: widget.style ?? defaultFontStyle,
-              ),
-              const Spacer(),
-              widget.enabled
-                  ? widget.customValue ??
-                      Text(
-                        widget.value ?? '',
-                        style: widget.style ?? defaultFontStyle,
-                      )
-                  : SpinKitCircle(
-                      color: Colors.white,
-                      size: 24.w,
-                    ),
-              if (widget.icon != null) ...[
-                Padding(
-                  padding: EdgeInsets.only(left: 8.w),
-                  child: SizedBox(
-                    width: 24.w,
-                    height: 24.w,
-                    child: widget.icon,
+              Row(
+                children: [
+                  Text(
+                    widget.description,
+                    style: widget.style ?? defaultFontStyle,
                   ),
+                  if (widget.showAmpFlag) const AmpFlag(),
+                  SizedBox(width: 5.w),
+                ],
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        alignment: Alignment.centerRight,
+                        child: widget.customValue ??
+                            Text(
+                              widget.value ?? '',
+                              style: widget.style ?? defaultFontStyle,
+                              overflow: TextOverflow.fade,
+                              softWrap: false,
+                            ),
+                      ),
+                    ),
+                    if (widget.icon != null) ...[
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.w),
+                        child: SizedBox(
+                          width: 24.w,
+                          height: 24.w,
+                          child: widget.icon,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ],
+              ),
             ],
           ),
           if (widget.dollarConversion != null &&

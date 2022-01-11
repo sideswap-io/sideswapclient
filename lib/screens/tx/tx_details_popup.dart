@@ -17,8 +17,8 @@ class TxDetailsPopup extends ConsumerWidget {
   Widget build(BuildContext context, ScopedReader watch) {
     final _transItem = watch(walletProvider).txDetails;
     final wallet = watch(walletProvider);
-    final _ticker = wallet.getAssetById(wallet.selectedWalletAsset)?.ticker ??
-        kLiquidBitcoinTicker;
+    final asset = wallet.selectedWalletAsset?.asset ?? wallet.liquidAssetId();
+    final _ticker = wallet.getAssetById(asset)?.ticker ?? kLiquidBitcoinTicker;
 
     return SideSwapPopup(
       child: Builder(
@@ -40,26 +40,23 @@ class TxDetailsPopup extends ConsumerWidget {
                   _transItem.tx.balances.firstWhere((e) => e.amount < 0);
               final _balanceReceived =
                   _transItem.tx.balances.firstWhere((e) => e.amount >= 0);
-              final _deliveredPrecision = context
-                  .read(walletProvider)
-                  .getPrecisionForAssetId(assetId: _balanceDelivered.assetId);
+              final _assetSent = wallet.getAssetById(_balanceDelivered.assetId);
+              final _assetRecv = wallet.getAssetById(_balanceReceived.assetId);
+              final _deliveredPrecision = _assetSent?.precision ?? 8;
+              final _receivedPrecision = _assetRecv?.precision ?? 8;
               _delivered = amountStr(_balanceDelivered.amount.toInt().abs(),
                   precision: _deliveredPrecision);
+              final sentBitcoin =
+                  _balanceDelivered.assetId == wallet.liquidAssetId();
+              final asset = sentBitcoin ? _assetRecv : _assetSent;
 
-              final _assetSentTicker =
-                  wallet.getAssetById(_balanceDelivered.assetId)?.ticker ??
-                      kUnknownTicker;
-              final _assetRecvTicker =
-                  wallet.getAssetById(_balanceReceived.assetId)?.ticker ??
-                      kUnknownTicker;
+              final _assetSentTicker = _assetSent?.ticker ?? kUnknownTicker;
+              final _assetRecvTicker = _assetRecv?.ticker ?? kUnknownTicker;
               _delivered = replaceCharacterOnPosition(
                 input: _delivered,
                 currencyChar: _assetSentTicker,
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
-              final _receivedPrecision = context
-                  .read(walletProvider)
-                  .getPrecisionForAssetId(assetId: _balanceReceived.assetId);
               _received = amountStr(_balanceReceived.amount.toInt(),
                   precision: _receivedPrecision);
               _received = replaceCharacterOnPosition(
@@ -68,10 +65,9 @@ class TxDetailsPopup extends ConsumerWidget {
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
 
-              const pricePrecision = 2;
-              final sentBitcoin = _assetSentTicker == kLiquidBitcoinTicker;
-              final assetPrecision =
-                  sentBitcoin ? _receivedPrecision : _deliveredPrecision;
+              final pricedInLiquid = !(asset?.swapMarket ?? false);
+              final pricePrecision = pricedInLiquid ? 8 : 2;
+              final assetPrecision = asset?.precision ?? 8;
               final bitcoinAmountFull = (sentBitcoin
                       ? _balanceDelivered.amount
                       : _balanceReceived.amount)
@@ -86,17 +82,22 @@ class TxDetailsPopup extends ConsumerWidget {
               final bitcoinAmountAjusted = sentBitcoin
                   ? bitcoinAmountFull - networkFee
                   : bitcoinAmountFull + networkFee;
-              final price = toFloat(assetAmount, precision: assetPrecision) /
-                  toFloat(bitcoinAmountAjusted);
-              _price = price.toStringAsFixed(pricePrecision);
+              final priceOrig =
+                  toFloat(assetAmount, precision: assetPrecision) /
+                      toFloat(bitcoinAmountAjusted);
+              final price = pricedInLiquid ? (1 / priceOrig) : priceOrig;
               final assetTicker =
                   sentBitcoin ? _assetRecvTicker : _assetSentTicker;
+              _price = price.toStringAsFixed(pricePrecision);
               _price = replaceCharacterOnPosition(
                 input: _price,
-                currencyChar: assetTicker,
+                currencyChar:
+                    pricedInLiquid ? kLiquidBitcoinTicker : assetTicker,
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
-              _price = '1 $kLiquidBitcoinTicker = $_price';
+              _price = pricedInLiquid
+                  ? '1 $assetTicker = $_price'
+                  : '1 $kLiquidBitcoinTicker = $_price';
             }
 
             final _balances = _transItem.tx.balances;

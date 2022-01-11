@@ -3,6 +3,15 @@ extern crate log;
 #[macro_use]
 extern crate anyhow;
 
-pub mod ffi;
+mod amp;
+mod envs;
+mod ffi;
+mod models;
 mod settings;
-pub mod worker;
+mod swaps;
+mod worker;
+
+#[allow(dead_code, non_camel_case_types)]
+mod gdk;
+#[allow(dead_code)]
+mod gdk_json;

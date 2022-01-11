@@ -8,11 +8,13 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/payment_amount_receiver_field.dart';
 import 'package:sideswap/screens/pay/widgets/payment_send_amount.dart';
 
@@ -35,7 +37,8 @@ class PaymentAmountPage extends StatefulWidget {
 
 class _PaymentAmountPageState extends State<PaymentAmountPage> {
   String dollarConversion = '';
-  String assetId = '';
+  late AccountAsset accountAsset;
+  late List<AccountAsset> availableAssets;
   bool enabled = false;
   String amount = '0';
   TextEditingController? tickerAmountController;
@@ -54,24 +57,26 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
     color: const Color(0xFF709EBA),
   );
 
-  String getSelectedAssetId() {
+  AccountAsset getSelectedAssetId() {
     final wallet = context.read(walletProvider);
-    final assetId = wallet.selectedWalletAsset;
-    if (assetId.isNotEmpty) {
-      return assetId;
+    final payAssetId = context
+        .read(paymentProvider)
+        .paymentAmountPageArguments
+        .result
+        ?.assetId;
+    if (payAssetId != null) {
+      for (var account in context.read(balancesProvider).balances.keys) {
+        if (account.asset == payAssetId) {
+          return account;
+        }
+      }
+      return AccountAsset(AccountType.regular, payAssetId);
     }
-    final balances = context.read(balancesProvider).balances;
-    if (balances[wallet.liquidAssetId()] != 0) {
-      return wallet.liquidAssetId() ?? '';
+    final account = wallet.selectedWalletAsset;
+    if (account != null) {
+      return account;
     }
-
-    try {
-      final nonZeroAsset =
-          balances.entries.firstWhere((item) => item.value > 0);
-      return nonZeroAsset.key;
-    } on StateError {
-      return wallet.liquidAssetId() ?? '';
-    }
+    return AccountAsset(AccountType.regular, wallet.liquidAssetId());
   }
 
   @override
@@ -86,15 +91,13 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
             ?.amount
             ?.toStringAsFixed(8) ??
         '0';
-    assetId = context
-            .read(walletProvider)
-            .assets[context
-                .read(paymentProvider)
-                .paymentAmountPageArguments
-                .result
-                ?.assetId]
-            ?.assetId ??
-        getSelectedAssetId();
+    accountAsset = getSelectedAssetId();
+    availableAssets = context.read(walletProvider).sendAssetsWithBalance();
+    if (!availableAssets.contains(accountAsset)) {
+      availableAssets.add(accountAsset);
+    }
+    availableAssets.sort();
+
     enabled = false;
     tickerAmountController = TextEditingController()
       ..addListener(() {
@@ -131,9 +134,10 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
       return;
     }
 
-    final precision =
-        context.read(walletProvider).getPrecisionForAssetId(assetId: assetId);
-    final balance = context.read(balancesProvider).balances[assetId];
+    final precision = context
+        .read(walletProvider)
+        .getPrecisionForAssetId(assetId: accountAsset.asset);
+    final balance = context.read(balancesProvider).balances[accountAsset];
     final newValue = value.replaceAll(' ', '');
     final newAmount = double.tryParse(newValue)?.toDouble();
     final realBalance = double.tryParse(
@@ -235,8 +239,9 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                   builder: (context, watch, child) {
                     final showError = watch(paymentProvider).insufficientFunds;
                     final newAmount = double.tryParse(amount) ?? 0;
-                    final newAssetId =
-                        watch(walletProvider).getAssetById(assetId)?.assetId;
+                    final newAssetId = watch(walletProvider)
+                        .getAssetById(accountAsset.asset)
+                        ?.assetId;
                     final usdAmount = watch(walletProvider)
                         .getAmountUsd(newAssetId, newAmount);
                     dollarConversion = usdAmount.toStringAsFixed(2);
@@ -245,6 +250,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                         .isAmountUsdAvailable(newAssetId);
                     dollarConversion = replaceCharacterOnPosition(
                         input: dollarConversion, currencyChar: '\$');
+                    final isAmp = accountAsset.account.isAmp();
                     return Column(
                       children: [
                         if (showError) ...[
@@ -264,9 +270,18 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Send',
-                              style: _labelStyle,
+                            Row(
+                              children: [
+                                Text(
+                                  'Send'.tr(),
+                                  style: _labelStyle,
+                                ),
+                                SizedBox(
+                                  width: 4.w,
+                                  height: 24.h,
+                                ),
+                                if (isAmp) const AmpFlag()
+                              ],
                             ),
                             if (showError) ...[
                               Text(
@@ -296,13 +311,14 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
               Padding(
                 padding: EdgeInsets.only(top: 10.h),
                 child: PaymentSendAmount(
+                  availableDropdownAssets: availableAssets,
                   controller: tickerAmountController,
-                  dropdownValue: assetId,
+                  dropdownValue: accountAsset,
                   focusNode: tickerAmountFocusNode,
                   validate: (value) => validate(value),
                   onDropdownChanged: (value) {
                     setState(() {
-                      assetId = value;
+                      accountAsset = value;
                       tickerAmountController?.text = '';
                     });
                   },
@@ -313,7 +329,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ProviderListener<Balances>(
+                    ProviderListener<BalancesNotifier>(
                       provider: balancesProvider,
                       onChange: (context, state) {
                         if (tickerAmountController != null &&
@@ -324,10 +340,12 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                       child: Consumer(
                         builder: (context, watch, child) {
                           final balance =
-                              watch(balancesProvider).balances[assetId] ?? 0;
+                              watch(balancesProvider).balances[accountAsset] ??
+                                  0;
                           final precision = context
                               .read(walletProvider)
-                              .getPrecisionForAssetId(assetId: assetId);
+                              .getPrecisionForAssetId(
+                                  assetId: accountAsset.asset);
                           return Text(
                             'PAYMENT_BALANCE',
                             style: _approximateStyle,
@@ -353,11 +371,12 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                           setState(() {
                             final precision = context
                                 .read(walletProvider)
-                                .getPrecisionForAssetId(assetId: assetId);
+                                .getPrecisionForAssetId(
+                                    assetId: accountAsset.asset);
                             final text = amountStr(
                                 context
                                         .read(balancesProvider)
-                                        .balances[assetId] ??
+                                        .balances[accountAsset] ??
                                     0,
                                 precision: precision);
                             if (tickerAmountController?.value != null) {
@@ -400,27 +419,31 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
         Padding(
           padding:
               EdgeInsets.only(top: 36.h, bottom: 24.h, left: 16.w, right: 16.w),
-          child: CustomBigButton(
-            width: double.infinity,
-            height: 54.h,
-            backgroundColor: const Color(0xFF00C5FF),
-            text: 'CONTINUE'.tr(),
-            enabled: enabled,
-            onPressed: enabled
-                ? () {
-                    context.read(paymentProvider).selectPaymentSend(
-                          amount.toString(),
-                          assetId,
-                          address: context
-                              .read(paymentProvider)
-                              .paymentAmountPageArguments
-                              .result
-                              ?.address,
-                          friend: friend,
-                        );
-                  }
-                : null,
-          ),
+          child: Consumer(builder: (context, watch, child) {
+            final buttonEnabled =
+                enabled && !watch(walletProvider).isCreatingTx;
+            return CustomBigButton(
+              width: double.infinity,
+              height: 54.h,
+              backgroundColor: const Color(0xFF00C5FF),
+              text: 'CONTINUE'.tr(),
+              enabled: buttonEnabled,
+              onPressed: buttonEnabled
+                  ? () {
+                      context.read(paymentProvider).selectPaymentSend(
+                            amount.toString(),
+                            accountAsset,
+                            address: context
+                                .read(paymentProvider)
+                                .paymentAmountPageArguments
+                                .result
+                                ?.address,
+                            friend: friend,
+                          );
+                    }
+                  : null,
+            );
+          }),
         ),
       ],
     );

@@ -15,6 +15,12 @@
 
 #define SIDESWAP_ENV_LOCAL 3
 
+#define SIDESWAP_ENV_LOCAL_LIQUID 4
+
+#define SIDESWAP_ENV_TESTNET 5
+
+#define SIDESWAP_ENV_LOCAL_TESTNET 6
+
 typedef uint64_t IntPtr;
 
 IntPtr sideswap_client_start(int32_t env,

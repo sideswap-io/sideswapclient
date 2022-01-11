@@ -15,7 +15,7 @@
 )]
 pub struct Amount(pub i64);
 
-const COIN: i64 = 100_000_000;
+pub const COIN: i64 = 100_000_000;
 
 pub const ELEMENTS_CONFIRMED_BLOCKS: i32 = 2;
 pub const BITCOIN_CONFIRMED_BLOCKS: i32 = 6;
@@ -55,12 +55,12 @@ impl Amount {
     Hash, Eq, PartialEq, Clone, Ord, PartialOrd, Debug, serde::Serialize, serde::Deserialize,
 )]
 pub struct TxOut {
-    pub txid: String,
-    pub vout: i32,
+    pub txid: sideswap_api::Txid,
+    pub vout: u32,
 }
 
 impl TxOut {
-    pub fn new(txid: String, vout: i32) -> TxOut {
+    pub fn new(txid: sideswap_api::Txid, vout: u32) -> TxOut {
         TxOut { txid, vout }
     }
 }
@@ -85,117 +85,19 @@ pub fn select_utxo(mut inputs: Vec<i64>, amount: i64) -> Vec<i64> {
     result
 }
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone, serde::Serialize, serde::Deserialize)]
-pub enum Env {
-    Prod,
-    Staging,
-    Regtest,
-    Local,
-}
-
-impl Env {
-    pub fn data(&self) -> &'static EnvData {
-        env_data(*self)
+pub fn select_utxo_values<T>(mut inputs: Vec<(i64, T)>, amount: i64) -> Vec<T> {
+    let input_amounts = inputs.iter().map(|(amount, _)| amount).cloned().collect();
+    let selected = select_utxo(input_amounts, amount);
+    let mut result = Vec::new();
+    for selected_amount in selected {
+        let index = inputs
+            .iter()
+            .position(|(amount, _)| *amount == selected_amount)
+            .unwrap();
+        let value = inputs.swap_remove(index).1;
+        result.push(value);
     }
-
-    pub fn is_mainnet(&self) -> bool {
-        self.data().mainnet
-    }
-}
-
-pub struct EnvData {
-    pub host: &'static str,
-    pub port: u16,
-    pub use_tls: bool,
-    pub name: &'static str,
-    pub mainnet: bool,
-    pub bitcoin_asset_id: &'static str,
-}
-
-const ENV_PROD: EnvData = EnvData {
-    host: "api.sideswap.io",
-    port: 443,
-    use_tls: true,
-    name: "prod",
-    mainnet: true,
-    bitcoin_asset_id: "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
-};
-
-const ENV_STAGING: EnvData = EnvData {
-    host: "api-test.sideswap.io",
-    port: 443,
-    use_tls: true,
-    name: "staging",
-    mainnet: true,
-    bitcoin_asset_id: "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
-};
-
-const ENV_REGTEST: EnvData = EnvData {
-    host: "api-regtest.sideswap.io",
-    port: 443,
-    use_tls: true,
-    name: "regtest",
-    mainnet: false,
-    bitcoin_asset_id: "2e16b12daf1244332a438e829ca7ce209195f8e1c54199770cd8b327710a8ab2",
-};
-
-const ENV_LOCAL: EnvData = EnvData {
-    host: "192.168.71.50",
-    port: 4001,
-    use_tls: false,
-    name: "local",
-    mainnet: false,
-    bitcoin_asset_id: "2684bbac0fa7ad544ec8eee43c35156346e5d641d24a4b9d5d8f183e3f2d8fb9",
-};
-
-fn known_asset_id(mainnet: bool, ticker: &str) -> Option<&'static str> {
-    match (mainnet, ticker) {
-        // Liquid
-        (true, sideswap_api::TICKER_LBTC) => {
-            Some("6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d")
-        }
-        (true, sideswap_api::TICKER_USDT) => {
-            Some("ce091c998b83c78bb71a632313ba3760f1763d9cfcffae02258ffa9865a37bd2")
-        }
-        _ => None,
-    }
-}
-
-pub fn env_data(env: Env) -> &'static EnvData {
-    match env {
-        Env::Prod => &ENV_PROD,
-        Env::Staging => &ENV_STAGING,
-        Env::Regtest => &ENV_REGTEST,
-        Env::Local => &ENV_LOCAL,
-    }
-}
-
-// Check that known asset IDs are valid
-pub fn check_assets(env: Env, assets: &sideswap_api::Assets) {
-    let mainnet = env_data(env).mainnet;
-    if !mainnet {
-        return;
-    }
-
-    let bitcoin_asset = assets
-        .iter()
-        .find(|asset| asset.ticker.0 == sideswap_api::TICKER_LBTC)
-        .expect("can't find bitcoin ticker");
-    assert!(
-        bitcoin_asset.asset_id.0
-            == known_asset_id(mainnet, &sideswap_api::TICKER_LBTC).expect("can't find L-BTC")
-    );
-
-    assets
-        .iter()
-        .find(|asset| asset.ticker.0 == sideswap_api::TICKER_USDT)
-        .map(|asset| {
-            assert!(
-                asset.asset_id.0
-                    == known_asset_id(mainnet, &sideswap_api::TICKER_USDT)
-                        .expect("can't find L-BTC")
-            );
-        });
+    result
 }
 
 const VSIZE_FIXED: i64 = 23;
@@ -246,15 +148,35 @@ pub fn asset_scale(asset_precision: u8) -> f64 {
     10i64.checked_pow(asset_precision as u32).unwrap() as f64
 }
 
-pub fn asset_amount(bitcoin_amount: i64, price: f64, asset_precision: u8) -> i64 {
+pub fn asset_amount(
+    bitcoin_amount: i64,
+    price: f64,
+    asset_precision: u8,
+    market: sideswap_api::MarketType,
+) -> i64 {
     let scale = asset_scale(asset_precision);
-    let asset_amount = Amount::from_sat(bitcoin_amount).to_bitcoin() * price * scale;
-    f64::round(asset_amount) as i64
+    let bitcoin_amount = Amount::from_sat(bitcoin_amount).to_bitcoin();
+    let asset_amount = if market.priced_in_bitcoins() {
+        bitcoin_amount / price
+    } else {
+        bitcoin_amount * price
+    };
+    f64::round(asset_amount * scale) as i64
 }
 
-pub fn bitcoin_amount(asset_amount: i64, price: f64, asset_precision: u8) -> i64 {
+pub fn bitcoin_amount(
+    asset_amount: i64,
+    price: f64,
+    asset_precision: u8,
+    market: sideswap_api::MarketType,
+) -> i64 {
     let asset_amount = asset_float_amount(asset_amount, asset_precision);
-    Amount::from_bitcoin(asset_amount / price).to_sat()
+    let bitcoin_amount = if market.priced_in_bitcoins() {
+        asset_amount * price
+    } else {
+        asset_amount / price
+    };
+    Amount::from_bitcoin(bitcoin_amount).to_sat()
 }
 
 pub fn asset_float_amount(asset_amount: i64, asset_precision: u8) -> f64 {
@@ -281,22 +203,6 @@ mod tests {
     }
 
     #[test]
-    fn test_asset_amount() {
-        assert_eq!(
-            asset_amount(Amount::from_bitcoin(1.0).to_sat(), 12345.67, 8),
-            1234567000000
-        );
-        assert_eq!(
-            asset_amount(Amount::from_bitcoin(1.0).to_sat(), 12345.67, 2),
-            1234567
-        );
-        assert_eq!(
-            asset_amount(Amount::from_bitcoin(1.0).to_sat(), 12345.67, 0),
-            12346
-        );
-    }
-
-    #[test]
     fn test_max_amount() {
         use rand::Rng;
         let mut rng = rand::thread_rng();
@@ -305,8 +211,8 @@ mod tests {
         let test_count = 10000000;
         for _ in 0..test_count {
             let balance: i64 = rng.gen_range(
-                MIN_BITCOIN_AMOUNT.to_sat() + MIN_SERVER_FEE.to_sat()
-                    ..Amount::from_bitcoin(100.0).to_sat(),
+                MIN_BITCOIN_AMOUNT.to_sat() + MIN_SERVER_FEE.to_sat(),
+                Amount::from_bitcoin(100.0).to_sat(),
             );
             let balance = Amount::from_sat(balance);
             let amount = get_max_bitcoin_amount(balance).unwrap();

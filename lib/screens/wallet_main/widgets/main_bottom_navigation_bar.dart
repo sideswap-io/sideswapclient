@@ -51,7 +51,7 @@ class _MainBottomNavigationBarState extends State<MainBottomNavigationBar> {
               : SideSwapNavigationItemIcon('assets/home.svg', height: 24.h),
         ),
         BottomNavigationBarItem(
-          label: 'Accounts'.tr(),
+          label: 'Assets'.tr(),
           icon: widget.currentIndex == 1
               ? SideSwapNavigationItemIcon('assets/accounts_active.svg',
                   height: 24.h)

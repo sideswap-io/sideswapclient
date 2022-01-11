@@ -18,7 +18,6 @@ class OrderPriceField extends StatelessWidget {
     required this.controller,
     this.asset,
     this.icon,
-    required this.description,
     this.focusNode,
     this.dollarConversion = '',
     this.onEditingComplete,
@@ -28,12 +27,12 @@ class OrderPriceField extends StatelessWidget {
     required this.onSliderChanged,
     this.trackingPrice = '',
     this.displaySlider = false,
+    required this.invertColors,
   }) : super(key: key);
 
   final TextEditingController controller;
   final Asset? asset;
   final Image? icon;
-  final String description;
   final FocusNode? focusNode;
   final String dollarConversion;
   final void Function()? onEditingComplete;
@@ -43,6 +42,7 @@ class OrderPriceField extends StatelessWidget {
   final void Function(double)? onSliderChanged;
   final String trackingPrice;
   final bool displaySlider;
+  final bool invertColors;
 
   @override
   Widget build(BuildContext context) {
@@ -50,11 +50,11 @@ class OrderPriceField extends StatelessWidget {
         context.read(requestOrderProvider).isAssetToken(asset?.assetId);
     final indexPrice =
         context.read(marketsProvider).getIndexPriceStr(asset?.assetId ?? '');
-    var minPercent = -1;
-    var maxPercent = 1;
+    var minPercent = -kEditPriceMaxTrackingPercent;
+    var maxPercent = kEditPriceMaxTrackingPercent;
     if (!tracking && (!isToken && indexPrice.isNotEmpty)) {
-      minPercent = -3;
-      maxPercent = 3;
+      minPercent = -kEditPriceMaxPercent;
+      maxPercent = kEditPriceMaxPercent;
     }
 
     return SizedBox(
@@ -84,7 +84,7 @@ class OrderPriceField extends StatelessWidget {
                         Text(
                           'Index price:'.tr(),
                           style: GoogleFonts.roboto(
-                            fontSize: 15.sp,
+                            fontSize: 12.sp,
                             fontWeight: FontWeight.w500,
                             color: const Color(0xFF00C5FF),
                           ),
@@ -92,7 +92,7 @@ class OrderPriceField extends StatelessWidget {
                         Text(
                           '${replaceCharacterOnPosition(input: indexPrice)} ${asset?.ticker}',
                           style: GoogleFonts.roboto(
-                            fontSize: 15.sp,
+                            fontSize: 14.sp,
                             fontWeight: FontWeight.w500,
                             color: Colors.white,
                           ),
@@ -126,6 +126,7 @@ class OrderPriceField extends StatelessWidget {
                 asset: asset,
                 price: controller.text,
                 dollarConversion: dollarConversion,
+                invertColors: invertColors,
               ),
             ),
           ] else ...[

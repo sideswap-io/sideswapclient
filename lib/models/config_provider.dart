@@ -21,7 +21,6 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const mnemonicEncryptedField = 'mnemonic_encrypted';
   static const useBiometricProtectionField = 'biometric_protection';
   static const licenseAcceptedField = 'license_accepted';
-  static const disabledAssetsField = 'disabled_assets';
   static const envField = 'env';
   static const txItemList = 'txItemList';
   static const phoneKeyField = 'phoneKey';
@@ -30,11 +29,11 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const pinSaltField = 'pinSalt';
   static const pinEncryptedDataField = 'pinEncryptedData';
   static const pinIdentifierField = 'pinIdentifierField';
-  static const settingsNetworkTypeField = 'settingsNetworkTypeField';
-  static const settingsHostField = 'settingsHostField';
-  static const settingsPortField = 'settingsPortField';
-  static const settingsPasswordField = 'settingsPasswordField';
-  static const settingsUseTLSField = 'settingsUseTLSField';
+  static const settingsNetworkTypeField = 'settingsNetworkTypeFieldNew';
+  static const settingsHostField = 'settingsHostFieldNew';
+  static const settingsPortField = 'settingsPortFieldNew';
+  static const settingsUseTLSField = 'settingsUseTLSFieldNew';
+  static const settingsField = 'settings';
 
   ConfigChangeNotifierProvider(this.read);
 
@@ -69,15 +68,6 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   Future<void> setLicenseAccepted(bool licenseAccepted) async {
     await _prefs.setBool(licenseAcceptedField, licenseAccepted);
-    notifyListeners();
-  }
-
-  List<String> get disabledAssetIds {
-    return _prefs.getStringList(disabledAssetsField) ?? [];
-  }
-
-  Future<void> setDisabledAssetIds(List<String> value) async {
-    await _prefs.setStringList(disabledAssetsField, value.toList());
     notifyListeners();
   }
 
@@ -166,7 +156,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
     return EnumToString.fromString(
             SettingsNetworkType.values, typeString ?? '') ??
-        SettingsNetworkType.sideswap;
+        SettingsNetworkType.blockstream;
   }
 
   Future<void> setSettingsHost(String host) async {
@@ -177,20 +167,12 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
     return _prefs.getString(settingsHostField) ?? '';
   }
 
-  Future<void> setSettingsPort(String port) async {
-    await _prefs.setString(settingsPortField, port);
+  Future<void> setSettingsPort(int port) async {
+    await _prefs.setInt(settingsPortField, port);
   }
 
-  String get settingsPort {
-    return _prefs.getString(settingsPortField) ?? '';
-  }
-
-  Future<void> setSettingsPassword(String password) async {
-    await _prefs.setString(settingsPasswordField, password);
-  }
-
-  String get settingsPassword {
-    return _prefs.getString(settingsPasswordField) ?? '';
+  int get settingsPort {
+    return _prefs.getInt(settingsPortField) ?? 0;
   }
 
   Future<void> setSettingsUseTLS(bool value) async {
@@ -199,5 +181,17 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   bool get settingsUseTLS {
     return _prefs.getBool(settingsUseTLSField) ?? false;
+  }
+
+  String? get settings {
+    return _prefs.getString(settingsField);
+  }
+
+  Future<void> setSettings(String value) async {
+    await _prefs.setString(settingsField, value);
+  }
+
+  Future<void> clearSettings() async {
+    await _prefs.remove(settingsField);
   }
 }

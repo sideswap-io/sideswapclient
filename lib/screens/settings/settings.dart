@@ -1,6 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -45,6 +48,68 @@ class _SettingsState extends State<Settings> {
             children: [
               Padding(
                 padding: EdgeInsets.only(top: 40.h),
+                child: Text('AMP ID:',
+                    style: GoogleFonts.roboto(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white,
+                    )),
+              ),
+              SizedBox(
+                height: 8.w,
+              ),
+              Consumer(builder: (context, watch, child) {
+                final wallet = watch(walletProvider);
+                final ampId = wallet.ampId;
+
+                return Container(
+                  height: 60.w,
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    border:
+                        Border.all(color: const Color(0xFF19668F), width: 1),
+                    borderRadius: BorderRadius.all(Radius.circular(8.w)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            ampId ?? '',
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.roboto(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 4),
+                          child: InkWell(
+                            onTap: () async {
+                              await copyToClipboard(context, ampId ?? '',
+                                  displaySnackbar: true);
+                            },
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/copy.svg',
+                                width: 24.w,
+                                height: 24.w,
+                                color: const Color(0xFF00B4E9),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                );
+              }),
+              Padding(
+                padding: EdgeInsets.only(top: 24.h),
                 child: SettingsButton(
                   type: SettingsButtonType.recovery,
                   text: 'View my recovery phrase'.tr(),

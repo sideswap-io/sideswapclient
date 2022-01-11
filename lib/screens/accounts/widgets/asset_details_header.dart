@@ -6,7 +6,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
+import 'package:sideswap/models/request_order_provider.dart';
+import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 
@@ -21,6 +24,8 @@ class AssetDetailsHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ScopedReader watch) {
     var _dollarConversion = '0.0';
+    final isAmp =
+        context.read(walletProvider).selectedWalletAsset!.account.isAmp();
 
     return Opacity(
       opacity: percent,
@@ -29,9 +34,8 @@ class AssetDetailsHeader extends ConsumerWidget {
           Consumer(
             builder: (context, watch, child) {
               final wallet = watch(walletProvider);
-              final asset = wallet.assets[wallet.selectedWalletAsset.isNotEmpty
-                  ? wallet.selectedWalletAsset
-                  : wallet.liquidAssetId()];
+              final account = wallet.selectedWalletAsset!;
+              final asset = wallet.assets[account.asset];
               return Text(
                 asset?.name ?? '',
                 style: GoogleFonts.roboto(
@@ -42,24 +46,39 @@ class AssetDetailsHeader extends ConsumerWidget {
               );
             },
           ),
+          if (isAmp)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(8.w),
+                ),
+                color: const Color(0xFF1C6086),
+              ),
+              padding: EdgeInsets.symmetric(
+                vertical: 6.w,
+                horizontal: 8.w,
+              ),
+              margin: const EdgeInsets.all(8.0),
+              child: Text('AMP wallet',
+                  style: GoogleFonts.roboto(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white,
+                  )),
+            ),
           Padding(
             padding: EdgeInsets.only(top: 8.h),
             child: Consumer(
               builder: (context, watch, child) {
                 final wallet = watch(walletProvider);
-                final balance = watch(balancesProvider).balances[
-                    wallet.selectedWalletAsset.isNotEmpty
-                        ? wallet.selectedWalletAsset
-                        : wallet.liquidAssetId()];
-                final asset = wallet.assets[
-                    wallet.selectedWalletAsset.isNotEmpty
-                        ? wallet.selectedWalletAsset
-                        : wallet.liquidAssetId()];
+                final account = wallet.selectedWalletAsset!;
+                final asset = wallet.assets[account.asset];
+                final balance = watch(balancesProvider).balances[account];
 
-                final ticker = asset?.ticker ?? kLiquidBitcoinTicker;
+                final ticker = asset!.ticker;
                 final precision = context
                     .read(walletProvider)
-                    .getPrecisionForAssetId(assetId: asset?.assetId);
+                    .getPrecisionForAssetId(assetId: asset.assetId);
                 final balanceStr =
                     '${amountStr(balance ?? 0, precision: precision)} $ticker';
                 return Text(
@@ -78,19 +97,13 @@ class AssetDetailsHeader extends ConsumerWidget {
             child: Consumer(
               builder: (context, watch, child) {
                 final wallet = watch(walletProvider);
-                final asset = wallet.assets[
-                    wallet.selectedWalletAsset.isNotEmpty
-                        ? wallet.selectedWalletAsset
-                        : wallet.liquidAssetId()];
+                final account = wallet.selectedWalletAsset!;
+                final asset = wallet.assets[account.asset];
                 final precision = context
                     .read(walletProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
                 final balance = double.tryParse(amountStr(
-                      context.read(balancesProvider).balances[
-                              wallet.selectedWalletAsset.isNotEmpty
-                                  ? wallet.selectedWalletAsset
-                                  : wallet.liquidAssetId()] ??
-                          0,
+                      context.read(balancesProvider).balances[account] ?? 0,
                       precision: precision,
                     )) ??
                     .0;
@@ -115,38 +128,76 @@ class AssetDetailsHeader extends ConsumerWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 22.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                RoundedButtonWithLabel(
-                  onTap: () {
-                    context.read(walletProvider).selectAssetReceive();
-                  },
-                  label: 'Receive'.tr(),
-                  buttonBackground: Colors.white,
-                  child: SvgPicture.asset(
-                    'assets/bottom_left_arrow.svg',
-                    width: 28.w,
-                    height: 28.w,
+            child: Consumer(builder: (context, watch, child) {
+              final wallet = context.read(walletProvider);
+              final account = wallet.selectedWalletAsset!;
+              final asset = wallet.assets[account.asset]!;
+              final instantSwapVisible = (asset.swapMarket ||
+                      asset.assetId == wallet.liquidAssetId()) &&
+                  account.account == AccountType.regular;
+              final isAmpAsset = wallet.ampAssets.contains(account.asset);
+              final isAmpAccount = account.account == AccountType.amp;
+              final p2pSwapVisible =
+                  !asset.unregistered && (isAmpAsset == isAmpAccount);
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  RoundedButtonWithLabel(
+                    onTap: () {
+                      wallet.selectAssetReceive(account.account);
+                    },
+                    label: 'Receive'.tr(),
+                    buttonBackground: Colors.white,
+                    child: SvgPicture.asset(
+                      'assets/bottom_left_arrow.svg',
+                      width: 28.w,
+                      height: 28.w,
+                    ),
                   ),
-                ),
-                Container(
-                  width: 32.w,
-                ),
-                RoundedButtonWithLabel(
-                  onTap: () {
-                    context.read(walletProvider).selectPaymentPage();
-                  },
-                  label: 'Send'.tr(),
-                  buttonBackground: Colors.white,
-                  child: SvgPicture.asset(
-                    'assets/top_right_arrow.svg',
-                    width: 28.w,
-                    height: 28.w,
+                  if (instantSwapVisible || p2pSwapVisible) ...[
+                    Container(
+                      width: 32.w,
+                    ),
+                    RoundedButtonWithLabel(
+                      onTap: () {
+                        if (instantSwapVisible) {
+                          context
+                              .read(swapProvider)
+                              .setSelectedLeftAsset(account.asset);
+                          context.read(swapProvider).selectSwap();
+                        } else {
+                          context.read(requestOrderProvider).deliverAssetId =
+                              account;
+                          context.read(walletProvider).setCreateOrderEntry();
+                        }
+                      },
+                      label: 'Swap'.tr(),
+                      buttonBackground: Colors.white,
+                      child: SvgPicture.asset(
+                        'assets/asset_swap_arrows.svg',
+                        width: 28.w,
+                        height: 28.w,
+                      ),
+                    ),
+                  ],
+                  Container(
+                    width: 32.w,
                   ),
-                ),
-              ],
-            ),
+                  RoundedButtonWithLabel(
+                    onTap: () {
+                      context.read(walletProvider).selectPaymentPage();
+                    },
+                    label: 'Send'.tr(),
+                    buttonBackground: Colors.white,
+                    child: SvgPicture.asset(
+                      'assets/top_right_arrow.svg',
+                      width: 28.w,
+                      height: 28.w,
+                    ),
+                  ),
+                ],
+              );
+            }),
           ),
         ],
       ),

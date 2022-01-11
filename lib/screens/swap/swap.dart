@@ -1,21 +1,18 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:qr_flutter/qr_flutter.dart';
+import 'package:fixnum/fixnum.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/common/widgets/side_swap_popup.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/swap/widgets/swap_middle_icon.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
@@ -27,15 +24,22 @@ class SwapMain extends StatefulWidget {
   _SwapMainState createState() => _SwapMainState();
 }
 
+enum Subscribe {
+  empty,
+  send,
+  recv,
+}
+
 class _SwapMainState extends State<SwapMain> {
-  TextEditingController? _swapAmountController;
+  TextEditingController? _swapSendAmountController;
+  TextEditingController? _swapRecvAmountController;
   TextEditingController? _swapAddressRecvController;
 
-  String _lastSwapAmountValue = '';
   late FocusNode _deliverFocusNode;
   late FocusNode _receiveFocusNode;
-  late FocusNode _receiveAddressFocusNode;
-  String _swapAmount = '';
+  // Do not use _receiveAddressFocusNode for now because it cause exception after dispose call
+  //late FocusNode _receiveAddressFocusNode;
+  Subscribe subscribe = Subscribe.empty;
   // Do not delete - for future use
   final bool _visibleToggles = false;
 
@@ -45,16 +49,20 @@ class _SwapMainState extends State<SwapMain> {
   bool addressLabelVisible = false;
   int blocks = 2;
 
+  BuildContext? currentContext;
+
+  bool authInProgress = false;
+
   @override
   void initState() {
     super.initState();
 
-    _swapAmountController = TextEditingController();
-    _swapAmountController?.addListener(onSwapAmountControllerChanged);
+    _swapSendAmountController = TextEditingController();
+    _swapRecvAmountController = TextEditingController();
     _swapAddressRecvController = TextEditingController();
     _deliverFocusNode = FocusNode();
     _receiveFocusNode = FocusNode();
-    _receiveAddressFocusNode = FocusNode();
+    //_receiveAddressFocusNode = FocusNode();
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_deliverFocusNode);
     });
@@ -63,15 +71,23 @@ class _SwapMainState extends State<SwapMain> {
     if (serverStatus?.bitcoinFeeRates != null) {
       blocks = serverStatus!.bitcoinFeeRates.first.blocks;
     }
+
+    currentContext = context.read(walletProvider).navigatorKey.currentContext;
+
+    subscribeToPriceStream();
   }
 
   @override
   void dispose() {
-    _swapAmountController?.dispose();
+    _swapSendAmountController?.dispose();
+    _swapRecvAmountController?.dispose();
     _swapAddressRecvController?.dispose();
     _deliverFocusNode.dispose();
     _receiveFocusNode.dispose();
-    _receiveAddressFocusNode.dispose();
+    //_receiveAddressFocusNode.dispose();
+    if (currentContext != null) {
+      currentContext!.read(walletProvider).unsubscribeFromPriceStream();
+    }
     super.dispose();
   }
 
@@ -80,90 +96,279 @@ class _SwapMainState extends State<SwapMain> {
     refreshSwapAmount();
   }
 
-  void onSwapAmountControllerChanged() {
-    final value = _swapAmount;
+  void onSwapSendAmountChanged(String value) {
+    subscribe = Subscribe.send;
+    final newValue = replaceCharacterOnPosition(
+      input: value,
+    );
 
-    validateSwapSendAsset();
-
-    if (value == _lastSwapAmountValue) {
-      return;
+    if (_swapSendAmountController != null) {
+      _swapSendAmountController!.value = fixCursorPosition(
+          controller: _swapSendAmountController!, newValue: newValue);
     }
-    _lastSwapAmountValue = value;
 
-    final swapSendAsset = context.read(swapProvider).swapSendAsset ?? '';
+    refreshSwapAmount();
+    subscribeToPriceStream();
+  }
+
+  void onSwapRecvAmountChanged(String value) {
+    subscribe = Subscribe.recv;
+    final newValue = replaceCharacterOnPosition(
+      input: value,
+    );
+
+    if (_swapRecvAmountController != null) {
+      _swapRecvAmountController!.value = fixCursorPosition(
+          controller: _swapRecvAmountController!, newValue: newValue);
+    }
+
+    refreshSwapAmount();
+    subscribeToPriceStream();
+  }
+
+  void onMaxSendPressed() {
+    final swapSendAsset = context.read(swapProvider).swapSendAsset!;
+    final swapSendAccount = AccountAsset(AccountType.regular, swapSendAsset);
     final precision = context
         .read(walletProvider)
         .getPrecisionForAssetId(assetId: swapSendAsset);
-    final amount = context
-            .read(walletProvider)
-            .parseAssetAmount(value, precision: precision) ??
-        0;
-    context.read(swapProvider).setSwapAmount(amount, blocks);
+    final _balance = context.read(balancesProvider).balances[swapSendAccount];
+    final _balanceStr = amountStr(_balance ?? 0, precision: precision);
+
+    var amount = _balanceStr;
+    subscribe = Subscribe.send;
+
+    final newValue = replaceCharacterOnPosition(
+      input: amount,
+    );
+    _swapSendAmountController?.value = TextEditingValue(
+      text: newValue,
+      selection: TextSelection.collapsed(offset: newValue.length),
+    );
+
+    refreshSwapAmount();
+    subscribeToPriceStream();
   }
 
-  bool validate(String value, String assetId) {
-    if (value.isEmpty) {
-      context.read(swapProvider).showInsufficientFunds = false;
-      return false;
+  void subscribeToPriceStream() {
+    final wallet = context.read(walletProvider);
+    final swaps = context.read(swapProvider);
+    final type = swaps.swapType();
+
+    wallet.unsubscribeFromPriceStream();
+
+    if (type == SwapType.atomic) {
+      final swapSendAsset = swaps.swapSendAsset ?? '';
+      final swapRecvAsset = swaps.swapRecvAsset ?? '';
+      final sendAmount = (subscribe == Subscribe.send) ? getSendAmount() : null;
+      final recvAmount = (subscribe == Subscribe.recv) ? getRecvAmount() : null;
+      final sendBitcoins = swapSendAsset == wallet.liquidAssetId();
+      final asset = sendBitcoins ? swapRecvAsset : swapSendAsset;
+      wallet.subscribeToPriceStream(
+          asset, sendBitcoins, sendAmount, recvAmount, updateFromPriceStream);
     }
-
-    final precision =
-        context.read(walletProvider).getPrecisionForAssetId(assetId: assetId);
-    final balance = context.read(balancesProvider).balances[assetId];
-    final amount = double.tryParse(value);
-    final realBalance =
-        double.tryParse(amountStr(balance ?? 0, precision: precision));
-    if (amount == null || realBalance == null) {
-      return false;
-    }
-
-    if (amount <= realBalance) {
-      context.read(swapProvider).showInsufficientFunds = false;
-      return true;
-    }
-
-    context.read(swapProvider).showInsufficientFunds = true;
-
-    return false;
   }
 
-  void validateSwapSendAsset() {
-    final value = _swapAmount;
-    final _swapSendAsset = context.read(swapProvider).swapSendAsset ?? '';
-    validate(value, _swapSendAsset);
+  void setDeliverAsset(AccountAsset accountAsset) {
+    context.read(swapProvider).setSelectedLeftAsset(accountAsset.asset);
+    subscribeToPriceStream();
+  }
+
+  void setReceiveAsset(AccountAsset accountAsset) {
+    context.read(swapProvider).setSelectedRightAsset(accountAsset.asset);
+    subscribeToPriceStream();
+  }
+
+  void toggleAssets() {
+    final _swapRecvAsset = context.read(swapProvider).swapRecvAsset;
+    final _swapSendAsset = context.read(swapProvider).swapSendAsset;
+    context.read(swapProvider).setSelectedLeftAsset(_swapRecvAsset ?? '');
+    context.read(swapProvider).setSelectedRightAsset(_swapSendAsset ?? '');
+    clearAddressController();
+    clearAmountController();
+    subscribeToPriceStream();
+  }
+
+  void switchToSwaps() {
+    final swap = context.read(swapProvider);
+
+    swap.setSwapPeg(false);
+    clearAddressController();
+    clearAmountController();
+    swap.swapReset();
+    subscribeToPriceStream();
+  }
+
+  void switchToPegs() {
+    final swap = context.read(swapProvider);
+    final wallet = context.read(walletProvider);
+
+    swap.setSwapPeg(true);
+    swap.setSelectedLeftAsset(wallet.bitcoinAssetId());
+    swap.setSelectedRightAsset(wallet.liquidAssetId());
+    clearAddressController();
+    clearAmountController();
+    swap.swapReset();
+    subscribeToPriceStream();
+  }
+
+  void updateFromPriceStream(From_UpdatePriceStream msg) {
+    final swaps = context.read(swapProvider);
+    final wallet = context.read(walletProvider);
+    // Do not update amounts while waiting for swap transaction
+    if (swaps.swapState != SwapState.idle || authInProgress) {
+      return;
+    }
+
+    swaps.swapNetworkError = msg.errorMsg;
+    swaps.price = msg.hasPrice() ? msg.price : null;
+
+    if (subscribe == Subscribe.send) {
+      if (msg.hasRecvAmount()) {
+        swaps.swapRecvAmount = msg.recvAmount.toInt();
+        final recvAsset = swaps.swapRecvAsset;
+        final recvPrecision =
+            wallet.getPrecisionForAssetId(assetId: recvAsset ?? '');
+        final recvAmount = swaps.swapRecvAmount;
+        final recvAmountStr = recvAmount != 0
+            ? amountStr(recvAmount, precision: recvPrecision)
+            : '';
+        _swapRecvAmountController!.text = replaceCharacterOnPosition(
+          input: recvAmountStr,
+        );
+      } else {
+        _swapRecvAmountController!.text = '';
+      }
+    }
+
+    if (subscribe == Subscribe.recv) {
+      if (msg.hasSendAmount()) {
+        swaps.swapSendAmount = msg.sendAmount.toInt();
+        final sendAsset = swaps.swapSendAsset;
+        final sendPrecision =
+            wallet.getPrecisionForAssetId(assetId: sendAsset ?? '');
+        final sendAmount = swaps.swapSendAmount;
+        final sendAmountStr = sendAmount != 0
+            ? amountStr(sendAmount, precision: sendPrecision)
+            : '';
+        _swapSendAmountController!.text = replaceCharacterOnPosition(
+          input: sendAmountStr,
+        );
+      } else {
+        _swapSendAmountController!.text = '';
+      }
+    }
+  }
+
+  int getAssetAmount(String asset, String value) {
+    final wallet = context.read(walletProvider);
+    final precision = wallet.getPrecisionForAssetId(assetId: asset);
+    final amount = wallet.parseAssetAmount(value, precision: precision) ?? 0;
+    return amount;
+  }
+
+  int getSendAmount() {
+    final sendAsset = context.read(swapProvider).swapSendAsset;
+    return getAssetAmount(sendAsset ?? '', _swapSendAmountController!.text);
+  }
+
+  int getRecvAmount() {
+    final recvAsset = context.read(swapProvider).swapRecvAsset;
+    return getAssetAmount(recvAsset ?? '', _swapRecvAmountController!.text);
+  }
+
+  bool insufficientFunds() {
+    final swapSendAsset = context.read(swapProvider).swapSendAsset!;
+    final sendAccount = AccountAsset(AccountType.regular, swapSendAsset);
+    final balance = context.read(balancesProvider).balances[sendAccount] ?? 0;
+    final sendAmount = getSendAmount();
+    return sendAmount > 0 && sendAmount > balance;
+  }
+
+  void swapAccept() async {
+    final wallet = context.read(walletProvider);
+    final swaps = context.read(swapProvider);
+    // Remember amounts before calling async functions
+    final sendAmount = getSendAmount();
+    final recvAmount = getRecvAmount();
+    final price = swaps.price;
+    final type = swaps.swapType();
+    final sendAccount = AccountAsset(AccountType.regular, swaps.swapSendAsset!);
+
+    final maxBalance = swaps.swapSendWallet == SwapWallet.local
+        ? context.read(balancesProvider).balances[sendAccount] ?? 0
+        : kMaxCoins;
+    if (type != SwapType.pegIn) {
+      if (sendAmount <= 0 || sendAmount > maxBalance) {
+        await context
+            .read(utilsProvider)
+            .showErrorDialog('Please enter correct amount'.tr());
+        return;
+      }
+    }
+
+    if (type == SwapType.pegOut) {
+      final addrType = swaps.swapAddrType(swaps.swapType());
+      if (!wallet.isAddrValid(swaps.swapRecvAddressExternal, addrType)) {
+        await context.read(utilsProvider).showErrorDialog(
+            'PLEASE_ENTER_CORRECT_ADDRESS'
+                .tr(args: [(swaps.addrTypeStr(addrType))]));
+        return;
+      }
+    }
+
+    authInProgress = true;
+    final authSucceed = await wallet.isAuthenticated();
+    authInProgress = false;
+    if (!authSucceed) {
+      return;
+    }
+
+    if (type == SwapType.pegIn) {
+      final msg = To();
+      msg.pegInRequest = To_PegInRequest();
+      wallet.sendMsg(msg);
+      swaps.swapState = SwapState.sent;
+      return;
+    }
+
+    if (type == SwapType.pegOut) {
+      final msg = To();
+      msg.pegOutRequest = To_PegOutRequest();
+      msg.pegOutRequest.sendAmount = Int64(sendAmount);
+      msg.pegOutRequest.recvAddr = swaps.swapRecvAddressExternal;
+      msg.pegOutRequest.blocks = blocks;
+      wallet.sendMsg(msg);
+      swaps.swapState = SwapState.sent;
+    }
+
+    if (type == SwapType.atomic) {
+      final msg = To();
+      msg.swapRequest = To_SwapRequest();
+      final swapSendAsset = swaps.swapSendAsset ?? '';
+      final sendBitcoins = swapSendAsset == wallet.liquidAssetId();
+      final swapRecvAsset = swaps.swapRecvAsset ?? '';
+      final asset = sendBitcoins ? swapRecvAsset : swapSendAsset;
+      msg.swapRequest.sendBitcoins = sendBitcoins;
+      msg.swapRequest.asset = asset;
+      msg.swapRequest.sendAmount = Int64(sendAmount);
+      msg.swapRequest.recvAmount = Int64(recvAmount);
+      msg.swapRequest.price = price ?? 0.0;
+      wallet.sendMsg(msg);
+      swaps.swapState = SwapState.sent;
+    }
   }
 
   void refreshSwapAmount() {
     context.read(swapProvider).swapReset();
-
-    final value = _swapAmount;
-    validateSwapSendAsset();
-
-    final swapSendAsset = context.read(swapProvider).swapSendAsset ?? '';
-    final precision = context
-        .read(walletProvider)
-        .getPrecisionForAssetId(assetId: swapSendAsset);
-    final amount = context
-            .read(walletProvider)
-            .parseAssetAmount(value, precision: precision) ??
-        0;
-    context.read(swapProvider).setSwapAmount(amount, blocks);
   }
 
-  Future<bool> onClose() async {
-    FocusManager.instance.primaryFocus?.unfocus();
-    context.read(swapProvider).swapReset();
-    context.read(swapProvider).setSwapPeg(false);
-    return context.read(walletProvider).goBack();
-  }
-
-  void clearAmountController() async {
-    await Future.microtask(() {
-      context.read(swapProvider).swapRecvAmount = 0;
-      _swapAmountController?.clear();
-      _swapAmount = '';
-      context.read(swapProvider).didAssetReplaced = false;
-    });
+  void clearAmountController() {
+    context.read(swapProvider).swapSendAmount = 0;
+    context.read(swapProvider).swapRecvAmount = 0;
+    _swapSendAmountController?.clear();
+    _swapRecvAmountController?.clear();
+    subscribe = Subscribe.empty;
   }
 
   void clearAddressController() {
@@ -220,21 +425,7 @@ class _SwapMainState extends State<SwapMain> {
                     buildBottomBackground(),
                     SwapMiddleIcon(
                       visibleToggles: _visibleToggles,
-                      onTap: () {
-                        final _swapRecvAsset =
-                            context.read(swapProvider).swapRecvAsset;
-                        final _swapSendAsset =
-                            context.read(swapProvider).swapSendAsset;
-                        context
-                            .read(swapProvider)
-                            .setSelectedLeftAsset(_swapRecvAsset ?? '');
-                        context
-                            .read(swapProvider)
-                            .setSelectedRightAsset(_swapSendAsset ?? '');
-
-                        clearAddressController();
-                        clearAmountController();
-                      },
+                      onTap: toggleAssets,
                     ),
                     Column(
                       mainAxisSize: MainAxisSize.min,
@@ -280,53 +471,53 @@ class _SwapMainState extends State<SwapMain> {
       padding: EdgeInsets.only(top: 16.h, bottom: 24.h),
       child: Consumer(
         builder: (context, watch, child) {
-          final _recvAmount = watch(swapProvider).swapRecvAmount;
-          final _swapType = watch(swapProvider).swapType();
-          final _swapTypeStr =
-              context.read(swapProvider).swapTypeStr(_swapType).toUpperCase();
-          var _enabled = _recvAmount > 0 || _swapType == SwapType.pegIn;
-          if (_swapType == SwapType.pegOut) {
-            _enabled = _recvAmount > 0 &&
-                _swapAddressRecvController != null &&
-                _swapAddressRecvController!.text.isNotEmpty &&
-                _addressErrorText == null;
+          final swapType = watch(swapProvider).swapType();
+          final swapTypeStr =
+              context.read(swapProvider).swapTypeStr(swapType).toUpperCase();
+          bool enabled;
+          switch (swapType) {
+            case SwapType.atomic:
+              enabled = getSendAmount() > 0 &&
+                  getRecvAmount() > 0 &&
+                  !insufficientFunds();
+              break;
+            case SwapType.pegIn:
+              enabled = true;
+              break;
+            case SwapType.pegOut:
+              enabled = getSendAmount() > 0 &&
+                  !insufficientFunds() &&
+                  _swapAddressRecvController != null &&
+                  _swapAddressRecvController!.text.isNotEmpty &&
+                  _addressErrorText == null;
+              break;
           }
 
-          if (_swapType == SwapType.pegIn && !pegInInfoDisplayed) {
+          if (swapType == SwapType.pegIn && !pegInInfoDisplayed) {
             context.read(swapProvider).showPegInInformation();
             pegInInfoDisplayed = true;
           }
 
-          if (_swapType == SwapType.pegOut && !pegOutInfoDisplayed) {
+          if (swapType == SwapType.pegOut && !pegOutInfoDisplayed) {
             context.read(swapProvider).showPegOutInformation();
             pegOutInfoDisplayed = true;
           }
 
           final swapState = watch(swapProvider).swapState;
 
-          _enabled = _enabled && swapState == SwapState.idle;
+          enabled = enabled && swapState == SwapState.idle;
 
           return CustomBigButton(
             width: double.infinity,
             height: 54.h,
-            enabled: _enabled,
+            enabled: enabled,
             backgroundColor: const Color(0xFF00C5FF),
-            onPressed: _enabled && _addressErrorText == null
-                ? () async {
-                    final recvAmount =
-                        context.read(swapProvider).swapRecvAmount;
-                    if (await context.read(walletProvider).isAuthenticated()) {
-                      context
-                          .read(swapProvider)
-                          .swapAccept(context, recvAmount);
-                    }
-                  }
-                : null,
+            onPressed: enabled ? () => swapAccept() : null,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 Text(
-                  _swapTypeStr,
+                  swapTypeStr,
                   style: GoogleFonts.roboto(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.normal,
@@ -357,23 +548,21 @@ class _SwapMainState extends State<SwapMain> {
   Widget buildReceiveAmount() {
     return Consumer(
       builder: (context, watch, child) {
-        final _swapRecvAssets = watch(swapProvider).swapRecvAssets();
-        final _swapRecvAsset = watch(swapProvider).swapRecvAsset;
+        final _swapRecvAssets = watch(swapProvider)
+            .swapRecvAssets()
+            .map((e) => AccountAsset(AccountType.regular, e))
+            .toList();
+        final _swapRecvAsset = watch(swapProvider).swapRecvAsset!;
         final _swapRecvWallet = watch(swapProvider).swapRecvWallet;
-        final _recvAmount = watch(swapProvider).swapRecvAmount;
         final _precision = context
             .read(walletProvider)
-            .getPrecisionForAssetId(assetId: _swapRecvAsset ?? '');
-        final _recvAmountStr = _recvAmount != 0
-            ? amountStr(_recvAmount, precision: _precision)
-            : '';
-        final _balance = watch(balancesProvider).balances[_swapRecvAsset];
+            .getPrecisionForAssetId(assetId: _swapRecvAsset);
+        final swapRecvAccount =
+            AccountAsset(AccountType.regular, _swapRecvAsset);
+        final _balance = watch(balancesProvider).balances[swapRecvAccount];
         final _balanceStr = amountStr(_balance ?? 0, precision: _precision);
         final _swapType = watch(swapProvider).swapType();
-
-        if (watch(swapProvider).didAssetReplaced) {
-          clearAmountController();
-        }
+        final swapState = watch(swapProvider).swapState;
 
         final serverStatus = watch(walletProvider).serverStatus;
         final feeRates = (_swapType == SwapType.pegOut &&
@@ -381,72 +570,45 @@ class _SwapMainState extends State<SwapMain> {
                 serverStatus != null)
             ? serverStatus.bitcoinFeeRates
             : <FeeRate>[];
-        final showInsufficientFunds = watch(swapProvider).showInsufficientFunds;
-        final serverError = watch(swapProvider).swapNetworkError;
+        // Show error in one place only
+        final serverError = subscribe != Subscribe.recv
+            ? ''
+            : watch(swapProvider).swapNetworkError;
 
         return SwapSideAmount(
           text: 'Receive'.tr(),
           padding: EdgeInsets.symmetric(horizontal: 16.w),
-          controller: TextEditingController()
-            ..text = replaceCharacterOnPosition(
-              input: _recvAmountStr,
-            ),
+          controller: _swapRecvAmountController!,
           addressController: _swapAddressRecvController!,
-          readOnly: true,
+          isMaxVisible: false,
+          readOnly: _swapType != SwapType.atomic || swapState != SwapState.idle,
           hintText: '0.0',
-          showHintText: true,
-          dropdownReadOnly: _swapType == SwapType.atomic &&
-                  _swapRecvAsset != null &&
-                  _swapRecvAsset.length > 1
-              ? false
-              : true,
+          showHintText: _swapType == SwapType.atomic,
+          dropdownReadOnly:
+              _swapType == SwapType.atomic && _swapRecvAsset.length > 1
+                  ? false
+                  : true,
           feeRates: feeRates,
           onFeeRateChanged: onFeeRateChanged,
           visibleToggles: _visibleToggles,
           balance: _balanceStr,
-          dropdownValue: _swapRecvAsset ?? '',
+          dropdownValue: AccountAsset(AccountType.regular, _swapRecvAsset),
           availableAssets: _swapRecvAssets,
           labelGroupValue: _swapRecvWallet,
           addressErrorText: _addressErrorText,
           focusNode: _receiveFocusNode,
-          receiveAddressFocusNode: _receiveAddressFocusNode,
+          //receiveAddressFocusNode: _receiveAddressFocusNode,
+          receiveAddressFocusNode: null,
           isAddressLabelVisible: addressLabelVisible,
           swapType: _swapType,
-          showInsufficientFunds: showInsufficientFunds,
+          showInsufficientFunds: false,
           errorDescription: serverError,
           localLabelOnChanged: (value) =>
               context.read(swapProvider).setRecvRadioCb(SwapWallet.local),
           externalLabelOnChanged: (value) =>
               context.read(swapProvider).setRecvRadioCb(SwapWallet.extern),
-          onDropdownChanged: (value) =>
-              context.read(swapProvider).setSelectedRightAsset(value),
-          onChanged: (value) {
-            final newValue = replaceCharacterOnPosition(
-              input: value,
-            );
-
-            if (_swapAmountController != null) {
-              _swapAmountController!.value = fixCursorPosition(
-                  controller: _swapAmountController!, newValue: newValue);
-            }
-          },
-          onAddressTap: () async {
-            _receiveAddressFocusNode.unfocus();
-            final value = await Clipboard.getData(Clipboard.kTextPlain);
-            if (value?.text != null) {
-              var text = value?.text?.replaceAll('\n', '') ?? '';
-              text = text.replaceAll(' ', '');
-              final wallet = context.read(walletProvider);
-              if (wallet.isAddrValid(text, AddrType.bitcoin)) {
-                await pasteFromClipboard(_swapAddressRecvController!);
-              }
-              validateAddress(_swapAddressRecvController!.text);
-            }
-
-            if (!addressLabelVisible) {
-              _receiveAddressFocusNode.requestFocus();
-            }
-          },
+          onDropdownChanged: setReceiveAsset,
+          onChanged: onSwapRecvAmountChanged,
           onAddressEditingCompleted: () async {
             final text = _swapAddressRecvController?.text ?? '';
             validateAddress(text);
@@ -469,78 +631,50 @@ class _SwapMainState extends State<SwapMain> {
   Widget buildDeliverAmount() {
     return Consumer(
       builder: (context, watch, child) {
-        final _swapSendAsset = watch(swapProvider).swapSendAsset;
-        final _balance = watch(balancesProvider).balances[_swapSendAsset];
-        final _precision = context
+        final swapSendAsset = AccountAsset(
+            AccountType.regular, watch(swapProvider).swapSendAsset!);
+        final balance = watch(balancesProvider).balances[swapSendAsset] ?? 0;
+        final precision = context
             .read(walletProvider)
-            .getPrecisionForAssetId(assetId: _swapSendAsset ?? '');
-        final _balanceStr = amountStr(_balance ?? 0, precision: _precision);
-        final _swapSendAssets = watch(swapProvider).swapSendAssets();
-        final _swapSendWallet = watch(swapProvider).swapSendWallet;
-        var _isReadOnly = _swapSendWallet == SwapWallet.extern;
+            .getPrecisionForAssetId(assetId: swapSendAsset.asset);
+        final balanceStr = amountStr(balance, precision: precision);
+        final swapSendAssets = watch(swapProvider)
+            .swapSendAssets()
+            .map((e) => AccountAsset(AccountType.regular, e))
+            .toList();
+        final swapSendWallet = watch(swapProvider).swapSendWallet;
         final swapState = watch(swapProvider).swapState;
-        final _swapType = watch(swapProvider).swapType();
-        final showInsufficientFunds = watch(swapProvider).showInsufficientFunds;
-        final serverError = watch(swapProvider).swapNetworkError;
-
-        if (watch(swapProvider).didAssetReplaced) {
-          clearAmountController();
-        }
-
-        validateSwapSendAsset();
-
-        if (swapState != SwapState.idle) {
-          _isReadOnly = true;
-        }
+        final swapType = watch(swapProvider).swapType();
+        final serverError = subscribe == Subscribe.recv
+            ? ''
+            : watch(swapProvider).swapNetworkError;
+        final showInsufficientFunds = insufficientFunds() && serverError == '';
 
         return SwapSideAmount(
           text: 'Deliver'.tr(),
           padding: EdgeInsets.symmetric(horizontal: 16.w),
-          controller: _swapAmountController!,
+          controller: _swapSendAmountController!,
           focusNode: _deliverFocusNode,
           isMaxVisible: true,
-          balance: _balanceStr,
-          readOnly: _isReadOnly,
+          balance: balanceStr,
+          readOnly: swapSendWallet == SwapWallet.extern ||
+              swapState != SwapState.idle,
+          hintText: '0.0',
+          showHintText: true,
           visibleToggles: _visibleToggles,
-          dropdownValue: _swapSendAsset ?? '',
-          availableAssets: _swapSendAssets,
-          labelGroupValue: _swapSendWallet,
-          swapType: _swapType,
+          dropdownValue: swapSendAsset,
+          availableAssets: swapSendAssets,
+          labelGroupValue: swapSendWallet,
+          swapType: swapType,
           showInsufficientFunds: showInsufficientFunds,
           errorDescription: serverError,
           localLabelOnChanged: (value) =>
               context.read(swapProvider).setSendRadioCb(SwapWallet.local),
           externalLabelOnChanged: (value) =>
               context.read(swapProvider).setSendRadioCb(SwapWallet.extern),
-          onDropdownChanged: (value) =>
-              context.read(swapProvider).setSelectedLeftAsset(value),
-          onChanged: (value) {
-            _swapAmount = value.replaceAll(' ', '');
-            final newValue = replaceCharacterOnPosition(
-              input: value,
-            );
-
-            if (_swapAmountController != null) {
-              _swapAmountController!.value = fixCursorPosition(
-                  controller: _swapAmountController!, newValue: newValue);
-            }
-
-            refreshSwapAmount();
-          },
-          onMaxPressed: () {
-            var amount = _balanceStr;
-            _swapAmount = amount.replaceAll(' ', '');
-
-            final newValue = replaceCharacterOnPosition(
-              input: amount,
-            );
-            _swapAmountController?.value = TextEditingValue(
-              text: newValue,
-              selection: TextSelection.collapsed(offset: newValue.length),
-            );
-
-            refreshSwapAmount();
-          },
+          onDropdownChanged: setDeliverAsset,
+          onChanged: onSwapSendAmountChanged,
+          onMaxPressed: onMaxSendPressed,
         );
       },
     );
@@ -548,26 +682,8 @@ class _SwapMainState extends State<SwapMain> {
 
   Widget buildTopButtons(BuildContext context) {
     return TopSwapButtons(
-      onSwapPressed: () {
-        context.read(swapProvider).setSwapPeg(false);
-
-        clearAddressController();
-        _swapAmountController?.clear();
-        context.read(swapProvider).swapReset();
-      },
-      onPegPressed: () {
-        final swap = context.read(swapProvider);
-        final wallet = context.read(walletProvider);
-        swap.setSwapPeg(true);
-
-        // always set as peg-in
-        swap.setSelectedLeftAsset(wallet.bitcoinAssetId() ?? '');
-        swap.setSelectedRightAsset(wallet.liquidAssetId() ?? '');
-
-        clearAddressController();
-        _swapAmountController?.clear();
-        swap.swapReset();
-      },
+      onSwapPressed: switchToSwaps,
+      onPegPressed: switchToPegs,
     );
   }
 
@@ -587,91 +703,6 @@ class _SwapMainState extends State<SwapMain> {
           ),
         );
       },
-    );
-  }
-}
-
-// Do not delete this class yet
-class SwapWaitPegTx extends StatelessWidget {
-  const SwapWaitPegTx({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return SideSwapPopup(
-      child: Consumer(
-        builder: (context, watch, child) {
-          final _address = watch(swapProvider).swapPegAddressServer ?? '';
-          final _swapSendAsset = watch(swapProvider).swapSendAsset;
-          final _swapRecvWallet = watch(swapProvider).swapRecvWallet;
-          final _swapRecvAsset = watch(swapProvider).swapRecvAsset;
-          final _swapRecvAddressExternal =
-              watch(swapProvider).swapRecvAddressExternal.isEmpty
-                  ? '<EMPTY>'.tr()
-                  : watch(swapProvider).swapRecvAddressExternal;
-          final _sendPrecision = context
-              .read(walletProvider)
-              .getPrecisionForAssetId(assetId: _swapSendAsset);
-          final _recvPrecision = context
-              .read(walletProvider)
-              .getPrecisionForAssetId(assetId: _swapRecvAsset);
-          final _sendAmount = amountStr(watch(swapProvider).swapSendAmount,
-              precision: _sendPrecision);
-          final _recvAmount = amountStr(watch(swapProvider).swapRecvAmount,
-              precision: _recvPrecision);
-
-          return Column(
-            children: [
-              Container(
-                width: 263.w,
-                height: 263.w,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    16.w,
-                  ),
-                  color: Colors.white,
-                ),
-                child: Center(
-                  child: Consumer(
-                    builder: (context, watch, child) => QrImage(
-                      data: _address,
-                      version: QrVersions.auto,
-                      size: 223.w,
-                    ),
-                  ),
-                ),
-              ),
-              const Spacer(),
-              const Text(
-                'SWAP_SEND_ASSET_RECEIVING_ADDRESS',
-                style: TextStyle(fontSize: 24),
-              ).tr(args: [_swapSendAsset ?? '']),
-              Text(_address),
-              Visibility(
-                visible: _swapRecvWallet == SwapWallet.extern,
-                child: Column(
-                  children: [
-                    const Text(
-                      'SWAP_RECV_ASSET_YOUR_ADDRESS',
-                      style: TextStyle(fontSize: 24),
-                    ).tr(args: [_swapRecvAsset ?? '']),
-                    Text(_swapRecvAddressExternal),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              const Text('SWAP_SEND_AMOUNT').tr(
-                args: [_sendAmount, _swapSendAsset ?? ''],
-              ),
-              const Text('SWAP_RECV_AMOUNT').tr(
-                args: [_recvAmount, _swapRecvAsset ?? ''],
-              ),
-              const Spacer(),
-              ShareAddress(addr: _address),
-              const SizedBox(height: 20),
-            ],
-          );
-        },
-      ),
     );
   }
 }

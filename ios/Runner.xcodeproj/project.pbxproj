@@ -14,10 +14,9 @@
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
-		B01CCCCF2555813E00EE65A5 /* libwallycore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B01CCCCC2555813000EE65A5 /* libwallycore.a */; };
-		B01CCCD7255584DB00EE65A5 /* libsecp256k1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B01CCCD6255584CF00EE65A5 /* libsecp256k1.a */; };
 		B01CCCD92555850200EE65A5 /* libsideswap_client.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B01CCCD8255584F900EE65A5 /* libsideswap_client.a */; };
 		B0A4543425E8395A004E91B9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B0A4543325E8395A004E91B9 /* GoogleService-Info.plist */; };
+		B0CA660D274CED8100C136E1 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B0CA660C274CED8100C136E1 /* libc++.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -55,6 +54,7 @@
 		B01CCCD8255584F900EE65A5 /* libsideswap_client.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsideswap_client.a; path = "../rust/target/aarch64-apple-ios/release/libsideswap_client.a"; sourceTree = "<group>"; };
 		B0A4543325E8395A004E91B9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B0A4549925EFAE6F004E91B9 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		B0CA660C274CED8100C136E1 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		D5E03FE7DDA056F6884837D4 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,10 +63,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0CA660D274CED8100C136E1 /* libc++.tbd in Frameworks */,
 				B01CCCD92555850200EE65A5 /* libsideswap_client.a in Frameworks */,
-				B01CCCCF2555813E00EE65A5 /* libwallycore.a in Frameworks */,
 				82561C401FD5ACC337598EBF /* Pods_Runner.framework in Frameworks */,
-				B01CCCD7255584DB00EE65A5 /* libsecp256k1.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +75,7 @@
 		0BF124F1BD2C83BAC49ACCE3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B0CA660C274CED8100C136E1 /* libc++.tbd */,
 				B01CCCD8255584F900EE65A5 /* libsideswap_client.a */,
 				B01CCCD6255584CF00EE65A5 /* libsecp256k1.a */,
 				B01CCCCC2555813000EE65A5 /* libwallycore.a */,
@@ -172,7 +172,7 @@
 		97C146E61CF9000F007C117D /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1210;
+				LastUpgradeCheck = 1300;
 				ORGANIZATIONNAME = "";
 				TargetAttributes = {
 					97C146ED1CF9000F007C117D = {
@@ -244,7 +244,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\n";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -258,7 +258,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build\n";
 		};
 		F0FC45F4BB15E0E6F1A51F94 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;

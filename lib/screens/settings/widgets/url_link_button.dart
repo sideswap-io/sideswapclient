@@ -20,7 +20,8 @@ class UrlLinkButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 4.h),
       width: double.maxFinite,
       height: 56.h,
       child: TextButton(

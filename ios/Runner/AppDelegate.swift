@@ -55,6 +55,8 @@ public func dummyMethodToEnforceBundling() {
                 self?.encrypt(data: data.data, result: result, userPresence: false)
             case "decryptFallback":
                 self?.decrypt(result: result)
+            case "decryptNotPossible":
+                self?.decryptNotPossible(result: result)
             default:
                 result(FlutterMethodNotImplemented)
             }
@@ -134,5 +136,22 @@ public func dummyMethodToEnforceBundling() {
 
         let mnemonicEncoded: Data = mnemonic.data(using: String.Encoding.utf8)!
         result(mnemonicEncoded)
+    }
+
+    private func decryptNotPossible(result: FlutterResult) {
+        let query: [String: Any] = [kSecClass as String: kSecClassGenericPassword,
+                                    kSecMatchLimit as String: kSecMatchLimitOne,
+                                    kSecReturnAttributes as String: true,
+                                    kSecAttrLabel as String: kKeyName,
+                                    kSecUseOperationPrompt as String: "Unlock mnemonic",
+                                    kSecReturnData as String: true,
+                                    kSecUseAuthenticationUI as String: kSecUseAuthenticationUIFail]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        if status == errSecItemNotFound {
+            result(true)
+            return
+        }
+        result(false)
     }
 }

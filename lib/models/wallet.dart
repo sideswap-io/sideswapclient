@@ -12,15 +12,16 @@ import 'package:ffi/ffi.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/markets_provider.dart';
+import 'package:sideswap/models/network_access_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/token_market_provider.dart';
 import 'package:vibration/vibration.dart';
@@ -30,8 +31,6 @@ import 'package:sideswap/common/bitmap_helper.dart';
 import 'package:sideswap/common/encryption.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
-import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
-import 'package:sideswap/common/widgets/insufficient_balance_dialog.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/contact_provider.dart';
 import 'package:sideswap/models/notifications_service.dart';
@@ -106,6 +105,7 @@ enum Status {
   orderPopup,
   orderSuccess,
   orderResponseSuccess,
+  swapPrompt,
 
   createOrderEntry,
   createOrder,
@@ -118,25 +118,49 @@ enum AddrType {
   elements,
 }
 
-const envValues = [
-  SIDESWAP_ENV_PROD,
-  SIDESWAP_ENV_STAGING,
-  SIDESWAP_ENV_REGTEST,
-  SIDESWAP_ENV_LOCAL
-];
+List<int> envValues() {
+  if (kDebugMode) {
+    return [
+      SIDESWAP_ENV_PROD,
+      SIDESWAP_ENV_TESTNET,
+      SIDESWAP_ENV_REGTEST,
+      SIDESWAP_ENV_LOCAL_LIQUID,
+      SIDESWAP_ENV_LOCAL_TESTNET,
+      SIDESWAP_ENV_LOCAL,
+    ];
+  }
+  return [
+    SIDESWAP_ENV_PROD,
+    SIDESWAP_ENV_TESTNET,
+  ];
+}
 
 String envName(int env) {
   switch (env) {
     case SIDESWAP_ENV_PROD:
-      return 'Prod';
-    case SIDESWAP_ENV_STAGING:
-      return 'Staging';
+      return 'Liquid';
+    case SIDESWAP_ENV_TESTNET:
+      return 'Testnet';
     case SIDESWAP_ENV_REGTEST:
       return 'Regtest';
+    case SIDESWAP_ENV_LOCAL_LIQUID:
+      return 'Local Liquid';
+    case SIDESWAP_ENV_LOCAL_TESTNET:
+      return 'Local Testnet';
     case SIDESWAP_ENV_LOCAL:
-      return 'Local';
+      return 'Local Regtest';
   }
   throw Exception('unexpected env value');
+}
+
+Account getAccount(AccountType accountType) {
+  final account = Account();
+  account.amp = accountType == AccountType.amp;
+  return account;
+}
+
+AccountType getAccountType(Account account) {
+  return account.amp ? AccountType.amp : AccountType.regular;
 }
 
 class PinData {
@@ -154,8 +178,18 @@ class PinData {
 
   @override
   String toString() {
-    return 'PinData(salt: $salt, encryptedData: $encryptedData, pinIdentifier: $pinIdentifier, error: $error)';
+    return 'PinData(salt: $salt, encryptedData: <redacted>, pinIdentifier: $pinIdentifier, error: $error)';
   }
+}
+
+MarketType getMarketType(Asset asset) {
+  if (asset.swapMarket) {
+    return MarketType.stablecoin;
+  }
+  if (asset.ampMarket) {
+    return MarketType.amp;
+  }
+  return MarketType.token;
 }
 
 class PinDecryptedData {
@@ -189,7 +223,8 @@ class WalletChangeNotifier with ChangeNotifier {
   final _encryption = Encryption();
 
   String _mnemonic = '';
-  final enabledAssetIds = <String>[];
+
+  final disabledAccounts = <AccountAsset>{};
 
   late GlobalKey<NavigatorState> navigatorKey;
 
@@ -207,18 +242,28 @@ class WalletChangeNotifier with ChangeNotifier {
   final Map<String, From_PriceUpdate> _prices = {};
   Map<String, From_PriceUpdate> get prices => _prices;
 
-  String selectedWalletAsset = '';
-  String recvAddress = '';
+  AccountAsset? selectedWalletAsset;
+
+  final recvAddresses = <AccountType, String>{};
+  AccountType recvAddressAccount = AccountType.regular;
 
   Map<int, List<String>> backupCheckAllWords = {};
   Map<int, int> backupCheckSelectedWords = {};
 
-  final _assetIds = <String>[];
-  var assets = <String, Asset>{};
-  var assetImagesBig = <String, Image>{};
-  var assetImagesSmall = <String, Image>{};
+  final assets = <String, Asset>{};
+  final assetImagesBig = <String, Image>{};
+  final assetImagesSmall = <String, Image>{};
+  var ampAssets = <String>[];
 
   final allTxs = <String, TransItem>{};
+  final allPegs = <String, List<TransItem>>{};
+  // Cached version of allTxs and allPegs
+  final _allAssets = <AccountAsset, List<TxItem>>{};
+  var _allAssetsNeedUpdate = false;
+
+  var _allAccounts = <AccountAsset>[];
+  var _allAccountsNeedUpdate = false;
+
   final newTransItemSubject = BehaviorSubject<TransItem>();
   StreamSubscription<TransItem>? txDetailsSubscription;
 
@@ -226,12 +271,13 @@ class WalletChangeNotifier with ChangeNotifier {
 
   final _recvSubject = PublishSubject<From>();
 
-  // Cached version of allTxs
-  final allAssets = <String, List<TxItem>>{};
-  Map<String, List<TxItem>> txItemMap = {};
+  String? ampId;
+
+  var isCreatingTx = false;
+  var isSendingTx = false;
 
   // Toggle assets page
-  var filteredToggleAssetIds = <String>[];
+  var filteredToggleAccounts = <AccountAsset>[];
 
   var pendingPushMessages = <String>[];
 
@@ -246,6 +292,9 @@ class WalletChangeNotifier with ChangeNotifier {
 
   OrderDetailsData orderDetailsData = OrderDetailsData.empty();
   PublishSubject<String> explorerUrlSubject = PublishSubject<String>();
+
+  SwapDetails? swapDetails;
+  bool swapPromptWaitingTx = false;
 
   PublishSubject<PinData> pinEncryptDataSubject = PublishSubject<PinData>();
   PublishSubject<PinDecryptedData> pinDecryptDataSubject =
@@ -273,6 +322,7 @@ class WalletChangeNotifier with ChangeNotifier {
   late ReceivePort _receivePort;
 
   Future<void> startClient() async {
+    logger.d('startClient');
     _recvSubject.listen((value) async {
       await _recvMsg(value);
     });
@@ -311,15 +361,23 @@ class WalletChangeNotifier with ChangeNotifier {
     clientReady = true;
     processPendingPushMessages();
 
-    if (read(configProvider).mnemonicEncrypted.isNotEmpty) {
+    final config = read(configProvider);
+    final appResetRequired = await _encryption.appResetRequired(
+        hasEncryptedMnemonic: config.mnemonicEncrypted.isNotEmpty,
+        usePinProtection: config.usePinProtection);
+    if (appResetRequired) {
+      config.deleteConfig();
+    }
+
+    if (config.mnemonicEncrypted.isNotEmpty) {
       if (await _encryption.canAuthenticate() &&
-          read(configProvider).useBiometricProtection) {
+          config.useBiometricProtection) {
         status = Status.lockedWalet;
       } else {
         await unlockWallet();
       }
     } else {
-      if (read(configProvider).usePinProtection) {
+      if (config.usePinProtection) {
         await unlockWallet();
       } else {
         status = Status.noWallet;
@@ -341,42 +399,105 @@ class WalletChangeNotifier with ChangeNotifier {
     super.notifyListeners();
   }
 
-  void _addTxItem(TransItem item, String? assetId) {
-    if (assetId == null) {
-      logger.e('AssetId is null for txitem: $item');
-      return;
+  void _addTxItem(Map<AccountAsset, List<TxItem>> list, AccountType account,
+      String assetId, TransItem item) {
+    final accountAsset = AccountAsset(account, assetId);
+    if (list[accountAsset] == null) {
+      list[accountAsset] = [];
     }
+    list[accountAsset]!.add(TxItem(item: item));
+  }
 
-    if (allAssets[assetId] == null) {
-      allAssets[assetId] = [];
+  List<AccountAsset> getAllAccounts() {
+    if (_allAccountsNeedUpdate) {
+      final set = getAllAssets().keys.toSet();
+      if (assets[liquidAssetId()] != null) {
+        set.add(AccountAsset(AccountType.regular, liquidAssetId()));
+      }
+      if (assets[tetherAssetId()] != null) {
+        set.add(AccountAsset(AccountType.regular, tetherAssetId()));
+      }
+      if (assets[eurxAssetId()] != null) {
+        set.add(AccountAsset(AccountType.regular, eurxAssetId()));
+      }
+      _allAccounts = set.toList();
+      _allAccounts.sort();
+      _allAccountsNeedUpdate = false;
     }
-    allAssets[assetId]?.add(TxItem(item: item));
+    return _allAccounts;
+  }
+
+  Map<AccountAsset, List<TxItem>> getAllAssets() {
+    if (_allAssetsNeedUpdate) {
+      final list = <AccountAsset, List<TxItem>>{};
+
+      for (final item in allTxs.values) {
+        final tx = item.tx;
+        for (final balance in tx.balances) {
+          final account = getAccountType(balance.account);
+          _addTxItem(list, account, balance.assetId, item);
+        }
+      }
+
+      for (final order in allPegs.entries) {
+        for (final item in order.value) {
+          _addTxItem(list, AccountType.regular, liquidAssetId(), item);
+        }
+      }
+
+      _allAssets.clear();
+      final _dateFormat = DateFormat('yyyy-MM-dd');
+      for (var item in list.entries) {
+        item.value.sort((a, b) => b.compareTo(a));
+
+        final tempAssets = <TxItem>[];
+        for (var item in item.value) {
+          if (tempAssets.isEmpty) {
+            tempAssets.add(item.copyWith(showDate: true));
+          } else {
+            final last = DateTime.parse(_dateFormat.format(
+                DateTime.fromMillisecondsSinceEpoch(
+                    tempAssets.last.createdAt)));
+            final current = DateTime.parse(_dateFormat
+                .format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)));
+            final diff = last.difference(current).inDays;
+            tempAssets.add(item.copyWith(showDate: diff != 0));
+          }
+        }
+
+        _allAssetsNeedUpdate = false;
+        _allAssets[item.key] = tempAssets;
+      }
+    }
+    return _allAssets;
   }
 
   void refreshTxs() {
-    allAssets.clear();
-    for (var item in allTxs.values) {
-      switch (item.whichItem()) {
-        case TransItem_Item.tx:
-          var tx = item.tx;
-          for (var balance in tx.balances) {
-            _addTxItem(item, balance.assetId);
-          }
-          break;
-        case TransItem_Item.peg:
-          _addTxItem(item, liquidAssetId());
-          break;
-        case TransItem_Item.notSet:
-          throw Exception('invalid message');
-      }
-    }
-
-    Future.microtask(() async => await buildTxList(allAssets));
+    _allAssetsNeedUpdate = true;
+    _allAccountsNeedUpdate = true;
+    notifyListeners();
   }
 
-  Future<void> addTxItem(TransItem item) async {
-    allTxs[item.id] = item;
-    newTransItemSubject.add(item);
+  void updateTxs(From_UpdatedTxs txs) {
+    for (final item in txs.items) {
+      allTxs[item.id] = item;
+      newTransItemSubject.add(item);
+    }
+    refreshTxs();
+  }
+
+  void removedTxs(From_RemovedTxs txs) {
+    for (final txid in txs.txids) {
+      allTxs.remove(txid);
+    }
+    refreshTxs();
+  }
+
+  void updatePegs(From_UpdatedPegs pegs) {
+    allPegs[pegs.orderId] = pegs.items;
+    for (final item in pegs.items) {
+      newTransItemSubject.add(item);
+    }
     refreshTxs();
   }
 
@@ -386,38 +507,33 @@ class WalletChangeNotifier with ChangeNotifier {
     }
     // Process message here
     switch (from.whichMsg()) {
-      case From_Msg.updatedTx:
-        await addTxItem(from.updatedTx);
+      case From_Msg.envSettings:
+        _liquidAssetId = from.envSettings.policyAssetId;
+        _tetherAssetId = from.envSettings.usdtAssetId;
+        _eurxAssetId = from.envSettings.eurxAssetId;
+        _liquidAssetId = from.envSettings.policyAssetId;
+        AccountAsset.liquidAssetId = _liquidAssetId;
         break;
-      case From_Msg.removedTx:
-        var id = from.removedTx.id;
-        allTxs.remove(id);
-        refreshTxs();
+      case From_Msg.updatedTxs:
+        updateTxs(from.updatedTxs);
+        break;
+      case From_Msg.removedTxs:
+        removedTxs(from.removedTxs);
+        break;
+      case From_Msg.updatedPegs:
+        updatePegs(from.updatedPegs);
         break;
       case From_Msg.newAsset:
         final assetIcon = base64Decode(from.newAsset.icon);
         _addAsset(from.newAsset, assetIcon);
         break;
-      case From_Msg.balanceUpdate:
-        read(balancesProvider.notifier).updateBalance(
-            key: from.balanceUpdate.assetId,
-            value: from.balanceUpdate.amount.toInt());
+      case From_Msg.ampAssets:
+        ampAssets = from.ampAssets.assets;
         notifyListeners();
         break;
-
-      case From_Msg.swapReview:
-        if (read(swapProvider).swapActive) {
-          read(swapProvider).swapSendAsset = from.swapReview.sendAsset;
-          read(swapProvider).swapRecvAsset = from.swapReview.recvAsset;
-          read(swapProvider).swapSendAmount =
-              from.swapReview.sendAmount.toInt();
-          read(swapProvider).swapRecvAmount =
-              from.swapReview.recvAmount.toInt();
-          read(swapProvider).swapNetworkFee =
-              from.swapReview.networkFee.toInt();
-          read(swapProvider).swapNetworkError = from.swapReview.error;
-          notifyListeners();
-        }
+      case From_Msg.balanceUpdate:
+        read(balancesProvider.notifier).updateBalances(from.balanceUpdate);
+        notifyListeners();
         break;
 
       case From_Msg.swapFailed:
@@ -425,45 +541,39 @@ class WalletChangeNotifier with ChangeNotifier {
         read(swapProvider).swapNetworkError = from.swapFailed;
         await read(utilsProvider)
             .showErrorDialog(read(swapProvider).swapNetworkError);
+        if (status == Status.swapPrompt) {
+          status = Status.registered;
+          notifyListeners();
+        }
         break;
 
       case From_Msg.swapSucceed:
         var txItem = from.swapSucceed;
-        await addTxItem(txItem);
         showSwapTxDetails(txItem);
         read(swapProvider).swapReset();
         break;
 
-      case From_Msg.swapWaitTx:
+      case From_Msg.peginWaitTx:
         status = Status.swapWaitPegTx;
-        read(swapProvider).swapPegAddressServer = from.swapWaitTx.pegAddr;
-        read(swapProvider).swapRecvAddressExternal = from.swapWaitTx.recvAddr;
-        //read(swapProvider).swapSendAmount = from.swapWaitTx.sendAmount.toInt();
-        //read(swapProvider).swapRecvAmount = from.swapWaitTx.recvAmount.toInt();
-        read(swapProvider).swapSendAsset = from.swapWaitTx.sendAsset;
-        read(swapProvider).swapRecvAsset = from.swapWaitTx.recvAsset;
+        read(swapProvider).swapPegAddressServer = from.peginWaitTx.pegAddr;
+        read(swapProvider).swapRecvAddressExternal = from.peginWaitTx.recvAddr;
         notifyListeners();
         break;
 
       case From_Msg.recvAddress:
-        recvAddress = from.recvAddress.addr;
+        final accountType = getAccountType(from.recvAddress.account);
+        recvAddresses[accountType] = from.recvAddress.addr.addr;
         notifyListeners();
         break;
 
       case From_Msg.createTxResult:
+        isCreatingTx = false;
         switch (from.createTxResult.whichResult()) {
           case From_CreateTxResult_Result.errorMsg:
-            final balance = read(balancesProvider).balances[liquidAssetId()];
-            if (selectedWalletAsset != liquidAssetId() && balance == 0) {
-              showInsufficientBalanceDialog(
-                  navigatorKey.currentContext, kLiquidBitcoinTicker);
-            } else {
-              await read(utilsProvider)
-                  .showErrorDialog(from.createTxResult.errorMsg);
-            }
+            await read(utilsProvider)
+                .showErrorDialog(from.createTxResult.errorMsg);
             break;
           case From_CreateTxResult_Result.networkFee:
-            read(paymentProvider).sendResultError = '';
             read(paymentProvider).sendNetworkFee =
                 from.createTxResult.networkFee.toInt();
             status = Status.paymentSend;
@@ -475,29 +585,43 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.sendResult:
+        isSendingTx = false;
         status = Status.assetDetails;
         switch (from.sendResult.whichResult()) {
           case From_SendResult_Result.errorMsg:
-            read(paymentProvider).sendResultError = from.sendResult.errorMsg;
+            await read(utilsProvider).showErrorDialog(from.sendResult.errorMsg,
+                buttonText: 'CONTINUE'.tr());
             notifyListeners();
             break;
           case From_SendResult_Result.txItem:
             var item = from.sendResult.txItem;
-            await addTxItem(item);
             showTxDetails(item);
             break;
           case From_SendResult_Result.notSet:
             throw Exception('invalid send result message');
         }
+        notifyListeners();
         break;
 
       case From_Msg.blindedValues:
-        final url = generateTxidUrl(
-          from.blindedValues.txid,
-          true,
-          blindedValues: from.blindedValues.blindedValues,
-        );
-        explorerUrlSubject.add(url);
+        switch (from.blindedValues.whichResult()) {
+          case From_BlindedValues_Result.errorMsg:
+            await read(utilsProvider).showErrorDialog(
+                from.blindedValues.errorMsg,
+                buttonText: 'CONTINUE'.tr());
+            break;
+          case From_BlindedValues_Result.blindedValues:
+            final url = generateTxidUrl(
+              from.blindedValues.txid,
+              true,
+              blindedValues: from.blindedValues.blindedValues,
+              testnet: env() == SIDESWAP_ENV_TESTNET,
+            );
+            explorerUrlSubject.add(url);
+            break;
+          case From_BlindedValues_Result.notSet:
+            throw Exception('invalid blinded values message');
+        }
         break;
 
       case From_Msg.serverStatus:
@@ -605,32 +729,28 @@ class WalletChangeNotifier with ChangeNotifier {
 
         var orderType = OrderDetailsDataType.submit;
         switch (from.submitReview.step) {
-          case (From_SubmitReview_Step.SUBMIT):
+          case From_SubmitReview_Step.SUBMIT:
             orderType = OrderDetailsDataType.submit;
             break;
-          case (From_SubmitReview_Step.QUOTE):
+          case From_SubmitReview_Step.QUOTE:
             orderType = OrderDetailsDataType.quote;
             break;
-          case (From_SubmitReview_Step.SIGN):
+          case From_SubmitReview_Step.SIGN:
             orderType = OrderDetailsDataType.sign;
             break;
         }
 
         final fromSr = from.submitReview;
 
-        if (!fromSr.internal) {
-          read(requestOrderProvider).insertExternalOrder(fromSr.orderId);
-        }
-
         final assetAmount = fromSr.assetAmount;
         final assetId = fromSr.asset;
         final bitcoinAmount = fromSr.bitcoinAmount;
         final assetPrecision = getPrecisionForAssetId(assetId: assetId);
-        final bitcoinPrecision =
-            getPrecisionForTicker(ticker: kLiquidBitcoinTicker);
+        const bitcoinPrecision = 8;
         final orderId = fromSr.orderId;
         final indexPrice = from.submitReview.indexPrice;
         const autoSign = true;
+        final asset = assets[fromSr.asset]!;
 
         orderDetailsData = OrderDetailsData(
           bitcoinAmount: bitcoinAmount.toInt(),
@@ -645,10 +765,13 @@ class WalletChangeNotifier with ChangeNotifier {
           fee: from.submitReview.serverFee.toInt(),
           isTracking: indexPrice,
           autoSign: autoSign,
+          marketType: getMarketType(asset),
         );
+        final own =
+            read(marketsProvider).getRequestOrderById(fromSr.orderId)?.own ??
+                false;
 
-        if (read(requestOrderProvider).isOrderExternal(orderId) ||
-            orderType == OrderDetailsDataType.sign) {
+        if (!own || orderType == OrderDetailsDataType.sign) {
           await setOrder();
         } else {
           setCreateOrder();
@@ -675,7 +798,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
           case From_SubmitResult_Result.swapSucceed:
             var txItem = from.submitResult.swapSucceed;
-            await addTxItem(txItem);
             showSwapTxDetails(txItem);
             break;
 
@@ -697,7 +819,7 @@ class WalletChangeNotifier with ChangeNotifier {
         final initialUri = read(universalLinkProvider).initialUri;
         if (initialUri != null) {
           logger.d('Initial uri found: $initialUri');
-          read(universalLinkProvider).handleUri(initialUri);
+          read(universalLinkProvider).handleAppUri(initialUri);
         }
 
         break;
@@ -739,6 +861,7 @@ class WalletChangeNotifier with ChangeNotifier {
         final oc = from.orderCreated;
         final sendBitcoins = !oc.order.sendBitcoins;
         var price = oc.order.price;
+        final asset = assets[oc.order.assetId]!;
 
         final order = RequestOrder(
           orderId: oc.order.orderId,
@@ -753,9 +876,9 @@ class WalletChangeNotifier with ChangeNotifier {
           sendBitcoins: sendBitcoins,
           autoSign: oc.order.autoSign,
           own: oc.order.own,
-          tokenMarket: oc.order.tokenMarket,
-          isNew: oc.order.new_14,
+          isNew: oc.new_2,
           indexPrice: oc.order.indexPrice,
+          marketType: getMarketType(asset),
         );
 
         if (order.isNew && order.own) {
@@ -772,20 +895,23 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.notSet:
         throw Exception('invalid empty message');
+
       case From_Msg.indexPrice:
         final ticker = read(requestOrderProvider)
             .tickerForAssetId(from.indexPrice.assetId);
         logger.d(
             'INDEX PRICE: ${ticker.isEmpty ? from.indexPrice.assetId : ticker} ${from.indexPrice.ind}');
-        read(marketsProvider)
-            .setIndexPrice(from.indexPrice.assetId, from.indexPrice.ind);
+        read(marketsProvider).setIndexLastPrice(
+          from.indexPrice.assetId,
+          from.indexPrice.hasInd() ? from.indexPrice.ind : null,
+          from.indexPrice.hasLast() ? from.indexPrice.last : null,
+        );
         break;
       case From_Msg.assetDetails:
         logger.d("Asset details: ${from.assetDetails}");
-        final hasStats = from.assetDetails.hasStats();
         final assetDetailsData = AssetDetailsData(
           assetId: from.assetDetails.assetId,
-          stats: hasStats
+          stats: from.assetDetails.hasStats()
               ? AssetDetailsStats(
                   issuedAmount: from.assetDetails.stats.issuedAmount.toInt(),
                   burnedAmount: from.assetDetails.stats.burnedAmount.toInt(),
@@ -793,15 +919,35 @@ class WalletChangeNotifier with ChangeNotifier {
                       from.assetDetails.stats.hasBlindedIssuances,
                 )
               : null,
+          chartUrl: from.assetDetails.hasChartUrl()
+              ? from.assetDetails.chartUrl
+              : null,
+          chartStats: from.assetDetails.hasChartStats()
+              ? AssetChartStats(
+                  high: from.assetDetails.chartStats.high,
+                  low: from.assetDetails.chartStats.low,
+                  last: from.assetDetails.chartStats.last,
+                )
+              : null,
         );
         read(tokenMarketProvider).insertAssetDetails(assetDetailsData);
+        break;
+      case From_Msg.updatePriceStream:
+        _processSubscribeUpdate(from.updatePriceStream);
+        break;
+      case From_Msg.registerAmp:
+        _processRegisterAmpResult(from.registerAmp);
         break;
     }
   }
 
   void openTxUrl(String txid, bool isLiquid, bool unblinded) {
     if (!isLiquid || !unblinded) {
-      final url = generateTxidUrl(txid, isLiquid);
+      final url = generateTxidUrl(
+        txid,
+        isLiquid,
+        testnet: env() == SIDESWAP_ENV_TESTNET,
+      );
       explorerUrlSubject.add(url);
       return;
     }
@@ -814,8 +960,7 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> _addBtcAsset() async {
     final bitcoinAsset = Asset();
     bitcoinAsset.name = 'Bitcoin';
-    bitcoinAsset.assetId =
-        '0000000000000000000000000000000000000000000000000000000000000000';
+    bitcoinAsset.assetId = bitcoinAssetId();
     bitcoinAsset.ticker = kBitcoinTicker;
     bitcoinAsset.precision = kDefaultPrecision;
     final icon = await BitmapHelper.getPngBufferFromSvgAsset(
@@ -824,41 +969,24 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _addAsset(Asset asset, Uint8List assetIcon) {
-    if (assets[asset.assetId] == null) {
-      _assetIds.add(asset.assetId);
-      assets[asset.assetId] = asset;
-      assetImagesBig[asset.assetId] = Image.memory(
-        assetIcon,
-        width: 75,
-        height: 75,
-        filterQuality: FilterQuality.high,
-      );
-      assetImagesSmall[asset.assetId] = Image.memory(
-        assetIcon,
-        width: 32,
-        height: 32,
-        filterQuality: FilterQuality.high,
-      );
-      if (asset.ticker == kLiquidBitcoinTicker) {
-        _liquidAssetId = asset.assetId;
-      }
-      if (asset.ticker == kBitcoinTicker) {
-        _bitcoinAssetId = asset.assetId;
-      }
-      if (asset.ticker == kTetherTicker) {
-        _tetherAssetId = asset.assetId;
-      }
-      if (asset.ticker == kEurxTicker) {
-        _eurxAssetId = asset.assetId;
-      }
-      updateEnabledAssetIds();
-    }
-    // Make sure we don't have null values
-    if (read(balancesProvider).balances[asset.assetId] == null) {
-      read(balancesProvider.notifier)
-          .updateBalance(key: asset.assetId, value: 0);
-    }
+    // Always update asset here as they might change
+    // (amp_market could be set if server is down when app is started).
+    assets[asset.assetId] = asset;
+    assetImagesBig[asset.assetId] = Image.memory(
+      assetIcon,
+      width: 75,
+      height: 75,
+      filterQuality: FilterQuality.high,
+    );
+    assetImagesSmall[asset.assetId] = Image.memory(
+      assetIcon,
+      width: 32,
+      height: 32,
+      filterQuality: FilterQuality.high,
+    );
     read(swapProvider).checkSelectedAsset();
+    // Make sure that new fixed accounts are added
+    _allAccountsNeedUpdate = true;
     notifyListeners();
   }
 
@@ -913,17 +1041,6 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     return Lib.lib.sideswap_verify_mnemonic(mnemonic.toNativeUtf8().cast());
-  }
-
-  void updateEnabledAssetIds() {
-    enabledAssetIds.clear();
-    for (var assetId in _assetIds) {
-      if (!read(configProvider).disabledAssetIds.contains(assetId) &&
-          assetId != bitcoinAssetId()) {
-        enabledAssetIds.add(assetId);
-      }
-    }
-    notifyListeners();
   }
 
   List<String> getMnemonicWords() {
@@ -1197,6 +1314,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
         break;
       case Status.orderPopup:
+      case Status.swapPrompt:
         status = Status.registered;
         break;
       case Status.swapWaitPegTx:
@@ -1261,13 +1379,20 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _login(String mnemonic) {
+    final config = read(configProvider);
+
     final msg = To();
     msg.login = To_Login();
     msg.login.mnemonic = mnemonic;
-    if (read(configProvider).phoneKey.isNotEmpty) {
-      msg.login.phoneKey = read(configProvider).phoneKey;
+    msg.login.network = getNetworkSettings();
+
+    if (config.phoneKey.isNotEmpty) {
+      msg.login.phoneKey = config.phoneKey;
     }
+
     sendMsg(msg);
+
+    loadSettings();
 
     status = Status.walletLoading;
     notifyListeners();
@@ -1275,30 +1400,24 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void _logout() {
     read(balancesProvider.notifier).clear();
-    read(swapProvider).swapSendAsset = '';
-    read(swapProvider).swapRecvAsset = '';
 
     final msg = To();
     msg.logout = Empty();
     sendMsg(msg);
+
+    resetSettings();
   }
 
-  void selectAssetDetails(String value) {
+  void selectAssetDetails(AccountAsset value) {
     status = Status.assetDetails;
     selectedWalletAsset = value;
     notifyListeners();
   }
 
-  void prepareAssetReceive() {
-    recvAddress = '';
-
-    final msg = To();
-    msg.getRecvAddress = Empty();
-    sendMsg(msg);
-  }
-
-  void selectAssetReceive() {
-    prepareAssetReceive();
+  void selectAssetReceive(AccountType accountType) {
+    recvAddresses.clear();
+    recvAddressAccount = accountType;
+    toggleRecvAddrType(accountType);
 
     status = Status.assetReceive;
 
@@ -1310,7 +1429,9 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void selectAssetReceiveFromWalletMain() {
-    prepareAssetReceive();
+    recvAddresses.clear();
+    recvAddressAccount = AccountType.regular;
+    toggleRecvAddrType(AccountType.regular);
 
     status = Status.assetReceiveFromWalletMain;
 
@@ -1318,6 +1439,16 @@ class WalletChangeNotifier with ChangeNotifier {
     uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments
         .copyWith(navigationItem: WalletMainNavigationItem.homeAssetReceive);
 
+    notifyListeners();
+  }
+
+  void toggleRecvAddrType(AccountType accountType) {
+    if (recvAddresses[accountType] == null) {
+      final msg = To();
+      msg.getRecvAddress = getAccount(accountType);
+      sendMsg(msg);
+    }
+    recvAddressAccount = accountType;
     notifyListeners();
   }
 
@@ -1348,6 +1479,7 @@ class WalletChangeNotifier with ChangeNotifier {
     txDetailsSubscription?.cancel();
     txDetailsSubscription = newTransItemSubject.listen((value) {
       if (value.id == txDetails.id) {
+        // FIXME: Check that correct account is used here
         txDetails = value;
         notifyListeners();
       }
@@ -1389,10 +1521,21 @@ class WalletChangeNotifier with ChangeNotifier {
     return commonAddrErrorStr(addr, AddrType.bitcoin);
   }
 
+  void createTx(To_CreateTx createTx) {
+    final msg = To();
+    msg.createTx = createTx;
+    sendMsg(msg);
+    isCreatingTx = true;
+    notifyListeners();
+  }
+
   void assetSendConfirm() {
     final msg = To();
     msg.sendTx = To_SendTx();
+    msg.sendTx.account = getAccount(selectedWalletAsset!.account);
     sendMsg(msg);
+    isSendingTx = true;
+    notifyListeners();
   }
 
   void selectAvailableAssets() {
@@ -1415,36 +1558,57 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void setToggleAssetFilter(String filter) {
     final filterLowerCase = filter.toLowerCase();
-    final filteredToggleAssetIdsNew = <String>[];
-    for (var assetId in _assetIds) {
-      final asset = assets[assetId];
-      if (asset == null) {
-        continue;
-      }
-
+    final filteredToggleAccountsNew = <AccountAsset>[];
+    for (final account in getAllAccounts()) {
+      final asset = assets[account.asset]!;
       if (_showAsset(asset, filterLowerCase)) {
-        filteredToggleAssetIdsNew.add(assetId);
+        filteredToggleAccountsNew.add(account);
       }
     }
-    if (!listEquals(filteredToggleAssetIdsNew, filteredToggleAssetIds)) {
-      filteredToggleAssetIds = filteredToggleAssetIdsNew;
+    if (!listEquals(filteredToggleAccountsNew, filteredToggleAccounts)) {
+      filteredToggleAccounts = filteredToggleAccountsNew;
       notifyListeners();
     }
   }
 
-  Future<void> toggleAssetVisibility(String? assetId) async {
-    if (assetId == null) {
-      return;
-    }
+  bool disabledAssetAccount(AccountAsset account) {
+    return disabledAccounts.contains(account);
+  }
 
-    final disableAssetIds = read(configProvider).disabledAssetIds;
-    if (disableAssetIds.contains(assetId)) {
-      disableAssetIds.remove(assetId);
-    } else {
-      disableAssetIds.add(assetId);
+  void loadSettings() {
+    var settings = Settings();
+    final settingsStr = read(configProvider).settings;
+    if (settingsStr != null) {
+      settings = Settings.fromJson(settingsStr);
     }
-    await read(configProvider).setDisabledAssetIds(disableAssetIds);
-    updateEnabledAssetIds();
+    disabledAccounts.clear();
+    for (var v in settings.disabledAccounts) {
+      disabledAccounts.add(AccountAsset(getAccountType(v.account), v.assetId));
+    }
+  }
+
+  Future<void> saveSettings() async {
+    final settings = Settings();
+    for (var v in disabledAccounts) {
+      settings.disabledAccounts.add(Settings_AccountAsset(
+          account: getAccount(v.account), assetId: v.asset));
+    }
+    await read(configProvider).setSettings(settings.writeToJson());
+  }
+
+  Future<void> resetSettings() async {
+    await read(configProvider).clearSettings();
+    loadSettings();
+  }
+
+  Future<void> toggleAssetVisibility(AccountAsset account) async {
+    if (disabledAssetAccount(account)) {
+      disabledAccounts.remove(account);
+    } else {
+      disabledAccounts.add(account);
+    }
+    await saveSettings();
+    notifyListeners();
   }
 
   void editTxMemo(Object arguments) {
@@ -1549,8 +1713,10 @@ class WalletChangeNotifier with ChangeNotifier {
     await read(configProvider).deleteConfig();
     read(phoneProvider).clearData();
     allTxs.clear();
+    allPegs.clear();
     refreshTxs();
     status = Status.noWallet;
+    ampId = null;
     notifyListeners();
   }
 
@@ -1579,6 +1745,7 @@ class WalletChangeNotifier with ChangeNotifier {
       // TODO: Show error
       status = Status.lockedWalet;
     }
+
     notifyListeners();
   }
 
@@ -1616,37 +1783,6 @@ class WalletChangeNotifier with ChangeNotifier {
     await read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
     _mnemonic = mnemonic;
     await read(configProvider).setUseBiometricProtection(false);
-    notifyListeners();
-  }
-
-  Future<void> buildTxList(Map<String, List<TxItem>> value) async {
-    final _dateFormat = DateFormat('yyyy-MM-dd');
-
-    for (var key in value.keys) {
-      final listItems = value[key];
-      if (listItems != null) {
-        value[key] = listItems..sort((a, b) => b.compareTo(a));
-
-        final tempAssets = <TxItem>[];
-        for (var item in listItems) {
-          if (tempAssets.isEmpty) {
-            tempAssets.add(item.copyWith(showDate: true));
-          } else {
-            final last = DateTime.parse(_dateFormat.format(
-                DateTime.fromMillisecondsSinceEpoch(
-                    tempAssets.last.createdAt)));
-            final current = DateTime.parse(_dateFormat
-                .format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)));
-            final diff = last.difference(current).inDays;
-            tempAssets.add(item.copyWith(showDate: diff != 0));
-          }
-        }
-
-        value[key] = tempAssets;
-      }
-    }
-
-    txItemMap = value;
     notifyListeners();
   }
 
@@ -1775,15 +1911,6 @@ class WalletChangeNotifier with ChangeNotifier {
     return false;
   }
 
-  Asset? getAssetByTicker(String ticker) {
-    for (var asset in assets.values) {
-      if (asset.ticker == ticker) {
-        return asset;
-      }
-    }
-    return null;
-  }
-
   Asset? getAssetById(String assetId) {
     for (var asset in assets.values) {
       if (asset.assetId == assetId) {
@@ -1793,28 +1920,21 @@ class WalletChangeNotifier with ChangeNotifier {
     return null;
   }
 
-  String? _liquidAssetId;
-  String? liquidAssetId() {
-    return _liquidAssetId;
-  }
+  final _bitcoinAssetId =
+      '0000000000000000000000000000000000000000000000000000000000000000';
+  String bitcoinAssetId() => _bitcoinAssetId;
 
-  String? _bitcoinAssetId;
-  String? bitcoinAssetId() {
-    return _bitcoinAssetId;
-  }
+  late String _liquidAssetId;
+  String liquidAssetId() => _liquidAssetId;
 
-  String? _tetherAssetId;
-  String? tetherAssetId() {
-    return _tetherAssetId;
-  }
+  late String _tetherAssetId;
+  String tetherAssetId() => _tetherAssetId;
 
-  String? _eurxAssetId;
-  String? eurxAssetId() {
-    return _eurxAssetId;
-  }
+  late String _eurxAssetId;
+  String eurxAssetId() => _eurxAssetId;
 
-  List<String> sendAssets() {
-    return assets.keys.where((element) => element != bitcoinAssetId()).toList();
+  List<AccountAsset> sendAssets() {
+    return sendAssetsWithBalance();
   }
 
   void setImportAvatar() {
@@ -1874,7 +1994,7 @@ class WalletChangeNotifier with ChangeNotifier {
     required bool autosign,
     bool accept = false,
     bool private = true,
-    int ttlSeconds = kTenMinutes,
+    int ttlSeconds = kHalfHour,
   }) {
     orderDetailsData =
         orderDetailsData.copyWith(accept: accept, private: private);
@@ -1909,6 +2029,7 @@ class WalletChangeNotifier with ChangeNotifier {
     bool isAssetAmount = false,
     String? sessionId,
     double? indexPrice,
+    AccountType account = AccountType.regular,
   }) {
     final msg = To();
     msg.submitOrder = To_SubmitOrder();
@@ -1927,6 +2048,7 @@ class WalletChangeNotifier with ChangeNotifier {
     if (indexPrice != null) {
       msg.submitOrder.indexPrice = indexPrice;
     }
+    msg.submitOrder.account = getAccount(account);
 
     sendMsg(msg);
   }
@@ -1935,8 +2057,6 @@ class WalletChangeNotifier with ChangeNotifier {
     if (orderId == null || orderId.isEmpty) {
       return;
     }
-
-    read(requestOrderProvider).insertExternalOrder(orderId);
 
     final msg = To();
     msg.linkOrder = To_LinkOrder();
@@ -2053,19 +2173,6 @@ class WalletChangeNotifier with ChangeNotifier {
     return assets[assetId]?.precision ?? 8;
   }
 
-  int getPrecisionForTicker({String ticker = ''}) {
-    var precision = 8;
-    try {
-      final asset =
-          assets.values.firstWhere((e) => e.ticker == kLiquidBitcoinTicker);
-      precision = asset.precision;
-    } on StateError {
-      logger.w('Cant set precision for ticker: $ticker');
-    }
-
-    return precision;
-  }
-
   void processPendingPushMessages() {
     // Delay processing until client is started.
     // Fix "Unhandled Exception: client is not initialized" error
@@ -2095,6 +2202,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setCreateOrderEntry() {
+    read(requestOrderProvider).validateDeliverAsset();
     status = Status.createOrderEntry;
     notifyListeners();
   }
@@ -2154,9 +2262,195 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
+  void modifyOrderAutoSign(String orderId, bool autoSign) {
+    orderDetailsData = OrderDetailsData.empty();
+    final msg = To();
+    msg.editOrder = To_EditOrder();
+    msg.editOrder.orderId = orderId;
+    msg.editOrder.autoSign = autoSign;
+    sendMsg(msg);
+  }
+
+  List<AccountAsset> sendAssetsWithBalance() {
+    final allAssets = read(balancesProvider)
+        .balances
+        .entries
+        .where((e) => e.value > 0)
+        .map((e) => e.key)
+        .toList();
+    if (allAssets.isEmpty) {
+      return [AccountAsset(AccountType.regular, liquidAssetId())];
+    }
+    return allAssets;
+  }
+
   void setOrderRequestView(RequestOrder requestOrder) {
     read(requestOrderProvider).currentRequestOrderView = requestOrder;
     status = Status.orderRequestView;
     notifyListeners();
+  }
+
+  String? subscribedAsset;
+  bool? subscribedSendBitcoins;
+  int? subscribedSendAmount;
+  int? subscribedRecvAmount;
+
+  Function(From_UpdatePriceStream)? subscribedUpdateCallback;
+
+  void _resetSubscribedData() {
+    subscribedAsset = null;
+    subscribedSendBitcoins = null;
+    subscribedSendAmount = null;
+    subscribedRecvAmount = null;
+    subscribedUpdateCallback = null;
+  }
+
+  void _processSubscribeUpdate(From_UpdatePriceStream msg) {
+    // Ignore old updates
+    final callback = subscribedUpdateCallback;
+    final subscribedSendAmountCopy = subscribedSendAmount;
+    final subscribedRecvAmountCopy = subscribedRecvAmount;
+    if (msg.assetId != subscribedAsset ||
+        msg.sendBitcoins != subscribedSendBitcoins ||
+        callback == null) {
+      return;
+    }
+
+    // Ignore old updates
+    final expectedPriceMsg = subscribedSendAmount == null &&
+        subscribedRecvAmount == null &&
+        !msg.hasSendAmount() &&
+        !msg.hasRecvAmount();
+    final expectedSendAmountMsg = subscribedSendAmountCopy != null &&
+        subscribedSendAmountCopy.toInt() == msg.sendAmount.toInt();
+    final expectedRecvAmountMsg = subscribedRecvAmountCopy != null &&
+        subscribedRecvAmountCopy.toInt() == msg.recvAmount.toInt();
+
+    if (expectedPriceMsg || expectedSendAmountMsg || expectedRecvAmountMsg) {
+      callback(msg);
+    }
+  }
+
+  void subscribeToPriceStream(String asset, bool sendBitcoins, int? sendAmount,
+      int? recvAmount, Function(From_UpdatePriceStream) callback) {
+    assert(asset.isNotEmpty);
+    _resetSubscribedData();
+
+    subscribedAsset = asset;
+    subscribedSendBitcoins = sendBitcoins;
+    subscribedSendAmount = sendAmount;
+    subscribedRecvAmount = recvAmount;
+    subscribedUpdateCallback = callback;
+
+    final msg = To();
+    msg.subscribePriceStream = To_SubscribePriceStream();
+    msg.subscribePriceStream.assetId = asset;
+    msg.subscribePriceStream.sendBitcoins = sendBitcoins;
+    if (sendAmount != null && sendAmount != 0) {
+      msg.subscribePriceStream.sendAmount = Int64(sendAmount);
+    }
+    if (recvAmount != null && recvAmount != 0) {
+      msg.subscribePriceStream.recvAmount = Int64(recvAmount);
+    }
+    sendMsg(msg);
+  }
+
+  void unsubscribeFromPriceStream() {
+    final msg = To();
+    msg.unsubscribePriceStream = Empty();
+    sendMsg(msg);
+
+    _resetSubscribedData();
+  }
+
+  void verifySwap(SwapDetails swap) {
+    if (swap.sendAmount <= 0) {
+      throw ErrorDescription('Invalid send amount: $swap.sendAmount');
+    }
+    if (swap.recvAmount <= 0) {
+      throw ErrorDescription('Invalid recv amount: $swap.recvAmount');
+    }
+    if (swap.orderId.isEmpty) {
+      throw ErrorDescription('Order ID is empty');
+    }
+    if (swap.uploadUrl.isEmpty) {
+      throw ErrorDescription('Upload URL is empty');
+    }
+    if (swap.sendAsset == swap.recvAsset) {
+      throw ErrorDescription('Swap assets are same');
+    }
+    if (assets[swap.sendAsset] == null) {
+      throw ErrorDescription('Asset is not known: $swap.sendAsset');
+    }
+    if (assets[swap.recvAsset] == null) {
+      throw ErrorDescription('Asset is not known: $swap.recvAsset');
+    }
+  }
+
+  void startSwapPrompt(SwapDetails swap) {
+    verifySwap(swap);
+    swapDetails = swap;
+    swapPromptWaitingTx = false;
+    status = Status.swapPrompt;
+    notifyListeners();
+  }
+
+  void swapReviewAccept() {
+    swapPromptWaitingTx = true;
+    status = Status.swapPrompt;
+    notifyListeners();
+
+    final msg = To();
+    msg.swapAccept = swapDetails!;
+    sendMsg(msg);
+  }
+
+  Future<void> _processRegisterAmpResult(From_RegisterAmp msg) async {
+    switch (msg.whichResult()) {
+      case From_RegisterAmp_Result.ampId:
+        ampId = msg.ampId;
+        break;
+      case From_RegisterAmp_Result.errorMsg:
+        await read(utilsProvider).showErrorDialog(msg.errorMsg);
+        break;
+      case From_RegisterAmp_Result.notSet:
+        assert(false);
+    }
+    notifyListeners();
+  }
+
+  void handleAppStateChange(AppLifecycleState state) {
+    bool active = state == AppLifecycleState.resumed;
+    bool paused = state == AppLifecycleState.paused;
+    if (active || paused) {
+      final msg = To();
+      msg.appState = To_AppState();
+      msg.appState.active = active;
+      sendMsg(msg);
+    }
+  }
+
+  NetworkSettings getNetworkSettings() {
+    final config = read(configProvider);
+    final network = NetworkSettings();
+    switch (config.settingsNetworkType) {
+      case SettingsNetworkType.blockstream:
+        network.blockstream = Empty();
+        break;
+      case SettingsNetworkType.custom:
+        network.custom = NetworkSettings_Custom();
+        network.custom.host = config.settingsHost;
+        network.custom.port = config.settingsPort;
+        network.custom.useTls = config.settingsUseTLS;
+        break;
+    }
+    return network;
+  }
+
+  void applyNetworkChange() {
+    final msg = To();
+    msg.changeNetwork = To_ChangeNetwork();
+    msg.changeNetwork.network = getNetworkSettings();
+    sendMsg(msg);
   }
 }

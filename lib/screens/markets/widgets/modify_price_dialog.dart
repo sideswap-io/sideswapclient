@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -54,15 +55,40 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
     inversePrice = !widget.orderDetailsData.sellBitcoin;
 
     if (widget.orderDetailsData.isTracking) {
-      sliderValue = double.tryParse(
-              ((widget.orderDetailsData.indexPrice - 1) * 100)
-                  .toStringAsFixed(2)) ??
+      final indexPrice = context
+              .read(marketsProvider)
+              .getRequestOrderById(widget.orderDetailsData.orderId)
+              ?.indexPrice ??
           0;
+      sliderValue =
+          double.tryParse(((indexPrice - 1) * 100).toStringAsFixed(2)) ?? 0;
+    } else {
+      final indexPrice = context
+          .read(marketsProvider)
+          .getIndexPriceForAsset(widget.asset?.assetId ?? '');
+      final orderPrice = context
+              .read(marketsProvider)
+              .getRequestOrderById(widget.orderDetailsData.orderId)
+              ?.price ??
+          0;
+      0;
+      if (indexPrice != 0 && orderPrice != 0) {
+        sliderValue = double.tryParse(
+                ((orderPrice - indexPrice) / indexPrice * 100)
+                    .toStringAsFixed(2)) ??
+            0;
+        if (sliderValue > kEditPriceMaxPercent) {
+          sliderValue = kEditPriceMaxPercent.toDouble();
+        }
+        if (sliderValue < -kEditPriceMaxPercent) {
+          sliderValue = -kEditPriceMaxPercent.toDouble();
+        }
+      }
     }
 
     context
         .read(marketsProvider)
-        .subscribeIndexPrice(assetId: widget.orderDetailsData.assetId);
+        .subscribeIndexPrice(widget.orderDetailsData.assetId);
   }
 
   @override
@@ -84,7 +110,7 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
         .isAssetToken(widget.orderDetailsData.assetId);
 
     if (widget.orderDetailsData.isTracking) {
-      final indexPrice = 1 + (sliderValue / 100);
+      final indexPrice = 1 + sliderValue / 100;
       context.read(requestOrderProvider).modifyOrderPrice(
             widget.orderDetailsData.orderId,
             isToken: isToken,
@@ -95,14 +121,10 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
     }
 
     var price = widget.controller.text;
-    final pricedInLiquid = context
-        .read(requestOrderProvider)
-        .isPricedInLiquid(widget.orderDetailsData.assetId);
     context.read(requestOrderProvider).modifyOrderPrice(
           widget.orderDetailsData.orderId,
           isToken: isToken,
           price: price,
-          isPricedInLiquid: pricedInLiquid,
         );
     Navigator.of(context).pop();
   }
@@ -127,8 +149,7 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
         .tickerForAssetId(widget.asset?.assetId ?? '');
     final trackingPriceFixed = context
         .read(marketsProvider)
-        .calculateTrackingPrice(inversePrice ? -sliderValue : sliderValue,
-            widget.asset?.assetId ?? '');
+        .calculateTrackingPrice(sliderValue, widget.asset?.assetId ?? '');
     final trackingPrice =
         '${replaceCharacterOnPosition(input: trackingPriceFixed)} $ticker';
     final tracking = widget.orderDetailsData.isTracking;
@@ -173,64 +194,99 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
                           borderRadius: BorderRadius.all(Radius.circular(8.r)),
                           color: const Color(0xFF1C6086),
                         ),
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                              top: 24.h, left: 16.w, right: 16.w),
-                          child: Column(
-                            children: [
-                              Text(
-                                'Modify Price'.tr(),
-                                style: GoogleFonts.roboto(
-                                  fontSize: 20.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: 33.h),
-                                child: OrderPriceField(
-                                  controller: widget.controller,
-                                  focusNode: focusNode,
-                                  asset: widget.asset,
-                                  icon: widget.icon,
-                                  onEditingComplete: onSubmit,
-                                  description: 'Price'.tr(),
-                                  sliderValue: sliderValue,
-                                  tracking: widget.orderDetailsData.isTracking,
-                                  trackingPrice: trackingPrice,
-                                  dollarConversion: priceConversion,
-                                  displaySlider: displaySlider,
-                                  onSliderChanged: (value) {
-                                    setState(() {
-                                      sliderValue = value;
-                                    });
-                                  },
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: 16.h),
-                                child: CustomBigButton(
-                                  width: double.maxFinite,
-                                  height: 54.h,
-                                  text: 'SUBMIT'.tr(),
-                                  backgroundColor: const Color(0xFF00C5FF),
-                                  onPressed: onSubmit,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(top: 16.h),
-                                child: CustomBigButton(
-                                  width: double.maxFinite,
-                                  height: 54.h,
-                                  text: 'CANCEL'.tr(),
-                                  backgroundColor: Colors.transparent,
-                                  onPressed: () {
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              right: 12.h,
+                              top: 12.h,
+                              child: Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(42.w),
+                                child: InkWell(
+                                  onTap: () {
+                                    context.read(walletProvider).cancelOrder(
+                                        widget.orderDetailsData.orderId);
                                     Navigator.of(context).pop();
                                   },
+                                  borderRadius: BorderRadius.circular(42.w),
+                                  child: Container(
+                                    width: 48.w,
+                                    height: 48.w,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: SvgPicture.asset(
+                                        'assets/delete.svg',
+                                        width: 24.w,
+                                        height: 24.w,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            Padding(
+                              padding: EdgeInsets.only(
+                                  top: 24.h, left: 16.w, right: 16.w),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Modify Price'.tr(),
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 20.sp,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 33.h),
+                                    child: OrderPriceField(
+                                      controller: widget.controller,
+                                      focusNode: focusNode,
+                                      asset: widget.asset,
+                                      icon: widget.icon,
+                                      onEditingComplete: onSubmit,
+                                      sliderValue: sliderValue,
+                                      tracking:
+                                          widget.orderDetailsData.isTracking,
+                                      trackingPrice: trackingPrice,
+                                      dollarConversion: priceConversion,
+                                      displaySlider: displaySlider,
+                                      onSliderChanged: (value) {
+                                        setState(() {
+                                          sliderValue = value;
+                                        });
+                                      },
+                                      invertColors: inversePrice,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 16.h),
+                                    child: CustomBigButton(
+                                      width: double.maxFinite,
+                                      height: 54.h,
+                                      text: 'SUBMIT'.tr(),
+                                      backgroundColor: const Color(0xFF00C5FF),
+                                      onPressed: onSubmit,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 16.h),
+                                    child: CustomBigButton(
+                                      width: double.maxFinite,
+                                      height: 54.h,
+                                      text: 'CANCEL'.tr(),
+                                      backgroundColor: Colors.transparent,
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

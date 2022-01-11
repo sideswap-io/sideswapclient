@@ -8,7 +8,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rxdart/subjects.dart';
@@ -21,6 +20,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
+import 'package:sideswap/common/utils/build_config.dart';
 
 enum IncomingNotificationType {
   message,
@@ -241,7 +241,7 @@ class NotificationService {
 
     if (transItem.peg.isPegIn) {
       try {
-        final txid = transItem.peg.txidRecv;
+        final txid = transItem.peg.txidSend;
         final fcmPayload =
             _delayedNotifications.firstWhere((e) => e.txid == txid);
 
@@ -254,7 +254,7 @@ class NotificationService {
       }
     }
 
-    logger.d('Delayed not found found!');
+    logger.d('Delayed not found!');
     return false;
   }
 
@@ -365,10 +365,9 @@ class NotificationService {
         if (payload != null) {
           _delayedNotifications.add(payload);
           // check if we already have txid on list
-          context.read(walletProvider).allTxs.values.forEach((tx) {
-            if (_onNewTransItem(tx)) {
-              return;
-            }
+          context.read(walletProvider).allTxs.values.forEach(_onNewTransItem);
+          context.read(walletProvider).allPegs.values.forEach((pegs) {
+            pegs.forEach(_onNewTransItem);
           });
         } else {
           logger.w('Empty payload: $fcmMessage');
@@ -457,8 +456,6 @@ class NotificationService {
       return;
     }
 
-    final allTxs = _context!.read(walletProvider).allTxs;
-
     logger.d(fcmTx.txType.toString());
 
     final fcmTxType = fcmTx.txType;
@@ -470,7 +467,10 @@ class NotificationService {
     final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
 
     // display only recv notification when app is opened
-    if (!allTxs.containsKey(fcmTx.txId) && fcmTx.txType == FCMTxType.recv) {
+    final allTxs = _context!.read(walletProvider).allTxs;
+    final knownTx = allTxs.containsKey(fcmTx.txId);
+
+    if (!knownTx && fcmTx.txType == FCMTxType.recv) {
       // no tx item in internal list or unhandled type - let's display that what we're received
       await _onDefaultNotification(
         title: fcmMessage.notification?.title ?? '',
@@ -501,35 +501,29 @@ class NotificationService {
 
     final txid = fcmPayload.txid;
 
-    final allTxs = _context!.read(walletProvider).allTxs;
     final fcmTxType = fcmPayload.type;
     if (fcmTxType == null) {
       return;
     }
 
-    switch (fcmTxType) {
-      case FCMPayloadType.pegin:
-      case FCMPayloadType.pegout:
-      case FCMPayloadType.send:
-      case FCMPayloadType.recv:
-      case FCMPayloadType.redeposit:
-        if (allTxs.containsKey(txid)) {
-          final tx = allTxs[txid];
-          if (tx != null) {
-            _context!.read(walletProvider).showTxDetails(tx);
-          }
+    for (final tx in _context!.read(walletProvider).allTxs.values) {
+      if (tx.tx.txid == txid) {
+        if (fcmTxType == FCMPayloadType.swap) {
+          _context!.read(walletProvider).showSwapTxDetails(tx);
+        } else {
+          _context!.read(walletProvider).showTxDetails(tx);
         }
-        break;
-      case FCMPayloadType.swap:
-        if (allTxs.containsKey(txid)) {
-          final tx = allTxs[txid];
-          if (tx != null) {
-            _context!.read(walletProvider).showSwapTxDetails(tx);
-          }
+        return;
+      }
+    }
+
+    for (final list in _context!.read(walletProvider).allPegs.values) {
+      for (final peg in list) {
+        if (peg.peg.txidSend == txid) {
+          _context!.read(walletProvider).showTxDetails(peg);
+          return;
         }
-        break;
-      case FCMPayloadType.unknown:
-        break;
+      }
     }
 
     logger.d('onNotificationData payload not found: $fcmPayload');
@@ -632,6 +626,10 @@ class NotificationService {
   }
 
   Future handleDynamicLinks() async {
+    if (!notificationServiceAvailable()) {
+      return;
+    }
+
     final data = await FirebaseDynamicLinks.instance.getInitialLink();
 
     _handleDeepLink(data);
@@ -689,6 +687,9 @@ class NotificationService {
   }
 
   Future<void> refreshToken() async {
+    if (!notificationServiceAvailable()) {
+      return;
+    }
     try {
       final token = await FirebaseMessaging.instance.getToken();
       logger.d('Firebase token $token');

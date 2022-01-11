@@ -106,7 +106,7 @@ pub fn process_balancing(
                         &rpc::sendtoaddress_asset(
                             &args.bitfinex_fund_address,
                             balancing.amount.to_bitcoin(),
-                            &asset.asset_id.0,
+                            &asset.asset_id.to_string(),
                         ),
                     );
                     match result {
@@ -137,7 +137,7 @@ pub fn process_balancing(
                     .get(bitfinex_currency_usdt)
                     .cloned()
                     .unwrap_or_default();
-                if (usdt_balance >= balancing.amount.to_bitcoin() || !args.env.is_mainnet())
+                if (usdt_balance >= balancing.amount.to_bitcoin() || !args.env.data().mainnet)
                     && module_connected
                 {
                     send_msg(
@@ -243,7 +243,7 @@ pub fn process_balancing(
                     .get(bitfinex_currency_btc)
                     .cloned()
                     .unwrap_or_default();
-                if (btc_balance >= balancing.amount.to_bitcoin() || !args.env.is_mainnet())
+                if (btc_balance >= balancing.amount.to_bitcoin() || !args.env.data().mainnet)
                     && module_connected
                 {
                     send_msg(

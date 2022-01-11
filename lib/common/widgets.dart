@@ -14,6 +14,7 @@ import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
+import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class AddressQrScanner extends StatefulWidget {
@@ -120,6 +121,22 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
     }
   }
 
+  Future<void> showError(String errorMessage) async {
+    final flushbar = Flushbar<Widget>(
+      messageText: Text(
+        errorMessage,
+        style: Theme.of(context)
+            .textTheme
+            .bodyText1
+            ?.copyWith(color: Colors.white),
+      ),
+      duration: const Duration(seconds: 3),
+      backgroundColor: const Color(0xFF135579),
+    );
+
+    await flushbar.show(context);
+  }
+
   void _onQrViewCreated(
       QRViewController controller, QrCodeAddressType? expectedAddress) {
     _qrController = controller;
@@ -137,42 +154,29 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
       if (!done) {
         done = true;
         logger.d('Scanned data: ${scanData.code}');
+
+        final handleResult =
+            context.read(universalLinkProvider).handleAppUrlStr(scanData.code);
+        if (handleResult == HandleResult.success) {
+          await popup();
+          return;
+        }
+        if (handleResult == HandleResult.failed) {
+          await showError('Invalid QR code'.tr());
+          done = false;
+          return;
+        }
+
         final result =
             context.read(qrcodeProvider).parseDynamicQrCode(scanData.code);
         if (result.error != null) {
-          final flushbar = Flushbar<Widget>(
-            messageText: Text(
-              result.errorMessage ?? '',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText1
-                  ?.copyWith(color: Colors.white),
-            ),
-            duration: const Duration(seconds: 3),
-            backgroundColor: const Color(0xFF135579),
-          );
-
-          await flushbar.show(context);
-
+          await showError(result.errorMessage ?? 'Invalid QR code'.tr());
           done = false;
           return;
         }
 
         if (expectedAddress != null && result.addressType != expectedAddress) {
-          final flushbar = Flushbar<Widget>(
-            messageText: Text(
-              'Invalid QR code'.tr(),
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyText1
-                  ?.copyWith(color: Colors.white),
-            ),
-            duration: const Duration(seconds: 3),
-            backgroundColor: const Color(0xFF135579),
-          );
-
-          await flushbar.show(context);
-
+          await showError('Invalid QR code'.tr());
           done = false;
           return;
         }

@@ -8,15 +8,13 @@ use serde_json::Value;
 
 pub trait Session<E> {
     // fn create_session(network: Network) -> Result<Self::Value, E>;
-    fn destroy_session(&mut self) -> Result<(), E>;
     fn poll_session(&self) -> Result<(), E>;
     fn connect(&mut self, net_params: &Value) -> Result<(), E>;
     fn disconnect(&mut self) -> Result<(), E>;
-    // fn register_user(&mut self, mnemonic: String) -> Result<(), E>;
     fn login(&mut self, mnemonic: &Mnemonic, password: Option<Password>) -> Result<LoginData, E>;
-    fn login_with_pin(&mut self, pin: String, details: PinGetDetails) -> Result<LoginData, E>;
+    fn mnemonic_from_pin_data(&mut self, pin: String, details: PinGetDetails) -> Result<String, E>;
     fn get_subaccounts(&self) -> Result<Vec<AccountInfo>, E>;
-    fn get_subaccount(&self, index: u32, num_confs: u32) -> Result<AccountInfo, E>;
+    fn get_subaccount(&self, index: u32) -> Result<AccountInfo, E>;
     fn create_subaccount(&mut self, opt: CreateAccountOpt) -> Result<AccountInfo, E>;
     fn get_next_subaccount(&self, opt: GetNextAccountOpt) -> Result<u32, E>;
     /// Deprecated in favor of update_subaccount
@@ -24,7 +22,7 @@ pub trait Session<E> {
     fn update_subaccount(&mut self, opt: UpdateAccountOpt) -> Result<(), E>;
     fn set_subaccount_hidden(&mut self, opt: SetAccountHiddenOpt) -> Result<(), E>;
     fn get_transactions(&self, opt: &GetTransactionsOpt) -> Result<TxsResult, E>;
-    fn get_transaction_details(&self, txid: &str) -> Result<Value, E>;
+    fn get_raw_transaction_details(&self, txid: &str) -> Result<Value, E>;
     fn get_balance(&self, opt: &GetBalanceOpt) -> Result<Balances, E>;
     fn set_transaction_memo(&self, txid: &str, memo: &str) -> Result<(), E>;
     fn create_transaction(&mut self, details: &mut CreateTransaction)
@@ -40,7 +38,7 @@ pub trait Session<E> {
     fn get_available_currencies(&self) -> Result<Value, E>;
     fn get_fee_estimates(&mut self) -> Result<Vec<FeeEstimate>, E>;
     fn get_settings(&self) -> Result<Settings, E>;
-    fn change_settings(&mut self, settings: &Settings) -> Result<(), E>;
+    fn change_settings(&mut self, value: &Value) -> Result<(), E>;
     fn refresh_assets(&self, details: &RefreshAssets) -> Result<Value, E>;
     fn block_status(&self) -> Result<(u32, BEBlockHash), E>;
     fn tx_status(&self) -> Result<u64, E>;

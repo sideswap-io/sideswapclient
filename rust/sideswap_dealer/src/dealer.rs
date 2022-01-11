@@ -5,7 +5,7 @@ use sideswap_common::types;
 use sideswap_common::types::{Amount, TxOut};
 use sideswap_common::ws;
 use std::collections::{BTreeMap, BTreeSet};
-use std::sync::mpsc::{Receiver, Sender};
+use std::str::FromStr;
 
 // Extra asset UTXO amount to cover future price edits
 const EXTRA_ASSET_UTXO_FRACTION: f64 = 0.03;
@@ -20,7 +20,7 @@ const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs
 
 #[derive(Debug, Clone)]
 pub struct Params {
-    pub env: types::Env,
+    pub env: sideswap_common::env::Env,
 
     pub server_host: String,
     pub server_port: u16,
@@ -67,7 +67,7 @@ pub enum From {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SwapSucceed {
-    pub txid: String,
+    pub txid: Txid,
     pub ticker: DealerTicker,
     pub bitcoin_amount: sideswap_common::types::Amount,
     pub send_bitcoins: bool,
@@ -237,20 +237,22 @@ fn get_pset(
     params: &Params,
     http_client: &reqwest::blocking::Client,
     extra_asset_utxo: bool,
-) -> Result<AddrRequest, anyhow::Error> {
-    let env_data = types::env_data(params.env);
+) -> Result<PsetMakerRequest, anyhow::Error> {
+    let env_data = params.env.data();
+    let bitcoin_asset = AssetId::from_str(env_data.policy_asset).unwrap();
     let (send_asset, send_amount) = if details.send_bitcoins {
-        (
-            AssetId(env_data.bitcoin_asset_id.to_owned()),
-            details.bitcoin_amount + details.server_fee,
-        )
+        (bitcoin_asset, details.bitcoin_amount + details.server_fee)
     } else {
         (details.asset.clone(), details.asset_amount)
     };
 
     let mut asset_utxos: Vec<_> = utxos
         .values()
-        .filter(|utxo| utxo.item.asset == send_asset.0)
+        .filter(|utxo| {
+            utxo.item.asset == send_asset
+                && utxo.item.amountblinder.is_some()
+                && utxo.item.assetblinder.is_some()
+        })
         .collect();
     let utxos_amounts: Vec<i64> = asset_utxos.iter().map(|utxo| utxo.amount).collect();
     let total: i64 = utxos_amounts.iter().sum();
@@ -264,34 +266,28 @@ fn get_pset(
         send_amount
     };
     let selected = types::select_utxo(utxos_amounts, utxo_amount);
-    let mut selected_utxos = Vec::new();
+
+    let mut inputs = Vec::<PsetInput>::new();
+
     for amount in selected {
         let index = asset_utxos
             .iter()
             .position(|v| v.amount == amount)
             .expect("utxo must exists");
         let utxo = asset_utxos.swap_remove(index);
-        let txout = TxOut::new(utxo.item.txid.clone(), utxo.item.vout);
-        selected_utxos.push(txout);
-    }
-    let outputs_amounts: BTreeMap<String, serde_json::Value> = BTreeMap::new();
-    let outputs_assets: BTreeMap<String, String> = BTreeMap::new();
-    let raw_tx = rpc::make_rpc_call::<String>(
-        &http_client,
-        &params.rpc,
-        &rpc::create_raw_tx(&selected_utxos, &outputs_amounts, 0, false, &outputs_assets),
-    )
-    .expect("creating raw tx failed");
 
-    let pset =
-        rpc::make_rpc_call::<String>(http_client, &params.rpc, &rpc::convert_to_psbt(&raw_tx))
-            .expect("converting PSBT failed");
-    let pset = rpc::make_rpc_call::<rpc::FillPsbtData>(
-        &http_client,
-        &params.rpc,
-        &rpc::fill_psbt_data(&pset),
-    )
-    .expect("converting PSBT failed");
+        let asset_bf = utxo.item.assetblinder.unwrap();
+        let value_bf = utxo.item.amountblinder.unwrap();
+        inputs.push(PsetInput {
+            txid: utxo.item.txid,
+            vout: utxo.item.vout,
+            asset: send_asset,
+            asset_bf,
+            value: amount as u64,
+            value_bf,
+            redeem_script: utxo.item.redeem_script.clone(),
+        });
+    }
 
     let recv_addr =
         rpc::make_rpc_call::<String>(&http_client, &params.rpc, &rpc::get_new_address())
@@ -300,15 +296,77 @@ fn get_pset(
         rpc::make_rpc_call::<String>(&http_client, &params.rpc, &rpc::get_new_address())
             .expect("getting new address failed");
 
-    Ok(AddrRequest {
+    let addr_request = PsetMakerRequest {
         order_id: order_id.clone(),
-        pset: pset.psbt,
-        recv_addr,
-        change_addr,
         price: details.price,
-        private: None,
+        private: false,
         ttl_seconds: None,
-    })
+        inputs,
+        recv_addr: Some(recv_addr),
+        recv_gaid: None,
+        change_addr,
+    };
+    Ok(addr_request)
+}
+
+fn sign_pset(
+    secp: &elements_pset::secp256k1_zkp::Secp256k1<elements_pset::secp256k1_zkp::All>,
+    data: &SignNotification,
+    params: &Params,
+    utxos: &Utxos,
+    http_client: &reqwest::blocking::Client,
+) -> Result<SignRequest, anyhow::Error> {
+    let mut pset = elements_pset::encode::deserialize::<
+        elements_pset::pset::PartiallySignedTransaction,
+    >(&base64::decode(&data.pset)?)?;
+    let tx = pset.extract_tx()?;
+
+    for (index, input) in tx.input.iter().enumerate() {
+        let tx_out = TxOut {
+            txid: Txid::from_str(&input.previous_output.txid.to_string()).unwrap(),
+            vout: input.previous_output.vout,
+        };
+        if let Some(utxo) = utxos.get(&tx_out) {
+            let priv_key = rpc::make_rpc_call::<rpc::DumpPrivKey>(
+                &http_client,
+                &params.rpc,
+                &rpc::dumpprivkey(&utxo.item.address),
+            )?;
+            let private_key = elements_pset::bitcoin::PrivateKey::from_str(&priv_key)?;
+
+            let value_commitment =
+                hex::decode(&utxo.item.amountcommitment.as_ref().unwrap()).unwrap();
+            let value_commitment = elements_pset::encode::deserialize::<
+                elements_pset::confidential::Value,
+            >(&value_commitment)
+            .unwrap();
+
+            let input_sign = sideswap_common::pset::internal_sign_elements(
+                &secp,
+                &tx,
+                index,
+                &private_key,
+                value_commitment,
+                elements_pset::SigHashType::All,
+            );
+            let public_key = private_key.public_key(&secp);
+            let pset_input = pset.inputs.get_mut(index).unwrap();
+            pset_input.final_script_sig = utxo.item.redeem_script.as_ref().map(|s| {
+                elements_pset::script::Builder::new()
+                    .push_slice(&hex::decode(s).unwrap())
+                    .into_script()
+            });
+            pset_input.final_script_witness = Some(vec![input_sign, public_key.to_bytes()]);
+        }
+    }
+
+    let pset = elements_pset::encode::serialize(&pset);
+    let sign_request = SignRequest {
+        order_id: data.order_id.clone(),
+        signed_pset: base64::encode(&pset),
+        side: data.details.side,
+    };
+    Ok(sign_request)
 }
 
 fn get_price(price: &PricePair, send_bitcoins: bool, interest: f64) -> f64 {
@@ -426,7 +484,6 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                         price: Some(price),
                         index_price: None,
                     },
-                    session_id: None,
                 }
             );
             if let Ok(submit_resp) = submit_result {
@@ -439,12 +496,12 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                     true,
                 );
                 match pset {
-                    Ok(v) => {
-                        let addr_result = send_request!(send_request, Addr, v);
+                    Ok(pset_maker_req) => {
+                        let addr_result = send_request!(send_request, PsetMaker, pset_maker_req);
                         match addr_result {
                             Ok(_) => {
                                 *own = Some(OwnOrder {
-                                    order_id: submit_resp.order_id,
+                                    order_id: submit_resp.order_id.clone(),
                                     bitcoin_amount: new_bitcoin_amount_normal,
                                     price,
                                 });
@@ -514,7 +571,11 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
     }
 }
 
-fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
+fn worker(
+    params: Params,
+    to_rx: crossbeam_channel::Receiver<To>,
+    from_tx: crossbeam_channel::Sender<From>,
+) {
     assert!(
         params.bitcoin_amount_min.to_bitcoin() >= MIN_BITCOIN_AMOUNT,
         "bitcoin_amount_min can't be less than {}",
@@ -527,14 +588,14 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
     assert!(params.interest_submit > params.interest_sign);
     assert!(params.interest_submit < 1.1);
 
-    let (ws_tx, ws_rx) = ws::start(
+    let (ws_tx, ws_rx, _hint_tx) = ws::start(
         params.server_host.clone(),
         params.server_port,
         params.server_use_tls,
         false,
     );
 
-    let (msg_tx, msg_rx) = std::sync::mpsc::channel::<Msg>();
+    let (msg_tx, msg_rx) = crossbeam_channel::unbounded::<Msg>();
 
     let msg_tx_copy = msg_tx.clone();
     std::thread::spawn(move || {
@@ -543,7 +604,7 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
         }
     });
 
-    let (resp_tx, resp_rx) = std::sync::mpsc::channel::<Result<Response, Error>>();
+    let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<Result<Response, Error>>();
 
     let msg_tx_copy = msg_tx.clone();
     std::thread::spawn(move || {
@@ -588,6 +649,7 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
         .build()
         .expect("http client construction failed");
 
+    let secp = elements_pset::secp256k1_zkp::Secp256k1::new();
     let mut assets = Vec::new();
     let mut server_connected = false;
     let mut utxos = Utxos::new();
@@ -684,22 +746,11 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                     );
                     match result {
                         Ok(_) => {
-                            let result = rpc::make_rpc_call::<rpc::WalletSignPsbt>(
-                                &rpc_http_client,
-                                &params.rpc,
-                                &rpc::wallet_sign_psbt(&order.pset),
-                            )
-                            .expect("signing PSBT failed");
-                            send_request!(
-                                send_request,
-                                Sign,
-                                SignRequest {
-                                    order_id: order.order_id.clone(),
-                                    signed_pset: result.psbt,
-                                    side: order.details.side,
-                                }
-                            )
-                            .expect("sending signed PSBT failed");
+                            let result =
+                                sign_pset(&secp, &order, &params, &utxos, &rpc_http_client)
+                                    .unwrap();
+                            send_request!(send_request, Sign, result)
+                                .expect("sending signed PSBT failed");
                             pending_signs.insert(order.order_id, order.details);
                         }
                         Err(e) => error!(
@@ -755,9 +806,9 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                 )
                 .expect("list_unspent failed");
 
-                let mut asset_amounts = BTreeMap::<&str, f64>::new();
+                let mut asset_amounts = BTreeMap::<AssetId, f64>::new();
                 for item in unspent_with_zc.iter() {
-                    let asset_amount = asset_amounts.entry(&item.asset).or_default();
+                    let asset_amount = asset_amounts.entry(item.asset).or_default();
                     *asset_amount += Amount::from_rpc(&item.amount).to_bitcoin();
                 }
 
@@ -765,7 +816,7 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                     .iter()
                     .flat_map(|asset| {
                         asset_amounts
-                            .get(asset.asset_id.0.as_str())
+                            .get(&asset.asset_id)
                             .map(|balance| (asset, *balance))
                     })
                     .flat_map(|(asset, balance)| {
@@ -867,8 +918,17 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
                             false,
                         );
                         match result {
-                            Ok(addr_details) => {
-                                let addr_result = send_request!(send_request, Addr, addr_details);
+                            Ok(pset_req) => {
+                                let taker_pset_req = PsetTakerRequest {
+                                    order_id: pset_req.order_id,
+                                    price: pset_req.price,
+                                    inputs: pset_req.inputs,
+                                    recv_addr: pset_req.recv_addr,
+                                    recv_gaid: None,
+                                    change_addr: pset_req.change_addr,
+                                };
+                                let addr_result =
+                                    send_request!(send_request, PsetTaker, taker_pset_req);
                                 if let Err(e) = addr_result {
                                     error!("sending addr details failed: {}", e);
                                 } else {
@@ -911,9 +971,14 @@ fn worker(params: Params, to_rx: Receiver<To>, from_tx: Sender<From>) {
     }
 }
 
-pub fn start(params: Params) -> (Sender<To>, Receiver<From>) {
-    let (from_tx, from_rx) = std::sync::mpsc::channel::<From>();
-    let (to_tx, to_rx) = std::sync::mpsc::channel::<To>();
+pub fn start(
+    params: Params,
+) -> (
+    crossbeam_channel::Sender<To>,
+    crossbeam_channel::Receiver<From>,
+) {
+    let (from_tx, from_rx) = crossbeam_channel::unbounded::<From>();
+    let (to_tx, to_rx) = crossbeam_channel::unbounded::<To>();
 
     std::thread::spawn(move || {
         worker(params, to_rx, from_tx);

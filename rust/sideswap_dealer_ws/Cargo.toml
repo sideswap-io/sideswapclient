@@ -16,7 +16,8 @@ config = "*"
 log4rs = "*"
 tokio-tungstenite = { version = "*", features = [ "stream" ] }
 futures = "*"
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 futures-channel = "*"
 futures-util = "*"
-tungstenite = "0.13"
+tungstenite = { version = "*", default-features = false, features = [] }
+crossbeam-channel = "0.5.1"

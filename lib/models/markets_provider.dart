@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -17,7 +16,6 @@ final marketsProvider =
 
 enum RequestOrderType {
   order,
-  payment,
 }
 
 extension RequestOrderEx on RequestOrder {
@@ -66,7 +64,7 @@ class RequestOrder {
   final bool sendBitcoins;
   final bool autoSign;
   final bool own;
-  final bool tokenMarket;
+  final MarketType marketType;
   final double indexPrice;
   final bool isNew;
   RequestOrder({
@@ -82,50 +80,14 @@ class RequestOrder {
     required this.sendBitcoins,
     required this.autoSign,
     required this.own,
-    required this.tokenMarket,
+    required this.marketType,
     required this.indexPrice,
     required this.isNew,
   });
 
-  RequestOrder copyWith({
-    String? orderId,
-    String? assetId,
-    int? bitcoinAmount,
-    int? serverFee,
-    int? assetAmount,
-    double? price,
-    int? createdAt,
-    int? expiresAt,
-    bool? private,
-    bool? sendBitcoins,
-    bool? autoSign,
-    bool? own,
-    bool? tokenMarket,
-    double? indexPrice,
-    bool? isNew,
-  }) {
-    return RequestOrder(
-      orderId: orderId ?? this.orderId,
-      assetId: assetId ?? this.assetId,
-      bitcoinAmount: bitcoinAmount ?? this.bitcoinAmount,
-      serverFee: serverFee ?? this.serverFee,
-      assetAmount: assetAmount ?? this.assetAmount,
-      price: price ?? this.price,
-      createdAt: createdAt ?? this.createdAt,
-      expiresAt: expiresAt ?? this.expiresAt,
-      private: private ?? this.private,
-      sendBitcoins: sendBitcoins ?? this.sendBitcoins,
-      autoSign: autoSign ?? this.autoSign,
-      own: own ?? this.own,
-      tokenMarket: tokenMarket ?? this.tokenMarket,
-      indexPrice: indexPrice ?? this.indexPrice,
-      isNew: isNew ?? this.isNew,
-    );
-  }
-
   @override
   String toString() {
-    return 'RequestOrder(orderId: $orderId, assetId: $assetId, bitcoinAmount: $bitcoinAmount, serverFee: $serverFee, assetAmount: $assetAmount, price: $price, createdAt: $createdAt, expiresAt: $expiresAt, private: $private, sendBitcoins: $sendBitcoins, autoSign: $autoSign, own: $own, tokenMarket: $tokenMarket, indexPrice: $indexPrice, isNew: $isNew)';
+    return 'RequestOrder(orderId: $orderId, assetId: $assetId, bitcoinAmount: $bitcoinAmount, serverFee: $serverFee, assetAmount: $assetAmount, price: $price, createdAt: $createdAt, expiresAt: $expiresAt, private: $private, sendBitcoins: $sendBitcoins, autoSign: $autoSign, own: $own, marketType: $marketType, indexPrice: $indexPrice, isNew: $isNew)';
   }
 
   @override
@@ -145,7 +107,7 @@ class RequestOrder {
         other.sendBitcoins == sendBitcoins &&
         other.autoSign == autoSign &&
         other.own == own &&
-        other.tokenMarket == tokenMarket &&
+        other.marketType == marketType &&
         other.indexPrice == indexPrice &&
         other.isNew == isNew;
   }
@@ -164,9 +126,15 @@ class RequestOrder {
         sendBitcoins.hashCode ^
         autoSign.hashCode ^
         own.hashCode ^
-        tokenMarket.hashCode ^
+        marketType.hashCode ^
         indexPrice.hashCode ^
         isNew.hashCode;
+  }
+
+  bool isSell() {
+    // On stablecoin market we sell/buy L-BTC for asset
+    // On AMP/token market we sell/buy asset for L-BTC
+    return (marketType == MarketType.stablecoin) != sendBitcoins;
   }
 }
 
@@ -181,6 +149,7 @@ class MarketsProvider extends ChangeNotifier {
   List<RequestOrder> get marketOrders => _marketOrders.values.toList();
 
   final _indexPriceMap = <String, double>{};
+  final _lastPriceMap = <String, double>{};
   String _subscribedIndexPriceAssetId = '';
 
   void onServerConnectionChanged(bool value) {
@@ -258,21 +227,19 @@ class MarketsProvider extends ChangeNotifier {
     read(walletProvider).sendMsg(msg);
   }
 
-  void subscribeIndexPrice({String? assetId}) {
-    // don't subscrive if already subscribed
+  void subscribeIndexPrice(String assetId) {
+    assert(assetId != read(walletProvider).liquidAssetId());
+
+    // don't subscribe if already subscribed
     if (assetId == _subscribedIndexPriceAssetId) {
       return;
     }
 
     unsubscribeIndexPrice();
-    if (assetId == null) {
-      return;
-    }
-
     _subscribedIndexPriceAssetId = assetId;
 
     final msg = To();
-    msg.subscribePrice = To_SubscribePrice();
+    msg.subscribePrice = AssetId();
     msg.subscribePrice.assetId = assetId;
     read(walletProvider).sendMsg(msg);
   }
@@ -283,7 +250,7 @@ class MarketsProvider extends ChangeNotifier {
     }
 
     final msg = To();
-    msg.unsubscribePrice = To_UnsubscribePrice();
+    msg.unsubscribePrice = AssetId();
     msg.unsubscribePrice.assetId = _subscribedIndexPriceAssetId;
     read(walletProvider).sendMsg(msg);
 
@@ -295,40 +262,51 @@ class MarketsProvider extends ChangeNotifier {
   }
 
   double getIndexPriceForAsset(String assetId) {
-    if (!_indexPriceMap.containsKey(assetId)) {
-      return 0;
-    }
-
     return _indexPriceMap[assetId] ?? 0;
   }
 
-  void setIndexPrice(String assetId, double price) {
+  double getLastPriceForAsset(String assetId) {
+    return _lastPriceMap[assetId] ?? 0;
+  }
+
+  void setIndexLastPrice(String assetId, double? ind, double? last) {
     if (assetId.isEmpty) {
       return;
     }
 
-    _indexPriceMap[assetId] = price;
+    if (ind != null) {
+      _indexPriceMap[assetId] = ind;
+    } else {
+      _indexPriceMap.remove(assetId);
+    }
+
+    if (last != null) {
+      _lastPriceMap[assetId] = last;
+    } else {
+      _lastPriceMap.remove(assetId);
+    }
+
     notifyListeners();
 
     read(requestOrderProvider).updateIndexPrice();
   }
 
   String getIndexPriceStr(String assetId) {
-    var priceBroadcast = getIndexPriceForAsset(assetId);
-
-    if (priceBroadcast == 0) {
-      // Let's display now only average value
-      final assetPrice = read(walletProvider).prices[assetId];
-      final ask = assetPrice?.ask ?? .0;
-      final bid = assetPrice?.bid ?? .0;
-      priceBroadcast = (ask + bid) / 2;
-    }
-
-    if (priceBroadcast == 0) {
+    final isAmp = read(walletProvider).assets[assetId]?.ampMarket ?? false;
+    var price = getIndexPriceForAsset(assetId);
+    if (price == 0) {
       return '';
     }
+    return priceStr(price, isAmp);
+  }
 
-    return priceBroadcast.toStringAsFixed(2);
+  String getLastPriceStr(String assetId) {
+    final isAmp = read(walletProvider).assets[assetId]?.ampMarket ?? false;
+    var price = getLastPriceForAsset(assetId);
+    if (price == 0) {
+      return '';
+    }
+    return priceStr(price, isAmp);
   }
 
   String calculateTrackingPrice(double sliderValue, String assetId) {
@@ -353,10 +331,7 @@ class MarketsProvider extends ChangeNotifier {
             .getRequestOrderById(requestOrder.orderId)
             ?.price ??
         0;
-    final pricedInLiquid =
-        read(requestOrderProvider).isPricedInLiquid(requestOrder.assetId);
-    final priceStr =
-        pricedInLiquid ? priceStrForEdit(1 / price) : priceStrForEdit(price);
+    final priceStr = priceStrForEdit(price);
 
     final TextEditingController controller = TextEditingController()
       ..text = priceStr;
@@ -370,18 +345,18 @@ class MarketsProvider extends ChangeNotifier {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        final wallet = context.read(walletProvider);
         final assetId = requestOrder.assetId;
-        final asset = context
-            .read(requestOrderProvider)
-            .getPriceAsset(baseAssetId: assetId);
-        final icon =
-            context.read(walletProvider).assetImagesSmall[asset.assetId];
+        final asset = wallet.assets[assetId]!;
+        final liquidAsset = wallet.assets[wallet.liquidAssetId()]!;
+        final priceAsset = asset.swapMarket ? asset : liquidAsset;
+        final icon = wallet.assetImagesSmall[priceAsset.assetId];
         final orderDetailsData =
             OrderDetailsData.fromRequestOrder(requestOrder, context.read);
         return ModifyPriceDialog(
           controller: controller,
           orderDetailsData: orderDetailsData,
-          asset: asset,
+          asset: priceAsset,
           icon: icon,
         );
       },

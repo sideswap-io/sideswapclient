@@ -1,21 +1,23 @@
 import 'dart:ui' as _ui;
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:marquee/marquee.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 import 'package:sideswap/screens/swap/widgets/labeled_radio.dart';
@@ -31,6 +33,7 @@ class SwapSideAmount extends StatefulHookWidget {
     this.onMaxPressed,
     required this.dropdownValue,
     required this.availableAssets,
+    this.disabledAssets = const <AccountAsset>[],
     this.labelGroupValue = SwapWallet.local,
     this.localLabelOnChanged,
     this.externalLabelOnChanged,
@@ -42,7 +45,6 @@ class SwapSideAmount extends StatefulHookWidget {
     this.focusNode,
     this.receiveAddressFocusNode,
     this.visibleToggles = false,
-    this.onAddressTap,
     this.onAddressEditingCompleted,
     this.addressErrorText,
     this.onAddressChanged,
@@ -59,16 +61,18 @@ class SwapSideAmount extends StatefulHookWidget {
     this.onEditingCompleted,
     this.dollarConversion = '',
     this.textInputAction,
+    this.showAccountsInPopup = false,
   }) : super(key: key);
 
   final String text;
   final TextEditingController controller;
   final TextEditingController? addressController;
-  final ValueChanged<String>? onDropdownChanged;
+  final ValueChanged<AccountAsset>? onDropdownChanged;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onMaxPressed;
-  final String dropdownValue;
-  final List<String> availableAssets;
+  final AccountAsset dropdownValue;
+  final List<AccountAsset> availableAssets;
+  final List<AccountAsset> disabledAssets;
   final SwapWallet labelGroupValue;
   final ValueChanged<SwapWallet>? localLabelOnChanged;
   final ValueChanged<SwapWallet>? externalLabelOnChanged;
@@ -80,7 +84,6 @@ class SwapSideAmount extends StatefulHookWidget {
   final FocusNode? focusNode;
   final FocusNode? receiveAddressFocusNode;
   final bool visibleToggles;
-  final VoidCallback? onAddressTap;
   final VoidCallback? onAddressEditingCompleted;
   final String? addressErrorText;
   final ValueChanged<String>? onAddressChanged;
@@ -97,6 +100,7 @@ class SwapSideAmount extends StatefulHookWidget {
   final void Function()? onEditingCompleted;
   final String dollarConversion;
   final TextInputAction? textInputAction;
+  final bool showAccountsInPopup;
 
   @override
   _SwapSideAmountState createState() => _SwapSideAmountState();
@@ -126,20 +130,26 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
 
   @override
   Widget build(BuildContext context) {
+    final isAmp = widget.dropdownValue.account.isAmp();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: widget.padding,
           child: SizedBox(
-            height: 18.h,
+            height: 20.h,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  widget.text,
-                  style: _labelStyle,
-                ).tr(),
+                Row(
+                  children: [
+                    Text(
+                      widget.text,
+                      style: _labelStyle,
+                    ).tr(),
+                    if (isAmp) const AmpFlag(fontSize: 10),
+                  ],
+                ),
                 if (widget.swapType == SwapType.pegOut &&
                     widget.labelGroupValue == SwapWallet.extern &&
                     widget.feeRates.isNotEmpty) ...[
@@ -239,6 +249,7 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                 focusNode: widget.focusNode ?? FocusNode(),
                 dropdownValue: widget.dropdownValue,
                 availableAssets: widget.availableAssets,
+                disabledAssets: widget.disabledAssets,
                 onDropdownChanged: widget.onDropdownChanged,
                 onChanged: widget.onChanged,
                 hintText: widget.hintText,
@@ -248,6 +259,7 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                 onSubmitted: widget.onSubmitted,
                 onEditingComplete: widget.onEditingCompleted,
                 textInputAction: widget.textInputAction,
+                showAccountsInPopup: widget.showAccountsInPopup,
               ),
             ),
           ),
@@ -311,8 +323,8 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                         );
                         logger.d('Scanner Done');
                       },
-                      onTap: widget.onAddressTap,
                       onEditingCompleted: widget.onAddressEditingCompleted,
+                      addrType: AddrType.bitcoin,
                     ),
                   ),
                 ],

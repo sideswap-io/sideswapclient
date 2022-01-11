@@ -6,7 +6,7 @@ final networkAccessProvider = ChangeNotifierProvider<NetworkAccessProvider>(
     (ref) => NetworkAccessProvider(ref.read));
 
 enum SettingsNetworkType {
-  sideswap,
+  //sideswap,
   blockstream,
   custom,
 }
@@ -20,13 +20,6 @@ class NetworkAccessProvider with ChangeNotifier {
     read(configProvider)
         .setSettingsNetworkType(type)
         .then((value) => notifyListeners());
-
-    if (type != SettingsNetworkType.custom) {
-      read(configProvider).setSettingsHost('');
-      read(configProvider).setSettingsPort('');
-      read(configProvider).setSettingsPassword('');
-      read(configProvider).setSettingsUseTLS(false);
-    }
   }
 
   SettingsNetworkType get networkType {

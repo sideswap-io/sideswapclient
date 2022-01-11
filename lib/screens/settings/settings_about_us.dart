@@ -2,13 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/screens/settings/settings_licenses.dart';
 import 'package:sideswap/screens/settings/widgets/url_link_button.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SettingsAboutUs extends StatelessWidget {
   const SettingsAboutUs({Key? key}) : super(key: key);
@@ -28,6 +31,7 @@ class SettingsAboutUs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    final env = context.read(configProvider).env;
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'About us'.tr(),
@@ -59,7 +63,6 @@ class SettingsAboutUs extends StatelessWidget {
             SizedBox(height: 30.h),
             SizedBox(
               width: double.maxFinite,
-              height: 376.h,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -122,6 +125,30 @@ class SettingsAboutUs extends StatelessWidget {
                       height: 24.w,
                     ),
                   ),
+                  if (env != 0) ...[
+                    UrlLinkButton(
+                      text: 'Export log',
+                      icon: SvgPicture.asset(
+                        'assets/web_icon.svg',
+                        width: 24.w,
+                        height: 24.w,
+                      ),
+                      onPressed: () {
+                        shareLogFile("sideswap.log");
+                      },
+                    ),
+                    UrlLinkButton(
+                      text: 'Export previous log',
+                      icon: SvgPicture.asset(
+                        'assets/web_icon.svg',
+                        width: 24.w,
+                        height: 24.w,
+                      ),
+                      onPressed: () {
+                        shareLogFile("sideswap_prev.log");
+                      },
+                    ),
+                  ]
                 ],
               ),
             ),

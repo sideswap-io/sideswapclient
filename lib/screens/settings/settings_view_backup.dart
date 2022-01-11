@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
-import 'package:secure_application/secure_application_provider.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';

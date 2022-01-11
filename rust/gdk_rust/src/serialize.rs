@@ -4,29 +4,8 @@ use gdk_common::model::*;
 use gdk_common::session::Session;
 use serde_json::Value;
 
-pub fn balance_result_value(bal: &Balances) -> Value {
-    json!(bal)
-}
-
 pub fn txs_result_value(txs: &TxsResult) -> Value {
     json!(txs.0.clone())
-}
-
-pub fn subaccounts_value(subaccounts: &[AccountInfo]) -> Value {
-    Value::Array(subaccounts.iter().map(subaccount_value).collect())
-}
-
-pub fn subaccount_value(subaccount: &AccountInfo) -> Value {
-    json!({
-        "type": subaccount.script_type,
-        "pointer": subaccount.account_num,
-        "required_ca": 0,
-        "receiving_id": "",
-        "name": subaccount.settings.name,
-        "hidden": subaccount.settings.hidden,
-        "has_transactions": subaccount.has_transactions,
-        "satoshi": balance_result_value(&subaccount.satoshi)
-    })
 }
 
 pub fn login<S, E>(session: &mut S, input: &Value) -> Result<Value, Error>
@@ -47,7 +26,7 @@ where
         .map_err(Into::into)
 }
 
-pub fn login_with_pin<S, E>(session: &mut S, input: &Value) -> Result<Value, Error>
+pub fn mnemonic_from_pin_data<S, E>(session: &mut S, input: &Value) -> Result<Value, Error>
 where
     E: Into<Error>,
     S: Session<E>,
@@ -58,7 +37,7 @@ where
         .ok_or_else(|| Error::Other("login_with_pin: missing pin argument".into()))?;
     let pin_data: PinGetDetails = serde_json::from_value(input["pin_data"].clone())?;
     session
-        .login_with_pin(pin, pin_data)
+        .mnemonic_from_pin_data(pin, pin_data)
         .map(|x| serde_json::to_value(&x).unwrap())
         .map_err(Into::into)
 }
@@ -68,19 +47,14 @@ where
     E: Into<Error>,
     S: Session<E>,
 {
-    let index = input["index"]
+    let index = input["subaccount"]
         .as_u64()
         .ok_or_else(|| Error::Other("get_subaccount: index argument not found".into()))?;
 
-    let num_confs = input["num_confs"].as_u64().unwrap_or(0);
-
-    session
-        .get_subaccount(index as u32, num_confs as u32)
-        .map(|x| subaccount_value(&x))
-        .map_err(Into::into)
+    session.get_subaccount(index as u32).map(|v| json!(v)).map_err(Into::into)
 }
 
-pub fn get_transaction_details<S, E>(session: &S, input: &Value) -> Result<Value, Error>
+pub fn get_raw_transaction_details<S, E>(session: &S, input: &Value) -> Result<Value, Error>
 where
     E: Into<Error>,
     S: Session<E>,
@@ -88,9 +62,9 @@ where
     // TODO: parse txid?
     let txid = input
         .as_str()
-        .ok_or_else(|| Error::Other("get_transaction_details: input is not a string".into()))?;
+        .ok_or_else(|| Error::Other("get_raw_transaction_details: input is not a string".into()))?;
 
-    session.get_transaction_details(txid).map_err(Into::into)
+    session.get_raw_transaction_details(txid).map_err(Into::into)
 }
 
 pub fn create_transaction<S, E>(session: &mut S, input: &Value) -> Result<Value, Error>
@@ -125,11 +99,11 @@ where
     // TODO: parse txid?.
     let txid = input["txid"]
         .as_str()
-        .ok_or_else(|| Error::Other("get_transaction_details: missing txid".into()))?;
+        .ok_or_else(|| Error::Other("set_transaction_memo: missing txid".into()))?;
 
     let memo = input["memo"]
         .as_str()
-        .ok_or_else(|| Error::Other("get_transaction_details: missing memo".into()))?;
+        .ok_or_else(|| Error::Other("set_transaction_memo: missing memo".into()))?;
 
     session.set_transaction_memo(txid, memo).map(|v| json!(v)).map_err(Into::into)
 }

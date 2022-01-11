@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -26,7 +26,7 @@ class Accounts extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  'Accounts',
+                  'Assets',
                   style: GoogleFonts.roboto(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
@@ -109,33 +109,31 @@ class Accounts extends StatelessWidget {
               padding: EdgeInsets.only(top: 16.h),
               child: Consumer(
                 builder: (context, watch, child) {
-                  final availableAssets =
-                      watch(walletProvider).enabledAssetIds.where((e) {
-                    // always display liquid asset
-                    if (e == context.read(walletProvider).liquidAssetId()) {
-                      return true;
-                    }
-
-                    final transactions =
-                        watch(walletProvider).txItemMap[e] ?? <TxItem>[];
-                    // hide assets with empty transactions
-                    if (transactions.isEmpty) {
-                      return false;
-                    }
-
-                    return true;
-                  }).toList();
+                  final wallet = watch(walletProvider);
+                  final disabledAccounts = wallet.disabledAccounts;
+                  final availableAssets = wallet
+                      .getAllAccounts()
+                      .where((item) => !disabledAccounts.contains(item))
+                      .toList();
                   return ListView(
                     children: List<Widget>.generate(
                       availableAssets.length,
                       (index) {
-                        final assetId = availableAssets[index];
-                        final asset = watch(walletProvider).assets[assetId];
+                        final accountAsset = availableAssets[index];
                         final balance =
-                            watch(balancesProvider).balances[assetId] ?? 0;
+                            watch(balancesProvider).balances[accountAsset] ?? 0;
                         return AccountItem(
-                          asset: asset,
                           balance: balance,
+                          accountAsset: availableAssets[index],
+                          onSelected: (AccountAsset value) {
+                            final uiStateArgs =
+                                context.read(uiStateArgsProvider);
+                            uiStateArgs.walletMainArguments =
+                                uiStateArgs.walletMainArguments.copyWith(
+                                    navigationItem:
+                                        WalletMainNavigationItem.assetDetails);
+                            wallet.selectAssetDetails(accountAsset);
+                          },
                         );
                       },
                     ),

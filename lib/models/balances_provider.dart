@@ -1,39 +1,34 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
 
-final balancesProvider = StateNotifierProvider<BalancesNotifier, Balances>(
-    (ref) => BalancesNotifier());
+final balancesProvider = ChangeNotifierProvider<BalancesNotifier>((ref) {
+  return BalancesNotifier(ref.read);
+});
 
-class Balances {
-  const Balances({
-    this.balances = const {},
-  });
+class BalancesNotifier with ChangeNotifier {
+  final Reader read;
+  final balances = <AccountAsset, int>{};
 
-  final Map<String, int> balances;
+  BalancesNotifier(this.read);
 
-  Balances copyWith({
-    Map<String, int>? balances,
-  }) {
-    return Balances(
-      balances: balances ?? this.balances,
-    );
-  }
-}
-
-class BalancesNotifier extends StateNotifier<Balances> {
-  BalancesNotifier() : super(const Balances());
-
-  void updateBalance({required String key, required int value}) {
-    final _balances = Map<String, int>.from(state.balances);
-    _balances.update(key, (_) => value, ifAbsent: () => value);
-
-    state = state.copyWith(balances: _balances);
-  }
-
-  void removeBalance({required String key}) {
-    state.balances.remove(key);
+  void updateBalances(From_BalanceUpdate newBalances) {
+    final accountType = getAccountType(newBalances.account);
+    // Make sure all old balances from that account are cleared,
+    // because it won't be set here if balance goes to 0.
+    // This will prevent showning old balance when new balance is 0.
+    balances.removeWhere((key, value) => key.account == accountType);
+    for (final balance in newBalances.balances) {
+      final accountAsset = AccountAsset(accountType, balance.assetId);
+      balances[accountAsset] = balance.amount.toInt();
+    }
+    notifyListeners();
   }
 
   void clear() {
-    state.balances.clear();
+    balances.clear();
+    notifyListeners();
   }
 }

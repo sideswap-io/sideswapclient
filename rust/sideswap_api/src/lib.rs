@@ -1,3 +1,7 @@
+pub mod fcm_models;
+pub mod gdk;
+pub mod http_rpc;
+
 use serde::{Deserialize, Serialize};
 use std::vec::Vec;
 
@@ -29,13 +33,46 @@ pub fn get_os_type() -> i32 {
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct OrderId(pub String);
-
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct PhoneKey(pub String);
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct AssetId(pub String);
+#[derive(
+    Debug,
+    Hash,
+    PartialEq,
+    Eq,
+    Copy,
+    Clone,
+    Ord,
+    PartialOrd,
+    serde_with::SerializeDisplay,
+    serde_with::DeserializeFromStr,
+)]
+pub struct Hash32(pub [u8; 32]);
+
+impl std::str::FromStr for Hash32 {
+    type Err = hex::FromHexError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut data: [u8; 32] = [0; 32];
+        hex::decode_to_slice(s, &mut data)?;
+        data.reverse();
+        Ok(Hash32(data))
+    }
+}
+
+impl std::fmt::Display for Hash32 {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut data = self.0;
+        data.reverse();
+        write!(f, "{}", hex::encode(data))
+    }
+}
+
+pub type AssetId = Hash32;
+pub type BlindingFactor = Hash32;
+pub type Txid = Hash32;
+pub type SessionId = Hash32;
+pub type OrderId = Hash32;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct Ticker(pub String);
@@ -46,9 +83,16 @@ pub struct ContactKey(pub String);
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct AvatarId(pub String);
 
-impl std::fmt::Display for OrderId {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.0)
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Copy, Clone)]
+pub enum MarketType {
+    Stablecoin,
+    Amp,
+    Token,
+}
+
+impl MarketType {
+    pub fn priced_in_bitcoins(&self) -> bool {
+        *self != MarketType::Stablecoin
     }
 }
 
@@ -60,18 +104,33 @@ pub struct Asset {
     pub icon: Option<String>, // PNG in base64
     pub precision: u8,
     pub icon_url: Option<String>,
+    pub instant_swaps: Option<bool>,
+    pub domain: Option<String>,
 }
 
 pub type Assets = Vec<Asset>;
+
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+pub struct AmpAsset {
+    pub asset_id: AssetId,
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetsRequestParam {
     pub embedded_icons: bool,
 }
 pub type AssetsRequest = Option<AssetsRequestParam>;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetsResponse {
     pub assets: Assets,
+}
+
+pub type AmpAssetsRequest = Option<AssetsRequestParam>;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AmpAssetsResponse {
+    pub assets: Vec<Asset>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -145,7 +204,7 @@ pub enum SwapState {
     WaitPsbt(Swap),
     WaitSign(String),
     Failed(SwapError),
-    Done(String),
+    Done(Txid),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -352,6 +411,8 @@ pub struct ServerStatus {
     pub price_band: f64,
     pub elements_fee_rate: f64,
     pub bitcoin_fee_rates: Vec<FeeRate>,
+    pub upload_url: String,
+    pub policy_asset: AssetId,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -534,8 +595,8 @@ pub type Empty = Option<Void>;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum OrderSide {
-    Requestor,
-    Responder,
+    Maker,
+    Taker,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone, Copy)]
@@ -554,6 +615,7 @@ pub struct Details {
     pub side: OrderSide,
     pub send_bitcoins: bool,
     pub order_type: OrderType,
+    pub market: MarketType,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -573,6 +635,7 @@ pub struct LoadPricesRequest {
 pub struct LoadPricesResponse {
     pub asset: AssetId,
     pub ind: Option<f64>,
+    pub last: Option<f64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -584,7 +647,6 @@ pub type CancelPricesResponse = Empty;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubmitRequest {
     pub order: PriceOrder,
-    pub session_id: Option<String>,
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubmitResponse {
@@ -608,12 +670,12 @@ pub type CancelResponse = Empty;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LoginRequest {
-    pub session_id: Option<String>,
+    pub session_id: Option<SessionId>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LoginResponse {
-    pub session_id: String,
+    pub session_id: SessionId,
     pub orders: Vec<OrderCreatedNotification>,
 }
 
@@ -668,23 +730,47 @@ pub struct LinkResponse {
     pub index_price: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct AddrRequest {
-    pub order_id: OrderId,
-    pub pset: String,
-    pub recv_addr: String,
-    pub change_addr: String,
-    pub price: f64,
-    pub private: Option<bool>,
-    pub ttl_seconds: Option<u64>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PsetInput {
+    pub txid: Txid,
+    pub vout: u32,
+    pub asset: AssetId,
+    pub asset_bf: BlindingFactor,
+    pub value: u64,
+    pub value_bf: BlindingFactor,
+    pub redeem_script: Option<String>,
 }
-pub type AddrResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PsetMakerRequest {
+    pub order_id: OrderId,
+    pub price: f64,
+    pub private: bool,
+    pub ttl_seconds: Option<u64>,
+    pub inputs: Vec<PsetInput>,
+    pub recv_addr: Option<String>,
+    pub recv_gaid: Option<String>,
+    pub change_addr: String,
+}
+pub type PsetMakerResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PsetTakerRequest {
+    pub order_id: OrderId,
+    pub price: f64,
+    pub inputs: Vec<PsetInput>,
+    pub recv_addr: Option<String>,
+    pub recv_gaid: Option<String>,
+    pub change_addr: String,
+}
+pub type PsetTakerResponse = Empty;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SignNotification {
     pub order_id: OrderId,
     pub pset: String,
     pub details: Details,
+    pub nonces: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -717,6 +803,13 @@ pub struct AssetStats {
     pub has_blinded_issuances: bool,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ChartStats {
+    pub low: f64,
+    pub high: f64,
+    pub last: f64,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AssetDetailsResponse {
     pub asset_id: AssetId,
@@ -726,12 +819,240 @@ pub struct AssetDetailsResponse {
     pub icon_url: String,
     pub domain: String,
     pub chain_stats: Option<AssetStats>,
+    pub chart_url: Option<String>,
+    pub chart_stats: Option<ChartStats>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CompleteNotification {
     pub order_id: OrderId,
-    pub txid: Option<String>,
+    pub txid: Option<Txid>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum IssueAssetStatus {
+    WaitingPayin,
+    InvalidPayin,
+    WaitingConf,
+    Processing,
+    Complete,
+    PayinTimeout,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct IssueAssetRequest {
+    pub name: String,
+    pub ticker: String,
+    pub description: String,
+    pub icon: Option<String>,
+    pub amount: i64,
+    pub precision: u8,
+    pub recv_address: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct IssueAssetResponse {
+    pub order_id: OrderId,
+    pub created_at: Timestamp,
+    pub name: String,
+    pub ticker: String,
+    pub description: String,
+    pub icon: Option<String>,
+    pub amount: i64,
+    pub precision: u8,
+    pub recv_address: String,
+    pub payin_address: String,
+    pub status: IssueAssetStatus,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct IssueAssetStatusRequest {
+    pub order_id: OrderId,
+}
+
+pub type IssueAssetStatusResponse = IssueAssetResponse;
+
+#[derive(Serialize, Deserialize, Debug, PartialOrd, PartialEq, Copy, Clone)]
+pub struct PriceOffer {
+    pub client_send_bitcoins: bool,
+    pub price: f64,
+    pub max_send_amount: i64,
+}
+
+pub type PriceOffers = Vec<PriceOffer>;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BroadcastPriceStreamRequest {
+    pub asset: AssetId,
+    pub list: PriceOffers,
+    pub balancing: bool,
+}
+
+pub type BroadcastPriceStreamResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub struct SubscribePriceStreamRequest {
+    pub subscribe_id: Option<String>,
+    pub asset: AssetId,
+    pub send_bitcoins: bool,
+    pub send_amount: Option<i64>,
+    pub recv_amount: Option<i64>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
+pub struct SubscribePriceStreamResponse {
+    pub subscribe_id: Option<String>,
+    pub asset: AssetId,
+    pub send_bitcoins: bool,
+    pub send_amount: Option<i64>,
+    pub recv_amount: Option<i64>,
+    pub fixed_fee: Option<i64>,
+    pub price: Option<f64>,
+    pub error_msg: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UnsubscribePriceStreamRequest {
+    pub subscribe_id: Option<String>,
+}
+
+pub type UnsubscribePriceStreamResponse = Empty;
+
+// New swap API
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartSwapWebRequest {
+    pub price: f64,
+    pub asset: AssetId,
+    pub send_bitcoins: bool,
+    pub send_amount: i64,
+    pub recv_amount: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartSwapWebResponse {
+    pub order_id: OrderId,
+    pub send_asset: AssetId,
+    pub send_amount: i64,
+    pub recv_asset: AssetId,
+    pub recv_amount: i64,
+    pub upload_url: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartSwapClientRequest {
+    pub price: f64,
+    pub asset: AssetId,
+    pub send_bitcoins: bool,
+    pub send_amount: i64,
+    pub recv_amount: i64,
+    pub inputs: Vec<PsetInput>,
+    pub recv_addr: String,
+    pub change_addr: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartSwapClientResponse {
+    pub order_id: OrderId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartSwapDealerNotification {
+    pub order_id: OrderId,
+    pub send_asset: AssetId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StartSwapDealerRequest {
+    pub order_id: OrderId,
+    pub inputs: Vec<PsetInput>,
+    pub recv_addr: String,
+    pub change_addr: String,
+}
+
+pub type StartSwapDealerResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BlindedSwapClientNotification {
+    pub order_id: OrderId,
+    pub pset: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SignedSwapClientRequest {
+    pub order_id: OrderId,
+    pub pset: String,
+}
+
+pub type SignedSwapClientResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BlindedSwapDealerNotification {
+    pub order_id: OrderId,
+    pub pset: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SignedSwapDealerRequest {
+    pub order_id: OrderId,
+    pub pset: String,
+}
+
+pub type SignedSwapDealerResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+pub enum SwapDoneStatus {
+    Success,
+    ClientError,
+    DealerError,
+    ServerError,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SwapDoneNotification {
+    pub order_id: OrderId,
+    pub status: SwapDoneStatus,
+    pub txid: Option<Txid>,
+    pub send_asset: AssetId,
+    pub send_amount: i64,
+    pub recv_asset: AssetId,
+    pub recv_amount: i64,
+    pub network_fee: Option<i64>,
+    pub price: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ChartPoint {
+    pub time: String,
+    pub open: f64,
+    pub close: f64,
+    pub high: f64,
+    pub low: f64,
+    pub volume: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MarketDataSubscribeRequest {
+    pub asset: AssetId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MarketDataSubscribeResponse {
+    pub asset: AssetId,
+    pub data: Vec<ChartPoint>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MarketDataUnsubscribeRequest {
+    pub asset: AssetId,
+}
+
+pub type MarketDataUnsubscribeResponse = Empty;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MarketDataUpdateNotification {
+    pub asset: AssetId,
+    pub update: ChartPoint,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -741,6 +1062,7 @@ pub enum Request {
     Ping(Empty),
     ServerStatus(Empty),
     Assets(AssetsRequest),
+    AmpAssets(AmpAssetsRequest),
     PegFee(PegFeeRequest),
     Peg(PegRequest),
     PegStatus(PegStatusRequest),
@@ -779,10 +1101,26 @@ pub enum Request {
     Subscribe(SubscribeRequest),
     Unsubscribe(UnsubscribeRequest),
     Link(LinkRequest),
-    Addr(AddrRequest),
+    PsetMaker(PsetMakerRequest),
+    PsetTaker(PsetTakerRequest),
     Sign(SignRequest),
     GetSign(GetSignRequest),
     AssetDetails(AssetDetailsRequest),
+
+    IssueAsset(IssueAssetRequest),
+    IssueAssetStatus(IssueAssetStatusRequest),
+
+    BroadcastPriceStream(BroadcastPriceStreamRequest),
+    SubscribePriceStream(SubscribePriceStreamRequest),
+    UnsubscribePriceStream(UnsubscribePriceStreamRequest),
+    StartSwapWeb(StartSwapWebRequest),
+    StartSwapClient(StartSwapClientRequest),
+    StartSwapDealer(StartSwapDealerRequest),
+    SignedSwapClient(SignedSwapClientRequest),
+    SignedSwapDealer(SignedSwapDealerRequest),
+
+    MarketDataSubscribe(MarketDataSubscribeRequest),
+    MarketDataUnsubscribe(MarketDataUnsubscribeRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -790,6 +1128,7 @@ pub enum Response {
     Ping(Empty),
     ServerStatus(ServerStatus),
     Assets(AssetsResponse),
+    AmpAssets(AmpAssetsResponse),
     PegFee(PegFeeResponse),
     Peg(PegResponse),
     PegStatus(PegStatus),
@@ -828,10 +1167,26 @@ pub enum Response {
     Subscribe(SubscribeResponse),
     Unsubscribe(UnsubscribeResponse),
     Link(LinkResponse),
-    Addr(AddrResponse),
+    PsetMaker(PsetMakerResponse),
+    PsetTaker(PsetTakerResponse),
     Sign(SignResponse),
     GetSign(GetSignResponse),
     AssetDetails(AssetDetailsResponse),
+
+    IssueAsset(IssueAssetResponse),
+    IssueAssetStatus(IssueAssetStatusResponse),
+
+    BroadcastPriceStream(BroadcastPriceStreamResponse),
+    SubscribePriceStream(SubscribePriceStreamResponse),
+    UnsubscribePriceStream(UnsubscribePriceStreamResponse),
+    StartSwapWeb(StartSwapWebResponse),
+    StartSwapClient(StartSwapClientResponse),
+    StartSwapDealer(StartSwapDealerResponse),
+    SignedSwapClient(SignedSwapClientResponse),
+    SignedSwapDealer(SignedSwapDealerResponse),
+
+    MarketDataSubscribe(MarketDataSubscribeResponse),
+    MarketDataUnsubscribe(MarketDataUnsubscribeResponse),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -854,6 +1209,16 @@ pub enum Notification {
     ContactRemoved(ContactRemovedNotification),
     ContactTransaction(ContactTransactionCreatedNotification),
     AccountStatus(AccountStatusNotification),
+
+    IssueAssetStatus(IssueAssetStatusResponse),
+
+    UpdatePriceStream(SubscribePriceStreamResponse),
+    StartSwapDealer(StartSwapDealerNotification),
+    BlindedSwapClient(BlindedSwapClientNotification),
+    BlindedSwapDealer(BlindedSwapDealerNotification),
+    SwapDone(SwapDoneNotification),
+
+    MarketDataUpdate(MarketDataUpdateNotification),
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
@@ -900,64 +1265,4 @@ pub enum RequestMessage {
 pub enum ResponseMessage {
     Response(Option<RequestId>, Result<Response, Error>),
     Notification(Notification),
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum TxType {
-    Send,
-    Recv,
-    Swap,
-    Redeposit,
-    Unknown,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct FcmMessageTx {
-    pub txid: String,
-    pub tx_type: TxType,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct FcmMessagePeg {
-    pub order_id: OrderId,
-    pub peg_in: bool,
-    pub tx_hash: String,
-    pub vout: i32,
-    pub created_at: Timestamp,
-    pub payout_txid: Option<String>,
-    pub payout: i64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct FcmMessageSign {
-    pub order_id: OrderId,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub enum FcmMessage {
-    Tx(FcmMessageTx),
-    PegDetected(FcmMessagePeg),
-    PegPayout(FcmMessagePeg),
-    Sign(FcmMessageSign),
-}
-
-#[derive(serde::Deserialize, Debug)]
-pub struct GdkEntity {
-    pub domain: Option<String>,
-}
-
-#[derive(serde::Deserialize, Debug)]
-pub struct GdkAsset {
-    pub asset_id: AssetId,
-    pub name: Option<String>,
-    pub precision: Option<u8>,
-    pub ticker: Option<Ticker>,
-    pub entity: Option<GdkEntity>,
-}
-
-#[derive(serde::Deserialize, Debug, Default)]
-pub struct GdkAssets {
-    pub assets: std::collections::BTreeMap<AssetId, GdkAsset>,
-    pub icons: std::collections::BTreeMap<AssetId, String>,
 }

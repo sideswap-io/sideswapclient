@@ -17,6 +17,7 @@ import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/prelaunch_page.dart';
+import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/screens/background/preload_background_painter.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/home/wallet_locked.dart';
@@ -45,6 +46,7 @@ import 'package:sideswap/screens/onboarding/widgets/new_wallet_pin_welcome.dart'
 import 'package:sideswap/screens/onboarding/widgets/pin_success.dart';
 import 'package:sideswap/screens/order/order_popup.dart';
 import 'package:sideswap/screens/order/order_success.dart';
+import 'package:sideswap/screens/order/swap_prompt.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/payment_page.dart';
 import 'package:sideswap/screens/pay/payment_send_popup.dart';
@@ -105,13 +107,28 @@ class MyApp extends StatefulWidget {
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    notificationService.init(context);
+    WidgetsBinding.instance!.addObserver(this);
+    if (notificationServiceAvailable()) {
+      notificationService.init(context);
+    }
     context.read(universalLinkProvider).handleIncomingLinks();
     context.read(universalLinkProvider).handleInitialUri();
+  }
+
+  @override
+  dispose() {
+    super.dispose();
+    WidgetsBinding.instance!.removeObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    context.read(walletProvider).handleAppStateChange(state);
   }
 
   @override
@@ -416,6 +433,12 @@ class __RootWidgetState extends State<_RootWidget> {
             requestOrder:
                 context.read(requestOrderProvider).currentRequestOrderView,
           )),
+        ];
+      case Status.swapPrompt:
+        final orderId = context.read(walletProvider).swapDetails?.orderId ?? '';
+        return [
+          const MaterialPage<Widget>(child: WalletMain()),
+          MaterialPage<Widget>(child: SwapPrompt(key: Key(orderId))),
         ];
     }
   }

@@ -4,11 +4,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sideswap/app_main.dart';
 import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap/common/utils/build_config.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  await Firebase.initializeApp();
+  if (notificationServiceAvailable()) {
+    await Firebase.initializeApp();
+  }
 
   FlavorConfig(
     flavor: Flavor.production,

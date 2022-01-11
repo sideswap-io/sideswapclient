@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -28,14 +29,14 @@ class _AssetDetailsState extends State<AssetDetails>
   final _hightPercentController = StreamController<double>.broadcast();
 
   final double _maxExtent = 0.8849;
-  final double _minExtent = 0.4433;
+  final double _minExtent = 0.35;
 
   double _panelPosition = .0;
 
   late PanelController _panelController;
 
-  String _assetId = '';
-  Map<String, List<TxItem>> _txItemMap = <String, List<TxItem>>{};
+  late AccountAsset _asset;
+  var _txItemMap = <AccountAsset, List<TxItem>>{};
 
   double normalize(double value, double min, double max) {
     return (value - min) / (max - min);
@@ -49,8 +50,8 @@ class _AssetDetailsState extends State<AssetDetails>
   void initState() {
     super.initState();
     _panelController = PanelController();
-    _assetId = context.read(walletProvider).selectedWalletAsset;
-    _txItemMap = context.read(walletProvider).txItemMap;
+    _asset = context.read(walletProvider).selectedWalletAsset!;
+    _txItemMap = context.read(walletProvider).getAllAssets();
   }
 
   @override
@@ -98,9 +99,7 @@ class _AssetDetailsState extends State<AssetDetails>
                     child: Consumer(
                       builder: (context, watch, child) {
                         final wallet = watch(walletProvider);
-                        final assetId = wallet.selectedWalletAsset.isNotEmpty
-                            ? wallet.selectedWalletAsset
-                            : wallet.bitcoinAssetId();
+                        final assetId = wallet.selectedWalletAsset!.asset;
                         final assetImagesBig =
                             watch(walletProvider).assetImagesBig[assetId];
                         return SizedBox(
@@ -127,9 +126,9 @@ class _AssetDetailsState extends State<AssetDetails>
         ),
         Consumer(
           builder: (context, watch, child) {
-            _assetId = watch(walletProvider).selectedWalletAsset;
-            _txItemMap = watch(walletProvider).txItemMap;
-            final assetList = _txItemMap[_assetId] ?? <TxItem>[];
+            _asset = watch(walletProvider).selectedWalletAsset!;
+            _txItemMap = watch(walletProvider).getAllAssets();
+            final assetList = _txItemMap[_asset] ?? <TxItem>[];
 
             final minimizedPadding = MediaQuery.of(context).padding.top + 40;
             final maximizedPadding = MediaQuery.of(context).padding.top + 70;
@@ -236,7 +235,8 @@ class _AssetDetailsState extends State<AssetDetails>
                           ? Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16.w),
                               child: TxListItem(
-                                assetId: _assetId,
+                                assetId: _asset.asset,
+                                accountType: _asset.account,
                                 txItem: assetList[index],
                               ),
                             )

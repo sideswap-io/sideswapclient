@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
@@ -14,13 +15,15 @@ class PaymentSendAmount extends StatefulWidget {
     this.onDropdownChanged,
     required this.dropdownValue,
     required this.validate,
+    this.availableDropdownAssets,
   }) : super(key: key);
 
   final TextEditingController? controller;
   final FocusNode focusNode;
-  final void Function(String)? onDropdownChanged;
+  final void Function(AccountAsset)? onDropdownChanged;
   final void Function(String) validate;
-  final String dropdownValue;
+  final AccountAsset dropdownValue;
+  final List<AccountAsset>? availableDropdownAssets;
 
   @override
   _PaymentSendAmountState createState() => _PaymentSendAmountState();
@@ -31,7 +34,8 @@ class _PaymentSendAmountState extends State<PaymentSendAmount> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, watch, child) {
-        final sendAssets = watch(walletProvider).sendAssets();
+        final sendAssets = widget.availableDropdownAssets ??
+            watch(walletProvider).sendAssets();
         return TickerAmountTextField(
           focusNode: widget.focusNode,
           controller: widget.controller,
@@ -39,6 +43,7 @@ class _PaymentSendAmountState extends State<PaymentSendAmount> {
           availableAssets: sendAssets,
           onDropdownChanged: widget.onDropdownChanged,
           dropdownValue: widget.dropdownValue,
+          showAccountsInPopup: true,
           onChanged: (value) {
             widget.validate(value);
             final newValue = replaceCharacterOnPosition(

@@ -4,6 +4,10 @@ package sideswap.proto;
 message Empty {
 }
 
+message Account {
+  required bool amp = 1;
+}
+
 message Address {
   required string addr = 1;
 }
@@ -13,6 +17,12 @@ message Balance {
   required int64 amount = 2;
 }
 
+message TxBalance {
+  required string asset_id = 1;
+  required int64 amount = 2;
+  required Account account = 3;
+}
+
 message Asset {
   required string asset_id = 1;
   required string name = 2;
@@ -20,11 +30,13 @@ message Asset {
   required string icon = 4;
   required uint32 precision = 5;
   required bool swap_market = 6;
+  required bool amp_market = 9;
+  required bool unregistered = 8;
   optional string domain = 7;
 }
 
 message Tx {
-  repeated Balance balances = 1;
+  repeated TxBalance balances = 1;
   required string txid = 2;
   required int64 network_fee = 3;
   required string memo = 4;
@@ -55,6 +67,10 @@ message TransItem {
     Tx tx = 10;
     Peg peg = 11;
   }
+}
+
+message AssetId {
+  required string asset_id = 1;
 }
 
 message GenericResponse {
@@ -105,15 +121,41 @@ message Order {
   required bool private = 9;
   required bool auto_sign = 11;
   required bool own = 12;
-  required bool token_market = 13;
-  required bool new = 14;
+  required bool from_notification = 13;
   optional double index_price = 15;
+}
+
+message SwapDetails {
+  required string order_id = 1;
+  required string send_asset = 2;
+  required string recv_asset = 3;
+  required int64 send_amount = 4;
+  required int64 recv_amount = 5;
+  required string upload_url = 6;
+}
+
+message NetworkSettings {
+  message Custom {
+    required string host = 1;
+    required int32 port = 2;
+    required bool use_tls = 3;
+  }
+
+  oneof selected {
+    Empty blockstream = 1;
+    Custom custom = 2;
+  }
 }
 
 message To {
   message Login {
     required string mnemonic = 1;
     optional string phone_key = 2;
+    required NetworkSettings network = 4;
+  }
+
+  message ChangeNetwork {
+    required NetworkSettings network = 1;
   }
 
   message EncryptPin {
@@ -128,16 +170,25 @@ message To {
     required string pin_identifier = 4;
   }
 
-  message SwapRequest {
-    required string send_asset = 2;
-    required string recv_asset = 3;
-    required int64 send_amount = 4;
-    optional int32 blocks = 5;
+  message AppState {
+    required bool active = 1;
   }
 
-  message SwapAccept {
-    optional string recv_addr = 1;
-    optional int64 recv_amount = 2;
+  message SwapRequest {
+    required bool send_bitcoins = 1;
+    required string asset = 2;
+    required int64 send_amount = 3;
+    required int64 recv_amount = 4;
+    required double price = 5;
+  }
+
+  message PegInRequest {
+  }
+
+  message PegOutRequest {
+    required int64 send_amount = 1;
+    required string recv_addr = 2;
+    required int32 blocks = 3;
   }
 
   message SetMemo {
@@ -149,10 +200,11 @@ message To {
     required string addr = 1;
     required Balance balance = 2;
     required bool is_contact = 3;
+    required Account account = 4;
   }
 
   message SendTx {
-    required string memo = 1;
+    required Account account = 1;
   }
 
   message BlindedValues {
@@ -187,6 +239,7 @@ message To {
   }
 
   message SubmitOrder {
+    required Account account = 7;
     optional string session_id = 1;
     required string asset_id = 2;
     optional double bitcoin_amount = 3;
@@ -212,6 +265,7 @@ message To {
     oneof data {
       double price = 2;
       double index_price = 3;
+      bool auto_sign = 4;
     }
   }
 
@@ -229,36 +283,33 @@ message To {
     optional string asset_id = 2;
   }
 
-  message SubscribePrice {
-    required string asset_id = 2;
-  }
-
-  message UnsubscribePrice {
-    required string asset_id = 2;
-  }
-
-  message AssetDetails {
-    required string asset_id = 2;
+  message SubscribePriceStream {
+    required string asset_id = 1;
+    required bool send_bitcoins = 2;
+    optional int64 send_amount = 3;
+    optional int64 recv_amount = 4;
   }
 
   oneof msg {
     Login login = 1;
     Empty logout = 2;
+    ChangeNetwork change_network = 9;
     UpdatePushToken update_push_token = 3;
     EncryptPin encrypt_pin = 4;
     DecryptPin decrypt_pin = 5;
     string push_message = 6;
+    AppState app_state = 8;
 
     SetMemo set_memo = 10;
-    Empty get_recv_address = 11;
+    Account get_recv_address = 11;
     CreateTx create_tx = 12;
     SendTx send_tx = 13;
     BlindedValues blinded_values = 14;
 
     SwapRequest swap_request = 20;
-    Empty swap_cancel = 21;
-    SwapAccept swap_accept = 22;
-    Empty peg_request = 23;
+    PegInRequest peg_in_request = 21;
+    PegOutRequest peg_out_request = 22;
+    SwapDetails swap_accept = 23;
 
     RegisterPhone register_phone = 40;
     VerifyPhone verify_phone = 41;
@@ -272,13 +323,21 @@ message To {
     EditOrder edit_order = 52;
     CancelOrder cancel_order = 53;
     Subscribe subscribe = 54;
-    SubscribePrice subscribe_price = 55;
-    UnsubscribePrice unsubscribe_price = 56;
-    AssetDetails asset_details = 57;
+    AssetId asset_details = 57;
+    AssetId subscribe_price = 55;
+    AssetId unsubscribe_price = 56;
+    SubscribePriceStream subscribe_price_stream = 58;
+    Empty unsubscribe_price_stream = 59;
   }
 }
 
 message From {
+  message EnvSettings {
+    required string policy_asset_id = 1;
+    required string usdt_asset_id = 2;
+    required string eurx_asset_id = 3;
+  }
+
   message EncryptPin {
     message Data {
       required string salt = 2;
@@ -298,26 +357,43 @@ message From {
     }
   }
 
-  message RemovedTx {
-    required string id = 1;
+  message RegisterAmp {
+    oneof result {
+      string amp_id = 1;
+      string error_msg = 2;
+    }
   }
 
-  message SwapReview {
-    required string send_asset = 1;
-    required string recv_asset = 2;
-    required int64 send_amount = 3;
-    optional int64 recv_amount = 4;
-    optional int64 network_fee = 5;
-    optional string error = 7;
+  message AmpAssets {
+    repeated string assets = 1;
   }
 
-  message SwapWaitTx {
-    required string send_asset = 1;
-    required string recv_asset = 2;
-    //required int64 send_amount = 3;
-    //required int64 recv_amount = 4;
+  message UpdatedTxs {
+    repeated TransItem items = 1;
+  }
+
+  message RemovedTxs {
+    repeated string txids = 1;
+  }
+
+  message UpdatedPegs {
+    required string order_id = 1;
+    repeated TransItem items = 2;
+  }
+
+  message BalanceUpdate {
+    required Account account = 1;
+    repeated Balance balances = 2;
+  }
+
+  message PeginWaitTx {
     required string peg_addr = 5;
     required string recv_addr = 6;
+  }
+
+  message RecvAddress {
+    required Address addr = 1;
+    required Account account = 2;
   }
 
   message CreateTxResult {
@@ -336,7 +412,10 @@ message From {
 
   message BlindedValues {
     required string txid = 1;
-    optional string blinded_values = 2;
+    oneof result {
+      string error_msg = 2;
+      string blinded_values = 3;
+    }
   }
 
   message PriceUpdate {
@@ -379,7 +458,6 @@ message From {
     required bool sell_bitcoin = 6;
     required Step step = 7;
     required bool index_price = 9;
-    required bool internal = 10;
     required bool auto_sign = 11;
   }
 
@@ -393,6 +471,7 @@ message From {
 
   message OrderCreated {
     required Order order = 1;
+    required bool new = 2;
   }
 
   message OrderRemoved {
@@ -402,6 +481,7 @@ message From {
   message IndexPrice {
     required string asset_id = 1;
     optional double ind = 2;
+    optional double last = 3;
   }
 
   message ContactRemoved {
@@ -418,15 +498,35 @@ message From {
       required int64 burned_amount = 2;
       required bool has_blinded_issuances = 3;
     }
+    message ChartStats {
+      required double low = 1;
+      required double high = 2;
+      required double last = 3;
+    }
     required string asset_id = 1;
     optional Stats stats = 2;
+    optional string chart_url = 3;
+    optional ChartStats chart_stats = 4;
+  }
+
+  message UpdatePriceStream {
+    required string asset_id = 1;
+    required bool send_bitcoins = 2;
+    optional int64 send_amount = 3;
+    optional int64 recv_amount = 4;
+    optional double price = 5;
+    optional string error_msg = 6;
   }
 
   oneof msg {
-    TransItem updated_tx = 1;
-    RemovedTx removed_tx = 2;
+    EnvSettings env_settings = 13;
+    RegisterAmp register_amp = 8;
+    UpdatedTxs updated_txs = 1;
+    RemovedTxs removed_txs = 12;
+    UpdatedPegs updated_pegs = 2;
     Asset new_asset = 3;
-    Balance balance_update = 4;
+    AmpAssets amp_assets = 9;
+    BalanceUpdate balance_update = 4;
     ServerStatus server_status = 5;
     PriceUpdate price_update = 6;
     Empty wallet_loaded = 7;
@@ -434,12 +534,11 @@ message From {
     EncryptPin encrypt_pin = 10;
     DecryptPin decrypt_pin = 11;
 
-    SwapReview swap_review = 20;
-    SwapWaitTx swap_wait_tx = 21;
+    PeginWaitTx pegin_wait_tx = 21;
     TransItem swap_succeed = 22;
     string swap_failed = 23;
 
-    Address recv_address = 30;
+    RecvAddress recv_address = 30;
     CreateTxResult create_tx_result = 31;
     SendResult send_result = 32;
     BlindedValues blinded_values = 33;
@@ -465,5 +564,16 @@ message From {
     OrderRemoved order_removed = 63;
     IndexPrice index_price = 64;
     AssetDetails asset_details = 65;
+
+    UpdatePriceStream update_price_stream = 66;
   }
+}
+
+message Settings {
+  message AccountAsset {
+    required Account account = 1;
+    required string asset_id = 2;
+  }
+
+  repeated AccountAsset disabled_accounts = 1;
 }

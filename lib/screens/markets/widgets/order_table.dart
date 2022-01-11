@@ -1,10 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
@@ -26,136 +23,91 @@ class OrderTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assets = context.read(walletProvider).assets;
-    Image? assetIcon, bitcoinIcon;
-    var assetTicker = '';
-
-    var bitcoinTicker = '';
-    for (var asset in assets.values) {
-      if (asset.ticker == kLiquidBitcoinTicker) {
-        bitcoinIcon =
-            context.read(walletProvider).assetImagesSmall[asset.assetId];
-        bitcoinTicker = asset.ticker;
-      }
-      if (asset.assetId == orderDetailsData.assetId) {
-        assetIcon =
-            context.read(walletProvider).assetImagesSmall[asset.assetId];
-        assetTicker = asset.ticker;
-      }
-    }
-
-    final isPricedInLiquid = context
-        .read(requestOrderProvider)
-        .isPricedInLiquid(orderDetailsData.assetId);
-
+    final wallet = context.read(walletProvider);
+    final bitcoinAsset = wallet.assets[wallet.liquidAssetId()]!;
+    final asset = wallet.assets[orderDetailsData.assetId]!;
     final sellBitcoin = orderDetailsData.sellBitcoin;
+    final sendAsset = sellBitcoin ? bitcoinAsset : asset;
+    final recvAsset = sellBitcoin ? asset : bitcoinAsset;
     final deliverAmount = sellBitcoin
-        ? orderDetailsData.bitcoinAmountWithFeeStr
-        : orderDetailsData.assetAmountStr;
-    final deliverTicker = sellBitcoin ? bitcoinTicker : assetTicker;
-    final deliverIcon = sellBitcoin ? bitcoinIcon : assetIcon;
+        ? (orderDetailsData.bitcoinAmount + orderDetailsData.fee)
+        : orderDetailsData.assetAmount;
     final receiveAmount = sellBitcoin
-        ? orderDetailsData.assetAmountStr
-        : orderDetailsData.bitcoinAmountWithFeeStr;
-    final receiveTicker = sellBitcoin ? assetTicker : bitcoinTicker;
-    final receiveIcon = sellBitcoin ? assetIcon : bitcoinIcon;
-    final priceTicker = isPricedInLiquid ? bitcoinTicker : assetTicker;
-    final priceIcon = isPricedInLiquid ? bitcoinIcon : assetIcon;
-    final priceAmount = !isPricedInLiquid
-        ? orderDetailsData.priceAmountStr
-        : orderDetailsData.priceAmountInvertedStr;
-
-    final receiveAssetId =
-        context.read(walletProvider).getAssetByTicker(receiveTicker)?.assetId ??
-            '';
-    0;
-    final dollarConversion = context
-        .read(requestOrderProvider)
-        .dollarConversion(receiveAssetId, double.tryParse(receiveAmount) ?? 0);
+        ? orderDetailsData.assetAmount
+        : (orderDetailsData.bitcoinAmount - orderDetailsData.fee);
+    final assetAmount = orderDetailsData.assetAmount;
+    final bitcoinAmount = orderDetailsData.bitcoinAmount;
+    final isStablecoin = asset.swapMarket;
+    final priceAsset = isStablecoin ? asset : bitcoinAsset;
+    final priceAmount = orderDetailsData.priceAmountStr;
+    final priceDollarConversion = !isStablecoin
+        ? context.read(requestOrderProvider).dollarConversion(
+            bitcoinAsset.assetId, double.tryParse(priceAmount) ?? 0)
+        : null;
+    final isAmp = wallet.ampAssets.contains(asset.assetId);
 
     return Column(
       children: [
         if (useTokenView) ...[
           OrderTableRow(
             description: 'Name'.tr(),
-            value: context
-                    .read(walletProvider)
-                    .assets[orderDetailsData.assetId]
-                    ?.name ??
-                '',
-            icon: deliverIcon,
+            value: asset.name,
+            icon: wallet.assetImagesSmall[asset.assetId],
           ),
           OrderTableRow(
             description: 'Ticker'.tr(),
-            customValue: Row(
-              children: [
-                Text(
-                  deliverTicker,
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(left: 8.w),
-                  child: SizedBox(
-                    width: 24.w,
-                    height: 24.w,
-                  ),
-                ),
-              ],
-            ),
+            showAmpFlag: isAmp,
+            value: asset.ticker,
+            icon: wallet.assetImagesSmall[asset.assetId],
           ),
-          OrderTableRow(
+          OrderTableRow.assetAmount(
             description: 'Amount'.tr(),
-            value: '$deliverAmount $deliverTicker',
-            icon: deliverIcon,
             orderTableRowType: orderTableRowType,
             enabled: enabled,
+            amount: assetAmount,
+            assetId: asset.assetId,
           ),
         ] else ...[
-          OrderTableRow(
+          OrderTableRow.assetAmount(
             description: 'Deliver'.tr(),
-            value: '$deliverAmount $deliverTicker',
-            icon: deliverIcon,
             orderTableRowType: orderTableRowType,
             enabled: enabled,
+            amount: deliverAmount,
+            assetId: sendAsset.assetId,
           ),
         ],
         OrderTableRow(
           description: 'Price'.tr(),
-          value: '$priceAmount $priceTicker',
-          icon: priceIcon,
+          value: '$priceAmount ${priceAsset.ticker}',
+          icon: wallet.assetImagesSmall[priceAsset.assetId]!,
           orderTableRowType: orderTableRowType,
+          dollarConversion: priceDollarConversion,
           enabled: enabled,
         ),
         if (useTokenView) ...[
-          OrderTableRow(
-            description: 'Total price'.tr(),
-            value: '$receiveAmount $receiveTicker',
-            icon: receiveIcon,
-            displayDivider: false,
-            dollarConversion: dollarConversion,
-            orderTableRowType: orderTableRowType,
-            enabled: enabled,
-          ),
+          OrderTableRow.assetAmount(
+              description: 'Total price'.tr(),
+              displayDivider: false,
+              orderTableRowType: orderTableRowType,
+              enabled: enabled,
+              amount: bitcoinAmount,
+              assetId: wallet.liquidAssetId()),
         ] else ...[
-          OrderTableRow(
+          OrderTableRow.assetAmount(
             description: 'Fee'.tr(),
-            value: '${orderDetailsData.feeStr} $bitcoinTicker',
-            icon: bitcoinIcon,
             orderTableRowType: orderTableRowType,
             enabled: enabled,
+            amount: orderDetailsData.fee,
+            assetId: bitcoinAsset.assetId,
+            showDollarConversion: false,
           ),
-          OrderTableRow(
+          OrderTableRow.assetAmount(
             description: 'Receive'.tr(),
-            value: '$receiveAmount $receiveTicker',
-            icon: receiveIcon,
             displayDivider: false,
-            dollarConversion: dollarConversion,
             orderTableRowType: orderTableRowType,
             enabled: enabled,
+            amount: receiveAmount,
+            assetId: recvAsset.assetId,
           ),
         ],
       ],

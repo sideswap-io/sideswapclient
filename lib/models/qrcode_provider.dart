@@ -34,7 +34,6 @@ class QrCodeResult {
   int? bitMask;
   bool? error;
   String? errorMessage;
-  String? orderId;
   String? assetId;
 
   QrCodeResult({
@@ -47,7 +46,6 @@ class QrCodeResult {
     this.bitMask,
     this.error,
     this.errorMessage,
-    this.orderId,
     this.assetId,
   });
 
@@ -74,14 +72,13 @@ class QrCodeResult {
       bitMask: bitMask ?? this.bitMask,
       error: error ?? this.error,
       errorMessage: errorMessage ?? this.errorMessage,
-      orderId: orderId ?? this.orderId,
       assetId: assetId ?? this.assetId,
     );
   }
 
   @override
   String toString() {
-    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, ticker: $ticker, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage, orderId: $orderId, assetId: $assetId)';
+    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, ticker: $ticker, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage, assetId: $assetId)';
   }
 
   @override
@@ -98,7 +95,6 @@ class QrCodeResult {
         other.bitMask == bitMask &&
         other.error == error &&
         other.errorMessage == errorMessage &&
-        other.orderId == orderId &&
         other.assetId == assetId;
   }
 
@@ -113,7 +109,6 @@ class QrCodeResult {
         bitMask.hashCode ^
         error.hashCode ^
         errorMessage.hashCode ^
-        orderId.hashCode ^
         assetId.hashCode;
   }
 }
@@ -173,15 +168,6 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     if (url.scheme == 'sideswap') {
       return parseSideSwapAddress(qrCode);
-    }
-
-    final orderId = url.queryParameters['order_id'];
-    if (url.scheme == 'https' &&
-        url.host == 'app.sideswap.io' &&
-        url.path == '/submit/' &&
-        orderId != null) {
-      _result.orderId = orderId;
-      return _result;
     }
 
     _emitError('Invalid QR code'.tr());

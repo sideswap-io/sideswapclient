@@ -9,6 +9,8 @@ import 'package:sideswap/common/widgets/colored_container.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/swap_market_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/markets/token_market_order_details.dart';
+import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class SwapMarket extends StatefulWidget {
   const SwapMarket({Key? key}) : super(key: key);
@@ -59,74 +61,104 @@ class _SwapMarketState extends State<SwapMarket> {
     final marketAssetId =
         context.read(swapMarketProvider).currentProduct.assetId;
 
-    context.read(marketsProvider).subscribeIndexPrice(assetId: marketAssetId);
+    context.read(marketsProvider).subscribeIndexPrice(marketAssetId);
     context.read(marketsProvider).subscribeSwapMarket(marketAssetId);
+  }
+
+  void openOrder(RequestOrder order) async {
+    if (order.own) {
+      await context.read(marketsProvider).onModifyPrice(order);
+      return;
+    }
+
+    if (order.marketType != MarketType.token) {
+      context.read(walletProvider).linkOrder(order.orderId);
+      return;
+    }
+
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(
+        builder: (context) => TokenMarketOrderDetails(
+          requestOrder: order,
+        ),
+      ),
+    );
+
+    // TODO: mockups points here to SwapMarketOrderDetails
+    // but that screen display wrong side data
+    // consider how to back from Status.orderPopup
+    // to markets page
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.only(top: 24.h, left: 16.w, right: 16.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Index price'.tr(),
-                    style: headerStyle,
-                  ),
-                  Consumer(
-                    builder: (context, watch, child) {
-                      final currentProduct =
-                          context.read(swapMarketProvider).currentProduct;
-                      final indexPrice = watch(marketsProvider)
-                          .getIndexPriceStr(currentProduct.assetId);
-                      final icon = context
-                          .read(walletProvider)
-                          .assetImagesSmall[currentProduct.assetId];
-                      return Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(top: 10.h),
-                            child: Row(
-                              children: [
-                                Padding(
-                                  padding: EdgeInsets.only(right: 5.w),
-                                  child: Text(
-                                    indexPrice,
-                                    style: indexPriceStyleDescription,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(right: 6.w),
-                                  child: SizedBox(
-                                    width: 21.r,
-                                    height: 21.r,
-                                    child: icon,
-                                  ),
-                                ),
-                                Text(
-                                  currentProduct.ticker,
+    return Consumer(builder: (context, watch, child) {
+      final swapMarket = watch(swapMarketProvider);
+      final wallet = context.read(walletProvider);
+      final markets = watch(marketsProvider);
+
+      final currentProduct = swapMarket.currentProduct;
+      final asset = wallet.assets[currentProduct.assetId]!;
+      final isAmp = asset.ampMarket;
+      final indexPrice = markets.getIndexPriceStr(currentProduct.assetId);
+      final lastPrice = markets.getLastPriceStr(currentProduct.assetId);
+      final priceIcon = isAmp
+          ? wallet.assetImagesSmall[wallet.liquidAssetId()]
+          : wallet.assetImagesSmall[currentProduct.assetId];
+      final priceTicker = isAmp ? kLiquidBitcoinTicker : currentProduct.ticker;
+      final products = swapMarket.getProducts();
+      final length = swapMarket.getMaxSwapOrderLength();
+      final bidOffers = swapMarket.bidOffers;
+      final askOffers = swapMarket.askOffers;
+
+      return Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.only(top: 24.h, left: 16.w, right: 16.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isAmp ? 'Last price'.tr() : 'Index price'.tr(),
+                      style: headerStyle,
+                    ),
+                    Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.only(top: 10.h),
+                          child: Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(right: 5.w),
+                                child: Text(
+                                  isAmp ? lastPrice : indexPrice,
                                   style: indexPriceStyleDescription,
                                 ),
-                              ],
-                            ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 6.w),
+                                child: SizedBox(
+                                  width: 21.r,
+                                  height: 21.r,
+                                  child: priceIcon,
+                                ),
+                              ),
+                              Text(
+                                priceTicker,
+                                style: indexPriceStyleDescription,
+                              ),
+                            ],
                           ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
-              Consumer(builder: (context, watch, child) {
-                final products = context.read(swapMarketProvider).getProducts();
-                final currentProduct = watch(swapMarketProvider).currentProduct;
-                return ColoredContainer(
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                ColoredContainer(
                   width: 135.w,
                   height: 39.h,
                   child: DropdownButton<Product>(
@@ -160,140 +192,107 @@ class _SwapMarketState extends State<SwapMarket> {
                       subscribeToMarket();
                     },
                   ),
-                );
-              }),
-            ],
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 22.h),
-          child: const Divider(
-            thickness: 1,
-            height: 1,
-            color: Color(0xFF2B6F95),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(bottom: 15.h, left: 14.w, right: 14.w),
-          child: Row(
-            children: [
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Amount'.tr(),
-                      style: headerStyle,
-                    ),
-                    Text(
-                      'Bid'.tr(),
-                      style: headerStyle,
-                    ),
-                  ],
                 ),
-              ),
-              SizedBox(
-                width: 11.w,
-              ),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Offer'.tr(),
-                      style: headerStyle,
-                    ),
-                    Text(
-                      'Amount'.tr(),
-                      style: headerStyle,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        Consumer(
-          builder: (context, watch, child) {
-            final length = watch(swapMarketProvider).getMaxSwapOrderLength();
-            final bidOffers = context.read(swapMarketProvider).bidOffers;
-            final askOffers = context.read(swapMarketProvider).askOffers;
-            return Expanded(
-              child: RawScrollbar(
-                isAlwaysShown: true,
-                thickness: 3,
-                radius: Radius.circular(2.r),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 22.h),
+            child: const Divider(
+              thickness: 1,
+              height: 1,
+              color: Color(0xFF2B6F95),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.only(bottom: 15.h, left: 14.w, right: 14.w),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Amount'.tr(),
+                        style: headerStyle,
+                      ),
+                      Text(
+                        'Bid'.tr(),
+                        style: headerStyle,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 11.w,
+                ),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Offer'.tr(),
+                        style: headerStyle,
+                      ),
+                      Text(
+                        'Amount'.tr(),
+                        style: headerStyle,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: RawScrollbar(
+              isAlwaysShown: true,
+              thickness: 3,
+              radius: Radius.circular(2.r),
+              controller: scrollController,
+              thumbColor: const Color(0xFF78AECC),
+              child: ListView.builder(
                 controller: scrollController,
-                thumbColor: const Color(0xFF78AECC),
-                child: ListView.builder(
-                  controller: scrollController,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: length,
-                  itemBuilder: (context, index) {
-                    return Row(
-                      children: [
-                        if (index < bidOffers.length) ...[
-                          Padding(
-                            padding: EdgeInsets.only(left: 6.w),
-                            child: SwapAmountRow(
-                              requestOrder: bidOffers[index],
-                              onTap: (value) async {
-                                if (value.own) {
-                                  await context
-                                      .read(marketsProvider)
-                                      .onModifyPrice(value);
-                                  return;
-                                }
-
-                                context
-                                    .read(walletProvider)
-                                    .linkOrder(value.orderId);
-
-                                // TODO: mockups points here to SwapMarketOrderDetails
-                                // but that screen display wrong side data
-                                // consider how to back from Status.orderPopup
-                                // to markets page
-                              },
-                            ),
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: length,
+                itemBuilder: (context, index) {
+                  return Row(
+                    children: [
+                      if (index < bidOffers.length) ...[
+                        Padding(
+                          padding: EdgeInsets.only(left: 6.w),
+                          child: SwapAmountRow(
+                            isAmp: isAmp,
+                            assetPrecision: asset.precision,
+                            requestOrder: bidOffers[index],
+                            onTap: openOrder,
                           ),
-                          const Spacer(),
-                        ],
-                        if (index < askOffers.length) ...[
-                          const Spacer(),
-                          Padding(
-                            padding: EdgeInsets.only(right: 6.w),
-                            child: SwapAmountRow(
-                              requestOrder: askOffers[index],
-                              type: SwapAmountRowType.ask,
-                              inverted: true,
-                              onTap: (value) async {
-                                if (value.own) {
-                                  await context
-                                      .read(marketsProvider)
-                                      .onModifyPrice(value);
-                                  return;
-                                }
-
-                                context
-                                    .read(walletProvider)
-                                    .linkOrder(value.orderId);
-
-                                // TODO: same here like above
-                              },
-                            ),
-                          ),
-                        ],
+                        ),
+                        const Spacer(),
                       ],
-                    );
-                  },
-                ),
+                      if (index < askOffers.length) ...[
+                        const Spacer(),
+                        Padding(
+                          padding: EdgeInsets.only(right: 6.w),
+                          child: SwapAmountRow(
+                            isAmp: isAmp,
+                            assetPrecision: asset.precision,
+                            requestOrder: askOffers[index],
+                            type: SwapAmountRowType.ask,
+                            onTap: openOrder,
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ],
-    );
+            ),
+          ),
+        ],
+      );
+    });
   }
 }
 
@@ -306,14 +305,16 @@ class SwapAmountRow extends StatelessWidget {
   SwapAmountRow({
     Key? key,
     required this.requestOrder,
+    required this.isAmp,
+    required this.assetPrecision,
     this.type = SwapAmountRowType.bid,
-    this.inverted = false,
     this.onTap,
   }) : super(key: key);
 
   final RequestOrder requestOrder;
   final SwapAmountRowType type;
-  final bool inverted;
+  final bool isAmp;
+  final int assetPrecision;
   final Function(RequestOrder)? onTap;
 
   final amountStyle = GoogleFonts.roboto(
@@ -324,10 +325,11 @@ class SwapAmountRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final amountString = amountStr(requestOrder.bitcoinAmount);
-    final price = requestOrder.price;
-    final priceString =
-        replaceCharacterOnPosition(input: price.toStringAsFixed(2));
+    final amountString = isAmp
+        ? amountStr(requestOrder.assetAmount, precision: assetPrecision)
+        : amountStr(requestOrder.bitcoinAmount);
+    final price =
+        priceStrForMarket(requestOrder.price, requestOrder.marketType);
     return Padding(
       padding: EdgeInsets.only(bottom: 6.h),
       child: CustomPaint(
@@ -368,38 +370,28 @@ class SwapAmountRow extends StatelessWidget {
                   Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 6.w, vertical: 10.h),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        if (inverted) ...[
-                          Text(
-                            priceString,
-                            style: amountStyle.copyWith(
-                              color: type == SwapAmountRowType.bid
-                                  ? const Color(0xFF2CCCBF)
-                                  : const Color(0xFFFF7878),
-                            ),
+                    child: Builder(builder: (context) {
+                      var children = [
+                        Text(
+                          amountString,
+                          style: amountStyle,
+                        ),
+                        Text(
+                          price,
+                          style: amountStyle.copyWith(
+                            color: type == SwapAmountRowType.bid
+                                ? const Color(0xFF2CCCBF)
+                                : const Color(0xFFFF7878),
                           ),
-                          Text(
-                            amountString,
-                            style: amountStyle,
-                          ),
-                        ] else ...[
-                          Text(
-                            amountString,
-                            style: amountStyle,
-                          ),
-                          Text(
-                            priceString,
-                            style: amountStyle.copyWith(
-                              color: type == SwapAmountRowType.bid
-                                  ? const Color(0xFF2CCCBF)
-                                  : const Color(0xFFFF7878),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                        ),
+                      ];
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: type == SwapAmountRowType.bid
+                            ? children
+                            : children.reversed.toList(),
+                      );
+                    }),
                   ),
                 ],
               ),

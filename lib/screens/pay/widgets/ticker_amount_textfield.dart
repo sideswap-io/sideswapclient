@@ -3,23 +3,26 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
-import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/pay/payment_select_account.dart';
 import 'package:sideswap/screens/swap/fee_suggestions.dart';
+import 'package:sideswap/models/swap_provider.dart';
 
 class TickerAmountTextField extends StatefulWidget {
   const TickerAmountTextField({
     Key? key,
+    this.text,
     this.onDropdownChanged,
     required this.dropdownValue,
     this.controller,
     this.focusNode,
     this.onChanged,
-    this.availableAssets = const <String>[],
+    this.availableAssets = const <AccountAsset>[],
+    this.disabledAssets = const <AccountAsset>[],
     this.readOnly = false,
     this.dropdownReadOnly = false,
     this.showError = false,
@@ -30,14 +33,17 @@ class TickerAmountTextField extends StatefulWidget {
     this.onSubmitted,
     this.onEditingComplete,
     this.textInputAction,
+    this.showAccountsInPopup = false,
   }) : super(key: key);
 
-  final void Function(String)? onDropdownChanged;
-  final String dropdownValue;
+  final String? text;
+  final void Function(AccountAsset)? onDropdownChanged;
+  final AccountAsset dropdownValue;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final ValueChanged<String>? onChanged;
-  final List<String> availableAssets;
+  final List<AccountAsset> availableAssets;
+  final List<AccountAsset> disabledAssets;
   final bool readOnly;
   final bool dropdownReadOnly;
   final bool showError;
@@ -48,6 +54,7 @@ class TickerAmountTextField extends StatefulWidget {
   final void Function(String)? onSubmitted;
   final void Function()? onEditingComplete;
   final TextInputAction? textInputAction;
+  final bool showAccountsInPopup;
 
   @override
   _TickerAmountTextFieldState createState() => _TickerAmountTextFieldState();
@@ -104,6 +111,124 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
     }
   }
 
+  Widget buildDropdown() {
+    return Builder(builder: (context) {
+      return SizedBox(
+        width: 90.w,
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<AccountAsset>(
+            isExpanded: true,
+            icon: widget.dropdownReadOnly
+                ? Container()
+                : const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.white,
+                  ),
+            dropdownColor: const Color(0xFF2B6F95),
+            style: _dropdownTextStyle,
+            onChanged: widget.dropdownReadOnly
+                ? null
+                : (value) {
+                    if (widget.onDropdownChanged == null || value == null) {
+                      return;
+                    }
+                    widget.onDropdownChanged!(value);
+                  },
+            disabledHint: widget.dropdownReadOnly
+                ? Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          context
+                                  .read(walletProvider)
+                                  .getAssetById(widget.dropdownValue.asset)
+                                  ?.ticker ??
+                              '',
+                          textAlign: TextAlign.left,
+                          style: _dropdownTextStyle,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.fade,
+                        ),
+                      ),
+                    ],
+                  )
+                : null,
+            value: widget.dropdownValue,
+            items: widget.availableAssets.map((value) {
+              final _asset = context.read(walletProvider).assets[value.asset];
+              final image = context
+                  .read(walletProvider)
+                  .assetImagesSmall[_asset?.assetId];
+
+              return DropdownMenuItem<AccountAsset>(
+                value: value,
+                child: Row(
+                  children: [
+                    if (image != null) ...[
+                      image,
+                    ],
+                    Container(
+                      width: 8.w,
+                    ),
+                    if (_asset?.ticker != null) ...[
+                      Expanded(
+                        child: Text(
+                          _asset?.ticker ?? '',
+                          textAlign: TextAlign.left,
+                          style: _dropdownTextStyle,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.fade,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+            selectedItemBuilder: (context) {
+              return widget.availableAssets.map((value) {
+                final _asset = context.read(walletProvider).assets[value.asset];
+                if (_asset?.ticker == null) {
+                  return Container();
+                }
+
+                return Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _asset?.ticker ?? '',
+                        textAlign: TextAlign.left,
+                        style: _dropdownTextStyle,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.fade,
+                      ),
+                    ),
+                  ],
+                );
+              }).toList();
+            },
+          ),
+        ),
+      );
+    });
+  }
+
+  void showAccountsPopup() {
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(
+          builder: (context) => PaymentSelectAccount(
+                availableAssets: widget.availableAssets,
+                disabledAssets: widget.disabledAssets,
+                onSelected: (AccountAsset value) {
+                  widget.onDropdownChanged!(value);
+                },
+              )),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final borderDecoration = BoxDecoration(
@@ -140,7 +265,7 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                         builder: (context, watch, child) {
                           final _icon = context
                               .read(walletProvider)
-                              .assetImagesSmall[widget.dropdownValue];
+                              .assetImagesSmall[widget.dropdownValue.asset];
 
                           return SizedBox(
                             width: 32.w,
@@ -151,112 +276,14 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       ),
                       Padding(
                           padding: EdgeInsets.only(left: 8.w),
-                          child: SizedBox(
-                            width: 90.w,
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                isExpanded: true,
-                                icon: widget.dropdownReadOnly
-                                    ? Container()
-                                    : const Icon(
-                                        Icons.keyboard_arrow_down,
-                                        color: Colors.white,
-                                      ),
-                                dropdownColor: const Color(0xFF2B6F95),
-                                style: _dropdownTextStyle,
-                                onChanged: widget.dropdownReadOnly
-                                    ? null
-                                    : (value) {
-                                        if (widget.onDropdownChanged == null ||
-                                            value == null) {
-                                          return;
-                                        }
-                                        widget.onDropdownChanged!(value);
-                                      },
-                                disabledHint: widget.dropdownReadOnly
-                                    ? Row(
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              context
-                                                      .read(walletProvider)
-                                                      .getAssetById(
-                                                          widget.dropdownValue)
-                                                      ?.ticker ??
-                                                  '',
-                                              textAlign: TextAlign.left,
-                                              style: _dropdownTextStyle,
-                                              maxLines: 1,
-                                              softWrap: false,
-                                              overflow: TextOverflow.fade,
-                                            ),
-                                          ),
-                                        ],
-                                      )
-                                    : null,
-                                value: widget.dropdownValue,
-                                items: widget.availableAssets.map((value) {
-                                  final _asset = context
-                                      .read(walletProvider)
-                                      .assets[value];
-                                  final image = context
-                                      .read(walletProvider)
-                                      .assetImagesSmall[_asset?.assetId];
-
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Row(
-                                      children: [
-                                        if (image != null) ...[
-                                          image,
-                                        ],
-                                        Container(
-                                          width: 8.w,
-                                        ),
-                                        if (_asset?.ticker != null) ...[
-                                          Expanded(
-                                            child: Text(
-                                              _asset?.ticker ?? '',
-                                              textAlign: TextAlign.left,
-                                              style: _dropdownTextStyle,
-                                              maxLines: 1,
-                                              softWrap: false,
-                                              overflow: TextOverflow.fade,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  );
-                                }).toList(),
-                                selectedItemBuilder: (context) {
-                                  return widget.availableAssets.map((value) {
-                                    final _asset = context
-                                        .read(walletProvider)
-                                        .assets[value];
-                                    if (_asset?.ticker == null) {
-                                      return Container();
-                                    }
-
-                                    return Row(
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            _asset?.ticker ?? '',
-                                            textAlign: TextAlign.left,
-                                            style: _dropdownTextStyle,
-                                            maxLines: 1,
-                                            softWrap: false,
-                                            overflow: TextOverflow.fade,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  }).toList();
-                                },
-                              ),
-                            ),
-                          )),
+                          child: (widget.showAccountsInPopup)
+                              ? GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: widget.dropdownReadOnly
+                                      ? null
+                                      : showAccountsPopup,
+                                  child: IgnorePointer(child: buildDropdown()))
+                              : buildDropdown()),
                     ],
                   ),
                 ),
@@ -341,10 +368,9 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       }
 
                       final assetPrecision = context
-                              .read(walletProvider)
-                              .assets[widget.dropdownValue]
-                              ?.precision ??
-                          kDefaultPrecision;
+                          .read(walletProvider)
+                          .assets[widget.dropdownValue.asset]!
+                          .precision;
 
                       return SizedBox(
                         height: 42.h,

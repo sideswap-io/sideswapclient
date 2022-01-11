@@ -17,9 +17,6 @@ pub enum WrappedResponse {
     Response(ResponseMessage),
 }
 
-pub type Sender = std::sync::mpsc::Sender<WrappedRequest>;
-pub type Receiver = std::sync::mpsc::Receiver<WrappedResponse>;
-
 static GLOBAL_REQUEST_ID: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(1);
 
 pub fn next_request_id() -> RequestId {
@@ -43,8 +40,9 @@ async fn run(
     port: u16,
     use_tls: bool,
     sync: bool,
-    req_rx: std::sync::mpsc::Receiver<WrappedRequest>,
-    resp_tx: std::sync::mpsc::Sender<WrappedResponse>,
+    req_rx: crossbeam_channel::Receiver<WrappedRequest>,
+    resp_tx: crossbeam_channel::Sender<WrappedResponse>,
+    mut hint_rx: tokio::sync::mpsc::UnboundedReceiver<()>,
 ) {
     let (req_tx_async, mut req_rx_async) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
     std::thread::spawn(move || {
@@ -80,19 +78,33 @@ async fn run(
 
         let mut reconnect_count = 0;
         let mut ws_stream = None;
+
         while ws_stream.is_none() {
-            let connect_result = connect_async(&url).await;
-            match connect_result {
-                Ok((v, _)) => ws_stream = Some(v),
-                Err(e) => {
-                    error!("ws connection to the server failed: {}", e);
-                    let delay = RECONNECT_WAIT_PERIODS
-                        .get(reconnect_count)
-                        .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
-                    tokio::time::delay_for(*delay).await;
-                    reconnect_count += 1;
+            debug!("try ws connection...");
+            let delay = RECONNECT_WAIT_PERIODS
+                .get(reconnect_count)
+                .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
+            tokio::select! {
+                connect_result = async {
+                    let connect_result = connect_async(&url).await;
+                    if connect_result.is_err() {
+                        tokio::time::sleep(*delay).await
+                    }
+                    connect_result
+                } => {
+                    match connect_result {
+                        Ok((v, _)) => ws_stream = Some(v),
+                        Err(e) => {
+                            error!("ws connection to the server failed: {}", e);
+                            reconnect_count += 1;
+                        }
+                    };
                 }
-            };
+                _ = hint_rx.recv() => {
+                    debug!("reconnect hint received");
+                    reconnect_count = 0;
+                }
+            }
         }
         let mut ws_stream = ws_stream.unwrap();
 
@@ -134,7 +146,7 @@ async fn run(
                     }
                 }
 
-                client_result = req_rx_async.next() => {
+                client_result = req_rx_async.recv() => {
                     let client_result = match client_result {
                         Some(v) => v,
                         None => {
@@ -175,16 +187,25 @@ async fn run(
     }
 }
 
-pub fn start(host: String, port: u16, use_tls: bool, sync: bool) -> (Sender, Receiver) {
-    let (req_tx, req_rx) = std::sync::mpsc::channel::<WrappedRequest>();
-    let (resp_tx, resp_rx) = std::sync::mpsc::channel::<WrappedResponse>();
+pub fn start(
+    host: String,
+    port: u16,
+    use_tls: bool,
+    sync: bool,
+) -> (
+    crossbeam_channel::Sender<WrappedRequest>,
+    crossbeam_channel::Receiver<WrappedResponse>,
+    tokio::sync::mpsc::UnboundedSender<()>,
+) {
+    let (req_tx, req_rx) = crossbeam_channel::unbounded::<WrappedRequest>();
+    let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<WrappedResponse>();
+    let (hint_tx, hint_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
     std::thread::spawn(move || {
-        let mut rt = tokio::runtime::Builder::new()
-            .basic_scheduler()
+        let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(run(host, port, use_tls, sync, req_rx, resp_tx));
+        rt.block_on(run(host, port, use_tls, sync, req_rx, resp_tx, hint_rx));
     });
-    (req_tx, resp_rx)
+    (req_tx, resp_rx, hint_tx)
 }

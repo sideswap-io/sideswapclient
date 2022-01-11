@@ -4,16 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/models/config_provider.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
 class AssetSelectItem extends StatelessWidget {
-  final Asset? asset;
-  const AssetSelectItem({Key? key, this.asset}) : super(key: key);
+  final AccountAsset account;
+  const AssetSelectItem({Key? key, required this.account}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final wallet = context.read(walletProvider);
+    final assetImage = wallet.assetImagesBig[account.asset];
+    final asset = wallet.assets[account.asset]!;
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
       child: SizedBox(
@@ -24,9 +27,7 @@ class AssetSelectItem extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () async {
-              await context
-                  .read(walletProvider)
-                  .toggleAssetVisibility(asset?.assetId);
+              await context.read(walletProvider).toggleAssetVisibility(account);
             },
             child: AbsorbPointer(
               child: Padding(
@@ -34,16 +35,10 @@ class AssetSelectItem extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Consumer(
-                      builder: (context, watch, child) {
-                        final _assetImagesBig =
-                            watch(walletProvider).assetImagesBig;
-                        return SizedBox(
-                          width: 45.w,
-                          height: 45.w,
-                          child: _assetImagesBig[asset?.assetId],
-                        );
-                      },
+                    SizedBox(
+                      width: 45.w,
+                      height: 45.w,
+                      child: assetImage,
                     ),
                     Expanded(
                       child: Padding(
@@ -55,7 +50,7 @@ class AssetSelectItem extends StatelessWidget {
                             Padding(
                               padding: EdgeInsets.only(bottom: 4.h),
                               child: Text(
-                                asset?.name ?? '',
+                                asset.name,
                                 overflow: TextOverflow.clip,
                                 maxLines: 1,
                                 textAlign: TextAlign.left,
@@ -66,14 +61,19 @@ class AssetSelectItem extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Text(
-                              asset?.ticker ?? '',
-                              textAlign: TextAlign.right,
-                              style: GoogleFonts.roboto(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.normal,
-                                color: const Color(0xFF6B91A8),
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  asset.ticker,
+                                  textAlign: TextAlign.right,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.normal,
+                                    color: const Color(0xFF6B91A8),
+                                  ),
+                                ),
+                                if (account.account.isAmp()) const AmpFlag()
+                              ],
                             ),
                           ],
                         ),
@@ -81,11 +81,11 @@ class AssetSelectItem extends StatelessWidget {
                     ),
                     Consumer(
                       builder: (context, watch, child) {
-                        final _selected = watch(configProvider)
-                            .disabledAssetIds
-                            .contains(asset?.assetId);
+                        final wallet = context.read(walletProvider);
+                        final _selected = !wallet.disabledAssetAccount(account);
                         return FlutterSwitch(
-                          value: !_selected,
+                          value: _selected,
+                          disabled: false,
                           onToggle: (val) {},
                           width: 51.h,
                           height: 31.h,

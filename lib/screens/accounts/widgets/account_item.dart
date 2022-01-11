@@ -4,35 +4,47 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
 class AccountItem extends ConsumerWidget {
-  final Asset? asset;
+  final AccountAsset accountAsset;
   final int balance;
-  const AccountItem({Key? key, this.asset, this.balance = 0}) : super(key: key);
+  final ValueChanged<AccountAsset> onSelected;
+  final bool disabled;
+  const AccountItem({
+    Key? key,
+    required this.accountAsset,
+    this.balance = 0,
+    required this.onSelected,
+    this.disabled = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context, ScopedReader watch) {
-    final assetImage = watch(walletProvider).assetImagesBig[asset?.assetId];
-    final precision = context
-        .read(walletProvider)
-        .getPrecisionForAssetId(assetId: asset?.assetId);
+    final wallet = watch(walletProvider);
+    final asset = wallet.assets[accountAsset.asset]!;
+    final assetImage = wallet.assetImagesBig[accountAsset.asset];
+    final precision =
+        wallet.getPrecisionForAssetId(assetId: accountAsset.asset);
     final amountString = amountStr(
-      context.read(balancesProvider).balances[asset?.assetId] ?? 0,
+      context.read(balancesProvider).balances[accountAsset] ?? 0,
       precision: precision,
     );
+    final isAmp = accountAsset.account.isAmp();
     final amount = precision == 0
         ? int.tryParse(amountString) ?? 0
         : double.tryParse(amountString) ?? .0;
-    final amountUsd =
-        context.read(walletProvider).getAmountUsd(asset?.assetId, amount);
+    final amountUsd = wallet.getAmountUsd(accountAsset.asset, amount);
     var _dollarConversion = '0.0';
     _dollarConversion = amountUsd.toStringAsFixed(2);
     _dollarConversion = replaceCharacterOnPosition(
         input: _dollarConversion, currencyChar: '\$');
+    final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
+    final backgrounColor =
+        disabled ? const Color(0xFF034569) : const Color(0xFF135579);
 
     return Padding(
       padding: EdgeInsets.only(bottom: 8.h),
@@ -40,21 +52,17 @@ class AccountItem extends ConsumerWidget {
         height: 80.h,
         child: TextButton(
           style: TextButton.styleFrom(
-            backgroundColor: const Color(0xFF135579),
+            backgroundColor: backgrounColor,
             padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: () {
-            final uiStateArgs = context.read(uiStateArgsProvider);
-            uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments
-                .copyWith(
-                    navigationItem: WalletMainNavigationItem.assetDetails);
-            if (asset?.assetId != null) {
-              context.read(walletProvider).selectAssetDetails(asset!.assetId);
-            }
-          },
+          onPressed: disabled
+              ? null
+              : () {
+                  onSelected(accountAsset);
+                },
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 14.w),
             child: Row(
@@ -77,14 +85,14 @@ class AccountItem extends ConsumerWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                asset?.name ?? '',
+                                asset.name,
                                 overflow: TextOverflow.clip,
                                 maxLines: 1,
                                 textAlign: TextAlign.left,
                                 style: GoogleFonts.roboto(
                                   fontSize: 17.sp,
                                   fontWeight: FontWeight.normal,
-                                  color: Colors.white,
+                                  color: textColor,
                                 ),
                               ),
                             ),
@@ -96,7 +104,7 @@ class AccountItem extends ConsumerWidget {
                                 style: GoogleFonts.roboto(
                                   fontSize: 17.sp,
                                   fontWeight: FontWeight.normal,
-                                  color: Colors.white,
+                                  color: textColor,
                                 ),
                               ),
                             ),
@@ -105,13 +113,19 @@ class AccountItem extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              asset?.ticker ?? '',
-                              style: GoogleFonts.roboto(
-                                fontSize: 15.sp,
-                                fontWeight: FontWeight.normal,
-                                color: const Color(0xFF6B91A8),
-                              ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  asset.ticker,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 15.sp,
+                                    fontWeight: FontWeight.normal,
+                                    color: const Color(0xFF6B91A8),
+                                  ),
+                                ),
+                                if (isAmp) const AmpFlag(fontSize: 14),
+                              ],
                             ),
                             if (amountUsd != 0) ...[
                               Text(

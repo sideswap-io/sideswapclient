@@ -17,19 +17,17 @@ use android_logger::{Config, FilterBuilder};
 use log::Level;
 use std::ffi::CString;
 use std::fmt;
-use std::mem::transmute;
 use std::os::raw::c_char;
 use std::sync::Once;
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use gdk_common::model::{
-    CreateAccountOpt, GDKRUST_json, GetNextAccountOpt, GetTransactionsOpt, RenameAccountOpt,
-    SPVVerifyTx, SetAccountHiddenOpt, UpdateAccountOpt,
+    CreateAccountOpt, GetNextAccountOpt, GetTransactionsOpt, RenameAccountOpt, SPVVerifyTx,
+    SetAccountHiddenOpt, UpdateAccountOpt,
 };
 use gdk_common::session::Session;
 
 use crate::error::Error;
-use chrono::Utc;
 use gdk_electrum::{ElectrumSession, NativeNotif};
 use log::{LevelFilter, Metadata, Record};
 use std::str::FromStr;
@@ -49,87 +47,6 @@ pub enum GdkBackend {
     Electrum(ElectrumSession),
 }
 
-#[derive(Debug)]
-#[repr(C)]
-pub enum GA_auth_handler {
-    Error(String),
-    Done(Value),
-}
-
-impl GA_auth_handler {
-    fn _done(res: Value) -> *const GA_auth_handler {
-        info!("GA_auth_handler::done() {:?}", res);
-        let handler = GA_auth_handler::Done(res);
-        unsafe { transmute(Box::new(handler)) }
-    }
-    fn _success() -> *const GA_auth_handler {
-        GA_auth_handler::_done(Value::Null)
-    }
-
-    fn _to_json(&self) -> Value {
-        match self {
-            GA_auth_handler::Error(err) => json!({ "status": "error", "error": err }),
-            GA_auth_handler::Done(res) => json!({ "status": "done", "result": res }),
-        }
-    }
-}
-
-//
-// Macros
-//
-
-macro_rules! tryit {
-    ($x:expr) => {
-        match $x {
-            Err(err) => {
-                error!("error: {:?}", err);
-                return GA_ERROR;
-            }
-            Ok(x) => {
-                // can't easily print x because bitcoincore_rpc::Client is not serializable :(
-                // should be fixed with https://github.com/rust-bitcoin/rust-bitcoincore-rpc/pull/51
-                x
-            }
-        }
-    };
-}
-
-macro_rules! ok {
-    ($t:expr, $x:expr, $ret:expr) => {
-        unsafe {
-            let x = $x;
-            trace!("ok!() {:?}", x);
-            *$t = x;
-            $ret
-        }
-    };
-}
-
-macro_rules! json_res {
-    ($t:expr, $x:expr, $ret:expr) => {{
-        let x = json!($x);
-        ok!($t, GDKRUST_json::new(x), $ret)
-    }};
-}
-
-macro_rules! safe_ref {
-    ($t:expr) => {{
-        if $t.is_null() {
-            return GA_ERROR;
-        }
-        unsafe { &*$t }
-    }};
-}
-
-macro_rules! safe_mut_ref {
-    ($t:expr) => {{
-        if $t.is_null() {
-            return GA_ERROR;
-        }
-        unsafe { &mut *$t }
-    }};
-}
-
 //
 // Session & account management
 //
@@ -138,11 +55,17 @@ static INIT_LOGGER: Once = Once::new();
 
 #[no_mangle]
 pub extern "C" fn GDKRUST_create_session(
-    ret: *mut *const GdkSession,
-    network: *const GDKRUST_json,
+    ret: *mut *const libc::c_void,
+    network: *const c_char,
 ) -> i32 {
     const DEFAULT_LOG_LEVEL: LevelFilter = LevelFilter::Off;
-    let network = &safe_ref!(network).0;
+    let network: Value = match serde_json::from_str(&read_str(network)) {
+        Ok(x) => x,
+        Err(err) => {
+            error!("error: {:?}", err);
+            return GA_ERROR;
+        }
+    };
     let level = if network.is_object() {
         match network.as_object().unwrap().get("log_level") {
             Some(Value::String(val)) => LevelFilter::from_str(val).unwrap_or(DEFAULT_LOG_LEVEL),
@@ -154,16 +77,19 @@ pub extern "C" fn GDKRUST_create_session(
     init_logging(level);
     debug!("init logging");
 
-    let sess = create_session(&network);
-
-    if let Err(err) = sess {
-        error!("create_session error: {}", err);
-        return GA_ERROR;
+    match create_session(&network) {
+        Err(err) => {
+            error!("create_session error: {}", err);
+            GA_ERROR
+        }
+        Ok(session) => {
+            let session = Box::new(session);
+            unsafe {
+                *ret = Box::into_raw(session) as *mut libc::c_void;
+            };
+            GA_OK
+        }
     }
-
-    let sess = unsafe { transmute(Box::new(sess.unwrap())) };
-
-    ok!(ret, sess, GA_OK)
 }
 
 /// Initialize the logging framework.
@@ -231,11 +157,18 @@ fn fetch_cached_exchange_rates(sess: &mut GdkSession) -> Option<Vec<Ticker>> {
         debug!("hit exchange rate cache");
     } else {
         info!("missed exchange rate cache");
-        let agent = match sess.backend {
-            GdkBackend::Electrum(ref s) => s.build_request_agent(),
+        let (agent, is_mainnet) = match sess.backend {
+            GdkBackend::Electrum(ref s) => (s.build_request_agent(), s.network.mainnet),
         };
         if let Ok(agent) = agent {
-            let rates = fetch_exchange_rates(agent);
+            let rates = if is_mainnet {
+                fetch_exchange_rates(agent)
+            } else {
+                vec![Ticker {
+                    pair: Pair::new(Currency::BTC, Currency::USD),
+                    rate: 1.1,
+                }]
+            };
             // still record time even if we get no results
             sess.last_xr_fetch = SystemTime::now();
             if !rates.is_empty() {
@@ -250,25 +183,40 @@ fn fetch_cached_exchange_rates(sess: &mut GdkSession) -> Option<Vec<Ticker>> {
 
 #[no_mangle]
 pub extern "C" fn GDKRUST_call_session(
-    sess: *mut GdkSession,
+    ptr: *mut libc::c_void,
     method: *const c_char,
-    input: *const GDKRUST_json,
-    output: *mut *const GDKRUST_json,
+    input: *const c_char,
+    output: *mut *const c_char,
 ) -> i32 {
     let method = read_str(method);
-    let input = &safe_ref!(input).0;
+    let input: Value = match serde_json::from_str(&read_str(input)) {
+        Ok(x) => x,
+        Err(err) => {
+            error!("error: {:?}", err);
+            return GA_ERROR;
+        }
+    };
 
-    let sess = safe_mut_ref!(sess);
+    if ptr.is_null() {
+        return GA_ERROR;
+    }
+    let sess: &mut GdkSession = unsafe { &mut *(ptr as *mut GdkSession) };
 
     if method == "exchange_rates" {
         let rates = fetch_cached_exchange_rates(sess).unwrap_or_default();
-        return json_res!(output, tickers_to_json(rates), GA_OK);
+        let s = make_str(tickers_to_json(rates).to_string());
+        unsafe {
+            *output = s;
+        }
+        return GA_OK;
     }
 
     // Redact inputs containing private data
-    let methods_to_redact = vec!["login", "register_user", "set_pin", "create_subaccount"];
+    let methods_to_redact_in =
+        vec!["login", "register_user", "set_pin", "create_subaccount", "mnemonic_from_pin_data"];
     let input_str = format!("{:?}", &input);
-    let input_redacted = if methods_to_redact.contains(&method.as_str())
+    let input_redacted = if methods_to_redact_in.contains(&method.as_str())
+        || input_str.contains("pin")
         || input_str.contains("mnemonic")
         || input_str.contains("xprv")
     {
@@ -283,7 +231,8 @@ pub extern "C" fn GDKRUST_call_session(
         // GdkSession::Rpc(ref s) => handle_call(s, method),
     };
 
-    let mut output_redacted = if method == "get_mnemonic" {
+    let methods_to_redact_out = vec!["get_mnemonic", "mnemonic_from_pin_data"];
+    let mut output_redacted = if methods_to_redact_out.contains(&method.as_str()) {
         "redacted".to_string()
     } else {
         format!("{:?}", res)
@@ -291,31 +240,38 @@ pub extern "C" fn GDKRUST_call_session(
     output_redacted.truncate(200);
     info!("GDKRUST_call_session {} output {:?}", method, output_redacted);
 
-    match res {
-        Ok(ref val) => json_res!(output, val, GA_OK),
+    let (s, ret) = match res {
+        Ok(ref val) => (val.to_string(), GA_OK),
         Err(ref e) => {
             let code = e.to_gdk_code();
             let desc = e.gdk_display();
 
             let ret_val = match e {
                 Error::Electrum(gdk_electrum::error::Error::InvalidPin) => GA_NOT_AUTHORIZED,
-                Error::Electrum(gdk_electrum::error::Error::PinError) => GA_ERROR,
-                _ => GA_OK,
+                _ => GA_ERROR,
             };
 
             info!("rust error {}: {}", code, desc);
-            json_res!(output, json!({ "error": code, "message": desc }), ret_val)
+            (json!({ "error": code, "message": desc }).to_string(), ret_val)
         }
+    };
+    let s = make_str(s);
+    unsafe {
+        *output = s;
     }
+    ret
 }
 
 #[no_mangle]
 pub extern "C" fn GDKRUST_set_notification_handler(
-    sess: *mut GdkSession,
-    handler: extern "C" fn(*const libc::c_void, *const GDKRUST_json),
+    ptr: *mut libc::c_void,
+    handler: extern "C" fn(*const libc::c_void, *const c_char),
     self_context: *const libc::c_void,
 ) -> i32 {
-    let sess = safe_mut_ref!(sess);
+    if ptr.is_null() {
+        return GA_ERROR;
+    }
+    let sess: &mut GdkSession = unsafe { &mut *(ptr as *mut GdkSession) };
     let backend = &mut sess.backend;
 
     match backend {
@@ -353,7 +309,7 @@ fn tickers_to_json(tickers: Vec<Ticker>) -> Value {
     let empty_map = serde_json::map::Map::new();
     let currency_map = Value::Object(tickers.iter().fold(empty_map, |mut acc, ticker| {
         let currency = ticker.pair.second();
-        acc.insert(currency.to_string(), ticker.rate.to_string().into());
+        acc.insert(currency.to_string(), format!("{:.8}", ticker.rate).into());
         acc
     }));
 
@@ -369,31 +325,26 @@ where
     match method {
         "poll_session" => session.poll_session().map(|v| json!(v)).map_err(Into::into),
 
-        "destroy_session" => session.destroy_session().map(|v| json!(v)).map_err(Into::into),
-
         "connect" => session.connect(input).map(|v| json!(v)).map_err(Into::into),
 
         "disconnect" => session.disconnect().map(|v| json!(v)).map_err(Into::into),
 
         "login" => login(session, input).map(|v| json!(v)),
-        "login_with_pin" => login_with_pin(session, input).map(|v| json!(v)),
+        "mnemonic_from_pin_data" => {
+            mnemonic_from_pin_data(session, input).map(|v| json!(v)).map_err(Into::into)
+        }
         "set_pin" => session
             .set_pin(&serde_json::from_value(input.clone())?)
             .map(|v| json!(v))
             .map_err(Into::into),
 
-        "get_subaccounts" => {
-            session.get_subaccounts().map(|x| serialize::subaccounts_value(&x)).map_err(Into::into)
-        }
+        "get_subaccounts" => session.get_subaccounts().map(|v| json!(v)).map_err(Into::into),
 
         "get_subaccount" => get_subaccount(session, input),
 
         "create_subaccount" => {
             let opt: CreateAccountOpt = serde_json::from_value(input.clone())?;
-            session
-                .create_subaccount(opt)
-                .map(|x| serialize::subaccount_value(&x))
-                .map_err(Into::into)
+            session.create_subaccount(opt).map(|v| json!(v)).map_err(Into::into)
         }
         "get_next_subaccount" => {
             let opt: GetNextAccountOpt = serde_json::from_value(input.clone())?;
@@ -420,7 +371,7 @@ where
             session.get_transactions(&opt).map(|x| txs_result_value(&x)).map_err(Into::into)
         }
 
-        "get_transaction_details" => get_transaction_details(session, input),
+        "get_raw_transaction_details" => get_raw_transaction_details(session, input),
         "get_balance" => session
             .get_balance(&serde_json::from_value(input.clone())?)
             .map(|v| json!(v))
@@ -483,49 +434,32 @@ where
 }
 
 #[no_mangle]
-pub extern "C" fn GDKRUST_convert_json_to_string(
-    json: *const GDKRUST_json,
-    ret: *mut *const c_char,
-) -> i32 {
-    let json = &unsafe { &*json }.0;
-    let res = json.to_string();
-    ok!(ret, make_str(res), GA_OK)
-}
-
-#[no_mangle]
-pub extern "C" fn GDKRUST_convert_string_to_json(
-    jstr: *const c_char,
-    ret: *mut *const GDKRUST_json,
-) -> i32 {
-    let jstr = read_str(jstr);
-    let json: Value = tryit!(serde_json::from_str(&jstr));
-    json_res!(ret, json, GA_OK)
-}
-
-#[no_mangle]
-pub extern "C" fn GDKRUST_destroy_json(ptr: *mut GDKRUST_json) -> i32 {
-    trace!("GA_destroy_json({:?})", ptr);
-    // TODO make sure this works
-    unsafe {
-        drop(&*ptr);
-    }
-    GA_OK
-}
-
-#[no_mangle]
-pub extern "C" fn GDKRUST_destroy_string(ptr: *mut c_char) -> i32 {
+pub extern "C" fn GDKRUST_destroy_string(ptr: *mut c_char) {
     unsafe {
         // retake pointer and drop
         let _ = CString::from_raw(ptr);
     }
-    GA_OK
 }
 
 #[no_mangle]
-pub extern "C" fn GDKRUST_spv_verify_tx(input: *const GDKRUST_json) -> i32 {
+pub extern "C" fn GDKRUST_destroy_session(ptr: *mut libc::c_void) {
+    unsafe {
+        // retake pointer and drop
+        let _ = Box::from_raw(ptr as *mut GdkSession);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn GDKRUST_spv_verify_tx(input: *const c_char) -> i32 {
     init_logging(LevelFilter::Info);
     info!("GDKRUST_spv_verify_tx");
-    let input: &Value = &safe_ref!(input).0;
+    let input: Value = match serde_json::from_str(&read_str(input)) {
+        Ok(x) => x,
+        Err(err) => {
+            error!("error: {:?}", err);
+            return GA_ERROR;
+        }
+    };
     let input: SPVVerifyTx = match serde_json::from_value(input.clone()) {
         Ok(val) => val,
         Err(e) => {
@@ -549,12 +483,26 @@ pub struct SimpleLogger;
 
 impl log::Log for SimpleLogger {
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() <= log::max_level()
+        let level = metadata.level();
+        if level > log::Level::Debug {
+            level <= log::max_level()
+        } else {
+            level <= log::max_level()
+                && !metadata.target().starts_with("rustls")
+                && !metadata.target().starts_with("electrum_client")
+        }
     }
 
     fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) {
-            println!("{} {} - {}", Utc::now().format("%S%.3f"), record.level(), record.args());
+            let ts = SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards");
+            println!(
+                "{:02}.{:03} {} - {}",
+                ts.as_secs() % 60,
+                ts.subsec_millis(),
+                record.level(),
+                record.args()
+            );
         }
     }
 

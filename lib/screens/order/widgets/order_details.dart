@@ -1,16 +1,19 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/utils/custom_logger.dart';
-import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/common/helpers.dart';
 
 enum OrderDetailsDataType {
   submit,
   quote,
   sign,
+}
+
+enum MarketType {
+  stablecoin,
+  amp,
+  token,
 }
 
 extension OrderDetailsDataEx on OrderDetailsData {
@@ -34,18 +37,9 @@ extension OrderDetailsDataEx on OrderDetailsData {
     return amountStr(fee, precision: bitcoinPrecision);
   }
 
-  String get bitcoinAmountWithFeeStr {
-    return sellBitcoin
-        ? amountStr(bitcoinAmount + fee, precision: bitcoinPrecision)
-        : amountStr(bitcoinAmount - fee, precision: bitcoinPrecision);
-  }
-
   String get priceAmountStr {
-    return priceStr(priceAmount);
-  }
-
-  String get priceAmountInvertedStr {
-    return priceStr(1 / priceAmount);
+    final priceInLiquid = marketType != MarketType.stablecoin;
+    return priceStr(priceAmount, priceInLiquid);
   }
 }
 
@@ -57,6 +51,7 @@ class OrderDetailsData {
     required this.assetAmount,
     required this.assetPrecision,
     required this.assetId,
+    required this.marketType,
     this.orderType,
     this.sellBitcoin = true,
     required this.orderId,
@@ -85,6 +80,7 @@ class OrderDetailsData {
   final bool autoSign;
   final bool own;
   final double indexPrice;
+  final MarketType marketType;
 
   factory OrderDetailsData.empty() {
     return OrderDetailsData(
@@ -96,6 +92,7 @@ class OrderDetailsData {
       fee: 0,
       assetId: '',
       orderId: '',
+      marketType: MarketType.stablecoin,
     );
   }
 
@@ -104,8 +101,7 @@ class OrderDetailsData {
     final sendBitcoins = requestOrder.sendBitcoins;
     final assetPrecision = read(walletProvider)
         .getPrecisionForAssetId(assetId: requestOrder.assetId);
-    final bitcoinPrecision = read(walletProvider)
-        .getPrecisionForTicker(ticker: kLiquidBitcoinTicker);
+    const bitcoinPrecision = 8;
     final orderDetailsData = OrderDetailsData(
       bitcoinAmount: requestOrder.bitcoinAmount,
       bitcoinPrecision: bitcoinPrecision,
@@ -121,6 +117,7 @@ class OrderDetailsData {
       own: requestOrder.own,
       isTracking: requestOrder.indexPrice != 0,
       indexPrice: requestOrder.indexPrice,
+      marketType: requestOrder.marketType,
     );
 
     return orderDetailsData;
@@ -161,6 +158,7 @@ class OrderDetailsData {
       autoSign: autoSign ?? this.autoSign,
       own: own ?? this.own,
       indexPrice: indexPrice ?? this.indexPrice,
+      marketType: marketType,
     );
   }
 

@@ -2,6 +2,7 @@
 name = "sideswap_client"
 version = "0.1.2"
 edition = "2018"
+build = "build.rs"
 
 [lib]
 name = "sideswap_client"
@@ -10,16 +11,14 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 sideswap_api = { version = "*", path = "../sideswap_api" }
 sideswap_common = { version = "*", path = "../sideswap_common" }
-sideswap_libwally = { version = "*", path = "../sideswap_libwally" }
-elements = "*"
-bitcoin = { version = "0.26", features = [ "use-serde" ] }
+elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "53d5729f8cdc3623f9f110edba86aeaa9059af5b", features = ["serde-feature"] }
+elements_pset = { package = "elements", git = "https://github.com/sanket1729/rust-elements", rev = "dc350a0b8664cdd5b051443810a6a1f99a6173da" }
+bitcoin = { version = "0.27.1", features = [ "use-serde" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 log = "*"
 anyhow = "*"
-env_logger = "*"
-android_logger = "*"
-simple-logging = "*"
+flexi_logger = "*"
 derive_more = "*"
 base64 = "*"
 gdk-rust = { path = "../gdk_rust" }
@@ -31,6 +30,13 @@ bytes = "*"
 allo-isolate = "*"
 chrono = "*"
 hex = "*"
+rand = "0.6.5"
+bip39 = "1.0.1"
+ureq = "*"
+time = {version= "0.3.5", features = ["local-offset", "formatting", "macros", "parsing"]}
+crossbeam-channel = "0.5.1"
+tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 
 [build-dependencies]
 prost-build = "0.6.1"
+vergen = { version = "5", default-features = false, features = ["build", "rustc", "git"] }

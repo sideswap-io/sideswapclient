@@ -4,7 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -44,6 +44,7 @@ class _CreateOrderViewState extends State<CreateOrderView> {
   bool isModifyDialogOpened = false;
   int ttlSeconds = kHalfHour;
   bool ttlLocked = false;
+  bool buttonDisabled = false;
 
   @override
   void initState() {
@@ -78,11 +79,7 @@ class _CreateOrderViewState extends State<CreateOrderView> {
       orderDetailsData = context.read(walletProvider).orderDetailsData;
       autoSignValue = orderDetailsData.autoSign;
       orderTypePublicValue = !orderDetailsData.private;
-      if (orderDetailsData.isTracking) {
-        ttlSeconds = kTwelveHours;
-      } else {
-        ttlSeconds = kHalfHour;
-      }
+      ttlSeconds = kOneDay;
 
       final isToken = context
           .read(requestOrderProvider)
@@ -184,8 +181,31 @@ class _CreateOrderViewState extends State<CreateOrderView> {
                       requestOrder: widget.requestOrder,
                       ttlSeconds: ttlSeconds,
                       ttlLocked: ttlLocked,
-                      onAutoSignToggle: editMode
+                      onPressed: buttonDisabled
                           ? null
+                          : () async {
+                              if (await context
+                                  .read(walletProvider)
+                                  .isAuthenticated()) {
+                                context.read(walletProvider).setSubmitDecision(
+                                      accept: true,
+                                      autosign: autoSignValue,
+                                      private: !orderTypePublicValue,
+                                      ttlSeconds: ttlSeconds,
+                                    );
+                                setState(() {
+                                  buttonDisabled = true;
+                                });
+                              }
+                            },
+                      onAutoSignToggle: editMode
+                          ? (value) {
+                              context.read(walletProvider).modifyOrderAutoSign(
+                                  orderDetailsData.orderId, value);
+                              setState(() {
+                                autoSignValue = value;
+                              });
+                            }
                           : (value) {
                               setState(() {
                                 autoSignValue = value;
@@ -244,6 +264,7 @@ class CreateOrderViewBody extends StatelessWidget {
     required this.editMode,
     required this.orderTypeValue,
     required this.orderDetailsData,
+    required this.onPressed,
     this.onAutoSignToggle,
     this.onOrderTypeToggle,
     this.requestOrder,
@@ -264,6 +285,7 @@ class CreateOrderViewBody extends StatelessWidget {
   final void Function(int?)? onTtlChanged;
   final int ttlSeconds;
   final bool ttlLocked;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -353,16 +375,7 @@ class CreateOrderViewBody extends StatelessWidget {
                   text: 'CREATE ORDER'.tr(),
                   textColor: Colors.white,
                   backgroundColor: const Color(0xFF00C5FF),
-                  onPressed: () async {
-                    if (await context.read(walletProvider).isAuthenticated()) {
-                      context.read(walletProvider).setSubmitDecision(
-                            accept: true,
-                            autosign: autoSignValue,
-                            private: !orderTypeValue,
-                            ttlSeconds: ttlSeconds,
-                          );
-                    }
-                  },
+                  onPressed: onPressed,
                 ),
               ),
             ]

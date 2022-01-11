@@ -1,16 +1,48 @@
 use std::env;
 
 fn main() {
-    let target = env::var("TARGET").unwrap();
+    let proto_path = "../../ffi/sideswap.proto";
+    let mut config = prost_build::Config::new();
+    config.type_attribute(".", "#[derive(serde::Serialize)]");
+    config
+        .compile_protos(&[proto_path], &["../../ffi"])
+        .unwrap();
+    println!("cargo:rerun-if-changed={}", proto_path);
 
-    prost_build::compile_protos(&["../../ffi/sideswap.proto"], &["../../ffi"]).unwrap();
+    let gdk_env_name = "GDK_DIR";
+    let gdk_dir = env::var(gdk_env_name).unwrap();
+    println!("cargo:rerun-if-env-changed={}", gdk_env_name);
 
-    let wally_dir = env::var("WALLY_DIR").unwrap();
-    println!("cargo:rustc-link-lib=static=wallycore");
-    if !target.contains("apple") {
-        println!("cargo:rustc-link-lib=static=secp256k1");
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let target_arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+    match target_os.as_str() {
+        "android" => {
+            println!("cargo:rustc-link-lib=dylib=greenaddress");
+            let android_gdk_path = match target_arch.as_str() {
+                "x86" => "x86",
+                "x86_64" => "x86_64",
+                "arm" => "armeabi-v7a",
+                "aarch64" => "arm64-v8a",
+                _ => unimplemented!("unsupported target_arch: {}", target_arch),
+            };
+            println!(
+                "cargo:rustc-link-search=native={}/lib/{}",
+                gdk_dir, android_gdk_path
+            );
+        }
+        "linux" => {
+            println!("cargo:rustc-link-lib=dylib=greenaddress");
+            println!("cargo:rustc-link-search=native={}", gdk_dir);
+        }
+        "ios" => {
+            println!("cargo:rustc-link-lib=static=greenaddress_full");
+            println!("cargo:rustc-link-lib=dylib=stdc++");
+            println!("cargo:rustc-link-search=native={}/lib/iphone", gdk_dir);
+        }
+        _ => {
+            unimplemented!("unsupported target_os: {}", target_os)
+        }
     }
-    println!("cargo:rustc-link-search=native={}", wally_dir);
 
-    println!("cargo:rerun-if-env-changed=WALLY_DIR");
+    vergen::vergen(vergen::Config::default()).unwrap();
 }

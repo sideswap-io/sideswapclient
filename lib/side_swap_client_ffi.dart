@@ -755,6 +755,12 @@ const int SIDESWAP_ENV_REGTEST = 2;
 
 const int SIDESWAP_ENV_LOCAL = 3;
 
+const int SIDESWAP_ENV_LOCAL_LIQUID = 4;
+
+const int SIDESWAP_ENV_TESTNET = 5;
+
+const int SIDESWAP_ENV_LOCAL_TESTNET = 6;
+
 typedef _c_sideswap_client_start = ffi.Uint64 Function(
   ffi.Int32 env,
   ffi.Pointer<ffi.Int8> work_dir,

@@ -19,7 +19,7 @@ class AutoSign extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 114.h,
+      height: 90.h,
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
         borderRadius: BorderRadius.all(Radius.circular(8.r)),
@@ -27,7 +27,7 @@ class AutoSign extends StatelessWidget {
       ),
       child: Padding(
         padding:
-            EdgeInsets.only(top: 10.h, bottom: 19.h, left: 12.w, right: 12.w),
+            EdgeInsets.only(top: 6.h, bottom: 12.h, left: 12.w, right: 12.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

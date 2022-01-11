@@ -6,8 +6,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 final swapMarketProvider = ChangeNotifierProvider<SwapMarketProvider>(
     (ref) => SwapMarketProvider(ref.read));
@@ -66,8 +66,11 @@ class SwapMarketProvider extends ChangeNotifier {
   Product? _currentProduct;
 
   set currentProduct(Product value) {
-    _currentProduct = value;
-    notifyListeners();
+    if (_currentProduct != value) {
+      _currentProduct = value;
+      updateOffers();
+      notifyListeners();
+    }
   }
 
   Product get currentProduct => _currentProduct ?? getDefaultProduct();
@@ -76,14 +79,14 @@ class SwapMarketProvider extends ChangeNotifier {
     return read(walletProvider)
         .assets
         .values
-        .where((e) => e.swapMarket)
+        .where((e) => e.swapMarket | e.ampMarket)
         .map((e) => e.assetId)
         .toList();
   }
 
   Product getDefaultProduct() {
     return Product(
-      assetId: read(walletProvider).tetherAssetId() ?? '',
+      assetId: read(walletProvider).tetherAssetId(),
       displayName: '$kLiquidBitcoinTicker / $kTetherTicker',
       ticker: kTetherTicker,
     );
@@ -92,13 +95,17 @@ class SwapMarketProvider extends ChangeNotifier {
   List<Product> getProducts() {
     final newList = <Product>[];
     newList.add(getDefaultProduct());
+    final wallet = read(walletProvider);
 
     newList.addAll(read(swapMarketProvider).getProductsAssetId().map((e) {
-      final ticker = read(requestOrderProvider).tickerForAssetId(e);
+      final asset = wallet.assets[e]!;
+      final displayName = asset.ampMarket
+          ? '${asset.ticker} / $kLiquidBitcoinTicker'
+          : '$kLiquidBitcoinTicker / ${asset.ticker}';
       return Product(
         assetId: e,
-        displayName: '$kLiquidBitcoinTicker / $ticker',
-        ticker: ticker,
+        displayName: displayName,
+        ticker: asset.ticker,
       );
     }).toList());
 
@@ -109,7 +116,7 @@ class SwapMarketProvider extends ChangeNotifier {
     final newOrders = requestOrders
         .where((e) =>
             !e.private &&
-            !e.tokenMarket &&
+            (e.marketType != MarketType.token) &&
             !DateTime.fromMillisecondsSinceEpoch(e.expiresAt)
                 .difference(DateTime.now())
                 .isNegative)
@@ -128,14 +135,23 @@ class SwapMarketProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool isBid(bool sendBitcoins, bool isAmp) {
+    return sendBitcoins == isAmp;
+  }
+
   void updateOffers() {
+    final isAmp =
+        read(walletProvider).assets[currentProduct.assetId]?.ampMarket ?? false;
     bidOffers.clear();
     bidOffers.addAll(swapMarketOrders
-        .where((e) => !e.sendBitcoins && e.assetId == currentProduct.assetId)
+        .where((e) =>
+            isBid(e.sendBitcoins, isAmp) && e.assetId == currentProduct.assetId)
         .sorted((a, b) => b.price.compareTo(a.price)));
     askOffers.clear();
     askOffers.addAll(swapMarketOrders
-        .where((e) => e.sendBitcoins && e.assetId == currentProduct.assetId)
+        .where((e) =>
+            !isBid(e.sendBitcoins, isAmp) &&
+            e.assetId == currentProduct.assetId)
         .sorted((a, b) => a.price.compareTo(b.price)));
   }
 

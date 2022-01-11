@@ -2,9 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
+import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class OrderPriceTextField extends StatelessWidget {
@@ -27,6 +29,10 @@ class OrderPriceTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dollarConversion = context
+        .read(requestOrderProvider)
+        .dollarConversion(
+            asset?.assetId ?? '', double.tryParse(controller.text) ?? 0);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
@@ -47,6 +53,7 @@ class OrderPriceTextField extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(top: 12.h),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Price'.tr(),
@@ -54,6 +61,14 @@ class OrderPriceTextField extends StatelessWidget {
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
                         color: const Color(0xFF00C5FF),
+                      ),
+                    ),
+                    Text(
+                      dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
+                      style: GoogleFonts.roboto(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.normal,
+                        color: const Color(0xFF709EBA),
                       ),
                     ),
                   ],

@@ -41,7 +41,7 @@ class SwapSummary extends StatelessWidget {
   final TxCircleImageType txCircleImageType;
   final String timestampStr;
   final String status;
-  final List<Balance> balances;
+  final List<TxBalance> balances;
   final int networkFee;
   final Confs confs;
   final Tx tx;

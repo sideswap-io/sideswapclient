@@ -2,19 +2,26 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/enum_as_string.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
+import 'package:sideswap/common/utils/build_config.dart';
 import 'package:uni_links/uni_links.dart';
-
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/wallet.dart';
 
 final universalLinkProvider = ChangeNotifierProvider<UniversalLinkProvider>(
     (ref) => UniversalLinkProvider(ref.read));
+
+enum HandleResult {
+  unknown,
+  failed,
+  success,
+}
 
 class UniversalLinkProvider with ChangeNotifier {
   final Reader read;
@@ -27,6 +34,9 @@ class UniversalLinkProvider with ChangeNotifier {
   Uri? latestUri;
 
   void handleIncomingLinks() {
+    if (!universalLinksAvailable()) {
+      return;
+    }
     if (!kIsWeb) {
       // It will handle app links while the app is already started - be it in
       // the foreground or in the background.
@@ -34,7 +44,7 @@ class UniversalLinkProvider with ChangeNotifier {
         logger.d('got uri: $uri');
         latestUri = uri;
         if (uri != null) {
-          handleUri(uri);
+          handleAppUri(uri);
         }
       }, onError: (Object err) {
         logger.e('got err: $err');
@@ -44,6 +54,9 @@ class UniversalLinkProvider with ChangeNotifier {
   }
 
   Future<void> handleInitialUri() async {
+    if (!universalLinksAvailable()) {
+      return;
+    }
     if (!_initialUriIsHandled) {
       _initialUriIsHandled = true;
 
@@ -58,7 +71,7 @@ class UniversalLinkProvider with ChangeNotifier {
         initialUri = uri;
       } on PlatformException catch (err) {
         // Platform messages may fail but we ignore the exception
-        logger.e('falied to get initial uri: $err');
+        logger.e('failed to get initial uri: $err');
       } on FormatException catch (err) {
         logger.e('malformed initial uri: $err');
       }
@@ -69,54 +82,72 @@ class UniversalLinkProvider with ChangeNotifier {
     return double.tryParse(uri.queryParameters[name] ?? '');
   }
 
-  void handleUri(Uri uri) {
+  HandleResult handleAppUrlStr(String uri) {
+    final parsedUri = Uri.tryParse(uri);
+    if (parsedUri == null) {
+      return HandleResult.unknown;
+    }
+    return handleAppUri(parsedUri);
+  }
+
+  HandleResult handleAppUri(Uri uri) {
     if (uri.host != 'app.sideswap.io') {
-      logger.w('unexpected host: $uri');
-      return;
+      return HandleResult.unknown;
     }
 
     switch (uri.path) {
       case '/submit/':
-        handleSubmitOrder(uri);
-        return;
+        return handleSubmitOrder(uri);
       case '/app2app/':
-        handleApp2App(uri);
-        return;
+        return handleApp2App(uri);
+      case '/swap/':
+        return handleSwapPrompt(uri);
     }
 
-    logger.w('Invalid URI: $uri');
+    return HandleResult.failed;
   }
 
-  void handleSubmitOrder(Uri uri) {
+  HandleResult handleSubmitOrder(Uri uri) {
     final orderId = uri.queryParameters['order_id'];
     if (orderId != null) {
       read(walletProvider).linkOrder(orderId);
-      return;
+      return HandleResult.success;
     }
 
-    final sessionId = uri.queryParameters['session_id'];
-    if (sessionId != null) {
-      final assetId = uri.queryParameters['asset_id'] ?? '';
-      final bitcoinAmount = getDouble(uri, 'bitcoin_amount') ?? 0;
-      final price = getDouble(uri, 'price') ?? 0;
-      final indexPrice = getDouble(uri, 'index_price');
-      read(walletProvider).submitOrder(
-        assetId,
-        bitcoinAmount,
-        price,
-        sessionId: sessionId,
-        indexPrice: indexPrice,
-      );
-      return;
+    return HandleResult.failed;
+  }
+
+  HandleResult handleSwapPrompt(Uri uri) {
+    final market = uri.queryParameters['market'];
+    final orderId = uri.queryParameters['order_id'];
+    if (orderId is String && orderId.isNotEmpty && market == 'p2p') {
+      read(walletProvider).linkOrder(orderId);
+      return HandleResult.success;
+    }
+
+    try {
+      final swap = SwapDetails();
+      swap.orderId = uri.queryParameters['order_id']!;
+      swap.sendAsset = uri.queryParameters['send_asset']!;
+      swap.recvAsset = uri.queryParameters['recv_asset']!;
+      swap.sendAmount = Int64(int.parse(uri.queryParameters['send_amount']!));
+      swap.recvAmount = Int64(int.parse(uri.queryParameters['recv_amount']!));
+      swap.uploadUrl = uri.queryParameters['upload_url']!;
+
+      read(walletProvider).startSwapPrompt(swap);
+      return HandleResult.success;
+    } on Exception catch (e) {
+      logger.w('swap prompt URL parse error: $e');
+      return HandleResult.failed;
     }
   }
 
   // use qr scanner parser here to keep parseBIP21 code in one place
-  void handleApp2App(Uri uri) {
+  HandleResult handleApp2App(Uri uri) {
     final addressTypeParameter = uri.queryParameters['addressType'];
     if (addressTypeParameter == null) {
       logger.w('uri address type is wrong');
-      return;
+      return HandleResult.failed;
     }
 
     final addressType =
@@ -124,7 +155,7 @@ class UniversalLinkProvider with ChangeNotifier {
 
     if (addressType == null) {
       logger.w('cannot convert uri address type');
-      return;
+      return HandleResult.failed;
     }
 
     final query = uri.queryParameters;
@@ -132,7 +163,7 @@ class UniversalLinkProvider with ChangeNotifier {
     final address = query['address'];
     if (address == null) {
       logger.w('uri address is empty');
-      return;
+      return HandleResult.failed;
     }
 
     var fakeAddress = '${addressType.asString()}:$address?';
@@ -153,5 +184,6 @@ class UniversalLinkProvider with ChangeNotifier {
         result: result,
       ),
     );
+    return HandleResult.success;
   }
 }

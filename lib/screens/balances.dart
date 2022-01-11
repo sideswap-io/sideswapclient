@@ -7,14 +7,17 @@ import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
-enum TxType { received, sent, swap, unknown }
+enum TxType { received, sent, swap, internal, unknown }
 
 TxType txType(Tx tx) {
   var anyPositive = false;
   var anyNegative = false;
+  var anyRegular = false;
+  var anyAmp = false;
   for (var balance in tx.balances) {
     if (balance.amount > 0) {
       anyPositive = true;
@@ -22,8 +25,16 @@ TxType txType(Tx tx) {
     if (balance.amount < 0) {
       anyNegative = true;
     }
+    if (balance.account.amp) {
+      anyAmp = true;
+    } else {
+      anyRegular = true;
+    }
   }
-  if (tx.balances.length == 2 && anyPositive && anyPositive) {
+  if (tx.balances.length == 2 &&
+      anyPositive &&
+      anyPositive &&
+      (tx.balances[0].assetId != tx.balances[1].assetId)) {
     return TxType.swap;
   }
 
@@ -32,6 +43,10 @@ TxType txType(Tx tx) {
   }
   if (anyNegative && !anyPositive) {
     return TxType.sent;
+  }
+
+  if (anyAmp && anyRegular) {
+    return TxType.internal;
   }
 
   return TxType.unknown;
@@ -44,6 +59,8 @@ IconData txIcon(TxType type) {
     case TxType.sent:
       return Icons.arrow_circle_up;
     case TxType.swap:
+      return Icons.swap_horiz;
+    case TxType.internal:
       return Icons.swap_horiz;
     case TxType.unknown:
       return Icons.device_unknown;
@@ -58,15 +75,18 @@ String txTypeName(TxType type) {
       return 'Sent'.tr();
     case TxType.swap:
       return 'Swap'.tr();
+    case TxType.internal:
+      return 'Internal'.tr();
     case TxType.unknown:
       return 'Unknown'.tr();
   }
 }
 
-int txAssetAmount(Tx tx, String assetId) {
+int txAssetAmount(Tx tx, String assetId, AccountType accountType) {
   var sum = 0;
   for (var balance in tx.balances) {
-    if (balance.assetId == assetId) {
+    if (balance.assetId == assetId &&
+        getAccountType(balance.account) == accountType) {
       sum += balance.amount.toInt();
     }
   }

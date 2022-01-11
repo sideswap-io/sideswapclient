@@ -297,5 +297,9 @@
     "BUY": "BUY",
     "CLOSE": "CLOSE",
     "SWAP": "SWAP",
-    "Index price:": "Index price:"
+    "Index price:": "Index price:",
+    "Regular wallet": "Regular wallet",
+    "AMP wallet": "AMP wallet",
+    "Select currency": "Select currency",
+    "Last price": "Last price"
 }

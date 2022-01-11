@@ -12,8 +12,20 @@ class Encryption {
     return Platform.isAndroid || Platform.isIOS;
   }
 
+  Future<bool> appResetRequired({
+    required bool hasEncryptedMnemonic,
+    required bool usePinProtection,
+  }) async {
+    // Detect when app is transfered to new iOS device and KeyChain item is not available
+    if (!Platform.isIOS || !hasEncryptedMnemonic || usePinProtection) {
+      return false;
+    }
+    final result = await platform.invokeMethod<bool>('decryptNotPossible');
+    return result ?? false;
+  }
+
   Future<bool> canAuthenticate() async {
-    // Always use fallback method is plugin is not available
+    // Always use fallback method if plugin is not available
     if (!isPluginAvailable()) {
       return false;
     }

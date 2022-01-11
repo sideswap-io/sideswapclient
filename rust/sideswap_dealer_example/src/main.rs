@@ -14,7 +14,7 @@ extern crate anyhow;
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     log_settings: String,
-    env: types::Env,
+    env: sideswap_common::env::Env,
     rpc: RpcServer,
 
     bitcoin_amount_submit: f64,

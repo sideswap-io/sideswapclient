@@ -12,7 +12,7 @@ use tokio_tungstenite::accept_async;
 #[derive(Debug, Deserialize)]
 pub struct Settings {
     log_settings: String,
-    env: types::Env,
+    env: sideswap_common::env::Env,
     rpc: RpcServer,
 
     ws_listen_addr: String,
@@ -31,7 +31,7 @@ async fn accept_connection(
     peer: SocketAddr,
     stream: TcpStream,
     clients: Clients,
-    dealer_tx: std::sync::mpsc::Sender<To>,
+    dealer_tx: crossbeam_channel::Sender<To>,
 ) {
     if let Err(e) = handle_connection(secret_expected, peer, stream, &clients, dealer_tx).await {
         error!("error: {}", e);
@@ -62,7 +62,7 @@ pub enum StartRequest {
 
 async fn read_loop(
     mut stream: futures_util::stream::SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>,
-    dealer_tx: std::sync::mpsc::Sender<To>,
+    dealer_tx: crossbeam_channel::Sender<To>,
     send_tx: tokio::sync::mpsc::UnboundedSender<String>,
 ) -> Result<(), anyhow::Error> {
     while let Some(msg) = stream.next().await {
@@ -90,7 +90,7 @@ async fn handle_connection(
     peer: SocketAddr,
     stream: TcpStream,
     clients: &Clients,
-    dealer_tx: std::sync::mpsc::Sender<To>,
+    dealer_tx: crossbeam_channel::Sender<To>,
 ) -> Result<(), anyhow::Error> {
     info!("new connection: {}", peer);
     let ws_stream = accept_async(stream).await?;
@@ -150,7 +150,7 @@ async fn start_processing(
     ws_listen_addr: String,
     secret_expected: String,
     clients: Clients,
-    dealer_tx: std::sync::mpsc::Sender<To>,
+    dealer_tx: crossbeam_channel::Sender<To>,
 ) {
     let listener = TcpListener::bind(&ws_listen_addr)
         .await

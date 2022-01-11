@@ -20,9 +20,11 @@ class AssetReceiveWidget extends StatefulWidget {
   const AssetReceiveWidget({
     Key? key,
     this.isPegIn = false,
+    this.isAmp = false,
   }) : super(key: key);
 
   final bool isPegIn;
+  final bool isAmp;
 
   @override
   _AssetReceivePopupState createState() => _AssetReceivePopupState();
@@ -58,17 +60,12 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, watch, child) {
+        final wallet = watch(walletProvider);
         final _recvAddress = widget.isPegIn
             ? watch(swapProvider).swapPegAddressServer
-            : watch(walletProvider).recvAddress;
-        final _recvAsset = widget.isPegIn
-            ? watch(swapProvider).swapSendAsset ??
-                watch(walletProvider).liquidAssetId()
-            : watch(walletProvider).selectedWalletAsset.isNotEmpty
-                ? watch(walletProvider).selectedWalletAsset
-                : watch(walletProvider).liquidAssetId();
-
+            : wallet.recvAddresses[wallet.recvAddressAccount];
         final _swapRecvAddr = watch(swapProvider).swapRecvAddressExternal;
+        final minPegIn = wallet.serverStatus?.minPegInAmount.toInt() ?? 0;
 
         final _assetSend = watch(swapProvider).swapSendAsset ?? '';
         final serverFeePercentPegIn =
@@ -113,6 +110,16 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                       ),
                     ),
                   ),
+                  if (widget.isPegIn && minPegIn != 0) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: Text('Min amount: ${amountStr(minPegIn)} BTC',
+                          style: GoogleFonts.roboto(
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.normal,
+                          )),
+                    ),
+                  ],
                   if (!widget.isPegIn) ...[
                     Padding(
                       padding: EdgeInsets.only(top: 24.h),
@@ -298,13 +305,15 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             heigh: 39.h,
                             borderRadius: BorderRadius.circular(8.w),
                             child: Text(
-                              'Liquid address copied',
+                              widget.isAmp
+                                  ? 'AMP address copied'
+                                  : 'Liquid address copied',
                               style: GoogleFonts.roboto(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),
-                            ).tr(args: [_recvAsset ?? '']),
+                            ).tr(),
                           ),
                         ),
                       ),

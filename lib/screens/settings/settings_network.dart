@@ -8,6 +8,7 @@ import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/network_access_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
+import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/settings/settings_custom_host.dart';
 import 'package:sideswap/screens/settings/widgets/settings_network_button.dart';
 
@@ -54,27 +55,27 @@ class _SettingsNetworkState extends State<SettingsNetwork> {
                           watch(networkAccessProvider).networkType;
                       return Column(
                         children: [
-                          SettingsNetworkButton(
-                            value: networkType == SettingsNetworkType.sideswap,
-                            onChanged: (value) {
-                              setState(() {
-                                context
-                                    .read(networkAccessProvider)
-                                    .networkType = SettingsNetworkType.sideswap;
-                              });
-                            },
-                            title: Padding(
-                              padding: EdgeInsets.only(left: 10.w),
-                              child: Text(
-                                'SideSwap'.tr(),
-                                style: GoogleFonts.roboto(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
+                          // SettingsNetworkButton(
+                          //   value: networkType == SettingsNetworkType.sideswap,
+                          //   onChanged: (value) {
+                          //     setState(() {
+                          //       context
+                          //           .read(networkAccessProvider)
+                          //           .networkType = SettingsNetworkType.sideswap;
+                          //     });
+                          //   },
+                          //   title: Padding(
+                          //     padding: EdgeInsets.only(left: 10.w),
+                          //     child: Text(
+                          //       'SideSwap'.tr(),
+                          //       style: GoogleFonts.roboto(
+                          //         fontSize: 16.sp,
+                          //         fontWeight: FontWeight.normal,
+                          //         color: Colors.white,
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
                           Padding(
                             padding: EdgeInsets.only(top: 8.h),
                             child: SettingsNetworkButton(
@@ -86,6 +87,9 @@ class _SettingsNetworkState extends State<SettingsNetwork> {
                                           .read(networkAccessProvider)
                                           .networkType =
                                       SettingsNetworkType.blockstream;
+                                  context
+                                      .read(walletProvider)
+                                      .applyNetworkChange();
                                 });
                               },
                               title: Padding(

@@ -11,6 +11,8 @@ import 'package:sideswap/common/widgets/colored_container.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
+import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class OrderItem extends StatefulWidget {
   const OrderItem({
@@ -75,72 +77,45 @@ class _OrderItemState extends State<OrderItem> {
 
   @override
   Widget build(BuildContext context) {
-    final assets = context.read(walletProvider).assets;
-    Image? assetIcon, bitcoinIcon;
-    var assetTicker = '';
-    bool isToken = false;
-
-    var bitcoinTicker = '';
-    for (var asset in assets.values) {
-      if (asset.ticker == kLiquidBitcoinTicker) {
-        bitcoinIcon =
-            context.read(walletProvider).assetImagesSmall[asset.assetId];
-        bitcoinTicker = asset.ticker;
-      }
-      if (asset.assetId == widget.requestOrder.assetId) {
-        isToken =
-            context.read(requestOrderProvider).isAssetToken(asset.assetId);
-        assetIcon =
-            context.read(walletProvider).assetImagesSmall[asset.assetId];
-        assetTicker = asset.ticker;
-      }
-    }
-
-    final isPricedInLiquid = context
-        .read(requestOrderProvider)
-        .isPricedInLiquid(widget.requestOrder.assetId);
+    final wallet = context.read(walletProvider);
+    final assets = wallet.assets;
+    final bitcoinAsset = assets[wallet.liquidAssetId()]!;
+    final asset = assets[widget.requestOrder.assetId]!;
+    final isStablecoin = asset.swapMarket;
+    final bitcoinIcon = wallet.assetImagesSmall[wallet.liquidAssetId()]!;
+    final assetIcon = wallet.assetImagesSmall[asset.assetId];
+    final assetTicker = asset.ticker;
+    final isToken = widget.requestOrder.marketType == MarketType.token;
+    final isAmp = widget.requestOrder.marketType == MarketType.amp;
+    final bitcoinTicker = bitcoinAsset.ticker;
 
     final sendBitcoins = widget.requestOrder.sendBitcoins;
-    final deliverAmount = sendBitcoins
-        ? widget.requestOrder.bitcoinAmountWithFee
-        : widget.requestOrder.assetAmount;
-    final deliverTicker = sendBitcoins ? bitcoinTicker : assetTicker;
-    final deliverPrecision = context
-            .read(walletProvider)
-            .getAssetByTicker(deliverTicker)
-            ?.precision ??
-        0;
-    final deliverAmountStr =
-        amountStr(deliverAmount, precision: deliverPrecision);
+    final sendAsset = sendBitcoins ? bitcoinAsset : asset;
+    final recvAsset = sendBitcoins ? asset : bitcoinAsset;
+
+    final deliverTicker = sendAsset.ticker;
+    final bitcoinAmountStr = amountStr(widget.requestOrder.bitcoinAmount);
+    final assetAmountStr =
+        amountStr(widget.requestOrder.assetAmount, precision: asset.precision);
     final deliverIcon = sendBitcoins ? bitcoinIcon : assetIcon;
-    final receiveAmount = sendBitcoins
+    final buyAmount = sendBitcoins
         ? widget.requestOrder.assetAmount
-        : widget.useTokenMarketView
-            ? widget.requestOrder.bitcoinAmount
-            : widget.requestOrder.bitcoinAmountWithFee;
+        : widget.requestOrder.bitcoinAmount;
     final receiveTicker = sendBitcoins ? assetTicker : bitcoinTicker;
-    final receivePrecision = context
-            .read(walletProvider)
-            .getAssetByTicker(receiveTicker)
-            ?.precision ??
-        0;
-    final receiveAmountStr =
-        amountStr(receiveAmount, precision: receivePrecision);
+    final receivePrecision = recvAsset.precision;
+    final buyAmountStr = amountStr(buyAmount, precision: receivePrecision);
     final receiveIcon = sendBitcoins ? assetIcon : bitcoinIcon;
-    final priceTicker = isPricedInLiquid ? bitcoinTicker : assetTicker;
-    final priceIcon = sendBitcoins
-        ? receiveIcon
-        : isPricedInLiquid
-            ? receiveIcon
-            : deliverIcon;
-    var priceAmount = isPricedInLiquid
-        ? priceStr(1 / widget.requestOrder.price)
-        : priceStr(widget.requestOrder.price);
-    final dollarConversion = context
+    final totalPrice = sendBitcoins
+        ? widget.requestOrder.assetAmount
+        : widget.requestOrder.bitcoinAmount;
+    final totalPriceStr = amountStr(totalPrice, precision: receivePrecision);
+    final priceTicker = isStablecoin ? assetTicker : bitcoinTicker;
+    final priceIcon = isStablecoin ? assetIcon : bitcoinIcon;
+    final priceAmount = priceStrForMarket(
+        widget.requestOrder.price, widget.requestOrder.marketType);
+    final dollarConversionRecv = context
         .read(requestOrderProvider)
-        .dollarConversionFromString(
-            context.read(walletProvider).liquidAssetId() ?? '',
-            receiveAmountStr);
+        .dollarConversionFromString(wallet.liquidAssetId(), buyAmountStr);
 
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
@@ -150,9 +125,7 @@ class _OrderItemState extends State<OrderItem> {
         child: InkWell(
           onTap: widget.onTap ??
               () {
-                context
-                    .read(walletProvider)
-                    .setOrderRequestView(widget.requestOrder);
+                wallet.setOrderRequestView(widget.requestOrder);
               },
           borderRadius: BorderRadius.all(Radius.circular(10.r)),
           child: Container(
@@ -181,13 +154,16 @@ class _OrderItemState extends State<OrderItem> {
                           Text(
                             isToken
                                 ? deliverTicker
-                                : '$bitcoinTicker / $assetTicker',
+                                : (isAmp
+                                    ? '$assetTicker / $bitcoinTicker'
+                                    : '$bitcoinTicker / $assetTicker'),
                             style: GoogleFonts.roboto(
                               fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
+                          if (isAmp) const AmpFlag()
                         ],
                       ),
                       if (widget.useTokenMarketView) ...[
@@ -238,11 +214,10 @@ class _OrderItemState extends State<OrderItem> {
                       Row(
                         children: [
                           Text(
-                            sendBitcoins
-                                ? '$deliverAmountStr $deliverTicker'
-                                : isToken
-                                    ? '$deliverAmountStr $deliverTicker'
-                                    : '$receiveAmountStr $receiveTicker',
+                            widget.requestOrder.marketType ==
+                                    MarketType.stablecoin
+                                ? '$bitcoinAmountStr $kLiquidBitcoinTicker'
+                                : '$assetAmountStr $assetTicker',
                             style: amountStyle,
                           ),
                           Padding(
@@ -250,11 +225,10 @@ class _OrderItemState extends State<OrderItem> {
                             child: SizedBox(
                               width: 24.w,
                               height: 24.w,
-                              child: sendBitcoins
-                                  ? deliverIcon
-                                  : isToken
-                                      ? deliverIcon
-                                      : receiveIcon,
+                              child: widget.requestOrder.marketType ==
+                                      MarketType.stablecoin
+                                  ? bitcoinIcon
+                                  : assetIcon,
                             ),
                           ),
                         ],
@@ -302,7 +276,7 @@ class _OrderItemState extends State<OrderItem> {
                           Row(
                             children: [
                               Text(
-                                '$receiveAmountStr $receiveTicker',
+                                '$totalPriceStr $receiveTicker',
                                 style: amountStyle,
                               ),
                               Padding(
@@ -332,7 +306,7 @@ class _OrderItemState extends State<OrderItem> {
                           Row(
                             children: [
                               Text(
-                                '≈ $dollarConversion',
+                                '≈ $dollarConversionRecv',
                                 style: amountStyle.copyWith(
                                     color: const Color(0xFF709EBA)),
                               ),
@@ -403,7 +377,7 @@ class _OrderItemState extends State<OrderItem> {
                             if (!isToken) ...[
                               Padding(
                                 padding: EdgeInsets.only(right: 8.w),
-                                child: sendBitcoins
+                                child: sendBitcoins != isAmp
                                     ? ColoredContainer(
                                         child: Text(
                                           'Sell'.tr(),

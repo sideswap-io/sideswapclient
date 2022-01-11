@@ -29,7 +29,6 @@
         android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
         android:name="io.flutter.app.FlutterApplication"
-        android:requestLegacyExternalStorage="true"
         android:extractNativeLibs="true"
         >
         <meta-data

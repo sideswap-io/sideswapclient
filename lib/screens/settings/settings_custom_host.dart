@@ -12,7 +12,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/network_access_provider.dart';
-import 'package:sideswap/models/utils_provider.dart';
+import 'package:sideswap/models/wallet.dart';
 
 class SettingsCustomHost extends StatefulWidget {
   const SettingsCustomHost({Key? key}) : super(key: key);
@@ -26,10 +26,9 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
 
   late TextEditingController hostController;
   late TextEditingController portController;
-  late TextEditingController passwordController;
+  late bool useTls;
 
   bool saveEnabled = false;
-  bool obscurePassword = true;
 
   @override
   void initState() {
@@ -47,16 +46,12 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
       });
 
     portController = TextEditingController()
-      ..text = context.read(configProvider).settingsPort
+      ..text = context.read(configProvider).settingsPort.toString()
       ..addListener(() {
         validate();
       });
 
-    passwordController = TextEditingController()
-      ..text = context.read(configProvider).settingsPassword
-      ..addListener(() {
-        validate();
-      });
+    useTls = context.read(configProvider).settingsUseTLS;
 
     validate();
   }
@@ -65,7 +60,6 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
   void dispose() {
     hostController.dispose();
     portController.dispose();
-    passwordController.dispose();
     super.dispose();
   }
 
@@ -80,18 +74,6 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
     }
 
     setState(() {});
-  }
-
-  void showErrorDialog() {
-    context.read(utilsProvider).settingsErrorDialog(
-          title: 'No connection found'.tr(),
-          description:
-              'Connection to the Liquid network servers could not be established',
-          buttonText: 'OK'.tr(),
-          onPressed: (context) {
-            Navigator.of(context).pop();
-          },
-        );
   }
 
   @override
@@ -155,59 +137,15 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 18.h),
-                        child: Text(
-                          'Password'.tr(),
-                          style: defaultTextStyle,
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 10.h),
-                        child: SideSwapTextField(
-                          controller: passwordController,
-                          hintText: 'Password'.tr(),
-                          obscureText: obscurePassword,
-                          suffixIcon: SizedBox(
-                            width: 32.w,
-                            height: 54.h,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    obscurePassword = !obscurePassword;
-                                  });
-                                },
-                                child: Center(
-                                  child: obscurePassword
-                                      ? Icon(
-                                          Icons.visibility_off,
-                                          color: const Color(0xFF84ADC6),
-                                          size: 22.w,
-                                        )
-                                      : Icon(
-                                          Icons.visibility,
-                                          color: const Color(0xFF84ADC6),
-                                          size: 22.w,
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
                         padding: EdgeInsets.only(top: 10.h),
                         child: Consumer(
                           builder: (context, watch, child) {
-                            final useTLS = watch(configProvider).settingsUseTLS;
                             return CustomCheckBox(
-                              value: useTLS,
-                              onChanged: (value) async {
-                                await context
-                                    .read(configProvider)
-                                    .setSettingsUseTLS(value);
-                                setState(() {});
+                              value: useTls,
+                              onChanged: (value) {
+                                setState(() {
+                                  useTls = value;
+                                });
                               },
                               child: Padding(
                                 padding: EdgeInsets.only(left: 10.w),
@@ -242,12 +180,13 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                               context
                                   .read(configProvider)
                                   .setSettingsHost(hostController.text);
+                              context.read(configProvider).setSettingsPort(
+                                  int.parse(portController.text));
                               context
                                   .read(configProvider)
-                                  .setSettingsPort(portController.text);
-                              context
-                                  .read(configProvider)
-                                  .setSettingsPassword(passwordController.text);
+                                  .setSettingsUseTLS(useTls);
+                              Navigator.of(context).pop();
+                              context.read(walletProvider).applyNetworkChange();
                             },
                             backgroundColor: const Color(0xFF00C5FF),
                             textColor: Colors.white,

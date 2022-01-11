@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/balances.dart';
@@ -14,17 +15,19 @@ class TxItemTransaction extends StatelessWidget {
     Key? key,
     required this.transItem,
     required this.assetId,
+    required this.accountType,
   }) : super(key: key);
 
   final TransItem transItem;
   final String assetId;
+  final AccountType accountType;
   static final double itemHeight = 46.h;
 
   @override
   Widget build(BuildContext context) {
     final wallet = context.read(walletProvider);
     final asset = wallet.getAssetById(assetId);
-    final amount = txAssetAmount(transItem.tx, assetId);
+    final amount = txAssetAmount(transItem.tx, assetId, accountType);
     final ticker = asset?.ticker;
     final precision =
         context.read(walletProvider).getPrecisionForAssetId(assetId: assetId);

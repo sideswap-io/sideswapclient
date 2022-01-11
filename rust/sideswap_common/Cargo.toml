@@ -9,11 +9,17 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["arbitrary_precision"] }
 anyhow = "*"
 log = "*"
-async-tungstenite = { version = "0.9.3", features = ["tokio-runtime", "tokio-rustls"] }
+async-tungstenite = { version = "0.16.1", features = ["tokio-runtime", "tokio-rustls-webpki-roots"] }
 futures = "*"
 futures-util = "*"
-tokio = { version = "0.2", features = ["macros", "sync", "time", "stream"] }
+tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 tungstenite = { version = "*", default-features = false, features = [] }
 derive_more = "*"
 bitcoin = { version = "0.26" }
-rand = "*"
+elements = "*"
+elements_pset = { package = "elements", git = "https://github.com/sanket1729/rust-elements", rev = "dc350a0b8664cdd5b051443810a6a1f99a6173da" }
+rand = "0.6.5"
+crossbeam-channel = "0.5.1"
+
+[dev-dependencies]
+hex = "*"

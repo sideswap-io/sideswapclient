@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:decimal/decimal.dart';
 import 'package:flutter/services.dart';
 
 // From https://stackoverflow.com/a/57496055
@@ -38,6 +39,16 @@ class DecimalTextInputFormatter extends TextInputFormatter {
         composing: TextRange.empty,
       );
     }
+
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    final decimalValue = Decimal.tryParse(newValue.text);
+    if (decimalValue == null) {
+      return oldValue;
+    }
+
     var newSelection = newValue.selection;
     var truncated = newValue.text;
 

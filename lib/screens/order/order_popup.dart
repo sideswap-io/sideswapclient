@@ -6,13 +6,19 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/request_order_provider.dart';
+import 'package:sideswap/models/token_market_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/markets/token_market_order_details.dart';
+import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
+import 'package:sideswap/screens/markets/widgets/time_to_live.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/autosign.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
@@ -32,16 +38,28 @@ class _OrderPopupState extends State<OrderPopup> {
   bool enabled = true;
   bool percentEnabled = false;
   bool orderTypeValue = false;
+  late int ttlSeconds;
+  late final bool showAssetDetails;
 
   @override
   void initState() {
     super.initState();
     final orderDetailsData = context.read(walletProvider).orderDetailsData;
     autoSign = orderDetailsData.autoSign;
+    ttlSeconds = kOneDay;
+    showAssetDetails = orderDetailsData.marketType == MarketType.amp &&
+        orderDetailsData.orderType == OrderDetailsDataType.quote;
 
     // if (orderDetailsData.orderType == OrderType.execute) {
     //   _percentTimer = Timer.periodic(Duration(seconds: 1), onTimer);
     // }
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      if (showAssetDetails) {
+        context
+            .read(tokenMarketProvider)
+            .requestAssetDetails(assetId: orderDetailsData.assetId);
+      }
+    });
   }
 
   void onTimer(Timer timer) {
@@ -72,6 +90,38 @@ class _OrderPopupState extends State<OrderPopup> {
     context.read(walletProvider).goBack();
   }
 
+  Widget buildStatsRow(BuildContext context, String title, double value) {
+    final wallet = context.read(walletProvider);
+    final price = value.toStringAsFixed(8);
+    final dollarConversion = context
+        .read(requestOrderProvider)
+        .dollarConversion(wallet.liquidAssetId(), value);
+
+    return Column(
+      children: [
+        Text('$title ($kLiquidBitcoinTicker)',
+            style: defaultInfoStyle.copyWith(
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            )),
+        SizedBox(height: 4.h),
+        Text(price,
+            style: defaultInfoStyle.copyWith(
+              color: Colors.white,
+            )),
+        SizedBox(height: 4.h),
+        Text(
+          dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
+          style: GoogleFonts.roboto(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.normal,
+            color: const Color(0xFF709EBA),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
@@ -90,6 +140,10 @@ class _OrderPopupState extends State<OrderPopup> {
             OrderDetailsDataType? orderType =
                 orderDetailsData.orderType ?? OrderDetailsDataType.submit;
             final dataAvailable = orderDetailsData.isDataAvailable();
+            final assetDetails = watch(tokenMarketProvider)
+                .assetDetails[orderDetailsData.assetId];
+            final chartUrl = assetDetails?.chartUrl;
+            final chartStats = assetDetails?.chartStats;
 
             var orderDescription = '';
             switch (orderType) {
@@ -168,7 +222,7 @@ class _OrderPopupState extends State<OrderPopup> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 24.h),
+                    padding: EdgeInsets.only(top: 12.h),
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(10.r)),
@@ -195,7 +249,7 @@ class _OrderPopupState extends State<OrderPopup> {
                   ],
                   if (orderType == OrderDetailsDataType.submit) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 20.h),
+                      padding: EdgeInsets.only(top: 6.h),
                       child: AutoSign(
                         value: autoSign,
                         onToggle: (value) {
@@ -205,7 +259,78 @@ class _OrderPopupState extends State<OrderPopup> {
                         },
                       ),
                     ),
+                    Padding(
+                      padding: EdgeInsets.only(top: 6.h),
+                      child: TimeToLive(
+                          dropdownValue: ttlSeconds,
+                          dropdownItems: const [
+                            kTenMinutes,
+                            kHalfHour,
+                            kOneHour,
+                            kSixHours,
+                            kTwelveHours,
+                            kOneDay
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              ttlSeconds = value!;
+                            });
+                          }),
+                    ),
                     const OrderTypeTracking(),
+                  ],
+                  const Spacer(),
+                  if (showAssetDetails && assetDetails != null) ...[
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.w),
+                      child: Column(
+                        children: [
+                          if (chartStats != null)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                buildStatsRow(
+                                    context, '30d Low'.tr(), chartStats.low),
+                                buildStatsRow(
+                                    context, '30d High'.tr(), chartStats.high),
+                                buildStatsRow(
+                                    context, 'Last'.tr(), chartStats.last),
+                              ],
+                            ),
+                          if (chartUrl != null)
+                            OrderTableRow(
+                              description: 'Chart:'.tr(),
+                              topPadding: 14.h,
+                              displayDivider: false,
+                              style: defaultInfoStyle,
+                              customValue: GestureDetector(
+                                onTap: () async {
+                                  await openUrl(chartUrl);
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/web_icon.svg',
+                                      width: 18.w,
+                                      height: 18.w,
+                                    ),
+                                    SizedBox(
+                                      width: 4.w,
+                                    ),
+                                    Text(
+                                      'sideswap.io',
+                                      style: defaultInfoStyle.copyWith(
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
                   ],
                   const Spacer(),
                   CustomBigButton(
@@ -228,6 +353,7 @@ class _OrderPopupState extends State<OrderPopup> {
                                   autosign: autoSign,
                                   accept: true,
                                   private: false,
+                                  ttlSeconds: ttlSeconds,
                                 );
                             break;
                         }
@@ -264,7 +390,7 @@ class _OrderPopupState extends State<OrderPopup> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+                    padding: EdgeInsets.only(top: 0.h, bottom: 0.h),
                     child: CustomBigButton(
                       width: double.maxFinite,
                       height: 54.h,
@@ -293,7 +419,7 @@ class OrderTypeTracking extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 8.h),
+      padding: EdgeInsets.only(top: 6.h),
       child: Container(
         height: 51.h,
         decoration: BoxDecoration(

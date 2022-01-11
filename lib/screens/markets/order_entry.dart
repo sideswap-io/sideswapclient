@@ -11,6 +11,7 @@ import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
@@ -31,13 +32,14 @@ class _OrderEntryState extends State<OrderEntry> {
   final TextEditingController receiveController = TextEditingController();
   final TextEditingController priceAmountController = TextEditingController();
   late FocusNode deliverFocusNode;
+  late FocusNode receiveFocusNode;
   late FocusNode priceFocusNode;
   bool isValid = false;
   bool showInsufficientFunds = false;
   bool isContinued = false;
   String receiveConversion = '';
   String priceConversion = '';
-  bool tracking = false;
+  bool trackingSelected = true;
   double sliderValue = 0;
   String trackingPrice = '';
   bool displaySlider = false;
@@ -52,42 +54,62 @@ class _OrderEntryState extends State<OrderEntry> {
     currentContext = context.read(walletProvider).navigatorKey.currentContext;
 
     deliverController.addListener(() {
-      receiveController.text = context
-          .read(requestOrderProvider)
-          .calculateReceiveAmount(
-              deliverController.text, priceAmountController.text);
-      validate();
+      final requestOrder = context.read(requestOrderProvider);
+      // Check isSellOrder to prevent cascading notifications after price edit
+      if (requestOrder.isSellOrder()) {
+        receiveController.text = requestOrder.calculateReceiveAmount(
+            deliverController.text, priceAmountController.text);
+        validate();
+      }
+    });
+
+    receiveController.addListener(() {
+      final requestOrder = context.read(requestOrderProvider);
+      // Check isSellOrder to prevent cascading notifications after price edit
+      if (!requestOrder.isSellOrder()) {
+        deliverController.text = requestOrder.calculateDeliverAmount(
+            receiveController.text, priceAmountController.text);
+        validate();
+      }
     });
 
     priceAmountController.addListener(() {
-      receiveController.text = context
-          .read(requestOrderProvider)
-          .calculateReceiveAmount(
-              deliverController.text, priceAmountController.text);
+      final requestOrder = context.read(requestOrderProvider);
+      if (requestOrder.isSellOrder()) {
+        receiveController.text = requestOrder.calculateReceiveAmount(
+            deliverController.text, priceAmountController.text);
+      } else {
+        deliverController.text = requestOrder.calculateDeliverAmount(
+            receiveController.text, priceAmountController.text);
+      }
       validate();
     });
 
     deliverFocusNode = FocusNode();
     priceFocusNode = FocusNode();
+    receiveFocusNode = FocusNode();
 
     inversePrice = !context.read(requestOrderProvider).isDeliverLiquid();
 
     context.read(marketsProvider).subscribeIndexPrice(
-        assetId: context.read(requestOrderProvider).priceAsset.assetId);
+        context.read(requestOrderProvider).tokenAccountAsset().asset);
 
     final indexPrice = context.read(requestOrderProvider).indexPrice;
     final isToken = context.read(requestOrderProvider).isDeliverToken();
 
-    if (isToken || indexPrice.isEmpty) {
-      tracking = false;
-    }
-
-    displaySlider = tracking;
-    if (!tracking && (!isToken && indexPrice.isNotEmpty)) {
+    displaySlider = isTracking();
+    if (!isTracking() && (!isToken && indexPrice.isNotEmpty)) {
       displaySlider = true;
     }
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    focusEnterAmount(context);
+  }
+
+  bool isTracking() {
+    final requests = context.read(requestOrderProvider);
+    final indexPrice = requests.indexPrice;
+    final isToken = context.read(requestOrderProvider).isDeliverToken();
+    return trackingSelected && !isToken && indexPrice.isNotEmpty;
   }
 
   @override
@@ -100,12 +122,21 @@ class _OrderEntryState extends State<OrderEntry> {
     receiveController.dispose();
     priceAmountController.dispose();
     deliverFocusNode.dispose();
+    receiveFocusNode.dispose();
     priceFocusNode.dispose();
     super.dispose();
   }
 
-  void afterBuild(BuildContext context) {
-    FocusScope.of(context).requestFocus(deliverFocusNode);
+  void focusEnterAmount(BuildContext context) {
+    WidgetsBinding.instance?.addPostFrameCallback((_) {
+      if (context.read(requestOrderProvider).isSellOrder()) {
+        FocusScope.of(context).requestFocus(deliverFocusNode);
+        setValue(deliverController, '');
+      } else {
+        FocusScope.of(context).requestFocus(receiveFocusNode);
+        setValue(receiveController, '');
+      }
+    });
   }
 
   void clearData() {
@@ -184,12 +215,14 @@ class _OrderEntryState extends State<OrderEntry> {
     final receiveAssetId = context.read(requestOrderProvider).receiveAssetId;
 
     setState(() {
-      if (receiveAssetId == context.read(walletProvider).tetherAssetId()) {
+      if (receiveAssetId.asset ==
+          context.read(walletProvider).tetherAssetId()) {
         receiveConversion = '';
       } else {
         receiveConversion = context
             .read(requestOrderProvider)
-            .dollarConversionFromString(receiveAssetId, receiveController.text);
+            .dollarConversionFromString(
+                receiveAssetId.asset, receiveController.text);
       }
     });
   }
@@ -198,37 +231,39 @@ class _OrderEntryState extends State<OrderEntry> {
     // hide keyboard
     SystemChannels.textInput.invokeMethod<void>('TextInput.hide');
 
-    final isSendBitcoin = context.read(requestOrderProvider).isDeliverLiquid();
-    final isAssetAmount = !isSendBitcoin;
+    final requestOrder = context.read(requestOrderProvider);
 
-    var amountStr = deliverController.text;
-    // We always sell
-    var amount = -(double.tryParse(amountStr) ?? 0);
+    final isSendBitcoin = requestOrder.isDeliverLiquid();
+    final isAmp = requestOrder.deliverAssetId.account == AccountType.amp ||
+        requestOrder.receiveAssetId.account == AccountType.amp;
+    final isAssetAmount = !isSendBitcoin || isAmp;
+    final isSellOrder = requestOrder.isSellOrder();
+
+    var amount = isSellOrder
+        ? -(double.tryParse(deliverController.text) ?? 0)
+        : (double.tryParse(receiveController.text) ?? 0);
 
     final priceAmount = double.tryParse(priceAmountController.text) ?? 0;
     var price = priceAmount;
 
     var trackingPercent = .0;
-    if (tracking) {
+    if (isTracking()) {
       final indexPrice =
           double.tryParse(context.read(requestOrderProvider).indexPrice) ?? 0;
       trackingPercent = 1 + (sliderValue / 100);
       price = indexPrice;
     }
 
-    final assetId = context.read(requestOrderProvider).tokenAssetId();
-    final pricedInLiquid =
-        context.read(requestOrderProvider).isPricedInLiquid(assetId);
-    if (pricedInLiquid) {
-      price = 1 / price;
-    }
+    final accountAsset = context.read(requestOrderProvider).tokenAccountAsset();
+    final assetId = accountAsset.asset;
 
     context.read(walletProvider).submitOrder(
           assetId,
           amount,
           price,
           isAssetAmount: isAssetAmount,
-          indexPrice: tracking ? trackingPercent : null,
+          indexPrice: isTracking() ? trackingPercent : null,
+          account: accountAsset.account,
         );
 
     setState(() {
@@ -239,9 +274,9 @@ class _OrderEntryState extends State<OrderEntry> {
 
   void onToggleTracking(bool value) {
     setState(() {
-      tracking = value;
+      trackingSelected = value;
 
-      if (!tracking) {
+      if (!isTracking()) {
         priceAmountController.text = '';
       } else {
         sliderValue = 0;
@@ -256,11 +291,15 @@ class _OrderEntryState extends State<OrderEntry> {
 
     final trackingPriceFixed = context
         .read(marketsProvider)
-        .calculateTrackingPrice(inversePrice ? -sliderValue : sliderValue,
-            context.read(requestOrderProvider).priceAsset.assetId);
+        .calculateTrackingPrice(
+            sliderValue, context.read(requestOrderProvider).priceAsset.assetId);
 
     setState(() {
-      priceAmountController.text = trackingPriceFixed;
+      if ((double.tryParse(trackingPriceFixed) ?? 0) != 0) {
+        priceAmountController.text = trackingPriceFixed;
+      } else {
+        priceAmountController.text = '';
+      }
       trackingPrice =
           '${replaceCharacterOnPosition(input: trackingPriceFixed)} $ticker';
     });
@@ -322,24 +361,19 @@ class _OrderEntryState extends State<OrderEntry> {
                               final indexPrice =
                                   watch(requestOrderProvider).indexPrice;
 
-                              if (isToken || indexPrice.isEmpty) {
-                                tracking = false;
-                              }
-
-                              displaySlider = tracking;
-                              if (!tracking &&
+                              displaySlider = isTracking();
+                              if (!isTracking() &&
                                   (!isToken && indexPrice.isNotEmpty)) {
                                 displaySlider = true;
                               }
 
                               return OrderPriceField(
                                 focusNode: priceFocusNode,
-                                description: 'Price'.tr(),
                                 asset: asset,
                                 icon: icon,
                                 controller: priceAmountController,
                                 dollarConversion: priceConversion,
-                                tracking: tracking,
+                                tracking: isTracking(),
                                 trackingPrice: trackingPrice,
                                 displaySlider: displaySlider,
                                 onToggleTracking: isToken || indexPrice.isEmpty
@@ -358,6 +392,7 @@ class _OrderEntryState extends State<OrderEntry> {
 
                                   calculateTrackingPrice();
                                 },
+                                invertColors: inversePrice,
                               );
                             },
                           ),
@@ -369,19 +404,16 @@ class _OrderEntryState extends State<OrderEntry> {
                                   top: 12.h, left: 16.w, right: 16.w),
                               child: Consumer(
                                 builder: (context, watch, child) {
+                                  final requests = watch(requestOrderProvider);
                                   final deliverAssetId =
-                                      watch(requestOrderProvider)
-                                          .deliverAssetId;
+                                      requests.deliverAssetId;
                                   final deliverAssets =
-                                      watch(requestOrderProvider)
-                                          .deliverAssets();
-                                  final balance = watch(requestOrderProvider)
-                                      .deliverBalance();
-                                  final precision = context
-                                          .read(requestOrderProvider)
-                                          .deliverAsset()
-                                          ?.precision ??
-                                      0;
+                                      requests.deliverAssets();
+                                  final disabledAssets =
+                                      requests.disabledAssets();
+                                  final balance = requests.deliverBalance();
+                                  final precision =
+                                      requests.deliverAsset()?.precision ?? 0;
                                   final hint = DecimalCutterTextInputFormatter(
                                     decimalRange: precision,
                                   )
@@ -391,19 +423,23 @@ class _OrderEntryState extends State<OrderEntry> {
                                           const TextEditingValue(
                                               text: '0.00000000'))
                                       .text;
+                                  final readOnly = !requests.isSellOrder();
                                   return SwapSideAmount(
                                     text: 'Deliver'.tr(),
                                     focusNode: deliverFocusNode,
                                     controller: deliverController,
                                     dropdownValue: deliverAssetId,
                                     availableAssets: deliverAssets,
+                                    disabledAssets: disabledAssets,
                                     balance: balance,
-                                    isMaxVisible: true,
+                                    isMaxVisible: !readOnly,
                                     hintText: hint,
                                     showHintText: true,
+                                    readOnly: readOnly,
                                     swapType: SwapType.atomic,
                                     showInsufficientFunds:
                                         showInsufficientFunds,
+                                    showAccountsInPopup: true,
                                     onDropdownChanged: (value) {
                                       final deliverAsset = context
                                           .read(requestOrderProvider)
@@ -421,6 +457,7 @@ class _OrderEntryState extends State<OrderEntry> {
                                             .read(requestOrderProvider)
                                             .isDeliverLiquid();
                                       });
+                                      focusEnterAmount(context);
                                     },
                                     onMaxPressed: () {
                                       var amount = balance;
@@ -462,14 +499,11 @@ class _OrderEntryState extends State<OrderEntry> {
                                   right: 16.w),
                               child: Consumer(
                                 builder: (context, watch, child) {
-                                  final receiveAsset =
-                                      watch(requestOrderProvider)
-                                          .receiveAssetId;
+                                  final requests = watch(requestOrderProvider);
+                                  final receiveAsset = requests.receiveAssetId;
                                   final receiveAssets =
-                                      watch(requestOrderProvider)
-                                          .receiveAssets();
-                                  final balance = watch(requestOrderProvider)
-                                      .receiveBalance();
+                                      requests.receiveAssets();
+                                  final balance = requests.receiveBalance();
                                   final precision = context
                                           .read(requestOrderProvider)
                                           .receiveAsset()
@@ -486,6 +520,7 @@ class _OrderEntryState extends State<OrderEntry> {
                                       .text;
                                   return SwapSideAmount(
                                     text: 'Receive'.tr(),
+                                    focusNode: receiveFocusNode,
                                     controller: receiveController,
                                     dropdownValue: receiveAsset,
                                     availableAssets: receiveAssets,
@@ -493,9 +528,10 @@ class _OrderEntryState extends State<OrderEntry> {
                                     balance: balance,
                                     hintText: hint,
                                     showHintText: true,
-                                    readOnly: true,
+                                    readOnly: requests.isSellOrder(),
                                     dropdownReadOnly: receiveAssets.length == 1,
                                     dollarConversion: receiveConversion,
+                                    showAccountsInPopup: true,
                                     onDropdownChanged: (value) {
                                       final receiveAsset = context
                                           .read(requestOrderProvider)
@@ -507,6 +543,18 @@ class _OrderEntryState extends State<OrderEntry> {
                                           .read(requestOrderProvider)
                                           .receiveAssetId = value;
                                       clearData();
+                                      focusEnterAmount(context);
+                                    },
+                                    onEditingCompleted: () {
+                                      if (displaySlider) {
+                                        validate();
+                                      }
+                                      if (displaySlider) {
+                                        FocusScope.of(context).unfocus();
+                                      } else {
+                                        FocusScope.of(context)
+                                            .requestFocus(priceFocusNode);
+                                      }
                                     },
                                   );
                                 },

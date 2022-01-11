@@ -223,12 +223,20 @@ pub fn listunspent(minconf: i32) -> RpcRequest {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UnspentItem {
-    pub txid: String,
-    pub vout: i32,
+    pub txid: sideswap_api::Txid,
+    pub vout: u32,
     pub address: String,
     pub amount: serde_json::Number,
     pub confirmations: i32,
-    pub asset: String,
+    pub asset: sideswap_api::AssetId,
+    #[serde(rename = "scriptPubKey")]
+    pub script_pub_key: String,
+    #[serde(rename = "redeemScript")]
+    pub redeem_script: Option<String>,
+    pub assetblinder: Option<sideswap_api::BlindingFactor>,
+    pub amountblinder: Option<sideswap_api::BlindingFactor>,
+    pub assetcommitment: Option<String>,
+    pub amountcommitment: Option<String>,
 }
 pub type ListUnspent = Vec<UnspentItem>;
 
@@ -291,3 +299,40 @@ pub fn sendtoaddress_bitcoin(addr: &str, amount: f64) -> RpcRequest {
     sendtoaddress_generic(addr, amount, None, None, None, None, None, None, None)
 }
 pub type SendToAddressResult = String;
+
+pub fn get_address_info(addr: &str) -> RpcRequest {
+    RpcRequest {
+        method: "getaddressinfo".to_owned(),
+        params: vec![serde_json::json!(addr)],
+    }
+}
+#[derive(Deserialize)]
+pub struct GetAddressInfo {
+    pub confidential: String,
+    pub unconfidential: String,
+    pub solvable: bool,
+}
+
+pub fn get_raw_transaction(txid: &sideswap_api::Txid) -> RpcRequest {
+    RpcRequest {
+        method: "getrawtransaction".to_owned(),
+        params: vec![serde_json::json!(txid)],
+    }
+}
+pub type GetRawTransactionResult = String;
+
+pub fn dumpprivkey(addr: &str) -> RpcRequest {
+    RpcRequest {
+        method: "dumpprivkey".to_owned(),
+        params: vec![serde_json::json!(addr)],
+    }
+}
+pub type DumpPrivKey = String;
+
+pub fn dumpblindingkey(addr: &str) -> RpcRequest {
+    RpcRequest {
+        method: "dumpblindingkey".to_owned(),
+        params: vec![serde_json::json!(addr)],
+    }
+}
+pub type DumpBlindingKey = String;

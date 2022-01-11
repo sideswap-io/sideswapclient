@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -37,13 +38,6 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String _sendResultError = '';
-  String get sendResultError => _sendResultError;
-  set sendResultError(String sendResultError) {
-    _sendResultError = sendResultError;
-    notifyListeners();
-  }
-
   int _sendNetworkFee = 0;
   int get sendNetworkFee => _sendNetworkFee;
   set sendNetworkFee(int sendNetworkFee) {
@@ -60,7 +54,7 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void selectPaymentSend(String amount, String assetId,
+  void selectPaymentSend(String amount, AccountAsset accountAsset,
       {Friend? friend, String? address}) {
     // TODO: handle friend payment send
     if (address == null) {
@@ -68,14 +62,14 @@ class PaymentProvider with ChangeNotifier {
       return;
     }
 
-    read(walletProvider).selectedWalletAsset = assetId;
+    read(walletProvider).selectedWalletAsset = accountAsset;
     if (!read(walletProvider).isAddrValid(address, AddrType.elements)) {
       logger.e('Invalid address $address');
       return;
     }
 
-    final precision =
-        read(walletProvider).getPrecisionForAssetId(assetId: assetId);
+    final precision = read(walletProvider)
+        .getPrecisionForAssetId(assetId: accountAsset.asset);
     final _amount =
         read(walletProvider).parseAssetAmount(amount, precision: precision);
     final balance = read(balancesProvider)
@@ -93,13 +87,13 @@ class PaymentProvider with ChangeNotifier {
     sendAddrParsed = address;
     sendAmountParsed = _amount;
 
-    final msg = To();
-    msg.createTx = To_CreateTx();
-    msg.createTx.addr = sendAddrParsed;
-    msg.createTx.balance = Balance();
-    msg.createTx.balance.amount = Int64(sendAmountParsed);
-    msg.createTx.balance.assetId = read(walletProvider).selectedWalletAsset;
-    read(walletProvider).sendMsg(msg);
+    final createTx = To_CreateTx();
+    createTx.addr = sendAddrParsed;
+    createTx.balance = Balance();
+    createTx.balance.amount = Int64(sendAmountParsed);
+    createTx.balance.assetId = read(walletProvider).selectedWalletAsset!.asset;
+    createTx.account = getAccount(accountAsset.account);
+    read(walletProvider).createTx(createTx);
 
     notifyListeners();
   }

@@ -1,10 +1,9 @@
 import 'package:decimal/decimal.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -40,30 +39,13 @@ class RequestOrderProvider extends ChangeNotifier {
   final Reader read;
 
   RequestOrderProvider(this.read) {
-    final assets = deliverAssets();
-    if (_deliverAssetId.isEmpty) {
-      if (assets.isNotEmpty) {
-        _deliverAssetId = assets.first;
-      } else {
-        _deliverAssetId = read(walletProvider).liquidAssetId() ?? '';
-      }
-    }
+    _deliverAssetId =
+        AccountAsset(AccountType.regular, read(walletProvider).liquidAssetId());
   }
 
   RequestOrder? currentRequestOrderView;
 
-  final _externalOrders = <String>[];
   String indexPrice = '';
-
-  /// Insert order id or session id to distinguis between external or in app
-  /// created swap orders
-  void insertExternalOrder(String id) {
-    _externalOrders.add(id);
-  }
-
-  bool isOrderExternal(String id) {
-    return _externalOrders.any((element) => element == id);
-  }
 
   bool isAssetToken(String? assetId) {
     if (assetId == null) {
@@ -80,31 +62,24 @@ class RequestOrderProvider extends ChangeNotifier {
     return precision == 0;
   }
 
-  bool isPricedInLiquid(String? assetId) {
-    if ((assetId == read(walletProvider).tetherAssetId() ||
-        assetId == read(walletProvider).eurxAssetId())) {
-      return false;
-    } else if ((isAssetToken(assetId) && isZeroPrecision(assetId)) ||
-        assetId == read(walletProvider).liquidAssetId()) {
-      return true;
-    }
-
-    return false;
+  bool isSellOrder() {
+    // Receive AMP order is always a buy, all else is always a sell
+    return receiveAssetId.account != AccountType.amp;
   }
 
   bool isDeliverToken() {
     final assetId = isDeliverLiquid()
         ? read(requestOrderProvider).receiveAssetId
         : read(requestOrderProvider).deliverAssetId;
-    return read(requestOrderProvider).isAssetToken(assetId);
+    return read(requestOrderProvider).isAssetToken(assetId.asset);
   }
 
   bool isDeliverLiquid() {
-    return read(requestOrderProvider).deliverAssetId ==
+    return read(requestOrderProvider).deliverAssetId.asset ==
         read(walletProvider).liquidAssetId();
   }
 
-  String tokenAssetId() {
+  AccountAsset tokenAccountAsset() {
     return isDeliverLiquid()
         ? read(requestOrderProvider).receiveAssetId
         : read(requestOrderProvider).deliverAssetId;
@@ -118,30 +93,32 @@ class RequestOrderProvider extends ChangeNotifier {
         .toList();
   }
 
-  String _deliverAssetId = '';
-
-  String get deliverAssetId {
-    if (realDeliverBalance() == 0 &&
-        _deliverAssetId != read(walletProvider).liquidAssetId()) {
-      _deliverAssetId =
-          deliverAssets().firstWhere((element) => element != receiveAssetId);
-    }
-
+  late AccountAsset _deliverAssetId;
+  AccountAsset get deliverAssetId {
     return _deliverAssetId;
   }
 
-  set deliverAssetId(String value) {
+  set deliverAssetId(AccountAsset value) {
     _deliverAssetId = value;
     _receiveAssetId = receiveAssets().first;
     notifyListeners();
     updateIndexPrice();
   }
 
+  void validateDeliverAsset() {
+    final allDeliverAccounts = deliverAssets();
+    // This would deselect currently selected asset if it goes to 0
+    final validDeliver = allDeliverAccounts.contains(deliverAssetId);
+    if (!validDeliver) {
+      deliverAssetId = allDeliverAccounts.first;
+    }
+  }
+
   Asset? deliverAsset() {
     return read(walletProvider)
         .assets
         .values
-        .firstWhere((element) => element.assetId == _deliverAssetId);
+        .firstWhere((element) => element.assetId == _deliverAssetId.asset);
   }
 
   int deliverPrecision() {
@@ -149,24 +126,41 @@ class RequestOrderProvider extends ChangeNotifier {
   }
 
   String deliverTicker() {
-    return read(walletProvider).assets[_deliverAssetId]?.ticker ?? '';
+    return read(walletProvider).assets[_deliverAssetId.asset]?.ticker ?? '';
   }
 
-  List<String> deliverAssets() {
-    final assets = liquidAssets();
-    assets.removeWhere((element) {
-      if (element == read(walletProvider).liquidAssetId()) {
-        return false;
-      }
+  List<AccountAsset> deliverAssets() {
+    final liquid = read(walletProvider).liquidAssetId();
+    final assets = read(balancesProvider)
+        .balances
+        .entries
+        .where((item) =>
+            item.value > 0 ||
+            (item.key.asset == liquid &&
+                item.key.account == AccountType.regular))
+        .map((item) => item.key)
+        .toList();
+    assets.sort();
+    return assets;
+  }
 
-      if (read(balancesProvider).balances[element] == 0) {
+  List<AccountAsset> disabledAssets() {
+    final wallet = read(walletProvider);
+    final ampAssets = wallet.ampAssets;
+    final allAssets = wallet.assets;
+    final asset = deliverAssets().where((item) {
+      final asset = allAssets[item.asset]!;
+      if (asset.unregistered) {
         return true;
       }
-
+      final isAmpAsset = ampAssets.contains(asset.assetId);
+      final isAmpAccount = item.account == AccountType.amp;
+      if (isAmpAsset != isAmpAccount) {
+        return true;
+      }
       return false;
-    });
-
-    return assets;
+    }).toList();
+    return asset;
   }
 
   String deliverBalance() {
@@ -180,12 +174,12 @@ class RequestOrderProvider extends ChangeNotifier {
     return read(balancesProvider).balances[_deliverAssetId] ?? 0;
   }
 
-  String? _receiveAssetId;
-  String get receiveAssetId {
+  AccountAsset? _receiveAssetId;
+  AccountAsset get receiveAssetId {
     return _receiveAssetId ??= receiveAssets().first;
   }
 
-  set receiveAssetId(String value) {
+  set receiveAssetId(AccountAsset value) {
     _receiveAssetId = value;
     notifyListeners();
   }
@@ -194,7 +188,7 @@ class RequestOrderProvider extends ChangeNotifier {
     return read(walletProvider)
         .assets
         .values
-        .firstWhere((element) => element.assetId == receiveAssetId);
+        .firstWhere((element) => element.assetId == receiveAssetId.asset);
   }
 
   int receivePrecision() {
@@ -205,29 +199,20 @@ class RequestOrderProvider extends ChangeNotifier {
     return read(walletProvider).assets[receiveAssetId]?.ticker ?? '';
   }
 
-  List<String> receiveAssets() {
+  List<AccountAsset> receiveAssets() {
     if (deliverTicker() == kLiquidBitcoinTicker) {
-      return [
-        read(walletProvider)
-            .assets
-            .values
-            .firstWhere((element) => element.ticker == kTetherTicker)
-            .assetId,
-        read(walletProvider)
-            .assets
-            .values
-            .firstWhere((element) => element.ticker == kEurxTicker)
-            .assetId
-      ];
-    } else {
-      return [
-        read(walletProvider)
-            .assets
-            .values
-            .firstWhere((element) => element.ticker == kLiquidBitcoinTicker)
-            .assetId,
-      ];
+      return read(walletProvider)
+          .assets
+          .values
+          .where((e) =>
+              (e.swapMarket || e.ampMarket) && e.ticker != kLiquidBitcoinTicker)
+          .map((e) => AccountAsset(
+              e.ampMarket ? AccountType.amp : AccountType.regular, e.assetId))
+          .toList();
     }
+
+    final liquid = read(walletProvider).liquidAssetId();
+    return [AccountAsset(AccountType.regular, liquid)];
   }
 
   String dollarConversion(String assetId, num amount) {
@@ -262,12 +247,18 @@ class RequestOrderProvider extends ChangeNotifier {
 
   String receiveBalance() {
     final balance = read(balancesProvider).balances[receiveAssetId];
-    final precision =
-        read(walletProvider).getPrecisionForAssetId(assetId: receiveAssetId);
+    final precision = read(walletProvider)
+        .getPrecisionForAssetId(assetId: receiveAssetId.asset);
     return amountStr(balance ?? 0, precision: precision);
   }
 
   Asset? _priceAsset;
+
+  bool isStablecoinMarket() {
+    final tokenAssetId = tokenAccountAsset().asset;
+    final tokenAsset = read(walletProvider).assets[tokenAssetId]!;
+    return tokenAsset.swapMarket;
+  }
 
   Asset get priceAsset {
     final newPriceAsset = getPriceAsset();
@@ -277,26 +268,19 @@ class RequestOrderProvider extends ChangeNotifier {
 
     _priceAsset = newPriceAsset;
 
-    read(marketsProvider).unsubscribeIndexPrice();
-    read(marketsProvider).subscribeIndexPrice(assetId: newPriceAsset.assetId);
+    read(marketsProvider).subscribeIndexPrice(tokenAccountAsset().asset);
 
     return newPriceAsset;
   }
 
-  Asset getPriceAsset({String? baseAssetId}) {
-    baseAssetId ??= deliverAssetId;
-
-    var assetId = baseAssetId;
-    if (isPricedInLiquid(assetId)) {
-      assetId = receiveAssetId;
-    } else {
-      assetId = baseAssetId;
+  Asset getPriceAsset() {
+    final assetId = tokenAccountAsset().asset;
+    final wallet = read(walletProvider);
+    final asset = wallet.assets[assetId]!;
+    if (asset.swapMarket) {
+      return asset;
     }
-
-    return read(walletProvider)
-        .assets
-        .values
-        .firstWhere((element) => element.assetId == assetId);
+    return wallet.assets[wallet.liquidAssetId()]!;
   }
 
   Image? priceAssetIcon() {
@@ -304,10 +288,12 @@ class RequestOrderProvider extends ChangeNotifier {
   }
 
   void updateIndexPrice() {
-    final sendLiquid = deliverAssetId == read(walletProvider).liquidAssetId();
+    final sendLiquid =
+        deliverAssetId.asset == read(walletProvider).liquidAssetId();
     final assetId = !sendLiquid ? deliverAssetId : receiveAssetId;
 
-    var priceBroadcast = read(marketsProvider).getIndexPriceForAsset(assetId);
+    var priceBroadcast =
+        read(marketsProvider).getIndexPriceForAsset(assetId.asset);
 
     if (priceBroadcast == 0) {
       // Let's display now only average value
@@ -336,7 +322,8 @@ class RequestOrderProvider extends ChangeNotifier {
         Decimal.tryParse(deliverAmountStr) ?? Decimal.zero;
     final priceAmountParsed = Decimal.tryParse(priceAmountStr) ?? Decimal.zero;
 
-    if (isPricedInLiquid(deliverAssetId)) {
+    // FIXME: Include server fee here
+    if (isStablecoinMarket() == isDeliverLiquid()) {
       amountParsed = deliverAmountParsed * priceAmountParsed;
     } else {
       if (priceAmountParsed != Decimal.zero) {
@@ -348,27 +335,34 @@ class RequestOrderProvider extends ChangeNotifier {
       return '';
     }
 
-    final precision = receiveAsset()?.precision ?? 0;
-
+    final precision = receiveAsset()!.precision;
     return amountParsed.toStringAsFixed(precision);
   }
 
-  void swapAssets() {
-    if (deliverAssets()
-        .firstWhere(
-          (element) => element == receiveAssetId,
-          orElse: () => '',
-        )
-        .isEmpty) {
-      return;
+  String calculateDeliverAmount(String receiveAmount, String priceAmount) {
+    final receiveAmountStr = receiveAmount.replaceAll(' ', '');
+    final priceAmountStr = priceAmount.replaceAll(' ', '');
+    var amountParsed = Decimal.zero;
+
+    final receiveAmountParsed =
+        Decimal.tryParse(receiveAmountStr) ?? Decimal.zero;
+    final priceAmountParsed = Decimal.tryParse(priceAmountStr) ?? Decimal.zero;
+
+    if (isStablecoinMarket() == isDeliverLiquid()) {
+      if (priceAmountParsed != Decimal.zero) {
+        amountParsed = receiveAmountParsed / priceAmountParsed;
+      }
+    } else {
+      amountParsed = receiveAmountParsed * priceAmountParsed;
     }
 
-    final oldDeliverAsset = deliverAssetId;
-    deliverAssetId = receiveAssetId;
-    if (tickerForAssetId(oldDeliverAsset) == kTetherTicker ||
-        tickerForAssetId(oldDeliverAsset) == kEurxTicker) {
-      receiveAssetId = oldDeliverAsset;
+    if (amountParsed == Decimal.zero) {
+      return '';
     }
+
+    final precision = deliverAsset()?.precision ?? 0;
+
+    return amountParsed.toStringAsFixed(precision);
   }
 
   String tickerForAssetId(String assetId) {
@@ -384,7 +378,6 @@ class RequestOrderProvider extends ChangeNotifier {
     bool isToken = false,
     String? price,
     double? indexPrice,
-    bool isPricedInLiquid = false,
   }) {
     if (price == null) {
       if (indexPrice == null) {
@@ -398,10 +391,6 @@ class RequestOrderProvider extends ChangeNotifier {
     var newPrice = double.tryParse(price) ?? 0;
     if (newPrice <= 0) {
       return;
-    }
-
-    if (isPricedInLiquid) {
-      newPrice = (1 / newPrice);
     }
 
     read(walletProvider).modifyOrderPrice(orderId, price: newPrice);

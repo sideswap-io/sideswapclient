@@ -1,7 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,9 +7,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/show_peg_info_widget.dart';
-import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
-import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
@@ -49,37 +45,14 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool _showInsufficientFunds = false;
-  bool get showInsufficientFunds => _showInsufficientFunds;
-  set showInsufficientFunds(bool showInsufficientFunds) {
-    if (swapSendWallet == SwapWallet.local) {
-      _showInsufficientFunds = showInsufficientFunds;
-    } else {
-      _showInsufficientFunds = false;
-    }
-  }
-
   String? _swapSendAsset;
   String? get swapSendAsset => _swapSendAsset;
-  set swapSendAsset(String? swapSendAsset) {
-    _swapSendAsset = swapSendAsset;
-    notifyListeners();
-  }
 
   String? _swapRecvAsset;
   String? get swapRecvAsset => _swapRecvAsset;
 
-  set swapRecvAsset(String? swapRecvAsset) {
-    _swapRecvAsset = swapRecvAsset;
-    notifyListeners();
-  }
-
   bool _swapPeg = false;
   bool get swapPeg => _swapPeg;
-  set swapPeg(bool swapPeg) {
-    _swapPeg = swapPeg;
-    notifyListeners();
-  }
 
   SwapWallet _swapSendWallet = SwapWallet.local;
   SwapWallet get swapSendWallet => _swapSendWallet;
@@ -92,6 +65,13 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   SwapWallet get swapRecvWallet => _swapRecvWallet;
   set swapRecvWallet(SwapWallet swapRecvWallet) {
     _swapRecvWallet = swapRecvWallet;
+    notifyListeners();
+  }
+
+  double? _price;
+  double? get price => _price;
+  set price(double? value) {
+    _price = value;
     notifyListeners();
   }
 
@@ -109,21 +89,12 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int _swapNetworkFee = 0;
-  int get swapNetworkFee => _swapNetworkFee;
-  set swapNetworkFee(int swapNetworkFee) {
-    _swapNetworkFee = swapNetworkFee;
-    notifyListeners();
-  }
-
   String _swapRecvAddressExternal = '';
   String get swapRecvAddressExternal => _swapRecvAddressExternal;
   set swapRecvAddressExternal(String swapRecvAddressExternal) {
     _swapRecvAddressExternal = swapRecvAddressExternal;
     notifyListeners();
   }
-
-  bool swapActive = false;
 
   String _swapNetworkError = '';
   String get swapNetworkError => _swapNetworkError;
@@ -142,13 +113,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  bool _didAssetReplaced = false;
-  bool get didAssetReplaced => _didAssetReplaced;
-  set didAssetReplaced(bool didAssetReplaced) {
-    _didAssetReplaced = didAssetReplaced;
-    notifyListeners();
-  }
-
   // Functions //
 
   List<String> swapSendAssets() {
@@ -156,13 +120,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     if (swapPeg) {
       final swapPegList = <String>[];
 
-      if (wallet.bitcoinAssetId() != null) {
-        swapPegList.add(wallet.bitcoinAssetId()!);
-      }
-
-      if (wallet.liquidAssetId() != null) {
-        swapPegList.add(wallet.liquidAssetId()!);
-      }
+      swapPegList.add(wallet.bitcoinAssetId());
+      swapPegList.add(wallet.liquidAssetId());
 
       return swapPegList;
     }
@@ -175,17 +134,14 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   List<String> swapRecvAssets() {
     final wallet = read(walletProvider);
     if (swapPeg) {
-      if (swapSendAsset == wallet.liquidAssetId() &&
-          wallet.bitcoinAssetId() != null) {
-        return [wallet.bitcoinAssetId()!];
-      } else if (wallet.liquidAssetId() != null) {
-        return [wallet.liquidAssetId()!];
+      if (swapSendAsset == wallet.liquidAssetId()) {
+        return [wallet.bitcoinAssetId()];
       }
+      return [wallet.liquidAssetId()];
     }
 
-    if (swapSendAsset != wallet.liquidAssetId() &&
-        wallet.liquidAssetId() != null) {
-      return [wallet.liquidAssetId()!];
+    if (swapSendAsset != wallet.liquidAssetId()) {
+      return [wallet.liquidAssetId()];
     }
 
     return wallet.assets.entries
@@ -207,102 +163,23 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     return SwapType.atomic;
   }
 
-  void swapAccept(BuildContext context, int recvAmount) async {
-    final type = swapType();
-
-    if (type == SwapType.pegIn) {
-      final msg = To();
-      msg.pegRequest = Empty();
-      read(walletProvider).sendMsg(msg);
-      swapState = SwapState.sent;
-      return;
-    }
-
-    final maxBalance = swapSendWallet == SwapWallet.local
-        ? read(balancesProvider).balances[swapSendAsset] ?? 0
-        : kMaxCoins;
-    if (swapSendAmount <= 0 || swapSendAmount > maxBalance) {
-      await read(utilsProvider)
-          .showErrorDialog('Please enter correct amount'.tr());
-      swapState = SwapState.idle;
-      return;
-    }
-
-    if (swapRecvWallet == SwapWallet.extern) {
-      final addrType = swapAddrType(swapType());
-      if (!read(walletProvider)
-          .isAddrValid(swapRecvAddressExternal, addrType)) {
-        await read(utilsProvider).showErrorDialog(
-            'PLEASE_ENTER_CORRECT_ADDRESS'.tr(args: [(addrTypeStr(addrType))]));
-        swapState = SwapState.idle;
-        return;
-      }
-    }
-
-    if (!swapActive) {
-      await read(utilsProvider).showErrorDialog('Nothing to accept');
-      swapState = SwapState.idle;
-      return;
-    }
-
-    swapActive = false;
-    final msg = To();
-    msg.swapAccept = To_SwapAccept();
-    if (swapRecvWallet == SwapWallet.extern) {
-      msg.swapAccept.recvAddr = swapRecvAddressExternal;
-    }
-    msg.swapAccept.recvAmount = Int64(recvAmount);
-    read(walletProvider).sendMsg(msg);
-    swapState = SwapState.sent;
-  }
-
-  void setSwapAmount(int amount, int blocks) {
-    swapCancel();
-
-    swapNetworkError = '';
-    notifyListeners();
-
-    if (amount <= 0) {
-      return;
-    }
-
-    var balanceAvailable =
-        read(balancesProvider).balances[swapSendAsset]?.toInt() ?? 0;
-    if (swapSendWallet == SwapWallet.local && amount > balanceAvailable) {
-      return;
-    }
-
-    if (swapSendAsset == null || swapRecvAsset == null) {
-      logger.w('Expected non null asset: $swapSendAsset and $swapRecvAsset');
-    }
-
-    swapActive = true;
-    final msg = To();
-    msg.swapRequest = To_SwapRequest();
-    msg.swapRequest.sendAsset = swapSendAsset!;
-    msg.swapRequest.recvAsset = swapRecvAsset!;
-    msg.swapRequest.sendAmount = Int64(amount);
-    msg.swapRequest.blocks = blocks;
-    read(walletProvider).sendMsg(msg);
-  }
-
   void checkSelectedAsset() {
     final wallet = read(walletProvider);
     if (wallet.assets.length < 3) {
       return;
     }
     if (swapSendAsset == null) {
-      swapPeg = false;
-      swapSendAsset = wallet.liquidAssetId();
-      swapRecvAsset = wallet.tetherAssetId();
+      _swapPeg = false;
+      _swapSendAsset = wallet.liquidAssetId();
+      _swapRecvAsset = wallet.tetherAssetId();
     }
     final sendAssetsAllowed = swapSendAssets();
     if (!sendAssetsAllowed.contains(swapSendAsset)) {
-      swapSendAsset = sendAssetsAllowed.first;
+      _swapSendAsset = sendAssetsAllowed.first;
     }
     final recvAssetsAllowed = swapRecvAssets();
     if (!recvAssetsAllowed.contains(swapRecvAsset)) {
-      swapRecvAsset = recvAssetsAllowed.first;
+      _swapRecvAsset = recvAssetsAllowed.first;
     }
     final allowedSendList = allowedSendWallets();
     if (!allowedSendList.contains(swapSendWallet)) {
@@ -316,45 +193,25 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   void setSelectedLeftAsset(String asset) {
     swapReset();
-    swapSendAsset = asset;
-    didAssetReplaced = true;
+    _swapSendAsset = asset;
     checkSelectedAsset();
     notifyListeners();
   }
 
   void setSelectedRightAsset(String asset) {
     swapReset();
-    swapRecvAsset = asset;
-    didAssetReplaced = true;
+    _swapRecvAsset = asset;
     checkSelectedAsset();
     notifyListeners();
   }
 
   void swapReset() {
-    swapCancel();
-
-    showInsufficientFunds = false;
     swapNetworkError = '';
     swapSendAmount = 0;
     swapRecvAmount = 0;
-    swapNetworkFee = 0;
     notifyListeners();
 
     swapState = SwapState.idle;
-  }
-
-  void swapCancel() {
-    swapRecvAmount = 0;
-    swapNetworkFee = 0;
-    notifyListeners();
-
-    if (swapActive) {
-      swapActive = false;
-      final msg = To();
-      msg.swapCancel = Empty();
-      read(walletProvider).sendMsg(msg);
-      swapState = SwapState.idle;
-    }
   }
 
   String swapPriceStr() {
@@ -379,12 +236,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       priceStr = price.toStringAsFixed(nonBtcAsset?.precision.toInt() ?? 0);
     }
     return '1 $kLiquidBitcoinTicker = $priceStr ${nonBtcAsset?.ticker ?? ''}';
-  }
-
-  String swapConversionRateStr() {
-    final rate = 100 * (swapRecvAmount / swapSendAmount);
-    final rateStr = rate.toStringAsFixed(1);
-    return '$rateStr%';
   }
 
   List<SwapWallet> allowedSendWallets() {
@@ -438,7 +289,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   void setSwapPeg(bool value) {
     if (swapPeg != value) {
-      swapPeg = value;
+      _swapPeg = value;
       checkSelectedAsset();
       notifyListeners();
     }
@@ -540,8 +391,42 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
     final uiStateArgs = read(uiStateArgsProvider);
     uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments.copyWith(
-      currentIndex: 2,
+      currentIndex: 3,
       navigationItem: WalletMainNavigationItem.swap,
     );
+  }
+
+  String? getPriceText() {
+    final wallet = read(walletProvider);
+    final swapType_ = swapType();
+
+    if (swapType_ == SwapType.atomic) {
+      final assetSend = swapSendAsset;
+      final assetRecv = swapRecvAsset;
+      final priceCopy = _price;
+      if (assetSend == null || assetRecv == null || priceCopy == null) {
+        return null;
+      }
+      final sendLiquid = assetSend == wallet.liquidAssetId();
+      final asset = sendLiquid ? assetRecv : assetSend;
+
+      final priceString = priceStr(priceCopy, false);
+      final assetTicker = wallet.getAssetById(asset)?.ticker ?? kUnknownTicker;
+      final swapText = '1 $kLiquidBitcoinTicker = $priceString $assetTicker';
+      return swapText;
+    }
+
+    final serverStatus = wallet.serverStatus;
+    if (serverStatus == null) {
+      return null;
+    }
+
+    final serverPercent = swapType_ == SwapType.pegIn
+        ? serverStatus.serverFeePercentPegIn
+        : serverStatus.serverFeePercentPegOut;
+    final percentConversion = 100 - serverPercent;
+    final conversionStr = percentConversion.toStringAsFixed(2);
+    final conversionText = 'Conversion rate $conversionStr%';
+    return conversionText;
   }
 }

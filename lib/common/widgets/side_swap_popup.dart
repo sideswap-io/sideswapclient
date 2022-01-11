@@ -82,8 +82,9 @@ class SideSwapPopup extends StatelessWidget {
                             Align(
                               alignment: Alignment.topRight,
                               child: Padding(
-                                padding:
-                                    EdgeInsets.only(top: 25.h, right: 22.w),
+                                padding: EdgeInsets.only(
+                                    top: enableInsideTopPadding ? 25.h : 0.h,
+                                    right: 22.w),
                                 child: CustomBackButton(
                                   width: 18.w,
                                   height: 18.w,

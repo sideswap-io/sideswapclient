@@ -29,15 +29,15 @@ class TokenMarketOrderDetails extends StatefulWidget {
       _TokenMarketOrderDetailsState();
 }
 
+TextStyle defaultInfoStyle = GoogleFonts.roboto(
+  fontSize: 14.sp,
+  fontWeight: FontWeight.normal,
+  color: const Color(0xFF709EBA),
+);
+
 class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
   String expiresTitle = '';
   Timer? _expireTimer;
-
-  TextStyle defaultInfoStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
-    fontWeight: FontWeight.normal,
-    color: const Color(0xFF709EBA),
-  );
 
   @override
   void initState() {
@@ -126,6 +126,7 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
 
                         final assetDetailsData = assetDetails[assetId];
                         final stats = assetDetailsData?.stats;
+                        final chartsUrl = assetDetailsData?.chartUrl;
 
                         final asset = context
                             .read(walletProvider)
@@ -192,6 +193,25 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
                                   ),
                                 ),
                               ],
+                              if (chartsUrl != null) ...[
+                                GestureDetector(
+                                  onTap: () async {
+                                    await openUrl(chartsUrl);
+                                  },
+                                  child: OrderTableRow(
+                                    description: 'Chart:'.tr(),
+                                    topPadding: 14.h,
+                                    displayDivider: false,
+                                    style: defaultInfoStyle,
+                                    customValue: Text(
+                                      'sideswap.io',
+                                      style: defaultInfoStyle.copyWith(
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         );
@@ -205,7 +225,9 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
                         width: double.maxFinite,
                         height: 54.h,
                         backgroundColor: const Color(0xFF00C5FF),
-                        text: 'BUY'.tr(),
+                        text: widget.requestOrder.isSell()
+                            ? 'SELL'.tr()
+                            : 'BUY'.tr(),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).pop();
                           context

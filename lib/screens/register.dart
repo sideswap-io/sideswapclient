@@ -45,7 +45,7 @@ class _SelectEnvState extends State<SelectEnv> {
                 ).tr(),
                 const SizedBox(height: 20),
                 Column(
-                  children: envValues
+                  children: envValues()
                       .map((e) => RadioListTile<int>(
                             title: Text(envName(e)),
                             value: e,

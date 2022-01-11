@@ -37,7 +37,7 @@ class PaymentSendPopup extends StatelessWidget {
             child: Consumer(
               builder: (context, watch, child) {
                 final asset = watch(walletProvider)
-                    .assets[watch(walletProvider).selectedWalletAsset];
+                    .assets[watch(walletProvider).selectedWalletAsset!.asset];
                 final precision = context
                     .read(walletProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
@@ -61,7 +61,7 @@ class PaymentSendPopup extends StatelessWidget {
             child: Consumer(
               builder: (context, watch, child) {
                 final asset = watch(walletProvider)
-                    .assets[watch(walletProvider).selectedWalletAsset];
+                    .assets[watch(walletProvider).selectedWalletAsset!.asset];
                 final precision = context
                     .read(walletProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
@@ -154,18 +154,25 @@ class PaymentSendPopup extends StatelessWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 40.h, bottom: 40.h),
-            child: CustomBigButton(
-              width: MediaQuery.of(context).size.width,
-              height: 54.h,
-              backgroundColor: const Color(0xFF00C5FF),
-              text: 'SEND'.tr(),
-              enabled: true,
-              onPressed: () async {
-                if (await context.read(walletProvider).isAuthenticated()) {
-                  context.read(walletProvider).assetSendConfirm();
-                }
-              },
-            ),
+            child: Consumer(builder: (context, watch, child) {
+              final buttonEnabled = !watch(walletProvider).isSendingTx;
+              return CustomBigButton(
+                width: MediaQuery.of(context).size.width,
+                height: 54.h,
+                backgroundColor: const Color(0xFF00C5FF),
+                text: 'SEND'.tr(),
+                enabled: buttonEnabled,
+                onPressed: buttonEnabled
+                    ? () async {
+                        if (await context
+                            .read(walletProvider)
+                            .isAuthenticated()) {
+                          context.read(walletProvider).assetSendConfirm();
+                        }
+                      }
+                    : null,
+              );
+            }),
           ),
         ],
       ),

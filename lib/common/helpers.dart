@@ -8,8 +8,9 @@ import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:share/share.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/screens/balances.dart';
+import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -38,6 +39,9 @@ const int kOneHour = kHalfHour * 2;
 const int kSixHours = kOneHour * 6;
 const int kTwelveHours = kSixHours * 2;
 const int kOneDay = kSixHours * 4;
+
+const int kEditPriceMaxPercent = 10;
+const int kEditPriceMaxTrackingPercent = 1;
 
 double convertToNewRange({
   required double value,
@@ -87,13 +91,21 @@ String amountStrNamed(int amount, String ticker,
   return '$valueStr $ticker';
 }
 
-String priceStr(double price) {
+String priceStr(double price, bool priceInLiquid) {
+  if (priceInLiquid) {
+    return price.toStringAsFixed(8);
+  }
   return price.toStringAsPrecision(7);
+}
+
+String priceStrForMarket(double price, MarketType market) {
+  return priceStr(
+      price, market == MarketType.token || market == MarketType.amp);
 }
 
 // Same as priceStr but without trailing zeros
 String priceStrForEdit(double price) {
-  return Decimal.parse(priceStr(price)).toString();
+  return price.toString();
 }
 
 final shortFormat = DateFormat('MMM d, yyyy');
@@ -188,15 +200,6 @@ void setValue(TextEditingController controller, String value) {
       TextSelection.fromPosition(TextPosition(offset: value.length));
 }
 
-Future<void> pasteFromClipboard(TextEditingController? controller) async {
-  final value = await Clipboard.getData(Clipboard.kTextPlain);
-  if (value?.text != null && controller != null) {
-    var text = value!.text!.replaceAll('\n', '');
-    text = text.replaceAll(' ', '');
-    setValue(controller, text);
-  }
-}
-
 Future<void> openUrl(String url) async {
   // Skip canLaunch(url) check because it fails to open twitter link if twitter client is installed
   // More details here - https://github.com/flutter/flutter/issues/63727
@@ -208,10 +211,20 @@ String generateTxidUrl(
   String txid,
   bool isLiquid, {
   String blindedValues = '',
+  bool testnet = false,
 }) {
-  var url = isLiquid
-      ? 'https://blockstream.info/liquid/tx/$txid'
-      : 'https://blockstream.info/tx/$txid';
+  String baseUrl;
+  if (!testnet) {
+    baseUrl = isLiquid
+        ? 'https://blockstream.info/liquid'
+        : 'https://blockstream.info';
+  } else {
+    baseUrl = isLiquid
+        ? 'https://blockstream.info/liquidtestnet'
+        : 'https://blockstream.info/testnet';
+  }
+
+  var url = '$baseUrl/tx/$txid';
   if (blindedValues.isNotEmpty) {
     url = url + '/#blinded=' + blindedValues;
   }
@@ -384,7 +397,7 @@ List<List<String>> exportTxList(
       var balance = 0;
       tx.tx.balances
           .where((balance) => balance.assetId == asset.assetId)
-          .forEach((item) => balance = item.amount.toInt());
+          .forEach((item) => balance += item.amount.toInt());
       line.add(amountStr(balance, precision: asset.precision));
     }
     result.add(line);
@@ -402,4 +415,22 @@ Future<void> shareCsv(String data) async {
   final fileName = '$dir/data.csv';
   await File(fileName).writeAsString(data);
   Share.shareFiles([fileName], text: 'Transactions list');
+}
+
+Future<void> shareLogFile(String name) async {
+  final dir = (await getApplicationSupportDirectory()).path;
+  final fileName = '$dir/$name';
+  try {
+    await Share.shareFiles([fileName], text: 'Log file');
+  } on PlatformException {
+    logger.e('share log failed');
+  }
+}
+
+int boolToInt(bool a) {
+  return a ? 1 : 0;
+}
+
+int compareBool(bool a, bool b) {
+  return boolToInt(a).compareTo(boolToInt(b));
 }

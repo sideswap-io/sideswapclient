@@ -1,7 +1,4 @@
-import 'dart:ui';
-
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_spinkit/flutter_spinkit.dart';

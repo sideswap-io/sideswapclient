@@ -30,6 +30,9 @@ TxCircleImageType txTypeToImageType({required TxType type}) {
     case TxType.swap:
       txCircleImageType = TxCircleImageType.swap;
       break;
+    case TxType.internal:
+      txCircleImageType = TxCircleImageType.swap;
+      break;
     case TxType.unknown:
       txCircleImageType = TxCircleImageType.unknown;
       break;

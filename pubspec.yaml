@@ -15,19 +15,19 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.12+36
+version: 1.1.0+41
 
 environment:
-  sdk: ">=2.13.0 <3.0.0"
+  sdk: ">=2.14.3 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_lints: ^1.0.3
+  flutter_lints: ^1.0.4
   # secure recovery page
   secure_application: ^3.7.3
-  animations: ^2.0.0
-  another_flushbar: ^1.10.23
+  animations: ^2.0.1
+  another_flushbar: ^1.10.24
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -40,62 +40,62 @@ dependencies:
   faker: ^2.0.0
   ffi: ^1.1.2
   # dynamic links
-  firebase_dynamic_links: ^2.0.7
+  firebase_dynamic_links: ^2.0.10
   #firebase notifications
-  firebase_messaging: ^10.0.4
+  firebase_messaging: ^10.0.8
   fixnum: ^1.0.0
   # contacts
   flutter_contact: ^0.9.1+7
   # provider
   flutter_hooks: ^0.17.0
   # icon generator
-  flutter_launcher_icons: ^0.9.1
+  flutter_launcher_icons: ^0.9.2
   #notifications
   flutter_local_notifications: ^8.1.1
-  flutter_plugin_android_lifecycle: ^2.0.2
+  flutter_plugin_android_lifecycle: ^2.0.3
   # screen scaling
   flutter_screenutil: ^5.0.0+2
   # license loading indicator
-  flutter_spinkit: ^5.0.0
+  flutter_spinkit: ^5.1.0
   flutter_svg: ^0.22.0
   # switch
   flutter_switch: ^0.3.2
   # mnemonic words suggestions
-  flutter_typeahead: ^3.1.3
+  flutter_typeahead: ^3.2.1
   # notification payload parsing
-  freezed_annotation: ^0.14.2
+  freezed_annotation: ^0.14.3
   # fonts
   google_fonts: ^2.1.0
-  hooks_riverpod: ^0.14.0+3
-  image: ^3.0.2
+  hooks_riverpod: ^0.14.0+4
+  image: ^3.0.7
   # avatar
-  image_picker: ^0.8.1+3
-  json_annotation: ^4.0.1
+  image_picker: ^0.8.4+2
+  json_annotation: ^4.1.0
   # logger
-  logger: ^1.0.0
+  logger: ^1.1.0
   # marqee text
   marquee: ^2.2.0
-  package_info: ^2.0.2
+  package_info_plus: ^1.0.6
   # background
   path_drawing: ^0.5.1
-  path_provider: ^2.0.2
+  path_provider: ^2.0.5
   # permissions (contacts)
-  permission_handler: ^8.1.4+2
+  permission_handler: ^8.1.6
   # pin
   pinput: ^1.2.0
   #provider: ^4.3.2
   protobuf: ^2.0.0
-  qr_code_scanner: ^0.5.1
+  qr_code_scanner: ^0.5.2
   qr_flutter: ^4.0.0
   # rxdart
-  rxdart: ^0.26.0
-  share: ^2.0.4
-  shared_preferences: ^2.0.6
+  rxdart: ^0.27.2
+  share_plus: ^2.1.4
+  shared_preferences: ^2.0.8
   # sliding tx list
   sliding_up_panel: ^2.0.0+1
   # deep/app links
   uni_links: ^0.5.1
-  url_launcher: ^6.0.7
+  url_launcher: ^6.0.12
   # sound notification
   flutter_ringtone_player: ^3.0.0
   vibration: ^1.7.4-nullsafety.0
@@ -105,14 +105,18 @@ dependencies:
   # list comparision
   collection: ^1.15.0
   csv: ^5.0.0
+  tuple: ^2.0.0
+
+dependency_overrides:
+  rxdart: ^0.27.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  analyzer: ^1.7.1
-  build_runner: ^2.0.4
-  freezed: ^0.14.2
-  json_serializable: ^4.1.3
+  analyzer: ^2.4.0
+  build_runner: ^2.1.2
+  freezed: ^0.14.5
+  json_serializable: ^5.0.2
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -194,6 +198,7 @@ flutter:
     - assets/lock.svg
     - assets/volume_filter.svg
     - assets/export.svg
+    - assets/asset_swap_arrows.svg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

@@ -20,13 +20,13 @@ pub struct Server {
     port: i32,
 }
 
-pub type Sender = std::sync::mpsc::Sender<WrappedRequest>;
-pub type Receiver = std::sync::mpsc::Receiver<WrappedResponse>;
+pub type Sender = crossbeam_channel::Sender<WrappedRequest>;
+pub type Receiver = crossbeam_channel::Receiver<WrappedResponse>;
 
 async fn run(
     server: Server,
-    req_rx: std::sync::mpsc::Receiver<WrappedRequest>,
-    resp_tx: std::sync::mpsc::Sender<WrappedResponse>,
+    req_rx: crossbeam_channel::Receiver<WrappedRequest>,
+    resp_tx: crossbeam_channel::Sender<WrappedResponse>,
 ) {
     let (req_tx_async, mut req_rx_async) = futures::channel::mpsc::unbounded::<WrappedRequest>();
     std::thread::spawn(move || {
@@ -100,8 +100,8 @@ async fn run(
 }
 
 pub fn start(server: Server) -> (Sender, Receiver) {
-    let (req_tx, req_rx) = std::sync::mpsc::channel::<WrappedRequest>();
-    let (resp_tx, resp_rx) = std::sync::mpsc::channel::<WrappedResponse>();
+    let (req_tx, req_rx) = crossbeam_channel::unbounded::<WrappedRequest>();
+    let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<WrappedResponse>();
     std::thread::spawn(move || {
         async_std::task::block_on(run(server, req_rx, resp_tx));
     });

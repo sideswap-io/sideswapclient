@@ -11,12 +11,11 @@ clap = "*"
 log = "*"
 log4rs = { version = "*", features = ["gzip"] }
 serde_json = "*"
-reqwest = { version = "*", features = ["blocking", "json"] }
+reqwest = { version = "*", default-features = false, features = ["blocking", "json", "rustls-tls"] }
 anyhow = "*"
 serde = { version = "1.0", features = ["derive"] }
 config = "*"
-crossbeam-channel = "*"
-tungstenite = "*"
+tungstenite = { version = "*", default-features = false, features = [] }
 url = "*"
 async-tungstenite = { version = "*", features = ["async-std-runtime", "async-tls"] }
 async-std = "*"
@@ -25,11 +24,16 @@ rustls = { version = "*", features = ["dangerous_configuration"] }
 futures = "*"
 futures-util = "*"
 webpki = "*"
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 prost = "0.7.0"
 libc = "*"
 signal-hook = "*"
 hyper = { version = "*", features = ["server"] }
+elements_pset = { package = "elements", git = "https://github.com/sanket1729/rust-elements", rev = "dc350a0b8664cdd5b051443810a6a1f99a6173da" }
+base64 = "*"
+hex = "*"
+rand = "0.6.5"
+crossbeam-channel = "0.5.1"
 
 [build-dependencies]
 prost-build = "0.7.0"

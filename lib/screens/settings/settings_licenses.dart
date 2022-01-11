@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info/package_info.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -101,7 +101,8 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
       final widget = Theme(
         data: Theme.of(context).copyWith(
           dividerColor: Colors.transparent,
-          accentColor: const Color(0xFF00C5FF),
+          colorScheme: ColorScheme.fromSwatch()
+              .copyWith(secondary: const Color(0xFF00C5FF)),
         ),
         child: ExpansionTile(
           title: Text(
