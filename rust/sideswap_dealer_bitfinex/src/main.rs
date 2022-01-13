@@ -602,7 +602,13 @@ fn hedge_order(
     mod_tx: &module::Sender,
     pending_orders: &mut PendingOrders,
 ) {
-    info!("swap succeed, txid: {}", &txid);
+    info!(
+        "hedge swap, txid: {}, ticker: {}, send_bitcoins: {}, bitcoin_amount: {}",
+        &txid,
+        dealer_ticker.0,
+        send_bitcoins,
+        bitcoin_amount.to_bitcoin()
+    );
     *balancing_blocked = std::time::Instant::now();
     let bf_fee = if args.env.data().mainnet {
         BITFINEX_FEE_PROD
@@ -684,7 +690,7 @@ fn main() {
     log4rs::init_file(&args.log_settings, Default::default()).expect("can't open log settings");
 
     let env_data = args.env.data();
-    let _bitcoin_asset = AssetId::from_str(env_data.policy_asset).unwrap();
+    let bitcoin_asset = AssetId::from_str(env_data.policy_asset).unwrap();
 
     info!("starting proxy...");
     unsafe {
@@ -1234,6 +1240,7 @@ fn main() {
                         }
                     }
                 }
+
                 Notification::ServerStatus(status) => server_status = Some(status),
 
                 Notification::OrderCreated(order) if order.own.is_none() => {
@@ -1404,6 +1411,46 @@ fn main() {
                     );
                     if let Err(e) = signed_swap_resp {
                         error!("starting swap failed: {}", e);
+                    }
+                }
+
+                Notification::SwapDone(swap) => {
+                    debug!("instant swap complete: {:?}", &swap);
+                    let _active_swap = instant_swaps
+                        .remove(&swap.order_id)
+                        .expect("order not found");
+                    if swap.status == SwapDoneStatus::Success {
+                        let txid = swap.txid.unwrap();
+                        // All reported amounts are from the client side
+                        let dealer_send_bitcoins = swap.recv_asset == bitcoin_asset;
+                        let (asset_id, bitcoin_amount) = if swap.recv_asset == bitcoin_asset {
+                            (swap.send_asset, swap.recv_amount)
+                        } else {
+                            (swap.recv_asset, swap.send_amount)
+                        };
+                        let bitcoin_amount = Amount::from_sat(bitcoin_amount);
+                        let asset = assets
+                            .iter()
+                            .find(|v: &&Asset| v.asset_id == asset_id)
+                            .expect("asset must be known");
+                        let dealer_ticker = **DEALER_TICKERS
+                            .iter()
+                            .find(|ticker| ticker.0 == asset.ticker.0)
+                            .expect("dealer ticker must known");
+                        hedge_order(
+                            &args,
+                            &txid,
+                            dealer_ticker,
+                            bitcoin_amount,
+                            dealer_send_bitcoins,
+                            &mut balancing_blocked,
+                            &mut profit_reports,
+                            &wallet_balances,
+                            &exchange_balances,
+                            &book_names,
+                            &mod_tx,
+                            &mut pending_orders,
+                        );
                     }
                 }
 

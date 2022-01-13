@@ -231,7 +231,7 @@ pub extern "C" fn sideswap_verify_mnemonic(mnemonic: *const c_char) -> bool {
     let mnemonic = unsafe { CStr::from_ptr(mnemonic) };
     bip39::Mnemonic::parse(mnemonic.to_str().unwrap())
         .ok()
-        .map(|mnemonic| mnemonic.word_count() == 12)
+        .map(|mnemonic| mnemonic.word_count() == 12 || mnemonic.word_count() == 24)
         .unwrap_or(false)
 }
 

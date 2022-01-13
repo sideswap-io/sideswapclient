@@ -17,7 +17,7 @@ class ImportWalletError extends StatelessWidget {
         resultType: ResultPageType.error,
         header: 'Oops!'.tr(),
         description:
-            'Your wallet could not be re-created. Please ensure the 12 words exactly matches your recovery seed.'
+            'Your wallet could not be re-created. Please ensure the words exactly matches your recovery seed.'
                 .tr(),
         buttonText: 'RETRY'.tr(),
         onPressed: () => context.read(walletProvider).startMnemonicImport(),

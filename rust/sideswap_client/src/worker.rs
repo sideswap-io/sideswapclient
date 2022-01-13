@@ -864,14 +864,16 @@ impl Data {
         warn!("disconnected from server");
         self.connected = false;
 
+        if let Some(ctx) = self.ctx.as_mut() {
+            ctx.orders_last.clear();
+        }
         self.sync_order_list();
 
         self.ui.send(ffi::proto::from::Msg::ServerDisconnected(
             ffi::proto::Empty {},
         ));
 
-        if let Some(ctx) = self.ctx.as_mut() {
-            ctx.orders_last.clear();
+        if let Some(_) = self.ctx.as_mut() {
             self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
         }
     }

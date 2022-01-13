@@ -58,6 +58,12 @@ pub struct ListTransactions {
 #[derive(Serialize)]
 pub struct HwDevice {}
 
+#[derive(Deserialize)]
+pub struct TwoFactorConfig {
+    pub all_methods: Vec<String>,
+    pub any_enabled: bool,
+}
+
 #[derive(Serialize)]
 pub struct UnspentOutputsArgs {
     pub subaccount: i32,

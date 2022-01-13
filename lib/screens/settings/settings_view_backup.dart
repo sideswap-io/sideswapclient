@@ -39,36 +39,36 @@ class _SettingsViewBackupState extends State<SettingsViewBackup> {
         title: 'Recovery phrase'.tr(),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 40.h),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
-                child: Text(
-                  'Your 12 word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
-                      .tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.normal,
-                    color: Colors.white,
+        child: Consumer(builder: (context, watch, child) {
+          final mnemonicWords = watch(walletProvider).getMnemonicWords();
+          final words = List<ValueNotifier<String>>.generate(
+              mnemonicWords.length, (index) => ValueNotifier(''));
+          var index = 0;
+          for (var word in mnemonicWords) {
+            words[index].value = word;
+            index++;
+          }
+          return Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: 40.h),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: Text(
+                    'Your ${words.length} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
+                        .tr(),
+                    style: GoogleFonts.roboto(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(
-              height: 32.h,
-            ),
-            Consumer(builder: (context, watch, child) {
-              final mnemonicWords = watch(walletProvider).getMnemonicWords();
-              final words = List<ValueNotifier<String>>.generate(
-                  12, (index) => ValueNotifier(''));
-              var index = 0;
-              for (var word in mnemonicWords) {
-                words[index].value = word;
-                index++;
-              }
-              return MnemonicTable(
+              SizedBox(
+                height: 32.h,
+              ),
+              MnemonicTable(
                 onCheckError: (index) {
                   return false;
                 },
@@ -77,10 +77,10 @@ class _SettingsViewBackupState extends State<SettingsViewBackup> {
                   return true;
                 },
                 words: words,
-              );
-            }),
-          ],
-        ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

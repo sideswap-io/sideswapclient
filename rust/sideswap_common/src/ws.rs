@@ -121,8 +121,8 @@ async fn run(
                     let server_msg = server_msg.unwrap();
                     let server_msg = match server_msg {
                         Ok(v) => v,
-                        Err(_) => {
-                            error!("ws connection to the server closed");
+                        Err(v) => {
+                            error!("ws connection to the server closed: {}", v);
                             break;
                         }
                     };

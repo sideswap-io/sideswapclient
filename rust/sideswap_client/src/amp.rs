@@ -438,8 +438,6 @@ unsafe fn try_connect(
             Ok(created_subaccount)
         })?;
 
-    // FIXME: Check 2FA status
-
     let wallet = Wallet {
         session: Some(session),
         account,
@@ -825,6 +823,20 @@ unsafe fn get_swap_inputs(
         .session
         .clone()
         .ok_or_else(|| anyhow!("no session"))?;
+
+    let mut config = std::ptr::null_mut();
+    let rc = gdk::GA_get_twofactor_config(session, &mut config);
+    ensure!(
+        rc == 0,
+        "GA_get_twofactor_config failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    let mut config = GdkJson::owned(config);
+    let config = config.to_json::<gdk_json::TwoFactorConfig>()?;
+    ensure!(
+        !config.any_enabled,
+        "Two-Factor authentication not supported"
+    );
 
     let mut call = std::ptr::null_mut();
     let unspent_outputs = gdk_json::UnspentOutputsArgs {

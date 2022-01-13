@@ -28,7 +28,7 @@ class MnemonicTable extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: SizedBox(
         width: double.maxFinite,
-        height: 180.h,
+        height: 15.h * words.length,
         child: GridView.count(
           crossAxisCount: 3,
           addRepaintBoundaries: false,
@@ -36,7 +36,7 @@ class MnemonicTable extends StatelessWidget {
           padding: EdgeInsets.zero,
           childAspectRatio: _itemWidth / _itemHeight - 0.16,
           children: List.generate(
-            12,
+            words.length,
             (index) {
               final correctField = onCheckField(index);
               return Center(

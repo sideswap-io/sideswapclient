@@ -767,11 +767,8 @@ class WalletChangeNotifier with ChangeNotifier {
           autoSign: autoSign,
           marketType: getMarketType(asset),
         );
-        final own =
-            read(marketsProvider).getRequestOrderById(fromSr.orderId)?.own ??
-                false;
-
-        if (!own || orderType == OrderDetailsDataType.sign) {
+        if (orderType == OrderDetailsDataType.quote ||
+            orderType == OrderDetailsDataType.sign) {
           await setOrder();
         } else {
           setCreateOrder();

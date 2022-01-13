@@ -304,15 +304,13 @@ class CreateOrderViewBody extends StatelessWidget {
                 onToggle: onAutoSignToggle,
               ),
             ),
-            if (!orderDetailsData.isTracking) ...[
-              Padding(
-                padding: EdgeInsets.only(top: 8.h),
-                child: OrderType(
-                  value: orderTypeValue,
-                  onToggle: onOrderTypeToggle,
-                ),
+            Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: OrderType(
+                value: orderTypeValue,
+                onToggle: onOrderTypeToggle,
               ),
-            ],
+            ),
             if (!editMode) ...[
               Padding(
                 padding: EdgeInsets.only(top: 8.h),
