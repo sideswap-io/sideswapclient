@@ -32,6 +32,36 @@ class _SettingsNetworkState extends State<SettingsNetwork> {
         );
   }
 
+  Widget buildButton(
+    String name,
+    SettingsNetworkType selectedNetwork,
+    SettingsNetworkType buttonNetwork,
+  ) {
+    return Padding(
+      padding: EdgeInsets.only(top: 8.h),
+      child: SettingsNetworkButton(
+        value: selectedNetwork == buttonNetwork,
+        onChanged: (value) {
+          setState(() {
+            context.read(networkAccessProvider).networkType = buttonNetwork;
+            context.read(walletProvider).applyNetworkChange();
+          });
+        },
+        title: Padding(
+          padding: EdgeInsets.only(left: 10.w),
+          child: Text(
+            name,
+            style: GoogleFonts.roboto(
+              fontSize: 16.sp,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
@@ -51,65 +81,20 @@ class _SettingsNetworkState extends State<SettingsNetwork> {
                   padding: EdgeInsets.only(top: 40.h, left: 16.w, right: 16.w),
                   child: Consumer(
                     builder: (context, watch, child) {
-                      final networkType =
+                      final selectedNetwork =
                           watch(networkAccessProvider).networkType;
                       return Column(
                         children: [
-                          // SettingsNetworkButton(
-                          //   value: networkType == SettingsNetworkType.sideswap,
-                          //   onChanged: (value) {
-                          //     setState(() {
-                          //       context
-                          //           .read(networkAccessProvider)
-                          //           .networkType = SettingsNetworkType.sideswap;
-                          //     });
-                          //   },
-                          //   title: Padding(
-                          //     padding: EdgeInsets.only(left: 10.w),
-                          //     child: Text(
-                          //       'SideSwap'.tr(),
-                          //       style: GoogleFonts.roboto(
-                          //         fontSize: 16.sp,
-                          //         fontWeight: FontWeight.normal,
-                          //         color: Colors.white,
-                          //       ),
-                          //     ),
-                          //   ),
-                          // ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8.h),
-                            child: SettingsNetworkButton(
-                              value: networkType ==
-                                  SettingsNetworkType.blockstream,
-                              onChanged: (value) {
-                                setState(() {
-                                  context
-                                          .read(networkAccessProvider)
-                                          .networkType =
-                                      SettingsNetworkType.blockstream;
-                                  context
-                                      .read(walletProvider)
-                                      .applyNetworkChange();
-                                });
-                              },
-                              title: Padding(
-                                padding: EdgeInsets.only(left: 10.w),
-                                child: Text(
-                                  'Blockstream'.tr(),
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          buildButton('Blockstream'.tr(), selectedNetwork,
+                              SettingsNetworkType.blockstream),
+                          buildButton('SideSwap'.tr(), selectedNetwork,
+                              SettingsNetworkType.sideswap),
                           Padding(
                             padding: EdgeInsets.only(top: 8.h),
                             child: SettingsNetworkButton(
                               trailingIconVisible: true,
-                              value: networkType == SettingsNetworkType.custom,
+                              value:
+                                  selectedNetwork == SettingsNetworkType.custom,
                               onChanged: (value) {
                                 Navigator.of(context, rootNavigator: true)
                                     .push<void>(

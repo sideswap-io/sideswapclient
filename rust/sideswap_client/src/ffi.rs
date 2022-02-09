@@ -22,6 +22,7 @@ pub struct StartParams {
 
 pub struct Client {
     msg_sender: crossbeam_channel::Sender<worker::Message>,
+    from_receiver_ffi: Option<crossbeam_channel::Receiver<FromMsg>>,
     env: Env,
 }
 
@@ -31,7 +32,7 @@ pub struct RecvMessage(Vec<u8>);
 pub type IntPtr = u64;
 
 // NOTE: Do not use usize for ffi, use u64 instead.
-// Uisng usize breaks generated code on 32 builds (arm7).
+// Using usize breaks generated code on 32 builds (arm7).
 
 // Client pointer to use from background notifications
 static GLOBAL_CLIENT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
@@ -39,6 +40,15 @@ static GLOBAL_CLIENT: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU6
 fn get_string(str: *const c_char) -> String {
     let str = unsafe { std::ffi::CStr::from_ptr(str) };
     str.to_str().unwrap().to_owned()
+}
+
+fn convert_from_msg(msg: FromMsg) -> u64 {
+    let from = proto::From { msg: Some(msg) };
+    let mut buf = Vec::new();
+    from.encode(&mut buf).expect("encoding message failed");
+    let msg = std::boxed::Box::new(RecvMessage(buf));
+    let msg_ptr = Box::into_raw(msg) as IntPtr;
+    msg_ptr
 }
 
 #[no_mangle]
@@ -59,15 +69,13 @@ pub extern "C" fn sideswap_client_start(
         _ => panic!("unknown env"),
     };
 
-    let enable_log = env != Env::Prod;
+    let enable_dart = dart_port != SIDESWAP_DART_PORT_DISABLED;
 
     let work_dir = get_string(work_dir);
     let version = get_string(version);
-    if enable_log {
-        INIT_LOGGER_FLAG.call_once(|| {
-            init_log(&work_dir);
-        });
-    }
+    INIT_LOGGER_FLAG.call_once(|| {
+        init_log(&work_dir);
+    });
 
     std::panic::set_hook(Box::new(|i| {
         error!("sideswap panic detected: {:?}", i);
@@ -81,9 +89,16 @@ pub extern "C" fn sideswap_client_start(
     let (msg_sender, msg_receiver) = crossbeam_channel::unbounded::<worker::Message>();
     let (from_sender, from_receiver) = crossbeam_channel::unbounded::<FromMsg>();
 
+    let from_receiver_ffi = if enable_dart {
+        None
+    } else {
+        Some(from_receiver.clone())
+    };
+
     let client = Box::new(Client {
         env,
         msg_sender: msg_sender.clone(),
+        from_receiver_ffi,
     });
 
     std::thread::Builder::new()
@@ -93,21 +108,19 @@ pub extern "C" fn sideswap_client_start(
         })
         .unwrap();
 
-    std::thread::spawn(move || {
-        let port = allo_isolate::Isolate::new(dart_port);
-        for msg in from_receiver {
-            let from = proto::From { msg: Some(msg) };
-            let mut buf = Vec::new();
-            from.encode(&mut buf).expect("encoding message failed");
-            let msg = std::boxed::Box::new(RecvMessage(buf));
-            let msg_ptr = Box::into_raw(msg) as IntPtr;
-            let result = port.post(msg_ptr);
-            if !result {
-                warn!("posting message to dart failed, exit");
-                break;
+    if enable_dart {
+        std::thread::spawn(move || {
+            let port = allo_isolate::Isolate::new(dart_port);
+            for msg in from_receiver {
+                let msg_ptr = convert_from_msg(msg);
+                let result = port.post(msg_ptr);
+                if !result {
+                    warn!("posting message to dart failed, exit");
+                    break;
+                }
             }
-        }
-    });
+        });
+    }
 
     let client = Box::into_raw(client) as IntPtr;
     GLOBAL_CLIENT.store(client, std::sync::atomic::Ordering::Relaxed);
@@ -126,6 +139,17 @@ pub extern "C" fn sideswap_send_request(client: IntPtr, data: *const u8, len: u6
         .msg_sender
         .send(worker::Message::Ui(msg))
         .expect("sending to message failed");
+}
+
+#[no_mangle]
+pub extern "C" fn sideswap_recv_request(client: IntPtr) -> u64 {
+    assert!(client != 0);
+    let client = unsafe { &mut *(client as *mut Client) };
+    let from_receiver_ffi = client
+        .from_receiver_ffi
+        .as_ref()
+        .expect("sideswap_recv_request can't be used with dart");
+    convert_from_msg(from_receiver_ffi.recv().unwrap())
 }
 
 #[no_mangle]
@@ -160,6 +184,8 @@ pub extern "C" fn sideswap_process_background(data: *const c_char) {
         Err(_) => warn!("wait timeout"),
     }
 }
+
+pub const SIDESWAP_DART_PORT_DISABLED: i64 = -1;
 
 pub const SIDESWAP_BITCOIN: i32 = 1;
 pub const SIDESWAP_ELEMENTS: i32 = 2;
@@ -242,7 +268,7 @@ pub extern "C" fn sideswap_string_free(str: *mut c_char) {
     }
 }
 
-const LOG_FILTER: &str = "debug,hyper=info,rustls=info,ureq=info";
+const LOG_FILTER: &str = "debug,hyper=info,rustls=info,ureq=info,electrum_client=info";
 
 use time::{format_description::FormatItem, macros::format_description};
 

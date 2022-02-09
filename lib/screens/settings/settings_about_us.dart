@@ -8,10 +8,8 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/screens/settings/settings_licenses.dart';
 import 'package:sideswap/screens/settings/widgets/url_link_button.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class SettingsAboutUs extends StatelessWidget {
   const SettingsAboutUs({Key? key}) : super(key: key);
@@ -28,10 +26,31 @@ class SettingsAboutUs extends StatelessWidget {
   static const String urlPrivacyPolicy = 'https://sideswap.io/privacy-policy/';
   static const String urlPrivacyPolicyText = 'Privacy Policy';
 
+  void showExportLogMenu(BuildContext context) async {
+    final result = await showMenu(
+      context: context,
+      position: const RelativeRect.fromLTRB(0, 0, 0, 0),
+      items: [
+        const PopupMenuItem<int>(
+          value: 1,
+          child: Text('Export log'),
+        ),
+        const PopupMenuItem<int>(
+          value: 2,
+          child: Text('Export previous log'),
+        ),
+      ],
+    );
+    if (result == 1) {
+      shareLogFile("sideswap.log");
+    } else if (result == 2) {
+      shareLogFile("sideswap_prev.log");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    final env = context.read(configProvider).env;
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'About us'.tr(),
@@ -47,12 +66,17 @@ class SettingsAboutUs extends StatelessWidget {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     final packageInfo = snapshot.data as PackageInfo;
-                    return Text(
-                      'VERSION'.tr(args: [packageInfo.version]),
-                      style: GoogleFonts.roboto(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF00C5FF),
+                    return GestureDetector(
+                      onLongPress: () {
+                        showExportLogMenu(context);
+                      },
+                      child: Text(
+                        'VERSION'.tr(args: [packageInfo.version]),
+                        style: GoogleFonts.roboto(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF00C5FF),
+                        ),
                       ),
                     );
                   }
@@ -125,30 +149,6 @@ class SettingsAboutUs extends StatelessWidget {
                       height: 24.w,
                     ),
                   ),
-                  if (env != 0) ...[
-                    UrlLinkButton(
-                      text: 'Export log',
-                      icon: SvgPicture.asset(
-                        'assets/web_icon.svg',
-                        width: 24.w,
-                        height: 24.w,
-                      ),
-                      onPressed: () {
-                        shareLogFile("sideswap.log");
-                      },
-                    ),
-                    UrlLinkButton(
-                      text: 'Export previous log',
-                      icon: SvgPicture.asset(
-                        'assets/web_icon.svg',
-                        width: 24.w,
-                        height: 24.w,
-                      ),
-                      onPressed: () {
-                        shareLogFile("sideswap_prev.log");
-                      },
-                    ),
-                  ]
                 ],
               ),
             ),

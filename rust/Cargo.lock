@@ -2858,6 +2858,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "sideswap_headless"
+version = "0.1.2"
+dependencies = [
+ "clap",
+ "futures-util",
+ "log",
+ "prost 0.6.1",
+ "serde_json 1.0.64",
+ "sideswap_client",
+ "sideswap_common",
+ "tokio",
+ "tokio-tungstenite",
+ "tungstenite 0.13.0",
+]
+
+[[package]]
 name = "signal-hook"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -96,15 +96,18 @@ class AccountItem extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: EdgeInsets.only(left: 8.w),
-                              child: Text(
-                                amountString,
-                                textAlign: TextAlign.right,
-                                style: GoogleFonts.roboto(
-                                  fontSize: 17.sp,
-                                  fontWeight: FontWeight.normal,
-                                  color: textColor,
+                            Visibility(
+                              visible: asset.assetId != wallet.bitcoinAssetId(),
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 8.w),
+                                child: Text(
+                                  amountString,
+                                  textAlign: TextAlign.right,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 17.sp,
+                                    fontWeight: FontWeight.normal,
+                                    color: textColor,
+                                  ),
                                 ),
                               ),
                             ),

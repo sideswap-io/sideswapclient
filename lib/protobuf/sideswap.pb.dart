@@ -519,7 +519,6 @@ class Peg extends $pb.GeneratedMessage {
     ..aQS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'addrSend')
     ..aQS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'addrRecv')
     ..aQS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txidSend')
-    ..a<$core.int>(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'voutSend', $pb.PbFieldType.Q3)
     ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txidRecv')
   ;
 
@@ -531,7 +530,6 @@ class Peg extends $pb.GeneratedMessage {
     $core.String? addrSend,
     $core.String? addrRecv,
     $core.String? txidSend,
-    $core.int? voutSend,
     $core.String? txidRecv,
   }) {
     final _result = create();
@@ -552,9 +550,6 @@ class Peg extends $pb.GeneratedMessage {
     }
     if (txidSend != null) {
       _result.txidSend = txidSend;
-    }
-    if (voutSend != null) {
-      _result.voutSend = voutSend;
     }
     if (txidRecv != null) {
       _result.txidRecv = txidRecv;
@@ -636,21 +631,12 @@ class Peg extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   void clearTxidSend() => clearField(6);
 
-  @$pb.TagNumber(7)
-  $core.int get voutSend => $_getIZ(6);
-  @$pb.TagNumber(7)
-  set voutSend($core.int v) { $_setSignedInt32(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasVoutSend() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearVoutSend() => clearField(7);
-
   @$pb.TagNumber(8)
-  $core.String get txidRecv => $_getSZ(7);
+  $core.String get txidRecv => $_getSZ(6);
   @$pb.TagNumber(8)
-  set txidRecv($core.String v) { $_setString(7, v); }
+  set txidRecv($core.String v) { $_setString(6, v); }
   @$pb.TagNumber(8)
-  $core.bool hasTxidRecv() => $_has(7);
+  $core.bool hasTxidRecv() => $_has(6);
   @$pb.TagNumber(8)
   void clearTxidRecv() => clearField(8);
 }
@@ -1722,6 +1708,7 @@ class NetworkSettings_Custom extends $pb.GeneratedMessage {
 
 enum NetworkSettings_Selected {
   blockstream, 
+  sideswap, 
   custom, 
   notSet
 }
@@ -1729,23 +1716,29 @@ enum NetworkSettings_Selected {
 class NetworkSettings extends $pb.GeneratedMessage {
   static const $core.Map<$core.int, NetworkSettings_Selected> _NetworkSettings_SelectedByTag = {
     1 : NetworkSettings_Selected.blockstream,
-    2 : NetworkSettings_Selected.custom,
+    2 : NetworkSettings_Selected.sideswap,
+    3 : NetworkSettings_Selected.custom,
     0 : NetworkSettings_Selected.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'NetworkSettings', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2])
+    ..oo(0, [1, 2, 3])
     ..aOM<Empty>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'blockstream', subBuilder: Empty.create)
-    ..aOM<NetworkSettings_Custom>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'custom', subBuilder: NetworkSettings_Custom.create)
+    ..aOM<Empty>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sideswap', subBuilder: Empty.create)
+    ..aOM<NetworkSettings_Custom>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'custom', subBuilder: NetworkSettings_Custom.create)
   ;
 
   NetworkSettings._() : super();
   factory NetworkSettings({
     Empty? blockstream,
+    Empty? sideswap,
     NetworkSettings_Custom? custom,
   }) {
     final _result = create();
     if (blockstream != null) {
       _result.blockstream = blockstream;
+    }
+    if (sideswap != null) {
+      _result.sideswap = sideswap;
     }
     if (custom != null) {
       _result.custom = custom;
@@ -1788,15 +1781,26 @@ class NetworkSettings extends $pb.GeneratedMessage {
   Empty ensureBlockstream() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  NetworkSettings_Custom get custom => $_getN(1);
+  Empty get sideswap => $_getN(1);
   @$pb.TagNumber(2)
-  set custom(NetworkSettings_Custom v) { setField(2, v); }
+  set sideswap(Empty v) { setField(2, v); }
   @$pb.TagNumber(2)
-  $core.bool hasCustom() => $_has(1);
+  $core.bool hasSideswap() => $_has(1);
   @$pb.TagNumber(2)
-  void clearCustom() => clearField(2);
+  void clearSideswap() => clearField(2);
   @$pb.TagNumber(2)
-  NetworkSettings_Custom ensureCustom() => $_ensure(1);
+  Empty ensureSideswap() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  NetworkSettings_Custom get custom => $_getN(2);
+  @$pb.TagNumber(3)
+  set custom(NetworkSettings_Custom v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasCustom() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearCustom() => clearField(3);
+  @$pb.TagNumber(3)
+  NetworkSettings_Custom ensureCustom() => $_ensure(2);
 }
 
 class To_Login extends $pb.GeneratedMessage {
@@ -2253,6 +2257,7 @@ class To_PegOutRequest extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendAmount', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'recvAddr')
     ..a<$core.int>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'blocks', $pb.PbFieldType.Q3)
+    ..aQM<Account>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: Account.create)
   ;
 
   To_PegOutRequest._() : super();
@@ -2260,6 +2265,7 @@ class To_PegOutRequest extends $pb.GeneratedMessage {
     $fixnum.Int64? sendAmount,
     $core.String? recvAddr,
     $core.int? blocks,
+    Account? account,
   }) {
     final _result = create();
     if (sendAmount != null) {
@@ -2270,6 +2276,9 @@ class To_PegOutRequest extends $pb.GeneratedMessage {
     }
     if (blocks != null) {
       _result.blocks = blocks;
+    }
+    if (account != null) {
+      _result.account = account;
     }
     return _result;
   }
@@ -2320,6 +2329,17 @@ class To_PegOutRequest extends $pb.GeneratedMessage {
   $core.bool hasBlocks() => $_has(2);
   @$pb.TagNumber(3)
   void clearBlocks() => clearField(3);
+
+  @$pb.TagNumber(4)
+  Account get account => $_getN(3);
+  @$pb.TagNumber(4)
+  set account(Account v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAccount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAccount() => clearField(4);
+  @$pb.TagNumber(4)
+  Account ensureAccount() => $_ensure(3);
 }
 
 class To_SetMemo extends $pb.GeneratedMessage {
@@ -2882,7 +2902,6 @@ class To_UploadContacts extends $pb.GeneratedMessage {
 
 class To_SubmitOrder extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.SubmitOrder', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sessionId')
     ..aQS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetId')
     ..a<$core.double>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'bitcoinAmount', $pb.PbFieldType.OD)
     ..a<$core.double>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetAmount', $pb.PbFieldType.OD)
@@ -2893,7 +2912,6 @@ class To_SubmitOrder extends $pb.GeneratedMessage {
 
   To_SubmitOrder._() : super();
   factory To_SubmitOrder({
-    $core.String? sessionId,
     $core.String? assetId,
     $core.double? bitcoinAmount,
     $core.double? assetAmount,
@@ -2902,9 +2920,6 @@ class To_SubmitOrder extends $pb.GeneratedMessage {
     Account? account,
   }) {
     final _result = create();
-    if (sessionId != null) {
-      _result.sessionId = sessionId;
-    }
     if (assetId != null) {
       _result.assetId = assetId;
     }
@@ -2946,70 +2961,61 @@ class To_SubmitOrder extends $pb.GeneratedMessage {
   static To_SubmitOrder getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_SubmitOrder>(create);
   static To_SubmitOrder? _defaultInstance;
 
-  @$pb.TagNumber(1)
-  $core.String get sessionId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set sessionId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasSessionId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearSessionId() => clearField(1);
-
   @$pb.TagNumber(2)
-  $core.String get assetId => $_getSZ(1);
+  $core.String get assetId => $_getSZ(0);
   @$pb.TagNumber(2)
-  set assetId($core.String v) { $_setString(1, v); }
+  set assetId($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(2)
-  $core.bool hasAssetId() => $_has(1);
+  $core.bool hasAssetId() => $_has(0);
   @$pb.TagNumber(2)
   void clearAssetId() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.double get bitcoinAmount => $_getN(2);
+  $core.double get bitcoinAmount => $_getN(1);
   @$pb.TagNumber(3)
-  set bitcoinAmount($core.double v) { $_setDouble(2, v); }
+  set bitcoinAmount($core.double v) { $_setDouble(1, v); }
   @$pb.TagNumber(3)
-  $core.bool hasBitcoinAmount() => $_has(2);
+  $core.bool hasBitcoinAmount() => $_has(1);
   @$pb.TagNumber(3)
   void clearBitcoinAmount() => clearField(3);
 
   @$pb.TagNumber(4)
-  $core.double get assetAmount => $_getN(3);
+  $core.double get assetAmount => $_getN(2);
   @$pb.TagNumber(4)
-  set assetAmount($core.double v) { $_setDouble(3, v); }
+  set assetAmount($core.double v) { $_setDouble(2, v); }
   @$pb.TagNumber(4)
-  $core.bool hasAssetAmount() => $_has(3);
+  $core.bool hasAssetAmount() => $_has(2);
   @$pb.TagNumber(4)
   void clearAssetAmount() => clearField(4);
 
   @$pb.TagNumber(5)
-  $core.double get price => $_getN(4);
+  $core.double get price => $_getN(3);
   @$pb.TagNumber(5)
-  set price($core.double v) { $_setDouble(4, v); }
+  set price($core.double v) { $_setDouble(3, v); }
   @$pb.TagNumber(5)
-  $core.bool hasPrice() => $_has(4);
+  $core.bool hasPrice() => $_has(3);
   @$pb.TagNumber(5)
   void clearPrice() => clearField(5);
 
   @$pb.TagNumber(6)
-  $core.double get indexPrice => $_getN(5);
+  $core.double get indexPrice => $_getN(4);
   @$pb.TagNumber(6)
-  set indexPrice($core.double v) { $_setDouble(5, v); }
+  set indexPrice($core.double v) { $_setDouble(4, v); }
   @$pb.TagNumber(6)
-  $core.bool hasIndexPrice() => $_has(5);
+  $core.bool hasIndexPrice() => $_has(4);
   @$pb.TagNumber(6)
   void clearIndexPrice() => clearField(6);
 
   @$pb.TagNumber(7)
-  Account get account => $_getN(6);
+  Account get account => $_getN(5);
   @$pb.TagNumber(7)
   set account(Account v) { setField(7, v); }
   @$pb.TagNumber(7)
-  $core.bool hasAccount() => $_has(6);
+  $core.bool hasAccount() => $_has(5);
   @$pb.TagNumber(7)
   void clearAccount() => clearField(7);
   @$pb.TagNumber(7)
-  Account ensureAccount() => $_ensure(6);
+  Account ensureAccount() => $_ensure(5);
 }
 
 class To_LinkOrder extends $pb.GeneratedMessage {
@@ -5718,6 +5724,66 @@ class From_OrderRemoved extends $pb.GeneratedMessage {
   void clearOrderId() => clearField(1);
 }
 
+class From_OrderComplete extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.OrderComplete', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderId')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'txid')
+  ;
+
+  From_OrderComplete._() : super();
+  factory From_OrderComplete({
+    $core.String? orderId,
+    $core.String? txid,
+  }) {
+    final _result = create();
+    if (orderId != null) {
+      _result.orderId = orderId;
+    }
+    if (txid != null) {
+      _result.txid = txid;
+    }
+    return _result;
+  }
+  factory From_OrderComplete.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_OrderComplete.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_OrderComplete clone() => From_OrderComplete()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_OrderComplete copyWith(void Function(From_OrderComplete) updates) => super.copyWith((message) => updates(message as From_OrderComplete)) as From_OrderComplete; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_OrderComplete create() => From_OrderComplete._();
+  From_OrderComplete createEmptyInstance() => create();
+  static $pb.PbList<From_OrderComplete> createRepeated() => $pb.PbList<From_OrderComplete>();
+  @$core.pragma('dart2js:noInline')
+  static From_OrderComplete getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_OrderComplete>(create);
+  static From_OrderComplete? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get orderId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set orderId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get txid => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set txid($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTxid() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTxid() => clearField(2);
+}
+
 class From_IndexPrice extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.IndexPrice', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetId')
@@ -6281,6 +6347,7 @@ enum From_Msg {
   indexPrice, 
   assetDetails, 
   updatePriceStream, 
+  orderComplete, 
   notSet
 }
 
@@ -6326,10 +6393,11 @@ class From extends $pb.GeneratedMessage {
     64 : From_Msg.indexPrice,
     65 : From_Msg.assetDetails,
     66 : From_Msg.updatePriceStream,
+    67 : From_Msg.orderComplete,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 21, 22, 23, 30, 31, 32, 33, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 60, 61, 62, 63, 64, 65, 66])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 21, 22, 23, 30, 31, 32, 33, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 60, 61, 62, 63, 64, 65, 66, 67])
     ..aOM<From_UpdatedTxs>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedTxs', subBuilder: From_UpdatedTxs.create)
     ..aOM<From_UpdatedPegs>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedPegs', subBuilder: From_UpdatedPegs.create)
     ..aOM<Asset>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newAsset', subBuilder: Asset.create)
@@ -6370,6 +6438,7 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_IndexPrice>(64, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'indexPrice', subBuilder: From_IndexPrice.create)
     ..aOM<From_AssetDetails>(65, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'assetDetails', subBuilder: From_AssetDetails.create)
     ..aOM<From_UpdatePriceStream>(66, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatePriceStream', subBuilder: From_UpdatePriceStream.create)
+    ..aOM<From_OrderComplete>(67, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'orderComplete', subBuilder: From_OrderComplete.create)
   ;
 
   From._() : super();
@@ -6414,6 +6483,7 @@ class From extends $pb.GeneratedMessage {
     From_IndexPrice? indexPrice,
     From_AssetDetails? assetDetails,
     From_UpdatePriceStream? updatePriceStream,
+    From_OrderComplete? orderComplete,
   }) {
     final _result = create();
     if (updatedTxs != null) {
@@ -6535,6 +6605,9 @@ class From extends $pb.GeneratedMessage {
     }
     if (updatePriceStream != null) {
       _result.updatePriceStream = updatePriceStream;
+    }
+    if (orderComplete != null) {
+      _result.orderComplete = orderComplete;
     }
     return _result;
   }
@@ -6999,6 +7072,17 @@ class From extends $pb.GeneratedMessage {
   void clearUpdatePriceStream() => clearField(66);
   @$pb.TagNumber(66)
   From_UpdatePriceStream ensureUpdatePriceStream() => $_ensure(39);
+
+  @$pb.TagNumber(67)
+  From_OrderComplete get orderComplete => $_getN(40);
+  @$pb.TagNumber(67)
+  set orderComplete(From_OrderComplete v) { setField(67, v); }
+  @$pb.TagNumber(67)
+  $core.bool hasOrderComplete() => $_has(40);
+  @$pb.TagNumber(67)
+  void clearOrderComplete() => clearField(67);
+  @$pb.TagNumber(67)
+  From_OrderComplete ensureOrderComplete() => $_ensure(40);
 }
 
 class Settings_AccountAsset extends $pb.GeneratedMessage {

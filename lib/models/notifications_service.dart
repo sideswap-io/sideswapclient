@@ -350,9 +350,7 @@ class NotificationService {
 
     switch (type) {
       case IncomingNotificationType.message:
-        if (fcmTx != null) {
-          _onForegroundNotification(fcmMessage, fcmTx);
-        }
+        _onForegroundNotification(fcmMessage);
         break;
       case IncomingNotificationType.resume:
         if (fcmTx != null) {
@@ -408,8 +406,7 @@ class NotificationService {
     _onNotificationData(payload);
   }
 
-  Future<void> _onForegroundNotification(
-      FCMMessage fcmMessage, FCMTx fcmTx) async {
+  Future<void> _onForegroundNotification(FCMMessage fcmMessage) async {
     final pegDetected = fcmMessage.data?.details?.pegDetected;
     if (pegDetected != null) {
       const payloadType = FCMPayloadType.pegin;
@@ -424,7 +421,22 @@ class NotificationService {
       return;
     }
 
-    return await _onTxNotification(fcmMessage, fcmTx);
+    final orderCancelled = fcmMessage.data?.details?.orderCancelled;
+    if (orderCancelled != null) {
+      final title = fcmMessage.notification?.title ?? '';
+      final body = fcmMessage.notification?.body ?? '';
+      await _onDefaultNotification(
+        title: title,
+        body: body,
+      );
+      return;
+    }
+
+    final fcmTx = fcmMessage.data?.details?.tx;
+    if (fcmTx != null) {
+      await _onTxNotification(fcmMessage, fcmTx);
+      return;
+    }
   }
 
   FCMPayloadType _getPayloadType(FCMTxType txType) {

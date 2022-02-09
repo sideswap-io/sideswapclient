@@ -269,7 +269,8 @@ class _OrderPopupState extends State<OrderPopup> {
                             kOneHour,
                             kSixHours,
                             kTwelveHours,
-                            kOneDay
+                            kOneDay,
+                            kOneWeek,
                           ],
                           onChanged: (value) {
                             setState(() {

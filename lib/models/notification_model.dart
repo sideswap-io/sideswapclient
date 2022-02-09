@@ -92,6 +92,7 @@ class FCMDetails with _$FCMDetails {
     FCMTx? tx,
     @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
     @JsonKey(name: 'peg_detected') FCMPeg? pegDetected,
+    @JsonKey(name: 'order_cancelled') FCMOrderCancelled? orderCancelled,
   }) = _FCMDetails;
 
   factory FCMDetails.fromJson(Map<String, dynamic> json) =>
@@ -121,6 +122,16 @@ class FCMPeg with _$FCMPeg {
   }) = _FCMPeg;
 
   factory FCMPeg.fromJson(Map<String, dynamic> json) => _$FCMPegFromJson(json);
+}
+
+@freezed
+class FCMOrderCancelled with _$FCMOrderCancelled {
+  const factory FCMOrderCancelled({
+    @JsonKey(name: 'order_id') String? orderId,
+  }) = _FCMOrderCancelled;
+
+  factory FCMOrderCancelled.fromJson(Map<String, dynamic> json) =>
+      _$FCMOrderCancelledFromJson(json);
 }
 
 @freezed

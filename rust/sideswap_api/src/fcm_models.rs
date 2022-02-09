@@ -33,10 +33,16 @@ pub struct FcmMessageSign {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct OrderCancelled {
+    pub order_id: OrderId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum FcmMessage {
     Tx(FcmMessageTx),
     PegDetected(FcmMessagePeg),
     PegPayout(FcmMessagePeg),
     Sign(FcmMessageSign),
+    OrderCancelled(OrderCancelled),
 }

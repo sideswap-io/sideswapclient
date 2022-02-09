@@ -40,9 +40,7 @@ extension RequestOrderEx on RequestOrder {
   String getExpireDescription() {
     final expireAt = DateTime.fromMillisecondsSinceEpoch(expiresAt);
     final duration = expireAt.difference(DateTime.now());
-    return duration.inHours.remainder(24) >= 1
-        ? duration.toHoursMinutes()
-        : duration.toMinutes();
+    return duration.toStringCustom();
   }
 
   int get bitcoinAmountWithFee {

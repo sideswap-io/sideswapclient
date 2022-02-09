@@ -8,6 +8,11 @@ pub struct InitConfig {
 }
 
 #[derive(Serialize)]
+pub struct GetSubaccountsOpts {
+    pub refresh: Option<bool>,
+}
+
+#[derive(Serialize)]
 pub struct ConnectConfig {
     pub name: String,
     pub log_level: Option<String>,
@@ -175,6 +180,12 @@ pub struct CreateTransactionOpt {
 
 #[derive(Deserialize, Debug)]
 pub struct CreateTransactionResult {
+    pub fee: u64,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct SignTransactionResult {
+    pub transaction: String,
     pub fee: u64,
 }
 

@@ -49,7 +49,6 @@ message Peg {
   required string addr_send = 4;
   required string addr_recv = 5;
   required string txid_send = 6;
-  required int32 vout_send = 7;
   optional string txid_recv = 8;
 }
 
@@ -143,7 +142,8 @@ message NetworkSettings {
 
   oneof selected {
     Empty blockstream = 1;
-    Custom custom = 2;
+    Empty sideswap = 2;
+    Custom custom = 3;
   }
 }
 
@@ -189,6 +189,7 @@ message To {
     required int64 send_amount = 1;
     required string recv_addr = 2;
     required int32 blocks = 3;
+    required Account account = 4;
   }
 
   message SetMemo {
@@ -240,7 +241,6 @@ message To {
 
   message SubmitOrder {
     required Account account = 7;
-    optional string session_id = 1;
     required string asset_id = 2;
     optional double bitcoin_amount = 3;
     optional double asset_amount = 4;
@@ -478,6 +478,11 @@ message From {
     required string order_id = 1;
   }
 
+  message OrderComplete {
+    required string order_id = 1;
+    optional string txid = 2;
+  }
+
   message IndexPrice {
     required string asset_id = 1;
     optional double ind = 2;
@@ -562,6 +567,7 @@ message From {
     Empty server_disconnected = 61;
     OrderCreated order_created = 62;
     OrderRemoved order_removed = 63;
+    OrderComplete order_complete = 67;
     IndexPrice index_price = 64;
     AssetDetails asset_details = 65;
 

@@ -889,6 +889,9 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.orderRemoved:
         read(marketsProvider).removeOrder(from.orderRemoved.orderId);
         break;
+      case From_Msg.orderComplete:
+        // Used with headless client only
+        break;
 
       case From_Msg.notSet:
         throw Exception('invalid empty message');
@@ -2024,15 +2027,11 @@ class WalletChangeNotifier with ChangeNotifier {
     double amount,
     double price, {
     bool isAssetAmount = false,
-    String? sessionId,
     double? indexPrice,
     AccountType account = AccountType.regular,
   }) {
     final msg = To();
     msg.submitOrder = To_SubmitOrder();
-    if (sessionId != null) {
-      msg.submitOrder.sessionId = sessionId;
-    }
     msg.submitOrder.assetId = assetId;
 
     if (isAssetAmount) {
@@ -2433,6 +2432,9 @@ class WalletChangeNotifier with ChangeNotifier {
     switch (config.settingsNetworkType) {
       case SettingsNetworkType.blockstream:
         network.blockstream = Empty();
+        break;
+      case SettingsNetworkType.sideswap:
+        network.sideswap = Empty();
         break;
       case SettingsNetworkType.custom:
         network.custom = NetworkSettings_Custom();

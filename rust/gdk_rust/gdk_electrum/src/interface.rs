@@ -47,6 +47,9 @@ impl ElectrumUrl {
         if let Some(proxy) = proxy {
             // TODO: add support for credentials?
             config = config.socks5(Some(electrum_client::Socks5Config::new(proxy)))?;
+        } else {
+            // SIDESWAP: Set connection timeout to not break the app when wrong electrs address is used
+            config = config.timeout(Some(10))?;
         }
         self.build_config(config)
     }

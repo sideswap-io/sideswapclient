@@ -6,7 +6,7 @@ build = "build.rs"
 
 [lib]
 name = "sideswap_client"
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 sideswap_api = { version = "*", path = "../sideswap_api" }

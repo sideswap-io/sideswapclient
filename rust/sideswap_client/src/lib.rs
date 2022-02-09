@@ -5,7 +5,7 @@ extern crate anyhow;
 
 mod amp;
 mod envs;
-mod ffi;
+pub mod ffi;
 mod models;
 mod settings;
 mod swaps;

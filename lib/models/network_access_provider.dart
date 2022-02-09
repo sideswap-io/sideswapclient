@@ -6,8 +6,8 @@ final networkAccessProvider = ChangeNotifierProvider<NetworkAccessProvider>(
     (ref) => NetworkAccessProvider(ref.read));
 
 enum SettingsNetworkType {
-  //sideswap,
   blockstream,
+  sideswap,
   custom,
 }
 

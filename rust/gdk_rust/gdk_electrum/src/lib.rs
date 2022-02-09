@@ -115,6 +115,27 @@ impl Closer {
     }
 }
 
+#[derive(Clone)]
+pub struct SyncInterval {
+    value: Arc<std::sync::atomic::AtomicU32>,
+}
+
+impl SyncInterval {
+    fn new() -> Self {
+        SyncInterval {
+            value: Arc::new(std::sync::atomic::AtomicU32::new(7)),
+        }
+    }
+
+    pub fn store(&self, value: u32) {
+        self.value.store(value, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    fn load(&self) -> u32 {
+        self.value.load(std::sync::atomic::Ordering::Relaxed)
+    }
+}
+
 pub struct ElectrumSession {
     pub data_root: String,
     pub proxy: Option<String>,
@@ -124,6 +145,7 @@ pub struct ElectrumSession {
     pub notify: NativeNotif,
     pub closer: Closer,
     pub state: State,
+    pub sync_interval: SyncInterval,
 }
 
 #[derive(Debug, PartialEq)]
@@ -157,6 +179,10 @@ fn notify_updated_txs(notif: NativeNotif, account_num: u32) {
     // This is used as a signal to trigger syncing via get_transactions, the transaction
     // list contained here is ignored and can be just a mock.
     let mockup_json = json!({"event":"transaction","transaction":{"subaccounts":[account_num]}});
+    notify(notif, mockup_json);
+}
+fn notify_sync_failed(notif: NativeNotif) {
+    let mockup_json = json!({"event": "sync_failed"});
     notify(notif, mockup_json);
 }
 fn notify_sync_complete(notif: NativeNotif) {
@@ -220,6 +246,7 @@ impl ElectrumSession {
                 handles: vec![],
             },
             state: State::Disconnected,
+            sync_interval: SyncInterval::new(),
         }
     }
 
@@ -536,7 +563,7 @@ impl Session<Error> for ElectrumSession {
             });
         }
 
-        let sync_interval = self.network.sync_interval.unwrap_or(7);
+        let sync_interval = self.sync_interval.clone();
 
         if self.network.spv_enabled.unwrap_or(false) {
             let checker = match self.network.id() {
@@ -570,7 +597,7 @@ impl Session<Error> for ElectrumSession {
                 let mut round = 0u8;
 
                 'outer: loop {
-                    if wait_or_close(&r, sync_interval) {
+                    if wait_or_close(&r, &sync_interval) {
                         info!("closing headers thread");
                         break;
                     }
@@ -673,6 +700,7 @@ impl Session<Error> for ElectrumSession {
         self.closer.senders.push(close_tipper);
         let tipper_url = self.url.clone();
         let proxy = self.proxy.clone();
+        let sync_interval = self.sync_interval.clone();
         let tipper_handle = thread::spawn(move || {
             info!("starting tipper thread");
             loop {
@@ -690,7 +718,7 @@ impl Session<Error> for ElectrumSession {
                         }
                     }
                 }
-                if wait_or_close(&r, sync_interval) {
+                if wait_or_close(&r, &sync_interval) {
                     info!("closing tipper thread {:?}", tip_height);
                     break;
                 }
@@ -703,8 +731,10 @@ impl Session<Error> for ElectrumSession {
         let notify_txs = self.notify.clone();
         let syncer_url = self.url.clone();
         let proxy = self.proxy.clone();
+        let sync_interval = self.sync_interval.clone();
         let syncer_handle = thread::spawn(move || {
             info!("starting syncer thread");
+            let mut send_error = true;
             loop {
                 match syncer_url.build_client(proxy.as_deref()) {
                     Ok(client) => match syncer.sync(&client) {
@@ -712,14 +742,24 @@ impl Session<Error> for ElectrumSession {
                             for account_num in updated_accounts {
                                 info!("there are new transactions");
                                 notify_updated_txs(notify_txs.clone(), account_num);
+                                // SIDESWAP: Connection succeed at least once,
+                                // do not report errors for transitional network errors
+                                send_error = false;
                             }
                         }
                         Err(e) => warn!("Error during sync, {:?}", e),
                     },
-                    Err(e) => warn!("Can't build client {:?}", e),
+                    Err(e) => {
+                        warn!("Can't build client {:?}", e);
+                        if send_error {
+                            // SIDESWAP: Send notification if sync failed (but only once)
+                            notify_sync_failed(notify_txs.clone());
+                            send_error = false;
+                        }
+                    }
                 }
                 notify_sync_complete(notify_txs.clone());
-                if wait_or_close(&r, sync_interval) {
+                if wait_or_close(&r, &sync_interval) {
                     info!("closing syncer thread");
                     break;
                 }
@@ -1439,7 +1479,6 @@ impl Syncer {
                 txs_in_db.insert(txid);
 
                 if let BETransaction::Elements(tx) = &tx {
-                    info!("compute OutPoint Unblinded");
                     for (i, output) in tx.output.iter().enumerate() {
                         let be_script = output.script_pubkey.clone().into_be();
                         let store_read = self.store.read()?;
@@ -1494,7 +1533,7 @@ impl Syncer {
 
     pub fn try_unblind(
         &self,
-        outpoint: elements::OutPoint,
+        _outpoint: elements::OutPoint,
         output: elements::TxOut,
     ) -> Result<elements::TxOutSecrets, Error> {
         match (output.asset, output.value, output.nonce) {
@@ -1508,12 +1547,6 @@ impl Syncer {
                 let script = output.script_pubkey.clone();
                 let blinding_key = asset_blinding_key_to_ec_private_key(master_blinding, &script);
                 let txout_secrets = output.unblind(&EC, blinding_key)?;
-                info!(
-                    "Unblinded outpoint:{} asset:{} value:{}",
-                    outpoint,
-                    txout_secrets.asset.to_hex(),
-                    txout_secrets.value
-                );
 
                 Ok(txout_secrets)
             }
@@ -1530,12 +1563,14 @@ impl Syncer {
     }
 }
 
-fn wait_or_close(r: &Receiver<()>, interval: u32) -> bool {
-    for _ in 0..(interval * 2) {
+fn wait_or_close(r: &Receiver<()>, interval: &SyncInterval) -> bool {
+    let mut count = 0;
+    while count < interval.load() * 2 {
         thread::sleep(Duration::from_millis(500));
         if r.try_recv().is_ok() {
             return true;
         }
+        count += 1;
     }
     false
 }

@@ -176,8 +176,7 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                   ],
                 ],
                 if (widget.errorDescription.isNotEmpty && !widget.readOnly) ...[
-                  SizedBox(
-                    width: 280.w,
+                  Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final textStyle = GoogleFonts.roboto(

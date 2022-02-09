@@ -163,7 +163,7 @@ class AssetDetailsHeader extends ConsumerWidget {
                         if (instantSwapVisible) {
                           context
                               .read(swapProvider)
-                              .setSelectedLeftAsset(account.asset);
+                              .setSelectedLeftAsset(account);
                           context.read(swapProvider).selectSwap();
                         } else {
                           context.read(requestOrderProvider).deliverAssetId =

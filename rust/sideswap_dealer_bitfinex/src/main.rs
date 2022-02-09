@@ -297,12 +297,12 @@ fn get_prices(
         .sum::<i64>();
     let mut result = PriceOffers::default();
     let max_send_asset_amount = i64::min(
-        Amount::from_bitcoin(wallet_btc_amount as f64 * prices.ask).to_sat(),
+        (wallet_btc_amount as f64 * prices.ask) as i64,
         exchange_asset_amount,
     );
     let max_send_bitcoin_amount = i64::min(
         exchange_btc_amount,
-        Amount::from_bitcoin(wallet_asset_amount as f64 / prices.bid).to_sat(),
+        (wallet_asset_amount as f64 / prices.bid) as i64,
     );
     if max_send_asset_amount > 0 {
         result.push(PriceOffer {
@@ -1729,32 +1729,38 @@ fn main() {
                     Some(status.join(","))
                 };
 
+                let usdt_price = module_prices.get(&DEALER_USDT).cloned();
                 if storage.balancing.is_none()
                     && args.env.data().mainnet
                     && now.duration_since(balancing_blocked) > std::time::Duration::from_secs(60)
                     && args.balancing_enabled
+                    && usdt_price.is_some()
                 {
-                    let balance_bitcoin =
-                        get_balancing(balance_wallet_bitcoin, balance_exchange_bitcoin, &RATIO_BTC);
-                    let balance_usdt =
-                        get_balancing(balance_wallet_usdt, balance_exchange_usdt, &RATIO_USDT);
-                    match balance_bitcoin {
-                        Balancing::Recv(amount) => {
+                    let usdt_price = usdt_price.unwrap();
+                    let usdt_price = (usdt_price.bid + usdt_price.ask) / 2.0;
+                    let balancing = get_balancing(
+                        balance_wallet_bitcoin,
+                        balance_exchange_bitcoin,
+                        balance_wallet_usdt,
+                        balance_exchange_usdt,
+                        usdt_price,
+                    );
+
+                    match balancing {
+                        AssetBalancing::None => {}
+                        AssetBalancing::RecvBtc(amount) => {
                             send_cli_request(&msg_tx, CliRequest::TestRecvBtc(amount))
                         }
-                        Balancing::Send(amount) => {
+                        AssetBalancing::SendBtc(amount) => {
                             send_cli_request(&msg_tx, CliRequest::TestSendBtc(amount))
                         }
-                        Balancing::None => match balance_usdt {
-                            Balancing::Recv(amount) => {
-                                send_cli_request(&msg_tx, CliRequest::TestRecvUsdt(amount))
-                            }
-                            Balancing::Send(amount) => {
-                                send_cli_request(&msg_tx, CliRequest::TestSendUsdt(amount))
-                            }
-                            Balancing::None => {}
-                        },
-                    }
+                        AssetBalancing::RecvUsdt(amount) => {
+                            send_cli_request(&msg_tx, CliRequest::TestRecvUsdt(amount))
+                        }
+                        AssetBalancing::SendUsdt(amount) => {
+                            send_cli_request(&msg_tx, CliRequest::TestSendUsdt(amount))
+                        }
+                    };
                 }
 
                 for ticker in DEALER_TICKERS.iter() {
@@ -1976,28 +1982,5 @@ fn main() {
                 return;
             }
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_get_balancing() {
-        assert_eq!(get_balancing(0.0, 0.5, &RATIO_BTC), Balancing::None);
-        assert_eq!(get_balancing(0.5, 0.0, &RATIO_BTC), Balancing::None);
-        assert_eq!(get_balancing(0.5, 0.5, &RATIO_BTC), Balancing::None);
-        assert_eq!(get_balancing(0.1, 0.9, &RATIO_BTC), Balancing::Recv(0.3));
-        assert_eq!(get_balancing(0.9, 0.1, &RATIO_BTC), Balancing::Send(0.5));
-        assert_eq!(get_balancing(5000., 5000., &RATIO_USDT), Balancing::None);
-        assert_eq!(
-            get_balancing(1000., 9000., &RATIO_USDT),
-            Balancing::Recv(5000.0)
-        );
-        assert_eq!(
-            get_balancing(9000., 1000., &RATIO_USDT),
-            Balancing::Send(3000.0)
-        );
     }
 }

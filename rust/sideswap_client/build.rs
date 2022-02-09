@@ -3,7 +3,7 @@ use std::env;
 fn main() {
     let proto_path = "../../ffi/sideswap.proto";
     let mut config = prost_build::Config::new();
-    config.type_attribute(".", "#[derive(serde::Serialize)]");
+    config.type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]");
     config
         .compile_protos(&[proto_path], &["../../ffi"])
         .unwrap();
@@ -33,6 +33,16 @@ fn main() {
         "linux" => {
             println!("cargo:rustc-link-lib=dylib=greenaddress");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
+        }
+        "windows" => {
+            println!("cargo:rustc-link-lib=dylib=greenaddress_full");
+            println!("cargo:rustc-link-lib=dylib=stdc++.dll");
+            println!("cargo:rustc-link-lib=dylib=ssp.dll");
+            println!("cargo:rustc-link-lib=dylib=crypt32");
+            println!("cargo:rustc-link-lib=dylib=shell32");
+            println!("cargo:rustc-link-lib=dylib=iphlpapi");
+            println!("cargo:rustc-link-search=native={}", gdk_dir);
+            println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-w64-mingw32/8.3-posix");
         }
         "ios" => {
             println!("cargo:rustc-link-lib=static=greenaddress_full");

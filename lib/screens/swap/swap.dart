@@ -128,10 +128,10 @@ class _SwapMainState extends State<SwapMain> {
 
   void onMaxSendPressed() {
     final swapSendAsset = context.read(swapProvider).swapSendAsset!;
-    final swapSendAccount = AccountAsset(AccountType.regular, swapSendAsset);
+    final swapSendAccount = swapSendAsset;
     final precision = context
         .read(walletProvider)
-        .getPrecisionForAssetId(assetId: swapSendAsset);
+        .getPrecisionForAssetId(assetId: swapSendAsset.asset);
     final _balance = context.read(balancesProvider).balances[swapSendAccount];
     final _balanceStr = amountStr(_balance ?? 0, precision: precision);
 
@@ -158,32 +158,34 @@ class _SwapMainState extends State<SwapMain> {
     wallet.unsubscribeFromPriceStream();
 
     if (type == SwapType.atomic) {
-      final swapSendAsset = swaps.swapSendAsset ?? '';
-      final swapRecvAsset = swaps.swapRecvAsset ?? '';
+      final swapSendAsset = swaps.swapSendAsset;
+      final swapRecvAsset = swaps.swapRecvAsset;
       final sendAmount = (subscribe == Subscribe.send) ? getSendAmount() : null;
       final recvAmount = (subscribe == Subscribe.recv) ? getRecvAmount() : null;
-      final sendBitcoins = swapSendAsset == wallet.liquidAssetId();
+      final sendBitcoins = swapSendAsset?.asset == wallet.liquidAssetId();
       final asset = sendBitcoins ? swapRecvAsset : swapSendAsset;
-      wallet.subscribeToPriceStream(
-          asset, sendBitcoins, sendAmount, recvAmount, updateFromPriceStream);
+      wallet.subscribeToPriceStream(asset?.asset ?? '', sendBitcoins,
+          sendAmount, recvAmount, updateFromPriceStream);
     }
   }
 
   void setDeliverAsset(AccountAsset accountAsset) {
-    context.read(swapProvider).setSelectedLeftAsset(accountAsset.asset);
+    clearAmountController();
+    context.read(swapProvider).setSelectedLeftAsset(accountAsset);
     subscribeToPriceStream();
   }
 
   void setReceiveAsset(AccountAsset accountAsset) {
-    context.read(swapProvider).setSelectedRightAsset(accountAsset.asset);
+    clearAmountController();
+    context.read(swapProvider).setSelectedRightAsset(accountAsset);
     subscribeToPriceStream();
   }
 
   void toggleAssets() {
     final _swapRecvAsset = context.read(swapProvider).swapRecvAsset;
     final _swapSendAsset = context.read(swapProvider).swapSendAsset;
-    context.read(swapProvider).setSelectedLeftAsset(_swapRecvAsset ?? '');
-    context.read(swapProvider).setSelectedRightAsset(_swapSendAsset ?? '');
+    context.read(swapProvider).setSelectedLeftAsset(_swapRecvAsset!);
+    context.read(swapProvider).setSelectedRightAsset(_swapSendAsset!);
     clearAddressController();
     clearAmountController();
     subscribeToPriceStream();
@@ -204,8 +206,10 @@ class _SwapMainState extends State<SwapMain> {
     final wallet = context.read(walletProvider);
 
     swap.setSwapPeg(true);
-    swap.setSelectedLeftAsset(wallet.bitcoinAssetId());
-    swap.setSelectedRightAsset(wallet.liquidAssetId());
+    swap.setSelectedLeftAsset(
+        AccountAsset(AccountType.regular, wallet.bitcoinAssetId()));
+    swap.setSelectedRightAsset(
+        AccountAsset(AccountType.regular, wallet.liquidAssetId()));
     clearAddressController();
     clearAmountController();
     swap.swapReset();
@@ -228,7 +232,7 @@ class _SwapMainState extends State<SwapMain> {
         swaps.swapRecvAmount = msg.recvAmount.toInt();
         final recvAsset = swaps.swapRecvAsset;
         final recvPrecision =
-            wallet.getPrecisionForAssetId(assetId: recvAsset ?? '');
+            wallet.getPrecisionForAssetId(assetId: recvAsset?.asset ?? '');
         final recvAmount = swaps.swapRecvAmount;
         final recvAmountStr = recvAmount != 0
             ? amountStr(recvAmount, precision: recvPrecision)
@@ -246,7 +250,7 @@ class _SwapMainState extends State<SwapMain> {
         swaps.swapSendAmount = msg.sendAmount.toInt();
         final sendAsset = swaps.swapSendAsset;
         final sendPrecision =
-            wallet.getPrecisionForAssetId(assetId: sendAsset ?? '');
+            wallet.getPrecisionForAssetId(assetId: sendAsset?.asset ?? '');
         final sendAmount = swaps.swapSendAmount;
         final sendAmountStr = sendAmount != 0
             ? amountStr(sendAmount, precision: sendPrecision)
@@ -269,17 +273,19 @@ class _SwapMainState extends State<SwapMain> {
 
   int getSendAmount() {
     final sendAsset = context.read(swapProvider).swapSendAsset;
-    return getAssetAmount(sendAsset ?? '', _swapSendAmountController!.text);
+    return getAssetAmount(
+        sendAsset?.asset ?? '', _swapSendAmountController!.text);
   }
 
   int getRecvAmount() {
     final recvAsset = context.read(swapProvider).swapRecvAsset;
-    return getAssetAmount(recvAsset ?? '', _swapRecvAmountController!.text);
+    return getAssetAmount(
+        recvAsset?.asset ?? '', _swapRecvAmountController!.text);
   }
 
   bool insufficientFunds() {
     final swapSendAsset = context.read(swapProvider).swapSendAsset!;
-    final sendAccount = AccountAsset(AccountType.regular, swapSendAsset);
+    final sendAccount = swapSendAsset;
     final balance = context.read(balancesProvider).balances[sendAccount] ?? 0;
     final sendAmount = getSendAmount();
     return sendAmount > 0 && sendAmount > balance;
@@ -293,7 +299,7 @@ class _SwapMainState extends State<SwapMain> {
     final recvAmount = getRecvAmount();
     final price = swaps.price;
     final type = swaps.swapType();
-    final sendAccount = AccountAsset(AccountType.regular, swaps.swapSendAsset!);
+    final sendAccount = swaps.swapSendAsset;
 
     final maxBalance = swaps.swapSendWallet == SwapWallet.local
         ? context.read(balancesProvider).balances[sendAccount] ?? 0
@@ -338,6 +344,7 @@ class _SwapMainState extends State<SwapMain> {
       msg.pegOutRequest.sendAmount = Int64(sendAmount);
       msg.pegOutRequest.recvAddr = swaps.swapRecvAddressExternal;
       msg.pegOutRequest.blocks = blocks;
+      msg.pegOutRequest.account = getAccount(sendAccount!.account);
       wallet.sendMsg(msg);
       swaps.swapState = SwapState.sent;
     }
@@ -345,12 +352,12 @@ class _SwapMainState extends State<SwapMain> {
     if (type == SwapType.atomic) {
       final msg = To();
       msg.swapRequest = To_SwapRequest();
-      final swapSendAsset = swaps.swapSendAsset ?? '';
-      final sendBitcoins = swapSendAsset == wallet.liquidAssetId();
-      final swapRecvAsset = swaps.swapRecvAsset ?? '';
+      final swapSendAsset = swaps.swapSendAsset;
+      final sendBitcoins = swapSendAsset?.asset == wallet.liquidAssetId();
+      final swapRecvAsset = swaps.swapRecvAsset;
       final asset = sendBitcoins ? swapRecvAsset : swapSendAsset;
       msg.swapRequest.sendBitcoins = sendBitcoins;
-      msg.swapRequest.asset = asset;
+      msg.swapRequest.asset = asset?.asset ?? '';
       msg.swapRequest.sendAmount = Int64(sendAmount);
       msg.swapRequest.recvAmount = Int64(recvAmount);
       msg.swapRequest.price = price ?? 0.0;
@@ -548,17 +555,14 @@ class _SwapMainState extends State<SwapMain> {
   Widget buildReceiveAmount() {
     return Consumer(
       builder: (context, watch, child) {
-        final _swapRecvAssets = watch(swapProvider)
-            .swapRecvAssets()
-            .map((e) => AccountAsset(AccountType.regular, e))
-            .toList();
+        final _swapRecvAssets = watch(swapProvider).swapRecvAssets().toList();
         final _swapRecvAsset = watch(swapProvider).swapRecvAsset!;
         final _swapRecvWallet = watch(swapProvider).swapRecvWallet;
         final _precision = context
             .read(walletProvider)
-            .getPrecisionForAssetId(assetId: _swapRecvAsset);
+            .getPrecisionForAssetId(assetId: _swapRecvAsset.asset);
         final swapRecvAccount =
-            AccountAsset(AccountType.regular, _swapRecvAsset);
+            AccountAsset(AccountType.regular, _swapRecvAsset.asset);
         final _balance = watch(balancesProvider).balances[swapRecvAccount];
         final _balanceStr = amountStr(_balance ?? 0, precision: _precision);
         final _swapType = watch(swapProvider).swapType();
@@ -585,14 +589,14 @@ class _SwapMainState extends State<SwapMain> {
           hintText: '0.0',
           showHintText: _swapType == SwapType.atomic,
           dropdownReadOnly:
-              _swapType == SwapType.atomic && _swapRecvAsset.length > 1
+              _swapType == SwapType.atomic && _swapRecvAssets.length > 1
                   ? false
                   : true,
           feeRates: feeRates,
           onFeeRateChanged: onFeeRateChanged,
           visibleToggles: _visibleToggles,
           balance: _balanceStr,
-          dropdownValue: AccountAsset(AccountType.regular, _swapRecvAsset),
+          dropdownValue: _swapRecvAsset,
           availableAssets: _swapRecvAssets,
           labelGroupValue: _swapRecvWallet,
           addressErrorText: _addressErrorText,
@@ -623,6 +627,7 @@ class _SwapMainState extends State<SwapMain> {
               addressLabelVisible = false;
             });
           },
+          showAccountsInPopup: true,
         );
       },
     );
@@ -631,17 +636,13 @@ class _SwapMainState extends State<SwapMain> {
   Widget buildDeliverAmount() {
     return Consumer(
       builder: (context, watch, child) {
-        final swapSendAsset = AccountAsset(
-            AccountType.regular, watch(swapProvider).swapSendAsset!);
+        final swapSendAsset = watch(swapProvider).swapSendAsset!;
         final balance = watch(balancesProvider).balances[swapSendAsset] ?? 0;
         final precision = context
             .read(walletProvider)
             .getPrecisionForAssetId(assetId: swapSendAsset.asset);
         final balanceStr = amountStr(balance, precision: precision);
-        final swapSendAssets = watch(swapProvider)
-            .swapSendAssets()
-            .map((e) => AccountAsset(AccountType.regular, e))
-            .toList();
+        final swapSendAssets = watch(swapProvider).swapSendAssets().toList();
         final swapSendWallet = watch(swapProvider).swapSendWallet;
         final swapState = watch(swapProvider).swapState;
         final swapType = watch(swapProvider).swapType();
@@ -675,6 +676,7 @@ class _SwapMainState extends State<SwapMain> {
           onDropdownChanged: setDeliverAsset,
           onChanged: onSwapSendAmountChanged,
           onMaxPressed: onMaxSendPressed,
+          showAccountsInPopup: true,
         );
       },
     );

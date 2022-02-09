@@ -42,19 +42,11 @@ pub fn get_account(amp: bool) -> ffi::proto::Account {
     ffi::proto::Account { amp }
 }
 
-fn network_type(mainnet: bool) -> &'static elements::AddressParams {
-    if mainnet {
-        &elements::AddressParams::LIQUID
-    } else {
-        &elements::AddressParams::ELEMENTS
-    }
-}
-
 fn output_address(
-    txout: &elements::TxOut,
-    params: &'static elements::AddressParams,
-) -> Option<elements::Address> {
-    elements::Address::from_script(&txout.script_pubkey, None, params)
+    txout: &elements_pset::TxOut,
+    params: &'static elements_pset::AddressParams,
+) -> Option<elements_pset::Address> {
+    elements_pset::Address::from_script(&txout.script_pubkey, None, params)
 }
 
 struct ActivePeg {
@@ -69,6 +61,12 @@ enum AddrType {
 struct SendTx {
     tx: TransactionMeta,
     contact_key: Option<ContactKey>,
+}
+
+pub struct PegPayment {
+    pub sent_amount: i64,
+    pub sent_txid: sideswap_api::Txid,
+    pub signed_tx: String,
 }
 
 pub struct Context {
@@ -88,7 +86,7 @@ pub struct Context {
 
     send_tx: Option<SendTx>,
     active_extern_peg: Option<ActivePeg>,
-    sent_txhash: Option<sideswap_api::Txid>,
+    sent_txhash: Option<Txid>,
 
     active_submit: Option<LinkResponse>,
     active_sign: Option<SignNotification>,
@@ -317,7 +315,6 @@ fn get_peg_item(peg: &PegStatus, tx: &TxStatus) -> ffi::proto::TransItem {
         addr_send: peg.addr.clone(),
         addr_recv: peg.addr_recv.clone(),
         txid_send: tx.tx_hash.clone(),
-        vout_send: tx.vout,
         txid_recv: tx.payout_txid.clone(),
     };
     let confs = tx.detected_confs.and_then(|count| {
@@ -476,6 +473,7 @@ impl Data {
                     },
                 ));
                 ctx.sent_txhash = None;
+                Data::update_sync_interval(&ctx);
             }
         }
 
@@ -484,6 +482,7 @@ impl Data {
             if let Some(tx) = tx {
                 self.ui.send(ffi::proto::from::Msg::SwapSucceed(tx.clone()));
                 ctx.succeed_swap = None;
+                Data::update_sync_interval(&ctx);
             }
         }
 
@@ -605,6 +604,10 @@ impl Data {
                 self.process_pending_requests();
             }
         }
+    }
+
+    fn sync_failed(&mut self) {
+        self.show_message("electrs connection failed");
     }
 
     fn resume_peg_monitoring(&mut self) {
@@ -929,8 +932,81 @@ impl Data {
                 }
             }
             "sync_complete" => self.sync_complete(),
+            "sync_failed" => self.sync_failed(),
             _ => {}
         }
+    }
+
+    fn make_pegout_payment(
+        &mut self,
+        send_amount: i64,
+        peg_addr: &str,
+    ) -> Result<PegPayment, anyhow::Error> {
+        let balance = self.get_balance(&self.liquid_asset_id);
+        let ctx = self.ctx.as_mut().expect("wallet must be set");
+        ensure!(balance.to_sat() >= send_amount, "Insufficient balance");
+        let send_all = balance.to_sat() == send_amount;
+
+        let address_amount = gdk_common::model::AddressAmount {
+            address: peg_addr.to_owned(),
+            satoshi: send_amount as u64,
+            asset_id: Some(self.liquid_asset_id.to_string()),
+        };
+
+        let utxos = ctx
+            .session
+            .get_unspent_outputs(&gdk_common::model::GetUnspentOpt {
+                subaccount: ACCOUNT,
+                num_confs: Some(BALANCE_NUM_CONFS),
+                confidential_utxos_only: None,
+                all_coins: None,
+            })
+            .map_err(|_| anyhow!("loading UTXO failed"))?;
+
+        let mut details = gdk_common::model::CreateTransaction {
+            addressees: vec![address_amount],
+            fee_rate: None,
+            subaccount: ACCOUNT,
+            send_all,
+            previous_transaction: None,
+            memo: None,
+            utxos,
+            num_confs: 0,
+            confidential_utxos_only: false,
+            utxo_strategy: gdk_common::model::UtxoStrategy::Default,
+        };
+        let tx_detail_unsigned = ctx
+            .session
+            .create_transaction(&mut details)
+            .map_err(|e| anyhow!("{}", e))?;
+        let sent_amount = if send_all {
+            send_amount - tx_detail_unsigned.fee as i64
+        } else {
+            send_amount
+        };
+        let server_status = self
+            .server_status
+            .as_ref()
+            .ok_or(anyhow!("server_status is not known"))?;
+        ensure!(
+            sent_amount >= server_status.min_peg_out_amount,
+            "min {}",
+            Amount::from_sat(server_status.min_peg_out_amount)
+                .to_bitcoin()
+                .to_string()
+        );
+        let tx_detail_signed = ctx.session.sign_transaction(&tx_detail_unsigned).unwrap();
+        let ctx = self.ctx.as_mut().expect("wallet must be set");
+        let sent_txid = match ctx.session.send_transaction(&tx_detail_signed) {
+            Ok(v) => sideswap_api::Txid::from_str(&v.txid).unwrap(),
+            Err(e) => bail!("broadcast failed: {}", e.to_string()),
+        };
+        let payment = PegPayment {
+            sent_amount,
+            sent_txid,
+            signed_tx: tx_detail_signed.hex,
+        };
+        Ok(payment)
     }
 
     fn try_process_pegout_request(
@@ -942,7 +1018,7 @@ impl Data {
             .server_status
             .as_ref()
             .ok_or(anyhow!("server_status is not known"))?;
-        // FIXME: Check amount including network fee if sending all
+        let conversion_rate = 1. - server_status.server_fee_percent_peg_out / 100.;
         ensure!(
             req.send_amount >= server_status.min_peg_out_amount,
             "min {}",
@@ -972,91 +1048,44 @@ impl Data {
             Ok(_) => bail!("unexpected server response"),
             Err(e) => bail!("server error: {}", e.to_string()),
         };
-        let balance = self.get_balance(&self.liquid_asset_id);
-        let ctx = self.ctx.as_mut().expect("wallet must be set");
-        ensure!(balance.to_sat() >= req.send_amount, "Insufficient balance");
-
-        let amount = gdk_common::model::AddressAmount {
-            address: resp.peg_addr.clone(),
-            satoshi: req.send_amount as u64,
-            asset_id: Some(self.liquid_asset_id.to_string()),
-        };
-        let send_all = balance.to_sat() == req.send_amount;
-
-        let utxos = ctx
-            .session
-            .get_unspent_outputs(&gdk_common::model::GetUnspentOpt {
-                subaccount: ACCOUNT,
-                num_confs: Some(BALANCE_NUM_CONFS),
-                confidential_utxos_only: None,
-                all_coins: None,
-            })
-            .map_err(|_| anyhow!("loading UTXO failed"))?;
-
-        let mut details = gdk_common::model::CreateTransaction {
-            addressees: vec![amount],
-            fee_rate: None,
-            subaccount: ACCOUNT,
-            send_all,
-            previous_transaction: None,
-            memo: None,
-            utxos,
-            num_confs: 0,
-            confidential_utxos_only: false,
-            utxo_strategy: gdk_common::model::UtxoStrategy::Default,
-        };
-        let tx_detail_unsigned = ctx
-            .session
-            .create_transaction(&mut details)
-            .map_err(|e| anyhow!("{}", e))?;
-        let params = network_type(self.env.data().mainnet);
-        let tx: elements::Transaction =
-            elements::encode::deserialize(&hex::decode(&tx_detail_unsigned.hex)?)?;
-        let peg_addr = elements::Address::from_str(&resp.peg_addr)?.to_unconfidential();
-        let vout_send = tx
-            .output
-            .iter()
-            .position(|txout| output_address(&txout, params).as_ref() == Some(&peg_addr))
-            .ok_or(anyhow!("can't find peg output"))? as i32;
-        let send_amount = if send_all {
-            req.send_amount - tx_detail_unsigned.fee as i64
-        } else {
-            req.send_amount
-        };
-        let server_status = self
-            .server_status
-            .as_ref()
-            .ok_or(anyhow!("server_status is not known"))?;
-        ensure!(
-            send_amount >= server_status.min_peg_out_amount,
-            "min {}",
-            Amount::from_sat(server_status.min_peg_out_amount)
-                .to_bitcoin()
-                .to_string()
-        );
-        let conversion_rate = 1. - server_status.server_fee_percent_peg_out / 100.;
-        let recv_amount = (send_amount as f64 * conversion_rate).round() as i64;
-        let tx_detail_signed = ctx.session.sign_transaction(&tx_detail_unsigned).unwrap();
-        let ctx = self.ctx.as_mut().expect("wallet must be set");
-        let send_txid = match ctx.session.send_transaction(&tx_detail_signed) {
-            Ok(v) => v.txid,
-            Err(e) => bail!("broadcast failed: {}", e.to_string()),
-        };
 
         self.add_peg_monitoring(resp.order_id, PegDir::Out);
 
+        let payment = if req.account.amp {
+            self.amp
+                .make_pegout_payment(req.send_amount, &resp.peg_addr)?
+        } else {
+            self.make_pegout_payment(req.send_amount, &resp.peg_addr)?
+        };
+
+        let recv_amount = (payment.sent_amount as f64 * conversion_rate).round() as i64;
+
+        let addr_params = self.env.elements_params_pset();
+        let tx: elements_pset::Transaction =
+            elements_pset::encode::deserialize(&hex::decode(&payment.signed_tx).unwrap()).unwrap();
+        let peg_addr = elements_pset::Address::parse_with_params(
+            &resp.peg_addr,
+            self.env.elements_params_pset(),
+        )
+        .unwrap()
+        .to_unconfidential();
+        let sent_vout = tx
+            .output
+            .iter()
+            .position(|txout| output_address(&txout, addr_params).as_ref() == Some(&peg_addr))
+            .unwrap() as i32;
+
         let peg_details = ffi::proto::Peg {
             is_peg_in: false,
-            amount_send: send_amount,
+            amount_send: payment.sent_amount,
             amount_recv: recv_amount,
             addr_send: resp.peg_addr.clone(),
             addr_recv: req.recv_addr,
-            txid_send: send_txid.clone(),
-            vout_send,
+            txid_send: payment.sent_txid.to_string(),
             txid_recv: None,
         };
 
-        let id = peg_txitem_id(&send_txid, vout_send);
+        let id = peg_txitem_id(&payment.sent_txid.to_string(), sent_vout);
         let swap_succeed = ffi::proto::TransItem {
             id,
             created_at: timestamp_now(),
@@ -1418,6 +1447,7 @@ impl Data {
 
         let ctx = self.ctx.as_mut().ok_or_else(|| anyhow!("wallet empty"))?;
         ctx.succeed_swap = Some(response.txid);
+        Data::update_sync_interval(&ctx);
 
         Ok(())
     }
@@ -1563,6 +1593,7 @@ impl Data {
         };
         let ctx = self.ctx.as_mut().expect("wallet must be set");
         ctx.sent_txhash = Some(txid);
+        Data::update_sync_interval(&ctx);
         Ok(())
     }
 
@@ -1631,6 +1662,25 @@ impl Data {
     ) -> Result<(ElectrumSession, gdk_common::model::LoginData), anyhow::Error> {
         let parsed_network = envs::get_network(self.env);
         let url = match network.selected.as_ref().unwrap() {
+            ffi::proto::network_settings::Selected::Sideswap(_)
+                if self.env.data().network == env::Network::Mainnet =>
+            {
+                Ok(gdk_electrum::interface::ElectrumUrl::Tls(
+                    "electrs.sideswap.io:12001".to_owned(),
+                    true,
+                ))
+            }
+            ffi::proto::network_settings::Selected::Sideswap(_)
+                if self.env.data().network == env::Network::Testnet =>
+            {
+                Ok(gdk_electrum::interface::ElectrumUrl::Tls(
+                    "electrs.sideswap.io:12002".to_owned(),
+                    true,
+                ))
+            }
+            ffi::proto::network_settings::Selected::Sideswap(_) => {
+                gdk_electrum::determine_electrum_url_from_net(&parsed_network)
+            }
             ffi::proto::network_settings::Selected::Blockstream(_) => {
                 gdk_electrum::determine_electrum_url_from_net(&parsed_network)
             }
@@ -2681,6 +2731,7 @@ impl Data {
         }
 
         self.pending_sign_requests.push_back(msg);
+        self.update_amp_connection_status();
         self.process_pending_requests();
     }
 
@@ -2927,6 +2978,13 @@ impl Data {
     }
 
     fn process_complete(&mut self, msg: CompleteNotification) {
+        self.ui.send(ffi::proto::from::Msg::OrderComplete(
+            ffi::proto::from::OrderComplete {
+                order_id: msg.order_id.to_string(),
+                txid: msg.txid.map(|v| v.to_string()),
+            },
+        ));
+
         match msg.txid {
             Some(v) => {
                 let submit_data = match self.submit_data.get_mut(&msg.order_id) {
@@ -3149,6 +3207,7 @@ impl Data {
             (None, Some(txid)) => {
                 debug!("instant swap succeed, txid: {}", txid);
                 ctx.succeed_swap = Some(txid);
+                Data::update_sync_interval(&ctx);
             }
             (Some(e), None) => {
                 self.ui
@@ -3227,7 +3286,10 @@ impl Data {
     }
 
     fn update_amp_connection_status(&mut self) {
-        let new_amp_active = self.app_active || !self.pending_signs.is_empty();
+        let amp_submits = self.amp_submits();
+        let new_amp_active = self.app_active
+            || (!self.pending_signs.is_empty() && amp_submits)
+            || (!self.pending_sign_requests.is_empty() && amp_submits);
         if new_amp_active != self.amp_active {
             self.amp_active = new_amp_active;
             self.send_amp(amp::To::AppState(new_amp_active));
@@ -3784,6 +3846,12 @@ impl Data {
         }
     }
 
+    fn update_sync_interval(ctx: &Context) {
+        let pending_tx = ctx.sent_txhash.is_some() || ctx.succeed_swap.is_some();
+        let interval = if pending_tx { 1 } else { 7 };
+        ctx.session.sync_interval.store(interval);
+    }
+
     fn sync_order_list(&mut self) {
         let ctx = match self.ctx.as_mut() {
             Some(v) => v,
@@ -3889,6 +3957,7 @@ impl Data {
     fn process_amp_sent_tx(&mut self, txid: sideswap_api::Txid) {
         if let Some(ctx) = self.ctx.as_mut() {
             ctx.sent_txhash = Some(txid);
+            Data::update_sync_interval(&ctx);
         }
     }
 

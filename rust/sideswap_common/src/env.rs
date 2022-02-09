@@ -9,6 +9,7 @@ pub enum Env {
     LocalTestnet,
 }
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Network {
     Mainnet,
     Testnet,

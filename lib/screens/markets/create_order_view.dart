@@ -322,7 +322,8 @@ class CreateOrderViewBody extends StatelessWidget {
                     kOneHour,
                     kSixHours,
                     kTwelveHours,
-                    kOneDay
+                    kOneDay,
+                    kOneWeek,
                   ],
                   onChanged: onTtlChanged,
                   locked: onTtlChanged == null ? true : false,

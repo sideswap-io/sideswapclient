@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#define SIDESWAP_DART_PORT_DISABLED -1
+
 #define SIDESWAP_BITCOIN 1
 
 #define SIDESWAP_ELEMENTS 2
@@ -29,6 +31,8 @@ IntPtr sideswap_client_start(int32_t env,
                              int64_t dart_port);
 
 void sideswap_send_request(IntPtr client, const uint8_t *data, uint64_t len);
+
+uint64_t sideswap_recv_request(IntPtr client);
 
 void sideswap_process_background(const char *data);
 

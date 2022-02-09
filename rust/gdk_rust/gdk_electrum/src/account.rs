@@ -583,7 +583,6 @@ impl Account {
         let acc_store = store_write.account_cache_mut(self.account_num).unwrap();
 
         for (txid, tx) in txs {
-            info!("verifying tx: {}", txid);
             // Confirmed transactions and Elements transactions cannot be fee-bumped and therefore don't require verification
             if !matches!(tx, BETransaction::Bitcoin(_))
                 || acc_store.heights.get(txid).map_or(true, |h| h.is_some())

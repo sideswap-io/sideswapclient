@@ -1,29 +1,39 @@
 use super::*;
 use storage::TransferState;
 
-pub struct Ratio {
+struct Ratio {
     min: f64,
     norm: f64,
     max: f64,
 }
 
 #[derive(PartialEq, Debug)]
-pub enum Balancing {
+enum Balancing {
     None,
-    Send(f64),
     Recv(f64),
+    Send(f64),
 }
 
-pub const RATIO_BTC: Ratio = Ratio {
+#[derive(PartialEq, Debug)]
+pub enum AssetBalancing {
+    None,
+    RecvBtc(f64),
+    SendBtc(f64),
+    RecvUsdt(f64),
+    SendUsdt(f64),
+}
+
+const RATIO_BTC: Ratio = Ratio {
     min: 0.25,
-    norm: 0.4,
+    norm: 0.5,
     max: 0.75,
 };
-pub const RATIO_USDT: Ratio = Ratio {
+const RATIO_USDT: Ratio = Ratio {
     min: 0.25,
-    norm: 0.6,
+    norm: 0.5,
     max: 0.75,
 };
+const MIN_BALANCING_AMOUNT_USDT: f64 = 1000.0;
 
 fn update_balancing_state(
     storage: &mut Storage,
@@ -46,7 +56,11 @@ fn update_balancing_state(
     save_storage(storage, path);
 }
 
-pub fn get_balancing(wallet_balance: f64, exchange_balance: f64, expected: &Ratio) -> Balancing {
+fn get_balancing_smaller(
+    wallet_balance: f64,
+    exchange_balance: f64,
+    expected: &Ratio,
+) -> Balancing {
     // Something up with balance probably
     if wallet_balance == 0.0 || exchange_balance == 0.0 {
         return Balancing::None;
@@ -64,6 +78,99 @@ pub fn get_balancing(wallet_balance: f64, exchange_balance: f64, expected: &Rati
         Balancing::Send(diff)
     } else {
         Balancing::None
+    }
+}
+
+fn get_balancing_bigger(
+    asset_wallet_balance: f64,
+    asset_exchange_balance: f64,
+    other_wallet_balance: f64,
+    other_exchange_balance: f64,
+    from_other_to_asset_scale: f64,
+) -> Balancing {
+    let recv_amount = other_exchange_balance * from_other_to_asset_scale - asset_wallet_balance;
+    let send_amount = other_wallet_balance * from_other_to_asset_scale - asset_exchange_balance;
+    if recv_amount > 0.0 {
+        Balancing::Recv(recv_amount)
+    } else if send_amount > 0.0 {
+        Balancing::Send(send_amount)
+    } else {
+        Balancing::None
+    }
+}
+
+pub fn get_balancing(
+    balance_wallet_bitcoin: f64,
+    balance_exchange_bitcoin: f64,
+    balance_wallet_usdt: f64,
+    balance_exchange_usdt: f64,
+    bitcoin_usdt_price: f64,
+) -> AssetBalancing {
+    if bitcoin_usdt_price == 0.0
+        || balance_wallet_bitcoin == 0.0
+        || balance_exchange_bitcoin == 0.0
+        || balance_wallet_usdt == 0.0
+        || balance_exchange_usdt == 0.0
+    {
+        return AssetBalancing::None;
+    }
+
+    let bitcoin_total = balance_wallet_bitcoin + balance_exchange_bitcoin;
+    let usdt_total = balance_wallet_usdt + balance_exchange_usdt;
+    let bitcoin_total_as_usdt = bitcoin_total * bitcoin_usdt_price;
+    let bitcoin_smaller = bitcoin_total_as_usdt < usdt_total;
+
+    // Balance smaller asset first
+    let smaller_balancing = if bitcoin_smaller {
+        get_balancing_smaller(balance_wallet_bitcoin, balance_exchange_bitcoin, &RATIO_BTC)
+    } else {
+        get_balancing_smaller(balance_wallet_usdt, balance_exchange_usdt, &RATIO_USDT)
+    };
+
+    let balancing = match smaller_balancing {
+        Balancing::Recv(amount) if bitcoin_smaller => AssetBalancing::RecvBtc(amount),
+        Balancing::Send(amount) if bitcoin_smaller => AssetBalancing::SendBtc(amount),
+        Balancing::Recv(amount) => AssetBalancing::RecvUsdt(amount),
+        Balancing::Send(amount) => AssetBalancing::SendUsdt(amount),
+        Balancing::None => {
+            let bigger_balancing = if bitcoin_smaller {
+                get_balancing_bigger(
+                    balance_wallet_usdt,
+                    balance_exchange_usdt,
+                    balance_wallet_bitcoin,
+                    balance_exchange_bitcoin,
+                    bitcoin_usdt_price,
+                )
+            } else {
+                get_balancing_bigger(
+                    balance_wallet_bitcoin,
+                    balance_exchange_bitcoin,
+                    balance_wallet_usdt,
+                    balance_exchange_usdt,
+                    1.0 / bitcoin_usdt_price,
+                )
+            };
+            match bigger_balancing {
+                Balancing::Recv(amount) if bitcoin_smaller => AssetBalancing::RecvUsdt(amount),
+                Balancing::Send(amount) if bitcoin_smaller => AssetBalancing::SendUsdt(amount),
+                Balancing::Recv(amount) => AssetBalancing::RecvBtc(amount),
+                Balancing::Send(amount) => AssetBalancing::SendBtc(amount),
+                Balancing::None => AssetBalancing::None,
+            }
+        }
+    };
+    let balancing_amount_usdt = match balancing {
+        AssetBalancing::None => 0.0,
+        AssetBalancing::RecvBtc(v) => v * bitcoin_usdt_price,
+        AssetBalancing::SendBtc(v) => v * bitcoin_usdt_price,
+        AssetBalancing::RecvUsdt(v) => v,
+        AssetBalancing::SendUsdt(v) => v,
+    };
+
+    if balancing_amount_usdt < MIN_BALANCING_AMOUNT_USDT {
+        AssetBalancing::None
+    } else {
+        balancing
     }
 }
 
@@ -435,5 +542,73 @@ pub fn process_transfer(storage: &mut Storage, msg: proto::from::Transfer, args:
         }
     } else {
         warn!("ignore transfer result")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_balancing() {
+        // Bitcoin is smaller
+        assert_eq!(
+            get_balancing(0.5, 0.5, 27500.0, 27500.0, 50000.0),
+            AssetBalancing::None
+        );
+        assert_eq!(
+            get_balancing(0.2, 0.8, 27500.0, 27500.0, 50000.0),
+            AssetBalancing::RecvBtc(0.3)
+        );
+        assert_eq!(
+            get_balancing(0.8, 0.2, 27500.0, 27500.0, 50000.0),
+            AssetBalancing::SendBtc(0.3)
+        );
+        assert_eq!(
+            get_balancing(0.3, 0.7, 10000.0, 45000.0, 50000.0),
+            AssetBalancing::RecvUsdt(25000.0)
+        );
+        assert_eq!(
+            get_balancing(0.7, 0.3, 10000.0, 45000.0, 50000.0),
+            AssetBalancing::RecvUsdt(5000.0)
+        );
+        assert_eq!(
+            get_balancing(0.3, 0.7, 34500.0, 15500.0, 50000.0),
+            AssetBalancing::None
+        );
+        assert_eq!(
+            get_balancing(0.7, 0.3, 15000.0, 35000.0, 50000.0),
+            AssetBalancing::None
+        );
+
+        // USDt is smaller
+        assert_eq!(
+            get_balancing(0.5, 0.5, 22500.0, 22500.0, 50000.0),
+            AssetBalancing::None
+        );
+        assert_eq!(
+            get_balancing(0.5, 0.5, 5000.0, 40000.0, 50000.0),
+            AssetBalancing::RecvUsdt(17500.0)
+        );
+        assert_eq!(
+            get_balancing(0.5, 0.5, 40000.0, 5000.0, 50000.0),
+            AssetBalancing::SendUsdt(17500.0)
+        );
+        assert_eq!(
+            get_balancing(0.2, 0.8, 13500.0, 31500.0, 50000.0),
+            AssetBalancing::RecvBtc(0.43)
+        );
+        assert_eq!(
+            get_balancing(0.8, 0.2, 13500.0, 31500.0, 50000.0),
+            AssetBalancing::SendBtc(0.07)
+        );
+        assert_eq!(
+            get_balancing(0.7, 0.3, 13500.0, 31500.0, 50000.0),
+            AssetBalancing::None
+        );
+        assert_eq!(
+            get_balancing(0.3, 0.7, 31500.0, 13500.0, 50000.0),
+            AssetBalancing::None
+        );
     }
 }

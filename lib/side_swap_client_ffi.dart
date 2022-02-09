@@ -57,6 +57,20 @@ class NativeLibrary {
   late final _dart_sideswap_send_request _sideswap_send_request =
       _sideswap_send_request_ptr.asFunction<_dart_sideswap_send_request>();
 
+  int sideswap_recv_request(
+    int client,
+  ) {
+    return _sideswap_recv_request(
+      client,
+    );
+  }
+
+  late final _sideswap_recv_request_ptr =
+      _lookup<ffi.NativeFunction<_c_sideswap_recv_request>>(
+          'sideswap_recv_request');
+  late final _dart_sideswap_recv_request _sideswap_recv_request =
+      _sideswap_recv_request_ptr.asFunction<_dart_sideswap_recv_request>();
+
   void sideswap_process_background(
     ffi.Pointer<ffi.Int8> data,
   ) {
@@ -743,6 +757,8 @@ const int __have_pthread_attr_t = 1;
 
 const int _ALLOCA_H = 1;
 
+const int SIDESWAP_DART_PORT_DISABLED = -1;
+
 const int SIDESWAP_BITCOIN = 1;
 
 const int SIDESWAP_ELEMENTS = 2;
@@ -785,6 +801,14 @@ typedef _dart_sideswap_send_request = void Function(
   int client,
   ffi.Pointer<ffi.Uint8> data,
   int len,
+);
+
+typedef _c_sideswap_recv_request = ffi.Uint64 Function(
+  ffi.Uint64 client,
+);
+
+typedef _dart_sideswap_recv_request = int Function(
+  int client,
 );
 
 typedef _c_sideswap_process_background = ffi.Void Function(

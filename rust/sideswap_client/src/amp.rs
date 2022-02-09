@@ -75,6 +75,14 @@ impl Amp {
     pub fn get_blinded_values(&self, txid: &str) -> Result<Vec<String>, anyhow::Error> {
         unsafe { get_blinded_values(&mut self.0.lock().unwrap(), txid) }
     }
+
+    pub fn make_pegout_payment(
+        &self,
+        send_amount: i64,
+        peg_addr: &str,
+    ) -> Result<worker::PegPayment, anyhow::Error> {
+        unsafe { make_pegout_payment(&mut self.0.lock().unwrap(), send_amount, peg_addr) }
+    }
 }
 
 #[derive(Debug)]
@@ -402,8 +410,15 @@ unsafe fn try_connect(
 
     try_login(session, &mnemonic)?;
 
+    let get_subaccounts_opts = gdk_json::GetSubaccountsOpts {
+        refresh: Some(false),
+    };
     let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_get_subaccounts(session, &mut call);
+    let rc = gdk::GA_get_subaccounts(
+        session,
+        GdkJson::new(&get_subaccounts_opts).as_ptr(),
+        &mut call,
+    );
     ensure!(
         rc == 0,
         "GA_get_subaccounts failed: {}",
@@ -1072,6 +1087,108 @@ unsafe fn get_blinded_values(data: &mut Data, txid: &str) -> Result<Vec<String>,
         }
     }
     Ok(result)
+}
+
+unsafe fn make_pegout_payment(
+    data: &mut Data,
+    send_amount: i64,
+    peg_addr: &str,
+) -> Result<worker::PegPayment, anyhow::Error> {
+    let wallet = data
+        .wallet
+        .as_mut()
+        .ok_or_else(|| anyhow!("no AMP wallet"))?;
+    let session = wallet
+        .session
+        .clone()
+        .ok_or_else(|| anyhow!("no session"))?;
+    let send_asset = wallet.policy_asset;
+
+    let mut call = std::ptr::null_mut();
+    let unspent_outputs = gdk_json::UnspentOutputsArgs {
+        subaccount: wallet.account.pointer,
+        num_confs: 0,
+    };
+    let rc =
+        gdk::GA_get_unspent_outputs(session, GdkJson::new(&unspent_outputs).as_ptr(), &mut call);
+    ensure!(
+        rc == 0,
+        "GA_get_unspent_outputs failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    let unspent_outputs_json = run_auth_handler::<gdk_json::UnspentOutputsJsonResult>(call)
+        .map_err(|e| anyhow!("loading unspent outputs failed: {}", e))?;
+    let mut unspent_outputs = serde_json::from_value::<gdk_json::UnspentOutputs>(
+        unspent_outputs_json.unspent_outputs.clone(),
+    )
+    .map_err(|e| anyhow!("parsing unspent outputs failed: {}", e))?;
+
+    let inputs = unspent_outputs.remove(&send_asset).unwrap_or_default();
+    let total = inputs.iter().map(|input| input.satoshi).sum::<u64>() as i64;
+    ensure!(send_amount <= total, "Insufficient funds");
+    let send_all = send_amount == total;
+
+    let tx_addressee = gdk_json::TxAddressee {
+        address: peg_addr.to_owned(),
+        satoshi: send_amount as u64,
+        asset_id: send_asset,
+    };
+    let create_tx = gdk_json::CreateTransactionOpt {
+        subaccount: wallet.account.pointer,
+        addressees: vec![tx_addressee],
+        utxos: unspent_outputs_json.unspent_outputs,
+        send_all,
+    };
+    let mut call = std::ptr::null_mut();
+    let rc = gdk::GA_create_transaction(session, GdkJson::new(&create_tx).as_ptr(), &mut call);
+    ensure!(
+        rc == 0,
+        "GA_create_transaction failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    let created_tx_json = run_auth_handler::<serde_json::Value>(call)
+        .map_err(|e| anyhow!("creating transaction failed: {}", e))?;
+    let created_tx =
+        serde_json::from_value::<gdk_json::CreateTransactionResult>(created_tx_json.clone())
+            .map_err(|e| anyhow!("parsing created transaction JSON failed: {}", e))?;
+    debug!("created tx: {:?}", &created_tx);
+    ensure!(created_tx.fee > 0, "network fee is 0");
+
+    let mut call = std::ptr::null_mut();
+    let rc = gdk::GA_sign_transaction(session, GdkJson::new(&created_tx_json).as_ptr(), &mut call);
+    ensure!(
+        rc == 0,
+        "GA_sign_transaction failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    let signed_tx_json = run_auth_handler::<serde_json::Value>(call)
+        .map_err(|e| anyhow!("signing tx failed: {}", e))?;
+
+    let signed_tx =
+        serde_json::from_value::<gdk_json::SignTransactionResult>(signed_tx_json.clone())?;
+
+    let mut call = std::ptr::null_mut();
+    let rc = gdk::GA_send_transaction(session, GdkJson::new(&signed_tx_json).as_ptr(), &mut call);
+    ensure!(
+        rc == 0,
+        "GA_send_transaction failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    let send_result = run_auth_handler::<gdk_json::SendTransactionResult>(call)
+        .map_err(|e| anyhow!("sending tx failed: {}", e))?;
+    info!("send succeed, waiting for txhash: {}", &send_result.txhash);
+
+    let sent_amount = if send_all {
+        send_amount - created_tx.fee as i64
+    } else {
+        send_amount
+    };
+
+    Ok(worker::PegPayment {
+        sent_amount,
+        sent_txid: send_result.txhash,
+        signed_tx: signed_tx.transaction,
+    })
 }
 
 static GDK_INITIALIZED: std::sync::Once = std::sync::Once::new();

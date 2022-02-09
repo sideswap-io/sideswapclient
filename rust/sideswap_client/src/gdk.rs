@@ -236,11 +236,13 @@ extern "C" {
     #[doc = " Get the user's subaccount details."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
+    #[doc = " :param details: the :ref:`get-subaccounts-params-data` controlling the request."]
     #[doc = " :param call: Destination for the resulting GA_auth_handler to perform the creation."]
     #[doc = "|     The call handlers result is :ref:`subaccount-list`."]
     #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
     pub fn GA_get_subaccounts(
         session: *mut GA_session,
+        details: *const GA_json,
         call: *mut *mut GA_auth_handler,
     ) -> ::std::os::raw::c_int;
 }
@@ -500,7 +502,7 @@ extern "C" {
     #[doc = " Get wallet details of a PSBT or PSET."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
-    #[doc = " :param details: The :ref:`psbt-get-details` for getting the wallet details."]
+    #[doc = " :param details: The :ref:`psbt-wallet-details` for getting the wallet details."]
     #[doc = " :param call: Destination for the resulting GA_auth_handler to get the wallet details."]
     #[doc = "|     The call handlers result is :ref:`psbt-get-details-result`."]
     #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]

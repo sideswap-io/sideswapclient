@@ -7,6 +7,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/show_peg_info_widget.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -45,11 +46,11 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String? _swapSendAsset;
-  String? get swapSendAsset => _swapSendAsset;
+  AccountAsset? _swapSendAsset;
+  AccountAsset? get swapSendAsset => _swapSendAsset;
 
-  String? _swapRecvAsset;
-  String? get swapRecvAsset => _swapRecvAsset;
+  AccountAsset? _swapRecvAsset;
+  AccountAsset? get swapRecvAsset => _swapRecvAsset;
 
   bool _swapPeg = false;
   bool get swapPeg => _swapPeg;
@@ -115,49 +116,52 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   // Functions //
 
-  List<String> swapSendAssets() {
+  List<AccountAsset> swapSendAssets() {
     final wallet = read(walletProvider);
     if (swapPeg) {
-      final swapPegList = <String>[];
+      final swapPegList = <AccountAsset>[];
 
-      swapPegList.add(wallet.bitcoinAssetId());
-      swapPegList.add(wallet.liquidAssetId());
+      swapPegList
+          .add(AccountAsset(AccountType.regular, wallet.bitcoinAssetId()));
+      swapPegList
+          .add(AccountAsset(AccountType.regular, wallet.liquidAssetId()));
+      swapPegList.add(AccountAsset(AccountType.amp, wallet.liquidAssetId()));
 
       return swapPegList;
     }
     return wallet.assets.entries
         .where((e) => e.key == wallet.liquidAssetId() || e.value.swapMarket)
-        .map((e) => e.key)
+        .map((e) => AccountAsset(AccountType.regular, e.key))
         .toList();
   }
 
-  List<String> swapRecvAssets() {
+  List<AccountAsset> swapRecvAssets() {
     final wallet = read(walletProvider);
     if (swapPeg) {
-      if (swapSendAsset == wallet.liquidAssetId()) {
-        return [wallet.bitcoinAssetId()];
+      if (swapSendAsset?.asset == wallet.liquidAssetId()) {
+        return [AccountAsset(AccountType.regular, wallet.bitcoinAssetId())];
       }
-      return [wallet.liquidAssetId()];
+      return [AccountAsset(AccountType.regular, wallet.liquidAssetId())];
     }
 
-    if (swapSendAsset != wallet.liquidAssetId()) {
-      return [wallet.liquidAssetId()];
+    if (swapSendAsset?.asset != wallet.liquidAssetId()) {
+      return [AccountAsset(AccountType.regular, wallet.liquidAssetId())];
     }
 
     return wallet.assets.entries
         .where((e) => e.value.swapMarket)
-        .map((e) => e.key)
+        .map((e) => AccountAsset(AccountType.regular, e.key))
         .toList();
   }
 
   SwapType swapType() {
     final wallet = read(walletProvider);
-    if (swapSendAsset == wallet.bitcoinAssetId() &&
-        swapRecvAsset == wallet.liquidAssetId()) {
+    if (swapSendAsset?.asset == wallet.bitcoinAssetId() &&
+        swapRecvAsset?.asset == wallet.liquidAssetId()) {
       return SwapType.pegIn;
     }
-    if (swapSendAsset == wallet.liquidAssetId() &&
-        swapRecvAsset == wallet.bitcoinAssetId()) {
+    if (swapSendAsset?.asset == wallet.liquidAssetId() &&
+        swapRecvAsset?.asset == wallet.bitcoinAssetId()) {
       return SwapType.pegOut;
     }
     return SwapType.atomic;
@@ -170,8 +174,10 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
     if (swapSendAsset == null) {
       _swapPeg = false;
-      _swapSendAsset = wallet.liquidAssetId();
-      _swapRecvAsset = wallet.tetherAssetId();
+      _swapSendAsset =
+          AccountAsset(AccountType.regular, wallet.liquidAssetId());
+      _swapRecvAsset =
+          AccountAsset(AccountType.regular, wallet.tetherAssetId());
     }
     final sendAssetsAllowed = swapSendAssets();
     if (!sendAssetsAllowed.contains(swapSendAsset)) {
@@ -191,14 +197,14 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
   }
 
-  void setSelectedLeftAsset(String asset) {
+  void setSelectedLeftAsset(AccountAsset asset) {
     swapReset();
     _swapSendAsset = asset;
     checkSelectedAsset();
     notifyListeners();
   }
 
-  void setSelectedRightAsset(String asset) {
+  void setSelectedRightAsset(AccountAsset asset) {
     swapReset();
     _swapRecvAsset = asset;
     checkSelectedAsset();
@@ -407,11 +413,12 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       if (assetSend == null || assetRecv == null || priceCopy == null) {
         return null;
       }
-      final sendLiquid = assetSend == wallet.liquidAssetId();
+      final sendLiquid = assetSend.asset == wallet.liquidAssetId();
       final asset = sendLiquid ? assetRecv : assetSend;
 
       final priceString = priceStr(priceCopy, false);
-      final assetTicker = wallet.getAssetById(asset)?.ticker ?? kUnknownTicker;
+      final assetTicker =
+          wallet.getAssetById(asset.asset)?.ticker ?? kUnknownTicker;
       final swapText = '1 $kLiquidBitcoinTicker = $priceString $assetTicker';
       return swapText;
     }

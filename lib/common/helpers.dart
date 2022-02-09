@@ -39,6 +39,7 @@ const int kOneHour = kHalfHour * 2;
 const int kSixHours = kOneHour * 6;
 const int kTwelveHours = kSixHours * 2;
 const int kOneDay = kSixHours * 4;
+const int kOneWeek = kOneDay * 7;
 
 const int kEditPriceMaxPercent = 10;
 const int kEditPriceMaxTrackingPercent = 1;

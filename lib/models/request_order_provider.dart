@@ -14,24 +14,17 @@ final requestOrderProvider = ChangeNotifierProvider<RequestOrderProvider>(
     (ref) => RequestOrderProvider(ref.read));
 
 extension DurationExtensions on Duration {
-  String toHoursMinutes() {
-    if (inMinutes.remainder(60) > 0) {
-      return '${inHours.remainder(24)}h ${inMinutes.remainder(60)}m';
+  String toStringCustom() {
+    if (inDays > 0) {
+      return '${inDays}d ${inHours.remainder(24)}h';
     }
-
-    return '${inHours}h';
-  }
-
-  String toMinutes() {
-    if (inMinutes.remainder(60) > 0) {
-      return '$inMinutes min';
+    if (inHours > 0) {
+      return '${inHours}h ${inMinutes.remainder(60)}m';
     }
-
-    return toSeconds();
-  }
-
-  String toSeconds() {
-    return '$inSeconds sec';
+    if (inMinutes > 0) {
+      return '${inMinutes}m ${inSeconds.remainder(60)}s';
+    }
+    return '${inSeconds}s';
   }
 }
 
