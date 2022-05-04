@@ -2,14 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
-void showWalletBackupDialog(BuildContext context) {
+void showWalletBackupDialog(WidgetRef ref, BuildContext context) {
   showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -87,7 +87,7 @@ void showWalletBackupDialog(BuildContext context) {
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).pop();
 
-                    context.read(walletProvider).backupNewWalletEnable();
+                    ref.read(walletProvider).backupNewWalletEnable();
                   },
                 ),
                 Padding(
@@ -97,17 +97,14 @@ void showWalletBackupDialog(BuildContext context) {
                     height: 54.h,
                     text: 'SKIP FOR NOW'.tr(),
                     backgroundColor: Colors.transparent,
-                    onPressed: () async {
+                    onPressed: () {
                       Navigator.of(context, rootNavigator: true).pop();
 
-                      if (FlavorConfig.isProduction() &&
-                          FlavorConfig
-                              .instance.values.enableOnboardingUserFeatures) {
-                        context.read(walletProvider).setImportAvatar();
+                      if (FlavorConfig.isProduction &&
+                          FlavorConfig.enableOnboardingUserFeatures) {
+                        ref.read(walletProvider).setImportAvatar();
                       } else {
-                        await context
-                            .read(walletProvider)
-                            .loginAndLoadMainPage();
+                        ref.read(walletProvider).loginAndLoadMainPage();
                       }
                     },
                   ),

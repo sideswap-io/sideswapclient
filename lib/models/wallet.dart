@@ -13,17 +13,22 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:sideswap/desktop/desktop_helpers.dart';
+import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
+import 'package:sideswap/models/local_notifications_service.dart';
+import 'package:sideswap/models/market_data_provider.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/network_access_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/token_market_provider.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:vibration/vibration.dart';
 import 'package:move_to_background/move_to_background.dart';
 
@@ -213,11 +218,11 @@ const kBackupCheckLineCount = 4;
 const kBackupCheckWordCount = 3;
 
 final walletProvider = ChangeNotifierProvider<WalletChangeNotifier>((ref) {
-  return WalletChangeNotifier(ref.read);
+  return WalletChangeNotifier(ref);
 });
 
 class WalletChangeNotifier with ChangeNotifier {
-  final Reader read;
+  final Ref ref;
   int _client = 0;
 
   final _encryption = Encryption();
@@ -250,13 +255,16 @@ class WalletChangeNotifier with ChangeNotifier {
   Map<int, List<String>> backupCheckAllWords = {};
   Map<int, int> backupCheckSelectedWords = {};
 
+  final assetsList = <String>[];
   final assets = <String, Asset>{};
   final assetImagesBig = <String, Image>{};
   final assetImagesSmall = <String, Image>{};
+  final assetImagesVerySmall = <String, Image>{};
   var ampAssets = <String>[];
 
   final allTxs = <String, TransItem>{};
   final allPegs = <String, List<TransItem>>{};
+  final allPegsById = <String, TransItem>{};
   // Cached version of allTxs and allPegs
   final _allAssets = <AccountAsset, List<TxItem>>{};
   var _allAssetsNeedUpdate = false;
@@ -264,14 +272,23 @@ class WalletChangeNotifier with ChangeNotifier {
   var _allAccounts = <AccountAsset>[];
   var _allAccountsNeedUpdate = false;
 
+  var _allTxsSorted = <TransItem>[];
+  var _allTxsSortedNeedUpdate = false;
+
+  var _allNewTxsSorted = <TransItem>[];
+  var _allNewTxsSortedNeedUpdate = false;
+
   final newTransItemSubject = BehaviorSubject<TransItem>();
   StreamSubscription<TransItem>? txDetailsSubscription;
 
-  final serverConnection = BehaviorSubject<bool>();
+  final serverConnection = BehaviorSubject<bool>.seeded(false);
 
   final _recvSubject = PublishSubject<From>();
+  StreamSubscription<From>? _recvSubscription;
 
   String? ampId;
+
+  var syncComplete = false;
 
   var isCreatingTx = false;
   var isSendingTx = false;
@@ -317,13 +334,18 @@ class WalletChangeNotifier with ChangeNotifier {
     calloc.free(pointer);
   }
 
-  WalletChangeNotifier(this.read);
+  WalletChangeNotifier(this.ref);
 
   late ReceivePort _receivePort;
+  StreamSubscription<dynamic>? _receivePortSubscription;
 
   Future<void> startClient() async {
     logger.d('startClient');
-    _recvSubject.listen((value) async {
+
+    _recvSubscription?.cancel();
+    _receivePortSubscription?.cancel();
+
+    _recvSubscription = _recvSubject.listen((value) async {
       await _recvMsg(value);
     });
 
@@ -334,7 +356,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
     _receivePort = ReceivePort();
 
-    final env = read(configProvider).env;
+    final env = ref.read(configProvider).env;
 
     final workDir = await getApplicationSupportDirectory();
     final workPath = workDir.absolute.path.toNativeUtf8();
@@ -350,7 +372,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
     await _addBtcAsset();
 
-    _receivePort.listen((dynamic msgPtr) async {
+    _receivePortSubscription = _receivePort.listen((dynamic msgPtr) async {
       final ptr = Lib.lib.sideswap_msg_ptr(msgPtr as int);
       final len = Lib.lib.sideswap_msg_len(msgPtr);
       final msg = From.fromBuffer(ptr.asTypedList(len));
@@ -361,7 +383,7 @@ class WalletChangeNotifier with ChangeNotifier {
     clientReady = true;
     processPendingPushMessages();
 
-    final config = read(configProvider);
+    final config = ref.read(configProvider);
     final appResetRequired = await _encryption.appResetRequired(
         hasEncryptedMnemonic: config.mnemonicEncrypted.isNotEmpty,
         usePinProtection: config.usePinProtection);
@@ -389,8 +411,8 @@ class WalletChangeNotifier with ChangeNotifier {
       await unlockWallet();
     }
 
-    await notificationService.refreshToken();
-    await notificationService.handleDynamicLinks();
+    await ref.read(notificationServiceProvider).refreshToken();
+    await ref.read(notificationServiceProvider).handleDynamicLinks();
   }
 
   @override
@@ -410,21 +432,45 @@ class WalletChangeNotifier with ChangeNotifier {
 
   List<AccountAsset> getAllAccounts() {
     if (_allAccountsNeedUpdate) {
-      final set = getAllAssets().keys.toSet();
-      if (assets[liquidAssetId()] != null) {
-        set.add(AccountAsset(AccountType.regular, liquidAssetId()));
+      // Use array to show registered on the server assets first
+      final newList = <AccountAsset>[];
+      newList.add(AccountAsset(AccountType.regular, liquidAssetId()));
+      newList.add(AccountAsset(AccountType.amp, liquidAssetId()));
+      for (final asset in assets.values) {
+        if (asset.swapMarket) {
+          newList.add(AccountAsset(AccountType.regular, asset.assetId));
+        } else if (asset.ampMarket) {
+          newList.add(AccountAsset(AccountType.amp, asset.assetId));
+        }
       }
-      if (assets[tetherAssetId()] != null) {
-        set.add(AccountAsset(AccountType.regular, tetherAssetId()));
+      final remainingAccounts =
+          getAllAssets().keys.toSet().difference(newList.toSet());
+      for (final account in remainingAccounts) {
+        newList.add(account);
       }
-      if (assets[eurxAssetId()] != null) {
-        set.add(AccountAsset(AccountType.regular, eurxAssetId()));
-      }
-      _allAccounts = set.toList();
-      _allAccounts.sort();
+      _allAccounts = newList;
       _allAccountsNeedUpdate = false;
     }
     return _allAccounts;
+  }
+
+  List<TransItem> getAllTxsSorted() {
+    if (_allTxsSortedNeedUpdate) {
+      _allTxsSorted = allTxs.values.toList()..addAll(allPegsById.values);
+      _allTxsSorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      _allTxsSortedNeedUpdate = false;
+    }
+    return _allTxsSorted;
+  }
+
+  List<TransItem> getAllNewTxsSorted() {
+    if (_allNewTxsSortedNeedUpdate) {
+      _allNewTxsSorted = allTxs.values.where((e) => e.hasConfs()).toList()
+        ..addAll(allPegsById.values.where((e) => e.hasConfs()));
+      _allNewTxsSorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      _allNewTxsSortedNeedUpdate = false;
+    }
+    return _allNewTxsSorted;
   }
 
   Map<AccountAsset, List<TxItem>> getAllAssets() {
@@ -475,6 +521,8 @@ class WalletChangeNotifier with ChangeNotifier {
   void refreshTxs() {
     _allAssetsNeedUpdate = true;
     _allAccountsNeedUpdate = true;
+    _allTxsSortedNeedUpdate = true;
+    _allNewTxsSortedNeedUpdate = true;
     notifyListeners();
   }
 
@@ -497,6 +545,7 @@ class WalletChangeNotifier with ChangeNotifier {
     allPegs[pegs.orderId] = pegs.items;
     for (final item in pegs.items) {
       newTransItemSubject.add(item);
+      allPegsById[item.id] = item;
     }
     refreshTxs();
   }
@@ -532,15 +581,16 @@ class WalletChangeNotifier with ChangeNotifier {
         notifyListeners();
         break;
       case From_Msg.balanceUpdate:
-        read(balancesProvider.notifier).updateBalances(from.balanceUpdate);
+        ref.read(balancesProvider.notifier).updateBalances(from.balanceUpdate);
         notifyListeners();
         break;
 
       case From_Msg.swapFailed:
         logger.w('Swap failed: ${from.swapFailed}');
-        read(swapProvider).swapNetworkError = from.swapFailed;
-        await read(utilsProvider)
-            .showErrorDialog(read(swapProvider).swapNetworkError);
+        ref.read(swapNetworkErrorStateProvider.notifier).state =
+            from.swapFailed;
+        notifyListeners();
+        await ref.read(utilsProvider).showErrorDialog(from.swapFailed);
         if (status == Status.swapPrompt) {
           status = Status.registered;
           notifyListeners();
@@ -550,14 +600,21 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.swapSucceed:
         var txItem = from.swapSucceed;
         showSwapTxDetails(txItem);
-        read(swapProvider).swapReset();
+        ref.read(swapProvider).swapReset();
+        ref.read(swapProvider).clearAmounts();
         break;
 
       case From_Msg.peginWaitTx:
-        status = Status.swapWaitPegTx;
-        read(swapProvider).swapPegAddressServer = from.peginWaitTx.pegAddr;
-        read(swapProvider).swapRecvAddressExternal = from.peginWaitTx.recvAddr;
-        notifyListeners();
+        ref.read(swapProvider).swapPegAddressServer = from.peginWaitTx.pegAddr;
+        ref.read(swapProvider).swapRecvAddressExternal =
+            from.peginWaitTx.recvAddr;
+        ref.read(swapStateProvider.notifier).state = SwapState.idle;
+        if (!FlavorConfig.isDesktop) {
+          status = Status.swapWaitPegTx;
+          notifyListeners();
+        } else {
+          desktopWaitPegin(navigatorKey.currentContext!);
+        }
         break;
 
       case From_Msg.recvAddress:
@@ -570,13 +627,15 @@ class WalletChangeNotifier with ChangeNotifier {
         isCreatingTx = false;
         switch (from.createTxResult.whichResult()) {
           case From_CreateTxResult_Result.errorMsg:
-            await read(utilsProvider)
+            await ref
+                .read(utilsProvider)
                 .showErrorDialog(from.createTxResult.errorMsg);
             break;
-          case From_CreateTxResult_Result.networkFee:
-            read(paymentProvider).sendNetworkFee =
-                from.createTxResult.networkFee.toInt();
-            status = Status.paymentSend;
+          case From_CreateTxResult_Result.createdTx:
+            ref.read(paymentProvider).createdTx = from.createTxResult.createdTx;
+            if (!FlavorConfig.isDesktop) {
+              status = Status.paymentSend;
+            }
             break;
           case From_CreateTxResult_Result.notSet:
             throw Exception('invalid send result message');
@@ -586,16 +645,24 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.sendResult:
         isSendingTx = false;
-        status = Status.assetDetails;
+        if (!FlavorConfig.isDesktop) {
+          status = Status.assetDetails;
+        }
         switch (from.sendResult.whichResult()) {
           case From_SendResult_Result.errorMsg:
-            await read(utilsProvider).showErrorDialog(from.sendResult.errorMsg,
+            await ref.read(utilsProvider).showErrorDialog(
+                from.sendResult.errorMsg,
                 buttonText: 'CONTINUE'.tr());
             notifyListeners();
             break;
           case From_SendResult_Result.txItem:
             var item = from.sendResult.txItem;
-            showTxDetails(item);
+            if (!FlavorConfig.isDesktop) {
+              showTxDetails(item);
+            } else {
+              desktopShowTx(navigatorKey.currentContext!, item.id,
+                  isPeg: allPegsById.containsKey(item.id));
+            }
             break;
           case From_SendResult_Result.notSet:
             throw Exception('invalid send result message');
@@ -606,7 +673,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.blindedValues:
         switch (from.blindedValues.whichResult()) {
           case From_BlindedValues_Result.errorMsg:
-            await read(utilsProvider).showErrorDialog(
+            await ref.read(utilsProvider).showErrorDialog(
                 from.blindedValues.errorMsg,
                 buttonText: 'CONTINUE'.tr());
             break;
@@ -615,7 +682,7 @@ class WalletChangeNotifier with ChangeNotifier {
               from.blindedValues.txid,
               true,
               blindedValues: from.blindedValues.blindedValues,
-              testnet: env() == SIDESWAP_ENV_TESTNET,
+              testnet: isTestnet(),
             );
             explorerUrlSubject.add(url);
             break;
@@ -646,13 +713,15 @@ class WalletChangeNotifier with ChangeNotifier {
           case From_RegisterPhone_Result.phoneKey:
             var phoneKey = From_RegisterPhone_Result.phoneKey;
             logger.d('got phone key: $phoneKey');
-            await read(phoneProvider)
+            await ref
+                .read(phoneProvider)
                 .receivedRegisterState(phoneKey: from.registerPhone.phoneKey);
             break;
           case From_RegisterPhone_Result.errorMsg:
             var errorMsg = From_RegisterPhone_Result.errorMsg;
             logger.d('registration failed: $errorMsg');
-            await read(phoneProvider)
+            await ref
+                .read(phoneProvider)
                 .receivedRegisterState(errorMsg: from.registerPhone.errorMsg);
             break;
           case From_RegisterPhone_Result.notSet:
@@ -664,12 +733,13 @@ class WalletChangeNotifier with ChangeNotifier {
         switch (from.verifyPhone.whichResult()) {
           case From_VerifyPhone_Result.success:
             logger.d('phone verification succeed');
-            read(phoneProvider).receivedVerifyState();
+            ref.read(phoneProvider).receivedVerifyState();
             break;
           case From_VerifyPhone_Result.errorMsg:
             var errorMsg = From_VerifyPhone_Result.errorMsg;
             logger.d('verification failed: $errorMsg');
-            read(phoneProvider)
+            ref
+                .read(phoneProvider)
                 .receivedVerifyState(errorMsg: from.verifyPhone.errorMsg);
             break;
           case From_VerifyPhone_Result.notSet:
@@ -686,15 +756,23 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.uploadContacts:
         if (from.uploadContacts.success) {
-          read(contactProvider).onDone();
+          ref.read(contactProvider).onDone();
         } else {
-          read(contactProvider).onError(error: from.uploadContacts.errorMsg);
+          ref
+              .read(contactProvider)
+              .onError(error: from.uploadContacts.errorMsg);
         }
         break;
 
       case From_Msg.showMessage:
-        await read(utilsProvider).showErrorDialog(from.showMessage.text,
+        await ref.read(utilsProvider).showErrorDialog(from.showMessage.text,
             buttonText: 'CONTINUE'.tr());
+        break;
+
+      case From_Msg.insufficientFunds:
+        await ref
+            .read(utilsProvider)
+            .showInsufficienFunds(from.insufficientFunds);
         break;
 
       case From_Msg.encryptPin:
@@ -707,7 +785,7 @@ class WalletChangeNotifier with ChangeNotifier {
               salt: data.salt,
               encryptedData: data.encryptedData,
               pinIdentifier: data.pinIdentifier);
-          await read(configProvider).setPinData(pinData);
+          await ref.read(configProvider).setPinData(pinData);
           pinEncryptDataSubject.add(pinData);
         }
         break;
@@ -799,7 +877,11 @@ class WalletChangeNotifier with ChangeNotifier {
             break;
 
           case From_SubmitResult_Result.error:
-            await read(utilsProvider).showErrorDialog(from.submitResult.error,
+            if (FlavorConfig.isDesktop) {
+              desktopClosePopups(navigatorKey.currentContext!);
+            }
+            await ref.read(utilsProvider).showErrorDialog(
+                from.submitResult.error,
                 buttonText: 'CONTINUE'.tr());
             setRegistered();
             break;
@@ -813,12 +895,16 @@ class WalletChangeNotifier with ChangeNotifier {
 
         // check initial deep link
         // process links before login request for loading screen to work properly
-        final initialUri = read(universalLinkProvider).initialUri;
+        final initialUri = ref.read(universalLinkProvider).initialUri;
         if (initialUri != null) {
           logger.d('Initial uri found: $initialUri');
-          read(universalLinkProvider).handleAppUri(initialUri);
+          ref.read(universalLinkProvider).handleAppUri(initialUri);
         }
+        break;
 
+      case From_Msg.syncComplete:
+        syncComplete = true;
+        notifyListeners();
         break;
 
       case From_Msg.contactCreated:
@@ -838,13 +924,13 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.editOrder:
         if (!from.editOrder.success) {
-          read(utilsProvider).showErrorDialog(from.editOrder.errorMsg,
+          ref.read(utilsProvider).showErrorDialog(from.editOrder.errorMsg,
               buttonText: 'CLOSE'.tr());
         }
         break;
       case From_Msg.cancelOrder:
         if (!from.cancelOrder.success) {
-          read(utilsProvider).showErrorDialog(from.cancelOrder.errorMsg,
+          ref.read(utilsProvider).showErrorDialog(from.cancelOrder.errorMsg,
               buttonText: 'CLOSE'.tr());
         }
         break;
@@ -879,15 +965,17 @@ class WalletChangeNotifier with ChangeNotifier {
         );
 
         if (order.isNew && order.own) {
-          orderDetailsData = OrderDetailsData.fromRequestOrder(order, read);
-          read(walletProvider).setCreateOrderSuccess();
+          final assetPrecision = getPrecisionForAssetId(assetId: order.assetId);
+          orderDetailsData =
+              OrderDetailsData.fromRequestOrder(order, assetPrecision);
+          setCreateOrderSuccess();
         }
 
-        read(marketsProvider).insertOrder(order);
+        ref.read(marketsProvider).insertOrder(order);
 
         break;
       case From_Msg.orderRemoved:
-        read(marketsProvider).removeOrder(from.orderRemoved.orderId);
+        ref.read(marketsProvider).removeOrder(from.orderRemoved.orderId);
         break;
       case From_Msg.orderComplete:
         // Used with headless client only
@@ -897,15 +985,16 @@ class WalletChangeNotifier with ChangeNotifier {
         throw Exception('invalid empty message');
 
       case From_Msg.indexPrice:
-        final ticker = read(requestOrderProvider)
+        final ticker = ref
+            .read(requestOrderProvider)
             .tickerForAssetId(from.indexPrice.assetId);
         logger.d(
             'INDEX PRICE: ${ticker.isEmpty ? from.indexPrice.assetId : ticker} ${from.indexPrice.ind}');
-        read(marketsProvider).setIndexLastPrice(
-          from.indexPrice.assetId,
-          from.indexPrice.hasInd() ? from.indexPrice.ind : null,
-          from.indexPrice.hasLast() ? from.indexPrice.last : null,
-        );
+        ref.read(marketsProvider).setIndexLastPrice(
+              from.indexPrice.assetId,
+              from.indexPrice.hasInd() ? from.indexPrice.ind : null,
+              from.indexPrice.hasLast() ? from.indexPrice.last : null,
+            );
         break;
       case From_Msg.assetDetails:
         logger.d("Asset details: ${from.assetDetails}");
@@ -915,6 +1004,7 @@ class WalletChangeNotifier with ChangeNotifier {
               ? AssetDetailsStats(
                   issuedAmount: from.assetDetails.stats.issuedAmount.toInt(),
                   burnedAmount: from.assetDetails.stats.burnedAmount.toInt(),
+                  offlineAmount: from.assetDetails.stats.offlineAmount.toInt(),
                   hasBlindedIssuances:
                       from.assetDetails.stats.hasBlindedIssuances,
                 )
@@ -930,13 +1020,26 @@ class WalletChangeNotifier with ChangeNotifier {
                 )
               : null,
         );
-        read(tokenMarketProvider).insertAssetDetails(assetDetailsData);
+        ref.read(tokenMarketProvider).insertAssetDetails(assetDetailsData);
         break;
       case From_Msg.updatePriceStream:
         _processSubscribeUpdate(from.updatePriceStream);
         break;
       case From_Msg.registerAmp:
         _processRegisterAmpResult(from.registerAmp);
+        break;
+      case From_Msg.localMessage:
+        ref
+            .read(localNotificationsProvider)
+            .showNotification(from.localMessage.title, from.localMessage.body);
+        break;
+      case From_Msg.marketDataSubscribe:
+        ref
+            .read(marketDataProvider)
+            .marketDataResponse(from.marketDataSubscribe);
+        break;
+      case From_Msg.marketDataUpdate:
+        ref.read(marketDataProvider).marketDataUpdate(from.marketDataUpdate);
         break;
     }
   }
@@ -946,7 +1049,7 @@ class WalletChangeNotifier with ChangeNotifier {
       final url = generateTxidUrl(
         txid,
         isLiquid,
-        testnet: env() == SIDESWAP_ENV_TESTNET,
+        testnet: isTestnet(),
       );
       explorerUrlSubject.add(url);
       return;
@@ -969,6 +1072,9 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _addAsset(Asset asset, Uint8List assetIcon) {
+    if (assets[asset.assetId] == null) {
+      assetsList.add(asset.assetId);
+    }
     // Always update asset here as they might change
     // (amp_market could be set if server is down when app is started).
     assets[asset.assetId] = asset;
@@ -984,7 +1090,13 @@ class WalletChangeNotifier with ChangeNotifier {
       height: 32,
       filterQuality: FilterQuality.high,
     );
-    read(swapProvider).checkSelectedAsset();
+    assetImagesVerySmall[asset.assetId] = Image.memory(
+      assetIcon,
+      width: 20,
+      height: 20,
+      filterQuality: FilterQuality.high,
+    );
+    ref.read(swapProvider).checkSelectedAsset();
     // Make sure that new fixed accounts are added
     _allAccountsNeedUpdate = true;
     notifyListeners();
@@ -1028,6 +1140,12 @@ class WalletChangeNotifier with ChangeNotifier {
     return amountInt;
   }
 
+  int getSatoshiForAmount(String asset, String value) {
+    final precision = getPrecisionForAssetId(assetId: asset);
+    final amount = parseAssetAmount(value, precision: precision) ?? 0;
+    return amount;
+  }
+
   String getNewMnemonic() {
     final mnemonicPtr = Lib.lib.sideswap_generate_mnemonic12();
     final mnemonic = mnemonicPtr.cast<Utf8>().toDartString();
@@ -1048,13 +1166,13 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> setReviewLicenseCreateWallet() async {
-    if (read(configProvider).licenseAccepted) {
+    if (ref.read(configProvider).licenseAccepted) {
       if (await _encryption.canAuthenticate()) {
         await newWalletBiometricPrompt();
         return;
       }
 
-      await setNewWalletPinWelcome();
+      setNewWalletPinWelcome();
     } else {
       status = Status.reviewLicenseCreateWallet;
     }
@@ -1062,7 +1180,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setReviewLicenseImportWallet() {
-    if (read(configProvider).licenseAccepted) {
+    if (ref.read(configProvider).licenseAccepted) {
       startMnemonicImport();
     } else {
       status = Status.reviewLicenseImportWallet;
@@ -1071,12 +1189,12 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> setLicenseAccepted() async {
-    await read(configProvider).setLicenseAccepted(true);
+    await ref.read(configProvider).setLicenseAccepted(true);
     notifyListeners();
   }
 
   Future<void> newWalletBiometricPrompt() async {
-    assert(read(configProvider).licenseAccepted == true);
+    assert(ref.read(configProvider).licenseAccepted == true);
     _mnemonic = getNewMnemonic();
     if (await _encryption.canAuthenticate()) {
       status = Status.newWalletBiometricPrompt;
@@ -1140,35 +1258,37 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     if (enableBiometric) {
-      await read(configProvider)
+      await ref
+          .read(configProvider)
           .setMnemonicEncrypted(await _encryption.encryptBiometric(_mnemonic));
 
-      if (read(configProvider).mnemonicEncrypted.isEmpty) {
+      if (ref.read(configProvider).mnemonicEncrypted.isEmpty) {
         return false;
       }
-      await read(configProvider).setUseBiometricProtection(true);
-      await read(configProvider).setUsePinProtection(false);
+      await ref.read(configProvider).setUseBiometricProtection(true);
+      await ref.read(configProvider).setUsePinProtection(false);
     } else {
-      await read(configProvider)
+      await ref
+          .read(configProvider)
           .setMnemonicEncrypted(await _encryption.encryptFallback(_mnemonic));
       // Should not happen, something is very wrong
-      if (read(configProvider).mnemonicEncrypted.isEmpty) {
+      if (ref.read(configProvider).mnemonicEncrypted.isEmpty) {
         return false;
       }
 
-      await read(configProvider).setUseBiometricProtection(false);
+      await ref.read(configProvider).setUseBiometricProtection(false);
     }
 
     return true;
   }
 
-  Future<void> loginAndLoadMainPage() async {
+  void loginAndLoadMainPage() {
     _login(_mnemonic);
-    read(swapProvider).checkSelectedAsset();
+    ref.read(swapProvider).checkSelectedAsset();
   }
 
   Future<void> acceptLicense() async {
-    await read(configProvider).setLicenseAccepted(true);
+    await ref.read(configProvider).setLicenseAccepted(true);
     status = Status.noWallet;
     notifyListeners();
   }
@@ -1277,7 +1397,7 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case Status.assetDetails:
         status = Status.registered;
-        final uiStateArgs = read(uiStateArgsProvider);
+        final uiStateArgs = ref.read(uiStateArgsProvider);
         uiStateArgs.walletMainArguments =
             uiStateArgs.walletMainArguments.copyWith(
           currentIndex: 0,
@@ -1293,7 +1413,7 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case Status.assetReceive:
         status = Status.assetDetails;
-        final uiStateArgs = read(uiStateArgsProvider);
+        final uiStateArgs = ref.read(uiStateArgsProvider);
         uiStateArgs.walletMainArguments =
             uiStateArgs.walletMainArguments.copyWith(
           currentIndex: 1,
@@ -1305,7 +1425,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.orderSuccess:
       case Status.orderResponseSuccess:
         status = Status.registered;
-        final uiStateArgs = read(uiStateArgsProvider);
+        final uiStateArgs = ref.read(uiStateArgsProvider);
         uiStateArgs.walletMainArguments =
             uiStateArgs.walletMainArguments.copyWith(
           currentIndex: 0,
@@ -1318,13 +1438,13 @@ class WalletChangeNotifier with ChangeNotifier {
         status = Status.registered;
         break;
       case Status.swapWaitPegTx:
-        final uiStateArgs = read(uiStateArgsProvider);
+        final uiStateArgs = ref.read(uiStateArgsProvider);
         uiStateArgs.walletMainArguments =
             uiStateArgs.walletMainArguments.copyWith(
           currentIndex: 0,
           navigationItem: WalletMainNavigationItem.home,
         );
-        read(swapProvider).pegStop();
+        ref.read(swapProvider).pegStop();
         break;
       case Status.settingsBackup:
       case Status.settingsSecurity:
@@ -1379,12 +1499,13 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _login(String mnemonic) {
-    final config = read(configProvider);
+    final config = ref.read(configProvider);
 
     final msg = To();
     msg.login = To_Login();
     msg.login.mnemonic = mnemonic;
     msg.login.network = getNetworkSettings();
+    msg.login.desktop = FlavorConfig.isDesktop;
 
     if (config.phoneKey.isNotEmpty) {
       msg.login.phoneKey = config.phoneKey;
@@ -1398,8 +1519,8 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void _logout() {
-    read(balancesProvider.notifier).clear();
+  Future<void> _logout() async {
+    ref.read(balancesProvider.notifier).clear();
 
     final msg = To();
     msg.logout = Empty();
@@ -1421,21 +1542,25 @@ class WalletChangeNotifier with ChangeNotifier {
 
     status = Status.assetReceive;
 
-    final uiStateArgs = read(uiStateArgsProvider);
+    final uiStateArgs = ref.read(uiStateArgsProvider);
     uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments
         .copyWith(navigationItem: WalletMainNavigationItem.homeAssetReceive);
 
     notifyListeners();
   }
 
-  void selectAssetReceiveFromWalletMain() {
+  void startAssetReceiveAddr() {
     recvAddresses.clear();
     recvAddressAccount = AccountType.regular;
     toggleRecvAddrType(AccountType.regular);
+  }
+
+  void selectAssetReceiveFromWalletMain() {
+    startAssetReceiveAddr();
 
     status = Status.assetReceiveFromWalletMain;
 
-    final uiStateArgs = read(uiStateArgsProvider);
+    final uiStateArgs = ref.read(uiStateArgsProvider);
     uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments
         .copyWith(navigationItem: WalletMainNavigationItem.homeAssetReceive);
 
@@ -1467,12 +1592,17 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void showSwapTxDetails(TransItem tx) {
-    status = Status.swapTxDetails;
-    txDetails = tx;
+    if (!FlavorConfig.isDesktop) {
+      status = Status.swapTxDetails;
+      txDetails = tx;
 
-    _listenTxDetailsChanges();
+      _listenTxDetailsChanges();
 
-    notifyListeners();
+      notifyListeners();
+    } else {
+      desktopShowTx(navigatorKey.currentContext!, tx.id,
+          isPeg: allPegsById.containsKey(tx.id));
+    }
   }
 
   void _listenTxDetailsChanges() {
@@ -1521,7 +1651,7 @@ class WalletChangeNotifier with ChangeNotifier {
     return commonAddrErrorStr(addr, AddrType.bitcoin);
   }
 
-  void createTx(To_CreateTx createTx) {
+  void createTx(CreateTx createTx) {
     final msg = To();
     msg.createTx = createTx;
     sendMsg(msg);
@@ -1529,10 +1659,14 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void assetSendConfirm() {
+  void assetSendConfirmMobile() {
+    assetSendConfirmCommon(getAccount(selectedWalletAsset!.account));
+  }
+
+  void assetSendConfirmCommon(Account account) {
     final msg = To();
     msg.sendTx = To_SendTx();
-    msg.sendTx.account = getAccount(selectedWalletAsset!.account);
+    msg.sendTx.account = account;
     sendMsg(msg);
     isSendingTx = true;
     notifyListeners();
@@ -1577,7 +1711,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void loadSettings() {
     var settings = Settings();
-    final settingsStr = read(configProvider).settings;
+    final settingsStr = ref.read(configProvider).settings;
     if (settingsStr != null) {
       settings = Settings.fromJson(settingsStr);
     }
@@ -1593,11 +1727,11 @@ class WalletChangeNotifier with ChangeNotifier {
       settings.disabledAccounts.add(Settings_AccountAsset(
           account: getAccount(v.account), assetId: v.asset));
     }
-    await read(configProvider).setSettings(settings.writeToJson());
+    await ref.read(configProvider).setSettings(settings.writeToJson());
   }
 
   Future<void> resetSettings() async {
-    await read(configProvider).clearSettings();
+    await ref.read(configProvider).clearSettings();
     loadSettings();
   }
 
@@ -1647,8 +1781,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsViewBackup() async {
-    if (read(configProvider).usePinProtection) {
-      if (await read(pinProtectionProvider).pinBlockadeUnlocked()) {
+    if (ref.read(configProvider).usePinProtection) {
+      if (await ref.read(pinProtectionProvider).pinBlockadeUnlocked()) {
         status = Status.settingsBackup;
         notifyListeners();
         return;
@@ -1657,18 +1791,18 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    final mnemonic = read(configProvider).useBiometricProtection
+    final mnemonic = ref.read(configProvider).useBiometricProtection
         ? await _encryption
-            .decryptBiometric(read(configProvider).mnemonicEncrypted)
+            .decryptBiometric(ref.read(configProvider).mnemonicEncrypted)
         : await _encryption
-            .decryptFallback(read(configProvider).mnemonicEncrypted);
+            .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
     if (mnemonic == _mnemonic && validateMnemonic(mnemonic)) {
       status = Status.settingsBackup;
       notifyListeners();
     }
   }
 
-  Future<void> settingsUserDetails() async {
+  void settingsUserDetails() {
     status = Status.settingsUserDetails;
     notifyListeners();
   }
@@ -1694,14 +1828,6 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  bool isBiometricEnabled() {
-    return read(configProvider).useBiometricProtection;
-  }
-
-  bool isPinEnabled() {
-    return read(configProvider).usePinProtection;
-  }
-
   Future<bool> isBiometricAvailable() async {
     settingsBiometricAvailable = await _encryption.canAuthenticate();
     return settingsBiometricAvailable;
@@ -1709,9 +1835,9 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<void> settingsDeletePromptConfirm() async {
     unregisterPhone();
-    _logout();
-    await read(configProvider).deleteConfig();
-    read(phoneProvider).clearData();
+    await _logout();
+    await ref.read(configProvider).deleteConfig();
+    ref.read(phoneProvider).clearData();
     allTxs.clear();
     allPegs.clear();
     refreshTxs();
@@ -1721,8 +1847,10 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> unlockWallet() async {
-    if (read(configProvider).usePinProtection) {
-      if (await read(pinProtectionProvider).pinBlockadeUnlocked()) {
+    if (ref.read(configProvider).usePinProtection) {
+      if (await ref
+          .read(pinProtectionProvider)
+          .pinBlockadeUnlocked(showBackButton: false)) {
         _login(_mnemonic);
         return;
       }
@@ -1732,12 +1860,12 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    if (read(configProvider).useBiometricProtection) {
+    if (ref.read(configProvider).useBiometricProtection) {
       _mnemonic = await _encryption
-          .decryptBiometric(read(configProvider).mnemonicEncrypted);
+          .decryptBiometric(ref.read(configProvider).mnemonicEncrypted);
     } else {
       _mnemonic = await _encryption
-          .decryptFallback(read(configProvider).mnemonicEncrypted);
+          .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
     }
     if (validateMnemonic(_mnemonic)) {
       _login(_mnemonic);
@@ -1751,7 +1879,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<void> settingsEnableBiometric() async {
     final mnemonic = await _encryption
-        .decryptFallback(read(configProvider).mnemonicEncrypted);
+        .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
 
     if (mnemonic.isEmpty) {
       return;
@@ -1762,15 +1890,15 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    await read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
+    await ref.read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
     _mnemonic = mnemonic;
-    await read(configProvider).setUseBiometricProtection(true);
+    await ref.read(configProvider).setUseBiometricProtection(true);
     notifyListeners();
   }
 
   Future<void> settingsDisableBiometric() async {
     final mnemonic = await _encryption
-        .decryptBiometric(read(configProvider).mnemonicEncrypted);
+        .decryptBiometric(ref.read(configProvider).mnemonicEncrypted);
     if (mnemonic.isEmpty) {
       return;
     }
@@ -1780,24 +1908,25 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    await read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
+    await ref.read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
     _mnemonic = mnemonic;
-    await read(configProvider).setUseBiometricProtection(false);
+    await ref.read(configProvider).setUseBiometricProtection(false);
     notifyListeners();
   }
 
   int env() {
-    return read(configProvider).env;
+    return ref.read(configProvider).env;
   }
 
   Future<void> setEnv(int e) async {
-    if (read(configProvider).env == e) {
+    if (ref.read(configProvider).env == e) {
       status = Status.noWallet;
       notifyListeners();
       return;
     }
 
-    await read(configProvider).setEnv(e);
+    await ref.read(configProvider).setEnv(e);
+
     exit(0);
   }
 
@@ -1808,16 +1937,16 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<bool> isAuthenticated() async {
-    if (read(configProvider).usePinProtection) {
-      return read(pinProtectionProvider).pinBlockadeUnlocked();
+    if (ref.read(configProvider).usePinProtection) {
+      return ref.read(pinProtectionProvider).pinBlockadeUnlocked();
     }
 
-    if (read(configProvider).useBiometricProtection) {
+    if (ref.read(configProvider).useBiometricProtection) {
       _mnemonic = await _encryption
-          .decryptBiometric(read(configProvider).mnemonicEncrypted);
+          .decryptBiometric(ref.read(configProvider).mnemonicEncrypted);
     } else {
       _mnemonic = await _encryption
-          .decryptFallback(read(configProvider).mnemonicEncrypted);
+          .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
     }
 
     if (validateMnemonic(_mnemonic)) {
@@ -1846,7 +1975,7 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     if (await _registerWallet(false)) {
-      await loginAndLoadMainPage();
+      loginAndLoadMainPage();
     }
   }
 
@@ -1973,6 +2102,16 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> setOrder() async {
+    if (FlavorConfig.isDesktop) {
+      desktopOrderReview(
+        navigatorKey.currentContext!,
+        orderDetailsData.orderType == OrderDetailsDataType.sign
+            ? ReviewScreen.sign
+            : ReviewScreen.quote,
+      );
+      return;
+    }
+
     status = Status.registered;
     notifyListeners();
 
@@ -1994,7 +2133,7 @@ class WalletChangeNotifier with ChangeNotifier {
     required bool autosign,
     bool accept = false,
     bool private = true,
-    int ttlSeconds = kHalfHour,
+    int ttlSeconds = kOneWeek,
   }) {
     orderDetailsData =
         orderDetailsData.copyWith(accept: accept, private: private);
@@ -2061,7 +2200,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void uploadDeviceContacts(To_UploadContacts uploadContacts) {
-    uploadContacts.phoneKey = read(configProvider).phoneKey;
+    uploadContacts.phoneKey = ref.read(configProvider).phoneKey;
     final msg = To();
     msg.uploadContacts = uploadContacts;
     sendMsg(msg);
@@ -2069,7 +2208,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void uploadAvatar({required String avatar}) {
     final uploadAvatar = To_UploadAvatar();
-    uploadAvatar.phoneKey = read(configProvider).phoneKey;
+    uploadAvatar.phoneKey = ref.read(configProvider).phoneKey;
     uploadAvatar.image = avatar;
 
     final msg = To();
@@ -2077,9 +2216,9 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  Future<void> setNewWalletPinWelcome() async {
+  void setNewWalletPinWelcome() {
     _mnemonic = getNewMnemonic();
-    read(pinSetupProvider).isNewWallet = true;
+    ref.read(pinSetupProvider).isNewWallet = true;
     status = Status.newWalletPinWelcome;
     notifyListeners();
   }
@@ -2093,14 +2232,7 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void setPinSetup({
-    required void Function(BuildContext context) onSuccessCallback,
-    required void Function(BuildContext context) onBackCallback,
-  }) {
-    read(pinSetupProvider).init(
-      onSuccessCallback: onSuccessCallback,
-      onBackCallback: onBackCallback,
-    );
+  void setPinSetup() {
     status = Status.pinSetup;
     notifyListeners();
   }
@@ -2114,7 +2246,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void sendDecryptPin(String pin) {
-    final pinData = read(configProvider).pinData;
+    final pinData = ref.read(configProvider).pinData;
 
     final msg = To();
     msg.decryptPin = To_DecryptPin();
@@ -2132,32 +2264,33 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<bool> disablePinProtection() async {
-    if (!read(configProvider).usePinProtection) {
+    if (!ref.read(configProvider).usePinProtection) {
       // already disabled
       return true;
     }
 
-    final pinDecryptedSubscription = read(walletProvider)
-        .pinDecryptDataSubject
-        .listen((pinDecryptedData) async {
+    final pinDecryptedSubscription =
+        pinDecryptDataSubject.listen((pinDecryptedData) async {
       if (pinDecryptedData.success) {
         // turn off pin and save encrypted mnemonic
-        await read(configProvider).setUsePinProtection(false);
+        await ref.read(configProvider).setUsePinProtection(false);
         notifyListeners();
 
-        await read(configProvider).setMnemonicEncrypted(
+        await ref.read(configProvider).setMnemonicEncrypted(
             await _encryption.encryptFallback(pinDecryptedData.mnemonic));
       }
     });
 
-    final ret = await read(pinProtectionProvider).pinBlockadeUnlocked();
+    final ret = await ref.read(pinProtectionProvider).pinBlockadeUnlocked(
+        iconType: PinKeyboardAcceptType.disable,
+        title: 'Disable PIN protection'.tr());
     await pinDecryptedSubscription.cancel();
 
     return ret;
   }
 
   Future<void> enablePinProtection() async {
-    await read(configProvider).setUsePinProtection(true);
+    await ref.read(configProvider).setUsePinProtection(true);
     notifyListeners();
   }
 
@@ -2198,23 +2331,39 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setCreateOrderEntry() {
-    read(requestOrderProvider).validateDeliverAsset();
+    ref.read(requestOrderProvider).validateDeliverAsset();
     status = Status.createOrderEntry;
     notifyListeners();
   }
 
   void setCreateOrder() {
+    if (FlavorConfig.isDesktop) {
+      desktopOrderReview(
+          navigatorKey.currentContext!, ReviewScreen.submitStart);
+      return;
+    }
+
     status = Status.createOrder;
     notifyListeners();
   }
 
   void setCreateOrderSuccess() {
+    if (FlavorConfig.isDesktop) {
+      if (orderDetailsData.private) {
+        desktopOrderReview(
+            navigatorKey.currentContext!, ReviewScreen.submitSucceed);
+      } else {
+        desktopClosePopups(navigatorKey.currentContext!);
+      }
+      return;
+    }
+
     status = Status.createOrderSuccess;
     notifyListeners();
   }
 
   void unregisterPhone() {
-    final phoneKey = read(configProvider).phoneKey;
+    final phoneKey = ref.read(configProvider).phoneKey;
     if (phoneKey.isNotEmpty) {
       var msg = To();
       msg.unregisterPhone = To_UnregisterPhone();
@@ -2226,8 +2375,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void removePhoneKey() {
-    read(configProvider).setPhoneKey('');
-    read(configProvider).setPhoneNumber('');
+    ref.read(configProvider).setPhoneKey('');
+    ref.read(configProvider).setPhoneNumber('');
   }
 
   void cancelOrder(String orderId) {
@@ -2268,7 +2417,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   List<AccountAsset> sendAssetsWithBalance() {
-    final allAssets = read(balancesProvider)
+    final allAssets = ref
+        .read(balancesProvider)
         .balances
         .entries
         .where((e) => e.value > 0)
@@ -2281,7 +2431,17 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setOrderRequestView(RequestOrder requestOrder) {
-    read(requestOrderProvider).currentRequestOrderView = requestOrder;
+    ref.read(requestOrderProvider).currentRequestOrderView = requestOrder;
+
+    if (FlavorConfig.isDesktop) {
+      final orderAsset = assets[requestOrder.assetId]!;
+      orderDetailsData =
+          OrderDetailsData.fromRequestOrder(requestOrder, orderAsset.precision);
+      notifyListeners();
+      desktopOrderReview(navigatorKey.currentContext!, ReviewScreen.edit);
+      return;
+    }
+
     status = Status.orderRequestView;
     notifyListeners();
   }
@@ -2291,24 +2451,21 @@ class WalletChangeNotifier with ChangeNotifier {
   int? subscribedSendAmount;
   int? subscribedRecvAmount;
 
-  Function(From_UpdatePriceStream)? subscribedUpdateCallback;
+  final updatePriceStream = PublishSubject<From_UpdatePriceStream>();
 
   void _resetSubscribedData() {
     subscribedAsset = null;
     subscribedSendBitcoins = null;
     subscribedSendAmount = null;
     subscribedRecvAmount = null;
-    subscribedUpdateCallback = null;
   }
 
   void _processSubscribeUpdate(From_UpdatePriceStream msg) {
     // Ignore old updates
-    final callback = subscribedUpdateCallback;
     final subscribedSendAmountCopy = subscribedSendAmount;
     final subscribedRecvAmountCopy = subscribedRecvAmount;
     if (msg.assetId != subscribedAsset ||
-        msg.sendBitcoins != subscribedSendBitcoins ||
-        callback == null) {
+        msg.sendBitcoins != subscribedSendBitcoins) {
       return;
     }
 
@@ -2323,12 +2480,16 @@ class WalletChangeNotifier with ChangeNotifier {
         subscribedRecvAmountCopy.toInt() == msg.recvAmount.toInt();
 
     if (expectedPriceMsg || expectedSendAmountMsg || expectedRecvAmountMsg) {
-      callback(msg);
+      updatePriceStream.add(msg);
     }
   }
 
-  void subscribeToPriceStream(String asset, bool sendBitcoins, int? sendAmount,
-      int? recvAmount, Function(From_UpdatePriceStream) callback) {
+  void subscribeToPriceStream(
+    String asset,
+    bool sendBitcoins,
+    int? sendAmount,
+    int? recvAmount,
+  ) {
     assert(asset.isNotEmpty);
     _resetSubscribedData();
 
@@ -2336,7 +2497,6 @@ class WalletChangeNotifier with ChangeNotifier {
     subscribedSendBitcoins = sendBitcoins;
     subscribedSendAmount = sendAmount;
     subscribedRecvAmount = recvAmount;
-    subscribedUpdateCallback = callback;
 
     final msg = To();
     msg.subscribePriceStream = To_SubscribePriceStream();
@@ -2352,11 +2512,13 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void unsubscribeFromPriceStream() {
-    final msg = To();
-    msg.unsubscribePriceStream = Empty();
-    sendMsg(msg);
+    if (subscribedAsset != null) {
+      final msg = To();
+      msg.unsubscribePriceStream = Empty();
+      sendMsg(msg);
 
-    _resetSubscribedData();
+      _resetSubscribedData();
+    }
   }
 
   void verifySwap(SwapDetails swap) {
@@ -2407,7 +2569,7 @@ class WalletChangeNotifier with ChangeNotifier {
         ampId = msg.ampId;
         break;
       case From_RegisterAmp_Result.errorMsg:
-        await read(utilsProvider).showErrorDialog(msg.errorMsg);
+        await ref.read(utilsProvider).showErrorDialog(msg.errorMsg);
         break;
       case From_RegisterAmp_Result.notSet:
         assert(false);
@@ -2427,7 +2589,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   NetworkSettings getNetworkSettings() {
-    final config = read(configProvider);
+    final config = ref.read(configProvider);
     final network = NetworkSettings();
     switch (config.settingsNetworkType) {
       case SettingsNetworkType.blockstream:
@@ -2451,5 +2613,9 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.changeNetwork = To_ChangeNetwork();
     msg.changeNetwork.network = getNetworkSettings();
     sendMsg(msg);
+  }
+
+  bool isTestnet() {
+    return env() == SIDESWAP_ENV_TESTNET;
   }
 }

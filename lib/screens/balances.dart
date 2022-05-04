@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -11,7 +11,13 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
-enum TxType { received, sent, swap, internal, unknown }
+enum TxType {
+  received,
+  sent,
+  swap,
+  internal,
+  unknown,
+}
 
 TxType txType(Tx tx) {
   var anyPositive = false;
@@ -38,13 +44,17 @@ TxType txType(Tx tx) {
     return TxType.swap;
   }
 
+  if (tx.balances.length == 1 &&
+      tx.balances.first.amount == -tx.networkFee &&
+      tx.balances.first.assetId == AccountAsset.liquidAssetId) {
+    return TxType.internal;
+  }
   if (anyPositive && !anyNegative) {
     return TxType.received;
   }
   if (anyNegative && !anyPositive) {
     return TxType.sent;
   }
-
   if (anyAmp && anyRegular) {
     return TxType.internal;
   }
@@ -80,6 +90,13 @@ String txTypeName(TxType type) {
     case TxType.unknown:
       return 'Unknown'.tr();
   }
+}
+
+String pegTypeName(bool isPegIn) {
+  if (isPegIn) {
+    return 'Peg-In'.tr();
+  }
+  return 'Peg-Out'.tr();
 }
 
 int txAssetAmount(Tx tx, String assetId, AccountType accountType) {
@@ -160,17 +177,17 @@ class _WalletTxMemoState extends State<WalletTxMemo> {
                     Padding(
                       padding: EdgeInsets.only(top: 10.h),
                       child: Consumer(
-                        builder: (context, watch, child) {
-                          final tx = watch(walletProvider).txDetails.tx;
-                          final initialValue = watch(walletProvider).txMemo(tx);
+                        builder: (context, ref, child) {
+                          final tx = ref.watch(walletProvider).txDetails.tx;
+                          final initialValue =
+                              ref.watch(walletProvider).txMemo(tx);
                           return TextFormField(
                             focusNode: _focusNode,
                             initialValue: initialValue,
-                            onChanged: (value) => context
-                                .read(walletProvider)
-                                .onTxMemoChanged(value),
+                            onChanged: (value) =>
+                                ref.read(walletProvider).onTxMemoChanged(value),
                             onFieldSubmitted: (value) {
-                              context.read(walletProvider).goBack();
+                              ref.read(walletProvider).goBack();
                             },
                             style: GoogleFonts.roboto(
                               fontSize: 17.sp,

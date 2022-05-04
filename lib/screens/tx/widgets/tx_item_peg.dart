@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -24,10 +24,6 @@ class TxItemPeg extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _status = txItemToStatus(transItem, isPeg: true);
-    final wallet = context.read(walletProvider);
-    final asset = wallet.getAssetById(assetId);
-    final payout =
-        amountStrNamed(transItem.peg.amountRecv.toInt(), asset?.ticker ?? '');
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -59,14 +55,21 @@ class TxItemPeg extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
-                    payout,
-                    style: GoogleFonts.roboto(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.normal,
-                      color: const Color(0xFFB3FF85),
-                    ),
-                  ),
+                  Consumer(builder: (context, ref, _) {
+                    final asset =
+                        ref.watch(walletProvider).getAssetById(assetId);
+                    final payout = amountStrNamed(
+                        transItem.peg.amountRecv.toInt(), asset?.ticker ?? '');
+
+                    return Text(
+                      payout,
+                      style: GoogleFonts.roboto(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.normal,
+                        color: const Color(0xFFB3FF85),
+                      ),
+                    );
+                  }),
                   Padding(
                     padding: EdgeInsets.only(top: 4.h),
                     child: Text(

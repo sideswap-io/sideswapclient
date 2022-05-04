@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -25,16 +25,6 @@ class TxItemTransaction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wallet = context.read(walletProvider);
-    final asset = wallet.getAssetById(assetId);
-    final amount = txAssetAmount(transItem.tx, assetId, accountType);
-    final ticker = asset?.ticker;
-    final precision =
-        context.read(walletProvider).getPrecisionForAssetId(assetId: assetId);
-    final balanceStr =
-        '${amountStr(amount, forceSign: true, precision: precision)} $ticker';
-    final balanceColor =
-        balanceStr.contains('+') ? const Color(0xFFB3FF85) : Colors.white;
     final type = txType(transItem.tx);
     final txCircleImageType = txTypeToImageType(type: type);
     final status = txItemToStatus(transItem);
@@ -67,13 +57,32 @@ class TxItemTransaction extends StatelessWidget {
                               color: Colors.white,
                             ),
                           ),
-                          Text(
-                            balanceStr,
-                            style: GoogleFonts.roboto(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.normal,
-                              color: balanceColor,
-                            ),
+                          Consumer(
+                            builder: ((context, ref, _) {
+                              final asset = ref
+                                  .watch(walletProvider)
+                                  .getAssetById(assetId);
+                              final amount = txAssetAmount(
+                                  transItem.tx, assetId, accountType);
+                              final ticker = asset?.ticker;
+                              final precision = ref
+                                  .watch(walletProvider)
+                                  .getPrecisionForAssetId(assetId: assetId);
+                              final balanceStr =
+                                  '${amountStr(amount, forceSign: true, precision: precision)} $ticker';
+                              final balanceColor = balanceStr.contains('+')
+                                  ? const Color(0xFFB3FF85)
+                                  : Colors.white;
+
+                              return Text(
+                                balanceStr,
+                                style: GoogleFonts.roboto(
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.normal,
+                                  color: balanceColor,
+                                ),
+                              );
+                            }),
                           ),
                         ],
                       ),

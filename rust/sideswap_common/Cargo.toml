@@ -13,7 +13,7 @@ async-tungstenite = { version = "0.16.1", features = ["tokio-runtime", "tokio-ru
 futures = "*"
 futures-util = "*"
 tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
-tungstenite = { version = "*", default-features = false, features = [] }
+tungstenite = { version = "0.13.0", default-features = false, features = [] }
 derive_more = "*"
 bitcoin = { version = "0.26" }
 elements = "*"

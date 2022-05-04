@@ -2,18 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 
 final assetsPrecacheChangeNotifier = Provider<AssetsPrecacheProvider>((ref) {
-  return AssetsPrecacheProvider(ref.read);
+  return AssetsPrecacheProvider(ref);
 });
 
 class AssetsPrecacheProvider {
-  final Reader read;
+  final Ref ref;
 
-  AssetsPrecacheProvider(this.read);
+  AssetsPrecacheProvider(this.ref);
 
   Future<bool> precache() async {
     final manifestContent = await rootBundle.loadString('AssetManifest.json');
@@ -28,7 +28,7 @@ class AssetsPrecacheProvider {
       logger.d('Precaching: $image');
       try {
         await precachePicture(
-            ExactAssetPicture(SvgPicture.svgStringDecoder, image), null);
+            ExactAssetPicture(SvgPicture.svgStringDecoderBuilder, image), null);
       } catch (e) {
         logger.e('Error precaching $image: $e');
       }

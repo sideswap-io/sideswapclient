@@ -31,7 +31,8 @@ fn main() {
             );
         }
         "linux" => {
-            println!("cargo:rustc-link-lib=dylib=greenaddress");
+            println!("cargo:rustc-link-lib=static=greenaddress_full");
+            println!("cargo:rustc-link-lib=dylib=stdc++");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         "windows" => {
@@ -47,7 +48,12 @@ fn main() {
         "ios" => {
             println!("cargo:rustc-link-lib=static=greenaddress_full");
             println!("cargo:rustc-link-lib=dylib=stdc++");
-            println!("cargo:rustc-link-search=native={}/lib/iphone", gdk_dir);
+            println!("cargo:rustc-link-search=native={}", gdk_dir);
+        }
+        "macos" => {
+            println!("cargo:rustc-link-lib=static=greenaddress_full");
+            println!("cargo:rustc-link-lib=dylib=c++");
+            println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         _ => {
             unimplemented!("unsupported target_os: {}", target_os)

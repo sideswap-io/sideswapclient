@@ -1,0 +1,272 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
+import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
+import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/models/wallet.dart';
+
+class DLicenses {
+  LicenseEntry licenseEntry;
+  List<LicenseParagraph> paragraphs;
+
+  DLicenses({
+    required this.licenseEntry,
+    required this.paragraphs,
+  });
+}
+
+class DSettingsLicenses extends HookConsumerWidget {
+  const DSettingsLicenses({Key? key}) : super(key: key);
+
+  void goBack(WidgetRef ref) {
+    ref.read(walletProvider).setRegistered();
+    ref.read(walletProvider).settingsViewAboutUs();
+  }
+
+  Future<List<DLicenses>> getLicenseEntries() async {
+    final licenses = <DLicenses>[];
+    await for (final LicenseEntry license in LicenseRegistry.licenses) {
+      licenses.add(DLicenses(
+          licenseEntry: license, paragraphs: license.paragraphs.toList()));
+    }
+
+    return licenses;
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsDialogTheme =
+        ref.watch(desktopAppThemeProvider).settingsDialogTheme;
+
+    final _licenses = useState(<Widget>[]);
+    final _licenseContent = useState(<String, List<Widget>>{});
+    final licenseEntries = useMemoized(() => getLicenseEntries());
+    final licenseSnapshot = useFuture(licenseEntries);
+    final controller = useScrollController();
+
+    useEffect(() {
+      if (!licenseSnapshot.hasData) {
+        return;
+      }
+
+      final List<Widget> licenses = [];
+      final Map<String, List<Widget>> licenseContent = {};
+      for (var license in licenseSnapshot.data!) {
+        var tempSubWidget = <Widget>[];
+
+        if (licenseContent
+            .containsKey(license.licenseEntry.packages.join(', '))) {
+          tempSubWidget =
+              licenseContent[license.licenseEntry.packages.join(', ')] ?? [];
+        }
+
+        tempSubWidget.add(const Padding(
+          padding: EdgeInsets.symmetric(vertical: 18.0),
+          child: Text(
+            '\u2618',
+            textAlign: TextAlign.center,
+          ),
+        ));
+
+        for (var paragraph in license.paragraphs) {
+          if (paragraph.indent == LicenseParagraph.centeredIndent) {
+            tempSubWidget.add(
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(
+                  paragraph.text,
+                  style: GoogleFonts.roboto(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          } else {
+            tempSubWidget.add(
+              Padding(
+                padding: EdgeInsetsDirectional.only(
+                    top: 8.0, start: 16.0 * paragraph.indent),
+                child: Text(
+                  paragraph.text,
+                ),
+              ),
+            );
+          }
+        }
+
+        tempSubWidget.add(const Divider());
+        licenseContent[license.licenseEntry.packages.join(', ')] =
+            tempSubWidget;
+      }
+
+      licenseContent.keys.toList().sort();
+
+      for (var packageName in licenseContent.keys.toList()) {
+        var count = 0;
+        final value = licenseContent[packageName];
+
+        if (value != null) {
+          for (var element in value) {
+            if (element.runtimeType == Divider) count += 1;
+          }
+        }
+
+        final widget = Theme(
+          data: ThemeData().copyWith(
+            dividerColor: Colors.transparent,
+          ),
+          child: ExpansionTile(
+            collapsedIconColor: Colors.white,
+            title: Text(
+              packageName,
+              style: const TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            subtitle: Text(
+              '$count licenses',
+              style: const TextStyle(
+                color: Colors.white,
+              ),
+            ),
+            children: value != null
+                ? <Widget>[
+                    ...value,
+                  ]
+                : [],
+          ),
+        );
+
+        if (packageName == kPackageGdk || packageName == kPackageSideswap) {
+          licenses.insert(0, widget);
+        } else {
+          licenses.add(widget);
+        }
+      }
+
+      _licenses.value = licenses;
+      _licenseContent.value = licenseContent;
+
+      return;
+    }, [licenseSnapshot.data]);
+
+    return WillPopScope(
+      onWillPop: () async {
+        goBack(ref);
+        return false;
+      },
+      child: DContentDialog(
+        title: DContentDialogTitle(
+          onClose: () {
+            goBack(ref);
+          },
+          content: Text('SideSwap'.tr()),
+        ),
+        content: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Column(
+              children: [
+                FutureBuilder(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      final packageInfo = snapshot.data as PackageInfo;
+                      return Text(
+                        'VERSION'.tr(args: [packageInfo.version]),
+                        style: GoogleFonts.roboto(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white,
+                        ),
+                      );
+                    }
+
+                    return Container();
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Copyright © 2022 SideSwap',
+                    style: GoogleFonts.roboto(
+                      fontSize: 10,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white.withOpacity(0.6),
+                    ),
+                  ),
+                ),
+                // if (_licenses.value.isEmpty) ...[],
+                SizedBox(
+                  height: 467,
+                  child: ValueListenableBuilder(
+                    valueListenable: _licenses,
+                    builder: (context, List<Widget> licenses, __) {
+                      if (licenses.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 16),
+                          child: Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 32),
+                              child: SpinKitThreeBounce(
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Scrollbar(
+                          isAlwaysShown: true,
+                          controller: controller,
+                          child: ListView.separated(
+                            controller: controller,
+                            itemCount: licenses.length,
+                            separatorBuilder: (context, index) => const Divider(
+                              color: Color(0xFF135579),
+                            ),
+                            itemBuilder: (context, index) {
+                              return licenses.elementAt(index);
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          Center(
+            child: DCustomTextBigButton(
+              onPressed: () {
+                goBack(ref);
+              },
+              child: Text(
+                'BACK'.tr(),
+              ),
+            ),
+          ),
+        ],
+        style: const DContentDialogThemeData().merge(settingsDialogTheme),
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 693),
+      ),
+    );
+  }
+}

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -24,7 +24,7 @@ extension Utility on BuildContext {
   }
 }
 
-class WalletImportInputs extends StatefulWidget {
+class WalletImportInputs extends ConsumerStatefulWidget {
   const WalletImportInputs({required this.wordCount, Key? key})
       : super(key: key);
 
@@ -34,7 +34,7 @@ class WalletImportInputs extends StatefulWidget {
   _WalletImportInputsState createState() => _WalletImportInputsState();
 }
 
-class _WalletImportInputsState extends State<WalletImportInputs> {
+class _WalletImportInputsState extends ConsumerState<WalletImportInputs> {
   late List<ValueNotifier<String>> words =
       List.generate(widget.wordCount, (index) => ValueNotifier(''));
   final wordList = <String>[];
@@ -179,7 +179,7 @@ class _WalletImportInputsState extends State<WalletImportInputs> {
     setState(() {});
   }
 
-  Future<void> validateFinal() async {
+  Future<void> validateFinal(WidgetRef ref) async {
     var index = 0;
     for (var word in words) {
       final suggestionList = getSuggestions(word.value);
@@ -196,7 +196,7 @@ class _WalletImportInputsState extends State<WalletImportInputs> {
     final wrongIndex = _errorField.indexWhere((e) => e == true);
 
     if (wrongIndex == -1) {
-      await nextPage();
+      await nextPage(ref);
       return;
     }
 
@@ -219,14 +219,14 @@ class _WalletImportInputsState extends State<WalletImportInputs> {
     return false;
   }
 
-  Future<void> nextPage() async {
+  Future<void> nextPage(WidgetRef ref) async {
     for (var focusNode in _focusNodeList) {
       focusNode.unfocus();
     }
 
     FocusManager.instance.primaryFocus?.unfocus();
     final mnemonic = getMnemonic();
-    final wallet = context.read(walletProvider);
+    final wallet = ref.read(walletProvider);
     if (!wallet.validateMnemonic(mnemonic)) {
       wallet.setImportWalletResult(false);
       return;
@@ -321,13 +321,13 @@ class _WalletImportInputsState extends State<WalletImportInputs> {
                         onSubmitted: (value) async {
                           _jumpTo(index + 1);
                           if (index >= widget.wordCount - 1) {
-                            await validateFinal();
+                            await validateFinal(ref);
                           }
                         },
                         onEditingComplete: () async {
                           _jumpTo(index + 1);
                           if (index >= widget.wordCount - 1) {
-                            await validateFinal();
+                            await validateFinal(ref);
                           }
                         },
                       ),
@@ -353,7 +353,7 @@ class _WalletImportInputsState extends State<WalletImportInputs> {
                         });
                         _jumpTo(index + 1);
                         if (index >= widget.wordCount - 1) {
-                          await validateFinal();
+                          await validateFinal(ref);
                         }
                       },
                       onSaved: (value) {},
@@ -405,69 +405,79 @@ class _WalletImportState extends State<WalletImport> {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-        key: _scaffoldKey,
-        appBar: const CustomAppBar(),
-        body: Column(children: [
-          Padding(
-            padding: EdgeInsets.only(top: 10.h, left: 54.w, right: 54.w),
-            child: Text(
-              'Enter your recovery phrase'.tr(),
-              textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                fontSize: 22.sp,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+      key: _scaffoldKey,
+      appBar: CustomAppBar(
+        title: 'Enter your recovery phrase'.tr(),
+      ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                  minWidth: constraints.maxWidth,
+                  minHeight: constraints.maxHeight),
+              child: IntrinsicHeight(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        width: double.maxFinite,
+                        height: 36.h,
+                        decoration: BoxDecoration(
+                          color: _colorToggleBackground,
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(10.0.w)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: SwapButton(
+                                color: shortMnemonic
+                                    ? _colorToggleOn
+                                    : _colorToggleBackground,
+                                text: '12 words'.tr(),
+                                textColor: shortMnemonic
+                                    ? _colorToggleTextOn
+                                    : _colorToggleTextOff,
+                                onPressed: () => setState(() {
+                                  shortMnemonic = true;
+                                }),
+                              ),
+                            ),
+                            Expanded(
+                              child: SwapButton(
+                                color: !shortMnemonic
+                                    ? _colorToggleOn
+                                    : _colorToggleBackground,
+                                text: '24 words'.tr(),
+                                textColor: !shortMnemonic
+                                    ? _colorToggleTextOn
+                                    : _colorToggleTextOff,
+                                onPressed: () => setState(() {
+                                  shortMnemonic = false;
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 24.h,
+                    ),
+                    WalletImportInputs(
+                      key: ValueKey(shortMnemonic),
+                      wordCount: shortMnemonic ? 12 : 24,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-            child: Container(
-              width: double.maxFinite, //286.w,
-              height: 36.h,
-              decoration: BoxDecoration(
-                color: _colorToggleBackground,
-                borderRadius: BorderRadius.all(Radius.circular(10.0.w)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: SwapButton(
-                      color: shortMnemonic
-                          ? _colorToggleOn
-                          : _colorToggleBackground,
-                      text: '12 words'.tr(),
-                      textColor: shortMnemonic
-                          ? _colorToggleTextOn
-                          : _colorToggleTextOff,
-                      onPressed: () => setState(() {
-                        shortMnemonic = true;
-                      }),
-                    ),
-                  ),
-                  Expanded(
-                    child: SwapButton(
-                      color: !shortMnemonic
-                          ? _colorToggleOn
-                          : _colorToggleBackground,
-                      text: '24 words'.tr(),
-                      textColor: !shortMnemonic
-                          ? _colorToggleTextOn
-                          : _colorToggleTextOff,
-                      onPressed: () => setState(() {
-                        shortMnemonic = false;
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          WalletImportInputs(
-            key: ValueKey(shortMnemonic),
-            wordCount: shortMnemonic ? 12 : 24,
-          ),
-        ]));
+        ),
+      ),
+    );
   }
 }

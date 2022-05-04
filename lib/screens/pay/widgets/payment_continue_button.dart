@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -8,7 +8,7 @@ import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
-class PaymentContinueButton extends StatelessWidget {
+class PaymentContinueButton extends ConsumerWidget {
   const PaymentContinueButton({
     Key? key,
     required this.enabled,
@@ -21,7 +21,7 @@ class PaymentContinueButton extends StatelessWidget {
   final TextEditingController addressController;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return CustomBigButton(
       width: double.infinity,
       height: 54.h,
@@ -31,7 +31,7 @@ class PaymentContinueButton extends StatelessWidget {
       onPressed: ((errorText != null) && (!enabled))
           ? null
           : () {
-              context.read(paymentProvider).selectPaymentAmountPage(
+              ref.read(paymentProvider).selectPaymentAmountPage(
                     PaymentAmountPageArguments(
                       result: QrCodeResult(address: addressController.text),
                     ),

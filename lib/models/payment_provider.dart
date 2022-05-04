@@ -1,6 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -10,12 +10,13 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
-final paymentProvider = Provider((ref) => PaymentProvider(ref.read));
+final paymentProvider =
+    ChangeNotifierProvider<PaymentProvider>((ref) => PaymentProvider(ref));
 
 class PaymentProvider with ChangeNotifier {
-  final Reader read;
+  final Ref ref;
 
-  PaymentProvider(this.read);
+  PaymentProvider(this.ref);
 
   bool _insufficientFunds = false;
   bool get insufficientFunds => _insufficientFunds;
@@ -38,19 +39,21 @@ class PaymentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  int _sendNetworkFee = 0;
-  int get sendNetworkFee => _sendNetworkFee;
-  set sendNetworkFee(int sendNetworkFee) {
-    _sendNetworkFee = sendNetworkFee;
+  CreatedTx? _createdTx;
+  CreatedTx? get createdTx => _createdTx;
+  set createdTx(CreatedTx? value) {
+    _createdTx = value;
     notifyListeners();
   }
+
+  int get sendNetworkFee => _createdTx?.networkFee.toInt() ?? 0;
 
   PaymentAmountPageArguments paymentAmountPageArguments =
       PaymentAmountPageArguments();
 
   void selectPaymentAmountPage(PaymentAmountPageArguments arguments) {
     paymentAmountPageArguments = arguments;
-    read(walletProvider).status = Status.paymentAmountPage;
+    ref.read(walletProvider).status = Status.paymentAmountPage;
     notifyListeners();
   }
 
@@ -62,18 +65,20 @@ class PaymentProvider with ChangeNotifier {
       return;
     }
 
-    read(walletProvider).selectedWalletAsset = accountAsset;
-    if (!read(walletProvider).isAddrValid(address, AddrType.elements)) {
+    ref.read(walletProvider).selectedWalletAsset = accountAsset;
+    if (!ref.read(walletProvider).isAddrValid(address, AddrType.elements)) {
       logger.e('Invalid address $address');
       return;
     }
 
-    final precision = read(walletProvider)
+    final precision = ref
+        .read(walletProvider)
         .getPrecisionForAssetId(assetId: accountAsset.asset);
     final _amount =
-        read(walletProvider).parseAssetAmount(amount, precision: precision);
-    final balance = read(balancesProvider)
-        .balances[read(walletProvider).selectedWalletAsset];
+        ref.read(walletProvider).parseAssetAmount(amount, precision: precision);
+    final balance = ref
+        .read(balancesProvider)
+        .balances[ref.read(walletProvider).selectedWalletAsset];
     if (balance == null) {
       logger.e('Wrong balance for selected wallet asset');
       return;
@@ -87,13 +92,14 @@ class PaymentProvider with ChangeNotifier {
     sendAddrParsed = address;
     sendAmountParsed = _amount;
 
-    final createTx = To_CreateTx();
+    final createTx = CreateTx();
     createTx.addr = sendAddrParsed;
     createTx.balance = Balance();
     createTx.balance.amount = Int64(sendAmountParsed);
-    createTx.balance.assetId = read(walletProvider).selectedWalletAsset!.asset;
+    createTx.balance.assetId =
+        ref.read(walletProvider).selectedWalletAsset!.asset;
     createTx.account = getAccount(accountAsset.account);
-    read(walletProvider).createTx(createTx);
+    ref.read(walletProvider).createTx(createTx);
 
     notifyListeners();
   }

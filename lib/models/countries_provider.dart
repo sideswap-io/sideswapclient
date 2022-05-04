@@ -1,18 +1,18 @@
 import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/common/utils/country_codes.dart';
 
-final countriesProvider = ChangeNotifierProvider<CountriesProvider>(
-    (ref) => CountriesProvider(ref.read));
+final countriesProvider =
+    ChangeNotifierProvider<CountriesProvider>((ref) => CountriesProvider(ref));
 
 class CountriesProvider with ChangeNotifier {
-  CountriesProvider(this.read) {
+  CountriesProvider(this.ref) {
     _loadCountries();
   }
 
-  Reader read;
+  final Ref ref;
   List<CountryCode> countries = <CountryCode>[];
 
   void _loadCountries() {

@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/contact_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_import_button_painter.dart';
 
-class FriendsPanelImportButton extends StatefulWidget {
+class FriendsPanelImportButton extends ConsumerStatefulWidget {
   const FriendsPanelImportButton({
     Key? key,
     this.width,
@@ -26,7 +26,8 @@ class FriendsPanelImportButton extends StatefulWidget {
       _FriendsPanelImportButtonState();
 }
 
-class _FriendsPanelImportButtonState extends State<FriendsPanelImportButton> {
+class _FriendsPanelImportButtonState
+    extends ConsumerState<FriendsPanelImportButton> {
   StreamSubscription<int>? percentageLoadedSubscription;
   int percent = 0;
 
@@ -34,10 +35,8 @@ class _FriendsPanelImportButtonState extends State<FriendsPanelImportButton> {
   void initState() {
     super.initState();
 
-    percentageLoadedSubscription = context
-        .read(contactProvider)
-        .percentageLoaded
-        .listen(onPercentageLoaded);
+    percentageLoadedSubscription =
+        ref.read(contactProvider).percentageLoaded.listen(onPercentageLoaded);
   }
 
   @override
@@ -60,16 +59,16 @@ class _FriendsPanelImportButtonState extends State<FriendsPanelImportButton> {
         borderRadius: BorderRadius.all(Radius.circular(8.w)),
         child: InkWell(
           onTap: () {
-            context.read(contactProvider).loadContacts();
+            ref.read(contactProvider).loadContacts();
           },
           borderRadius: BorderRadius.all(Radius.circular(8.w)),
           child: SizedBox(
             width: widget.width,
             height: widget.height,
             child: Consumer(
-              builder: (context, watch, child) {
-                final contactsLoadingState =
-                    watch(contactProvider).contactsLoadingState;
+              builder: (context, ref, child) {
+                final contactsLoadingState = ref.watch(
+                    contactProvider.select((p) => p.contactsLoadingState));
                 if (contactsLoadingState != ContactsLoadingState.running) {
                   percent = 0;
                 }

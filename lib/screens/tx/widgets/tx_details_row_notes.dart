@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -16,8 +16,8 @@ class TxDetailsRowNotes extends ConsumerWidget {
   final Tx tx;
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final memo = watch(walletProvider).txMemo(tx);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final memo = ref.watch(walletProvider).txMemo(tx);
     return SizedBox(
       width: 343.w,
       child: Row(
@@ -62,7 +62,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
                   height: 26.w,
                   child: TextButton(
                     onPressed: () {
-                      context.read(walletProvider).editTxMemo(tx);
+                      ref.read(walletProvider).editTxMemo(tx);
                     },
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,

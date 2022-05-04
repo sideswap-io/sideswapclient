@@ -11,6 +11,8 @@ import 'package:sideswap/models/countries_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
+// TODO: fix this provider
+
 typedef OnBack = Future<void> Function(BuildContext context);
 typedef OnSuccess = OnBack;
 typedef OnDone = OnBack;
@@ -41,24 +43,29 @@ class ConfirmPhoneData {
   OnDone? onImportContactsDone;
 
   Future<void> defaultConfirmPhoneBack(BuildContext context) async {
-    context.read(walletProvider).setAssociatePhoneWelcome();
+    // TODO: fix
+    // context.read(walletProvider).setAssociatePhoneWelcome();
   }
 
   Future<void> defaultConfirmPhoneSuccess(BuildContext context) async {
-    context.read(walletProvider).setConfirmPhoneSuccess();
+    // TODO: fix
+    // context.read(walletProvider).setConfirmPhoneSuccess();
   }
 
   Future<void> defaultConfirmPhoneDone(BuildContext context) async {
-    context.read(walletProvider).setImportContacts();
+    // TODO: fix
+    // context.read(walletProvider).setImportContacts();
   }
 
   Future<void> defaultImportContactsBack(BuildContext context) async {}
   Future<void> defaultImportContactsSuccess(BuildContext context) async {
-    context.read(walletProvider).setImportContactsSuccess();
+    // TODO: fix
+    // context.read(walletProvider).setImportContactsSuccess();
   }
 
   Future<void> defaultImportContactsDone(BuildContext context) async {
-    await context.read(walletProvider).loginAndLoadMainPage();
+    // TODO: fix
+    // await context.read(walletProvider).loginAndLoadMainPage();
   }
 }
 
@@ -82,18 +89,18 @@ enum SmsCodeStep {
 
 final phoneProvider = ChangeNotifierProvider<PhoneProvider>((ref) {
   logger.d('Init phone provider');
-  return PhoneProvider(ref.read, ConfirmPhoneData());
+  return PhoneProvider(ref, ConfirmPhoneData());
 });
 
 class PhoneProvider with ChangeNotifier {
   PhoneProvider(
-    this.read,
+    this.ref,
     this._confirmPhoneData,
   ) {
-    _countryCode = read(countriesProvider).getSystemDefaultCountry();
+    _countryCode = ref.read(countriesProvider).getSystemDefaultCountry();
   }
 
-  final Reader read;
+  final Ref ref;
 
   String _phoneNumber = '';
   CountryCode _countryCode = const CountryCode();
@@ -156,7 +163,7 @@ class PhoneProvider with ChangeNotifier {
   }
 
   void sendPhoneNumber() {
-    read(walletProvider).registerPhone(countryPhoneNumber);
+    ref.read(walletProvider).registerPhone(countryPhoneNumber);
     _phoneRegisterStep = PhoneRegisterStep.phoneNumberSent;
     _phoneRegisterTime = DateTime.now();
     barier = true;
@@ -190,7 +197,7 @@ class PhoneProvider with ChangeNotifier {
   }
 
   void verifySmsCode() {
-    read(walletProvider).verifyPhone(_phoneKey, _smsCode);
+    ref.read(walletProvider).verifyPhone(_phoneKey, _smsCode);
     _smsCodeStep = SmsCodeStep.sent;
     notifyListeners();
   }
@@ -199,8 +206,8 @@ class PhoneProvider with ChangeNotifier {
       {String phoneKey = '', String errorMsg = ''}) async {
     if (phoneKey.isNotEmpty) {
       _phoneKey = phoneKey;
-      await read(configProvider).setPhoneKey(phoneKey);
-      await read(configProvider).setPhoneNumber(countryPhoneNumber);
+      await ref.read(configProvider).setPhoneKey(phoneKey);
+      await ref.read(configProvider).setPhoneNumber(countryPhoneNumber);
       _phoneRegisterStep = PhoneRegisterStep.phoneNumberAccepted;
       _smsCodeStep = SmsCodeStep.visible;
       notifyListeners();
@@ -208,7 +215,8 @@ class PhoneProvider with ChangeNotifier {
     }
 
     if (errorMsg.isNotEmpty) {
-      await read(utilsProvider)
+      await ref
+          .read(utilsProvider)
           .showErrorDialog('Wrong phone number: $errorMsg'.tr());
       _phoneRegisterStep = PhoneRegisterStep.phoneNumberError;
       _smsCodeStep = SmsCodeStep.hidden;
@@ -227,7 +235,7 @@ class PhoneProvider with ChangeNotifier {
     _smsCodeStep = SmsCodeStep.hidden;
     barier = false;
     notifyListeners();
-    final context = read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(walletProvider).navigatorKey.currentContext;
     if (context == null) {
       return;
     }

@@ -4,7 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -12,6 +12,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/notifications_service.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 import 'package:sideswap/screens/swap/widgets/rounded_text_label.dart';
@@ -21,10 +22,12 @@ class AssetReceiveWidget extends StatefulWidget {
     Key? key,
     this.isPegIn = false,
     this.isAmp = false,
+    this.showShare = true,
   }) : super(key: key);
 
   final bool isPegIn;
   final bool isAmp;
+  final bool showShare;
 
   @override
   _AssetReceivePopupState createState() => _AssetReceivePopupState();
@@ -59,23 +62,29 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final wallet = watch(walletProvider);
+      builder: (context, ref, _) {
+        final recvAddressAccount =
+            ref.watch(walletProvider.select((p) => p.recvAddressAccount));
+        final recvAddresses = ref.watch(
+            walletProvider.select((p) => p.recvAddresses[recvAddressAccount]));
         final _recvAddress = widget.isPegIn
-            ? watch(swapProvider).swapPegAddressServer
-            : wallet.recvAddresses[wallet.recvAddressAccount];
-        final _swapRecvAddr = watch(swapProvider).swapRecvAddressExternal;
-        final minPegIn = wallet.serverStatus?.minPegInAmount.toInt() ?? 0;
+            ? ref.watch(swapProvider.select((p) => p.swapPegAddressServer))
+            : recvAddresses;
+        final _swapRecvAddr =
+            ref.watch(swapProvider.select((p) => p.swapRecvAddressExternal));
+        final minPegIn = ref.watch(walletProvider
+            .select((p) => p.serverStatus?.minPegInAmount.toInt() ?? 0));
 
-        final _assetSend = watch(swapProvider).swapSendAsset ?? '';
-        final serverFeePercentPegIn =
-            watch(walletProvider).serverStatus?.serverFeePercentPegIn;
-        final serverFeePercentPegOut =
-            watch(walletProvider).serverStatus?.serverFeePercentPegOut;
+        final _assetSend =
+            ref.watch(swapProvider.select((p) => p.swapSendAsset ?? ''));
+        final serverFeePercentPegIn = ref.watch(walletProvider
+            .select((p) => p.serverStatus?.serverFeePercentPegIn));
+        final serverFeePercentPegOut = ref.watch(walletProvider
+            .select((p) => p.serverStatus?.serverFeePercentPegOut));
         var _percentConversion =
             (serverFeePercentPegIn == null || serverFeePercentPegOut == null)
                 ? 0
-                : _assetSend == watch(walletProvider).liquidAssetId()
+                : _assetSend == ref.watch(walletProvider).liquidAssetId()
                     ? 100 - serverFeePercentPegOut
                     : 100 - serverFeePercentPegIn;
 
@@ -146,7 +155,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             showCopyInfo();
                           },
                           child: SizedBox(
-                            width: 311.w,
+                            width: FlavorConfig.isDesktop ? 400.w : 311.w,
                             height: 60.h,
                             child: Text(
                               _recvAddress,
@@ -181,25 +190,27 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             height: 28.w,
                           ),
                         ),
-                        Padding(
-                          padding: EdgeInsets.only(left: 32.w),
-                          child: RoundedButtonWithLabel(
-                            onTap: () async {
-                              final shortUri = await notificationService
-                                  .createShortDynamicLink(
-                                      address: _recvAddress);
-                              await shareAddress(
-                                  'Liquid address:\n$_recvAddress\n\nYou can open directly in app clicking this url: ${shortUri.toString()}');
-                            },
-                            label: 'Share'.tr(),
-                            buttonBackground: Colors.white,
-                            child: SvgPicture.asset(
-                              'assets/share.svg',
-                              width: 28.w,
-                              height: 28.w,
+                        if (widget.showShare)
+                          Padding(
+                            padding: EdgeInsets.only(left: 32.w),
+                            child: RoundedButtonWithLabel(
+                              onTap: () async {
+                                final shortUri = await ref
+                                    .read(notificationServiceProvider)
+                                    .createShortDynamicLink(
+                                        address: _recvAddress);
+                                await shareAddress(
+                                    'Liquid address:\n$_recvAddress\n\nYou can open directly in app clicking this url: ${shortUri.toString()}');
+                              },
+                              label: 'Share'.tr(),
+                              buttonBackground: Colors.white,
+                              child: SvgPicture.asset(
+                                'assets/share.svg',
+                                width: 28.w,
+                                height: 28.w,
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -273,7 +284,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             child: Align(
                               alignment: Alignment.topCenter,
                               child: SizedBox(
-                                width: 311.w,
+                                width: FlavorConfig.isDesktop ? 400.w : 311.w,
                                 height: 60.h,
                                 child: Text(
                                   _swapRecvAddr,

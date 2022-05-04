@@ -5,7 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -13,7 +13,7 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 
-class TxDetailsBottomButtons extends StatefulWidget {
+class TxDetailsBottomButtons extends ConsumerStatefulWidget {
   const TxDetailsBottomButtons({
     Key? key,
     required this.id,
@@ -31,30 +31,31 @@ class TxDetailsBottomButtons extends StatefulWidget {
   _TxDetailsBottomButtonsState createState() => _TxDetailsBottomButtonsState();
 }
 
-class _TxDetailsBottomButtonsState extends State<TxDetailsBottomButtons> {
+class _TxDetailsBottomButtonsState
+    extends ConsumerState<TxDetailsBottomButtons> {
   StreamSubscription? openExplorerSubscription;
   StreamSubscription? shareExplorerSubscription;
 
   Future<void> _openUrl(String txid, bool isLiquid, bool unblinded) async {
     await openExplorerSubscription?.cancel();
     openExplorerSubscription =
-        context.read(walletProvider).explorerUrlSubject.listen((value) async {
+        ref.read(walletProvider).explorerUrlSubject.listen((value) async {
       await openExplorerSubscription?.cancel();
       await openUrl(value);
     });
 
-    context.read(walletProvider).openTxUrl(txid, isLiquid, unblinded);
+    ref.read(walletProvider).openTxUrl(txid, isLiquid, unblinded);
   }
 
   Future<void> _shareAddress(String txid, bool isLiquid, bool unblinded) async {
     await shareExplorerSubscription?.cancel();
     shareExplorerSubscription =
-        context.read(walletProvider).explorerUrlSubject.listen((value) async {
+        ref.read(walletProvider).explorerUrlSubject.listen((value) async {
       await shareExplorerSubscription?.cancel();
       await shareAddress(value);
     });
 
-    context.read(walletProvider).openTxUrl(txid, isLiquid, unblinded);
+    ref.read(walletProvider).openTxUrl(txid, isLiquid, unblinded);
   }
 
   @override

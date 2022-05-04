@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -31,8 +31,8 @@ class TopRecvButtons extends StatelessWidget {
         borderRadius: BorderRadius.all(Radius.circular(10.0.w)),
       ),
       child: Consumer(
-        builder: (context, watch, child) {
-          final isAmp = watch(walletProvider).recvAddressAccount.isAmp();
+        builder: (context, ref, _) {
+          final isAmp = ref.watch(walletProvider).recvAddressAccount.isAmp();
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

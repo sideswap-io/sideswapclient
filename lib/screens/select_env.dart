@@ -1,26 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
 
 // TODO: fix that - new ui
-class SelectEnv extends StatefulWidget {
+class SelectEnv extends ConsumerStatefulWidget {
   const SelectEnv({Key? key}) : super(key: key);
 
   @override
   _SelectEnvState createState() => _SelectEnvState();
 }
 
-class _SelectEnvState extends State<SelectEnv> {
+class _SelectEnvState extends ConsumerState<SelectEnv> {
   int selectedEnv = 0;
 
   @override
   Widget build(BuildContext context) {
-    final wallet = context.read(walletProvider);
-    var env = selectedEnv;
     return SideSwapScaffold(
       body: SafeArea(
         child: Padding(
@@ -33,7 +31,7 @@ class _SelectEnvState extends State<SelectEnv> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(
-                      onPressed: () => context.read(walletProvider).goBack(),
+                      onPressed: () => ref.read(walletProvider).goBack(),
                       icon: const Icon(Icons.close),
                     ),
                   ],
@@ -63,7 +61,8 @@ class _SelectEnvState extends State<SelectEnv> {
                       .toList(),
                 ),
                 OutlinedButton(
-                  onPressed: () async => await wallet.setEnv(env),
+                  onPressed: () async =>
+                      await ref.read(walletProvider).setEnv(selectedEnv),
                   child: SizedBox(
                     width: 100,
                     height: 40,

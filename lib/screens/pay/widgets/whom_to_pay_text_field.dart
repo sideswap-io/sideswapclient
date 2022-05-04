@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/models/payment_provider.dart';
@@ -37,21 +37,25 @@ class _WhomToPayTextFieldState extends State<WhomToPayTextField> {
         },
         onScanTap: () {
           Navigator.of(context, rootNavigator: true).push<void>(
-            MaterialPageRoute(
-              builder: (context) => AddressQrScanner(
-                resultCb: (value) {
-                  widget.addressController.text = value.address ?? '';
-                  if (widget.validator()) {
-                    context.read(paymentProvider).selectPaymentAmountPage(
-                          PaymentAmountPageArguments(
-                            result: value,
-                          ),
-                        );
-                    return;
-                  }
+            MaterialPageRoute(builder: (context) {
+              return Consumer(
+                builder: (context, ref, _) {
+                  return AddressQrScanner(
+                    resultCb: (value) {
+                      widget.addressController.text = value.address ?? '';
+                      if (widget.validator()) {
+                        ref.read(paymentProvider).selectPaymentAmountPage(
+                              PaymentAmountPageArguments(
+                                result: value,
+                              ),
+                            );
+                        return;
+                      }
+                    },
+                  );
                 },
-              ),
-            ),
+              );
+            }),
           );
         },
       ),

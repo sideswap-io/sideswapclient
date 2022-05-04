@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -16,19 +16,19 @@ import 'package:sideswap/screens/pay/widgets/friends_panel.dart';
 import 'package:sideswap/screens/pay/widgets/payment_continue_button.dart';
 import 'package:sideswap/screens/pay/widgets/whom_to_pay_text_field.dart';
 
-class PaymentPage extends StatefulWidget {
+class PaymentPage extends ConsumerStatefulWidget {
   const PaymentPage({Key? key}) : super(key: key);
 
   @override
   _PaymentPageState createState() => _PaymentPageState();
 }
 
-class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
+class _PaymentPageState extends ConsumerState<PaymentPage>
+    with WidgetsBindingObserver {
   late TextEditingController addressController;
   String? errorText;
   AddrType addrType = AddrType.elements;
   bool continueEnabled = false;
-  bool isPhoneRegistered = false;
   Friend? friend;
   double overlap = .0;
 
@@ -37,7 +37,6 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
     addressController = TextEditingController()..addListener(onAddressChanged);
-    isPhoneRegistered = context.read(configProvider).phoneKey.isNotEmpty;
   }
 
   @override
@@ -58,12 +57,12 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
   }
 
   bool validate() {
-    final newErrorText = context
+    final newErrorText = ref
         .read(walletProvider)
         .commonAddrErrorStr(addressController.text, addrType);
     if (newErrorText.isNotEmpty) {
       friend =
-          context.read(friendsProvider).getFriendByName(addressController.text);
+          ref.read(friendsProvider).getFriendByName(addressController.text);
       if (friend != null) {
         // friend found
         setState(() {
@@ -123,11 +122,12 @@ class _PaymentPageState extends State<PaymentPage> with WidgetsBindingObserver {
       ),
       body: SafeArea(
         child: Consumer(
-          builder: (context, watch, child) {
-            isPhoneRegistered = watch(configProvider).phoneKey.isNotEmpty;
+          builder: (context, ref, _) {
+            final isPhoneRegistered =
+                ref.watch(configProvider.select((p) => p.phoneKey.isNotEmpty));
 
-            if (FlavorConfig.isProduction() &&
-                FlavorConfig.instance.values.enableOnboardingUserFeatures) {
+            if (FlavorConfig.isProduction &&
+                FlavorConfig.enableOnboardingUserFeatures) {
               if (isPhoneRegistered) {
                 return SingleChildScrollView(
                   child: Column(

@@ -3,18 +3,26 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
 import 'package:sideswap/models/pin_protection_provider.dart';
+import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_keyboard.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_text_field.dart';
 
 class PinProtection extends StatelessWidget {
-  const PinProtection({Key? key}) : super(key: key);
+  const PinProtection({
+    Key? key,
+    this.title,
+    this.iconType = PinKeyboardAcceptType.unlock,
+  }) : super(key: key);
+
+  final String? title;
+  final PinKeyboardAcceptType iconType;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +30,7 @@ class PinProtection extends StatelessWidget {
       backgroundColor: const Color(0xFF135579),
       sideSwapBackground: false,
       appBar: CustomAppBar(
-        title: 'Unlock your wallet'.tr(),
+        title: title ?? 'Unlock your wallet'.tr(),
         onPressed: () {
           Navigator.of(context).pop(false);
         },
@@ -40,8 +48,10 @@ class PinProtection extends StatelessWidget {
                   minWidth: constraints.maxWidth,
                   minHeight: constraints.maxHeight,
                 ),
-                child: const IntrinsicHeight(
-                  child: PinProtectionBody(),
+                child: IntrinsicHeight(
+                  child: PinProtectionBody(
+                    iconType: iconType,
+                  ),
                 ),
               ),
             );
@@ -52,16 +62,19 @@ class PinProtection extends StatelessWidget {
   }
 }
 
-class PinProtectionBody extends StatefulWidget {
+class PinProtectionBody extends ConsumerStatefulWidget {
   const PinProtectionBody({
     Key? key,
+    required this.iconType,
   }) : super(key: key);
+
+  final PinKeyboardAcceptType iconType;
 
   @override
   _PinProtectionBodyState createState() => _PinProtectionBodyState();
 }
 
-class _PinProtectionBodyState extends State<PinProtectionBody> {
+class _PinProtectionBodyState extends ConsumerState<PinProtectionBody> {
   late FocusNode pinFocusNode;
   StreamSubscription<PinKey>? keyPressedSubscription;
 
@@ -70,12 +83,12 @@ class _PinProtectionBodyState extends State<PinProtectionBody> {
     pinFocusNode = FocusNode();
 
     keyPressedSubscription =
-        context.read(pinKeyboardProvider).keyPressedSubject.listen((pinKey) {
-      context.read(pinProtectionProvider).onKeyEntered(pinKey);
+        ref.read(pinKeyboardProvider).keyPressedSubject.listen((pinKey) {
+      ref.read(pinProtectionProvider).onKeyEntered(pinKey);
     });
 
     pinFocusNode.requestFocus();
-    context.read(pinProtectionProvider).init(onUnlockCallback: () {
+    ref.read(pinProtectionProvider).init(onUnlockCallback: () {
       Navigator.of(context).pop(true);
     });
     super.initState();
@@ -115,10 +128,13 @@ class _PinProtectionBodyState extends State<PinProtectionBody> {
           Padding(
             padding: EdgeInsets.only(top: 10.h, left: 16.w, right: 16.w),
             child: Consumer(
-              builder: (context, watch, child) {
-                final pin = watch(pinProtectionProvider).pinCode;
-                final state = watch(pinProtectionProvider).state;
-                final errorMessage = watch(pinProtectionProvider).errorMessage;
+              builder: (context, ref, _) {
+                final pin =
+                    ref.watch(pinProtectionProvider.select((p) => p.pinCode));
+                final state =
+                    ref.watch(pinProtectionProvider.select((p) => p.state));
+                final errorMessage = ref
+                    .watch(pinProtectionProvider.select((p) => p.errorMessage));
 
                 return PinTextField(
                   pin: pin,
@@ -134,8 +150,18 @@ class _PinProtectionBodyState extends State<PinProtectionBody> {
           const Spacer(),
           Padding(
             padding: EdgeInsets.only(bottom: 32.h),
-            child: const PinKeyboard(
-              showUnlock: true,
+            child: Consumer(
+              builder: ((context, ref, _) {
+                final isNewWallet = ref.read(pinSetupProvider).isNewWallet;
+                return PinKeyboard(
+                  acceptType: isNewWallet
+                      ? ref.watch(pinSetupProvider).fieldState ==
+                              PinFieldState.secondPin
+                          ? PinKeyboardAcceptType.save
+                          : PinKeyboardAcceptType.icon
+                      : widget.iconType,
+                );
+              }),
             ),
           ),
         ],

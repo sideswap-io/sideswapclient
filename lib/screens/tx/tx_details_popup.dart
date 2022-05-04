@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
@@ -14,11 +14,13 @@ class TxDetailsPopup extends ConsumerWidget {
   const TxDetailsPopup({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final _transItem = watch(walletProvider).txDetails;
-    final wallet = watch(walletProvider);
-    final asset = wallet.selectedWalletAsset?.asset ?? wallet.liquidAssetId();
-    final _ticker = wallet.getAssetById(asset)?.ticker ?? kLiquidBitcoinTicker;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final _transItem = ref.watch(walletProvider.select((p) => p.txDetails));
+    final liquidAssetId = ref.watch(walletProvider).liquidAssetId();
+    final asset = ref.watch(walletProvider
+        .select((p) => p.selectedWalletAsset?.asset ?? liquidAssetId));
+    final _ticker = ref.watch(walletProvider).getAssetById(asset)?.ticker ??
+        kLiquidBitcoinTicker;
 
     return SideSwapPopup(
       child: Builder(
@@ -40,14 +42,17 @@ class TxDetailsPopup extends ConsumerWidget {
                   _transItem.tx.balances.firstWhere((e) => e.amount < 0);
               final _balanceReceived =
                   _transItem.tx.balances.firstWhere((e) => e.amount >= 0);
-              final _assetSent = wallet.getAssetById(_balanceDelivered.assetId);
-              final _assetRecv = wallet.getAssetById(_balanceReceived.assetId);
+              final _assetSent = ref
+                  .watch(walletProvider)
+                  .getAssetById(_balanceDelivered.assetId);
+              final _assetRecv = ref
+                  .watch(walletProvider)
+                  .getAssetById(_balanceReceived.assetId);
               final _deliveredPrecision = _assetSent?.precision ?? 8;
               final _receivedPrecision = _assetRecv?.precision ?? 8;
               _delivered = amountStr(_balanceDelivered.amount.toInt().abs(),
                   precision: _deliveredPrecision);
-              final sentBitcoin =
-                  _balanceDelivered.assetId == wallet.liquidAssetId();
+              final sentBitcoin = _balanceDelivered.assetId == liquidAssetId;
               final asset = sentBitcoin ? _assetRecv : _assetSent;
 
               final _assetSentTicker = _assetSent?.ticker ?? kUnknownTicker;

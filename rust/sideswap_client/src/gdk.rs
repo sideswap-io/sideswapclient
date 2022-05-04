@@ -25,16 +25,15 @@ pub type GA_notification_handler = ::std::option::Option<
     unsafe extern "C" fn(context: *mut ::std::os::raw::c_void, details: *mut GA_json),
 >;
 extern "C" {
-    #[doc = " Set the global configuration and run one-time initialization code. This function must"]
-    #[doc = " be called once and only once before calling any other functions. When used in a"]
-    #[doc = " multi-threaded context this function should be called before starting any other"]
-    #[doc = " threads that call other gdk functions."]
+    #[doc = " Perform one-time initialization of the library. This call must be made once"]
+    #[doc = " only before calling any other GDK functions, including any functions called"]
+    #[doc = " from other threads."]
     #[doc = ""]
     #[doc = " :param config: The :ref:`init-config-arg`."]
     pub fn GA_init(config: *const GA_json) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Get the error details associated with the last error on the current thread, if any."]
+    #[doc = " Get any error details associated with the last error on the current thread."]
     #[doc = ""]
     #[doc = " :param output: Destination for the output :ref:`error-details` JSON."]
     #[doc = "|     Returned GA_json should be freed using `GA_destroy_json`."]
@@ -44,50 +43,87 @@ extern "C" {
     #[doc = " Create a new session."]
     #[doc = ""]
     #[doc = " :param session: Destination for the resulting session."]
-    #[doc = "|     Returned session should be freed using `GA_destroy_session`."]
+    #[doc = "|     The returned session should be freed using `GA_destroy_session`."]
+    #[doc = ""]
+    #[doc = " Once created, the caller should set a handler for notifications using"]
+    #[doc = " `GA_set_notification_handler`, before calling `GA_connect` to connect the"]
+    #[doc = " session to the network for use."]
     pub fn GA_create_session(session: *mut *mut GA_session) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Set a handler to be called when notifications arrive for a session."]
+    #[doc = ""]
+    #[doc = " :param session: The session to receive notifications for."]
+    #[doc = " :param handler: The handler to receive notifications."]
+    #[doc = " :param context: A context pointer to be passed to the handler."]
+    #[doc = ""]
+    #[doc = " This call must be initially made on a session before `GA_connect`."]
+    #[doc = " :ref:`ntf-notifications` may arrive on different threads, so the caller"]
+    #[doc = " must ensure that shared data is correctly locked within the handler."]
+    #[doc = " The ``GA_json`` object passed to the caller must be destroyed by the"]
+    #[doc = " caller using `GA_destroy_json`. Failing to do so will result in"]
+    #[doc = " memory leaks."]
+    #[doc = ""]
+    #[doc = " Once a session has been connected, this call can be made only with null"]
+    #[doc = " values for ``handler`` and ``context``. Once this returns, no further"]
+    #[doc = " notifications will be delivered for the lifetime of the session."]
+    #[doc = ""]
+    #[doc = " The caller should not call session functions from within the callback"]
+    #[doc = " handler as this may block the application."]
+    pub fn GA_set_notification_handler(
+        session: *mut GA_session,
+        handler: GA_notification_handler,
+        context: *mut ::std::os::raw::c_void,
+    ) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = " Free a session allocated by `GA_create_session`."]
     #[doc = ""]
-    #[doc = " :param session: Session to free."]
+    #[doc = " :param session: The session to free."]
+    #[doc = ""]
+    #[doc = " If the session was connected using `GA_connect` then this call will"]
+    #[doc = " disconnect it it before destroying it."]
     pub fn GA_destroy_session(session: *mut GA_session) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Connect to a remote server using the specified network."]
+    #[doc = " Connect the session to the specified network."]
     #[doc = ""]
-    #[doc = " :param session: The session to use."]
+    #[doc = " :param session: The session to connect."]
     #[doc = " :param net_params: The :ref:`net-params` of the network to connect to."]
+    #[doc = ""]
+    #[doc = " This call connects to the remote network services that the session"]
+    #[doc = " requires, for example the Green servers or Electrum servers."]
+    #[doc = " `GA_connect` must be called only once per session lifetime, after"]
+    #[doc = " `GA_create_session` and before `GA_destroy_session` respectively."]
+    #[doc = " Once connected, the underlying network connection of the"]
+    #[doc = " session can be controlled using `GA_reconnect_hint`."]
+    #[doc = ""]
+    #[doc = " Once the session is connected, use `GA_register_user` to create a new"]
+    #[doc = " wallet for the session, or `GA_login_user` to open an existing wallet."]
     pub fn GA_connect(
         session: *mut GA_session,
         net_params: *const GA_json,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Disconnect from a connected remote server."]
+    #[doc = " Connect or disconnect a sessions underlying network connection."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
-    pub fn GA_disconnect(session: *mut GA_session) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    #[doc = " Configure networking behaviour when reconnecting."]
-    #[doc = ""]
-    #[doc = " :param session: The session to use."]
-    #[doc = " :param hint: the :ref:`hint` to configure."]
+    #[doc = " :param hint: the :ref:`reconnect` describing the desired reconnection behaviour."]
     pub fn GA_reconnect_hint(
         session: *mut GA_session,
         hint: *const GA_json,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Get the current SOCKS5 url for the embedded Tor daemon, if any."]
+    #[doc = " Get the current proxy settings for the given session."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
-    #[doc = " :param socks5: Destination for the SOCKS5 url (host:port). Empty string if not set."]
-    #[doc = "|     Returned string should be freed using `GA_destroy_string`."]
-    pub fn GA_get_tor_socks5(
+    #[doc = " :param output: Destination for the output :ref:`proxy-info`."]
+    #[doc = "|     Returned GA_json should be freed using `GA_destroy_json`."]
+    pub fn GA_get_proxy_settings(
         session: *mut GA_session,
-        socks5: *mut *mut ::std::os::raw::c_char,
+        output: *mut *mut GA_json,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
@@ -122,12 +158,17 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Refresh the internal cache asset information."]
+    #[doc = " Refresh the sessions internal cache of Liquid asset information."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param params: the :ref:`assets-params-data` of the server to connect to."]
     #[doc = " :param output: Destination for the assets JSON."]
     #[doc = "|     Returned GA_json should be freed using `GA_destroy_json`."]
+    #[doc = ""]
+    #[doc = " Each release of GDK comes with a list of the latest registered Liquid"]
+    #[doc = " assets built-in. This call is used to return this data and/or to update"]
+    #[doc = " it to include any new assets that have been registered since installation"]
+    #[doc = " or the last update."]
     pub fn GA_refresh_assets(
         session: *mut GA_session,
         params: *const GA_json,
@@ -145,7 +186,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Create a new user account using a hardware wallet/HSM/TPM."]
+    #[doc = " Create a new user wallet."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param hw_device: :ref:`hw-device` or empty JSON for software wallet registration."]
@@ -160,13 +201,18 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Authenticate a user."]
+    #[doc = " Authenticate to a user's wallet."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param hw_device: :ref:`hw-device` or empty JSON for software wallet login."]
     #[doc = " :param details: The :ref:`login-credentials` for authenticating the user."]
     #[doc = " :param call: Destination for the resulting GA_auth_handler to perform the login."]
     #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
+    #[doc = ""]
+    #[doc = " If a sessions underlying network connection has disconnected and"]
+    #[doc = " reconnected, the user will need to login again using this function. In"]
+    #[doc = " this case, the caller can pass empty JSON for both ``hw_device`` and"]
+    #[doc = " ``details`` to login using the previously passed credentials and device."]
     pub fn GA_login_user(
         session: *mut GA_session,
         hw_device: *const GA_json,
@@ -175,7 +221,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Set a watch-only login for the wallet."]
+    #[doc = " Set a watch-only login for a logged-in user wallet."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param username: The username."]
@@ -187,7 +233,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Get the current watch-only login for the wallet, if any."]
+    #[doc = " Get the current watch-only login for a logged-in user wallet, if any."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param username: Destination for the watch-only username. Empty string if not set."]
@@ -198,11 +244,19 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Remove an account."]
+    #[doc = " Remove and delete the server history of a wallet."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param call: Destination for the resulting GA_auth_handler to perform the removal."]
     #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
+    #[doc = ""]
+    #[doc = " For multisig Green sessions, removing a wallet removes all history and"]
+    #[doc = " data associated with the wallet on the server. This operation cannot be"]
+    #[doc = " undone, and re-registering the wallet will not bring back the wallet's"]
+    #[doc = " history. For this reason, only empty wallets can be deleted."]
+    #[doc = ""]
+    #[doc = " For singlesig sessions, removing a wallet removes the locally persisted cache."]
+    #[doc = " The actual removal will happen after `GA_destroy_session` is called."]
     pub fn GA_remove_account(
         session: *mut GA_session,
         call: *mut *mut GA_auth_handler,
@@ -393,7 +447,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " The sum of unspent outputs destined to user's wallet."]
+    #[doc = " Get the sum of unspent outputs paying to a subaccount."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param details: :ref:`unspent-outputs-request` detailing the unspent transaction outputs to"]
@@ -407,7 +461,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " The list of allowed currencies for all available pricing sources."]
+    #[doc = " Get the list of allowed currencies for all available pricing sources."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param currencies: The returned list of :ref:`currencies`."]
@@ -515,7 +569,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Broadcast a non-Green signed transaction to the P2P network."]
+    #[doc = " Broadcast a fully signed transaction to the P2P network."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param transaction_hex: The signed transaction in hex to broadcast."]
@@ -561,7 +615,7 @@ extern "C" {
 }
 extern "C" {
     #[doc = " Set the number of blocks after which nLockTime transactions become"]
-    #[doc = "|    spendable without two factor authentication. When this function"]
+    #[doc = "|    spendable without two factor authentication. When this call"]
     #[doc = "|    succeeds, if the user has an email address associated with the"]
     #[doc = "|    wallet, an updated nlocktimes.zip file will be sent via email."]
     #[doc = ""]
@@ -663,7 +717,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Change settings"]
+    #[doc = " Change wallet settings."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param settings: The new :ref:`settings` values."]
@@ -676,7 +730,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Get settings"]
+    #[doc = " Get current wallet settings."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param settings: Destination for the current :ref:`settings`."]
@@ -684,27 +738,6 @@ extern "C" {
     pub fn GA_get_settings(
         session: *mut GA_session,
         settings: *mut *mut GA_json,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    #[doc = " Set a handler to be called when notifications arrive."]
-    #[doc = ""]
-    #[doc = " :param session: The server session to receive notifications for."]
-    #[doc = " :param handler: The handler to receive notifications."]
-    #[doc = " :param context: A context pointer to be passed to the handler."]
-    #[doc = ""]
-    #[doc = " This function must be called before `GA_connect`."]
-    #[doc = " Notifications may arrive on different threads so the caller must ensure"]
-    #[doc = " that shared data is correctly locked within the handler."]
-    #[doc = " The GA_json object passed to the caller must be destroyed by the caller"]
-    #[doc = " using `GA_destroy_json`. Failing to do so will result in memory leaks."]
-    #[doc = " When the session is disconnected/destroyed, a final call will be made to"]
-    #[doc = " the handler with a :ref:`session-event` notification."]
-    #[doc = ""]
-    pub fn GA_set_notification_handler(
-        session: *mut GA_session,
-        handler: GA_notification_handler,
-        context: *mut ::std::os::raw::c_void,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {

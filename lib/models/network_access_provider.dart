@@ -1,9 +1,8 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sideswap/models/config_provider.dart';
 
-final networkAccessProvider = ChangeNotifierProvider<NetworkAccessProvider>(
-    (ref) => NetworkAccessProvider(ref.read));
+final networkAccessProvider =
+    Provider<NetworkAccessProvider>((ref) => NetworkAccessProvider(ref));
 
 enum SettingsNetworkType {
   blockstream,
@@ -11,18 +10,12 @@ enum SettingsNetworkType {
   custom,
 }
 
-class NetworkAccessProvider with ChangeNotifier {
-  NetworkAccessProvider(this.read);
+class NetworkAccessProvider {
+  NetworkAccessProvider(this.ref);
 
-  final Reader read;
+  final Ref ref;
 
   set networkType(SettingsNetworkType type) {
-    read(configProvider)
-        .setSettingsNetworkType(type)
-        .then((value) => notifyListeners());
-  }
-
-  SettingsNetworkType get networkType {
-    return read(configProvider).settingsNetworkType;
+    ref.read(configProvider).setSettingsNetworkType(type);
   }
 }

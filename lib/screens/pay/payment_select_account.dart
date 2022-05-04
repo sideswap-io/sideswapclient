@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -44,18 +44,18 @@ class PaymentSelectAccount extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.all(16.w),
-                    child: Consumer(
-                      builder: (context, watch, child) {
-                        return ListView(
-                          children: List<Widget>.generate(
-                            availableAssets.length,
-                            (index) {
-                              final accountAsset = availableAssets[index];
-                              final balance = watch(balancesProvider)
-                                      .balances[accountAsset] ??
-                                  0;
-                              final asset = availableAssets[index];
-                              final disabled = disabledAssets.contains(asset);
+                    child: ListView(
+                      children: List<Widget>.generate(
+                        availableAssets.length,
+                        (index) {
+                          final accountAsset = availableAssets[index];
+                          final asset = availableAssets[index];
+                          final disabled = disabledAssets.contains(asset);
+                          return Consumer(
+                            builder: (context, ref, _) {
+                              final balance = ref.watch(balancesProvider.select(
+                                  (p) => p.balances[accountAsset] ?? 0));
+
                               return AccountItem(
                                 balance: balance,
                                 accountAsset: asset,
@@ -66,9 +66,9 @@ class PaymentSelectAccount extends StatelessWidget {
                                 },
                               );
                             },
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),

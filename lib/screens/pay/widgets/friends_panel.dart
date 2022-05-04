@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
@@ -24,11 +24,12 @@ class _FriendsPanelState extends State<FriendsPanel> {
       children: [
         const FriendsPanelHeader(),
         Consumer(
-          builder: (context, watch, child) {
+          builder: (context, ref, child) {
             final friends = widget.searchString != null
-                ? watch(friendsProvider)
+                ? ref
+                    .watch(friendsProvider)
                     .getFriendListByName(widget.searchString!)
-                : watch(friendsProvider).friends;
+                : ref.watch(friendsProvider.select((p) => p.friends));
             return ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -41,7 +42,7 @@ class _FriendsPanelState extends State<FriendsPanel> {
                     friend: friends[index],
                     highlightName: widget.searchString,
                     onPressed: () {
-                      context.read(paymentProvider).selectPaymentAmountPage(
+                      ref.read(paymentProvider).selectPaymentAmountPage(
                             PaymentAmountPageArguments(
                               friend: friends[index],
                             ),

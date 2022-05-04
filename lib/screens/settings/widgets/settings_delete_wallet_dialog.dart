@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -82,18 +82,22 @@ void showDeleteWalletDialog(BuildContext context) {
                   ),
                 ),
                 const Spacer(),
-                CustomBigButton(
-                  width: 279.w,
-                  height: 54.h,
-                  text: 'YES'.tr(),
-                  backgroundColor: const Color(0xFF00C5FF),
-                  onPressed: () async {
-                    if (await context.read(walletProvider).isAuthenticated()) {
-                      await context
-                          .read(walletProvider)
-                          .settingsDeletePromptConfirm();
-                      Navigator.of(context, rootNavigator: true).pop();
-                    }
+                Consumer(
+                  builder: (context, ref, _) {
+                    return CustomBigButton(
+                      width: 279.w,
+                      height: 54.h,
+                      text: 'YES'.tr(),
+                      backgroundColor: const Color(0xFF00C5FF),
+                      onPressed: () async {
+                        if (await ref.read(walletProvider).isAuthenticated()) {
+                          await ref
+                              .read(walletProvider)
+                              .settingsDeletePromptConfirm();
+                        }
+                        Navigator.of(context, rootNavigator: true).pop();
+                      },
+                    );
                   },
                 ),
                 Padding(

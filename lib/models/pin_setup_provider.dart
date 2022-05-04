@@ -2,14 +2,16 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
+import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/models/wallet.dart';
 
-final pinSetupProvider = ChangeNotifierProvider<PinSetupProvider>(
-    (ref) => PinSetupProvider(ref.read));
+final pinSetupProvider =
+    ChangeNotifierProvider<PinSetupProvider>((ref) => PinSetupProvider(ref));
 
 enum PinFieldState {
   firstPin,
@@ -23,12 +25,9 @@ enum PinSetupState {
 }
 
 class PinSetupProvider extends ChangeNotifier {
-  final Reader read;
+  final Ref ref;
 
-  PinSetupProvider(this.read) {
-    onSuccess = _onDefaultSuccess;
-    onBack = _onDefaultBack;
-  }
+  PinSetupProvider(this.ref);
 
   static const minPinLength = 4;
   static const maxPinLength = 8;
@@ -47,6 +46,8 @@ class PinSetupProvider extends ChangeNotifier {
 
     _firstPin = value;
     state = PinSetupState.idle;
+    errorMessage = '';
+    notifyListeners();
   }
 
   String _secondPin = '';
@@ -58,10 +59,16 @@ class PinSetupProvider extends ChangeNotifier {
 
     _secondPin = value;
     state = PinSetupState.idle;
+    errorMessage = '';
+    notifyListeners();
   }
 
   bool _firstPinEnabled = true;
-  set firstPinEnabled(bool value) => _firstPinEnabled = value;
+  set firstPinEnabled(bool value) {
+    _firstPinEnabled = value;
+    notifyListeners();
+  }
+
   bool get firstPinEnabled {
     if (state == PinSetupState.done) {
       return false;
@@ -71,7 +78,11 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   bool _secondPinEnabled = false;
-  set secondPinEnabled(bool value) => _secondPinEnabled = value;
+  set secondPinEnabled(bool value) {
+    _secondPinEnabled = value;
+    notifyListeners();
+  }
+
   bool get secondPinEnabled {
     if (state == PinSetupState.done) {
       return false;
@@ -81,32 +92,44 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   bool isNewWallet = false;
-  late VoidCallback onSuccess;
-  late VoidCallback onBack;
 
   String errorMessage = '';
 
-  void _onDefaultSuccess() {}
-  void _onDefaultBack() {}
+  void onSuccess() {
+    ref.read(pinSetupExitStateProvider.notifier).state =
+        const PinSetupExitState.success();
+  }
 
-  void init({
-    required void Function(BuildContext context) onSuccessCallback,
-    required void Function(BuildContext context) onBackCallback,
-  }) {
-    final context = read(walletProvider).navigatorKey.currentContext;
-    if (context == null) {
-      logger.w('Context cannot be null');
-      return;
-    }
+  void onBack() {
+    ref.read(pinSetupExitStateProvider.notifier).state =
+        const PinSetupExitState.back();
+  }
 
-    onSuccess = () {
-      onSuccessCallback(context);
-    };
-    onBack = () {
-      onBackCallback(context);
-    };
-
+  void initPinSetupSettings() {
+    ref.read(pinSetupExitStateProvider.notifier).state =
+        const PinSetupExitState.empty();
+    ref.read(pinSetupCallerStateProvider.notifier).state =
+        const PinSetupCallerState.settings();
     _clearStates();
+    ref.read(walletProvider).setPinSetup();
+  }
+
+  void initPinSetupNewWalletPinWelcome() {
+    ref.read(pinSetupExitStateProvider.notifier).state =
+        const PinSetupExitState.empty();
+    ref.read(pinSetupCallerStateProvider.notifier).state =
+        const PinSetupCallerState.newWalletPinWelcome();
+    _clearStates();
+    ref.read(walletProvider).setPinSetup();
+  }
+
+  void initPinSetupPinWelcome() {
+    ref.read(pinSetupExitStateProvider.notifier).state =
+        const PinSetupExitState.empty();
+    ref.read(pinSetupCallerStateProvider.notifier).state =
+        const PinSetupCallerState.pinWelcome();
+    _clearStates();
+    ref.read(walletProvider).setPinSetup();
   }
 
   void _done() {
@@ -127,6 +150,7 @@ class PinSetupProvider extends ChangeNotifier {
     secondPin = '';
     secondPinEnabled = false;
     errorMessage = '';
+    notifyListeners();
   }
 
   Future<void> onKeyEntered(PinKey key) async {
@@ -259,11 +283,21 @@ class PinSetupProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setFirstPinState() {
+    fieldState = PinFieldState.firstPin;
+    notifyListeners();
+  }
+
+  void setSecondPinState() {
+    fieldState = PinFieldState.secondPin;
+    notifyListeners();
+  }
+
   Future<void> _sendPin(String pin) async {
     await pinEnryptedSubscription?.cancel();
     pinEnryptedSubscription =
-        read(walletProvider).pinEncryptDataSubject.listen(_onPinData);
-    read(walletProvider).sendEncryptPin(pin);
+        ref.read(walletProvider).pinEncryptDataSubject.listen(_onPinData);
+    ref.read(walletProvider).sendEncryptPin(pin);
     state = PinSetupState.done;
     notifyListeners();
   }
@@ -282,6 +316,13 @@ class PinSetupProvider extends ChangeNotifier {
     logger.d('PIN OK');
 
     _done();
-    await read(walletProvider).setPinSuccess();
+    await ref.read(walletProvider).setPinSuccess();
   }
 }
+
+final pinSetupCallerStateProvider =
+    StateProvider.autoDispose<PinSetupCallerState>(
+        (ref) => const PinSetupCallerState.empty());
+
+final pinSetupExitStateProvider = StateProvider.autoDispose<PinSetupExitState>(
+    (ref) => const PinSetupExitState.empty());

@@ -7,6 +7,7 @@ class OrderTrackingSliderTrackShape extends RoundedRectSliderTrackShape {
     this.inverse = false,
     this.negativeColor = const Color(0xFFFF7878),
     this.positiveColor = const Color(0xFF2CCCBF),
+    this.trackColor = const Color(0xFF135579),
   });
 
   final double minValue;
@@ -14,6 +15,7 @@ class OrderTrackingSliderTrackShape extends RoundedRectSliderTrackShape {
   final bool inverse;
   final Color negativeColor;
   final Color positiveColor;
+  final Color trackColor;
 
   @override
   void paint(
@@ -43,7 +45,7 @@ class OrderTrackingSliderTrackShape extends RoundedRectSliderTrackShape {
       offset.dx + thumbWidth / 2,
       offset.dy + (parentBox.size.height - trackHeight) / 2,
       trackWidth - thumbWidth / 2,
-      trackHeight * 2,
+      offset.dy + (parentBox.size.height - trackHeight) / 2 + trackHeight,
     );
 
     final trackNegativeBackground = Rect.fromLTRB(
@@ -99,7 +101,7 @@ class OrderTrackingSliderTrackShape extends RoundedRectSliderTrackShape {
     final isThumbOnLeftSide =
         thumbCenter.dx < (trackRect.left + trackRect.width) / 2;
 
-    final trackPaint = Paint()..color = const Color(0xFF135579);
+    final trackPaint = Paint()..color = trackColor;
 
     // draw background
     context.canvas.drawRRect(

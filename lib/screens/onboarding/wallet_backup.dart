@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:secure_application/secure_application_provider.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -9,11 +11,20 @@ import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_table.dart';
 
-class WalletBackup extends StatelessWidget {
+class WalletBackup extends HookConsumerWidget {
   const WalletBackup({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lockController =
+        useMemoized(() => SecureApplicationProvider.of(context, listen: false));
+    useEffect(() {
+      lockController?.secure();
+      return () {
+        lockController?.open();
+      };
+    });
+
     return SideSwapPopup(
       enableInsideHorizontalPadding: false,
       child: Column(
@@ -59,9 +70,9 @@ class WalletBackup extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(top: 32.h),
             child: Consumer(
-              builder: (context, watch, child) {
+              builder: (context, ref, child) {
                 final words = <ValueNotifier<String>>[];
-                watch(walletProvider).getMnemonicWords().forEach((e) {
+                ref.watch(walletProvider).getMnemonicWords().forEach((e) {
                   words.add(ValueNotifier<String>(e));
                 });
                 return MnemonicTable(
@@ -86,7 +97,7 @@ class WalletBackup extends StatelessWidget {
               text: 'CONFIRM YOUR WORDS'.tr(),
               backgroundColor: const Color(0xFF00C5FF),
               onPressed: () {
-                context.read(walletProvider).backupNewWalletCheck();
+                ref.read(walletProvider).backupNewWalletCheck();
               },
             ),
           ),

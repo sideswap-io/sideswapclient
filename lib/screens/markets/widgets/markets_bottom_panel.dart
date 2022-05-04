@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MarketsBottomPanel extends StatelessWidget {
+class MarketsBottomPanel extends ConsumerWidget {
   const MarketsBottomPanel({
     Key? key,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.maxFinite,
       height: 102.h,
@@ -28,7 +28,7 @@ class MarketsBottomPanel extends StatelessWidget {
           text: 'CREATE ORDER'.tr(),
           backgroundColor: const Color(0xFF00C5FF),
           onPressed: () {
-            context.read(walletProvider).setCreateOrderEntry();
+            ref.read(walletProvider).setCreateOrderEntry();
           },
         ),
       ),

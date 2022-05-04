@@ -16,8 +16,8 @@ targets:
           field_rename: none
           ignore_unannotated: false
           include_if_null: true
-        generate_for:
-          - "lib/models/notification_model.dart"
       freezed|freezed:
         generate_for:
           - "lib/models/notification_model.dart"
+          - "lib/models/swap_models.dart"
+          - "lib/models/pin_models.dart"

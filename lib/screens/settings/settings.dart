@@ -1,34 +1,37 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/biometric_available_provider.dart';
+import 'package:sideswap/models/pin_available_provider.dart';
+import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/widgets/settings_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_delete_wallet_dialog.dart';
 
-class Settings extends StatefulWidget {
+class Settings extends ConsumerStatefulWidget {
   const Settings({Key? key}) : super(key: key);
 
   @override
   _SettingsState createState() => _SettingsState();
 }
 
-class _SettingsState extends State<Settings> {
+class _SettingsState extends ConsumerState<Settings> {
   bool isBiometricAvailable = false;
 
   @override
   void initState() {
     Future.microtask(() async {
       isBiometricAvailable =
-          await context.read(walletProvider).isBiometricAvailable();
+          await ref.read(walletProvider).isBiometricAvailable();
       setState(() {});
     });
     super.initState();
@@ -58,9 +61,8 @@ class _SettingsState extends State<Settings> {
               SizedBox(
                 height: 8.w,
               ),
-              Consumer(builder: (context, watch, child) {
-                final wallet = watch(walletProvider);
-                final ampId = wallet.ampId;
+              Consumer(builder: (context, ref, _) {
+                final ampId = ref.watch(walletProvider.select((p) => p.ampId));
 
                 return Container(
                   height: 60.w,
@@ -114,20 +116,19 @@ class _SettingsState extends State<Settings> {
                   type: SettingsButtonType.recovery,
                   text: 'View my recovery phrase'.tr(),
                   onPressed: () {
-                    context.read(walletProvider).settingsViewBackup();
+                    ref.read(walletProvider).settingsViewBackup();
                   },
                 ),
               ),
-              if (FlavorConfig.isProduction() &&
-                  FlavorConfig
-                      .instance.values.enableOnboardingUserFeatures) ...[
+              if (FlavorConfig.isProduction &&
+                  FlavorConfig.enableOnboardingUserFeatures) ...[
                 Padding(
                   padding: EdgeInsets.only(top: 8.h),
                   child: SettingsButton(
                     type: SettingsButtonType.userDetails,
                     text: 'User details'.tr(),
                     onPressed: () {
-                      context.read(walletProvider).settingsUserDetails();
+                      ref.read(walletProvider).settingsUserDetails();
                     },
                   ),
                 ),
@@ -138,21 +139,24 @@ class _SettingsState extends State<Settings> {
                   type: SettingsButtonType.about,
                   text: 'About us'.tr(),
                   onPressed: () {
-                    context.read(walletProvider).settingsViewAboutUs();
+                    ref.read(walletProvider).settingsViewAboutUs();
                   },
                 ),
               ),
               Consumer(
-                builder: (context, watch, child) {
-                  watch(walletProvider).isBiometricAvailable().then((value) {
+                builder: (context, ref, _) {
+                  ref
+                      .watch(walletProvider)
+                      .isBiometricAvailable()
+                      .then((value) {
                     setState(() {
                       isBiometricAvailable = value;
                     });
                   });
 
                   final isBiometricEnabled =
-                      watch(walletProvider).isBiometricEnabled();
-                  final isPinEnabled = watch(walletProvider).isPinEnabled();
+                      ref.watch(biometricAvailableProvider);
+                  final isPinEnabled = ref.watch(pinAvailableProvider);
 
                   return Column(
                     children: [
@@ -164,7 +168,7 @@ class _SettingsState extends State<Settings> {
                           value: isBiometricEnabled,
                           onTap: () async {
                             if (isBiometricEnabled) {
-                              await context
+                              await ref
                                   .read(walletProvider)
                                   .settingsDisableBiometric();
                             } else {
@@ -172,10 +176,10 @@ class _SettingsState extends State<Settings> {
                               // pin could be enabled when biometric is unavailable
                               // but in the mean time biometric could be enabled in device settings
                               // then we need to display in settings both options
-                              if (await context
+                              if (await ref
                                   .read(walletProvider)
                                   .disablePinProtection()) {
-                                await context
+                                await ref
                                     .read(walletProvider)
                                     .settingsEnableBiometric();
                               }
@@ -191,23 +195,11 @@ class _SettingsState extends State<Settings> {
                           value: isPinEnabled,
                           onTap: () async {
                             if (isPinEnabled) {
-                              await context
+                              await ref
                                   .read(walletProvider)
                                   .disablePinProtection();
                             } else {
-                              context.read(walletProvider).setPinSetup(
-                                onSuccessCallback:
-                                    (BuildContext context) async {
-                                  context
-                                      .read(walletProvider)
-                                      .settingsViewPage();
-                                },
-                                onBackCallback: (BuildContext context) async {
-                                  context
-                                      .read(walletProvider)
-                                      .settingsViewPage();
-                                },
-                              );
+                              ref.read(pinSetupProvider).initPinSetupSettings();
                             }
                           },
                         ),
@@ -216,14 +208,14 @@ class _SettingsState extends State<Settings> {
                   );
                 },
               ),
-              if (FlavorConfig.instance.values.enableNetworkSettings) ...[
+              if (FlavorConfig.enableNetworkSettings) ...[
                 Padding(
                   padding: EdgeInsets.only(top: 8.h),
                   child: SettingsButton(
                     type: SettingsButtonType.network,
                     text: 'Network access'.tr(),
                     onPressed: () {
-                      context.read(walletProvider).settingsNetwork();
+                      ref.read(walletProvider).settingsNetwork();
                     },
                   ),
                 ),

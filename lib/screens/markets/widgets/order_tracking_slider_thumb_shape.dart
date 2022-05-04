@@ -10,6 +10,8 @@ class OrderTrackingSliderThumbShape extends SliderComponentShape {
     this.positiveColor = const Color(0xFF2CCCBF),
     this.circleNegativeColor = const Color(0xFF3E475F),
     this.circlePositiveColor = const Color(0xFF147385),
+    this.customRadius,
+    this.stokeRatio = 0.214285,
   });
 
   final double minValue;
@@ -21,11 +23,13 @@ class OrderTrackingSliderThumbShape extends SliderComponentShape {
 
   var borderColor = const Color(0xFF1B8BC8);
   var circleColor = const Color(0xFF043857);
-  final radius = 14.0.r;
+  final double? customRadius;
+  final double defaultRadius = 14.0.r;
+  final double stokeRatio;
 
   @override
   Size getPreferredSize(bool isEnabled, bool isDiscrete) {
-    return Size.fromRadius(radius);
+    return Size.fromRadius(customRadius ?? defaultRadius);
   }
 
   @override
@@ -61,9 +65,10 @@ class OrderTrackingSliderThumbShape extends SliderComponentShape {
     }
 
     final paintCircle = Paint()..color = circleColor;
+    final radius = customRadius ?? defaultRadius;
     final paintBorder = Paint()
       ..color = borderColor
-      ..strokeWidth = radius * 0.214285
+      ..strokeWidth = radius * stokeRatio
       ..style = PaintingStyle.stroke;
 
     context.canvas.drawCircle(center, radius, paintCircle);

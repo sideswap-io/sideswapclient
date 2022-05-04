@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -33,13 +33,15 @@ class _PaymentSendAmountState extends State<PaymentSendAmount> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
+      builder: (context, ref, child) {
         final sendAssets = widget.availableDropdownAssets ??
-            watch(walletProvider).sendAssets();
+            ref.watch(walletProvider).sendAssets();
+        final showError =
+            ref.watch(paymentProvider.select((p) => p.insufficientFunds));
         return TickerAmountTextField(
           focusNode: widget.focusNode,
           controller: widget.controller,
-          showError: watch(paymentProvider).insufficientFunds,
+          showError: showError,
           availableAssets: sendAssets,
           onDropdownChanged: widget.onDropdownChanged,
           dropdownValue: widget.dropdownValue,

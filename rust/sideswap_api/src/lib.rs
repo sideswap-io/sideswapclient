@@ -106,6 +106,7 @@ pub struct Asset {
     pub icon_url: Option<String>,
     pub instant_swaps: Option<bool>,
     pub domain: Option<String>,
+    pub domain_agent: Option<String>,
 }
 
 pub type Assets = Vec<Asset>;
@@ -166,11 +167,6 @@ pub struct PegResponse {
 pub struct PegStatusRequest {
     pub order_id: OrderId,
     pub peg_in: Option<bool>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SwapStatusRequest {
-    pub order_id: OrderId,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -291,6 +287,12 @@ pub struct PriceUpdateSubscribe {
 pub struct PriceUpdateNotification {
     pub asset: AssetId,
     pub price: PricePair,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LocalMessageNotification {
+    pub title: String,
+    pub body: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -800,6 +802,7 @@ pub struct AssetDetailsRequest {
 pub struct AssetStats {
     pub issued_amount: i64,
     pub burned_amount: i64,
+    pub offline_amount: Option<i64>,
     pub has_blinded_issuances: bool,
 }
 
@@ -818,6 +821,7 @@ pub struct AssetDetailsResponse {
     pub precision: u8,
     pub icon_url: String,
     pub domain: String,
+    pub domain_agent: Option<String>,
     pub chain_stats: Option<AssetStats>,
     pub chart_url: Option<String>,
     pub chart_stats: Option<ChartStats>,
@@ -1021,7 +1025,7 @@ pub struct SwapDoneNotification {
     pub price: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ChartPoint {
     pub time: String,
     pub open: f64,
@@ -1198,6 +1202,7 @@ pub enum Notification {
     RfqCreated(RfqCreatedNotification),
     RfqRemoved(RfqRemovedNotification),
     PriceUpdate(PriceUpdateNotification),
+    LocalMessage(LocalMessageNotification),
 
     UpdatePrices(LoadPricesResponse),
     OrderCreated(OrderCreatedNotification),

@@ -1,39 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/wallet_biometric_prompt.dart';
 
-class ImportWalletBiometricPrompt extends StatelessWidget {
+class ImportWalletBiometricPrompt extends ConsumerWidget {
   const ImportWalletBiometricPrompt({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return WalletBiometricPrompt(
       onYesPressed: () async {
-        if (await context.read(walletProvider).walletBiometricEnable() ==
-            false) {
+        if (await ref.read(walletProvider).walletBiometricEnable() == false) {
           return;
         }
 
-        if (FlavorConfig.isProduction() &&
-            FlavorConfig.instance.values.enableOnboardingUserFeatures) {
-          context.read(walletProvider).setImportAvatar();
+        if (FlavorConfig.isProduction &&
+            FlavorConfig.enableOnboardingUserFeatures) {
+          ref.read(walletProvider).setImportAvatar();
         } else {
-          await context.read(walletProvider).loginAndLoadMainPage();
+          ref.read(walletProvider).loginAndLoadMainPage();
         }
       },
       onNoPressed: () async {
-        if (await context.read(walletProvider).walletBiometricSkip() == false) {
+        if (await ref.read(walletProvider).walletBiometricSkip() == false) {
           return;
         }
 
-        if (FlavorConfig.isProduction() &&
-            FlavorConfig.instance.values.enableOnboardingUserFeatures) {
-          context.read(walletProvider).setImportAvatar();
+        if (FlavorConfig.isProduction &&
+            FlavorConfig.enableOnboardingUserFeatures) {
+          ref.read(walletProvider).setImportAvatar();
         } else {
-          await context.read(walletProvider).loginAndLoadMainPage();
+          ref.read(walletProvider).loginAndLoadMainPage();
         }
       },
     );

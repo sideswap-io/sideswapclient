@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
-
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/colored_container.dart';
 import 'package:sideswap/models/markets_provider.dart';
@@ -12,15 +11,14 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/token_market_order_details.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
-class SwapMarket extends StatefulWidget {
+class SwapMarket extends ConsumerStatefulWidget {
   const SwapMarket({Key? key}) : super(key: key);
 
   @override
   _SwapMarketState createState() => _SwapMarketState();
 }
 
-class _SwapMarketState extends State<SwapMarket> {
-  BuildContext? currentContext;
+class _SwapMarketState extends ConsumerState<SwapMarket> {
   ScrollController scrollController = ScrollController();
 
   final headerStyle = GoogleFonts.roboto(
@@ -38,19 +36,7 @@ class _SwapMarketState extends State<SwapMarket> {
   @override
   void initState() {
     super.initState();
-    currentContext = context.read(walletProvider).navigatorKey.currentContext;
-
     WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
-  }
-
-  @override
-  void dispose() {
-    // we can't use here context, because that widget could be outside tree
-    if (currentContext != null) {
-      currentContext!.read(marketsProvider).unsubscribeIndexPrice();
-    }
-
-    super.dispose();
   }
 
   void afterBuild(BuildContext context) async {
@@ -58,21 +44,20 @@ class _SwapMarketState extends State<SwapMarket> {
   }
 
   void subscribeToMarket() {
-    final marketAssetId =
-        context.read(swapMarketProvider).currentProduct.assetId;
+    final marketAssetId = ref.read(swapMarketProvider).currentProduct.assetId;
 
-    context.read(marketsProvider).subscribeIndexPrice(marketAssetId);
-    context.read(marketsProvider).subscribeSwapMarket(marketAssetId);
+    ref.read(marketsProvider).subscribeIndexPrice(marketAssetId);
+    ref.read(marketsProvider).subscribeSwapMarket(marketAssetId);
   }
 
   void openOrder(RequestOrder order) async {
     if (order.own) {
-      await context.read(marketsProvider).onModifyPrice(order);
+      await ref.read(marketsProvider).onModifyPrice(ref, order);
       return;
     }
 
     if (order.marketType != MarketType.token) {
-      context.read(walletProvider).linkOrder(order.orderId);
+      ref.read(walletProvider).linkOrder(order.orderId);
       return;
     }
 
@@ -92,10 +77,10 @@ class _SwapMarketState extends State<SwapMarket> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final swapMarket = watch(swapMarketProvider);
-      final wallet = context.read(walletProvider);
-      final markets = watch(marketsProvider);
+    return Consumer(builder: (context, ref, child) {
+      final swapMarket = ref.watch(swapMarketProvider);
+      final wallet = ref.read(walletProvider);
+      final markets = ref.watch(marketsProvider);
 
       final currentProduct = swapMarket.currentProduct;
       final asset = wallet.assets[currentProduct.assetId]!;
@@ -188,7 +173,7 @@ class _SwapMarketState extends State<SwapMarket> {
                         return;
                       }
 
-                      context.read(swapMarketProvider).currentProduct = value;
+                      ref.read(swapMarketProvider).currentProduct = value;
                       subscribeToMarket();
                     },
                   ),

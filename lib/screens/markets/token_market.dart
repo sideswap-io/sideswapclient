@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/markets_provider.dart';
@@ -10,14 +10,14 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/token_market_order_details.dart';
 import 'package:sideswap/screens/markets/widgets/order_item.dart';
 
-class TokenMarket extends StatefulWidget {
+class TokenMarket extends ConsumerStatefulWidget {
   const TokenMarket({Key? key}) : super(key: key);
 
   @override
   _TokenMarketState createState() => _TokenMarketState();
 }
 
-class _TokenMarketState extends State<TokenMarket> {
+class _TokenMarketState extends ConsumerState<TokenMarket> {
   late TokenMarketDropdownValue currentDropdownValue;
   final tokenRequestOrders = <RequestOrder>[];
   ScrollController scrollController = ScrollController();
@@ -26,13 +26,13 @@ class _TokenMarketState extends State<TokenMarket> {
   void initState() {
     super.initState();
 
-    currentDropdownValue = context
+    currentDropdownValue = ref
         .read(tokenMarketProvider)
         .getDropdownValues()
         .where((e) => e.assetId.isEmpty)
         .first;
 
-    tokenRequestOrders.addAll(context
+    tokenRequestOrders.addAll(ref
         .read(tokenMarketProvider)
         .getTokenList(currentDropdownValue.assetId));
 
@@ -50,7 +50,7 @@ class _TokenMarketState extends State<TokenMarket> {
   }
 
   void subscribeToMarket() {
-    context.read(marketsProvider).subscribeTokenMarket();
+    ref.read(marketsProvider).subscribeTokenMarket();
   }
 
   @override
@@ -74,8 +74,9 @@ class _TokenMarketState extends State<TokenMarket> {
           Padding(
             padding: EdgeInsets.only(top: 4.h, left: 16.w, right: 16.w),
             child: Consumer(
-              builder: (context, watch, child) {
-                final values = watch(tokenMarketProvider).getDropdownValues();
+              builder: (context, ref, child) {
+                final values =
+                    ref.watch(tokenMarketProvider).getDropdownValues();
                 if (!values.any((e) => e == currentDropdownValue)) {
                   currentDropdownValue =
                       values.where((e) => e.assetId.isEmpty).first;
@@ -170,9 +171,9 @@ class _TokenMarketState extends State<TokenMarket> {
             ),
           ),
           Consumer(
-            builder: (context, watch, child) {
-              watch(tokenMarketProvider).tokenMarketOrders;
-              final newTokenMarketOrders = context
+            builder: (context, ref, child) {
+              ref.watch(tokenMarketProvider).tokenMarketOrders;
+              final newTokenMarketOrders = ref
                   .read(tokenMarketProvider)
                   .getTokenList(currentDropdownValue.assetId);
               tokenRequestOrders.clear();
@@ -200,10 +201,8 @@ class _TokenMarketState extends State<TokenMarket> {
                               useTokenMarketView: true,
                               onTap: () {
                                 if (tokenRequestOrders[index].own) {
-                                  context
-                                      .read(walletProvider)
-                                      .setOrderRequestView(
-                                          tokenRequestOrders[index]);
+                                  ref.read(walletProvider).setOrderRequestView(
+                                      tokenRequestOrders[index]);
                                   return;
                                 }
 

@@ -26,9 +26,8 @@
 
     <application
         android:label="SideSwap"
-        android:icon="@mipmap/launcher_icon"
+        android:icon="@mipmap/notification_icon"
         android:allowBackup="false"
-        android:name="io.flutter.app.FlutterApplication"
         android:extractNativeLibs="true"
         >
         <meta-data

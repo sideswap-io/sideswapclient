@@ -1,12 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class MnemonicCheckRow extends StatelessWidget {
+class MnemonicCheckRow extends ConsumerWidget {
   final int wordIndex;
   final List<String> words;
   final void Function(int) onTap;
@@ -19,7 +19,7 @@ class MnemonicCheckRow extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -40,7 +40,7 @@ class MnemonicCheckRow extends StatelessWidget {
               children: List<Widget>.generate(
                 words.length,
                 (int index) {
-                  final selectionIndex = context
+                  final selectionIndex = ref
                           .read(walletProvider)
                           .backupCheckSelectedWords[wordIndex] ??
                       -1;

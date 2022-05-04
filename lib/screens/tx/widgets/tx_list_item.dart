@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -40,20 +40,24 @@ class TxListItem extends StatelessWidget {
             Expanded(
               child: Material(
                 color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    context.read(walletProvider).showTxDetails(txItem.item);
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    return InkWell(
+                      onTap: () {
+                        ref.read(walletProvider).showTxDetails(txItem.item);
+                      },
+                      child: txItem.item.whichItem() == TransItem_Item.tx
+                          ? TxItemTransaction(
+                              assetId: assetId,
+                              transItem: txItem.item,
+                              accountType: accountType,
+                            )
+                          : TxItemPeg(
+                              assetId: assetId,
+                              transItem: txItem.item,
+                            ),
+                    );
                   },
-                  child: txItem.item.whichItem() == TransItem_Item.tx
-                      ? TxItemTransaction(
-                          assetId: assetId,
-                          transItem: txItem.item,
-                          accountType: accountType,
-                        )
-                      : TxItemPeg(
-                          assetId: assetId,
-                          transItem: txItem.item,
-                        ),
                 ),
               ),
             ),

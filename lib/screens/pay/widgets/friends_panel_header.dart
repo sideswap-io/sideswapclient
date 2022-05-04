@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
@@ -29,8 +29,9 @@ class FriendsPanelHeader extends StatelessWidget {
         child: Row(
           children: [
             Consumer(
-              builder: (context, watch, child) {
-                final friendsCounter = watch(friendsProvider).friends.length;
+              builder: (context, ref, child) {
+                final friendsCounter =
+                    ref.watch(friendsProvider).friends.length;
                 return Text(
                   'SIDESWAP_FRIENDS'.tr(args: ['$friendsCounter']),
                   style: GoogleFonts.roboto(

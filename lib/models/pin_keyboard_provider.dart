@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rxdart/subjects.dart';
 
 enum PinKey {
@@ -17,12 +17,12 @@ enum PinKey {
 }
 
 final pinKeyboardProvider =
-    Provider<PinKeyboardProvider>((ref) => PinKeyboardProvider(ref.read));
+    Provider<PinKeyboardProvider>((ref) => PinKeyboardProvider(ref));
 
 class PinKeyboardProvider {
-  final Reader read;
+  final Ref ref;
 
-  PinKeyboardProvider(this.read);
+  PinKeyboardProvider(this.ref);
 
   PublishSubject<PinKey> keyPressedSubject = PublishSubject<PinKey>();
 

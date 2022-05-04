@@ -1,12 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
-class OrderSuccess extends StatelessWidget {
+class OrderSuccess extends ConsumerWidget {
   const OrderSuccess({
     Key? key,
     this.isResponse = false,
@@ -15,7 +15,7 @@ class OrderSuccess extends StatelessWidget {
   final bool isResponse;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // final orderData = context.read(walletProvider).orderDetailsData;
     return SideSwapPopup(
       hideCloseButton: true,
@@ -24,7 +24,7 @@ class OrderSuccess extends StatelessWidget {
         header: isResponse ? 'Response submitted' : 'Order submitted'.tr(),
         buttonText: 'OK'.tr(),
         onPressed: () {
-          context.read(walletProvider).goBack();
+          ref.read(walletProvider).goBack();
         },
       ),
     );

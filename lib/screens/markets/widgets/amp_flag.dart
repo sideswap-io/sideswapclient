@@ -13,7 +13,7 @@ class AmpFlag extends StatelessWidget {
         borderRadius: BorderRadius.all(
           Radius.circular(10.w),
         ),
-        color: const Color(0xFF1C6086),
+        color: const Color(0x664994BC),
       ),
       margin: EdgeInsets.only(left: 8.w),
       padding: EdgeInsets.symmetric(

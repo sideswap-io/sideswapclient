@@ -1,11 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/background/background_painter.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 
-class SideSwapScaffold extends StatefulWidget {
+class SideSwapScaffold extends ConsumerStatefulWidget {
   const SideSwapScaffold({
     Key? key,
     this.onWillPop,
@@ -59,9 +61,20 @@ class SideSwapScaffold extends StatefulWidget {
   _SideSwapScaffoldState createState() => _SideSwapScaffoldState();
 }
 
-class _SideSwapScaffoldState extends State<SideSwapScaffold> {
+class _SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
   @override
   Widget build(BuildContext context) {
+    if (FlavorConfig.isDesktop) {
+      return DPopupWithClose(
+        width: 580,
+        height: 605,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 40),
+          child: widget.body!,
+        ),
+      );
+    }
+
     final statusBarTopPadding = MediaQuery.of(context).padding.top;
     final body = widget.sideSwapBackground
         ? CustomPaint(
@@ -96,7 +109,7 @@ class _SideSwapScaffoldState extends State<SideSwapScaffold> {
     return WillPopScope(
       onWillPop: widget.onWillPop ??
           () async {
-            return context.read(walletProvider).goBack();
+            return ref.read(walletProvider).goBack();
           },
       child: _scaffold,
     );

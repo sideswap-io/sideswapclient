@@ -11,7 +11,7 @@ import 'package:sideswap/models/avatar_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/screens/onboarding/import_avatar_resizer.dart';
 
-class ImageSourceChooser extends StatelessWidget {
+class ImageSourceChooser extends ConsumerWidget {
   const ImageSourceChooser({
     Key? key,
     this.resizerData,
@@ -20,7 +20,7 @@ class ImageSourceChooser extends StatelessWidget {
   final ImportAvatarResizerData? resizerData;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return ClipRRect(
       borderRadius: BorderRadius.all(
         Radius.circular(14.w),
@@ -49,7 +49,7 @@ class ImageSourceChooser extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
-                  if (await context.read(avatarProvider).loadCameraImage()) {
+                  if (await ref.read(avatarProvider).loadCameraImage()) {
                     Navigator.pop(context);
                     await Navigator.of(context, rootNavigator: true).push<void>(
                       MaterialPageRoute(
@@ -62,9 +62,9 @@ class ImageSourceChooser extends StatelessWidget {
                   }
 
                   final error =
-                      context.read(avatarProvider).avatarProviderError;
+                      ref.read(avatarProvider).avatarProviderError;
                   if (error != null) {
-                    await context.read(utilsProvider).showErrorDialog(
+                    await ref.read(utilsProvider).showErrorDialog(
                         'UNABLE_TO_LOAD_IMAGE'.tr(args: ['$error']));
                   }
                 },
@@ -90,7 +90,7 @@ class ImageSourceChooser extends StatelessWidget {
                   ),
                 ),
                 onPressed: () async {
-                  if (await context.read(avatarProvider).loadGalleryImage()) {
+                  if (await ref.read(avatarProvider).loadGalleryImage()) {
                     Navigator.pop(context);
                     await Navigator.of(context, rootNavigator: true).push<void>(
                       MaterialPageRoute(

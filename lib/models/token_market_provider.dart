@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -8,16 +8,18 @@ import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 final tokenMarketProvider = ChangeNotifierProvider<TokenMarketProvider>(
-    (ref) => TokenMarketProvider(read: ref.read));
+    (ref) => TokenMarketProvider(ref));
 
 class AssetDetailsStats {
   int issuedAmount;
   int burnedAmount;
+  int offlineAmount;
   bool hasBlindedIssuances;
 
   AssetDetailsStats({
     required this.issuedAmount,
     required this.burnedAmount,
+    required this.offlineAmount,
     required this.hasBlindedIssuances,
   });
 }
@@ -83,11 +85,9 @@ class TokenMarketDropdownValue {
 }
 
 class TokenMarketProvider extends ChangeNotifier {
-  Reader read;
+  final Ref ref;
 
-  TokenMarketProvider({
-    required this.read,
-  });
+  TokenMarketProvider(this.ref);
 
   final tokenMarketOrders = <RequestOrder>[];
   final assetDetails = <String, AssetDetailsData>{};
@@ -111,7 +111,7 @@ class TokenMarketProvider extends ChangeNotifier {
 
     for (var order in tokenMarketOrders) {
       final value = TokenMarketDropdownValue(
-          name: read(walletProvider).assets[order.assetId]?.ticker ?? '',
+          name: ref.read(walletProvider).assets[order.assetId]?.ticker ?? '',
           assetId: order.assetId);
 
       if (!dropdownValues.any((e) => e.assetId == value.assetId)) {
@@ -134,7 +134,7 @@ class TokenMarketProvider extends ChangeNotifier {
     final msg = To();
     msg.assetDetails = AssetId();
     msg.assetDetails.assetId = assetId;
-    read(walletProvider).sendMsg(msg);
+    ref.read(walletProvider).sendMsg(msg);
   }
 
   void insertAssetDetails(AssetDetailsData assetDetailsData) {

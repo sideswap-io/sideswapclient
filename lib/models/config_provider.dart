@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/models/network_access_provider.dart';
 
@@ -14,7 +14,7 @@ import 'package:sideswap/models/wallet.dart';
 
 final configProvider =
     ChangeNotifierProvider<ConfigChangeNotifierProvider>((ref) {
-  return ConfigChangeNotifierProvider(ref.read);
+  return ConfigChangeNotifierProvider(ref);
 });
 
 class ConfigChangeNotifierProvider with ChangeNotifier {
@@ -35,9 +35,9 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const settingsUseTLSField = 'settingsUseTLSFieldNew';
   static const settingsField = 'settings';
 
-  ConfigChangeNotifierProvider(this.read);
+  ConfigChangeNotifierProvider(this.ref);
 
-  final Reader read;
+  final Ref ref;
   late SharedPreferences _prefs;
 
   Future<bool> init() async {
@@ -93,7 +93,8 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
     final currentEnv = env;
     await _prefs.clear();
     logger.d(phoneNumber);
-    read(phoneProvider)
+    ref
+        .read(phoneProvider)
         .setConfirmPhoneData(confirmPhoneData: ConfirmPhoneData());
     await setEnv(currentEnv);
     notifyListeners();
@@ -149,18 +150,23 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   Future<void> setSettingsNetworkType(SettingsNetworkType type) async {
     await _prefs.setString(
         settingsNetworkTypeField, EnumToString.convertToString(type));
+    notifyListeners();
   }
 
   SettingsNetworkType get settingsNetworkType {
     final typeString = _prefs.getString(settingsNetworkTypeField);
 
-    return EnumToString.fromString(
-            SettingsNetworkType.values, typeString ?? '') ??
+    if (typeString == null) {
+      return SettingsNetworkType.blockstream;
+    }
+
+    return EnumToString.fromString(SettingsNetworkType.values, typeString) ??
         SettingsNetworkType.blockstream;
   }
 
   Future<void> setSettingsHost(String host) async {
     await _prefs.setString(settingsHostField, host);
+    notifyListeners();
   }
 
   String get settingsHost {
@@ -169,6 +175,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   Future<void> setSettingsPort(int port) async {
     await _prefs.setInt(settingsPortField, port);
+    notifyListeners();
   }
 
   int get settingsPort {
@@ -177,6 +184,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   Future<void> setSettingsUseTLS(bool value) async {
     await _prefs.setBool(settingsUseTLSField, value);
+    notifyListeners();
   }
 
   bool get settingsUseTLS {
@@ -189,6 +197,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   Future<void> setSettings(String value) async {
     await _prefs.setString(settingsField, value);
+    notifyListeners();
   }
 
   Future<void> clearSettings() async {

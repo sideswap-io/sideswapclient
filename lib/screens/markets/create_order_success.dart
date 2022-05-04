@@ -1,11 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
+import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
@@ -14,13 +15,13 @@ import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 import 'package:sideswap/screens/markets/widgets/share_and_copy_buttons_row.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 
-class CreateOrderSuccess extends StatelessWidget {
+class CreateOrderSuccess extends ConsumerWidget {
   const CreateOrderSuccess({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     OrderDetailsData orderDetailsData =
-        context.read(walletProvider).orderDetailsData;
+        ref.read(walletProvider).orderDetailsData;
 
     return SideSwapPopup(
       onWillPop: () async {
@@ -44,14 +45,14 @@ class CreateOrderSuccess extends StatelessWidget {
                 child: ShareAndCopyButtonsRow(
                   buttonWidth: 166.w,
                   onShare: () async {
-                    await Share.share(context
+                    await Share.share(ref
                         .read(requestOrderProvider)
                         .getAddressToShare(orderDetailsData));
                   },
                   onCopy: () async {
                     await copyToClipboard(
                         context,
-                        context
+                        ref
                             .read(requestOrderProvider)
                             .getAddressToShare(orderDetailsData));
                   },
@@ -69,9 +70,9 @@ class CreateOrderSuccess extends StatelessWidget {
             : null,
         onPressed: () {
           // clear old order data
-          context.read(walletProvider).orderDetailsData =
-              OrderDetailsData.empty();
-          context.read(walletProvider).setRegistered();
+          ref.read(walletProvider).orderDetailsData = OrderDetailsData.empty();
+          ref.read(marketsProvider).unsubscribeIndexPrice();
+          ref.read(walletProvider).setRegistered();
         },
       ),
     );

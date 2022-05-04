@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -14,7 +14,7 @@ import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/markets/widgets/order_price_field.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
-class ModifyPriceDialog extends StatefulWidget {
+class ModifyPriceDialog extends ConsumerStatefulWidget {
   const ModifyPriceDialog({
     Key? key,
     required this.controller,
@@ -32,7 +32,7 @@ class ModifyPriceDialog extends StatefulWidget {
   _ModifyPriceDialogState createState() => _ModifyPriceDialogState();
 }
 
-class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
+class _ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
   late FocusNode focusNode;
   double sliderValue = 0;
   BuildContext? currentContext;
@@ -46,16 +46,16 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
 
     WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
 
-    currentContext = context.read(walletProvider).navigatorKey.currentContext;
+    currentContext = ref.read(walletProvider).navigatorKey.currentContext;
 
     widget.controller.addListener(() {
-      updateDollarConversion();
+      updateDollarConversion(ref);
     });
 
     inversePrice = !widget.orderDetailsData.sellBitcoin;
 
     if (widget.orderDetailsData.isTracking) {
-      final indexPrice = context
+      final indexPrice = ref
               .read(marketsProvider)
               .getRequestOrderById(widget.orderDetailsData.orderId)
               ?.indexPrice ??
@@ -63,10 +63,10 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
       sliderValue =
           double.tryParse(((indexPrice - 1) * 100).toStringAsFixed(2)) ?? 0;
     } else {
-      final indexPrice = context
+      final indexPrice = ref
           .read(marketsProvider)
           .getIndexPriceForAsset(widget.asset?.assetId ?? '');
-      final orderPrice = context
+      final orderPrice = ref
               .read(marketsProvider)
               .getRequestOrderById(widget.orderDetailsData.orderId)
               ?.price ??
@@ -86,7 +86,7 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
       }
     }
 
-    context
+    ref
         .read(marketsProvider)
         .subscribeIndexPrice(widget.orderDetailsData.assetId);
   }
@@ -95,7 +95,7 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
   void dispose() {
     focusNode.dispose();
     if (currentContext != null) {
-      currentContext!.read(marketsProvider).unsubscribeIndexPrice();
+      ref.read(marketsProvider).unsubscribeIndexPrice();
     }
     super.dispose();
   }
@@ -105,13 +105,13 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
   }
 
   void onSubmit() {
-    final isToken = context
+    final isToken = ref
         .read(requestOrderProvider)
         .isAssetToken(widget.orderDetailsData.assetId);
 
     if (widget.orderDetailsData.isTracking) {
       final indexPrice = 1 + sliderValue / 100;
-      context.read(requestOrderProvider).modifyOrderPrice(
+      ref.read(requestOrderProvider).modifyOrderPrice(
             widget.orderDetailsData.orderId,
             isToken: isToken,
             indexPrice: indexPrice,
@@ -121,7 +121,7 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
     }
 
     var price = widget.controller.text;
-    context.read(requestOrderProvider).modifyOrderPrice(
+    ref.read(requestOrderProvider).modifyOrderPrice(
           widget.orderDetailsData.orderId,
           isToken: isToken,
           price: price,
@@ -129,13 +129,13 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
     Navigator.of(context).pop();
   }
 
-  void updateDollarConversion() {
+  void updateDollarConversion(WidgetRef ref) {
     final priceAssetId = widget.asset?.assetId ?? '';
     setState(() {
-      if (priceAssetId == context.read(walletProvider).tetherAssetId()) {
+      if (priceAssetId == ref.read(walletProvider).tetherAssetId()) {
         priceConversion = '';
       } else {
-        priceConversion = context
+        priceConversion = ref
             .read(requestOrderProvider)
             .dollarConversionFromString(priceAssetId, widget.controller.text);
       }
@@ -144,22 +144,21 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final ticker = context
+    final ticker = ref
         .read(requestOrderProvider)
         .tickerForAssetId(widget.asset?.assetId ?? '');
-    final trackingPriceFixed = context
+    final trackingPriceFixed = ref
         .read(marketsProvider)
         .calculateTrackingPrice(sliderValue, widget.asset?.assetId ?? '');
     final trackingPrice =
         '${replaceCharacterOnPosition(input: trackingPriceFixed)} $ticker';
     final tracking = widget.orderDetailsData.isTracking;
     var displaySlider = tracking;
-    final isToken = context
+    final isToken = ref
         .read(requestOrderProvider)
         .isAssetToken(widget.orderDetailsData.assetId);
-    final indexPrice = context
-        .read(marketsProvider)
-        .getIndexPriceStr(widget.asset?.assetId ?? '');
+    final indexPrice =
+        ref.read(marketsProvider).getIndexPriceStr(widget.asset?.assetId ?? '');
     if (!tracking && (!isToken && indexPrice.isNotEmpty)) {
       displaySlider = true;
     }
@@ -167,7 +166,7 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
     if (displaySlider) {
       widget.controller.text = trackingPriceFixed;
     }
-    updateDollarConversion();
+    updateDollarConversion(ref);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -204,7 +203,7 @@ class _ModifyPriceDialogState extends State<ModifyPriceDialog> {
                                 borderRadius: BorderRadius.circular(42.w),
                                 child: InkWell(
                                   onTap: () {
-                                    context.read(walletProvider).cancelOrder(
+                                    ref.read(walletProvider).cancelOrder(
                                         widget.orderDetailsData.orderId);
                                     Navigator.of(context).pop();
                                   },

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -16,7 +16,7 @@ import 'package:sideswap/screens/markets/widgets/order_table.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
-class TokenMarketOrderDetails extends StatefulWidget {
+class TokenMarketOrderDetails extends ConsumerStatefulWidget {
   const TokenMarketOrderDetails({
     Key? key,
     required this.requestOrder,
@@ -35,7 +35,8 @@ TextStyle defaultInfoStyle = GoogleFonts.roboto(
   color: const Color(0xFF709EBA),
 );
 
-class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
+class _TokenMarketOrderDetailsState
+    extends ConsumerState<TokenMarketOrderDetails> {
   String expiresTitle = '';
   Timer? _expireTimer;
 
@@ -59,11 +60,12 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
       }
     });
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance
+        ?.addPostFrameCallback((_) => afterBuild(ref, context));
   }
 
-  void afterBuild(BuildContext context) async {
-    context
+  void afterBuild(WidgetRef ref, BuildContext context) async {
+    ref
         .read(tokenMarketProvider)
         .requestAssetDetails(assetId: widget.requestOrder.assetId);
   }
@@ -105,20 +107,29 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
                         ),
                         child: Padding(
                           padding: EdgeInsets.all(16.r),
-                          child: OrderTable(
-                            orderDetailsData: OrderDetailsData.fromRequestOrder(
-                              widget.requestOrder,
-                              context.read,
-                            ),
-                            useTokenView: true,
+                          child: Consumer(
+                            builder: (context, ref, _) {
+                              final assetPrecision = ref
+                                  .watch(walletProvider)
+                                  .getPrecisionForAssetId(
+                                      assetId: widget.requestOrder.assetId);
+                              return OrderTable(
+                                orderDetailsData:
+                                    OrderDetailsData.fromRequestOrder(
+                                  widget.requestOrder,
+                                  assetPrecision,
+                                ),
+                                useTokenView: true,
+                              );
+                            },
                           ),
                         ),
                       ),
                     ),
                     Consumer(
-                      builder: (context, watch, child) {
+                      builder: (context, ref, child) {
                         final assetDetails =
-                            watch(tokenMarketProvider).assetDetails;
+                            ref.watch(tokenMarketProvider).assetDetails;
                         final assetId = widget.requestOrder.assetId;
                         if (!assetDetails.containsKey(assetId)) {
                           return Container();
@@ -128,7 +139,7 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
                         final stats = assetDetailsData?.stats;
                         final chartsUrl = assetDetailsData?.chartUrl;
 
-                        final asset = context
+                        final asset = ref
                             .read(walletProvider)
                             .assets[widget.requestOrder.assetId];
                         final ticker = asset?.ticker ?? '';
@@ -230,7 +241,7 @@ class _TokenMarketOrderDetailsState extends State<TokenMarketOrderDetails> {
                             : 'BUY'.tr(),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).pop();
-                          context
+                          ref
                               .read(walletProvider)
                               .linkOrder(widget.requestOrder.orderId);
                         },

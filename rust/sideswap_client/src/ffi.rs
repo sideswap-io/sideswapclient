@@ -51,6 +51,48 @@ fn convert_from_msg(msg: FromMsg) -> u64 {
     msg_ptr
 }
 
+pub fn get_env_from_ffi(env: Env) -> i32 {
+    match env {
+        Env::Prod => SIDESWAP_ENV_PROD,
+        Env::Staging => SIDESWAP_ENV_STAGING,
+        Env::Testnet => SIDESWAP_ENV_TESTNET,
+        Env::Regtest => SIDESWAP_ENV_REGTEST,
+        Env::Local => SIDESWAP_ENV_LOCAL,
+        Env::LocalLiquid => SIDESWAP_ENV_LOCAL_LIQUID,
+        Env::LocalTestnet => SIDESWAP_ENV_LOCAL_TESTNET,
+    }
+}
+
+pub fn get_ffi_from_env(env: i32) -> Option<Env> {
+    match env {
+        SIDESWAP_ENV_PROD => Some(Env::Prod),
+        SIDESWAP_ENV_STAGING => Some(Env::Staging),
+        SIDESWAP_ENV_REGTEST => Some(Env::Regtest),
+        SIDESWAP_ENV_LOCAL => Some(Env::Local),
+        SIDESWAP_ENV_LOCAL_LIQUID => Some(Env::LocalLiquid),
+        SIDESWAP_ENV_TESTNET => Some(Env::Testnet),
+        SIDESWAP_ENV_LOCAL_TESTNET => Some(Env::LocalTestnet),
+        _ => None,
+    }
+}
+
+pub fn send_msg(client: IntPtr, msg: proto::to::Msg) {
+    let msg = proto::To { msg: Some(msg) };
+    let mut buf = Vec::new();
+    msg.encode(&mut buf).expect("encoding message failed");
+    sideswap_send_request(client, buf.as_ptr(), buf.len() as u64);
+}
+
+pub fn blocking_recv_msg(client: IntPtr) -> proto::from::Msg {
+    let msg = sideswap_recv_request(client);
+    let ptr = sideswap_msg_ptr(msg);
+    let size = sideswap_msg_len(msg);
+    let msg_copy = unsafe { std::slice::from_raw_parts(ptr, size as usize) }.to_owned();
+    sideswap_msg_free(msg);
+    let msg = proto::From::decode(msg_copy.as_slice()).expect("message decode failed");
+    msg.msg.unwrap()
+}
+
 #[no_mangle]
 pub extern "C" fn sideswap_client_start(
     env: i32,
@@ -58,16 +100,7 @@ pub extern "C" fn sideswap_client_start(
     version: *const c_char,
     dart_port: i64,
 ) -> IntPtr {
-    let env = match env {
-        SIDESWAP_ENV_PROD => Env::Prod,
-        SIDESWAP_ENV_STAGING => Env::Staging,
-        SIDESWAP_ENV_REGTEST => Env::Regtest,
-        SIDESWAP_ENV_LOCAL => Env::Local,
-        SIDESWAP_ENV_LOCAL_LIQUID => Env::LocalLiquid,
-        SIDESWAP_ENV_TESTNET => Env::Testnet,
-        SIDESWAP_ENV_LOCAL_TESTNET => Env::LocalTestnet,
-        _ => panic!("unknown env"),
-    };
+    let env = get_ffi_from_env(env).expect("unknown env");
 
     let enable_dart = dart_port != SIDESWAP_DART_PORT_DISABLED;
 
@@ -287,7 +320,12 @@ pub fn log_format(
         record.module_path().unwrap_or("<unnamed>"),
         &record.args()
     );
-    let len = std::cmp::min(text.len(), 2048);
+    let line_limit = if cfg!(debug_assertions) {
+        1 * 1024 * 1024
+    } else {
+        2 * 1024
+    };
+    let len = std::cmp::min(text.len(), line_limit);
     write!(w, "{}", &text.as_str()[..len])
 }
 

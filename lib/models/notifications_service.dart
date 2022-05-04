@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
 import 'dart:async';
 import 'package:ffi/ffi.dart';
 
@@ -8,11 +6,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:rxdart/subjects.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/models/local_notifications_service.dart';
 import 'package:sideswap/models/notification_model.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
@@ -47,31 +44,8 @@ class ReceivedNotification {
   final String? payload;
 }
 
-const String _groupKey = 'com.android.sideswap.GENERAL_NOTIFICATION';
-
-const String _notificationChannelId = 'sideswap_channel_id';
-const String _notificationChannelName = 'Main';
-const String _notificationChannelDescription = 'All notifications';
-
-const String _notificationSignChannelId = 'sideswap_channel_id_sign';
-const String _notificationSignChannelName = 'Sign';
-const String _notificationSignChannelDescription = 'Sign notifications';
-
-const AndroidNotificationChannel mainChannel = AndroidNotificationChannel(
-  _notificationChannelId, // id
-  _notificationChannelName, // title
-  _notificationChannelDescription, // description
-  importance: Importance.high,
-);
-
-const AndroidNotificationChannel signChannel = AndroidNotificationChannel(
-  _notificationSignChannelId,
-  _notificationSignChannelName,
-  _notificationSignChannelDescription,
-  importance: Importance.high,
-);
-
-NotificationService notificationService = NotificationService();
+final notificationServiceProvider =
+    Provider<NotificationService>((ref) => NotificationService(ref));
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   logger.d('onBackground: $message');
@@ -82,65 +56,17 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 class NotificationService {
-  factory NotificationService() {
-    return _notificationService;
-  }
+  final Ref ref;
 
-  NotificationService.internal();
-
-  static final NotificationService _notificationService =
-      NotificationService.internal();
-
-  final didReceiveLocalNotificationSubject =
-      BehaviorSubject<ReceivedNotification>();
-  final selectNotificationSubject = BehaviorSubject<FCMPayload>();
-
-  String _selectedNotificationPayload = '';
-  String get selectedNotificationPayload => _selectedNotificationPayload;
-
-  int _notificationId = 0;
+  NotificationService(this.ref);
 
   String dynamicLinkAddress = '';
 
-  final _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  BuildContext? _context;
-
   final _delayedNotifications = <FCMPayload>[];
 
-  Future<void> init(BuildContext context) async {
-    _context = context;
+  Future<void> init() async {
     await FirebaseMessaging.instance.requestPermission();
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    if (Platform.isIOS) {
-      await _flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              IOSFlutterLocalNotificationsPlugin>()
-          ?.requestPermissions(
-            sound: true,
-            alert: true,
-            badge: true,
-          );
-    }
-
-    // remove old notification channel
-    // TODO: This could be removed later
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.deleteNotificationChannel(_notificationChannelId);
-
-    // create new notification channel
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(mainChannel);
-
-    await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.createNotificationChannel(signChannel);
 
     // resume?
     await FirebaseMessaging.instance
@@ -152,7 +78,6 @@ class NotificationService {
 
       logger.d('onResume: $message');
       _handleIncomingNotification(
-        context,
         IncomingNotificationType.resume,
         message,
       );
@@ -161,7 +86,6 @@ class NotificationService {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       logger.d('onMessage: $message');
       _handleIncomingNotification(
-        context,
         IncomingNotificationType.message,
         message,
       );
@@ -170,53 +94,22 @@ class NotificationService {
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       logger.d('onLaunch: $message');
       _handleIncomingNotification(
-        context,
         IncomingNotificationType.launch,
         message,
       );
     });
 
-    final initializationSettings = _getInitializationSettings(
-      onDidReceiveLocalNotification:
-          (int id, String? title, String? body, String? payload) async {
-        didReceiveLocalNotificationSubject.add(
-          ReceivedNotification(
-            id: id,
-            title: title,
-            body: body,
-            payload: payload,
-          ),
-        );
-      },
-    );
-
-    // initialise the plugin.
-    await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onSelectNotification: (String? payload) async {
-        if (payload == null) {
-          logger.w('Empty notification payload');
-          return;
-        }
-
-        try {
-          _selectedNotificationPayload = payload;
-          final json = jsonDecode(payload) as Map<String, dynamic>;
-          final fcmPayload = FCMPayload.fromJson(json);
-          selectNotificationSubject.add(fcmPayload);
-        } catch (e) {
-          logger.e('Cannot parse payload: $e');
-        }
-      },
-    );
-
-    selectNotificationSubject.stream.listen(_onNotificationData);
-    didReceiveLocalNotificationSubject.stream.listen(_oniOSNotification);
-    context
-        .read(walletProvider)
-        .newTransItemSubject
+    ref
+        .read(localNotificationsProvider)
+        .selectNotificationSubject
         .stream
-        .listen(_onNewTransItem);
+        .listen(_onNotificationData);
+    ref
+        .read(localNotificationsProvider)
+        .didReceiveLocalNotificationSubject
+        .stream
+        .listen(_oniOSNotification);
+    ref.read(walletProvider).newTransItemSubject.stream.listen(_onNewTransItem);
   }
 
   bool _onNewTransItem(TransItem transItem) {
@@ -258,78 +151,11 @@ class NotificationService {
     return false;
   }
 
-  NotificationDetails _getNotificationDetails({
-    NotificationVisibility visibility = NotificationVisibility.public,
-    StyleInformation styleInformation =
-        const DefaultStyleInformation(true, true),
-    NotificationChannelType type = NotificationChannelType.main,
-  }) {
-    String channelId, channelName, channelDescription;
-
-    switch (type) {
-      case NotificationChannelType.main:
-        channelId = _notificationChannelId;
-        channelName = _notificationChannelName;
-        channelDescription = _notificationChannelDescription;
-        break;
-      case NotificationChannelType.sign:
-        channelId = _notificationSignChannelId;
-        channelName = _notificationSignChannelName;
-        channelDescription = _notificationSignChannelDescription;
-        break;
-    }
-
-    final androidPlatformChannelSpecifics = AndroidNotificationDetails(
-      channelId,
-      channelName,
-      channelDescription,
-      importance: Importance.max,
-      priority: Priority.high,
-      groupKey: _groupKey,
-      enableLights: true,
-      color: const Color.fromARGB(255, 87, 193, 251),
-      ledColor: const Color.fromARGB(255, 0, 197, 255),
-      ledOnMs: 1000,
-      ledOffMs: 500,
-      visibility: visibility,
-      styleInformation: styleInformation,
-    );
-
-    final platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-      iOS: const IOSNotificationDetails(),
-    );
-
-    return platformChannelSpecifics;
-  }
-
-  InitializationSettings _getInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/notification_icon');
-
-    final initializationSettingsIOS = IOSInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-      onDidReceiveLocalNotification: onDidReceiveLocalNotification,
-    );
-
-    final initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
-
-    return initializationSettings;
-  }
-
-  void _handleIncomingNotification(BuildContext context,
+  void _handleIncomingNotification(
       IncomingNotificationType type, RemoteMessage message) {
     dynamic details = message.data['details'];
     if (details is String) {
-      context.read(walletProvider).gotPushMessage(details);
+      ref.read(walletProvider).gotPushMessage(details);
     }
 
     final messageJson = {
@@ -363,8 +189,8 @@ class NotificationService {
         if (payload != null) {
           _delayedNotifications.add(payload);
           // check if we already have txid on list
-          context.read(walletProvider).allTxs.values.forEach(_onNewTransItem);
-          context.read(walletProvider).allPegs.values.forEach((pegs) {
+          ref.read(walletProvider).allTxs.values.forEach(_onNewTransItem);
+          ref.read(walletProvider).allPegs.values.forEach((pegs) {
             pegs.forEach(_onNewTransItem);
           });
         } else {
@@ -464,10 +290,6 @@ class NotificationService {
   }
 
   Future<void> _onTxNotification(FCMMessage fcmMessage, FCMTx fcmTx) async {
-    if (_context == null) {
-      return;
-    }
-
     logger.d(fcmTx.txType.toString());
 
     final fcmTxType = fcmTx.txType;
@@ -479,7 +301,7 @@ class NotificationService {
     final payload = FCMPayload(type: payloadType, txid: fcmTx.txId);
 
     // display only recv notification when app is opened
-    final allTxs = _context!.read(walletProvider).allTxs;
+    final allTxs = ref.read(walletProvider).allTxs;
     final knownTx = allTxs.containsKey(fcmTx.txId);
 
     if (!knownTx && fcmTx.txType == FCMTxType.recv) {
@@ -507,10 +329,6 @@ class NotificationService {
   void _onNotificationData(FCMPayload fcmPayload) async {
     logger.d('Notification data: $fcmPayload');
 
-    if (_context == null) {
-      return;
-    }
-
     final txid = fcmPayload.txid;
 
     final fcmTxType = fcmPayload.type;
@@ -518,21 +336,25 @@ class NotificationService {
       return;
     }
 
-    for (final tx in _context!.read(walletProvider).allTxs.values) {
+    final allTxs = ref.read(walletProvider).allTxs;
+
+    for (final tx in allTxs.values) {
       if (tx.tx.txid == txid) {
         if (fcmTxType == FCMPayloadType.swap) {
-          _context!.read(walletProvider).showSwapTxDetails(tx);
+          ref.read(walletProvider).showSwapTxDetails(tx);
         } else {
-          _context!.read(walletProvider).showTxDetails(tx);
+          ref.read(walletProvider).showTxDetails(tx);
         }
         return;
       }
     }
 
-    for (final list in _context!.read(walletProvider).allPegs.values) {
+    final allPegs = ref.read(walletProvider).allPegs;
+
+    for (final list in allPegs.values) {
       for (final peg in list) {
         if (peg.peg.txidSend == txid) {
-          _context!.read(walletProvider).showTxDetails(peg);
+          ref.read(walletProvider).showTxDetails(peg);
           return;
         }
       }
@@ -549,12 +371,8 @@ class NotificationService {
       'Notification iOS data: ${receivedNotification.id} ${receivedNotification.title} ${receivedNotification.body} ${receivedNotification.payload}',
     );
 
-    if (_context == null) {
-      return;
-    }
-
     await showDialog<void>(
-      context: _context!,
+      context: ref.read(walletProvider).navigatorKey.currentContext!,
       builder: (BuildContext context) => CupertinoAlertDialog(
         title: receivedNotification.title != null
             ? Text(receivedNotification.title ?? '')
@@ -587,54 +405,21 @@ class NotificationService {
     );
   }
 
-  Future<void> showNotification(
-    String title,
-    String body, {
-    String payload = '',
-    NotificationVisibility visibility = NotificationVisibility.public,
-    NotificationDetails? notificationDetails,
-    NotificationChannelType type = NotificationChannelType.main,
-  }) async {
-    final activeNotifications = await _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.getActiveNotifications();
-
-    if (activeNotifications == null || activeNotifications.isEmpty) {
-      _notificationId = 0;
-    }
-
-    notificationDetails ??= _getNotificationDetails(
-      visibility: visibility,
-      type: type,
-    );
-
-    await _flutterLocalNotificationsPlugin.show(
-      _notificationId,
-      title,
-      body,
-      notificationDetails,
-      payload: payload,
-    );
-
-    _notificationId = _notificationId + 1;
-  }
-
   Future<void> _onDefaultNotification({
     String? title,
     String? body,
     FCMPayload? payload,
     NotificationChannelType type = NotificationChannelType.main,
   }) async {
-    final notificationDetails = _getNotificationDetails(type: type);
+    final notificationDetails = getNotificationDetails(type: type);
 
-    await showNotification(
-      title ?? '',
-      body ?? '',
-      notificationDetails: notificationDetails,
-      payload: payload?.toJsonString() ?? '',
-      type: type,
-    );
+    await ref.read(localNotificationsProvider).showNotification(
+          title ?? '',
+          body ?? '',
+          notificationDetails: notificationDetails,
+          payload: payload?.toJsonString() ?? '',
+          type: type,
+        );
   }
 
   Future handleDynamicLinks() async {
@@ -646,11 +431,10 @@ class NotificationService {
 
     _handleDeepLink(data);
 
-    FirebaseDynamicLinks.instance.onLink(
-        onSuccess: (PendingDynamicLinkData? dynamicLink) async {
+    FirebaseDynamicLinks.instance.onLink.listen((dynamicLink) {
       _handleDeepLink(dynamicLink);
-    }, onError: (OnLinkErrorException e) async {
-      logger.e('Link Failed: ${e.message}');
+    }, onError: (dynamic error) {
+      logger.e('Link Failed: ${error.message}');
     });
   }
 
@@ -659,8 +443,8 @@ class NotificationService {
     if (deepLink != null) {
       logger.d('_handleDeepLink | deeplink: $deepLink');
 
-      if (deepLink.queryParameters.containsKey('address') && _context != null) {
-        _context!.read(paymentProvider).selectPaymentAmountPage(
+      if (deepLink.queryParameters.containsKey('address')) {
+        ref.read(paymentProvider).selectPaymentAmountPage(
               PaymentAmountPageArguments(
                 result:
                     QrCodeResult(address: deepLink.queryParameters['address']),
@@ -674,19 +458,20 @@ class NotificationService {
     final parameters = DynamicLinkParameters(
       uriPrefix: 'https://sideswap.page.link',
       link: Uri.parse('https://sideswap.io/share?address=$address'),
-      androidParameters: AndroidParameters(
+      androidParameters: const AndroidParameters(
         packageName: 'io.sideswap',
       ),
-      navigationInfoParameters: NavigationInfoParameters(
+      navigationInfoParameters: const NavigationInfoParameters(
         forcedRedirectEnabled: true,
       ),
-      socialMetaTagParameters: SocialMetaTagParameters(
+      socialMetaTagParameters: const SocialMetaTagParameters(
         title: 'Sideswap',
         description: 'Shared address',
       ),
     );
 
-    final shortDynamicLink = await parameters.buildShortLink();
+    final shortDynamicLink =
+        await FirebaseDynamicLinks.instance.buildShortLink(parameters);
 
     if (shortDynamicLink.warnings != null &&
         shortDynamicLink.warnings!.isNotEmpty) {
@@ -705,15 +490,11 @@ class NotificationService {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       logger.d('Firebase token $token');
-      if (_context != null) {
-        _context!.read(walletProvider).updatePushToken(token);
-      }
+      ref.read(walletProvider).updatePushToken(token);
 
       FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
         logger.d('Firebase token: $token');
-        if (_context != null) {
-          _context!.read(walletProvider).updatePushToken(newToken);
-        }
+        ref.read(walletProvider).updatePushToken(newToken);
       });
     } on PlatformException catch (err) {
       logger.e('PlatformException: $err');

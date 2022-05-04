@@ -19,5 +19,5 @@ futures = "*"
 tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 futures-channel = "*"
 futures-util = "*"
-tungstenite = { version = "*", default-features = false, features = [] }
+tungstenite = { version = "0.13.0", default-features = false, features = [] }
 crossbeam-channel = "0.5.1"

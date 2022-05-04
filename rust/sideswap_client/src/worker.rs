@@ -25,6 +25,8 @@ const USER_AGENT: &str = "SideSwapApp";
 const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 const SERVER_REQUEST_POLL_PERIOD: std::time::Duration = std::time::Duration::from_secs(1);
 
+const DESKTOP_IDLE_TIMER: std::time::Duration = std::time::Duration::from_secs(600);
+
 const ACCOUNT: u32 = 0;
 
 const BALANCE_NUM_CONFS: u32 = 0;
@@ -42,11 +44,48 @@ pub fn get_account(amp: bool) -> ffi::proto::Account {
     ffi::proto::Account { amp }
 }
 
-fn output_address(
-    txout: &elements_pset::TxOut,
-    params: &'static elements_pset::AddressParams,
-) -> Option<elements_pset::Address> {
-    elements_pset::Address::from_script(&txout.script_pubkey, None, params)
+pub fn get_created_tx(
+    req: &ffi::proto::CreateTx,
+    hex: &str,
+    addressees: &[gdk_common::model::AddressAmount],
+) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+    let tx: elements::Transaction = elements::encode::deserialize(&hex::decode(hex)?)?;
+
+    let network_fee = tx.all_fees().values().cloned().sum::<u64>() as i64;
+    let vsize = (tx.get_weight() + 3) / 4;
+    let fee_per_byte = network_fee as f64 / vsize as f64;
+
+    ensure!(addressees.iter().all(|v| v.asset_id.is_some()));
+    let addressees = addressees
+        .iter()
+        .map(|v| ffi::proto::AddressAmount {
+            address: v.address.clone(),
+            amount: v.satoshi as i64,
+            asset_id: v.asset_id().unwrap().to_string(),
+        })
+        .collect();
+
+    Ok(ffi::proto::CreatedTx {
+        req: req.clone(),
+        input_count: tx.input.len() as i32,
+        output_count: tx.output.len() as i32,
+        size: tx.get_size() as i64,
+        vsize: vsize as i64,
+        network_fee,
+        fee_per_byte,
+        addressees,
+    })
+}
+
+fn convert_chart_point(point: ChartPoint) -> ffi::proto::ChartPoint {
+    ffi::proto::ChartPoint {
+        time: point.time,
+        open: point.open,
+        close: point.close,
+        high: point.high,
+        low: point.low,
+        volume: point.volume,
+    }
 }
 
 struct ActivePeg {
@@ -59,7 +98,7 @@ enum AddrType {
 }
 
 struct SendTx {
-    tx: TransactionMeta,
+    tx_signed: TransactionMeta,
     contact_key: Option<ContactKey>,
 }
 
@@ -78,6 +117,7 @@ pub struct Context {
     txs: BTreeMap<bool, HashMap<Txid, models::Transaction>>,
     orders_last: BTreeMap<OrderId, ffi::proto::Order>,
     orders_sent: BTreeMap<OrderId, ffi::proto::Order>,
+    desktop: bool,
 
     succeed_swap: Option<Txid>,
     pending_txs: bool,
@@ -116,6 +156,7 @@ struct SubmitData {
     txid: Option<String>,
     index_price: bool,
     market: MarketType,
+    signed: bool,
 }
 
 struct UiData {
@@ -158,6 +199,8 @@ pub struct Data {
     subscribed_price_stream: Option<SubscribePriceStreamRequest>,
     app_active: bool,
     amp_active: bool,
+    subscribed_market_data: Option<AssetId>,
+    last_ui_msg_at: std::time::Instant,
 }
 
 pub struct ActiveSwap {
@@ -178,9 +221,11 @@ pub enum Message {
     PegStatus(PegStatus),
     Subscribe(SubscribeResponse),
     Unsubscribe(UnsubscribeResponse),
+    MarketDataResponse(MarketDataSubscribeResponse),
     AssetDetails(AssetDetailsResponse),
     BackgroundMessage(String, crossbeam_channel::Sender<()>),
     Amp(amp::From),
+    IdleTimer,
 }
 
 #[derive(Debug)]
@@ -299,6 +344,8 @@ fn get_tx_item(tx: &gdk_common::model::TxListItem, top_block: u32) -> models::Tr
         balances,
         created_at,
         pending_confs: pending_confs,
+        size: tx.transaction_size as u32,
+        vsize: tx.transaction_vsize as u32,
     };
     tx_item
 }
@@ -373,6 +420,7 @@ impl Data {
             icon_url: None,
             instant_swaps: Some(false),
             domain: v.entity.as_ref().and_then(|v| v.domain.as_ref()).cloned(),
+            domain_agent: None,
         };
         Ok(asset)
     }
@@ -419,6 +467,8 @@ impl Data {
                             memo: item.memo.clone(),
                             network_fee: item.network_fee as i64,
                             txid: item.txid.to_string(),
+                            size: item.size as i64,
+                            vsize: item.vsize as i64,
                         };
                         let confs = item.pending_confs.map(|confs| ffi::proto::Confs {
                             count: confs as u32,
@@ -435,7 +485,7 @@ impl Data {
                         ffi::proto::trans_item::Item::Tx(v) => &mut v.balances,
                         ffi::proto::trans_item::Item::Peg(_) => unreachable!(),
                     };
-                    for balance in item.balances.iter() {
+                    for balance in item.balances.iter().filter(|balance| balance.value != 0) {
                         balances.push(ffi::proto::TxBalance {
                             asset_id: balance.asset.to_string(),
                             amount: balance.value,
@@ -463,11 +513,13 @@ impl Data {
             }
         }
 
+        let mut queue_msgs = Vec::new();
+
         if let Some(txid) = ctx.sent_txhash.as_ref() {
             let tx = updated.get(txid);
             if let Some(tx) = tx {
                 let result = ffi::proto::from::send_result::Result::TxItem(tx.clone());
-                self.ui.send(ffi::proto::from::Msg::SendResult(
+                queue_msgs.push(ffi::proto::from::Msg::SendResult(
                     ffi::proto::from::SendResult {
                         result: Some(result),
                     },
@@ -480,7 +532,7 @@ impl Data {
         if let Some(txid) = ctx.succeed_swap.as_ref() {
             let tx = updated.get(txid);
             if let Some(tx) = tx {
-                self.ui.send(ffi::proto::from::Msg::SwapSucceed(tx.clone()));
+                queue_msgs.push(ffi::proto::from::Msg::SwapSucceed(tx.clone()));
                 ctx.succeed_swap = None;
                 Data::update_sync_interval(&ctx);
             }
@@ -518,6 +570,7 @@ impl Data {
                                 icon_url: None,
                                 instant_swaps: Some(false),
                                 domain: None,
+                                domain_agent: None,
                             },
                             true,
                         )
@@ -538,6 +591,10 @@ impl Data {
             self.ui.send(ffi::proto::from::Msg::RemovedTxs(
                 ffi::proto::from::RemovedTxs { txids: removed },
             ));
+        }
+
+        for msg in queue_msgs.into_iter() {
+            self.ui.send(msg);
         }
     }
 
@@ -602,6 +659,8 @@ impl Data {
                 ctx.sync_complete = true;
                 self.send_wallet_loaded();
                 self.process_pending_requests();
+                self.ui
+                    .send(ffi::proto::from::Msg::SyncComplete(ffi::proto::Empty {}));
             }
         }
     }
@@ -840,6 +899,12 @@ impl Data {
             self.send_request_msg(Request::SubscribePriceStream(req.clone()));
         }
 
+        if let Some(asset_id) = self.subscribed_market_data {
+            self.send_request_msg(Request::MarketDataSubscribe(MarketDataSubscribeRequest {
+                asset: asset_id,
+            }));
+        }
+
         Ok(())
     }
 
@@ -1012,13 +1077,12 @@ impl Data {
     fn try_process_pegout_request(
         &mut self,
         req: ffi::proto::to::PegOutRequest,
-    ) -> Result<ffi::proto::TransItem, anyhow::Error> {
+    ) -> Result<OrderId, anyhow::Error> {
         ensure!(self.connected, "not connected");
         let server_status = self
             .server_status
             .as_ref()
             .ok_or(anyhow!("server_status is not known"))?;
-        let conversion_rate = 1. - server_status.server_fee_percent_peg_out / 100.;
         ensure!(
             req.send_amount >= server_status.min_peg_out_amount,
             "min {}",
@@ -1051,59 +1115,22 @@ impl Data {
 
         self.add_peg_monitoring(resp.order_id, PegDir::Out);
 
-        let payment = if req.account.amp {
+        let _payment = if req.account.amp {
             self.amp
                 .make_pegout_payment(req.send_amount, &resp.peg_addr)?
         } else {
             self.make_pegout_payment(req.send_amount, &resp.peg_addr)?
         };
 
-        let recv_amount = (payment.sent_amount as f64 * conversion_rate).round() as i64;
-
-        let addr_params = self.env.elements_params_pset();
-        let tx: elements_pset::Transaction =
-            elements_pset::encode::deserialize(&hex::decode(&payment.signed_tx).unwrap()).unwrap();
-        let peg_addr = elements_pset::Address::parse_with_params(
-            &resp.peg_addr,
-            self.env.elements_params_pset(),
-        )
-        .unwrap()
-        .to_unconfidential();
-        let sent_vout = tx
-            .output
-            .iter()
-            .position(|txout| output_address(&txout, addr_params).as_ref() == Some(&peg_addr))
-            .unwrap() as i32;
-
-        let peg_details = ffi::proto::Peg {
-            is_peg_in: false,
-            amount_send: payment.sent_amount,
-            amount_recv: recv_amount,
-            addr_send: resp.peg_addr.clone(),
-            addr_recv: req.recv_addr,
-            txid_send: payment.sent_txid.to_string(),
-            txid_recv: None,
-        };
-
-        let id = peg_txitem_id(&payment.sent_txid.to_string(), sent_vout);
-        let swap_succeed = ffi::proto::TransItem {
-            id,
-            created_at: timestamp_now(),
-            confs: Some(ffi::proto::Confs {
-                count: 0,
-                total: TX_CONF_COUNT,
-            }),
-            item: Some(ffi::proto::trans_item::Item::Peg(peg_details)),
-        };
-
-        Ok(swap_succeed)
+        Ok(resp.order_id)
     }
 
     fn process_pegout_request(&mut self, req: ffi::proto::to::PegOutRequest) {
         let result = self.try_process_pegout_request(req);
         match result {
-            Ok(v) => {
-                self.ui.send(ffi::proto::from::Msg::SwapSucceed(v));
+            Ok(order_id) => {
+                let ctx = self.ctx.as_mut().expect("wallet must be set");
+                ctx.active_extern_peg = Some(ActivePeg { order_id });
             }
             Err(e) => {
                 error!("starting peg-out failed: {}", e.to_string());
@@ -1484,7 +1511,10 @@ impl Data {
         ));
     }
 
-    fn create_tx(&mut self, req: ffi::proto::to::CreateTx) -> Result<i64, anyhow::Error> {
+    fn create_tx(
+        &mut self,
+        req: ffi::proto::CreateTx,
+    ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
         let ctx = self.ctx.as_ref().expect("wallet must be set");
         let (address, contact_key) = if req.is_contact {
             let phone_key = ctx
@@ -1553,21 +1583,31 @@ impl Data {
             .map_err(|e| anyhow!("{}", e))?;
         let network_fee = tx_detail_unsigned.fee as i64;
         ensure!(network_fee > 0, "network fee is 0");
+
+        let tx_signed = ctx
+            .session
+            .sign_transaction(&tx_detail_unsigned)
+            .map_err(|e| anyhow!("transaction sign failed: {}", e.to_string()))?;
+
+        let addressees = &tx_signed
+            .create_transaction
+            .as_ref()
+            .ok_or_else(|| anyhow!("create_transaction is not set"))?
+            .addressees;
+        let result = get_created_tx(&req, &tx_signed.hex, addressees)?;
+
         ctx.send_tx = Some(SendTx {
-            tx: tx_detail_unsigned,
+            tx_signed,
             contact_key,
         });
-        Ok(network_fee)
+
+        Ok(result)
     }
 
     fn send_tx(&mut self, _req: ffi::proto::to::SendTx) -> Result<(), anyhow::Error> {
         let ctx = self.ctx.as_mut().expect("wallet must be set");
         let send_tx = ctx.send_tx.take().ok_or(anyhow!("no transaction found"))?;
-        let tx_detail_unsigned = send_tx.tx;
-        let tx_detail_signed = ctx
-            .session
-            .sign_transaction(&tx_detail_unsigned)
-            .map_err(|e| anyhow!("transaction sign failed: {}", e.to_string()))?;
+        let tx_detail_signed = send_tx.tx_signed;
         let txid = sideswap_api::Txid::from_str(&tx_detail_signed.txid).unwrap();
 
         match send_tx.contact_key {
@@ -1597,14 +1637,14 @@ impl Data {
         Ok(())
     }
 
-    fn process_create_tx(&mut self, req: ffi::proto::to::CreateTx) {
+    fn process_create_tx(&mut self, req: ffi::proto::CreateTx) {
         if req.account.amp {
             self.send_amp(amp::To::CreateTx(req));
             return;
         }
 
         let result = match self.create_tx(req) {
-            Ok(network_fee) => ffi::proto::from::create_tx_result::Result::NetworkFee(network_fee),
+            Ok(tx) => ffi::proto::from::create_tx_result::Result::CreatedTx(tx),
             Err(e) => ffi::proto::from::create_tx_result::Result::ErrorMsg(e.to_string()),
         };
         let send_result = ffi::proto::from::CreateTxResult {
@@ -1719,7 +1759,27 @@ impl Data {
 
         self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
 
-        self.send_amp(amp::To::Login(req.mnemonic.clone(), self.env));
+        // let jade_port = sideswap_jade::Handle::ports()
+        //     .ok()
+        //     .unwrap_or_default()
+        //     .into_iter()
+        //     .next();
+        let jade_port = None;
+        let wallet = if let Some(jade_port) = jade_port {
+            amp::LoginWallet::Hardware(amp::HardwareWallet {
+                wallet_name: "JadeTest".to_owned(),
+                device_port: jade_port,
+            })
+        } else {
+            amp::LoginWallet::Software(amp::SoftwareWallet {
+                mnemonic: req.mnemonic.clone(),
+            })
+        };
+        let login_info = amp::LoginInfo {
+            env: self.env,
+            wallet: wallet,
+        };
+        self.send_amp(amp::To::Login(login_info));
 
         // Looks like this request does not fail even if wrong network settings are used
         let (session, login_data) = self.create_session(&req.network, &req.mnemonic).unwrap();
@@ -1735,6 +1795,7 @@ impl Data {
             txs: BTreeMap::new(),
             orders_last: BTreeMap::new(),
             orders_sent: BTreeMap::new(),
+            desktop: req.desktop,
             succeed_swap: None,
             pending_txs: false,
             active_swap: None,
@@ -1890,11 +1951,13 @@ impl Data {
             .map(|tx| get_peg_item(&status, &tx))
             .collect::<Vec<_>>();
 
+        let mut queue_msgs = Vec::new();
+
         if let Some(peg) = ctx.active_extern_peg.as_ref() {
             if peg.order_id == status.order_id {
                 if let Some(first_peg) = status.list.first() {
                     let peg_item = get_peg_item(&status, first_peg);
-                    self.ui.send(ffi::proto::from::Msg::SwapSucceed(peg_item));
+                    queue_msgs.push(ffi::proto::from::Msg::SwapSucceed(peg_item));
                     ctx.active_extern_peg = None;
                 }
             }
@@ -1906,6 +1969,10 @@ impl Data {
                 items: pegs,
             },
         ));
+
+        for msg in queue_msgs.into_iter() {
+            self.ui.send(msg);
+        }
     }
 
     fn process_subscribe_response(&mut self, msg: SubscribeResponse) {
@@ -1915,13 +1982,28 @@ impl Data {
         self.sync_order_list();
     }
 
-    fn process_unsubscribe_response(&mut self, _msg: UnsubscribeResponse) {
-        // We only allow subscribing to one market at a time
-        // So after unsubscribe we could remove all non-own orders
+    fn process_unsubscribe_response(&mut self, msg: UnsubscribeResponse) {
+        // Remove non-own orders from the market that was just unsubscribed
         if let Some(ctx) = self.ctx.as_mut() {
-            ctx.orders_last.retain(|_, order| order.own);
+            ctx.orders_last.retain(|_, order| {
+                order.own
+                    || match &msg.asset {
+                        Some(asset_id) => order.asset_id != asset_id.to_string(),
+                        None => !order.token_market,
+                    }
+            });
         }
         self.sync_order_list();
+    }
+
+    fn process_market_data_response(&mut self, msg: MarketDataSubscribeResponse) {
+        let data = msg.data.into_iter().map(convert_chart_point).collect();
+        self.ui.send(ffi::proto::from::Msg::MarketDataSubscribe(
+            ffi::proto::from::MarketDataSubscribe {
+                asset_id: msg.asset.to_string(),
+                data,
+            },
+        ));
     }
 
     fn process_asset_details_response(&mut self, msg: AssetDetailsResponse) {
@@ -1930,6 +2012,7 @@ impl Data {
             .map(|v| ffi::proto::from::asset_details::Stats {
                 burned_amount: v.burned_amount,
                 issued_amount: v.issued_amount,
+                offline_amount: v.offline_amount.unwrap_or_default(),
                 has_blinded_issuances: v.has_blinded_issuances,
             });
         let chart_stats = msg
@@ -2160,7 +2243,10 @@ impl Data {
         Ok(())
     }
 
-    fn try_process_downloaded_link(&mut self, resp: LinkResponse) -> Result<(), anyhow::Error> {
+    fn try_process_downloaded_link(
+        &mut self,
+        resp: LinkResponse,
+    ) -> Result<Option<ffi::proto::from::Msg>, anyhow::Error> {
         let order_id = resp.order_id;
         let details = &resp.details;
 
@@ -2191,19 +2277,16 @@ impl Data {
         } else {
             &resp.details.asset
         };
-        let send_asset = self
-            .assets
-            .get(send_asset)
-            .ok_or_else(|| anyhow!("send asset not found"))?;
-        let available_balance_float =
-            types::asset_float_amount(available_balance.to_sat(), send_asset.precision);
-        let send_amount_float = types::asset_float_amount(send_amount, send_asset.precision);
-        ensure!(
-            available_balance.to_sat() >= send_amount,
-            "Insufficient funds\nAvailable: {}\nRequired: {}",
-            available_balance_float,
-            send_amount_float,
-        );
+
+        if available_balance.to_sat() < send_amount {
+            return Ok(Some(ffi::proto::from::Msg::InsufficientFunds(
+                ffi::proto::from::ShowInsufficientFunds {
+                    asset_id: send_asset.to_string(),
+                    available: available_balance.to_sat(),
+                    required: send_amount,
+                },
+            )));
+        }
 
         let step = if details.side == OrderSide::Maker {
             ffi::proto::from::submit_review::Step::Submit
@@ -2233,7 +2316,7 @@ impl Data {
         self.visible_submit = Some(order_id.clone());
         let ctx = self.ctx.as_mut().ok_or(anyhow!("no context found"))?;
         ctx.active_submit = Some(resp);
-        Ok(())
+        Ok(None)
     }
 
     fn process_submit_order(&mut self, req: ffi::proto::to::SubmitOrder) {
@@ -2546,6 +2629,7 @@ impl Data {
             txid: None,
             index_price,
             market: details.market,
+            signed: false,
         };
         self.submit_data
             .insert(submit_data.order_id.clone(), submit_data);
@@ -2649,6 +2733,9 @@ impl Data {
                 side: submit_data.side,
             }
         )?;
+
+        let submit_data = self.submit_data.get_mut(&msg.order_id).unwrap();
+        submit_data.signed = true;
 
         Ok(false)
     }
@@ -2902,15 +2989,21 @@ impl Data {
     }
 
     fn process_subscribe(&mut self, req: ffi::proto::to::Subscribe) {
-        let new_subscribes = match req.market() {
-            ffi::proto::to::subscribe::Market::None => BTreeSet::new(),
-            ffi::proto::to::subscribe::Market::Tokens => std::iter::once(None).collect(),
-            ffi::proto::to::subscribe::Market::Asset => {
-                std::iter::once(Some(AssetId::from_str(&req.asset_id.unwrap()).unwrap())).collect()
-            }
+        let ctx = match self.ctx.as_ref() {
+            Some(v) => v,
+            None => return,
         };
+        let new_subscribes = req
+            .markets
+            .iter()
+            .map(|market| {
+                market
+                    .asset_id
+                    .as_ref()
+                    .map(|asset_id| AssetId::from_str(asset_id).unwrap())
+            })
+            .collect();
 
-        let ctx = self.ctx.as_ref().unwrap();
         for unsubscribe in ctx.subscribes.difference(&new_subscribes) {
             self.send_request_msg(Request::Unsubscribe(UnsubscribeRequest {
                 asset: unsubscribe.clone(),
@@ -2965,6 +3058,26 @@ impl Data {
         }
     }
 
+    fn process_market_data_subscribe(&mut self, req: ffi::proto::to::MarketDataSubscribe) {
+        let asset_id = AssetId::from_str(&req.asset_id).unwrap();
+        self.process_market_data_unsubscribe();
+        if self.connected {
+            self.send_request_msg(Request::MarketDataSubscribe(MarketDataSubscribeRequest {
+                asset: asset_id,
+            }));
+        }
+        self.subscribed_market_data = Some(asset_id);
+    }
+
+    fn process_market_data_unsubscribe(&mut self) {
+        if let (true, Some(asset_id)) = (self.connected, self.subscribed_market_data) {
+            self.send_request_msg(Request::MarketDataUnsubscribe(
+                MarketDataUnsubscribeRequest { asset: asset_id },
+            ));
+        }
+        self.subscribed_market_data = None;
+    }
+
     fn send_subscribe_request(&self) {
         let ctx = match self.ctx.as_ref() {
             Some(v) => v,
@@ -2994,14 +3107,26 @@ impl Data {
                 submit_data.txid = Some(v.to_string())
             }
             None => {
+                let submit = self.submit_data.remove(&msg.order_id);
                 if self.visible_submit.as_ref() == Some(&msg.order_id)
                     || (self.visible_submit.is_none()
                         && self.waiting_submit.as_ref() == Some(&msg.order_id))
                 {
+                    let is_maker = submit
+                        .as_ref()
+                        .map(|v| v.side == OrderSide::Maker)
+                        .unwrap_or(false);
+                    let signed = submit.as_ref().map(|v| v.signed).unwrap_or(false);
                     self.ui.send(ffi::proto::from::Msg::SubmitResult(
                         ffi::proto::from::SubmitResult {
                             result: Some(ffi::proto::from::submit_result::Result::Error(
-                                "Counterparty failed to sign".to_owned(),
+                                if is_maker {
+                                    "Failed to sign".to_owned()
+                                } else if !signed {
+                                    "Order removed".to_owned()
+                                } else {
+                                    "Counterparty failed to sign".to_owned()
+                                },
                             )),
                         },
                     ));
@@ -3009,7 +3134,6 @@ impl Data {
                     self.process_pending_sign_prompts();
                     self.process_pending_succeed();
                 }
-                self.submit_data.remove(&msg.order_id);
             }
         }
     }
@@ -3031,6 +3155,9 @@ impl Data {
         };
 
         let private = msg.own.as_ref().map(|v| v.private).unwrap_or(false);
+        let swap_market = self.assets.get(&msg.details.asset).is_some();
+        let amp_market = self.amp_assets.get(&msg.details.asset).is_some();
+        let token_market = !swap_market && !amp_market;
         let auto_sign = self
             .submit_data
             .get(&msg.order_id)
@@ -3051,6 +3178,7 @@ impl Data {
             private,
             auto_sign,
             own,
+            token_market,
             from_notification,
             index_price,
         };
@@ -3220,6 +3348,24 @@ impl Data {
         };
     }
 
+    fn process_local_message(&mut self, msg: LocalMessageNotification) {
+        self.ui.send(ffi::proto::from::Msg::LocalMessage(
+            ffi::proto::from::LocalMessage {
+                title: msg.title,
+                body: msg.body,
+            },
+        ));
+    }
+
+    fn process_market_data_update(&mut self, msg: MarketDataUpdateNotification) {
+        self.ui.send(ffi::proto::from::Msg::MarketDataUpdate(
+            ffi::proto::from::MarketDataUpdate {
+                asset_id: msg.asset.to_string(),
+                update: convert_chart_point(msg.update),
+            },
+        ));
+    }
+
     // message processing
 
     fn send_request_msg(&self, request: Request) -> RequestId {
@@ -3362,6 +3508,7 @@ impl Data {
                 txid: None,
                 index_price: false,
                 market: details.market,
+                signed: false,
             };
             self.submit_data
                 .insert(submit_data.order_id.clone(), submit_data);
@@ -3479,9 +3626,11 @@ impl Data {
         let downloaded_links = std::mem::replace(&mut self.downloaded_links, Vec::new());
         for resp in downloaded_links.into_iter() {
             let result = self.try_process_downloaded_link(resp);
-            if let Err(e) = result {
-                self.show_message(&e.to_string());
-            }
+            match result {
+                Ok(Some(v)) => self.ui.send(v),
+                Ok(None) => {}
+                Err(e) => self.show_message(&e.to_string()),
+            };
         }
 
         self.process_pending_sign_prompts();
@@ -3505,6 +3654,7 @@ impl Data {
             "from ui: {}",
             serde_json::to_string(&redact_to_msg(msg.clone())).unwrap()
         );
+        self.reset_idle_timer();
         match msg {
             ffi::proto::to::Msg::Login(req) => self.process_login_request(req),
             ffi::proto::to::Msg::Logout(_) => self.process_logout_request(),
@@ -3543,6 +3693,10 @@ impl Data {
             ffi::proto::to::Msg::UnsubscribePriceStream(_) => {
                 self.process_unsubscribe_price_stream()
             }
+            ffi::proto::to::Msg::MarketDataSubscribe(req) => {
+                self.process_market_data_subscribe(req)
+            }
+            ffi::proto::to::Msg::MarketDataUnsubscribe(_) => self.process_market_data_unsubscribe(),
         }
     }
 
@@ -3563,6 +3717,8 @@ impl Data {
             Notification::UpdatePriceStream(msg) => self.process_update_price_stream(msg),
             Notification::BlindedSwapClient(msg) => self.process_blinded_swap_client(msg),
             Notification::SwapDone(msg) => self.process_swap_done(msg),
+            Notification::LocalMessage(msg) => self.process_local_message(msg),
+            Notification::MarketDataUpdate(msg) => self.process_market_data_update(msg),
             _ => {}
         }
     }
@@ -3588,6 +3744,7 @@ impl Data {
             swap_market,
             amp_market,
             domain: asset.domain.clone(),
+            domain_agent: asset.domain_agent.clone(),
             unregistered,
         };
 
@@ -3981,6 +4138,25 @@ impl Data {
             amp::From::ConnectionStatus(connected) => self.process_amp_connection_status(connected),
         }
     }
+
+    fn reset_idle_timer(&mut self) {
+        self.last_ui_msg_at = std::time::Instant::now();
+        self.process_idle_timer();
+    }
+
+    fn process_idle_timer(&mut self) {
+        let is_desktop = self.ctx.as_ref().map(|ctx| ctx.desktop).unwrap_or(false);
+        if is_desktop {
+            let ui_idle =
+                std::time::Instant::now().duration_since(self.last_ui_msg_at) > DESKTOP_IDLE_TIMER;
+            let new_app_active = !ui_idle;
+            if self.app_active != new_app_active {
+                info!("update desktop app status, active: {}", new_app_active);
+                self.app_active = new_app_active;
+                self.update_amp_connection_status();
+            }
+        }
+    }
 }
 
 pub fn start_processing(
@@ -4036,6 +4212,10 @@ pub fn start_processing(
                     _,
                     Ok(Response::UnsubscribePriceStream(_)),
                 )) => {}
+                ws::WrappedResponse::Response(ResponseMessage::Response(
+                    _,
+                    Ok(Response::MarketDataUnsubscribe(_)),
+                )) => {}
 
                 ws::WrappedResponse::Response(ResponseMessage::Response(
                     _,
@@ -4049,6 +4229,14 @@ pub fn start_processing(
                     _,
                     Ok(Response::Unsubscribe(msg)),
                 )) => msg_sender_copy.send(Message::Unsubscribe(msg)).unwrap(),
+
+                ws::WrappedResponse::Response(ResponseMessage::Response(
+                    _,
+                    Ok(Response::MarketDataSubscribe(msg)),
+                )) => msg_sender_copy
+                    .send(Message::MarketDataResponse(msg))
+                    .unwrap(),
+
                 ws::WrappedResponse::Response(ResponseMessage::Response(
                     _,
                     Ok(Response::LoadPrices(msg)),
@@ -4087,6 +4275,16 @@ pub fn start_processing(
     });
     let notif_context = Box::new(NotifContext(Mutex::new(notif_sender)));
     let notif_context = Box::into_raw(notif_context);
+
+    let msg_sender_copy = msg_sender.clone();
+    std::thread::spawn(move || loop {
+        std::thread::sleep(DESKTOP_IDLE_TIMER);
+        let send_result = msg_sender_copy.send(Message::IdleTimer);
+        if send_result.is_err() {
+            warn!("worker stopped, quit idle timer thread...");
+            break;
+        }
+    });
 
     let settings_path = Data::data_path(env, &params.work_dir);
     let mut settings = settings::load_settings(&settings_path).unwrap_or_default();
@@ -4129,6 +4327,8 @@ pub fn start_processing(
         subscribed_price_stream: None,
         app_active: true,
         amp_active: true,
+        subscribed_market_data: None,
+        last_ui_msg_at: std::time::Instant::now(),
     };
 
     if let Err(e) = state.load_assets() {
@@ -4147,11 +4347,13 @@ pub fn start_processing(
             Message::PegStatus(msg) => state.process_peg_status(msg),
             Message::Subscribe(msg) => state.process_subscribe_response(msg),
             Message::Unsubscribe(msg) => state.process_unsubscribe_response(msg),
+            Message::MarketDataResponse(msg) => state.process_market_data_response(msg),
             Message::AssetDetails(msg) => state.process_asset_details_response(msg),
             Message::BackgroundMessage(data, sender) => {
                 state.process_background_message(data, sender)
             }
             Message::Amp(msg) => state.process_amp_message(msg),
+            Message::IdleTimer => state.process_idle_timer(),
         }
 
         let stopped = std::time::Instant::now();

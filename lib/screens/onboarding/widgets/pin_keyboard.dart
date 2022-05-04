@@ -2,36 +2,29 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
+import 'package:sideswap/models/pin_protection_provider.dart';
 
-class PinKeyboard extends StatefulWidget {
+class PinKeyboard extends ConsumerStatefulWidget {
   const PinKeyboard({
     Key? key,
-    this.onlyAccept = false,
-    this.showUnlock = false,
+    this.acceptType = PinKeyboardAcceptType.icon,
   }) : super(key: key);
 
-  final bool onlyAccept;
-  final bool showUnlock;
+  final PinKeyboardAcceptType acceptType;
 
   @override
   _PinKeyboardState createState() => _PinKeyboardState();
 }
 
-class _PinKeyboardState extends State<PinKeyboard> {
+class _PinKeyboardState extends ConsumerState<PinKeyboard> {
   final _buttonStyle = GoogleFonts.roboto(
     fontSize: 26.sp,
     fontWeight: FontWeight.w500,
     color: const Color(0xFF00C5FF),
-  );
-
-  final _saveStyle = GoogleFonts.roboto(
-    fontSize: 16.sp,
-    fontWeight: FontWeight.bold,
-    color: Colors.white,
   );
 
   @override
@@ -65,22 +58,41 @@ class _PinKeyboardState extends State<PinKeyboard> {
               style: _buttonStyle,
             );
           } else if (index == 11) {
-            if (widget.showUnlock) {
-              child = Text(
-                'UNLOCK'.tr(),
-                style: _saveStyle,
-              );
-            } else if (widget.onlyAccept) {
-              child = Text(
-                'SAVE'.tr(),
-                style: _saveStyle,
-              );
-            } else {
-              child = Icon(
-                Icons.keyboard_return,
-                color: Colors.white,
-                size: 28.w,
-              );
+            final textStyle = GoogleFonts.roboto(
+              fontSize: 18.sp,
+            );
+            switch (widget.acceptType) {
+              case PinKeyboardAcceptType.icon:
+                child = const Icon(
+                  Icons.keyboard_return,
+                  color: Colors.white,
+                  size: 24,
+                );
+                break;
+              case PinKeyboardAcceptType.enable:
+                child = Text(
+                  'ENABLE'.tr(),
+                  style: textStyle,
+                );
+                break;
+              case PinKeyboardAcceptType.disable:
+                child = Text(
+                  'DISABLE'.tr(),
+                  style: textStyle,
+                );
+                break;
+              case PinKeyboardAcceptType.unlock:
+                child = Text(
+                  'UNLOCK'.tr(),
+                  style: textStyle,
+                );
+                break;
+              case PinKeyboardAcceptType.save:
+                child = Text(
+                  'SAVE'.tr(),
+                  style: textStyle,
+                );
+                break;
             }
           } else {
             child = Text(
@@ -96,7 +108,7 @@ class _PinKeyboardState extends State<PinKeyboard> {
             child: InkWell(
               onTap: () {
                 HapticFeedback.mediumImpact();
-                context.read(pinKeyboardProvider).keyPressed(index);
+                ref.read(pinKeyboardProvider).keyPressed(index);
               },
               borderRadius: BorderRadius.all(Radius.circular(8.w)),
               child: Container(

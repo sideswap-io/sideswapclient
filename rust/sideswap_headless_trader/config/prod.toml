@@ -1,0 +1,17 @@
+# SideSwap server (and Liquid network)
+env = "Prod"
+
+# Work dir to store temporary files
+work_dir = "/tmp/work_dir"
+
+# Mnemonic that has existing B-JDE balance and will receive L-BTC balance
+mnemonic = "<YOUR_MNEMONIC>"
+
+# How many orders should be submitted at the same time (distinct UTXOs are required)
+order_count = 2
+
+# Price of 1 B-JDE in USDt
+price_usdt = 50
+
+# B-JDE
+trading_asset_id = "78557eb89ea8439dc1a519f4eb0267c86b261068648a0f84a5c6b55ca39b66f1"

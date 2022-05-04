@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class SideSwapPopup extends StatelessWidget {
+class SideSwapPopup extends ConsumerWidget {
   const SideSwapPopup({
     Key? key,
     required this.child,
@@ -38,7 +38,7 @@ class SideSwapPopup extends StatelessWidget {
   final bool extendBodyBehindAppBar;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
       extendBodyBehindAppBar: extendBodyBehindAppBar,
       sideSwapBackground: sideSwapBackground,
@@ -93,7 +93,7 @@ class SideSwapPopup extends StatelessWidget {
                                     if (onClose != null) {
                                       onClose!();
                                     } else {
-                                      context.read(walletProvider).goBack();
+                                      ref.read(walletProvider).goBack();
                                     }
                                   },
                                 ),

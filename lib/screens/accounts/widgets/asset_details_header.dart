@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -22,18 +22,17 @@ class AssetDetailsHeader extends ConsumerWidget {
   final double percent;
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
+  Widget build(BuildContext context, WidgetRef ref) {
     var _dollarConversion = '0.0';
-    final isAmp =
-        context.read(walletProvider).selectedWalletAsset!.account.isAmp();
+    final isAmp = ref.read(walletProvider).selectedWalletAsset!.account.isAmp();
 
     return Opacity(
       opacity: percent,
       child: Column(
         children: [
           Consumer(
-            builder: (context, watch, child) {
-              final wallet = watch(walletProvider);
+            builder: (context, ref, child) {
+              final wallet = ref.watch(walletProvider);
               final account = wallet.selectedWalletAsset!;
               final asset = wallet.assets[account.asset];
               return Text(
@@ -69,14 +68,14 @@ class AssetDetailsHeader extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.only(top: 8.h),
             child: Consumer(
-              builder: (context, watch, child) {
-                final wallet = watch(walletProvider);
+              builder: (context, ref, child) {
+                final wallet = ref.watch(walletProvider);
                 final account = wallet.selectedWalletAsset!;
                 final asset = wallet.assets[account.asset];
-                final balance = watch(balancesProvider).balances[account];
+                final balance = ref.watch(balancesProvider).balances[account];
 
                 final ticker = asset!.ticker;
-                final precision = context
+                final precision = ref
                     .read(walletProvider)
                     .getPrecisionForAssetId(assetId: asset.assetId);
                 final balanceStr =
@@ -95,15 +94,15 @@ class AssetDetailsHeader extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.only(top: 4.h),
             child: Consumer(
-              builder: (context, watch, child) {
-                final wallet = watch(walletProvider);
+              builder: (context, ref, child) {
+                final wallet = ref.watch(walletProvider);
                 final account = wallet.selectedWalletAsset!;
                 final asset = wallet.assets[account.asset];
-                final precision = context
+                final precision = ref
                     .read(walletProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
                 final balance = double.tryParse(amountStr(
-                      context.read(balancesProvider).balances[account] ?? 0,
+                      ref.read(balancesProvider).balances[account] ?? 0,
                       precision: precision,
                     )) ??
                     .0;
@@ -111,7 +110,7 @@ class AssetDetailsHeader extends ConsumerWidget {
                 _dollarConversion = amountUsd.toStringAsFixed(2);
                 _dollarConversion = replaceCharacterOnPosition(
                     input: _dollarConversion, currencyChar: '\$');
-                final visibleConversion = context
+                final visibleConversion = ref
                     .read(walletProvider)
                     .isAmountUsdAvailable(asset?.assetId);
 
@@ -128,8 +127,8 @@ class AssetDetailsHeader extends ConsumerWidget {
           ),
           Padding(
             padding: EdgeInsets.only(top: 22.h),
-            child: Consumer(builder: (context, watch, child) {
-              final wallet = context.read(walletProvider);
+            child: Consumer(builder: (context, ref, child) {
+              final wallet = ref.read(walletProvider);
               final account = wallet.selectedWalletAsset!;
               final asset = wallet.assets[account.asset]!;
               final instantSwapVisible = (asset.swapMarket ||
@@ -161,14 +160,12 @@ class AssetDetailsHeader extends ConsumerWidget {
                     RoundedButtonWithLabel(
                       onTap: () {
                         if (instantSwapVisible) {
-                          context
-                              .read(swapProvider)
-                              .setSelectedLeftAsset(account);
-                          context.read(swapProvider).selectSwap();
+                          ref.read(swapProvider).setSelectedLeftAsset(account);
+                          ref.read(swapProvider).selectSwap();
                         } else {
-                          context.read(requestOrderProvider).deliverAssetId =
+                          ref.read(requestOrderProvider).deliverAssetId =
                               account;
-                          context.read(walletProvider).setCreateOrderEntry();
+                          ref.read(walletProvider).setCreateOrderEntry();
                         }
                       },
                       label: 'Swap'.tr(),
@@ -185,7 +182,7 @@ class AssetDetailsHeader extends ConsumerWidget {
                   ),
                   RoundedButtonWithLabel(
                     onTap: () {
-                      context.read(walletProvider).selectPaymentPage();
+                      ref.read(walletProvider).selectPaymentPage();
                     },
                     label: 'Send'.tr(),
                     buttonBackground: Colors.white,

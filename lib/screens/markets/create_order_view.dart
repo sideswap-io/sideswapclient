@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -21,7 +21,7 @@ import 'package:sideswap/screens/markets/widgets/share_and_copy_buttons_row.dart
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 import 'package:sideswap/screens/markets/widgets/time_to_live.dart';
 
-class CreateOrderView extends StatefulWidget {
+class CreateOrderView extends ConsumerStatefulWidget {
   const CreateOrderView({
     Key? key,
     this.requestOrder,
@@ -33,7 +33,7 @@ class CreateOrderView extends StatefulWidget {
   _CreateOrderViewState createState() => _CreateOrderViewState();
 }
 
-class _CreateOrderViewState extends State<CreateOrderView> {
+class _CreateOrderViewState extends ConsumerState<CreateOrderView> {
   bool autoSignValue = true;
   bool orderTypePublicValue = true;
 
@@ -42,7 +42,7 @@ class _CreateOrderViewState extends State<CreateOrderView> {
   String expiresTitle = '';
   Timer? _expireTimer;
   bool isModifyDialogOpened = false;
-  int ttlSeconds = kHalfHour;
+  int ttlSeconds = kOneWeek;
   bool ttlLocked = false;
   bool buttonDisabled = false;
 
@@ -51,8 +51,11 @@ class _CreateOrderViewState extends State<CreateOrderView> {
     super.initState();
 
     if (widget.requestOrder != null) {
-      orderDetailsData =
-          OrderDetailsData.fromRequestOrder(widget.requestOrder!, context.read);
+      final assetPrecision = ref
+          .read(walletProvider)
+          .getPrecisionForAssetId(assetId: widget.requestOrder!.assetId);
+      orderDetailsData = OrderDetailsData.fromRequestOrder(
+          widget.requestOrder!, assetPrecision);
 
       orderTypePublicValue = !widget.requestOrder!.private;
       autoSignValue = orderDetailsData.autoSign;
@@ -72,26 +75,27 @@ class _CreateOrderViewState extends State<CreateOrderView> {
           if (isModifyDialogOpened) {
             Navigator.of(context, rootNavigator: true).pop();
           }
-          context.read(walletProvider).setRegistered();
+          ref.read(walletProvider).setRegistered();
         }
       });
     } else {
-      orderDetailsData = context.read(walletProvider).orderDetailsData;
+      orderDetailsData = ref.read(walletProvider).orderDetailsData;
       autoSignValue = orderDetailsData.autoSign;
       orderTypePublicValue = !orderDetailsData.private;
-      ttlSeconds = kOneDay;
+      ttlSeconds = kOneWeek;
 
-      final isToken = context
-          .read(requestOrderProvider)
-          .isAssetToken(orderDetailsData.assetId);
+      final isToken =
+          ref.read(requestOrderProvider).isAssetToken(orderDetailsData.assetId);
       if (isToken) {
-        ttlSeconds = kOneDay;
+        ttlSeconds = kOneWeek;
       }
     }
 
+    ref.read(marketsProvider).subscribeIndexPrice(orderDetailsData.assetId);
+
     if (editMode) {
       // set current edited data
-      context.read(walletProvider).orderDetailsData = orderDetailsData;
+      ref.read(walletProvider).orderDetailsData = orderDetailsData;
     }
   }
 
@@ -101,17 +105,19 @@ class _CreateOrderViewState extends State<CreateOrderView> {
     super.dispose();
   }
 
-  void onGoBack() {
+  void onGoBack(WidgetRef ref) {
+    ref.read(marketsProvider).unsubscribeIndexPrice();
+
     if (widget.requestOrder != null) {
-      context.read(walletProvider).setRegistered();
+      ref.read(walletProvider).setRegistered();
     } else {
-      context.read(walletProvider).setSubmitDecision(
+      ref.read(walletProvider).setSubmitDecision(
             accept: false,
             autosign: autoSignValue,
             private: !orderTypePublicValue,
             ttlSeconds: ttlSeconds,
           );
-      context.read(walletProvider).setRegistered();
+      ref.read(walletProvider).setRegistered();
     }
   }
 
@@ -119,7 +125,7 @@ class _CreateOrderViewState extends State<CreateOrderView> {
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       onWillPop: () async {
-        onGoBack();
+        onGoBack(ref);
         return false;
       },
       appBar: editMode
@@ -132,19 +138,19 @@ class _CreateOrderViewState extends State<CreateOrderView> {
                 height: 24.w,
               ),
               onTrailingButtonPressed: () {
-                context
+                ref
                     .read(walletProvider)
                     .cancelOrder(widget.requestOrder!.orderId);
-                onGoBack();
+                onGoBack(ref);
               },
               onPressed: () {
-                onGoBack();
+                onGoBack(ref);
               },
             )
           : CustomAppBar(
               title: 'Create order'.tr(),
               onPressed: () {
-                onGoBack();
+                onGoBack(ref);
               },
             ),
       body: LayoutBuilder(
@@ -157,19 +163,23 @@ class _CreateOrderViewState extends State<CreateOrderView> {
               ),
               child: IntrinsicHeight(
                 child: Consumer(
-                  builder: (context, watch, child) {
+                  builder: (context, ref, child) {
                     if (widget.requestOrder != null) {
                       // update data if swapRequest has changed
-                      final index = context
+                      final index = ref
                           .read(marketsProvider)
                           .marketOrders
                           .indexWhere(
                               (e) => e.orderId == orderDetailsData.orderId);
                       if (index >= 0) {
                         final requestOrder =
-                            watch(marketsProvider).marketOrders[index];
+                            ref.watch(marketsProvider).marketOrders[index];
+                        final assetPrecision = ref
+                            .read(walletProvider)
+                            .getPrecisionForAssetId(
+                                assetId: requestOrder.assetId);
                         orderDetailsData = OrderDetailsData.fromRequestOrder(
-                            requestOrder, context.read);
+                            requestOrder, assetPrecision);
                       }
                     }
 
@@ -184,10 +194,10 @@ class _CreateOrderViewState extends State<CreateOrderView> {
                       onPressed: buttonDisabled
                           ? null
                           : () async {
-                              if (await context
+                              if (await ref
                                   .read(walletProvider)
                                   .isAuthenticated()) {
-                                context.read(walletProvider).setSubmitDecision(
+                                ref.read(walletProvider).setSubmitDecision(
                                       accept: true,
                                       autosign: autoSignValue,
                                       private: !orderTypePublicValue,
@@ -200,7 +210,7 @@ class _CreateOrderViewState extends State<CreateOrderView> {
                             },
                       onAutoSignToggle: editMode
                           ? (value) {
-                              context.read(walletProvider).modifyOrderAutoSign(
+                              ref.read(walletProvider).modifyOrderAutoSign(
                                   orderDetailsData.orderId, value);
                               setState(() {
                                 autoSignValue = value;
@@ -220,9 +230,9 @@ class _CreateOrderViewState extends State<CreateOrderView> {
                             },
                       onModifyPrice: () async {
                         isModifyDialogOpened = true;
-                        await context
+                        await ref
                             .read(marketsProvider)
-                            .onModifyPrice(widget.requestOrder);
+                            .onModifyPrice(ref, widget.requestOrder);
                         isModifyDialogOpened = false;
                       },
                       onTtlChanged: (value) async {
@@ -233,10 +243,10 @@ class _CreateOrderViewState extends State<CreateOrderView> {
                         });
 
                         if (editMode) {
-                          if (await context
+                          if (await ref
                               .read(walletProvider)
                               .isAuthenticated()) {
-                            context.read(walletProvider).setSubmitDecision(
+                            ref.read(walletProvider).setSubmitDecision(
                                   accept: true,
                                   autosign: autoSignValue,
                                   private: !orderTypePublicValue,
@@ -257,7 +267,7 @@ class _CreateOrderViewState extends State<CreateOrderView> {
   }
 }
 
-class CreateOrderViewBody extends StatelessWidget {
+class CreateOrderViewBody extends ConsumerWidget {
   const CreateOrderViewBody({
     Key? key,
     required this.autoSignValue,
@@ -288,7 +298,7 @@ class CreateOrderViewBody extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -316,15 +326,7 @@ class CreateOrderViewBody extends StatelessWidget {
                 padding: EdgeInsets.only(top: 8.h),
                 child: TimeToLive(
                   dropdownValue: ttlSeconds,
-                  dropdownItems: const [
-                    kTenMinutes,
-                    kHalfHour,
-                    kOneHour,
-                    kSixHours,
-                    kTwelveHours,
-                    kOneDay,
-                    kOneWeek,
-                  ],
+                  dropdownItems: availableTtlValues(),
                   onChanged: onTtlChanged,
                   locked: onTtlChanged == null ? true : false,
                 ),
@@ -337,14 +339,14 @@ class CreateOrderViewBody extends StatelessWidget {
                   padding: EdgeInsets.only(bottom: 40.h),
                   child: ShareAndCopyButtonsRow(
                     onShare: () async {
-                      await Share.share(context
+                      await Share.share(ref
                           .read(requestOrderProvider)
                           .getAddressToShare(orderDetailsData));
                     },
                     onCopy: () async {
                       await copyToClipboard(
                           context,
-                          context
+                          ref
                               .read(requestOrderProvider)
                               .getAddressToShare(orderDetailsData));
                     },

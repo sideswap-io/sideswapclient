@@ -1,15 +1,31 @@
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
+
+[target.x86_64-pc-windows-gnu]
+rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
+
+[target.x86_64-apple-darwin]
+rustflags = []
+
+[target.aarch64-apple-ios]
+rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
+
 [target.aarch64-linux-android]
 ar = "arch64-linux-android-ar"
 linker = "aarch64-linux-android21-clang"
+rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
 
 [target.armv7-linux-androideabi]
 ar = "arm-linux-androideabi-ar"
 linker = "armv7a-linux-androideabi21-clang"
+rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
 
 [target.i686-linux-android]
 ar = "i686-linux-android-ar"
 linker = "i686-linux-android21-clang"
+rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
 
 [target.x86_64-linux-android]
 ar = "x86_64-linux-android-ar"
 linker = "x86_64-linux-android21-clang"
+rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]

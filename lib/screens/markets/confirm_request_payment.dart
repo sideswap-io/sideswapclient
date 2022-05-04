@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -11,17 +11,17 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/markets/confirm_request_payment_success.dart';
 
-class ConfirmRequestPayment extends StatelessWidget {
+class ConfirmRequestPayment extends ConsumerWidget {
   const ConfirmRequestPayment({Key? key, required this.request})
       : super(key: key);
 
   final PaymentRequest request;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final amount = request.amount;
     final ticker =
-        context.read(walletProvider).assets[request.assetId]?.ticker ?? '';
+        ref.read(walletProvider).assets[request.assetId]?.ticker ?? '';
 
     return SideSwapPopup(
       onWillPop: () async {
@@ -74,7 +74,7 @@ class ConfirmRequestPayment extends StatelessWidget {
                   textColor: Colors.white,
                   onPressed: () async {
                     final authenticated =
-                        await context.read(walletProvider).isAuthenticated();
+                        await ref.read(walletProvider).isAuthenticated();
                     if (authenticated) {
                       await Navigator.of(context, rootNavigator: true)
                           .push<void>(

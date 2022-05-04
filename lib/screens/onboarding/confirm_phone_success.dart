@@ -1,14 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
-class ConfirmPhoneSuccess extends StatelessWidget {
+class ConfirmPhoneSuccess extends ConsumerWidget {
   ConfirmPhoneSuccess({
     Key? key,
   }) : super(key: key);
@@ -20,7 +20,7 @@ class ConfirmPhoneSuccess extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapPopup(
       onWillPop: () async {
         return false;
@@ -38,7 +38,7 @@ class ConfirmPhoneSuccess extends StatelessWidget {
                 style: _defaultTextStyle,
               ),
               TextSpan(
-                text: context.read(phoneProvider).countryPhoneNumber,
+                text: ref.read(phoneProvider).countryPhoneNumber,
                 style: _defaultTextStyle.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -53,7 +53,7 @@ class ConfirmPhoneSuccess extends StatelessWidget {
         buttonText: 'CONTINUE'.tr(),
         onPressed: () async {
           final confirmPhoneData =
-              context.read(phoneProvider).getConfirmPhoneData();
+              ref.read(phoneProvider).getConfirmPhoneData();
           await confirmPhoneData.onConfirmPhoneDone!(context);
         },
       ),

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/markets_provider.dart';
@@ -10,7 +10,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 final swapMarketProvider = ChangeNotifierProvider<SwapMarketProvider>(
-    (ref) => SwapMarketProvider(ref.read));
+    (ref) => SwapMarketProvider(ref));
 
 class Product {
   String assetId;
@@ -54,11 +54,9 @@ class Product {
 }
 
 class SwapMarketProvider extends ChangeNotifier {
-  Reader read;
+  final Ref ref;
 
-  SwapMarketProvider(
-    this.read,
-  );
+  SwapMarketProvider(this.ref);
 
   final swapMarketOrders = <RequestOrder>[];
   final bidOffers = <RequestOrder>[];
@@ -76,7 +74,8 @@ class SwapMarketProvider extends ChangeNotifier {
   Product get currentProduct => _currentProduct ?? getDefaultProduct();
 
   List<String> getProductsAssetId() {
-    return read(walletProvider)
+    return ref
+        .read(walletProvider)
         .assets
         .values
         .where((e) => e.swapMarket | e.ampMarket)
@@ -86,7 +85,7 @@ class SwapMarketProvider extends ChangeNotifier {
 
   Product getDefaultProduct() {
     return Product(
-      assetId: read(walletProvider).tetherAssetId(),
+      assetId: ref.read(walletProvider).tetherAssetId(),
       displayName: '$kLiquidBitcoinTicker / $kTetherTicker',
       ticker: kTetherTicker,
     );
@@ -95,9 +94,9 @@ class SwapMarketProvider extends ChangeNotifier {
   List<Product> getProducts() {
     final newList = <Product>[];
     newList.add(getDefaultProduct());
-    final wallet = read(walletProvider);
+    final wallet = ref.read(walletProvider);
 
-    newList.addAll(read(swapMarketProvider).getProductsAssetId().map((e) {
+    newList.addAll(getProductsAssetId().map((e) {
       final asset = wallet.assets[e]!;
       final displayName = asset.ampMarket
           ? '${asset.ticker} / $kLiquidBitcoinTicker'
@@ -141,7 +140,8 @@ class SwapMarketProvider extends ChangeNotifier {
 
   void updateOffers() {
     final isAmp =
-        read(walletProvider).assets[currentProduct.assetId]?.ampMarket ?? false;
+        ref.read(walletProvider).assets[currentProduct.assetId]?.ampMarket ??
+            false;
     bidOffers.clear();
     bidOffers.addAll(swapMarketOrders
         .where((e) =>

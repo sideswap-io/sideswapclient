@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -23,14 +23,14 @@ class AccountItem extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, ScopedReader watch) {
-    final wallet = watch(walletProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallet = ref.watch(walletProvider);
     final asset = wallet.assets[accountAsset.asset]!;
     final assetImage = wallet.assetImagesBig[accountAsset.asset];
     final precision =
         wallet.getPrecisionForAssetId(assetId: accountAsset.asset);
     final amountString = amountStr(
-      context.read(balancesProvider).balances[accountAsset] ?? 0,
+      ref.read(balancesProvider).balances[accountAsset] ?? 0,
       precision: precision,
     );
     final isAmp = accountAsset.account.isAmp();
@@ -72,37 +72,23 @@ class AccountItem extends ConsumerWidget {
                   height: 48.w,
                   child: assetImage,
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: 10.w),
-                  child: SizedBox(
-                    width: 257.w,
-                    height: 48.w,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                asset.name,
-                                overflow: TextOverflow.clip,
-                                maxLines: 1,
-                                textAlign: TextAlign.left,
-                                style: GoogleFonts.roboto(
-                                  fontSize: 17.sp,
-                                  fontWeight: FontWeight.normal,
-                                  color: textColor,
-                                ),
-                              ),
-                            ),
-                            Visibility(
-                              visible: asset.assetId != wallet.bitcoinAssetId(),
-                              child: Padding(
-                                padding: EdgeInsets.only(left: 8.w),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 10.w),
+                    child: SizedBox(
+                      height: 48.w,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
                                 child: Text(
-                                  amountString,
-                                  textAlign: TextAlign.right,
+                                  asset.name,
+                                  overflow: TextOverflow.clip,
+                                  maxLines: 1,
+                                  textAlign: TextAlign.left,
                                   style: GoogleFonts.roboto(
                                     fontSize: 17.sp,
                                     fontWeight: FontWeight.normal,
@@ -110,39 +96,55 @@ class AccountItem extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
+                              Visibility(
+                                visible:
+                                    asset.assetId != wallet.bitcoinAssetId(),
+                                child: Padding(
+                                  padding: EdgeInsets.only(left: 8.w),
+                                  child: Text(
+                                    amountString,
+                                    textAlign: TextAlign.right,
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 17.sp,
+                                      fontWeight: FontWeight.normal,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    asset.ticker,
+                                    style: GoogleFonts.roboto(
+                                      fontSize: 15.sp,
+                                      fontWeight: FontWeight.normal,
+                                      color: const Color(0xFF6B91A8),
+                                    ),
+                                  ),
+                                  if (isAmp) const AmpFlag(fontSize: 14),
+                                ],
+                              ),
+                              if (amountUsd != 0) ...[
                                 Text(
-                                  asset.ticker,
+                                  '≈ $_dollarConversion',
                                   style: GoogleFonts.roboto(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.normal,
                                     color: const Color(0xFF6B91A8),
                                   ),
                                 ),
-                                if (isAmp) const AmpFlag(fontSize: 14),
                               ],
-                            ),
-                            if (amountUsd != 0) ...[
-                              Text(
-                                '≈ $_dollarConversion',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 15.sp,
-                                  fontWeight: FontWeight.normal,
-                                  color: const Color(0xFF6B91A8),
-                                ),
-                              ),
                             ],
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

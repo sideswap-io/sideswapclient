@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -10,7 +10,7 @@ enum CustomBackButtonType {
   close,
 }
 
-class CustomBackButton extends StatefulWidget {
+class CustomBackButton extends ConsumerStatefulWidget {
   const CustomBackButton({
     Key? key,
     this.onPressed,
@@ -30,7 +30,7 @@ class CustomBackButton extends StatefulWidget {
   _CustomBackButtonState createState() => _CustomBackButtonState();
 }
 
-class _CustomBackButtonState extends State<CustomBackButton> {
+class _CustomBackButtonState extends ConsumerState<CustomBackButton> {
   double _width = 0;
   double _height = 0;
   final double _padding = 16;
@@ -55,7 +55,7 @@ class _CustomBackButtonState extends State<CustomBackButton> {
           onTap: widget.onPressed ??
               () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                context.read(walletProvider).goBack();
+                ref.read(walletProvider).goBack();
               },
           child: Container(
             width: _width + _padding,

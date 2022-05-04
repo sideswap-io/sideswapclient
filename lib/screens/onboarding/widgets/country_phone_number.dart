@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/country_code.dart';
@@ -12,7 +12,7 @@ import 'package:sideswap/screens/onboarding/widgets/wait_sms_confirmation.dart';
 
 typedef PhoneNumberCallback = void Function(CountryCode, String);
 
-class CountryPhoneNumber extends StatefulWidget {
+class CountryPhoneNumber extends ConsumerStatefulWidget {
   const CountryPhoneNumber({
     Key? key,
     required this.phoneNumberCallback,
@@ -26,7 +26,7 @@ class CountryPhoneNumber extends StatefulWidget {
   _CountryPhoneNumberState createState() => _CountryPhoneNumberState();
 }
 
-class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
+class _CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
   late CountryCode visibleCountryCode;
   String visiblePhoneNumber = '';
   late FocusNode phoneFocusNode;
@@ -52,8 +52,8 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
 
     phoneFocusNode = widget.focusNode ?? FocusNode();
 
-    visibleCountryCode = context.read(phoneProvider).countryCode;
-    _menuItems = context
+    visibleCountryCode = ref.read(phoneProvider).countryCode;
+    _menuItems = ref
         .read(countriesProvider)
         .countries
         .map(
@@ -78,7 +78,8 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
         )
         .toList();
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance
+        ?.addPostFrameCallback((_) => afterBuild(ref, context));
   }
 
   @override
@@ -87,14 +88,14 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
     super.dispose();
   }
 
-  void afterBuild(BuildContext context) {
-    final phoneNumber = context.read(phoneProvider).phoneNumber;
+  void afterBuild(WidgetRef ref, BuildContext context) {
+    final phoneNumber = ref.read(phoneProvider).phoneNumber;
     visiblePhoneNumber = phoneNumber;
     controller.clear();
     controller.text = phoneNumber;
     setState(() {
-      visibleCountryCode = context.read(phoneProvider).countryCode;
-      _counter = context.read(phoneProvider).getSmsDelay();
+      visibleCountryCode = ref.read(phoneProvider).countryCode;
+      _counter = ref.read(phoneProvider).getSmsDelay();
     });
   }
 
@@ -226,8 +227,8 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
                   ],
                 ),
                 Consumer(
-                  builder: (context, watch, child) {
-                    final barier = watch(phoneProvider).barier;
+                  builder: (context, ref, child) {
+                    final barier = ref.watch(phoneProvider).barier;
                     if (barier && phoneFocusNode.hasPrimaryFocus) {
                       phoneFocusNode.unfocus();
                     }
@@ -243,8 +244,8 @@ class _CountryPhoneNumberState extends State<CountryPhoneNumber> {
             ),
           ),
           Consumer(
-            builder: (context, watch, child) {
-              final delay = watch(phoneProvider).getSmsDelay();
+            builder: (context, ref, child) {
+              final delay = ref.watch(phoneProvider).getSmsDelay();
               if (_counter == 0 && delay != 0) {
                 Future.microtask(() {
                   setState(() {

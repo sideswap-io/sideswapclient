@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/pay/payment_select_account.dart';
-import 'package:sideswap/screens/swap/fee_suggestions.dart';
-import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/screens/pay/widgets/fee_rates_dropdown.dart';
 
 class TickerAmountTextField extends StatefulWidget {
   const TickerAmountTextField({
@@ -29,7 +30,6 @@ class TickerAmountTextField extends StatefulWidget {
     this.hintText = '',
     this.showHintText = false,
     this.feeRates = const <FeeRate>[],
-    this.onFeeRateChanged,
     this.onSubmitted,
     this.onEditingComplete,
     this.textInputAction,
@@ -50,7 +50,6 @@ class TickerAmountTextField extends StatefulWidget {
   final String hintText;
   final bool showHintText;
   final List<FeeRate> feeRates;
-  final void Function(FeeRate)? onFeeRateChanged;
   final void Function(String)? onSubmitted;
   final void Function()? onEditingComplete;
   final TextInputAction? textInputAction;
@@ -138,17 +137,22 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                 ? Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          context
-                                  .read(walletProvider)
-                                  .getAssetById(widget.dropdownValue.asset)
-                                  ?.ticker ??
-                              '',
-                          textAlign: TextAlign.left,
-                          style: _dropdownTextStyle,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.fade,
+                        child: Consumer(
+                          builder: (context, ref, _) {
+                            final text = ref
+                                    .watch(walletProvider)
+                                    .getAssetById(widget.dropdownValue.asset)
+                                    ?.ticker ??
+                                '';
+                            return Text(
+                              text,
+                              textAlign: TextAlign.left,
+                              style: _dropdownTextStyle,
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.fade,
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -156,57 +160,75 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                 : null,
             value: widget.dropdownValue,
             items: widget.availableAssets.map((value) {
-              final _asset = context.read(walletProvider).assets[value.asset];
-              final image = context
-                  .read(walletProvider)
-                  .assetImagesSmall[_asset?.assetId];
-
               return DropdownMenuItem<AccountAsset>(
                 value: value,
                 child: Row(
                   children: [
-                    if (image != null) ...[
-                      image,
-                    ],
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final _asset = ref.watch(walletProvider
+                            .select((p) => p.assets[value.asset]));
+                        final image = ref.watch(walletProvider.select(
+                            (p) => p.assetImagesSmall[_asset?.assetId]));
+                        if (image != null) {
+                          return image;
+                        }
+
+                        return Container();
+                      },
+                    ),
                     Container(
                       width: 8.w,
                     ),
-                    if (_asset?.ticker != null) ...[
-                      Expanded(
-                        child: Text(
-                          _asset?.ticker ?? '',
-                          textAlign: TextAlign.left,
-                          style: _dropdownTextStyle,
-                          maxLines: 1,
-                          softWrap: false,
-                          overflow: TextOverflow.fade,
-                        ),
-                      ),
-                    ],
+                    Consumer(builder: (context, ref, _) {
+                      final _asset = ref.watch(
+                          walletProvider.select((p) => p.assets[value.asset]));
+
+                      if (_asset?.ticker != null) {
+                        return Expanded(
+                          child: Text(
+                            _asset?.ticker ?? '',
+                            textAlign: TextAlign.left,
+                            style: _dropdownTextStyle,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.fade,
+                          ),
+                        );
+                      }
+
+                      return Container();
+                    }),
                   ],
                 ),
               );
             }).toList(),
             selectedItemBuilder: (context) {
               return widget.availableAssets.map((value) {
-                final _asset = context.read(walletProvider).assets[value.asset];
-                if (_asset?.ticker == null) {
-                  return Container();
-                }
+                return Consumer(
+                  builder: (context, ref, _) {
+                    final _asset = ref.watch(
+                        walletProvider.select((p) => p.assets[value.asset]));
 
-                return Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _asset?.ticker ?? '',
-                        textAlign: TextAlign.left,
-                        style: _dropdownTextStyle,
-                        maxLines: 1,
-                        softWrap: false,
-                        overflow: TextOverflow.fade,
-                      ),
-                    ),
-                  ],
+                    if (_asset?.ticker != null) {
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _asset?.ticker ?? '',
+                              textAlign: TextAlign.left,
+                              style: _dropdownTextStyle,
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.fade,
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return Container();
+                  },
                 );
               }).toList();
             },
@@ -217,15 +239,20 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
   }
 
   void showAccountsPopup() {
+    Widget builder(BuildContext context) {
+      return PaymentSelectAccount(
+        availableAssets: widget.availableAssets,
+        disabledAssets: widget.disabledAssets,
+        onSelected: (AccountAsset value) {
+          widget.onDropdownChanged!(value);
+        },
+      );
+    }
+
     Navigator.of(context, rootNavigator: true).push<void>(
-      MaterialPageRoute(
-          builder: (context) => PaymentSelectAccount(
-                availableAssets: widget.availableAssets,
-                disabledAssets: widget.disabledAssets,
-                onSelected: (AccountAsset value) {
-                  widget.onDropdownChanged!(value);
-                },
-              )),
+      FlavorConfig.isDesktop
+          ? DialogRoute(builder: builder, context: context)
+          : MaterialPageRoute(builder: builder),
     );
   }
 
@@ -262,10 +289,9 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                   child: Row(
                     children: [
                       Consumer(
-                        builder: (context, watch, child) {
-                          final _icon = context
-                              .read(walletProvider)
-                              .assetImagesSmall[widget.dropdownValue.asset];
+                        builder: (context, ref, _) {
+                          final _icon = ref.watch(walletProvider.select((p) =>
+                              p.assetImagesSmall[widget.dropdownValue.asset]));
 
                           return SizedBox(
                             width: 32.w,
@@ -289,88 +315,20 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                 ),
                 Expanded(
                   child: Consumer(
-                    builder: (context, watch, child) {
-                      if (context.read(swapProvider).swapType() ==
-                              SwapType.pegIn &&
-                          widget.readOnly) {
+                    builder: (context, ref, _) {
+                      final swapType = ref.watch(swapProvider).swapType();
+                      if (swapType == SwapType.pegIn && widget.readOnly) {
                         _visibleHintText = false;
                       }
 
                       if (widget.feeRates.isNotEmpty) {
-                        return Padding(
-                          padding: EdgeInsets.only(left: 18.w),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.of(context, rootNavigator: true)
-                                    .push<void>(
-                                  MaterialPageRoute(
-                                    builder: (context) => FeeRates(
-                                      feeRates: widget.feeRates,
-                                      onPressed: (value) {
-                                        setState(() {
-                                          _feeRate = value;
-                                          if (widget.onFeeRateChanged != null) {
-                                            widget.onFeeRateChanged!(value);
-                                          }
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                height: 42.h,
-                                decoration: borderDecoration,
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: SizedBox(
-                                    width: 225.w,
-                                    height: 42.h,
-                                    child: Padding(
-                                      padding: EdgeInsets.only(top: 6.h),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              getFeeRate(feeRate: _feeRate),
-                                              overflow: TextOverflow.clip,
-                                              maxLines: 1,
-                                              style: GoogleFonts.roboto(
-                                                fontSize: 13.sp,
-                                                fontWeight: FontWeight.normal,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                EdgeInsets.only(bottom: 3.h),
-                                            child: Icon(
-                                              Icons.keyboard_arrow_down,
-                                              size: 16.w,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
+                        return FeeRatesDropdown(
+                            borderDecoration: borderDecoration);
                       }
 
-                      final assetPrecision = context
-                          .read(walletProvider)
-                          .assets[widget.dropdownValue.asset]!
-                          .precision;
+                      final assetPrecision = ref.watch(walletProvider.select(
+                          (p) =>
+                              p.assets[widget.dropdownValue.asset]!.precision));
 
                       return SizedBox(
                         height: 42.h,

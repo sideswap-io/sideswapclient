@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum WalletMainNavigationItem {
   home,
@@ -22,29 +22,48 @@ class WalletMainArguments {
     required this.navigationItem,
   });
 
-  WalletMainArguments fromIndex(int currentIndex) {
-    switch (currentIndex) {
+  WalletMainArguments fromIndex(int value) {
+    switch (value) {
       case 0:
         return copyWith(
-            currentIndex: currentIndex,
-            navigationItem: WalletMainNavigationItem.home);
+            currentIndex: value, navigationItem: WalletMainNavigationItem.home);
       case 1:
         return copyWith(
-            currentIndex: currentIndex,
+            currentIndex: value,
             navigationItem: WalletMainNavigationItem.accounts);
       case 2:
         return copyWith(
-            currentIndex: currentIndex,
+            currentIndex: value,
             navigationItem: WalletMainNavigationItem.markets);
       case 3:
         return copyWith(
-            currentIndex: currentIndex,
-            navigationItem: WalletMainNavigationItem.swap);
+            currentIndex: value, navigationItem: WalletMainNavigationItem.swap);
     }
 
     return copyWith(
-        currentIndex: currentIndex,
-        navigationItem: WalletMainNavigationItem.home);
+        currentIndex: value, navigationItem: WalletMainNavigationItem.home);
+  }
+
+  WalletMainArguments fromIndexDesktop(int value) {
+    switch (value) {
+      case 0:
+        return copyWith(
+            currentIndex: value, navigationItem: WalletMainNavigationItem.home);
+      case 1:
+        return copyWith(
+            currentIndex: value,
+            navigationItem: WalletMainNavigationItem.markets);
+      case 2:
+        return copyWith(
+            currentIndex: value, navigationItem: WalletMainNavigationItem.swap);
+      case 3:
+        return copyWith(
+            currentIndex: value,
+            navigationItem: WalletMainNavigationItem.transactions);
+    }
+
+    return copyWith(
+        currentIndex: value, navigationItem: WalletMainNavigationItem.home);
   }
 
   WalletMainArguments copyWith({
@@ -85,9 +104,9 @@ class UiStateArgsChangeNotifierProvider extends ChangeNotifier {
       currentIndex: 0, navigationItem: WalletMainNavigationItem.home);
 
   WalletMainArguments get walletMainArguments => _walletMainArguments;
-  set walletMainArguments(WalletMainArguments walletMainArguments) {
+  set walletMainArguments(WalletMainArguments value) {
     _lastWalletMainArguments = _walletMainArguments;
-    _walletMainArguments = walletMainArguments;
+    _walletMainArguments = value;
     notifyListeners();
   }
 

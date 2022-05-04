@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/swap_market_provider.dart';
@@ -12,7 +12,7 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/common/helpers.dart';
 
 final marketsProvider =
-    ChangeNotifierProvider<MarketsProvider>((ref) => MarketsProvider(ref.read));
+    ChangeNotifierProvider<MarketsProvider>((ref) => MarketsProvider(ref));
 
 enum RequestOrderType {
   order,
@@ -37,10 +37,14 @@ extension RequestOrderEx on RequestOrder {
     return getExpiresAt().isNegative;
   }
 
-  String getExpireDescription() {
+  Duration getExpireDuration() {
     final expireAt = DateTime.fromMillisecondsSinceEpoch(expiresAt);
     final duration = expireAt.difference(DateTime.now());
-    return duration.toStringCustom();
+    return duration;
+  }
+
+  String getExpireDescription() {
+    return getExpireDuration().toStringCustom();
   }
 
   int get bitcoinAmountWithFee {
@@ -136,11 +140,17 @@ class RequestOrder {
   }
 }
 
-class MarketsProvider extends ChangeNotifier {
-  Reader read;
+enum SubscribedMarket {
+  none,
+  token,
+  asset,
+}
 
-  MarketsProvider(this.read) {
-    read(walletProvider).serverConnection.listen(onServerConnectionChanged);
+class MarketsProvider extends ChangeNotifier {
+  final Ref ref;
+
+  MarketsProvider(this.ref) {
+    ref.read(walletProvider).serverConnection.listen(onServerConnectionChanged);
   }
 
   final Map<String, RequestOrder> _marketOrders = <String, RequestOrder>{};
@@ -149,6 +159,8 @@ class MarketsProvider extends ChangeNotifier {
   final _indexPriceMap = <String, double>{};
   final _lastPriceMap = <String, double>{};
   String _subscribedIndexPriceAssetId = '';
+
+  SubscribedMarket subscribedMarket = SubscribedMarket.none;
 
   void onServerConnectionChanged(bool value) {
     if (!value) {
@@ -173,60 +185,68 @@ class MarketsProvider extends ChangeNotifier {
 
   void insertOrder(RequestOrder order) {
     _marketOrders[order.orderId] = order;
-    if (read(requestOrderProvider).currentRequestOrderView?.orderId ==
+    if (ref.read(requestOrderProvider).currentRequestOrderView?.orderId ==
         order.orderId) {
-      read(requestOrderProvider).currentRequestOrderView = order;
+      ref.read(requestOrderProvider).currentRequestOrderView = order;
     }
     notifyListeners();
 
-    read(swapMarketProvider)
+    ref
+        .read(swapMarketProvider)
         .updateSwapMarketOrders(_marketOrders.values.toList());
-    read(tokenMarketProvider)
+    ref
+        .read(tokenMarketProvider)
         .updateTokenMarketOrders(_marketOrders.values.toList());
   }
 
   void removeOrder(String orderId) {
     _marketOrders.remove(orderId);
     if (orderId ==
-        read(requestOrderProvider).currentRequestOrderView?.orderId) {
-      read(walletProvider).setRegistered();
+        ref.read(requestOrderProvider).currentRequestOrderView?.orderId) {
+      ref.read(walletProvider).setRegistered();
     }
     notifyListeners();
 
-    read(swapMarketProvider)
+    ref
+        .read(swapMarketProvider)
         .updateSwapMarketOrders(_marketOrders.values.toList());
-    read(tokenMarketProvider)
+    ref
+        .read(tokenMarketProvider)
         .updateTokenMarketOrders(_marketOrders.values.toList());
   }
 
   void subscribeTokenMarket() {
+    subscribedMarket = SubscribedMarket.token;
     final msg = To();
     msg.subscribe = To_Subscribe();
-    msg.subscribe.market = To_Subscribe_Market.TOKENS;
-    read(walletProvider).sendMsg(msg);
+    msg.subscribe.markets.add(To_Subscribe_Market(assetId: null));
+    ref.read(walletProvider).sendMsg(msg);
   }
 
-  void subscribeSwapMarket(String assetId) {
+  void subscribeSwapMarket(String assetId, {bool withTokenMaket = false}) {
     if (assetId.isEmpty) {
       return;
     }
 
+    subscribedMarket = SubscribedMarket.asset;
     final msg = To();
     msg.subscribe = To_Subscribe();
-    msg.subscribe.market = To_Subscribe_Market.ASSET;
-    msg.subscribe.assetId = assetId;
-    read(walletProvider).sendMsg(msg);
+    msg.subscribe.markets.add(To_Subscribe_Market(assetId: assetId));
+    if (withTokenMaket) {
+      msg.subscribe.markets.add(To_Subscribe_Market(assetId: null));
+    }
+    ref.read(walletProvider).sendMsg(msg);
   }
 
   void unsubscribeMarket() {
+    subscribedMarket = SubscribedMarket.none;
     final msg = To();
     msg.subscribe = To_Subscribe();
-    msg.subscribe.market = To_Subscribe_Market.NONE;
-    read(walletProvider).sendMsg(msg);
+    ref.read(walletProvider).sendMsg(msg);
   }
 
   void subscribeIndexPrice(String assetId) {
-    assert(assetId != read(walletProvider).liquidAssetId());
+    assert(assetId != ref.read(walletProvider).liquidAssetId());
 
     // don't subscribe if already subscribed
     if (assetId == _subscribedIndexPriceAssetId) {
@@ -239,7 +259,7 @@ class MarketsProvider extends ChangeNotifier {
     final msg = To();
     msg.subscribePrice = AssetId();
     msg.subscribePrice.assetId = assetId;
-    read(walletProvider).sendMsg(msg);
+    ref.read(walletProvider).sendMsg(msg);
   }
 
   void unsubscribeIndexPrice() {
@@ -250,7 +270,7 @@ class MarketsProvider extends ChangeNotifier {
     final msg = To();
     msg.unsubscribePrice = AssetId();
     msg.unsubscribePrice.assetId = _subscribedIndexPriceAssetId;
-    read(walletProvider).sendMsg(msg);
+    ref.read(walletProvider).sendMsg(msg);
 
     _subscribedIndexPriceAssetId = '';
   }
@@ -286,11 +306,11 @@ class MarketsProvider extends ChangeNotifier {
 
     notifyListeners();
 
-    read(requestOrderProvider).updateIndexPrice();
+    ref.read(requestOrderProvider).updateIndexPrice();
   }
 
   String getIndexPriceStr(String assetId) {
-    final isAmp = read(walletProvider).assets[assetId]?.ampMarket ?? false;
+    final isAmp = ref.read(walletProvider).assets[assetId]?.ampMarket ?? false;
     var price = getIndexPriceForAsset(assetId);
     if (price == 0) {
       return '';
@@ -299,7 +319,7 @@ class MarketsProvider extends ChangeNotifier {
   }
 
   String getLastPriceStr(String assetId) {
-    final isAmp = read(walletProvider).assets[assetId]?.ampMarket ?? false;
+    final isAmp = ref.read(walletProvider).assets[assetId]?.ampMarket ?? false;
     var price = getLastPriceForAsset(assetId);
     if (price == 0) {
       return '';
@@ -320,12 +340,13 @@ class MarketsProvider extends ChangeNotifier {
     return marketOrders.where((e) => e.own == true).toList();
   }
 
-  Future<void> onModifyPrice(RequestOrder? requestOrder) async {
+  Future<void> onModifyPrice(WidgetRef ref, RequestOrder? requestOrder) async {
     if (requestOrder == null) {
       return;
     }
 
-    final price = read(marketsProvider)
+    final price = ref
+            .read(marketsProvider)
             .getRequestOrderById(requestOrder.orderId)
             ?.price ??
         0;
@@ -334,7 +355,7 @@ class MarketsProvider extends ChangeNotifier {
     final TextEditingController controller = TextEditingController()
       ..text = priceStr;
 
-    final context = read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(walletProvider).navigatorKey.currentContext;
     if (context == null) {
       return;
     }
@@ -343,14 +364,17 @@ class MarketsProvider extends ChangeNotifier {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        final wallet = context.read(walletProvider);
+        final wallet = ref.read(walletProvider);
         final assetId = requestOrder.assetId;
         final asset = wallet.assets[assetId]!;
         final liquidAsset = wallet.assets[wallet.liquidAssetId()]!;
         final priceAsset = asset.swapMarket ? asset : liquidAsset;
         final icon = wallet.assetImagesSmall[priceAsset.assetId];
+        final assetPrecision = ref
+            .read(walletProvider)
+            .getPrecisionForAssetId(assetId: requestOrder.assetId);
         final orderDetailsData =
-            OrderDetailsData.fromRequestOrder(requestOrder, context.read);
+            OrderDetailsData.fromRequestOrder(requestOrder, assetPrecision);
         return ModifyPriceDialog(
           controller: controller,
           orderDetailsData: orderDetailsData,

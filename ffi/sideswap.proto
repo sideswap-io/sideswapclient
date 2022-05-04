@@ -12,6 +12,12 @@ message Address {
   required string addr = 1;
 }
 
+message AddressAmount {
+  required string address = 1;
+  required int64 amount = 2;
+  required string asset_id = 3;
+}
+
 message Balance {
   required string asset_id = 1;
   required int64 amount = 2;
@@ -33,12 +39,15 @@ message Asset {
   required bool amp_market = 9;
   required bool unregistered = 8;
   optional string domain = 7;
+  optional string domain_agent = 10;
 }
 
 message Tx {
   repeated TxBalance balances = 1;
   required string txid = 2;
   required int64 network_fee = 3;
+  required int64 size = 5;
+  required int64 vsize = 6;
   required string memo = 4;
 }
 
@@ -120,6 +129,7 @@ message Order {
   required bool private = 9;
   required bool auto_sign = 11;
   required bool own = 12;
+  required bool token_market = 16;
   required bool from_notification = 13;
   optional double index_price = 15;
 }
@@ -147,11 +157,39 @@ message NetworkSettings {
   }
 }
 
+message CreateTx {
+  required string addr = 1;
+  required Balance balance = 2;
+  required bool is_contact = 3;
+  required Account account = 4;
+}
+
+message CreatedTx {
+  required CreateTx req = 1;
+  required int32 input_count = 2;
+  required int32 output_count = 3;
+  required int64 size = 4;
+  required int64 vsize = 7;
+  required int64 network_fee = 5;
+  required double fee_per_byte = 6;
+  repeated AddressAmount addressees = 8;
+}
+
+message ChartPoint {
+  required string time = 1;
+  required double open = 2;
+  required double close = 3;
+  required double high = 4;
+  required double low = 5;
+  required double volume = 6;
+}
+
 message To {
   message Login {
     required string mnemonic = 1;
     optional string phone_key = 2;
     required NetworkSettings network = 4;
+    required bool desktop = 5;
   }
 
   message ChangeNetwork {
@@ -195,13 +233,6 @@ message To {
   message SetMemo {
     required string txid = 1;
     required string memo = 2;
-  }
-
-  message CreateTx {
-    required string addr = 1;
-    required Balance balance = 2;
-    required bool is_contact = 3;
-    required Account account = 4;
   }
 
   message SendTx {
@@ -274,13 +305,10 @@ message To {
   }
 
   message Subscribe {
-    enum Market {
-      NONE = 0;
-      TOKENS = 1;
-      ASSET = 2;
+    message Market {
+      optional string asset_id = 1;
     }
-    required Market market = 1;
-    optional string asset_id = 2;
+    repeated Market markets = 1;
   }
 
   message SubscribePriceStream {
@@ -288,6 +316,10 @@ message To {
     required bool send_bitcoins = 2;
     optional int64 send_amount = 3;
     optional int64 recv_amount = 4;
+  }
+
+  message MarketDataSubscribe {
+    required string asset_id = 1;
   }
 
   oneof msg {
@@ -328,6 +360,9 @@ message To {
     AssetId unsubscribe_price = 56;
     SubscribePriceStream subscribe_price_stream = 58;
     Empty unsubscribe_price_stream = 59;
+
+    MarketDataSubscribe market_data_subscribe = 60;
+    Empty market_data_unsubscribe = 61;
   }
 }
 
@@ -399,7 +434,7 @@ message From {
   message CreateTxResult {
     oneof result {
       string error_msg = 1;
-      int64 network_fee = 2;
+      CreatedTx created_tx = 2;
     }
   }
 
@@ -440,6 +475,12 @@ message From {
 
   message ShowMessage {
     required string text = 1;
+  }
+
+  message ShowInsufficientFunds {
+    required string asset_id = 1;
+    required int64 available = 2;
+    required int64 required = 3;
   }
 
   message SubmitReview {
@@ -501,6 +542,7 @@ message From {
     message Stats {
       required int64 issued_amount = 1;
       required int64 burned_amount = 2;
+      required int64 offline_amount = 4;
       required bool has_blinded_issuances = 3;
     }
     message ChartStats {
@@ -523,6 +565,21 @@ message From {
     optional string error_msg = 6;
   }
 
+  message LocalMessage {
+    required string title = 1;
+    required string body = 2;
+  }
+
+  message MarketDataSubscribe {
+    required string asset_id = 1;
+    repeated ChartPoint data = 2;
+  }
+
+  message MarketDataUpdate {
+    required string asset_id = 1;
+    required ChartPoint update = 2;
+  }
+
   oneof msg {
     EnvSettings env_settings = 13;
     RegisterAmp register_amp = 8;
@@ -535,6 +592,7 @@ message From {
     ServerStatus server_status = 5;
     PriceUpdate price_update = 6;
     Empty wallet_loaded = 7;
+    Empty sync_complete = 14;
 
     EncryptPin encrypt_pin = 10;
     DecryptPin decrypt_pin = 11;
@@ -558,6 +616,7 @@ message From {
     AccountStatus account_status = 47;
 
     ShowMessage show_message = 50;
+    ShowInsufficientFunds insufficient_funds = 55;
     SubmitReview submit_review = 51;
     SubmitResult submit_result = 52;
     GenericResponse edit_order = 53;
@@ -572,6 +631,10 @@ message From {
     AssetDetails asset_details = 65;
 
     UpdatePriceStream update_price_stream = 66;
+    LocalMessage local_message = 68;
+
+    MarketDataSubscribe market_data_subscribe = 70;
+    MarketDataUpdate market_data_update = 71;
   }
 }
 

@@ -11,13 +11,13 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/choose_avatar_image.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
-class ImportAvatar extends StatelessWidget {
+class ImportAvatar extends ConsumerWidget {
   ImportAvatar({Key? key}) : super(key: key);
 
   final double avatarRadius = 200.w;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
       body: SafeArea(
         child: Center(
@@ -94,7 +94,7 @@ class ImportAvatar extends StatelessWidget {
                     textColor: const Color(0xFF00C5FF),
                     backgroundColor: Colors.transparent,
                     onPressed: () {
-                      context.read(walletProvider).setAssociatePhoneWelcome();
+                      ref.read(walletProvider).setAssociatePhoneWelcome();
                     },
                   ),
                 ),

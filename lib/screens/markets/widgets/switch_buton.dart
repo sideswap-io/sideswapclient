@@ -21,6 +21,7 @@ class SwitchButton extends StatefulWidget {
     this.inactiveText = '',
     this.activeTextStyle,
     this.inactiveTextStyle,
+    this.fontSize,
   }) : super(key: key);
 
   final double width;
@@ -39,24 +40,13 @@ class SwitchButton extends StatefulWidget {
   final String inactiveText;
   final TextStyle? activeTextStyle;
   final TextStyle? inactiveTextStyle;
+  final double? fontSize;
 
   @override
   _SwitchButtonState createState() => _SwitchButtonState();
 }
 
 class _SwitchButtonState extends State<SwitchButton> {
-  final defaultActiveTextStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
-    fontWeight: FontWeight.w500,
-    color: Colors.white,
-  );
-
-  final defaultInactiveTextStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
-    fontWeight: FontWeight.w500,
-    color: const Color(0xFF78AECC),
-  );
-
   late double switchWidth = (widget.width - 3 * widget.borderWidth) / 2;
   late double switchHeight = widget.height - 2 * widget.borderWidth;
   bool disabled = false;
@@ -77,6 +67,18 @@ class _SwitchButtonState extends State<SwitchButton> {
 
   @override
   Widget build(BuildContext context) {
+    final defaultActiveTextStyle = GoogleFonts.roboto(
+      fontSize: widget.fontSize ?? 14.sp,
+      fontWeight: FontWeight.w500,
+      color: Colors.white,
+    );
+
+    final defaultInactiveTextStyle = GoogleFonts.roboto(
+      fontSize: widget.fontSize ?? 14.sp,
+      fontWeight: FontWeight.w500,
+      color: const Color(0xFF78AECC),
+    );
+
     var activeTextStyle = (disabled
             ? widget.activeTextStyle?.copyWith(
                 color: widget.activeTextStyle?.color?.withOpacity(0.2))

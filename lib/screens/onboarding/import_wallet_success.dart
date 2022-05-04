@@ -1,16 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
-class ImportWalletSuccess extends StatelessWidget {
+class ImportWalletSuccess extends ConsumerWidget {
   const ImportWalletSuccess({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapPopup(
       onWillPop: () async {
         return false;
@@ -23,7 +23,7 @@ class ImportWalletSuccess extends StatelessWidget {
               'You have successfully imported your wallet to this device'.tr(),
           buttonText: 'CONTINUE'.tr(),
           onPressed: () async {
-            await context.read(walletProvider).setPinWelcome();
+            await ref.read(walletProvider).setPinWelcome();
           }),
     );
   }

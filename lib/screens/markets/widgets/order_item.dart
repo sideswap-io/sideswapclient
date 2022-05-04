@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -14,7 +14,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
-class OrderItem extends StatefulWidget {
+class OrderItem extends ConsumerStatefulWidget {
   const OrderItem({
     Key? key,
     required this.requestOrder,
@@ -30,7 +30,7 @@ class OrderItem extends StatefulWidget {
   _OrderItemState createState() => _OrderItemState();
 }
 
-class _OrderItemState extends State<OrderItem> {
+class _OrderItemState extends ConsumerState<OrderItem> {
   String createdAt = '';
   String expire = '';
   Timer? expireTimer;
@@ -77,7 +77,7 @@ class _OrderItemState extends State<OrderItem> {
 
   @override
   Widget build(BuildContext context) {
-    final wallet = context.read(walletProvider);
+    final wallet = ref.read(walletProvider);
     final assets = wallet.assets;
     final bitcoinAsset = assets[wallet.liquidAssetId()]!;
     final asset = assets[widget.requestOrder.assetId]!;
@@ -113,7 +113,7 @@ class _OrderItemState extends State<OrderItem> {
     final priceIcon = isStablecoin ? assetIcon : bitcoinIcon;
     final priceAmount = priceStrForMarket(
         widget.requestOrder.price, widget.requestOrder.marketType);
-    final dollarConversionRecv = context
+    final dollarConversionRecv = ref
         .read(requestOrderProvider)
         .dollarConversionFromString(wallet.liquidAssetId(), buyAmountStr);
 

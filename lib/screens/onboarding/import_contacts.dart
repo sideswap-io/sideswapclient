@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -14,14 +14,14 @@ import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/import_contacts_image.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
-class ImportContacts extends StatefulWidget {
+class ImportContacts extends ConsumerStatefulWidget {
   const ImportContacts({Key? key}) : super(key: key);
 
   @override
   _ImportContactsState createState() => _ImportContactsState();
 }
 
-class _ImportContactsState extends State<ImportContacts> {
+class _ImportContactsState extends ConsumerState<ImportContacts> {
   StreamSubscription<int>? percentageLoadedSubscription;
   int percent = 0;
 
@@ -29,10 +29,8 @@ class _ImportContactsState extends State<ImportContacts> {
   void initState() {
     super.initState();
 
-    percentageLoadedSubscription = context
-        .read(contactProvider)
-        .percentageLoaded
-        .listen(onPercentageLoaded);
+    percentageLoadedSubscription =
+        ref.read(contactProvider).percentageLoaded.listen(onPercentageLoaded);
   }
 
   @override
@@ -55,13 +53,13 @@ class _ImportContactsState extends State<ImportContacts> {
       },
       body: Center(
         child: Consumer(
-          builder: (context, watch, child) {
+          builder: (context, ref, child) {
             final contactsLoadingState =
-                watch(contactProvider).contactsLoadingState;
+                ref.watch(contactProvider).contactsLoadingState;
             if (contactsLoadingState == ContactsLoadingState.done) {
               Future.microtask(() async {
                 final confirmPhoneData =
-                    context.read(phoneProvider).getConfirmPhoneData();
+                    ref.read(phoneProvider).getConfirmPhoneData();
                 await confirmPhoneData.onImportContactsSuccess!(context);
               });
             }
@@ -109,7 +107,7 @@ class _ImportContactsState extends State<ImportContacts> {
                     enabled:
                         contactsLoadingState != ContactsLoadingState.running,
                     onPressed: () {
-                      context.read(contactProvider).loadContacts();
+                      ref.read(contactProvider).loadContacts();
                     },
                   ),
                 ),
@@ -127,7 +125,7 @@ class _ImportContactsState extends State<ImportContacts> {
                           contactsLoadingState != ContactsLoadingState.running,
                       onPressed: () async {
                         final confirmPhoneData =
-                            context.read(phoneProvider).getConfirmPhoneData();
+                            ref.read(phoneProvider).getConfirmPhoneData();
                         await confirmPhoneData.onImportContactsDone!(context);
                       },
                     ),

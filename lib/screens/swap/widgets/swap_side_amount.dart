@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:marquee/marquee.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
@@ -17,16 +17,17 @@ import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 import 'package:sideswap/screens/swap/widgets/labeled_radio.dart';
 
-class SwapSideAmount extends StatefulHookWidget {
+class SwapSideAmount extends ConsumerStatefulWidget {
   const SwapSideAmount({
     Key? key,
     required this.text,
-    required this.controller,
+    this.controller,
     this.addressController,
     this.onDropdownChanged,
     this.onChanged,
@@ -53,19 +54,19 @@ class SwapSideAmount extends StatefulHookWidget {
     this.hintText = '',
     this.showHintText = false,
     this.feeRates = const <FeeRate>[],
-    this.onFeeRateChanged,
     required this.swapType,
     this.showInsufficientFunds = false,
     this.errorDescription = '',
     this.onSubmitted,
     this.onEditingCompleted,
     this.dollarConversion = '',
+    this.dollarConversion2,
     this.textInputAction,
     this.showAccountsInPopup = false,
   }) : super(key: key);
 
   final String text;
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final TextEditingController? addressController;
   final ValueChanged<AccountAsset>? onDropdownChanged;
   final ValueChanged<String>? onChanged;
@@ -92,13 +93,13 @@ class SwapSideAmount extends StatefulHookWidget {
   final String hintText;
   final bool showHintText;
   final List<FeeRate> feeRates;
-  final void Function(FeeRate)? onFeeRateChanged;
   final SwapType swapType;
   final bool showInsufficientFunds;
   final String errorDescription;
   final void Function(String)? onSubmitted;
   final void Function()? onEditingCompleted;
   final String dollarConversion;
+  final String? dollarConversion2;
   final TextInputAction? textInputAction;
   final bool showAccountsInPopup;
 
@@ -106,7 +107,7 @@ class SwapSideAmount extends StatefulHookWidget {
   _SwapSideAmountState createState() => _SwapSideAmountState();
 }
 
-class _SwapSideAmountState extends State<SwapSideAmount> {
+class _SwapSideAmountState extends ConsumerState<SwapSideAmount> {
   final _labelStyle = GoogleFonts.roboto(
     fontSize: 15.sp,
     fontWeight: FontWeight.w500,
@@ -123,7 +124,7 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
   void initState() {
     super.initState();
     widget.addressController?.addListener(() {
-      context.read(swapProvider).swapRecvAddressExternal =
+      ref.read(swapProvider).swapRecvAddressExternal =
           widget.addressController?.text ?? '';
     });
   }
@@ -141,20 +142,23 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      widget.text,
-                      style: _labelStyle,
-                    ).tr(),
-                    if (isAmp) const AmpFlag(fontSize: 10),
-                  ],
+                SizedBox(
+                  width: 122.w,
+                  child: Row(
+                    children: [
+                      Text(
+                        widget.text,
+                        style: _labelStyle,
+                      ).tr(),
+                      if (isAmp) const AmpFlag(fontSize: 10),
+                    ],
+                  ),
                 ),
                 if (widget.swapType == SwapType.pegOut &&
                     widget.labelGroupValue == SwapWallet.extern &&
                     widget.feeRates.isNotEmpty) ...[
                   Padding(
-                    padding: EdgeInsets.only(left: 72.w),
+                    padding: EdgeInsets.only(left: 24.w),
                     child: Text(
                       'Fee suggestions'.tr(),
                       style: _labelStyle,
@@ -174,6 +178,16 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                   ] else ...[
                     Container(),
                   ],
+                  if (widget.dollarConversion2 != null &&
+                      widget.dollarConversion2!.isNotEmpty)
+                    Text(
+                      '≈ ${widget.dollarConversion2}',
+                      style: GoogleFonts.roboto(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.normal,
+                        color: const Color(0xFF83B4D2),
+                      ),
+                    ),
                 ],
                 if (widget.errorDescription.isNotEmpty && !widget.readOnly) ...[
                   Expanded(
@@ -254,7 +268,6 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                 hintText: widget.hintText,
                 showHintText: widget.showHintText,
                 feeRates: widget.feeRates,
-                onFeeRateChanged: widget.onFeeRateChanged,
                 onSubmitted: widget.onSubmitted,
                 onEditingComplete: widget.onEditingCompleted,
                 textInputAction: widget.textInputAction,
@@ -306,22 +319,32 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                       controller:
                           widget.addressController ?? TextEditingController(),
                       onChanged: widget.onAddressChanged,
-                      onScanTap: () async {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        await Navigator.of(context, rootNavigator: true)
-                            .push<void>(
-                          MaterialPageRoute(
-                            builder: (context) => AddressQrScanner(
-                              resultCb: (value) async {
-                                widget.addressController?.text =
-                                    value.address ?? '';
-                              },
-                              expectedAddress: QrCodeAddressType.bitcoin,
-                            ),
-                          ),
-                        );
-                        logger.d('Scanner Done');
-                      },
+                      onPasteTap: FlavorConfig.isDesktop &&
+                              widget.addressController != null
+                          ? () async {
+                              await handlePasteSingleLine(
+                                  widget.addressController!);
+                              setState(() {});
+                            }
+                          : null,
+                      onScanTap: FlavorConfig.isDesktop
+                          ? null
+                          : () async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              await Navigator.of(context, rootNavigator: true)
+                                  .push<void>(
+                                MaterialPageRoute(
+                                  builder: (context) => AddressQrScanner(
+                                    resultCb: (value) async {
+                                      widget.addressController?.text =
+                                          value.address ?? '';
+                                    },
+                                    expectedAddress: QrCodeAddressType.bitcoin,
+                                  ),
+                                ),
+                              );
+                              logger.d('Scanner Done');
+                            },
                       onEditingCompleted: widget.onAddressEditingCompleted,
                       addrType: AddrType.bitcoin,
                     ),
@@ -403,34 +426,34 @@ class _SwapSideAmountState extends State<SwapSideAmount> {
                 ],
                 if (widget.labelGroupValue == SwapWallet.extern &&
                     widget.swapType == SwapType.pegIn) ...[
-                  SizedBox(
-                    height: 36.h,
-                    width: SideSwapScreenUtil.screenWidth -
-                        widget.padding.horizontal,
-                    child: Text(
-                      'SideSwap will generate a Peg-In address for you to deliver BTC into'
-                          .tr(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.normal,
-                        color: const Color(0xFF709EBA),
+                  Expanded(
+                    child: SizedBox(
+                      height: 36.h,
+                      child: Text(
+                        'SideSwap will generate a Peg-In address for you to deliver BTC into'
+                            .tr(),
+                        style: GoogleFonts.roboto(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.normal,
+                          color: const Color(0xFF709EBA),
+                        ),
                       ),
                     ),
                   ),
                 ],
                 if (widget.labelGroupValue == SwapWallet.local &&
                     widget.swapType == SwapType.pegIn) ...[
-                  SizedBox(
-                    height: 36.h,
-                    width: SideSwapScreenUtil.screenWidth -
-                        widget.padding.horizontal,
-                    child: Text(
-                      'Your SideSwap wallet will auto-generate a L-BTC address with which to receive the Peg-In amount'
-                          .tr(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 12.sp,
-                        fontWeight: FontWeight.normal,
-                        color: const Color(0xFF709EBA),
+                  Expanded(
+                    child: SizedBox(
+                      height: 36.h,
+                      child: Text(
+                        'Your SideSwap wallet will auto-generate a L-BTC address with which to receive the Peg-In amount'
+                            .tr(),
+                        style: GoogleFonts.roboto(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.normal,
+                          color: const Color(0xFF709EBA),
+                        ),
                       ),
                     ),
                   ),

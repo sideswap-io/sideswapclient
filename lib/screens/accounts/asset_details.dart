@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -17,14 +17,14 @@ import 'package:sideswap/screens/accounts/widgets/maximize_list_button.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 import 'package:sideswap/screens/tx/widgets/tx_list_item.dart';
 
-class AssetDetails extends StatefulWidget {
+class AssetDetails extends ConsumerStatefulWidget {
   const AssetDetails({Key? key}) : super(key: key);
 
   @override
   _AssetDetailsState createState() => _AssetDetailsState();
 }
 
-class _AssetDetailsState extends State<AssetDetails>
+class _AssetDetailsState extends ConsumerState<AssetDetails>
     with SingleTickerProviderStateMixin {
   final _hightPercentController = StreamController<double>.broadcast();
 
@@ -50,8 +50,8 @@ class _AssetDetailsState extends State<AssetDetails>
   void initState() {
     super.initState();
     _panelController = PanelController();
-    _asset = context.read(walletProvider).selectedWalletAsset!;
-    _txItemMap = context.read(walletProvider).getAllAssets();
+    _asset = ref.read(walletProvider).selectedWalletAsset!;
+    _txItemMap = ref.read(walletProvider).getAllAssets();
   }
 
   @override
@@ -84,7 +84,7 @@ class _AssetDetailsState extends State<AssetDetails>
                   padding: EdgeInsets.only(top: 16.h),
                   child: CustomBackButton(
                     onPressed: () {
-                      final uiStateArgs = context.read(uiStateArgsProvider);
+                      final uiStateArgs = ref.read(uiStateArgsProvider);
                       uiStateArgs.walletMainArguments =
                           uiStateArgs.walletMainArguments.copyWith(
                               navigationItem:
@@ -97,11 +97,11 @@ class _AssetDetailsState extends State<AssetDetails>
                   child: Padding(
                     padding: EdgeInsets.only(top: logoPadding),
                     child: Consumer(
-                      builder: (context, watch, child) {
-                        final wallet = watch(walletProvider);
+                      builder: (context, ref, child) {
+                        final wallet = ref.watch(walletProvider);
                         final assetId = wallet.selectedWalletAsset!.asset;
                         final assetImagesBig =
-                            watch(walletProvider).assetImagesBig[assetId];
+                            ref.watch(walletProvider).assetImagesBig[assetId];
                         return SizedBox(
                           width: logoHeight,
                           height: logoHeight,
@@ -125,9 +125,9 @@ class _AssetDetailsState extends State<AssetDetails>
           },
         ),
         Consumer(
-          builder: (context, watch, child) {
-            _asset = watch(walletProvider).selectedWalletAsset!;
-            _txItemMap = watch(walletProvider).getAllAssets();
+          builder: (context, ref, child) {
+            _asset = ref.watch(walletProvider).selectedWalletAsset!;
+            _txItemMap = ref.watch(walletProvider).getAllAssets();
             final assetList = _txItemMap[_asset] ?? <TxItem>[];
 
             final minimizedPadding = MediaQuery.of(context).padding.top + 40;

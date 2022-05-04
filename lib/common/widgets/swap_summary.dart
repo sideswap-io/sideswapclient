@@ -2,7 +2,7 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -15,7 +15,7 @@ import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row_notes.dart';
 
-class SwapSummary extends StatelessWidget {
+class SwapSummary extends ConsumerWidget {
   const SwapSummary({
     Key? key,
     required this.ticker,
@@ -48,7 +48,7 @@ class SwapSummary extends StatelessWidget {
   final String txId;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,7 +109,7 @@ class SwapSummary extends StatelessWidget {
         ] else ...[
           ...List<Widget>.generate(balances.length, (index) {
             final balance = balances[index];
-            final asset = context.read(walletProvider).assets[balance.assetId];
+            final asset = ref.read(walletProvider).assets[balance.assetId];
             final ticker = asset != null ? asset.ticker : kUnknownTicker;
             final balanceStr = amountStr(balance.amount.toInt(),
                 precision: asset?.precision ?? 8);

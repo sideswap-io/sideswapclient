@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -12,7 +12,7 @@ import 'package:sideswap/screens/markets/widgets/order_price_text_field.dart';
 import 'package:sideswap/screens/markets/widgets/order_tracking_slider.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
-class OrderPriceField extends StatelessWidget {
+class OrderPriceField extends ConsumerWidget {
   const OrderPriceField({
     Key? key,
     required this.controller,
@@ -45,11 +45,10 @@ class OrderPriceField extends StatelessWidget {
   final bool invertColors;
 
   @override
-  Widget build(BuildContext context) {
-    final isToken =
-        context.read(requestOrderProvider).isAssetToken(asset?.assetId);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isToken = ref.read(requestOrderProvider).isAssetToken(asset?.assetId);
     final indexPrice =
-        context.read(marketsProvider).getIndexPriceStr(asset?.assetId ?? '');
+        ref.read(marketsProvider).getIndexPriceStr(asset?.assetId ?? '');
     var minPercent = -kEditPriceMaxTrackingPercent;
     var maxPercent = kEditPriceMaxTrackingPercent;
     if (!tracking && (!isToken && indexPrice.isNotEmpty)) {
@@ -67,8 +66,9 @@ class OrderPriceField extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Consumer(
-                  builder: (context, watch, child) {
-                    var indexPrice = watch(marketsProvider)
+                  builder: (context, ref, child) {
+                    var indexPrice = ref
+                        .watch(marketsProvider)
                         .getIndexPriceStr(asset?.assetId ?? '');
                     if (displaySlider && onSliderChanged != null) {
                       Future.microtask(() => onSliderChanged!(sliderValue));

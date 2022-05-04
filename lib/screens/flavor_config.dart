@@ -8,10 +8,12 @@ enum Flavor {
 class FlavorValues {
   bool enableOnboardingUserFeatures;
   bool enableNetworkSettings;
+  bool isDesktop;
 
   FlavorValues({
     required this.enableOnboardingUserFeatures,
     required this.enableNetworkSettings,
+    this.isDesktop = false,
   });
 }
 
@@ -32,6 +34,11 @@ class FlavorConfig {
   FlavorConfig._internal(this.flavor, this.values, this.name);
 
   static FlavorConfig get instance => _instance;
-  static bool isProduction() => _instance.flavor == Flavor.production;
-  static bool isFdroid() => _instance.flavor == Flavor.fdroid;
+  static bool get isProduction => _instance.flavor == Flavor.production;
+  static bool get isFdroid => _instance.flavor == Flavor.fdroid;
+  static bool get enableOnboardingUserFeatures =>
+      _instance.values.enableOnboardingUserFeatures;
+  static bool get enableNetworkSettings =>
+      _instance.values.enableNetworkSettings;
+  static bool get isDesktop => _instance.values.isDesktop;
 }

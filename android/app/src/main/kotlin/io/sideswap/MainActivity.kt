@@ -1,11 +1,13 @@
 package io.sideswap
 
+import android.os.Build
 import android.os.Bundle
 import android.security.keystore.KeyProperties
 import androidx.annotation.NonNull
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -35,13 +37,21 @@ class MainActivity : FlutterFragmentActivity() {
     val SPEC_CIPHER = "$SPEC_KEY_TYPE/$SPEC_BLOCK_MODE/$SPEC_PADDING"
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        // Aligns the Flutter view vertically with the window.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        executor = ContextCompat.getMainExecutor(this)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Disable the Android splash screen fade out animation to avoid
+            // a flicker before the similar frame is drawn in Flutter.
+            splashScreen.setOnExitAnimationListener { splashScreenView -> splashScreenView.remove() }
+        }
+
+        super.onCreate(savedInstanceState)
     }
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        executor = ContextCompat.getMainExecutor(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "canAuthenticate" -> {

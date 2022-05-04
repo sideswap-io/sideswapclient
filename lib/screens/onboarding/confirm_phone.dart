@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/country_code.dart';
@@ -12,14 +12,14 @@ import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/country_phone_number.dart';
 import 'package:sideswap/screens/onboarding/widgets/sms_digit_code.dart';
 
-class ConfirmPhone extends StatefulWidget {
+class ConfirmPhone extends ConsumerStatefulWidget {
   const ConfirmPhone({Key? key}) : super(key: key);
 
   @override
   _ConfirmPhoneState createState() => _ConfirmPhoneState();
 }
 
-class _ConfirmPhoneState extends State<ConfirmPhone> {
+class _ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
   late FocusNode _numberFocusNode;
   ConfirmPhoneData? confirmPhoneData;
 
@@ -29,7 +29,7 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
     _numberFocusNode = FocusNode();
     WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
 
-    confirmPhoneData = context.read(phoneProvider).getConfirmPhoneData();
+    confirmPhoneData = ref.read(phoneProvider).getConfirmPhoneData();
   }
 
   @override
@@ -39,9 +39,9 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
   }
 
   void afterBuild(BuildContext context) {
-    var delay = context.read(phoneProvider).getSmsDelay();
+    var delay = ref.read(phoneProvider).getSmsDelay();
     if (delay < 0) {
-      context.read(phoneProvider).setBarier(false);
+      ref.read(phoneProvider).setBarier(false);
       FocusScope.of(context).requestFocus(_numberFocusNode);
     }
   }
@@ -50,7 +50,7 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
     logger
         .d('Country code: ${countryCode.dialCode} phone number: $phoneNumber');
 
-    context.read(phoneProvider).setPhoneNumber(countryCode, phoneNumber);
+    ref.read(phoneProvider).setPhoneNumber(countryCode, phoneNumber);
   }
 
   @override
@@ -90,8 +90,8 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
             ),
           ),
           Consumer(
-            builder: (context, watch, child) {
-              final step = watch(phoneProvider).smsCodeStep;
+            builder: (context, ref, child) {
+              final step = ref.watch(phoneProvider).smsCodeStep;
               if (step != SmsCodeStep.hidden) {
                 return Padding(
                   padding: EdgeInsets.only(top: 24.h),
@@ -104,9 +104,9 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
           ),
           const Spacer(),
           Consumer(
-            builder: (context, watch, child) {
-              final phoneStep = watch(phoneProvider).phoneRegisterStep;
-              final smsStep = watch(phoneProvider).smsCodeStep;
+            builder: (context, ref, child) {
+              final phoneStep = ref.watch(phoneProvider).phoneRegisterStep;
+              final smsStep = ref.watch(phoneProvider).smsCodeStep;
 
               final enabledSmsButton = (smsStep == SmsCodeStep.fullyEntered ||
                   smsStep == SmsCodeStep.codeAccepted ||
@@ -123,7 +123,7 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
                     textColor: Colors.white,
                     text: 'SEND SMS WITH CODE'.tr(),
                     onPressed: () {
-                      context.read(phoneProvider).sendPhoneNumber();
+                      ref.read(phoneProvider).sendPhoneNumber();
                     },
                   ),
                 );
@@ -138,7 +138,7 @@ class _ConfirmPhoneState extends State<ConfirmPhone> {
                     textColor: Colors.white,
                     text: 'CONFIRM'.tr(),
                     onPressed: () {
-                      context.read(phoneProvider).verifySmsCode();
+                      ref.read(phoneProvider).verifySmsCode();
                     },
                   ),
                 );

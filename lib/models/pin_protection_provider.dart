@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
@@ -11,7 +11,7 @@ import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 final pinProtectionProvider = ChangeNotifierProvider<PinProtectionProvider>(
-    (ref) => PinProtectionProvider(ref.read));
+    (ref) => PinProtectionProvider(ref));
 
 enum PinProtectionState {
   idle,
@@ -19,16 +19,28 @@ enum PinProtectionState {
   error,
 }
 
+enum PinKeyboardAcceptType {
+  icon,
+  enable,
+  disable,
+  unlock,
+  save,
+}
+
 class PinProtectionProvider extends ChangeNotifier {
-  final Reader read;
+  final Ref ref;
 
-  PinProtectionProvider(this.read);
+  PinProtectionProvider(this.ref);
 
-  Future<bool> Function()? onPinBlockadeCallback;
+  Future<bool> Function(String?, bool, PinKeyboardAcceptType)?
+      onPinBlockadeCallback;
 
-  Future<bool> pinBlockadeUnlocked() async {
+  Future<bool> pinBlockadeUnlocked(
+      {String? title,
+      bool showBackButton = true,
+      PinKeyboardAcceptType iconType = PinKeyboardAcceptType.unlock}) async {
     if (onPinBlockadeCallback != null) {
-      return await onPinBlockadeCallback!();
+      return await onPinBlockadeCallback!(title, showBackButton, iconType);
     }
     return false;
   }
@@ -134,9 +146,9 @@ class PinProtectionProvider extends ChangeNotifier {
 
     await pinDecryptedSubscription?.cancel();
     pinDecryptedSubscription =
-        read(walletProvider).pinDecryptDataSubject.listen(_onPinDecrypted);
+        ref.read(walletProvider).pinDecryptDataSubject.listen(_onPinDecrypted);
 
-    read(walletProvider).sendDecryptPin(pinCode);
+    ref.read(walletProvider).sendDecryptPin(pinCode);
   }
 
   void _onPinDecrypted(PinDecryptedData pinDecryptedData) async {
@@ -154,7 +166,17 @@ class PinProtectionProvider extends ChangeNotifier {
     }
 
     pinCode = '';
-    errorMessage = 'Wrong PIN code'.tr();
+    switch (pinDecryptedData.error) {
+      case 'PinError':
+        errorMessage = 'Connection failed'.tr();
+        break;
+      case 'BlockModeError':
+        errorMessage = 'Wrong PIN code'.tr();
+        break;
+      default:
+        errorMessage = 'Unknown error'.tr(args: [pinDecryptedData.error]);
+        break;
+    }
     state = PinProtectionState.error;
     notifyListeners();
   }

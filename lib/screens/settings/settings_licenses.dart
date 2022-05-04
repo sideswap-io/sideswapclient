@@ -47,7 +47,7 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
       tempSubWidget.add(const Padding(
         padding: EdgeInsets.symmetric(vertical: 18.0),
         child: Text(
-          '🍀‬', // That's U+1F340. Could also use U+2766 (❦) if U+1F340 doesn't work everywhere.
+          '\u202C',
           textAlign: TextAlign.center,
         ),
       ));
@@ -126,9 +126,7 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
       );
 
       setState(() {
-        if (packageName == kPackageLibwally ||
-            packageName == kPackageGdk ||
-            packageName == kPackageSideswap) {
+        if (packageName == kPackageGdk || packageName == kPackageSideswap) {
           _licenses.insert(0, widget);
         } else {
           _licenses.add(widget);

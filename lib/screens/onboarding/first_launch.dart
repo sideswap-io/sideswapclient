@@ -2,25 +2,33 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/select_env_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class FirstLaunch extends StatefulWidget {
+class FirstLaunch extends ConsumerStatefulWidget {
   const FirstLaunch({Key? key}) : super(key: key);
 
   @override
   _FirstLaunchState createState() => _FirstLaunchState();
 }
 
-class _FirstLaunchState extends State<FirstLaunch> {
+class _FirstLaunchState extends ConsumerState<FirstLaunch> {
   var tapCount = 0;
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<SelectEnvProvider>(selectEnvProvider, (_, next) async {
+      if (next.showSelectEnvDialog) {
+        ref.read(selectEnvProvider).showSelectEnvDialog = false;
+        ref.read(walletProvider).selectEnv();
+      }
+    });
+
     return SideSwapScaffold(
       body: SafeArea(
         child: LayoutBuilder(
@@ -38,13 +46,7 @@ class _FirstLaunchState extends State<FirstLaunch> {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: () {
-                              tapCount += 1;
-                              if (tapCount > 7) {
-                                tapCount = 0;
-                                context.read(walletProvider).selectEnv();
-                              }
-                            },
+                            onTap: ref.read(selectEnvProvider).handleTap,
                             child: Column(
                               children: [
                                 Padding(
@@ -95,7 +97,7 @@ class _FirstLaunchState extends State<FirstLaunch> {
                                 fontWeight: FontWeight.bold,
                               ),
                               onPressed: () async {
-                                await context
+                                await ref
                                     .read(walletProvider)
                                     .setReviewLicenseCreateWallet();
                               },
@@ -114,7 +116,7 @@ class _FirstLaunchState extends State<FirstLaunch> {
                               backgroundColor: Colors.transparent,
                               textColor: const Color(0xFF00C5FF),
                               onPressed: () {
-                                context
+                                ref
                                     .read(walletProvider)
                                     .setReviewLicenseImportWallet();
                               },

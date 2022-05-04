@@ -3,10 +3,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/screens/accounts/accounts.dart';
@@ -19,14 +20,14 @@ import 'package:sideswap/screens/markets/markets.dart';
 import 'package:sideswap/screens/swap/swap.dart';
 import 'package:sideswap/screens/wallet_main/widgets/main_bottom_navigation_bar.dart';
 
-class WalletMain extends StatefulWidget {
+class WalletMain extends ConsumerStatefulWidget {
   const WalletMain({Key? key}) : super(key: key);
 
   @override
   _WalletMainState createState() => _WalletMainState();
 }
 
-class _WalletMainState extends State<WalletMain> {
+class _WalletMainState extends ConsumerState<WalletMain> {
   DateTime currentBackPressTime = DateTime.now();
   MarketSelectedType selectedMarketType = MarketSelectedType.orders;
 
@@ -52,11 +53,15 @@ class _WalletMainState extends State<WalletMain> {
             setState(() {
               selectedMarketType = MarketSelectedType.orders;
             });
+            ref.read(marketsProvider).unsubscribeMarket();
+            ref.read(marketsProvider).unsubscribeIndexPrice();
           },
           onTokenPressed: () {
             setState(() {
               selectedMarketType = MarketSelectedType.token;
             });
+            ref.read(marketsProvider).subscribeTokenMarket();
+            ref.read(marketsProvider).unsubscribeIndexPrice();
           },
           onSwapPressed: () {
             setState(() {
@@ -77,11 +82,11 @@ class _WalletMainState extends State<WalletMain> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        final _currentPageIndex =
-            watch(uiStateArgsProvider).walletMainArguments.currentIndex;
-        final _navigationItem =
-            watch(uiStateArgsProvider).walletMainArguments.navigationItem;
+      builder: (context, ref, _) {
+        final walletMainArguments =
+            ref.watch(uiStateArgsProvider.select((p) => p.walletMainArguments));
+        final _currentPageIndex = walletMainArguments.currentIndex;
+        final _navigationItem = walletMainArguments.navigationItem;
 
         return SideSwapScaffold(
           onWillPop: () async {
@@ -123,9 +128,8 @@ class _WalletMainState extends State<WalletMain> {
 
               return false;
             }
-            final uiStateArgs = context.read(uiStateArgsProvider);
-            uiStateArgs.walletMainArguments =
-                uiStateArgs.walletMainArguments.fromIndex(0);
+            ref.read(uiStateArgsProvider).walletMainArguments =
+                walletMainArguments.fromIndex(0);
             return false;
           },
           body: SafeArea(
@@ -134,10 +138,9 @@ class _WalletMainState extends State<WalletMain> {
           bottomNavigationBar: MainBottomNavigationBar(
             currentIndex: _currentPageIndex,
             onTap: (index) {
-              context.read(swapProvider).swapReset();
-              final uiStateArgs = context.read(uiStateArgsProvider);
-              uiStateArgs.walletMainArguments =
-                  uiStateArgs.walletMainArguments.fromIndex(index);
+              ref.read(swapProvider).swapReset();
+              ref.read(uiStateArgsProvider).walletMainArguments =
+                  walletMainArguments.fromIndex(index);
             },
           ),
         );

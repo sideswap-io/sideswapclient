@@ -1,13 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
-class OrderTable extends StatelessWidget {
+class OrderTable extends ConsumerWidget {
   const OrderTable({
     Key? key,
     this.orderTableRowType = OrderTableRowType.normal,
@@ -22,8 +22,8 @@ class OrderTable extends StatelessWidget {
   final bool useTokenView;
 
   @override
-  Widget build(BuildContext context) {
-    final wallet = context.read(walletProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallet = ref.read(walletProvider);
     final bitcoinAsset = wallet.assets[wallet.liquidAssetId()]!;
     final asset = wallet.assets[orderDetailsData.assetId]!;
     final sellBitcoin = orderDetailsData.sellBitcoin;
@@ -41,7 +41,7 @@ class OrderTable extends StatelessWidget {
     final priceAsset = isStablecoin ? asset : bitcoinAsset;
     final priceAmount = orderDetailsData.priceAmountStr;
     final priceDollarConversion = !isStablecoin
-        ? context.read(requestOrderProvider).dollarConversion(
+        ? ref.read(requestOrderProvider).dollarConversion(
             bitcoinAsset.assetId, double.tryParse(priceAmount) ?? 0)
         : null;
     final isAmp = wallet.ampAssets.contains(asset.assetId);

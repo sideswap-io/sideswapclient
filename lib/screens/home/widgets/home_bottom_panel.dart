@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets.dart';
@@ -10,13 +10,13 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
-class HomeBottomPanel extends StatelessWidget {
+class HomeBottomPanel extends ConsumerWidget {
   const HomeBottomPanel({
     Key? key,
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       height: 180.h,
       decoration: BoxDecoration(
@@ -35,9 +35,7 @@ class HomeBottomPanel extends StatelessWidget {
             children: [
               RoundedButtonWithLabel(
                 onTap: () {
-                  context
-                      .read(walletProvider)
-                      .selectAssetReceiveFromWalletMain();
+                  ref.read(walletProvider).selectAssetReceiveFromWalletMain();
                 },
                 label: 'Receive'.tr(),
                 buttonBackground: Colors.white,
@@ -53,7 +51,7 @@ class HomeBottomPanel extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => AddressQrScanner(
                         resultCb: (value) {
-                          context.read(paymentProvider).selectPaymentAmountPage(
+                          ref.read(paymentProvider).selectPaymentAmountPage(
                                 PaymentAmountPageArguments(
                                   result: value,
                                 ),
@@ -73,7 +71,7 @@ class HomeBottomPanel extends StatelessWidget {
               ),
               RoundedButtonWithLabel(
                 onTap: () {
-                  context.read(walletProvider).selectPaymentPage();
+                  ref.read(walletProvider).selectPaymentPage();
                 },
                 label: 'Pay'.tr(),
                 buttonBackground: Colors.white,

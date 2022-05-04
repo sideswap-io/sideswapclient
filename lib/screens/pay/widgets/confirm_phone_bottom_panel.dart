@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -54,51 +55,55 @@ class ConfirmPhoneBottomPanel extends StatelessWidget {
           ),
           const Spacer(),
           Padding(
-            padding: EdgeInsets.only(bottom: 36.h, left: 16.w, right: 16.w),
-            child: CustomBigButton(
-              width: double.maxFinite,
-              height: 54.h,
-              text: 'CONFIRM PHONE NUMBER'.tr(),
-              backgroundColor: const Color(0xFF003251),
-              textColor: const Color(0xFF00B4E9),
-              onPressed: () async {
-                context.read(phoneProvider).setConfirmPhoneData(
-                      confirmPhoneData: ConfirmPhoneData(
-                        onConfirmPhoneBack: (context) async {
-                          Navigator.of(context).pop();
-                        },
-                        onConfirmPhoneSuccess: (context) async {
-                          await Navigator.of(context, rootNavigator: true)
-                              .push<void>(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const PaymentConfirmPhoneSuccess(),
+              padding: EdgeInsets.only(bottom: 36.h, left: 16.w, right: 16.w),
+              child: Consumer(
+                builder: (context, ref, _) {
+                  return CustomBigButton(
+                    width: double.maxFinite,
+                    height: 54.h,
+                    text: 'CONFIRM PHONE NUMBER'.tr(),
+                    backgroundColor: const Color(0xFF003251),
+                    textColor: const Color(0xFF00B4E9),
+                    onPressed: () async {
+                      ref.read(phoneProvider).setConfirmPhoneData(
+                            confirmPhoneData: ConfirmPhoneData(
+                              onConfirmPhoneBack: (context) async {
+                                Navigator.of(context).pop();
+                              },
+                              onConfirmPhoneSuccess: (context) async {
+                                await Navigator.of(context, rootNavigator: true)
+                                    .push<void>(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const PaymentConfirmPhoneSuccess(),
+                                  ),
+                                );
+                              },
+                              onConfirmPhoneDone: (context) async {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                                ref.read(walletProvider).setImportContacts();
+                              },
+                              onImportContactsBack: (context) async {},
+                              onImportContactsDone: (context) async {
+                                ref.read(walletProvider).selectPaymentPage();
+                              },
+                              onImportContactsSuccess: (context) async {
+                                ref.read(walletProvider).selectPaymentPage();
+                              },
                             ),
                           );
-                        },
-                        onConfirmPhoneDone: (context) async {
-                          Navigator.of(context).pop();
-                          Navigator.of(context).pop();
-                          context.read(walletProvider).setImportContacts();
-                        },
-                        onImportContactsBack: (context) async {},
-                        onImportContactsDone: (context) async {
-                          context.read(walletProvider).selectPaymentPage();
-                        },
-                        onImportContactsSuccess: (context) async {
-                          context.read(walletProvider).selectPaymentPage();
-                        },
-                      ),
-                    );
 
-                await Navigator.of(context, rootNavigator: true).push<void>(
-                  MaterialPageRoute(
-                    builder: (context) => const ConfirmPhone(),
-                  ),
-                );
-              },
-            ),
-          ),
+                      await Navigator.of(context, rootNavigator: true)
+                          .push<void>(
+                        MaterialPageRoute(
+                          builder: (context) => const ConfirmPhone(),
+                        ),
+                      );
+                    },
+                  );
+                },
+              )),
         ],
       ),
     );

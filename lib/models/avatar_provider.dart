@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image/image.dart' as image;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -28,13 +28,13 @@ class UserAvatarData {
 
 final avatarProvider = ChangeNotifierProvider<AvatarProvider>((ref) {
   logger.d('Initialize Avatar Provider');
-  return AvatarProvider(ref.read);
+  return AvatarProvider(ref);
 });
 
 class AvatarProvider with ChangeNotifier {
-  AvatarProvider(this.read);
+  AvatarProvider(this.ref);
 
-  final Reader read;
+  final Ref ref;
 
   final _picker = ImagePicker();
   Object? avatarProviderError;
@@ -171,6 +171,6 @@ class AvatarProvider with ChangeNotifier {
 
     final bytes = image.encodeJpg(img);
     final avatarString = base64Encode(bytes);
-    read(walletProvider).uploadAvatar(avatar: avatarString);
+    ref.read(walletProvider).uploadAvatar(avatar: avatarString);
   }
 }

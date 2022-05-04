@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -23,14 +23,14 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/autosign.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 
-class OrderPopup extends StatefulWidget {
+class OrderPopup extends ConsumerStatefulWidget {
   const OrderPopup({Key? key}) : super(key: key);
 
   @override
   _OrderPopupState createState() => _OrderPopupState();
 }
 
-class _OrderPopupState extends State<OrderPopup> {
+class _OrderPopupState extends ConsumerState<OrderPopup> {
   int seconds = 60;
   int percent = 100;
   Timer? _percentTimer;
@@ -44,9 +44,9 @@ class _OrderPopupState extends State<OrderPopup> {
   @override
   void initState() {
     super.initState();
-    final orderDetailsData = context.read(walletProvider).orderDetailsData;
+    final orderDetailsData = ref.read(walletProvider).orderDetailsData;
     autoSign = orderDetailsData.autoSign;
-    ttlSeconds = kOneDay;
+    ttlSeconds = kOneWeek;
     showAssetDetails = orderDetailsData.marketType == MarketType.amp &&
         orderDetailsData.orderType == OrderDetailsDataType.quote;
 
@@ -55,18 +55,18 @@ class _OrderPopupState extends State<OrderPopup> {
     // }
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       if (showAssetDetails) {
-        context
+        ref
             .read(tokenMarketProvider)
             .requestAssetDetails(assetId: orderDetailsData.assetId);
       }
     });
   }
 
-  void onTimer(Timer timer) {
+  void onTimer(WidgetRef ref, Timer timer) {
     seconds--;
     if (seconds == 0) {
       _percentTimer?.cancel();
-      context.read(walletProvider).setRegistered();
+      ref.read(walletProvider).setRegistered();
       Navigator.of(context).pop();
       return;
     }
@@ -83,17 +83,18 @@ class _OrderPopupState extends State<OrderPopup> {
   }
 
   void onClose() {
-    context.read(walletProvider).setSubmitDecision(
+    ref.read(walletProvider).setSubmitDecision(
           autosign: autoSign,
           accept: false,
         );
-    context.read(walletProvider).goBack();
+    ref.read(walletProvider).goBack();
   }
 
-  Widget buildStatsRow(BuildContext context, String title, double value) {
-    final wallet = context.read(walletProvider);
+  Widget buildStatsRow(
+      WidgetRef ref, BuildContext context, String title, double value) {
+    final wallet = ref.read(walletProvider);
     final price = value.toStringAsFixed(8);
-    final dollarConversion = context
+    final dollarConversion = ref
         .read(requestOrderProvider)
         .dollarConversion(wallet.liquidAssetId(), value);
 
@@ -135,12 +136,13 @@ class _OrderPopupState extends State<OrderPopup> {
       ),
       body: Center(
         child: Consumer(
-          builder: (context, watch, child) {
-            final orderDetailsData = watch(walletProvider).orderDetailsData;
+          builder: (context, ref, child) {
+            final orderDetailsData = ref.watch(walletProvider).orderDetailsData;
             OrderDetailsDataType? orderType =
                 orderDetailsData.orderType ?? OrderDetailsDataType.submit;
             final dataAvailable = orderDetailsData.isDataAvailable();
-            final assetDetails = watch(tokenMarketProvider)
+            final assetDetails = ref
+                .watch(tokenMarketProvider)
                 .assetDetails[orderDetailsData.assetId];
             final chartUrl = assetDetails?.chartUrl;
             final chartStats = assetDetails?.chartStats;
@@ -263,15 +265,7 @@ class _OrderPopupState extends State<OrderPopup> {
                       padding: EdgeInsets.only(top: 6.h),
                       child: TimeToLive(
                           dropdownValue: ttlSeconds,
-                          dropdownItems: const [
-                            kTenMinutes,
-                            kHalfHour,
-                            kOneHour,
-                            kSixHours,
-                            kTwelveHours,
-                            kOneDay,
-                            kOneWeek,
-                          ],
+                          dropdownItems: availableTtlValues(),
                           onChanged: (value) {
                             setState(() {
                               ttlSeconds = value!;
@@ -290,12 +284,12 @@ class _OrderPopupState extends State<OrderPopup> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                buildStatsRow(ref, context, '30d Low'.tr(),
+                                    chartStats.low),
+                                buildStatsRow(ref, context, '30d High'.tr(),
+                                    chartStats.high),
                                 buildStatsRow(
-                                    context, '30d Low'.tr(), chartStats.low),
-                                buildStatsRow(
-                                    context, '30d High'.tr(), chartStats.high),
-                                buildStatsRow(
-                                    context, 'Last'.tr(), chartStats.last),
+                                    ref, context, 'Last'.tr(), chartStats.last),
                               ],
                             ),
                           if (chartUrl != null)
@@ -341,7 +335,7 @@ class _OrderPopupState extends State<OrderPopup> {
                     backgroundColor: const Color(0xFF00C5FF),
                     onPressed: () async {
                       final auth =
-                          await context.read(walletProvider).isAuthenticated();
+                          await ref.read(walletProvider).isAuthenticated();
                       if (auth) {
                         setState(() {
                           enabled = false;
@@ -350,7 +344,7 @@ class _OrderPopupState extends State<OrderPopup> {
                           case OrderDetailsDataType.submit:
                           case OrderDetailsDataType.quote:
                           case OrderDetailsDataType.sign:
-                            context.read(walletProvider).setSubmitDecision(
+                            ref.read(walletProvider).setSubmitDecision(
                                   autosign: autoSign,
                                   accept: true,
                                   private: false,
@@ -441,9 +435,9 @@ class OrderTypeTracking extends StatelessWidget {
                 ),
               ),
               Consumer(
-                builder: (context, watch, child) {
+                builder: (context, ref, child) {
                   final indexPrice =
-                      watch(walletProvider).orderDetailsData.isTracking;
+                      ref.watch(walletProvider).orderDetailsData.isTracking;
                   return Text(
                     indexPrice ? 'Price tracking'.tr() : 'Limit order'.tr(),
                     style: GoogleFonts.roboto(

@@ -1,4 +1,4 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/models/assets_precache_provider.dart';
 import 'package:sideswap/models/config_provider.dart';

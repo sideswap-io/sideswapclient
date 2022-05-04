@@ -1,26 +1,31 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/theme.dart';
+import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/listeners/pin_listener.dart';
+import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/models/config_provider.dart';
+import 'package:sideswap/models/init_provider.dart';
+import 'package:sideswap/models/local_notifications_service.dart';
 import 'package:sideswap/models/notifications_service.dart';
 import 'package:sideswap/models/pin_protection_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/prelaunch_page.dart';
-import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/screens/background/preload_background_painter.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/home/wallet_locked.dart';
+import 'package:sideswap/screens/markets/create_order_success.dart';
+import 'package:sideswap/screens/markets/create_order_view.dart';
+import 'package:sideswap/screens/markets/order_entry.dart';
 import 'package:sideswap/screens/onboarding/associate_phone_welcome.dart';
 import 'package:sideswap/screens/onboarding/confirm_phone.dart';
 import 'package:sideswap/screens/onboarding/confirm_phone_success.dart';
@@ -51,10 +56,7 @@ import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/payment_page.dart';
 import 'package:sideswap/screens/pay/payment_send_popup.dart';
 import 'package:sideswap/screens/pin/pin_protection.dart';
-import 'package:sideswap/screens/register.dart';
-import 'package:sideswap/screens/markets/create_order_view.dart';
-import 'package:sideswap/screens/markets/order_entry.dart';
-import 'package:sideswap/screens/markets/create_order_success.dart';
+import 'package:sideswap/screens/select_env.dart';
 import 'package:sideswap/screens/settings/settings.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 import 'package:sideswap/screens/settings/settings_network.dart';
@@ -64,19 +66,6 @@ import 'package:sideswap/screens/settings/settings_view_backup.dart';
 import 'package:sideswap/screens/swap/peg_in_address.dart';
 import 'package:sideswap/screens/tx/tx_details_popup.dart';
 import 'package:sideswap/screens/wallet_main/wallet_main.dart';
-
-final initProvider = FutureProvider<bool>((ref) async {
-  LicenseRegistry.addLicense(() async* {
-    var license = await rootBundle
-        .loadString('assets/licenses/libwally-core-license.txt');
-    yield LicenseEntryWithLineBreaks([kPackageLibwally], license);
-    license = await rootBundle.loadString('assets/licenses/gdk-license.txt');
-    yield LicenseEntryWithLineBreaks([kPackageGdk], license);
-  });
-
-  final config = ref.read(configProvider);
-  return await config.init();
-});
 
 class AppMain extends StatelessWidget {
   const AppMain({
@@ -93,30 +82,32 @@ class AppMain extends StatelessWidget {
         ],
         path: 'assets/translations',
         fallbackLocale: const Locale('en', 'US'),
-        //preloaderColor: Colors.transparent,
-        child: const ProviderScope(child: MyApp()),
+        child: const ProviderScope(
+          child: MyApp(),
+        ),
       ),
     );
   }
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
   @override
   _MyAppState createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance!.addObserver(this);
+    ref.read(localNotificationsProvider).init();
     if (notificationServiceAvailable()) {
-      notificationService.init(context);
+      ref.read(notificationServiceProvider).init();
     }
-    context.read(universalLinkProvider).handleIncomingLinks();
-    context.read(universalLinkProvider).handleInitialUri();
+    ref.read(universalLinkProvider).handleIncomingLinks();
+    ref.read(universalLinkProvider).handleInitialUri();
   }
 
   @override
@@ -128,13 +119,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    context.read(walletProvider).handleAppStateChange(state);
+    ref.read(walletProvider).handleAppStateChange(state);
   }
 
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(375, 667),
+      minTextAdapt: true,
+      splitScreenMode: true,
       builder: () => MaterialApp(
         title: 'SideSwap',
         debugShowCheckedModeBanner: false,
@@ -142,6 +135,13 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
+        builder: (context, widget) {
+          ScreenUtil.setContext(context);
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+            child: widget!,
+          );
+        },
         home: SecureApplication(
           nativeRemoveDelay: 100,
           onNeedUnlock: (secureApplicationController) async {
@@ -187,13 +187,14 @@ class _MyPopupPageRoute<T> extends PageRoute<T>
   bool get fullscreenDialog => false;
 }
 
-class _RootWidget extends StatefulWidget {
+class _RootWidget extends ConsumerStatefulWidget {
   @override
   __RootWidgetState createState() => __RootWidgetState();
 }
 
-class __RootWidgetState extends State<_RootWidget> {
-  List<Page<dynamic>> pages(BuildContext context, Status status) {
+class __RootWidgetState extends ConsumerState<_RootWidget> {
+  List<Page<dynamic>> pages(
+      WidgetRef ref, BuildContext context, Status status) {
     switch (status) {
       case Status.loading:
       case Status.walletLoading:
@@ -379,7 +380,7 @@ class __RootWidgetState extends State<_RootWidget> {
           const MyPopupPage<Widget>(child: PaymentSendPopup()),
         ];
       case Status.orderPopup:
-        final orderId = context.read(walletProvider).orderDetailsData.orderId;
+        final orderId = ref.read(walletProvider).orderDetailsData.orderId;
         return [
           const MaterialPage<Widget>(child: WalletMain()),
           MaterialPage<Widget>(child: OrderPopup(key: Key(orderId))),
@@ -431,11 +432,11 @@ class __RootWidgetState extends State<_RootWidget> {
           MaterialPage<Widget>(
               child: CreateOrderView(
             requestOrder:
-                context.read(requestOrderProvider).currentRequestOrderView,
+                ref.read(requestOrderProvider).currentRequestOrderView,
           )),
         ];
       case Status.swapPrompt:
-        final orderId = context.read(walletProvider).swapDetails?.orderId ?? '';
+        final orderId = ref.read(walletProvider).swapDetails?.orderId ?? '';
         return [
           const MaterialPage<Widget>(child: WalletMain()),
           MaterialPage<Widget>(child: SwapPrompt(key: Key(orderId))),
@@ -453,19 +454,23 @@ class __RootWidgetState extends State<_RootWidget> {
       statusBarColor: Colors.transparent,
     ));
 
-    context.read(walletProvider).navigatorKey = _navigatorKey;
-    context.read(pinProtectionProvider).onPinBlockadeCallback = onPinBlockade;
+    ref.read(walletProvider).navigatorKey = _navigatorKey;
+    ref.read(pinProtectionProvider).onPinBlockadeCallback = onPinBlockade;
   }
 
-  Future<bool> onPinBlockade() async {
+  Future<bool> onPinBlockade(
+      String? title, bool backButton, PinKeyboardAcceptType iconType) async {
     final ret = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const PinProtection();
+        return PinProtection(
+          title: title,
+          iconType: iconType,
+        );
       },
     );
-    context.read(pinProtectionProvider).deinit();
+    ref.read(pinProtectionProvider).deinit();
     return ret ?? false;
   }
 
@@ -473,6 +478,8 @@ class __RootWidgetState extends State<_RootWidget> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        const PinListener(),
+        const UiStatesListener(),
         WillPopScope(
           onWillPop: () async {
             // https://github.com/flutter/flutter/issues/66349
@@ -480,11 +487,11 @@ class __RootWidgetState extends State<_RootWidget> {
             return !ret;
           },
           child: Consumer(
-            builder: (context, watch, child) {
-              final status = watch(walletProvider).status;
+            builder: (context, ref, child) {
+              final status = ref.watch(walletProvider).status;
               return Navigator(
                 key: _navigatorKey,
-                pages: pages(context, status),
+                pages: pages(ref, context, status),
                 onPopPage: (route, dynamic result) {
                   logger.d('on pop page');
                   if (!route.didPop(result)) {
@@ -497,10 +504,10 @@ class __RootWidgetState extends State<_RootWidget> {
           ),
         ),
         Consumer(
-          builder: (context, watch, child) {
-            final initProviderValue = watch(initProvider);
+          builder: (context, ref, child) {
+            final initProviderValue = ref.watch(initProvider);
             return initProviderValue.map(data: (_) {
-              final env = watch(configProvider).env;
+              final env = ref.watch(configProvider).env;
               return Visibility(
                 visible: env != 0,
                 child: Align(

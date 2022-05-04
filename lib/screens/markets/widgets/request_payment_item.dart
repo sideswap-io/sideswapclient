@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,7 +10,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/markets/confirm_request_payment.dart';
 
-class RequestPaymentItem extends StatelessWidget {
+class RequestPaymentItem extends ConsumerWidget {
   const RequestPaymentItem(
       {Key? key, required this.request, required this.onCancelPressed})
       : super(key: key);
@@ -19,7 +19,7 @@ class RequestPaymentItem extends StatelessWidget {
   final VoidCallback onCancelPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     var height = 158.h;
     var header = 'Sended'.tr();
     final _dateFormat = DateFormat('dd MMMM yyyy');
@@ -66,7 +66,7 @@ class RequestPaymentItem extends StatelessWidget {
                   ),
                   Padding(
                     padding: EdgeInsets.only(left: 8.w),
-                    child: context
+                    child: ref
                             .read(walletProvider)
                             .assetImagesSmall[request.assetId] ??
                         Container(),
@@ -74,7 +74,7 @@ class RequestPaymentItem extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.only(left: 4.w),
                     child: Text(
-                      context
+                      ref
                               .read(walletProvider)
                               .assets[request.assetId]
                               ?.ticker ??

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
@@ -14,8 +14,8 @@ class AssetReceivePopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer(builder: (context, watch, child) {
-      final isAmp = watch(walletProvider).recvAddressAccount.isAmp();
+    return Consumer(builder: (context, ref, _) {
+      final isAmp = ref.watch(walletProvider).recvAddressAccount.isAmp();
       return SideSwapPopup(
         enableInsideTopPadding: false,
         child: Column(
@@ -32,14 +32,12 @@ class AssetReceivePopup extends StatelessWidget {
             ),
             TopRecvButtons(
               onRegularPressed: () {
-                context
+                ref
                     .read(walletProvider)
                     .toggleRecvAddrType(AccountType.regular);
               },
               onAmpPressed: () {
-                context
-                    .read(walletProvider)
-                    .toggleRecvAddrType(AccountType.amp);
+                ref.read(walletProvider).toggleRecvAddrType(AccountType.amp);
               },
             ),
             AssetReceiveWidget(key: Key(isAmp.toString()), isAmp: isAmp),

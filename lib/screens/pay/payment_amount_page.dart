@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -28,14 +28,14 @@ class PaymentAmountPageArguments {
   Friend? friend;
 }
 
-class PaymentAmountPage extends StatefulWidget {
+class PaymentAmountPage extends ConsumerStatefulWidget {
   const PaymentAmountPage({Key? key}) : super(key: key);
 
   @override
   _PaymentAmountPageState createState() => _PaymentAmountPageState();
 }
 
-class _PaymentAmountPageState extends State<PaymentAmountPage> {
+class _PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
   String dollarConversion = '';
   late AccountAsset accountAsset;
   late List<AccountAsset> availableAssets;
@@ -58,25 +58,22 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
   );
 
   AccountAsset getSelectedAssetId() {
-    final wallet = context.read(walletProvider);
-    final payAssetId = context
-        .read(paymentProvider)
-        .paymentAmountPageArguments
-        .result
-        ?.assetId;
+    final payAssetId =
+        ref.read(paymentProvider).paymentAmountPageArguments.result?.assetId;
     if (payAssetId != null) {
-      for (var account in context.read(balancesProvider).balances.keys) {
+      for (var account in ref.read(balancesProvider).balances.keys) {
         if (account.asset == payAssetId) {
           return account;
         }
       }
       return AccountAsset(AccountType.regular, payAssetId);
     }
-    final account = wallet.selectedWalletAsset;
+    final account = ref.read(walletProvider).selectedWalletAsset;
     if (account != null) {
       return account;
     }
-    return AccountAsset(AccountType.regular, wallet.liquidAssetId());
+    return AccountAsset(
+        AccountType.regular, ref.read(walletProvider).liquidAssetId());
   }
 
   @override
@@ -84,15 +81,22 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
     super.initState();
 
     dollarConversion = '0.0';
-    amount = context
-            .read(paymentProvider)
-            .paymentAmountPageArguments
-            .result
-            ?.amount
-            ?.toStringAsFixed(8) ??
-        '0';
+
     accountAsset = getSelectedAssetId();
-    availableAssets = context.read(walletProvider).sendAssetsWithBalance();
+
+    // Asset amount always has precision 8, see here for details:
+    // https://github.com/btcpayserver/btcpayserver/pull/1402
+    // https://github.com/Blockstream/green_android/issues/86
+    final amountAsBtc =
+        ref.read(paymentProvider).paymentAmountPageArguments.result?.amount ??
+            0.0;
+    final amountInSat = toIntAmount(amountAsBtc);
+    final assetPrecison =
+        ref.read(walletProvider).assets[accountAsset.asset]?.precision ?? 8;
+    final amountAsAsset = toFloat(amountInSat, precision: assetPrecison);
+    amount = amountAsAsset.toStringAsFixed(assetPrecison);
+
+    availableAssets = ref.read(walletProvider).sendAssetsWithBalance();
     if (!availableAssets.contains(accountAsset)) {
       availableAssets.add(accountAsset);
     }
@@ -110,7 +114,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
 
     tickerAmountFocusNode = FocusNode();
 
-    context.read(paymentProvider).insufficientFunds = false;
+    ref.read(paymentProvider).insufficientFunds = false;
 
     WidgetsBinding.instance?.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(tickerAmountFocusNode);
@@ -126,7 +130,7 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
 
   void validate(String value) {
     if (value.isEmpty) {
-      context.read(paymentProvider).insufficientFunds = false;
+      ref.read(paymentProvider).insufficientFunds = false;
       setState(() {
         enabled = false;
         amount = '0';
@@ -134,10 +138,10 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
       return;
     }
 
-    final precision = context
+    final precision = ref
         .read(walletProvider)
         .getPrecisionForAssetId(assetId: accountAsset.asset);
-    final balance = context.read(balancesProvider).balances[accountAsset];
+    final balance = ref.read(balancesProvider).balances[accountAsset];
     final newValue = value.replaceAll(' ', '');
     final newAmount = double.tryParse(newValue)?.toDouble();
     final realBalance = double.tryParse(
@@ -166,24 +170,31 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
       setState(() {
         enabled = true;
       });
-      context.read(paymentProvider).insufficientFunds = false;
+      ref.read(paymentProvider).insufficientFunds = false;
       return;
     }
 
     setState(() {
       enabled = false;
     });
-    context.read(paymentProvider).insufficientFunds = true;
+    ref.read(paymentProvider).insufficientFunds = true;
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<BalancesNotifier>(balancesProvider, ((previous, next) {
+      // validate every time when balancesProvider will change
+      if (tickerAmountController != null &&
+          tickerAmountController!.text.isNotEmpty) {
+        validate(tickerAmountController?.text ?? '');
+      }
+    }));
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Pay'.tr(),
         showTrailingButton: true,
         onTrailingButtonPressed: () {
-          context.read(walletProvider).setRegistered();
+          ref.read(walletProvider).setRegistered();
         },
       ),
       body: Stack(
@@ -219,13 +230,11 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Consumer(
-                builder: (context, watch, child) {
-                  final friend =
-                      watch(paymentProvider).paymentAmountPageArguments.friend;
-                  final address = watch(paymentProvider)
-                      .paymentAmountPageArguments
-                      .result
-                      ?.address;
+                builder: (context, watch, _) {
+                  final friend = ref.watch(paymentProvider
+                      .select((p) => p.paymentAmountPageArguments.friend));
+                  final address = ref.watch(paymentProvider.select(
+                      (p) => p.paymentAmountPageArguments.result?.address));
                   return PaymentAmountReceiverField(
                     text: address ?? '',
                     labelStyle: _labelStyle,
@@ -236,17 +245,20 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
               Padding(
                 padding: EdgeInsets.only(top: 24.h),
                 child: Consumer(
-                  builder: (context, watch, child) {
-                    final showError = watch(paymentProvider).insufficientFunds;
+                  builder: (context, watch, _) {
+                    final showError = ref.watch(
+                        paymentProvider.select((p) => p.insufficientFunds));
                     final newAmount = double.tryParse(amount) ?? 0;
-                    final newAssetId = watch(walletProvider)
+                    final newAssetId = ref
+                        .watch(walletProvider)
                         .getAssetById(accountAsset.asset)
                         ?.assetId;
-                    final usdAmount = watch(walletProvider)
+                    final usdAmount = ref
+                        .watch(walletProvider)
                         .getAmountUsd(newAssetId, newAmount);
                     dollarConversion = usdAmount.toStringAsFixed(2);
-                    final visibleConversion = context
-                        .read(walletProvider)
+                    final visibleConversion = ref
+                        .watch(walletProvider)
                         .isAmountUsdAvailable(newAssetId);
                     dollarConversion = replaceCharacterOnPosition(
                         input: dollarConversion, currencyChar: '\$');
@@ -329,31 +341,20 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ProviderListener<BalancesNotifier>(
-                      provider: balancesProvider,
-                      onChange: (context, state) {
-                        if (tickerAmountController != null &&
-                            tickerAmountController!.text.isNotEmpty) {
-                          validate(tickerAmountController?.text ?? '');
-                        }
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final balance = ref.watch(balancesProvider
+                            .select((p) => p.balances[accountAsset] ?? 0));
+                        final precision = ref
+                            .watch(walletProvider)
+                            .getPrecisionForAssetId(
+                                assetId: accountAsset.asset);
+                        return Text(
+                          'PAYMENT_BALANCE',
+                          style: _approximateStyle,
+                        ).tr(
+                            args: [(amountStr(balance, precision: precision))]);
                       },
-                      child: Consumer(
-                        builder: (context, watch, child) {
-                          final balance =
-                              watch(balancesProvider).balances[accountAsset] ??
-                                  0;
-                          final precision = context
-                              .read(walletProvider)
-                              .getPrecisionForAssetId(
-                                  assetId: accountAsset.asset);
-                          return Text(
-                            'PAYMENT_BALANCE',
-                            style: _approximateStyle,
-                          ).tr(args: [
-                            (amountStr(balance, precision: precision))
-                          ]);
-                        },
-                      ),
                     ),
                     Container(
                       width: 54.w,
@@ -369,12 +370,12 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
                       child: TextButton(
                         onPressed: () {
                           setState(() {
-                            final precision = context
+                            final precision = ref
                                 .read(walletProvider)
                                 .getPrecisionForAssetId(
                                     assetId: accountAsset.asset);
                             final text = amountStr(
-                                context
+                                ref
                                         .read(balancesProvider)
                                         .balances[accountAsset] ??
                                     0,
@@ -419,9 +420,9 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
         Padding(
           padding:
               EdgeInsets.only(top: 36.h, bottom: 24.h, left: 16.w, right: 16.w),
-          child: Consumer(builder: (context, watch, child) {
-            final buttonEnabled =
-                enabled && !watch(walletProvider).isCreatingTx;
+          child: Consumer(builder: (context, ref, _) {
+            final buttonEnabled = enabled &&
+                !ref.watch(walletProvider.select((p) => p.isCreatingTx));
             return CustomBigButton(
               width: double.infinity,
               height: 54.h,
@@ -430,10 +431,10 @@ class _PaymentAmountPageState extends State<PaymentAmountPage> {
               enabled: buttonEnabled,
               onPressed: buttonEnabled
                   ? () {
-                      context.read(paymentProvider).selectPaymentSend(
+                      ref.read(paymentProvider).selectPaymentSend(
                             amount.toString(),
                             accountAsset,
-                            address: context
+                            address: ref
                                 .read(paymentProvider)
                                 .paymentAmountPageArguments
                                 .result

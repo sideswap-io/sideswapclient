@@ -26,7 +26,7 @@
 			"args": [
 				"pub",
 				"run",
-				"flutter_launcher_icons:main",
+				"flutter_launcher_icons_maker:main",
 				"-f",
 				"application_icon.yaml"
 			],
@@ -42,7 +42,7 @@
 			"args": [
 				"pub",
 				"run",
-				"flutter_launcher_icons:main",
+				"flutter_launcher_icons_maker:main",
 				"-f",
 				"notification_icon.yaml"
 			],

@@ -4,7 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -14,7 +14,7 @@ import 'package:sideswap/models/contact_provider.dart';
 import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class PaymentConfirmPhoneSuccess extends StatefulWidget {
+class PaymentConfirmPhoneSuccess extends ConsumerStatefulWidget {
   const PaymentConfirmPhoneSuccess({Key? key}) : super(key: key);
 
   @override
@@ -23,7 +23,7 @@ class PaymentConfirmPhoneSuccess extends StatefulWidget {
 }
 
 class _PaymentConfirmPhoneSuccessState
-    extends State<PaymentConfirmPhoneSuccess> {
+    extends ConsumerState<PaymentConfirmPhoneSuccess> {
   final _defaultTextStyle = GoogleFonts.roboto(
     fontSize: 16.sp,
     fontWeight: FontWeight.normal,
@@ -37,10 +37,8 @@ class _PaymentConfirmPhoneSuccessState
   void initState() {
     super.initState();
 
-    percentageLoadedSubscription = context
-        .read(contactProvider)
-        .percentageLoaded
-        .listen(onPercentageLoaded);
+    percentageLoadedSubscription =
+        ref.read(contactProvider).percentageLoaded.listen(onPercentageLoaded);
   }
 
   @override
@@ -101,44 +99,50 @@ class _PaymentConfirmPhoneSuccessState
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 12.h, left: 24.w, right: 24.w),
-              child: RichText(
-                textAlign: TextAlign.center,
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: 'Your number '.tr(),
-                      style: _defaultTextStyle,
-                    ),
-                    TextSpan(
-                      text: context.read(phoneProvider).countryPhoneNumber,
-                      style: _defaultTextStyle.copyWith(
-                        fontWeight: FontWeight.bold,
+                padding: EdgeInsets.only(top: 12.h, left: 24.w, right: 24.w),
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final countryPhoneNumber = ref.watch(
+                        phoneProvider.select((p) => p.countryPhoneNumber));
+                    return RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: 'Your number '.tr(),
+                            style: _defaultTextStyle,
+                          ),
+                          TextSpan(
+                            text: countryPhoneNumber,
+                            style: _defaultTextStyle.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' has been successfully linked to the wallet'
+                                .tr(),
+                            style: _defaultTextStyle,
+                          ),
+                        ],
                       ),
-                    ),
-                    TextSpan(
-                      text: ' has been successfully linked to the wallet'.tr(),
-                      style: _defaultTextStyle,
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                    );
+                  },
+                )),
             const Spacer(),
             Container(
               height: 324.h,
               color: const Color(0xFF004666),
               child: Center(
                 child: Consumer(
-                  builder: (context, watch, child) {
-                    final contactsLoadingState =
-                        watch(contactProvider).contactsLoadingState;
+                  builder: (context, ref, _) {
+                    final contactsLoadingState = ref.watch(
+                        contactProvider.select((p) => p.contactsLoadingState));
 
                     if (contactsLoadingState == ContactsLoadingState.done) {
                       Future.microtask(() async {
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
-                        context.read(walletProvider).selectPaymentPage();
+                        ref.read(walletProvider).selectPaymentPage();
                       });
                     }
 
@@ -177,7 +181,7 @@ class _PaymentConfirmPhoneSuccessState
                             enabled: contactsLoadingState !=
                                 ContactsLoadingState.running,
                             onPressed: () {
-                              context.read(contactProvider).loadContacts();
+                              ref.read(contactProvider).loadContacts();
                             },
                           ),
                         ),
@@ -194,7 +198,7 @@ class _PaymentConfirmPhoneSuccessState
                             onPressed: () {
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
-                              context.read(walletProvider).selectPaymentPage();
+                              ref.read(walletProvider).selectPaymentPage();
                             },
                           ),
                         ),

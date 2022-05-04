@@ -1,13 +1,12 @@
 import 'package:faker/faker.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sideswap/models/friends_provider.dart';
 
 //  TODO: remove this provider?
 
 final paymentRequestsProvider = ChangeNotifierProvider<PaymentRequestsProvider>(
-    (ref) => PaymentRequestsProvider(read: ref.read));
+    (ref) => PaymentRequestsProvider(ref));
 
 enum PaymentRequestType {
   sent,
@@ -78,11 +77,9 @@ class PaymentRequest {
 }
 
 class PaymentRequestsProvider with ChangeNotifier {
-  Reader read;
+  final Ref ref;
 
-  PaymentRequestsProvider({
-    required this.read,
-  });
+  PaymentRequestsProvider(this.ref);
 
   List<PaymentRequest> paymentRequests = <PaymentRequest>[];
 
@@ -95,7 +92,7 @@ class PaymentRequestsProvider with ChangeNotifier {
             i % 2 == 0 ? PaymentRequestType.sent : PaymentRequestType.received,
         amount: random.numberOfLength(14),
         dateTime: faker.date.dateTime(minYear: 2020, maxYear: 2021),
-        friend: read(friendsProvider).friends.first,
+        friend: ref.read(friendsProvider).friends.first,
         assetId:
             'a0682b2b1493596f93cea5f4582df6a900b5e1a491d5ac39dea4bb39d0a45bbf',
         message:

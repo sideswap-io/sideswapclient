@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -17,7 +17,7 @@ import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class AddressQrScanner extends StatefulWidget {
+class AddressQrScanner extends ConsumerStatefulWidget {
   final ValueChanged<QrCodeResult> resultCb;
   final QrCodeAddressType? expectedAddress;
 
@@ -28,10 +28,11 @@ class AddressQrScanner extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _AddressQrScannerState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _AddressQrScannerState();
 }
 
-class _AddressQrScannerState extends State<AddressQrScanner> {
+class _AddressQrScannerState extends ConsumerState<AddressQrScanner> {
   QRViewController? _qrController;
   final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -97,7 +98,7 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
               QRView(
                 key: _qrKey,
                 onQRViewCreated: (value) {
-                  _onQrViewCreated(value, widget.expectedAddress);
+                  _onQrViewCreated(ref, value, widget.expectedAddress);
                 },
                 onPermissionSet: onPermissionSet,
                 overlay: QrScannerOverlayShape(
@@ -137,14 +138,14 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
     await flushbar.show(context);
   }
 
-  void _onQrViewCreated(
-      QRViewController controller, QrCodeAddressType? expectedAddress) {
+  void _onQrViewCreated(WidgetRef ref, QRViewController controller,
+      QrCodeAddressType? expectedAddress) {
     _qrController = controller;
 
     var input = '';
     controller.scannedDataStream.where((e) {
       final ret = e.code != input;
-      input = e.code;
+      input = e.code ?? '';
       return ret;
     }).listen((scanData) async {
       Future<void>.delayed(const Duration(seconds: 2), () {
@@ -155,8 +156,9 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
         done = true;
         logger.d('Scanned data: ${scanData.code}');
 
-        final handleResult =
-            context.read(universalLinkProvider).handleAppUrlStr(scanData.code);
+        final handleResult = ref
+            .read(universalLinkProvider)
+            .handleAppUrlStr(scanData.code ?? '');
         if (handleResult == HandleResult.success) {
           await popup();
           return;
@@ -168,9 +170,16 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
         }
 
         final result =
-            context.read(qrcodeProvider).parseDynamicQrCode(scanData.code);
+            ref.read(qrcodeProvider).parseDynamicQrCode(scanData.code ?? '');
         if (result.error != null) {
           await showError(result.errorMessage ?? 'Invalid QR code'.tr());
+          done = false;
+          return;
+        }
+
+        if (result.assetId != null &&
+            ref.read(walletProvider).assets[result.assetId] == null) {
+          await showError('Unknown asset'.tr());
           done = false;
           return;
         }
@@ -194,7 +203,7 @@ class _AddressQrScannerState extends State<AddressQrScanner> {
   }
 }
 
-class ShareTxidButtons extends StatelessWidget {
+class ShareTxidButtons extends ConsumerWidget {
   final bool isLiquid;
   final String txid;
 
@@ -205,7 +214,7 @@ class ShareTxidButtons extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -215,7 +224,7 @@ class ShareTxidButtons extends StatelessWidget {
             height: 50,
             child: ElevatedButton(
               onPressed: () =>
-                  context.read(walletProvider).openTxUrl(txid, isLiquid, true),
+                  ref.read(walletProvider).openTxUrl(txid, isLiquid, false),
               child: const Text('LINK TO EXTERNAL EXPLORER').tr(),
             ),
           ),

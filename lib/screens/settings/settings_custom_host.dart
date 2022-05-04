@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -14,14 +14,14 @@ import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/network_access_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class SettingsCustomHost extends StatefulWidget {
+class SettingsCustomHost extends ConsumerStatefulWidget {
   const SettingsCustomHost({Key? key}) : super(key: key);
 
   @override
   _SettingsCustomHostState createState() => _SettingsCustomHostState();
 }
 
-class _SettingsCustomHostState extends State<SettingsCustomHost> {
+class _SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
   late TextStyle defaultTextStyle;
 
   late TextEditingController hostController;
@@ -40,18 +40,18 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
     );
 
     hostController = TextEditingController()
-      ..text = context.read(configProvider).settingsHost
+      ..text = ref.read(configProvider).settingsHost
       ..addListener(() {
         validate();
       });
 
     portController = TextEditingController()
-      ..text = context.read(configProvider).settingsPort.toString()
+      ..text = ref.read(configProvider).settingsPort.toString()
       ..addListener(() {
         validate();
       });
 
-    useTls = context.read(configProvider).settingsUseTLS;
+    useTls = ref.read(configProvider).settingsUseTLS;
 
     validate();
   }
@@ -152,7 +152,7 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                                 child: Row(
                                   children: [
                                     Text(
-                                      'Use TLS',
+                                      'Use TLS'.tr(),
                                       style: defaultTextStyle,
                                     ),
                                   ],
@@ -175,18 +175,18 @@ class _SettingsCustomHostState extends State<SettingsCustomHost> {
                             height: 54.h,
                             text: 'SAVE AND APPLY'.tr(),
                             onPressed: () {
-                              context.read(networkAccessProvider).networkType =
+                              ref.read(networkAccessProvider).networkType =
                                   SettingsNetworkType.custom;
-                              context
+                              ref
                                   .read(configProvider)
                                   .setSettingsHost(hostController.text);
-                              context.read(configProvider).setSettingsPort(
+                              ref.read(configProvider).setSettingsPort(
                                   int.parse(portController.text));
-                              context
+                              ref
                                   .read(configProvider)
                                   .setSettingsUseTLS(useTls);
                               Navigator.of(context).pop();
-                              context.read(walletProvider).applyNetworkChange();
+                              ref.read(walletProvider).applyNetworkChange();
                             },
                             backgroundColor: const Color(0xFF00C5FF),
                             textColor: Colors.white,

@@ -2,11 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/widgets/quote_expired_dialog.dart';
 
 enum SettingsDialogIcon {
@@ -16,12 +19,12 @@ enum SettingsDialogIcon {
 
 const kErrorQuoteExpired = 'quote expired';
 
-final utilsProvider = Provider((ref) => UtilsProvider(ref.read));
+final utilsProvider = Provider<UtilsProvider>((ref) => UtilsProvider(ref));
 
 class UtilsProvider {
-  final Reader read;
+  final Ref ref;
 
-  UtilsProvider(this.read);
+  UtilsProvider(this.ref);
 
   Future<void> settingsErrorDialog({
     required String title,
@@ -32,7 +35,7 @@ class UtilsProvider {
     void Function(BuildContext context)? onSecondPressed,
     SettingsDialogIcon icon = SettingsDialogIcon.error,
   }) async {
-    final context = read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(walletProvider).navigatorKey.currentContext;
     if (context == null) {
       return;
     }
@@ -163,7 +166,7 @@ class UtilsProvider {
 
   Future<void> showErrorDialog(String errorDescription,
       {String? buttonText}) async {
-    final context = read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(walletProvider).navigatorKey.currentContext;
     if (context == null) {
       return;
     }
@@ -175,7 +178,8 @@ class UtilsProvider {
 
     await showDialog<void>(
       context: context,
-      barrierDismissible: false,
+      barrierDismissible:
+          FlavorConfig.isDesktop, // Allow close popups with Esc on desktop
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -260,6 +264,153 @@ class UtilsProvider {
           ),
         );
       },
+    );
+  }
+
+  Future<void> showInsufficienFunds(From_ShowInsufficientFunds msg) async {
+    final context = ref.read(walletProvider).navigatorKey.currentContext;
+    if (context == null) {
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible:
+          FlavorConfig.isDesktop, // Allow close popups with Esc on desktop
+      builder: (BuildContext context) {
+        return _InsufficientFunds(msg: msg);
+      },
+    );
+  }
+}
+
+class _InsufficientFunds extends ConsumerWidget {
+  const _InsufficientFunds({
+    Key? key,
+    required this.msg,
+  }) : super(key: key);
+
+  final From_ShowInsufficientFunds msg;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallet = ref.watch(walletProvider);
+    final asset = wallet.assets[msg.assetId]!;
+    final icon = wallet.assetImagesVerySmall[asset.assetId]!;
+    final availableStr = amountStrNamed(msg.available.toInt(), asset.ticker,
+        precision: asset.precision);
+    final requiredStr = amountStrNamed(msg.required.toInt(), asset.ticker,
+        precision: asset.precision);
+
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.w),
+      ), //this right here
+      child: Container(
+        width: 343.w,
+        height: 378.h,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(
+            Radius.circular(8.w),
+          ),
+          color: const Color(0xFF1C6086),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 32.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                flex: 2,
+                child: Container(
+                  width: 60.w,
+                  height: 60.w,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(60.w),
+                    border: Border.all(
+                      color: const Color(0xFFFF7878),
+                      width: 2,
+                      style: BorderStyle.solid,
+                    ),
+                  ),
+                  child: Center(
+                    child: SvgPicture.asset(
+                      'assets/error.svg',
+                      width: 23.w,
+                      height: 23.w,
+                      color: const Color(0xFFFF7878),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 6,
+                child: Padding(
+                  padding: EdgeInsets.only(top: 32.h),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Insufficient funds'.tr(),
+                        style: const TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                      SizedBox(height: 20.h),
+                      Row(
+                        children: [
+                          Text(
+                            'Available'.tr(),
+                            style: const TextStyle(
+                              color: Color(0xFF569BBA),
+                            ),
+                          ),
+                          const Spacer(),
+                          icon,
+                          SizedBox(width: 12.w),
+                          Text(availableStr),
+                          SizedBox(width: 8.w),
+                        ],
+                      ),
+                      SizedBox(height: 12.h),
+                      Row(
+                        children: [
+                          Text(
+                            'Required'.tr(),
+                            style: const TextStyle(
+                              color: Color(0xFF569BBA),
+                            ),
+                          ),
+                          const Spacer(),
+                          icon,
+                          SizedBox(width: 12.w),
+                          Text(requiredStr),
+                          SizedBox(width: 8.w),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Flexible(
+                flex: 3,
+                child: Padding(
+                  padding: EdgeInsets.only(top: 16.h),
+                  child: CustomBigButton(
+                    width: 279.w,
+                    height: 54.h,
+                    text: 'OK'.tr(),
+                    backgroundColor: const Color(0xFF00C5FF),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).pop();
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

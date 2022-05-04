@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -12,7 +12,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
-class SwapMarketOrderDetails extends StatefulWidget {
+class SwapMarketOrderDetails extends ConsumerStatefulWidget {
   const SwapMarketOrderDetails({
     Key? key,
     required this.requestOrder,
@@ -24,7 +24,8 @@ class SwapMarketOrderDetails extends StatefulWidget {
   _SwapMarketOrderDetailsState createState() => _SwapMarketOrderDetailsState();
 }
 
-class _SwapMarketOrderDetailsState extends State<SwapMarketOrderDetails> {
+class _SwapMarketOrderDetailsState
+    extends ConsumerState<SwapMarketOrderDetails> {
   String expiresTitle = '';
   Timer? _expireTimer;
 
@@ -85,11 +86,21 @@ class _SwapMarketOrderDetailsState extends State<SwapMarketOrderDetails> {
                         ),
                         child: Padding(
                           padding: EdgeInsets.all(16.r),
-                          child: OrderTable(
-                            orderDetailsData: OrderDetailsData.fromRequestOrder(
-                              widget.requestOrder,
-                              context.read,
-                            ),
+                          child: Consumer(
+                            builder: (context, ref, _) {
+                              final assetPrecision = ref
+                                  .watch(walletProvider)
+                                  .getPrecisionForAssetId(
+                                      assetId: widget.requestOrder.assetId);
+
+                              return OrderTable(
+                                orderDetailsData:
+                                    OrderDetailsData.fromRequestOrder(
+                                  widget.requestOrder,
+                                  assetPrecision,
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
@@ -105,7 +116,7 @@ class _SwapMarketOrderDetailsState extends State<SwapMarketOrderDetails> {
                         text: 'SWAP'.tr(),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).pop();
-                          context
+                          ref
                               .read(walletProvider)
                               .linkOrder(widget.requestOrder.orderId);
                         },

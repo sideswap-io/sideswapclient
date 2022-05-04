@@ -11,9 +11,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/screens/settings/settings_licenses.dart';
 import 'package:sideswap/screens/settings/widgets/url_link_button.dart';
 
-class SettingsAboutUs extends StatelessWidget {
-  const SettingsAboutUs({Key? key}) : super(key: key);
-
+class SettingsAboutUsData {
   static const String urlWeb = 'https://sideswap.io/';
   static const String urlWebText = 'sideswap.io';
   static const String urlTwitter = 'https://twitter.com/side_swap';
@@ -25,6 +23,11 @@ class SettingsAboutUs extends StatelessWidget {
   static const String urlTelegramText = 't.me/SideSwap_io';
   static const String urlPrivacyPolicy = 'https://sideswap.io/privacy-policy/';
   static const String urlPrivacyPolicyText = 'Privacy Policy';
+  static const String urlFaq = 'https://sideswap.io/faq/';
+}
+
+class SettingsAboutUs extends StatelessWidget {
+  const SettingsAboutUs({Key? key}) : super(key: key);
 
   void showExportLogMenu(BuildContext context) async {
     final result = await showMenu(
@@ -50,7 +53,6 @@ class SettingsAboutUs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // PackageInfo packageInfo = await PackageInfo.fromPlatform();
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'About us'.tr(),
@@ -91,8 +93,8 @@ class SettingsAboutUs extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   UrlLinkButton(
-                    url: urlWeb,
-                    text: urlWebText,
+                    url: SettingsAboutUsData.urlWeb,
+                    text: SettingsAboutUsData.urlWebText,
                     icon: SvgPicture.asset(
                       'assets/web_icon.svg',
                       width: 24.w,
@@ -100,8 +102,8 @@ class SettingsAboutUs extends StatelessWidget {
                     ),
                   ),
                   UrlLinkButton(
-                    url: urlGitHub,
-                    text: urlGithubText,
+                    url: SettingsAboutUsData.urlGitHub,
+                    text: SettingsAboutUsData.urlGithubText,
                     icon: SvgPicture.asset(
                       'assets/github_icon.svg',
                       width: 24.w,
@@ -109,8 +111,8 @@ class SettingsAboutUs extends StatelessWidget {
                     ),
                   ),
                   UrlLinkButton(
-                    url: urlTwitter,
-                    text: urlTwitterText,
+                    url: SettingsAboutUsData.urlTwitter,
+                    text: SettingsAboutUsData.urlTwitterText,
                     icon: SvgPicture.asset(
                       'assets/twitter_icon.svg',
                       width: 24.w,
@@ -118,8 +120,8 @@ class SettingsAboutUs extends StatelessWidget {
                     ),
                   ),
                   UrlLinkButton(
-                    url: urlTelegram,
-                    text: urlTelegramText,
+                    url: SettingsAboutUsData.urlTelegram,
+                    text: SettingsAboutUsData.urlTelegramText,
                     icon: SvgPicture.asset(
                       'assets/telegram_icon.svg',
                       width: 24.w,
@@ -141,8 +143,8 @@ class SettingsAboutUs extends StatelessWidget {
                     },
                   ),
                   UrlLinkButton(
-                    url: urlPrivacyPolicy,
-                    text: urlPrivacyPolicyText,
+                    url: SettingsAboutUsData.urlPrivacyPolicy,
+                    text: SettingsAboutUsData.urlPrivacyPolicyText,
                     icon: SvgPicture.asset(
                       'assets/web_icon.svg',
                       width: 24.w,

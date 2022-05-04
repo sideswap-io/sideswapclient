@@ -1,8 +1,5 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/wallet.dart';
 
 enum OrderDetailsDataType {
   submit,
@@ -62,6 +59,8 @@ class OrderDetailsData {
     this.autoSign = false,
     this.own = false,
     this.indexPrice = 0,
+    this.createdAt = 0,
+    this.expiresAt = 0,
   });
 
   final int bitcoinAmount;
@@ -81,6 +80,8 @@ class OrderDetailsData {
   final bool own;
   final double indexPrice;
   final MarketType marketType;
+  final int createdAt;
+  final int expiresAt;
 
   factory OrderDetailsData.empty() {
     return OrderDetailsData(
@@ -97,10 +98,8 @@ class OrderDetailsData {
   }
 
   factory OrderDetailsData.fromRequestOrder(
-      RequestOrder requestOrder, Reader read) {
+      RequestOrder requestOrder, int assetPrecision) {
     final sendBitcoins = requestOrder.sendBitcoins;
-    final assetPrecision = read(walletProvider)
-        .getPrecisionForAssetId(assetId: requestOrder.assetId);
     const bitcoinPrecision = 8;
     final orderDetailsData = OrderDetailsData(
       bitcoinAmount: requestOrder.bitcoinAmount,
@@ -118,6 +117,8 @@ class OrderDetailsData {
       isTracking: requestOrder.indexPrice != 0,
       indexPrice: requestOrder.indexPrice,
       marketType: requestOrder.marketType,
+      createdAt: requestOrder.createdAt,
+      expiresAt: requestOrder.expiresAt,
     );
 
     return orderDetailsData;

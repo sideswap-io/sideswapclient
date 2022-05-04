@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -15,7 +15,7 @@ enum LicenseNextStep {
   importWallet,
 }
 
-class LicenseTerms extends StatelessWidget {
+class LicenseTerms extends ConsumerWidget {
   const LicenseTerms({
     Key? key,
     required this.nextStep,
@@ -28,7 +28,7 @@ class LicenseTerms extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapPopup(
       enableInsideHorizontalPadding: false,
       child: Column(
@@ -99,16 +99,14 @@ class LicenseTerms extends StatelessWidget {
               text: 'I AGREE'.tr(),
               backgroundColor: const Color(0xFF00C5FF),
               onPressed: () async {
-                await context.read(walletProvider).setLicenseAccepted();
+                await ref.read(walletProvider).setLicenseAccepted();
                 if (nextStep == LicenseNextStep.createWallet) {
-                  await context
-                      .read(walletProvider)
-                      .setReviewLicenseCreateWallet();
+                  await ref.read(walletProvider).setReviewLicenseCreateWallet();
                   return;
                 }
 
                 if (nextStep == LicenseNextStep.importWallet) {
-                  context.read(walletProvider).startMnemonicImport();
+                  ref.read(walletProvider).startMnemonicImport();
                 }
               },
             ),

@@ -53,26 +53,32 @@ class OrderTableRow extends StatefulWidget {
     bool showDollarConversion = true,
   }) {
     return Builder(builder: (context) {
-      final wallet = context.read(walletProvider);
+      return Consumer(
+        builder: ((context, ref, _) {
+          final icon = ref
+              .watch(walletProvider.select((p) => p.assetImagesSmall[assetId]));
+          final asset =
+              ref.watch(walletProvider.select((p) => p.assets[assetId]));
 
-      final icon = wallet.assetImagesSmall[assetId];
-      final asset = wallet.assets[assetId]!;
-      final ticker = asset.ticker;
-      final amount_ = amountStr(amount, precision: asset.precision);
-      final dollarConversion =
-          (wallet.liquidAssetId() == assetId && showDollarConversion)
-              ? (context.read(requestOrderProvider).dollarConversion(
-                  assetId, toFloat(amount, precision: asset.precision)))
+          final ticker = asset?.ticker;
+          final amount_ = amountStr(amount, precision: asset?.precision ?? 8);
+          final dollarConversion = ref.watch(walletProvider).liquidAssetId() ==
+                      assetId &&
+                  showDollarConversion
+              ? ref.watch(requestOrderProvider).dollarConversion(
+                  assetId, toFloat(amount, precision: asset?.precision ?? 8))
               : null;
 
-      return OrderTableRow(
-        description: description,
-        value: '$amount_ $ticker',
-        dollarConversion: dollarConversion,
-        icon: icon,
-        orderTableRowType: orderTableRowType,
-        displayDivider: displayDivider,
-        enabled: enabled,
+          return OrderTableRow(
+            description: description,
+            value: '$amount_ $ticker',
+            dollarConversion: dollarConversion,
+            icon: icon,
+            orderTableRowType: orderTableRowType,
+            displayDivider: displayDivider,
+            enabled: enabled,
+          );
+        }),
       );
     });
   }

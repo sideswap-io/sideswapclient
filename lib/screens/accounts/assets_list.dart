@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -10,16 +10,16 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/accounts/widgets/asset_search_text_field.dart';
 import 'package:sideswap/screens/accounts/widgets/asset_select_item.dart';
 
-class AssetSelectList extends StatelessWidget {
+class AssetSelectList extends ConsumerWidget {
   const AssetSelectList({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Asset list'.tr(),
         onPressed: () {
-          final uiStateArgs = context.read(uiStateArgsProvider);
+          final uiStateArgs = ref.read(uiStateArgsProvider);
           uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments
               .copyWith(navigationItem: WalletMainNavigationItem.accounts);
         },
@@ -38,9 +38,9 @@ class AssetSelectList extends StatelessWidget {
                     ),
                     Expanded(
                       child: Consumer(
-                        builder: (context, watch, child) {
+                        builder: (context, ref, child) {
                           final filteredToggleAccounts =
-                              watch(walletProvider).filteredToggleAccounts;
+                              ref.watch(walletProvider).filteredToggleAccounts;
                           return ListView(
                             children: List<Widget>.generate(
                               filteredToggleAccounts.length,

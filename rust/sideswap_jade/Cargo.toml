@@ -1,0 +1,17 @@
+[package]
+name = "sideswap_jade"
+version = "0.1.2"
+edition = "2018"
+
+[dependencies]
+log = "*"
+serialport = "*"
+hex = "*"
+ciborium = "*"
+ciborium-io = "*"
+anyhow = "*"
+serde = "*"
+ureq = "2.0"
+serde_json = "*"
+serde_bytes = "*"
+base64 = "*"

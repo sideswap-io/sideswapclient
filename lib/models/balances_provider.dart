@@ -5,14 +5,14 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 final balancesProvider = ChangeNotifierProvider<BalancesNotifier>((ref) {
-  return BalancesNotifier(ref.read);
+  return BalancesNotifier(ref);
 });
 
 class BalancesNotifier with ChangeNotifier {
-  final Reader read;
+  final Ref ref;
   final balances = <AccountAsset, int>{};
 
-  BalancesNotifier(this.read);
+  BalancesNotifier(this.ref);
 
   void updateBalances(From_BalanceUpdate newBalances) {
     final accountType = getAccountType(newBalances.account);

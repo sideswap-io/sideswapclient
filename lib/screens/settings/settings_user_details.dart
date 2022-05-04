@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -16,14 +16,14 @@ import 'package:sideswap/screens/onboarding/confirm_phone_success.dart';
 import 'package:sideswap/screens/onboarding/import_avatar_resizer.dart';
 import 'package:sideswap/screens/onboarding/widgets/choose_avatar_image.dart';
 
-class SettingsUserDetails extends StatefulWidget {
+class SettingsUserDetails extends ConsumerStatefulWidget {
   const SettingsUserDetails({Key? key}) : super(key: key);
 
   @override
   _SettingsUserDetailsState createState() => _SettingsUserDetailsState();
 }
 
-class _SettingsUserDetailsState extends State<SettingsUserDetails> {
+class _SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
   Image? avatar;
   String phoneNumber = '';
 
@@ -31,8 +31,8 @@ class _SettingsUserDetailsState extends State<SettingsUserDetails> {
   void initState() {
     super.initState();
     Future.microtask(() async {
-      avatar = await context.read(avatarProvider).getUserAvatarThumbnail();
-      phoneNumber = context.read(configProvider).phoneNumber;
+      avatar = await ref.read(avatarProvider).getUserAvatarThumbnail();
+      phoneNumber = ref.read(configProvider).phoneNumber;
       setState(() {});
     });
   }
@@ -64,12 +64,10 @@ class _SettingsUserDetailsState extends State<SettingsUserDetails> {
                             onSave: (context) async {
                               Navigator.of(context).pop();
                               // refresh avatar
-                              avatar = await context
+                              avatar = await ref
                                   .read(avatarProvider)
                                   .getUserAvatarThumbnail();
-                              await context
-                                  .read(walletProvider)
-                                  .settingsUserDetails();
+                              ref.read(walletProvider).settingsUserDetails();
                             },
                           ),
                         );
@@ -83,7 +81,7 @@ class _SettingsUserDetailsState extends State<SettingsUserDetails> {
                 child: PhoneNumberButton(
                   phoneNumber: phoneNumber,
                   onTap: () async {
-                    context.read(phoneProvider).setConfirmPhoneData(
+                    ref.read(phoneProvider).setConfirmPhoneData(
                           confirmPhoneData: ConfirmPhoneData(
                             onConfirmPhoneBack: (context) async {
                               Navigator.of(context).pop();
@@ -115,7 +113,7 @@ class _SettingsUserDetailsState extends State<SettingsUserDetails> {
                   padding: EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
                   child: TextButton(
                     onPressed: () {
-                      context.read(walletProvider).unregisterPhone();
+                      ref.read(walletProvider).unregisterPhone();
                     },
                     child: const Text('Logout'),
                   ))

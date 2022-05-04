@@ -29,7 +29,6 @@ const String kEurxTicker = 'EURx';
 const String kUnknownTicker = '???';
 
 const String kPackageSideswap = 'sideswap';
-const String kPackageLibwally = 'libwally-core';
 const String kPackageGdk = 'GDK';
 
 const int kOneMinute = 60;
@@ -40,6 +39,18 @@ const int kSixHours = kOneHour * 6;
 const int kTwelveHours = kSixHours * 2;
 const int kOneDay = kSixHours * 4;
 const int kOneWeek = kOneDay * 7;
+
+List<int> availableTtlValues() {
+  return [
+    kTenMinutes,
+    kHalfHour,
+    kOneHour,
+    kSixHours,
+    kTwelveHours,
+    kOneDay,
+    kOneWeek,
+  ];
+}
 
 const int kEditPriceMaxPercent = 10;
 const int kEditPriceMaxTrackingPercent = 1;
@@ -62,6 +73,10 @@ double toFloat(int amount, {int precision = 8}) {
   return amount / pow(10, precision);
 }
 
+int toIntAmount(double amount, {int precision = 8}) {
+  return (amount * pow(10, precision)).round();
+}
+
 String amountStr(int amount, {bool forceSign = false, int precision = 8}) {
   var sign = '';
   if (amount < 0) {
@@ -73,16 +88,15 @@ String amountStr(int amount, {bool forceSign = false, int precision = 8}) {
   final bitAmount = amount ~/ kCoin;
   final satAmount = amount % kCoin;
   final satAmountStr = satAmount.toString().padLeft(8, '0');
-  final newAmount =
-      Decimal.tryParse('$sign$bitAmount$satAmountStr') ?? Decimal.zero;
+  final newAmount = Decimal.tryParse('$bitAmount$satAmountStr') ?? Decimal.zero;
   final power =
       Decimal.tryParse(pow(10, precision).toStringAsFixed(precision)) ??
           Decimal.zero;
   final amountWithPrecision = newAmount / power;
   if (precision == 0) {
-    return amountWithPrecision.toInt().toString();
+    return sign + amountWithPrecision.toInt().toString();
   }
-  return (newAmount / power).toStringAsFixed(precision);
+  return sign + (newAmount / power).toStringAsFixed(precision);
 }
 
 String amountStrNamed(int amount, String ticker,
@@ -201,6 +215,15 @@ void setValue(TextEditingController controller, String value) {
       TextSelection.fromPosition(TextPosition(offset: value.length));
 }
 
+Future<void> handlePasteSingleLine(TextEditingController controller) async {
+  final data = await Clipboard.getData(Clipboard.kTextPlain);
+  final text = data?.text;
+  if (text != null) {
+    final textUpdated = text.replaceAll('\n', '').trim();
+    setValue(controller, textUpdated);
+  }
+}
+
 Future<void> openUrl(String url) async {
   // Skip canLaunch(url) check because it fails to open twitter link if twitter client is installed
   // More details here - https://github.com/flutter/flutter/issues/63727
@@ -231,6 +254,13 @@ String generateTxidUrl(
   }
 
   return url;
+}
+
+String generateAssetUrl({required String assetId, required bool testnet}) {
+  final baseUrl = testnet
+      ? 'https://blockstream.info/liquidtestnet'
+      : 'https://blockstream.info/liquid';
+  return '$baseUrl/asset/$assetId';
 }
 
 Future<void> shareTxid(String txid) async {
@@ -434,4 +464,28 @@ int boolToInt(bool a) {
 
 int compareBool(bool a, bool b) {
   return boolToInt(a).compareTo(boolToInt(b));
+}
+
+List<Widget> withDivider(List<Widget> list, Widget divider) {
+  if (list.isEmpty) {
+    return [];
+  }
+  return List.generate(list.length * 2 - 1, (index) {
+    if (index % 2 == 1) {
+      return divider;
+    }
+    return list[index ~/ 2];
+  });
+}
+
+double indexPriceToTrackerValue(double value) {
+  return roundTrackerValue((value - 1) * 100);
+}
+
+double trackerValueToIndexPrice(double value) {
+  return 1 + value / 100;
+}
+
+double roundTrackerValue(double value) {
+  return (value * 100).round().toDouble() / 100.0;
 }

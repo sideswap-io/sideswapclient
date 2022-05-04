@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
-class AssetSelectItem extends StatelessWidget {
+class AssetSelectItem extends ConsumerWidget {
   final AccountAsset account;
   const AssetSelectItem({Key? key, required this.account}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    final wallet = context.read(walletProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallet = ref.read(walletProvider);
     final assetImage = wallet.assetImagesBig[account.asset];
     final asset = wallet.assets[account.asset]!;
     return Padding(
@@ -27,7 +27,7 @@ class AssetSelectItem extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
             onTap: () async {
-              await context.read(walletProvider).toggleAssetVisibility(account);
+              await ref.read(walletProvider).toggleAssetVisibility(account);
             },
             child: AbsorbPointer(
               child: Padding(
@@ -80,8 +80,8 @@ class AssetSelectItem extends StatelessWidget {
                       ),
                     ),
                     Consumer(
-                      builder: (context, watch, child) {
-                        final wallet = context.read(walletProvider);
+                      builder: (context, ref, child) {
+                        final wallet = ref.read(walletProvider);
                         final _selected = !wallet.disabledAssetAccount(account);
                         return FlutterSwitch(
                           value: _selected,

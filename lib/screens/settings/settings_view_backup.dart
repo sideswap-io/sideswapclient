@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
@@ -10,37 +11,27 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_table.dart';
 
-class SettingsViewBackup extends StatefulWidget {
+class SettingsViewBackup extends HookConsumerWidget {
   const SettingsViewBackup({Key? key}) : super(key: key);
 
   @override
-  _SettingsViewBackupState createState() => _SettingsViewBackupState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lockController =
+        useMemoized(() => SecureApplicationProvider.of(context, listen: false));
+    useEffect(() {
+      lockController?.secure();
+      return () {
+        lockController?.open();
+      };
+    });
 
-class _SettingsViewBackupState extends State<SettingsViewBackup> {
-  SecureApplicationController? lockController;
-  @override
-  void initState() {
-    lockController = SecureApplicationProvider.of(context, listen: false);
-    lockController?.secure();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    lockController?.open();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Recovery phrase'.tr(),
       ),
       body: SafeArea(
-        child: Consumer(builder: (context, watch, child) {
-          final mnemonicWords = watch(walletProvider).getMnemonicWords();
+        child: Consumer(builder: (context, ref, _) {
+          final mnemonicWords = ref.watch(walletProvider).getMnemonicWords();
           final words = List<ValueNotifier<String>>.generate(
               mnemonicWords.length, (index) => ValueNotifier(''));
           var index = 0;

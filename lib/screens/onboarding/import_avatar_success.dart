@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -9,21 +9,21 @@ import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/avatar_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class ImportAvatarSuccess extends StatefulWidget {
+class ImportAvatarSuccess extends ConsumerStatefulWidget {
   const ImportAvatarSuccess({Key? key}) : super(key: key);
 
   @override
   _ImportAvatarSuccessState createState() => _ImportAvatarSuccessState();
 }
 
-class _ImportAvatarSuccessState extends State<ImportAvatarSuccess> {
+class _ImportAvatarSuccessState extends ConsumerState<ImportAvatarSuccess> {
   Image? avatar;
 
   @override
   void initState() {
     super.initState();
     Future.microtask(() async {
-      avatar = await context.read(avatarProvider).getUserAvatarThumbnail();
+      avatar = await ref.read(avatarProvider).getUserAvatarThumbnail();
       setState(() {});
     });
   }
@@ -33,7 +33,7 @@ class _ImportAvatarSuccessState extends State<ImportAvatarSuccess> {
     return SideSwapPopup(
       hideCloseButton: true,
       onWillPop: () async {
-        context.read(walletProvider).setImportAvatar();
+        ref.read(walletProvider).setImportAvatar();
         return false;
       },
       child: Center(
@@ -88,7 +88,7 @@ class _ImportAvatarSuccessState extends State<ImportAvatarSuccess> {
                   text: 'CONTINUE'.tr(),
                   backgroundColor: const Color(0xFF00C5FF),
                   onPressed: () {
-                    context.read(walletProvider).setAssociatePhoneWelcome();
+                    ref.read(walletProvider).setAssociatePhoneWelcome();
                   },
                 ),
               ),

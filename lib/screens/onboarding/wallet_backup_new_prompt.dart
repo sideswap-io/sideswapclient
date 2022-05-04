@@ -2,21 +2,25 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 import 'package:sideswap/screens/onboarding/widgets/wallet_backup_new_prompt_dialog.dart';
 
-class WalletBackupNewPrompt extends StatelessWidget {
+class WalletBackupNewPrompt extends ConsumerWidget {
   const WalletBackupNewPrompt({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // clear pin new wallet state
+    ref.read(pinSetupProvider).isNewWallet = false;
+
     return SideSwapScaffold(
       body: SafeArea(
         child: Column(
@@ -79,9 +83,7 @@ class WalletBackupNewPrompt extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 32.h),
               child: PageDots(
                 maxSelectedDots:
-                    FlavorConfig.instance.values.enableOnboardingUserFeatures
-                        ? 1
-                        : 4,
+                    FlavorConfig.enableOnboardingUserFeatures ? 1 : 4,
               ),
             ),
             Padding(
@@ -92,7 +94,7 @@ class WalletBackupNewPrompt extends StatelessWidget {
                 text: 'YES'.tr(),
                 backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () {
-                  context.read(walletProvider).backupNewWalletEnable();
+                  ref.read(walletProvider).backupNewWalletEnable();
                 },
               ),
             ),
@@ -107,7 +109,7 @@ class WalletBackupNewPrompt extends StatelessWidget {
                   textColor: const Color(0xFF00C5FF),
                   backgroundColor: Colors.transparent,
                   onPressed: () async {
-                    showWalletBackupDialog(context);
+                    showWalletBackupDialog(ref, context);
                   },
                 ),
               ),

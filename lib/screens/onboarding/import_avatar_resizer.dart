@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image/image.dart' as image;
 import 'package:vector_math/vector_math_64.dart' as vector;
 
@@ -25,7 +25,7 @@ class ImportAvatarResizerData {
   ImportAvatarResizerData({this.onBack, this.onSave});
 }
 
-class ImportAvatarResizer extends StatefulWidget {
+class ImportAvatarResizer extends ConsumerStatefulWidget {
   const ImportAvatarResizer({Key? key, this.resizerData}) : super(key: key);
 
   final ImportAvatarResizerData? resizerData;
@@ -34,7 +34,7 @@ class ImportAvatarResizer extends StatefulWidget {
   _ImportAvatarResizerState createState() => _ImportAvatarResizerState();
 }
 
-class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
+class _ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
   late ImportAvatarResizerData resizerData;
 
   @override
@@ -44,11 +44,11 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
       resizerData = ImportAvatarResizerData(
         onBack: (context) async {
           Navigator.of(context).pop();
-          context.read(walletProvider).setImportAvatar();
+          ref.read(walletProvider).setImportAvatar();
         },
         onSave: (context) async {
           Navigator.of(context).pop();
-          context.read(walletProvider).setImportAvatarSuccess();
+          ref.read(walletProvider).setImportAvatarSuccess();
         },
       );
     } else {
@@ -56,8 +56,8 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
     }
   }
 
-  Future<void> generateThumbnail() async {
-    final data = context.read(avatarProvider).userAvatarData;
+  Future<void> generateThumbnail(WidgetRef ref) async {
+    final data = ref.read(avatarProvider).userAvatarData;
     if (data.uiImage == null) {
       return;
     }
@@ -95,7 +95,7 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
     }
 
     final thumbnail = image.copyResize(outputImage, width: 256, height: 256);
-    await context.read(avatarProvider).saveUserAvatarThumbnail(thumbnail);
+    await ref.read(avatarProvider).saveUserAvatarThumbnail(thumbnail);
   }
 
   @override
@@ -135,12 +135,11 @@ class _ImportAvatarResizerState extends State<ImportAvatarResizer> {
                 text: 'SAVE'.tr(),
                 backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () async {
-                  await generateThumbnail();
-                  final thumbnail = await context
-                      .read(avatarProvider)
-                      .getUserAvatarThumbnail();
+                  await generateThumbnail(ref);
+                  final thumbnail =
+                      await ref.read(avatarProvider).getUserAvatarThumbnail();
                   if (thumbnail != null) {
-                    await context.read(avatarProvider).uploadAvatar();
+                    await ref.read(avatarProvider).uploadAvatar();
                     if (resizerData.onSave != null) {
                       await resizerData.onSave!(context);
                     }
@@ -174,7 +173,7 @@ class AvatarResizer extends StatelessWidget {
   }
 }
 
-class DragImage extends StatefulWidget {
+class DragImage extends ConsumerStatefulWidget {
   const DragImage({
     Key? key,
     required this.position,
@@ -186,14 +185,13 @@ class DragImage extends StatefulWidget {
   DragImageState createState() => DragImageState();
 }
 
-class DragImageState extends State<DragImage> {
+class DragImageState extends ConsumerState<DragImage> {
   late UserAvatarData _data;
 
   @override
   void initState() {
     Future.microtask(
-      () async =>
-          _data = await context.read(avatarProvider).getUserAvatarData(),
+      () async => _data = await ref.read(avatarProvider).getUserAvatarData(),
     );
 
     super.initState();
@@ -202,8 +200,8 @@ class DragImageState extends State<DragImage> {
   @override
   Widget build(BuildContext context) {
     return Consumer(
-      builder: (context, watch, child) {
-        _data = watch(avatarProvider).userAvatarData;
+      builder: (context, ref, child) {
+        _data = ref.watch(avatarProvider).userAvatarData;
         if (_data.uiImage == null) {
           return Container();
         }
@@ -248,19 +246,19 @@ class DragImageState extends State<DragImage> {
   void _handleScaleStart(ScaleStartDetails start) {
     _data.previousOffset = _data.position - start.focalPoint;
     _data.previousZoom = _data.zoom;
-    context.read(avatarProvider).setUserAvatarData(_data);
+    ref.read(avatarProvider).setUserAvatarData(_data);
   }
 
   void _handleScaleUpdate(ScaleUpdateDetails update) async {
     _data.zoom = _data.previousZoom * update.scale;
     _data.position = (update.focalPoint + _data.previousOffset);
-    context.read(avatarProvider).setUserAvatarData(_data);
+    ref.read(avatarProvider).setUserAvatarData(_data);
   }
 
   void _handleScaleReset() {
     _data.zoom = 1.0;
     _data.position = Offset.zero;
-    context.read(avatarProvider).setUserAvatarData(_data);
+    ref.read(avatarProvider).setUserAvatarData(_data);
   }
 }
 

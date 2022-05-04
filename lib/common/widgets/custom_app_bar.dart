@@ -81,7 +81,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       child: Align(
                         alignment: Alignment.center,
                         child: SizedBox(
-                          width: 260.w,
                           child: Text(
                             title ?? '',
                             textAlign: TextAlign.center,

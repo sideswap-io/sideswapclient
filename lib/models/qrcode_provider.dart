@@ -2,14 +2,14 @@ import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/wallet.dart';
 
 final qrcodeProvider = ChangeNotifierProvider<QrCodeNotifierProvider>(
-    (ref) => QrCodeNotifierProvider(ref.read));
+    (ref) => QrCodeNotifierProvider(ref));
 
 enum QrCodeResultType {
   merchant,
@@ -122,10 +122,10 @@ class QrCodeResult {
 // bit mask;
 
 class QrCodeNotifierProvider extends ChangeNotifier {
-  final Reader read;
+  final Ref ref;
   QrCodeResult _result = QrCodeResult();
 
-  QrCodeNotifierProvider(this.read);
+  QrCodeNotifierProvider(this.ref);
 
   QrCodeResult parseDynamicQrCode(String qrCode) {
     if (qrCode.isEmpty) {
@@ -135,7 +135,7 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     _result = QrCodeResult();
 
     // check is it static qr code
-    final wallet = read(walletProvider);
+    final wallet = ref.read(walletProvider);
     if (wallet.isAddrValid(qrCode, AddrType.bitcoin)) {
       _result.address = qrCode;
       _result.addressType = QrCodeAddressType.bitcoin;
@@ -268,7 +268,7 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     if (params.containsKey('assetid')) {
       _result.assetId = params['assetid'];
-      final asset = read(walletProvider).assets[_result.assetId];
+      final asset = ref.read(walletProvider).assets[_result.assetId];
       _result.ticker = asset != null ? asset.ticker : kUnknownTicker;
     }
 

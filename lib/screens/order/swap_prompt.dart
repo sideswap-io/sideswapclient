@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -12,7 +12,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 
-class SwapPromptTable extends StatelessWidget {
+class SwapPromptTable extends ConsumerWidget {
   const SwapPromptTable({
     Key? key,
     required this.swap,
@@ -23,7 +23,7 @@ class SwapPromptTable extends StatelessWidget {
   final bool enabled;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         OrderTableRow.assetAmount(
@@ -44,27 +44,27 @@ class SwapPromptTable extends StatelessWidget {
   }
 }
 
-class SwapPrompt extends StatelessWidget {
+class SwapPrompt extends ConsumerWidget {
   const SwapPrompt({Key? key}) : super(key: key);
 
-  void onClose(BuildContext context) {
-    context.read(walletProvider).goBack();
+  void onClose(WidgetRef ref, BuildContext context) {
+    ref.read(walletProvider).goBack();
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
       sideSwapBackground: false,
       extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFF064363),
       appBar: CustomAppBar(
-        onPressed: () => onClose(context),
+        onPressed: () => onClose(ref, context),
       ),
       body: Center(
         child: Consumer(
-          builder: (context, watch, child) {
-            final swap = watch(walletProvider).swapDetails!;
-            final enabled = !watch(walletProvider).swapPromptWaitingTx;
+          builder: (context, ref, child) {
+            final swap = ref.watch(walletProvider).swapDetails!;
+            final enabled = !ref.watch(walletProvider).swapPromptWaitingTx;
 
             return Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -106,9 +106,9 @@ class SwapPrompt extends StatelessWidget {
                     backgroundColor: const Color(0xFF00C5FF),
                     onPressed: () async {
                       final auth =
-                          await context.read(walletProvider).isAuthenticated();
+                          await ref.read(walletProvider).isAuthenticated();
                       if (auth) {
-                        context.read(walletProvider).swapReviewAccept();
+                        ref.read(walletProvider).swapReviewAccept();
                       }
                     },
                     child: Stack(
@@ -143,7 +143,7 @@ class SwapPrompt extends StatelessWidget {
                       textColor: const Color(0xFF00C5FF),
                       backgroundColor: Colors.transparent,
                       enabled: enabled,
-                      onPressed: () => onClose(context),
+                      onPressed: () => onClose(ref, context),
                     ),
                   )
                 ],

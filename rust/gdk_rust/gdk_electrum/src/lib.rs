@@ -742,10 +742,10 @@ impl Session<Error> for ElectrumSession {
                             for account_num in updated_accounts {
                                 info!("there are new transactions");
                                 notify_updated_txs(notify_txs.clone(), account_num);
-                                // SIDESWAP: Connection succeed at least once,
-                                // do not report errors for transitional network errors
-                                send_error = false;
                             }
+                            // SIDESWAP: Connection succeed at least once,
+                            // do not report errors for transitional network errors
+                            send_error = false;
                         }
                         Err(e) => warn!("Error during sync, {:?}", e),
                     },

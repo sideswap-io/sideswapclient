@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -12,11 +12,11 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 
-class Accounts extends StatelessWidget {
+class Accounts extends ConsumerWidget {
   const Accounts({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
       child: Column(
@@ -37,7 +37,7 @@ class Accounts extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      final wallet = context.read(walletProvider);
+                      final wallet = ref.read(walletProvider);
                       final list =
                           exportTxList(wallet.allTxs.values, wallet.assets);
                       final csv = convertToCsv(list);
@@ -70,13 +70,13 @@ class Accounts extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      final uiStateArgs = context.read(uiStateArgsProvider);
+                      final uiStateArgs = ref.read(uiStateArgsProvider);
                       uiStateArgs.walletMainArguments =
                           uiStateArgs.walletMainArguments.copyWith(
                               navigationItem:
                                   WalletMainNavigationItem.assetSelect);
 
-                      context.read(walletProvider).selectAvailableAssets();
+                      ref.read(walletProvider).selectAvailableAssets();
                     },
                     borderRadius: BorderRadius.circular(21.w),
                     child: Container(
@@ -108,8 +108,8 @@ class Accounts extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.only(top: 16.h),
               child: Consumer(
-                builder: (context, watch, child) {
-                  final wallet = watch(walletProvider);
+                builder: (context, ref, child) {
+                  final wallet = ref.watch(walletProvider);
                   final disabledAccounts = wallet.disabledAccounts;
                   final availableAssets = wallet
                       .getAllAccounts()
@@ -120,14 +120,15 @@ class Accounts extends StatelessWidget {
                       availableAssets.length,
                       (index) {
                         final accountAsset = availableAssets[index];
-                        final balance =
-                            watch(balancesProvider).balances[accountAsset] ?? 0;
+                        final balance = ref
+                                .watch(balancesProvider)
+                                .balances[accountAsset] ??
+                            0;
                         return AccountItem(
                           balance: balance,
                           accountAsset: availableAssets[index],
                           onSelected: (AccountAsset value) {
-                            final uiStateArgs =
-                                context.read(uiStateArgsProvider);
+                            final uiStateArgs = ref.read(uiStateArgsProvider);
                             uiStateArgs.walletMainArguments =
                                 uiStateArgs.walletMainArguments.copyWith(
                                     navigationItem:

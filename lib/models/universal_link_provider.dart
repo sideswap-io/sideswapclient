@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sideswap/common/utils/enum_as_string.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
@@ -15,7 +15,7 @@ import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/wallet.dart';
 
 final universalLinkProvider = ChangeNotifierProvider<UniversalLinkProvider>(
-    (ref) => UniversalLinkProvider(ref.read));
+    (ref) => UniversalLinkProvider(ref));
 
 enum HandleResult {
   unknown,
@@ -24,9 +24,9 @@ enum HandleResult {
 }
 
 class UniversalLinkProvider with ChangeNotifier {
-  final Reader read;
+  final Ref ref;
 
-  UniversalLinkProvider(this.read);
+  UniversalLinkProvider(this.ref);
 
   bool _initialUriIsHandled = false;
   StreamSubscription? uriLinkSubscription;
@@ -110,7 +110,7 @@ class UniversalLinkProvider with ChangeNotifier {
   HandleResult handleSubmitOrder(Uri uri) {
     final orderId = uri.queryParameters['order_id'];
     if (orderId != null) {
-      read(walletProvider).linkOrder(orderId);
+      ref.read(walletProvider).linkOrder(orderId);
       return HandleResult.success;
     }
 
@@ -121,7 +121,7 @@ class UniversalLinkProvider with ChangeNotifier {
     final market = uri.queryParameters['market'];
     final orderId = uri.queryParameters['order_id'];
     if (orderId is String && orderId.isNotEmpty && market == 'p2p') {
-      read(walletProvider).linkOrder(orderId);
+      ref.read(walletProvider).linkOrder(orderId);
       return HandleResult.success;
     }
 
@@ -134,7 +134,7 @@ class UniversalLinkProvider with ChangeNotifier {
       swap.recvAmount = Int64(int.parse(uri.queryParameters['recv_amount']!));
       swap.uploadUrl = uri.queryParameters['upload_url']!;
 
-      read(walletProvider).startSwapPrompt(swap);
+      ref.read(walletProvider).startSwapPrompt(swap);
       return HandleResult.success;
     } on Exception catch (e) {
       logger.w('swap prompt URL parse error: $e');
@@ -176,14 +176,15 @@ class UniversalLinkProvider with ChangeNotifier {
       fakeAddress = '$fakeAddress&$key=${query[key]}';
     }
 
-    final result = read(qrcodeProvider)
+    final result = ref
+        .read(qrcodeProvider)
         .parseBIP21(qrCode: fakeAddress, addressType: addressType);
 
-    read(paymentProvider).selectPaymentAmountPage(
-      PaymentAmountPageArguments(
-        result: result,
-      ),
-    );
+    ref.read(paymentProvider).selectPaymentAmountPage(
+          PaymentAmountPageArguments(
+            result: result,
+          ),
+        );
     return HandleResult.success;
   }
 }

@@ -11,11 +11,13 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 [dependencies]
 sideswap_api = { version = "*", path = "../sideswap_api" }
 sideswap_common = { version = "*", path = "../sideswap_common" }
+sideswap_jade = { version = "*", path = "../sideswap_jade" }
 elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "53d5729f8cdc3623f9f110edba86aeaa9059af5b", features = ["serde-feature"] }
 elements_pset = { package = "elements", git = "https://github.com/sanket1729/rust-elements", rev = "dc350a0b8664cdd5b051443810a6a1f99a6173da" }
 bitcoin = { version = "0.27.1", features = [ "use-serde" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+serde_bytes = "*"
 log = "*"
 anyhow = "*"
 flexi_logger = "*"
@@ -32,10 +34,11 @@ chrono = "*"
 hex = "*"
 rand = "0.6.5"
 bip39 = "1.0.1"
-ureq = "*"
+ureq = "1.5"
 time = {version= "0.3.5", features = ["local-offset", "formatting", "macros", "parsing"]}
 crossbeam-channel = "0.5.1"
 tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
+secp256k1 = "*"
 
 [build-dependencies]
 prost-build = "0.6.1"

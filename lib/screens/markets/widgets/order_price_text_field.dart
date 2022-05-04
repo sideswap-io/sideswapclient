@@ -2,14 +2,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
-class OrderPriceTextField extends StatelessWidget {
+class OrderPriceTextField extends ConsumerWidget {
   const OrderPriceTextField({
     Key? key,
     this.icon,
@@ -28,11 +28,9 @@ class OrderPriceTextField extends StatelessWidget {
   final int precision;
 
   @override
-  Widget build(BuildContext context) {
-    final dollarConversion = context
-        .read(requestOrderProvider)
-        .dollarConversion(
-            asset?.assetId ?? '', double.tryParse(controller.text) ?? 0);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final dollarConversion = ref.read(requestOrderProvider).dollarConversion(
+        asset?.assetId ?? '', double.tryParse(controller.text) ?? 0);
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {

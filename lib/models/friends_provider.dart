@@ -1,14 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/models/contact_provider.dart';
 import 'package:sideswap/models/payment_requests_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart' show Contact;
 
-final friendsProvider = ChangeNotifierProvider<FriendsProvider>(
-    (ref) => FriendsProvider(read: ref.read));
+final friendsProvider =
+    ChangeNotifierProvider<FriendsProvider>((ref) => FriendsProvider(ref));
 
 class Friend {
   Contact contact;
@@ -57,15 +57,13 @@ class Friend {
 }
 
 class FriendsProvider with ChangeNotifier {
-  Reader read;
+  final Ref ref;
 
-  FriendsProvider({
-    required this.read,
-  }) {
-    read(contactProvider).friendsLoadedData.listen((value) {
+  FriendsProvider(this.ref) {
+    ref.read(contactProvider).friendsLoadedData.listen((value) {
       friends.clear();
       friends.addAll(value);
-      read(paymentRequestsProvider).createFakeRequests();
+      ref.read(paymentRequestsProvider).createFakeRequests();
       notifyListeners();
     });
   }

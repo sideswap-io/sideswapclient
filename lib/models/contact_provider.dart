@@ -6,7 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contact/contacts.dart' as flutter_contacts;
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image/image.dart' as image;
 import 'package:rxdart/subjects.dart';
 
@@ -24,16 +24,16 @@ enum ContactsLoadingState {
 }
 
 final contactProvider =
-    ChangeNotifierProvider<ContactProvider>((ref) => ContactProvider(ref.read));
+    ChangeNotifierProvider<ContactProvider>((ref) => ContactProvider(ref));
 
 class ContactProvider with ChangeNotifier {
-  ContactProvider(this.read) {
+  ContactProvider(this.ref) {
     percentageLoaded.listen((value) {
       logger.d('Loaded $value %');
     });
   }
 
-  final Reader read;
+  final Ref ref;
 
   final BehaviorSubject<int> percentageLoaded = BehaviorSubject();
   final BehaviorSubject<List<Friend>> friendsLoadedData = BehaviorSubject();
@@ -113,7 +113,7 @@ class ContactProvider with ChangeNotifier {
       percentageLoaded.add(counter * 100 ~/ total);
     }
 
-    read(walletProvider).uploadDeviceContacts(uploadContacts);
+    ref.read(walletProvider).uploadDeviceContacts(uploadContacts);
     friendsLoadedData.add(friendsData);
   }
 
@@ -169,7 +169,8 @@ class ContactProvider with ChangeNotifier {
 
   void onError({String error = ''}) async {
     logger.d('Import contacts onError');
-    await read(utilsProvider)
+    await ref
+        .read(utilsProvider)
         .showErrorDialog('Error importing contacts: $error'.tr());
 
     contactsLoadingState = ContactsLoadingState.done;
