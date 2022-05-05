@@ -190,6 +190,7 @@ message To {
     optional string phone_key = 2;
     required NetworkSettings network = 4;
     required bool desktop = 5;
+    optional bool send_utxo_updates = 6;
   }
 
   message ChangeNetwork {
@@ -421,6 +422,17 @@ message From {
     repeated Balance balances = 2;
   }
 
+  message UtxoUpdate {
+    message Utxo {
+      required string txid = 1;
+      required uint32 vout = 2;
+      required string asset_id = 3;
+      required uint64 amount = 4;
+    }
+    required Account account = 1;
+    repeated Utxo utxos = 2;
+  }
+
   message PeginWaitTx {
     required string peg_addr = 5;
     required string recv_addr = 6;
@@ -589,6 +601,7 @@ message From {
     Asset new_asset = 3;
     AmpAssets amp_assets = 9;
     BalanceUpdate balance_update = 4;
+    UtxoUpdate utxo_update = 15;
     ServerStatus server_status = 5;
     PriceUpdate price_update = 6;
     Empty wallet_loaded = 7;

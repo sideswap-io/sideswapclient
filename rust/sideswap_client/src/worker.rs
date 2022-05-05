@@ -118,6 +118,7 @@ pub struct Context {
     orders_last: BTreeMap<OrderId, ffi::proto::Order>,
     orders_sent: BTreeMap<OrderId, ffi::proto::Order>,
     desktop: bool,
+    send_utxo_updates: bool,
 
     succeed_swap: Option<Txid>,
     pending_txs: bool,
@@ -756,12 +757,47 @@ impl Data {
                 amount: balance,
             })
             .collect();
-        let balances_update = ffi::proto::from::BalanceUpdate {
-            account: get_account(false),
-            balances,
-        };
-        self.ui
-            .send(ffi::proto::from::Msg::BalanceUpdate(balances_update));
+        self.ui.send(ffi::proto::from::Msg::BalanceUpdate(
+            ffi::proto::from::BalanceUpdate {
+                account: get_account(false),
+                balances,
+            },
+        ));
+
+        if ctx.send_utxo_updates {
+            let balance_opts = gdk_common::model::GetUnspentOpt {
+                subaccount: ACCOUNT,
+                num_confs: Some(BALANCE_NUM_CONFS),
+                confidential_utxos_only: None,
+                all_coins: None,
+            };
+            let utxos = ctx
+                .session
+                .get_unspent_outputs(&balance_opts)
+                .map_err(|e| anyhow!("{}", e))?
+                .0;
+            let utxos = utxos
+                .into_iter()
+                .map(|(asset_id, utxos)| {
+                    utxos
+                        .into_iter()
+                        .map(move |utxo| ffi::proto::from::utxo_update::Utxo {
+                            txid: utxo.txhash,
+                            vout: utxo.pt_idx,
+                            asset_id: asset_id.clone(),
+                            amount: utxo.satoshi,
+                        })
+                })
+                .flatten()
+                .collect::<Vec<_>>();
+            self.ui.send(ffi::proto::from::Msg::UtxoUpdate(
+                ffi::proto::from::UtxoUpdate {
+                    account: get_account(false),
+                    utxos,
+                },
+            ));
+        }
+
         Ok(())
     }
 
@@ -1796,6 +1832,7 @@ impl Data {
             orders_last: BTreeMap::new(),
             orders_sent: BTreeMap::new(),
             desktop: req.desktop,
+            send_utxo_updates: req.send_utxo_updates.unwrap_or_default(),
             succeed_swap: None,
             pending_txs: false,
             active_swap: None,

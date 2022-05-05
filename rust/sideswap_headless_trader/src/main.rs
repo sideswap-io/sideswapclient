@@ -29,7 +29,7 @@ fn main() {
 
     let client = sideswap_client::ffi::sideswap_client_start(
         sideswap_client::ffi::get_env_from_ffi(args.env),
-        std::ffi::CString::new(args.work_dir)
+        std::ffi::CString::new(args.work_dir.clone())
             .unwrap()
             .as_c_str()
             .as_ptr(),
@@ -41,19 +41,20 @@ fn main() {
     send_msg(
         client,
         to::Msg::Login(to::Login {
-            mnemonic: args.mnemonic,
+            mnemonic: args.mnemonic.clone(),
             phone_key: None,
             network: NetworkSettings {
                 selected: Some(network_settings::Selected::Sideswap(Empty {})),
             },
             desktop: false,
+            send_utxo_updates: Some(true),
         }),
     );
 
     // This will stop AMP account because we don't use it here
     send_msg(client, to::Msg::AppState(to::AppState { active: false }));
 
-    let mut balances = std::collections::BTreeMap::new();
+    let mut trading_utxo_count = 0;
     let mut connected = false;
 
     let usdt_asset_id =
@@ -65,16 +66,15 @@ fn main() {
         let msg = blocking_recv_msg(client);
 
         match msg {
-            from::Msg::BalanceUpdate(data) => {
-                if !data.account.amp {
-                    for balance in data.balances.iter() {
-                        let asset_id = sideswap_api::AssetId::from_str(&balance.asset_id).unwrap();
-                        let old_balance = balances.insert(asset_id, balance.amount);
-                        if old_balance != Some(balance.amount) {
-                            info!("update balance {} to {}", balance.asset_id, balance.amount);
-                        }
-                    }
-                }
+            from::Msg::UtxoUpdate(msg) => {
+                trading_utxo_count = msg
+                    .utxos
+                    .iter()
+                    .filter(|utxo| {
+                        sideswap_api::AssetId::from_str(&utxo.asset_id).unwrap()
+                            == args.trading_asset_id
+                    })
+                    .count();
             }
 
             from::Msg::ServerConnected(_) => {
@@ -103,7 +103,7 @@ fn main() {
                 if connected {
                     if let Some(usdt_index_price) = usdt_index_price {
                         let price = args.price_usdt / usdt_index_price;
-                        for _ in orders.len()..args.order_count {
+                        for _ in orders.len()..usize::min(trading_utxo_count, args.order_count) {
                             send_msg(
                                 client,
                                 to::Msg::SubmitOrder(to::SubmitOrder {
