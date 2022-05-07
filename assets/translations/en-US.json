@@ -353,5 +353,10 @@
     "Unconfirmed transactions": "Unconfirmed transactions",
     "Waiting for counterparty to sign": "Waiting for counterparty to sign",
     "Working orders": "Working orders",
-    "Unknown error": "Unknown error: {}"
+    "Unknown error": "Unknown error: {}",
+    "Create transaction": "Create transaction",
+    "Review": "Review",
+    "Login": "Login",
+    "Unlock": "Unlock",
+    "URL": "URL"
 }

@@ -45,16 +45,16 @@ class Empty extends $pb.GeneratedMessage {
 
 class Account extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'Account', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..a<$core.bool>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'amp', $pb.PbFieldType.QB)
+    ..a<$core.int>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id', $pb.PbFieldType.Q3)
   ;
 
   Account._() : super();
   factory Account({
-    $core.bool? amp,
+    $core.int? id,
   }) {
     final _result = create();
-    if (amp != null) {
-      _result.amp = amp;
+    if (id != null) {
+      _result.id = id;
     }
     return _result;
   }
@@ -80,13 +80,13 @@ class Account extends $pb.GeneratedMessage {
   static Account? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.bool get amp => $_getBF(0);
+  $core.int get id => $_getIZ(0);
   @$pb.TagNumber(1)
-  set amp($core.bool v) { $_setBool(0, v); }
+  set id($core.int v) { $_setSignedInt32(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasAmp() => $_has(0);
+  $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
-  void clearAmp() => clearField(1);
+  void clearId() => clearField(1);
 }
 
 class Address extends $pb.GeneratedMessage {
@@ -3953,6 +3953,68 @@ class To_MarketDataSubscribe extends $pb.GeneratedMessage {
   void clearAssetId() => clearField(1);
 }
 
+class To_JadeAction extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To.JadeAction', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<Account>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: Account.create)
+    ..e<To_JadeAction_Action>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'action', $pb.PbFieldType.QE, defaultOrMaker: To_JadeAction_Action.UNLOCK, valueOf: To_JadeAction_Action.valueOf, enumValues: To_JadeAction_Action.values)
+  ;
+
+  To_JadeAction._() : super();
+  factory To_JadeAction({
+    Account? account,
+    To_JadeAction_Action? action,
+  }) {
+    final _result = create();
+    if (account != null) {
+      _result.account = account;
+    }
+    if (action != null) {
+      _result.action = action;
+    }
+    return _result;
+  }
+  factory To_JadeAction.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_JadeAction.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_JadeAction clone() => To_JadeAction()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_JadeAction copyWith(void Function(To_JadeAction) updates) => super.copyWith((message) => updates(message as To_JadeAction)) as To_JadeAction; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static To_JadeAction create() => To_JadeAction._();
+  To_JadeAction createEmptyInstance() => create();
+  static $pb.PbList<To_JadeAction> createRepeated() => $pb.PbList<To_JadeAction>();
+  @$core.pragma('dart2js:noInline')
+  static To_JadeAction getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_JadeAction>(create);
+  static To_JadeAction? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  To_JadeAction_Action get action => $_getN(1);
+  @$pb.TagNumber(2)
+  set action(To_JadeAction_Action v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAction() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAction() => clearField(2);
+}
+
 enum To_Msg {
   login, 
   logout, 
@@ -3989,6 +4051,7 @@ enum To_Msg {
   unsubscribePriceStream, 
   marketDataSubscribe, 
   marketDataUnsubscribe, 
+  jadeAction, 
   notSet
 }
 
@@ -4029,10 +4092,11 @@ class To extends $pb.GeneratedMessage {
     59 : To_Msg.unsubscribePriceStream,
     60 : To_Msg.marketDataSubscribe,
     61 : To_Msg.marketDataUnsubscribe,
+    70 : To_Msg.jadeAction,
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'To', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 20, 21, 22, 23, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 20, 21, 22, 23, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 70])
     ..aOM<To_Login>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
@@ -4068,6 +4132,7 @@ class To extends $pb.GeneratedMessage {
     ..aOM<Empty>(59, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unsubscribePriceStream', subBuilder: Empty.create)
     ..aOM<To_MarketDataSubscribe>(60, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'marketDataSubscribe', subBuilder: To_MarketDataSubscribe.create)
     ..aOM<Empty>(61, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'marketDataUnsubscribe', subBuilder: Empty.create)
+    ..aOM<To_JadeAction>(70, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'jadeAction', subBuilder: To_JadeAction.create)
   ;
 
   To._() : super();
@@ -4107,6 +4172,7 @@ class To extends $pb.GeneratedMessage {
     Empty? unsubscribePriceStream,
     To_MarketDataSubscribe? marketDataSubscribe,
     Empty? marketDataUnsubscribe,
+    To_JadeAction? jadeAction,
   }) {
     final _result = create();
     if (login != null) {
@@ -4213,6 +4279,9 @@ class To extends $pb.GeneratedMessage {
     }
     if (marketDataUnsubscribe != null) {
       _result.marketDataUnsubscribe = marketDataUnsubscribe;
+    }
+    if (jadeAction != null) {
+      _result.jadeAction = jadeAction;
     }
     return _result;
   }
@@ -4622,6 +4691,17 @@ class To extends $pb.GeneratedMessage {
   void clearMarketDataUnsubscribe() => clearField(61);
   @$pb.TagNumber(61)
   Empty ensureMarketDataUnsubscribe() => $_ensure(34);
+
+  @$pb.TagNumber(70)
+  To_JadeAction get jadeAction => $_getN(35);
+  @$pb.TagNumber(70)
+  set jadeAction(To_JadeAction v) { setField(70, v); }
+  @$pb.TagNumber(70)
+  $core.bool hasJadeAction() => $_has(35);
+  @$pb.TagNumber(70)
+  void clearJadeAction() => clearField(70);
+  @$pb.TagNumber(70)
+  To_JadeAction ensureJadeAction() => $_ensure(35);
 }
 
 class From_EnvSettings extends $pb.GeneratedMessage {
@@ -7239,6 +7319,130 @@ class From_MarketDataUpdate extends $pb.GeneratedMessage {
   ChartPoint ensureUpdate() => $_ensure(1);
 }
 
+class From_JadeUpdated extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.JadeUpdated', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<Account>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: Account.create)
+    ..e<From_JadeUpdated_Status>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'status', $pb.PbFieldType.QE, defaultOrMaker: From_JadeUpdated_Status.UNKNOWN, valueOf: From_JadeUpdated_Status.valueOf, enumValues: From_JadeUpdated_Status.values)
+    ..aQS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+  ;
+
+  From_JadeUpdated._() : super();
+  factory From_JadeUpdated({
+    Account? account,
+    From_JadeUpdated_Status? status,
+    $core.String? name,
+  }) {
+    final _result = create();
+    if (account != null) {
+      _result.account = account;
+    }
+    if (status != null) {
+      _result.status = status;
+    }
+    if (name != null) {
+      _result.name = name;
+    }
+    return _result;
+  }
+  factory From_JadeUpdated.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_JadeUpdated.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_JadeUpdated clone() => From_JadeUpdated()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_JadeUpdated copyWith(void Function(From_JadeUpdated) updates) => super.copyWith((message) => updates(message as From_JadeUpdated)) as From_JadeUpdated; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_JadeUpdated create() => From_JadeUpdated._();
+  From_JadeUpdated createEmptyInstance() => create();
+  static $pb.PbList<From_JadeUpdated> createRepeated() => $pb.PbList<From_JadeUpdated>();
+  @$core.pragma('dart2js:noInline')
+  static From_JadeUpdated getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_JadeUpdated>(create);
+  static From_JadeUpdated? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  From_JadeUpdated_Status get status => $_getN(1);
+  @$pb.TagNumber(2)
+  set status(From_JadeUpdated_Status v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasStatus() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearStatus() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get name => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set name($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasName() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearName() => clearField(3);
+}
+
+class From_JadeRemoved extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.JadeRemoved', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<Account>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'account', subBuilder: Account.create)
+  ;
+
+  From_JadeRemoved._() : super();
+  factory From_JadeRemoved({
+    Account? account,
+  }) {
+    final _result = create();
+    if (account != null) {
+      _result.account = account;
+    }
+    return _result;
+  }
+  factory From_JadeRemoved.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_JadeRemoved.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_JadeRemoved clone() => From_JadeRemoved()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_JadeRemoved copyWith(void Function(From_JadeRemoved) updates) => super.copyWith((message) => updates(message as From_JadeRemoved)) as From_JadeRemoved; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_JadeRemoved create() => From_JadeRemoved._();
+  From_JadeRemoved createEmptyInstance() => create();
+  static $pb.PbList<From_JadeRemoved> createRepeated() => $pb.PbList<From_JadeRemoved>();
+  @$core.pragma('dart2js:noInline')
+  static From_JadeRemoved getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_JadeRemoved>(create);
+  static From_JadeRemoved? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+}
+
 enum From_Msg {
   updatedTxs, 
   updatedPegs, 
@@ -7287,6 +7491,8 @@ enum From_Msg {
   localMessage, 
   marketDataSubscribe, 
   marketDataUpdate, 
+  jadeUpdated, 
+  jadeRemoved, 
   notSet
 }
 
@@ -7339,10 +7545,12 @@ class From extends $pb.GeneratedMessage {
     68 : From_Msg.localMessage,
     70 : From_Msg.marketDataSubscribe,
     71 : From_Msg.marketDataUpdate,
+    80 : From_Msg.jadeUpdated,
+    81 : From_Msg.jadeRemoved,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 21, 22, 23, 30, 31, 32, 33, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 21, 22, 23, 30, 31, 32, 33, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 80, 81])
     ..aOM<From_UpdatedTxs>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedTxs', subBuilder: From_UpdatedTxs.create)
     ..aOM<From_UpdatedPegs>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'updatedPegs', subBuilder: From_UpdatedPegs.create)
     ..aOM<Asset>(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'newAsset', subBuilder: Asset.create)
@@ -7390,6 +7598,8 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_LocalMessage>(68, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'localMessage', subBuilder: From_LocalMessage.create)
     ..aOM<From_MarketDataSubscribe>(70, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'marketDataSubscribe', subBuilder: From_MarketDataSubscribe.create)
     ..aOM<From_MarketDataUpdate>(71, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'marketDataUpdate', subBuilder: From_MarketDataUpdate.create)
+    ..aOM<From_JadeUpdated>(80, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'jadeUpdated', subBuilder: From_JadeUpdated.create)
+    ..aOM<From_JadeRemoved>(81, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'jadeRemoved', subBuilder: From_JadeRemoved.create)
   ;
 
   From._() : super();
@@ -7441,6 +7651,8 @@ class From extends $pb.GeneratedMessage {
     From_LocalMessage? localMessage,
     From_MarketDataSubscribe? marketDataSubscribe,
     From_MarketDataUpdate? marketDataUpdate,
+    From_JadeUpdated? jadeUpdated,
+    From_JadeRemoved? jadeRemoved,
   }) {
     final _result = create();
     if (updatedTxs != null) {
@@ -7583,6 +7795,12 @@ class From extends $pb.GeneratedMessage {
     }
     if (marketDataUpdate != null) {
       _result.marketDataUpdate = marketDataUpdate;
+    }
+    if (jadeUpdated != null) {
+      _result.jadeUpdated = jadeUpdated;
+    }
+    if (jadeRemoved != null) {
+      _result.jadeRemoved = jadeRemoved;
     }
     return _result;
   }
@@ -8124,6 +8342,28 @@ class From extends $pb.GeneratedMessage {
   void clearMarketDataUpdate() => clearField(71);
   @$pb.TagNumber(71)
   From_MarketDataUpdate ensureMarketDataUpdate() => $_ensure(46);
+
+  @$pb.TagNumber(80)
+  From_JadeUpdated get jadeUpdated => $_getN(47);
+  @$pb.TagNumber(80)
+  set jadeUpdated(From_JadeUpdated v) { setField(80, v); }
+  @$pb.TagNumber(80)
+  $core.bool hasJadeUpdated() => $_has(47);
+  @$pb.TagNumber(80)
+  void clearJadeUpdated() => clearField(80);
+  @$pb.TagNumber(80)
+  From_JadeUpdated ensureJadeUpdated() => $_ensure(47);
+
+  @$pb.TagNumber(81)
+  From_JadeRemoved get jadeRemoved => $_getN(48);
+  @$pb.TagNumber(81)
+  set jadeRemoved(From_JadeRemoved v) { setField(81, v); }
+  @$pb.TagNumber(81)
+  $core.bool hasJadeRemoved() => $_has(48);
+  @$pb.TagNumber(81)
+  void clearJadeRemoved() => clearField(81);
+  @$pb.TagNumber(81)
+  From_JadeRemoved ensureJadeRemoved() => $_ensure(48);
 }
 
 class Settings_AccountAsset extends $pb.GeneratedMessage {

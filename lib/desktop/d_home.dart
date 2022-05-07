@@ -13,6 +13,7 @@ import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/protobuf/sideswap.pbenum.dart';
 
 class DesktopHome extends ConsumerStatefulWidget {
   const DesktopHome({Key? key}) : super(key: key);
@@ -155,13 +156,44 @@ class _DesktopHomeState extends ConsumerState<DesktopHome> {
                     ),
                     const SizedBox(height: 10),
                     _SubAccount(
+                      name: 'Regular assets'.tr(),
                       isAmp: false,
                       accounts: regularAccounts,
                     ),
                     _SubAccount(
+                      name: 'AMP assets'.tr(),
                       isAmp: true,
                       accounts: ampAccounts,
                     ),
+                    Column(
+                        children: wallet.jades.values
+                            .map((jade) => _SubAccount(
+                                  name: jade.name,
+                                  isAmp: false,
+                                  accounts: wallet
+                                      .getAllAccounts()
+                                      .where((e) =>
+                                          e.account ==
+                                          getAccountType(jade.account))
+                                      .toList(),
+                                  onUnlock: jade.status ==
+                                          From_JadeUpdated_Status.LOCKED
+                                      ? () {
+                                          wallet.jadeAction(
+                                              getAccountType(jade.account),
+                                              To_JadeAction_Action.UNLOCK);
+                                        }
+                                      : null,
+                                  onLogin: jade.status ==
+                                          From_JadeUpdated_Status.UNLOCKED
+                                      ? () {
+                                          wallet.jadeAction(
+                                              getAccountType(jade.account),
+                                              To_JadeAction_Action.LOGIN);
+                                        }
+                                      : null,
+                                ))
+                            .toList()),
                   ],
                 ),
               ),
@@ -227,11 +259,20 @@ class _Headeritem extends StatelessWidget {
 }
 
 class _SubAccount extends StatefulWidget {
-  const _SubAccount({Key? key, required this.isAmp, required this.accounts})
-      : super(key: key);
+  const _SubAccount({
+    Key? key,
+    required this.name,
+    required this.isAmp,
+    required this.accounts,
+    this.onUnlock,
+    this.onLogin,
+  }) : super(key: key);
 
+  final String name;
   final bool isAmp;
   final List<AccountAsset> accounts;
+  final VoidCallback? onUnlock;
+  final VoidCallback? onLogin;
 
   @override
   State<_SubAccount> createState() => _SubAccountState();
@@ -242,8 +283,6 @@ class _SubAccountState extends State<_SubAccount> {
 
   @override
   Widget build(BuildContext context) {
-    final text = widget.isAmp ? 'AMP assets'.tr() : 'Regular assets'.tr();
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -254,7 +293,7 @@ class _SubAccountState extends State<_SubAccount> {
               child: Row(
                 children: [
                   Text(
-                    text,
+                    widget.name,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -265,6 +304,20 @@ class _SubAccountState extends State<_SubAccount> {
                     _expanded ? 'assets/arrow_down.svg' : 'assets/arrow_up.svg',
                   ),
                   const Spacer(),
+                  if (widget.onUnlock != null)
+                    DHoverButton(
+                      builder: (context, states) {
+                        return Text('Unlock'.tr());
+                      },
+                      onPressed: widget.onUnlock,
+                    ),
+                  if (widget.onLogin != null)
+                    DHoverButton(
+                      builder: (context, states) {
+                        return Text('Login'.tr());
+                      },
+                      onPressed: widget.onLogin,
+                    ),
                 ],
               ),
             ),

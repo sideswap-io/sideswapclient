@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/widgets/d_transparent_button.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/balances.dart';
@@ -257,8 +258,10 @@ class _Wallet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isAmp = tx.tx.balances.any((e) => e.account.amp);
-    final isRegular = tx.tx.balances.any((e) => !e.account.amp);
+    final isAmp =
+        tx.tx.balances.any((e) => AccountType.fromPb(e.account).isAmp());
+    final isRegular =
+        tx.tx.balances.any((e) => AccountType.fromPb(e.account).isRegular());
     final accountName = tx.hasPeg()
         ? ''
         : ((isAmp && isRegular) ? 'Regular/AMP' : (isAmp ? 'AMP' : 'Regular'));

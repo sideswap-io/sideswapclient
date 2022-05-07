@@ -40,8 +40,14 @@ const DEFAULT_ICON: &[u8] = include_bytes!("../images/icon_blank.png");
 
 const AUTO_SIGN_ALLOWED_INDEX_PRICE_CHANGE: f64 = 0.1;
 
-pub fn get_account(amp: bool) -> ffi::proto::Account {
-    ffi::proto::Account { amp }
+pub type AccountId = i32;
+
+pub const ACCOUNT_ID_REGULAR: AccountId = 0;
+pub const ACCOUNT_ID_AMP: AccountId = 1;
+pub const ACCOUNT_ID_JADE_FIRST: AccountId = 2;
+
+pub fn get_account(id: AccountId) -> ffi::proto::Account {
+    ffi::proto::Account { id }
 }
 
 pub fn get_created_tx(
@@ -114,11 +120,13 @@ pub struct Context {
     wallet_hash_id: String,
     sync_complete: bool,
     wallet_loaded_sent: bool,
-    txs: BTreeMap<bool, HashMap<Txid, models::Transaction>>,
+    txs: BTreeMap<AccountId, HashMap<Txid, models::Transaction>>,
     orders_last: BTreeMap<OrderId, ffi::proto::Order>,
     orders_sent: BTreeMap<OrderId, ffi::proto::Order>,
     desktop: bool,
     send_utxo_updates: bool,
+    stopped: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    jades: BTreeMap<sideswap_jade::Port, amp::Amp>,
 
     succeed_swap: Option<Txid>,
     pending_txs: bool,
@@ -137,6 +145,13 @@ pub struct Context {
     subscribes: BTreeSet<Option<AssetId>>,
 
     agent: ureq::Agent,
+}
+
+impl Drop for Context {
+    fn drop(&mut self) {
+        self.stopped
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+    }
 }
 
 pub struct ServerResp(Option<RequestId>, Result<Response, Error>);
@@ -175,6 +190,7 @@ pub struct Data {
     assets: BTreeMap<AssetId, Asset>,
     amp_assets: BTreeSet<AssetId>,
     assets_old: Vec<Asset>,
+    msg_sender: crossbeam_channel::Sender<Message>,
     ws_sender: crossbeam_channel::Sender<ws::WrappedRequest>,
     ws_hint: tokio::sync::mpsc::UnboundedSender<()>,
     amp: amp::Amp,
@@ -225,8 +241,9 @@ pub enum Message {
     MarketDataResponse(MarketDataSubscribeResponse),
     AssetDetails(AssetDetailsResponse),
     BackgroundMessage(String, crossbeam_channel::Sender<()>),
-    Amp(amp::From),
+    Amp(worker::AccountId, amp::From),
     IdleTimer,
+    ScanJade(Vec<sideswap_jade::Port>),
 }
 
 #[derive(Debug)]
@@ -435,7 +452,7 @@ impl Data {
         Ok(())
     }
 
-    fn send_new_transactions(&mut self, items: Vec<models::Transaction>, amp: bool) {
+    fn send_new_transactions(&mut self, items: Vec<models::Transaction>, amp: AccountId) {
         let ctx = match self.ctx.as_mut() {
             Some(v) => v,
             None => return,
@@ -630,7 +647,7 @@ impl Data {
             .map(|tx| get_tx_item(tx, top_block))
             .collect::<Vec<_>>();
 
-        self.send_new_transactions(txs, false);
+        self.send_new_transactions(txs, ACCOUNT_ID_REGULAR);
         self.update_address_registrations();
         self.process_pending_succeed();
         self.update_balances();
@@ -759,7 +776,7 @@ impl Data {
             .collect();
         self.ui.send(ffi::proto::from::Msg::BalanceUpdate(
             ffi::proto::from::BalanceUpdate {
-                account: get_account(false),
+                account: get_account(ACCOUNT_ID_REGULAR),
                 balances,
             },
         ));
@@ -792,7 +809,7 @@ impl Data {
                 .collect::<Vec<_>>();
             self.ui.send(ffi::proto::from::Msg::UtxoUpdate(
                 ffi::proto::from::UtxoUpdate {
-                    account: get_account(false),
+                    account: get_account(ACCOUNT_ID_REGULAR),
                     utxos,
                 },
             ));
@@ -1151,11 +1168,20 @@ impl Data {
 
         self.add_peg_monitoring(resp.order_id, PegDir::Out);
 
-        let _payment = if req.account.amp {
-            self.amp
-                .make_pegout_payment(req.send_amount, &resp.peg_addr)?
-        } else {
-            self.make_pegout_payment(req.send_amount, &resp.peg_addr)?
+        match req.account.id {
+            ACCOUNT_ID_REGULAR => {
+                self.make_pegout_payment(req.send_amount, &resp.peg_addr)?;
+            }
+            ACCOUNT_ID_AMP => {
+                self.amp
+                    .make_pegout_payment(req.send_amount, &resp.peg_addr)?;
+            }
+            _ => {
+                let jade = self
+                    .get_jade(req.account.id)
+                    .ok_or_else(|| anyhow!("unknown account"))?;
+                jade.make_pegout_payment(req.send_amount, &resp.peg_addr)?;
+            }
         };
 
         Ok(resp.order_id)
@@ -1525,10 +1551,17 @@ impl Data {
     }
 
     fn process_get_recv_address(&mut self, req: ffi::proto::Account) {
-        if req.amp {
-            self.send_amp(amp::To::GetRecvAddr);
-            return;
-        }
+        match req.id {
+            ACCOUNT_ID_REGULAR => {}
+            ACCOUNT_ID_AMP => {
+                self.send_amp(amp::To::GetRecvAddr);
+                return;
+            }
+            _ => {
+                self.send_jade(req.id, amp::To::GetRecvAddr);
+                return;
+            }
+        };
 
         let wallet = self.ctx.as_mut().expect("wallet must be set");
         let addr = wallet
@@ -1542,7 +1575,7 @@ impl Data {
         self.ui.send(ffi::proto::from::Msg::RecvAddress(
             ffi::proto::from::RecvAddress {
                 addr: ffi::proto::Address { addr },
-                account: get_account(false),
+                account: get_account(req.id),
             },
         ));
     }
@@ -1674,10 +1707,17 @@ impl Data {
     }
 
     fn process_create_tx(&mut self, req: ffi::proto::CreateTx) {
-        if req.account.amp {
-            self.send_amp(amp::To::CreateTx(req));
-            return;
-        }
+        match req.account.id {
+            ACCOUNT_ID_REGULAR => {}
+            ACCOUNT_ID_AMP => {
+                self.send_amp(amp::To::CreateTx(req));
+                return;
+            }
+            _ => {
+                self.send_jade(req.account.id, amp::To::CreateTx(req));
+                return;
+            }
+        };
 
         let result = match self.create_tx(req) {
             Ok(tx) => ffi::proto::from::create_tx_result::Result::CreatedTx(tx),
@@ -1691,10 +1731,17 @@ impl Data {
     }
 
     fn process_send_tx(&mut self, req: ffi::proto::to::SendTx) {
-        if req.account.amp {
-            self.send_amp(amp::To::SendTx);
-            return;
-        }
+        match req.account.id {
+            ACCOUNT_ID_REGULAR => {}
+            ACCOUNT_ID_AMP => {
+                self.send_amp(amp::To::SendTx);
+                return;
+            }
+            _ => {
+                self.send_jade(req.account.id, amp::To::SendTx);
+                return;
+            }
+        };
 
         let result = self.send_tx(req);
         if let Err(e) = result {
@@ -1795,25 +1842,9 @@ impl Data {
 
         self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
 
-        // let jade_port = sideswap_jade::Handle::ports()
-        //     .ok()
-        //     .unwrap_or_default()
-        //     .into_iter()
-        //     .next();
-        let jade_port = None;
-        let wallet = if let Some(jade_port) = jade_port {
-            amp::LoginWallet::Hardware(amp::HardwareWallet {
-                wallet_name: "JadeTest".to_owned(),
-                device_port: jade_port,
-            })
-        } else {
-            amp::LoginWallet::Software(amp::SoftwareWallet {
-                mnemonic: req.mnemonic.clone(),
-            })
-        };
         let login_info = amp::LoginInfo {
             env: self.env,
-            wallet: wallet,
+            mnemonic: Some(req.mnemonic.clone()),
         };
         self.send_amp(amp::To::Login(login_info));
 
@@ -1833,6 +1864,8 @@ impl Data {
             orders_sent: BTreeMap::new(),
             desktop: req.desktop,
             send_utxo_updates: req.send_utxo_updates.unwrap_or_default(),
+            stopped: std::sync::Arc::default(),
+            jades: BTreeMap::new(),
             succeed_swap: None,
             pending_txs: false,
             active_swap: None,
@@ -1845,6 +1878,25 @@ impl Data {
             subscribes: BTreeSet::new(),
             agent: ureq::agent(),
         };
+
+        if req.desktop {
+            let stopped_copy = ctx.stopped.clone();
+            let msg_sender_copy = self.msg_sender.clone();
+            std::thread::spawn(move || {
+                debug!("start scan jade thread");
+                while !stopped_copy.load(std::sync::atomic::Ordering::Relaxed) {
+                    std::thread::sleep(std::time::Duration::from_secs(10));
+                    let ports_result = sideswap_jade::Handle::ports();
+                    match &ports_result {
+                        Ok(v) => debug!("jade ports scan succeed: {:?}", v),
+                        Err(e) => warn!("jade ports scan failed: {}", e),
+                    }
+                    let _ =
+                        msg_sender_copy.send(Message::ScanJade(ports_result.unwrap_or_default()));
+                }
+                debug!("quit scan jade thread");
+            });
+        }
 
         self.ctx = Some(ctx);
 
@@ -2228,14 +2280,15 @@ impl Data {
         );
         let asset = AssetId::from_str(&req.asset_id).unwrap();
         let is_amp = self.amp_assets.contains(&asset);
+
         if is_amp {
             ensure!(
-                req.account.amp,
+                req.account.id == ACCOUNT_ID_AMP,
                 "AMP asset order is expected to be from AMP account"
             );
         } else {
             ensure!(
-                !req.account.amp,
+                req.account.id == ACCOUNT_ID_REGULAR,
                 "Non AMP asset order is expected to be from non-AMP account"
             );
         }
@@ -3734,6 +3787,7 @@ impl Data {
                 self.process_market_data_subscribe(req)
             }
             ffi::proto::to::Msg::MarketDataUnsubscribe(_) => self.process_market_data_unsubscribe(),
+            ffi::proto::to::Msg::JadeAction(msg) => self.process_jade_action_request(msg),
         }
     }
 
@@ -4099,6 +4153,12 @@ impl Data {
         self.amp.send(msg);
     }
 
+    fn send_jade(&self, account_id: AccountId, msg: amp::To) {
+        if let Some(jade) = self.get_jade(account_id) {
+            jade.send(msg);
+        }
+    }
+
     fn process_amp_register_result(&mut self, result: Result<String, String>) {
         let result = match result {
             Ok(v) => ffi::proto::from::register_amp::Result::AmpId(v),
@@ -4111,7 +4171,7 @@ impl Data {
         ));
     }
 
-    fn process_amp_balance(&mut self, balances: BTreeMap<AssetId, u64>) {
+    fn process_amp_balance(&mut self, account: AccountId, balances: BTreeMap<AssetId, u64>) {
         let balances = balances
             .into_iter()
             .map(|(asset_id, balance)| ffi::proto::Balance {
@@ -4120,22 +4180,22 @@ impl Data {
             })
             .collect();
         let balances_update = ffi::proto::from::BalanceUpdate {
-            account: get_account(true),
+            account: get_account(account),
             balances,
         };
         self.ui
             .send(ffi::proto::from::Msg::BalanceUpdate(balances_update));
     }
 
-    fn process_amp_transactions(&mut self, items: Vec<models::Transaction>) {
-        self.send_new_transactions(items, true);
+    fn process_amp_transactions(&mut self, account: AccountId, items: Vec<models::Transaction>) {
+        self.send_new_transactions(items, account);
     }
 
-    fn process_amp_recv_addr(&mut self, addr: String) {
+    fn process_amp_recv_addr(&mut self, account: AccountId, addr: String) {
         self.ui.send(ffi::proto::from::Msg::RecvAddress(
             ffi::proto::from::RecvAddress {
                 addr: ffi::proto::Address { addr },
-                account: get_account(true),
+                account: get_account(account),
             },
         ));
     }
@@ -4162,16 +4222,36 @@ impl Data {
         }
     }
 
-    fn process_amp_message(&mut self, msg: amp::From) {
+    fn process_amp_jade_updated(&mut self, msg: ffi::proto::from::JadeUpdated) {
+        self.ui.send(ffi::proto::from::Msg::JadeUpdated(msg));
+    }
+
+    fn process_amp_fatal_jade_error(&mut self, port: sideswap_jade::Port) {
+        if let Some(ctx) = self.ctx.as_mut() {
+            let jade = ctx.jades.remove(&port);
+            if let Some(jade) = jade {
+                let id = jade.get_account_id();
+                self.ui.send(ffi::proto::from::Msg::JadeRemoved(
+                    ffi::proto::from::JadeRemoved {
+                        account: get_account(id),
+                    },
+                ))
+            }
+        }
+    }
+
+    fn process_amp_message(&mut self, account: AccountId, msg: amp::From) {
         match msg {
             amp::From::Register(result) => self.process_amp_register_result(result),
-            amp::From::Balances(balances) => self.process_amp_balance(balances),
-            amp::From::Transactions(items) => self.process_amp_transactions(items),
-            amp::From::RecvAddr(addr) => self.process_amp_recv_addr(addr),
+            amp::From::Balances(balances) => self.process_amp_balance(account, balances),
+            amp::From::Transactions(items) => self.process_amp_transactions(account, items),
+            amp::From::RecvAddr(addr) => self.process_amp_recv_addr(account, addr),
             amp::From::CreateTx(result) => self.process_amp_create_tx_result(result),
             amp::From::SendTx(result) => self.process_amp_send_tx_result(result),
             amp::From::SentTx(txid) => self.process_amp_sent_tx(txid),
             amp::From::Error(msg) => self.show_message(&msg),
+            amp::From::JadeUpdated(msg) => self.process_amp_jade_updated(msg),
+            amp::From::FatalJadeError(port) => self.process_amp_fatal_jade_error(port),
             amp::From::ConnectionStatus(connected) => self.process_amp_connection_status(connected),
         }
     }
@@ -4191,6 +4271,50 @@ impl Data {
                 info!("update desktop app status, active: {}", new_app_active);
                 self.app_active = new_app_active;
                 self.update_amp_connection_status();
+            }
+        }
+    }
+
+    fn get_jade(&self, account: AccountId) -> Option<&amp::Amp> {
+        self.ctx.as_ref().and_then(|ctx| {
+            ctx.jades
+                .values()
+                .find(|jade| jade.get_account_id() == account)
+        })
+    }
+
+    fn process_jade_action_request(&mut self, msg: ffi::proto::to::JadeAction) {
+        match msg.action() {
+            ffi::proto::to::jade_action::Action::Unlock => {
+                self.send_jade(msg.account.id, amp::To::JadeUnlock(self.env))
+            }
+            ffi::proto::to::jade_action::Action::Login => self.send_jade(
+                msg.account.id,
+                amp::To::Login(amp::LoginInfo {
+                    env: self.env,
+                    mnemonic: None,
+                }),
+            ),
+        }
+    }
+
+    fn process_scan_jade(&mut self, ports: Vec<sideswap_jade::Port>) {
+        if let Some(ctx) = self.ctx.as_mut() {
+            for port in ports {
+                if ctx.jades.get(&port).is_none() {
+                    // FIXME: Always use new ID here
+                    let account_id = ACCOUNT_ID_JADE_FIRST + ctx.jades.len() as i32;
+                    let wallet = amp::start_processing(
+                        &self.params.work_dir,
+                        account_id,
+                        self.msg_sender.clone(),
+                        Some(port.clone()),
+                    );
+                    ctx.jades.insert(port, wallet);
+                }
+            }
+            for jade in ctx.jades.values() {
+                jade.send(amp::To::JadeRefreshStatus);
             }
         }
     }
@@ -4214,7 +4338,7 @@ pub fn start_processing(
     };
     ui.send(ffi::proto::from::Msg::EnvSettings(env_settings));
 
-    let amp = amp::start_processing(&params.work_dir, msg_sender.clone());
+    let amp = amp::start_processing(&params.work_dir, ACCOUNT_ID_AMP, msg_sender.clone(), None);
 
     gdk_electrum::store::REGTEST_ENV
         .store(!env.data().mainnet, std::sync::atomic::Ordering::Relaxed);
@@ -4339,6 +4463,7 @@ pub fn start_processing(
         assets: BTreeMap::new(),
         amp_assets: BTreeSet::new(),
         assets_old: Vec::new(),
+        msg_sender,
         ws_sender,
         ws_hint,
         amp,
@@ -4389,8 +4514,9 @@ pub fn start_processing(
             Message::BackgroundMessage(data, sender) => {
                 state.process_background_message(data, sender)
             }
-            Message::Amp(msg) => state.process_amp_message(msg),
+            Message::Amp(account, msg) => state.process_amp_message(account, msg),
             Message::IdleTimer => state.process_idle_timer(),
+            Message::ScanJade(ports) => state.process_scan_jade(ports),
         }
 
         let stopped = std::time::Instant::now();

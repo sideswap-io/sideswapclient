@@ -86,58 +86,24 @@ impl Amp {
     ) -> Result<worker::PegPayment, anyhow::Error> {
         unsafe { make_pegout_payment(&mut self.0.lock().unwrap(), send_amount, peg_addr) }
     }
-}
 
-#[derive(Clone)]
-pub enum LoginWallet {
-    Software(SoftwareWallet),
-    Hardware(HardwareWallet),
-}
-
-#[derive(Clone)]
-pub struct SoftwareWallet {
-    pub mnemonic: String,
-}
-
-#[derive(Clone)]
-pub struct HardwareWallet {
-    pub wallet_name: String,
-    pub device_port: sideswap_jade::Port,
-}
-
-impl LoginWallet {
-    fn get_mnemonic(&self) -> Option<String> {
-        match self {
-            LoginWallet::Software(v) => Some(v.mnemonic.clone()),
-            LoginWallet::Hardware(_) => None,
-        }
-    }
-
-    fn get_hw_device(&self) -> gdk_json::HwDevice {
-        let device = match self {
-            LoginWallet::Software(_) => None,
-            LoginWallet::Hardware(v) => Some(gdk_json::HwDeviceDetails {
-                name: v.wallet_name.clone(),
-                supports_ae_protocol: 1,
-                supports_arbitrary_scripts: true,
-                supports_host_unblinding: true,
-                supports_liquid: 1,
-                supports_low_r: true,
-            }),
-        };
-        gdk_json::HwDevice { device }
+    pub fn get_account_id(&self) -> worker::AccountId {
+        self.0.lock().unwrap().account
     }
 }
 
 #[derive(Clone)]
 pub struct LoginInfo {
     pub env: Env,
-    pub wallet: LoginWallet,
+    pub mnemonic: Option<String>,
 }
 
 pub enum To {
     Notification(gdk_json::Notification),
+
     JadeFatalError(anyhow::Error),
+    JadeReadStatus(sideswap_jade::models::RespVersionInfo),
+    JadeAuthUser(bool),
 
     Login(LoginInfo),
     Logout,
@@ -145,6 +111,8 @@ pub enum To {
     GetRecvAddr,
     CreateTx(ffi::proto::CreateTx),
     SendTx,
+    JadeRefreshStatus,
+    JadeUnlock(Env),
 }
 
 #[derive(Debug)]
@@ -157,6 +125,8 @@ pub enum From {
     SendTx(ffi::proto::from::SendResult),
     SentTx(sideswap_api::Txid),
     Error(String),
+    JadeUpdated(ffi::proto::from::JadeUpdated),
+    FatalJadeError(sideswap_jade::Port),
     ConnectionStatus(bool),
 }
 
@@ -171,6 +141,8 @@ struct Wallet {
 unsafe impl Send for Wallet {}
 
 struct HwData {
+    name: String,
+    port: sideswap_jade::Port,
     secp: elements::secp256k1_zkp::Secp256k1<elements::secp256k1_zkp::All>,
     jade: sideswap_jade::Jade,
     resp_receiver: std::sync::mpsc::Receiver<sideswap_jade::Resp>,
@@ -183,6 +155,7 @@ impl HwData {
             warn!("unexpected Jade response ignored: {:?}", msg);
         }
     }
+
     fn get_resp_with_timeout(
         &self,
         time: std::time::Duration,
@@ -191,12 +164,27 @@ impl HwData {
             .recv_timeout(time)
             .map_err(|_| anyhow!("Jade receive timeout"))
     }
+
     fn get_resp(&self) -> Result<sideswap_jade::Resp, anyhow::Error> {
         self.get_resp_with_timeout(std::time::Duration::from_secs(10))
+    }
+
+    fn get_hw_device(hw_data: Option<&Self>) -> gdk_json::HwDevice {
+        gdk_json::HwDevice {
+            device: hw_data.map(|hw_data| gdk_json::HwDeviceDetails {
+                name: hw_data.name.clone(),
+                supports_ae_protocol: 1,
+                supports_arbitrary_scripts: true,
+                supports_host_unblinding: true,
+                supports_liquid: 1,
+                supports_low_r: true,
+            }),
+        }
     }
 }
 
 struct Data {
+    account: worker::AccountId,
     amp_sender: crossbeam_channel::Sender<To>,
     worker: crossbeam_channel::Sender<worker::Message>,
     notif_context: *mut NotifContext,
@@ -729,7 +717,7 @@ fn last_gdk_error_details() -> Result<String, anyhow::Error> {
 }
 
 fn send_from(data: &Data, from: From) {
-    let result = data.worker.send(worker::Message::Amp(from));
+    let result = data.worker.send(worker::Message::Amp(data.account, from));
     if let Err(e) = result {
         warn!("sending failed: {}", e);
     }
@@ -824,19 +812,13 @@ unsafe fn notification(data: &mut Data, msg: gdk_json::Notification) {
     }
 }
 
-unsafe fn jade_fatal_error(data: &mut Data, error: anyhow::Error) {
-    if let Some(_) = data.wallet.as_ref() {
-        send_from(data, From::Error(format!("Jade error: {}", error)));
-    }
-}
-
 unsafe fn try_login(
     session: *mut gdk::GA_session,
     info: &LoginInfo,
     hw_data: Option<&HwData>,
 ) -> Result<(), anyhow::Error> {
-    let mnemonic = info.wallet.get_mnemonic();
-    let hw_device = info.wallet.get_hw_device();
+    let mnemonic = info.mnemonic.clone();
+    let hw_device = HwData::get_hw_device(hw_data);
     let login_user = gdk_json::LoginUser {
         mnemonic: mnemonic.clone(),
     };
@@ -891,9 +873,9 @@ unsafe fn try_connect(
     );
 
     let mut call = std::ptr::null_mut();
-    let mnemonic = login_info.wallet.get_mnemonic().unwrap_or_default();
+    let mnemonic = login_info.mnemonic.clone().unwrap_or_default();
     let mnemonic = CString::new(mnemonic.clone()).unwrap();
-    let hw_device = login_info.wallet.get_hw_device();
+    let hw_device = HwData::get_hw_device(hw_data);
     let rc = gdk::GA_register_user(
         session,
         GdkJson::new(&hw_device).as_ptr(),
@@ -967,45 +949,16 @@ unsafe fn try_connect(
 }
 
 unsafe fn login(data: &mut Data, login_info: LoginInfo) {
+    info!(
+        "start login, account: {}, hw_data is set: {}",
+        data.account,
+        data.hw_data.is_some()
+    );
     logout(data);
 
     let mut session = std::ptr::null_mut();
     let rc = gdk::GA_create_session(&mut session);
     assert!(rc == 0);
-
-    if let LoginWallet::Hardware(details) = &login_info.wallet {
-        let amp_sender_copy = data.amp_sender.clone();
-        let (resp_sender, resp_receiver) = std::sync::mpsc::channel();
-        let callback = move |msg| {
-            match msg {
-                sideswap_jade::Resp::FatalError(e) => {
-                    // TODO: Unblock blocked receiver sending some arbitrary response:
-                    // let _ = resp_sender.send(SomeRandomResponse);
-                    let _ = amp_sender_copy.send(To::JadeFatalError(e));
-                }
-                _ => {
-                    let _ = resp_sender.send(msg);
-                }
-            };
-        };
-        let jade_result = sideswap_jade::Jade::new(details.device_port.clone(), callback);
-        match jade_result {
-            Ok(jade) => {
-                data.hw_data = Some(HwData {
-                    secp: elements::secp256k1_zkp::Secp256k1::new(),
-                    jade,
-                    resp_receiver,
-                })
-            }
-            Err(e) => {
-                send_from(
-                    data,
-                    From::Register(Err(format!("Jade open failed: {}", e))),
-                );
-                return;
-            }
-        };
-    }
 
     let login_result = try_connect(
         session,
@@ -1045,7 +998,6 @@ unsafe fn logout(data: &mut Data) {
             assert!(rc == 0);
         }
         data.wallet = None;
-        data.hw_data = None;
     }
 }
 
@@ -1756,19 +1708,122 @@ unsafe fn make_pegout_payment(
     })
 }
 
+fn jade_fatal_error(data: &mut Data, error: anyhow::Error) {
+    error!("fatal jade error: {}", error);
+    send_from(
+        data,
+        From::FatalJadeError(data.hw_data.as_ref().unwrap().port.clone()),
+    );
+}
+
+fn jade_process_read_status(data: &mut Data, status: sideswap_jade::models::RespVersionInfo) {
+    let status = match status.jade_state {
+        sideswap_jade::models::State::Ready => ffi::proto::from::jade_updated::Status::Unlocked,
+        sideswap_jade::models::State::Temp => ffi::proto::from::jade_updated::Status::Unknown,
+        sideswap_jade::models::State::Unsaved => ffi::proto::from::jade_updated::Status::Unknown,
+        sideswap_jade::models::State::Locked => ffi::proto::from::jade_updated::Status::Locked,
+        sideswap_jade::models::State::Uninit => ffi::proto::from::jade_updated::Status::Uninit,
+    };
+
+    send_from(
+        data,
+        From::JadeUpdated(ffi::proto::from::JadeUpdated {
+            account: worker::get_account(data.account),
+            status: status as i32,
+            name: data.hw_data.as_ref().unwrap().name.clone(),
+        }),
+    );
+}
+
+fn jade_process_auth_user(data: &mut Data, result: bool) {
+    if result {
+        info!("jade unlock succeed");
+        refresh_jade_status(data);
+    }
+}
+
+fn refresh_jade_status(data: &mut Data) {
+    // FIXME: Detect status read timeouts (when jade goes to sleep)
+    data.hw_data.as_ref().unwrap().jade.read_status();
+}
+
+fn process_jade_unlock(data: &mut Data, env: Env) {
+    let network = if env.data().mainnet {
+        sideswap_jade::Network::Liquid
+    } else {
+        sideswap_jade::Network::TestnetLiquid
+    };
+    data.hw_data.as_ref().unwrap().jade.auth_user(network);
+}
+
 static GDK_INITIALIZED: std::sync::Once = std::sync::Once::new();
 
-pub fn start_processing(work_dir: &str, worker: crossbeam_channel::Sender<worker::Message>) -> Amp {
+pub fn start_processing(
+    work_dir: &str,
+    account: worker::AccountId,
+    worker: crossbeam_channel::Sender<worker::Message>,
+    jade_port: Option<sideswap_jade::Port>,
+) -> Amp {
     let (amp_sender, amp_receiver) = crossbeam_channel::unbounded::<To>();
 
     let notif_context = Box::into_raw(Box::new(NotifContext(amp_sender.clone())));
 
+    let hw_data = if let Some(jade_port) = jade_port {
+        let amp_sender_copy = amp_sender.clone();
+        let (resp_sender, resp_receiver) = std::sync::mpsc::channel();
+        let callback = move |msg| {
+            match msg {
+                sideswap_jade::Resp::FatalError(e) => {
+                    // TODO: Unblock blocked receiver sending some arbitrary response:
+                    // let _ = resp_sender.send(SomeRandomResponse);
+                    let _ = amp_sender_copy.send(To::JadeFatalError(e));
+                }
+                sideswap_jade::Resp::ReadStatus(Ok(v)) => {
+                    let _ = amp_sender_copy.send(To::JadeReadStatus(v));
+                }
+                sideswap_jade::Resp::ReadStatus(Err(e)) => {
+                    let _ = amp_sender_copy.send(To::JadeFatalError(e));
+                }
+                sideswap_jade::Resp::AuthUser(Ok(result)) => {
+                    let _ = amp_sender_copy.send(To::JadeAuthUser(result));
+                }
+                sideswap_jade::Resp::AuthUser(Err(e)) => {
+                    warn!("unlock failed: {}", e);
+                }
+                _ => {
+                    let _ = resp_sender.send(msg);
+                }
+            };
+        };
+        let jade_result = sideswap_jade::Jade::new(jade_port.clone(), callback);
+        match jade_result {
+            Ok(jade) => Some(HwData {
+                name: format!(
+                    "Jade {}",
+                    jade_port.serial_number.clone().unwrap_or_default()
+                ),
+                port: jade_port.clone(),
+                secp: elements::secp256k1_zkp::Secp256k1::new(),
+                jade,
+                resp_receiver,
+            }),
+            Err(e) => {
+                debug!("openning jade device failed: {}", e);
+                _ = amp_sender.send(To::JadeFatalError(e));
+                None
+            }
+        }
+    } else {
+        None
+    };
+
     let data = std::sync::Arc::new(std::sync::Mutex::new(Data {
+        account,
         amp_sender,
         worker,
         notif_context,
         wallet: None,
-        hw_data: None,
+        hw_data,
         top_block: None,
         pending_txs: false,
     }));
@@ -1787,7 +1842,10 @@ pub fn start_processing(work_dir: &str, worker: crossbeam_channel::Sender<worker
             let mut data = data_copy.lock().unwrap();
             match msg {
                 To::Notification(msg) => notification(&mut data, msg),
+
                 To::JadeFatalError(error) => jade_fatal_error(&mut data, error),
+                To::JadeReadStatus(msg) => jade_process_read_status(&mut data, msg),
+                To::JadeAuthUser(result) => jade_process_auth_user(&mut data, result),
 
                 To::Login(info) => login(&mut data, info),
                 To::Logout => logout(&mut data),
@@ -1795,6 +1853,8 @@ pub fn start_processing(work_dir: &str, worker: crossbeam_channel::Sender<worker
                 To::GetRecvAddr => get_recv_addr(&mut data),
                 To::CreateTx(tx) => create_tx(&mut data, tx),
                 To::SendTx => send_tx(&mut data),
+                To::JadeRefreshStatus => refresh_jade_status(&mut data),
+                To::JadeUnlock(env) => process_jade_unlock(&mut data, env),
             }
         }
 

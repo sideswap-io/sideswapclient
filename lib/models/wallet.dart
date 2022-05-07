@@ -160,12 +160,12 @@ String envName(int env) {
 
 Account getAccount(AccountType accountType) {
   final account = Account();
-  account.amp = accountType == AccountType.amp;
+  account.id = accountType.id;
   return account;
 }
 
 AccountType getAccountType(Account account) {
-  return account.amp ? AccountType.amp : AccountType.regular;
+  return AccountType(account.id);
 }
 
 class PinData {
@@ -316,6 +316,8 @@ class WalletChangeNotifier with ChangeNotifier {
   PublishSubject<PinData> pinEncryptDataSubject = PublishSubject<PinData>();
   PublishSubject<PinDecryptedData> pinDecryptDataSubject =
       PublishSubject<PinDecryptedData>();
+
+  final jades = <AccountType, From_JadeUpdated>{};
 
   void sendMsg(To to) {
     if (kDebugMode) {
@@ -1040,6 +1042,21 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.marketDataUpdate:
         ref.read(marketDataProvider).marketDataUpdate(from.marketDataUpdate);
+        break;
+      case From_Msg.utxoUpdate:
+        // Not used.
+        break;
+
+      case From_Msg.jadeUpdated:
+        final account = getAccountType(from.jadeUpdated.account);
+        jades[account] = from.jadeUpdated;
+        notifyListeners();
+        break;
+      case From_Msg.jadeRemoved:
+        final account = getAccountType(from.jadeRemoved.account);
+        jades.remove(account);
+        // FIXME: Remove accounts and balances here
+        notifyListeners();
         break;
     }
   }
@@ -2167,7 +2184,7 @@ class WalletChangeNotifier with ChangeNotifier {
     double price, {
     bool isAssetAmount = false,
     double? indexPrice,
-    AccountType account = AccountType.regular,
+    AccountType account = const AccountType(0),
   }) {
     final msg = To();
     msg.submitOrder = To_SubmitOrder();
@@ -2617,5 +2634,13 @@ class WalletChangeNotifier with ChangeNotifier {
 
   bool isTestnet() {
     return env() == SIDESWAP_ENV_TESTNET;
+  }
+
+  void jadeAction(AccountType account, To_JadeAction_Action action) {
+    final msg = To();
+    msg.jadeAction = To_JadeAction();
+    msg.jadeAction.account = getAccount(account);
+    msg.jadeAction.action = action;
+    sendMsg(msg);
   }
 }

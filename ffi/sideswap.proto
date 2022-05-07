@@ -5,7 +5,7 @@ message Empty {
 }
 
 message Account {
-  required bool amp = 1;
+  required int32 id = 1;
 }
 
 message Address {
@@ -323,6 +323,15 @@ message To {
     required string asset_id = 1;
   }
 
+  message JadeAction {
+    enum Action {
+      UNLOCK = 1;
+      LOGIN = 2;
+    }
+    required Account account = 1;
+    required Action action = 2;
+  }
+
   oneof msg {
     Login login = 1;
     Empty logout = 2;
@@ -364,6 +373,8 @@ message To {
 
     MarketDataSubscribe market_data_subscribe = 60;
     Empty market_data_unsubscribe = 61;
+
+    JadeAction jade_action = 70;
   }
 }
 
@@ -592,6 +603,24 @@ message From {
     required ChartPoint update = 2;
   }
 
+  message JadeUpdated {
+    enum Status {
+      UNKNOWN = 0;
+      UNINIT = 1;
+      LOCKED = 2;
+      UNLOCKED = 3;
+      CONNECTED = 4;
+    }
+
+    required Account account = 1;
+    required Status status = 2;
+    required string name = 3;
+  }
+
+  message JadeRemoved {
+    required Account account = 1;
+  }
+
   oneof msg {
     EnvSettings env_settings = 13;
     RegisterAmp register_amp = 8;
@@ -648,6 +677,9 @@ message From {
 
     MarketDataSubscribe market_data_subscribe = 70;
     MarketDataUpdate market_data_update = 71;
+
+    JadeUpdated jade_updated = 80;
+    JadeRemoved jade_removed = 81;
   }
 }
 

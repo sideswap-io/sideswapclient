@@ -187,6 +187,7 @@ impl Drop for Jade {
     }
 }
 
+#[derive(Eq, PartialEq)]
 enum PendingRequest {
     ReadStatus,
     HttpRequest,
@@ -688,19 +689,26 @@ fn worker<F>(
             },
 
             WorkerReq::ReadStatus => {
-                state.last_request_id += 1;
-                let req = models::Req::<ciborium::value::Value> {
-                    id: state.last_request_id.to_string(),
-                    method: "get_version_info".to_owned(),
-                    params: None,
-                };
-                let result = handle.send(&req);
-                if let Err(e) = result {
-                    callback(Resp::FatalError(e));
-                } else {
-                    state
-                        .pending_requests
-                        .insert(state.last_request_id, PendingRequest::ReadStatus);
+                // Remove all old status requests
+                state
+                    .pending_requests
+                    .retain(|_, request| *request != PendingRequest::ReadStatus);
+                // Do not send status requests while unlocking wallet (because unlock would fail)
+                if state.pending_requests.is_empty() {
+                    state.last_request_id += 1;
+                    let req = models::Req::<ciborium::value::Value> {
+                        id: state.last_request_id.to_string(),
+                        method: "get_version_info".to_owned(),
+                        params: None,
+                    };
+                    let result = handle.send(&req);
+                    if let Err(e) = result {
+                        callback(Resp::FatalError(e));
+                    } else {
+                        state
+                            .pending_requests
+                            .insert(state.last_request_id, PendingRequest::ReadStatus);
+                    }
                 }
             }
 

@@ -1,6 +1,6 @@
 pub use crate::reader::BufReader;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Port {
     pub port_name: String,
     pub serial_number: Option<String>,
@@ -42,7 +42,7 @@ impl Handle {
     {
         debug!("open Jade port {}", port.port_name);
         let port = serialport::new(&port.port_name, 115200)
-            .timeout(std::time::Duration::from_secs(10))
+            .timeout(std::time::Duration::from_secs(15))
             .open()?;
         let quit_flag = std::sync::Arc::new(std::sync::atomic::AtomicBool::default());
 
@@ -52,6 +52,7 @@ impl Handle {
             let reader = BufReader::default();
             let mut buffer = [0u8; 32768];
             loop {
+                debug!("start jade read...");
                 match port_copy.read(&mut buffer) {
                     Ok(bytes) => {
                         debug!("received {} bytes", bytes);
@@ -63,7 +64,7 @@ impl Handle {
                                 reader.clone(),
                             ) {
                                 Ok(v) => {
-                                    debug!("recv: {:#?}", &v);
+                                    debug!("recv: {:?}", &v);
                                     let data = reader.remove_read();
                                     callback(FromPort::Data(data));
                                     if reader.size() == 0 {
@@ -78,6 +79,7 @@ impl Handle {
                         }
                     }
                     Err(e) if e.kind() == std::io::ErrorKind::TimedOut => {
+                        debug!("jade read timeout");
                         if quit_flag_copy.load(std::sync::atomic::Ordering::Relaxed) {
                             debug!("stop reading thread");
                             return;
@@ -102,10 +104,12 @@ impl Handle {
         let mut buf = Vec::<u8>::new();
         ciborium::ser::into_writer(&data, &mut buf).unwrap();
         debug!(
-            "send: {:#?}",
+            "send: {:?}",
             &ciborium::de::from_reader::<ciborium::value::Value, _>(buf.as_slice()).unwrap()
         );
         self.port.write_all(&buf)?;
+        self.port.flush()?;
+        debug!("jade write succeed");
         Ok(())
     }
 }

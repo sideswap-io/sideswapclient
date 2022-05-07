@@ -9,7 +9,7 @@ pub mod ffi;
 mod models;
 mod settings;
 mod swaps;
-mod worker;
+pub mod worker;
 
 #[allow(dead_code, non_camel_case_types)]
 mod gdk;

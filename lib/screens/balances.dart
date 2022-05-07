@@ -31,7 +31,7 @@ TxType txType(Tx tx) {
     if (balance.amount < 0) {
       anyNegative = true;
     }
-    if (balance.account.amp) {
+    if (AccountType.fromPb(balance.account).isAmp()) {
       anyAmp = true;
     } else {
       anyRegular = true;

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 

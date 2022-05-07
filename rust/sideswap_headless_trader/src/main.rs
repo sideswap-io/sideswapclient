@@ -107,7 +107,9 @@ fn main() {
                             send_msg(
                                 client,
                                 to::Msg::SubmitOrder(to::SubmitOrder {
-                                    account: Account { amp: false },
+                                    account: Account {
+                                        id: sideswap_client::worker::ACCOUNT_ID_REGULAR,
+                                    },
                                     asset_id: args.trading_asset_id.to_string(),
                                     bitcoin_amount: None,
                                     asset_amount: Some(-1.0),

@@ -1,17 +1,38 @@
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
 
-enum AccountType {
-  regular,
-  amp,
-}
+class AccountType {
+  final int id;
+  const AccountType(this.id);
 
-extension AccountTypeHelpers on AccountType {
+  static AccountType get regular {
+    return const AccountType(0);
+  }
+
+  static AccountType get amp {
+    return const AccountType(1);
+  }
+
+  static AccountType fromPb(Account account) {
+    return AccountType(account.id);
+  }
+
   bool isRegular() {
-    return this == AccountType.regular;
+    return this == regular;
   }
 
   bool isAmp() {
-    return this == AccountType.amp;
+    return this == amp;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AccountType && id == other.id;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode;
   }
 }
 
