@@ -17,7 +17,13 @@ class NewWalletPinWelcome extends ConsumerWidget {
   Future<void> onNoPressedCallback(WidgetRef ref) async {
     // important - clear new wallet state in pin provider!
     ref.read(pinSetupProvider).isNewWallet = false;
-    await ref.read(walletProvider).newWalletBiometricPrompt();
+
+    final wallet = ref.read(walletProvider);
+    if (wallet.walletImporting) {
+      await wallet.setImportWalletBiometricPrompt();
+    } else {
+      await wallet.newWalletBiometricPrompt();
+    }
   }
 
   @override

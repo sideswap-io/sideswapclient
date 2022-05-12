@@ -37,7 +37,7 @@ class CountriesProvider with ChangeNotifier {
 
   CountryCode getSystemDefaultCountry() {
     final defaultCountryCode =
-        WidgetsBinding.instance?.window.locales.first.countryCode;
+        WidgetsBinding.instance.window.locales.first.countryCode;
     final countryCode = countries.firstWhere(
         (e) => e.countryCode == defaultCountryCode,
         orElse: () => countries.first);

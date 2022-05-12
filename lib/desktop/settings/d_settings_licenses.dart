@@ -231,7 +231,7 @@ class DSettingsLicenses extends HookConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.only(top: 16),
                         child: Scrollbar(
-                          isAlwaysShown: true,
+                          thumbVisibility: true,
                           controller: controller,
                           child: ListView.separated(
                             controller: controller,

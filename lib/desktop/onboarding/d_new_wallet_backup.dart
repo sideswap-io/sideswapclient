@@ -21,7 +21,7 @@ class _DWalletBackupState extends ConsumerState<DNewWalletBackup> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       final words = ref.read(walletProvider).getMnemonicWords();
       final wordItems = Map<int, WordItem>.fromEntries(List.generate(
           words.length,
@@ -37,11 +37,10 @@ class _DWalletBackupState extends ConsumerState<DNewWalletBackup> {
         ref.read(walletProvider).newWalletBackupPrompt();
       },
       backgroundContent: const DNewWalletBackupLogoBackground(),
-      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 462),
+      constraints: const BoxConstraints(maxWidth: 628),
       content: Center(
         child: SizedBox(
           width: 484,
-          height: 293,
           child: Column(
             children: [
               Text(

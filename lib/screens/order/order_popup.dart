@@ -53,7 +53,7 @@ class _OrderPopupState extends ConsumerState<OrderPopup> {
     // if (orderDetailsData.orderType == OrderType.execute) {
     //   _percentTimer = Timer.periodic(Duration(seconds: 1), onTimer);
     // }
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (showAssetDetails) {
         ref
             .read(tokenMarketProvider)

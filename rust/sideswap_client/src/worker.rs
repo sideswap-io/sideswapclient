@@ -46,6 +46,8 @@ pub const ACCOUNT_ID_REGULAR: AccountId = 0;
 pub const ACCOUNT_ID_AMP: AccountId = 1;
 pub const ACCOUNT_ID_JADE_FIRST: AccountId = 2;
 
+pub const ENABLE_JADE: bool = false;
+
 pub fn get_account(id: AccountId) -> ffi::proto::Account {
     ffi::proto::Account { id }
 }
@@ -427,7 +429,7 @@ impl Data {
             .assets
             .get(asset_id)
             .ok_or_else(|| anyhow!("asset not found"))?;
-        let default_ticker = || Ticker(format!("{:0.4}...", &asset_id.to_string()));
+        let default_ticker = || Ticker(format!("{:0.4}", &asset_id.to_string()));
         let default_name = || format!("{:0.8}...", &asset_id.to_string());
         let asset = Asset {
             asset_id: asset_id.clone(),
@@ -581,8 +583,8 @@ impl Data {
                         (
                             Asset {
                                 asset_id: asset_id.clone(),
-                                name: asset_id.to_string(),
-                                ticker: Ticker(format!("{}", &asset_id.to_string()[..4])),
+                                name: format!("{:0.8}...", &asset_id.to_string()),
+                                ticker: Ticker(format!("{:0.4}", &asset_id.to_string())),
                                 icon: Some(base64::encode(DEFAULT_ICON)),
                                 precision: 8,
                                 icon_url: None,
@@ -1879,7 +1881,7 @@ impl Data {
             agent: ureq::agent(),
         };
 
-        if req.desktop {
+        if req.desktop && ENABLE_JADE {
             let stopped_copy = ctx.stopped.clone();
             let msg_sender_copy = self.msg_sender.clone();
             std::thread::spawn(move || {

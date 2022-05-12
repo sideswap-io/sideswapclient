@@ -29,6 +29,7 @@ class DSettingsViewBackup extends HookConsumerWidget {
       return;
     });
 
+    final wordCount = ref.read(mnemonicWordItemsProvider.notifier).state.length;
     return WillPopScope(
       onWillPop: () async {
         ref.read(walletProvider).goBack();
@@ -43,18 +44,20 @@ class DSettingsViewBackup extends HookConsumerWidget {
         ),
         content: Center(
           child: SizedBox(
-            height: 418,
+            height: 430,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Column(
                 children: [
                   Text(
-                      'Your 12 word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
+                      'Your $wordCount word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
                           .tr()),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 24),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 24),
                     child: DMnemonicTable(
                       enabled: false,
+                      itemsCount: wordCount,
+                      height: 365,
                     ),
                   ),
                 ],
@@ -75,7 +78,7 @@ class DSettingsViewBackup extends HookConsumerWidget {
           ),
         ],
         style: const DContentDialogThemeData().merge(settingsDialogTheme),
-        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
+        constraints: const BoxConstraints(maxWidth: 580),
       ),
     );
   }

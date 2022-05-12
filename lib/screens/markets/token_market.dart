@@ -36,7 +36,7 @@ class _TokenMarketState extends ConsumerState<TokenMarket> {
         .read(tokenMarketProvider)
         .getTokenList(currentDropdownValue.assetId));
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
   }
 
   @override
@@ -182,7 +182,7 @@ class _TokenMarketState extends ConsumerState<TokenMarket> {
                 child: Padding(
                   padding: EdgeInsets.only(top: 8.h),
                   child: RawScrollbar(
-                    isAlwaysShown: true,
+                    thumbVisibility: true,
                     thickness: 3,
                     radius: Radius.circular(2.r),
                     controller: scrollController,

@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
+import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -354,23 +355,31 @@ class _SubAccountState extends State<_SubAccount> {
                           final balanceStr = amountStr(balance,
                               precision: asset?.precision ?? 0);
 
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            child: Row(
-                              children: [
-                                icon ?? Container(),
-                                const SizedBox(width: 8),
-                                Text(
-                                  asset?.ticker ?? '',
-                                  style: const TextStyle(fontSize: 16),
+                          return DHoverButton(
+                            builder: (context, sstates) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                child: Row(
+                                  children: [
+                                    icon ?? Container(),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      asset?.ticker ?? '',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      balanceStr,
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
+                                  ],
                                 ),
-                                const Spacer(),
-                                Text(
-                                  balanceStr,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                              ],
-                            ),
+                              );
+                            },
+                            onPressed: () {
+                              desktopOpenAccount(context, account);
+                            },
                           );
                         },
                       );

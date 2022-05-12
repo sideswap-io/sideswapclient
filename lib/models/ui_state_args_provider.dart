@@ -110,6 +110,12 @@ class UiStateArgsChangeNotifierProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clear() {
+    _walletMainArguments = WalletMainArguments(
+        currentIndex: 0, navigationItem: WalletMainNavigationItem.home);
+    _lastWalletMainArguments = _walletMainArguments;
+  }
+
   WalletMainArguments get lastWalletMainArguments => _lastWalletMainArguments;
 
   factory UiStateArgsChangeNotifierProvider() {

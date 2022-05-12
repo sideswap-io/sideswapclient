@@ -12,12 +12,12 @@ import 'package:window_manager/window_manager.dart';
 class DMnemonicTable extends StatefulWidget {
   const DMnemonicTable({
     Key? key,
-    this.itemWidth = 109,
+    this.itemWidth = 150,
     this.itemHeight = 39,
     this.itemSelected = 0,
     this.onPressed,
     this.width = 460,
-    this.height = 133,
+    this.height = 190,
     this.itemsCount = 12,
     this.enabled = true,
   }) : super(key: key);
@@ -71,7 +71,7 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
       width: widget.width,
       height: widget.height,
       child: GridView.count(
-        crossAxisCount: 4,
+        crossAxisCount: 3,
         addRepaintBoundaries: false,
         shrinkWrap: true,
         padding: EdgeInsets.zero,

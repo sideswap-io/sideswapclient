@@ -123,7 +123,7 @@ class _WalletTxMemoState extends State<WalletTxMemo> {
   void initState() {
     super.initState();
     _focusNode = FocusNode();
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
   }
 
   @override

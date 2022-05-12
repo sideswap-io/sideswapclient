@@ -85,7 +85,7 @@ class _PinSetupState extends ConsumerState<PinSetup> {
                       Padding(
                         padding: EdgeInsets.only(top: 32.h),
                         child: Text(
-                          'Set your PIN (4-8 chars)'.tr(),
+                          'Set your PIN (6-8 chars)'.tr(),
                           style: GoogleFonts.roboto(
                             fontSize: 15.sp,
                             fontWeight: FontWeight.w500,

@@ -36,7 +36,7 @@ class _SwapMarketState extends ConsumerState<SwapMarket> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
   }
 
   void afterBuild(BuildContext context) async {
@@ -231,7 +231,7 @@ class _SwapMarketState extends ConsumerState<SwapMarket> {
           ),
           Expanded(
             child: RawScrollbar(
-              isAlwaysShown: true,
+              thumbVisibility: true,
               thickness: 3,
               radius: Radius.circular(2.r),
               controller: scrollController,

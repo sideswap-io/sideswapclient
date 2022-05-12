@@ -25,7 +25,7 @@ class _FilledRequestsPageState extends State<FilledRequestsPage> {
   void initState() {
     super.initState();
     scrollController = ScrollController();
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
   }
 
   @override
@@ -88,7 +88,7 @@ class _FilledRequestsPageState extends State<FilledRequestsPage> {
                       child: SizedBox(
                         height: 100,
                         child: RawScrollbar(
-                          isAlwaysShown: isScrollbarVisible,
+                          thumbVisibility: isScrollbarVisible,
                           thickness: 3,
                           radius: Radius.circular(2.r),
                           controller: scrollController,

@@ -32,9 +32,16 @@ class DPinProtection extends HookConsumerWidget {
 
     useEffect(() {
       focusNode.requestFocus();
-      ref.read(pinProtectionProvider).init(onUnlockCallback: () {
-        Navigator.of(context).pop(true);
-      });
+      ref.read(pinProtectionProvider).init(
+        onUnlockCallback: () {
+          Navigator.of(context).pop(true);
+        },
+        onUnlockFailedCallback: () {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            focusNode.requestFocus();
+          });
+        },
+      );
       return;
     }, [focusNode]);
 

@@ -90,7 +90,7 @@ class AvatarProvider with ChangeNotifier {
   }
 
   Future<UserAvatarData> getUserAvatarData() async {
-    imageCache?.clearLiveImages();
+    imageCache.clearLiveImages();
     if (pickedFile?.path == null) {
       return UserAvatarData();
     }

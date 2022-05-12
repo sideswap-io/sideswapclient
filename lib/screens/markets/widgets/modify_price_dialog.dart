@@ -44,7 +44,7 @@ class _ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
     super.initState();
     focusNode = FocusNode();
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
 
     currentContext = ref.read(walletProvider).navigatorKey.currentContext;
 

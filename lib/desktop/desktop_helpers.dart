@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/desktop/main/d_asset_info.dart';
 import 'package:sideswap/desktop/main/d_open_url.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/desktop/main/d_recv_popup.dart';
 import 'package:sideswap/desktop/main/d_send_popup.dart';
 import 'package:sideswap/desktop/main/d_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_wait_pegin.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
@@ -76,6 +78,16 @@ void desktopOpenUrl(BuildContext context) {
     context: context,
     builder: (context) {
       return const DOpenUrl();
+    },
+    routeSettings: const RouteSettings(name: _popupRouteName),
+  );
+}
+
+void desktopOpenAccount(BuildContext context, AccountAsset account) {
+  showDialog<void>(
+    context: context,
+    builder: (context) {
+      return DAssetInfo(account: account);
     },
     routeSettings: const RouteSettings(name: _popupRouteName),
   );

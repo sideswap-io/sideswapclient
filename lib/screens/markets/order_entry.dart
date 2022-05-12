@@ -124,7 +124,7 @@ class _OrderEntryState extends ConsumerState<OrderEntry> {
   }
 
   void focusEnterAmount(WidgetRef ref, BuildContext context) {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (ref.read(requestOrderProvider).isSellOrder()) {
         FocusScope.of(context).requestFocus(deliverFocusNode);
         setValue(deliverController, '');

@@ -116,7 +116,7 @@ class _PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
 
     ref.read(paymentProvider).insufficientFunds = false;
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(tickerAmountFocusNode);
     });
   }

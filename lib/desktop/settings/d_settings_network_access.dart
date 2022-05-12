@@ -78,7 +78,7 @@ class DSettingsNetworkAccess extends ConsumerWidget {
                           (route) => route.isFirst);
                     },
                     content: Text(
-                      'Custom'.tr(),
+                      'Personal Electrum Server'.tr(),
                     ),
                   ),
                 ),

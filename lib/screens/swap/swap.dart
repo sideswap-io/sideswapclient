@@ -50,7 +50,7 @@ class _SwapMainState extends ConsumerState<SwapMain> {
     swapAddressRecvController = TextEditingController();
     deliverFocusNode = FocusNode();
     receiveFocusNode = FocusNode();
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(deliverFocusNode);
     });
 

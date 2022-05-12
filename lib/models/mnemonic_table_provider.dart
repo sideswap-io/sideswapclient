@@ -144,26 +144,26 @@ class MnemonicTableProvider extends ChangeNotifier {
       return;
     }
 
-    final List<String> choosedWords = [];
-    for (var w in wordlist) {
-      if (w.startsWith(searchWord)) {
-        choosedWords.add(w);
-      }
-    }
+    // final List<String> choosedWords = [];
+    // for (var w in wordlist) {
+    //   if (w.startsWith(searchWord)) {
+    //     choosedWords.add(w);
+    //   }
+    // }
 
-    if (choosedWords.length == 1 && searchWord.length > 3) {
-      wordItems[currentIndex] = WordItem(choosedWords[0], true);
-      nextWord(currentIndex);
-      notifyListeners();
-    } else {
-      final found = wordlist.any((e) => e == searchWord);
-      if (found) {
-        wordItems[currentIndex] = WordItem(searchWord, true);
-      } else {
-        wordItems[currentIndex] = WordItem(searchWord, false);
-      }
-      notifyListeners();
-    }
+    // if (choosedWords.length == 1 && searchWord.length > 3) {
+    //   wordItems[currentIndex] = WordItem(choosedWords[0], true);
+    //   nextWord(currentIndex);
+    //   notifyListeners();
+    // } else {
+    //   final found = wordlist.any((e) => e == searchWord);
+    //   if (found) {
+    //     wordItems[currentIndex] = WordItem(searchWord, true);
+    //   } else {
+    //     wordItems[currentIndex] = WordItem(searchWord, false);
+    //   }
+    //   notifyListeners();
+    // }
   }
 
   void validateOnSubmit(String value, int currentIndex) {
@@ -201,5 +201,12 @@ class MnemonicTableProvider extends ChangeNotifier {
       }
     }
     notifyListeners();
+  }
+
+  Iterable<String> suggestions(String text) {
+    if (text.isEmpty) {
+      return const Iterable.empty();
+    }
+    return wordlist.where((word) => word.startsWith(text));
   }
 }

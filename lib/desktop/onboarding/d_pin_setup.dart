@@ -145,7 +145,7 @@ class DPinSetupContent extends HookConsumerWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Set your PIN (4-8 chars)'.tr(),
+                  'Set your PIN (6-8 chars)'.tr(),
                   style: GoogleFonts.roboto(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,

@@ -46,17 +46,24 @@ class PinProtectionProvider extends ChangeNotifier {
   }
 
   VoidCallback? onUnlock;
+  VoidCallback? onUnlockFailed;
 
   StreamSubscription<PinDecryptedData>? pinDecryptedSubscription;
   PinProtectionState state = PinProtectionState.idle;
 
   String pinCode = '';
   String errorMessage = '';
+  int wrongCount = 0;
 
-  void init({required VoidCallback onUnlockCallback}) {
+  void init({
+    required VoidCallback onUnlockCallback,
+    VoidCallback? onUnlockFailedCallback,
+  }) {
     pinCode = '';
+    errorMessage = '';
     state = PinProtectionState.idle;
     onUnlock = onUnlockCallback;
+    onUnlockFailed = onUnlockFailedCallback;
   }
 
   void deinit() {
@@ -159,6 +166,7 @@ class PinProtectionProvider extends ChangeNotifier {
     logger.d(pinDecryptedData);
 
     if (pinDecryptedData.success) {
+      wrongCount = 0;
       if (onUnlock != null) {
         onUnlock!();
       }
@@ -171,7 +179,18 @@ class PinProtectionProvider extends ChangeNotifier {
         errorMessage = 'Connection failed'.tr();
         break;
       case 'BlockModeError':
-        errorMessage = 'Wrong PIN code'.tr();
+        wrongCount += 1;
+        switch (wrongCount) {
+          case 1:
+            errorMessage = 'Wrong PIN code. Two attempts remaining.'.tr();
+            break;
+          case 2:
+            errorMessage = 'Wrong PIN code. Last attempt remaining.'.tr();
+            break;
+          case 3:
+            ref.read(walletProvider).settingsDeletePromptConfirm();
+            return;
+        }
         break;
       default:
         errorMessage = 'Unknown error'.tr(args: [pinDecryptedData.error]);
@@ -179,5 +198,9 @@ class PinProtectionProvider extends ChangeNotifier {
     }
     state = PinProtectionState.error;
     notifyListeners();
+
+    if (onUnlockFailed != null) {
+      onUnlockFailed!();
+    }
   }
 }

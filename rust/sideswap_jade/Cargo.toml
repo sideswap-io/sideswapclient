@@ -5,7 +5,7 @@ edition = "2018"
 
 [dependencies]
 log = "*"
-serialport = "*"
+serialport = "4.1.0"
 hex = "*"
 ciborium = "*"
 ciborium-io = "*"
@@ -15,3 +15,4 @@ ureq = "2.0"
 serde_json = "*"
 serde_bytes = "*"
 base64 = "*"
+crossbeam-channel = "0.5.1"

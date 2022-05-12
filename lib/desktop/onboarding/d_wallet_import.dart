@@ -41,7 +41,6 @@ class _DWalletImportState extends ConsumerState<DWalletImport> {
       },
       constraints: const BoxConstraints(
         maxWidth: 628,
-        maxHeight: 593,
       ),
       title: Text(
         'Enter your recovery phrase'.tr(),
@@ -55,7 +54,7 @@ class _DWalletImportState extends ConsumerState<DWalletImport> {
       content: Center(
         child: SizedBox(
             width: 460,
-            height: mnemonicCounter == 12 ? 278 : 414,
+            height: mnemonicCounter == 12 ? 320 : 510,
             child: Consumer(
               builder: (context, ref, _) {
                 final currentItem = ref.watch(currentMnemonicIndexProvider);
@@ -99,7 +98,7 @@ class _DWalletImportState extends ConsumerState<DWalletImport> {
                     Padding(
                       padding: const EdgeInsets.only(top: 19),
                       child: DMnemonicTable(
-                        height: mnemonicCounter == 12 ? 137 : 274,
+                        height: mnemonicCounter == 12 ? 180 : 370,
                         itemsCount: ref.read(mnemonicTableProvider).length(),
                         itemSelected: currentItem,
                         onPressed: (index) {

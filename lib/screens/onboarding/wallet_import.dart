@@ -96,7 +96,7 @@ class _WalletImportInputsState extends ConsumerState<WalletImportInputs> {
 
     _listScrollController = ScrollController();
 
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       // focus first TextField
       _focusNodeList[_selectedItem].requestFocus();
       await _loadWordList();

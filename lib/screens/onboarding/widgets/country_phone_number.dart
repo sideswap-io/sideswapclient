@@ -79,7 +79,7 @@ class _CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
         .toList();
 
     WidgetsBinding.instance
-        ?.addPostFrameCallback((_) => afterBuild(ref, context));
+        .addPostFrameCallback((_) => afterBuild(ref, context));
   }
 
   @override

@@ -29,7 +29,7 @@ class PinSetupProvider extends ChangeNotifier {
 
   PinSetupProvider(this.ref);
 
-  static const minPinLength = 4;
+  static const minPinLength = 6;
   static const maxPinLength = 8;
 
   PinFieldState fieldState = PinFieldState.firstPin;
@@ -210,7 +210,7 @@ class PinSetupProvider extends ChangeNotifier {
 
     firstPin = '$_firstPin$number';
 
-    if (firstPin.length >= 4) {
+    if (firstPin.length >= minPinLength) {
       secondPinEnabled = true;
     }
     notifyListeners();

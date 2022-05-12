@@ -101,7 +101,14 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
   @override
   Widget build(BuildContext context) {
     final wallet = ref.watch(walletProvider);
-    final accounts = wallet.getAllAccounts();
+    final balances = ref.watch(balancesProvider);
+    final defaultAccount =
+        AccountAsset(AccountType.regular, wallet.liquidAssetId());
+    final accounts = wallet
+        .getAllAccounts()
+        .where((account) =>
+            (balances.balances[account] ?? 0) != 0 || account == defaultAccount)
+        .toList();
 
     return DPopupWithClose(
       width: 580,

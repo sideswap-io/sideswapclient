@@ -1575,7 +1575,7 @@ class _WorkingOrdersState extends ConsumerState<_WorkingOrders> {
                   )
                 : Scrollbar(
                     controller: _scrollController,
-                    isAlwaysShown: true,
+                    thumbVisibility: true,
                     child: ListView.builder(
                       controller: _scrollController,
                       itemBuilder: (BuildContext context, int index) {

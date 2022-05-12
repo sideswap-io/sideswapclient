@@ -229,6 +229,12 @@ class WalletChangeNotifier with ChangeNotifier {
 
   String _mnemonic = '';
 
+  // Used only to differentiate import and new wallet startup flows
+  // when same states are used (for example newWalletPinWelcome)
+  bool walletImporting = false;
+
+  bool loggedIn = false;
+
   final disabledAccounts = <AccountAsset>{};
 
   late GlobalKey<NavigatorState> navigatorKey;
@@ -437,7 +443,7 @@ class WalletChangeNotifier with ChangeNotifier {
       // Use array to show registered on the server assets first
       final newList = <AccountAsset>[];
       newList.add(AccountAsset(AccountType.regular, liquidAssetId()));
-      newList.add(AccountAsset(AccountType.amp, liquidAssetId()));
+      //newList.add(AccountAsset(AccountType.amp, liquidAssetId()));
       for (final asset in assets.values) {
         if (asset.swapMarket) {
           newList.add(AccountAsset(AccountType.regular, asset.assetId));
@@ -1183,6 +1189,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> setReviewLicenseCreateWallet() async {
+    walletImporting = false;
     if (ref.read(configProvider).licenseAccepted) {
       if (await _encryption.canAuthenticate()) {
         await newWalletBiometricPrompt();
@@ -1197,6 +1204,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setReviewLicenseImportWallet() {
+    walletImporting = true;
     if (ref.read(configProvider).licenseAccepted) {
       startMnemonicImport();
     } else {
@@ -1239,9 +1247,18 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void importMnemonic(String mnemonic) {
-    assert(
-        status == Status.importWallet || status == Status.importWalletSuccess);
+    assert(status == Status.importWallet ||
+        status == Status.importWalletSuccess ||
+        status == Status.newWalletPinWelcome);
+
     _mnemonic = mnemonic;
+
+    if (FlavorConfig.isDesktop) {
+      ref.read(pinSetupProvider).isNewWallet = true;
+      status = Status.newWalletPinWelcome;
+      notifyListeners();
+      return;
+    }
 
     setImportWalletResult(true);
   }
@@ -1533,17 +1550,21 @@ class WalletChangeNotifier with ChangeNotifier {
     loadSettings();
 
     status = Status.walletLoading;
+    loggedIn = true;
     notifyListeners();
   }
 
   Future<void> _logout() async {
     ref.read(balancesProvider.notifier).clear();
+    ref.read(uiStateArgsProvider).clear();
 
     final msg = To();
     msg.logout = Empty();
     sendMsg(msg);
 
     resetSettings();
+
+    loggedIn = false;
   }
 
   void selectAssetDetails(AccountAsset value) {
@@ -1851,8 +1872,16 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsDeletePromptConfirm() async {
-    unregisterPhone();
-    await _logout();
+    if (FlavorConfig.isDesktop) {
+      Navigator.of(navigatorKey.currentContext!, rootNavigator: true)
+          .popUntil((route) => route.isFirst);
+      Navigator.of(navigatorKey.currentContext!)
+          .popUntil((route) => route.isFirst);
+    }
+    if (loggedIn) {
+      unregisterPhone();
+      await _logout();
+    }
     await ref.read(configProvider).deleteConfig();
     ref.read(phoneProvider).clearData();
     allTxs.clear();
@@ -2138,7 +2167,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
       final instance = WidgetsBinding.instance;
       if (orderDetailsData.orderType == OrderDetailsDataType.sign &&
-          instance != null &&
           instance.lifecycleState == AppLifecycleState.resumed) {
         unawaited(FlutterRingtonePlayer.playNotification());
         unawaited(Vibration.vibrate());

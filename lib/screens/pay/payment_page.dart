@@ -35,13 +35,13 @@ class _PaymentPageState extends ConsumerState<PaymentPage>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addObserver(this);
+    WidgetsBinding.instance.addObserver(this);
     addressController = TextEditingController()..addListener(onAddressChanged);
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance!.removeObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     addressController.dispose();
     super.dispose();
   }

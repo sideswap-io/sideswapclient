@@ -30,13 +30,16 @@ enum ReviewState {
   disabled,
 }
 
-String getTitle(ReviewScreen screen) {
+String getTitle(ReviewScreen screen, ReviewState state) {
   switch (screen) {
     case ReviewScreen.submitStart:
       return 'Create order'.tr();
     case ReviewScreen.submitSucceed:
       return 'Order successfully created'.tr();
     case ReviewScreen.quote:
+      if (state == ReviewState.disabled) {
+        return 'Order signed'.tr();
+      }
       return 'Accept order'.tr();
     case ReviewScreen.sign:
       return 'Countersign order'.tr();
@@ -45,13 +48,16 @@ String getTitle(ReviewScreen screen) {
   }
 }
 
-String getButtonTitle(ReviewScreen screen) {
+String getButtonTitle(ReviewScreen screen, ReviewState state) {
   switch (screen) {
     case ReviewScreen.submitStart:
       return 'Create order'.tr();
     case ReviewScreen.submitSucceed:
       return 'Order successfully created'.tr();
     case ReviewScreen.quote:
+      if (state == ReviewState.disabled) {
+        return 'Awaiting countersigning'.tr();
+      }
       return 'Accept order'.tr();
     case ReviewScreen.sign:
       return 'Manual acceptance signing'.tr();
@@ -226,7 +232,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                           child: SvgPicture.asset('assets/success2.svg'),
                         ),
                       Text(
-                        getTitle(widget.screen),
+                        getTitle(widget.screen, state),
                         style: Theme.of(context).textTheme.headline3,
                       ),
                     ],
@@ -376,7 +382,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
               child: DCustomFilledBigButton(
                 width: 500,
                 height: 44,
-                child: Text(getButtonTitle(widget.screen).toUpperCase()),
+                child: Text(getButtonTitle(widget.screen, state).toUpperCase()),
                 onPressed: (state == ReviewState.idle) ? handleSubmit : null,
                 autofocus: widget.screen != ReviewScreen.edit,
               ),

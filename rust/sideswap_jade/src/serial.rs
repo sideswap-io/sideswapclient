@@ -7,8 +7,7 @@ pub struct Port {
 }
 
 pub struct Handle {
-    port: Box<dyn serialport::SerialPort>,
-    quit_flag: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    sender: crossbeam_channel::Sender<Vec<u8>>,
 }
 
 #[derive(Debug)]
@@ -41,19 +40,45 @@ impl Handle {
         F: 'static + Send + FnMut(FromPort) -> (),
     {
         debug!("open Jade port {}", port.port_name);
-        let port = serialport::new(&port.port_name, 115200)
-            .timeout(std::time::Duration::from_secs(15))
+        let mut port = serialport::new(&port.port_name, 115200)
+            .timeout(std::time::Duration::from_millis(50))
             .open()?;
-        let quit_flag = std::sync::Arc::new(std::sync::atomic::AtomicBool::default());
 
-        let mut port_copy = port.try_clone()?;
-        let quit_flag_copy = quit_flag.clone();
+        let (sender, receiver) = crossbeam_channel::unbounded::<Vec<u8>>();
+
         std::thread::spawn(move || {
             let reader = BufReader::default();
             let mut buffer = [0u8; 32768];
+
+            debug!("start jade read thread");
+
             loop {
-                debug!("start jade read...");
-                match port_copy.read(&mut buffer) {
+                loop {
+                    let recv_result = receiver.try_recv();
+                    match recv_result {
+                        Ok(v) => {
+                            let result = port.write_all(&v);
+                            if let Err(e) = result {
+                                callback(FromPort::FatalError(e.into()));
+                                return;
+                            }
+                            let result = port.flush();
+                            if let Err(e) = result {
+                                callback(FromPort::FatalError(e.into()));
+                                return;
+                            }
+                        }
+                        Err(crossbeam_channel::TryRecvError::Empty) => {
+                            break;
+                        }
+                        Err(crossbeam_channel::TryRecvError::Disconnected) => {
+                            debug!("stop reading thread");
+                            return;
+                        }
+                    }
+                }
+
+                match port.read(&mut buffer) {
                     Ok(bytes) => {
                         debug!("received {} bytes", bytes);
                         reader.append_data(&buffer[..bytes]);
@@ -78,13 +103,7 @@ impl Handle {
                             }
                         }
                     }
-                    Err(e) if e.kind() == std::io::ErrorKind::TimedOut => {
-                        debug!("jade read timeout");
-                        if quit_flag_copy.load(std::sync::atomic::Ordering::Relaxed) {
-                            debug!("stop reading thread");
-                            return;
-                        }
-                    }
+                    Err(e) if e.kind() == std::io::ErrorKind::TimedOut => {}
                     Err(e) => {
                         error!("fatal reading error: {}", e);
                         callback(FromPort::FatalError(e.into()));
@@ -94,7 +113,7 @@ impl Handle {
             }
         });
 
-        Ok(Self { port, quit_flag })
+        Ok(Self { sender })
     }
 
     pub fn send<T>(&mut self, data: &T) -> Result<(), anyhow::Error>
@@ -107,16 +126,7 @@ impl Handle {
             "send: {:?}",
             &ciborium::de::from_reader::<ciborium::value::Value, _>(buf.as_slice()).unwrap()
         );
-        self.port.write_all(&buf)?;
-        self.port.flush()?;
-        debug!("jade write succeed");
+        self.sender.send(buf)?;
         Ok(())
-    }
-}
-
-impl Drop for Handle {
-    fn drop(&mut self) {
-        self.quit_flag
-            .store(true, std::sync::atomic::Ordering::Relaxed);
     }
 }

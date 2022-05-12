@@ -34,7 +34,7 @@ class _DChartsState extends ConsumerState<DCharts> {
   void initState() {
     super.initState();
     marketData = ref.read(marketDataProvider);
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       marketData.marketDataSubscribe(widget.assetId);
       ref
           .read(tokenMarketProvider)
@@ -44,7 +44,7 @@ class _DChartsState extends ConsumerState<DCharts> {
 
   @override
   void dispose() {
-    WidgetsBinding.instance?.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       marketData.marketDataUnsubscribe();
     });
     super.dispose();

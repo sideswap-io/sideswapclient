@@ -61,7 +61,7 @@ class _TokenMarketOrderDetailsState
     });
 
     WidgetsBinding.instance
-        ?.addPostFrameCallback((_) => afterBuild(ref, context));
+        .addPostFrameCallback((_) => afterBuild(ref, context));
   }
 
   void afterBuild(WidgetRef ref, BuildContext context) async {

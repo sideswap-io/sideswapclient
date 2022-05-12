@@ -27,7 +27,7 @@ class _ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
   void initState() {
     super.initState();
     _numberFocusNode = FocusNode();
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
 
     confirmPhoneData = ref.read(phoneProvider).getConfirmPhoneData();
   }

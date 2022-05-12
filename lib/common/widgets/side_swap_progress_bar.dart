@@ -28,7 +28,7 @@ class _SideSwapProgressBarState extends State<SideSwapProgressBar> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance?.addPostFrameCallback((_) => afterBuild(context));
+    WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
   }
 
   void afterBuild(BuildContext context) {

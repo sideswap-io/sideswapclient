@@ -77,7 +77,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
           onClose: () {
             goBack(context, ref);
           },
-          content: Text('Custom'.tr()),
+          content: Text('Personal Electrum Server'.tr()),
         ),
         content: Center(
           child: SizedBox(

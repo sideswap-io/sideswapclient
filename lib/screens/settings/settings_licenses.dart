@@ -34,7 +34,7 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
     await for (final LicenseEntry license in LicenseRegistry.licenses) {
       var tempSubWidget = <Widget>[];
       final paragraphs =
-          await SchedulerBinding.instance?.scheduleTask<List<LicenseParagraph>>(
+          await SchedulerBinding.instance.scheduleTask<List<LicenseParagraph>>(
         license.paragraphs.toList,
         Priority.animation,
         debugLabel: 'License',
@@ -52,33 +52,31 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
         ),
       ));
 
-      if (paragraphs != null) {
-        for (var paragraph in paragraphs) {
-          if (paragraph.indent == LicenseParagraph.centeredIndent) {
-            tempSubWidget.add(
-              Padding(
-                padding: EdgeInsets.only(top: 16.h),
-                child: Text(
-                  paragraph.text,
-                  style: GoogleFonts.roboto(
-                    fontSize: 12.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+      for (var paragraph in paragraphs) {
+        if (paragraph.indent == LicenseParagraph.centeredIndent) {
+          tempSubWidget.add(
+            Padding(
+              padding: EdgeInsets.only(top: 16.h),
+              child: Text(
+                paragraph.text,
+                style: GoogleFonts.roboto(
+                  fontSize: 12.sp,
+                  fontWeight: FontWeight.bold,
                 ),
+                textAlign: TextAlign.center,
               ),
-            );
-          } else {
-            tempSubWidget.add(
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                    top: 8.0, start: 16.0 * paragraph.indent),
-                child: Text(
-                  paragraph.text,
-                ),
+            ),
+          );
+        } else {
+          tempSubWidget.add(
+            Padding(
+              padding: EdgeInsetsDirectional.only(
+                  top: 8.0, start: 16.0 * paragraph.indent),
+              child: Text(
+                paragraph.text,
               ),
-            );
-          }
+            ),
+          );
         }
       }
 

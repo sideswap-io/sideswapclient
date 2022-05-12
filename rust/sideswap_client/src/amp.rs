@@ -1809,7 +1809,7 @@ pub fn start_processing(
             }),
             Err(e) => {
                 debug!("openning jade device failed: {}", e);
-                _ = amp_sender.send(To::JadeFatalError(e));
+                let _ = amp_sender.send(To::JadeFatalError(e));
                 None
             }
         }

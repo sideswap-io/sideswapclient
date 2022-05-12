@@ -210,8 +210,13 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
         break;
       case Status.pinSuccess:
         if (ref.read(pinSetupProvider).isNewWallet) {
-          await ref.read(walletProvider).walletBiometricSkip();
-          ref.read(walletProvider).newWalletBackupPrompt();
+          final wallet = ref.read(walletProvider);
+          await wallet.walletBiometricSkip();
+          if (wallet.walletImporting) {
+            wallet.setImportWalletBiometricPrompt();
+          } else {
+            wallet.newWalletBackupPrompt();
+          }
           return;
         }
 
