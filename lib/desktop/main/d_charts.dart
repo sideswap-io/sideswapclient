@@ -1,7 +1,7 @@
 import 'package:candlesticks/candlesticks.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
@@ -13,10 +13,10 @@ import 'package:sideswap/models/wallet.dart';
 
 class DCharts extends ConsumerStatefulWidget {
   const DCharts({
-    Key? key,
+    super.key,
     required this.assetId,
     required this.onBackPressed,
-  }) : super(key: key);
+  });
 
   final String assetId;
   final VoidCallback onBackPressed;
@@ -129,11 +129,10 @@ class _DChartsState extends ConsumerState<DCharts> {
 
 class _AssetDetails extends ConsumerWidget {
   const _AssetDetails({
-    Key? key,
     required this.assetId,
     required this.expanded,
     required this.onToggled,
-  }) : super(key: key);
+  });
 
   final String assetId;
   final bool expanded;
@@ -208,13 +207,13 @@ class _AssetDetails extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _DetailsField(
-                name: '3d Low'.tr(),
+                name: '30d Low'.tr(),
                 value: priceStr(stats.low, pricedInLiquid),
                 assetAmount: stats.low,
                 assetId: priceAssetId,
               ),
               _DetailsField(
-                name: '3d High'.tr(),
+                name: '30d High'.tr(),
                 value: priceStr(stats.high, pricedInLiquid),
                 assetAmount: stats.high,
                 assetId: priceAssetId,
@@ -322,13 +321,12 @@ class _AssetDetails extends ConsumerWidget {
 
 class _DetailsField extends ConsumerWidget {
   const _DetailsField({
-    Key? key,
     required this.name,
     required this.value,
     this.color,
     this.assetAmount,
     this.assetId,
-  }) : super(key: key);
+  });
 
   final String name;
   final String value;

@@ -12,13 +12,13 @@ import 'package:sideswap/screens/markets/token_market_order_details.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class SwapMarket extends ConsumerStatefulWidget {
-  const SwapMarket({Key? key}) : super(key: key);
+  const SwapMarket({super.key});
 
   @override
-  _SwapMarketState createState() => _SwapMarketState();
+  SwapMarketState createState() => SwapMarketState();
 }
 
-class _SwapMarketState extends ConsumerState<SwapMarket> {
+class SwapMarketState extends ConsumerState<SwapMarket> {
   ScrollController scrollController = ScrollController();
 
   final headerStyle = GoogleFonts.roboto(
@@ -288,13 +288,13 @@ enum SwapAmountRowType {
 
 class SwapAmountRow extends StatelessWidget {
   SwapAmountRow({
-    Key? key,
+    super.key,
     required this.requestOrder,
     required this.isAmp,
     required this.assetPrecision,
     this.type = SwapAmountRowType.bid,
     this.onTap,
-  }) : super(key: key);
+  });
 
   final RequestOrder requestOrder;
   final SwapAmountRowType type;

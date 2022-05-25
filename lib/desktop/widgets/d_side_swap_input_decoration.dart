@@ -4,12 +4,10 @@ import 'package:sideswap/desktop/widgets/d_transparent_button.dart';
 
 class DSideSwapInputDecoration extends InputDecoration {
   DSideSwapInputDecoration({
-    String? hintText,
-    String? errorText,
+    super.hintText,
+    super.errorText,
     VoidCallback? onPastePressed,
   }) : super(
-          hintText: hintText,
-          errorText: errorText,
           hintStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.normal,
@@ -47,13 +45,13 @@ class DSideSwapInputDecoration extends InputDecoration {
                     MouseRegion(
                       cursor: SystemMouseCursors.basic,
                       child: DTransparentButton(
+                        onPressed: onPastePressed,
                         child: SvgPicture.asset(
                           'assets/paste.svg',
                           width: 20,
                           height: 20,
                           color: const Color(0xFF135579),
                         ),
-                        onPressed: onPastePressed,
                       ),
                     ),
                   ],

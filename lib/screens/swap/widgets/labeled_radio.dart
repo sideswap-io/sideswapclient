@@ -5,12 +5,12 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class LabeledRadio<T> extends StatelessWidget {
   const LabeledRadio({
-    Key? key,
+    super.key,
     required this.label,
     required this.groupValue,
     required this.value,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   final String label;
   final T groupValue;

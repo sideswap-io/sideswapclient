@@ -11,7 +11,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DSettingsDeleteWallet extends ConsumerWidget {
-  const DSettingsDeleteWallet({Key? key}) : super(key: key);
+  const DSettingsDeleteWallet({super.key});
 
   void goBack(WidgetRef ref) {
     ref.read(walletProvider).setRegistered();
@@ -51,7 +51,7 @@ class DSettingsDeleteWallet extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 10),
+                padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
                 child: Text(
                   'Please make sure you have backed up your wallet before proceeding.'
                       .tr(),

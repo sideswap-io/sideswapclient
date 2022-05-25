@@ -9,14 +9,14 @@ class RegexTextHighlight extends StatelessWidget {
   final bool ignoreCase;
 
   const RegexTextHighlight({
-    Key? key,
+    super.key,
     required this.text,
     required this.highlightRegex,
     required this.highlightStyle,
     required this.nonHighlightStyle,
     this.maxLines,
     this.ignoreCase = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

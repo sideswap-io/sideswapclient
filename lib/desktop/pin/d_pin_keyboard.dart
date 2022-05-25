@@ -29,11 +29,11 @@ class PinKeyboardIndexProvider extends ChangeNotifier {
 
 class DPinKeyboard extends HookConsumerWidget {
   const DPinKeyboard({
-    Key? key,
+    super.key,
     this.width,
     this.height,
     this.acceptType = PinKeyboardAcceptType.icon,
-  }) : super(key: key);
+  });
 
   final PinKeyboardAcceptType acceptType;
   final double? width;
@@ -173,13 +173,13 @@ class DPinKeyboard extends HookConsumerWidget {
 
 class DAnimatedPinButton extends HookConsumerWidget {
   const DAnimatedPinButton({
-    Key? key,
+    super.key,
     required this.itemWidth,
     required this.itemHeight,
     required this.buttonStyle,
     required this.child,
     required this.index,
-  }) : super(key: key);
+  });
 
   final double itemWidth;
   final double itemHeight;

@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -13,9 +13,9 @@ import 'package:sideswap/screens/onboarding/import_avatar_resizer.dart';
 
 class ImageSourceChooser extends ConsumerWidget {
   const ImageSourceChooser({
-    Key? key,
+    super.key,
     this.resizerData,
-  }) : super(key: key);
+  });
 
   final ImportAvatarResizerData? resizerData;
 
@@ -61,8 +61,7 @@ class ImageSourceChooser extends ConsumerWidget {
                     return;
                   }
 
-                  final error =
-                      ref.read(avatarProvider).avatarProviderError;
+                  final error = ref.read(avatarProvider).avatarProviderError;
                   if (error != null) {
                     await ref.read(utilsProvider).showErrorDialog(
                         'UNABLE_TO_LOAD_IMAGE'.tr(args: ['$error']));

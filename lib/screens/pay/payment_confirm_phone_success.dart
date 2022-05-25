@@ -4,7 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -15,14 +15,14 @@ import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class PaymentConfirmPhoneSuccess extends ConsumerStatefulWidget {
-  const PaymentConfirmPhoneSuccess({Key? key}) : super(key: key);
+  const PaymentConfirmPhoneSuccess({super.key});
 
   @override
-  _PaymentConfirmPhoneSuccessState createState() =>
-      _PaymentConfirmPhoneSuccessState();
+  PaymentConfirmPhoneSuccessState createState() =>
+      PaymentConfirmPhoneSuccessState();
 }
 
-class _PaymentConfirmPhoneSuccessState
+class PaymentConfirmPhoneSuccessState
     extends ConsumerState<PaymentConfirmPhoneSuccess> {
   final _defaultTextStyle = GoogleFonts.roboto(
     fontSize: 16.sp,

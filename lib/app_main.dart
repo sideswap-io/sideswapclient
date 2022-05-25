@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:secure_application/secure_application.dart';
@@ -14,6 +14,7 @@ import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/init_provider.dart';
 import 'package:sideswap/models/local_notifications_service.dart';
+import 'package:sideswap/models/locales_provider.dart';
 import 'package:sideswap/models/notifications_service.dart';
 import 'package:sideswap/models/pin_protection_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
@@ -69,35 +70,32 @@ import 'package:sideswap/screens/wallet_main/wallet_main.dart';
 
 class AppMain extends StatelessWidget {
   const AppMain({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: PreloadBackgroundPainter(),
       child: EasyLocalization(
-        supportedLocales: const [
-          Locale('en', 'US'),
-        ],
+        useOnlyLangCode: true,
+        supportedLocales: supportedLocales(),
         path: 'assets/translations',
-        fallbackLocale: const Locale('en', 'US'),
-        child: const ProviderScope(
-          child: MyApp(),
-        ),
+        fallbackLocale: const Locale('en'),
+        child: const MyApp(),
       ),
     );
   }
 }
 
 class MyApp extends ConsumerStatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  MyAppState createState() => MyAppState();
 }
 
-class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
+class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
@@ -128,7 +126,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       designSize: const Size(375, 667),
       minTextAdapt: true,
       splitScreenMode: true,
-      builder: () => MaterialApp(
+      builder: (context, _) => MaterialApp(
         title: 'SideSwap',
         debugShowCheckedModeBanner: false,
         theme: appTheme,
@@ -136,7 +134,6 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         supportedLocales: context.supportedLocales,
         locale: context.locale,
         builder: (context, widget) {
-          ScreenUtil.setContext(context);
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
             child: widget!,

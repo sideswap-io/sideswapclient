@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -16,12 +16,12 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class ModifyPriceDialog extends ConsumerStatefulWidget {
   const ModifyPriceDialog({
-    Key? key,
+    super.key,
     required this.controller,
     required this.orderDetailsData,
     this.asset,
     this.icon,
-  }) : super(key: key);
+  });
 
   final TextEditingController controller;
   final Asset? asset;
@@ -29,10 +29,10 @@ class ModifyPriceDialog extends ConsumerStatefulWidget {
   final OrderDetailsData orderDetailsData;
 
   @override
-  _ModifyPriceDialogState createState() => _ModifyPriceDialogState();
+  ModifyPriceDialogState createState() => ModifyPriceDialogState();
 }
 
-class _ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
+class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
   late FocusNode focusNode;
   double sliderValue = 0;
   BuildContext? currentContext;

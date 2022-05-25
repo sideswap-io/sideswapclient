@@ -8,20 +8,19 @@ import 'package:sideswap/screens/wallet_main/widgets/sideswap_navigation_item.da
 
 class MainBottomNavigationBar extends StatefulWidget {
   const MainBottomNavigationBar({
-    Key? key,
+    super.key,
     required this.onTap,
     required this.currentIndex,
-  }) : super(key: key);
+  });
 
   final ValueChanged<int> onTap;
   final int currentIndex;
 
   @override
-  _MainBottomNavigationBarState createState() =>
-      _MainBottomNavigationBarState();
+  MainBottomNavigationBarState createState() => MainBottomNavigationBarState();
 }
 
-class _MainBottomNavigationBarState extends State<MainBottomNavigationBar> {
+class MainBottomNavigationBarState extends State<MainBottomNavigationBar> {
   Color backgroundColor = const Color(0xFF021C36);
   Color selectedItemColor = const Color(0xFF00C5FF);
   Color unselectedItemColor = const Color(0xFF68839E);

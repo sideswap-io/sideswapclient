@@ -3,7 +3,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 class SwapBottomBackground extends StatelessWidget {
-  const SwapBottomBackground({Key? key}) : super(key: key);
+  const SwapBottomBackground({super.key});
 
   @override
   Widget build(BuildContext context) {

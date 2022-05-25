@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -21,13 +21,13 @@ import 'package:sideswap/screens/markets/widgets/order_price_field.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 
 class OrderEntry extends ConsumerStatefulWidget {
-  const OrderEntry({Key? key}) : super(key: key);
+  const OrderEntry({super.key});
 
   @override
-  _OrderEntryState createState() => _OrderEntryState();
+  OrderEntryState createState() => OrderEntryState();
 }
 
-class _OrderEntryState extends ConsumerState<OrderEntry> {
+class OrderEntryState extends ConsumerState<OrderEntry> {
   final TextEditingController deliverController = TextEditingController();
   final TextEditingController receiveController = TextEditingController();
   final TextEditingController priceAmountController = TextEditingController();

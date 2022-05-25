@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/markets_provider.dart';
@@ -11,13 +11,13 @@ import 'package:sideswap/screens/markets/token_market_order_details.dart';
 import 'package:sideswap/screens/markets/widgets/order_item.dart';
 
 class TokenMarket extends ConsumerStatefulWidget {
-  const TokenMarket({Key? key}) : super(key: key);
+  const TokenMarket({super.key});
 
   @override
-  _TokenMarketState createState() => _TokenMarketState();
+  TokenMarketState createState() => TokenMarketState();
 }
 
-class _TokenMarketState extends ConsumerState<TokenMarket> {
+class TokenMarketState extends ConsumerState<TokenMarket> {
   late TokenMarketDropdownValue currentDropdownValue;
   final tokenRequestOrders = <RequestOrder>[];
   ScrollController scrollController = ScrollController();

@@ -9,30 +9,20 @@ enum IconButtonMode { tiny, small, large }
 
 class DIconButton extends DBaseButton {
   const DIconButton({
-    Key? key,
+    super.key,
     required Widget icon,
-    required VoidCallback? onPressed,
-    VoidCallback? onLongPress,
-    VoidCallback? onTapUp,
-    VoidCallback? onTapDown,
-    VoidCallback? onTapCancel,
-    FocusNode? focusNode,
-    bool autofocus = false,
-    DButtonStyle? style,
+    required super.onPressed,
+    super.onLongPress,
+    super.onTapUp,
+    super.onTapDown,
+    super.onTapCancel,
+    super.focusNode,
+    super.autofocus = false,
+    super.style,
     this.iconButtonMode,
-    MouseCursor? cursor,
+    super.cursor,
   }) : super(
-          key: key,
           child: icon,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          onLongPress: onLongPress,
-          onPressed: onPressed,
-          onTapCancel: onTapCancel,
-          onTapDown: onTapDown,
-          onTapUp: onTapUp,
-          style: style,
-          cursor: cursor,
         );
 
   final IconButtonMode? iconButtonMode;
@@ -77,9 +67,9 @@ class DIconButton extends DBaseButton {
 
 class SmallIconButton extends InheritedWidget {
   const SmallIconButton({
-    Key? key,
-    required Widget child,
-  }) : super(key: key, child: child);
+    super.key,
+    required super.child,
+  });
 
   static SmallIconButton? of(BuildContext context) {
     return context.dependOnInheritedWidgetOfExactType<SmallIconButton>();

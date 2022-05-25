@@ -4,7 +4,7 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class AmpFlag extends StatelessWidget {
   final double fontSize;
-  const AmpFlag({Key? key, this.fontSize = 12}) : super(key: key);
+  const AmpFlag({super.key, this.fontSize = 12});
 
   @override
   Widget build(BuildContext context) {

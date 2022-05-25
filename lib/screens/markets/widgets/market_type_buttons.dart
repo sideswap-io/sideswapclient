@@ -11,12 +11,12 @@ enum MarketSelectedType {
 
 class MarketTypeButtons extends StatefulWidget {
   const MarketTypeButtons({
-    Key? key,
+    super.key,
     this.onOrdersPressed,
     this.onTokenPressed,
     this.onSwapPressed,
     this.selectedType = MarketSelectedType.orders,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onOrdersPressed;
   final VoidCallback? onTokenPressed;
@@ -24,10 +24,10 @@ class MarketTypeButtons extends StatefulWidget {
   final MarketSelectedType selectedType;
 
   @override
-  _MarketTypeButtonsState createState() => _MarketTypeButtonsState();
+  MarketTypeButtonsState createState() => MarketTypeButtonsState();
 }
 
-class _MarketTypeButtonsState extends State<MarketTypeButtons> {
+class MarketTypeButtonsState extends State<MarketTypeButtons> {
   final colorToggleBackground = const Color(0xFF043857);
   final colorToggleOn = const Color(0xFF1F7EB1);
   final colorToggleTextOn = const Color(0xFFFFFFFF);

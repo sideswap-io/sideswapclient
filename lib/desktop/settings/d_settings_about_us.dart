@@ -13,7 +13,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 
 class DSettingsAboutUs extends HookConsumerWidget {
-  const DSettingsAboutUs({Key? key}) : super(key: key);
+  const DSettingsAboutUs({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,7 +100,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
                     child: DUrlLinkButton(
-                      text: 'Licenses',
+                      text: 'Licenses'.tr(),
                       onPressed: () {
                         Navigator.pushAndRemoveUntil(
                             context,
@@ -112,11 +112,11 @@ class DSettingsAboutUs extends HookConsumerWidget {
                       },
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.only(top: 10),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
                     child: DUrlLinkButton(
                       url: SettingsAboutUsData.urlPrivacyPolicy,
-                      text: SettingsAboutUsData.urlPrivacyPolicyText,
+                      text: 'Privacy Policy'.tr(),
                       icon: 'assets/web_icon.svg',
                     ),
                   ),

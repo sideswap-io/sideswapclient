@@ -56,6 +56,7 @@ class OrderDetailsData {
     required this.fee,
     this.isTracking = false,
     this.private = false,
+    this.twoStep = false,
     this.autoSign = false,
     this.own = false,
     this.indexPrice = 0,
@@ -76,6 +77,7 @@ class OrderDetailsData {
   final int fee;
   final bool isTracking;
   final bool private;
+  final bool twoStep;
   final bool autoSign;
   final bool own;
   final double indexPrice;
@@ -112,6 +114,7 @@ class OrderDetailsData {
       orderId: requestOrder.orderId,
       fee: requestOrder.serverFee,
       private: requestOrder.private,
+      twoStep: requestOrder.twoStep,
       autoSign: requestOrder.autoSign,
       own: requestOrder.own,
       isTracking: requestOrder.indexPrice != 0,

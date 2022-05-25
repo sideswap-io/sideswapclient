@@ -8,9 +8,9 @@ enum DColoredCircularIconType {
 
 class DColoredCircularIcon extends StatelessWidget {
   const DColoredCircularIcon({
-    Key? key,
+    super.key,
     this.type = DColoredCircularIconType.delete,
-  }) : super(key: key);
+  });
 
   final DColoredCircularIconType type;
 

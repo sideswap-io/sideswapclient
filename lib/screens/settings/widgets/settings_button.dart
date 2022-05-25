@@ -15,12 +15,12 @@ enum SettingsButtonType {
 
 class SettingsButton extends StatefulWidget {
   const SettingsButton({
-    Key? key,
+    super.key,
     this.transparent = false,
     this.type = SettingsButtonType.recovery,
     required this.text,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final bool transparent;
   final SettingsButtonType type;
@@ -28,10 +28,10 @@ class SettingsButton extends StatefulWidget {
   final VoidCallback? onPressed;
 
   @override
-  _SettingsButtonState createState() => _SettingsButtonState();
+  SettingsButtonState createState() => SettingsButtonState();
 }
 
-class _SettingsButtonState extends State<SettingsButton> {
+class SettingsButtonState extends State<SettingsButton> {
   late Widget _icon;
 
   @override

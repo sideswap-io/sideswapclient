@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -12,11 +12,11 @@ import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class TxItemTransaction extends StatelessWidget {
   const TxItemTransaction({
-    Key? key,
+    super.key,
     required this.transItem,
     required this.assetId,
     required this.accountType,
-  }) : super(key: key);
+  });
 
   final TransItem transItem;
   final String assetId;

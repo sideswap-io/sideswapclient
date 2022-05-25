@@ -1,5 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,8 +12,7 @@ import 'package:sideswap/screens/markets/confirm_request_payment.dart';
 
 class RequestPaymentItem extends ConsumerWidget {
   const RequestPaymentItem(
-      {Key? key, required this.request, required this.onCancelPressed})
-      : super(key: key);
+      {super.key, required this.request, required this.onCancelPressed});
 
   final PaymentRequest request;
   final VoidCallback onCancelPressed;
@@ -21,8 +20,8 @@ class RequestPaymentItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var height = 158.h;
-    var header = 'Sended'.tr();
-    final _dateFormat = DateFormat('dd MMMM yyyy');
+    var header = 'Sent'.tr();
+    final dateFormat = DateFormat('dd MMMM yyyy');
 
     if (request.type == PaymentRequestType.received) {
       height = 214.h;
@@ -43,7 +42,7 @@ class RequestPaymentItem extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '$header - ${_dateFormat.format(request.dateTime)}',
+              '$header - ${dateFormat.format(request.dateTime)}',
               style: GoogleFonts.roboto(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.normal,

@@ -5,11 +5,11 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class TxDetailsRow extends StatelessWidget {
   const TxDetailsRow({
-    Key? key,
+    super.key,
     required this.description,
     required this.details,
     this.detailsColor = Colors.white,
-  }) : super(key: key);
+  });
 
   final String description;
   final String details;

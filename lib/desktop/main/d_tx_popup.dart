@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
@@ -12,9 +12,9 @@ import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
 
 class DTxPopup extends ConsumerWidget {
   const DTxPopup({
-    Key? key,
+    super.key,
     required this.id,
-  }) : super(key: key);
+  });
 
   final String id;
 
@@ -106,13 +106,13 @@ class DTxPopup extends ConsumerWidget {
                   child: Column(
                     children: [
                       _Field(name: 'Fee'.tr(), value: feeStr),
-                      const _Separator(),
+                      _Separator(),
                       _Field(name: 'Size of transaction'.tr(), value: sizeStr),
-                      const _Separator(),
+                      _Separator(),
                       _Field(
                           name: 'Number of confirmations'.tr(),
                           value: confsStr),
-                      const _Separator(),
+                      _Separator(),
                       _Field(name: 'Transaction ID'.tr(), value: ''),
                       Row(
                         children: [
@@ -162,9 +162,9 @@ class DTxPopup extends ConsumerWidget {
 
 class DPegPopup extends ConsumerWidget {
   const DPegPopup({
-    Key? key,
+    super.key,
     required this.id,
-  }) : super(key: key);
+  });
 
   final String id;
 
@@ -252,9 +252,9 @@ class DPegPopup extends ConsumerWidget {
                 ),
                 const SizedBox(height: 10),
                 _Field(name: 'Conversion rate'.tr(), value: conversionRateStr),
-                const _Separator(),
+                _Separator(),
                 _Field(name: 'Number of confirmations'.tr(), value: confsStr),
-                const _Separator(),
+                _Separator(),
                 _Field(name: 'Transaction ID'.tr(), value: ''),
                 Row(
                   children: [
@@ -306,10 +306,9 @@ class DPegPopup extends ConsumerWidget {
 
 class _Balance extends ConsumerWidget {
   const _Balance({
-    Key? key,
     required this.assetId,
     required this.amount,
-  }) : super(key: key);
+  });
 
   final String assetId;
   final int amount;
@@ -325,6 +324,10 @@ class _Balance extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 12),
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          color: Color(0xFF135579),
+        ),
         child: Center(
           child: Row(
             children: [
@@ -336,10 +339,6 @@ class _Balance extends ConsumerWidget {
             ],
           ),
         ),
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-          color: Color(0xFF135579),
-        ),
       ),
     );
   }
@@ -347,10 +346,9 @@ class _Balance extends ConsumerWidget {
 
 class _Field extends StatelessWidget {
   const _Field({
-    Key? key,
     required this.name,
     required this.value,
-  }) : super(key: key);
+  });
 
   final String name;
   final String value;
@@ -384,8 +382,6 @@ class _Field extends StatelessWidget {
 }
 
 class _Separator extends StatelessWidget {
-  const _Separator({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -397,10 +393,9 @@ class _Separator extends StatelessWidget {
 
 class _LinkButton extends StatelessWidget {
   const _LinkButton({
-    Key? key,
     required this.text,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   final String text;
   final VoidCallback? onPressed;
@@ -410,6 +405,7 @@ class _LinkButton extends StatelessWidget {
     return DCustomTextBigButton(
       width: 245,
       height: 60,
+      onPressed: onPressed,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -423,7 +419,6 @@ class _LinkButton extends StatelessWidget {
           Text(text.toUpperCase(), textAlign: TextAlign.start),
         ],
       ),
-      onPressed: onPressed,
     );
   }
 }

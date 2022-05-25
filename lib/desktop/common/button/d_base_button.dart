@@ -8,7 +8,7 @@ import 'package:sideswap/desktop/theme.dart';
 
 abstract class DBaseButton extends ConsumerStatefulWidget {
   const DBaseButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.onLongPress,
     this.onTapUp,
@@ -19,7 +19,7 @@ abstract class DBaseButton extends ConsumerStatefulWidget {
     required this.autofocus,
     required this.child,
     this.cursor,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onPressed;
   final VoidCallback? onLongPress;
@@ -41,7 +41,7 @@ abstract class DBaseButton extends ConsumerStatefulWidget {
   bool get enabled => onPressed != null || onLongPress != null;
 
   @override
-  _BaseButtonState createState() => _BaseButtonState();
+  BaseButtonState createState() => BaseButtonState();
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -55,7 +55,7 @@ abstract class DBaseButton extends ConsumerStatefulWidget {
   }
 }
 
-class _BaseButtonState extends ConsumerState<DBaseButton> {
+class BaseButtonState extends ConsumerState<DBaseButton> {
   @override
   Widget build(BuildContext context) {
     final fasterAnimationDuration =
@@ -153,7 +153,7 @@ class _BaseButtonState extends ConsumerState<DBaseButton> {
             ),
           ),
         );
-        return DFocusBorder(child: result, focused: states.isFocused);
+        return DFocusBorder(focused: states.isFocused, child: result);
       },
     );
 

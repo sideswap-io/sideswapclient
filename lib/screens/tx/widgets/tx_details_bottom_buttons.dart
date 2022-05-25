@@ -5,7 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -15,12 +15,12 @@ import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 
 class TxDetailsBottomButtons extends ConsumerStatefulWidget {
   const TxDetailsBottomButtons({
-    Key? key,
+    super.key,
     required this.id,
     required this.isLiquid,
     this.enabled = true,
     this.blindType = BlindType.both,
-  }) : super(key: key);
+  });
 
   final String id;
   final bool isLiquid;
@@ -28,10 +28,10 @@ class TxDetailsBottomButtons extends ConsumerStatefulWidget {
   final bool enabled;
 
   @override
-  _TxDetailsBottomButtonsState createState() => _TxDetailsBottomButtonsState();
+  TxDetailsBottomButtonsState createState() => TxDetailsBottomButtonsState();
 }
 
-class _TxDetailsBottomButtonsState
+class TxDetailsBottomButtonsState
     extends ConsumerState<TxDetailsBottomButtons> {
   StreamSubscription? openExplorerSubscription;
   StreamSubscription? shareExplorerSubscription;

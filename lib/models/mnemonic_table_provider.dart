@@ -122,7 +122,7 @@ class MnemonicTableProvider extends ChangeNotifier {
       wordList.add(wordItem.word);
     }
     final result = wordList.fold<String>(
-        '', (previousValue, element) => previousValue + ' ' + element.trim());
+        '', (previousValue, element) => '$previousValue ${element.trim()}');
     return result.trim();
   }
 

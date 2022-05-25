@@ -1421,6 +1421,7 @@ class Order extends $pb.GeneratedMessage {
     ..a<$core.bool>(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fromNotification', $pb.PbFieldType.QB)
     ..a<$core.double>(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'indexPrice', $pb.PbFieldType.OD)
     ..a<$core.bool>(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'tokenMarket', $pb.PbFieldType.QB)
+    ..a<$core.bool>(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'twoStep', $pb.PbFieldType.QB)
   ;
 
   Order._() : super();
@@ -1440,6 +1441,7 @@ class Order extends $pb.GeneratedMessage {
     $core.bool? fromNotification,
     $core.double? indexPrice,
     $core.bool? tokenMarket,
+    $core.bool? twoStep,
   }) {
     final _result = create();
     if (orderId != null) {
@@ -1486,6 +1488,9 @@ class Order extends $pb.GeneratedMessage {
     }
     if (tokenMarket != null) {
       _result.tokenMarket = tokenMarket;
+    }
+    if (twoStep != null) {
+      _result.twoStep = twoStep;
     }
     return _result;
   }
@@ -1644,6 +1649,15 @@ class Order extends $pb.GeneratedMessage {
   $core.bool hasTokenMarket() => $_has(14);
   @$pb.TagNumber(16)
   void clearTokenMarket() => clearField(16);
+
+  @$pb.TagNumber(17)
+  $core.bool get twoStep => $_getBF(15);
+  @$pb.TagNumber(17)
+  set twoStep($core.bool v) { $_setBool(15, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasTwoStep() => $_has(15);
+  @$pb.TagNumber(17)
+  void clearTwoStep() => clearField(17);
 }
 
 class SwapDetails extends $pb.GeneratedMessage {
@@ -3485,6 +3499,7 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     ..aOB(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'autoSign')
     ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'private')
     ..a<$fixnum.Int64>(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ttlSeconds', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOB(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'twoStep')
   ;
 
   To_SubmitDecision._() : super();
@@ -3494,6 +3509,7 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     $core.bool? autoSign,
     $core.bool? private,
     $fixnum.Int64? ttlSeconds,
+    $core.bool? twoStep,
   }) {
     final _result = create();
     if (orderId != null) {
@@ -3510,6 +3526,9 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     }
     if (ttlSeconds != null) {
       _result.ttlSeconds = ttlSeconds;
+    }
+    if (twoStep != null) {
+      _result.twoStep = twoStep;
     }
     return _result;
   }
@@ -3578,6 +3597,15 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
   $core.bool hasTtlSeconds() => $_has(4);
   @$pb.TagNumber(5)
   void clearTtlSeconds() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get twoStep => $_getBF(5);
+  @$pb.TagNumber(6)
+  set twoStep($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTwoStep() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTwoStep() => clearField(6);
 }
 
 enum To_EditOrder_Data {

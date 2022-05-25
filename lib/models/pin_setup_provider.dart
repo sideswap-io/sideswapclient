@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
@@ -18,7 +17,7 @@ enum PinFieldState {
   secondPin,
 }
 
-enum PinSetupState {
+enum PinSetupStateEnum {
   idle,
   error,
   done,
@@ -33,7 +32,7 @@ class PinSetupProvider extends ChangeNotifier {
   static const maxPinLength = 8;
 
   PinFieldState fieldState = PinFieldState.firstPin;
-  PinSetupState state = PinSetupState.idle;
+  PinSetupStateEnum state = PinSetupStateEnum.idle;
 
   StreamSubscription<PinData>? pinEnryptedSubscription;
 
@@ -45,7 +44,7 @@ class PinSetupProvider extends ChangeNotifier {
     }
 
     _firstPin = value;
-    state = PinSetupState.idle;
+    state = PinSetupStateEnum.idle;
     errorMessage = '';
     notifyListeners();
   }
@@ -58,7 +57,7 @@ class PinSetupProvider extends ChangeNotifier {
     }
 
     _secondPin = value;
-    state = PinSetupState.idle;
+    state = PinSetupStateEnum.idle;
     errorMessage = '';
     notifyListeners();
   }
@@ -70,7 +69,7 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   bool get firstPinEnabled {
-    if (state == PinSetupState.done) {
+    if (state == PinSetupStateEnum.done) {
       return false;
     }
 
@@ -84,7 +83,7 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   bool get secondPinEnabled {
-    if (state == PinSetupState.done) {
+    if (state == PinSetupStateEnum.done) {
       return false;
     }
 
@@ -133,7 +132,7 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   void _done() {
-    state = PinSetupState.done;
+    state = PinSetupStateEnum.done;
     notifyListeners();
 
     Future.microtask(() {
@@ -143,7 +142,7 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   void _clearStates() {
-    state = PinSetupState.idle;
+    state = PinSetupStateEnum.idle;
     fieldState = PinFieldState.firstPin;
     firstPin = '';
     firstPinEnabled = true;
@@ -250,7 +249,7 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   Future<void> _onEnter() async {
-    if (state == PinSetupState.done) {
+    if (state == PinSetupStateEnum.done) {
       return;
     }
 
@@ -262,7 +261,7 @@ class PinSetupProvider extends ChangeNotifier {
 
     if (fieldState == PinFieldState.secondPin && secondPinEnabled) {
       if (firstPin != secondPin) {
-        state = PinSetupState.error;
+        state = PinSetupStateEnum.error;
         errorMessage = "PIN code doesn't match".tr();
         notifyListeners();
         return;
@@ -298,7 +297,7 @@ class PinSetupProvider extends ChangeNotifier {
     pinEnryptedSubscription =
         ref.read(walletProvider).pinEncryptDataSubject.listen(_onPinData);
     ref.read(walletProvider).sendEncryptPin(pin);
-    state = PinSetupState.done;
+    state = PinSetupStateEnum.done;
     notifyListeners();
   }
 
@@ -308,7 +307,7 @@ class PinSetupProvider extends ChangeNotifier {
 
     if (pinData.error.isNotEmpty) {
       errorMessage = 'Error setup new PIN code'.tr();
-      state = PinSetupState.error;
+      state = PinSetupStateEnum.error;
       notifyListeners();
       return;
     }

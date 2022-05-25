@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
@@ -9,9 +9,9 @@ import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 
 class DTtlPopup extends ConsumerWidget {
   const DTtlPopup({
-    Key? key,
+    super.key,
     this.selected,
-  }) : super(key: key);
+  });
 
   final int? selected;
 
@@ -64,10 +64,9 @@ class DTtlPopup extends ConsumerWidget {
 
 class _TtlValue extends StatelessWidget {
   const _TtlValue({
-    Key? key,
     required this.ttl,
     required this.selected,
-  }) : super(key: key);
+  });
 
   final int ttl;
   final bool selected;

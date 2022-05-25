@@ -10,12 +10,11 @@ class DesktopPageRoute<T> extends PageRoute<T> {
     bool maintainState = true,
     String? barrierLabel,
     required WidgetBuilder builder,
-    RouteSettings? settings,
-    bool fullscreenDialog = false,
+    super.settings,
+    super.fullscreenDialog,
   })  : _barrierLabel = barrierLabel,
         _maintainState = maintainState,
-        _builder = builder,
-        super(fullscreenDialog: fullscreenDialog, settings: settings);
+        _builder = builder;
 
   @override
   Color? get barrierColor => null;
@@ -36,8 +35,8 @@ class DesktopPageRoute<T> extends PageRoute<T> {
           curve: Curves.linear,
         ),
         child: ScaleTransition(
-          child: result,
           scale: Tween<double>(begin: 0.88, end: 1.0).animate(animation),
+          child: result,
         ),
       ),
     );

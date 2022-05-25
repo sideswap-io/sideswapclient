@@ -27,9 +27,9 @@ String getPegImageAssetName(bool isPegIn) {
 
 class TxImageSmall extends StatelessWidget {
   const TxImageSmall({
-    Key? key,
+    super.key,
     required this.txType,
-  }) : super(key: key);
+  });
 
   final TxType txType;
 
@@ -45,9 +45,9 @@ class TxImageSmall extends StatelessWidget {
 
 class PegImageSmall extends StatelessWidget {
   const PegImageSmall({
-    Key? key,
+    super.key,
     required this.isPegIn,
-  }) : super(key: key);
+  });
 
   final bool isPegIn;
 

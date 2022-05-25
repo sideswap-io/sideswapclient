@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/swap_provider.dart';
@@ -8,11 +8,11 @@ import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class TopSwapButtons extends StatelessWidget {
   const TopSwapButtons({
-    Key? key,
+    super.key,
     required this.onSwapPressed,
     required this.onPegPressed,
     required this.isDesktop,
-  }) : super(key: key);
+  });
 
   final _colorToggleBackgroundMobile = const Color(0xFF043857);
   final _colorToggleBackgroundDesktop = const Color(0xFF062D44);
@@ -39,25 +39,24 @@ class TopSwapButtons extends StatelessWidget {
       ),
       child: Consumer(
         builder: (context, ref, _) {
-          final _swapPeg = ref.watch(swapProvider.select((p) => p.swapPeg));
+          final swapPeg = ref.watch(swapProvider.select((p) => p.swapPeg));
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: SwapButton(
-                  color: !_swapPeg ? _colorToggleOn : colorToggleBackground,
+                  color: !swapPeg ? _colorToggleOn : colorToggleBackground,
                   text: 'Swap'.tr(),
                   textColor:
-                      !_swapPeg ? _colorToggleTextOn : _colorToggleTextOff,
+                      !swapPeg ? _colorToggleTextOn : _colorToggleTextOff,
                   onPressed: onSwapPressed,
                 ),
               ),
               Expanded(
                 child: SwapButton(
-                  color: _swapPeg ? _colorToggleOn : colorToggleBackground,
+                  color: swapPeg ? _colorToggleOn : colorToggleBackground,
                   text: 'Peg-In/Out'.tr(),
-                  textColor:
-                      _swapPeg ? _colorToggleTextOn : _colorToggleTextOff,
+                  textColor: swapPeg ? _colorToggleTextOn : _colorToggleTextOff,
                   onPressed: onPegPressed,
                 ),
               ),

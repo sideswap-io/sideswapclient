@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
@@ -10,17 +10,17 @@ import 'package:sideswap/models/pin_protection_provider.dart';
 
 class PinKeyboard extends ConsumerStatefulWidget {
   const PinKeyboard({
-    Key? key,
+    super.key,
     this.acceptType = PinKeyboardAcceptType.icon,
-  }) : super(key: key);
+  });
 
   final PinKeyboardAcceptType acceptType;
 
   @override
-  _PinKeyboardState createState() => _PinKeyboardState();
+  PinKeyboardState createState() => PinKeyboardState();
 }
 
-class _PinKeyboardState extends ConsumerState<PinKeyboard> {
+class PinKeyboardState extends ConsumerState<PinKeyboard> {
   final _buttonStyle = GoogleFonts.roboto(
     fontSize: 26.sp,
     fontWeight: FontWeight.w500,
@@ -29,8 +29,8 @@ class _PinKeyboardState extends ConsumerState<PinKeyboard> {
 
   @override
   Widget build(BuildContext context) {
-    final _itemWidth = 96.w;
-    final _itemHeight = 57.h;
+    final itemWidth = 96.w;
+    final itemHeight = 57.h;
 
     return SizedBox(
       width: 319.w,
@@ -42,7 +42,7 @@ class _PinKeyboardState extends ConsumerState<PinKeyboard> {
         padding: EdgeInsets.zero,
         mainAxisSpacing: 16.h,
         crossAxisSpacing: 16.w,
-        childAspectRatio: _itemWidth / _itemHeight,
+        childAspectRatio: itemWidth / itemHeight,
         physics: const NeverScrollableScrollPhysics(),
         children: List.generate(12, (index) {
           Widget child;

@@ -9,7 +9,7 @@ import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 
 class TxDetailsColumn extends StatelessWidget {
   TxDetailsColumn({
-    Key? key,
+    super.key,
     required this.description,
     required this.details,
     this.isCopyVisible = false,
@@ -27,8 +27,7 @@ class TxDetailsColumn extends StatelessWidget {
               fontSize: 14.sp,
               fontWeight: FontWeight.normal,
               color: Colors.white,
-            ),
-        super(key: key);
+            );
 
   final String description;
   final String details;

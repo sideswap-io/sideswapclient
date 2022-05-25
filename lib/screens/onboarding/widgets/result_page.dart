@@ -12,7 +12,7 @@ enum ResultPageType {
 
 class ResultPage extends StatelessWidget {
   const ResultPage({
-    Key? key,
+    super.key,
     this.header = '',
     this.description = '',
     this.descriptionWidget,
@@ -25,7 +25,7 @@ class ResultPage extends StatelessWidget {
     this.topPadding,
     this.buttonBackgroundColor = const Color(0xFF00C5FF),
     this.buttonSide,
-  }) : super(key: key);
+  });
 
   final String header;
   final String description;

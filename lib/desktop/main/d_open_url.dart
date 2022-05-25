@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
@@ -9,7 +9,7 @@ import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 
 class DOpenUrl extends ConsumerStatefulWidget {
-  const DOpenUrl({Key? key}) : super(key: key);
+  const DOpenUrl({super.key});
 
   @override
   ConsumerState<DOpenUrl> createState() => _DOpenUrlState();
@@ -67,9 +67,9 @@ class _DOpenUrlState extends ConsumerState<DOpenUrl> {
             const Spacer(),
             DCustomButton(
               height: 44,
-              child: Text('OK'.tr().toUpperCase()),
               isFilled: true,
               onPressed: handleSubmit,
+              child: Text('OK'.tr()),
             ),
           ],
         ),

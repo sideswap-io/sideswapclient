@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -15,11 +15,11 @@ class TxListItem extends StatelessWidget {
   final AccountType accountType;
   final TxItem txItem;
   const TxListItem({
-    Key? key,
+    super.key,
     required this.assetId,
     required this.accountType,
     required this.txItem,
-  }) : super(key: key);
+  });
 
   static final itemHeight = 46.h;
   static final itemWithDateHeight = 95.h;

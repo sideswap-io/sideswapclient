@@ -16,7 +16,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final Widget? trailingWidget;
 
   const CustomAppBar({
-    Key? key,
+    super.key,
     this.title,
     this.onPressed,
     this.backButtonColor,
@@ -26,7 +26,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showTrailingButton = false,
     this.onTrailingButtonPressed,
     this.trailingWidget,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

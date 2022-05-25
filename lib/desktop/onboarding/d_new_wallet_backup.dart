@@ -10,7 +10,7 @@ import 'package:sideswap/models/mnemonic_table_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DNewWalletBackup extends ConsumerStatefulWidget {
-  const DNewWalletBackup({Key? key}) : super(key: key);
+  const DNewWalletBackup({super.key});
 
   @override
   ConsumerState<DNewWalletBackup> createState() => _DWalletBackupState();

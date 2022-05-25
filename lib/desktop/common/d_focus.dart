@@ -8,13 +8,13 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DFocusBorder extends ConsumerWidget {
   const DFocusBorder({
-    Key? key,
+    super.key,
     required this.child,
     this.focused = true,
     this.style,
     this.renderOutside,
     this.useStackApproach = true,
-  }) : super(key: key);
+  });
 
   final Widget child;
   final bool focused;
@@ -99,10 +99,10 @@ class DFocusBorder extends ConsumerWidget {
 
 class DFocusTheme extends InheritedWidget {
   const DFocusTheme({
-    Key? key,
+    super.key,
     required this.data,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required super.child,
+  });
 
   final DFocusThemeData data;
 

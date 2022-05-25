@@ -10,19 +10,19 @@ enum EmptyRequestLogoIcon {
 
 class EmptyRequestsLogoContainer extends StatelessWidget {
   const EmptyRequestsLogoContainer({
-    Key? key,
+    super.key,
     this.icon = EmptyRequestLogoIcon.male,
     this.opacity = 1,
-  }) : super(key: key);
+  });
 
   final EmptyRequestLogoIcon icon;
   final double opacity;
 
   Widget getIcon() {
-    Widget _icon;
+    Widget internalIcon;
     switch (icon) {
       case EmptyRequestLogoIcon.male:
-        _icon = ClipOval(
+        internalIcon = ClipOval(
           child: Padding(
             padding: EdgeInsets.only(top: 5.h),
             child: SvgPicture.asset('assets/avatar.svg'),
@@ -30,7 +30,7 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
         );
         break;
       case EmptyRequestLogoIcon.ok:
-        _icon = Center(
+        internalIcon = Center(
           child: SvgPicture.asset(
             'assets/success.svg',
             width: 18.w,
@@ -40,7 +40,7 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
         break;
     }
 
-    return _icon;
+    return internalIcon;
   }
 
   @override

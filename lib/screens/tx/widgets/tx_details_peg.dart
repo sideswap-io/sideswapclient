@@ -14,17 +14,17 @@ import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 
 class TxDetailsPeg extends StatefulWidget {
   const TxDetailsPeg({
-    Key? key,
+    super.key,
     required this.transItem,
-  }) : super(key: key);
+  });
 
   final TransItem transItem;
 
   @override
-  _TxDetailsPegState createState() => _TxDetailsPegState();
+  TxDetailsPegState createState() => TxDetailsPegState();
 }
 
-class _TxDetailsPegState extends State<TxDetailsPeg> {
+class TxDetailsPegState extends State<TxDetailsPeg> {
   late String _timestampStr;
   late String _status;
 
@@ -39,20 +39,20 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
   @override
   Widget build(BuildContext context) {
     _status = txItemToStatus(widget.transItem, isPeg: true);
-    final _amountSend =
+    final amountSend =
         double.tryParse(amountStr(widget.transItem.peg.amountSend.toInt())) ??
             0;
-    final _amountRecv =
+    final amountRecv =
         double.tryParse(amountStr(widget.transItem.peg.amountRecv.toInt())) ??
             0;
     var conversionReceived = .0;
-    if (_amountSend != 0 && _amountRecv != 0) {
-      conversionReceived = _amountRecv * 100 / _amountSend;
+    if (amountSend != 0 && amountRecv != 0) {
+      conversionReceived = amountRecv * 100 / amountSend;
     }
     final isPegIn = widget.transItem.peg.isPegIn;
     final sendTicker = isPegIn ? kBitcoinTicker : kLiquidBitcoinTicker;
     final recvTicker = isPegIn ? kLiquidBitcoinTicker : kBitcoinTicker;
-    final _conversionRate =
+    final conversionRate =
         '1 $sendTicker = ${conversionReceived.toStringAsFixed(2)}% $recvTicker';
 
     return Column(
@@ -117,7 +117,7 @@ class _TxDetailsPegState extends State<TxDetailsPeg> {
           padding: EdgeInsets.only(top: 12.h),
           child: TxDetailsRow(
             description: 'Conversion rate'.tr(),
-            details: _conversionRate,
+            details: conversionRate,
           ),
         ),
         Padding(

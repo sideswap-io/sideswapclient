@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/helpers.dart';
 
@@ -18,13 +18,13 @@ import 'package:sideswap/screens/settings/widgets/settings_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_delete_wallet_dialog.dart';
 
 class Settings extends ConsumerStatefulWidget {
-  const Settings({Key? key}) : super(key: key);
+  const Settings({super.key});
 
   @override
-  _SettingsState createState() => _SettingsState();
+  SettingsState createState() => SettingsState();
 }
 
-class _SettingsState extends ConsumerState<Settings> {
+class SettingsState extends ConsumerState<Settings> {
   bool isBiometricAvailable = false;
 
   @override

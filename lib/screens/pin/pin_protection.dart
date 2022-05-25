@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -16,10 +16,10 @@ import 'package:sideswap/screens/onboarding/widgets/pin_text_field.dart';
 
 class PinProtection extends StatelessWidget {
   const PinProtection({
-    Key? key,
+    super.key,
     this.title,
     this.iconType = PinKeyboardAcceptType.unlock,
-  }) : super(key: key);
+  });
 
   final String? title;
   final PinKeyboardAcceptType iconType;
@@ -64,17 +64,17 @@ class PinProtection extends StatelessWidget {
 
 class PinProtectionBody extends ConsumerStatefulWidget {
   const PinProtectionBody({
-    Key? key,
+    super.key,
     required this.iconType,
-  }) : super(key: key);
+  });
 
   final PinKeyboardAcceptType iconType;
 
   @override
-  _PinProtectionBodyState createState() => _PinProtectionBodyState();
+  PinProtectionBodyState createState() => PinProtectionBodyState();
 }
 
-class _PinProtectionBodyState extends ConsumerState<PinProtectionBody> {
+class PinProtectionBodyState extends ConsumerState<PinProtectionBody> {
   late FocusNode pinFocusNode;
   StreamSubscription<PinKey>? keyPressedSubscription;
 

@@ -6,12 +6,12 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class UrlLinkButton extends StatelessWidget {
   const UrlLinkButton({
-    Key? key,
+    super.key,
     required this.text,
     this.url = '',
     this.icon,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final String url;
   final String text;

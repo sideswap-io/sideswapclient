@@ -6,12 +6,12 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class SettingsSecurity extends StatelessWidget {
   const SettingsSecurity({
-    Key? key,
+    super.key,
     this.value = false,
     this.onTap,
     this.icon = Icons.fingerprint,
     this.description = '',
-  }) : super(key: key);
+  });
 
   final bool value;
   final VoidCallback? onTap;

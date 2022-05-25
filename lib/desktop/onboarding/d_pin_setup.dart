@@ -20,7 +20,7 @@ import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DPinSetup extends ConsumerWidget {
-  const DPinSetup({Key? key, this.onEscapeKey}) : super(key: key);
+  const DPinSetup({super.key, this.onEscapeKey});
 
   final VoidCallback? onEscapeKey;
 
@@ -78,35 +78,35 @@ class DPinSetup extends ConsumerWidget {
 
 class DPinSetupContent extends HookConsumerWidget {
   const DPinSetupContent({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final firstPinOldValue = useState('');
     final secondPinOldValue = useState('');
-    final _firstPinFocusNode = useFocusNode();
-    final _secondPinFocusNode = useFocusNode();
+    final firstPinFocusNode = useFocusNode();
+    final secondPinFocusNode = useFocusNode();
 
     useEffect(() {
-      _firstPinFocusNode.requestFocus();
-      _firstPinFocusNode.addListener(() {
-        if (_firstPinFocusNode.hasFocus) {
+      firstPinFocusNode.requestFocus();
+      firstPinFocusNode.addListener(() {
+        if (firstPinFocusNode.hasFocus) {
           Future.microtask(() => ref.read(pinSetupProvider).setFirstPinState());
         }
       });
       return;
-    }, [_firstPinFocusNode]);
+    }, [firstPinFocusNode]);
 
     useEffect(() {
-      _secondPinFocusNode.addListener(() {
-        if (_secondPinFocusNode.hasFocus) {
+      secondPinFocusNode.addListener(() {
+        if (secondPinFocusNode.hasFocus) {
           Future.microtask(
               () => ref.read(pinSetupProvider).setSecondPinState());
         }
       });
       return;
-    }, [_secondPinFocusNode]);
+    }, [secondPinFocusNode]);
 
     useEffect(() {
       final subscription =
@@ -121,13 +121,13 @@ class DPinSetupContent extends HookConsumerWidget {
       firstPinOldValue.value = next.firstPin;
       secondPinOldValue.value = next.secondPin;
       if (next.fieldState == PinFieldState.firstPin &&
-          !_firstPinFocusNode.hasFocus) {
-        _firstPinFocusNode.requestFocus();
+          !firstPinFocusNode.hasFocus) {
+        firstPinFocusNode.requestFocus();
       }
 
       if (next.fieldState == PinFieldState.secondPin &&
-          !_secondPinFocusNode.hasFocus) {
-        _secondPinFocusNode.requestFocus();
+          !secondPinFocusNode.hasFocus) {
+        secondPinFocusNode.requestFocus();
       }
     });
 
@@ -161,12 +161,12 @@ class DPinSetupContent extends HookConsumerWidget {
                   final pin = ref.watch(pinSetupProvider).firstPin;
                   final fieldState = ref.watch(pinSetupProvider).fieldState;
                   if (fieldState == PinFieldState.firstPin) {
-                    _firstPinFocusNode.requestFocus();
+                    firstPinFocusNode.requestFocus();
                   }
                   final enabled = ref.watch(pinSetupProvider).firstPinEnabled;
 
                   return DPinTextField(
-                    focusNode: _firstPinFocusNode,
+                    focusNode: firstPinFocusNode,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(8),
@@ -218,20 +218,20 @@ class DPinSetupContent extends HookConsumerWidget {
                   final pin = ref.watch(pinSetupProvider).secondPin;
                   final fieldState = ref.watch(pinSetupProvider).fieldState;
                   if (fieldState == PinFieldState.secondPin) {
-                    _secondPinFocusNode.requestFocus();
+                    secondPinFocusNode.requestFocus();
                   }
                   final enabled = ref.watch(pinSetupProvider).secondPinEnabled;
                   final state = ref.watch(pinSetupProvider).state;
                   final errorMessage = ref.watch(pinSetupProvider).errorMessage;
                   return DPinTextField(
-                    focusNode: _secondPinFocusNode,
+                    focusNode: secondPinFocusNode,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(8),
                     ],
                     enabled: enabled,
                     pin: pin,
-                    error: state == PinSetupState.error,
+                    error: state == PinSetupStateEnum.error,
                     errorMessage: errorMessage,
                     onChanged: (value) {
                       if (secondPinOldValue.value == value) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -15,7 +15,7 @@ import 'package:sideswap/screens/pay/widgets/fee_rates_dropdown.dart';
 
 class TickerAmountTextField extends StatefulWidget {
   const TickerAmountTextField({
-    Key? key,
+    super.key,
     this.text,
     this.onDropdownChanged,
     required this.dropdownValue,
@@ -34,7 +34,7 @@ class TickerAmountTextField extends StatefulWidget {
     this.onEditingComplete,
     this.textInputAction,
     this.showAccountsInPopup = false,
-  }) : super(key: key);
+  });
 
   final String? text;
   final void Function(AccountAsset)? onDropdownChanged;
@@ -56,10 +56,10 @@ class TickerAmountTextField extends StatefulWidget {
   final bool showAccountsInPopup;
 
   @override
-  _TickerAmountTextFieldState createState() => _TickerAmountTextFieldState();
+  TickerAmountTextFieldState createState() => TickerAmountTextFieldState();
 }
 
-class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
+class TickerAmountTextFieldState extends State<TickerAmountTextField> {
   final _textFieldStyle = GoogleFonts.roboto(
     fontSize: 26.sp,
     fontWeight: FontWeight.normal,
@@ -166,10 +166,10 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                   children: [
                     Consumer(
                       builder: (context, ref, _) {
-                        final _asset = ref.watch(walletProvider
+                        final asset = ref.watch(walletProvider
                             .select((p) => p.assets[value.asset]));
-                        final image = ref.watch(walletProvider.select(
-                            (p) => p.assetImagesSmall[_asset?.assetId]));
+                        final image = ref.watch(walletProvider
+                            .select((p) => p.assetImagesSmall[asset?.assetId]));
                         if (image != null) {
                           return image;
                         }
@@ -181,13 +181,13 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       width: 8.w,
                     ),
                     Consumer(builder: (context, ref, _) {
-                      final _asset = ref.watch(
+                      final asset = ref.watch(
                           walletProvider.select((p) => p.assets[value.asset]));
 
-                      if (_asset?.ticker != null) {
+                      if (asset?.ticker != null) {
                         return Expanded(
                           child: Text(
-                            _asset?.ticker ?? '',
+                            asset?.ticker ?? '',
                             textAlign: TextAlign.left,
                             style: _dropdownTextStyle,
                             maxLines: 1,
@@ -207,15 +207,15 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
               return widget.availableAssets.map((value) {
                 return Consumer(
                   builder: (context, ref, _) {
-                    final _asset = ref.watch(
+                    final asset = ref.watch(
                         walletProvider.select((p) => p.assets[value.asset]));
 
-                    if (_asset?.ticker != null) {
+                    if (asset?.ticker != null) {
                       return Row(
                         children: [
                           Expanded(
                             child: Text(
-                              _asset?.ticker ?? '',
+                              asset?.ticker ?? '',
                               textAlign: TextAlign.left,
                               style: _dropdownTextStyle,
                               maxLines: 1,
@@ -290,13 +290,13 @@ class _TickerAmountTextFieldState extends State<TickerAmountTextField> {
                     children: [
                       Consumer(
                         builder: (context, ref, _) {
-                          final _icon = ref.watch(walletProvider.select((p) =>
+                          final icon = ref.watch(walletProvider.select((p) =>
                               p.assetImagesSmall[widget.dropdownValue.asset]));
 
                           return SizedBox(
                             width: 32.w,
                             height: 32.w,
-                            child: Center(child: _icon),
+                            child: Center(child: icon),
                           );
                         },
                       ),

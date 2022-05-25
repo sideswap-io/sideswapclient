@@ -3,10 +3,10 @@ import 'package:flutter/widgets.dart';
 
 class DTransparentButton extends StatelessWidget {
   const DTransparentButton({
-    Key? key,
+    super.key,
     required this.onPressed,
     required this.child,
-  }) : super(key: key);
+  });
 
   final VoidCallback onPressed;
   final Widget child;
@@ -15,8 +15,8 @@ class DTransparentButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      child: child,
       onTap: onPressed,
+      child: child,
     );
   }
 }

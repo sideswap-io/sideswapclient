@@ -7,8 +7,8 @@ import 'package:sideswap/screens/markets/widgets/empty_requests_logo.dart';
 
 class EmptyRequestsPage extends StatelessWidget {
   const EmptyRequestsPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

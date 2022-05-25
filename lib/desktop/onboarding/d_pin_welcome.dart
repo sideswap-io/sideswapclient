@@ -12,10 +12,10 @@ import 'package:sideswap/models/wallet.dart';
 
 class DPinWelcome extends ConsumerWidget {
   const DPinWelcome({
-    Key? key,
+    super.key,
     this.onYesPressed,
     this.onNoPressed,
-  }) : super(key: key);
+  });
 
   final void Function()? onYesPressed;
   final void Function()? onNoPressed;
@@ -60,13 +60,13 @@ class DPinWelcome extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 90),
                 child: DCustomFilledBigButton(
-                  child: Text('YES'.tr()),
                   width: 266,
                   height: 49,
                   onPressed: onYesPressed ??
                       () {
                         ref.read(pinSetupProvider).initPinSetupPinWelcome();
                       },
+                  child: Text('YES'.tr()),
                 ),
               ),
               Padding(
@@ -74,13 +74,13 @@ class DPinWelcome extends ConsumerWidget {
                 child: DCustomTextBigButton(
                   width: 266,
                   height: 49,
-                  child: Text('NOT NOW'.tr()),
                   onPressed: onNoPressed ??
                       () async {
                         await ref
                             .read(walletProvider)
                             .setImportWalletBiometricPrompt();
                       },
+                  child: Text('NOT NOW'.tr()),
                 ),
               ),
             ],
@@ -92,7 +92,7 @@ class DPinWelcome extends ConsumerWidget {
 }
 
 class DPinWelcomeLogo extends StatelessWidget {
-  const DPinWelcomeLogo({Key? key}) : super(key: key);
+  const DPinWelcomeLogo({super.key});
 
   @override
   Widget build(BuildContext context) {

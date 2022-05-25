@@ -5,11 +5,11 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class SwapArrowsButton extends StatelessWidget {
   const SwapArrowsButton({
-    Key? key,
+    super.key,
     required this.radius,
     this.onTap,
     this.color = const Color(0xFF00C5FF),
-  }) : super(key: key);
+  });
 
   final double radius;
   final VoidCallback? onTap;

@@ -13,7 +13,7 @@ import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DNewWalletBackupCheck extends ConsumerWidget {
-  const DNewWalletBackupCheck({Key? key}) : super(key: key);
+  const DNewWalletBackupCheck({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -122,11 +122,11 @@ class DNewWalletBackupCheck extends ConsumerWidget {
 
 class DWordLine extends ConsumerWidget {
   const DWordLine({
-    Key? key,
+    super.key,
     required this.wordIndex,
     this.onLineChanged,
     required this.words,
-  }) : super(key: key);
+  });
 
   final int wordIndex;
   final void Function(int wordIndex, int index)? onLineChanged;
@@ -185,7 +185,7 @@ class DWordLine extends ConsumerWidget {
 
 class DWordRadioButton extends ConsumerWidget {
   const DWordRadioButton({
-    Key? key,
+    super.key,
     this.semanticLabel,
     this.checked = false,
     this.focusNode,
@@ -193,7 +193,7 @@ class DWordRadioButton extends ConsumerWidget {
     this.onChanged,
     this.style,
     this.word = '',
-  }) : super(key: key);
+  });
 
   final String? semanticLabel;
   final bool checked;

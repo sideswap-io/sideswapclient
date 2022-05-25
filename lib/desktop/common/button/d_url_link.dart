@@ -4,10 +4,10 @@ import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 
 class DUrlLink extends StatelessWidget {
   const DUrlLink({
-    Key? key,
+    super.key,
     required this.text,
     this.url,
-  }) : super(key: key);
+  });
 
   final String text;
   final String? url;

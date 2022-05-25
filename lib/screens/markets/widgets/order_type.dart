@@ -6,11 +6,11 @@ import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
 class OrderType extends StatelessWidget {
   const OrderType({
-    Key? key,
+    super.key,
     this.backgroundColor = const Color(0xFF014767),
     required this.value,
     this.onToggle,
-  }) : super(key: key);
+  });
 
   final Color backgroundColor;
   final bool value;

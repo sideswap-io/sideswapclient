@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
@@ -11,10 +11,10 @@ import 'friends_panel_invite_button.dart';
 
 class FriendsPanelHeader extends StatelessWidget {
   const FriendsPanelHeader({
-    Key? key,
+    super.key,
     this.onPressed,
     this.panelPosition = .0,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onPressed;
   final double panelPosition;

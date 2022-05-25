@@ -96,6 +96,7 @@ impl Amp {
 pub struct LoginInfo {
     pub env: Env,
     pub mnemonic: Option<String>,
+    pub send_utxo_updates: bool,
 }
 
 pub enum To {
@@ -120,6 +121,7 @@ pub enum From {
     Register(Result<String, String>),
     Balances(BTreeMap<AssetId, u64>),
     Transactions(Vec<models::Transaction>),
+    UtxoUpdate(ffi::proto::from::UtxoUpdate),
     RecvAddr(String),
     CreateTx(ffi::proto::from::CreateTxResult),
     SendTx(ffi::proto::from::SendResult),
@@ -141,6 +143,7 @@ struct Wallet {
 unsafe impl Send for Wallet {}
 
 struct HwData {
+    env: Env,
     name: String,
     port: sideswap_jade::Port,
     secp: elements::secp256k1_zkp::Secp256k1<elements::secp256k1_zkp::All>,
@@ -249,11 +252,25 @@ impl Drop for GdkJson {
     }
 }
 
+struct AuthHandlerOwner {
+    call: *mut gdk::GA_auth_handler,
+}
+
+impl Drop for AuthHandlerOwner {
+    fn drop(&mut self) {
+        unsafe {
+            let rc = gdk::GA_destroy_auth_handler(self.call);
+            assert!(rc == 0);
+        }
+    }
+}
+
 unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
     hw_data: Option<&HwData>,
     call: *mut gdk::GA_auth_handler,
 ) -> Result<T, anyhow::Error> {
-    // FIXME: Destroy auth handler if function returns early
+    // Destroy auth handler if function returns early
+    let _auth_handler_owner = AuthHandlerOwner { call };
 
     let mut json = loop {
         let mut status = std::ptr::null_mut();
@@ -279,10 +296,12 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 // TODO: Send requests in parallel
                 for path in paths {
                     hw_data.clear_queue();
-                    // FIXME: Use correct network
-                    hw_data
-                        .jade
-                        .resolve_xpub(sideswap_jade::Network::TestnetLiquid, path);
+                    let network = if hw_data.env.data().mainnet {
+                        sideswap_jade::Network::Liquid
+                    } else {
+                        sideswap_jade::Network::TestnetLiquid
+                    };
+                    hw_data.jade.resolve_xpub(network, path);
                     let resp = hw_data.get_resp()?;
                     let resp = match resp {
                         sideswap_jade::Resp::ResolveXpub(v) => v,
@@ -665,9 +684,6 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
             }
         };
     };
-
-    let rc = gdk::GA_destroy_auth_handler(call);
-    assert!(rc == 0);
 
     let result = json
         .to_json::<gdk_json::AuthHandler<T>>()
@@ -1122,6 +1138,21 @@ unsafe fn update_tx_and_balances(data: &mut Data) {
         }
         Err(e) => error!("updating AMP balances failed: {}", e),
     }
+
+    let send_utxo_updates = data
+        .wallet
+        .as_ref()
+        .map(|wallet| wallet.login_info.send_utxo_updates)
+        .unwrap_or_default();
+    if send_utxo_updates {
+        let utxos = get_utxos(data);
+        match utxos {
+            Ok(utxos) => {
+                send_from(data, From::UtxoUpdate(utxos));
+            }
+            Err(e) => error!("updating UTXOs failed: {}", e),
+        }
+    }
 }
 
 fn try_get_gaid(data: &mut Data) -> Result<String, anyhow::Error> {
@@ -1552,6 +1583,48 @@ unsafe fn get_balances(data: &mut Data) -> Result<gdk_json::BalanceList, anyhow:
     Ok(balances)
 }
 
+unsafe fn get_utxos(data: &mut Data) -> Result<ffi::proto::from::UtxoUpdate, anyhow::Error> {
+    let wallet = data
+        .wallet
+        .as_mut()
+        .ok_or_else(|| anyhow!("no AMP wallet"))?;
+    let session = wallet
+        .session
+        .clone()
+        .ok_or_else(|| anyhow!("no session"))?;
+
+    let mut call = std::ptr::null_mut();
+    let unspent_outputs = gdk_json::UnspentOutputsArgs {
+        subaccount: wallet.account.pointer,
+        num_confs: 0,
+    };
+    let rc =
+        gdk::GA_get_unspent_outputs(session, GdkJson::new(&unspent_outputs).as_ptr(), &mut call);
+    ensure!(
+        rc == 0,
+        "GA_get_unspent_outputs failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    let unspent_outputs =
+        run_auth_handler_impl::<gdk_json::UnspentOutputsParsedResult>(data.hw_data.as_ref(), call)
+            .map_err(|e| anyhow!("loading unspent outputs failed: {}", e))?;
+    let utxos = unspent_outputs
+        .unspent_outputs
+        .values()
+        .flatten()
+        .map(|utxo| ffi::proto::from::utxo_update::Utxo {
+            txid: utxo.txhash.to_string(),
+            vout: utxo.pt_idx,
+            asset_id: utxo.asset_id.to_string(),
+            amount: utxo.satoshi,
+        })
+        .collect();
+    Ok(ffi::proto::from::UtxoUpdate {
+        account: worker::get_account(data.account),
+        utxos,
+    })
+}
+
 fn get_blinded_value(
     value: u64,
     asset: &AssetId,
@@ -1759,6 +1832,7 @@ fn process_jade_unlock(data: &mut Data, env: Env) {
 static GDK_INITIALIZED: std::sync::Once = std::sync::Once::new();
 
 pub fn start_processing(
+    env: Env,
     work_dir: &str,
     account: worker::AccountId,
     worker: crossbeam_channel::Sender<worker::Message>,
@@ -1798,6 +1872,7 @@ pub fn start_processing(
         let jade_result = sideswap_jade::Jade::new(jade_port.clone(), callback);
         match jade_result {
             Ok(jade) => Some(HwData {
+                env,
                 name: format!(
                     "Jade {}",
                     jade_port.serial_number.clone().unwrap_or_default()

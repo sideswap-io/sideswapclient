@@ -4,7 +4,7 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class SwitchButton extends StatefulWidget {
   const SwitchButton({
-    Key? key,
+    super.key,
     this.backgroundColor = const Color(0xFF043857),
     this.borderRadius = 8,
     this.width = 142,
@@ -22,7 +22,7 @@ class SwitchButton extends StatefulWidget {
     this.activeTextStyle,
     this.inactiveTextStyle,
     this.fontSize,
-  }) : super(key: key);
+  });
 
   final double width;
   final double height;
@@ -43,10 +43,10 @@ class SwitchButton extends StatefulWidget {
   final double? fontSize;
 
   @override
-  _SwitchButtonState createState() => _SwitchButtonState();
+  SwitchButtonState createState() => SwitchButtonState();
 }
 
-class _SwitchButtonState extends State<SwitchButton> {
+class SwitchButtonState extends State<SwitchButton> {
   late double switchWidth = (widget.width - 3 * widget.borderWidth) / 2;
   late double switchHeight = widget.height - 2 * widget.borderWidth;
   bool disabled = false;

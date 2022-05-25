@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -15,15 +15,15 @@ import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 
 class AssetDetailsHeader extends ConsumerWidget {
   const AssetDetailsHeader({
-    Key? key,
+    super.key,
     required this.percent,
-  }) : super(key: key);
+  });
 
   final double percent;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var _dollarConversion = '0.0';
+    var dollarConversion = '0.0';
     final isAmp = ref.read(walletProvider).selectedWalletAsset!.account.isAmp();
 
     return Opacity(
@@ -107,15 +107,15 @@ class AssetDetailsHeader extends ConsumerWidget {
                     )) ??
                     .0;
                 final amountUsd = wallet.getAmountUsd(asset?.assetId, balance);
-                _dollarConversion = amountUsd.toStringAsFixed(2);
-                _dollarConversion = replaceCharacterOnPosition(
-                    input: _dollarConversion, currencyChar: '\$');
+                dollarConversion = amountUsd.toStringAsFixed(2);
+                dollarConversion = replaceCharacterOnPosition(
+                    input: dollarConversion, currencyChar: '\$');
                 final visibleConversion = ref
                     .read(walletProvider)
                     .isAmountUsdAvailable(asset?.assetId);
 
                 return Text(
-                  visibleConversion ? '≈ $_dollarConversion' : '',
+                  visibleConversion ? '≈ $dollarConversion' : '',
                   style: GoogleFonts.roboto(
                     fontSize: 20.sp,
                     fontWeight: FontWeight.normal,

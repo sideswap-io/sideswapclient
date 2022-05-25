@@ -5,8 +5,8 @@ import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_contact/contacts.dart' as flutter_contacts;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_contacts/flutter_contacts.dart' as flutter_contacts;
 import 'package:image/image.dart' as image;
 import 'package:rxdart/subjects.dart';
 
@@ -68,45 +68,40 @@ class ContactProvider with ChangeNotifier {
     percentageLoaded.add(0);
     friendsData.clear();
 
-    final deviceContacts = flutter_contacts.Contacts.listContacts();
-    final total = await deviceContacts.length ?? 0;
+    final lightContacts = await flutter_contacts.FlutterContacts.getContacts();
+    final total = lightContacts.length;
     var counter = 0;
 
     var uploadContacts = To_UploadContacts();
 
-    while (await deviceContacts.moveNext()) {
-      final contact = await deviceContacts.current;
+    for (var i = 0; i < total; i++) {
+      final contact = await flutter_contacts.FlutterContacts.getContact(
+          lightContacts[i].id);
       if (contact == null) {
         continue;
       }
 
-      final avatar = await getContactAvatar(contact);
-
       if (contact.phones.isNotEmpty) {
         for (var i = 0; i < contact.phones.length; i++) {
           addContactToLocalList(
-            contact.phones[i].value,
+            contact.phones[i].normalizedNumber,
             contact.displayName,
-            avatar,
+            contact.thumbnail,
           );
         }
       }
 
-      final identifier = contact.identifier;
+      final identifier = contact.id;
       final displayName = contact.displayName;
-      if (identifier != null && displayName != null) {
-        var uploadContact = UploadContact();
-        uploadContact.identifier = identifier;
-        uploadContact.name = displayName;
-        for (final phone in contact.phones) {
-          final value = phone.value;
-          if (value != null) {
-            uploadContact.phones.add(value);
-          }
-        }
-        if (uploadContact.phones.isNotEmpty) {
-          uploadContacts.contacts.add(uploadContact);
-        }
+
+      var uploadContact = UploadContact();
+      uploadContact.identifier = identifier;
+      uploadContact.name = displayName;
+      for (final phone in contact.phones) {
+        uploadContact.phones.add(phone.normalizedNumber);
+      }
+      if (uploadContact.phones.isNotEmpty) {
+        uploadContacts.contacts.add(uploadContact);
       }
 
       counter++;
@@ -154,17 +149,6 @@ class ContactProvider with ChangeNotifier {
         friendsData.add(friendData);
       }
     }
-  }
-
-  Future<Uint8List?> getContactAvatar(flutter_contacts.Contact contact) async {
-    try {
-      return await flutter_contacts.Contacts.getContactImage(
-          contact.identifier);
-    } catch (err) {
-      logger.e(err);
-    }
-
-    return null;
   }
 
   void onError({String error = ''}) async {

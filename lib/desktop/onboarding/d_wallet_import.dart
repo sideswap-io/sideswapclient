@@ -11,7 +11,7 @@ import 'package:sideswap/models/mnemonic_table_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DWalletImport extends ConsumerStatefulWidget {
-  const DWalletImport({Key? key}) : super(key: key);
+  const DWalletImport({super.key});
 
   @override
   ConsumerState<DWalletImport> createState() => _DWalletImportState();

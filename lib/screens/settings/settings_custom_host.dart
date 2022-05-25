@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -15,13 +15,13 @@ import 'package:sideswap/models/network_access_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class SettingsCustomHost extends ConsumerStatefulWidget {
-  const SettingsCustomHost({Key? key}) : super(key: key);
+  const SettingsCustomHost({super.key});
 
   @override
-  _SettingsCustomHostState createState() => _SettingsCustomHostState();
+  SettingsCustomHostState createState() => SettingsCustomHostState();
 }
 
-class _SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
+class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
   late TextStyle defaultTextStyle;
 
   late TextEditingController hostController;

@@ -6,7 +6,7 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DCustomTextBigButton extends StatelessWidget {
   const DCustomTextBigButton({
-    Key? key,
+    super.key,
     this.width = 266,
     this.height = 49,
     required this.onPressed,
@@ -14,7 +14,7 @@ class DCustomTextBigButton extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.style,
-  }) : super(key: key);
+  });
 
   final double width;
   final double height;

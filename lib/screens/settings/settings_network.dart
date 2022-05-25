@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -14,13 +14,13 @@ import 'package:sideswap/screens/settings/settings_custom_host.dart';
 import 'package:sideswap/screens/settings/widgets/settings_network_button.dart';
 
 class SettingsNetwork extends ConsumerStatefulWidget {
-  const SettingsNetwork({Key? key}) : super(key: key);
+  const SettingsNetwork({super.key});
 
   @override
-  _SettingsNetworkState createState() => _SettingsNetworkState();
+  SettingsNetworkState createState() => SettingsNetworkState();
 }
 
-class _SettingsNetworkState extends ConsumerState<SettingsNetwork> {
+class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
   void showRestartDialog() {
     ref.read(utilsProvider).settingsErrorDialog(
           title: 'Network changes will take effect on restart'.tr(),

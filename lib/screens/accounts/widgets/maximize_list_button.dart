@@ -6,19 +6,19 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class MaximizeListButton extends StatefulWidget {
   const MaximizeListButton({
-    Key? key,
+    super.key,
     this.onPressed,
     required this.position,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onPressed;
   final double position;
 
   @override
-  _MaximizeListButtonState createState() => _MaximizeListButtonState();
+  MaximizeListButtonState createState() => MaximizeListButtonState();
 }
 
-class _MaximizeListButtonState extends State<MaximizeListButton> {
+class MaximizeListButtonState extends State<MaximizeListButton> {
   @override
   Widget build(BuildContext context) {
     return Material(

@@ -5,14 +5,14 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class PinTextField extends StatefulWidget {
   const PinTextField({
-    Key? key,
+    super.key,
     this.pin = '',
     this.focusNode,
     this.onTap,
     this.enabled = true,
     this.error = false,
     this.errorMessage = '',
-  }) : super(key: key);
+  });
 
   final String pin;
   final FocusNode? focusNode;
@@ -22,10 +22,10 @@ class PinTextField extends StatefulWidget {
   final String errorMessage;
 
   @override
-  _PinTextFieldState createState() => _PinTextFieldState();
+  PinTextFieldState createState() => PinTextFieldState();
 }
 
-class _PinTextFieldState extends State<PinTextField> {
+class PinTextFieldState extends State<PinTextField> {
   late TextEditingController controller;
 
   @override

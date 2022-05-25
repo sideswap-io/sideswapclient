@@ -13,10 +13,9 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pedantic/pedantic.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
@@ -500,7 +499,7 @@ class WalletChangeNotifier with ChangeNotifier {
       }
 
       _allAssets.clear();
-      final _dateFormat = DateFormat('yyyy-MM-dd');
+      final dateFormat = DateFormat('yyyy-MM-dd');
       for (var item in list.entries) {
         item.value.sort((a, b) => b.compareTo(a));
 
@@ -509,10 +508,10 @@ class WalletChangeNotifier with ChangeNotifier {
           if (tempAssets.isEmpty) {
             tempAssets.add(item.copyWith(showDate: true));
           } else {
-            final last = DateTime.parse(_dateFormat.format(
+            final last = DateTime.parse(dateFormat.format(
                 DateTime.fromMillisecondsSinceEpoch(
                     tempAssets.last.createdAt)));
-            final current = DateTime.parse(_dateFormat
+            final current = DateTime.parse(dateFormat
                 .format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)));
             final diff = last.difference(current).inDays;
             tempAssets.add(item.copyWith(showDate: diff != 0));
@@ -965,6 +964,7 @@ class WalletChangeNotifier with ChangeNotifier {
           expiresAt: oc.order.expiresAt.toInt(),
           private: oc.order.private,
           sendBitcoins: sendBitcoins,
+          twoStep: oc.order.twoStep,
           autoSign: oc.order.autoSign,
           own: oc.order.own,
           isNew: oc.new_2,
@@ -2054,12 +2054,12 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   double _getPrice(String? priceNum, String priceDen) {
-    final _priceNum = _getPriceBitcoin(priceNum);
-    final _priceDen = _getPriceBitcoin(priceDen);
-    if (_priceDen == 0 || _priceNum == 0) {
+    final internalPriceNum = _getPriceBitcoin(priceNum);
+    final internalPriceDen = _getPriceBitcoin(priceDen);
+    if (internalPriceDen == 0 || internalPriceNum == 0) {
       return 0;
     }
-    return _priceNum / _priceDen;
+    return internalPriceNum / internalPriceDen;
   }
 
   double _getPriceUsd(String assetId) {
@@ -2176,6 +2176,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void setSubmitDecision({
     required bool autosign,
+    bool twoStep = false,
     bool accept = false,
     bool private = true,
     int ttlSeconds = kOneWeek,
@@ -2191,6 +2192,7 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.submitDecision.orderId = orderDetailsData.orderId;
     msg.submitDecision.accept = accept;
     msg.submitDecision.autoSign = autosign;
+    msg.submitDecision.twoStep = twoStep;
     msg.submitDecision.private = orderDetailsData.private;
     msg.submitDecision.ttlSeconds = Int64(ttlSeconds);
     sendMsg(msg);

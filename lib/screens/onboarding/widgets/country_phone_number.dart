@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/country_code.dart';
@@ -14,19 +14,19 @@ typedef PhoneNumberCallback = void Function(CountryCode, String);
 
 class CountryPhoneNumber extends ConsumerStatefulWidget {
   const CountryPhoneNumber({
-    Key? key,
+    super.key,
     required this.phoneNumberCallback,
     this.focusNode,
-  }) : super(key: key);
+  });
 
   final PhoneNumberCallback phoneNumberCallback;
   final FocusNode? focusNode;
 
   @override
-  _CountryPhoneNumberState createState() => _CountryPhoneNumberState();
+  CountryPhoneNumberState createState() => CountryPhoneNumberState();
 }
 
-class _CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
+class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
   late CountryCode visibleCountryCode;
   String visiblePhoneNumber = '';
   late FocusNode phoneFocusNode;

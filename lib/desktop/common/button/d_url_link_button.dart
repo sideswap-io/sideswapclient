@@ -11,12 +11,12 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DUrlLinkButton extends ConsumerWidget {
   const DUrlLinkButton({
-    Key? key,
+    super.key,
     this.url = '',
     required this.text,
     this.icon,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final String url;
   final String text;

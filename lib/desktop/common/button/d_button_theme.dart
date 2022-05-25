@@ -86,10 +86,10 @@ class DButtonStyle with Diagnosticable {
 
 class DButtonTheme extends InheritedTheme {
   const DButtonTheme({
-    Key? key,
-    required Widget child,
+    super.key,
+    required super.child,
     required this.data,
-  }) : super(key: key, child: child);
+  });
 
   final DButtonThemeData data;
 

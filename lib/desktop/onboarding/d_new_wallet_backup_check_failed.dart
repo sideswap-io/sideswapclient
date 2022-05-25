@@ -10,7 +10,7 @@ import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DNewWalletBackupCheckFailed extends ConsumerWidget {
-  const DNewWalletBackupCheckFailed({Key? key}) : super(key: key);
+  const DNewWalletBackupCheckFailed({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

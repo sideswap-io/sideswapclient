@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -15,12 +15,12 @@ class AccountItem extends ConsumerWidget {
   final ValueChanged<AccountAsset> onSelected;
   final bool disabled;
   const AccountItem({
-    Key? key,
+    super.key,
     required this.accountAsset,
     this.balance = 0,
     required this.onSelected,
     this.disabled = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,10 +38,10 @@ class AccountItem extends ConsumerWidget {
         ? int.tryParse(amountString) ?? 0
         : double.tryParse(amountString) ?? .0;
     final amountUsd = wallet.getAmountUsd(accountAsset.asset, amount);
-    var _dollarConversion = '0.0';
-    _dollarConversion = amountUsd.toStringAsFixed(2);
-    _dollarConversion = replaceCharacterOnPosition(
-        input: _dollarConversion, currencyChar: '\$');
+    var dollarConversion = '0.0';
+    dollarConversion = amountUsd.toStringAsFixed(2);
+    dollarConversion = replaceCharacterOnPosition(
+        input: dollarConversion, currencyChar: '\$');
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
     final backgrounColor =
         disabled ? const Color(0xFF034569) : const Color(0xFF135579);
@@ -133,7 +133,7 @@ class AccountItem extends ConsumerWidget {
                               ),
                               if (amountUsd != 0) ...[
                                 Text(
-                                  '≈ $_dollarConversion',
+                                  '≈ $dollarConversion',
                                   style: GoogleFonts.roboto(
                                     fontSize: 15.sp,
                                     fontWeight: FontWeight.normal,

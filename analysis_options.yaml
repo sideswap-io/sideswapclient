@@ -1,5 +1,9 @@
 include: package:flutter_lints/flutter.yaml
 
+linter:
+  rules:
+    - use_super_parameters
+    
 analyzer:
   strong-mode:
     implicit-casts: false

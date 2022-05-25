@@ -4,14 +4,14 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class RoundedButton extends StatefulWidget {
   const RoundedButton({
-    Key? key,
+    super.key,
     this.onTap,
     this.color = const Color(0xFF0D5574),
     this.child,
     this.width,
     this.heigh,
     this.borderRadius,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onTap;
   final Color? color;
@@ -21,10 +21,10 @@ class RoundedButton extends StatefulWidget {
   final BorderRadiusGeometry? borderRadius;
 
   @override
-  _RoundedButtonState createState() => _RoundedButtonState();
+  RoundedButtonState createState() => RoundedButtonState();
 }
 
-class _RoundedButtonState extends State<RoundedButton> {
+class RoundedButtonState extends State<RoundedButton> {
   late double _width;
   late double _height;
   late BorderRadiusGeometry _borderRadius;

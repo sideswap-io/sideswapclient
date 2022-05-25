@@ -6,13 +6,13 @@ import 'package:easy_localization/easy_localization.dart';
 
 class TimeToLive extends StatefulWidget {
   const TimeToLive({
-    Key? key,
+    super.key,
     this.backgroundColor = const Color(0xFF014767),
     required this.dropdownValue,
     required this.dropdownItems,
     this.onChanged,
     this.locked = false,
-  }) : super(key: key);
+  });
 
   final Color backgroundColor;
   final int dropdownValue;
@@ -21,10 +21,10 @@ class TimeToLive extends StatefulWidget {
   final bool locked;
 
   @override
-  _TimeToLiveState createState() => _TimeToLiveState();
+  TimeToLiveState createState() => TimeToLiveState();
 }
 
-class _TimeToLiveState extends State<TimeToLive> {
+class TimeToLiveState extends State<TimeToLive> {
   final _dropdownButtonKey = GlobalKey();
 
   String getTtlDescription(int seconds) {

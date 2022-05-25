@@ -6,17 +6,17 @@ import 'package:sideswap/screens/markets/widgets/order_item.dart';
 
 class FilledRequestsPage extends StatefulWidget {
   const FilledRequestsPage({
-    Key? key,
+    super.key,
     required this.requests,
-  }) : super(key: key);
+  });
 
   final List<RequestOrder> requests;
 
   @override
-  _FilledRequestsPageState createState() => _FilledRequestsPageState();
+  FilledRequestsPageState createState() => FilledRequestsPageState();
 }
 
-class _FilledRequestsPageState extends State<FilledRequestsPage> {
+class FilledRequestsPageState extends State<FilledRequestsPage> {
   late ScrollController scrollController;
   bool isScrollbarVisible = false;
   final listViewKey = GlobalKey();

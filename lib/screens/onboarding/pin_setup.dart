@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -16,13 +16,13 @@ import 'package:sideswap/screens/onboarding/widgets/pin_keyboard.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_text_field.dart';
 
 class PinSetup extends ConsumerStatefulWidget {
-  const PinSetup({Key? key}) : super(key: key);
+  const PinSetup({super.key});
 
   @override
-  _PinSetupState createState() => _PinSetupState();
+  PinSetupState createState() => PinSetupState();
 }
 
-class _PinSetupState extends ConsumerState<PinSetup> {
+class PinSetupState extends ConsumerState<PinSetup> {
   late FocusNode _firstPinFocusNode;
   late FocusNode _secondPinFocusNode;
   StreamSubscription<PinKey>? keyPressedSubscription;
@@ -146,7 +146,7 @@ class _PinSetupState extends ConsumerState<PinSetup> {
 
                             return PinTextField(
                               enabled: enabled,
-                              error: state == PinSetupState.error,
+                              error: state == PinSetupStateEnum.error,
                               errorMessage: errorMessage,
                               pin: pin,
                               focusNode: _secondPinFocusNode,

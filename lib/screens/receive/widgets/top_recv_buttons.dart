@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -8,10 +8,10 @@ import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class TopRecvButtons extends StatelessWidget {
   const TopRecvButtons({
-    Key? key,
+    super.key,
     required this.onRegularPressed,
     required this.onAmpPressed,
-  }) : super(key: key);
+  });
 
   final _colorToggleBackground = const Color(0xFF043857);
   final _colorToggleOn = const Color(0xFF1F7EB1);

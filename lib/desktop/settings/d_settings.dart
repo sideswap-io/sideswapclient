@@ -12,9 +12,10 @@ import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
+import 'package:sideswap/screens/settings/settings_languages.dart';
 
 class DSettings extends ConsumerWidget {
-  const DSettings({Key? key}) : super(key: key);
+  const DSettings({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -100,6 +101,19 @@ class DSettings extends ConsumerWidget {
                       await openUrl(SettingsAboutUsData.urlFaq);
                     },
                     icon: DSettingsButtonIcon.faq,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: DSettingsButton(
+                    title: 'Language'.tr(),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push<void>(
+                          DialogRoute(
+                              builder: ((context) => const Languages()),
+                              context: context));
+                    },
+                    icon: DSettingsButtonIcon.language,
                   ),
                 ),
                 Padding(

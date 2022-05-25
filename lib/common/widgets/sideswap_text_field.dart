@@ -5,7 +5,7 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapTextField extends StatefulWidget {
   const SideSwapTextField({
-    Key? key,
+    super.key,
     this.errorText,
     this.controller,
     this.focusNode,
@@ -15,7 +15,7 @@ class SideSwapTextField extends StatefulWidget {
     this.keyboardType,
     this.inputFormatters,
     this.suffixIcon,
-  }) : super(key: key);
+  });
 
   final String? errorText;
   final TextEditingController? controller;
@@ -28,10 +28,10 @@ class SideSwapTextField extends StatefulWidget {
   final Widget? suffixIcon;
 
   @override
-  _SideSwapTextFieldState createState() => _SideSwapTextFieldState();
+  SideSwapTextFieldState createState() => SideSwapTextFieldState();
 }
 
-class _SideSwapTextFieldState extends State<SideSwapTextField> {
+class SideSwapTextFieldState extends State<SideSwapTextField> {
   late TextStyle hintStyle;
 
   @override

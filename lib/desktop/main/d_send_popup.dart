@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_addr_field.dart';
@@ -15,7 +15,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 
 class DSendPopup extends ConsumerWidget {
-  const DSendPopup({Key? key}) : super(key: key);
+  const DSendPopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +31,7 @@ class DSendPopup extends ConsumerWidget {
 }
 
 class DSendPopupCreate extends ConsumerStatefulWidget {
-  const DSendPopupCreate({Key? key}) : super(key: key);
+  const DSendPopupCreate({super.key});
 
   @override
   ConsumerState<DSendPopupCreate> createState() => _DSendPopupState();
@@ -189,9 +189,9 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
             const Spacer(),
             DCustomButton(
               height: 44,
-              child: Text('Review'.tr().toUpperCase()),
               isFilled: true,
               onPressed: enabled && !wallet.isCreatingTx ? submitReview : null,
+              child: Text('Review'.tr().toUpperCase()),
             ),
             // Row(
             //   children: [
@@ -221,7 +221,7 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
 }
 
 class DSendPopupReview extends ConsumerWidget {
-  const DSendPopupReview({Key? key}) : super(key: key);
+  const DSendPopupReview({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -250,9 +250,9 @@ class DSendPopupReview extends ConsumerWidget {
               padding: const EdgeInsets.only(left: 40, right: 40, top: 40),
               child: Column(
                 children: [
-                  const Text(
-                    'Confirm transaction',
-                    style: TextStyle(
+                  Text(
+                    'Confirm transaction'.tr(),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
                     ),
@@ -260,9 +260,9 @@ class DSendPopupReview extends ConsumerWidget {
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text('Address', style: headerStyle),
-                      Text('Amount', style: headerStyle),
+                    children: [
+                      Text('Address'.tr(), style: headerStyle),
+                      Text('Amount'.tr(), style: headerStyle),
                     ],
                   ),
                   const SizedBox(height: 14),
@@ -288,7 +288,7 @@ class DSendPopupReview extends ConsumerWidget {
                   const SizedBox(height: 16),
                   _RowTxDetail(name: 'Fee per byte'.tr(), value: feePerByteStr),
                   _RowTxDetail(name: 'Transaction size'.tr(), value: txSizeStr),
-                  _RowTxDetail(name: 'Network fee'.tr(), value: feeStr),
+                  _RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
                   _RowTxDetail(
                       name: 'Number of inputs'.tr(),
                       value: createdTx.inputCount.toString()),
@@ -301,17 +301,31 @@ class DSendPopupReview extends ConsumerWidget {
                       DCustomButton(
                         width: 245,
                         height: 44,
-                        child: Text('Back'.tr().toUpperCase()),
                         onPressed: !wallet.isSendingTx
                             ? () {
                                 ref.read(paymentProvider).createdTx = null;
                               }
                             : null,
+                        child: Text('Back'.tr().toUpperCase()),
                       ),
                       const Spacer(),
                       DCustomButton(
                         width: 245,
                         height: 44,
+                        autofocus: true,
+                        isFilled: true,
+                        onPressed: !wallet.isSendingTx
+                            ? () async {
+                                if (await ref
+                                    .read(walletProvider)
+                                    .isAuthenticated()) {
+                                  ref
+                                      .read(walletProvider)
+                                      .assetSendConfirmCommon(
+                                          payment.createdTx!.req.account);
+                                }
+                              }
+                            : null,
                         child: Row(
                           children: [
                             const Spacer(),
@@ -332,20 +346,6 @@ class DSendPopupReview extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        autofocus: true,
-                        isFilled: true,
-                        onPressed: !wallet.isSendingTx
-                            ? () async {
-                                if (await ref
-                                    .read(walletProvider)
-                                    .isAuthenticated()) {
-                                  ref
-                                      .read(walletProvider)
-                                      .assetSendConfirmCommon(
-                                          payment.createdTx!.req.account);
-                                }
-                              }
-                            : null,
                       ),
                     ],
                   )
@@ -361,11 +361,10 @@ class DSendPopupReview extends ConsumerWidget {
 
 class _RowTxReceiver extends ConsumerWidget {
   const _RowTxReceiver({
-    Key? key,
     required this.address,
     required this.assetId,
     required this.amount,
-  }) : super(key: key);
+  });
 
   final String address;
   final String assetId;
@@ -393,10 +392,9 @@ class _RowTxReceiver extends ConsumerWidget {
 
 class _RowTxDetail extends StatelessWidget {
   const _RowTxDetail({
-    Key? key,
     required this.name,
     required this.value,
-  }) : super(key: key);
+  });
 
   final String name;
   final String value;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
@@ -10,7 +10,7 @@ import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 import 'package:sideswap/screens/receive/widgets/top_recv_buttons.dart';
 
 class AssetReceivePopup extends StatelessWidget {
-  const AssetReceivePopup({Key? key}) : super(key: key);
+  const AssetReceivePopup({super.key});
 
   @override
   Widget build(BuildContext context) {

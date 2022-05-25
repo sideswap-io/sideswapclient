@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -20,17 +20,17 @@ import 'package:sideswap/screens/swap/widgets/top_swap_buttons.dart';
 
 class SwapMain extends ConsumerStatefulWidget {
   const SwapMain({
-    Key? key,
+    super.key,
     this.isDesktop = false,
-  }) : super(key: key);
+  });
 
   final bool isDesktop;
 
   @override
-  _SwapMainState createState() => _SwapMainState();
+  SwapMainState createState() => SwapMainState();
 }
 
-class _SwapMainState extends ConsumerState<SwapMain> {
+class SwapMainState extends ConsumerState<SwapMain> {
   TextEditingController? swapSendAmountController;
   TextEditingController? swapRecvAmountController;
   TextEditingController? swapAddressRecvController;

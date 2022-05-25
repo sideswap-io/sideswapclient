@@ -8,11 +8,11 @@ import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 
 class PaymentAmountReceiverField extends StatelessWidget {
   const PaymentAmountReceiverField({
-    Key? key,
+    super.key,
     required this.labelStyle,
     this.text = '',
     this.friend,
-  }) : super(key: key);
+  });
 
   final TextStyle labelStyle;
   final String text;

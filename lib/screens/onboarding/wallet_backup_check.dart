@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -10,13 +10,13 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_check_row.dart';
 
 class WalletBackupCheck extends ConsumerStatefulWidget {
-  const WalletBackupCheck({Key? key}) : super(key: key);
+  const WalletBackupCheck({super.key});
 
   @override
-  _WalletBackupCheckState createState() => _WalletBackupCheckState();
+  WalletBackupCheckState createState() => WalletBackupCheckState();
 }
 
-class _WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
+class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
   bool _canContinue = false;
 
   void validate(WidgetRef ref, BuildContext context) {

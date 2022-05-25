@@ -4,7 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -19,21 +19,21 @@ import 'package:sideswap/screens/swap/widgets/rounded_text_label.dart';
 
 class AssetReceiveWidget extends StatefulWidget {
   const AssetReceiveWidget({
-    Key? key,
+    super.key,
     this.isPegIn = false,
     this.isAmp = false,
     this.showShare = true,
-  }) : super(key: key);
+  });
 
   final bool isPegIn;
   final bool isAmp;
   final bool showShare;
 
   @override
-  _AssetReceivePopupState createState() => _AssetReceivePopupState();
+  AssetReceivePopupState createState() => AssetReceivePopupState();
 }
 
-class _AssetReceivePopupState extends State<AssetReceiveWidget> {
+class AssetReceivePopupState extends State<AssetReceiveWidget> {
   bool _isCopyDescVisible = false;
   Timer? _copyVisibilityTimer;
 
@@ -67,31 +67,31 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
             ref.watch(walletProvider.select((p) => p.recvAddressAccount));
         final recvAddresses = ref.watch(
             walletProvider.select((p) => p.recvAddresses[recvAddressAccount]));
-        final _recvAddress = widget.isPegIn
+        final recvAddress = widget.isPegIn
             ? ref.watch(swapProvider.select((p) => p.swapPegAddressServer))
             : recvAddresses;
-        final _swapRecvAddr =
+        final swapRecvAddr =
             ref.watch(swapProvider.select((p) => p.swapRecvAddressExternal));
         final minPegIn = ref.watch(walletProvider
             .select((p) => p.serverStatus?.minPegInAmount.toInt() ?? 0));
 
-        final _assetSend =
+        final assetSend =
             ref.watch(swapProvider.select((p) => p.swapSendAsset ?? ''));
         final serverFeePercentPegIn = ref.watch(walletProvider
             .select((p) => p.serverStatus?.serverFeePercentPegIn));
         final serverFeePercentPegOut = ref.watch(walletProvider
             .select((p) => p.serverStatus?.serverFeePercentPegOut));
-        var _percentConversion =
+        var percentConversion =
             (serverFeePercentPegIn == null || serverFeePercentPegOut == null)
                 ? 0
-                : _assetSend == ref.watch(walletProvider).liquidAssetId()
+                : assetSend == ref.watch(walletProvider).liquidAssetId()
                     ? 100 - serverFeePercentPegOut
                     : 100 - serverFeePercentPegIn;
 
-        final _conversionStr = _percentConversion.toStringAsFixed(2);
-        final _conversionText = 'Conversion rate $_conversionStr%';
+        final conversionStr = percentConversion.toStringAsFixed(2);
+        final conversionText = 'Conversion rate $conversionStr%';
 
-        return _recvAddress == null || _recvAddress.isEmpty
+        return recvAddress == null || recvAddress.isEmpty
             ? const Center(
                 child: CircularProgressIndicator(),
               )
@@ -112,7 +112,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                       ),
                       child: Center(
                         child: QrImage(
-                          data: _recvAddress,
+                          data: recvAddress,
                           version: QrVersions.auto,
                           size: 223.w,
                         ),
@@ -150,7 +150,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                         color: Colors.transparent,
                         child: InkWell(
                           onLongPress: () async {
-                            await copyToClipboard(context, _recvAddress,
+                            await copyToClipboard(context, recvAddress,
                                 displaySnackbar: false);
                             showCopyInfo();
                           },
@@ -158,7 +158,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                             width: FlavorConfig.isDesktop ? 400.w : 311.w,
                             height: 60.h,
                             child: Text(
-                              _recvAddress,
+                              recvAddress,
                               textAlign: TextAlign.center,
                               style: GoogleFonts.roboto(
                                 fontSize: 16.sp,
@@ -178,7 +178,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                       children: [
                         RoundedButtonWithLabel(
                           onTap: () async {
-                            await copyToClipboard(context, _recvAddress,
+                            await copyToClipboard(context, recvAddress,
                                 displaySnackbar: false);
                             showCopyInfo();
                           },
@@ -198,9 +198,9 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                                 final shortUri = await ref
                                     .read(notificationServiceProvider)
                                     .createShortDynamicLink(
-                                        address: _recvAddress);
+                                        address: recvAddress);
                                 await shareAddress(
-                                    'Liquid address:\n$_recvAddress\n\nYou can open directly in app clicking this url: ${shortUri.toString()}');
+                                    'Liquid address:\n$recvAddress\n\nYou can open directly in app clicking this url: ${shortUri.toString()}');
                               },
                               label: 'Share'.tr(),
                               buttonBackground: Colors.white,
@@ -234,7 +234,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                                 SizedBox(
                                   width: 200.w,
                                   child: RoundedTextLabel(
-                                    text: _conversionText,
+                                    text: conversionText,
                                     allRectRadius: true,
                                   ),
                                 ),
@@ -287,7 +287,7 @@ class _AssetReceivePopupState extends State<AssetReceiveWidget> {
                                 width: FlavorConfig.isDesktop ? 400.w : 311.w,
                                 height: 60.h,
                                 child: Text(
-                                  _swapRecvAddr,
+                                  swapRecvAddr,
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.roboto(
                                     fontSize: 16.sp,

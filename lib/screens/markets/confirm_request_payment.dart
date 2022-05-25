@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -12,8 +12,7 @@ import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/markets/confirm_request_payment_success.dart';
 
 class ConfirmRequestPayment extends ConsumerWidget {
-  const ConfirmRequestPayment({Key? key, required this.request})
-      : super(key: key);
+  const ConfirmRequestPayment({super.key, required this.request});
 
   final PaymentRequest request;
 

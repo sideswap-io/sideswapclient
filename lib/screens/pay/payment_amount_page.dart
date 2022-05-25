@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -29,13 +29,13 @@ class PaymentAmountPageArguments {
 }
 
 class PaymentAmountPage extends ConsumerStatefulWidget {
-  const PaymentAmountPage({Key? key}) : super(key: key);
+  const PaymentAmountPage({super.key});
 
   @override
-  _PaymentAmountPageState createState() => _PaymentAmountPageState();
+  PaymentAmountPageState createState() => PaymentAmountPageState();
 }
 
-class _PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
+class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
   String dollarConversion = '';
   late AccountAsset accountAsset;
   late List<AccountAsset> availableAssets;
@@ -350,7 +350,7 @@ class _PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                             .getPrecisionForAssetId(
                                 assetId: accountAsset.asset);
                         return Text(
-                          'PAYMENT_BALANCE',
+                          'Balance: {}',
                           style: _approximateStyle,
                         ).tr(
                             args: [(amountStr(balance, precision: precision))]);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class DHoverButton extends StatefulWidget {
   const DHoverButton({
-    Key? key,
+    super.key,
     this.cursor,
     this.onLongPress,
     this.onLongPressStart,
@@ -20,7 +20,7 @@ class DHoverButton extends StatefulWidget {
     this.semanticLabel,
     this.autofocus = false,
     this.onFocusChange,
-  }) : super(key: key);
+  });
 
   final MouseCursor? cursor;
   final VoidCallback? onLongPress;

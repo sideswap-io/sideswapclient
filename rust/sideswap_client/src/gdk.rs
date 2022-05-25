@@ -394,6 +394,7 @@ extern "C" {
     #[doc = " :param session: The session to use."]
     #[doc = " :param details: :ref:`unspent-outputs-request` detailing the unspent transaction outputs to fetch."]
     #[doc = " :param call: Destination for the resulting GA_auth_handler to complete the action."]
+    #[doc = "|     The call handlers result is :ref:`unspent-outputs`."]
     #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
     pub fn GA_get_unspent_outputs(
         session: *mut GA_session,

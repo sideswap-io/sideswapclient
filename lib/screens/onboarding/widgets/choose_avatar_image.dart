@@ -9,9 +9,9 @@ import 'package:sideswap/screens/onboarding/widgets/image_source_chooser.dart';
 
 class ChooseAvatarImage extends StatelessWidget {
   const ChooseAvatarImage({
-    Key? key,
+    super.key,
     this.resizerData,
-  }) : super(key: key);
+  });
 
   final ImportAvatarResizerData? resizerData;
 

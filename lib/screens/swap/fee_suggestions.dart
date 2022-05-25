@@ -10,8 +10,8 @@ import 'package:sideswap/models/swap_provider.dart';
 
 class FeeRates extends StatelessWidget {
   const FeeRates({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

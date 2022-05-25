@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   file_selector_windows
   flutter_local_notifications
+  permission_handler_windows
   secure_application
   url_launcher_windows
   window_manager

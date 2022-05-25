@@ -6,11 +6,11 @@ import 'package:sideswap/desktop/common/d_focus.dart';
 
 class DTopToolbarButton extends StatelessWidget {
   const DTopToolbarButton({
-    Key? key,
+    super.key,
     this.name = '',
     required this.icon,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final String name;
   final String icon;
@@ -71,17 +71,17 @@ class DTopToolbarButton extends StatelessWidget {
         );
 
         final background = Container(
-          child: child,
           color: states.isHovering
               ? states.isPressing
                   ? Colors.transparent.toAccentColor().darker
                   : Colors.transparent.toAccentColor().dark
               : Colors.transparent,
+          child: child,
         );
 
         final focusBorder = DFocusBorder(
-          child: background,
           focused: states.isFocused,
+          child: background,
         );
 
         return Semantics(

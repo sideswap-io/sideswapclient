@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -8,21 +9,21 @@ import 'package:sideswap/models/wallet.dart';
 
 class DAddrTextField extends ConsumerStatefulWidget {
   const DAddrTextField({
-    Key? key,
+    super.key,
     required this.controller,
     required this.onChanged,
     this.autofocus = false,
-  }) : super(key: key);
+  });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final bool autofocus;
 
   @override
-  _DAddrTextFieldState createState() => _DAddrTextFieldState();
+  DAddrTextFieldState createState() => DAddrTextFieldState();
 }
 
-class _DAddrTextFieldState extends ConsumerState<DAddrTextField> {
+class DAddrTextFieldState extends ConsumerState<DAddrTextField> {
   String getErrorText() {
     return ref
         .read(walletProvider)
@@ -69,7 +70,7 @@ class _DAddrTextFieldState extends ConsumerState<DAddrTextField> {
     return TextField(
       controller: widget.controller,
       decoration: DSideSwapInputDecoration(
-        hintText: 'Address',
+        hintText: 'Address'.tr(),
         errorText: errorText.isEmpty ? null : errorText,
         onPastePressed: () async {
           await handlePasteSingleLine(widget.controller);

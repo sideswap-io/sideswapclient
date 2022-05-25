@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -17,13 +17,13 @@ import 'package:sideswap/screens/pay/widgets/payment_continue_button.dart';
 import 'package:sideswap/screens/pay/widgets/whom_to_pay_text_field.dart';
 
 class PaymentPage extends ConsumerStatefulWidget {
-  const PaymentPage({Key? key}) : super(key: key);
+  const PaymentPage({super.key});
 
   @override
-  _PaymentPageState createState() => _PaymentPageState();
+  PaymentPageState createState() => PaymentPageState();
 }
 
-class _PaymentPageState extends ConsumerState<PaymentPage>
+class PaymentPageState extends ConsumerState<PaymentPage>
     with WidgetsBindingObserver {
   late TextEditingController addressController;
   String? errorText;

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -18,15 +18,14 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class TokenMarketOrderDetails extends ConsumerStatefulWidget {
   const TokenMarketOrderDetails({
-    Key? key,
+    super.key,
     required this.requestOrder,
-  }) : super(key: key);
+  });
 
   final RequestOrder requestOrder;
 
   @override
-  _TokenMarketOrderDetailsState createState() =>
-      _TokenMarketOrderDetailsState();
+  TokenMarketOrderDetailsState createState() => TokenMarketOrderDetailsState();
 }
 
 TextStyle defaultInfoStyle = GoogleFonts.roboto(
@@ -35,7 +34,7 @@ TextStyle defaultInfoStyle = GoogleFonts.roboto(
   color: const Color(0xFF709EBA),
 );
 
-class _TokenMarketOrderDetailsState
+class TokenMarketOrderDetailsState
     extends ConsumerState<TokenMarketOrderDetails> {
   String expiresTitle = '';
   Timer? _expireTimer;

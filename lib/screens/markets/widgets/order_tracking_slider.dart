@@ -11,7 +11,7 @@ import 'package:sideswap/screens/markets/widgets/order_tracking_slider_track_sha
 
 class OrderTrackingSlider extends StatelessWidget {
   OrderTrackingSlider({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
     this.minPercent = -3,
@@ -21,7 +21,7 @@ class OrderTrackingSlider extends StatelessWidget {
     this.price = '',
     this.dollarConversion = '',
     required this.invertColors,
-  }) : super(key: key);
+  });
 
   final double value;
   final void Function(double)? onChanged;

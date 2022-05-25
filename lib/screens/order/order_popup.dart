@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -24,13 +24,13 @@ import 'package:sideswap/screens/markets/widgets/autosign.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 
 class OrderPopup extends ConsumerStatefulWidget {
-  const OrderPopup({Key? key}) : super(key: key);
+  const OrderPopup({super.key});
 
   @override
-  _OrderPopupState createState() => _OrderPopupState();
+  OrderPopupState createState() => OrderPopupState();
 }
 
-class _OrderPopupState extends ConsumerState<OrderPopup> {
+class OrderPopupState extends ConsumerState<OrderPopup> {
   int seconds = 60;
   int percent = 100;
   Timer? _percentTimer;
@@ -408,8 +408,8 @@ class _OrderPopupState extends ConsumerState<OrderPopup> {
 
 class OrderTypeTracking extends StatelessWidget {
   const OrderTypeTracking({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

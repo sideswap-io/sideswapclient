@@ -7,7 +7,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 
 class PegInAddress extends StatelessWidget {
-  const PegInAddress({Key? key}) : super(key: key);
+  const PegInAddress({super.key});
 
   @override
   Widget build(BuildContext context) {

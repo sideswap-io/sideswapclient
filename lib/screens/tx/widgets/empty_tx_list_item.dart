@@ -6,7 +6,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class EmptyTxListItem extends StatelessWidget {
-  const EmptyTxListItem({Key? key}) : super(key: key);
+  const EmptyTxListItem({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -92,13 +92,13 @@ class EmptyTxListItem extends StatelessWidget {
 
 class EmptyTextContainer extends StatefulWidget {
   const EmptyTextContainer({
-    Key? key,
+    super.key,
     this.color = const Color(0xFF135579),
     this.width = 26,
     this.height,
     this.radius,
     this.border,
-  }) : super(key: key);
+  });
 
   final Color color;
   final double width;
@@ -107,10 +107,10 @@ class EmptyTextContainer extends StatefulWidget {
   final BoxBorder? border;
 
   @override
-  _EmptyTextContainerState createState() => _EmptyTextContainerState();
+  EmptyTextContainerState createState() => EmptyTextContainerState();
 }
 
-class _EmptyTextContainerState extends State<EmptyTextContainer> {
+class EmptyTextContainerState extends State<EmptyTextContainer> {
   double height = 0;
   double radius = 0;
 

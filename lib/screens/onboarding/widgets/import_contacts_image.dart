@@ -6,8 +6,8 @@ import 'package:sideswap/screens/onboarding/widgets/contact_mockup_container.dar
 
 class ImportContactsImage extends StatelessWidget {
   const ImportContactsImage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

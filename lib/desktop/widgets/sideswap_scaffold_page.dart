@@ -8,14 +8,14 @@ const double kPageDefaultVerticalPadding = 24.0;
 
 class SideSwapScaffoldPage extends StatefulWidget {
   const SideSwapScaffoldPage({
-    Key? key,
+    super.key,
     this.content = const SizedBox.expand(),
     this.header,
     this.bottomBar,
     this.padding = EdgeInsets.zero,
     this.onEscapeKey,
     this.onEnterKey,
-  }) : super(key: key);
+  });
 
   final Widget content;
   final Widget? header;
@@ -25,7 +25,7 @@ class SideSwapScaffoldPage extends StatefulWidget {
   final VoidCallback? onEnterKey;
 
   SideSwapScaffoldPage.scrollable({
-    Key? key,
+    super.key,
     this.header,
     this.bottomBar,
     this.padding,
@@ -43,11 +43,10 @@ class SideSwapScaffoldPage extends StatefulWidget {
             ),
             children: children,
           );
-        }),
-        super(key: key);
+        });
 
   SideSwapScaffoldPage.withPadding({
-    Key? key,
+    super.key,
     this.header,
     this.bottomBar,
     this.padding,
@@ -63,8 +62,7 @@ class SideSwapScaffoldPage extends StatefulWidget {
             ),
             child: content,
           );
-        }),
-        super(key: key);
+        });
 
   @override
   State<SideSwapScaffoldPage> createState() => _SideSwapScaffoldPageState();
@@ -127,11 +125,11 @@ class _SideSwapScaffoldPageState extends State<SideSwapScaffoldPage> {
 
 class SideSwapPageHeader extends ConsumerWidget {
   const SideSwapPageHeader({
-    Key? key,
+    super.key,
     this.leading,
     this.title,
     this.commandBar,
-  }) : super(key: key);
+  });
 
   final Widget? leading;
   final Widget? title;

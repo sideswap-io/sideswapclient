@@ -5,7 +5,7 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DCustomButton extends StatelessWidget {
   const DCustomButton({
-    Key? key,
+    super.key,
     required this.child,
     this.onPressed,
     this.width,
@@ -13,7 +13,7 @@ class DCustomButton extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.isFilled = false,
-  }) : super(key: key);
+  });
 
   final double? width;
   final double? height;

@@ -43,12 +43,12 @@ TxCircleImageType txTypeToImageType({required TxType type}) {
 
 class TxCircleImage extends StatefulWidget {
   const TxCircleImage({
-    Key? key,
+    super.key,
     required this.txCircleImageType,
     this.width,
     this.height,
     this.fake = false,
-  }) : super(key: key);
+  });
 
   final TxCircleImageType txCircleImageType;
   final double? width;
@@ -56,10 +56,10 @@ class TxCircleImage extends StatefulWidget {
   final bool fake;
 
   @override
-  _TxCircleImageState createState() => _TxCircleImageState();
+  TxCircleImageState createState() => TxCircleImageState();
 }
 
-class _TxCircleImageState extends State<TxCircleImage> {
+class TxCircleImageState extends State<TxCircleImage> {
   double _width = 0;
   double _height = 0;
   double _largeWidth = 0;

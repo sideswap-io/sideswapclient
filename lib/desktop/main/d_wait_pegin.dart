@@ -1,11 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 
 class DWaitPegin extends ConsumerWidget {
-  const DWaitPegin({Key? key}) : super(key: key);
+  const DWaitPegin({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -5,13 +5,13 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class MnemonicTable extends StatelessWidget {
   const MnemonicTable({
-    Key? key,
+    super.key,
     required this.onCheckField,
     this.onTapIndex,
     required this.onCheckError,
     required this.currentSelectedItem,
     required this.words,
-  }) : super(key: key);
+  });
 
   final bool Function(int index) onCheckField;
   final void Function(int index)? onTapIndex;
@@ -21,8 +21,8 @@ class MnemonicTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _itemWidth = 109.w;
-    final _itemHeight = 39.h;
+    final itemWidth = 109.w;
+    final itemHeight = 39.h;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -34,7 +34,7 @@ class MnemonicTable extends StatelessWidget {
           addRepaintBoundaries: false,
           shrinkWrap: true,
           padding: EdgeInsets.zero,
-          childAspectRatio: _itemWidth / _itemHeight - 0.16,
+          childAspectRatio: itemWidth / itemHeight - 0.16,
           children: List.generate(
             words.length,
             (index) {
@@ -47,8 +47,8 @@ class MnemonicTable extends StatelessWidget {
                     }
                   },
                   child: Container(
-                    width: _itemWidth,
-                    height: _itemHeight,
+                    width: itemWidth,
+                    height: itemHeight,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8.w),
                       color: correctField

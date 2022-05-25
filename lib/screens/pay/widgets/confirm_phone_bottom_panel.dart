@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -13,8 +12,8 @@ import 'package:sideswap/screens/pay/payment_confirm_phone_success.dart';
 
 class ConfirmPhoneBottomPanel extends StatelessWidget {
   const ConfirmPhoneBottomPanel({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -4,10 +4,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sideswap/app_main.dart';
 import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/desktop/desktop_app_main.dart';
+import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:args/args.dart';
 import 'package:window_manager/window_manager.dart';
@@ -63,6 +66,7 @@ Future<void> main(List<String> args) async {
   }
 
   await EasyLocalization.ensureInitialized();
+  final sharedPrefs = await SharedPreferences.getInstance();
 
   if (runMobile && isDesktop() || isMobile()) {
     if (notificationServiceAvailable()) {
@@ -78,7 +82,9 @@ Future<void> main(List<String> args) async {
     );
 
     runApp(
-      const AppMain(),
+      ProviderScope(overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+      ], child: const AppMain()),
     );
     return;
   }
@@ -92,5 +98,7 @@ Future<void> main(List<String> args) async {
     ),
   );
 
-  runApp(const DesktopAppMain());
+  runApp(ProviderScope(overrides: [
+    sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+  ], child: const DesktopAppMain()));
 }

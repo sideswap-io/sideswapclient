@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
@@ -13,19 +13,19 @@ import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
 
 class DesktopTxHistory extends StatefulWidget {
   const DesktopTxHistory({
-    Key? key,
+    super.key,
     this.horizontalPadding = 32,
     this.newTxsOnly = false,
-  }) : super(key: key);
+  });
 
   final double horizontalPadding;
   final bool newTxsOnly;
 
   @override
-  _DesktopTxHistoryState createState() => _DesktopTxHistoryState();
+  DesktopTxHistoryState createState() => DesktopTxHistoryState();
 }
 
-class _DesktopTxHistoryState extends State<DesktopTxHistory> {
+class DesktopTxHistoryState extends State<DesktopTxHistory> {
   static DateFormat dateFormatDate = DateFormat('y-MM-dd ');
   static DateFormat dateFormatTime = DateFormat('HH:mm:ss');
 
@@ -98,14 +98,14 @@ class _DesktopTxHistoryState extends State<DesktopTxHistory> {
             Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: widget.horizontalPadding, vertical: 12),
-              child: const _Row(list: [
-                _Header(text: 'Date'),
-                _Header(text: 'Wallet'),
-                _Header(text: 'Type'),
-                _Header(text: 'Sent'),
-                _Header(text: 'Received'),
-                _Header(text: 'Confirmations'),
-                _Header(text: 'Link'),
+              child: _Row(list: [
+                _Header(text: 'Date'.tr()),
+                _Header(text: 'Wallet'.tr()),
+                _Header(text: 'Type'.tr()),
+                _Header(text: 'Sent'.tr()),
+                _Header(text: 'Received'.tr()),
+                _Header(text: 'Confirmations'.tr()),
+                _Header(text: 'Link'.tr()),
               ]),
             ),
             Expanded(
@@ -179,9 +179,8 @@ class _DesktopTxHistoryState extends State<DesktopTxHistory> {
 
 class _Row extends StatelessWidget {
   const _Row({
-    Key? key,
     required this.list,
-  }) : super(key: key);
+  });
 
   final List<Widget> list;
 
@@ -202,9 +201,8 @@ class _Row extends StatelessWidget {
 
 class _Header extends StatelessWidget {
   const _Header({
-    Key? key,
     required this.text,
-  }) : super(key: key);
+  });
 
   final String text;
 
@@ -222,11 +220,10 @@ class _Header extends StatelessWidget {
 
 class _Date extends StatelessWidget {
   const _Date({
-    Key? key,
     required this.dateFormatDate,
     required this.dateFormatTime,
     required this.tx,
-  }) : super(key: key);
+  });
 
   final DateFormat dateFormatDate;
   final DateFormat dateFormatTime;
@@ -250,9 +247,8 @@ class _Date extends StatelessWidget {
 
 class _Wallet extends StatelessWidget {
   const _Wallet({
-    Key? key,
     required this.tx,
-  }) : super(key: key);
+  });
 
   final TransItem tx;
 
@@ -264,7 +260,9 @@ class _Wallet extends StatelessWidget {
         tx.tx.balances.any((e) => AccountType.fromPb(e.account).isRegular());
     final accountName = tx.hasPeg()
         ? ''
-        : ((isAmp && isRegular) ? 'Regular/AMP' : (isAmp ? 'AMP' : 'Regular'));
+        : ((isAmp && isRegular)
+            ? 'Regular/AMP'.tr()
+            : (isAmp ? 'AMP' : 'Regular'.tr()));
     return Align(
       alignment: Alignment.centerLeft,
       child: Text(accountName),
@@ -274,10 +272,9 @@ class _Wallet extends StatelessWidget {
 
 class _Type extends StatelessWidget {
   const _Type({
-    Key? key,
     required this.tx,
     required this.txType,
-  }) : super(key: key);
+  });
 
   final TransItem tx;
   final TxType txType;
@@ -301,9 +298,8 @@ class _Type extends StatelessWidget {
 
 class _Link extends ConsumerWidget {
   const _Link({
-    Key? key,
     required this.txid,
-  }) : super(key: key);
+  });
 
   final String txid;
 
@@ -325,9 +321,8 @@ class _Link extends ConsumerWidget {
 
 class _Confs extends StatelessWidget {
   const _Confs({
-    Key? key,
     required this.tx,
-  }) : super(key: key);
+  });
 
   final TransItem tx;
 
@@ -349,10 +344,9 @@ class _Confs extends StatelessWidget {
 
 class _Amount extends StatelessWidget {
   const _Amount({
-    Key? key,
     required this.balance,
     required this.wallet,
-  }) : super(key: key);
+  });
 
   final Balance balance;
   final WalletChangeNotifier wallet;

@@ -1,4 +1,4 @@
-import 'dart:ui' as _ui;
+import 'dart:ui' as ui;
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:marquee/marquee.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -25,7 +25,7 @@ import 'package:sideswap/screens/swap/widgets/labeled_radio.dart';
 
 class SwapSideAmount extends ConsumerStatefulWidget {
   const SwapSideAmount({
-    Key? key,
+    super.key,
     required this.text,
     this.controller,
     this.addressController,
@@ -63,7 +63,7 @@ class SwapSideAmount extends ConsumerStatefulWidget {
     this.dollarConversion2,
     this.textInputAction,
     this.showAccountsInPopup = false,
-  }) : super(key: key);
+  });
 
   final String text;
   final TextEditingController? controller;
@@ -104,10 +104,10 @@ class SwapSideAmount extends ConsumerStatefulWidget {
   final bool showAccountsInPopup;
 
   @override
-  _SwapSideAmountState createState() => _SwapSideAmountState();
+  SwapSideAmountState createState() => SwapSideAmountState();
 }
 
-class _SwapSideAmountState extends ConsumerState<SwapSideAmount> {
+class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
   final _labelStyle = GoogleFonts.roboto(
     fontSize: 15.sp,
     fontWeight: FontWeight.w500,
@@ -149,7 +149,7 @@ class _SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                       Text(
                         widget.text,
                         style: _labelStyle,
-                      ).tr(),
+                      ),
                       if (isAmp) const AmpFlag(fontSize: 10),
                     ],
                   ),
@@ -203,7 +203,7 @@ class _SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                             text: widget.errorDescription,
                             style: textStyle,
                           ),
-                          textDirection: _ui.TextDirection.ltr,
+                          textDirection: ui.TextDirection.ltr,
                           softWrap: false,
                           maxLines: 1,
                           overflow: TextOverflow.visible,
@@ -420,7 +420,7 @@ class _SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     (widget.swapType == SwapType.atomic ||
                         widget.swapType == SwapType.pegOut)) ...[
                   Text(
-                    'PAYMENT_BALANCE',
+                    'Balance: {}',
                     style: _balanceStyle,
                   ).tr(args: [widget.balance]),
                 ],

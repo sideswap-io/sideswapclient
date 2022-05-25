@@ -3,7 +3,7 @@ pub mod gdk;
 pub mod http_rpc;
 
 use serde::{Deserialize, Serialize};
-use std::vec::Vec;
+use std::{convert::TryInto, vec::Vec};
 
 pub const TICKER_BTC: &str = "BTC";
 pub const TICKER_LBTC: &str = "L-BTC";
@@ -65,6 +65,16 @@ impl std::fmt::Display for Hash32 {
         let mut data = self.0;
         data.reverse();
         write!(f, "{}", hex::encode(data))
+    }
+}
+
+impl Hash32 {
+    pub fn from_slice(slice: &[u8]) -> Result<Self, &'static str> {
+        if slice.len() != 32 {
+            Err("Invalid format")
+        } else {
+            Ok(Self(slice.try_into().unwrap()))
+        }
     }
 }
 
@@ -704,6 +714,7 @@ pub struct UnsubscribeResponse {
 pub struct Own {
     pub index_price: Option<f64>,
     pub private: bool,
+    pub two_step: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -733,6 +744,15 @@ pub struct LinkResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UtxoSecret {
+    pub asset: AssetId,
+    pub asset_bf: BlindingFactor,
+    pub value: u64,
+    pub value_bf: BlindingFactor,
+    pub sender_sk: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PsetInput {
     pub txid: Txid,
     pub vout: u32,
@@ -741,6 +761,13 @@ pub struct PsetInput {
     pub value: u64,
     pub value_bf: BlindingFactor,
     pub redeem_script: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MakerSignedHalf {
+    // TODO: Add optional funding transaction here
+    pub tx: String,
+    pub output: UtxoSecret,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -753,6 +780,7 @@ pub struct PsetMakerRequest {
     pub recv_addr: Option<String>,
     pub recv_gaid: Option<String>,
     pub change_addr: String,
+    pub signed_half: Option<MakerSignedHalf>,
 }
 pub type PsetMakerResponse = Empty;
 

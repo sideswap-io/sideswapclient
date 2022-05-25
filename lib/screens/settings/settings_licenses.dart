@@ -12,13 +12,13 @@ import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 
 class SettingsLicenses extends StatefulWidget {
-  const SettingsLicenses({Key? key}) : super(key: key);
+  const SettingsLicenses({super.key});
 
   @override
-  _SettingsLicensesState createState() => _SettingsLicensesState();
+  SettingsLicensesState createState() => SettingsLicensesState();
 }
 
-class _SettingsLicensesState extends State<SettingsLicenses> {
+class SettingsLicensesState extends State<SettingsLicenses> {
   final List<Widget> _licenses = <Widget>[];
   final Map<String, List<Widget>> _licenseContent = {};
   bool _loaded = false;
@@ -110,7 +110,7 @@ class _SettingsLicensesState extends State<SettingsLicenses> {
             ),
           ),
           subtitle: Text(
-            '$count licenses',
+            'licenses'.plural(count),
             style: const TextStyle(
               color: Colors.white,
             ),

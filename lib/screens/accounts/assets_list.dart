@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -11,7 +11,7 @@ import 'package:sideswap/screens/accounts/widgets/asset_search_text_field.dart';
 import 'package:sideswap/screens/accounts/widgets/asset_select_item.dart';
 
 class AssetSelectList extends ConsumerWidget {
-  const AssetSelectList({Key? key}) : super(key: key);
+  const AssetSelectList({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

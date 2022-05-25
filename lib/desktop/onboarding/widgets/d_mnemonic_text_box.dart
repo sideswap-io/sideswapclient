@@ -7,10 +7,10 @@ import 'package:sideswap/models/mnemonic_table_provider.dart';
 
 class DMnemonicTextBox extends ConsumerWidget {
   const DMnemonicTextBox({
-    Key? key,
+    super.key,
     this.currentIndex = 1,
     this.focusNode,
-  }) : super(key: key);
+  });
 
   final int currentIndex;
   final FocusNode? focusNode;
@@ -134,10 +134,10 @@ class DMnemonicTextBox extends ConsumerWidget {
 
 class OptionsView extends StatelessWidget {
   const OptionsView({
-    Key? key,
+    super.key,
     required this.options,
     required this.onSelected,
-  }) : super(key: key);
+  });
 
   final Iterable<String> options;
   final AutocompleteOnSelected<String> onSelected;

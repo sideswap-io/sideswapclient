@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -16,21 +16,21 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class OrderItem extends ConsumerStatefulWidget {
   const OrderItem({
-    Key? key,
+    super.key,
     required this.requestOrder,
     this.useTokenMarketView = false,
     this.onTap,
-  }) : super(key: key);
+  });
 
   final RequestOrder requestOrder;
   final bool useTokenMarketView;
   final void Function()? onTap;
 
   @override
-  _OrderItemState createState() => _OrderItemState();
+  OrderItemState createState() => OrderItemState();
 }
 
-class _OrderItemState extends ConsumerState<OrderItem> {
+class OrderItemState extends ConsumerState<OrderItem> {
   String createdAt = '';
   String expire = '';
   Timer? expireTimer;
@@ -379,22 +379,22 @@ class _OrderItemState extends ConsumerState<OrderItem> {
                                 padding: EdgeInsets.only(right: 8.w),
                                 child: sendBitcoins != isAmp
                                     ? ColoredContainer(
+                                        backgroundColor: const Color(0xFFFF7878)
+                                            .withOpacity(0.14),
+                                        borderColor: const Color(0xFFFF7878),
                                         child: Text(
                                           'Sell'.tr(),
                                           style: coloredContainerStyle,
                                         ),
-                                        backgroundColor: const Color(0xFFFF7878)
-                                            .withOpacity(0.14),
-                                        borderColor: const Color(0xFFFF7878),
                                       )
                                     : ColoredContainer(
+                                        backgroundColor: const Color(0xFF2CCCBF)
+                                            .withOpacity(0.14),
+                                        borderColor: const Color(0xFF2CCCBF),
                                         child: Text(
                                           'Buy'.tr(),
                                           style: coloredContainerStyle,
                                         ),
-                                        backgroundColor: const Color(0xFF2CCCBF)
-                                            .withOpacity(0.14),
-                                        borderColor: const Color(0xFF2CCCBF),
                                       ),
                               ),
                             ],

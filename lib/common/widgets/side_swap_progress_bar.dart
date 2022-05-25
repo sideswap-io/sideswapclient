@@ -5,12 +5,12 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapProgressBar extends StatefulWidget {
   const SideSwapProgressBar({
-    Key? key,
+    super.key,
     this.percent = 0,
     this.displayText = true,
     this.duration = const Duration(milliseconds: 500),
     this.text,
-  }) : super(key: key);
+  });
 
   final int percent;
   final bool displayText;
@@ -18,10 +18,10 @@ class SideSwapProgressBar extends StatefulWidget {
   final String? text;
 
   @override
-  _SideSwapProgressBarState createState() => _SideSwapProgressBarState();
+  SideSwapProgressBarState createState() => SideSwapProgressBarState();
 }
 
-class _SideSwapProgressBarState extends State<SideSwapProgressBar> {
+class SideSwapProgressBarState extends State<SideSwapProgressBar> {
   final _containerKey = GlobalKey();
   double _maxWidth = 0;
 

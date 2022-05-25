@@ -14,11 +14,11 @@ import 'package:sideswap/models/pin_setup_provider.dart';
 
 class DPinProtection extends HookConsumerWidget {
   const DPinProtection({
-    Key? key,
+    super.key,
     this.title,
     this.showBackButton = true,
     this.iconType = PinKeyboardAcceptType.unlock,
-  }) : super(key: key);
+  });
 
   final String? title;
   final bool showBackButton;

@@ -46,6 +46,7 @@
             android:screenOrientation="portrait"
             android:name=".MainActivity"
             android:launchMode="singleInstance"
+            android:exported="true"
             android:allowTaskReparenting="true"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

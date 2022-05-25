@@ -6,11 +6,11 @@ import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
 class AutoSign extends StatelessWidget {
   const AutoSign({
-    Key? key,
+    super.key,
     this.backgroundColor = const Color(0xFF014767),
     required this.value,
     this.onToggle,
-  }) : super(key: key);
+  });
 
   final Color backgroundColor;
   final bool value;
@@ -55,7 +55,7 @@ class AutoSign extends StatelessWidget {
               ],
             ),
             Text(
-              'If someone confirms your order in the order book, SidesSwap will automatically confirm the order'
+              'If someone confirms your order in the order book, SideSwap will automatically confirm the order'
                   .tr(),
               style: GoogleFonts.roboto(
                 fontSize: 14.sp,

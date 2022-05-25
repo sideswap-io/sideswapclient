@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 
 import 'package:sideswap/models/wallet.dart';
@@ -9,7 +9,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 
 class SideSwapScaffold extends ConsumerStatefulWidget {
   const SideSwapScaffold({
-    Key? key,
+    super.key,
     this.onWillPop,
     this.extendBody = false,
     this.extendBodyBehindAppBar = false,
@@ -32,7 +32,7 @@ class SideSwapScaffold extends ConsumerStatefulWidget {
     this.drawerEnableOpenDragGesture = true,
     this.endDrawerEnableOpenDragGesture = true,
     this.sideSwapBackground = true,
-  }) : super(key: key);
+  });
 
   final bool sideSwapBackground;
   final WillPopCallback? onWillPop;
@@ -58,10 +58,10 @@ class SideSwapScaffold extends ConsumerStatefulWidget {
   final bool endDrawerEnableOpenDragGesture;
 
   @override
-  _SideSwapScaffoldState createState() => _SideSwapScaffoldState();
+  SideSwapScaffoldState createState() => SideSwapScaffoldState();
 }
 
-class _SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
+class SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
   @override
   Widget build(BuildContext context) {
     if (FlavorConfig.isDesktop) {
@@ -83,7 +83,7 @@ class _SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
           )
         : widget.body;
 
-    final _scaffold = Scaffold(
+    final scaffold = Scaffold(
         extendBody: widget.extendBody,
         extendBodyBehindAppBar:
             widget.sideSwapBackground ? true : widget.extendBodyBehindAppBar,
@@ -111,7 +111,7 @@ class _SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
           () async {
             return ref.read(walletProvider).goBack();
           },
-      child: _scaffold,
+      child: scaffold,
     );
   }
 }

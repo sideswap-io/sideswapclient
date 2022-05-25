@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
@@ -13,9 +13,9 @@ import 'package:sideswap/models/wallet.dart';
 
 class DAssetInfo extends ConsumerStatefulWidget {
   const DAssetInfo({
-    Key? key,
+    super.key,
     required this.account,
-  }) : super(key: key);
+  });
 
   final AccountAsset account;
 
@@ -114,7 +114,7 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
                 const SizedBox(height: 32),
                 _Field(
                     name: 'Precision'.tr(), value: asset.precision.toString()),
-                const _Separator(),
+                _Separator(),
                 ...asset.hasDomain()
                     ? [
                         _Field(
@@ -133,7 +133,7 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
                             },
                           ),
                         ),
-                        const _Separator(),
+                        _Separator(),
                       ]
                     : [],
                 ...asset.hasDomainAgent()
@@ -154,7 +154,7 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
                             },
                           ),
                         ),
-                        const _Separator(),
+                        _Separator(),
                       ]
                     : [],
                 ...circulatingAmount != 0
@@ -162,7 +162,7 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
                         _Field(
                             name: 'Circulating amount'.tr(),
                             value: circulatingAmountStr),
-                        const _Separator(),
+                        _Separator(),
                       ]
                     : [],
                 _Field(name: 'Asset ID'.tr(), value: ''),
@@ -190,7 +190,7 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
             color: const Color(0xFF135579),
             padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 52),
             child: DCustomFilledBigButton(
-              child: Text('Open in explorer'.tr().toUpperCase()),
+              child: Text('OPEN IN EXPLORER'.tr()),
               onPressed: () {
                 final isTestnet = wallet.isTestnet();
                 final assetUrl = generateAssetUrl(
@@ -207,11 +207,10 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
 
 class _Field extends StatelessWidget {
   const _Field({
-    Key? key,
     required this.name,
     this.value,
     this.valueWidget,
-  }) : super(key: key);
+  });
 
   final String name;
   final String? value;
@@ -248,8 +247,6 @@ class _Field extends StatelessWidget {
 }
 
 class _Separator extends StatelessWidget {
-  const _Separator({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Container(

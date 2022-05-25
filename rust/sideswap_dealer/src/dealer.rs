@@ -305,6 +305,7 @@ fn get_pset(
         recv_addr: Some(recv_addr),
         recv_gaid: None,
         change_addr,
+        signed_half: None,
     };
     Ok(addr_request)
 }

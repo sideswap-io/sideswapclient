@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -17,13 +17,13 @@ import 'package:sideswap/screens/onboarding/import_avatar_resizer.dart';
 import 'package:sideswap/screens/onboarding/widgets/choose_avatar_image.dart';
 
 class SettingsUserDetails extends ConsumerStatefulWidget {
-  const SettingsUserDetails({Key? key}) : super(key: key);
+  const SettingsUserDetails({super.key});
 
   @override
-  _SettingsUserDetailsState createState() => _SettingsUserDetailsState();
+  SettingsUserDetailsState createState() => SettingsUserDetailsState();
 }
 
-class _SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
+class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
   Image? avatar;
   String phoneNumber = '';
 
@@ -127,10 +127,10 @@ class _SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
 
 class PhoneNumberButton extends StatelessWidget {
   PhoneNumberButton({
-    Key? key,
+    super.key,
     this.onTap,
     this.phoneNumber = '',
-  }) : super(key: key);
+  });
 
   final VoidCallback? onTap;
 
@@ -219,7 +219,7 @@ class PhoneNumberButton extends StatelessWidget {
 }
 
 class AvatarEditButton extends StatelessWidget {
-  AvatarEditButton({Key? key, this.onTap, this.avatar}) : super(key: key);
+  AvatarEditButton({super.key, this.onTap, this.avatar});
 
   final VoidCallback? onTap;
   final Image? avatar;

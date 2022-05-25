@@ -5,7 +5,7 @@ import 'package:sideswap/models/ui_state_args_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class UiStatesListener extends ConsumerWidget {
-  const UiStatesListener({Key? key}) : super(key: key);
+  const UiStatesListener({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

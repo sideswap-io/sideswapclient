@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -340,8 +339,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   void showPegInInformation() async {
     final prefs = await SharedPreferences.getInstance();
-    final _hidePegInInfo = prefs.getBool(hidePegInInfo) ?? false;
-    if (_hidePegInInfo) {
+    final internalHidePegInInfo = prefs.getBool(hidePegInInfo) ?? false;
+    if (internalHidePegInInfo) {
       return;
     }
 
@@ -373,8 +372,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   void showPegOutInformation() async {
     final prefs = await SharedPreferences.getInstance();
-    final _hidePegOutInfo = prefs.getBool(hidePegOutInfo) ?? false;
-    if (_hidePegOutInfo) {
+    final internalHidePegOutInfo = prefs.getBool(hidePegOutInfo) ?? false;
+    if (internalHidePegOutInfo) {
       return;
     }
 
@@ -650,13 +649,10 @@ class BitcoinFeeRatesProvider {
     final duration = Duration(minutes: blocks * 10);
     if (duration.inMinutes <= 60) {
       return 'BLOCKS_MINUTES'
-          .tr(args: ['$blocks', '${duration.inMinutes}', '$value']);
-    } else if (duration.inHours == 1) {
-      return 'BLOCKS_HOUR'
-          .tr(args: ['$blocks', '${duration.inHours}', '$value']);
+          .plural(blocks, args: ['$blocks', '${duration.inMinutes}', '$value']);
     } else {
       return 'BLOCKS_HOURS'
-          .tr(args: ['$blocks', '${duration.inHours}', '$value']);
+          .plural(blocks, args: ['$blocks', '${duration.inHours}', '$value']);
     }
   }
 }

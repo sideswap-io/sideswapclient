@@ -51,7 +51,7 @@ class BiometricShapeBorder extends ShapeBorder {
 
   @override
   void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    final _halfBorderWidth = borderWidth / 2;
+    final halfBorderWidth = borderWidth / 2;
 
     final borderPaint = Paint()
       ..color = borderColor
@@ -63,15 +63,15 @@ class BiometricShapeBorder extends ShapeBorder {
       ..color = const Color(0xFF135579)
       ..style = PaintingStyle.fill;
 
-    final topLeftX = rect.topLeft.dx + _halfBorderWidth;
-    final topLeftY = rect.topLeft.dy + _halfBorderWidth;
-    final topRightX = rect.topRight.dx - _halfBorderWidth;
-    final topRightY = rect.topRight.dy + _halfBorderWidth;
+    final topLeftX = rect.topLeft.dx + halfBorderWidth;
+    final topLeftY = rect.topLeft.dy + halfBorderWidth;
+    final topRightX = rect.topRight.dx - halfBorderWidth;
+    final topRightY = rect.topRight.dy + halfBorderWidth;
 
-    final bottomLeftX = rect.bottomLeft.dx + _halfBorderWidth;
-    final bottomLeftY = rect.bottomLeft.dy - _halfBorderWidth;
-    final bottomRightX = rect.bottomRight.dx - _halfBorderWidth;
-    final bottomRightY = rect.bottomRight.dy - _halfBorderWidth;
+    final bottomLeftX = rect.bottomLeft.dx + halfBorderWidth;
+    final bottomLeftY = rect.bottomLeft.dy - halfBorderWidth;
+    final bottomRightX = rect.bottomRight.dx - halfBorderWidth;
+    final bottomRightY = rect.bottomRight.dy - halfBorderWidth;
 
     canvas
       ..saveLayer(

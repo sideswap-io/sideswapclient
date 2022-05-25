@@ -127,6 +127,7 @@ message Order {
   required int64 created_at = 7;
   required int64 expires_at = 8;
   required bool private = 9;
+  required bool two_step = 17;
   required bool auto_sign = 11;
   required bool own = 12;
   required bool token_market = 16;
@@ -289,6 +290,7 @@ message To {
     required bool accept = 2;
     optional bool auto_sign = 3;
     optional bool private = 4;
+    optional bool two_step = 6;
     optional uint64 ttl_seconds = 5;
   }
 

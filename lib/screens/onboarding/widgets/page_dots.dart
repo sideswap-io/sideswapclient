@@ -5,9 +5,9 @@ import 'package:sideswap/screens/flavor_config.dart';
 
 class PageDots extends StatelessWidget {
   const PageDots({
-    Key? key,
+    super.key,
     this.maxSelectedDots = 0,
-  }) : super(key: key);
+  });
 
   final int maxSelectedDots;
 

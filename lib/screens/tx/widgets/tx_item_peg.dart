@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -11,10 +11,10 @@ import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class TxItemPeg extends StatelessWidget {
   const TxItemPeg({
-    Key? key,
+    super.key,
     required this.transItem,
     required this.assetId,
-  }) : super(key: key);
+  });
 
   final TransItem transItem;
   final String assetId;
@@ -23,7 +23,7 @@ class TxItemPeg extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _status = txItemToStatus(transItem, isPeg: true);
+    final status = txItemToStatus(transItem, isPeg: true);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -73,7 +73,7 @@ class TxItemPeg extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.only(top: 4.h),
                     child: Text(
-                      _status,
+                      status,
                       style: GoogleFonts.roboto(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.normal,

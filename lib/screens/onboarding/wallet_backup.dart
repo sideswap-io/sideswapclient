@@ -12,7 +12,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_table.dart';
 
 class WalletBackup extends HookConsumerWidget {
-  const WalletBackup({Key? key}) : super(key: key);
+  const WalletBackup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

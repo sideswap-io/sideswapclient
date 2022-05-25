@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as image;
 import 'package:vector_math/vector_math_64.dart' as vector;
 
@@ -26,15 +26,15 @@ class ImportAvatarResizerData {
 }
 
 class ImportAvatarResizer extends ConsumerStatefulWidget {
-  const ImportAvatarResizer({Key? key, this.resizerData}) : super(key: key);
+  const ImportAvatarResizer({super.key, this.resizerData});
 
   final ImportAvatarResizerData? resizerData;
 
   @override
-  _ImportAvatarResizerState createState() => _ImportAvatarResizerState();
+  ImportAvatarResizerState createState() => ImportAvatarResizerState();
 }
 
-class _ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
+class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
   late ImportAvatarResizerData resizerData;
 
   @override
@@ -159,8 +159,8 @@ class _ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
 
 class AvatarResizer extends StatelessWidget {
   const AvatarResizer({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -175,9 +175,9 @@ class AvatarResizer extends StatelessWidget {
 
 class DragImage extends ConsumerStatefulWidget {
   const DragImage({
-    Key? key,
+    super.key,
     required this.position,
-  }) : super(key: key);
+  });
 
   final Offset position;
 

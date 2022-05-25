@@ -12,6 +12,7 @@ pub struct Args {
     order_count: usize,
     price_usdt: f64,
     trading_asset_id: sideswap_api::AssetId,
+    amp_asset: Option<bool>,
 }
 
 fn main() {
@@ -51,8 +52,10 @@ fn main() {
         }),
     );
 
-    // This will stop AMP account because we don't use it here
-    send_msg(client, to::Msg::AppState(to::AppState { active: false }));
+    let amp = args.amp_asset.unwrap_or_default();
+    if !amp {
+        send_msg(client, to::Msg::AppState(to::AppState { active: false }));
+    }
 
     let mut trading_utxo_count = 0;
     let mut connected = false;
@@ -62,11 +65,17 @@ fn main() {
     let mut usdt_index_price = None;
     let mut orders = std::collections::BTreeMap::<String, Order>::new();
 
+    let account_id = if amp {
+        sideswap_client::worker::ACCOUNT_ID_AMP
+    } else {
+        sideswap_client::worker::ACCOUNT_ID_REGULAR
+    };
+
     loop {
         let msg = blocking_recv_msg(client);
 
         match msg {
-            from::Msg::UtxoUpdate(msg) => {
+            from::Msg::UtxoUpdate(msg) if msg.account.id == account_id => {
                 trading_utxo_count = msg
                     .utxos
                     .iter()
@@ -75,6 +84,7 @@ fn main() {
                             == args.trading_asset_id
                     })
                     .count();
+                info!("UTXO count: {}", trading_utxo_count);
             }
 
             from::Msg::ServerConnected(_) => {
@@ -107,9 +117,7 @@ fn main() {
                             send_msg(
                                 client,
                                 to::Msg::SubmitOrder(to::SubmitOrder {
-                                    account: Account {
-                                        id: sideswap_client::worker::ACCOUNT_ID_REGULAR,
-                                    },
+                                    account: Account { id: account_id },
                                     asset_id: args.trading_asset_id.to_string(),
                                     bitcoin_amount: None,
                                     asset_amount: Some(-1.0),
@@ -150,6 +158,7 @@ fn main() {
                     auto_sign: Some(true),
                     private: Some(false),
                     ttl_seconds: None,
+                    two_step: None,
                 }),
             ),
 

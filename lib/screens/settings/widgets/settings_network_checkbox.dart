@@ -5,11 +5,11 @@ import 'package:sideswap/common/widgets/custom_check_box.dart';
 
 class SettingsNetworkCheckbox extends StatelessWidget {
   const SettingsNetworkCheckbox({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
     required this.title,
-  }) : super(key: key);
+  });
 
   final bool value;
   final ValueChanged<bool> onChanged;

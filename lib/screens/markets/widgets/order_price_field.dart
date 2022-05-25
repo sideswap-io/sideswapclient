@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -14,7 +14,7 @@ import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
 class OrderPriceField extends ConsumerWidget {
   const OrderPriceField({
-    Key? key,
+    super.key,
     required this.controller,
     this.asset,
     this.icon,
@@ -28,7 +28,7 @@ class OrderPriceField extends ConsumerWidget {
     this.trackingPrice = '',
     this.displaySlider = false,
     required this.invertColors,
-  }) : super(key: key);
+  });
 
   final TextEditingController controller;
   final Asset? asset;

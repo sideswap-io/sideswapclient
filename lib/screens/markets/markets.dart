@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/markets_provider.dart';
@@ -12,12 +12,12 @@ import 'package:sideswap/screens/markets/widgets/markets_bottom_panel.dart';
 
 class Markets extends ConsumerStatefulWidget {
   const Markets({
-    Key? key,
+    super.key,
     required this.onOrdersPressed,
     required this.onTokenPressed,
     required this.onSwapPressed,
     this.selectedMarketType = MarketSelectedType.orders,
-  }) : super(key: key);
+  });
 
   final VoidCallback onOrdersPressed;
   final VoidCallback onTokenPressed;
@@ -25,10 +25,10 @@ class Markets extends ConsumerStatefulWidget {
   final MarketSelectedType selectedMarketType;
 
   @override
-  _MarketsState createState() => _MarketsState();
+  MarketsState createState() => MarketsState();
 }
 
-class _MarketsState extends ConsumerState<Markets> {
+class MarketsState extends ConsumerState<Markets> {
   @override
   Widget build(BuildContext context) {
     return Consumer(

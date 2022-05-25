@@ -17,12 +17,12 @@ enum BlindType {
 
 class ShareExternalExplorerDialog extends StatelessWidget {
   const ShareExternalExplorerDialog({
-    Key? key,
+    super.key,
     required this.onBlindedPressed,
     required this.onUnblindedPressed,
     this.shareIconType = ShareIconType.share,
     this.blindType = BlindType.both,
-  }) : super(key: key);
+  });
 
   final ShareIconType shareIconType;
   final VoidCallback onBlindedPressed;
@@ -98,11 +98,11 @@ enum BlindedButtonType {
 
 class BlindedButton extends StatelessWidget {
   const BlindedButton({
-    Key? key,
+    super.key,
     this.type = BlindedButtonType.blinded,
     required this.onPressed,
     required this.shareIconType,
-  }) : super(key: key);
+  });
 
   final BlindedButtonType type;
   final VoidCallback onPressed;

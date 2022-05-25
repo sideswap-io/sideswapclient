@@ -5,12 +5,12 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class SwapButton extends StatelessWidget {
   const SwapButton({
-    Key? key,
+    super.key,
     this.color,
     required this.text,
     this.textColor,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final Color? color;
   final Color? textColor;

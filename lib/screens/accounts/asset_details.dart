@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
@@ -18,13 +18,13 @@ import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 import 'package:sideswap/screens/tx/widgets/tx_list_item.dart';
 
 class AssetDetails extends ConsumerStatefulWidget {
-  const AssetDetails({Key? key}) : super(key: key);
+  const AssetDetails({super.key});
 
   @override
-  _AssetDetailsState createState() => _AssetDetailsState();
+  AssetDetailsState createState() => AssetDetailsState();
 }
 
-class _AssetDetailsState extends ConsumerState<AssetDetails>
+class AssetDetailsState extends ConsumerState<AssetDetails>
     with SingleTickerProviderStateMixin {
   final _hightPercentController = StreamController<double>.broadcast();
 

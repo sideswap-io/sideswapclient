@@ -1,5 +1,5 @@
 use super::*;
-use bitcoin::hashes::hex::ToHex;
+use bitcoin::hashes::{hex::ToHex, Hash};
 use gdk_common::model::TransactionMeta;
 use gdk_common::session::Session;
 use gdk_electrum::{ElectrumSession, NativeNotif};
@@ -171,6 +171,7 @@ struct SubmitData {
     sell_bitcoin: bool,
     txouts: BTreeSet<TxOut>,
     auto_sign: bool,
+    two_step: bool,
     txid: Option<String>,
     index_price: bool,
     market: MarketType,
@@ -1847,6 +1848,7 @@ impl Data {
         let login_info = amp::LoginInfo {
             env: self.env,
             mnemonic: Some(req.mnemonic.clone()),
+            send_utxo_updates: req.send_utxo_updates.unwrap_or_default(),
         };
         self.send_amp(amp::To::Login(login_info));
 
@@ -2588,6 +2590,8 @@ impl Data {
         let index_price = resp.index_price;
         let details = resp.details;
         let side = details.side;
+        let auto_sign = req.auto_sign.unwrap_or(false) && side == OrderSide::Maker;
+        let two_step = req.two_step.unwrap_or(false) && side == OrderSide::Maker;
         let order_id = OrderId::from_str(&req.order_id)?;
         let asset = self
             .assets
@@ -2597,14 +2601,20 @@ impl Data {
 
         let asset_amount = Amount::from_sat(details.asset_amount);
         let bitcoin_asset = self.liquid_asset_id.clone();
-        let (send_asset, send_amount, recv_asset) = if details.send_bitcoins {
+        let (send_asset, send_amount, recv_asset, recv_amount) = if details.send_bitcoins {
             (
                 bitcoin_asset,
                 details.bitcoin_amount + details.server_fee,
                 details.asset,
+                details.asset_amount,
             )
         } else {
-            (details.asset.clone(), asset_amount.to_sat(), bitcoin_asset)
+            (
+                details.asset.clone(),
+                asset_amount.to_sat(),
+                bitcoin_asset,
+                details.bitcoin_amount - details.server_fee,
+            )
         };
         let is_send_amp = self.amp_assets.contains(&send_asset);
         let is_recv_amp = self.amp_assets.contains(&recv_asset);
@@ -2629,6 +2639,7 @@ impl Data {
             .values()
             .flat_map(|item| item.txouts.iter())
             .collect::<BTreeSet<_>>();
+        // TODO: Remove UTXO value filtering for two step swaps after implementing funding transactions
         let filtered_utxos = swap_inputs
             .inputs
             .iter()
@@ -2636,6 +2647,8 @@ impl Data {
                 reserved_txouts
                     .get(&TxOut::new(utxo.txid, utxo.vout))
                     .is_none()
+                    // In two step swaps we only interested in UTXOs with exact amount
+                    && (!two_step || utxo.value == send_amount as u64)
             })
             .cloned()
             .collect::<Vec<_>>();
@@ -2676,6 +2689,63 @@ impl Data {
             .collect::<BTreeSet<_>>();
 
         if details.side == OrderSide::Maker {
+            let signed_half = if two_step {
+                ensure!(auto_sign, "Auto-sign must be enabled for two-step swap");
+                ensure!(
+                    inputs.len() == 1,
+                    "No UTXO found with exactly {} sat for two-step swap",
+                    send_amount
+                );
+                let input = &inputs[0];
+                let maker_input = swaps::SigSingleInput {
+                    txid: elements_pset::Txid::from_slice(&input.txid.0).unwrap(),
+                    vout: input.vout,
+                    asset: elements_pset::AssetId::from_slice(&input.asset.0).unwrap(),
+                    value: input.value,
+                    asset_bf: elements_pset::confidential::AssetBlindingFactor::from_slice(
+                        &input.asset_bf.0,
+                    )
+                    .unwrap(),
+                    value_bf: elements_pset::confidential::ValueBlindingFactor::from_slice(
+                        &input.value_bf.0,
+                    )
+                    .unwrap(),
+                };
+                let maker_output = swaps::SigSingleOutput {
+                    address: elements_pset::Address::parse_with_params(
+                        &recv_addr.clone().unwrap(),
+                        self.env.elements_params_pset(),
+                    )?,
+                    asset: elements_pset::AssetId::from_slice(&recv_asset.0).unwrap(),
+                    value: recv_amount as u64,
+                };
+                let ctx = self.ctx.as_mut().unwrap();
+                let wallet = ctx.session.wallet.as_ref().expect("wallet must be set");
+                let wallet = wallet.read().unwrap();
+                let account = wallet.accounts.get(&ACCOUNT).unwrap();
+                let maker_tx =
+                    swaps::sig_single_maker_tx(&self.secp, account, &maker_input, &maker_output)?;
+
+                Some(MakerSignedHalf {
+                    tx: elements_pset::encode::serialize_hex(&maker_tx.tx),
+                    output: UtxoSecret {
+                        asset: recv_asset,
+                        asset_bf: BlindingFactor::from_slice(
+                            maker_tx.output_asset_bf.into_inner().as_ref(),
+                        )
+                        .unwrap(),
+                        value: recv_amount as u64,
+                        value_bf: BlindingFactor::from_slice(
+                            maker_tx.output_value_bf.into_inner().as_ref(),
+                        )
+                        .unwrap(),
+                        sender_sk: maker_tx.output_sender_sk.to_string(),
+                    },
+                })
+            } else {
+                None
+            };
+
             let addr_req = PsetMakerRequest {
                 order_id: order_id.clone(),
                 price: details.price,
@@ -2685,6 +2755,7 @@ impl Data {
                 recv_addr,
                 recv_gaid,
                 change_addr,
+                signed_half,
             };
             send_request!(self, PsetMaker, addr_req)?;
         } else {
@@ -2703,7 +2774,6 @@ impl Data {
         let sell_bitcoin = details.send_bitcoins;
         let price = details.price;
         let server_fee = Amount::from_sat(details.server_fee);
-        let auto_sign = req.auto_sign.unwrap_or(false) && side == OrderSide::Maker;
 
         let submit_data = SubmitData {
             order_id: order_id.clone(),
@@ -2718,6 +2788,7 @@ impl Data {
             sell_bitcoin,
             txouts,
             auto_sign,
+            two_step,
             txid: None,
             index_price,
             market: details.market,
@@ -3235,8 +3306,9 @@ impl Data {
         if let Err(e) = add_asset_result {
             error!("adding asset for new order failed: {}", e);
         }
-        if msg.own.is_some() {
-            let adding_result = self.add_missing_submit_data(&msg.order_id, &msg.details);
+        if let Some(own) = msg.own.as_ref() {
+            let adding_result =
+                self.add_missing_submit_data(&msg.order_id, &msg.details, own.two_step);
             if let Err(e) = adding_result {
                 error!("adding missing submit data failed: {}", e);
             }
@@ -3250,11 +3322,11 @@ impl Data {
         let swap_market = self.assets.get(&msg.details.asset).is_some();
         let amp_market = self.amp_assets.get(&msg.details.asset).is_some();
         let token_market = !swap_market && !amp_market;
-        let auto_sign = self
+        let (auto_sign, two_step) = self
             .submit_data
             .get(&msg.order_id)
-            .map(|submit| submit.auto_sign)
-            .unwrap_or(false);
+            .map(|submit| (submit.auto_sign, submit.two_step))
+            .unwrap_or((false, false));
         let own = msg.own.is_some();
         let index_price = msg.own.as_ref().and_then(|v| v.index_price);
         let order = ffi::proto::Order {
@@ -3268,6 +3340,7 @@ impl Data {
             created_at: msg.created_at,
             expires_at: msg.expires_at,
             private,
+            two_step,
             auto_sign,
             own,
             token_market,
@@ -3570,6 +3643,7 @@ impl Data {
         &mut self,
         order_id: &OrderId,
         details: &Details,
+        two_step: bool,
     ) -> Result<(), anyhow::Error> {
         if self.submit_data.get(&order_id).is_none() {
             let asset = self
@@ -3583,7 +3657,7 @@ impl Data {
             let price = details.price;
             let server_fee = Amount::from_sat(details.server_fee);
 
-            // Auto sign is disabled after app restart
+            // Auto sign is disabled after app restart (unless two-step swap is used)
             let submit_data = SubmitData {
                 order_id: order_id.clone(),
                 side: OrderSide::Maker,
@@ -3596,7 +3670,8 @@ impl Data {
                 server_fee,
                 sell_bitcoin,
                 txouts: BTreeSet::new(),
-                auto_sign: false,
+                auto_sign: two_step,
+                two_step,
                 txid: None,
                 index_price: false,
                 market: details.market,
@@ -3619,7 +3694,7 @@ impl Data {
         )?;
         // Make sure that asset is known if app is restarted
         self.try_add_asset(&sign.data.details.asset)?;
-        self.add_missing_submit_data(&order_id, &sign.data.details)?;
+        self.add_missing_submit_data(&order_id, &sign.data.details, false)?;
         self.process_sign(sign.data);
 
         Ok(())
@@ -4193,6 +4268,10 @@ impl Data {
         self.send_new_transactions(items, account);
     }
 
+    fn process_amp_utxos(&mut self, utxos: ffi::proto::from::UtxoUpdate) {
+        self.ui.send(ffi::proto::from::Msg::UtxoUpdate(utxos));
+    }
+
     fn process_amp_recv_addr(&mut self, account: AccountId, addr: String) {
         self.ui.send(ffi::proto::from::Msg::RecvAddress(
             ffi::proto::from::RecvAddress {
@@ -4247,6 +4326,7 @@ impl Data {
             amp::From::Register(result) => self.process_amp_register_result(result),
             amp::From::Balances(balances) => self.process_amp_balance(account, balances),
             amp::From::Transactions(items) => self.process_amp_transactions(account, items),
+            amp::From::UtxoUpdate(utxos) => self.process_amp_utxos(utxos),
             amp::From::RecvAddr(addr) => self.process_amp_recv_addr(account, addr),
             amp::From::CreateTx(result) => self.process_amp_create_tx_result(result),
             amp::From::SendTx(result) => self.process_amp_send_tx_result(result),
@@ -4295,6 +4375,7 @@ impl Data {
                 amp::To::Login(amp::LoginInfo {
                     env: self.env,
                     mnemonic: None,
+                    send_utxo_updates: false,
                 }),
             ),
         }
@@ -4304,9 +4385,15 @@ impl Data {
         if let Some(ctx) = self.ctx.as_mut() {
             for port in ports {
                 if ctx.jades.get(&port).is_none() {
-                    // FIXME: Always use new ID here
-                    let account_id = ACCOUNT_ID_JADE_FIRST + ctx.jades.len() as i32;
+                    let account_id = ctx
+                        .jades
+                        .values()
+                        .map(|jade| jade.get_account_id())
+                        .max()
+                        .map(|last_account_id| last_account_id + 1)
+                        .unwrap_or(ACCOUNT_ID_JADE_FIRST);
                     let wallet = amp::start_processing(
+                        self.env,
                         &self.params.work_dir,
                         account_id,
                         self.msg_sender.clone(),
@@ -4340,7 +4427,13 @@ pub fn start_processing(
     };
     ui.send(ffi::proto::from::Msg::EnvSettings(env_settings));
 
-    let amp = amp::start_processing(&params.work_dir, ACCOUNT_ID_AMP, msg_sender.clone(), None);
+    let amp = amp::start_processing(
+        env,
+        &params.work_dir,
+        ACCOUNT_ID_AMP,
+        msg_sender.clone(),
+        None,
+    );
 
     gdk_electrum::store::REGTEST_ENV
         .store(!env.data().mainnet, std::sync::atomic::Ordering::Relaxed);

@@ -6,12 +6,12 @@ import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 
 class RoundedButtonWithLabel extends StatelessWidget {
   const RoundedButtonWithLabel({
-    Key? key,
+    super.key,
     this.onTap,
     this.label,
     this.child,
     this.buttonBackground,
-  }) : super(key: key);
+  });
   final VoidCallback? onTap;
   final String? label;
   final Widget? child;

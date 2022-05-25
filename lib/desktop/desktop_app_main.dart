@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/desktop_root_widget.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/models/locales_provider.dart';
 
 class DSideSwapScrollBehavior extends MaterialScrollBehavior {
   // Override behavior methods and getters like dragDevices
@@ -17,26 +18,23 @@ class DSideSwapScrollBehavior extends MaterialScrollBehavior {
 
 class DesktopAppMain extends StatelessWidget {
   const DesktopAppMain({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      child: EasyLocalization(
-        supportedLocales: const [
-          Locale('en', 'US'),
-        ],
-        path: 'assets/translations',
-        fallbackLocale: const Locale('en', 'US'),
-        child: const DesktopApp(),
-      ),
+    return EasyLocalization(
+      useOnlyLangCode: true,
+      supportedLocales: supportedLocales(),
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: const DesktopApp(),
     );
   }
 }
 
 class DesktopApp extends StatelessWidget {
-  const DesktopApp({Key? key}) : super(key: key);
+  const DesktopApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +45,7 @@ class DesktopApp extends StatelessWidget {
           designSize: const Size(1072, 880),
           minTextAdapt: true,
           splitScreenMode: true,
-          builder: () => MaterialApp(
+          builder: (context, _) => MaterialApp(
             title: 'SideSwap',
             showSemanticsDebugger: false,
             debugShowCheckedModeBanner: false,
@@ -71,7 +69,6 @@ class DesktopApp extends StatelessWidget {
             ),
             scrollBehavior: DSideSwapScrollBehavior(),
             builder: (context, widget) {
-              ScreenUtil.setContext(context);
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
                 child: widget!,

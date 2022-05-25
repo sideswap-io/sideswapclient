@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -12,13 +12,13 @@ enum CustomBackButtonType {
 
 class CustomBackButton extends ConsumerStatefulWidget {
   const CustomBackButton({
-    Key? key,
+    super.key,
     this.onPressed,
     this.buttonType = CustomBackButtonType.backArrow,
     this.width,
     this.height,
     this.color = const Color(0xFFAED7FF),
-  }) : super(key: key);
+  });
 
   final void Function()? onPressed;
   final CustomBackButtonType buttonType;
@@ -27,10 +27,10 @@ class CustomBackButton extends ConsumerStatefulWidget {
   final Color color;
 
   @override
-  _CustomBackButtonState createState() => _CustomBackButtonState();
+  CustomBackButtonState createState() => CustomBackButtonState();
 }
 
-class _CustomBackButtonState extends ConsumerState<CustomBackButton> {
+class CustomBackButtonState extends ConsumerState<CustomBackButton> {
   double _width = 0;
   double _height = 0;
   final double _padding = 16;

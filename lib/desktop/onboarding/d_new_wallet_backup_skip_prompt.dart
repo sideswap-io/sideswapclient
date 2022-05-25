@@ -10,7 +10,7 @@ import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DNewWalletBackupSkipPrompt extends ConsumerWidget {
-  const DNewWalletBackupSkipPrompt({Key? key}) : super(key: key);
+  const DNewWalletBackupSkipPrompt({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

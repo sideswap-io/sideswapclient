@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -10,11 +10,11 @@ import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
 class PaymentContinueButton extends ConsumerWidget {
   const PaymentContinueButton({
-    Key? key,
+    super.key,
     required this.enabled,
     required this.errorText,
     required this.addressController,
-  }) : super(key: key);
+  });
 
   final bool enabled;
   final String? errorText;

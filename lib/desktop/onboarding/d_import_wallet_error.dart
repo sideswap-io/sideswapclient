@@ -9,7 +9,7 @@ import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DImportWalletError extends ConsumerWidget {
-  const DImportWalletError({Key? key}) : super(key: key);
+  const DImportWalletError({super.key});
 
   void goBack(WidgetRef ref) {
     ref.read(walletProvider).startMnemonicImport();

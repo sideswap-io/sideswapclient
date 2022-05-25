@@ -6,11 +6,11 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class FriendsPanelInviteButton extends StatelessWidget {
   const FriendsPanelInviteButton({
-    Key? key,
+    super.key,
     this.width,
     this.height,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final double? width;
   final double? height;

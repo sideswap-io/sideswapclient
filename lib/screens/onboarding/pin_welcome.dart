@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -12,10 +12,10 @@ import 'package:sideswap/models/wallet.dart';
 
 class PinWelcome extends StatelessWidget {
   const PinWelcome({
-    Key? key,
+    super.key,
     this.onYesPressed,
     this.onNoPressed,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onYesPressed;
   final VoidCallback? onNoPressed;
@@ -49,10 +49,10 @@ class PinWelcome extends StatelessWidget {
 
 class PinWelcomeBody extends ConsumerWidget {
   const PinWelcomeBody({
-    Key? key,
+    super.key,
     this.onYesPressed,
     this.onNoPressed,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onYesPressed;
   final VoidCallback? onNoPressed;

@@ -9,22 +9,14 @@ import 'package:sideswap/desktop/theme.dart';
 class DButton extends DBaseButton {
   /// Creates a button.
   const DButton({
-    Key? key,
-    required Widget child,
-    required VoidCallback? onPressed,
-    VoidCallback? onLongPress,
-    FocusNode? focusNode,
-    bool autofocus = false,
-    DButtonStyle? style,
-  }) : super(
-          key: key,
-          child: child,
-          focusNode: focusNode,
-          autofocus: autofocus,
-          onLongPress: onLongPress,
-          onPressed: onPressed,
-          style: style,
-        );
+    super.key,
+    required super.child,
+    required super.onPressed,
+    super.onLongPress,
+    super.focusNode,
+    super.autofocus = false,
+    super.style,
+  });
 
   @override
   DButtonStyle defaultStyleOf(BuildContext context) {

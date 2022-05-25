@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/contact_provider.dart';
@@ -11,22 +11,22 @@ import 'package:sideswap/screens/pay/widgets/friends_panel_import_button_painter
 
 class FriendsPanelImportButton extends ConsumerStatefulWidget {
   const FriendsPanelImportButton({
-    Key? key,
+    super.key,
     this.width,
     this.height,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final double? width;
   final double? height;
   final VoidCallback? onPressed;
 
   @override
-  _FriendsPanelImportButtonState createState() =>
-      _FriendsPanelImportButtonState();
+  FriendsPanelImportButtonState createState() =>
+      FriendsPanelImportButtonState();
 }
 
-class _FriendsPanelImportButtonState
+class FriendsPanelImportButtonState
     extends ConsumerState<FriendsPanelImportButton> {
   StreamSubscription<int>? percentageLoadedSubscription;
   int percent = 0;

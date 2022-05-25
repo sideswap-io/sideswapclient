@@ -3,7 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -21,13 +21,13 @@ import 'package:sideswap/screens/swap/swap.dart';
 import 'package:sideswap/screens/wallet_main/widgets/main_bottom_navigation_bar.dart';
 
 class WalletMain extends ConsumerStatefulWidget {
-  const WalletMain({Key? key}) : super(key: key);
+  const WalletMain({super.key});
 
   @override
-  _WalletMainState createState() => _WalletMainState();
+  WalletMainState createState() => WalletMainState();
 }
 
-class _WalletMainState extends ConsumerState<WalletMain> {
+class WalletMainState extends ConsumerState<WalletMain> {
   DateTime currentBackPressTime = DateTime.now();
   MarketSelectedType selectedMarketType = MarketSelectedType.orders;
 
@@ -85,13 +85,13 @@ class _WalletMainState extends ConsumerState<WalletMain> {
       builder: (context, ref, _) {
         final walletMainArguments =
             ref.watch(uiStateArgsProvider.select((p) => p.walletMainArguments));
-        final _currentPageIndex = walletMainArguments.currentIndex;
-        final _navigationItem = walletMainArguments.navigationItem;
+        final currentPageIndex = walletMainArguments.currentIndex;
+        final navigationItem = walletMainArguments.navigationItem;
 
         return SideSwapScaffold(
           onWillPop: () async {
-            if (_currentPageIndex == 0 &&
-                _navigationItem == WalletMainNavigationItem.home) {
+            if (currentPageIndex == 0 &&
+                navigationItem == WalletMainNavigationItem.home) {
               final now = DateTime.now();
               if (now.difference(currentBackPressTime) >
                   const Duration(seconds: 2, milliseconds: 700)) {
@@ -133,10 +133,10 @@ class _WalletMainState extends ConsumerState<WalletMain> {
             return false;
           },
           body: SafeArea(
-            child: getChild(_navigationItem),
+            child: getChild(navigationItem),
           ),
           bottomNavigationBar: MainBottomNavigationBar(
-            currentIndex: _currentPageIndex,
+            currentIndex: currentPageIndex,
             onTap: (index) {
               ref.read(swapProvider).swapReset();
               ref.read(uiStateArgsProvider).walletMainArguments =

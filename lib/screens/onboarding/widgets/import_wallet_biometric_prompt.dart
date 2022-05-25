@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/wallet_biometric_prompt.dart';
 
 class ImportWalletBiometricPrompt extends ConsumerWidget {
-  const ImportWalletBiometricPrompt({Key? key}) : super(key: key);
+  const ImportWalletBiometricPrompt({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

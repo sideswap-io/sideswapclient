@@ -10,7 +10,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DSettingsPinSuccess extends ConsumerWidget {
-  const DSettingsPinSuccess({Key? key}) : super(key: key);
+  const DSettingsPinSuccess({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

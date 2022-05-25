@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -11,13 +11,13 @@ import 'package:sideswap/models/select_env_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class FirstLaunch extends ConsumerStatefulWidget {
-  const FirstLaunch({Key? key}) : super(key: key);
+  const FirstLaunch({super.key});
 
   @override
-  _FirstLaunchState createState() => _FirstLaunchState();
+  FirstLaunchState createState() => FirstLaunchState();
 }
 
-class _FirstLaunchState extends ConsumerState<FirstLaunch> {
+class FirstLaunchState extends ConsumerState<FirstLaunch> {
   var tapCount = 0;
 
   @override

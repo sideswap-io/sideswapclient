@@ -74,7 +74,7 @@ int Function(RequestOrder a, RequestOrder b) compareRequestOrder(int sign) {
 }
 
 class DMarkets extends ConsumerStatefulWidget {
-  const DMarkets({Key? key}) : super(key: key);
+  const DMarkets({super.key});
 
   @override
   ConsumerState<DMarkets> createState() => _DMarketsState();
@@ -181,10 +181,9 @@ class _DMarketsState extends ConsumerState<DMarkets> {
 
 class _MakeOrderPanel extends ConsumerStatefulWidget {
   const _MakeOrderPanel({
-    Key? key,
     required this.selectedAssetId,
     required this.onAssetSelected,
-  }) : super(key: key);
+  });
 
   final String selectedAssetId;
   final ValueChanged<String> onAssetSelected;
@@ -484,11 +483,10 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
 
 class _AssetSelector extends ConsumerWidget {
   const _AssetSelector({
-    Key? key,
     required this.marketType,
     required this.selectedAssetId,
     required this.onAssetSelected,
-  }) : super(key: key);
+  });
 
   final MarketType marketType;
   final String selectedAssetId;
@@ -579,10 +577,9 @@ class _AssetSelector extends ConsumerWidget {
 
 class _MakeOrderButton extends StatelessWidget {
   const _MakeOrderButton({
-    Key? key,
     required this.isSell,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   final bool isSell;
   final VoidCallback? onPressed;
@@ -593,9 +590,6 @@ class _MakeOrderButton extends StatelessWidget {
     return DCustomFilledBigButton(
       width: 344,
       height: 44,
-      child: Text(
-        'Continue'.tr().toUpperCase(),
-      ),
       onPressed: onPressed,
       style: DButtonStyle(
         padding: ButtonState.all(EdgeInsets.zero),
@@ -636,13 +630,16 @@ class _MakeOrderButton extends StatelessWidget {
           return const BorderSide(color: Colors.transparent, width: 1);
         }),
       ),
+      child: Text(
+        'Continue'.tr().toUpperCase(),
+      ),
     );
   }
 }
 
 class DOrderAmountEnter extends ConsumerWidget {
   const DOrderAmountEnter({
-    Key? key,
+    super.key,
     required this.caption,
     required this.assetId,
     required this.controller,
@@ -652,7 +649,7 @@ class DOrderAmountEnter extends ConsumerWidget {
     this.onEditingComplete,
     this.readonly = false,
     this.hintText = '0',
-  }) : super(key: key);
+  });
 
   final String caption;
   final String assetId;
@@ -739,15 +736,13 @@ class DOrderAmountEnter extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 8),
-        const _EnterAmountSeparator(),
+        _EnterAmountSeparator(),
       ],
     );
   }
 }
 
 class _EnterAmountSeparator extends StatelessWidget {
-  const _EnterAmountSeparator({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -759,10 +754,9 @@ class _EnterAmountSeparator extends StatelessWidget {
 
 class _BalanceLine extends ConsumerWidget {
   const _BalanceLine({
-    Key? key,
     required this.assetId,
     required this.onMaxPressed,
-  }) : super(key: key);
+  });
 
   final String assetId;
   final VoidCallback? onMaxPressed;
@@ -818,13 +812,13 @@ class _BalanceLine extends ConsumerWidget {
 
 class DEnterTrackingPrice extends StatelessWidget {
   const DEnterTrackingPrice({
-    Key? key,
+    super.key,
     required this.trackingToggled,
     required this.trackingValue,
     required this.invertColors,
     required this.onTrackingChanged,
     required this.onTrackingToggle,
-  }) : super(key: key);
+  });
 
   final bool trackingToggled;
   final double trackingValue;
@@ -851,10 +845,9 @@ class DEnterTrackingPrice extends StatelessWidget {
       fontSize: 13,
       fontWeight: FontWeight.w500,
     );
-    final minPercentStr = minPercent.toString() + '%';
-    final maxPercentStr = '+' + maxPercent.toString() + '%';
-    final valueStr =
-        (trackingValue > 0 ? '+' : '') + trackingValue.toString() + '%';
+    const minPercentStr = '$minPercent%';
+    const maxPercentStr = '+$maxPercent%';
+    final valueStr = '${trackingValue > 0 ? '+' : ''}$trackingValue%';
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -958,10 +951,9 @@ class DEnterTrackingPrice extends StatelessWidget {
 
 class _OrdersPanel extends ConsumerWidget {
   const _OrdersPanel({
-    Key? key,
     required this.selectedAssetId,
     this.onChartsPressed,
-  }) : super(key: key);
+  });
 
   final String selectedAssetId;
   final VoidCallback? onChartsPressed;
@@ -1044,11 +1036,10 @@ class _OrdersPanel extends ConsumerWidget {
 
 class _OrdersList extends StatelessWidget {
   const _OrdersList({
-    Key? key,
     required this.orders,
     required this.height,
     required this.emptyText,
-  }) : super(key: key);
+  });
 
   final List<RequestOrder> orders;
   final String emptyText;
@@ -1084,9 +1075,8 @@ class _OrdersList extends StatelessWidget {
 
 class _OrdersTitle extends StatelessWidget {
   const _OrdersTitle({
-    Key? key,
     required this.isLeft,
-  }) : super(key: key);
+  });
 
   final bool isLeft;
 
@@ -1115,9 +1105,8 @@ class _OrdersTitle extends StatelessWidget {
 
 class _OrderItem extends ConsumerWidget {
   const _OrderItem({
-    Key? key,
     required this.order,
-  }) : super(key: key);
+  });
 
   final RequestOrder order;
 
@@ -1188,9 +1177,8 @@ class _OrderItem extends ConsumerWidget {
 
 class _IndexPrice extends ConsumerWidget {
   const _IndexPrice({
-    Key? key,
     required this.selectedAssetId,
-  }) : super(key: key);
+  });
 
   final String selectedAssetId;
 
@@ -1252,9 +1240,8 @@ class _IndexPrice extends ConsumerWidget {
 
 class _ChartButton extends StatelessWidget {
   const _ChartButton({
-    Key? key,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onPressed;
 
@@ -1295,9 +1282,8 @@ class _ChartButton extends StatelessWidget {
 
 class _OrdersRow extends StatelessWidget {
   const _OrdersRow({
-    Key? key,
     required this.list,
-  }) : super(key: key);
+  });
 
   final List<Widget> list;
 
@@ -1318,9 +1304,8 @@ class _OrdersRow extends StatelessWidget {
 
 class _OrdersHeader extends StatelessWidget {
   const _OrdersHeader({
-    Key? key,
     required this.text,
-  }) : super(key: key);
+  });
 
   final String text;
 
@@ -1338,11 +1323,10 @@ class _OrdersHeader extends StatelessWidget {
 
 class _WorkingOrderAmount extends StatelessWidget {
   const _WorkingOrderAmount({
-    Key? key,
     required this.text,
     required this.assetId,
     required this.wallet,
-  }) : super(key: key);
+  });
 
   final String text;
   final String assetId;
@@ -1363,10 +1347,9 @@ class _WorkingOrderAmount extends StatelessWidget {
 
 class _WorkingOrder extends ConsumerWidget {
   const _WorkingOrder({
-    Key? key,
     required this.order,
     required this.wallet,
-  }) : super(key: key);
+  });
 
   final RequestOrder order;
   final WalletChangeNotifier wallet;
@@ -1456,10 +1439,9 @@ class _WorkingOrder extends ConsumerWidget {
 
 class _WorkingOrderButton extends StatelessWidget {
   const _WorkingOrderButton({
-    Key? key,
     required this.icon,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   final String icon;
   final VoidCallback onPressed;
@@ -1483,9 +1465,8 @@ class _WorkingOrderButton extends StatelessWidget {
 
 class _WorkingOrders extends ConsumerStatefulWidget {
   const _WorkingOrders({
-    Key? key,
     required this.onAssetSelected,
-  }) : super(key: key);
+  });
 
   final ValueChanged<String> onAssetSelected;
 
@@ -1603,11 +1584,11 @@ class _WorkingOrdersState extends ConsumerState<_WorkingOrders> {
                                       horizontal:
                                           horizontalPadding - separatorPadding,
                                     ),
-                                    child: _WorkingOrder(
-                                        order: order, wallet: wallet),
                                     color: states.isHovering
                                         ? const Color(0xFF22668C)
                                         : null,
+                                    child: _WorkingOrder(
+                                        order: order, wallet: wallet),
                                   );
                                 },
                                 onPressed: () {

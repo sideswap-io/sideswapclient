@@ -10,7 +10,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/license.dart';
 
 class DLicense extends ConsumerWidget {
-  const DLicense({Key? key, required this.nextStep}) : super(key: key);
+  const DLicense({super.key, required this.nextStep});
 
   final LicenseNextStep nextStep;
 

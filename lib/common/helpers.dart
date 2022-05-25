@@ -127,7 +127,7 @@ final shortFormat = DateFormat('MMM d, yyyy');
 
 // Returns timestamp in UTC
 DateTime parseTimestamp(String timestamp) {
-  return DateTime.parse(timestamp + 'Z');
+  return DateTime.parse('${timestamp}Z');
 }
 
 String txDateStrShort(DateTime timestamp) {
@@ -201,7 +201,7 @@ Future<void> copyToClipboard(BuildContext context, String addr,
   await Clipboard.setData(ClipboardData(text: addr));
   if (displaySnackbar) {
     final flushbar = Flushbar<void>(
-      messageText: const Text('Copied'),
+      messageText: Text('Copied'.tr()),
       duration: const Duration(seconds: 3),
       backgroundColor: const Color(0xFF135579),
     );
@@ -228,7 +228,10 @@ Future<void> openUrl(String url) async {
   // Skip canLaunch(url) check because it fails to open twitter link if twitter client is installed
   // More details here - https://github.com/flutter/flutter/issues/63727
   logger.d('Opening url: $url');
-  await launch(url);
+  final uri = Uri.tryParse(url);
+  if (uri != null) {
+    await launchUrl(uri);
+  }
 }
 
 String generateTxidUrl(
@@ -250,7 +253,7 @@ String generateTxidUrl(
 
   var url = '$baseUrl/tx/$txid';
   if (blindedValues.isNotEmpty) {
-    url = url + '/#blinded=' + blindedValues;
+    url = '$url/#blinded=$blindedValues';
   }
 
   return url;

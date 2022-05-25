@@ -4,7 +4,7 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class CustomCheckBox extends StatefulWidget {
   const CustomCheckBox({
-    Key? key,
+    super.key,
     required this.onChanged,
     required this.child,
     this.frameChecked = const Color(0xFFB1EDFF),
@@ -15,7 +15,7 @@ class CustomCheckBox extends StatefulWidget {
     this.size,
     this.icon,
     required this.value,
-  }) : super(key: key);
+  });
 
   final ValueChanged<bool> onChanged;
   final Widget child;
@@ -29,10 +29,10 @@ class CustomCheckBox extends StatefulWidget {
   final bool value;
 
   @override
-  _CustomCheckBoxState createState() => _CustomCheckBoxState();
+  CustomCheckBoxState createState() => CustomCheckBoxState();
 }
 
-class _CustomCheckBoxState extends State<CustomCheckBox>
+class CustomCheckBoxState extends State<CustomCheckBox>
     with TickerProviderStateMixin {
   late Radius radius;
   late double size;
@@ -75,9 +75,9 @@ class _CustomCheckBoxState extends State<CustomCheckBox>
     frameColorAnimation =
         ColorTween(begin: widget.frameUnchecked, end: widget.frameChecked)
             .animate(frameColorCurve)
-              ..addListener(() {
-                setState(() {});
-              });
+          ..addListener(() {
+            setState(() {});
+          });
 
     backgroundColorController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);
@@ -86,9 +86,9 @@ class _CustomCheckBoxState extends State<CustomCheckBox>
     backgroundColorAnimation = ColorTween(
             begin: widget.backgroundUnchecked, end: widget.backgroundChecked)
         .animate(backgroundColorCurve)
-          ..addListener(() {
-            setState(() {});
-          });
+      ..addListener(() {
+        setState(() {});
+      });
 
     fadeController = AnimationController(
         duration: const Duration(milliseconds: 200), vsync: this);

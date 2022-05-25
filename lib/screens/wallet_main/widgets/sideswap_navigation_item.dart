@@ -3,8 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapNavigationItemIcon extends StatelessWidget {
-  const SideSwapNavigationItemIcon(this.assetName, {Key? key, this.height})
-      : super(key: key);
+  const SideSwapNavigationItemIcon(this.assetName, {super.key, this.height});
 
   final String assetName;
   final double? height;

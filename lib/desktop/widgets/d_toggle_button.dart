@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class DToggleButton extends StatelessWidget {
   const DToggleButton({
-    Key? key,
+    super.key,
     required this.offText,
     required this.onText,
     required this.value,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   final bool value;
   final ValueChanged<bool>? onChanged;
@@ -17,13 +17,26 @@ class DToggleButton extends StatelessWidget {
   final String onText;
 
   final _colorToggleBackground = const Color(0xFF043857);
-  final _colorToggleOn = const Color(0xFF1F7EB1);
-  final _colorToggleTextOn = const Color(0xFFFFFFFF);
-  final _colorToggleTextOff = const Color(0xFF709EBA);
 
   @override
   Widget build(BuildContext context) {
     final handleClick = onChanged != null ? () => onChanged!(!value) : null;
+    final enabled = onChanged != null;
+
+    Color buttonColor(bool value) {
+      if (enabled) {
+        return value ? const Color(0xFF1F7EB1) : _colorToggleBackground;
+      }
+      return value ? const Color(0x5F1F7EB1) : _colorToggleBackground;
+    }
+
+    Color textColor(bool value) {
+      if (enabled) {
+        return value ? const Color(0xFFFFFFFF) : const Color(0xFF709EBA);
+      }
+      return value ? const Color(0x5FFFFFFF) : const Color(0x5FCCCCCC);
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: _colorToggleBackground,
@@ -36,17 +49,17 @@ class DToggleButton extends StatelessWidget {
             children: [
               Expanded(
                 child: SwapButton(
-                  color: !value ? _colorToggleOn : _colorToggleBackground,
+                  color: buttonColor(!value),
                   text: offText,
-                  textColor: !value ? _colorToggleTextOn : _colorToggleTextOff,
+                  textColor: textColor(!value),
                   onPressed: handleClick,
                 ),
               ),
               Expanded(
                 child: SwapButton(
-                  color: value ? _colorToggleOn : _colorToggleBackground,
+                  color: buttonColor(value),
                   text: onText,
-                  textColor: value ? _colorToggleTextOn : _colorToggleTextOff,
+                  textColor: textColor(value),
                   onPressed: handleClick,
                 ),
               ),

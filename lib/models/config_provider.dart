@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:enum_to_string/enum_to_string.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/models/network_access_provider.dart';
 
@@ -12,9 +11,13 @@ import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
+final sharedPreferencesProvider =
+    Provider<SharedPreferences>((_) => throw UnimplementedError());
+
 final configProvider =
     ChangeNotifierProvider<ConfigChangeNotifierProvider>((ref) {
-  return ConfigChangeNotifierProvider(ref);
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return ConfigChangeNotifierProvider(ref, prefs);
 });
 
 class ConfigChangeNotifierProvider with ChangeNotifier {
@@ -35,27 +38,20 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const settingsUseTLSField = 'settingsUseTLSFieldNew';
   static const settingsField = 'settings';
 
-  ConfigChangeNotifierProvider(this.ref);
+  ConfigChangeNotifierProvider(this.ref, this.prefs);
 
   final Ref ref;
-  late SharedPreferences _prefs;
-
-  Future<bool> init() async {
-    _prefs = await SharedPreferences.getInstance();
-    notifyListeners();
-
-    return true;
-  }
+  SharedPreferences prefs;
 
   Uint8List get mnemonicEncrypted {
-    return base64.decode(_prefs.getString(mnemonicEncryptedField) ?? '');
+    return base64.decode(prefs.getString(mnemonicEncryptedField) ?? '');
   }
 
   Future<void> setMnemonicEncrypted(Uint8List mnemonicEncrypted) async {
     if (mnemonicEncrypted.isEmpty) {
-      await _prefs.remove(mnemonicEncryptedField);
+      await prefs.remove(mnemonicEncryptedField);
     } else {
-      await _prefs.setString(
+      await prefs.setString(
           mnemonicEncryptedField, base64.encode(mnemonicEncrypted));
     }
 
@@ -63,35 +59,35 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   }
 
   bool get licenseAccepted {
-    return _prefs.getBool(licenseAcceptedField) ?? false;
+    return prefs.getBool(licenseAcceptedField) ?? false;
   }
 
   Future<void> setLicenseAccepted(bool licenseAccepted) async {
-    await _prefs.setBool(licenseAcceptedField, licenseAccepted);
+    await prefs.setBool(licenseAcceptedField, licenseAccepted);
     notifyListeners();
   }
 
   bool get useBiometricProtection {
-    return _prefs.getBool(useBiometricProtectionField) ?? false;
+    return prefs.getBool(useBiometricProtectionField) ?? false;
   }
 
   Future<void> setUseBiometricProtection(bool useBiometricProtection) async {
-    await _prefs.setBool(useBiometricProtectionField, useBiometricProtection);
+    await prefs.setBool(useBiometricProtectionField, useBiometricProtection);
     notifyListeners();
   }
 
   int get env {
-    return _prefs.getInt(envField) ?? 0;
+    return prefs.getInt(envField) ?? 0;
   }
 
   Future<void> setEnv(int env) async {
-    await _prefs.setInt(envField, env);
+    await prefs.setInt(envField, env);
     notifyListeners();
   }
 
   Future<void> deleteConfig() async {
     final currentEnv = env;
-    await _prefs.clear();
+    await prefs.clear();
     logger.d(phoneNumber);
     ref
         .read(phoneProvider)
@@ -101,43 +97,43 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   }
 
   Future<void> setPhoneKey(String phoneKey) async {
-    await _prefs.setString(phoneKeyField, phoneKey);
+    await prefs.setString(phoneKeyField, phoneKey);
     notifyListeners();
   }
 
   String get phoneKey {
-    return _prefs.getString(phoneKeyField) ?? '';
+    return prefs.getString(phoneKeyField) ?? '';
   }
 
   Future<void> setPhoneNumber(String phoneNumber) async {
-    await _prefs.setString(phoneNumberField, phoneNumber);
+    await prefs.setString(phoneNumberField, phoneNumber);
     notifyListeners();
   }
 
   String get phoneNumber {
-    return _prefs.getString(phoneNumberField) ?? '';
+    return prefs.getString(phoneNumberField) ?? '';
   }
 
   Future<void> setPinData(PinData pinData) async {
-    await _prefs.setString(pinSaltField, pinData.salt);
-    await _prefs.setString(pinEncryptedDataField, pinData.encryptedData);
-    await _prefs.setString(pinIdentifierField, pinData.pinIdentifier);
+    await prefs.setString(pinSaltField, pinData.salt);
+    await prefs.setString(pinEncryptedDataField, pinData.encryptedData);
+    await prefs.setString(pinIdentifierField, pinData.pinIdentifier);
     notifyListeners();
   }
 
   Future<void> setUsePinProtection(bool usePinProtection) async {
-    await _prefs.setBool(usePinProtectionField, usePinProtection);
+    await prefs.setBool(usePinProtectionField, usePinProtection);
     notifyListeners();
   }
 
   bool get usePinProtection {
-    return _prefs.getBool(usePinProtectionField) ?? false;
+    return prefs.getBool(usePinProtectionField) ?? false;
   }
 
   PinData get pinData {
-    final salt = _prefs.getString(pinSaltField);
-    final encryptedData = _prefs.getString(pinEncryptedDataField);
-    final pinIdentifier = _prefs.getString(pinIdentifierField);
+    final salt = prefs.getString(pinSaltField);
+    final encryptedData = prefs.getString(pinEncryptedDataField);
+    final pinIdentifier = prefs.getString(pinIdentifierField);
 
     if (salt == null || encryptedData == null || pinIdentifier == null) {
       return PinData();
@@ -148,13 +144,13 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   }
 
   Future<void> setSettingsNetworkType(SettingsNetworkType type) async {
-    await _prefs.setString(
+    await prefs.setString(
         settingsNetworkTypeField, EnumToString.convertToString(type));
     notifyListeners();
   }
 
   SettingsNetworkType get settingsNetworkType {
-    final typeString = _prefs.getString(settingsNetworkTypeField);
+    final typeString = prefs.getString(settingsNetworkTypeField);
 
     if (typeString == null) {
       return SettingsNetworkType.blockstream;
@@ -165,42 +161,42 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   }
 
   Future<void> setSettingsHost(String host) async {
-    await _prefs.setString(settingsHostField, host);
+    await prefs.setString(settingsHostField, host);
     notifyListeners();
   }
 
   String get settingsHost {
-    return _prefs.getString(settingsHostField) ?? '';
+    return prefs.getString(settingsHostField) ?? '';
   }
 
   Future<void> setSettingsPort(int port) async {
-    await _prefs.setInt(settingsPortField, port);
+    await prefs.setInt(settingsPortField, port);
     notifyListeners();
   }
 
   int get settingsPort {
-    return _prefs.getInt(settingsPortField) ?? 0;
+    return prefs.getInt(settingsPortField) ?? 0;
   }
 
   Future<void> setSettingsUseTLS(bool value) async {
-    await _prefs.setBool(settingsUseTLSField, value);
+    await prefs.setBool(settingsUseTLSField, value);
     notifyListeners();
   }
 
   bool get settingsUseTLS {
-    return _prefs.getBool(settingsUseTLSField) ?? false;
+    return prefs.getBool(settingsUseTLSField) ?? false;
   }
 
   String? get settings {
-    return _prefs.getString(settingsField);
+    return prefs.getString(settingsField);
   }
 
   Future<void> setSettings(String value) async {
-    await _prefs.setString(settingsField, value);
+    await prefs.setString(settingsField, value);
     notifyListeners();
   }
 
   Future<void> clearSettings() async {
-    await _prefs.remove(settingsField);
+    await prefs.remove(settingsField);
   }
 }

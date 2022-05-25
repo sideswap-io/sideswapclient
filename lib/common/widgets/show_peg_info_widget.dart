@@ -9,19 +9,19 @@ import 'package:sideswap/common/widgets/custom_check_box.dart';
 
 class ShowPegInfoWidget extends StatefulWidget {
   const ShowPegInfoWidget({
-    Key? key,
+    super.key,
     required this.onChanged,
     required this.text,
-  }) : super(key: key);
+  });
 
   final ValueChanged<bool> onChanged;
   final String text;
 
   @override
-  _ShowPegInfoWidgetState createState() => _ShowPegInfoWidgetState();
+  ShowPegInfoWidgetState createState() => ShowPegInfoWidgetState();
 }
 
-class _ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
+class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
   bool internalValue = false;
 
   @override

@@ -11,7 +11,7 @@ import 'package:window_manager/window_manager.dart';
 
 class DMnemonicTable extends StatefulWidget {
   const DMnemonicTable({
-    Key? key,
+    super.key,
     this.itemWidth = 150,
     this.itemHeight = 39,
     this.itemSelected = 0,
@@ -20,7 +20,7 @@ class DMnemonicTable extends StatefulWidget {
     this.height = 190,
     this.itemsCount = 12,
     this.enabled = true,
-  }) : super(key: key);
+  });
 
   final int itemsCount;
   final double width;
@@ -90,6 +90,38 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                         widget.onPressed?.call(index);
                       }
                     : null,
+                style: DButtonStyle(
+                  padding: ButtonState.all(EdgeInsets.zero),
+                  textStyle: ButtonState.all(
+                    GoogleFonts.roboto(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  backgroundColor: ButtonState.resolveWith((states) {
+                    if (states.isDisabled) {
+                      return const Color(0xFF23729D);
+                    }
+
+                    return const Color(0xFF1C6086);
+                  }),
+                  border: ButtonState.resolveWith((states) {
+                    if (states.isDisabled) {
+                      return const BorderSide(color: Colors.transparent);
+                    }
+
+                    return widget.itemSelected == index
+                        ? const BorderSide(color: Color(0xFF00C5FF))
+                        : const BorderSide(color: Color(0xFF23729D));
+                  }),
+                  shape: ButtonState.resolveWith((states) {
+                    return const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(8),
+                      ),
+                    );
+                  }),
+                ),
                 child: SizedBox(
                   width: widget.itemWidth,
                   height: widget.itemHeight,
@@ -131,38 +163,6 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                       const Spacer(),
                     ],
                   ),
-                ),
-                style: DButtonStyle(
-                  padding: ButtonState.all(EdgeInsets.zero),
-                  textStyle: ButtonState.all(
-                    GoogleFonts.roboto(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  backgroundColor: ButtonState.resolveWith((states) {
-                    if (states.isDisabled) {
-                      return const Color(0xFF23729D);
-                    }
-
-                    return const Color(0xFF1C6086);
-                  }),
-                  border: ButtonState.resolveWith((states) {
-                    if (states.isDisabled) {
-                      return const BorderSide(color: Colors.transparent);
-                    }
-
-                    return widget.itemSelected == index
-                        ? const BorderSide(color: Color(0xFF00C5FF))
-                        : const BorderSide(color: Color(0xFF23729D));
-                  }),
-                  shape: ButtonState.resolveWith((states) {
-                    return const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(8),
-                      ),
-                    );
-                  }),
                 ),
               );
             }),

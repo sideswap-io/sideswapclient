@@ -11,7 +11,7 @@ import 'package:sideswap/models/network_type_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DSettingsNetworkAccess extends ConsumerWidget {
-  const DSettingsNetworkAccess({Key? key}) : super(key: key);
+  const DSettingsNetworkAccess({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -3,7 +3,7 @@ import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/markets/widgets/empty_requests_logo_container.dart';
 
 class EmptyRequestsLogo extends StatelessWidget {
-  const EmptyRequestsLogo({Key? key}) : super(key: key);
+  const EmptyRequestsLogo({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -25,7 +25,7 @@ class DLicenses {
 }
 
 class DSettingsLicenses extends HookConsumerWidget {
-  const DSettingsLicenses({Key? key}) : super(key: key);
+  const DSettingsLicenses({super.key});
 
   void goBack(WidgetRef ref) {
     ref.read(walletProvider).setRegistered();
@@ -47,8 +47,8 @@ class DSettingsLicenses extends HookConsumerWidget {
     final settingsDialogTheme =
         ref.watch(desktopAppThemeProvider).settingsDialogTheme;
 
-    final _licenses = useState(<Widget>[]);
-    final _licenseContent = useState(<String, List<Widget>>{});
+    final licenses = useState(<Widget>[]);
+    final licenseContent = useState(<String, List<Widget>>{});
     final licenseEntries = useMemoized(() => getLicenseEntries());
     final licenseSnapshot = useFuture(licenseEntries);
     final controller = useScrollController();
@@ -58,15 +58,15 @@ class DSettingsLicenses extends HookConsumerWidget {
         return;
       }
 
-      final List<Widget> licenses = [];
-      final Map<String, List<Widget>> licenseContent = {};
+      final List<Widget> newLicenses = [];
+      final Map<String, List<Widget>> newLicenseContent = {};
       for (var license in licenseSnapshot.data!) {
         var tempSubWidget = <Widget>[];
 
-        if (licenseContent
+        if (newLicenseContent
             .containsKey(license.licenseEntry.packages.join(', '))) {
           tempSubWidget =
-              licenseContent[license.licenseEntry.packages.join(', ')] ?? [];
+              newLicenseContent[license.licenseEntry.packages.join(', ')] ?? [];
         }
 
         tempSubWidget.add(const Padding(
@@ -106,15 +106,15 @@ class DSettingsLicenses extends HookConsumerWidget {
         }
 
         tempSubWidget.add(const Divider());
-        licenseContent[license.licenseEntry.packages.join(', ')] =
+        newLicenseContent[license.licenseEntry.packages.join(', ')] =
             tempSubWidget;
       }
 
-      licenseContent.keys.toList().sort();
+      newLicenseContent.keys.toList().sort();
 
-      for (var packageName in licenseContent.keys.toList()) {
+      for (var packageName in newLicenseContent.keys.toList()) {
         var count = 0;
-        final value = licenseContent[packageName];
+        final value = newLicenseContent[packageName];
 
         if (value != null) {
           for (var element in value) {
@@ -135,7 +135,7 @@ class DSettingsLicenses extends HookConsumerWidget {
               ),
             ),
             subtitle: Text(
-              '$count licenses',
+              'licenses'.plural(count),
               style: const TextStyle(
                 color: Colors.white,
               ),
@@ -149,14 +149,14 @@ class DSettingsLicenses extends HookConsumerWidget {
         );
 
         if (packageName == kPackageGdk || packageName == kPackageSideswap) {
-          licenses.insert(0, widget);
+          newLicenses.insert(0, widget);
         } else {
-          licenses.add(widget);
+          newLicenses.add(widget);
         }
       }
 
-      _licenses.value = licenses;
-      _licenseContent.value = licenseContent;
+      licenses.value = newLicenses;
+      licenseContent.value = newLicenseContent;
 
       return;
     }, [licenseSnapshot.data]);
@@ -211,7 +211,7 @@ class DSettingsLicenses extends HookConsumerWidget {
                 SizedBox(
                   height: 467,
                   child: ValueListenableBuilder(
-                    valueListenable: _licenses,
+                    valueListenable: licenses,
                     builder: (context, List<Widget> licenses, __) {
                       if (licenses.isEmpty) {
                         return const Padding(

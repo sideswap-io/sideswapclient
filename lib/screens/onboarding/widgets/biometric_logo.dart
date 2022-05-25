@@ -5,8 +5,8 @@ import 'package:sideswap/screens/onboarding/widgets/biometric_shape_border.dart'
 
 class BiometricLogo extends StatelessWidget {
   const BiometricLogo({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

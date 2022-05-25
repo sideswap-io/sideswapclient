@@ -9,7 +9,7 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DRadioButton extends ConsumerWidget {
   const DRadioButton({
-    Key? key,
+    super.key,
     required this.checked,
     required this.onChanged,
     this.style,
@@ -17,7 +17,7 @@ class DRadioButton extends ConsumerWidget {
     this.semanticLabel,
     this.focusNode,
     this.autofocus = false,
-  }) : super(key: key);
+  });
 
   final bool checked;
   final ValueChanged<bool>? onChanged;
@@ -95,10 +95,10 @@ class DRadioButton extends ConsumerWidget {
 
 class DRadioButtonTheme extends InheritedTheme {
   const DRadioButtonTheme({
-    Key? key,
+    super.key,
     required this.data,
-    required Widget child,
-  }) : super(key: key, child: child);
+    required super.child,
+  });
 
   final DRadioButtonThemeData data;
 

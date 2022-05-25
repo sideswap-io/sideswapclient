@@ -2,7 +2,7 @@ import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -17,7 +17,7 @@ import 'package:sideswap/screens/tx/widgets/tx_details_row_notes.dart';
 
 class SwapSummary extends ConsumerWidget {
   const SwapSummary({
-    Key? key,
+    super.key,
     required this.ticker,
     required this.delivered,
     required this.received,
@@ -31,7 +31,7 @@ class SwapSummary extends ConsumerWidget {
     required this.confs,
     required this.tx,
     required this.txId,
-  }) : super(key: key);
+  });
 
   final String ticker;
   final String delivered;

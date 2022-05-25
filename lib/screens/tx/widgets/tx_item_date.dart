@@ -6,9 +6,9 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class TxItemDate extends StatelessWidget {
   const TxItemDate({
-    Key? key,
+    super.key,
     required this.createdAt,
-  }) : super(key: key);
+  });
 
   final int createdAt;
 

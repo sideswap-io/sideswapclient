@@ -16,7 +16,7 @@ import 'package:sideswap/models/network_access_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DSettingsCustomHost extends HookConsumerWidget {
-  const DSettingsCustomHost({Key? key}) : super(key: key);
+  const DSettingsCustomHost({super.key});
 
   void goBack(BuildContext context, WidgetRef ref) {
     Navigator.of(context).pop();

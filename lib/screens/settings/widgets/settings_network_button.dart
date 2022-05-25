@@ -5,12 +5,12 @@ import 'package:sideswap/screens/settings/widgets/settings_network_checkbox.dart
 
 class SettingsNetworkButton extends StatefulWidget {
   const SettingsNetworkButton({
-    Key? key,
+    super.key,
     required this.value,
     required this.onChanged,
     required this.title,
     this.trailingIconVisible = false,
-  }) : super(key: key);
+  });
 
   final bool value;
   final ValueChanged<bool> onChanged;
@@ -18,10 +18,10 @@ class SettingsNetworkButton extends StatefulWidget {
   final bool trailingIconVisible;
 
   @override
-  _SettingsNetworkButtonState createState() => _SettingsNetworkButtonState();
+  SettingsNetworkButtonState createState() => SettingsNetworkButtonState();
 }
 
-class _SettingsNetworkButtonState extends State<SettingsNetworkButton> {
+class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(

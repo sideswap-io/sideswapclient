@@ -6,7 +6,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 class PinListener extends ConsumerWidget {
-  const PinListener({Key? key}) : super(key: key);
+  const PinListener({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

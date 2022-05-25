@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
@@ -10,14 +10,14 @@ import 'package:sideswap/models/phone_provider.dart';
 
 class SmsDigitCode extends ConsumerStatefulWidget {
   const SmsDigitCode({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  _SmsDigitCodeState createState() => _SmsDigitCodeState();
+  SmsDigitCodeState createState() => SmsDigitCodeState();
 }
 
-class _SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
+class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
   final TextStyle _defaultPinStyle = GoogleFonts.roboto(
     fontSize: 22.sp,
     fontWeight: FontWeight.normal,

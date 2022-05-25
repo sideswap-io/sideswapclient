@@ -14,7 +14,7 @@ enum OrderTableRowType {
 
 class OrderTableRow extends StatefulWidget {
   const OrderTableRow({
-    Key? key,
+    super.key,
     required this.description,
     this.value,
     this.icon,
@@ -26,7 +26,7 @@ class OrderTableRow extends StatefulWidget {
     this.style,
     this.customValue,
     this.showAmpFlag = false,
-  }) : super(key: key);
+  });
 
   final String description;
   final String? value;
@@ -41,7 +41,7 @@ class OrderTableRow extends StatefulWidget {
   final bool showAmpFlag;
 
   @override
-  _OrderTableRowState createState() => _OrderTableRowState();
+  OrderTableRowState createState() => OrderTableRowState();
 
   static Widget assetAmount({
     required String description,
@@ -84,7 +84,7 @@ class OrderTableRow extends StatefulWidget {
   }
 }
 
-class _OrderTableRowState extends State<OrderTableRow> {
+class OrderTableRowState extends State<OrderTableRow> {
   late TextStyle defaultFontStyle = GoogleFonts.roboto(
     fontSize:
         widget.orderTableRowType == OrderTableRowType.normal ? 16.sp : 14.sp,

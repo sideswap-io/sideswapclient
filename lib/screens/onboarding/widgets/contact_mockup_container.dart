@@ -20,12 +20,12 @@ class EmptyLineData {
 
 class ContactMockupContainer extends StatelessWidget {
   const ContactMockupContainer({
-    Key? key,
+    super.key,
     this.icon = ContactMockupIcon.male1,
     this.width,
     this.height,
     this.radius,
-  }) : super(key: key);
+  });
 
   final ContactMockupIcon icon;
   final double? width;
@@ -33,20 +33,20 @@ class ContactMockupContainer extends StatelessWidget {
   final Radius? radius;
 
   SvgPicture getIcon() {
-    SvgPicture _icon;
+    SvgPicture iconPicture;
     switch (icon) {
       case ContactMockupIcon.male1:
-        _icon = SvgPicture.asset('assets/male1.svg');
+        iconPicture = SvgPicture.asset('assets/male1.svg');
         break;
       case ContactMockupIcon.male2:
-        _icon = SvgPicture.asset('assets/male2.svg');
+        iconPicture = SvgPicture.asset('assets/male2.svg');
         break;
       case ContactMockupIcon.female1:
-        _icon = SvgPicture.asset('assets/female1.svg');
+        iconPicture = SvgPicture.asset('assets/female1.svg');
         break;
     }
 
-    return _icon;
+    return iconPicture;
   }
 
   List<EmptyLineData> getLineData() {
@@ -79,25 +79,25 @@ class ContactMockupContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _width = width ?? 116.w;
-    final _height = height ?? 48.h;
-    final _radius = radius ?? Radius.circular(8.r);
+    final internalWidth = width ?? 116.w;
+    final internalHeight = height ?? 48.h;
+    final internalRadius = radius ?? Radius.circular(8.r);
 
     final lineData = getLineData();
     return Container(
-      width: _width,
-      height: _height,
+      width: internalWidth,
+      height: internalHeight,
       decoration: BoxDecoration(
         color: const Color(0xFFCAF3FF),
-        borderRadius: BorderRadius.all(_radius),
+        borderRadius: BorderRadius.all(internalRadius),
       ),
       child: Row(
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Container(
-              width: _width * 0.2758,
-              height: _width * 0.2758,
+              width: internalWidth * 0.2758,
+              height: internalWidth * 0.2758,
               decoration: BoxDecoration(
                 color: const Color(0xFF00C5FF),
                 shape: BoxShape.circle,

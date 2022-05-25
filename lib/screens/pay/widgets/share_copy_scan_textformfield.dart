@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
@@ -15,7 +15,7 @@ typedef ShareTapCallback = void Function(BuildContext context);
 
 class ShareCopyScanTextFormField extends StatefulWidget {
   const ShareCopyScanTextFormField({
-    Key? key,
+    super.key,
     this.textFormFieldKey,
     this.focusNode,
     this.controller,
@@ -33,7 +33,7 @@ class ShareCopyScanTextFormField extends StatefulWidget {
     this.onChanged,
     this.onEditingCompleted,
     this.addrType = AddrType.elements,
-  }) : super(key: key);
+  });
 
   final GlobalKey<FormFieldState>? textFormFieldKey;
   final FocusNode? focusNode;
@@ -54,11 +54,11 @@ class ShareCopyScanTextFormField extends StatefulWidget {
   final AddrType addrType;
 
   @override
-  _ShareCopyScanTextFormFieldState createState() =>
-      _ShareCopyScanTextFormFieldState();
+  ShareCopyScanTextFormFieldState createState() =>
+      ShareCopyScanTextFormFieldState();
 }
 
-class _ShareCopyScanTextFormFieldState
+class ShareCopyScanTextFormFieldState
     extends State<ShareCopyScanTextFormField> {
   final _spaceBetween = 4;
   final _iconWidth = 24;
@@ -111,22 +111,22 @@ class _ShareCopyScanTextFormFieldState
 
   @override
   Widget build(BuildContext context) {
-    var _suffixCounter = 0;
+    var suffixCounter = 0;
     if (widget.onCopyTap != null) {
-      _suffixCounter++;
+      suffixCounter++;
     }
     if (widget.onShareTap != null) {
-      _suffixCounter++;
+      suffixCounter++;
     }
     if (widget.onScanTap != null) {
-      _suffixCounter++;
+      suffixCounter++;
     }
     if (widget.onPasteTap != null) {
-      _suffixCounter++;
+      suffixCounter++;
     }
 
-    final _gestureAreaWidth = _spaceBetween * 2 + _iconWidth;
-    final _suffixWidth = _suffixCounter * _gestureAreaWidth;
+    final gestureAreaWidth = _spaceBetween * 2 + _iconWidth;
+    final suffixWidth = suffixCounter * gestureAreaWidth;
 
     return FutureBuilder<ClipboardData?>(
         future: Clipboard.getData(Clipboard.kTextPlain),
@@ -172,7 +172,7 @@ class _ShareCopyScanTextFormFieldState
                           : Padding(
                               padding: EdgeInsets.symmetric(horizontal: 16.w),
                               child: SizedBox(
-                                width: _suffixWidth.w,
+                                width: suffixWidth.w,
                                 height: 24.h,
                                 child: Row(
                                   mainAxisAlignment:
@@ -180,7 +180,7 @@ class _ShareCopyScanTextFormFieldState
                                   children: [
                                     if (widget.onCopyTap != null) ...[
                                       SizedBox(
-                                        width: _gestureAreaWidth.w,
+                                        width: gestureAreaWidth.w,
                                         height: double.maxFinite,
                                         child: InkWell(
                                           onTap: () {
@@ -199,7 +199,7 @@ class _ShareCopyScanTextFormFieldState
                                     ],
                                     if (widget.onPasteTap != null) ...[
                                       SizedBox(
-                                        width: _gestureAreaWidth.w,
+                                        width: gestureAreaWidth.w,
                                         height: double.maxFinite,
                                         child: InkWell(
                                           onTap: () {
@@ -218,7 +218,7 @@ class _ShareCopyScanTextFormFieldState
                                     ],
                                     if (widget.onScanTap != null) ...[
                                       SizedBox(
-                                        width: _gestureAreaWidth.w,
+                                        width: gestureAreaWidth.w,
                                         height: double.maxFinite,
                                         child: Material(
                                           color: Colors.transparent,
@@ -243,7 +243,7 @@ class _ShareCopyScanTextFormFieldState
                                     ],
                                     if (widget.onShareTap != null) ...[
                                       SizedBox(
-                                        width: _gestureAreaWidth.w,
+                                        width: gestureAreaWidth.w,
                                         height: double.maxFinite,
                                         child: Builder(
                                           builder: (BuildContext context) =>

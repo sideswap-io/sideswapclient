@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/permission_handler.dart';
@@ -22,10 +21,10 @@ class AddressQrScanner extends ConsumerStatefulWidget {
   final QrCodeAddressType? expectedAddress;
 
   const AddressQrScanner({
-    Key? key,
+    super.key,
     required this.resultCb,
     this.expectedAddress,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() =>
@@ -33,8 +32,7 @@ class AddressQrScanner extends ConsumerStatefulWidget {
 }
 
 class _AddressQrScannerState extends ConsumerState<AddressQrScanner> {
-  QRViewController? _qrController;
-  final GlobalKey _qrKey = GlobalKey(debugLabel: 'QR');
+  MobileScannerController cameraController = MobileScannerController();
 
   bool done = false;
   bool hasCameraPermission = false;
@@ -67,16 +65,6 @@ class _AddressQrScannerState extends ConsumerState<AddressQrScanner> {
   }
 
   @override
-  void reassemble() {
-    super.reassemble();
-    if (Platform.isAndroid) {
-      _qrController?.pauseCamera();
-    } else if (Platform.isIOS) {
-      _qrController?.resumeCamera();
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
       onWillPop: popup,
@@ -95,31 +83,23 @@ class _AddressQrScannerState extends ConsumerState<AddressQrScanner> {
         child: Stack(
           children: <Widget>[
             if (hasCameraPermission) ...[
-              QRView(
-                key: _qrKey,
-                onQRViewCreated: (value) {
-                  _onQrViewCreated(ref, value, widget.expectedAddress);
-                },
-                onPermissionSet: onPermissionSet,
-                overlay: QrScannerOverlayShape(
-                  borderColor: Colors.white,
-                  borderRadius: 10,
-                  borderLength: 30,
-                  borderWidth: 5,
-                  cutOutSize: 250,
-                ),
-              ),
+              MobileScanner(
+                  allowDuplicates: false,
+                  controller: MobileScannerController(
+                      facing: CameraFacing.front, torchEnabled: true),
+                  onDetect: (barcode, args) {
+                    if (barcode.rawValue == null) {
+                      logger.d('Failed to scan Barcode');
+                    } else {
+                      final String code = barcode.rawValue!;
+                      _onQrViewCreated(ref, code, widget.expectedAddress);
+                    }
+                  }),
             ],
           ],
         ),
       ),
     );
-  }
-
-  void onPermissionSet(QRViewController controller, bool isPermissionSet) {
-    if (!isPermissionSet) {
-      popup();
-    }
   }
 
   Future<void> showError(String errorMessage) async {
@@ -138,67 +118,52 @@ class _AddressQrScannerState extends ConsumerState<AddressQrScanner> {
     await flushbar.show(context);
   }
 
-  void _onQrViewCreated(WidgetRef ref, QRViewController controller,
-      QrCodeAddressType? expectedAddress) {
-    _qrController = controller;
+  void _onQrViewCreated(
+      WidgetRef ref, String code, QrCodeAddressType? expectedAddress) {
+    if (!done) {
+      done = true;
+      logger.d('Scanned data: $code');
 
-    var input = '';
-    controller.scannedDataStream.where((e) {
-      final ret = e.code != input;
-      input = e.code ?? '';
-      return ret;
-    }).listen((scanData) async {
-      Future<void>.delayed(const Duration(seconds: 2), () {
-        input = '';
-      });
-
-      if (!done) {
-        done = true;
-        logger.d('Scanned data: ${scanData.code}');
-
-        final handleResult = ref
-            .read(universalLinkProvider)
-            .handleAppUrlStr(scanData.code ?? '');
-        if (handleResult == HandleResult.success) {
-          await popup();
-          return;
-        }
-        if (handleResult == HandleResult.failed) {
-          await showError('Invalid QR code'.tr());
-          done = false;
-          return;
-        }
-
-        final result =
-            ref.read(qrcodeProvider).parseDynamicQrCode(scanData.code ?? '');
-        if (result.error != null) {
-          await showError(result.errorMessage ?? 'Invalid QR code'.tr());
-          done = false;
-          return;
-        }
-
-        if (result.assetId != null &&
-            ref.read(walletProvider).assets[result.assetId] == null) {
-          await showError('Unknown asset'.tr());
-          done = false;
-          return;
-        }
-
-        if (expectedAddress != null && result.addressType != expectedAddress) {
-          await showError('Invalid QR code'.tr());
-          done = false;
-          return;
-        }
-
-        widget.resultCb(result);
-        await popup();
+      final handleResult =
+          ref.read(universalLinkProvider).handleAppUrlStr(code);
+      if (handleResult == HandleResult.success) {
+        popup();
+        return;
       }
-    });
+      if (handleResult == HandleResult.failed) {
+        showError('Invalid QR code'.tr());
+        done = false;
+        return;
+      }
+
+      final result = ref.read(qrcodeProvider).parseDynamicQrCode(code);
+      if (result.error != null) {
+        showError(result.errorMessage ?? 'Invalid QR code'.tr());
+        done = false;
+        return;
+      }
+
+      if (result.assetId != null &&
+          ref.read(walletProvider).assets[result.assetId] == null) {
+        showError('Unknown asset'.tr());
+        done = false;
+        return;
+      }
+
+      if (expectedAddress != null && result.addressType != expectedAddress) {
+        showError('Invalid QR code'.tr());
+        done = false;
+        return;
+      }
+
+      widget.resultCb(result);
+      popup();
+    }
   }
 
   @override
   void dispose() {
-    _qrController?.dispose();
+    cameraController.dispose();
     super.dispose();
   }
 }
@@ -208,10 +173,10 @@ class ShareTxidButtons extends ConsumerWidget {
   final String txid;
 
   const ShareTxidButtons({
-    Key? key,
+    super.key,
     required this.isLiquid,
     required this.txid,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -246,9 +211,9 @@ class ShareTxidButtons extends ConsumerWidget {
 
 class ShareAddress extends StatelessWidget {
   const ShareAddress({
-    Key? key,
+    super.key,
     required this.addr,
-  }) : super(key: key);
+  });
 
   final String addr;
 
@@ -274,9 +239,9 @@ class CopyButton extends StatelessWidget {
   final String value;
 
   const CopyButton({
-    Key? key,
+    super.key,
     required this.value,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

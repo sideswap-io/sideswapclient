@@ -5,7 +5,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rxdart/subjects.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
@@ -229,8 +229,7 @@ class LocalNotificationService {
 
     const initializationSettingsMacos = MacOSInitializationSettings();
 
-    final iconPath = File(Platform.resolvedExecutable).parent.path +
-        'data\\flutter_assets\\assets\\icon\\icon.ico';
+    final iconPath = '${File(Platform.resolvedExecutable).parent.path}data\\flutter_assets\\assets\\icon\\icon.ico';
     final initializationSettingsWindows = WindowsInitializationSettings(
       appName: 'SideSwap',
       appUserModelId: 'io.sideswap',

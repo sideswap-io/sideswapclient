@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/swap_market_provider.dart';
@@ -64,6 +64,7 @@ class RequestOrder {
   final RequestOrderType requestOrderType = RequestOrderType.order;
   final bool private;
   final bool sendBitcoins;
+  final bool twoStep;
   final bool autoSign;
   final bool own;
   final MarketType marketType;
@@ -80,6 +81,7 @@ class RequestOrder {
     required this.expiresAt,
     required this.private,
     required this.sendBitcoins,
+    required this.twoStep,
     required this.autoSign,
     required this.own,
     required this.marketType,

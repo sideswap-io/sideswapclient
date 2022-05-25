@@ -3,10 +3,10 @@ import 'package:flutter_svg/svg.dart';
 
 class DSuccessIcon extends StatelessWidget {
   const DSuccessIcon({
-    Key? key,
+    super.key,
     this.width = 66,
     this.height = 66,
-  }) : super(key: key);
+  });
 
   final double width;
   final double height;

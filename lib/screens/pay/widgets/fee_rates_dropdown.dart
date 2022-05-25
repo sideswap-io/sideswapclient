@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/swap_models.dart';
@@ -10,9 +10,9 @@ import 'package:sideswap/screens/swap/fee_suggestions.dart';
 
 class FeeRatesDropdown extends StatelessWidget {
   const FeeRatesDropdown({
-    Key? key,
+    super.key,
     required this.borderDecoration,
-  }) : super(key: key);
+  });
 
   final BoxDecoration borderDecoration;
 

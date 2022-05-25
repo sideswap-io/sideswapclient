@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -14,10 +14,10 @@ import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 
 class SwapPromptTable extends ConsumerWidget {
   const SwapPromptTable({
-    Key? key,
+    super.key,
     required this.swap,
     required this.enabled,
-  }) : super(key: key);
+  });
 
   final SwapDetails swap;
   final bool enabled;
@@ -45,7 +45,7 @@ class SwapPromptTable extends ConsumerWidget {
 }
 
 class SwapPrompt extends ConsumerWidget {
-  const SwapPrompt({Key? key}) : super(key: key);
+  const SwapPrompt({super.key});
 
   void onClose(WidgetRef ref, BuildContext context) {
     ref.read(walletProvider).goBack();

@@ -17,7 +17,7 @@ class SideSwapPopupPage extends ConsumerWidget {
   final bool hideClose;
 
   const SideSwapPopupPage({
-    Key? key,
+    super.key,
     this.title,
     this.content,
     this.actions,
@@ -28,7 +28,7 @@ class SideSwapPopupPage extends ConsumerWidget {
     this.hideClose = false,
     this.onEscapeKey,
     this.onEnterKey,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -25,16 +25,15 @@ extension Utility on BuildContext {
 }
 
 class WalletImportInputs extends ConsumerStatefulWidget {
-  const WalletImportInputs({required this.wordCount, Key? key})
-      : super(key: key);
+  const WalletImportInputs({required this.wordCount, super.key});
 
   final int wordCount;
 
   @override
-  _WalletImportInputsState createState() => _WalletImportInputsState();
+  WalletImportInputsState createState() => WalletImportInputsState();
 }
 
-class _WalletImportInputsState extends ConsumerState<WalletImportInputs> {
+class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
   late List<ValueNotifier<String>> words =
       List.generate(widget.wordCount, (index) => ValueNotifier(''));
   final wordList = <String>[];
@@ -54,7 +53,7 @@ class _WalletImportInputsState extends ConsumerState<WalletImportInputs> {
 
   String getMnemonic() {
     final result = words.fold<String>('',
-        (previousValue, element) => previousValue + ' ' + element.value.trim());
+        (previousValue, element) => '$previousValue ${element.value.trim()}');
     return result.trim();
   }
 
@@ -131,9 +130,9 @@ class _WalletImportInputsState extends ConsumerState<WalletImportInputs> {
       _focusNodeList[index].unfocus();
     }
 
-    var _additionalPadding = .0;
+    var additionalPadding = .0;
     if (index > 0) {
-      _additionalPadding = _textFieldPadding * index;
+      additionalPadding = _textFieldPadding * index;
     }
 
     // animate instead jumpTo may cause bugs
@@ -145,7 +144,7 @@ class _WalletImportInputsState extends ConsumerState<WalletImportInputs> {
           ?.jumpTo(_listScrollController?.position.maxScrollExtent ?? 0);
     } else {
       _listScrollController
-          ?.jumpTo((_textFieldWidth * index + _additionalPadding));
+          ?.jumpTo((_textFieldWidth * index + additionalPadding));
     }
 
     if (index < _focusNodeList.length) {
@@ -386,13 +385,13 @@ class _WalletImportInputsState extends ConsumerState<WalletImportInputs> {
 }
 
 class WalletImport extends StatefulWidget {
-  const WalletImport({Key? key}) : super(key: key);
+  const WalletImport({super.key});
 
   @override
-  _WalletImportState createState() => _WalletImportState();
+  WalletImportState createState() => WalletImportState();
 }
 
-class _WalletImportState extends State<WalletImport> {
+class WalletImportState extends State<WalletImport> {
   final _scaffoldKey = GlobalKey();
 
   final _colorToggleBackground = const Color(0xFF043857);

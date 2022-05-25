@@ -12,10 +12,10 @@ class WalletBiometricPrompt extends StatelessWidget {
   final VoidCallback onNoPressed;
 
   const WalletBiometricPrompt({
-    Key? key,
+    super.key,
     required this.onYesPressed,
     required this.onNoPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

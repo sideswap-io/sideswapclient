@@ -7,7 +7,7 @@ import 'package:sideswap/desktop/pin/widgets/d_pin_icon_button.dart';
 
 class DPinTextField extends HookWidget {
   const DPinTextField({
-    Key? key,
+    super.key,
     this.focusNode,
     this.onChanged,
     this.onSubmitted,
@@ -17,7 +17,7 @@ class DPinTextField extends HookWidget {
     this.pin = '',
     this.error = false,
     this.errorMessage = '',
-  }) : super(key: key);
+  });
 
   final FocusNode? focusNode;
   final void Function(String)? onChanged;

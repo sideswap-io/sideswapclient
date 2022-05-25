@@ -14,17 +14,18 @@ enum DSettingsButtonIcon {
   password,
   network,
   faq,
+  language,
   delete,
 }
 
 class DSettingsButton extends ConsumerWidget {
   const DSettingsButton({
-    Key? key,
+    super.key,
     this.onPressed,
     this.title = '',
     this.forward = true,
     this.icon = DSettingsButtonIcon.recovery,
-  }) : super(key: key);
+  });
 
   final VoidCallback? onPressed;
   final String title;
@@ -52,6 +53,9 @@ class DSettingsButton extends ConsumerWidget {
         break;
       case DSettingsButtonIcon.delete:
         iconValue = 'assets/delete.svg';
+        break;
+      case DSettingsButtonIcon.language:
+        iconValue = 'assets/language.svg';
         break;
     }
 

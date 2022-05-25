@@ -10,12 +10,13 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/config_provider.dart';
+import 'package:sideswap/models/locales_provider.dart';
 import 'package:sideswap/models/mnemonic_table_provider.dart';
 import 'package:sideswap/models/select_env_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DFirstLaunch extends ConsumerWidget {
-  const DFirstLaunch({Key? key}) : super(key: key);
+  const DFirstLaunch({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -106,58 +107,135 @@ class DFirstLaunch extends ConsumerWidget {
       }
     });
 
-    return SideSwapScaffoldPage(
-      content: Column(
-        children: [
-          Expanded(child: Container()),
-          Padding(
-            padding: const EdgeInsets.only(top: 0),
-            child: FirstLaunchClickableLogo(
-              onPressed: ref.read(selectEnvProvider).handleTap,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 32),
-            child: Text(
-              'Welcome in SideSwap'.tr(),
-              style: GoogleFonts.roboto(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+    final lang = ref.watch(localesProvider).selectedLang(context);
+
+    return Stack(
+      key: ValueKey(lang),
+      children: [
+        SideSwapScaffoldPage(
+          content: Column(
+            children: [
+              Expanded(child: Container()),
+              Padding(
+                padding: const EdgeInsets.only(top: 0),
+                child: FirstLaunchClickableLogo(
+                  onPressed: ref.read(selectEnvProvider).handleTap,
+                ),
               ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              'Payments infrastructure for a digital era'.tr(),
-              style: GoogleFonts.roboto(
-                color: Colors.white,
-                fontSize: 16,
+              Padding(
+                padding: const EdgeInsets.only(top: 32),
+                child: Text(
+                  'Welcome in SideSwap'.tr(),
+                  style: GoogleFonts.roboto(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  'Payments infrastructure for a digital era'.tr(),
+                  style: GoogleFonts.roboto(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 126),
+                child: DCustomFilledBigButton(
+                  onPressed: () async {
+                    await ref
+                        .read(walletProvider)
+                        .setReviewLicenseCreateWallet();
+                  },
+                  child: Text('CREATE NEW WALLET'.tr()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: DCustomTextBigButton(
+                  onPressed: () {
+                    ref.refresh(mnemonicWordItemsProvider);
+                    ref.read(walletProvider).setReviewLicenseImportWallet();
+                  },
+                  child: Text('IMPORT WALLET'.tr()),
+                ),
+              ),
+              Expanded(child: Container()),
+            ],
+          ),
+        ),
+        const Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: LangSelector(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class LangSelector extends ConsumerWidget {
+  const LangSelector({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final localeProv = ref.watch(localesProvider);
+    return SizedBox(
+      width: 140,
+      height: 39,
+      child: DecoratedBox(
+        decoration: const ShapeDecoration(
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              width: 1.0,
+              style: BorderStyle.solid,
+              color: Color(0xFF00C5FF),
+            ),
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+          ),
+        ),
+        child: DropdownButton<String>(
+          underline: const SizedBox(),
+          isExpanded: true,
+          icon: const Padding(
+            padding: EdgeInsets.only(right: 10),
+            child: Icon(
+              Icons.keyboard_arrow_down,
+              color: Color(0xFF00B4E9),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 126),
-            child: DCustomFilledBigButton(
-              onPressed: () async {
-                await ref.read(walletProvider).setReviewLicenseCreateWallet();
-              },
-              child: Text('CREATE NEW WALLET'.tr()),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: DCustomTextBigButton(
-              onPressed: () {
-                ref.refresh(mnemonicWordItemsProvider);
-                ref.read(walletProvider).setReviewLicenseImportWallet();
-              },
-              child: Text('IMPORT WALLET'.tr()),
-            ),
-          ),
-          Expanded(child: Container()),
-        ],
+          dropdownColor: const Color(0xFF2B6F95),
+          onChanged: (value) {
+            localeProv.setSelectedLang(context, value!);
+          },
+          value: localeProv.selectedLang(context),
+          items: supportedLanguages()
+              .map((e) => DropdownMenuItem<String>(
+                    value: e,
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                      ),
+                      child: Row(
+                        children: [
+                          localeIconFile(e),
+                          const SizedBox(width: 8),
+                          Text(localeName(e),
+                              style: const TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
+                  ))
+              .toList(),
+        ),
       ),
     );
   }
@@ -167,9 +245,9 @@ class FirstLaunchClickableLogo extends StatelessWidget {
   final VoidCallback? onPressed;
 
   const FirstLaunchClickableLogo({
-    Key? key,
+    super.key,
     this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

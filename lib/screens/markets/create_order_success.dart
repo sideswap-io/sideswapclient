@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/helpers.dart';
 
@@ -16,7 +16,7 @@ import 'package:sideswap/screens/markets/widgets/share_and_copy_buttons_row.dart
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 
 class CreateOrderSuccess extends ConsumerWidget {
-  const CreateOrderSuccess({Key? key}) : super(key: key);
+  const CreateOrderSuccess({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

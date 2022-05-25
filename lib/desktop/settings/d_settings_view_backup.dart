@@ -11,7 +11,7 @@ import 'package:sideswap/models/mnemonic_table_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DSettingsViewBackup extends HookConsumerWidget {
-  const DSettingsViewBackup({Key? key}) : super(key: key);
+  const DSettingsViewBackup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

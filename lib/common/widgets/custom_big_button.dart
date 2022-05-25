@@ -5,7 +5,7 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class CustomBigButton extends StatelessWidget {
   CustomBigButton({
-    Key? key,
+    super.key,
     this.text,
     this.onPressed,
     this.width,
@@ -23,8 +23,7 @@ class CustomBigButton extends StatelessWidget {
               borderRadius: BorderRadius.all(
                 Radius.circular(8.w),
               ),
-            ),
-        super(key: key);
+            );
 
   final String? text;
   final VoidCallback? onPressed;

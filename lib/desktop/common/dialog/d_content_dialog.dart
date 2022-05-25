@@ -7,13 +7,13 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DContentDialog extends ConsumerWidget {
   const DContentDialog({
-    Key? key,
+    super.key,
     this.title,
     this.content,
     this.actions,
     this.style,
     this.constraints = const BoxConstraints(maxWidth: 368),
-  }) : super(key: key);
+  });
 
   final Widget? title;
   final Widget? content;
@@ -101,11 +101,11 @@ class DContentDialog extends ConsumerWidget {
 
 class DContentDialogTitle extends StatelessWidget {
   const DContentDialogTitle({
-    Key? key,
+    super.key,
     this.content,
     this.hideClose = false,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   final Widget? content;
   final bool hideClose;

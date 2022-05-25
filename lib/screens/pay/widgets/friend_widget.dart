@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/regexp_text_highlight.dart';
@@ -9,7 +9,7 @@ import 'package:sideswap/models/friends_provider.dart';
 
 class FriendWidget extends StatelessWidget {
   const FriendWidget({
-    Key? key,
+    super.key,
     this.width,
     required this.friend,
     this.onPressed,
@@ -18,7 +18,7 @@ class FriendWidget extends StatelessWidget {
     this.showTrailingIcon = true,
     this.contentPadding,
     this.customDescription,
-  }) : super(key: key);
+  });
 
   final Friend friend;
   final VoidCallback? onPressed;
@@ -31,9 +31,9 @@ class FriendWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _contentPadding =
+    final internalContentPadding =
         contentPadding ?? EdgeInsets.only(left: 12.w, right: 12.w);
-    final _width = width ?? 343.w;
+    final internalWidth = width ?? 343.w;
 
     return Material(
       color: backgroundColor,
@@ -42,12 +42,12 @@ class FriendWidget extends StatelessWidget {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(8.w),
         child: SizedBox(
-          width: _width,
+          width: internalWidth,
           height: 72.h,
           child: Row(
             children: [
               Padding(
-                padding: EdgeInsets.only(left: _contentPadding.left),
+                padding: EdgeInsets.only(left: internalContentPadding.left),
                 child: Container(
                   width: 49.w,
                   height: 49.w,
@@ -124,7 +124,7 @@ class FriendWidget extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(right: _contentPadding.right),
+                padding: EdgeInsets.only(right: internalContentPadding.right),
                 child: Container(
                   width: 24.w,
                   height: 24.w,

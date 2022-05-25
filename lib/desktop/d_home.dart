@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -17,13 +17,13 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/protobuf/sideswap.pbenum.dart';
 
 class DesktopHome extends ConsumerStatefulWidget {
-  const DesktopHome({Key? key}) : super(key: key);
+  const DesktopHome({super.key});
 
   @override
-  _DesktopHomeState createState() => _DesktopHomeState();
+  DesktopHomeState createState() => DesktopHomeState();
 }
 
-class _DesktopHomeState extends ConsumerState<DesktopHome> {
+class DesktopHomeState extends ConsumerState<DesktopHome> {
   Future<void> handleExport(WalletChangeNotifier wallet) async {
     final list = exportTxList(wallet.allTxs.values, wallet.assets);
     final csv = convertToCsv(list);
@@ -78,8 +78,8 @@ class _DesktopHomeState extends ConsumerState<DesktopHome> {
                           vertical: 16, horizontal: 16),
                       child: Row(
                         children: [
-                          const Text('Wallet view',
-                              style: TextStyle(
+                          Text('Wallet view'.tr(),
+                              style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                               )),
@@ -139,16 +139,16 @@ class _DesktopHomeState extends ConsumerState<DesktopHome> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Row(children: [
-                        const Expanded(
-                          child: _Headeritem(text: 'Type of asset'),
+                        Expanded(
+                          child: _Headeritem(text: 'Type of asset'.tr()),
                         ),
                         SizedBox(
                           width: 577,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              _Headeritem(text: 'Asset'),
-                              _Headeritem(text: 'Balance'),
+                            children: [
+                              _Headeritem(text: 'Asset'.tr()),
+                              _Headeritem(text: 'Balance'.tr()),
                             ],
                           ),
                         ),
@@ -203,6 +203,12 @@ class _DesktopHomeState extends ConsumerState<DesktopHome> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
+                  decoration: const BoxDecoration(
+                      color: Color(0xFF1C6086),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      )),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -224,12 +230,6 @@ class _DesktopHomeState extends ConsumerState<DesktopHome> {
                       ),
                     ],
                   ),
-                  decoration: const BoxDecoration(
-                      color: Color(0xFF1C6086),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(8),
-                        topRight: Radius.circular(8),
-                      )),
                 ),
               )
           ],
@@ -241,9 +241,8 @@ class _DesktopHomeState extends ConsumerState<DesktopHome> {
 
 class _Headeritem extends StatelessWidget {
   const _Headeritem({
-    Key? key,
     required this.text,
-  }) : super(key: key);
+  });
 
   final String text;
 
@@ -261,13 +260,12 @@ class _Headeritem extends StatelessWidget {
 
 class _SubAccount extends StatefulWidget {
   const _SubAccount({
-    Key? key,
     required this.name,
     required this.isAmp,
     required this.accounts,
     this.onUnlock,
     this.onLogin,
-  }) : super(key: key);
+  });
 
   final String name;
   final bool isAmp;
@@ -288,6 +286,13 @@ class _SubAccountState extends State<_SubAccount> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
+          decoration: BoxDecoration(
+            color: _expanded ? const Color(0xB50F577A) : Colors.transparent,
+            border: Border.all(
+              color: const Color(0xFF2E7CA7),
+            ),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+          ),
           child: IconButton(
             icon: Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -327,13 +332,6 @@ class _SubAccountState extends State<_SubAccount> {
                 _expanded = !_expanded;
               });
             },
-          ),
-          decoration: BoxDecoration(
-            color: _expanded ? const Color(0xB50F577A) : Colors.transparent,
-            border: Border.all(
-              color: const Color(0xFF2E7CA7),
-            ),
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
         ),
         if (_expanded)

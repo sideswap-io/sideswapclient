@@ -3,14 +3,14 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class ColoredContainer extends StatelessWidget {
   const ColoredContainer({
-    Key? key,
+    super.key,
     this.child,
     this.backgroundColor = const Color(0xFF1B8BC8),
     this.borderColor = const Color(0xFF1B8BC8),
     this.horizontalPadding = 12,
     this.width,
     this.height,
-  }) : super(key: key);
+  });
 
   final Widget? child;
   final Color backgroundColor;

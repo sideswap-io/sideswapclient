@@ -3,8 +3,8 @@ import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dar
 
 class DNewWalletBackupLogoBackground extends StatelessWidget {
   const DNewWalletBackupLogoBackground({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {

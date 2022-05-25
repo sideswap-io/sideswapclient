@@ -8,7 +8,7 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DSettingsRadioButton extends HookConsumerWidget {
   const DSettingsRadioButton({
-    Key? key,
+    super.key,
     required this.checked,
     required this.onChanged,
     this.content,
@@ -16,7 +16,7 @@ class DSettingsRadioButton extends HookConsumerWidget {
     this.focusNode,
     this.autofocus = false,
     this.trailingIcon = false,
-  }) : super(key: key);
+  });
 
   final bool checked;
   final ValueChanged<bool>? onChanged;

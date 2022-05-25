@@ -7,11 +7,11 @@ import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 
 class WaitSmsConfirmation extends ImplicitlyAnimatedWidget {
   const WaitSmsConfirmation({
-    Key? key,
-    required Duration duration,
-    VoidCallback? onEnd,
+    super.key,
+    required super.duration,
+    super.onEnd,
     required this.counter,
-  }) : super(duration: duration, onEnd: onEnd, key: key);
+  });
 
   final int counter;
 

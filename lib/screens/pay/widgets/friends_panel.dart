@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
@@ -9,15 +9,15 @@ import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_header.dart';
 
 class FriendsPanel extends StatefulWidget {
-  const FriendsPanel({Key? key, this.searchString}) : super(key: key);
+  const FriendsPanel({super.key, this.searchString});
 
   final String? searchString;
 
   @override
-  _FriendsPanelState createState() => _FriendsPanelState();
+  FriendsPanelState createState() => FriendsPanelState();
 }
 
-class _FriendsPanelState extends State<FriendsPanel> {
+class FriendsPanelState extends State<FriendsPanel> {
   @override
   Widget build(BuildContext context) {
     return Column(

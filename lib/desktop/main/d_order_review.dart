@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
@@ -69,17 +69,17 @@ String getButtonTitle(ReviewScreen screen, ReviewState state) {
 String getTtlDescription(int seconds) {
   final sec = Duration(seconds: seconds);
   if (sec.inHours >= 1) {
-    return '${sec.inHours} hour';
+    return 'HOURS'.plural(sec.inHours, args: ['${sec.inHours}']);
   }
 
-  return '${sec.inMinutes} min';
+  return 'MINUTES'.plural(sec.inMinutes, args: ['${sec.inMinutes}']);
 }
 
 class DOrderReview extends ConsumerStatefulWidget {
   const DOrderReview({
-    Key? key,
+    super.key,
     required this.screen,
-  }) : super(key: key);
+  });
 
   final ReviewScreen screen;
 
@@ -94,6 +94,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
   bool autoSignOld = true;
   bool public = true;
   int ttl = kOneWeek;
+  bool twoStep = false;
 
   // Edit order values
   bool isTracking = false;
@@ -114,6 +115,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
       isTracking = order.isTracking;
       autoSign = order.autoSign;
       autoSignOld = order.autoSign;
+      twoStep = order.twoStep;
       price = order.priceAmount;
       priceTrackerValue =
           indexPriceToTrackerValue(wallet.orderDetailsData.indexPrice);
@@ -153,6 +155,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
 
     ref.read(walletProvider).setSubmitDecision(
           autosign: autoSign,
+          twoStep: twoStep,
           accept: true,
           private: !public,
           ttlSeconds: ttl,
@@ -215,7 +218,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
 
     return DPopupWithClose(
       width: 580,
-      height: 625,
+      height: 670,
       child: Column(
         children: [
           Expanded(
@@ -281,8 +284,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                           hint: 'Deliver'.tr(),
                         ),
                         const SizedBox(height: 8),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 14),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           child: _Separator(),
                         ),
                         const SizedBox(height: 8),
@@ -323,21 +326,44 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                           _Field(name: 'Fee'.tr(), value: Text(feeValue)),
                         ]
                       : [],
+                  // if (widget.screen == ReviewScreen.submitStart ||
+                  //     widget.screen == ReviewScreen.edit)
+                  //   _SignTypeControls(
+                  //     twoStep: twoStep,
+                  //     onTwoStepChanged: (widget.screen == ReviewScreen.edit)
+                  //         ? null
+                  //         : (bool value) {
+                  //             setState(() {
+                  //               twoStep = value;
+                  //               if (twoStep) {
+                  //                 autoSign = true;
+                  //               }
+                  //             });
+                  //           },
+                  //   ),
                   if (widget.screen == ReviewScreen.submitStart ||
                       widget.screen == ReviewScreen.edit)
                     _AutoSignOrderControls(
                       autoSign: autoSign,
-                      onAutoSignChanged: (bool value) {
-                        setState(() {
-                          autoSign = value;
-                        });
-                      },
+                      onAutoSignChanged: twoStep
+                          ? null
+                          : (bool value) {
+                              setState(() {
+                                autoSign = value;
+                              });
+                            },
                     ),
                   if (widget.screen == ReviewScreen.submitStart)
                     _CreateOrderControls(
                       public: public,
                       ttl: ttl,
+                      twoStep: twoStep,
                       onPublicChanged: (bool value) {
+                        setState(() {
+                          public = value;
+                        });
+                      },
+                      onTwoStepChanged: (bool value) {
                         setState(() {
                           public = value;
                         });
@@ -382,9 +408,9 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
               child: DCustomFilledBigButton(
                 width: 500,
                 height: 44,
-                child: Text(getButtonTitle(widget.screen, state).toUpperCase()),
                 onPressed: (state == ReviewState.idle) ? handleSubmit : null,
                 autofocus: widget.screen != ReviewScreen.edit,
+                child: Text(getButtonTitle(widget.screen, state).toUpperCase()),
               ),
             ),
           if (widget.screen == ReviewScreen.submitSucceed && !order.private)
@@ -395,8 +421,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                 child: DCustomTextBigButton(
                   width: 260,
                   height: 44,
-                  child: Text('OK'.tr()),
                   onPressed: handleClose,
+                  child: Text('OK'.tr()),
                 ),
               ),
             ),
@@ -440,7 +466,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                             color: Colors.white,
                           ),
                           const SizedBox(width: 15),
-                          Text('Copy'.tr().toUpperCase()),
+                          Text('Copy'.tr()),
                         ],
                       ),
                       onPressed: () {
@@ -465,11 +491,10 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
 
 class _Balance extends ConsumerWidget {
   const _Balance({
-    Key? key,
     required this.assetId,
     required this.amount,
     required this.hint,
-  }) : super(key: key);
+  });
 
   final String assetId;
   final int amount;
@@ -532,8 +557,6 @@ class _Balance extends ConsumerWidget {
 }
 
 class _Separator extends StatelessWidget {
-  const _Separator({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -545,10 +568,9 @@ class _Separator extends StatelessWidget {
 
 class _Field extends StatelessWidget {
   const _Field({
-    Key? key,
     required this.name,
     required this.value,
-  }) : super(key: key);
+  });
 
   final String name;
   final Widget value;
@@ -576,7 +598,7 @@ class _Field extends StatelessWidget {
               ],
             ),
           ),
-          const _Separator(),
+          _Separator(),
         ],
       ),
     );
@@ -585,8 +607,6 @@ class _Field extends StatelessWidget {
 
 // Not used currently
 class _WaitSign extends StatefulWidget {
-  const _WaitSign({Key? key}) : super(key: key);
-
   @override
   State<_WaitSign> createState() => _WaitSignState();
 }
@@ -701,16 +721,19 @@ class ArcProgressPainter extends CustomPainter {
 
 class _CreateOrderControls extends StatelessWidget {
   const _CreateOrderControls({
-    Key? key,
     required this.public,
+    required this.twoStep,
     required this.ttl,
     required this.onPublicChanged,
+    required this.onTwoStepChanged,
     required this.onTtlChanged,
-  }) : super(key: key);
+  });
 
   final bool public;
+  final bool twoStep;
   final int ttl;
   final ValueChanged<bool> onPublicChanged;
+  final ValueChanged<bool> onTwoStepChanged;
   final ValueChanged<int> onTtlChanged;
 
   @override
@@ -727,7 +750,7 @@ class _CreateOrderControls extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Order type:'.tr()),
+              Text('Order type'.tr()),
               SizedBox(
                 width: 142,
                 height: 32,
@@ -750,7 +773,7 @@ class _CreateOrderControls extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Text('Time-to-live:'.tr()),
+              Text('Time-to-live'.tr()),
               const Spacer(),
               DHoverButton(
                 builder: (context, states) {
@@ -784,25 +807,66 @@ class _CreateOrderControls extends StatelessWidget {
   }
 }
 
+class _SignTypeControls extends StatelessWidget {
+  const _SignTypeControls({
+    required this.twoStep,
+    required this.onTwoStepChanged,
+  });
+
+  final bool twoStep;
+  final ValueChanged<bool>? onTwoStepChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            color: Color(0xFF135579),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Sign type'.tr()),
+              SizedBox(
+                width: 142,
+                height: 32,
+                child: DToggleButton(
+                  offText: 'Online'.tr(),
+                  onText: 'Offline'.tr(),
+                  value: twoStep,
+                  onChanged: onTwoStepChanged,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _AutoSignOrderControls extends StatelessWidget {
   const _AutoSignOrderControls({
-    Key? key,
     required this.autoSign,
     required this.onAutoSignChanged,
-  }) : super(key: key);
+  });
 
   final bool autoSign;
-  final ValueChanged<bool> onAutoSignChanged;
+  final ValueChanged<bool>? onAutoSignChanged;
 
   @override
   Widget build(BuildContext context) {
     final autoSignHelp =
-        'If someone confirms your order in the order book, SidesSwap will automatically confirm the order'
+        'If someone confirms your order in the order book, SideSwap will automatically confirm the order'
             .tr();
 
     return Column(
       children: [
-        const SizedBox(height: 20),
+        const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
           decoration: const BoxDecoration(
@@ -847,9 +911,8 @@ class _AutoSignOrderControls extends StatelessWidget {
 
 class _Timer extends StatefulWidget {
   const _Timer({
-    Key? key,
     required this.stopped,
-  }) : super(key: key);
+  });
 
   final bool stopped;
 

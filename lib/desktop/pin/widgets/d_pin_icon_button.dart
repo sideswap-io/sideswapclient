@@ -7,8 +7,7 @@ import 'package:sideswap/desktop/common/d_color.dart';
 
 class DPinIconButton extends HookWidget {
   const DPinIconButton(
-      {Key? key, this.onPressed, this.enabled = true, this.obscureText = false})
-      : super(key: key);
+      {super.key, this.onPressed, this.enabled = true, this.obscureText = false});
 
   final VoidCallback? onPressed;
   final bool enabled;
@@ -20,23 +19,16 @@ class DPinIconButton extends HookWidget {
         obscureText ? const Color(0xFF84ADC6) : const Color(0xFF00C5FF);
 
     final hoover = useState(false);
-    final tapDown = useState(false);
 
-    return FocusableActionDetector(
-      enabled: enabled,
-      onShowHoverHighlight: (v) {
-        if (v) {
-          hoover.value = true;
-        } else {
-          hoover.value = false;
-          tapDown.value = false;
-        }
+    return MouseRegion(
+      onEnter: (v) {
+        hoover.value = true;
+      },
+      onExit: (_) {
+        hoover.value = false;
       },
       child: DIconButton(
-        onPressed: onPressed,
-        onTapDown: () {
-          tapDown.value = true;
-        },
+        onPressed: enabled ? onPressed : null,
         cursor: SystemMouseCursors.basic,
         style: DButtonStyle(
           backgroundColor: ButtonState.all(Colors.transparent),
@@ -45,11 +37,7 @@ class DPinIconButton extends HookWidget {
           obscureText
               ? Icons.visibility_off_outlined
               : Icons.visibility_outlined,
-          color: hoover.value
-              ? tapDown.value
-                  ? iconColor.toAccentColor().darkest
-                  : iconColor.toAccentColor().darker
-              : iconColor,
+          color: hoover.value ? iconColor.toAccentColor().darker : iconColor,
           size: 22,
         ),
       ),

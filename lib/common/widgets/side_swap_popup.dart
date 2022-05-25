@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
@@ -8,7 +8,7 @@ import 'package:sideswap/models/wallet.dart';
 
 class SideSwapPopup extends ConsumerWidget {
   const SideSwapPopup({
-    Key? key,
+    super.key,
     required this.child,
     this.appBar,
     Color? backgroundColor,
@@ -21,8 +21,7 @@ class SideSwapPopup extends ConsumerWidget {
     this.sideSwapBackground = true,
     this.backgroundCoverColor,
     this.extendBodyBehindAppBar = false,
-  })  : _backgroundColor = backgroundColor ?? const Color(0xFF135579),
-        super(key: key);
+  })  : _backgroundColor = backgroundColor ?? const Color(0xFF135579);
 
   final Widget? child;
   final AppBar? appBar;

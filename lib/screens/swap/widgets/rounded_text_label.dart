@@ -5,12 +5,12 @@ import 'package:sideswap/common/screen_utils.dart';
 
 class RoundedTextLabel extends StatelessWidget {
   const RoundedTextLabel({
-    Key? key,
+    super.key,
     required this.text,
     this.color = const Color(0xFFA8D6EA),
     this.allRectRadius = false,
     this.height,
-  }) : super(key: key);
+  });
 
   final String text;
   final Color color;

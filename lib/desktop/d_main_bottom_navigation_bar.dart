@@ -1,24 +1,26 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/models/locales_provider.dart';
 
-class DesktopMainBottomNavigationBar extends StatefulWidget {
+class DesktopMainBottomNavigationBar extends ConsumerStatefulWidget {
   const DesktopMainBottomNavigationBar({
-    Key? key,
+    super.key,
     required this.onTap,
     required this.currentIndex,
-  }) : super(key: key);
+  });
 
   final ValueChanged<int> onTap;
   final int currentIndex;
 
   @override
-  _DesktopMainBottomNavigationBarState createState() =>
-      _DesktopMainBottomNavigationBarState();
+  DesktopMainBottomNavigationBarState createState() =>
+      DesktopMainBottomNavigationBarState();
 }
 
-class _DesktopMainBottomNavigationBarState
-    extends State<DesktopMainBottomNavigationBar> {
+class DesktopMainBottomNavigationBarState
+    extends ConsumerState<DesktopMainBottomNavigationBar> {
   void selected(int index) {
     setState(() {
       widget.onTap(index);
@@ -27,7 +29,9 @@ class _DesktopMainBottomNavigationBarState
 
   @override
   Widget build(BuildContext context) {
+    final lang = ref.watch(localesProvider).selectedLang(context);
     return Container(
+      key: ValueKey(lang),
       height: 56,
       color: const Color(0xFF021C36),
       child: Row(
@@ -73,14 +77,13 @@ class _DesktopMainBottomNavigationBarState
 
 class _ToolbarButton extends StatelessWidget {
   const _ToolbarButton({
-    Key? key,
     required this.name,
     required this.selectedIcon,
     required this.unselectedIcon,
     required this.index,
     required this.selectedIndex,
     required this.onSelected,
-  }) : super(key: key);
+  });
 
   final String name;
   final int index;

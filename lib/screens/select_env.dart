@@ -1,20 +1,20 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
 
 // TODO: fix that - new ui
 class SelectEnv extends ConsumerStatefulWidget {
-  const SelectEnv({Key? key}) : super(key: key);
+  const SelectEnv({super.key});
 
   @override
-  _SelectEnvState createState() => _SelectEnvState();
+  SelectEnvState createState() => SelectEnvState();
 }
 
-class _SelectEnvState extends ConsumerState<SelectEnv> {
+class SelectEnvState extends ConsumerState<SelectEnv> {
   int selectedEnv = 0;
 
   @override

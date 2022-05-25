@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/d_pin_welcome.dart';
 
 import 'package:sideswap/models/pin_setup_provider.dart';
@@ -8,7 +8,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/pin_welcome.dart';
 
 class NewWalletPinWelcome extends ConsumerWidget {
-  const NewWalletPinWelcome({Key? key}) : super(key: key);
+  const NewWalletPinWelcome({super.key});
 
   void onYesPressedCallback(WidgetRef ref) {
     ref.read(pinSetupProvider).initPinSetupNewWalletPinWelcome();

@@ -1,9 +1,10 @@
 import 'dart:math' as math show sin, pi;
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -13,14 +14,14 @@ import 'package:sideswap/screens/flavor_config.dart';
 
 class PreLaunchPage extends ConsumerStatefulWidget {
   const PreLaunchPage({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  _PreLaunchPageState createState() => _PreLaunchPageState();
+  PreLaunchPageState createState() => PreLaunchPageState();
 }
 
-class _PreLaunchPageState extends ConsumerState<PreLaunchPage> {
+class PreLaunchPageState extends ConsumerState<PreLaunchPage> {
   @override
   void initState() {
     super.initState();
@@ -46,7 +47,7 @@ class _PreLaunchPageState extends ConsumerState<PreLaunchPage> {
 }
 
 class PreLaunchPageBody extends StatefulWidget {
-  const PreLaunchPageBody({Key? key}) : super(key: key);
+  const PreLaunchPageBody({super.key});
 
   @override
   State<PreLaunchPageBody> createState() => _PreLaunchPageBodyState();
@@ -96,7 +97,7 @@ class _PreLaunchPageBodyState extends State<PreLaunchPageBody>
             : Padding(
                 padding: EdgeInsets.only(top: 30.h),
                 child: Text(
-                  'Wallet loading...',
+                  'Wallet loading...'.tr(),
                   style: GoogleFonts.roboto(
                     fontSize: 16.sp,
                     fontWeight: FontWeight.normal,
@@ -140,8 +141,7 @@ class _PreLaunchPageBodyState extends State<PreLaunchPageBody>
 }
 
 class DelayTween extends Tween<double> {
-  DelayTween({double? begin, double? end, required this.delay})
-      : super(begin: begin, end: end);
+  DelayTween({super.begin, super.end, required this.delay});
 
   final double delay;
 

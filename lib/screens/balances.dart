@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/screen_utils.dart';
@@ -111,13 +111,13 @@ int txAssetAmount(Tx tx, String assetId, AccountType accountType) {
 }
 
 class WalletTxMemo extends StatefulWidget {
-  const WalletTxMemo({Key? key}) : super(key: key);
+  const WalletTxMemo({super.key});
 
   @override
-  _WalletTxMemoState createState() => _WalletTxMemoState();
+  WalletTxMemoState createState() => WalletTxMemoState();
 }
 
-class _WalletTxMemoState extends State<WalletTxMemo> {
+class WalletTxMemoState extends State<WalletTxMemo> {
   late FocusNode _focusNode;
   @override
   void initState() {

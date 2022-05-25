@@ -9,7 +9,7 @@ import 'package:sideswap/desktop/theme.dart';
 
 class DToggleSwitchButton extends StatelessWidget {
   const DToggleSwitchButton({
-    Key? key,
+    super.key,
     required this.checked,
     required this.onChanged,
     this.width = 460,
@@ -18,7 +18,7 @@ class DToggleSwitchButton extends StatelessWidget {
     required this.uncheckedName,
     this.style,
     this.semanticLabel,
-  }) : super(key: key);
+  });
 
   final bool checked;
   final ValueChanged<bool>? onChanged;
@@ -103,10 +103,10 @@ class DToggleSwitchButton extends StatelessWidget {
 
 class DToggleSwitchTheme extends InheritedTheme {
   const DToggleSwitchTheme({
-    Key? key,
-    required Widget child,
+    super.key,
+    required super.child,
     required this.data,
-  }) : super(key: key, child: child);
+  });
 
   final DToggleSwitchThemeData data;
 

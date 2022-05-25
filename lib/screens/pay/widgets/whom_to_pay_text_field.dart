@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/models/payment_provider.dart';
@@ -9,12 +9,12 @@ import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart'
 
 class WhomToPayTextField extends StatefulWidget {
   const WhomToPayTextField({
-    Key? key,
+    super.key,
     required this.addressController,
     required this.validator,
     this.errorText,
     this.addrType = AddrType.elements,
-  }) : super(key: key);
+  });
 
   final TextEditingController addressController;
   final String? errorText;
@@ -22,10 +22,10 @@ class WhomToPayTextField extends StatefulWidget {
   final AddrType addrType;
 
   @override
-  _WhomToPayTextFieldState createState() => _WhomToPayTextFieldState();
+  WhomToPayTextFieldState createState() => WhomToPayTextFieldState();
 }
 
-class _WhomToPayTextFieldState extends State<WhomToPayTextField> {
+class WhomToPayTextFieldState extends State<WhomToPayTextField> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(

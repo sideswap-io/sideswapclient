@@ -158,7 +158,7 @@ class RouteGenerator {
 }
 
 class RouteContainer extends ConsumerStatefulWidget {
-  const RouteContainer({Key? key}) : super(key: key);
+  const RouteContainer({super.key});
 
   @override
   ConsumerState<RouteContainer> createState() => _RouteContainerState();

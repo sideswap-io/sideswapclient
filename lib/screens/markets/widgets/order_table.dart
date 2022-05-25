@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -9,12 +9,12 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class OrderTable extends ConsumerWidget {
   const OrderTable({
-    Key? key,
+    super.key,
     this.orderTableRowType = OrderTableRowType.normal,
     required this.orderDetailsData,
     this.enabled = true,
     this.useTokenView = false,
-  }) : super(key: key);
+  });
 
   final OrderTableRowType orderTableRowType;
   final OrderDetailsData orderDetailsData;

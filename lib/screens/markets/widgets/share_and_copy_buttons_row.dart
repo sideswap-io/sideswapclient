@@ -7,11 +7,11 @@ import 'package:easy_localization/easy_localization.dart';
 
 class ShareAndCopyButtonsRow extends StatelessWidget {
   const ShareAndCopyButtonsRow({
-    Key? key,
+    super.key,
     this.onShare,
     this.onCopy,
     this.buttonWidth,
-  }) : super(key: key);
+  });
 
   final void Function()? onShare;
   final void Function()? onCopy;

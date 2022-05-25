@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -10,7 +10,7 @@ import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
 class AssetSelectItem extends ConsumerWidget {
   final AccountAsset account;
-  const AssetSelectItem({Key? key, required this.account}) : super(key: key);
+  const AssetSelectItem({super.key, required this.account});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,9 +82,9 @@ class AssetSelectItem extends ConsumerWidget {
                     Consumer(
                       builder: (context, ref, child) {
                         final wallet = ref.read(walletProvider);
-                        final _selected = !wallet.disabledAssetAccount(account);
+                        final selected = !wallet.disabledAssetAccount(account);
                         return FlutterSwitch(
-                          value: _selected,
+                          value: selected,
                           disabled: false,
                           onToggle: (val) {},
                           width: 51.h,

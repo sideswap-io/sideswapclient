@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -8,7 +8,7 @@ import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 import 'package:sideswap/screens/receive/widgets/top_recv_buttons.dart';
 
 class DReceivePopup extends ConsumerWidget {
-  const DReceivePopup({Key? key}) : super(key: key);
+  const DReceivePopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

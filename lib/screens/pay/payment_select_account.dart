@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -11,11 +11,11 @@ import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 
 class PaymentSelectAccount extends StatelessWidget {
   const PaymentSelectAccount({
-    Key? key,
+    super.key,
     required this.availableAssets,
     required this.onSelected,
     this.disabledAssets = const <AccountAsset>[],
-  }) : super(key: key);
+  });
 
   final List<AccountAsset> availableAssets;
   final List<AccountAsset> disabledAssets;

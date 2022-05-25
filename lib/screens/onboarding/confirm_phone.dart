@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/country_code.dart';
@@ -13,13 +13,13 @@ import 'package:sideswap/screens/onboarding/widgets/country_phone_number.dart';
 import 'package:sideswap/screens/onboarding/widgets/sms_digit_code.dart';
 
 class ConfirmPhone extends ConsumerStatefulWidget {
-  const ConfirmPhone({Key? key}) : super(key: key);
+  const ConfirmPhone({super.key});
 
   @override
-  _ConfirmPhoneState createState() => _ConfirmPhoneState();
+  ConfirmPhoneState createState() => ConfirmPhoneState();
 }
 
-class _ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
+class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
   late FocusNode _numberFocusNode;
   ConfirmPhoneData? confirmPhoneData;
 

@@ -1,6 +1,6 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -74,7 +74,7 @@ class PaymentProvider with ChangeNotifier {
     final precision = ref
         .read(walletProvider)
         .getPrecisionForAssetId(assetId: accountAsset.asset);
-    final _amount =
+    final internalAmount =
         ref.read(walletProvider).parseAssetAmount(amount, precision: precision);
     final balance = ref
         .read(balancesProvider)
@@ -84,13 +84,15 @@ class PaymentProvider with ChangeNotifier {
       return;
     }
 
-    if (_amount == null || _amount <= 0 || _amount > balance) {
-      logger.e('Incorrect amount $_amount');
+    if (internalAmount == null ||
+        internalAmount <= 0 ||
+        internalAmount > balance) {
+      logger.e('Incorrect amount $amount');
       return;
     }
 
     sendAddrParsed = address;
-    sendAmountParsed = _amount;
+    sendAmountParsed = internalAmount;
 
     final createTx = CreateTx();
     createTx.addr = sendAddrParsed;

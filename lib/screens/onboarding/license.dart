@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -17,9 +17,9 @@ enum LicenseNextStep {
 
 class LicenseTerms extends ConsumerWidget {
   const LicenseTerms({
-    Key? key,
+    super.key,
     required this.nextStep,
-  }) : super(key: key);
+  });
 
   final LicenseNextStep nextStep;
 

@@ -22,12 +22,11 @@ class SettingsAboutUsData {
   static const String urlTelegram = 'https://t.me/SideSwap_io';
   static const String urlTelegramText = 't.me/SideSwap_io';
   static const String urlPrivacyPolicy = 'https://sideswap.io/privacy-policy/';
-  static const String urlPrivacyPolicyText = 'Privacy Policy';
   static const String urlFaq = 'https://sideswap.io/faq/';
 }
 
 class SettingsAboutUs extends StatelessWidget {
-  const SettingsAboutUs({Key? key}) : super(key: key);
+  const SettingsAboutUs({super.key});
 
   void showExportLogMenu(BuildContext context) async {
     final result = await showMenu(
@@ -144,7 +143,7 @@ class SettingsAboutUs extends StatelessWidget {
                   ),
                   UrlLinkButton(
                     url: SettingsAboutUsData.urlPrivacyPolicy,
-                    text: SettingsAboutUsData.urlPrivacyPolicyText,
+                    text: 'Privacy Policy'.tr(),
                     icon: SvgPicture.asset(
                       'assets/web_icon.svg',
                       width: 24.w,

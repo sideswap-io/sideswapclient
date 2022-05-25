@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -12,7 +12,7 @@ import 'package:sideswap/screens/onboarding/widgets/choose_avatar_image.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
 class ImportAvatar extends ConsumerWidget {
-  ImportAvatar({Key? key}) : super(key: key);
+  ImportAvatar({super.key});
 
   final double avatarRadius = 200.w;
 

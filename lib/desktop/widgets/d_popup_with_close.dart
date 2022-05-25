@@ -4,12 +4,12 @@ import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 
 class DPopupWithClose extends StatelessWidget {
   const DPopupWithClose({
-    Key? key,
+    super.key,
     required this.child,
     this.width,
     this.height,
     this.onClose,
-  }) : super(key: key);
+  });
 
   final Widget child;
   final double? width;

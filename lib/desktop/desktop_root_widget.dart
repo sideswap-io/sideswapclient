@@ -12,7 +12,7 @@ import 'package:sideswap/models/pin_protection_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DesktopRootWidget extends ConsumerStatefulWidget {
-  const DesktopRootWidget({Key? key}) : super(key: key);
+  const DesktopRootWidget({super.key});
 
   @override
   ConsumerState<DesktopRootWidget> createState() => _DesktopRootWidgetState();

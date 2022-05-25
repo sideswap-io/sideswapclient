@@ -11,7 +11,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
 class DNewWalletBackupPrompt extends ConsumerWidget {
-  const DNewWalletBackupPrompt({Key? key}) : super(key: key);
+  const DNewWalletBackupPrompt({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,9 +44,9 @@ class DNewWalletBackupPrompt extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 12),
                 child: SizedBox(
                   width: 428,
-                  height: 44,
+                  height: 60,
                   child: Text(
-                    'Protect your assets by ensuring you save the 12 work recovery phrase which can restore your wallet'
+                    'Protect your assets by ensuring you save the 12 word recovery phrase which can restore your wallet'
                         .tr(),
                     textAlign: TextAlign.center,
                     style: GoogleFonts.roboto(
@@ -67,12 +67,12 @@ class DNewWalletBackupPrompt extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 48),
                 child: DCustomFilledBigButton(
-                  child: Text('YES'.tr()),
                   width: 266,
                   height: 49,
                   onPressed: () {
                     ref.read(walletProvider).backupNewWalletEnable();
                   },
+                  child: Text('YES'.tr()),
                 ),
               ),
               Padding(

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -23,17 +23,17 @@ import 'package:sideswap/screens/markets/widgets/time_to_live.dart';
 
 class CreateOrderView extends ConsumerStatefulWidget {
   const CreateOrderView({
-    Key? key,
+    super.key,
     this.requestOrder,
-  }) : super(key: key);
+  });
 
   final RequestOrder? requestOrder;
 
   @override
-  _CreateOrderViewState createState() => _CreateOrderViewState();
+  CreateOrderViewState createState() => CreateOrderViewState();
 }
 
-class _CreateOrderViewState extends ConsumerState<CreateOrderView> {
+class CreateOrderViewState extends ConsumerState<CreateOrderView> {
   bool autoSignValue = true;
   bool orderTypePublicValue = true;
 
@@ -269,7 +269,7 @@ class _CreateOrderViewState extends ConsumerState<CreateOrderView> {
 
 class CreateOrderViewBody extends ConsumerWidget {
   const CreateOrderViewBody({
-    Key? key,
+    super.key,
     required this.autoSignValue,
     required this.editMode,
     required this.orderTypeValue,
@@ -282,7 +282,7 @@ class CreateOrderViewBody extends ConsumerWidget {
     this.onTtlChanged,
     this.ttlSeconds = kTenMinutes,
     this.ttlLocked = false,
-  }) : super(key: key);
+  });
 
   final bool autoSignValue;
   final bool editMode;
