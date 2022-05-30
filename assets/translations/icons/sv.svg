@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-se" viewBox="0 0 640 480">
-  <path fill="#005293" d="M0 0h640v480H0z"/>
-  <path fill="#fecb00" d="M176 0v192H0v96h176v192h96V288h368v-96H272V0h-96z"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="640" height="480" version="1.1" viewBox="0 0 169.33 127" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(83.344 141.45)">
+  <g transform="matrix(.26458 0 0 .26458 -83.344 -141.45)">
+   <path d="m0 0h640v480h-640z" fill="#005293"/>
+   <path d="m176 0v192h-176v96h176v192h96v-192h368v-96h-368v-192z" fill="#fecb00"/>
+  </g>
+ </g>
 </svg>

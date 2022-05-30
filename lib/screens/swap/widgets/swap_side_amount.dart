@@ -11,7 +11,6 @@ import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
-import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
@@ -21,6 +20,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
+import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 import 'package:sideswap/screens/swap/widgets/labeled_radio.dart';
 
 class SwapSideAmount extends ConsumerStatefulWidget {
@@ -131,6 +131,14 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
 
   @override
   Widget build(BuildContext context) {
+    final result = ref.watch(qrcodeResultModelProvider);
+    result.maybeWhen(
+      data: (result) {
+        widget.addressController?.text = result?.address ?? '';
+      },
+      orElse: () {},
+    );
+
     final isAmp = widget.dropdownValue.account.isAmp();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,11 +342,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                               await Navigator.of(context, rootNavigator: true)
                                   .push<void>(
                                 MaterialPageRoute(
-                                  builder: (context) => AddressQrScanner(
-                                    resultCb: (value) async {
-                                      widget.addressController?.text =
-                                          value.address ?? '';
-                                    },
+                                  builder: (context) => const AddressQrScanner(
                                     expectedAddress: QrCodeAddressType.bitcoin,
                                   ),
                                 ),

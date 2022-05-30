@@ -46,7 +46,7 @@ class DesktopMainBottomNavigationBarState
             onSelected: selected,
           ),
           _ToolbarButton(
-            name: 'Markets'.tr(),
+            name: 'Swap Markets'.tr(),
             selectedIcon: 'assets/requests_active.svg',
             unselectedIcon: 'assets/requests.svg',
             index: 1,
@@ -54,10 +54,18 @@ class DesktopMainBottomNavigationBarState
             onSelected: selected,
           ),
           _ToolbarButton(
-            name: 'Swap'.tr(),
+            name: 'Instant Swap'.tr(),
             selectedIcon: 'assets/swap_active.svg',
             unselectedIcon: 'assets/swap.svg',
             index: 2,
+            selectedIndex: widget.currentIndex,
+            onSelected: selected,
+          ),
+          _ToolbarButton(
+            name: 'Peg-In/Out'.tr(),
+            selectedIcon: 'assets/swap_active.svg',
+            unselectedIcon: 'assets/swap.svg',
+            index: 4,
             selectedIndex: widget.currentIndex,
             onSelected: selected,
           ),

@@ -1,6 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-pl" viewBox="0 0 640 480">
-  <g fill-rule="evenodd">
-    <path fill="#fff" d="M640 480H0V0h640z"/>
-    <path fill="#dc143c" d="M640 480H0V240h640z"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="640" height="480" version="1.1" viewBox="0 0 169.33 127" xmlns="http://www.w3.org/2000/svg">
+ <g transform="translate(76.162 111.78)">
+  <g transform="matrix(.26458 0 0 .26458 -76.162 -111.78)" fill-rule="evenodd">
+   <path d="m640 480h-640v-480h640z" fill="#fff"/>
+   <path d="m640 480h-640v-240h640z" fill="#dc143c"/>
   </g>
+ </g>
 </svg>

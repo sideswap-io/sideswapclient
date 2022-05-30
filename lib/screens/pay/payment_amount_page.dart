@@ -114,7 +114,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
 
     tickerAmountFocusNode = FocusNode();
 
-    ref.read(paymentProvider).insufficientFunds = false;
+    Future.microtask(() => ref.read(paymentProvider).insufficientFunds = false);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(tickerAmountFocusNode);

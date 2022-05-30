@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/models/payment_provider.dart';
+import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
+import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 
-class WhomToPayTextField extends StatefulWidget {
+class WhomToPayTextField extends StatefulHookConsumerWidget {
   const WhomToPayTextField({
     super.key,
     required this.addressController,
@@ -22,12 +23,28 @@ class WhomToPayTextField extends StatefulWidget {
   final AddrType addrType;
 
   @override
-  WhomToPayTextFieldState createState() => WhomToPayTextFieldState();
+  ConsumerState<WhomToPayTextField> createState() => WhomToPayTextFieldState();
 }
 
-class WhomToPayTextFieldState extends State<WhomToPayTextField> {
+class WhomToPayTextFieldState extends ConsumerState<WhomToPayTextField> {
   @override
   Widget build(BuildContext context) {
+    final result = ref.watch(qrcodeResultModelProvider);
+    result.maybeWhen(
+      data: (result) {
+        widget.addressController.text = result?.address ?? '';
+        if (widget.validator()) {
+          ref.read(paymentProvider).selectPaymentAmountPage(
+                PaymentAmountPageArguments(
+                  result: result,
+                ),
+              );
+          return;
+        }
+      },
+      orElse: () {},
+    );
+
     return SizedBox(
       child: ShareCopyScanTextFormField(
         errorText: widget.errorText,
@@ -40,19 +57,7 @@ class WhomToPayTextFieldState extends State<WhomToPayTextField> {
             MaterialPageRoute(builder: (context) {
               return Consumer(
                 builder: (context, ref, _) {
-                  return AddressQrScanner(
-                    resultCb: (value) {
-                      widget.addressController.text = value.address ?? '';
-                      if (widget.validator()) {
-                        ref.read(paymentProvider).selectPaymentAmountPage(
-                              PaymentAmountPageArguments(
-                                result: value,
-                              ),
-                            );
-                        return;
-                      }
-                    },
-                  );
+                  return const AddressQrScanner();
                 },
               );
             }),

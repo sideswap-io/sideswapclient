@@ -58,12 +58,12 @@ fn main() {
     }
 
     let mut trading_utxo_count = 0;
-    let mut connected = false;
 
     let usdt_asset_id =
         sideswap_api::AssetId::from_str(&args.env.data().network.usdt_asset_id()).unwrap();
     let mut usdt_index_price = None;
     let mut orders = std::collections::BTreeMap::<String, Order>::new();
+    let mut submit_times = Vec::<std::time::Instant>::new();
 
     let account_id = if amp {
         sideswap_client::worker::ACCOUNT_ID_AMP
@@ -73,6 +73,7 @@ fn main() {
 
     loop {
         let msg = blocking_recv_msg(client);
+        let now = std::time::Instant::now();
 
         match msg {
             from::Msg::UtxoUpdate(msg) if msg.account.id == account_id => {
@@ -89,7 +90,6 @@ fn main() {
 
             from::Msg::ServerConnected(_) => {
                 info!("server connected");
-                connected = true;
                 send_msg(
                     client,
                     to::Msg::SubscribePrice(AssetId {
@@ -100,7 +100,6 @@ fn main() {
 
             from::Msg::ServerDisconnected(_) => {
                 info!("server disconnected");
-                connected = false;
                 usdt_index_price = None;
             }
 
@@ -110,65 +109,75 @@ fn main() {
                     usdt_index_price = msg.ind;
                 }
 
-                if connected {
-                    if let Some(usdt_index_price) = usdt_index_price {
-                        let price = args.price_usdt / usdt_index_price;
-                        for _ in orders.len()..usize::min(trading_utxo_count, args.order_count) {
+                if let Some(usdt_index_price) = usdt_index_price {
+                    let price = args.price_usdt / usdt_index_price;
+
+                    submit_times
+                        .retain(|t| now.duration_since(*t) < std::time::Duration::from_secs(60));
+
+                    let active_count = orders.len() + submit_times.len();
+                    let expected_count = usize::min(trading_utxo_count, args.order_count);
+
+                    for _ in active_count..expected_count {
+                        info!("submit new order");
+                        send_msg(
+                            client,
+                            to::Msg::SubmitOrder(to::SubmitOrder {
+                                account: Account { id: account_id },
+                                asset_id: args.trading_asset_id.to_string(),
+                                bitcoin_amount: None,
+                                asset_amount: Some(-1.0),
+                                price,
+                                index_price: None,
+                            }),
+                        );
+                        submit_times.push(now);
+                    }
+
+                    for order in orders.values() {
+                        if order.price != price {
                             send_msg(
                                 client,
-                                to::Msg::SubmitOrder(to::SubmitOrder {
-                                    account: Account { id: account_id },
-                                    asset_id: args.trading_asset_id.to_string(),
-                                    bitcoin_amount: None,
-                                    asset_amount: Some(-1.0),
-                                    price,
-                                    index_price: None,
+                                to::Msg::EditOrder(to::EditOrder {
+                                    order_id: order.order_id.clone(),
+                                    data: Some(to::edit_order::Data::Price(price)),
                                 }),
                             );
                         }
-                        for order in orders.values() {
-                            if order.price != price {
-                                send_msg(
-                                    client,
-                                    to::Msg::EditOrder(to::EditOrder {
-                                        order_id: order.order_id.clone(),
-                                        data: Some(to::edit_order::Data::Price(price)),
-                                    }),
-                                );
-                            }
-                        }
-                    }
-                } else {
-                    for order in orders.values() {
-                        send_msg(
-                            client,
-                            to::Msg::CancelOrder(to::CancelOrder {
-                                order_id: order.order_id.clone(),
-                            }),
-                        );
                     }
                 }
             }
 
-            from::Msg::SubmitReview(msg) => send_msg(
-                client,
-                to::Msg::SubmitDecision(to::SubmitDecision {
-                    order_id: msg.order_id,
-                    accept: true,
-                    auto_sign: Some(true),
-                    private: Some(false),
-                    ttl_seconds: None,
-                    two_step: None,
-                }),
-            ),
+            from::Msg::SubmitReview(msg) => {
+                info!("send submit decision for order {}", msg.order_id);
+                send_msg(
+                    client,
+                    to::Msg::SubmitDecision(to::SubmitDecision {
+                        order_id: msg.order_id,
+                        accept: true,
+                        auto_sign: Some(true),
+                        private: Some(false),
+                        ttl_seconds: None,
+                        two_step: None,
+                    }),
+                );
+            }
 
             from::Msg::OrderCreated(msg) => {
-                orders.insert(msg.order.order_id.clone(), msg.order);
+                let order_id = msg.order.order_id.clone();
+                let old = orders.insert(msg.order.order_id.clone(), msg.order);
+                if old.is_none() {
+                    info!("order created {}", order_id);
+                }
             }
             from::Msg::OrderRemoved(msg) => {
+                info!("order removed {}", msg.order_id);
                 orders.remove(&msg.order_id);
             }
             from::Msg::OrderComplete(msg) => {
+                if let Some(txid) = msg.txid {
+                    info!("swap succeed, txid: {}", txid);
+                }
                 orders.remove(&msg.order_id);
             }
 

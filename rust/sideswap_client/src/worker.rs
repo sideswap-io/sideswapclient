@@ -27,6 +27,10 @@ const SERVER_REQUEST_POLL_PERIOD: std::time::Duration = std::time::Duration::fro
 
 const DESKTOP_IDLE_TIMER: std::time::Duration = std::time::Duration::from_secs(600);
 
+// AMP session stops somewhere between 50 and 125 minutes.
+// Take lower bound but deduct DESKTOP_IDLE_TIMER value.
+const AMP_SESSION_IDLE_PERIOD: std::time::Duration = std::time::Duration::from_secs(2400);
+
 const ACCOUNT: u32 = 0;
 
 const BALANCE_NUM_CONFS: u32 = 0;
@@ -139,7 +143,7 @@ pub struct Context {
     active_extern_peg: Option<ActivePeg>,
     sent_txhash: Option<Txid>,
 
-    active_submit: Option<LinkResponse>,
+    active_submits: BTreeMap<OrderId, LinkResponse>,
     active_sign: Option<SignNotification>,
 
     phone_key: Option<PhoneKey>,
@@ -221,6 +225,7 @@ pub struct Data {
     amp_active: bool,
     subscribed_market_data: Option<AssetId>,
     last_ui_msg_at: std::time::Instant,
+    last_amp_ping: std::time::Instant,
 }
 
 pub struct ActiveSwap {
@@ -1876,7 +1881,7 @@ impl Data {
             send_tx: None,
             active_extern_peg: None,
             sent_txhash: None,
-            active_submit: None,
+            active_submits: BTreeMap::new(),
             active_sign: None,
             phone_key,
             subscribes: BTreeSet::new(),
@@ -2409,7 +2414,7 @@ impl Data {
             .send(ffi::proto::from::Msg::SubmitReview(submit_review));
         self.visible_submit = Some(order_id.clone());
         let ctx = self.ctx.as_mut().ok_or(anyhow!("no context found"))?;
-        ctx.active_submit = Some(resp);
+        ctx.active_submits.insert(order_id, resp);
         Ok(None)
     }
 
@@ -2586,13 +2591,16 @@ impl Data {
             let sign_msg = ctx.active_sign.take().unwrap();
             return self.try_sign(sign_msg);
         }
-        let resp = ctx.active_submit.take().ok_or(anyhow!("data not found"))?;
+        let order_id = OrderId::from_str(&req.order_id)?;
+        let resp = ctx
+            .active_submits
+            .remove(&order_id)
+            .ok_or(anyhow!("data not found"))?;
         let index_price = resp.index_price;
         let details = resp.details;
         let side = details.side;
         let auto_sign = req.auto_sign.unwrap_or(false) && side == OrderSide::Maker;
         let two_step = req.two_step.unwrap_or(false) && side == OrderSide::Maker;
-        let order_id = OrderId::from_str(&req.order_id)?;
         let asset = self
             .assets
             .get(&details.asset)
@@ -2656,6 +2664,10 @@ impl Data {
         let mut asset_utxos = if filtered_amount >= send_amount {
             filtered_utxos
         } else {
+            warn!(
+                "can't find unused UTXO(s), required amount: {}, free amount: {}",
+                send_amount, filtered_amount
+            );
             swap_inputs.inputs
         };
         let change_addr = swap_inputs.change_addr;
@@ -4344,15 +4356,25 @@ impl Data {
     }
 
     fn process_idle_timer(&mut self) {
+        let now = std::time::Instant::now();
         let is_desktop = self.ctx.as_ref().map(|ctx| ctx.desktop).unwrap_or(false);
         if is_desktop {
-            let ui_idle =
-                std::time::Instant::now().duration_since(self.last_ui_msg_at) > DESKTOP_IDLE_TIMER;
+            let ui_idle = now.duration_since(self.last_ui_msg_at) > DESKTOP_IDLE_TIMER;
             let new_app_active = !ui_idle;
             if self.app_active != new_app_active {
                 info!("update desktop app status, active: {}", new_app_active);
                 self.app_active = new_app_active;
                 self.update_amp_connection_status();
+            }
+        }
+        if self.app_active
+            && self.ctx.is_some()
+            && now.duration_since(self.last_amp_ping) > AMP_SESSION_IDLE_PERIOD
+        {
+            self.last_amp_ping = now;
+            let result = self.amp.get_previous_addresses(0);
+            if let Err(e) = result {
+                error!("AMP ping failed: {}", e);
             }
         }
     }
@@ -4586,6 +4608,7 @@ pub fn start_processing(
         amp_active: true,
         subscribed_market_data: None,
         last_ui_msg_at: std::time::Instant::now(),
+        last_amp_ping: std::time::Instant::now(),
     };
 
     if let Err(e) = state.load_assets() {

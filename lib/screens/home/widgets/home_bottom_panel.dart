@@ -4,11 +4,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
-import 'package:sideswap/common/widgets.dart';
 import 'package:sideswap/models/payment_provider.dart';
+import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
+import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 
 class HomeBottomPanel extends ConsumerWidget {
   const HomeBottomPanel({
@@ -17,6 +18,18 @@ class HomeBottomPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final result = ref.watch(qrcodeResultModelProvider);
+    result.maybeWhen(
+      data: (result) {
+        ref.read(paymentProvider).selectPaymentAmountPage(
+              PaymentAmountPageArguments(
+                result: result,
+              ),
+            );
+      },
+      orElse: () {},
+    );
+
     return Container(
       height: 180.h,
       decoration: BoxDecoration(
@@ -49,15 +62,7 @@ class HomeBottomPanel extends ConsumerWidget {
                 onTap: () {
                   Navigator.of(context, rootNavigator: true).push<void>(
                     MaterialPageRoute(
-                      builder: (context) => AddressQrScanner(
-                        resultCb: (value) {
-                          ref.read(paymentProvider).selectPaymentAmountPage(
-                                PaymentAmountPageArguments(
-                                  result: value,
-                                ),
-                              );
-                        },
-                      ),
+                      builder: (context) => const AddressQrScanner(),
                     ),
                   );
                 },

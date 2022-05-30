@@ -162,11 +162,15 @@ class SwapMainState extends ConsumerState<SwapMain> {
                         children: [
                           Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16.w),
-                            child: TopSwapButtons(
-                              onSwapPressed:
-                                  ref.read(swapProvider).switchToSwaps,
-                              onPegPressed: ref.read(swapProvider).switchToPegs,
-                              isDesktop: widget.isDesktop,
+                            child: Visibility(
+                              visible: !widget.isDesktop,
+                              child: TopSwapButtons(
+                                onSwapPressed:
+                                    ref.read(swapProvider).switchToSwaps,
+                                onPegPressed:
+                                    ref.read(swapProvider).switchToPegs,
+                                isDesktop: widget.isDesktop,
+                              ),
                             ),
                           ),
                           Padding(

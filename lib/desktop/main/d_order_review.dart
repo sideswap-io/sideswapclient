@@ -326,21 +326,21 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                           _Field(name: 'Fee'.tr(), value: Text(feeValue)),
                         ]
                       : [],
-                  // if (widget.screen == ReviewScreen.submitStart ||
-                  //     widget.screen == ReviewScreen.edit)
-                  //   _SignTypeControls(
-                  //     twoStep: twoStep,
-                  //     onTwoStepChanged: (widget.screen == ReviewScreen.edit)
-                  //         ? null
-                  //         : (bool value) {
-                  //             setState(() {
-                  //               twoStep = value;
-                  //               if (twoStep) {
-                  //                 autoSign = true;
-                  //               }
-                  //             });
-                  //           },
-                  //   ),
+                  if (widget.screen == ReviewScreen.submitStart ||
+                      widget.screen == ReviewScreen.edit)
+                    _SignTypeControls(
+                      twoStep: twoStep,
+                      onTwoStepChanged: (widget.screen == ReviewScreen.edit)
+                          ? null
+                          : (bool value) {
+                              setState(() {
+                                twoStep = value;
+                                if (twoStep) {
+                                  autoSign = true;
+                                }
+                              });
+                            },
+                    ),
                   if (widget.screen == ReviewScreen.submitStart ||
                       widget.screen == ReviewScreen.edit)
                     _AutoSignOrderControls(

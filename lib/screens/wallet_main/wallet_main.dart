@@ -71,6 +71,8 @@ class WalletMainState extends ConsumerState<WalletMain> {
         );
       case WalletMainNavigationItem.swap:
         return const SwapMain();
+      case WalletMainNavigationItem.pegs:
+        return const SwapMain();
     }
   }
 

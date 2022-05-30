@@ -1,16 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 270.933 270.933" height="1024" width="1024">
-  <defs>
-    <linearGradient id="a">
-      <stop offset="0" stop-color="#1f4e6e"/>
-      <stop offset="1" stop-color="#113250"/>
-    </linearGradient>
-    <linearGradient gradientTransform="translate(-.007 .019)" gradientUnits="userSpaceOnUse" y2="112.613" x2="112.895" y1="-78.976" x1="-78.694" id="b" xlink:href="#a"/>
-  </defs>
-  <g transform="matrix(1.00003 0 0 1.00005 118.084 118.917)">
-    <ellipse cx="17.382" cy="16.549" rx="135.462" ry="135.46" fill="url(#b)"/>
-    <g clip-rule="evenodd" fill-rule="evenodd">
-      <path d="M116.567 4.245c-.193.407-9.077 22.95-48.147 39.295l13.814 12.69C34.378 90.25-43.86 98.06-74.248 61.106A97.82 100.672 0 00-55.303 88.42a98.67 101.546 0 0037.148 24.02 98.66 101.536 0 0085.014-9.81 98.66 101.536 0 0031.064-31.888l9.078 8.432a109.935 113.14 0 009.566-74.929z" fill="#94e7ff"/>
-      <path d="M15.695-85.037a98.55 101.424 0 00-71.097 29.775 91.923 94.603 0 00-3.062 3.35l-1.58 1.93-.099.103a98.29 101.155 0 00-24.071 66.5C-67.64-67.653 32.112-75.882 46.117-40.236 56.478-14.45 21.256-5.203 1.324-2.057v-20.107l-60.282 44.473L1.328 66.783V46.884C71.383 49.115 128.405-9.68 84.11-55.267a98.55 101.424 0 00-68.415-29.77z" fill="#00c5ff"/>
-    </g>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg width="1024" height="1024" version="1.1" viewBox="0 0 270.93 270.93" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <linearGradient id="b" x1="-78.694" x2="112.9" y1="-78.976" y2="112.61" gradientTransform="translate(-.007 .019)" gradientUnits="userSpaceOnUse">
+   <stop stop-color="#1f4e6e" offset="0"/>
+   <stop stop-color="#113250" offset="1"/>
+  </linearGradient>
+ </defs>
+ <g transform="translate(98.425 91.711)">
+  <g transform="matrix(1 0 0 1.0001 19.659 27.206)">
+   <ellipse cx="17.382" cy="16.549" rx="135.46" ry="135.46" fill="url(#b)"/>
+   <g clip-rule="evenodd" fill-rule="evenodd">
+    <path d="m116.57 4.245c-0.193 0.407-9.077 22.95-48.147 39.295l13.814 12.69c-47.856 34.02-126.09 41.83-156.48 4.876a97.82 100.67 0 0 0 18.945 27.314 98.67 101.55 0 0 0 37.148 24.02 98.66 101.54 0 0 0 85.014-9.81 98.66 101.54 0 0 0 31.064-31.888l9.078 8.432a109.94 113.14 0 0 0 9.566-74.929z" fill="#94e7ff"/>
+    <path d="m15.695-85.037a98.55 101.42 0 0 0-71.097 29.775 91.923 94.603 0 0 0-3.062 3.35l-1.58 1.93-0.099 0.103a98.29 101.16 0 0 0-24.071 66.5c16.574-84.274 116.33-92.503 130.33-56.857 10.361 25.786-24.861 35.033-44.793 38.179v-20.107l-60.282 44.473 60.286 44.474v-19.899c70.055 2.231 127.08-56.564 82.782-102.15a98.55 101.42 0 0 0-68.415-29.77z" fill="#00c5ff"/>
+   </g>
   </g>
+ </g>
 </svg>

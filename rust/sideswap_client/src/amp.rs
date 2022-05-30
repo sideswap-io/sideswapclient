@@ -90,6 +90,13 @@ impl Amp {
     pub fn get_account_id(&self) -> worker::AccountId {
         self.0.lock().unwrap().account
     }
+
+    pub fn get_previous_addresses(
+        &self,
+        last_pointer: u32,
+    ) -> Result<gdk_json::PreviousAddresses, anyhow::Error> {
+        unsafe { get_previous_addresses(&mut self.0.lock().unwrap(), last_pointer) }
+    }
 }
 
 #[derive(Clone)]
@@ -879,7 +886,6 @@ unsafe fn try_connect(
     let policy_asset = AssetId::from_str(login_info.env.data().policy_asset).unwrap();
     let connect_config = gdk_json::ConnectConfig {
         name: network.to_owned(),
-        log_level: Some("info".to_owned()),
     };
     let rc = gdk::GA_connect(session, GdkJson::new(&connect_config).as_ptr());
     ensure!(
@@ -1781,6 +1787,40 @@ unsafe fn make_pegout_payment(
     })
 }
 
+unsafe fn get_previous_addresses(
+    data: &mut Data,
+    last_pointer: u32,
+) -> Result<gdk_json::PreviousAddresses, anyhow::Error> {
+    let wallet = data
+        .wallet
+        .as_mut()
+        .ok_or_else(|| anyhow!("no AMP wallet"))?;
+    let session = wallet
+        .session
+        .clone()
+        .ok_or_else(|| anyhow!("no session"))?;
+
+    let mut call = std::ptr::null_mut();
+    let previous_addresses = gdk_json::PreviousAddressesOpts {
+        subaccount: wallet.account.pointer,
+        last_pointer,
+    };
+    let rc = gdk::GA_get_previous_addresses(
+        session,
+        GdkJson::new(&previous_addresses).as_ptr(),
+        &mut call,
+    );
+    ensure!(
+        rc == 0,
+        "GA_get_previous_addresses failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    let previous_addresses =
+        run_auth_handler_impl::<gdk_json::PreviousAddresses>(data.hw_data.as_ref(), call)
+            .map_err(|e| anyhow!("loading previous addresses failed: {}", e))?;
+    Ok(previous_addresses)
+}
+
 fn jade_fatal_error(data: &mut Data, error: anyhow::Error) {
     error!("fatal jade error: {}", error);
     send_from(
@@ -1906,6 +1946,7 @@ pub fn start_processing(
     GDK_INITIALIZED.call_once(|| unsafe {
         let config = gdk_json::InitConfig {
             datadir: work_dir.to_owned(),
+            log_level: None,
         };
         let rc = gdk::GA_init(GdkJson::new(&config).as_ptr());
         assert!(rc == 0);

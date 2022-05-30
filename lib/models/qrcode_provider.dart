@@ -6,7 +6,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/models/wallet.dart';
+
+final qrcodeResultModelProvider = StateProvider.autoDispose<QrCodeResultModel>(
+    (ref) => const QrCodeResultModelEmpty());
 
 final qrcodeProvider = ChangeNotifierProvider<QrCodeNotifierProvider>(
     (ref) => QrCodeNotifierProvider(ref));
@@ -161,10 +165,12 @@ class QrCodeNotifierProvider extends ChangeNotifier {
           qrCode: qrCode, addressType: QrCodeAddressType.liquidnetwork);
     }
 
+    // TODO: do we really need this?
+    // scheme could be anything so any random qr code is valid too
     // check other bip21 schemes
-    if (url.scheme != 'sideswap' && url.scheme != 'https') {
-      return parseBIP21(qrCode: qrCode, addressType: QrCodeAddressType.other);
-    }
+    // if (url.scheme != 'sideswap' && url.scheme != 'https') {
+    //   return parseBIP21(qrCode: qrCode, addressType: QrCodeAddressType.other);
+    // }
 
     if (url.scheme == 'sideswap') {
       return parseSideSwapAddress(qrCode);

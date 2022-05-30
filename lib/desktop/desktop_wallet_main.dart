@@ -43,7 +43,9 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
       case WalletMainNavigationItem.markets:
         return const DMarkets();
       case WalletMainNavigationItem.swap:
-        return const DSwapMain();
+        return const DSwapMain(pegs: false);
+      case WalletMainNavigationItem.pegs:
+        return const DSwapMain(pegs: true);
     }
   }
 
@@ -69,6 +71,20 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
               ref.read(swapProvider).swapReset();
               ref.read(uiStateArgsProvider).walletMainArguments =
                   walletMainArguments.fromIndexDesktop(index);
+              if (ref
+                      .read(uiStateArgsProvider)
+                      .walletMainArguments
+                      .navigationItem ==
+                  WalletMainNavigationItem.pegs) {
+                ref.read(swapProvider).switchToPegs();
+              }
+              if (ref
+                      .read(uiStateArgsProvider)
+                      .walletMainArguments
+                      .navigationItem ==
+                  WalletMainNavigationItem.swap) {
+                ref.read(swapProvider).switchToSwaps();
+              }
             },
           ),
         );
@@ -80,7 +96,10 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
 class DSwapMain extends StatelessWidget {
   const DSwapMain({
     super.key,
+    required this.pegs,
   });
+
+  final bool pegs;
 
   @override
   Widget build(BuildContext context) {

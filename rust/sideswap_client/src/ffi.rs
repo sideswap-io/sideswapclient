@@ -301,7 +301,8 @@ pub extern "C" fn sideswap_string_free(str: *mut c_char) {
     }
 }
 
-const LOG_FILTER: &str = "debug,hyper=info,rustls=info,ureq=info,electrum_client=info";
+const LOG_FILTER: &str =
+    "debug,hyper=info,rustls=info,ureq=warn,electrum_client=warn,gdk_electrum=warn";
 
 use time::{format_description::FormatItem, macros::format_description};
 

@@ -9,6 +9,7 @@ enum WalletMainNavigationItem {
   assetDetails,
   assetReceive,
   transactions,
+  pegs,
   markets,
   swap,
 }
@@ -38,6 +39,9 @@ class WalletMainArguments {
       case 3:
         return copyWith(
             currentIndex: value, navigationItem: WalletMainNavigationItem.swap);
+      case 4:
+        return copyWith(
+            currentIndex: value, navigationItem: WalletMainNavigationItem.pegs);
     }
 
     return copyWith(
@@ -60,6 +64,9 @@ class WalletMainArguments {
         return copyWith(
             currentIndex: value,
             navigationItem: WalletMainNavigationItem.transactions);
+      case 4:
+        return copyWith(
+            currentIndex: value, navigationItem: WalletMainNavigationItem.pegs);
     }
 
     return copyWith(

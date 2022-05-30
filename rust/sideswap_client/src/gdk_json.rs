@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize)]
 pub struct InitConfig {
     pub datadir: String,
+    pub log_level: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -15,7 +16,6 @@ pub struct GetSubaccountsOpts {
 #[derive(Serialize)]
 pub struct ConnectConfig {
     pub name: String,
-    pub log_level: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -414,4 +414,30 @@ pub struct SignTx {
     pub value_commitments: Vec<Option<String>>,
     pub assetblinders: Vec<Option<BlindingFactor>>,
     pub amountblinders: Vec<Option<BlindingFactor>>,
+}
+
+#[derive(Serialize)]
+pub struct PreviousAddressesOpts {
+    pub subaccount: i32,
+    pub last_pointer: u32,
+}
+
+#[derive(Deserialize)]
+pub struct PreviousAddress {
+    pub address: String,
+    pub address_type: String,
+    pub branch: u32,
+    pub pointer: u32,
+    pub script: String,
+    pub script_type: u32,
+    pub subaccount: i32,
+    pub subtype: i32,
+    pub tx_count: u32,
+}
+
+#[derive(Deserialize)]
+pub struct PreviousAddresses {
+    pub last_pointer: u32,
+    pub list: Vec<PreviousAddress>,
+    pub subaccount: i32,
 }

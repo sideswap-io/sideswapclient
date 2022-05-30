@@ -21,3 +21,4 @@ targets:
           - "lib/models/notification_model.dart"
           - "lib/models/swap_models.dart"
           - "lib/models/pin_models.dart"
+          - "lib/models/qrcode_models.dart"
