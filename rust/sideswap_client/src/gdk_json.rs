@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize)]
 pub struct InitConfig {
     pub datadir: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub log_level: Option<String>,
 }
 
