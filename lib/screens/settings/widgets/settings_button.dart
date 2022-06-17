@@ -11,6 +11,7 @@ enum SettingsButtonType {
   delete,
   userDetails,
   network,
+  language,
 }
 
 class SettingsButton extends StatefulWidget {
@@ -77,6 +78,13 @@ class SettingsButtonState extends State<SettingsButton> {
       case SettingsButtonType.network:
         _icon = SvgPicture.asset(
           'assets/network.svg',
+          width: 24.w,
+          height: 24.w,
+        );
+        break;
+      case SettingsButtonType.language:
+        _icon = SvgPicture.asset(
+          'assets/language.svg',
           width: 24.w,
           height: 24.w,
         );

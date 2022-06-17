@@ -174,21 +174,9 @@ class DPinSetupContent extends HookConsumerWidget {
                     enabled: enabled,
                     pin: pin,
                     onChanged: (value) {
-                      if (firstPinOldValue.value == value) {
-                        return;
-                      }
-
-                      if (firstPinOldValue.value.length > value.length) {
-                        ref.read(pinKeyboardIndexProvider).pinIndex = 10;
-                        ref.read(pinKeyboardProvider).keyPressed(9);
-                        return;
-                      }
-
-                      final lastCharacter = value
-                          .substring((value.length - 1).clamp(0, value.length));
-                      final index = int.tryParse(lastCharacter) ?? -1;
-                      ref.read(pinKeyboardIndexProvider).pinIndex = index;
-                      ref.read(pinKeyboardProvider).keyPressed(index - 1);
+                      ref
+                          .read(pinKeyboardProvider)
+                          .onDesktopKeyChanged(firstPinOldValue.value, value);
                     },
                     onSubmitted: (_) {
                       ref.read(pinKeyboardProvider).keyPressed(11);
@@ -234,21 +222,9 @@ class DPinSetupContent extends HookConsumerWidget {
                     error: state == PinSetupStateEnum.error,
                     errorMessage: errorMessage,
                     onChanged: (value) {
-                      if (secondPinOldValue.value == value) {
-                        return;
-                      }
-
-                      if (secondPinOldValue.value.length > value.length) {
-                        ref.read(pinKeyboardIndexProvider).pinIndex = 10;
-                        ref.read(pinKeyboardProvider).keyPressed(9);
-                        return;
-                      }
-
-                      final lastCharacter = value
-                          .substring((value.length - 1).clamp(0, value.length));
-                      final index = int.tryParse(lastCharacter) ?? -1;
-                      ref.read(pinKeyboardIndexProvider).pinIndex = index;
-                      ref.read(pinKeyboardProvider).keyPressed(index - 1);
+                      ref
+                          .read(pinKeyboardProvider)
+                          .onDesktopKeyChanged(secondPinOldValue.value, value);
                     },
                     onSubmitted: (_) {
                       ref.read(pinKeyboardProvider).keyPressed(11);

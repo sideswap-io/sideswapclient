@@ -68,8 +68,10 @@ const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_se
 
 const PRICE_EXPIRED: std::time::Duration = std::time::Duration::from_secs(300);
 
-const INTEREST_DEFAULT: f64 = 1.0075;
-const INTEREST_TO_SIGN: f64 = 1.0050;
+const INTEREST_DEFAULT_USDT: f64 = 1.0075;
+const INTEREST_TO_SIGN_USDT: f64 = 1.0050;
+const INTEREST_DEFAULT_EURX: f64 = 1.0040;
+const INTEREST_TO_SIGN_EURX: f64 = 1.0025;
 
 const MIN_HEDGE_AMOUNT: f64 = 0.0002;
 
@@ -679,8 +681,10 @@ fn main() {
         server_port: args.server_port,
         server_use_tls: args.server_use_tls,
         rpc: args.rpc.clone(),
-        interest_submit: INTEREST_DEFAULT,
-        interest_sign: INTEREST_TO_SIGN,
+        interest_submit_usdt: INTEREST_DEFAULT_USDT,
+        interest_sign_usdt: INTEREST_TO_SIGN_USDT,
+        interest_submit_eurx: INTEREST_DEFAULT_EURX,
+        interest_sign_eurx: INTEREST_TO_SIGN_EURX,
         tickers,
         bitcoin_amount_submit: Amount::from_bitcoin(args.bitcoin_amount_submit),
         bitcoin_amount_min: Amount::from_bitcoin(args.bitcoin_amount_min),
@@ -863,10 +867,12 @@ fn main() {
     let mut orders = BTreeMap::<OrderId, OrderCreatedNotification>::new();
     let mut pending_orders = PendingOrders::new();
 
+    let asset_usdt = AssetId::from_str(params.env.data().network.usdt_asset_id()).unwrap();
+    let asset_eurx = AssetId::from_str(params.env.data().network.eurx_asset_id()).unwrap();
+
     loop {
         let msg = msg_rx.recv().unwrap();
         let now = std::time::Instant::now();
-        let interest = INTEREST_DEFAULT;
 
         // Broadcast prices
         for (ticker, module_price) in module_prices.iter() {
@@ -879,6 +885,15 @@ fn main() {
                     .iter()
                     .find(|v: &&Asset| v.ticker.0 == ticker.0)
                     .expect("asset must be known");
+
+                let interest = if asset.asset_id == asset_usdt {
+                    INTEREST_DEFAULT_USDT
+                } else if asset.asset_id == asset_eurx {
+                    INTEREST_DEFAULT_EURX
+                } else {
+                    panic!("unexpected asset");
+                };
+
                 let price_new = PricePair {
                     bid: module_price.bid / interest,
                     ask: module_price.ask * interest,
@@ -933,6 +948,15 @@ fn main() {
                 .flatten()
                 .cloned();
             let server_status = server_status.as_ref().expect("server_status must exists");
+
+            let interest = if active_swap.ticker == Some(DEALER_USDT) {
+                INTEREST_DEFAULT_USDT
+            } else if active_swap.ticker == Some(DEALER_EURX) {
+                INTEREST_DEFAULT_EURX
+            } else {
+                panic!("unexpected asset");
+            };
+
             let quote_new = get_new_quote(
                 &assets,
                 &module_price,

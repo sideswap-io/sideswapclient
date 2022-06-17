@@ -884,12 +884,20 @@ class WalletChangeNotifier with ChangeNotifier {
             break;
 
           case From_SubmitResult_Result.error:
+          case From_SubmitResult_Result.unregisteredGaid:
             if (FlavorConfig.isDesktop) {
               desktopClosePopups(navigatorKey.currentContext!);
             }
-            await ref.read(utilsProvider).showErrorDialog(
-                from.submitResult.error,
-                buttonText: 'CONTINUE'.tr());
+            if (from.submitResult.whichResult() ==
+                From_SubmitResult_Result.error) {
+              await ref.read(utilsProvider).showErrorDialog(
+                  from.submitResult.error,
+                  buttonText: 'CONTINUE'.tr());
+            } else {
+              await ref
+                  .read(utilsProvider)
+                  .showUnregisteredGaid(from.submitResult.unregisteredGaid);
+            }
             setRegistered();
             break;
           case From_SubmitResult_Result.notSet:
@@ -1964,7 +1972,7 @@ class WalletChangeNotifier with ChangeNotifier {
     return ref.read(configProvider).env;
   }
 
-  Future<void> setEnv(int e) async {
+  Future<void> setEnv(int e, {bool restart = true}) async {
     if (ref.read(configProvider).env == e) {
       status = Status.noWallet;
       notifyListeners();
@@ -1973,7 +1981,9 @@ class WalletChangeNotifier with ChangeNotifier {
 
     await ref.read(configProvider).setEnv(e);
 
-    exit(0);
+    if (restart) {
+      exit(0);
+    }
   }
 
   void selectEnv() {

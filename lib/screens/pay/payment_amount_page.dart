@@ -94,7 +94,8 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
     final assetPrecison =
         ref.read(walletProvider).assets[accountAsset.asset]?.precision ?? 8;
     final amountAsAsset = toFloat(amountInSat, precision: assetPrecison);
-    amount = amountAsAsset.toStringAsFixed(assetPrecison);
+    amount =
+        amountAsAsset == 0 ? "" : amountAsAsset.toStringAsFixed(assetPrecison);
 
     availableAssets = ref.read(walletProvider).sendAssetsWithBalance();
     if (!availableAssets.contains(accountAsset)) {

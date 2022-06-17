@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:sideswap/desktop/pin/d_pin_keyboard.dart';
 
 enum PinKey {
   one,
@@ -38,5 +39,28 @@ class PinKeyboardProvider {
     final key = indexToKey(index);
 
     keyPressedSubject.add(key);
+  }
+
+  void onDesktopKeyChanged(String oldValue, String newValue) {
+    if (oldValue == newValue) {
+      return;
+    }
+
+    if (oldValue.length > newValue.length) {
+      ref.read(pinKeyboardIndexProvider).pinIndex = 10;
+      keyPressed(9);
+      return;
+    }
+
+    final lastCharacter =
+        newValue.substring((newValue.length - 1).clamp(0, newValue.length));
+    final index = int.tryParse(lastCharacter) ?? -1;
+    if (index == 0) {
+      ref.read(pinKeyboardIndexProvider).pinIndex = 11;
+      keyPressed(10);
+    } else {
+      ref.read(pinKeyboardIndexProvider).pinIndex = index;
+      keyPressed(index - 1);
+    }
   }
 }

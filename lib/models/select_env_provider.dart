@@ -11,9 +11,11 @@ class SelectEnvProvider extends ChangeNotifier {
   final Ref ref;
 
   SelectEnvProvider(this.ref) {
-    _currentEnv = ref.read(walletProvider).env();
+    _startupEnv = ref.read(walletProvider).env();
+    _currentEnv = _startupEnv;
   }
 
+  int _startupEnv = 0;
   int tapCounter = 0;
   int _currentEnv = 0;
   bool _showSelectEnvDialog = false;
@@ -31,6 +33,8 @@ class SelectEnvProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  int get startupEnv => _startupEnv;
+
   void handleTap() {
     tapCounter += 1;
     if (tapCounter >= 7) {
@@ -39,7 +43,7 @@ class SelectEnvProvider extends ChangeNotifier {
     }
   }
 
-  void saveEnv() {
-    ref.read(walletProvider).setEnv(_currentEnv);
+  Future<void> saveEnv({bool restart = true}) async {
+    await ref.read(walletProvider).setEnv(_currentEnv, restart: restart);
   }
 }

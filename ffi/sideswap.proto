@@ -528,10 +528,15 @@ message From {
   }
 
   message SubmitResult {
+    message UnregisteredGaid {
+      required string domain_agent = 1;
+    }
+
     oneof result {
       Empty submit_succeed = 1;
       TransItem swap_succeed = 2;
       string error = 3;
+      UnregisteredGaid unregistered_gaid = 4;
     }
   }
 

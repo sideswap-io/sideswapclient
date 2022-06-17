@@ -17,134 +17,148 @@ class Accounts extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(top: 24.h),
-            child: Row(
-              children: [
-                Text(
-                  'Assets',
-                  style: GoogleFonts.roboto(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white),
-                ).tr(),
-                const Spacer(),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      final wallet = ref.read(walletProvider);
-                      final list =
-                          exportTxList(wallet.allTxs.values, wallet.assets);
-                      final csv = convertToCsv(list);
-                      shareCsv(csv);
-                    },
-                    borderRadius: BorderRadius.circular(21.w),
-                    child: Container(
-                      width: 42.w,
-                      height: 42.w,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                      ),
-                      child: Row(
-                        children: [
-                          const Spacer(),
-                          Padding(
-                            padding: EdgeInsets.only(right: 6.w),
-                            child: SvgPicture.asset(
-                              'assets/export.svg',
-                              width: 22.w,
-                              height: 21.h,
-                            ),
+    final syncComplete = ref.watch(walletProvider).syncComplete;
+    return Stack(
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(top: 24.h),
+                child: Row(
+                  children: [
+                    Text(
+                      'Assets'.tr(),
+                      style: GoogleFonts.roboto(
+                          fontSize: 22.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
+                    ).tr(),
+                    const Spacer(),
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          final wallet = ref.read(walletProvider);
+                          final list =
+                              exportTxList(wallet.allTxs.values, wallet.assets);
+                          final csv = convertToCsv(list);
+                          shareCsv(csv);
+                        },
+                        borderRadius: BorderRadius.circular(21.w),
+                        child: Container(
+                          width: 42.w,
+                          height: 42.w,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Padding(
+                                padding: EdgeInsets.only(right: 6.w),
+                                child: SvgPicture.asset(
+                                  'assets/export.svg',
+                                  width: 22.w,
+                                  height: 21.h,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      final uiStateArgs = ref.read(uiStateArgsProvider);
-                      uiStateArgs.walletMainArguments =
-                          uiStateArgs.walletMainArguments.copyWith(
-                              navigationItem:
-                                  WalletMainNavigationItem.assetSelect);
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          final uiStateArgs = ref.read(uiStateArgsProvider);
+                          uiStateArgs.walletMainArguments =
+                              uiStateArgs.walletMainArguments.copyWith(
+                                  navigationItem:
+                                      WalletMainNavigationItem.assetSelect);
 
-                      ref.read(walletProvider).selectAvailableAssets();
-                    },
-                    borderRadius: BorderRadius.circular(21.w),
-                    child: Container(
-                      width: 42.w,
-                      height: 42.w,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                      ),
-                      child: Row(
-                        children: [
-                          const Spacer(),
-                          Padding(
-                            padding: EdgeInsets.only(right: 6.w),
-                            child: SvgPicture.asset(
-                              'assets/filter.svg',
-                              width: 22.w,
-                              height: 21.h,
-                            ),
+                          ref.read(walletProvider).selectAvailableAssets();
+                        },
+                        borderRadius: BorderRadius.circular(21.w),
+                        child: Container(
+                          width: 42.w,
+                          height: 42.w,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
                           ),
-                        ],
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              Padding(
+                                padding: EdgeInsets.only(right: 6.w),
+                                child: SvgPicture.asset(
+                                  'assets/filter.svg',
+                                  width: 22.w,
+                                  height: 21.h,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 16.h),
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final wallet = ref.watch(walletProvider);
+                      final disabledAccounts = wallet.disabledAccounts;
+                      final availableAssets = wallet
+                          .getAllAccounts()
+                          .where((item) => !disabledAccounts.contains(item))
+                          .toList();
+                      return ListView(
+                        children: List<Widget>.generate(
+                          availableAssets.length,
+                          (index) {
+                            final accountAsset = availableAssets[index];
+                            final balance = ref
+                                    .watch(balancesProvider)
+                                    .balances[accountAsset] ??
+                                0;
+                            return AccountItem(
+                              balance: balance,
+                              accountAsset: availableAssets[index],
+                              onSelected: (AccountAsset value) {
+                                final uiStateArgs =
+                                    ref.read(uiStateArgsProvider);
+                                uiStateArgs.walletMainArguments =
+                                    uiStateArgs.walletMainArguments.copyWith(
+                                        navigationItem: WalletMainNavigationItem
+                                            .assetDetails);
+                                wallet.selectAssetDetails(accountAsset);
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    },
                   ),
                 ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(top: 16.h),
-              child: Consumer(
-                builder: (context, ref, child) {
-                  final wallet = ref.watch(walletProvider);
-                  final disabledAccounts = wallet.disabledAccounts;
-                  final availableAssets = wallet
-                      .getAllAccounts()
-                      .where((item) => !disabledAccounts.contains(item))
-                      .toList();
-                  return ListView(
-                    children: List<Widget>.generate(
-                      availableAssets.length,
-                      (index) {
-                        final accountAsset = availableAssets[index];
-                        final balance = ref
-                                .watch(balancesProvider)
-                                .balances[accountAsset] ??
-                            0;
-                        return AccountItem(
-                          balance: balance,
-                          accountAsset: availableAssets[index],
-                          onSelected: (AccountAsset value) {
-                            final uiStateArgs = ref.read(uiStateArgsProvider);
-                            uiStateArgs.walletMainArguments =
-                                uiStateArgs.walletMainArguments.copyWith(
-                                    navigationItem:
-                                        WalletMainNavigationItem.assetDetails);
-                            wallet.selectAssetDetails(accountAsset);
-                          },
-                        );
-                      },
-                    ),
-                  );
-                },
               ),
+            ],
+          ),
+        ),
+        if (!syncComplete)
+          const Center(
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(color: Colors.white),
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }

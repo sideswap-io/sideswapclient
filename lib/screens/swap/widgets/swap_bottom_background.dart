@@ -8,7 +8,7 @@ class SwapBottomBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: FlavorConfig.isDesktop ? 275.h : 205.h),
+      padding: EdgeInsets.only(top: FlavorConfig.isDesktop ? 234.h : 205.h),
       child: Container(
         color: const Color(0xFF1C6086),
       ),

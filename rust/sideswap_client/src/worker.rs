@@ -2814,6 +2814,19 @@ impl Data {
     }
 
     fn process_submit_decision(&mut self, req: ffi::proto::to::SubmitDecision) {
+        let asset_id = OrderId::from_str(&req.order_id).ok().and_then(|order_id| {
+            self.ctx.as_ref().and_then(|ctx| {
+                ctx.active_submits
+                    .get(&order_id)
+                    .map(|order| order.details.asset)
+            })
+        });
+        let domain_agent = asset_id.and_then(|asset_id| {
+            self.assets
+                .get(&asset_id)
+                .and_then(|asset| asset.domain_agent.clone())
+        });
+
         let result = self.try_process_submit_decision(req);
         let result = match result {
             Ok(true) => {
@@ -2827,7 +2840,15 @@ impl Data {
             }
             Err(e) => {
                 error!("submit failed: {}", e);
-                ffi::proto::from::submit_result::Result::Error(e.to_string())
+                let unregistered_err = "Your AMP ID must be registered with the issuer to trade this product. Please consult product details for further information.";
+                match (e.to_string(), domain_agent) {
+                    (err_text, Some(domain_agent)) if err_text == unregistered_err => {
+                        ffi::proto::from::submit_result::Result::UnregisteredGaid(
+                            ffi::proto::from::submit_result::UnregisteredGaid { domain_agent },
+                        )
+                    }
+                    _ => ffi::proto::from::submit_result::Result::Error(e.to_string()),
+                }
             }
         };
         let from = ffi::proto::from::SubmitResult {
@@ -3946,6 +3967,8 @@ impl Data {
             Err(e) => {
                 if self.env == Env::Prod {
                     include_bytes!("../data/assets.json").to_vec()
+                } else if self.env == Env::Testnet {
+                    include_bytes!("../data/assets-testnet.json").to_vec()
                 } else {
                     bail!("can't load assets: {}", e)
                 }

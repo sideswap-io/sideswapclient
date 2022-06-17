@@ -10,6 +10,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
+import 'package:sideswap/models/app_releases_provider.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -64,6 +65,8 @@ class DesktopHomeState extends ConsumerState<DesktopHome> {
         final showUnconfirmed = allNewTxs.isNotEmpty && wallet.syncComplete;
         final unconfirmedHeight = min(allNewTxs.length, 3) * 40 + 50;
         final ampId = wallet.ampId;
+        final appReleases = ref.watch(appReleasesProvider);
+        final showNewRelease = appReleases.newDesktopReleaseAvailable();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -84,47 +87,7 @@ class DesktopHomeState extends ConsumerState<DesktopHome> {
                                 fontWeight: FontWeight.bold,
                               )),
                           const Spacer(),
-                          if (ampId != null)
-                            Container(
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF1C6086),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8)),
-                              ),
-                              child: Row(
-                                children: [
-                                  const SizedBox(width: 10),
-                                  const Text(
-                                    'AMP ID:',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    ampId,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  IconButton(
-                                    padding: EdgeInsets.zero,
-                                    onPressed: () async {
-                                      await copyToClipboard(
-                                        context,
-                                        ampId,
-                                      );
-                                    },
-                                    icon: SvgPicture.asset(
-                                      'assets/copy2.svg',
-                                      width: 20,
-                                      height: 20,
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
+                          if (ampId != null) AmpId(ampId: ampId),
                           const SizedBox(width: 16),
                           DHoverButton(
                             builder: (context, states) {
@@ -232,9 +195,142 @@ class DesktopHomeState extends ConsumerState<DesktopHome> {
                   ),
                 ),
               )
+            else if (showNewRelease)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: const BoxDecoration(
+                      color: Color(0xFF1C6086),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(8),
+                      )),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'New app version available: {}. Would you like to download it now?'
+                                        .tr(args: [
+                                      appReleases.versionDesktopLatest!
+                                    ]),
+                                  ),
+                                  const SizedBox(width: 32),
+                                  const _NewReleaseButton(yes: true),
+                                  const SizedBox(width: 8),
+                                  const _NewReleaseButton(yes: false),
+                                ],
+                              ),
+                              if (appReleases.changesDesktopLatest != null)
+                                Text(appReleases.changesDesktopLatest!),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
           ],
         );
       },
+    );
+  }
+}
+
+class _NewReleaseButton extends ConsumerWidget {
+  const _NewReleaseButton({
+    required this.yes,
+  });
+
+  final bool yes;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return DHoverButton(
+      builder: (context, states) {
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 13),
+          decoration: BoxDecoration(
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
+            border: Border.all(
+              color: const Color(0xFF00C5FF),
+            ),
+            color: states.isFocused ? const Color(0xFF007CA1) : null,
+          ),
+          child: Text(
+            yes ? 'Yes'.tr() : 'No'.tr(),
+            style: const TextStyle(
+              color: Color(0xFF00C5FF),
+              fontSize: 12,
+            ),
+          ),
+        );
+      },
+      onPressed: () {
+        ref.read(appReleasesProvider).ackNewDesktopRelease();
+        if (yes) {
+          openUrl('https://sideswap.io/downloads/');
+        }
+      },
+    );
+  }
+}
+
+class AmpId extends StatelessWidget {
+  const AmpId({
+    super.key,
+    required this.ampId,
+  });
+
+  final String ampId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF1C6086),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 10),
+          const Text(
+            'AMP ID:',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            ampId,
+            style: const TextStyle(
+              fontSize: 14,
+            ),
+          ),
+          IconButton(
+            padding: EdgeInsets.zero,
+            onPressed: () async {
+              await copyToClipboard(
+                context,
+                ampId,
+              );
+            },
+            icon: SvgPicture.asset(
+              'assets/copy2.svg',
+              width: 20,
+              height: 20,
+            ),
+          )
+        ],
+      ),
     );
   }
 }

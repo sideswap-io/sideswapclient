@@ -18,6 +18,8 @@ const MIN_BITCOIN_AMOUNT: f64 = 0.0001;
 
 const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs(60);
 
+const PRICE_EDIT_MIN_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
+
 #[derive(Debug, Clone)]
 pub struct Params {
     pub env: sideswap_common::env::Env,
@@ -28,8 +30,10 @@ pub struct Params {
 
     pub rpc: rpc::RpcServer,
 
-    pub interest_submit: f64,
-    pub interest_sign: f64,
+    pub interest_submit_usdt: f64,
+    pub interest_sign_usdt: f64,
+    pub interest_submit_eurx: f64,
+    pub interest_sign_eurx: f64,
 
     pub tickers: BTreeSet<DealerTicker>,
 
@@ -454,7 +458,12 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
         types::SERVER_FEE_RATE * params.bitcoin_amount_submit.to_bitcoin(),
         types::MIN_SERVER_FEE.to_bitcoin(),
     ));
-    let interest_take_ajusted = params.interest_submit
+    let interest_submit = match ticker {
+        DEALER_USDT => params.interest_submit_usdt,
+        DEALER_EURX => params.interest_submit_eurx,
+        _ => panic!("unexpected asset"),
+    };
+    let interest_take_ajusted = interest_submit
         * (1.0 + expected_server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin());
     let price = price.map(|price| get_price(&price.price, send_bitcoins, interest_take_ajusted));
     let new_bitcoin_amount_normal = price
@@ -585,9 +594,16 @@ fn worker(
     assert!(params.bitcoin_amount_submit >= params.bitcoin_amount_min);
     assert!(params.bitcoin_amount_submit <= params.bitcoin_amount_max);
 
-    assert!(params.interest_sign > 1.0);
-    assert!(params.interest_submit > params.interest_sign);
-    assert!(params.interest_submit < 1.1);
+    assert!(params.interest_sign_usdt > 1.0);
+    assert!(params.interest_submit_usdt > params.interest_sign_usdt);
+    assert!(params.interest_submit_usdt < 1.1);
+
+    assert!(params.interest_sign_eurx > 1.0);
+    assert!(params.interest_submit_eurx > params.interest_sign_eurx);
+    assert!(params.interest_submit_eurx < 1.1);
+
+    let asset_usdt = AssetId::from_str(params.env.data().network.usdt_asset_id()).unwrap();
+    let asset_eurx = AssetId::from_str(params.env.data().network.eurx_asset_id()).unwrap();
 
     let (ws_tx, ws_rx, _hint_tx) = ws::start(
         params.server_host.clone(),
@@ -661,6 +677,7 @@ fn worker(
     let mut pending_signs = BTreeMap::<OrderId, Details>::new();
     let mut own_orders = BTreeMap::<OwnOrderKey, Option<OwnOrder>>::new();
     let mut wallet_balance = None;
+    let mut last_price_edit = std::time::Instant::now();
 
     for &ticker in params.tickers.iter() {
         for &send_bitcoins in [false, true].iter() {
@@ -736,6 +753,14 @@ fn worker(
 
                 Notification::Sign(order) => {
                     debug!("sign notification received, order_id: {}", &order.order_id);
+                    let interest_sign = if order.details.asset == asset_usdt {
+                        params.interest_sign_usdt
+                    } else if order.details.asset == asset_eurx {
+                        params.interest_sign_eurx
+                    } else {
+                        panic!("unexpected asset");
+                    };
+
                     // TODO: Verify PSET
                     let result = take_order(
                         &params,
@@ -743,7 +768,7 @@ fn worker(
                         &order.details,
                         &all_balances,
                         &index_prices,
-                        params.interest_sign,
+                        interest_sign,
                     );
                     match result {
                         Ok(_) => {
@@ -879,7 +904,8 @@ fn worker(
             },
 
             Msg::Timer => {
-                if server_connected {
+                let now = std::time::Instant::now();
+                if server_connected && now.duration_since(last_price_edit) >= PRICE_EDIT_MIN_DELAY {
                     for (key, own) in own_orders.iter_mut() {
                         update_price(
                             own,
@@ -894,19 +920,29 @@ fn worker(
                             &send_request,
                         );
                     }
+                    last_price_edit = now;
                 }
 
                 for order in orders.values() {
                     if taken_orders.get(&order.order_id).is_some() {
                         continue;
                     }
+
+                    let interest_submit = if order.details.asset == asset_usdt {
+                        params.interest_submit_usdt
+                    } else if order.details.asset == asset_eurx {
+                        params.interest_submit_eurx
+                    } else {
+                        panic!("unexpected asset");
+                    };
+
                     let result = take_order(
                         &params,
                         &assets,
                         &order.details,
                         &all_balances,
                         &index_prices,
-                        params.interest_submit,
+                        interest_submit,
                     );
                     if result.is_ok() {
                         info!("take order: {:?}", order);

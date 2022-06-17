@@ -23,9 +23,9 @@ class SwapMiddleIcon extends ConsumerWidget {
     final swapType = ref.watch(swapProvider).swapType();
     final topPadding = swapType != SwapType.atomic
         ? visibleToggles
-            ? 275.h
-            : (FlavorConfig.isDesktop ? 275.h : 205.h)
-        : (FlavorConfig.isDesktop ? 275.h : 205.h);
+            ? 234.h
+            : (FlavorConfig.isDesktop ? 234.h : 205.h)
+        : (FlavorConfig.isDesktop ? 234.h : 205.h);
 
     return Padding(
       padding: EdgeInsets.only(top: topPadding - _swapIconSize / 2),

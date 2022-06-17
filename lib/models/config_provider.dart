@@ -37,6 +37,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const settingsPortField = 'settingsPortFieldNew';
   static const settingsUseTLSField = 'settingsUseTLSFieldNew';
   static const settingsField = 'settings';
+  static const knownNewReleaseField = 'known_new_release';
 
   ConfigChangeNotifierProvider(this.ref, this.prefs);
 
@@ -198,5 +199,14 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   Future<void> clearSettings() async {
     await prefs.remove(settingsField);
+  }
+
+  Future<void> setKnownNewReleaseBuild(int value) async {
+    await prefs.setInt(knownNewReleaseField, value);
+    notifyListeners();
+  }
+
+  int get knownNewReleaseBuild {
+    return prefs.getInt(knownNewReleaseField) ?? 0;
   }
 }

@@ -146,7 +146,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
                       children: [
                         Padding(
                           padding: EdgeInsets.only(
-                              top: FlavorConfig.isDesktop ? 305.h : 237.h),
+                              top: FlavorConfig.isDesktop ? 265.h : 237.h),
                           child: buildReceiveAmount(),
                         ),
                         const Spacer(),

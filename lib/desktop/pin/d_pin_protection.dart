@@ -106,21 +106,9 @@ class DPinProtection extends HookConsumerWidget {
                         error: state == PinProtectionState.error,
                         errorMessage: errorMessage,
                         onChanged: (value) {
-                          if (pinOldValue.value == value) {
-                            return;
-                          }
-
-                          if (pinOldValue.value.length > value.length) {
-                            ref.read(pinKeyboardIndexProvider).pinIndex = 10;
-                            ref.read(pinKeyboardProvider).keyPressed(9);
-                            return;
-                          }
-
-                          final lastCharacter = value.substring(
-                              (value.length - 1).clamp(0, value.length));
-                          final index = int.tryParse(lastCharacter) ?? -1;
-                          ref.read(pinKeyboardIndexProvider).pinIndex = index;
-                          ref.read(pinKeyboardProvider).keyPressed(index - 1);
+                          ref
+                              .read(pinKeyboardProvider)
+                              .onDesktopKeyChanged(pinOldValue.value, value);
                         },
                         onSubmitted: (_) {
                           ref.read(pinKeyboardProvider).keyPressed(11);

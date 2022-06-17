@@ -5,10 +5,10 @@ import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/desktop/pin/d_pin_protection.dart';
 import 'package:sideswap/desktop/route_generator.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
-import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/init_provider.dart';
 import 'package:sideswap/models/local_notifications_service.dart';
 import 'package:sideswap/models/pin_protection_provider.dart';
+import 'package:sideswap/models/select_env_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class DesktopRootWidget extends ConsumerStatefulWidget {
@@ -72,7 +72,7 @@ class _DesktopRootWidgetState extends ConsumerState<DesktopRootWidget> {
           builder: (context, ref, child) {
             final initProviderValue = ref.watch(initProvider);
             return initProviderValue.map(data: (_) {
-              final env = ref.watch(configProvider).env;
+              final env = ref.watch(selectEnvProvider).startupEnv;
               return Visibility(
                 visible: env != 0,
                 child: Align(

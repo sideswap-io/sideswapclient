@@ -136,8 +136,11 @@ class AssetDetailsHeader extends ConsumerWidget {
                   account.account == AccountType.regular;
               final isAmpAsset = wallet.ampAssets.contains(account.asset);
               final isAmpAccount = account.account == AccountType.amp;
-              final p2pSwapVisible =
-                  !asset.unregistered && (isAmpAsset == isAmpAccount);
+              final balance = ref.read(balancesProvider).balances[account] ?? 0;
+              final p2pSwapVisible = !asset.unregistered &&
+                  (isAmpAsset == isAmpAccount) &&
+                  // Token market swaps only allowed when balance is positive
+                  (isAmpAsset || balance > 0);
               return Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -163,8 +166,19 @@ class AssetDetailsHeader extends ConsumerWidget {
                           ref.read(swapProvider).setSelectedLeftAsset(account);
                           ref.read(swapProvider).selectSwap();
                         } else {
-                          ref.read(requestOrderProvider).deliverAssetId =
-                              account;
+                          if (balance > 0 || !account.account.isAmp()) {
+                            ref.read(requestOrderProvider).receiveAssetId =
+                                AccountAsset(AccountType.regular,
+                                    wallet.liquidAssetId());
+                            ref.read(requestOrderProvider).deliverAssetId =
+                                account;
+                          } else {
+                            ref.read(requestOrderProvider).deliverAssetId =
+                                AccountAsset(AccountType.regular,
+                                    wallet.liquidAssetId());
+                            ref.read(requestOrderProvider).receiveAssetId =
+                                account;
+                          }
                           ref.read(walletProvider).setCreateOrderEntry();
                         }
                       },

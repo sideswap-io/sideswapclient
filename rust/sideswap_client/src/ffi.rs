@@ -337,6 +337,7 @@ fn init_log(work_dir: &str) {
     let _ = flexi_logger::Logger::try_with_str(LOG_FILTER)
         .unwrap()
         .format(log_format)
+        .use_utc()
         .log_to_file(flexi_logger::FileSpec::try_from(path).unwrap())
         .duplicate_to_stderr(flexi_logger::Duplicate::Info)
         .start();

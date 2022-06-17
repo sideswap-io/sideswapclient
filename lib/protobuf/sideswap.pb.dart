@@ -6372,10 +6372,57 @@ class From_SubmitReview extends $pb.GeneratedMessage {
   void clearAutoSign() => clearField(11);
 }
 
+class From_SubmitResult_UnregisteredGaid extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.SubmitResult.UnregisteredGaid', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'domainAgent')
+  ;
+
+  From_SubmitResult_UnregisteredGaid._() : super();
+  factory From_SubmitResult_UnregisteredGaid({
+    $core.String? domainAgent,
+  }) {
+    final _result = create();
+    if (domainAgent != null) {
+      _result.domainAgent = domainAgent;
+    }
+    return _result;
+  }
+  factory From_SubmitResult_UnregisteredGaid.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_SubmitResult_UnregisteredGaid.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_SubmitResult_UnregisteredGaid clone() => From_SubmitResult_UnregisteredGaid()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_SubmitResult_UnregisteredGaid copyWith(void Function(From_SubmitResult_UnregisteredGaid) updates) => super.copyWith((message) => updates(message as From_SubmitResult_UnregisteredGaid)) as From_SubmitResult_UnregisteredGaid; // ignore: deprecated_member_use
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static From_SubmitResult_UnregisteredGaid create() => From_SubmitResult_UnregisteredGaid._();
+  From_SubmitResult_UnregisteredGaid createEmptyInstance() => create();
+  static $pb.PbList<From_SubmitResult_UnregisteredGaid> createRepeated() => $pb.PbList<From_SubmitResult_UnregisteredGaid>();
+  @$core.pragma('dart2js:noInline')
+  static From_SubmitResult_UnregisteredGaid getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_SubmitResult_UnregisteredGaid>(create);
+  static From_SubmitResult_UnregisteredGaid? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get domainAgent => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set domainAgent($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDomainAgent() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDomainAgent() => clearField(1);
+}
+
 enum From_SubmitResult_Result {
   submitSucceed, 
   swapSucceed, 
   error, 
+  unregisteredGaid, 
   notSet
 }
 
@@ -6384,13 +6431,15 @@ class From_SubmitResult extends $pb.GeneratedMessage {
     1 : From_SubmitResult_Result.submitSucceed,
     2 : From_SubmitResult_Result.swapSucceed,
     3 : From_SubmitResult_Result.error,
+    4 : From_SubmitResult_Result.unregisteredGaid,
     0 : From_SubmitResult_Result.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'From.SubmitResult', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3])
+    ..oo(0, [1, 2, 3, 4])
     ..aOM<Empty>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'submitSucceed', subBuilder: Empty.create)
     ..aOM<TransItem>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'swapSucceed', subBuilder: TransItem.create)
     ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'error')
+    ..aOM<From_SubmitResult_UnregisteredGaid>(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'unregisteredGaid', subBuilder: From_SubmitResult_UnregisteredGaid.create)
   ;
 
   From_SubmitResult._() : super();
@@ -6398,6 +6447,7 @@ class From_SubmitResult extends $pb.GeneratedMessage {
     Empty? submitSucceed,
     TransItem? swapSucceed,
     $core.String? error,
+    From_SubmitResult_UnregisteredGaid? unregisteredGaid,
   }) {
     final _result = create();
     if (submitSucceed != null) {
@@ -6408,6 +6458,9 @@ class From_SubmitResult extends $pb.GeneratedMessage {
     }
     if (error != null) {
       _result.error = error;
+    }
+    if (unregisteredGaid != null) {
+      _result.unregisteredGaid = unregisteredGaid;
     }
     return _result;
   }
@@ -6465,6 +6518,17 @@ class From_SubmitResult extends $pb.GeneratedMessage {
   $core.bool hasError() => $_has(2);
   @$pb.TagNumber(3)
   void clearError() => clearField(3);
+
+  @$pb.TagNumber(4)
+  From_SubmitResult_UnregisteredGaid get unregisteredGaid => $_getN(3);
+  @$pb.TagNumber(4)
+  set unregisteredGaid(From_SubmitResult_UnregisteredGaid v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUnregisteredGaid() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUnregisteredGaid() => clearField(4);
+  @$pb.TagNumber(4)
+  From_SubmitResult_UnregisteredGaid ensureUnregisteredGaid() => $_ensure(3);
 }
 
 class From_OrderCreated extends $pb.GeneratedMessage {

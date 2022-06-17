@@ -6,7 +6,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/locales_provider.dart';
 import 'package:sideswap/models/select_env_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
@@ -29,7 +31,10 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
       }
     });
 
+    final lang = ref.watch(localesProvider).selectedLang(context);
+
     return SideSwapScaffold(
+      key: ValueKey(lang),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -49,8 +54,15 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                             onTap: ref.read(selectEnvProvider).handleTap,
                             child: Column(
                               children: [
+                                const Align(
+                                  alignment: Alignment.center,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(24.0),
+                                    child: LangSelector(),
+                                  ),
+                                ),
                                 Padding(
-                                  padding: EdgeInsets.only(top: 48.h),
+                                  padding: EdgeInsets.only(top: 0.h),
                                   child: SizedBox(
                                     width: 132.w,
                                     height: 130.h,

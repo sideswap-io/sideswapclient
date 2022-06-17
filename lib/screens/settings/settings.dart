@@ -13,6 +13,7 @@ import 'package:sideswap/models/pin_available_provider.dart';
 import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap/screens/settings/settings_languages.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/widgets/settings_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_delete_wallet_dialog.dart';
@@ -220,6 +221,19 @@ class SettingsState extends ConsumerState<Settings> {
                   ),
                 ),
               ],
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: SettingsButton(
+                  type: SettingsButtonType.language,
+                  text: 'Language'.tr(),
+                  onPressed: () {
+                    Navigator.of(context, rootNavigator: true).push<void>(
+                        DialogRoute(
+                            builder: ((context) => const Languages()),
+                            context: context));
+                  },
+                ),
+              ),
               const Spacer(),
               Padding(
                 padding: EdgeInsets.only(bottom: 48.w),

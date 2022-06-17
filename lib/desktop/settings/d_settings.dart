@@ -5,6 +5,7 @@ import 'package:sideswap/desktop/common/button/d_settings_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/settings/d_settings_delete_wallet.dart';
+import 'package:sideswap/desktop/settings/d_settings_env.dart';
 import 'package:sideswap/desktop/settings/d_settings_pin_disable_success.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/models/pin_available_provider.dart';
@@ -114,6 +115,19 @@ class DSettings extends ConsumerWidget {
                               context: context));
                     },
                     icon: DSettingsButtonIcon.language,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: DSettingsButton(
+                    title: 'Environment'.tr(),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push<void>(
+                          DialogRoute(
+                              builder: ((context) => const DSettingsEnv()),
+                              context: context));
+                    },
+                    icon: DSettingsButtonIcon.network,
                   ),
                 ),
                 Padding(
