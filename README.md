@@ -12,3 +12,18 @@ Dealer example: [doc/dealer.md](doc/dealer.md).
 API reference: [https://sideswap.io/docs/](https://sideswap.io/docs/).
 
 SideSwap client uses [GDK library](https://github.com/Blockstream/gdk) and [libwally-core](https://github.com/ElementsProject/libwally-core) from Blockstream.
+
+Build instruction
+=================
+
+To build our flutter client on Windows please make sure symlinks are enabled:
+
+- Enable "Developer Mode" (this will also allow make symlinks on Windows)
+
+- Enable symlinks in Git
+
+```
+$ git config --global core.symlinks true
+```
+
+The repo should be cloned anew.

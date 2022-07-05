@@ -16,11 +16,18 @@ mkdir /build
 cd /build
 git clone https://github.com/blockstream/gdk
 cd gdk
-git checkout release_0.0.51
-./tools/build.sh --clang --enable-rust
+git checkout release_0.0.53
+./tools/build.sh --clang
 
 cd /build
 git clone https://github.com/sideswap-io/sideswapclient
-cd sideswapclient/rust/sideswap_headless_trader/
+
 export GDK_DIR=/build/gdk/build-clang/src
+
+pushd sideswapclient/rust/sideswap_headless_trader/
 cargo build --release
+popd
+
+pushd sideswapclient/rust/sideswap_headless/
+cargo build --release
+popd

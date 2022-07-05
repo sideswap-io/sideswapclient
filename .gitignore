@@ -31,6 +31,9 @@
 .pub-cache/
 .pub/
 /build/
+/flutter/desktop/build/
+/flutter/mobile/build/
+/flutter/fdroid/build/
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -46,8 +49,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-/lib/models/*.freezed.dart
-/lib/models/*.g.dart
+# include freezed.dart and g.dart in git to speedup app building
+#*.freezed.dart
+#*.g.dart
 
 /distr
 

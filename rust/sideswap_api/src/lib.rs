@@ -1087,6 +1087,28 @@ pub struct MarketDataUpdateNotification {
     pub update: ChartPoint,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SwapPrice {
+    pub asset_id: AssetId,
+    pub txid: Txid,
+    pub price: f64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SwapPricesRequest {
+    pub token: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SwapPricesResponse {
+    pub swap_prices: Vec<SwapPrice>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NewSwapPriceNotification {
+    pub swap_price: SwapPrice,
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1153,6 +1175,7 @@ pub enum Request {
 
     MarketDataSubscribe(MarketDataSubscribeRequest),
     MarketDataUnsubscribe(MarketDataUnsubscribeRequest),
+    SwapPrices(SwapPricesRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1219,6 +1242,7 @@ pub enum Response {
 
     MarketDataSubscribe(MarketDataSubscribeResponse),
     MarketDataUnsubscribe(MarketDataUnsubscribeResponse),
+    SwapPrices(SwapPricesResponse),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1252,6 +1276,7 @@ pub enum Notification {
     SwapDone(SwapDoneNotification),
 
     MarketDataUpdate(MarketDataUpdateNotification),
+    NewSwapPrice(NewSwapPriceNotification),
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone)]
