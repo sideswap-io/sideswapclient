@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class ColoredContainer extends StatelessWidget {
   const ColoredContainer({
@@ -25,7 +24,7 @@ class ColoredContainer extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(8.r)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         border: Border.all(
           color: borderColor,
         ),
@@ -33,7 +32,7 @@ class ColoredContainer extends StatelessWidget {
       ),
       child: Padding(
         padding:
-            EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5.h),
+            EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 5),
         child: child,
       ),
     );

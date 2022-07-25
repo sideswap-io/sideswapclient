@@ -4,11 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -81,12 +79,8 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
   void initState() {
     super.initState();
 
-    _textFieldWidth = 270.w;
-    _textFieldPadding = 10.w;
-    _textFieldLeftPadding = (SideSwapScreenUtil.screenWidth -
-            _textFieldWidth -
-            (2 * _textFieldPadding)) /
-        2;
+    _textFieldWidth = 270.0;
+    _textFieldPadding = 10.0;
 
     for (var i = 0; i < widget.wordCount; i++) {
       _textEditingControllerList.add(TextEditingController());
@@ -233,12 +227,37 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
     wallet.importMnemonic(mnemonic);
   }
 
+  void tryJump(int index) {
+    if (words[index].value.isEmpty) {
+      return;
+    }
+
+    final suggestionList = getSuggestions(words[index].value);
+    if (suggestionList.length != 1) {
+      return;
+    }
+
+    if (isCorrectWord(index)) {
+      if (index >= widget.wordCount - 1) {
+        validateFinal(ref);
+      }
+
+      Future.delayed(const Duration(milliseconds: 30), () {
+        _jumpTo(index + 1);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    _textFieldLeftPadding =
+        (screenWidth - _textFieldWidth - (8 * _textFieldPadding)) / 2;
+
     return Column(
       children: [
         SizedBox(
-          height: 54.h,
+          height: 54,
           width: MediaQuery.of(context).size.width,
           child: ListView(
             controller: _listScrollController,
@@ -258,7 +277,7 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                   child: Container(
                     width: _textFieldWidth,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8.w),
+                      borderRadius: BorderRadius.circular(8),
                       color: _selectedItem == index
                           ? Colors.white
                           : Colors.white.withOpacity(0.3),
@@ -269,9 +288,9 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                       debounceDuration: Duration.zero,
                       animationDuration: Duration.zero,
                       suggestionsBoxController: _suggestionsBoxController,
-                      suggestionsBoxDecoration: SuggestionsBoxDecoration(
-                        constraints: BoxConstraints(maxHeight: 17.sp * 12),
-                        color: const Color(0xFF1E6389),
+                      suggestionsBoxDecoration: const SuggestionsBoxDecoration(
+                        constraints: BoxConstraints(maxHeight: 17 * 12),
+                        color: Color(0xFF1E6389),
                       ),
                       textFieldConfiguration: TextFieldConfiguration(
                         controller: _textEditingControllerList[index],
@@ -280,8 +299,8 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                         textInputAction: index == widget.wordCount - 1
                             ? TextInputAction.done
                             : TextInputAction.next,
-                        style: GoogleFonts.roboto(
-                          fontSize: 17.sp,
+                        style: const TextStyle(
+                          fontSize: 17,
                           fontWeight: FontWeight.normal,
                           color: Colors.black,
                         ),
@@ -296,13 +315,13 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                           contentPadding: const EdgeInsets.only(
                               left: 10, bottom: 10, top: 10, right: 10),
                           prefixIcon: Padding(
-                            padding: EdgeInsets.only(left: 16.w, right: 16.w),
+                            padding: const EdgeInsets.only(left: 16, right: 16),
                             child: Text(
                               '${index + 1}',
-                              style: GoogleFonts.roboto(
-                                fontSize: 17.sp,
+                              style: const TextStyle(
+                                fontSize: 17,
                                 fontWeight: FontWeight.normal,
-                                color: const Color(0xFF00C5FF),
+                                color: Color(0xFF00C5FF),
                               ),
                             ),
                           ),
@@ -312,7 +331,12 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                           floatingLabelBehavior: FloatingLabelBehavior.always,
                         ),
                         onChanged: (value) {
+                          final oldValue = words[index].value;
                           words[index].value = value;
+
+                          if (oldValue != value) {
+                            tryJump(index);
+                          }
                         },
                         onTap: () {
                           _jumpTo(index, unfocus: false);
@@ -337,8 +361,8 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                         return ListTile(
                           title: Text(
                             suggestion,
-                            style: GoogleFonts.roboto(
-                              fontSize: 17.sp,
+                            style: const TextStyle(
+                              fontSize: 17,
                               fontWeight: FontWeight.normal,
                               color: Colors.white,
                             ),
@@ -363,9 +387,7 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
             ),
           ),
         ),
-        SizedBox(
-          height: 38.h,
-        ),
+        const SizedBox(height: 38),
         MnemonicTable(
           onCheckField: (index) {
             return isCorrectWord(index) && !_errorField[index];
@@ -422,11 +444,11 @@ class WalletImportState extends State<WalletImport> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Container(
                         width: double.maxFinite,
-                        height: 36.h,
+                        height: 36,
                         decoration: BoxDecoration(
                           color: _colorToggleBackground,
                           borderRadius:
-                              BorderRadius.all(Radius.circular(10.0.w)),
+                              const BorderRadius.all(Radius.circular(10)),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -463,9 +485,7 @@ class WalletImportState extends State<WalletImport> {
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: 24.h,
-                    ),
+                    const SizedBox(height: 24),
                     WalletImportInputs(
                       key: ValueKey(shortMnemonic),
                       wordCount: shortMnemonic ? 12 : 24,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
@@ -44,7 +43,7 @@ class DSettingsDeleteWallet extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 33),
                 child: Text(
                   'Are you sure to delete wallet?'.tr(),
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -55,7 +54,7 @@ class DSettingsDeleteWallet extends ConsumerWidget {
                 child: Text(
                   'Please make sure you have backed up your wallet before proceeding.'
                       .tr(),
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.normal,
                   ),

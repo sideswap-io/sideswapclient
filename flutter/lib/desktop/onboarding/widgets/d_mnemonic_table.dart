@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
@@ -93,7 +92,7 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                 style: DButtonStyle(
                   padding: ButtonState.all(EdgeInsets.zero),
                   textStyle: ButtonState.all(
-                    GoogleFonts.roboto(
+                    const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
@@ -132,10 +131,10 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                         padding: const EdgeInsets.only(left: 10),
                         child: Text(
                           '${index + 1}',
-                          style: GoogleFonts.roboto(
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.normal,
-                            color: const Color(0xFF00C5FF),
+                            color: Color(0xFF00C5FF),
                           ),
                         ),
                       ),
@@ -149,7 +148,7 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                           child: Text(
                             wordItem.word,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.roboto(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.normal,
                               color: wordItem.correct ||

@@ -1,8 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapInputDecoration extends InputDecoration {
   const SideSwapInputDecoration({
@@ -18,7 +15,8 @@ class SideSwapInputDecoration extends InputDecoration {
     super.errorText,
     super.errorStyle,
     super.errorMaxLines,
-    FloatingLabelBehavior super.floatingLabelBehavior = FloatingLabelBehavior.auto,
+    FloatingLabelBehavior super.floatingLabelBehavior =
+        FloatingLabelBehavior.auto,
     super.isCollapsed,
     super.isDense,
     super.contentPadding,
@@ -56,10 +54,10 @@ class SideSwapInputDecoration extends InputDecoration {
   @override
   TextStyle get hintStyle =>
       super.hintStyle ??
-      GoogleFonts.roboto(
-        fontSize: 17.sp,
+      const TextStyle(
+        fontSize: 17,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFF84ADC6),
+        color: Color(0xFF84ADC6),
       );
 
   @override
@@ -76,16 +74,16 @@ class SideSwapInputDecoration extends InputDecoration {
 
   @override
   EdgeInsetsGeometry get contentPadding =>
-      EdgeInsets.only(left: 16.w, top: 18.h, bottom: 18.h);
+      const EdgeInsets.only(left: 16, top: 18, bottom: 18);
 
   @override
   InputBorder get border =>
       super.border ??
-      OutlineInputBorder(
+      const OutlineInputBorder(
         borderRadius: BorderRadius.all(
-          Radius.circular(8.w),
+          Radius.circular(8),
         ),
-        borderSide: const BorderSide(
+        borderSide: BorderSide(
           color: Colors.transparent,
         ),
       );
@@ -93,9 +91,9 @@ class SideSwapInputDecoration extends InputDecoration {
   @override
   InputBorder get focusedBorder =>
       super.focusedBorder ??
-      OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8.w)),
-        borderSide: const BorderSide(
+      const OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderSide: BorderSide(
           color: Colors.transparent,
         ),
       );

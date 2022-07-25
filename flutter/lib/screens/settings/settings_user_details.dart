@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/avatar_provider.dart';
@@ -48,7 +46,7 @@ class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 40.h),
+                padding: const EdgeInsets.only(top: 40),
                 child: AvatarEditButton(
                   avatar: avatar,
                   onTap: () async {
@@ -77,7 +75,7 @@ class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
+                padding: const EdgeInsets.only(top: 32, left: 16, right: 16),
                 child: PhoneNumberButton(
                   phoneNumber: phoneNumber,
                   onTap: () async {
@@ -90,7 +88,7 @@ class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
                               await Navigator.of(context, rootNavigator: true)
                                   .push<void>(
                                 MaterialPageRoute(
-                                  builder: (context) => ConfirmPhoneSuccess(),
+                                  builder: (context) => const ConfirmPhoneSuccess(),
                                 ),
                               );
                             },
@@ -110,7 +108,7 @@ class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
                 ),
               ),
               Padding(
-                  padding: EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
+                  padding: const EdgeInsets.only(top: 32, left: 16, right: 16),
                   child: TextButton(
                     onPressed: () {
                       ref.read(walletProvider).unregisterPhone();
@@ -126,7 +124,7 @@ class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
 }
 
 class PhoneNumberButton extends StatelessWidget {
-  PhoneNumberButton({
+  const PhoneNumberButton({
     super.key,
     this.onTap,
     this.phoneNumber = '',
@@ -134,28 +132,28 @@ class PhoneNumberButton extends StatelessWidget {
 
   final VoidCallback? onTap;
 
-  final iconRadius = 40.w;
+  final iconRadius = 40.0;
   final String phoneNumber;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 80.h,
-      decoration: BoxDecoration(
+      height: 80,
+      decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(
-          Radius.circular(8.w),
+          Radius.circular(8),
         ),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: phoneNumber.isNotEmpty ? null : onTap,
-          borderRadius: BorderRadius.all(Radius.circular(8.w)),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           child: Row(
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   width: iconRadius,
                   height: iconRadius,
@@ -168,8 +166,8 @@ class PhoneNumberButton extends StatelessWidget {
                   child: Center(
                     child: SvgPicture.asset(
                       'assets/phone.svg',
-                      width: 16.w,
-                      height: 20.h,
+                      width: 16,
+                      height: 20,
                     ),
                   ),
                 ),
@@ -181,20 +179,20 @@ class PhoneNumberButton extends StatelessWidget {
                   children: [
                     Text(
                       'Phone number'.tr(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 15.sp,
+                      style: const TextStyle(
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF00C5FF),
+                        color: Color(0xFF00C5FF),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 8.h),
+                      padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         phoneNumber,
-                        style: GoogleFonts.roboto(
-                          fontSize: 17.sp,
+                        style: const TextStyle(
+                          fontSize: 17,
                           fontWeight: FontWeight.normal,
-                          color: const Color(0xFF002241),
+                          color: Color(0xFF002241),
                         ),
                       ),
                     ),
@@ -203,10 +201,10 @@ class PhoneNumberButton extends StatelessWidget {
               ] else ...[
                 Text(
                   '+ Associate phone number'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 15.sp,
+                  style: const TextStyle(
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF00C5FF),
+                    color: Color(0xFF00C5FF),
                   ),
                 ),
               ],
@@ -219,13 +217,13 @@ class PhoneNumberButton extends StatelessWidget {
 }
 
 class AvatarEditButton extends StatelessWidget {
-  AvatarEditButton({super.key, this.onTap, this.avatar});
+  const AvatarEditButton({super.key, this.onTap, this.avatar});
 
   final VoidCallback? onTap;
   final Image? avatar;
 
-  final double avatarRadius = 114.w;
-  final double editRadius = 34.w;
+  final double avatarRadius = 114.0;
+  final double editRadius = 34.0;
 
   @override
   Widget build(BuildContext context) {
@@ -244,13 +242,13 @@ class AvatarEditButton extends StatelessWidget {
               ),
               border: Border.all(
                 color: const Color(0xFF00C5FF),
-                width: 2.w,
+                width: 2,
               ),
             ),
             child: avatar == null
                 ? ClipOval(
                     child: Padding(
-                      padding: EdgeInsets.only(top: 18.h),
+                      padding: const EdgeInsets.only(top: 18),
                       child: SvgPicture.asset('assets/avatar.svg'),
                     ),
                   )
@@ -270,14 +268,14 @@ class AvatarEditButton extends StatelessWidget {
                 ),
                 border: Border.all(
                   color: const Color(0xFF054160),
-                  width: 2.w,
+                  width: 2,
                 ),
               ),
               child: Center(
                 child: SvgPicture.asset(
                   'assets/edit.svg',
-                  width: 14.w,
-                  height: 14.w,
+                  width: 14,
+                  height: 14,
                 ),
               ),
             ),

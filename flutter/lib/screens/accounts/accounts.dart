@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
@@ -21,17 +19,17 @@ class Accounts extends ConsumerWidget {
     return Stack(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 24.h),
+                padding: const EdgeInsets.only(top: 24),
                 child: Row(
                   children: [
                     Text(
                       'Assets'.tr(),
-                      style: GoogleFonts.roboto(
-                          fontSize: 22.sp,
+                      style: const TextStyle(
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.white),
                     ).tr(),
@@ -46,10 +44,10 @@ class Accounts extends ConsumerWidget {
                           final csv = convertToCsv(list);
                           shareCsv(csv);
                         },
-                        borderRadius: BorderRadius.circular(21.w),
+                        borderRadius: BorderRadius.circular(21),
                         child: Container(
-                          width: 42.w,
-                          height: 42.w,
+                          width: 42,
+                          height: 42,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                           ),
@@ -57,11 +55,11 @@ class Accounts extends ConsumerWidget {
                             children: [
                               const Spacer(),
                               Padding(
-                                padding: EdgeInsets.only(right: 6.w),
+                                padding: const EdgeInsets.only(right: 6),
                                 child: SvgPicture.asset(
                                   'assets/export.svg',
-                                  width: 22.w,
-                                  height: 21.h,
+                                  width: 22,
+                                  height: 21,
                                 ),
                               ),
                             ],
@@ -81,10 +79,10 @@ class Accounts extends ConsumerWidget {
 
                           ref.read(walletProvider).selectAvailableAssets();
                         },
-                        borderRadius: BorderRadius.circular(21.w),
+                        borderRadius: BorderRadius.circular(21),
                         child: Container(
-                          width: 42.w,
-                          height: 42.w,
+                          width: 42,
+                          height: 42,
                           decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                           ),
@@ -92,11 +90,11 @@ class Accounts extends ConsumerWidget {
                             children: [
                               const Spacer(),
                               Padding(
-                                padding: EdgeInsets.only(right: 6.w),
+                                padding: const EdgeInsets.only(right: 6),
                                 child: SvgPicture.asset(
                                   'assets/filter.svg',
-                                  width: 22.w,
-                                  height: 21.h,
+                                  width: 22,
+                                  height: 21,
                                 ),
                               ),
                             ],
@@ -109,16 +107,29 @@ class Accounts extends ConsumerWidget {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 16.h),
+                  padding: const EdgeInsets.only(top: 16),
                   child: Consumer(
                     builder: (context, ref, child) {
                       final wallet = ref.watch(walletProvider);
+                      final balances = ref.watch(balancesProvider);
                       final disabledAccounts = wallet.disabledAccounts;
+                      // Always show accounts with positive balance
+                      final alwaysEnabledAccounts = balances.balances.entries
+                          .where((e) => e.value > 0)
+                          .map((e) => e.key)
+                          .toSet();
+                      // Always show regular L-BTC account
+                      alwaysEnabledAccounts.add(AccountAsset(
+                          AccountType.regular, wallet.liquidAssetId()));
                       final availableAssets = wallet
                           .getAllAccounts()
-                          .where((item) => !disabledAccounts.contains(item))
+                          .where((item) =>
+                              !disabledAccounts.contains(item) ||
+                              alwaysEnabledAccounts.contains(item))
                           .toList();
+
                       return ListView(
+                        shrinkWrap: true,
                         children: List<Widget>.generate(
                           availableAssets.length,
                           (index) {

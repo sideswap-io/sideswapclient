@@ -7,7 +7,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -134,8 +133,8 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
               showTrailingButton: true,
               trailingWidget: SvgPicture.asset(
                 'assets/delete.svg',
-                width: 24.w,
-                height: 24.w,
+                width: 24,
+                height: 24,
               ),
               onTrailingButtonPressed: () {
                 ref
@@ -301,21 +300,21 @@ class CreateOrderViewBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SafeArea(
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           children: [
             OrderTable(
               orderDetailsData: orderDetailsData,
             ),
             Padding(
-              padding: EdgeInsets.only(top: 21.h),
+              padding: const EdgeInsets.only(top: 21),
               child: AutoSign(
                 value: autoSignValue,
                 onToggle: onAutoSignToggle,
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 8.h),
+              padding: const EdgeInsets.only(top: 8),
               child: OrderType(
                 value: orderTypeValue,
                 onToggle: onOrderTypeToggle,
@@ -323,7 +322,7 @@ class CreateOrderViewBody extends ConsumerWidget {
             ),
             if (!editMode) ...[
               Padding(
-                padding: EdgeInsets.only(top: 8.h),
+                padding: const EdgeInsets.only(top: 8),
                 child: TimeToLive(
                   dropdownValue: ttlSeconds,
                   dropdownItems: availableTtlValues(),
@@ -336,7 +335,7 @@ class CreateOrderViewBody extends ConsumerWidget {
             if (editMode) ...[
               if (requestOrder!.private) ...[
                 Padding(
-                  padding: EdgeInsets.only(bottom: 40.h),
+                  padding: const EdgeInsets.only(bottom: 40),
                   child: ShareAndCopyButtonsRow(
                     onShare: () async {
                       await Share.share(ref
@@ -354,25 +353,24 @@ class CreateOrderViewBody extends ConsumerWidget {
                 ),
               ] else ...[
                 Padding(
-                  padding: EdgeInsets.only(bottom: 40.h),
+                  padding: const EdgeInsets.only(bottom: 40),
                   child: CustomBigButton(
                     width: double.maxFinite,
-                    height: 54.h,
+                    height: 54,
                     text: 'MODIFY PRICE'.tr(),
                     textColor: Colors.white,
                     backgroundColor: Colors.transparent,
-                    side:
-                        BorderSide(color: const Color(0xFF00C5FF), width: 2.w),
+                    side: const BorderSide(color: Color(0xFF00C5FF), width: 2),
                     onPressed: onModifyPrice,
                   ),
                 ),
               ]
             ] else ...[
               Padding(
-                padding: EdgeInsets.only(bottom: 24.h),
+                padding: const EdgeInsets.only(bottom: 24),
                 child: CustomBigButton(
                   width: double.maxFinite,
-                  height: 54.h,
+                  height: 54,
                   text: 'CREATE ORDER'.tr(),
                   textColor: Colors.white,
                   backgroundColor: const Color(0xFF00C5FF),

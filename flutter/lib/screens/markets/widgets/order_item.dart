@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/colored_container.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
@@ -35,20 +33,20 @@ class OrderItemState extends ConsumerState<OrderItem> {
   String expire = '';
   Timer? expireTimer;
 
-  final descriptionStyle = GoogleFonts.roboto(
-    fontSize: 16.sp,
+  final descriptionStyle = const TextStyle(
+    fontSize: 16,
     fontWeight: FontWeight.w500,
-    color: const Color(0xFF00C5FF),
+    color: Color(0xFF00C5FF),
   );
 
-  final amountStyle = GoogleFonts.roboto(
-    fontSize: 16.sp,
+  final amountStyle = const TextStyle(
+    fontSize: 16,
     fontWeight: FontWeight.normal,
     color: Colors.white,
   );
 
-  final coloredContainerStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
+  final coloredContainerStyle = const TextStyle(
+    fontSize: 14,
     fontWeight: FontWeight.w500,
     color: Colors.white,
   );
@@ -118,22 +116,22 @@ class OrderItemState extends ConsumerState<OrderItem> {
         .dollarConversionFromString(wallet.liquidAssetId(), buyAmountStr);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Material(
-        borderRadius: BorderRadius.all(Radius.circular(10.r)),
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
         color: const Color(0xFF135579),
         child: InkWell(
           onTap: widget.onTap ??
               () {
                 wallet.setOrderRequestView(widget.requestOrder);
               },
-          borderRadius: BorderRadius.all(Radius.circular(10.r)),
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(10.r)),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 18.h, vertical: 16.w),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
               child: Column(
                 children: [
                   Row(
@@ -143,10 +141,10 @@ class OrderItemState extends ConsumerState<OrderItem> {
                         children: [
                           if (isToken) ...[
                             Padding(
-                              padding: EdgeInsets.only(right: 8.w),
+                              padding: const EdgeInsets.only(right: 8),
                               child: SizedBox(
-                                width: 24.w,
-                                height: 24.w,
+                                width: 24,
+                                height: 24,
                                 child: deliverIcon,
                               ),
                             ),
@@ -157,8 +155,8 @@ class OrderItemState extends ConsumerState<OrderItem> {
                                 : (isAmp
                                     ? '$assetTicker / $bitcoinTicker'
                                     : '$bitcoinTicker / $assetTicker'),
-                            style: GoogleFonts.roboto(
-                              fontSize: 18.sp,
+                            style: const TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -168,15 +166,15 @@ class OrderItemState extends ConsumerState<OrderItem> {
                       ),
                       if (widget.useTokenMarketView) ...[
                         ColoredContainer(
-                          horizontalPadding: 8.w,
+                          horizontalPadding: 8,
                           child: Row(
                             children: [
-                              Padding(
-                                padding: EdgeInsets.only(right: 8.w),
+                              const Padding(
+                                padding: EdgeInsets.only(right: 8),
                                 child: Icon(
                                   Icons.watch_later,
-                                  size: 14.h,
-                                  color: const Color(0xFF00C5FF),
+                                  size: 14,
+                                  color: Color(0xFF00C5FF),
                                 ),
                               ),
                               Text(
@@ -196,9 +194,9 @@ class OrderItemState extends ConsumerState<OrderItem> {
                       ]
                     ],
                   ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12.h),
-                    child: const Divider(
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Divider(
                       thickness: 1,
                       height: 1,
                       color: Color(0xFF2B6F95),
@@ -221,10 +219,10 @@ class OrderItemState extends ConsumerState<OrderItem> {
                             style: amountStyle,
                           ),
                           Padding(
-                            padding: EdgeInsets.only(left: 8.w),
+                            padding: const EdgeInsets.only(left: 8),
                             child: SizedBox(
-                              width: 24.w,
-                              height: 24.w,
+                              width: 24,
+                              height: 24,
                               child: widget.requestOrder.marketType ==
                                       MarketType.stablecoin
                                   ? bitcoinIcon
@@ -236,7 +234,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                     ],
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 12.h),
+                    padding: const EdgeInsets.only(top: 12),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -251,10 +249,10 @@ class OrderItemState extends ConsumerState<OrderItem> {
                               style: amountStyle,
                             ),
                             Padding(
-                              padding: EdgeInsets.only(left: 8.w),
+                              padding: const EdgeInsets.only(left: 8),
                               child: SizedBox(
-                                width: 24.w,
-                                height: 24.w,
+                                width: 24,
+                                height: 24,
                                 child: priceIcon,
                               ),
                             ),
@@ -265,7 +263,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                   ),
                   if (isToken) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 12.h),
+                      padding: const EdgeInsets.only(top: 12),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -280,10 +278,10 @@ class OrderItemState extends ConsumerState<OrderItem> {
                                 style: amountStyle,
                               ),
                               Padding(
-                                padding: EdgeInsets.only(left: 8.w),
+                                padding: const EdgeInsets.only(left: 8),
                                 child: SizedBox(
-                                  width: 24.w,
-                                  height: 24.w,
+                                  width: 24,
+                                  height: 24,
                                   child: receiveIcon,
                                 ),
                               ),
@@ -295,7 +293,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                   ],
                   if (widget.useTokenMarketView) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 6.h),
+                      padding: const EdgeInsets.only(top: 6),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -310,11 +308,11 @@ class OrderItemState extends ConsumerState<OrderItem> {
                                 style: amountStyle.copyWith(
                                     color: const Color(0xFF709EBA)),
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(left: 8.w),
+                              const Padding(
+                                padding: EdgeInsets.only(left: 8),
                                 child: SizedBox(
-                                  width: 24.w,
-                                  height: 24.w,
+                                  width: 24,
+                                  height: 24,
                                 ),
                               ),
                             ],
@@ -323,9 +321,9 @@ class OrderItemState extends ConsumerState<OrderItem> {
                       ),
                     ),
                   ] else ...[
-                    Padding(
-                      padding: EdgeInsets.symmetric(vertical: 12.h),
-                      child: const Divider(
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      child: Divider(
                         thickness: 1,
                         height: 1,
                         color: Color(0xFF2B6F95),
@@ -348,7 +346,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                             children: [
                               if (!isToken) ...[
                                 Padding(
-                                  padding: EdgeInsets.only(right: 8.w),
+                                  padding: const EdgeInsets.only(right: 8),
                                   child: ColoredContainer(
                                     backgroundColor: alternativeBackground,
                                     borderColor: alternativeBackground,
@@ -376,7 +374,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                           children: [
                             if (!isToken) ...[
                               Padding(
-                                padding: EdgeInsets.only(right: 8.w),
+                                padding: const EdgeInsets.only(right: 8),
                                 child: sendBitcoins != isAmp
                                     ? ColoredContainer(
                                         backgroundColor: const Color(0xFFFF7878)
@@ -399,15 +397,15 @@ class OrderItemState extends ConsumerState<OrderItem> {
                               ),
                             ],
                             ColoredContainer(
-                              horizontalPadding: 8.w,
+                              horizontalPadding: 8,
                               child: Row(
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(right: 8.w),
+                                  const Padding(
+                                    padding: EdgeInsets.only(right: 8),
                                     child: Icon(
                                       Icons.watch_later,
-                                      size: 14.h,
-                                      color: const Color(0xFF00C5FF),
+                                      size: 14,
+                                      color: Color(0xFF00C5FF),
                                     ),
                                   ),
                                   Text(

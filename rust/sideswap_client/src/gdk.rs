@@ -162,7 +162,7 @@ extern "C" {
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param params: the :ref:`assets-params-data` of the server to connect to."]
-    #[doc = " :param output: Destination for the assets JSON."]
+    #[doc = " :param output: Destination for the output :ref:`asset-informations`."]
     #[doc = "|     Returned GA_json should be freed using `GA_destroy_json`."]
     #[doc = ""]
     #[doc = " Each release of GDK comes with a list of the latest registered Liquid"]
@@ -170,6 +170,22 @@ extern "C" {
     #[doc = " it to include any new assets that have been registered since installation"]
     #[doc = " or the last update."]
     pub fn GA_refresh_assets(
+        session: *mut GA_session,
+        params: *const GA_json,
+        output: *mut *mut GA_json,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Query the Liquid asset registry."]
+    #[doc = ""]
+    #[doc = " :param session: The session to use."]
+    #[doc = " :param params: the :ref:`get-assets-params` specifying the assets to query."]
+    #[doc = " :param output: Destination for the output :ref:`asset-informations`."]
+    #[doc = "|     Returned GA_json should be freed using `GA_destroy_json`."]
+    #[doc = ""]
+    #[doc = " This call is used to retrieve informations about a set of Liquid assets"]
+    #[doc = " specified by their asset id."]
+    pub fn GA_get_assets(
         session: *mut GA_session,
         params: *const GA_json,
         output: *mut *mut GA_json,
@@ -190,13 +206,13 @@ extern "C" {
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     #[doc = " :param hw_device: :ref:`hw-device` or empty JSON for software wallet registration."]
-    #[doc = " :param mnemonic: The user's mnemonic passphrase for software wallet registration."]
+    #[doc = " :param details: The :ref:`login-credentials` for software wallet registration."]
     #[doc = " :param call: Destination for the resulting GA_auth_handler to perform the registration."]
     #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
     pub fn GA_register_user(
         session: *mut GA_session,
         hw_device: *const GA_json,
-        mnemonic: *const ::std::os::raw::c_char,
+        details: *const GA_json,
         call: *mut *mut GA_auth_handler,
     ) -> ::std::os::raw::c_int;
 }
@@ -221,11 +237,11 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Set a watch-only login for a logged-in user wallet."]
+    #[doc = " Set or disable a watch-only login for a logged-in user wallet."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
-    #[doc = " :param username: The username."]
-    #[doc = " :param password: The password."]
+    #[doc = " :param username: The watch-only username to login with, or a blank string to disable."]
+    #[doc = " :param password: The watch-only password to login with, or a blank string to disable."]
     pub fn GA_set_watch_only(
         session: *mut GA_session,
         username: *const ::std::os::raw::c_char,
@@ -380,8 +396,8 @@ extern "C" {
     #[doc = "|     The call handlers result is :ref:`previous-addresses`."]
     #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
     #[doc = ""]
-    #[doc = " .. note:: Iteration of all addresses is complete when the results 'last_pointer'"]
-    #[doc = "|     value equals 1."]
+    #[doc = " .. note:: Iteration of all addresses is complete when 'last_pointer' is not"]
+    #[doc = "|     present in the results."]
     pub fn GA_get_previous_addresses(
         session: *mut GA_session,
         details: *const GA_json,
@@ -486,27 +502,24 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Set a PIN for the user wallet."]
+    #[doc = " Encrypt json with server provided key protected by a PIN."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
-    #[doc = " :param mnemonic: The user's mnemonic passphrase."]
-    #[doc = " :param pin: The user PIN."]
-    #[doc = " :param device_id: The user device identifier."]
-    #[doc = " :param pin_data: The returned :ref:`pin-data` containing the user's encrypted mnemonic passphrase."]
-    #[doc = "|     Returned GA_json should be freed using `GA_destroy_json`."]
-    pub fn GA_set_pin(
+    #[doc = " :param details: The :ref:`encrypt-with-pin-details` to encrypt."]
+    #[doc = " :param call: Destination for the resulting GA_auth_handler to complete the action."]
+    #[doc = "|     The call handlers result is :ref:`encrypt-with-pin-result` which the caller should persist."]
+    #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
+    pub fn GA_encrypt_with_pin(
         session: *mut GA_session,
-        mnemonic: *const ::std::os::raw::c_char,
-        pin: *const ::std::os::raw::c_char,
-        device_id: *const ::std::os::raw::c_char,
-        pin_data: *mut *mut GA_json,
+        details: *const GA_json,
+        call: *mut *mut GA_auth_handler,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
     #[doc = " Disable all PIN logins previously set."]
     #[doc = ""]
     #[doc = " After calling this method, the user will not be able to login with PIN"]
-    #[doc = "| from any device that was previously enabled using `GA_set_pin`."]
+    #[doc = "| from any device that was previously enabled using `GA_encrypt_with_pin`."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
     pub fn GA_disable_all_pin_logins(session: *mut GA_session) -> ::std::os::raw::c_int;
@@ -663,18 +676,17 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Get the user's mnemonic passphrase."]
+    #[doc = " Get the user's credentials."]
     #[doc = ""]
     #[doc = " :param session: The session to use."]
-    #[doc = " :param password: Optional password to encrypt the user's mnemonic passphrase with."]
-    #[doc = " :param mnemonic: Destination for the user's 24 word mnemonic passphrase. if a"]
-    #[doc = "|     non-empty password is given, the returned mnemonic passphrase will be"]
-    #[doc = "|     27 words long and will require the password to use for logging in."]
-    #[doc = "|     Returned string should be freed using `GA_destroy_string`."]
-    pub fn GA_get_mnemonic_passphrase(
+    #[doc = " :param details: The :ref:`get-credentials-details` to get the credentials."]
+    #[doc = " :param call: Destination for the resulting GA_auth_handler to get the user's credentials."]
+    #[doc = "|     The call handlers result is :ref:`login-credentials`."]
+    #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
+    pub fn GA_get_credentials(
         session: *mut GA_session,
-        password: *const ::std::os::raw::c_char,
-        mnemonic: *mut *mut ::std::os::raw::c_char,
+        details: *const GA_json,
+        call: *mut *mut GA_auth_handler,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {

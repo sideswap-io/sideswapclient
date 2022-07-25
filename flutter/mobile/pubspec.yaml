@@ -3,7 +3,7 @@ description: Sideswap Client.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.2.2+48
+version: 1.2.3+51
 
 environment:
   sdk: ">=2.17.0 <3.0.0"
@@ -35,13 +35,7 @@ dependencies:
   # icon generator
   flutter_launcher_icons_maker: ^0.10.2
   #notifications
-
-  flutter_local_notifications:
-    git:
-      url: https://github.com/kennethnym/flutter_local_notifications.git
-      path: flutter_local_notifications
-      ref: 0baa7db0b641e18158e7690c874e1b2458649543
-
+  flutter_local_notifications: ^9.7.0
   flutter_plugin_android_lifecycle: ^2.0.6
   # screen scaling
   flutter_screenutil: ^5.5.3+2
@@ -54,8 +48,6 @@ dependencies:
   flutter_typeahead: ^4.0.0
   # notification payload parsing
   freezed_annotation: ^2.0.3
-  # fonts
-  google_fonts: ^3.0.1
   # because of 1.0.3 bug https://github.com/rrousselGit/river_pod/issues/815
   hooks_riverpod: ^2.0.0-dev.9
   flutter_hooks: ^0.18.4
@@ -67,7 +59,6 @@ dependencies:
   logger: ^1.1.0
   # marqee text
   marquee: ^2.2.2
-  package_info_plus: ^1.4.2
   # background
   path_drawing: ^1.0.0
   path_provider: ^2.0.10
@@ -246,6 +237,8 @@ flutter:
     - assets/arrow_down2.svg
     - assets/arrow_up2.svg
     - assets/language.svg
+    - assets/peg-in-out.svg
+    - assets/peg-in-out_active.svg
 
   fonts:
     - family: Roboto

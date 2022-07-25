@@ -7,6 +7,7 @@ pub struct Port {
 }
 
 pub struct Handle {
+    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
     sender: crossbeam_channel::Sender<Vec<u8>>,
 }
 
@@ -16,6 +17,7 @@ pub enum FromPort {
     FatalError(anyhow::Error),
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 impl Handle {
     pub fn ports() -> Result<Vec<Port>, anyhow::Error> {
         Ok(serialport::available_ports()?
@@ -128,5 +130,26 @@ impl Handle {
         );
         self.sender.send(buf)?;
         Ok(())
+    }
+}
+
+#[cfg(any(target_os = "android", target_os = "ios"))]
+impl Handle {
+    pub fn ports() -> Result<Vec<Port>, anyhow::Error> {
+        Ok(Vec::new())
+    }
+
+    pub fn new<F>(_port: Port, _callback: F) -> Result<Self, anyhow::Error>
+    where
+        F: 'static + Send + FnMut(FromPort) -> (),
+    {
+        unreachable!()
+    }
+
+    pub fn send<T>(&mut self, _data: &T) -> Result<(), anyhow::Error>
+    where
+        T: serde::Serialize,
+    {
+        unreachable!()
     }
 }

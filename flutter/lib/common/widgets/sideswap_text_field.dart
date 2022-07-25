@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapTextField extends StatefulWidget {
   const SideSwapTextField({
@@ -38,10 +36,10 @@ class SideSwapTextFieldState extends State<SideSwapTextField> {
   void initState() {
     super.initState();
     hintStyle = widget.hintStyle ??
-        GoogleFonts.roboto(
-          fontSize: 17.sp,
+        const TextStyle(
+          fontSize: 17,
           fontWeight: FontWeight.normal,
-          color: const Color(0xFF84ADC6),
+          color: Color(0xFF84ADC6),
         );
   }
 
@@ -59,9 +57,9 @@ class SideSwapTextFieldState extends State<SideSwapTextField> {
       focusNode: widget.focusNode,
       showCursor: true,
       cursorColor: Colors.black,
-      cursorHeight: 20.h,
-      style: GoogleFonts.roboto(
-        fontSize: 16.sp,
+      cursorHeight: 20,
+      style: const TextStyle(
+        fontSize: 16,
         fontWeight: FontWeight.normal,
         color: Colors.black,
       ),
@@ -70,7 +68,7 @@ class SideSwapTextFieldState extends State<SideSwapTextField> {
       inputFormatters: widget.inputFormatters,
       decoration: InputDecoration(
         isDense: true,
-        contentPadding: EdgeInsets.fromLTRB(10.w, 18.h, 10.w, 18.h),
+        contentPadding: const EdgeInsets.fromLTRB(10, 18, 10, 18),
         filled: true,
         fillColor: Colors.white,
         hintText: widget.hintText,

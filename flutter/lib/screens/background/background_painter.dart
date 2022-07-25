@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:matrix4_transform/matrix4_transform.dart';
 import 'package:path_drawing/path_drawing.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 String svgPath =
@@ -16,8 +15,7 @@ class BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     var paint = Paint();
-    var rect = Offset.zero &
-        Size(SideSwapScreenUtil.screenWidth, SideSwapScreenUtil.screenHeight);
+    var rect = Offset.zero & size;
 
     if (FlavorConfig.isDesktop) {
       paint.shader = const LinearGradient(

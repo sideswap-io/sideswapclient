@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -40,16 +38,16 @@ class AccountItem extends ConsumerWidget {
     final amountUsd = wallet.getAmountUsd(accountAsset.asset, amount);
     var dollarConversion = '0.0';
     dollarConversion = amountUsd.toStringAsFixed(2);
-    dollarConversion = replaceCharacterOnPosition(
-        input: dollarConversion, currencyChar: '\$');
+    dollarConversion =
+        replaceCharacterOnPosition(input: dollarConversion, currencyChar: '\$');
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
     final backgrounColor =
         disabled ? const Color(0xFF034569) : const Color(0xFF135579);
 
     return Padding(
-      padding: EdgeInsets.only(bottom: 8.h),
+      padding: const EdgeInsets.only(bottom: 8),
       child: SizedBox(
-        height: 80.h,
+        height: 80,
         child: TextButton(
           style: TextButton.styleFrom(
             backgroundColor: backgrounColor,
@@ -64,19 +62,19 @@ class AccountItem extends ConsumerWidget {
                   onSelected(accountAsset);
                 },
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14.w),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Row(
               children: [
                 SizedBox(
-                  width: 48.w,
-                  height: 48.w,
+                  width: 48,
+                  height: 48,
                   child: assetImage,
                 ),
                 Expanded(
                   child: Padding(
-                    padding: EdgeInsets.only(left: 10.w),
+                    padding: const EdgeInsets.only(left: 10),
                     child: SizedBox(
-                      height: 48.w,
+                      height: 48,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -89,8 +87,8 @@ class AccountItem extends ConsumerWidget {
                                   overflow: TextOverflow.clip,
                                   maxLines: 1,
                                   textAlign: TextAlign.left,
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 17.sp,
+                                  style: TextStyle(
+                                    fontSize: 17,
                                     fontWeight: FontWeight.normal,
                                     color: textColor,
                                   ),
@@ -100,12 +98,12 @@ class AccountItem extends ConsumerWidget {
                                 visible:
                                     asset.assetId != wallet.bitcoinAssetId(),
                                 child: Padding(
-                                  padding: EdgeInsets.only(left: 8.w),
+                                  padding: const EdgeInsets.only(left: 8),
                                   child: Text(
                                     amountString,
                                     textAlign: TextAlign.right,
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 17.sp,
+                                    style: TextStyle(
+                                      fontSize: 17,
                                       fontWeight: FontWeight.normal,
                                       color: textColor,
                                     ),
@@ -122,10 +120,10 @@ class AccountItem extends ConsumerWidget {
                                 children: [
                                   Text(
                                     asset.ticker,
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 15.sp,
+                                    style: const TextStyle(
+                                      fontSize: 15,
                                       fontWeight: FontWeight.normal,
-                                      color: const Color(0xFF6B91A8),
+                                      color: Color(0xFF6B91A8),
                                     ),
                                   ),
                                   if (isAmp) const AmpFlag(fontSize: 14),
@@ -134,10 +132,10 @@ class AccountItem extends ConsumerWidget {
                               if (amountUsd != 0) ...[
                                 Text(
                                   '≈ $dollarConversion',
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 15.sp,
+                                  style: const TextStyle(
+                                    fontSize: 15,
                                     fontWeight: FontWeight.normal,
-                                    color: const Color(0xFF6B91A8),
+                                    color: Color(0xFF6B91A8),
                                   ),
                                 ),
                               ],

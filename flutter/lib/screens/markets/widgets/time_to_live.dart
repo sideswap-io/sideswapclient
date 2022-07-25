@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class TimeToLive extends StatefulWidget {
@@ -65,22 +63,22 @@ class TimeToLiveState extends State<TimeToLive> {
     return GestureDetector(
       onTap: openDropdown,
       child: Container(
-        height: 51.h,
+        height: 51,
         width: double.maxFinite,
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.all(Radius.circular(8.r)),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           color: widget.backgroundColor,
         ),
         child: Padding(
-          padding: EdgeInsets.only(left: 12.w, right: 12.w),
+          padding: const EdgeInsets.only(left: 12, right: 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Time-to-live:'.tr(),
-                style: GoogleFonts.roboto(
-                  fontSize: 16.sp,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,
                 ),
@@ -90,19 +88,19 @@ class TimeToLiveState extends State<TimeToLive> {
                   children: [
                     Text(
                       getTtlDescription(widget.dropdownValue),
-                      style: GoogleFonts.roboto(
-                        fontSize: 16.sp,
+                      style: const TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFF78AECC),
+                        color: Color(0xFF78AECC),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: 7.w),
+                      padding: const EdgeInsets.only(left: 7),
                       child: SvgPicture.asset(
                         'assets/lock.svg',
                         color: const Color(0xFF78AECC),
-                        width: 10.w,
-                        height: 13.h,
+                        width: 10,
+                        height: 13,
                       ),
                     ),
                   ],
@@ -112,8 +110,8 @@ class TimeToLiveState extends State<TimeToLive> {
                   child: DropdownButton<int>(
                     key: _dropdownButtonKey,
                     value: widget.dropdownValue,
-                    style: GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),

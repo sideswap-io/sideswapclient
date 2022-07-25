@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:secure_application/secure_application.dart';
 
 import 'package:sideswap/common/theme.dart';
@@ -275,11 +274,11 @@ class __RootWidgetState extends ConsumerState<_RootWidget> {
         ];
       case Status.importAvatar:
         return [
-          MaterialPage<Widget>(child: ImportAvatar()),
+          const MaterialPage<Widget>(child: ImportAvatar()),
         ];
       case Status.importAvatarSuccess:
         return [
-          MaterialPage<Widget>(child: ImportAvatar()),
+          const MaterialPage<Widget>(child: ImportAvatar()),
           const MyPopupPage<Widget>(child: ImportAvatarSuccess()),
         ];
       case Status.associatePhoneWelcome:
@@ -292,7 +291,7 @@ class __RootWidgetState extends ConsumerState<_RootWidget> {
         ];
       case Status.confirmPhoneSuccess:
         return [
-          MyPopupPage<Widget>(child: ConfirmPhoneSuccess()),
+          const MyPopupPage<Widget>(child: ConfirmPhoneSuccess()),
         ];
       case Status.importContacts:
         return [
@@ -517,7 +516,7 @@ class __RootWidgetState extends ConsumerState<_RootWidget> {
                       ),
                       child: Text(
                         envName(env),
-                        style: GoogleFonts.roboto(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.normal,
                           color: Colors.white,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 
 enum EmptyRequestLogoIcon {
@@ -24,7 +23,7 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
       case EmptyRequestLogoIcon.male:
         internalIcon = ClipOval(
           child: Padding(
-            padding: EdgeInsets.only(top: 5.h),
+            padding: const EdgeInsets.only(top: 5),
             child: SvgPicture.asset('assets/avatar.svg'),
           ),
         );
@@ -33,8 +32,8 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
         internalIcon = Center(
           child: SvgPicture.asset(
             'assets/success.svg',
-            width: 18.w,
-            height: 18.w,
+            width: 18,
+            height: 18,
           ),
         );
         break;
@@ -48,26 +47,26 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
     return Opacity(
       opacity: opacity,
       child: Container(
-        width: 198.w,
-        height: 84.h,
-        decoration: BoxDecoration(
-          color: const Color(0xFF167399),
-          borderRadius: BorderRadius.all(Radius.circular(16.r)),
+        width: 198,
+        height: 84,
+        decoration: const BoxDecoration(
+          color: Color(0xFF167399),
+          borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 10.w, right: 10.w),
+              padding: const EdgeInsets.only(left: 10, right: 10),
               child: Container(
-                width: 60.r,
-                height: 60.r,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF135579),
                   border: Border.all(
                     color: const Color(0xFF00C5FF),
-                    width: 2.r,
+                    width: 2,
                   ),
                 ),
                 child: getIcon(),
@@ -78,47 +77,47 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  children: [
+                  children: const [
                     EmptyTextContainer(
-                      width: 26.w,
-                      height: 6.h,
-                      color: const Color(0xFF135579),
+                      width: 26,
+                      height: 6,
+                      color: Color(0xFF135579),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: 4.w),
+                      padding: EdgeInsets.only(left: 4),
                       child: EmptyTextContainer(
-                        width: 60.w,
-                        height: 6.h,
-                        color: const Color(0xFF135579),
+                        width: 60,
+                        height: 6,
+                        color: Color(0xFF135579),
                       ),
                     ),
                   ],
                 ),
-                Padding(
-                  padding: EdgeInsets.only(top: 5.h),
+                const Padding(
+                  padding: EdgeInsets.only(top: 5),
                   child: EmptyTextContainer(
-                    width: 95.w,
-                    height: 6.h,
-                    color: const Color(0xFF135579),
+                    width: 95,
+                    height: 6,
+                    color: Color(0xFF135579),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 11.h),
+                  padding: const EdgeInsets.only(top: 11),
                   child: Row(
                     children: [
                       EmptyTextContainer(
-                        width: 50.w,
-                        height: 14.h,
+                        width: 50,
+                        height: 14,
                         color: Colors.transparent,
                         border: Border.all(
-                            color: const Color(0xFF00C5FF), width: 2.w),
+                            color: const Color(0xFF00C5FF), width: 2),
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 4.w),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 4),
                         child: EmptyTextContainer(
-                          width: 50.w,
-                          height: 14.h,
-                          color: const Color(0xFF00C5FF),
+                          width: 50,
+                          height: 14,
+                          color: Color(0xFF00C5FF),
                         ),
                       ),
                     ],

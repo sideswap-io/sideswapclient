@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class SwapButton extends StatelessWidget {
   const SwapButton({
@@ -20,22 +17,22 @@ class SwapButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(2.0.w),
+      padding: const EdgeInsets.all(2.0),
       child: Container(
         //width: 139.w,
-        height: 36.h,
+        height: 36,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(
-            Radius.circular(8.0.w),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(8.0),
           ),
           color: color,
         ),
         child: TextButton(
           onPressed: onPressed,
           style: TextButton.styleFrom(
-            shape: RoundedRectangleBorder(
+            shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
-                Radius.circular(8.w),
+                Radius.circular(8),
               ),
             ),
           ),
@@ -45,8 +42,8 @@ class SwapButton extends StatelessWidget {
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.fade,
-              style: GoogleFonts.roboto(
-                fontSize: 13.sp,
+              style: TextStyle(
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
                 color: textColor,
               ),

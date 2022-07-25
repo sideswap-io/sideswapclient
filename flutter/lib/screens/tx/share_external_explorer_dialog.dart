@@ -1,9 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 enum ShareIconType {
   share,
@@ -46,18 +43,18 @@ class ShareExternalExplorerDialog extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: Container(
-              height: blindType == BlindType.both ? 165.h : 84.h,
-              decoration: BoxDecoration(
+              height: blindType == BlindType.both ? 165 : 84,
+              decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16.w),
-                  topRight: Radius.circular(16.w),
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-                color: const Color(0xFF1C6086),
+                color: Color(0xFF1C6086),
               ),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Padding(
-                  padding: EdgeInsets.only(top: 20.h, bottom: 20.h),
+                  padding: const EdgeInsets.only(top: 20, bottom: 20),
                   child: Column(
                     children: [
                       if (blindType == BlindType.both) ...[
@@ -65,9 +62,9 @@ class ShareExternalExplorerDialog extends StatelessWidget {
                           onPressed: onBlindedPressed,
                           shareIconType: shareIconType,
                         ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          child: const Divider(
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Divider(
                             thickness: 1,
                             height: 1,
                             color: Color(0xFF78AECC),
@@ -114,36 +111,36 @@ class BlindedButton extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.all(Radius.circular(8.w)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         child: SizedBox(
-          height: 44.h,
+          height: 44,
           child: Column(
             children: [
               const Spacer(),
               Row(
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(left: 8.w),
+                    padding: const EdgeInsets.only(left: 8),
                     child: type == BlindedButtonType.blinded
                         ? SvgPicture.asset(
                             'assets/blinded.svg',
-                            width: 22.w,
-                            height: 20.w,
+                            width: 22,
+                            height: 20,
                           )
                         : SvgPicture.asset(
                             'assets/unblinded.svg',
-                            width: 22.w,
-                            height: 16.w,
+                            width: 22,
+                            height: 16,
                           ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(left: 10.w),
+                    padding: const EdgeInsets.only(left: 10),
                     child: Text(
                       type == BlindedButtonType.blinded
                           ? 'Blinded data'.tr()
                           : 'Unblinded data'.tr(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 16.sp,
+                      style: const TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.normal,
                         color: Colors.white,
                       ),
@@ -151,17 +148,17 @@ class BlindedButton extends StatelessWidget {
                   ),
                   const Spacer(),
                   Padding(
-                    padding: EdgeInsets.only(right: 8.w),
+                    padding: const EdgeInsets.only(right: 8),
                     child: shareIconType == ShareIconType.share
                         ? SvgPicture.asset(
                             'assets/share3.svg',
-                            width: 24.w,
-                            height: 24.w,
+                            width: 24,
+                            height: 24,
                           )
                         : SvgPicture.asset(
                             'assets/link.svg',
-                            width: 24.w,
-                            height: 24.w,
+                            width: 24,
+                            height: 24,
                           ),
                   ),
                 ],

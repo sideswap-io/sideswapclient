@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/balances.dart';
 
 enum TxCircleImageType {
@@ -72,7 +71,7 @@ class TxCircleImageState extends State<TxCircleImage> {
   void initState() {
     super.initState();
 
-    _width = widget.width ?? 44.w;
+    _width = widget.width ?? 44;
     _height = widget.height ?? _width;
     _largeWidth = (_width * 49.10) / 100;
     _smallWidth = (_width * 45.45) / 100;

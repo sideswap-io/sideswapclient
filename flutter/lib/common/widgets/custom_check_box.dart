@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
-
 class CustomCheckBox extends StatefulWidget {
   const CustomCheckBox({
     super.key,
@@ -58,12 +56,12 @@ class CustomCheckBoxState extends State<CustomCheckBox>
 
     value = widget.value;
 
-    radius = widget.radius ?? Radius.circular(4.w);
-    size = widget.size ?? 16.w;
+    radius = widget.radius ?? const Radius.circular(4);
+    size = widget.size ?? 16;
     icon = widget.icon ??
-        Icon(
+        const Icon(
           Icons.check,
-          size: 13.w,
+          size: 13,
         );
 
     frameColorController = AnimationController(
@@ -140,7 +138,7 @@ class CustomCheckBoxState extends State<CustomCheckBox>
       child: Container(
         color: Colors.transparent,
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 11.h),
+          padding: const EdgeInsets.symmetric(vertical: 11),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,

@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 
@@ -24,7 +22,7 @@ class PaymentAmountReceiverField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(top: 26.h),
+          padding: const EdgeInsets.only(top: 26),
           child: Text(
             'Receiver',
             style: labelStyle,
@@ -32,30 +30,30 @@ class PaymentAmountReceiverField extends StatelessWidget {
         ),
         if (friend != null) ...[
           Padding(
-            padding: EdgeInsets.only(top: 10.h),
+            padding: const EdgeInsets.only(top: 10),
             child: FriendWidget(friend: friend!),
           ),
         ] else ...[
           Padding(
-            padding: EdgeInsets.only(top: 10.h),
+            padding: const EdgeInsets.only(top: 10),
             child: TextField(
               controller: TextEditingController()..text = text,
               maxLines: null,
               readOnly: true,
-              style: GoogleFonts.roboto(
-                fontSize: 16.sp,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.normal,
                 color: Colors.white,
               ),
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(
-                    Radius.circular(8.w),
+                    Radius.circular(8),
                   ),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: const Color(0xFF1D6389),
+                fillColor: Color(0xFF1D6389),
               ),
             ),
           ),

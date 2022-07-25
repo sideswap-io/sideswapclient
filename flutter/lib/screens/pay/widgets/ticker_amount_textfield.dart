@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/swap_provider.dart';
@@ -60,14 +58,14 @@ class TickerAmountTextField extends StatefulWidget {
 }
 
 class TickerAmountTextFieldState extends State<TickerAmountTextField> {
-  final _textFieldStyle = GoogleFonts.roboto(
-    fontSize: 26.sp,
+  final _textFieldStyle = const TextStyle(
+    fontSize: 26,
     fontWeight: FontWeight.normal,
     color: Colors.white,
   );
 
-  final _dropdownTextStyle = GoogleFonts.roboto(
-    fontSize: 22.sp,
+  final _dropdownTextStyle = const TextStyle(
+    fontSize: 22,
     fontWeight: FontWeight.normal,
     color: Colors.white,
   );
@@ -113,7 +111,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
   Widget buildDropdown() {
     return Builder(builder: (context) {
       return SizedBox(
-        width: 90.w,
+        width: 90,
         child: DropdownButtonHideUnderline(
           child: DropdownButton<AccountAsset>(
             isExpanded: true,
@@ -177,9 +175,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                         return Container();
                       },
                     ),
-                    Container(
-                      width: 8.w,
-                    ),
+                    Container(width: 8),
                     Consumer(builder: (context, ref, _) {
                       final asset = ref.watch(
                           walletProvider.select((p) => p.assets[value.asset]));
@@ -274,12 +270,12 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
     );
 
     return Container(
-      height: 43.h,
+      height: 43,
       decoration: widget.feeRates.isNotEmpty ? null : borderDecoration,
       child: Column(
         children: [
           SizedBox(
-            height: 42.h,
+            height: 42,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -294,14 +290,14 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                               p.assetImagesSmall[widget.dropdownValue.asset]));
 
                           return SizedBox(
-                            width: 32.w,
-                            height: 32.w,
+                            width: 32,
+                            height: 32,
                             child: Center(child: icon),
                           );
                         },
                       ),
                       Padding(
-                          padding: EdgeInsets.only(left: 8.w),
+                          padding: const EdgeInsets.only(left: 8),
                           child: (widget.showAccountsInPopup)
                               ? GestureDetector(
                                   behavior: HitTestBehavior.opaque,
@@ -331,7 +327,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                               p.assets[widget.dropdownValue.asset]!.precision));
 
                       return SizedBox(
-                        height: 42.h,
+                        height: 42,
                         child: TextField(
                           autofocus: false,
                           readOnly: widget.readOnly,

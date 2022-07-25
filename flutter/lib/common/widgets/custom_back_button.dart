@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 
 enum CustomBackButtonType {
@@ -39,15 +38,15 @@ class CustomBackButtonState extends ConsumerState<CustomBackButton> {
   void initState() {
     super.initState();
 
-    _width = widget.width ?? 28.h;
-    _height = widget.height ?? 28.h;
+    _width = widget.width ?? 28;
+    _height = widget.height ?? 28;
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
-          left: widget.buttonType == CustomBackButtonType.backArrow ? 5.w : 0),
+          left: widget.buttonType == CustomBackButtonType.backArrow ? 5 : 0),
       child: Material(
         color: Colors.transparent,
         child: InkWell(

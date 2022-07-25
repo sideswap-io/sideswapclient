@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class AssetSearchTextField extends ConsumerWidget {
@@ -15,26 +13,26 @@ class AssetSearchTextField extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SizedBox(
-      height: 44.h,
+      height: 44,
       child: TextField(
         onChanged: (value) =>
             ref.read(walletProvider).setToggleAssetFilter(value),
-        style: GoogleFonts.roboto(
-          fontSize: 17.sp,
+        style: const TextStyle(
+          fontSize: 17,
           fontWeight: FontWeight.normal,
-          color: const Color(0xFF055271),
+          color: Color(0xFF055271),
         ),
         decoration: InputDecoration(
           isDense: true,
           filled: true,
           fillColor: Colors.white,
           prefixIcon: SizedBox(
-            width: 41.w,
+            width: 41,
             child: Center(
               child: SvgPicture.asset(
                 'assets/search.svg',
-                width: 19.w,
-                height: 19.w,
+                width: 19,
+                height: 19,
                 color: const Color(0xFF055271),
               ),
             ),
@@ -48,10 +46,10 @@ class AssetSearchTextField extends ConsumerWidget {
             borderSide: const BorderSide(color: Colors.white),
           ),
           hintText: 'Search'.tr(),
-          hintStyle: GoogleFonts.roboto(
-            fontSize: 17.sp,
+          hintStyle: const TextStyle(
+            fontSize: 17,
             fontWeight: FontWeight.normal,
-            color: const Color(0xFF84ADC6),
+            color: Color(0xFF84ADC6),
           ),
         ),
       ),

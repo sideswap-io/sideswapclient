@@ -1,13 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/colored_container.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/swap_market_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/markets/market_charts_popup.dart';
+import 'package:sideswap/screens/markets/market_select_popup.dart';
 import 'package:sideswap/screens/markets/token_market_order_details.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
@@ -21,14 +22,14 @@ class SwapMarket extends ConsumerStatefulWidget {
 class SwapMarketState extends ConsumerState<SwapMarket> {
   ScrollController scrollController = ScrollController();
 
-  final headerStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
+  final headerStyle = const TextStyle(
+    fontSize: 13,
     fontWeight: FontWeight.w500,
-    color: const Color(0xFF00C5FF),
+    color: Color(0xFF00C5FF),
   );
 
-  final indexPriceStyleDescription = GoogleFonts.roboto(
-    fontSize: 16.sp,
+  final indexPriceStyleDescription = const TextStyle(
+    fontSize: 16,
     fontWeight: FontWeight.normal,
     color: Colors.white,
   );
@@ -75,6 +76,32 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
     // to markets page
   }
 
+  void showProductsPopup() {
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(builder: (context) {
+        return MarketSelectPopup(
+          selectedAssetId: ref.read(swapMarketProvider).currentProduct.assetId,
+          onAssetSelected: (assetId) {
+            final swapMarket = ref.read(swapMarketProvider);
+            final product = swapMarket.getProductFromAssetId(assetId);
+            swapMarket.currentProduct = product;
+            subscribeToMarket();
+          },
+        );
+      }),
+    );
+  }
+
+  void showChartsPopup() {
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(builder: (context) {
+        return MarketChartsPopup(
+          assetId: ref.read(swapMarketProvider).currentProduct.assetId,
+        );
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
@@ -84,14 +111,8 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
 
       final currentProduct = swapMarket.currentProduct;
       final asset = wallet.assets[currentProduct.assetId]!;
-      final isAmp = asset.ampMarket;
       final indexPrice = markets.getIndexPriceStr(currentProduct.assetId);
       final lastPrice = markets.getLastPriceStr(currentProduct.assetId);
-      final priceIcon = isAmp
-          ? wallet.assetImagesSmall[wallet.liquidAssetId()]
-          : wallet.assetImagesSmall[currentProduct.assetId];
-      final priceTicker = isAmp ? kLiquidBitcoinTicker : currentProduct.ticker;
-      final products = swapMarket.getProducts();
       final length = swapMarket.getMaxSwapOrderLength();
       final bidOffers = swapMarket.bidOffers;
       final askOffers = swapMarket.askOffers;
@@ -99,98 +120,115 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
       return Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 24.h, left: 16.w, right: 16.w),
+            padding: const EdgeInsets.only(top: 24, left: 8, right: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isAmp ? 'Last price'.tr() : 'Index price'.tr(),
-                      style: headerStyle,
-                    ),
-                    Row(
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(top: 10.h),
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(right: 5.w),
-                                child: Text(
-                                  isAmp ? lastPrice : indexPrice,
-                                  style: indexPriceStyleDescription,
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.only(right: 6.w),
-                                child: SizedBox(
-                                  width: 21.r,
-                                  height: 21.r,
-                                  child: priceIcon,
-                                ),
-                              ),
-                              Text(
-                                priceTicker,
-                                style: indexPriceStyleDescription,
-                              ),
-                            ],
+                Expanded(
+                  flex: 10,
+                  child: GestureDetector(
+                    onTap: showProductsPopup,
+                    child: ColoredContainer(
+                      height: 50.0,
+                      backgroundColor: const Color(0xFF135579),
+                      borderColor: Colors.transparent,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Product'.tr(),
+                            style: headerStyle,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                ColoredContainer(
-                  width: 135.w,
-                  height: 39.h,
-                  child: DropdownButton<Product>(
-                    value: currentProduct,
-                    isExpanded: true,
-                    dropdownColor: const Color(0xFF1E6389),
-                    underline: Container(),
-                    iconSize: 18,
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                    ),
-                    items: products
-                        .map((e) => DropdownMenuItem<Product>(
-                              value: e,
-                              child: Text(
-                                e.displayName,
-                                style: GoogleFonts.roboto(
-                                  fontSize: 14.sp,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                currentProduct.displayName,
+                                style: const TextStyle(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.normal,
                                   color: Colors.white,
                                 ),
                               ),
-                            ))
-                        .toList(),
-                    onChanged: (value) {
-                      if (value == null) {
-                        return;
-                      }
-
-                      ref.read(swapMarketProvider).currentProduct = value;
-                      subscribeToMarket();
-                    },
+                              const SizedBox(width: 4),
+                              SvgPicture.asset(
+                                'assets/arrow_down.svg',
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  flex: 10,
+                  child: ColoredContainer(
+                    backgroundColor: const Color(0xFF135579),
+                    borderColor: Colors.transparent,
+                    height: 50.0,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          asset.swapMarket
+                              ? 'Index price'.tr()
+                              : 'Last price'.tr(),
+                          style: headerStyle,
+                        ),
+                        Text(
+                          asset.swapMarket ? indexPrice : lastPrice,
+                          style: indexPriceStyleDescription,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  flex: 7,
+                  child: GestureDetector(
+                    onTap: showChartsPopup,
+                    child: ColoredContainer(
+                      height: 50.0,
+                      backgroundColor: const Color(0xFF135579),
+                      borderColor: Colors.transparent,
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset(
+                              'assets/chart.svg',
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Chart'.tr(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.normal,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 22.h),
-            child: const Divider(
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 22),
+            child: Divider(
               thickness: 1,
               height: 1,
               color: Color(0xFF2B6F95),
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(bottom: 15.h, left: 14.w, right: 14.w),
+            padding: const EdgeInsets.only(bottom: 15, left: 14, right: 14),
             child: Row(
               children: [
                 Expanded(
@@ -208,9 +246,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: 11.w,
-                ),
+                const SizedBox(width: 11),
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -233,7 +269,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
             child: RawScrollbar(
               thumbVisibility: true,
               thickness: 3,
-              radius: Radius.circular(2.r),
+              radius: const Radius.circular(2),
               controller: scrollController,
               thumbColor: const Color(0xFF78AECC),
               child: ListView.builder(
@@ -243,31 +279,36 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                 itemCount: length,
                 itemBuilder: (context, index) {
                   return Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       if (index < bidOffers.length) ...[
-                        Padding(
-                          padding: EdgeInsets.only(left: 6.w),
-                          child: SwapAmountRow(
-                            isAmp: isAmp,
-                            assetPrecision: asset.precision,
-                            requestOrder: bidOffers[index],
-                            onTap: openOrder,
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 6, right: 3),
+                            child: SwapAmountRow(
+                              assetPrecision: asset.precision,
+                              requestOrder: bidOffers[index],
+                              onTap: openOrder,
+                            ),
                           ),
                         ),
+                      ] else ...[
                         const Spacer(),
                       ],
                       if (index < askOffers.length) ...[
-                        const Spacer(),
-                        Padding(
-                          padding: EdgeInsets.only(right: 6.w),
-                          child: SwapAmountRow(
-                            isAmp: isAmp,
-                            assetPrecision: asset.precision,
-                            requestOrder: askOffers[index],
-                            type: SwapAmountRowType.ask,
-                            onTap: openOrder,
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 3, right: 6),
+                            child: SwapAmountRow(
+                              assetPrecision: asset.precision,
+                              requestOrder: askOffers[index],
+                              type: SwapAmountRowType.ask,
+                              onTap: openOrder,
+                            ),
                           ),
                         ),
+                      ] else ...[
+                        const Spacer(),
                       ],
                     ],
                   );
@@ -287,10 +328,9 @@ enum SwapAmountRowType {
 }
 
 class SwapAmountRow extends StatelessWidget {
-  SwapAmountRow({
+  const SwapAmountRow({
     super.key,
     required this.requestOrder,
-    required this.isAmp,
     required this.assetPrecision,
     this.type = SwapAmountRowType.bid,
     this.onTap,
@@ -298,88 +338,84 @@ class SwapAmountRow extends StatelessWidget {
 
   final RequestOrder requestOrder;
   final SwapAmountRowType type;
-  final bool isAmp;
   final int assetPrecision;
   final Function(RequestOrder)? onTap;
 
-  final amountStyle = GoogleFonts.roboto(
-    fontSize: 13.sp,
+  final amountStyle = const TextStyle(
+    fontSize: 13,
     fontWeight: FontWeight.normal,
     color: Colors.white,
   );
 
   @override
   Widget build(BuildContext context) {
-    final amountString = isAmp
-        ? amountStr(requestOrder.assetAmount, precision: assetPrecision)
-        : amountStr(requestOrder.bitcoinAmount);
+    final amountString = requestOrder.marketType == MarketType.stablecoin
+        ? amountStr(requestOrder.bitcoinAmount)
+        : amountStr(requestOrder.assetAmount, precision: assetPrecision);
     final price =
         priceStrForMarket(requestOrder.price, requestOrder.marketType);
     return Padding(
-      padding: EdgeInsets.only(bottom: 6.h),
+      padding: const EdgeInsets.only(bottom: 6),
       child: CustomPaint(
         painter: SwapAmountRowBackground(
           expiresAt: requestOrder.expiresAt,
           createdAt: requestOrder.createdAt,
           type: type,
-          radius: Radius.circular(4.r),
+          radius: const Radius.circular(4),
         ),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.all(Radius.circular(4.r)),
+          borderRadius: const BorderRadius.all(Radius.circular(4)),
           child: InkWell(
             onTap: () {
               if (onTap != null) {
                 onTap!(requestOrder);
               }
             },
-            borderRadius: BorderRadius.all(Radius.circular(4.r)),
-            child: SizedBox(
-              width: 181.w,
-              child: Stack(
-                children: [
-                  if (requestOrder.own) ...[
-                    Positioned(
-                      right: 5.w,
-                      top: 3.h,
-                      child: Container(
-                        width: 4.r,
-                        height: 4.r,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFF2CCCBF),
-                        ),
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
+            child: Stack(
+              children: [
+                if (requestOrder.own) ...[
+                  Positioned(
+                    right: 5,
+                    top: 3,
+                    child: Container(
+                      width: 4,
+                      height: 4,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF2CCCBF),
                       ),
                     ),
-                  ],
-                  Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 6.w, vertical: 10.h),
-                    child: Builder(builder: (context) {
-                      var children = [
-                        Text(
-                          amountString,
-                          style: amountStyle,
-                        ),
-                        Text(
-                          price,
-                          style: amountStyle.copyWith(
-                            color: type == SwapAmountRowType.bid
-                                ? const Color(0xFF2CCCBF)
-                                : const Color(0xFFFF7878),
-                          ),
-                        ),
-                      ];
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: type == SwapAmountRowType.bid
-                            ? children
-                            : children.reversed.toList(),
-                      );
-                    }),
                   ),
                 ],
-              ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                  child: Builder(builder: (context) {
+                    var children = [
+                      Text(
+                        amountString,
+                        style: amountStyle,
+                      ),
+                      Text(
+                        price,
+                        style: amountStyle.copyWith(
+                          color: type == SwapAmountRowType.bid
+                              ? const Color(0xFF2CCCBF)
+                              : const Color(0xFFFF7878),
+                        ),
+                      ),
+                    ];
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: type == SwapAmountRowType.bid
+                          ? children
+                          : children.reversed.toList(),
+                    );
+                  }),
+                ),
+              ],
             ),
           ),
         ),

@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -42,22 +40,22 @@ class SettingsViewBackup extends HookConsumerWidget {
           return Column(
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 40.h),
+                padding: const EdgeInsets.only(top: 40),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'Your ${words.length} word recovery phrase is your wallets backup. Write it down and store it somewhere safe, preferably offline.'
                         .tr(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              SizedBox(
-                height: 32.h,
+              const SizedBox(
+                height: 32,
               ),
               MnemonicTable(
                 onCheckError: (index) {

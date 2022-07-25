@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
-
 class RoundedButton extends StatefulWidget {
   const RoundedButton({
     super.key,
@@ -32,9 +30,9 @@ class RoundedButtonState extends State<RoundedButton> {
   @override
   void initState() {
     super.initState();
-    _width = widget.width ?? 42.h;
-    _height = widget.heigh ?? 42.h;
-    _borderRadius = widget.borderRadius ?? BorderRadius.circular(42.w);
+    _width = widget.width ?? 42;
+    _height = widget.heigh ?? 42;
+    _borderRadius = widget.borderRadius ?? BorderRadius.circular(42);
   }
 
   @override

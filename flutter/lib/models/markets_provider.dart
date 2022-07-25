@@ -151,9 +151,7 @@ enum SubscribedMarket {
 class MarketsProvider extends ChangeNotifier {
   final Ref ref;
 
-  MarketsProvider(this.ref) {
-    ref.read(walletProvider).serverConnection.listen(onServerConnectionChanged);
-  }
+  MarketsProvider(this.ref);
 
   final Map<String, RequestOrder> _marketOrders = <String, RequestOrder>{};
   List<RequestOrder> get marketOrders => _marketOrders.values.toList();
@@ -163,12 +161,6 @@ class MarketsProvider extends ChangeNotifier {
   String _subscribedIndexPriceAssetId = '';
 
   SubscribedMarket subscribedMarket = SubscribedMarket.none;
-
-  void onServerConnectionChanged(bool value) {
-    if (!value) {
-      clearOrders();
-    }
-  }
 
   void clearOrders() {
     _marketOrders.clear();
@@ -225,18 +217,20 @@ class MarketsProvider extends ChangeNotifier {
     ref.read(walletProvider).sendMsg(msg);
   }
 
-  void subscribeSwapMarket(String assetId, {bool withTokenMaket = false}) {
+  void subscribeSwapMarket(String assetId) {
     if (assetId.isEmpty) {
       return;
     }
+    final asset = ref.read(walletProvider).assets[assetId]!;
 
     subscribedMarket = SubscribedMarket.asset;
     final msg = To();
     msg.subscribe = To_Subscribe();
-    msg.subscribe.markets.add(To_Subscribe_Market(assetId: assetId));
-    if (withTokenMaket) {
-      msg.subscribe.markets.add(To_Subscribe_Market(assetId: null));
+    if (asset.ampMarket || asset.swapMarket) {
+      msg.subscribe.markets.add(To_Subscribe_Market(assetId: assetId));
     }
+    // Subscribe to the token market constantly to show new assets in the product selector
+    msg.subscribe.markets.add(To_Subscribe_Market(assetId: null));
     ref.read(walletProvider).sendMsg(msg);
   }
 
@@ -381,6 +375,7 @@ class MarketsProvider extends ChangeNotifier {
           controller: controller,
           orderDetailsData: orderDetailsData,
           asset: priceAsset,
+          productAsset: asset,
           icon: icon,
         );
       },

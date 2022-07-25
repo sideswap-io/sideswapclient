@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class UrlLink extends StatelessWidget {
   final String url;
@@ -10,7 +9,7 @@ class UrlLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(4.w),
+      padding: const EdgeInsets.all(4),
       child: GestureDetector(
         onTap: () {
           if (url.isNotEmpty) {

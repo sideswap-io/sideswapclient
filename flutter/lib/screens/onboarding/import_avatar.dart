@@ -2,9 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -12,9 +10,9 @@ import 'package:sideswap/screens/onboarding/widgets/choose_avatar_image.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
 class ImportAvatar extends ConsumerWidget {
-  ImportAvatar({super.key});
+  const ImportAvatar({super.key});
 
-  final double avatarRadius = 200.w;
+  final double avatarRadius = 200.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +22,7 @@ class ImportAvatar extends ConsumerWidget {
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 56.h),
+                padding: const EdgeInsets.only(top: 56),
                 child: Container(
                   width: avatarRadius,
                   height: avatarRadius,
@@ -35,39 +33,39 @@ class ImportAvatar extends ConsumerWidget {
                     ),
                     border: Border.all(
                       color: const Color(0xFF00C5FF),
-                      width: 6.w,
+                      width: 6,
                     ),
                   ),
                   child: ClipOval(
                     child: Padding(
-                      padding: EdgeInsets.only(top: 18.h),
+                      padding: const EdgeInsets.only(top: 18),
                       child: SvgPicture.asset('assets/avatar.svg'),
                     ),
                   ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 32.h),
+                padding: const EdgeInsets.only(top: 32),
                 child: Text(
                   'Want to add an avatar?'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 22.sp,
+                  style: const TextStyle(
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
               ),
               const Spacer(),
-              Padding(
-                padding: EdgeInsets.only(bottom: 32.h),
-                child: const PageDots(
+              const Padding(
+                padding: EdgeInsets.only(bottom: 32),
+                child: PageDots(
                   maxSelectedDots: 2,
                 ),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: CustomBigButton(
-                  height: 54.h,
+                  height: 54,
                   width: double.maxFinite,
                   text: 'YES'.tr(),
                   textColor: Colors.white,
@@ -84,11 +82,11 @@ class ImportAvatar extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+                padding: const EdgeInsets.only(top: 16, bottom: 16),
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: CustomBigButton(
-                    height: 54.h,
+                    height: 54,
                     width: double.maxFinite,
                     text: 'NOT NOW'.tr(),
                     textColor: const Color(0xFF00C5FF),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
@@ -78,15 +77,13 @@ class DUrlLinkButton extends ConsumerWidget {
                 padding: const EdgeInsets.only(left: 10),
                 child: Text(
                   text,
-                  style: GoogleFonts.roboto(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
                     color: const Color(0xFF00C5FF),
-                    textStyle: TextStyle(
-                      decoration: url.isNotEmpty
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                    ),
+                    decoration: url.isNotEmpty
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
                   ),
                 ),
               ),

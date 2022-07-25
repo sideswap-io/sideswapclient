@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
@@ -10,7 +10,7 @@ import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class DPinWelcome extends ConsumerWidget {
+class DPinWelcome extends HookConsumerWidget {
   const DPinWelcome({
     super.key,
     this.onYesPressed,
@@ -22,6 +22,13 @@ class DPinWelcome extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final yesFocusNode = useFocusNode();
+
+    useEffect(() {
+      yesFocusNode.requestFocus();
+      return null;
+    }, [yesFocusNode]);
+
     return SideSwapScaffoldPage(
       onEscapeKey: () {
         ref.read(pinSetupProvider).isNewWallet = false;
@@ -38,7 +45,7 @@ class DPinWelcome extends ConsumerWidget {
                 child: Text(
                   'Do you wish to set a PIN to protect your wallet?'.tr(),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -50,7 +57,7 @@ class DPinWelcome extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 12),
                 child: Text(
                   'Protect your wallet with the PIN'.tr(),
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
@@ -62,6 +69,7 @@ class DPinWelcome extends ConsumerWidget {
                 child: DCustomFilledBigButton(
                   width: 266,
                   height: 49,
+                  focusNode: yesFocusNode,
                   onPressed: onYesPressed ??
                       () {
                         ref.read(pinSetupProvider).initPinSetupPinWelcome();

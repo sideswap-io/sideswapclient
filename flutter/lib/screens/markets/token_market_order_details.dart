@@ -2,11 +2,9 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/markets_provider.dart';
@@ -28,10 +26,10 @@ class TokenMarketOrderDetails extends ConsumerStatefulWidget {
   TokenMarketOrderDetailsState createState() => TokenMarketOrderDetailsState();
 }
 
-TextStyle defaultInfoStyle = GoogleFonts.roboto(
-  fontSize: 14.sp,
+TextStyle defaultInfoStyle = const TextStyle(
+  fontSize: 14,
   fontWeight: FontWeight.normal,
-  color: const Color(0xFF709EBA),
+  color: Color(0xFF709EBA),
 );
 
 class TokenMarketOrderDetailsState
@@ -94,18 +92,18 @@ class TokenMarketOrderDetailsState
             ),
             child: IntrinsicHeight(
               child: Padding(
-                padding: EdgeInsets.only(top: 26.h),
+                padding: const EdgeInsets.only(top: 26),
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(10.r)),
-                          color: const Color(0xFF043857),
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          color: Color(0xFF043857),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(16.r),
+                          padding: const EdgeInsets.all(16),
                           child: Consumer(
                             builder: (context, ref, _) {
                               final assetPrecision = ref
@@ -150,22 +148,22 @@ class TokenMarketOrderDetailsState
                                 precision: asset!.precision);
 
                         return Padding(
-                          padding: EdgeInsets.only(
-                              top: 34.h, left: 16.w, right: 16.w),
+                          padding: const EdgeInsets.only(
+                              top: 34, left: 16, right: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Token info:'.tr(),
-                                style: GoogleFonts.roboto(
-                                  fontSize: 18.sp,
+                                style: const TextStyle(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
-                              Padding(
-                                padding: EdgeInsets.only(top: 12.h),
-                                child: const Divider(
+                              const Padding(
+                                padding: EdgeInsets.only(top: 12),
+                                child: Divider(
                                   thickness: 1,
                                   height: 1,
                                   color: Color(0xFF337BA3),
@@ -175,7 +173,7 @@ class TokenMarketOrderDetailsState
                                 OrderTableRow(
                                   description: 'Circulating amount:'.tr(),
                                   value: '$circulatingAmount $ticker',
-                                  topPadding: 14.h,
+                                  topPadding: 14,
                                   displayDivider: false,
                                   style: defaultInfoStyle,
                                 ),
@@ -189,7 +187,7 @@ class TokenMarketOrderDetailsState
                                   },
                                   child: OrderTableRow(
                                     description: 'Link:'.tr(),
-                                    topPadding: 14.h,
+                                    topPadding: 14,
                                     displayDivider: false,
                                     style: defaultInfoStyle,
                                     customValue: Text(
@@ -210,7 +208,7 @@ class TokenMarketOrderDetailsState
                                   },
                                   child: OrderTableRow(
                                     description: 'Chart:'.tr(),
-                                    topPadding: 14.h,
+                                    topPadding: 14,
                                     displayDivider: false,
                                     style: defaultInfoStyle,
                                     customValue: Text(
@@ -229,11 +227,11 @@ class TokenMarketOrderDetailsState
                     ),
                     const Spacer(),
                     Padding(
-                      padding: EdgeInsets.only(
-                          bottom: 40.h, left: 16.w, right: 16.w),
+                      padding: const EdgeInsets.only(
+                          bottom: 40, left: 16, right: 16),
                       child: CustomBigButton(
                         width: double.maxFinite,
-                        height: 54.h,
+                        height: 54,
                         backgroundColor: const Color(0xFF00C5FF),
                         text: widget.requestOrder.isSell()
                             ? 'SELL'.tr()

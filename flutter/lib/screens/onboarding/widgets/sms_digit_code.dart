@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pinput/pin_put/pin_put.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/phone_provider.dart';
 
 class SmsDigitCode extends ConsumerStatefulWidget {
@@ -18,10 +16,10 @@ class SmsDigitCode extends ConsumerStatefulWidget {
 }
 
 class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
-  final TextStyle _defaultPinStyle = GoogleFonts.roboto(
-    fontSize: 22.sp,
+  final TextStyle _defaultPinStyle = const TextStyle(
+    fontSize: 22,
     fontWeight: FontWeight.normal,
-    color: const Color(0xFF002241),
+    color: Color(0xFF002241),
   );
 
   void validate(String value) {
@@ -31,17 +29,17 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 107.h,
+      height: 107,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Enter the 4 digit code from SMS'.tr(),
-            style: GoogleFonts.roboto(
-              fontSize: 15.sp,
+            style: const TextStyle(
+              fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF00C5FF),
+              color: Color(0xFF00C5FF),
             ),
           ),
           const Spacer(),
@@ -50,10 +48,10 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
               final step = ref.watch(phoneProvider).smsCodeStep;
               return Container(
                 width: double.maxFinite,
-                height: 54.h,
+                height: 54,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(8.w),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(8),
                   ),
                   color: Colors.white,
                   border: Border.all(
@@ -64,7 +62,7 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
                 ),
                 child: PinPut(
                   eachFieldConstraints:
-                      BoxConstraints(maxHeight: 54.h, minWidth: 80.w),
+                      const BoxConstraints(maxHeight: 54, minWidth: 80),
                   fieldsCount: 4,
                   preFilledWidget: Container(
                     width: 40,
@@ -72,9 +70,9 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
                     color: Colors.white,
                   ),
                   separatorPositions: const [1, 2, 3],
-                  separator: SizedBox(
-                    height: 54.h,
-                    child: const VerticalDivider(
+                  separator: const SizedBox(
+                    height: 54,
+                    child: VerticalDivider(
                       width: 1,
                       thickness: 1,
                       color: Color(0xFFCCDEE9),
@@ -108,17 +106,17 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
             builder: (context, ref, child) {
               final step = ref.watch(phoneProvider).smsCodeStep;
               return SizedBox(
-                height: 23.h,
+                height: 23,
                 child: Visibility(
                   visible: step == SmsCodeStep.wrongCode,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 8.h),
+                  child: const Padding(
+                    padding: EdgeInsets.only(top: 8),
                     child: Text(
                       'Wrong code',
-                      style: GoogleFonts.roboto(
-                        fontSize: 14.sp,
+                      style: TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFFFF7878),
+                        color: Color(0xFFFF7878),
                       ),
                     ),
                   ),

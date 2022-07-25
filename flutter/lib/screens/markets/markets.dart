@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/screens/markets/swap_market.dart';
-import 'package:sideswap/screens/markets/token_market.dart';
 import 'package:sideswap/screens/markets/widgets/empty_requests_page.dart';
 import 'package:sideswap/screens/markets/widgets/filled_requests_page.dart';
 import 'package:sideswap/screens/markets/widgets/market_type_buttons.dart';
@@ -14,13 +12,11 @@ class Markets extends ConsumerStatefulWidget {
   const Markets({
     super.key,
     required this.onOrdersPressed,
-    required this.onTokenPressed,
     required this.onSwapPressed,
-    this.selectedMarketType = MarketSelectedType.orders,
+    this.selectedMarketType = MarketSelectedType.swap,
   });
 
   final VoidCallback onOrdersPressed;
-  final VoidCallback onTokenPressed;
   final VoidCallback onSwapPressed;
   final MarketSelectedType selectedMarketType;
 
@@ -36,11 +32,10 @@ class MarketsState extends ConsumerState<Markets> {
         return Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: 18.h, left: 16.w, right: 16.w),
+              padding: const EdgeInsets.only(top: 18, left: 16, right: 16),
               child: MarketTypeButtons(
                 selectedType: widget.selectedMarketType,
                 onOrdersPressed: widget.onOrdersPressed,
-                onTokenPressed: widget.onTokenPressed,
                 onSwapPressed: widget.onSwapPressed,
               ),
             ),
@@ -59,11 +54,9 @@ class MarketsState extends ConsumerState<Markets> {
                 },
               ),
               const MarketsBottomPanel(),
-            ] else if (widget.selectedMarketType ==
-                MarketSelectedType.token) ...[
-              const Flexible(child: TokenMarket()),
             ] else ...[
               const Flexible(child: SwapMarket()),
+              const MarketsBottomBuySellPanel(),
             ],
           ],
         );

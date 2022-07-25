@@ -91,35 +91,21 @@ class SwapMarketProvider extends ChangeNotifier {
     );
   }
 
-  List<Product> getProducts() {
-    final newList = <Product>[];
-    newList.add(getDefaultProduct());
+  Product getProductFromAssetId(String assetId) {
     final wallet = ref.read(walletProvider);
-
-    newList.addAll(getProductsAssetId().map((e) {
-      final asset = wallet.assets[e]!;
-      final displayName = asset.ampMarket
-          ? '${asset.ticker} / $kLiquidBitcoinTicker'
-          : '$kLiquidBitcoinTicker / ${asset.ticker}';
-      return Product(
-        assetId: e,
-        displayName: displayName,
-        ticker: asset.ticker,
-      );
-    }).toList());
-
-    return newList.toSet().toList();
+    final asset = wallet.assets[assetId]!;
+    final displayName = asset.swapMarket
+        ? '$kLiquidBitcoinTicker / ${asset.ticker}'
+        : '${asset.ticker} / $kLiquidBitcoinTicker';
+    return Product(
+      assetId: assetId,
+      displayName: displayName,
+      ticker: asset.ticker,
+    );
   }
 
   void updateSwapMarketOrders(List<RequestOrder> requestOrders) {
-    final newOrders = requestOrders
-        .where((e) =>
-            !e.private &&
-            (e.marketType != MarketType.token) &&
-            !DateTime.fromMillisecondsSinceEpoch(e.expiresAt)
-                .difference(DateTime.now())
-                .isNegative)
-        .toList();
+    final newOrders = requestOrders.where((e) => !e.private).toList();
 
     if (const ListEquality<RequestOrder>()
         .equals(swapMarketOrders, newOrders)) {
@@ -134,23 +120,21 @@ class SwapMarketProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool isBid(bool sendBitcoins, bool isAmp) {
-    return sendBitcoins == isAmp;
+  bool isBid(bool sendBitcoins, MarketType marketType) {
+    return sendBitcoins != (marketType == MarketType.stablecoin);
   }
 
   void updateOffers() {
-    final isAmp =
-        ref.read(walletProvider).assets[currentProduct.assetId]?.ampMarket ??
-            false;
     bidOffers.clear();
     bidOffers.addAll(swapMarketOrders
         .where((e) =>
-            isBid(e.sendBitcoins, isAmp) && e.assetId == currentProduct.assetId)
+            isBid(e.sendBitcoins, e.marketType) &&
+            e.assetId == currentProduct.assetId)
         .sorted((a, b) => b.price.compareTo(a.price)));
     askOffers.clear();
     askOffers.addAll(swapMarketOrders
         .where((e) =>
-            !isBid(e.sendBitcoins, isAmp) &&
+            !isBid(e.sendBitcoins, e.marketType) &&
             e.assetId == currentProduct.assetId)
         .sorted((a, b) => a.price.compareTo(b.price)));
   }

@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/payment_requests_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -37,20 +35,20 @@ class ConfirmRequestPaymentSuccess extends ConsumerWidget {
             Text(
               'DONE_FRIEND_PAYMENT'.tr(args: [request.friend.contact.name]),
               textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                fontSize: 16.sp,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.normal,
                 color: Colors.white,
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 12.h),
+              padding: const EdgeInsets.only(top: 12),
               child: Text(
                 '$amount $ticker',
-                style: GoogleFonts.roboto(
-                  fontSize: 24.sp,
+                style: const TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF00C5FF),
+                  color: Color(0xFF00C5FF),
                 ),
               ),
             ),

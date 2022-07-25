@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo_background.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_success_icon.dart';
@@ -30,7 +29,7 @@ class DNewWalletBackupCheckSucceed extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 32),
               child: Text(
                 'Success!'.tr(),
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -43,7 +42,7 @@ class DNewWalletBackupCheckSucceed extends ConsumerWidget {
                 'Please take every caution to protect and maintain your wallet seed. Your seed will enable you to restore your wallet in case your PIN is forgotten or your device is lost. Do not share it with anyone.'
                     .tr(),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -19,7 +17,7 @@ class FeeRatesDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(left: 18.w),
+      padding: const EdgeInsets.only(left: 18),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -35,15 +33,15 @@ class FeeRatesDropdown extends StatelessWidget {
             );
           },
           child: Container(
-            height: 42.h,
+            height: 42,
             decoration: borderDecoration,
             child: Align(
               alignment: Alignment.centerLeft,
               child: SizedBox(
-                width: 225.w,
-                height: 42.h,
+                width: 225,
+                height: 42,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 6.h),
+                  padding: const EdgeInsets.only(top: 6),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -59,8 +57,8 @@ class FeeRatesDropdown extends StatelessWidget {
                                   .feeRateDescription(currentFeeRate.feeRate),
                               overflow: TextOverflow.clip,
                               maxLines: 1,
-                              style: GoogleFonts.roboto(
-                                fontSize: 13.sp,
+                              style: const TextStyle(
+                                fontSize: 13,
                                 fontWeight: FontWeight.normal,
                                 color: Colors.white,
                               ),
@@ -70,11 +68,11 @@ class FeeRatesDropdown extends StatelessWidget {
                           return Container();
                         }),
                       )),
-                      Padding(
-                        padding: EdgeInsets.only(bottom: 3.h),
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 3),
                         child: Icon(
                           Icons.keyboard_arrow_down,
-                          size: 16.w,
+                          size: 16,
                         ),
                       ),
                     ],

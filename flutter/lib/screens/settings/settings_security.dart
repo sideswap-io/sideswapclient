@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class SettingsSecurity extends StatelessWidget {
   const SettingsSecurity({
@@ -21,20 +18,20 @@ class SettingsSecurity extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 8.h),
+      padding: const EdgeInsets.only(top: 8),
       child: InkWell(
         onTap: onTap,
         child: AbsorbPointer(
           child: SizedBox(
-            height: 60.w,
+            height: 60,
             child: TextButton(
               onPressed: () {},
               style: TextButton.styleFrom(
                 primary: Colors.white,
                 backgroundColor: const Color(0xFF135579),
-                shape: RoundedRectangleBorder(
+                shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
-                    Radius.circular(8.w),
+                    Radius.circular(8),
                   ),
                 ),
                 side: const BorderSide(
@@ -48,19 +45,19 @@ class SettingsSecurity extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(left: 16.w),
+                    padding: const EdgeInsets.only(left: 16),
                     child: Icon(
                       icon,
-                      size: 24.h,
+                      size: 24,
                       color: const Color(0xFF00C5FF),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(left: 10.w),
+                    padding: const EdgeInsets.only(left: 10),
                     child: Text(
                       description,
-                      style: GoogleFonts.roboto(
-                        fontSize: 16.sp,
+                      style: const TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.normal,
                         color: Colors.white,
                       ),
@@ -68,14 +65,14 @@ class SettingsSecurity extends StatelessWidget {
                   ),
                   const Spacer(),
                   Padding(
-                    padding: EdgeInsets.only(right: 19.w),
+                    padding: const EdgeInsets.only(right: 19),
                     child: FlutterSwitch(
                       value: value,
                       onToggle: (val) {},
-                      width: 51.h,
-                      height: 31.h,
-                      toggleSize: 27.h,
-                      padding: 2.h,
+                      width: 51,
+                      height: 31,
+                      toggleSize: 27,
+                      padding: 2,
                       activeColor: const Color(0xFF00C5FF),
                       inactiveColor: const Color(0xFF164D6A),
                       toggleColor: Colors.white,

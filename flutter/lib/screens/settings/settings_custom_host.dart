@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
@@ -33,10 +31,10 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
   @override
   void initState() {
     super.initState();
-    defaultTextStyle = GoogleFonts.roboto(
-      fontSize: 15.sp,
+    defaultTextStyle = const TextStyle(
+      fontSize: 15,
       fontWeight: FontWeight.w500,
-      color: const Color(0xFF00B4E9),
+      color: Color(0xFF00B4E9),
     );
 
     hostController = TextEditingController()
@@ -99,33 +97,33 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
               ),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(top: 40.h),
+                        padding: const EdgeInsets.only(top: 40),
                         child: Text(
                           'Host'.tr(),
                           style: defaultTextStyle,
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 10.h),
+                        padding: const EdgeInsets.only(top: 10),
                         child: SideSwapTextField(
                           controller: hostController,
                           hintText: 'Hostname'.tr(),
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 18.h),
+                        padding: const EdgeInsets.only(top: 18),
                         child: Text(
                           'Port'.tr(),
                           style: defaultTextStyle,
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 10.h),
+                        padding: const EdgeInsets.only(top: 10),
                         child: SideSwapTextField(
                           controller: portController,
                           hintText: 'Range 1-65535'.tr(),
@@ -137,7 +135,7 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 10.h),
+                        padding: const EdgeInsets.only(top: 10),
                         child: Consumer(
                           builder: (context, watch, child) {
                             return CustomCheckBox(
@@ -148,7 +146,7 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
                                 });
                               },
                               child: Padding(
-                                padding: EdgeInsets.only(left: 10.w),
+                                padding: const EdgeInsets.only(left: 10),
                                 child: Row(
                                   children: [
                                     Text(
@@ -162,35 +160,28 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
                           },
                         ),
                       ),
-                      const Spacer(
-                        flex: 3,
-                      ),
-                      Flexible(
-                        flex: 2,
-                        child: Padding(
-                          padding: EdgeInsets.only(bottom: 40.h),
-                          child: CustomBigButton(
-                            enabled: saveEnabled,
-                            width: double.maxFinite,
-                            height: 54.h,
-                            text: 'SAVE AND APPLY'.tr(),
-                            onPressed: () {
-                              ref.read(networkAccessProvider).networkType =
-                                  SettingsNetworkType.custom;
-                              ref
-                                  .read(configProvider)
-                                  .setSettingsHost(hostController.text);
-                              ref.read(configProvider).setSettingsPort(
-                                  int.parse(portController.text));
-                              ref
-                                  .read(configProvider)
-                                  .setSettingsUseTLS(useTls);
-                              Navigator.of(context).pop();
-                              ref.read(walletProvider).applyNetworkChange();
-                            },
-                            backgroundColor: const Color(0xFF00C5FF),
-                            textColor: Colors.white,
-                          ),
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 40),
+                        child: CustomBigButton(
+                          enabled: saveEnabled,
+                          width: double.maxFinite,
+                          height: 54,
+                          text: 'SAVE AND APPLY'.tr(),
+                          onPressed: () {
+                            ref.read(networkAccessProvider).networkType =
+                                SettingsNetworkType.custom;
+                            ref
+                                .read(configProvider)
+                                .setSettingsHost(hostController.text);
+                            ref.read(configProvider).setSettingsPort(
+                                int.parse(portController.text));
+                            ref.read(configProvider).setSettingsUseTLS(useTls);
+                            Navigator.of(context).pop();
+                            ref.read(walletProvider).applyNetworkChange();
+                          },
+                          backgroundColor: const Color(0xFF00C5FF),
+                          textColor: Colors.white,
                         ),
                       ),
                     ],

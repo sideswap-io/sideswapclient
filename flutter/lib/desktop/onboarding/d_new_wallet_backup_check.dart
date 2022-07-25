@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_radio_button.dart';
@@ -34,7 +33,7 @@ class DNewWalletBackupCheck extends ConsumerWidget {
             children: [
               Text(
                 'Select the correct word'.tr(),
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -47,7 +46,7 @@ class DNewWalletBackupCheck extends ConsumerWidget {
                   'Confirm your backup by proving you have the keys available offline'
                       .tr(),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
@@ -150,10 +149,10 @@ class DWordLine extends ConsumerWidget {
             child: Center(
               child: Text(
                 'Word #${wordIndex + 1}',
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: const Color(0xFF00C5FF),
+                  color: Color(0xFF00C5FF),
                   letterSpacing: 0.5,
                 ),
               ),
@@ -249,7 +248,7 @@ class DWordRadioButton extends ConsumerWidget {
                 child: Center(
                   child: Text(
                     "${word?[0]}${word?.substring(1).toLowerCase()}",
-                    style: GoogleFonts.roboto(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
                       color: checked ? const Color(0xFF002241) : Colors.white,

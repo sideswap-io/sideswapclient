@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/markets_provider.dart';
@@ -74,18 +73,18 @@ class SwapMarketOrderDetailsState
             ),
             child: IntrinsicHeight(
               child: Padding(
-                padding: EdgeInsets.only(top: 26.h),
+                padding: const EdgeInsets.only(top: 26),
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.w),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(10.r)),
-                          color: const Color(0xFF043857),
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          color: Color(0xFF043857),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.all(16.r),
+                          padding: const EdgeInsets.all(16),
                           child: Consumer(
                             builder: (context, ref, _) {
                               final assetPrecision = ref
@@ -107,11 +106,11 @@ class SwapMarketOrderDetailsState
                     ),
                     const Spacer(),
                     Padding(
-                      padding: EdgeInsets.only(
-                          bottom: 40.h, left: 16.w, right: 16.w),
+                      padding: const EdgeInsets.only(
+                          bottom: 40, left: 16, right: 16),
                       child: CustomBigButton(
                         width: double.maxFinite,
-                        height: 54.h,
+                        height: 54,
                         backgroundColor: const Color(0xFF00C5FF),
                         text: 'SWAP'.tr(),
                         onPressed: () {

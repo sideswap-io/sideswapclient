@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -46,7 +44,7 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                 ),
                 child: IntrinsicHeight(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.w),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Center(
                       child: Column(
                         children: [
@@ -61,32 +59,29 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                                     child: LangSelector(),
                                   ),
                                 ),
-                                Padding(
-                                  padding: EdgeInsets.only(top: 0.h),
-                                  child: SizedBox(
-                                    width: 132.w,
-                                    height: 130.h,
-                                    child: SvgPicture.asset('assets/logo.svg'),
-                                  ),
+                                SizedBox(
+                                  width: 132,
+                                  height: 130,
+                                  child: SvgPicture.asset('assets/logo.svg'),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(top: 40.h),
+                                  padding: const EdgeInsets.only(top: 40),
                                   child: Text(
                                     'Welcome in SideSwap'.tr(),
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 22.sp,
+                                    style: const TextStyle(
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ).tr(),
                                 ),
                                 Padding(
-                                  padding: EdgeInsets.only(top: 12.h),
-                                  child: Text(
+                                  padding: const EdgeInsets.only(top: 12),
+                                  child: const Text(
                                     'SideSwap is the easiest way to send, receive and swap on the Liquid network.',
                                     textAlign: TextAlign.center,
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 16.sp,
+                                    style: TextStyle(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.normal,
                                       color: Colors.white,
                                     ),
@@ -99,13 +94,13 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                             child: Container(),
                           ),
                           Padding(
-                            padding: EdgeInsets.only(bottom: 15.h),
+                            padding: const EdgeInsets.only(bottom: 15),
                             child: CustomBigButton(
                               width: double.infinity,
-                              height: 54.h,
+                              height: 54,
                               text: 'CREATE NEW WALLET'.tr(),
-                              textStyle: GoogleFonts.roboto(
-                                fontSize: 16.sp,
+                              textStyle: const TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                               onPressed: () async {
@@ -116,13 +111,13 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.only(bottom: 23.h),
+                            padding: const EdgeInsets.only(bottom: 23),
                             child: CustomBigButton(
                               width: double.infinity,
-                              height: 54.h,
+                              height: 54,
                               text: 'IMPORT WALLET'.tr(),
-                              textStyle: GoogleFonts.roboto(
-                                fontSize: 16.sp,
+                              textStyle: const TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                               backgroundColor: Colors.transparent,

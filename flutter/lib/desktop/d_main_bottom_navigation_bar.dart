@@ -63,8 +63,8 @@ class DesktopMainBottomNavigationBarState
           ),
           _ToolbarButton(
             name: 'Peg-In/Out'.tr(),
-            selectedIcon: 'assets/swap_active.svg',
-            unselectedIcon: 'assets/swap.svg',
+            selectedIcon: 'assets/peg-in-out_active.svg',
+            unselectedIcon: 'assets/peg-in-out.svg',
             index: 4,
             selectedIndex: widget.currentIndex,
             onSelected: selected,

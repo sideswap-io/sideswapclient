@@ -2,10 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -36,28 +34,26 @@ class LicenseTerms extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 38.h, left: 16.w, right: 16.w),
+            padding: const EdgeInsets.only(top: 38, left: 16, right: 16),
             child: Text(
               'Terms and conditions'.tr(),
-              style: GoogleFonts.roboto(
-                fontSize: 22.sp,
+              style: const TextStyle(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 24.h),
-            child: Material(
-              elevation: 3.0,
-              color: Colors.transparent,
-              shadowColor: const Color(0xFF1E6389),
-              child: SizedBox(
-                height: 421.h,
-                width: MediaQuery.of(context).size.width,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: Material(
+                elevation: 3.0,
+                color: Colors.transparent,
+                shadowColor: const Color(0xFF1E6389),
                 child: Padding(
-                  padding: EdgeInsets.only(
-                      left: 8.w, right: 8.w, top: 8.w, bottom: 8.w),
+                  padding: const EdgeInsets.only(
+                      left: 8, right: 8, top: 8, bottom: 8),
                   child: SingleChildScrollView(
                     child: Center(
                       child: FutureBuilder(
@@ -66,20 +62,19 @@ class LicenseTerms extends ConsumerWidget {
                           if (snapshot.hasData) {
                             return Text(
                               snapshot.data as String,
-                              textScaleFactor: 1.03,
-                              style: GoogleFonts.robotoMono(
-                                fontSize: 8.sp,
+                              style: const TextStyle(
+                                fontSize: 12,
                                 fontWeight: FontWeight.normal,
                                 color: Colors.white,
                               ),
                             );
                           }
 
-                          return Padding(
-                            padding: EdgeInsets.only(top: 32.h),
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 32),
                             child: SpinKitThreeBounce(
                               color: Colors.white,
-                              size: 24.w,
+                              size: 24,
                             ),
                           );
                         },
@@ -90,25 +85,32 @@ class LicenseTerms extends ConsumerWidget {
               ),
             ),
           ),
-          const Spacer(),
-          Padding(
-            padding: EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
-            child: CustomBigButton(
-              width: double.infinity,
-              height: 54.h,
-              text: 'I AGREE'.tr(),
-              backgroundColor: const Color(0xFF00C5FF),
-              onPressed: () async {
-                await ref.read(walletProvider).setLicenseAccepted();
-                if (nextStep == LicenseNextStep.createWallet) {
-                  await ref.read(walletProvider).setReviewLicenseCreateWallet();
-                  return;
-                }
+          Container(
+            height: 126,
+            color: const Color(0xFF1E6389),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16),
+              child: Center(
+                child: CustomBigButton(
+                  width: double.infinity,
+                  height: 54,
+                  text: 'I AGREE'.tr(),
+                  backgroundColor: const Color(0xFF00C5FF),
+                  onPressed: () async {
+                    await ref.read(walletProvider).setLicenseAccepted();
+                    if (nextStep == LicenseNextStep.createWallet) {
+                      await ref
+                          .read(walletProvider)
+                          .setReviewLicenseCreateWallet();
+                      return;
+                    }
 
-                if (nextStep == LicenseNextStep.importWallet) {
-                  ref.read(walletProvider).startMnemonicImport();
-                }
-              },
+                    if (nextStep == LicenseNextStep.importWallet) {
+                      ref.read(walletProvider).startMnemonicImport();
+                    }
+                  },
+                ),
+              ),
             ),
           ),
         ],

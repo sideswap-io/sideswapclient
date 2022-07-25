@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/onboarding/widgets/contact_mockup_container.dart';
 
 class ImportContactsImage extends StatelessWidget {
@@ -12,33 +11,33 @@ class ImportContactsImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 192.w,
-      height: 202.h,
+      width: 192,
+      height: 202,
       child: Stack(
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 43.w),
+            padding: const EdgeInsets.only(left: 43),
             child: SvgPicture.asset(
               'assets/device_frame.svg',
-              width: 106.w,
-              height: 202.h,
+              width: 106,
+              height: 202,
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 21.h),
-            child: const ContactMockupContainer(
+          const Padding(
+            padding: EdgeInsets.only(top: 21),
+            child: ContactMockupContainer(
               icon: ContactMockupIcon.male1,
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 77.h, left: 76.w),
-            child: const ContactMockupContainer(
+          const Padding(
+            padding: EdgeInsets.only(top: 77, left: 76),
+            child: ContactMockupContainer(
               icon: ContactMockupIcon.female1,
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 133.h),
-            child: const ContactMockupContainer(
+          const Padding(
+            padding: EdgeInsets.only(top: 133),
+            child: ContactMockupContainer(
               icon: ContactMockupIcon.male2,
             ),
           ),

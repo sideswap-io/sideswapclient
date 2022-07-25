@@ -492,3 +492,9 @@ double trackerValueToIndexPrice(double value) {
 double roundTrackerValue(double value) {
   return (value * 100).round().toDouble() / 100.0;
 }
+
+final _formatterThousandsSep = NumberFormat("#,##0.00");
+
+String formatThousandsSep(double value) {
+  return _formatterThousandsSep.format(value).replaceAll(',', ' ');
+}

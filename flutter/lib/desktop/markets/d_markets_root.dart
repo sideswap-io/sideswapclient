@@ -107,8 +107,7 @@ class _DMarketsState extends ConsumerState<DMarkets> {
     final selectedAsset = ref.read(walletProvider).assets[selectedAssetId]!;
     if (selectedAsset.swapMarket || selectedAsset.ampMarket) {
       markets.subscribeIndexPrice(selectedAssetId);
-      // Subscribe to the token market constantly to show new assets in the asset selector
-      markets.subscribeSwapMarket(selectedAssetId, withTokenMaket: true);
+      markets.subscribeSwapMarket(selectedAssetId);
     } else {
       markets.subscribeTokenMarket();
     }
@@ -449,32 +448,49 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
             ),
           if (expanded)
             Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 4, right: 7),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _AssetSelector(
-                        marketType: MarketType.stablecoin,
-                        selectedAssetId: widget.selectedAssetId,
-                        onAssetSelected: handleAssetSelected,
-                      ),
-                      _AssetSelector(
-                        marketType: MarketType.amp,
-                        selectedAssetId: widget.selectedAssetId,
-                        onAssetSelected: handleAssetSelected,
-                      ),
-                      _AssetSelector(
-                        marketType: MarketType.token,
-                        selectedAssetId: widget.selectedAssetId,
-                        onAssetSelected: handleAssetSelected,
-                      ),
-                    ],
-                  ),
-                ),
+              child: ProductColumns(
+                selectedAssetId: widget.selectedAssetId,
+                onAssetSelected: handleAssetSelected,
               ),
             )
+        ],
+      ),
+    );
+  }
+}
+
+class ProductColumns extends StatelessWidget {
+  const ProductColumns({
+    Key? key,
+    required this.selectedAssetId,
+    required this.onAssetSelected,
+  }) : super(key: key);
+
+  final String selectedAssetId;
+  final ValueChanged<String> onAssetSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, right: 7),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _AssetSelector(
+            marketType: MarketType.stablecoin,
+            selectedAssetId: selectedAssetId,
+            onAssetSelected: onAssetSelected,
+          ),
+          _AssetSelector(
+            marketType: MarketType.amp,
+            selectedAssetId: selectedAssetId,
+            onAssetSelected: onAssetSelected,
+          ),
+          _AssetSelector(
+            marketType: MarketType.token,
+            selectedAssetId: selectedAssetId,
+            onAssetSelected: onAssetSelected,
+          ),
         ],
       ),
     );
@@ -495,10 +511,29 @@ class _AssetSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wallet = ref.watch(walletProvider);
+
+    // Only show token assets that we could sell or buy
+    final tokenAssetsToSell = ref
+        .watch(balancesProvider)
+        .balances
+        .entries
+        .where((e) => e.key.account == AccountType.regular && e.value > 0)
+        .map((e) => e.key.asset);
+    final tokenAssetsToBuy = ref
+        .watch(marketsProvider)
+        .marketOrders
+        .where((e) => e.marketType == MarketType.token)
+        .map((e) => e.assetId);
+    final validTokenAssets = Set<String>.from(tokenAssetsToSell);
+    validTokenAssets.addAll(tokenAssetsToBuy);
+
     final assets = wallet.assetsList.map((e) => wallet.assets[e]!).where((e) =>
         e.assetId != wallet.liquidAssetId() &&
         e.assetId != wallet.bitcoinAssetId() &&
-        assetMarketType(e) == marketType);
+        assetMarketType(e) == marketType &&
+        (marketType != MarketType.token ||
+            validTokenAssets.contains(e.assetId)));
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5),
@@ -637,7 +672,7 @@ class _MakeOrderButton extends StatelessWidget {
   }
 }
 
-class DOrderAmountEnter extends ConsumerWidget {
+class DOrderAmountEnter extends ConsumerStatefulWidget {
   const DOrderAmountEnter({
     super.key,
     required this.caption,
@@ -662,22 +697,48 @@ class DOrderAmountEnter extends ConsumerWidget {
   final String hintText;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DOrderAmountEnter> createState() => _DOrderAmountEnterState();
+}
+
+class _DOrderAmountEnterState extends ConsumerState<DOrderAmountEnter> {
+  @override
+  Widget build(BuildContext context) {
     final wallet = ref.watch(walletProvider);
-    final asset = wallet.assets[assetId]!;
-    final icon = wallet.assetImagesSmall[assetId]!;
-    final precision = (isPriceField && asset.swapMarket) ? 2 : asset.precision;
+    final asset = wallet.assets[widget.assetId]!;
+    final icon = wallet.assetImagesSmall[widget.assetId]!;
+    final precision =
+        (widget.isPriceField && asset.swapMarket) ? 2 : asset.precision;
+    final showDollarConversion =
+        widget.isPriceField && widget.assetId == wallet.liquidAssetId();
+    final dollarConversion = showDollarConversion
+        ? ref
+            .read(requestOrderProvider)
+            .dollarConversionFromString(widget.assetId, widget.controller.text)
+        : null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          caption,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF00C5FF),
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.caption,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF00C5FF),
+              ),
+            ),
+            if (showDollarConversion && dollarConversion!.isNotEmpty)
+              Text(
+                '≈ $dollarConversion',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF83B4D2),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 3),
         Row(
@@ -694,7 +755,7 @@ class DOrderAmountEnter extends ConsumerWidget {
             Expanded(
               child: TextField(
                 textAlign: TextAlign.end,
-                controller: controller,
+                controller: widget.controller,
                 style: const TextStyle(
                   fontSize: 22,
                   color: Colors.white,
@@ -707,13 +768,13 @@ class DOrderAmountEnter extends ConsumerWidget {
                   border: const OutlineInputBorder(
                     borderSide: BorderSide.none,
                   ),
-                  hintText: hintText,
+                  hintText: widget.hintText,
                   hintStyle: MaterialStateTextStyle.resolveWith((states) {
                     return TextStyle(
-                        color:
-                            states.contains(MaterialState.focused) && !readonly
-                                ? Colors.transparent
-                                : const Color(0x7FFFFFFF));
+                        color: states.contains(MaterialState.focused) &&
+                                !widget.readonly
+                            ? Colors.transparent
+                            : const Color(0x7FFFFFFF));
                   }),
                 ),
                 keyboardType:
@@ -727,10 +788,13 @@ class DOrderAmountEnter extends ConsumerWidget {
                   ],
                   DecimalTextInputFormatter(decimalRange: precision),
                 ],
-                autofocus: autofocus,
-                onEditingComplete: onEditingComplete,
-                focusNode: focusNode,
-                readOnly: readonly,
+                autofocus: widget.autofocus,
+                onEditingComplete: widget.onEditingComplete,
+                onChanged: (value) {
+                  setState(() {});
+                },
+                focusNode: widget.focusNode,
+                readOnly: widget.readonly,
               ),
             ),
           ],
@@ -1013,14 +1077,12 @@ class _OrdersPanel extends ConsumerWidget {
                     children: [
                       _OrdersList(
                         orders: bids,
-                        height: constraints.maxHeight,
-                        emptyText: 'No active bids'.tr(),
+                        isBids: true,
                       ),
                       const SizedBox(width: 7),
                       _OrdersList(
                         orders: asks,
-                        height: constraints.maxHeight,
-                        emptyText: 'No active offers'.tr(),
+                        isBids: false,
                       ),
                     ],
                   ),
@@ -1037,29 +1099,25 @@ class _OrdersPanel extends ConsumerWidget {
 class _OrdersList extends StatelessWidget {
   const _OrdersList({
     required this.orders,
-    required this.height,
-    required this.emptyText,
+    required this.isBids,
   });
 
   final List<RequestOrder> orders;
-  final String emptyText;
-  final double height;
+  final bool isBids;
 
   @override
   Widget build(BuildContext context) {
     if (orders.isEmpty) {
       return Expanded(
-        child: Container(
-          height: height,
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Color(0xFF135579),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            emptyText,
-            style: const TextStyle(
-              color: Color(0xFF87C1E1),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 12, top: 12),
+          child: Align(
+            alignment: Alignment.center,
+            child: Text(
+              isBids ? 'No active bids'.tr() : 'No active offers'.tr(),
+              style: const TextStyle(
+                color: Color(0xFF87C1E1),
+              ),
             ),
           ),
         ),

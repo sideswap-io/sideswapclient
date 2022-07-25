@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapNavigationItemIcon extends StatelessWidget {
-  const SideSwapNavigationItemIcon(this.assetName, {super.key, this.height});
+  const SideSwapNavigationItemIcon(this.assetName, {super.key});
 
   final String assetName;
-  final double? height;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 32.w,
-      height: 30.h,
+      width: 32,
+      height: 32,
       child: SvgPicture.asset(
         assetName,
-        width: height,
+        width: 32,
       ),
     );
   }

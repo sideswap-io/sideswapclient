@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
@@ -60,15 +58,15 @@ class ShareCopyScanTextFormField extends StatefulWidget {
 
 class ShareCopyScanTextFormFieldState
     extends State<ShareCopyScanTextFormField> {
-  final _spaceBetween = 4;
-  final _iconWidth = 24;
+  final _spaceBetween = 4.0;
+  final _iconWidth = 24.0;
 
   late FocusNode _focusNode;
   bool _emptySuffix = false;
-  final TextStyle _defaultStyle = GoogleFonts.roboto(
-    fontSize: 17.sp,
+  final TextStyle _defaultStyle = const TextStyle(
+    fontSize: 17,
     fontWeight: FontWeight.normal,
-    color: const Color(0xFF84ADC6),
+    color: Color(0xFF84ADC6),
   );
 
   @override
@@ -111,7 +109,7 @@ class ShareCopyScanTextFormFieldState
 
   @override
   Widget build(BuildContext context) {
-    var suffixCounter = 0;
+    var suffixCounter = 0.0;
     if (widget.onCopyTap != null) {
       suffixCounter++;
     }
@@ -162,25 +160,26 @@ class ShareCopyScanTextFormFieldState
                       hintStyle: widget.hintStyle,
                       hintText: widget.hintText,
                       errorText: widget.errorText,
-                      errorStyle: GoogleFonts.roboto(
-                        fontSize: 14.sp,
+                      errorStyle: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFFFF7878),
+                        color: Color(0xFFFF7878),
                       ),
                       suffixIcon: _emptySuffix
                           ? null
                           : Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: SizedBox(
-                                width: suffixWidth.w,
-                                height: 24.h,
+                                width: suffixWidth,
+                                height: 24,
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceAround,
                                   children: [
                                     if (widget.onCopyTap != null) ...[
                                       SizedBox(
-                                        width: gestureAreaWidth.w,
+                                        width: gestureAreaWidth,
                                         height: double.maxFinite,
                                         child: InkWell(
                                           onTap: () {
@@ -189,8 +188,8 @@ class ShareCopyScanTextFormFieldState
                                           child: Center(
                                             child: SvgPicture.asset(
                                               'assets/copy.svg',
-                                              width: _iconWidth.w,
-                                              height: _iconWidth.w,
+                                              width: _iconWidth,
+                                              height: _iconWidth,
                                               color: const Color(0xFF00B4E9),
                                             ),
                                           ),
@@ -199,7 +198,7 @@ class ShareCopyScanTextFormFieldState
                                     ],
                                     if (widget.onPasteTap != null) ...[
                                       SizedBox(
-                                        width: gestureAreaWidth.w,
+                                        width: gestureAreaWidth,
                                         height: double.maxFinite,
                                         child: InkWell(
                                           onTap: () {
@@ -209,7 +208,7 @@ class ShareCopyScanTextFormFieldState
                                           child: Center(
                                             child: Icon(
                                               Icons.content_paste,
-                                              size: _iconWidth.h,
+                                              size: _iconWidth,
                                               color: const Color(0xFF00B4E9),
                                             ),
                                           ),
@@ -218,7 +217,7 @@ class ShareCopyScanTextFormFieldState
                                     ],
                                     if (widget.onScanTap != null) ...[
                                       SizedBox(
-                                        width: gestureAreaWidth.w,
+                                        width: gestureAreaWidth,
                                         height: double.maxFinite,
                                         child: Material(
                                           color: Colors.transparent,
@@ -232,8 +231,8 @@ class ShareCopyScanTextFormFieldState
                                             child: Center(
                                               child: SvgPicture.asset(
                                                 'assets/qr_icon.svg',
-                                                width: _iconWidth.w,
-                                                height: _iconWidth.w,
+                                                width: _iconWidth,
+                                                height: _iconWidth,
                                                 color: const Color(0xFF00B4E9),
                                               ),
                                             ),
@@ -243,7 +242,7 @@ class ShareCopyScanTextFormFieldState
                                     ],
                                     if (widget.onShareTap != null) ...[
                                       SizedBox(
-                                        width: gestureAreaWidth.w,
+                                        width: gestureAreaWidth,
                                         height: double.maxFinite,
                                         child: Builder(
                                           builder: (BuildContext context) =>
@@ -270,7 +269,7 @@ class ShareCopyScanTextFormFieldState
                                             child: Center(
                                               child: Icon(
                                                 Icons.share,
-                                                size: _iconWidth.h,
+                                                size: _iconWidth,
                                                 color: widget.shareEnabled
                                                     ? const Color(0xFF00B4E9)
                                                     : const Color(0xFFA5A9AF),
@@ -287,11 +286,11 @@ class ShareCopyScanTextFormFieldState
                     ),
                   ),
                   if (showPasteFromClipboard) ...[
-                    SizedBox(height: 10.h),
+                    const SizedBox(height: 10),
                     Container(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF135579),
-                        borderRadius: BorderRadius.all(Radius.circular(20.r)),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF135579),
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
                       ),
                       child: TextButton(
                         onPressed: () {
@@ -301,7 +300,7 @@ class ShareCopyScanTextFormFieldState
                           }
                         },
                         child: Padding(
-                          padding: EdgeInsets.all(12.w),
+                          padding: const EdgeInsets.all(12),
                           child: Row(
                             children: [
                               Expanded(
@@ -310,18 +309,18 @@ class ShareCopyScanTextFormFieldState
                                   children: [
                                     Text(
                                       'Paste from clipboard'.tr(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 14.sp,
+                                      style: const TextStyle(
+                                        fontSize: 14,
                                         fontWeight: FontWeight.normal,
-                                        color: const Color(0xFF00B4E9),
+                                        color: Color(0xFF00B4E9),
                                       ),
                                     ),
                                     Padding(
-                                      padding: EdgeInsets.only(top: 7.h),
+                                      padding: const EdgeInsets.only(top: 7),
                                       child: Text(
                                         clipboardText,
-                                        style: GoogleFonts.roboto(
-                                          fontSize: 14.sp,
+                                        style: const TextStyle(
+                                          fontSize: 14,
                                           fontWeight: FontWeight.normal,
                                           color: Colors.white,
                                         ),
@@ -330,10 +329,10 @@ class ShareCopyScanTextFormFieldState
                                   ],
                                 ),
                               ),
-                              SizedBox(width: 8.w),
+                              const SizedBox(width: 8),
                               Icon(
                                 Icons.content_paste,
-                                size: _iconWidth.h,
+                                size: _iconWidth,
                                 color: const Color(0xFFFFFFFF),
                               ),
                             ],

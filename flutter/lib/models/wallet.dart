@@ -14,9 +14,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/subjects.dart';
+import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common_platform.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
@@ -266,6 +266,8 @@ class WalletChangeNotifier with ChangeNotifier {
   final assetImagesSmall = <String, Image>{};
   final assetImagesVerySmall = <String, Image>{};
   var ampAssets = <String>[];
+  // List of accounts that are always visible in desktop wallet view
+  Set<AccountAsset> defaultAccounts = {};
 
   final allTxs = <String, TransItem>{};
   final allPegs = <String, List<TransItem>>{};
@@ -368,14 +370,8 @@ class WalletChangeNotifier with ChangeNotifier {
     final workDir = await getApplicationSupportDirectory();
     final workPath = workDir.absolute.path.toNativeUtf8();
 
-    final packageInfo =
-        !Platform.isLinux ? await PackageInfo.fromPlatform() : null;
-    final version = packageInfo != null
-        ? '${packageInfo.version}+${packageInfo.buildNumber}'
-        : '';
-
     _client = Lib.lib.sideswap_client_start(env, workPath.cast(),
-        version.toNativeUtf8().cast(), _receivePort.sendPort.nativePort);
+        appVersionFull.toNativeUtf8().cast(), _receivePort.sendPort.nativePort);
 
     await _addBtcAsset();
 
@@ -568,6 +564,7 @@ class WalletChangeNotifier with ChangeNotifier {
         _eurxAssetId = from.envSettings.eurxAssetId;
         _liquidAssetId = from.envSettings.policyAssetId;
         AccountAsset.liquidAssetId = _liquidAssetId;
+        defaultAccounts.add(AccountAsset(AccountType.regular, _liquidAssetId));
         break;
       case From_Msg.updatedTxs:
         updateTxs(from.updatedTxs);
@@ -953,6 +950,7 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.serverDisconnected:
         serverConnection.add(false);
+        ref.read(marketsProvider).clearOrders();
         break;
       case From_Msg.orderCreated:
         final oc = from.orderCreated;
@@ -1071,6 +1069,9 @@ class WalletChangeNotifier with ChangeNotifier {
         // FIXME: Remove accounts and balances here
         notifyListeners();
         break;
+      case From_Msg.logout:
+        logoutComplete();
+        break;
     }
   }
 
@@ -1104,6 +1105,12 @@ class WalletChangeNotifier with ChangeNotifier {
   void _addAsset(Asset asset, Uint8List assetIcon) {
     if (assets[asset.assetId] == null) {
       assetsList.add(asset.assetId);
+    }
+    if (asset.swapMarket) {
+      defaultAccounts.add(AccountAsset(AccountType.regular, asset.assetId));
+    }
+    if (asset.ampMarket) {
+      defaultAccounts.add(AccountAsset(AccountType.amp, asset.assetId));
     }
     // Always update asset here as they might change
     // (amp_market could be set if server is down when app is started).
@@ -1562,9 +1569,6 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> _logout() async {
-    ref.read(balancesProvider.notifier).clear();
-    ref.read(uiStateArgsProvider).clear();
-
     final msg = To();
     msg.logout = Empty();
     sendMsg(msg);
@@ -1761,7 +1765,7 @@ class WalletChangeNotifier with ChangeNotifier {
       settings = Settings.fromJson(settingsStr);
     }
     disabledAccounts.clear();
-    for (var v in settings.disabledAccounts) {
+    for (final v in settings.disabledAccounts) {
       disabledAccounts.add(AccountAsset(getAccountType(v.account), v.assetId));
     }
   }
@@ -1792,7 +1796,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void editTxMemo(Object arguments) {
     status = Status.txEditMemo;
-    _currentTxMemoUpdate;
     notifyListeners();
   }
 
@@ -1821,8 +1824,6 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.setMemo.txid = txid;
     msg.setMemo.memo = _currentTxMemoUpdate;
     sendMsg(msg);
-
-    _currentTxMemoUpdate;
   }
 
   Future<void> settingsViewBackup() async {
@@ -1888,11 +1889,19 @@ class WalletChangeNotifier with ChangeNotifier {
     if (loggedIn) {
       unregisterPhone();
       await _logout();
+      status = Status.loading;
+      notifyListeners();
     }
+  }
+
+  void logoutComplete() async {
     await ref.read(configProvider).deleteConfig();
+    ref.read(balancesProvider.notifier).clear();
+    ref.read(uiStateArgsProvider).clear();
     ref.read(phoneProvider).clearData();
     allTxs.clear();
     allPegs.clear();
+    allPegsById.clear();
     refreshTxs();
     status = Status.noWallet;
     ampId = null;

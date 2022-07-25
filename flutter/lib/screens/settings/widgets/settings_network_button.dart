@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/settings/widgets/settings_network_checkbox.dart';
 
 class SettingsNetworkButton extends StatefulWidget {
@@ -35,9 +34,9 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
           primary: Colors.white,
           backgroundColor: const Color(0xFF135579),
           padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
-              Radius.circular(8.w),
+              Radius.circular(8),
             ),
           ),
           side: const BorderSide(
@@ -47,7 +46,7 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -61,9 +60,9 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
               ),
               const Spacer(),
               if (widget.trailingIconVisible) ...[
-                Padding(
-                  padding: EdgeInsets.only(right: 16.w),
-                  child: const Icon(Icons.keyboard_arrow_right),
+                const Padding(
+                  padding: EdgeInsets.only(right: 16),
+                  child: Icon(Icons.keyboard_arrow_right),
                 ),
               ],
             ],

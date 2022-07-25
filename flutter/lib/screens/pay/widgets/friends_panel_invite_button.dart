@@ -1,8 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class FriendsPanelInviteButton extends StatelessWidget {
   const FriendsPanelInviteButton({
@@ -20,18 +17,18 @@ class FriendsPanelInviteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: const Color(0xFF00C5FF),
-      borderRadius: BorderRadius.all(Radius.circular(8.w)),
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.all(Radius.circular(8.w)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         child: SizedBox(
           width: width,
           height: height,
           child: Center(
             child: Text(
               'INVITE'.tr(),
-              style: GoogleFonts.roboto(
-                fontSize: 12.sp,
+              style: const TextStyle(
+                fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),

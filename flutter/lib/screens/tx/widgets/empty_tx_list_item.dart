@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class EmptyTxListItem extends StatelessWidget {
@@ -13,52 +12,46 @@ class EmptyTxListItem extends StatelessWidget {
     final random = Random();
     final imageType = TxCircleImageType.values[random.nextInt(4)];
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Padding(
-        padding: EdgeInsets.only(bottom: 10.h),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Opacity(
           opacity: 0.2,
           child: Container(
             width: double.infinity,
-            height: 64.h,
-            decoration: BoxDecoration(
-              color: const Color(0xFF167399),
+            height: 64,
+            decoration: const BoxDecoration(
+              color: Color(0xFF167399),
               borderRadius: BorderRadius.all(
-                Radius.circular(12.w),
+                Radius.circular(12),
               ),
             ),
             child: Padding(
-              padding: EdgeInsets.only(left: 10.w, right: 16.w),
+              padding: const EdgeInsets.only(left: 10, right: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(right: 10.w),
+                    padding: const EdgeInsets.only(right: 10),
                     child: TxCircleImage(
                       txCircleImageType: imageType,
                       fake: true,
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 19.h),
+                    padding: const EdgeInsets.symmetric(vertical: 19),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        EmptyTextContainer(
-                          width: 116.w,
+                        const EmptyTextContainer(
+                          width: 116,
                         ),
                         const Spacer(),
                         Row(
-                          children: [
-                            EmptyTextContainer(
-                              width: 26.w,
-                            ),
-                            SizedBox(
-                              width: 4.w,
-                            ),
-                            EmptyTextContainer(
-                              width: 60.w,
-                            )
+                          children: const [
+                            EmptyTextContainer(width: 26),
+                            SizedBox(width: 4),
+                            EmptyTextContainer(width: 60)
                           ],
                         )
                       ],
@@ -66,17 +59,13 @@ class EmptyTxListItem extends StatelessWidget {
                   ),
                   const Spacer(),
                   Padding(
-                    padding: EdgeInsets.symmetric(vertical: 19.h),
+                    padding: const EdgeInsets.symmetric(vertical: 19),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        EmptyTextContainer(
-                          width: 116.w,
-                        ),
-                        const Spacer(),
-                        EmptyTextContainer(
-                          width: 65.w,
-                        ),
+                      children: const [
+                        EmptyTextContainer(width: 116),
+                        Spacer(),
+                        EmptyTextContainer(width: 65),
                       ],
                     ),
                   ),
@@ -94,7 +83,7 @@ class EmptyTextContainer extends StatefulWidget {
   const EmptyTextContainer({
     super.key,
     this.color = const Color(0xFF135579),
-    this.width = 26,
+    this.width = 26.0,
     this.height,
     this.radius,
     this.border,
@@ -111,14 +100,14 @@ class EmptyTextContainer extends StatefulWidget {
 }
 
 class EmptyTextContainerState extends State<EmptyTextContainer> {
-  double height = 0;
-  double radius = 0;
+  double height = 0.0;
+  double radius = 0.0;
 
   @override
   void initState() {
     super.initState();
-    height = widget.height ?? 10.h;
-    radius = widget.radius ?? 8.w;
+    height = widget.height ?? 10;
+    radius = widget.radius ?? 8;
   }
 
   @override

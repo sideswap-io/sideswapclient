@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_table.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo_background.dart';
@@ -45,7 +44,7 @@ class _DWalletBackupState extends ConsumerState<DNewWalletBackup> {
             children: [
               Text(
                 'Save your 12 word recovery phrase'.tr(),
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -58,7 +57,7 @@ class _DWalletBackupState extends ConsumerState<DNewWalletBackup> {
                   'Please ensure you write down and save your 12 word recovery phrase. Without your recovery phrase, there is no way to restore access to your wallet and all balances will be irretrievably lost without recourse.'
                       .tr(),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,

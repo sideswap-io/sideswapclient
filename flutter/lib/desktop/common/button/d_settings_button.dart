@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
@@ -113,7 +112,7 @@ class DSettingsButton extends ConsumerWidget {
               padding: const EdgeInsets.only(left: 10),
               child: Text(
                 title,
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,

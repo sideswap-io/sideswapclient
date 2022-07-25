@@ -3,9 +3,7 @@ import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/avatar_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
@@ -22,23 +20,23 @@ class ImageSourceChooser extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ClipRRect(
-      borderRadius: BorderRadius.all(
-        Radius.circular(14.w),
+      borderRadius: const BorderRadius.all(
+        Radius.circular(14),
       ),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           width: double.maxFinite,
-          height: 115.h,
+          height: 115,
           color: const Color(0xFFF8F8F8).withOpacity(0.92),
           child: Column(
             children: [
               CustomBigButton(
                 width: double.maxFinite,
-                height: 56.h,
+                height: 56,
                 text: 'Open camera'.tr(),
-                textStyle: GoogleFonts.sourceSansPro(
-                  fontSize: 20.sp,
+                textStyle: const TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.w400,
                 ),
                 textColor: const Color(0xFF007AFF),
@@ -75,10 +73,10 @@ class ImageSourceChooser extends ConsumerWidget {
               ),
               CustomBigButton(
                 width: double.maxFinite,
-                height: 56.h,
+                height: 56,
                 text: 'Choose from gallery'.tr(),
-                textStyle: GoogleFonts.sourceSansPro(
-                  fontSize: 20.sp,
+                textStyle: const TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.w400,
                 ),
                 textColor: const Color(0xFF007AFF),

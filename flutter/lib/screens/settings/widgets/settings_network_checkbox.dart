@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 
 class SettingsNetworkCheckbox extends StatelessWidget {
@@ -18,15 +17,15 @@ class SettingsNetworkCheckbox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomCheckBox(
-      size: 24.w,
-      radius: Radius.circular(12.w),
+      size: 24,
+      radius: const Radius.circular(12),
       frameChecked: const Color(0xFF00C5FF),
       frameUnchecked: const Color(0xFF046C93),
       backgroundChecked: const Color(0xFF00C5FF),
       backgroundUnchecked: Colors.transparent,
-      icon: Icon(
+      icon: const Icon(
         Icons.check,
-        size: 16.w,
+        size: 16,
       ),
       value: value,
       onChanged: onChanged,

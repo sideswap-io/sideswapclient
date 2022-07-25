@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 
 enum ContactMockupIcon {
@@ -51,26 +50,26 @@ class ContactMockupContainer extends StatelessWidget {
 
   List<EmptyLineData> getLineData() {
     final lineData = <EmptyLineData>[];
-    final lineHeight = 4.h;
+    const lineHeight = 4.0;
     const color = Color(0xFF00C5FF);
     switch (icon) {
       case ContactMockupIcon.male1:
         lineData
-          ..add(EmptyLineData(16.w, lineHeight, color))
+          ..add(EmptyLineData(16, lineHeight, color))
           ..add(EmptyLineData(34, lineHeight, color))
-          ..add(EmptyLineData(58.w, lineHeight, color));
+          ..add(EmptyLineData(58, lineHeight, color));
         break;
       case ContactMockupIcon.male2:
         lineData
-          ..add(EmptyLineData(28.w, lineHeight, color))
+          ..add(EmptyLineData(28, lineHeight, color))
           ..add(EmptyLineData(22, lineHeight, color))
-          ..add(EmptyLineData(51.w, lineHeight, color));
+          ..add(EmptyLineData(51, lineHeight, color));
         break;
       case ContactMockupIcon.female1:
         lineData
-          ..add(EmptyLineData(34.w, lineHeight, color))
+          ..add(EmptyLineData(34, lineHeight, color))
           ..add(EmptyLineData(21, lineHeight, color))
-          ..add(EmptyLineData(59.w, lineHeight, color));
+          ..add(EmptyLineData(59, lineHeight, color));
         break;
     }
 
@@ -79,9 +78,9 @@ class ContactMockupContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final internalWidth = width ?? 116.w;
-    final internalHeight = height ?? 48.h;
-    final internalRadius = radius ?? Radius.circular(8.r);
+    final internalWidth = width ?? 116;
+    final internalHeight = height ?? 48;
+    final internalRadius = radius ?? const Radius.circular(8);
 
     final lineData = getLineData();
     return Container(
@@ -94,7 +93,7 @@ class ContactMockupContainer extends StatelessWidget {
       child: Row(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.w),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Container(
               width: internalWidth * 0.2758,
               height: internalWidth * 0.2758,
@@ -102,7 +101,7 @@ class ContactMockupContainer extends StatelessWidget {
                 color: const Color(0xFF00C5FF),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  width: 2.w,
+                  width: 2,
                   color: const Color(0xFF00C5FF),
                 ),
               ),
@@ -121,7 +120,7 @@ class ContactMockupContainer extends StatelessWidget {
                     color: lineData[0].color,
                   ),
                   Padding(
-                    padding: EdgeInsets.only(left: 4.w),
+                    padding: const EdgeInsets.only(left: 4),
                     child: EmptyTextContainer(
                       width: lineData[1].width,
                       height: lineData[1].height,
@@ -131,7 +130,7 @@ class ContactMockupContainer extends StatelessWidget {
                 ],
               ),
               Padding(
-                padding: EdgeInsets.only(top: 4.h),
+                padding: const EdgeInsets.only(top: 4),
                 child: EmptyTextContainer(
                   width: lineData[2].width,
                   height: lineData[2].height,

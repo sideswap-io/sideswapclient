@@ -55,12 +55,17 @@ class DesktopHomeState extends ConsumerState<DesktopHome> {
     return Consumer(
       builder: (BuildContext context, WidgetRef ref, Widget? child) {
         final wallet = ref.watch(walletProvider);
-        final regularAccounts = wallet
+        final balances = ref.watch(balancesProvider);
+        final allVisibleAccounts = wallet
             .getAllAccounts()
-            .where((e) => e.account.isRegular())
+            .where((e) =>
+                wallet.defaultAccounts.contains(e) ||
+                (balances.balances[e] ?? 0) > 0)
             .toList();
+        final regularAccounts =
+            allVisibleAccounts.where((e) => e.account.isRegular()).toList();
         final ampAccounts =
-            wallet.getAllAccounts().where((e) => e.account.isAmp()).toList();
+            allVisibleAccounts.where((e) => e.account.isAmp()).toList();
         final allNewTxs = wallet.getAllNewTxsSorted();
         final showUnconfirmed = allNewTxs.isNotEmpty && wallet.syncComplete;
         final unconfirmedHeight = min(allNewTxs.length, 3) * 40 + 50;

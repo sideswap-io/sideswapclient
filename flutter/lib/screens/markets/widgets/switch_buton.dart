@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class SwitchButton extends StatefulWidget {
   const SwitchButton({
@@ -67,14 +65,14 @@ class SwitchButtonState extends State<SwitchButton> {
 
   @override
   Widget build(BuildContext context) {
-    final defaultActiveTextStyle = GoogleFonts.roboto(
-      fontSize: widget.fontSize ?? 14.sp,
+    final defaultActiveTextStyle = TextStyle(
+      fontSize: widget.fontSize ?? 14,
       fontWeight: FontWeight.w500,
       color: Colors.white,
     );
 
-    final defaultInactiveTextStyle = GoogleFonts.roboto(
-      fontSize: widget.fontSize ?? 14.sp,
+    final defaultInactiveTextStyle = TextStyle(
+      fontSize: widget.fontSize ?? 14,
       fontWeight: FontWeight.w500,
       color: const Color(0xFF78AECC),
     );

@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -100,13 +98,13 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(top: widget.isPegIn ? 24.h : 29.h),
+                    padding: EdgeInsets.only(top: widget.isPegIn ? 24 : 29),
                     child: Container(
-                      width: widget.isPegIn ? 151.w : 263.w,
-                      height: widget.isPegIn ? 151.w : 263.w,
+                      width: widget.isPegIn ? 151 : 263,
+                      height: widget.isPegIn ? 151 : 263,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(
-                          16.w,
+                          16,
                         ),
                         color: Colors.white,
                       ),
@@ -114,7 +112,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                         child: QrImage(
                           data: recvAddress,
                           version: QrVersions.auto,
-                          size: 223.w,
+                          size: 223,
                         ),
                       ),
                     ),
@@ -123,29 +121,29 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
                       child: Text('Min amount: ${amountStr(minPegIn)} BTC',
-                          style: GoogleFonts.roboto(
-                            fontSize: 14.sp,
+                          style: const TextStyle(
+                            fontSize: 14,
                             fontWeight: FontWeight.normal,
                           )),
                     ),
                   ],
                   if (!widget.isPegIn) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 24.h),
-                      child: Text(
+                      padding: const EdgeInsets.only(top: 24),
+                      child: const Text(
                         'Receiving address',
-                        style: GoogleFonts.roboto(
-                          fontSize: 15.sp,
+                        style: TextStyle(
+                          fontSize: 15,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF00B4E9),
+                          color: Color(0xFF00B4E9),
                         ),
                       ).tr(),
                     ),
                   ],
                   Padding(
-                    padding: EdgeInsets.only(top: widget.isPegIn ? 16.h : 10.h),
+                    padding: EdgeInsets.only(top: widget.isPegIn ? 16 : 10),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 32.w),
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
@@ -155,13 +153,13 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                             showCopyInfo();
                           },
                           child: SizedBox(
-                            width: FlavorConfig.isDesktop ? 400.w : 311.w,
-                            height: 60.h,
+                            width: FlavorConfig.isDesktop ? 400 : 311,
+                            height: 60,
                             child: Text(
                               recvAddress,
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.roboto(
-                                fontSize: 16.sp,
+                              style: const TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.normal,
                                 color: Colors.white,
                               ),
@@ -172,7 +170,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: widget.isPegIn ? 16.h : 32.h),
+                    padding: EdgeInsets.only(top: widget.isPegIn ? 16 : 32),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -186,13 +184,13 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                           buttonBackground: Colors.white,
                           child: SvgPicture.asset(
                             'assets/copy.svg',
-                            width: 28.w,
-                            height: 28.w,
+                            width: 28,
+                            height: 28,
                           ),
                         ),
                         if (widget.showShare)
                           Padding(
-                            padding: EdgeInsets.only(left: 32.w),
+                            padding: const EdgeInsets.only(left: 32),
                             child: RoundedButtonWithLabel(
                               onTap: () async {
                                 final shortUri = getSendLinkUrl(recvAddress);
@@ -203,8 +201,8 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                               buttonBackground: Colors.white,
                               child: SvgPicture.asset(
                                 'assets/share.svg',
-                                width: 28.w,
-                                height: 28.w,
+                                width: 28,
+                                height: 28,
                               ),
                             ),
                           ),
@@ -216,7 +214,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                       child: Stack(
                         children: [
                           Padding(
-                            padding: EdgeInsets.only(top: 45.h),
+                            padding: const EdgeInsets.only(top: 45),
                             child: Container(
                               height: double.maxFinite,
                               width: double.maxFinite,
@@ -224,12 +222,12 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.only(top: 45.h - 26.h / 2),
+                            padding: const EdgeInsets.only(top: 45 - 26 / 2),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(
-                                  width: 200.w,
+                                  width: 200,
                                   child: RoundedTextLabel(
                                     text: conversionText,
                                     allRectRadius: true,
@@ -238,36 +236,37 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                               ],
                             ),
                           ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 90.h),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 90),
                             child: Align(
                               alignment: Alignment.topCenter,
                               child: Text(
                                 'Your SideSwap wallet:',
-                                style: GoogleFonts.roboto(
-                                  fontSize: 15.sp,
+                                style: TextStyle(
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w500,
-                                  color: const Color(0xFF00C5FF),
+                                  color: Color(0xFF00C5FF),
                                 ),
                               ),
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.only(top: 196.h),
+                            padding: const EdgeInsets.only(top: 196),
                             child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: AnimatedOpacity(
                                 opacity: _isCopyDescVisible ? 1.0 : 0.0,
                                 duration: const Duration(milliseconds: 500),
                                 child: RoundedButton(
                                   color: const Color(0xFF002336),
                                   width: double.infinity,
-                                  heigh: 39.h,
-                                  borderRadius: BorderRadius.circular(8.w),
-                                  child: Text(
+                                  heigh: 39,
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: const Text(
                                     'Bitcoin address copied',
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 16.sp,
+                                    style: TextStyle(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
@@ -277,17 +276,17 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                             ),
                           ),
                           Padding(
-                            padding: EdgeInsets.only(top: 120.h),
+                            padding: const EdgeInsets.only(top: 120),
                             child: Align(
                               alignment: Alignment.topCenter,
                               child: SizedBox(
-                                width: FlavorConfig.isDesktop ? 400.w : 311.w,
-                                height: 60.h,
+                                width: FlavorConfig.isDesktop ? 400 : 311,
+                                height: 60,
                                 child: Text(
                                   swapRecvAddr,
                                   textAlign: TextAlign.center,
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 16.sp,
+                                  style: const TextStyle(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.normal,
                                     color: Colors.white,
                                   ),
@@ -301,23 +300,23 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                   ],
                   if (!widget.isPegIn) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 2.h),
+                      padding: const EdgeInsets.only(top: 2),
                       child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: AnimatedOpacity(
                           opacity: _isCopyDescVisible ? 1.0 : 0.0,
                           duration: const Duration(milliseconds: 500),
                           child: RoundedButton(
                             color: const Color(0xFF002336),
                             width: double.infinity,
-                            heigh: 39.h,
-                            borderRadius: BorderRadius.circular(8.w),
+                            heigh: 39,
+                            borderRadius: BorderRadius.circular(8),
                             child: Text(
                               widget.isAmp
                                   ? 'AMP address copied'
                                   : 'Liquid address copied',
-                              style: GoogleFonts.roboto(
-                                fontSize: 16.sp,
+                              style: const TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
                               ),

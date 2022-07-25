@@ -2,10 +2,8 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
@@ -29,7 +27,7 @@ class WalletMain extends ConsumerStatefulWidget {
 
 class WalletMainState extends ConsumerState<WalletMain> {
   DateTime currentBackPressTime = DateTime.now();
-  MarketSelectedType selectedMarketType = MarketSelectedType.orders;
+  MarketSelectedType selectedMarketType = MarketSelectedType.swap;
 
   Widget getChild(WalletMainNavigationItem navigationItem) {
     switch (navigationItem) {
@@ -56,13 +54,6 @@ class WalletMainState extends ConsumerState<WalletMain> {
             ref.read(marketsProvider).unsubscribeMarket();
             ref.read(marketsProvider).unsubscribeIndexPrice();
           },
-          onTokenPressed: () {
-            setState(() {
-              selectedMarketType = MarketSelectedType.token;
-            });
-            ref.read(marketsProvider).subscribeTokenMarket();
-            ref.read(marketsProvider).unsubscribeIndexPrice();
-          },
           onSwapPressed: () {
             setState(() {
               selectedMarketType = MarketSelectedType.swap;
@@ -70,9 +61,9 @@ class WalletMainState extends ConsumerState<WalletMain> {
           },
         );
       case WalletMainNavigationItem.swap:
-        return const SwapMain();
+        return const SwapMain(key: ValueKey(false));
       case WalletMainNavigationItem.pegs:
-        return const SwapMain();
+        return const SwapMain(key: ValueKey(true));
     }
   }
 
@@ -101,8 +92,8 @@ class WalletMainState extends ConsumerState<WalletMain> {
                 final flushbar = Flushbar<Widget>(
                   messageText: Text(
                     'Press back again to exit'.tr(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 13.sp,
+                    style: const TextStyle(
+                      fontSize: 13,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
@@ -143,6 +134,20 @@ class WalletMainState extends ConsumerState<WalletMain> {
               ref.read(swapProvider).swapReset();
               ref.read(uiStateArgsProvider).walletMainArguments =
                   walletMainArguments.fromIndex(index);
+              if (ref
+                      .read(uiStateArgsProvider)
+                      .walletMainArguments
+                      .navigationItem ==
+                  WalletMainNavigationItem.pegs) {
+                ref.read(swapProvider).switchToPegs();
+              }
+              if (ref
+                      .read(uiStateArgsProvider)
+                      .walletMainArguments
+                      .navigationItem ==
+                  WalletMainNavigationItem.swap) {
+                ref.read(swapProvider).switchToSwaps();
+              }
             },
           ),
         );

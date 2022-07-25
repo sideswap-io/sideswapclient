@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sideswap/app_version.dart';
 import 'package:sideswap/models/config_provider.dart';
 
 final appReleasesProvider =
@@ -16,8 +16,6 @@ class AppReleasesChangeNotifier with ChangeNotifier {
   final Ref ref;
 
   late final Timer _timer;
-
-  int? buildCurrent;
 
   String? versionDesktopLatest;
   int? buildDesktopLatest;
@@ -38,8 +36,6 @@ class AppReleasesChangeNotifier with ChangeNotifier {
     final url = Uri.parse('https://app.sideswap.io/app_releases.json');
     final response = await http.get(url);
 
-    buildCurrent ??= int.parse((await PackageInfo.fromPlatform()).buildNumber);
-
     if (response.statusCode == 200) {
       final appReleases = jsonDecode(response.body) as Map<String, dynamic>;
       final desktop = (appReleases["desktop"] as Map<String, dynamic>);
@@ -53,7 +49,7 @@ class AppReleasesChangeNotifier with ChangeNotifier {
 
   bool newDesktopReleaseAvailable() {
     final knownNewReleaseBuild = ref.read(configProvider).knownNewReleaseBuild;
-    return max((buildCurrent ?? 0), knownNewReleaseBuild) <
+    return max(appBuildNumber, knownNewReleaseBuild) <
         (buildDesktopLatest ?? 0);
   }
 

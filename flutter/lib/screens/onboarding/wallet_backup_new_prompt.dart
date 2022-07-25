@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/pin_setup_provider.dart';
@@ -29,35 +27,35 @@ class WalletBackupNewPrompt extends ConsumerWidget {
               children: [
                 Center(
                   child: Padding(
-                    padding: EdgeInsets.only(top: 56.h),
+                    padding: const EdgeInsets.only(top: 56),
                     child: SvgPicture.asset(
                       'assets/shield_big.svg',
-                      width: 182.w,
-                      height: 202.h,
+                      width: 182,
+                      height: 202,
                     ),
                   ),
                 ),
                 Center(
                   child: Padding(
-                    padding: EdgeInsets.only(top: 113.h),
+                    padding: const EdgeInsets.only(top: 113),
                     child: SvgPicture.asset(
                       'assets/locker.svg',
-                      width: 54.w,
-                      height: 73.h,
+                      width: 54,
+                      height: 73,
                     ),
                   ),
                 ),
               ],
             ),
             Padding(
-              padding: EdgeInsets.only(top: 32.h),
+              padding: const EdgeInsets.only(top: 32),
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 40.w),
+                padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
                   'Do you wish to backup your wallet?'.tr(),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.roboto(
-                    fontSize: 22.sp,
+                  style: const TextStyle(
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -65,13 +63,13 @@ class WalletBackupNewPrompt extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 12.h, left: 16.w, right: 16.w),
+              padding: const EdgeInsets.only(top: 12, left: 16, right: 16),
               child: Text(
                 'Protect your assets by ensuring you save the 12 word recovery phrase which can restore your wallet'
                     .tr(),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(
-                  fontSize: 16.sp,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,
                   letterSpacing: 0.2,
@@ -80,17 +78,17 @@ class WalletBackupNewPrompt extends ConsumerWidget {
             ),
             const Spacer(),
             Padding(
-              padding: EdgeInsets.only(bottom: 32.h),
+              padding: const EdgeInsets.only(bottom: 32),
               child: PageDots(
                 maxSelectedDots:
                     FlavorConfig.enableOnboardingUserFeatures ? 1 : 4,
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: CustomBigButton(
                 width: double.infinity,
-                height: 54.h,
+                height: 54,
                 text: 'YES'.tr(),
                 backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () {
@@ -99,12 +97,12 @@ class WalletBackupNewPrompt extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Padding(
-                padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+                padding: const EdgeInsets.only(top: 16, bottom: 16),
                 child: CustomBigButton(
                   width: double.infinity,
-                  height: 54.h,
+                  height: 54,
                   text: 'NOT NOW'.tr(),
                   textColor: const Color(0xFF00C5FF),
                   backgroundColor: Colors.transparent,

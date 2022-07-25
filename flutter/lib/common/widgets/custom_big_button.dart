@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class CustomBigButton extends StatelessWidget {
-  CustomBigButton({
+  const CustomBigButton({
     super.key,
     this.text,
     this.onPressed,
@@ -18,10 +15,10 @@ class CustomBigButton extends StatelessWidget {
     OutlinedBorder? shape,
     this.side,
     this.child,
-  })  : shape = shape ??
-            RoundedRectangleBorder(
+  }) : shape = shape ??
+            const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(
-                Radius.circular(8.w),
+                Radius.circular(8),
               ),
             );
 
@@ -41,8 +38,8 @@ class CustomBigButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: width ?? 60.w,
-      height: height ?? 54.w,
+      width: width ?? 60,
+      height: height ?? 54,
       child: TextButton(
         onPressed: enabled ? onPressed : null,
         style: buttonStyle ??
@@ -70,8 +67,8 @@ class CustomBigButton extends StatelessWidget {
                 text ?? '',
                 overflow: TextOverflow.fade,
                 style: textStyle ??
-                    GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                     ),
               ),

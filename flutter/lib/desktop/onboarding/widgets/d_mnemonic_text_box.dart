@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/mnemonic_table_provider.dart';
 
-class DMnemonicTextBox extends ConsumerWidget {
-  const DMnemonicTextBox({
+class DMnemonicTextBox extends HookConsumerWidget {
+  const DMnemonicTextBox(
+    this.focusNode, {
     super.key,
     this.currentIndex = 1,
-    this.focusNode,
   });
 
   final int currentIndex;
-  final FocusNode? focusNode;
+  final FocusNode focusNode;
 
   void onSubmitted(String value, WidgetRef ref, FocusNode focusNode) {
     ref.read(mnemonicTableProvider).validateOnSubmit(value, currentIndex);
@@ -21,8 +21,33 @@ class DMnemonicTextBox extends ConsumerWidget {
     focusNode.requestFocus();
   }
 
+  void tryJump(String value, WidgetRef ref) {
+    final suggestions =
+        ref.read(mnemonicTableProvider).suggestions(value.toLowerCase());
+
+    if (suggestions.length == 1) {
+      onSubmitted(value, ref, focusNode);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final keyboardListenerFocusNode = useFocusNode();
+    final controller = useTextEditingController();
+
+    final currentWord =
+        ref.watch(mnemonicTableProvider.select((p) => p.word(currentIndex)));
+
+    useEffect(() {
+      Future.microtask(() {
+        controller.text = currentWord.word;
+        controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: controller.text.length));
+      });
+
+      return;
+    }, [currentWord]);
+
     return Container(
       width: 460,
       height: 49,
@@ -38,87 +63,94 @@ class DMnemonicTextBox extends ConsumerWidget {
             width: 16,
           ),
           Expanded(
-            child: Consumer(
-              builder: (context, ref, _) {
-                final currentWord = ref.watch(
-                    mnemonicTableProvider.select((p) => p.word(currentIndex)));
-                final controller = TextEditingController();
-                controller.text = currentWord.word;
-                controller.selection = TextSelection.fromPosition(
-                    TextPosition(offset: controller.text.length));
-
-                return RawAutocomplete<String>(
-                  textEditingController: controller,
-                  focusNode: focusNode,
-                  optionsBuilder: (TextEditingValue textEditingValue) {
-                    return ref
-                        .read(mnemonicTableProvider)
-                        .suggestions(textEditingValue.text.toLowerCase());
+            child: RawAutocomplete<String>(
+              focusNode: focusNode,
+              textEditingController: controller,
+              optionsBuilder: (TextEditingValue textEditingValue) {
+                return ref
+                    .read(mnemonicTableProvider)
+                    .suggestions(textEditingValue.text.toLowerCase());
+              },
+              onSelected: (value) {
+                onSubmitted(value, ref, focusNode);
+              },
+              fieldViewBuilder: (
+                BuildContext context,
+                TextEditingController textEditingController,
+                FocusNode focusNode,
+                VoidCallback onFieldSubmitted,
+              ) {
+                return RawKeyboardListener(
+                  focusNode: keyboardListenerFocusNode,
+                  onKey: (RawKeyEvent event) {
+                    if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
+                      onSubmitted(textEditingController.text, ref, focusNode);
+                      onFieldSubmitted();
+                    }
                   },
-                  onSelected: (value) {
-                    onSubmitted(value, ref, focusNode!);
-                  },
-                  fieldViewBuilder: (
-                    BuildContext context,
-                    TextEditingController textEditingController,
-                    FocusNode focusNode,
-                    VoidCallback onFieldSubmitted,
-                  ) {
-                    return TextField(
-                      controller: textEditingController,
-                      focusNode: focusNode,
-                      inputFormatters: [
-                        LengthLimitingTextInputFormatter(8),
-                      ],
-                      decoration: InputDecoration(
-                        isDense: true,
-                        prefixIcon: Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: Text(
-                            '${currentIndex + 1}',
-                            style: GoogleFonts.roboto(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: const Color(0xFF00C5FF),
-                            ),
+                  child: TextField(
+                    controller: textEditingController,
+                    focusNode: focusNode,
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(8),
+                    ],
+                    decoration: InputDecoration(
+                      isDense: true,
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Text(
+                          '${currentIndex + 1}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF00C5FF),
                           ),
                         ),
-                        prefixIconConstraints:
-                            const BoxConstraints(minWidth: 0, minHeight: 0),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none,
-                        ),
                       ),
-                      cursorColor: Colors.black,
-                      style: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.black,
+                      prefixIconConstraints:
+                          const BoxConstraints(minWidth: 0, minHeight: 0),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
                       ),
-                      onChanged: (value) {
-                        ref
-                            .read(mnemonicTableProvider)
-                            .validate(value, currentIndex);
-                      },
-                      onSubmitted: (value) {
-                        onSubmitted(value, ref, focusNode);
-                        onFieldSubmitted();
-                      },
-                    );
-                  },
-                  optionsViewBuilder: (
-                    BuildContext context,
-                    AutocompleteOnSelected<String> onSelected,
-                    Iterable<String> options,
-                  ) {
-                    return OptionsView(
-                      options: options,
-                      onSelected: onSelected,
-                    );
-                  },
+                    ),
+                    cursorColor: Colors.black,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.black,
+                    ),
+                    onChanged: (value) {
+                      final oldValue = ref
+                              .read(mnemonicTableProvider)
+                              .wordItems[currentIndex]
+                              ?.word ??
+                          '';
+                      ref
+                          .read(mnemonicTableProvider)
+                          .validate(value, currentIndex);
+
+                      if (oldValue != value) {
+                        tryJump(value, ref);
+                      }
+                    },
+                    onSubmitted: (value) {
+                      onSubmitted(value, ref, focusNode);
+                      onFieldSubmitted();
+                    },
+                  ),
+                );
+              },
+              optionsViewBuilder: (
+                BuildContext context,
+                AutocompleteOnSelected<String> onSelected,
+                Iterable<String> options,
+              ) {
+                return OptionsView(
+                  options: options,
+                  onSelected: onSelected,
                 );
               },
             ),

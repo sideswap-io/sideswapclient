@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -45,16 +43,16 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
   late FocusNode tickerAmountFocusNode;
   Friend? friend;
 
-  final _labelStyle = GoogleFonts.roboto(
-    fontSize: 15.sp,
+  final _labelStyle = const TextStyle(
+    fontSize: 15,
     fontWeight: FontWeight.w500,
-    color: const Color(0xFF00C5FF),
+    color: Color(0xFF00C5FF),
   );
 
-  final _approximateStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
+  final _approximateStyle = const TextStyle(
+    fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: const Color(0xFF709EBA),
+    color: Color(0xFF709EBA),
   );
 
   AccountAsset getSelectedAssetId() {
@@ -226,7 +224,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
     return Column(
       children: [
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -244,7 +242,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                 },
               ),
               Padding(
-                padding: EdgeInsets.only(top: 24.h),
+                padding: const EdgeInsets.only(top: 24),
                 child: Consumer(
                   builder: (context, watch, _) {
                     final showError = ref.watch(
@@ -289,20 +287,17 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                                   'Send'.tr(),
                                   style: _labelStyle,
                                 ),
-                                SizedBox(
-                                  width: 4.w,
-                                  height: 24.h,
-                                ),
+                                const SizedBox(width: 4, height: 24),
                                 if (isAmp) const AmpFlag()
                               ],
                             ),
                             if (showError) ...[
                               Text(
                                 'Insufficient funds'.tr(),
-                                style: GoogleFonts.roboto(
-                                  fontSize: 14.sp,
+                                style: const TextStyle(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.normal,
-                                  color: const Color(0xFFFF7878),
+                                  color: Color(0xFFFF7878),
                                 ),
                               ),
                             ] else ...[
@@ -322,7 +317,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 10.h),
+                padding: const EdgeInsets.only(top: 10),
                 child: PaymentSendAmount(
                   availableDropdownAssets: availableAssets,
                   controller: tickerAmountController,
@@ -338,7 +333,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 14.sp),
+                padding: const EdgeInsets.only(top: 14),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -358,10 +353,10 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                       },
                     ),
                     Container(
-                      width: 54.w,
-                      height: 24.h,
+                      width: 54,
+                      height: 24,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.w),
+                        borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: const Color(0xFF00C5FF),
                           width: 1,
@@ -395,18 +390,18 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
+                          shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(
-                              Radius.circular(8.w),
+                              Radius.circular(8),
                             ),
                           ),
                         ),
-                        child: Text(
+                        child: const Text(
                           'MAX',
-                          style: GoogleFonts.roboto(
-                            fontSize: 12.sp,
+                          style: TextStyle(
+                            fontSize: 12,
                             fontWeight: FontWeight.normal,
-                            color: const Color(0xFF00C5FF),
+                            color: Color(0xFF00C5FF),
                           ),
                         ),
                       ),
@@ -420,13 +415,13 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
         const Spacer(),
         Padding(
           padding:
-              EdgeInsets.only(top: 36.h, bottom: 24.h, left: 16.w, right: 16.w),
+              const EdgeInsets.only(top: 36, bottom: 24, left: 16, right: 16),
           child: Consumer(builder: (context, ref, _) {
             final buttonEnabled = enabled &&
                 !ref.watch(walletProvider.select((p) => p.isCreatingTx));
             return CustomBigButton(
               width: double.infinity,
-              height: 54.h,
+              height: 54,
               backgroundColor: const Color(0xFF00C5FF),
               text: 'CONTINUE'.tr(),
               enabled: buttonEnabled,

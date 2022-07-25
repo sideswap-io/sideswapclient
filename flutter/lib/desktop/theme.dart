@@ -1,7 +1,6 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
@@ -327,7 +326,7 @@ class DesktopAppTheme extends ChangeNotifier {
       shadowColor: ButtonState.all(Colors.transparent),
       padding: ButtonState.all(EdgeInsets.zero),
       textStyle: ButtonState.all(
-        GoogleFonts.roboto(
+        const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -345,7 +344,7 @@ class DesktopAppTheme extends ChangeNotifier {
     filledButtonStyle: DButtonStyle(
       padding: ButtonState.all(EdgeInsets.zero),
       textStyle: ButtonState.all(
-        GoogleFonts.roboto(
+        const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.5,

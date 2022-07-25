@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
@@ -19,7 +17,7 @@ class TxItemPeg extends StatelessWidget {
   final TransItem transItem;
   final String assetId;
 
-  static final double itemHeight = 46.h;
+  static const double itemHeight = 46.0;
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +36,11 @@ class TxItemPeg extends StatelessWidget {
                     : TxCircleImageType.pegOut,
               ),
               Padding(
-                padding: EdgeInsets.only(left: 10.w),
+                padding: const EdgeInsets.only(left: 10),
                 child: Text(
                   transItem.peg.isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 18.sp,
+                  style: const TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
@@ -63,21 +61,21 @@ class TxItemPeg extends StatelessWidget {
 
                     return Text(
                       payout,
-                      style: GoogleFonts.roboto(
-                        fontSize: 18.sp,
+                      style: const TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFFB3FF85),
+                        color: Color(0xFFB3FF85),
                       ),
                     );
                   }),
                   Padding(
-                    padding: EdgeInsets.only(top: 4.h),
+                    padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       status,
-                      style: GoogleFonts.roboto(
-                        fontSize: 14.sp,
+                      style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFF709EBA),
+                        color: Color(0xFF709EBA),
                       ),
                     ),
                   ),

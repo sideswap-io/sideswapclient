@@ -65,12 +65,13 @@ class _MobileChartState extends State<MobileChart> {
     minTiles = max(2, minTiles);
     double sizeRange = high - low;
     double minStepSize = sizeRange / minTiles;
-    double base =
-        pow(10, HelperFunctions.log10(minStepSize).floor()).toDouble();
+    double base = pow(10,
+            HelperFunctions.log10(max(minStepSize, double.minPositive)).floor())
+        .toDouble();
 
     if (2 * base > minStepSize) return 2 * base;
     if (5 * base > minStepSize) return 5 * base;
-    return 10 * base;
+    return max(10 * base, 0.00001);
   }
 
   @override
@@ -262,7 +263,7 @@ class _MobileChartState extends State<MobileChart> {
                                           child: Row(
                                             children: [
                                               Text(
-                                                "-${HelperFunctions.addMetricPrefix(HelperFunctions.getRoof(volumeHigh))}",
+                                                " ${HelperFunctions.addMetricPrefix(HelperFunctions.getRoof(volumeHigh))}",
                                                 style: TextStyle(
                                                   color: Theme.of(context)
                                                       .grayColor,

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -20,12 +18,12 @@ class AssetReceivePopup extends StatelessWidget {
         enableInsideTopPadding: false,
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: 12.h),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12),
               child: Text(
                 'Receive',
-                style: GoogleFonts.roboto(
-                  fontSize: 22.sp,
+                style: TextStyle(
+                  fontSize: 22,
                   fontWeight: FontWeight.normal,
                 ),
               ),

@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 
 class TxDetailsColumn extends StatelessWidget {
-  TxDetailsColumn({
+  const TxDetailsColumn({
     super.key,
     required this.description,
     required this.details,
@@ -17,14 +15,14 @@ class TxDetailsColumn extends StatelessWidget {
     TextStyle? detailsStyle,
     this.friend,
   })  : _descriptionStyle = descriptionStyle ??
-            GoogleFonts.roboto(
-              fontSize: 15.sp,
+            const TextStyle(
+              fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF00C5FF),
+              color: Color(0xFF00C5FF),
             ),
         _detailsStyle = detailsStyle ??
-            GoogleFonts.roboto(
-              fontSize: 14.sp,
+            const TextStyle(
+              fontSize: 14,
               fontWeight: FontWeight.normal,
               color: Colors.white,
             );
@@ -46,18 +44,15 @@ class TxDetailsColumn extends StatelessWidget {
           style: _descriptionStyle,
         ),
         if (friend != null) ...[
-          Padding(
-            padding: EdgeInsets.only(top: 0.h),
-            child: FriendWidget(
-              friend: friend!,
-              backgroundColor: const Color(0xFF135579),
-              showTrailingIcon: false,
-              contentPadding: EdgeInsets.only(left: 0, right: 12.w),
-            ),
+          FriendWidget(
+            friend: friend!,
+            backgroundColor: const Color(0xFF135579),
+            showTrailingIcon: false,
+            contentPadding: const EdgeInsets.only(right: 12),
           ),
         ] else ...[
           Padding(
-            padding: EdgeInsets.only(top: 10.h),
+            padding: const EdgeInsets.only(top: 10),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisSize: MainAxisSize.max,
@@ -70,10 +65,10 @@ class TxDetailsColumn extends StatelessWidget {
                 ),
                 if (isCopyVisible) ...[
                   Padding(
-                    padding: EdgeInsets.only(left: 13.w),
+                    padding: const EdgeInsets.only(left: 13),
                     child: SizedBox(
-                      width: 26.w,
-                      height: 26.w,
+                      width: 26,
+                      height: 26,
                       child: TextButton(
                         style: TextButton.styleFrom(padding: EdgeInsets.zero),
                         onPressed: () async {
@@ -81,8 +76,8 @@ class TxDetailsColumn extends StatelessWidget {
                         },
                         child: SvgPicture.asset(
                           'assets/copy.svg',
-                          width: 26.w,
-                          height: 26.w,
+                          width: 26,
+                          height: 26,
                           color: const Color(0xFF00C5FF),
                         ),
                       ),

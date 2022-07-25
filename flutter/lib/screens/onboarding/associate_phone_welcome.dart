@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -51,29 +49,30 @@ class AssociatePhoneWelcome extends ConsumerWidget {
                                 clipper: AvatarClipper(),
                                 child: Padding(
                                   padding:
-                                      EdgeInsets.only(top: 56.h, right: 75.w),
+                                      const EdgeInsets.only(top: 56, right: 75),
                                   child: SizedBox(
-                                    width: 192.w,
-                                    height: 267.h,
+                                    width: 192,
+                                    height: 267,
                                     child: SvgPicture.asset(
                                       'assets/associate_phone.svg',
-                                      width: 197.w,
-                                      height: 267.h,
+                                      width: 197,
+                                      height: 267,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                             Padding(
-                              padding: EdgeInsets.only(top: 290.h),
+                              padding: const EdgeInsets.only(top: 290),
                               child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 40.w),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 40),
                                 child: Text(
                                   'Want to associate an phone number with your account?'
                                       .tr(),
                                   textAlign: TextAlign.center,
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 22.sp,
+                                  style: const TextStyle(
+                                    fontSize: 22,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -83,17 +82,17 @@ class AssociatePhoneWelcome extends ConsumerWidget {
                           ],
                         ),
                         const Spacer(),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 32.h),
-                          child: const PageDots(
+                        const Padding(
+                          padding: EdgeInsets.only(bottom: 32),
+                          child: PageDots(
                             maxSelectedDots: 3,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: CustomBigButton(
                             width: double.maxFinite,
-                            height: 54.h,
+                            height: 54,
                             backgroundColor: const Color(0xFF00C5FF),
                             text: 'YES'.tr(),
                             onPressed: () {
@@ -102,12 +101,12 @@ class AssociatePhoneWelcome extends ConsumerWidget {
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Padding(
-                            padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+                            padding: const EdgeInsets.only(top: 16, bottom: 16),
                             child: CustomBigButton(
                               width: double.maxFinite,
-                              height: 54.h,
+                              height: 54,
                               backgroundColor: Colors.transparent,
                               text: 'NOT NOW'.tr(),
                               textColor: const Color(0xFF00C5FF),

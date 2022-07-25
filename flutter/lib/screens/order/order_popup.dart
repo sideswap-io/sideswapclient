@@ -4,11 +4,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
@@ -105,18 +103,18 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
               fontWeight: FontWeight.bold,
               decoration: TextDecoration.underline,
             )),
-        SizedBox(height: 4.h),
+        const SizedBox(height: 4),
         Text(price,
             style: defaultInfoStyle.copyWith(
               color: Colors.white,
             )),
-        SizedBox(height: 4.h),
+        const SizedBox(height: 4),
         Text(
           dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
-          style: GoogleFonts.roboto(
-            fontSize: 14.sp,
+          style: const TextStyle(
+            fontSize: 14,
             fontWeight: FontWeight.normal,
-            color: const Color(0xFF709EBA),
+            color: Color(0xFF709EBA),
           ),
         ),
       ],
@@ -161,27 +159,27 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
             }
 
             return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   if (orderType == OrderDetailsDataType.sign) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 67.h),
+                      padding: const EdgeInsets.only(top: 67),
                       child: Container(
-                        height: 109.h,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(8.w)),
-                          color: const Color(0xFF014767),
+                        height: 109,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(8)),
+                          color: Color(0xFF014767),
                         ),
                         child: Center(
                           child: Column(
                             children: [
                               Padding(
-                                padding: EdgeInsets.only(top: 24.h),
+                                padding: const EdgeInsets.only(top: 24),
                                 child: Container(
-                                  width: 26.w,
-                                  height: 26.w,
+                                  width: 26,
+                                  height: 26,
                                   decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: Color(0xFF00C5FF),
@@ -189,18 +187,18 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                                   child: Center(
                                     child: SvgPicture.asset(
                                       'assets/success.svg',
-                                      width: 11.w,
-                                      height: 11.w,
+                                      width: 11,
+                                      height: 11,
                                     ),
                                   ),
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsets.only(top: 16.h),
+                                padding: const EdgeInsets.only(top: 16),
                                 child: Text(
                                   'Your order has been matched'.tr(),
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 16.sp,
+                                  style: const TextStyle(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.normal,
                                     color: Colors.white,
                                   ),
@@ -213,25 +211,25 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                     ),
                   ],
                   Padding(
-                    padding: EdgeInsets.only(top: 32.h),
+                    padding: const EdgeInsets.only(top: 32),
                     child: Text(
                       orderDescription,
-                      style: GoogleFonts.roboto(
-                        fontSize: 22.sp,
+                      style: const TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 12.h),
+                    padding: const EdgeInsets.only(top: 12),
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10.r)),
-                        color: const Color(0xFF043857),
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        color: Color(0xFF043857),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(16.r),
+                        padding: const EdgeInsets.all(16),
                         child: OrderTable(
                           orderDetailsData: orderDetailsData,
                           enabled: dataAvailable,
@@ -242,7 +240,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                   if (orderType == OrderDetailsDataType.quote &&
                       percentEnabled) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 20.h),
+                      padding: const EdgeInsets.only(top: 20),
                       child: SideSwapProgressBar(
                         percent: percent,
                         text: '${seconds}s left',
@@ -251,7 +249,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                   ],
                   if (orderType == OrderDetailsDataType.submit) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 6.h),
+                      padding: const EdgeInsets.only(top: 6),
                       child: AutoSign(
                         value: autoSign,
                         onToggle: (value) {
@@ -262,7 +260,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 6.h),
+                      padding: const EdgeInsets.only(top: 6),
                       child: TimeToLive(
                           dropdownValue: ttlSeconds,
                           dropdownItems: availableTtlValues(),
@@ -277,7 +275,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                   const Spacer(),
                   if (showAssetDetails && assetDetails != null) ...[
                     Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16.w),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Column(
                         children: [
                           if (chartStats != null)
@@ -295,7 +293,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                           if (chartUrl != null)
                             OrderTableRow(
                               description: 'Chart:'.tr(),
-                              topPadding: 14.h,
+                              topPadding: 14,
                               displayDivider: false,
                               style: defaultInfoStyle,
                               customValue: GestureDetector(
@@ -307,12 +305,10 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                                   children: [
                                     SvgPicture.asset(
                                       'assets/web_icon.svg',
-                                      width: 18.w,
-                                      height: 18.w,
+                                      width: 18,
+                                      height: 18,
                                     ),
-                                    SizedBox(
-                                      width: 4.w,
-                                    ),
+                                    const SizedBox(width: 4),
                                     Text(
                                       'sideswap.io',
                                       style: defaultInfoStyle.copyWith(
@@ -330,7 +326,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                   const Spacer(),
                   CustomBigButton(
                     width: double.maxFinite,
-                    height: 54.h,
+                    height: 54,
                     enabled: dataAvailable && enabled,
                     backgroundColor: const Color(0xFF00C5FF),
                     onPressed: () async {
@@ -359,9 +355,9 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       children: [
                         if (!enabled) ...[
                           Padding(
-                            padding: EdgeInsets.only(right: 200.w),
+                            padding: const EdgeInsets.only(right: 200),
                             child: SpinKitCircle(
-                              size: 32.w,
+                              size: 32,
                               color: Colors.white.withOpacity(0.5),
                             ),
                           ),
@@ -375,8 +371,8 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                               : orderType == OrderDetailsDataType.sign
                                   ? 'Broadcasting'.tr()
                                   : 'Awaiting acceptance'.tr(),
-                          style: GoogleFonts.roboto(
-                            fontSize: 16.sp,
+                          style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.normal,
                             color: Colors.white,
                           ),
@@ -384,17 +380,14 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.only(top: 0.h, bottom: 0.h),
-                    child: CustomBigButton(
-                      width: double.maxFinite,
-                      height: 54.h,
-                      text: 'Cancel'.tr(),
-                      textColor: const Color(0xFF00C5FF),
-                      backgroundColor: Colors.transparent,
-                      enabled: enabled,
-                      onPressed: onClose,
-                    ),
+                  CustomBigButton(
+                    width: double.maxFinite,
+                    height: 54,
+                    text: 'Cancel'.tr(),
+                    textColor: const Color(0xFF00C5FF),
+                    backgroundColor: Colors.transparent,
+                    enabled: enabled,
+                    onPressed: onClose,
                   )
                 ],
               ),
@@ -414,22 +407,22 @@ class OrderTypeTracking extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 6.h),
+      padding: const EdgeInsets.only(top: 6),
       child: Container(
-        height: 51.h,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(8.w)),
-          color: const Color(0xFF014767),
+        height: 51,
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(8)),
+          color: Color(0xFF014767),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Order type:'.tr(),
-                style: GoogleFonts.roboto(
-                  fontSize: 16.sp,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,
                 ),
@@ -440,8 +433,8 @@ class OrderTypeTracking extends StatelessWidget {
                       ref.watch(walletProvider).orderDetailsData.isTracking;
                   return Text(
                     indexPrice ? 'Price tracking'.tr() : 'Limit order'.tr(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),

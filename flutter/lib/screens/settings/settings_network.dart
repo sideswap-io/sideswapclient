@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/network_access_provider.dart';
@@ -39,7 +37,7 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
     SettingsNetworkType buttonNetwork,
   ) {
     return Padding(
-      padding: EdgeInsets.only(top: 8.h),
+      padding: const EdgeInsets.only(top: 8),
       child: SettingsNetworkButton(
         value: selectedNetwork == buttonNetwork,
         onChanged: (value) {
@@ -49,11 +47,11 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
           });
         },
         title: Padding(
-          padding: EdgeInsets.only(left: 10.w),
+          padding: const EdgeInsets.only(left: 10),
           child: Text(
             name,
-            style: GoogleFonts.roboto(
-              fontSize: 16.sp,
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.normal,
               color: Colors.white,
             ),
@@ -79,7 +77,7 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
               ),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 40.h, left: 16.w, right: 16.w),
+                  padding: const EdgeInsets.only(top: 40, left: 16, right: 16),
                   child: Consumer(
                     builder: (context, ref, _) {
                       final selectedNetwork = ref.watch(networkTypeProvider);
@@ -90,7 +88,7 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
                           buildButton('SideSwap'.tr(), selectedNetwork,
                               SettingsNetworkType.sideswap),
                           Padding(
-                            padding: EdgeInsets.only(top: 8.h),
+                            padding: const EdgeInsets.only(top: 8),
                             child: SettingsNetworkButton(
                               trailingIconVisible: true,
                               value:
@@ -105,11 +103,11 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
                                 );
                               },
                               title: Padding(
-                                padding: EdgeInsets.only(left: 10.w),
+                                padding: const EdgeInsets.only(left: 10),
                                 child: Text(
                                   'Custom'.tr(),
-                                  style: GoogleFonts.roboto(
-                                    fontSize: 16.sp,
+                                  style: const TextStyle(
+                                    fontSize: 16,
                                     fontWeight: FontWeight.normal,
                                     color: Colors.white,
                                   ),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class ShareAndCopyButtonsRow extends StatelessWidget {
@@ -23,27 +21,27 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CustomBigButton(
-          width: buttonWidth ?? 160.w,
-          height: 54.h,
+          width: buttonWidth ?? 160,
+          height: 54,
           backgroundColor: const Color(0xFF00C5FF),
           onPressed: onShare,
           child: Padding(
-            padding: EdgeInsets.only(left: 16.w, right: 20.w),
+            padding: const EdgeInsets.only(left: 16, right: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'SHARE'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
                 ),
                 SvgPicture.asset(
                   'assets/share3.svg',
-                  width: 20.w,
-                  height: 24.w,
+                  width: 20,
+                  height: 24,
                   color: Colors.white,
                 ),
               ],
@@ -51,27 +49,27 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
           ),
         ),
         CustomBigButton(
-          width: buttonWidth ?? 160.w,
-          height: 54.h,
+          width: buttonWidth ?? 160,
+          height: 54,
           backgroundColor: const Color(0xFF00C5FF),
           onPressed: onCopy,
           child: Padding(
-            padding: EdgeInsets.only(left: 16.w, right: 20.w),
+            padding: const EdgeInsets.only(left: 16, right: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'COPY'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
                 ),
                 SvgPicture.asset(
                   'assets/copy.svg',
-                  width: 20.w,
-                  height: 24.w,
+                  width: 20,
+                  height: 24,
                   color: Colors.white,
                 ),
               ],

@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/avatar_provider.dart';
@@ -43,13 +41,13 @@ class ImportAvatarSuccessState extends ConsumerState<ImportAvatarSuccess> {
               Padding(
                 padding: const EdgeInsets.only(top: 100),
                 child: Container(
-                  width: 166.w,
-                  height: 166.w,
+                  width: 166,
+                  height: 166,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: const Color(0xFF00C5FF),
-                      width: 6.w,
+                      width: 6,
                     ),
                   ),
                   child: CircleAvatar(
@@ -58,22 +56,22 @@ class ImportAvatarSuccessState extends ConsumerState<ImportAvatarSuccess> {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 32.h),
+                padding: const EdgeInsets.only(top: 32),
                 child: Text(
                   'Success!'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 22.sp,
+                  style: const TextStyle(
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(top: 12.h),
+                padding: const EdgeInsets.only(top: 12),
                 child: Text(
                   'Your photo has been successfully added'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.w400,
                     color: Colors.white,
                   ),
@@ -81,10 +79,10 @@ class ImportAvatarSuccessState extends ConsumerState<ImportAvatarSuccess> {
               ),
               const Spacer(),
               Padding(
-                padding: EdgeInsets.only(bottom: 40.h),
+                padding: const EdgeInsets.only(bottom: 40),
                 child: CustomBigButton(
                   width: double.maxFinite,
-                  height: 54.h,
+                  height: 54,
                   text: 'CONTINUE'.tr(),
                   backgroundColor: const Color(0xFF00C5FF),
                   onPressed: () {

@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:rxdart/subjects.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/common_platform.dart';
 import 'package:sideswap/models/notification_model.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:window_manager/window_manager.dart';
@@ -156,7 +157,8 @@ class LocalNotificationService {
             AndroidFlutterLocalNotificationsPlugin>()
         ?.createNotificationChannel(signChannel);
 
-    final initializationSettings = _getInitializationSettings(
+    final initializationSettings =
+        commonPlatform.getLocalNotificationsInitializationSettings(
       onDidReceiveLocalNotification:
           (int id, String? title, String? body, String? payload) async {
         didReceiveLocalNotificationSubject.add(
@@ -231,44 +233,5 @@ class LocalNotificationService {
     );
 
     _notificationId = _notificationId + 1;
-  }
-
-  InitializationSettings _getInitializationSettings({
-    Future<dynamic> Function(int, String?, String?, String?)?
-        onDidReceiveLocalNotification,
-  }) {
-    const initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/notification_icon');
-
-    final initializationSettingsIOS = IOSInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-      onDidReceiveLocalNotification: onDidReceiveLocalNotification,
-    );
-
-    final initializationSettingsLinux = LinuxInitializationSettings(
-        defaultActionName: '',
-        defaultIcon: AssetsLinuxIcon('assets/icon/icon_linux.png'));
-
-    const initializationSettingsMacos = MacOSInitializationSettings();
-
-    final iconPath =
-        '${File(Platform.resolvedExecutable).parent.path}data\\flutter_assets\\assets\\icon\\icon.ico';
-    final initializationSettingsWindows = WindowsInitializationSettings(
-      appName: 'SideSwap',
-      appUserModelId: 'io.sideswap',
-      iconPath: iconPath,
-    );
-
-    final initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-      linux: initializationSettingsLinux,
-      macOS: initializationSettingsMacos,
-      windows: initializationSettingsWindows,
-    );
-
-    return initializationSettings;
   }
 }

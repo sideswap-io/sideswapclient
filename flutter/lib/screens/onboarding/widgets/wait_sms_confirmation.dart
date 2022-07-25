@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 
 class WaitSmsConfirmation extends ImplicitlyAnimatedWidget {
@@ -38,7 +36,7 @@ class _WaitSmsConfirmationState
     final duration = Duration(seconds: seconds);
     final percent = widget.counter == 0 ? 0 : seconds * 100 ~/ widget.counter;
     return SizedBox(
-      height: 24.h,
+      height: 24,
       child: Visibility(
         visible: controller.isAnimating,
         child: Column(
@@ -50,16 +48,16 @@ class _WaitSmsConfirmationState
               duration: const Duration(seconds: 1),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 4.h),
+              padding: const EdgeInsets.only(top: 4),
               child: Text(
                 'WAIT_FOR_SMS_CONFIRMATION'.tr(args: [
                   '${duration.inMinutes}',
                   ((duration.inSeconds % 60).toString().padLeft(2, '0'))
                 ]),
-                style: GoogleFonts.roboto(
-                  fontSize: 14.sp,
+                style: const TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.normal,
-                  color: const Color(0xFF00C5FF),
+                  color: Color(0xFF00C5FF),
                 ),
               ),
             ),

@@ -277,7 +277,7 @@ class _DesktopChartState extends State<DesktopChart> {
                                           child: Row(
                                             children: [
                                               Text(
-                                                "-${HelperFunctions.addMetricPrefix(HelperFunctions.getRoof(volumeHigh))}",
+                                                " ${HelperFunctions.addMetricPrefix(HelperFunctions.getRoof(volumeHigh))}",
                                                 style: TextStyle(
                                                   color: Theme.of(context)
                                                       .volumeColor,

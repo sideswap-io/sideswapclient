@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/home/widgets/home_bottom_panel.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
@@ -24,22 +23,22 @@ class Home extends ConsumerWidget {
               child: Column(
                 children: [
                   Padding(
-                    padding: EdgeInsets.only(top: 16.h),
+                    padding: const EdgeInsets.only(top: 16),
                     child: Row(
                       children: [
                         Expanded(
                           child: Container(),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(right: 16.w),
+                          padding: const EdgeInsets.only(right: 16),
                           child: RoundedButton(
                             onTap: () {
                               ref.read(walletProvider).settingsViewPage();
                             },
                             child: SvgPicture.asset(
                               'assets/settings.svg',
-                              width: 24.w,
-                              height: 24.w,
+                              width: 24,
+                              height: 24,
                             ),
                           ),
                         ),
@@ -47,10 +46,10 @@ class Home extends ConsumerWidget {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 34.h),
+                    padding: const EdgeInsets.only(top: 34),
                     child: SizedBox(
-                      width: 156.w,
-                      height: 152.h,
+                      width: 156,
+                      height: 152,
                       child: SvgPicture.asset('assets/logo.svg'),
                     ),
                   ),

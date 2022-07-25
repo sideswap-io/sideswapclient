@@ -76,6 +76,10 @@ class DesktopTxHistoryState extends State<DesktopTxHistory> {
     }
   }
 
+  bool getRecvMultipleOutputs(TransItem tx) {
+    return tx.tx.balances.where((e) => e.amount > 0).length > 1;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer(
@@ -132,6 +136,7 @@ class DesktopTxHistoryState extends State<DesktopTxHistory> {
                             wallet.liquidAssetId(), wallet.bitcoinAssetId());
                         final recvBalance = getRecvBalance(tx, type,
                             wallet.liquidAssetId(), wallet.bitcoinAssetId());
+                        final recvMultipleOutputs = getRecvMultipleOutputs(tx);
 
                         return Column(
                           children: [
@@ -150,9 +155,15 @@ class DesktopTxHistoryState extends State<DesktopTxHistory> {
                                     _Wallet(tx: tx),
                                     _Type(tx: tx, txType: type),
                                     _Amount(
-                                        balance: sentBalance, wallet: wallet),
+                                      balance: sentBalance,
+                                      wallet: wallet,
+                                      multipleOutputs: false,
+                                    ),
                                     _Amount(
-                                        balance: recvBalance, wallet: wallet),
+                                      balance: recvBalance,
+                                      wallet: wallet,
+                                      multipleOutputs: recvMultipleOutputs,
+                                    ),
                                     _Confs(tx: tx),
                                     _Link(txid: tx.id),
                                   ],
@@ -346,13 +357,18 @@ class _Amount extends StatelessWidget {
   const _Amount({
     required this.balance,
     required this.wallet,
+    required this.multipleOutputs,
   });
 
   final Balance balance;
   final WalletChangeNotifier wallet;
+  final bool multipleOutputs;
 
   @override
   Widget build(BuildContext context) {
+    if (multipleOutputs) {
+      return Text('Multiple outputs'.tr());
+    }
     if (balance.amount == 0) {
       return Container();
     }

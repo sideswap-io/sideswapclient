@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 
 enum ResultPageType {
@@ -46,10 +44,10 @@ class ResultPage extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: topPadding ?? 100.h),
+            padding: EdgeInsets.only(top: topPadding ?? 100),
             child: Container(
-              width: 166.w,
-              height: 166.w,
+              width: 166,
+              height: 166,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -64,38 +62,38 @@ class ResultPage extends StatelessWidget {
                 child: resultType == ResultPageType.success
                     ? SvgPicture.asset(
                         'assets/success.svg',
-                        width: 51.w,
-                        height: 51.w,
+                        width: 51,
+                        height: 51,
                         color: const Color(0xFFCAF3FF),
                       )
                     : SvgPicture.asset(
                         'assets/error.svg',
-                        width: 51.w,
-                        height: 51.w,
+                        width: 51,
+                        height: 51,
                         color: const Color(0xFFFF7878),
                       ),
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 32.h),
+            padding: const EdgeInsets.only(top: 32),
             child: Text(
               header,
-              style: GoogleFonts.roboto(
-                fontSize: 22.sp,
+              style: const TextStyle(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 12.h),
+            padding: const EdgeInsets.only(top: 12),
             child: description.isNotEmpty
                 ? Text(
                     description,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
@@ -104,10 +102,10 @@ class ResultPage extends StatelessWidget {
           ),
           const Spacer(),
           Padding(
-            padding: EdgeInsets.only(bottom: visibleSecondButton ? 0 : 40.h),
+            padding: EdgeInsets.only(bottom: visibleSecondButton ? 0 : 40),
             child: CustomBigButton(
               width: double.infinity,
-              height: 54.h,
+              height: 54,
               text: buttonText,
               backgroundColor: buttonBackgroundColor,
               side: buttonSide,
@@ -117,10 +115,10 @@ class ResultPage extends StatelessWidget {
           Visibility(
             visible: visibleSecondButton,
             child: Padding(
-              padding: EdgeInsets.only(top: 16.h, bottom: 40.h),
+              padding: const EdgeInsets.only(top: 16, bottom: 40),
               child: CustomBigButton(
                 width: double.infinity,
-                height: 54.h,
+                height: 54,
                 text: secondButtonText,
                 backgroundColor: Colors.transparent,
                 onPressed: onSecondButtonPressed,

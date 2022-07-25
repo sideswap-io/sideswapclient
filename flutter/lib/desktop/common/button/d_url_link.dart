@@ -20,6 +20,8 @@ class DUrlLink extends StatelessWidget {
           cursor: SystemMouseCursors.click,
           child: Text(
             text,
+            overflow: TextOverflow.clip,
+            maxLines: 1,
             style: const TextStyle(
               decoration: TextDecoration.underline,
             ),

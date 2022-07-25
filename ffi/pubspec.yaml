@@ -9,7 +9,7 @@ dev_dependencies:
 
 ffigen:
   name: NativeLibrary
-  output: '../lib/side_swap_client_ffi.dart'
+  output: '../flutter/lib/side_swap_client_ffi.dart'
   description: 'SideSwap FFI'
   headers:
     entry-points:

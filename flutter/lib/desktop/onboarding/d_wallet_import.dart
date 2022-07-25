@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_toggle_switch_button.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_table.dart';
@@ -10,30 +10,22 @@ import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:sideswap/models/mnemonic_table_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 
-class DWalletImport extends ConsumerStatefulWidget {
-  const DWalletImport({super.key});
+class DWalletImport extends HookConsumerWidget {
+  const DWalletImport({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<DWalletImport> createState() => _DWalletImportState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final focusNode = useFocusNode(skipTraversal: true);
 
-class _DWalletImportState extends ConsumerState<DWalletImport> {
-  final autoSuggestBox = TextEditingController();
-  final focusNode = FocusNode();
-  bool stateSwitch = true;
-
-  @override
-  void initState() {
-    super.initState();
-    focusNode.requestFocus();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     ref.listen(mnemonicWordsCounterProvider, (_, __) {
       focusNode.requestFocus();
     });
     final mnemonicCounter = ref.watch(mnemonicWordsCounterProvider);
+
+    useEffect(() {
+      focusNode.requestFocus();
+      return null;
+    }, [focusNode]);
 
     return SideSwapPopupPage(
       onClose: () {
@@ -44,7 +36,7 @@ class _DWalletImportState extends ConsumerState<DWalletImport> {
       ),
       title: Text(
         'Enter your recovery phrase'.tr(),
-        style: GoogleFonts.roboto(
+        style: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -91,8 +83,8 @@ class _DWalletImportState extends ConsumerState<DWalletImport> {
                     Padding(
                       padding: const EdgeInsets.only(top: 12),
                       child: DMnemonicTextBox(
+                        focusNode,
                         currentIndex: currentItem,
-                        focusNode: focusNode,
                       ),
                     ),
                     Padding(
@@ -134,7 +126,7 @@ class _DWalletImportState extends ConsumerState<DWalletImport> {
                 height: 49,
                 child: Text(
                   'CONTINUE'.tr(),
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,

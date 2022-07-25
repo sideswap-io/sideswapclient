@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/payment_requests_provider.dart';
 
@@ -22,18 +20,15 @@ class RequestsNavigationItemBadge extends StatelessWidget {
     return Consumer(
       builder: (context, watch, child) {
         return SizedBox(
-          width: 32.w,
-          height: 30.h,
+          width: 32,
+          height: 32,
           child: Stack(
             children: [
               Align(
-                alignment: Alignment.topLeft,
-                child: Padding(
-                  padding: EdgeInsets.only(top: 5.h),
-                  child: SvgPicture.asset(
-                    assetName,
-                    height: 23.h,
-                  ),
+                alignment: Alignment.bottomCenter,
+                child: SvgPicture.asset(
+                  assetName,
+                  width: 32,
                 ),
               ),
               Consumer(
@@ -47,8 +42,8 @@ class RequestsNavigationItemBadge extends StatelessWidget {
                     child: Align(
                       alignment: Alignment.topRight,
                       child: Container(
-                        width: 22.w,
-                        height: 22.w,
+                        width: 22,
+                        height: 22,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
@@ -60,8 +55,8 @@ class RequestsNavigationItemBadge extends StatelessWidget {
                         child: Center(
                           child: Text(
                             badgeNumber,
-                            style: GoogleFonts.roboto(
-                              fontSize: 10.sp,
+                            style: TextStyle(
+                              fontSize: 10,
                               fontWeight: FontWeight.w500,
                               color: backgroundColor,
                             ),

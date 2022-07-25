@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/desktop/pin/d_pin_protection.dart';
@@ -85,7 +84,7 @@ class _DesktopRootWidgetState extends ConsumerState<DesktopRootWidget> {
                       ),
                       child: Text(
                         envName(env),
-                        style: GoogleFonts.roboto(
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.normal,
                           color: Colors.white,

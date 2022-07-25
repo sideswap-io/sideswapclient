@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
@@ -32,7 +31,7 @@ class DNewWalletBackupPrompt extends ConsumerWidget {
                   child: Text(
                     'Do you wish to backup your wallet?'.tr(),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
+                    style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -49,7 +48,7 @@ class DNewWalletBackupPrompt extends ConsumerWidget {
                     'Protect your assets by ensuring you save the 12 word recovery phrase which can restore your wallet'
                         .tr(),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,

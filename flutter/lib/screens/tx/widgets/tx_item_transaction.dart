@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -21,7 +19,7 @@ class TxItemTransaction extends StatelessWidget {
   final TransItem transItem;
   final String assetId;
   final AccountType accountType;
-  static final double itemHeight = 46.h;
+  static const double itemHeight = 46.0;
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +39,7 @@ class TxItemTransaction extends StatelessWidget {
               Flexible(
                 flex: 1,
                 child: Padding(
-                  padding: EdgeInsets.only(left: 10.w),
+                  padding: const EdgeInsets.only(left: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -51,8 +49,8 @@ class TxItemTransaction extends StatelessWidget {
                         children: [
                           Text(
                             txTypeName(type),
-                            style: GoogleFonts.roboto(
-                              fontSize: 18.sp,
+                            style: const TextStyle(
+                              fontSize: 18,
                               fontWeight: FontWeight.normal,
                               color: Colors.white,
                             ),
@@ -76,8 +74,8 @@ class TxItemTransaction extends StatelessWidget {
 
                               return Text(
                                 balanceStr,
-                                style: GoogleFonts.roboto(
-                                  fontSize: 18.sp,
+                                style: TextStyle(
+                                  fontSize: 18,
                                   fontWeight: FontWeight.normal,
                                   color: balanceColor,
                                 ),
@@ -87,7 +85,7 @@ class TxItemTransaction extends StatelessWidget {
                         ],
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 4.h),
+                        padding: const EdgeInsets.only(top: 4),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -95,7 +93,7 @@ class TxItemTransaction extends StatelessWidget {
                             /*
                             Text(
                               'Joe Doe (fixme)',
-                              style: GoogleFonts.roboto(
+                              style: const TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.normal,
                                 color: Color(0xFF709EBA),
@@ -105,10 +103,10 @@ class TxItemTransaction extends StatelessWidget {
                             */
                             Text(
                               status,
-                              style: GoogleFonts.roboto(
-                                fontSize: 14.sp,
+                              style: const TextStyle(
+                                fontSize: 14,
                                 fontWeight: FontWeight.normal,
-                                color: const Color(0xFF709EBA),
+                                color: Color(0xFF709EBA),
                               ),
                             ),
                           ],

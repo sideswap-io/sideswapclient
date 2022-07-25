@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -67,30 +65,30 @@ class SwapPrompt extends ConsumerWidget {
             final enabled = !ref.watch(walletProvider).swapPromptWaitingTx;
 
             return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: EdgeInsets.only(top: 32.h),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 32),
                     child: Text(
                       'Swap Review',
-                      style: GoogleFonts.roboto(
-                        fontSize: 22.sp,
+                      style: TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 24.h),
+                    padding: const EdgeInsets.only(top: 24),
                     child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10.r)),
-                        color: const Color(0xFF043857),
+                      decoration: const BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(10)),
+                        color: Color(0xFF043857),
                       ),
                       child: Padding(
-                        padding: EdgeInsets.all(16.r),
+                        padding: const EdgeInsets.all(16),
                         child: SwapPromptTable(
                           enabled: enabled,
                           swap: swap,
@@ -101,7 +99,7 @@ class SwapPrompt extends ConsumerWidget {
                   const Spacer(),
                   CustomBigButton(
                     width: double.maxFinite,
-                    height: 54.h,
+                    height: 54,
                     enabled: enabled,
                     backgroundColor: const Color(0xFF00C5FF),
                     onPressed: () async {
@@ -116,17 +114,17 @@ class SwapPrompt extends ConsumerWidget {
                       children: [
                         if (!enabled) ...[
                           Padding(
-                            padding: EdgeInsets.only(right: 200.w),
+                            padding: const EdgeInsets.only(right: 200),
                             child: SpinKitCircle(
-                              size: 32.w,
+                              size: 32,
                               color: Colors.white.withOpacity(0.5),
                             ),
                           ),
                         ],
                         Text(
                           'Swap'.tr(),
-                          style: GoogleFonts.roboto(
-                            fontSize: 16.sp,
+                          style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.normal,
                             color: Colors.white,
                           ),
@@ -135,10 +133,10 @@ class SwapPrompt extends ConsumerWidget {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+                    padding: const EdgeInsets.only(top: 16, bottom: 16),
                     child: CustomBigButton(
                       width: double.maxFinite,
-                      height: 54.h,
+                      height: 54,
                       text: 'Cancel'.tr(),
                       textColor: const Color(0xFF00C5FF),
                       backgroundColor: Colors.transparent,

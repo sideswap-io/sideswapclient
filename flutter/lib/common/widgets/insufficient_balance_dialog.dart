@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/swap_provider.dart';
@@ -22,24 +20,24 @@ void showInsufficientBalanceDialog(
       return Dialog(
         insetPadding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.w),
+          borderRadius: BorderRadius.circular(8),
         ), //this right here
         child: Container(
-          width: 343.w,
-          height: 378.h,
-          decoration: BoxDecoration(
+          width: 343,
+          height: 378,
+          decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(
-              Radius.circular(8.w),
+              Radius.circular(8),
             ),
-            color: const Color(0xFF1C6086),
+            color: Color(0xFF1C6086),
           ),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  height: 56.h,
+                  height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFF135579),
@@ -52,32 +50,32 @@ void showInsufficientBalanceDialog(
                   child: Center(
                     child: SvgPicture.asset(
                       'assets/error.svg',
-                      width: 20.w,
-                      height: 22.h,
+                      width: 20,
+                      height: 22,
                       color: const Color(0xFFFF7878),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 32.h),
+                  padding: const EdgeInsets.only(top: 32),
                   child: Text(
                     'Insufficient {} balance'.tr(args: [ticker]),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
-                      fontSize: 20.sp,
+                    style: const TextStyle(
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 12.h),
+                  padding: const EdgeInsets.only(top: 12),
                   child: Text(
                     'Please swap a small amount for {} to pay for transaction fees'
                         .tr(args: [ticker]),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
@@ -86,7 +84,7 @@ void showInsufficientBalanceDialog(
                 const Spacer(),
                 CustomBigButton(
                   width: double.maxFinite,
-                  height: 54.h,
+                  height: 54,
                   text: 'SWAP NOW'.tr(),
                   backgroundColor: const Color(0xFF00C5FF),
                   onPressed: () {
@@ -96,10 +94,10 @@ void showInsufficientBalanceDialog(
                   },
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 8.h, bottom: 14.h),
+                  padding: const EdgeInsets.only(top: 8, bottom: 14),
                   child: CustomBigButton(
                     width: double.maxFinite,
-                    height: 54.h,
+                    height: 54,
                     text: 'CANCEL'.tr(),
                     backgroundColor: Colors.transparent,
                     onPressed: () async {

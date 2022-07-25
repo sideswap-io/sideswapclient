@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
@@ -57,10 +55,10 @@ class Languages extends ConsumerWidget {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 10),
                       child: Container(
-                        height: 50.h,
+                        height: 50,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(8.w),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(8),
                           ),
                           color: isSelected ? const Color(0xFF135579) : null,
                           border: isSelected
@@ -71,8 +69,8 @@ class Languages extends ConsumerWidget {
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(8.w),
+                            borderRadius: const BorderRadius.all(
+                              Radius.circular(8),
                             ),
                             onTap: () {
                               ref
@@ -81,8 +79,8 @@ class Languages extends ConsumerWidget {
                               Navigator.of(context).pop();
                             },
                             child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16.w,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
                               ),
                               child: Align(
                                 alignment: Alignment.centerLeft,
@@ -92,8 +90,8 @@ class Languages extends ConsumerWidget {
                                     const SizedBox(width: 8),
                                     Text(
                                       localeName(lang),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 16.sp,
+                                      style: const TextStyle(
+                                        fontSize: 16,
                                         fontWeight: FontWeight.normal,
                                         color: Colors.white,
                                       ),
@@ -113,7 +111,7 @@ class Languages extends ConsumerWidget {
             Container(
               color: const Color(0xFF135579),
               padding:
-                  const EdgeInsets.symmetric(vertical: 40, horizontal: 160),
+                  const EdgeInsets.symmetric(vertical: 40, horizontal: 118),
               child: DCustomTextBigButton(
                 onPressed: close(context),
                 child: Text(

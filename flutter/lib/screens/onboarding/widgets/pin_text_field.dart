@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class PinTextField extends StatefulWidget {
   const PinTextField({
@@ -47,7 +44,7 @@ class PinTextFieldState extends State<PinTextField> {
     controller.selection = TextSelection.fromPosition(
         TextPosition(offset: controller.text.length));
     return SizedBox(
-      height: widget.error && widget.errorMessage.isNotEmpty ? 75.h : 58.h,
+      height: widget.error && widget.errorMessage.isNotEmpty ? 75 : 58,
       child: Column(
         children: [
           Opacity(
@@ -65,16 +62,15 @@ class PinTextFieldState extends State<PinTextField> {
                     showCursor: true,
                     cursorColor: Colors.black,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.black,
                     ),
-                    cursorHeight: 20.h,
+                    cursorHeight: 20,
                     decoration: InputDecoration(
                       isDense: true,
-                      contentPadding:
-                          EdgeInsets.fromLTRB(10.w, 18.h, 10.w, 18.h),
+                      contentPadding: const EdgeInsets.fromLTRB(10, 18, 10, 18),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -95,15 +91,15 @@ class PinTextFieldState extends State<PinTextField> {
           ),
           if (widget.error && widget.errorMessage.isNotEmpty) ...[
             Padding(
-              padding: EdgeInsets.only(top: 6.h),
+              padding: const EdgeInsets.only(top: 6),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   widget.errorMessage,
                   overflow: TextOverflow.fade,
                   maxLines: 1,
-                  style: GoogleFonts.roboto(
-                    fontSize: 12.sp,
+                  style: const TextStyle(
+                    fontSize: 12,
                     fontWeight: FontWeight.normal,
                     color: Colors.red,
                   ),

@@ -120,6 +120,7 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
                         _Field(
                           name: 'Issuer Domain'.tr(),
                           valueWidget: DHoverButton(
+                            cursor: SystemMouseCursors.click,
                             builder: (context, states) {
                               return Text(
                                 asset.domain,
@@ -141,6 +142,7 @@ class _DAssetInfoState extends ConsumerState<DAssetInfo> {
                         _Field(
                           name: 'Registration Agent'.tr(),
                           valueWidget: DHoverButton(
+                            cursor: SystemMouseCursors.click,
                             builder: (context, states) {
                               return Text(
                                 asset.domainAgent,

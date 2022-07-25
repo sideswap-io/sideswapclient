@@ -28,6 +28,7 @@ pub struct Settings {
     pub device_key: Option<String>,
     pub last_external: Option<u32>,
     pub last_internal: Option<u32>,
+    pub last_external_amp: Option<u32>,
     pub session_id: Option<SessionId>,
 }
 

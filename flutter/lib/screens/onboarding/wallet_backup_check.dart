@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -35,14 +33,14 @@ class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 38.h),
+            padding: const EdgeInsets.only(top: 38),
             child: SizedBox(
-              width: 303.w,
-              height: 29.h,
+              width: 303,
+              height: 29,
               child: Text(
                 'Select the correct word'.tr(),
-                style: GoogleFonts.roboto(
-                  fontSize: 22.sp,
+                style: const TextStyle(
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -50,7 +48,7 @@ class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 8.h),
+            padding: const EdgeInsets.only(top: 8),
             child: Consumer(
               builder: (context, ref, child) {
                 final wordIndices =
@@ -66,7 +64,7 @@ class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
                               .backupCheckAllWords[wordIndex] ??
                           [];
                       return Padding(
-                        padding: EdgeInsets.only(top: 32.h),
+                        padding: const EdgeInsets.only(top: 32),
                         child: MnemonicCheckRow(
                           wordIndex: wordIndex,
                           words: words,
@@ -86,9 +84,9 @@ class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
           ),
           const Spacer(),
           Padding(
-            padding: EdgeInsets.only(bottom: 40.h),
+            padding: const EdgeInsets.only(bottom: 40),
             child: CustomBigButton(
-              height: 54.h,
+              height: 54,
               width: double.maxFinite,
               text: 'CONFIRM'.tr(),
               backgroundColor: const Color(0xFF00C5FF),

@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/token_market_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -56,23 +54,23 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 24.h),
+      padding: const EdgeInsets.only(top: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(left: 16.w, right: 16.w),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             child: Text(
               'Assets'.tr(),
-              style: GoogleFonts.roboto(
-                fontSize: 15.sp,
+              style: const TextStyle(
+                fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF00C5FF),
+                color: Color(0xFF00C5FF),
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 4.h, left: 16.w, right: 16.w),
+            padding: const EdgeInsets.only(top: 4, left: 16, right: 16),
             child: Consumer(
               builder: (context, ref, child) {
                 final values =
@@ -97,7 +95,7 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
                 //       children: [
                 //         Text(
                 //           currentDropdownValue.name,
-                //           style: GoogleFonts.roboto(
+                //           style: const TextStyle(
                 //             fontSize: 20.sp,
                 //             fontWeight: FontWeight.normal,
                 //             color: Colors.white,
@@ -115,7 +113,7 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
                 //                 width: 400.w,
                 //                 child: Text(
                 //                   e.name,
-                //                   style: GoogleFonts.roboto(
+                //                   style: const TextStyle(
                 //                     fontSize: 20.sp,
                 //                     fontWeight: FontWeight.normal,
                 //                     color: Colors.white,
@@ -142,8 +140,8 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
                     value: currentDropdownValue,
                     items: items,
                     isExpanded: true,
-                    style: GoogleFonts.roboto(
-                      fontSize: 20.sp,
+                    style: const TextStyle(
+                      fontSize: 20,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
@@ -162,9 +160,9 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
               },
             ),
           ),
-          Padding(
-            padding: EdgeInsets.only(top: 4.h, left: 16.w, right: 16.w),
-            child: const Divider(
+          const Padding(
+            padding: EdgeInsets.only(top: 4, left: 16, right: 16),
+            child: Divider(
               thickness: 1,
               height: 1,
               color: Color(0xFF2B6F95),
@@ -180,22 +178,22 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
               tokenRequestOrders.addAll(newTokenMarketOrders);
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 8.h),
+                  padding: const EdgeInsets.only(top: 8),
                   child: RawScrollbar(
                     thumbVisibility: true,
                     thickness: 3,
-                    radius: Radius.circular(2.r),
+                    radius: const Radius.circular(2),
                     controller: scrollController,
                     thumbColor: const Color(0xFF78AECC),
                     child: Padding(
-                      padding: EdgeInsets.only(left: 16.w, right: 16.w),
+                      padding: const EdgeInsets.only(left: 16, right: 16),
                       child: ListView.builder(
                         controller: scrollController,
                         shrinkWrap: true,
                         itemCount: tokenRequestOrders.length,
                         itemBuilder: (context, index) {
                           return Padding(
-                            padding: EdgeInsets.only(bottom: 8.h),
+                            padding: const EdgeInsets.only(bottom: 8),
                             child: OrderItem(
                               requestOrder: tokenRequestOrders[index],
                               useTokenMarketView: true,

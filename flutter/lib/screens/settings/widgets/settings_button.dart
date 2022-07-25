@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 enum SettingsButtonType {
   recovery,
@@ -43,50 +40,50 @@ class SettingsButtonState extends State<SettingsButton> {
       case SettingsButtonType.recovery:
         _icon = SvgPicture.asset(
           'assets/recovery.svg',
-          width: 24.w,
-          height: 24.w,
+          width: 24,
+          height: 24,
         );
         break;
       case SettingsButtonType.shield:
         _icon = SvgPicture.asset(
           'assets/shield.svg',
-          width: 24.w,
-          height: 24.w,
+          width: 24,
+          height: 24,
         );
         break;
       case SettingsButtonType.about:
         _icon = SvgPicture.asset(
           'assets/about.svg',
-          width: 24.w,
-          height: 24.w,
+          width: 24,
+          height: 24,
         );
         break;
       case SettingsButtonType.delete:
         _icon = SvgPicture.asset(
           'assets/delete.svg',
-          width: 24.w,
-          height: 24.w,
+          width: 24,
+          height: 24,
         );
         break;
       case SettingsButtonType.userDetails:
         _icon = SvgPicture.asset(
           'assets/user_details.svg',
-          width: 24.w,
-          height: 24.w,
+          width: 24,
+          height: 24,
         );
         break;
       case SettingsButtonType.network:
         _icon = SvgPicture.asset(
           'assets/network.svg',
-          width: 24.w,
-          height: 24.w,
+          width: 24,
+          height: 24,
         );
         break;
       case SettingsButtonType.language:
         _icon = SvgPicture.asset(
           'assets/language.svg',
-          width: 24.w,
-          height: 24.w,
+          width: 24,
+          height: 24,
         );
         break;
     }
@@ -95,7 +92,7 @@ class SettingsButtonState extends State<SettingsButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 60.w,
+      height: 60,
       width: double.infinity,
       child: TextButton(
         onPressed: widget.onPressed,
@@ -103,9 +100,9 @@ class SettingsButtonState extends State<SettingsButton> {
           primary: Colors.white,
           backgroundColor:
               widget.transparent ? Colors.transparent : const Color(0xFF135579),
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
-              Radius.circular(8.w),
+              Radius.circular(8),
             ),
           ),
           side: const BorderSide(
@@ -119,24 +116,24 @@ class SettingsButtonState extends State<SettingsButton> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 17.w),
+              padding: const EdgeInsets.only(left: 17),
               child: _icon,
             ),
             Padding(
-              padding: EdgeInsets.only(left: 12.w),
+              padding: const EdgeInsets.only(left: 12),
               child: Text(
                 widget.text,
-                style: GoogleFonts.roboto(
-                  fontSize: 16.sp,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,
                 ),
               ),
             ),
             const Spacer(),
-            Padding(
-              padding: EdgeInsets.only(right: 16.w),
-              child: const Icon(Icons.keyboard_arrow_right),
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Icon(Icons.keyboard_arrow_right),
             ),
           ],
         ),

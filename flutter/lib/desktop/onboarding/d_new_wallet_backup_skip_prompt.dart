@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
@@ -68,7 +67,7 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
                           'Are you sure you wish to continue without first making a backup?'
                               .tr(),
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.roboto(
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -81,7 +80,7 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
                             'SideSwap strongly recommends that you backup your wallet prior to holding any balances or your funds may be irretrievably lost forever'
                                 .tr(),
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.roboto(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.normal,
                               color: Colors.white,

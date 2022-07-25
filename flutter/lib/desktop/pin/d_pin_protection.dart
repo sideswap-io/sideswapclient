@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/pin/d_pin_keyboard.dart';
 import 'package:sideswap/desktop/pin/widgets/d_pin_text_field.dart';
@@ -78,10 +77,10 @@ class DPinProtection extends HookConsumerWidget {
               children: [
                 Text(
                   'Enter your PIN'.tr(),
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF00C5FF),
+                    color: Color(0xFF00C5FF),
                   ),
                 ),
                 Padding(

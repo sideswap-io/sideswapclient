@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/models/countries_provider.dart';
 import 'package:sideswap/models/phone_provider.dart';
@@ -33,14 +31,14 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
   TextEditingController controller = TextEditingController();
   int _counter = 0;
 
-  final TextStyle _flagStyle = GoogleFonts.roboto(
-    fontSize: 17.sp,
+  final TextStyle _flagStyle = const TextStyle(
+    fontSize: 17,
   );
 
-  final TextStyle _defaultTextStyle = GoogleFonts.roboto(
-    fontSize: 17.sp,
+  final TextStyle _defaultTextStyle = const TextStyle(
+    fontSize: 17,
     fontWeight: FontWeight.normal,
-    color: const Color(0xFF002241),
+    color: Color(0xFF002241),
   );
 
   List<DropdownMenuItem<CountryCode>> _menuItems =
@@ -66,7 +64,7 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                   style: _flagStyle,
                 ),
                 Padding(
-                  padding: EdgeInsets.only(left: 8.w),
+                  padding: const EdgeInsets.only(left: 8),
                   child: Text(
                     e.iso3Code ?? '',
                     style: _defaultTextStyle,
@@ -102,26 +100,26 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 117.h,
+      height: 117,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             'Phone number'.tr(),
-            style: GoogleFonts.roboto(
-              fontSize: 15.sp,
+            style: const TextStyle(
+              fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: const Color(0xFF00B4E9),
+              color: Color(0xFF00B4E9),
             ),
           ),
           const Spacer(),
           Container(
-            height: 54.h,
+            height: 54,
             width: double.maxFinite,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(
-                Radius.circular(8.w),
+                Radius.circular(8),
               ),
               color: Colors.white,
             ),
@@ -130,8 +128,8 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                 Row(
                   children: [
                     SizedBox(
-                      height: 54.h,
-                      width: 112.w,
+                      height: 54,
+                      width: 112,
                       child: DropdownButtonHideUnderline(
                         child: ButtonTheme(
                           alignedDropdown: true,
@@ -158,9 +156,9 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 16.w),
-                      child: const VerticalDivider(
+                    const Padding(
+                      padding: EdgeInsets.only(left: 16),
+                      child: VerticalDivider(
                         width: 1,
                         thickness: 1,
                         color: Color(0xFFCCDEE9),
@@ -172,9 +170,9 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                       },
                       child: Center(
                         child: Padding(
-                          padding: EdgeInsets.only(left: 16.w),
+                          padding: const EdgeInsets.only(left: 16),
                           child: SizedBox(
-                            width: 56.w,
+                            width: 56,
                             child: Text(
                               '+${visibleCountryCode.dialCode}',
                               style: _defaultTextStyle,
@@ -185,7 +183,7 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: EdgeInsets.only(right: 16.w),
+                        padding: const EdgeInsets.only(right: 16),
                         child: TextField(
                           controller: controller,
                           focusNode: phoneFocusNode,
@@ -255,7 +253,7 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
               }
 
               return Padding(
-                padding: EdgeInsets.only(top: 8.h),
+                padding: const EdgeInsets.only(top: 8),
                 child: WaitSmsConfirmation(
                   duration: Duration(seconds: _counter),
                   counter: _counter,

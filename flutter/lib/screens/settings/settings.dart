@@ -2,10 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/helpers.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/biometric_available_provider.dart';
@@ -46,32 +44,32 @@ class SettingsState extends ConsumerState<Settings> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: EdgeInsets.only(top: 40.h),
+              const Padding(
+                padding: EdgeInsets.only(top: 40),
                 child: Text('AMP ID:',
-                    style: GoogleFonts.roboto(
-                      fontSize: 18.sp,
+                    style: TextStyle(
+                      fontSize: 18,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     )),
               ),
-              SizedBox(
-                height: 8.w,
+              const SizedBox(
+                height: 8,
               ),
               Consumer(builder: (context, ref, _) {
                 final ampId = ref.watch(walletProvider.select((p) => p.ampId));
 
                 return Container(
-                  height: 60.w,
-                  padding: EdgeInsets.all(8.w),
+                  height: 60,
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     border:
                         Border.all(color: const Color(0xFF19668F), width: 1),
-                    borderRadius: BorderRadius.all(Radius.circular(8.w)),
+                    borderRadius: const BorderRadius.all(Radius.circular(8)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -82,8 +80,8 @@ class SettingsState extends ConsumerState<Settings> {
                           child: Text(
                             ampId ?? '',
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.roboto(
-                              fontSize: 16.sp,
+                            style: const TextStyle(
+                              fontSize: 16,
                               fontWeight: FontWeight.normal,
                               color: Colors.white,
                             ),
@@ -99,8 +97,8 @@ class SettingsState extends ConsumerState<Settings> {
                             child: Center(
                               child: SvgPicture.asset(
                                 'assets/copy.svg',
-                                width: 24.w,
-                                height: 24.w,
+                                width: 24,
+                                height: 24,
                                 color: const Color(0xFF00B4E9),
                               ),
                             ),
@@ -112,7 +110,7 @@ class SettingsState extends ConsumerState<Settings> {
                 );
               }),
               Padding(
-                padding: EdgeInsets.only(top: 24.h),
+                padding: const EdgeInsets.only(top: 24),
                 child: SettingsButton(
                   type: SettingsButtonType.recovery,
                   text: 'View my recovery phrase'.tr(),
@@ -124,7 +122,7 @@ class SettingsState extends ConsumerState<Settings> {
               if (FlavorConfig.isProduction &&
                   FlavorConfig.enableOnboardingUserFeatures) ...[
                 Padding(
-                  padding: EdgeInsets.only(top: 8.h),
+                  padding: const EdgeInsets.only(top: 8),
                   child: SettingsButton(
                     type: SettingsButtonType.userDetails,
                     text: 'User details'.tr(),
@@ -135,7 +133,7 @@ class SettingsState extends ConsumerState<Settings> {
                 ),
               ],
               Padding(
-                padding: EdgeInsets.only(top: 8.h),
+                padding: const EdgeInsets.only(top: 8),
                 child: SettingsButton(
                   type: SettingsButtonType.about,
                   text: 'About us'.tr(),
@@ -211,7 +209,7 @@ class SettingsState extends ConsumerState<Settings> {
               ),
               if (FlavorConfig.enableNetworkSettings) ...[
                 Padding(
-                  padding: EdgeInsets.only(top: 8.h),
+                  padding: const EdgeInsets.only(top: 8),
                   child: SettingsButton(
                     type: SettingsButtonType.network,
                     text: 'Network access'.tr(),
@@ -222,7 +220,7 @@ class SettingsState extends ConsumerState<Settings> {
                 ),
               ],
               Padding(
-                padding: EdgeInsets.only(top: 8.h),
+                padding: const EdgeInsets.only(top: 8),
                 child: SettingsButton(
                   type: SettingsButtonType.language,
                   text: 'Language'.tr(),
@@ -236,7 +234,7 @@ class SettingsState extends ConsumerState<Settings> {
               ),
               const Spacer(),
               Padding(
-                padding: EdgeInsets.only(bottom: 48.w),
+                padding: const EdgeInsets.only(bottom: 48),
                 child: SettingsButton(
                   type: SettingsButtonType.delete,
                   text: 'Delete wallet',

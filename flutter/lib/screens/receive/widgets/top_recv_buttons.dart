@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
@@ -24,10 +23,10 @@ class TopRecvButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.maxFinite, //286.w,
-      height: 36.h,
+      height: 36,
       decoration: BoxDecoration(
         color: _colorToggleBackground,
-        borderRadius: BorderRadius.all(Radius.circular(10.0.w)),
+        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Consumer(
         builder: (context, ref, _) {

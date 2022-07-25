@@ -78,6 +78,9 @@ const MIN_HEDGE_AMOUNT: f64 = 0.0002;
 const BITFINEX_FEE_PROD: f64 = 0.0017;
 const BITFINEX_FEE_TEST: f64 = 0.002;
 
+// Keep some extra amount in the wallet for the server and bf fees
+const INSTANT_SWAP_WORK_AMOUNT: f64 = 0.995;
+
 macro_rules! send_request {
     ($f:ident, $t:ident, $value:expr) => {
         match $f(Request::$t($value)) {
@@ -273,7 +276,7 @@ fn get_prices(
     };
     // Show that the dealer will buy any amount of EURx as needed
     let exchange_asset_amount = if ticker == DEALER_EURX {
-        sideswap_common::types::COIN * prices.ask as i64
+        10 * sideswap_common::types::COIN * prices.ask as i64
     } else {
         get_exchange_balance(exchange_balances, exchange_asset_currency)
     };
@@ -298,14 +301,14 @@ fn get_prices(
         .map(|utxo| utxo.amount)
         .sum::<i64>();
     let mut result = PriceOffers::default();
-    let max_send_asset_amount = i64::min(
-        (wallet_btc_amount as f64 * prices.ask) as i64,
-        exchange_asset_amount,
-    );
-    let max_send_bitcoin_amount = i64::min(
-        exchange_btc_amount,
-        (wallet_asset_amount as f64 / prices.bid) as i64,
-    );
+    let max_send_asset_amount = (f64::min(
+        wallet_btc_amount as f64 * prices.ask,
+        exchange_asset_amount as f64,
+    ) * INSTANT_SWAP_WORK_AMOUNT) as i64;
+    let max_send_bitcoin_amount = (f64::min(
+        exchange_btc_amount as f64,
+        wallet_asset_amount as f64 / prices.bid,
+    ) * INSTANT_SWAP_WORK_AMOUNT) as i64;
     if max_send_asset_amount > 0 {
         result.push(PriceOffer {
             client_send_bitcoins: false,

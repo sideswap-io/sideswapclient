@@ -5,7 +5,6 @@ edition = "2018"
 
 [dependencies]
 log = "*"
-serialport = "4.1.0"
 hex = "*"
 ciborium = "*"
 ciborium-io = "*"
@@ -16,3 +15,6 @@ serde_json = "*"
 serde_bytes = "*"
 base64 = "*"
 crossbeam-channel = "0.5.1"
+
+[target.'cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))'.dependencies]
+serialport = "4.1.0"

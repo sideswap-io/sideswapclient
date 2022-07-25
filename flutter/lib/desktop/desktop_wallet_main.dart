@@ -43,9 +43,9 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
       case WalletMainNavigationItem.markets:
         return const DMarkets();
       case WalletMainNavigationItem.swap:
-        return const DSwapMain(pegs: false);
+        return const DSwapMain(key: ValueKey(false));
       case WalletMainNavigationItem.pegs:
-        return const DSwapMain(pegs: true);
+        return const DSwapMain(key: ValueKey(true));
     }
   }
 
@@ -96,10 +96,7 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
 class DSwapMain extends StatelessWidget {
   const DSwapMain({
     super.key,
-    required this.pegs,
   });
-
-  final bool pegs;
 
   @override
   Widget build(BuildContext context) {
@@ -113,9 +110,7 @@ class DSwapMain extends StatelessWidget {
               width: 570,
               height: 551,
               color: const Color(0xFF043857),
-              child: const SwapMain(
-                isDesktop: true,
-              ),
+              child: const SwapMain(),
             ),
           ],
         ),

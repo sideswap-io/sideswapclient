@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common_platform.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/models/qrcode_provider.dart';
@@ -21,28 +20,30 @@ class HomeBottomPanel extends ConsumerWidget {
     final result = ref.watch(qrcodeResultModelProvider);
     result.maybeWhen(
       data: (result) {
-        ref.read(paymentProvider).selectPaymentAmountPage(
-              PaymentAmountPageArguments(
-                result: result,
-              ),
-            );
+        Future.microtask(() {
+          ref.read(paymentProvider).selectPaymentAmountPage(
+                PaymentAmountPageArguments(
+                  result: result,
+                ),
+              );
+        });
       },
       orElse: () {},
     );
 
     return Container(
-      height: 180.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F4766),
+      height: 180,
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F4766),
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16.w),
-          topRight: Radius.circular(16.w),
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
         ),
       ),
       child: Center(
         child: SizedBox(
-          width: 268.w,
-          height: 106.h,
+          width: 268,
+          height: 106,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -54,8 +55,8 @@ class HomeBottomPanel extends ConsumerWidget {
                 buttonBackground: Colors.white,
                 child: SvgPicture.asset(
                   'assets/bottom_left_arrow.svg',
-                  width: 28.w,
-                  height: 28.w,
+                  width: 28,
+                  height: 28,
                 ),
               ),
               RoundedButtonWithLabel(
@@ -71,8 +72,8 @@ class HomeBottomPanel extends ConsumerWidget {
                 buttonBackground: Colors.white,
                 child: SvgPicture.asset(
                   'assets/qr_code_scan.svg',
-                  width: 28.w,
-                  height: 28.w,
+                  width: 28,
+                  height: 28,
                 ),
               ),
               RoundedButtonWithLabel(
@@ -83,8 +84,8 @@ class HomeBottomPanel extends ConsumerWidget {
                 buttonBackground: Colors.white,
                 child: SvgPicture.asset(
                   'assets/top_right_arrow.svg',
-                  width: 28.w,
-                  height: 28.w,
+                  width: 28,
+                  height: 28,
                 ),
               ),
             ],

@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 enum MarketSelectedType {
-  orders,
-  token,
   swap,
+  orders,
 }
 
 class MarketTypeButtons extends StatefulWidget {
@@ -15,7 +13,7 @@ class MarketTypeButtons extends StatefulWidget {
     this.onOrdersPressed,
     this.onTokenPressed,
     this.onSwapPressed,
-    this.selectedType = MarketSelectedType.orders,
+    this.selectedType = MarketSelectedType.swap,
   });
 
   final VoidCallback? onOrdersPressed;
@@ -37,14 +35,26 @@ class MarketTypeButtonsState extends State<MarketTypeButtons> {
   Widget build(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      height: 36.h,
+      height: 36,
       decoration: BoxDecoration(
         color: colorToggleBackground,
-        borderRadius: BorderRadius.all(Radius.circular(10.0.w)),
+        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          Expanded(
+            child: SwapButton(
+              color: widget.selectedType == MarketSelectedType.swap
+                  ? colorToggleOn
+                  : colorToggleBackground,
+              text: 'Markets'.tr(),
+              textColor: widget.selectedType == MarketSelectedType.swap
+                  ? colorToggleTextOn
+                  : colorToggleTextOff,
+              onPressed: widget.onSwapPressed,
+            ),
+          ),
           Expanded(
             child: SwapButton(
               color: widget.selectedType == MarketSelectedType.orders
@@ -55,30 +65,6 @@ class MarketTypeButtonsState extends State<MarketTypeButtons> {
                   ? colorToggleTextOn
                   : colorToggleTextOff,
               onPressed: widget.onOrdersPressed,
-            ),
-          ),
-          Expanded(
-            child: SwapButton(
-              color: widget.selectedType == MarketSelectedType.token
-                  ? colorToggleOn
-                  : colorToggleBackground,
-              text: 'Token market'.tr(),
-              textColor: widget.selectedType == MarketSelectedType.token
-                  ? colorToggleTextOn
-                  : colorToggleTextOff,
-              onPressed: widget.onTokenPressed,
-            ),
-          ),
-          Expanded(
-            child: SwapButton(
-              color: widget.selectedType == MarketSelectedType.swap
-                  ? colorToggleOn
-                  : colorToggleBackground,
-              text: 'Swap market'.tr(),
-              textColor: widget.selectedType == MarketSelectedType.swap
-                  ? colorToggleTextOn
-                  : colorToggleTextOff,
-              onPressed: widget.onSwapPressed,
             ),
           ),
         ],

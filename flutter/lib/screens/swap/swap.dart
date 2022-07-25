@@ -1,18 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
+import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_background.dart';
 import 'package:sideswap/screens/swap/widgets/swap_middle_icon.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
@@ -21,10 +19,7 @@ import 'package:sideswap/screens/swap/widgets/top_swap_buttons.dart';
 class SwapMain extends ConsumerStatefulWidget {
   const SwapMain({
     super.key,
-    this.isDesktop = false,
   });
-
-  final bool isDesktop;
 
   @override
   SwapMainState createState() => SwapMainState();
@@ -38,8 +33,9 @@ class SwapMainState extends ConsumerState<SwapMain> {
   late FocusNode deliverFocusNode;
   late FocusNode receiveFocusNode;
 
-  bool pegInInfoDisplayed = false;
-  bool pegOutInfoDisplayed = false;
+  // Popups disabled for now
+  bool pegInInfoDisplayed = true;
+  bool pegOutInfoDisplayed = true;
 
   @override
   void initState() {
@@ -127,6 +123,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final middle = (constraints.maxHeight - 60) / 2;
           return SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(
@@ -136,47 +133,59 @@ class SwapMainState extends ConsumerState<SwapMain> {
               child: IntrinsicHeight(
                 child: Stack(
                   children: [
-                    const SwapBottomBackground(),
+                    SwapBottomBackground(
+                      middle: middle,
+                    ),
                     SwapMiddleIcon(
                       visibleToggles: false,
                       onTap: ref.read(swapProvider).toggleAssets,
+                      middle: middle,
                     ),
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Padding(
-                          padding: EdgeInsets.only(
-                              top: FlavorConfig.isDesktop ? 265.h : 237.h),
+                          padding: EdgeInsets.only(top: middle + 30),
                           child: buildReceiveAmount(),
                         ),
                         const Spacer(),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: buildBottomButton(),
                         ),
                       ],
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 16.h),
+                      padding: const EdgeInsets.only(top: 16),
                       child: Column(
                         children: [
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16.w),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Visibility(
-                              visible: !widget.isDesktop,
+                              visible: ref.watch(swapProvider).swapType() !=
+                                  SwapType.atomic,
                               child: TopSwapButtons(
-                                onSwapPressed:
-                                    ref.read(swapProvider).switchToSwaps,
-                                onPegPressed:
-                                    ref.read(swapProvider).switchToPegs,
-                                isDesktop: widget.isDesktop,
+                                onPegInPressed: () {
+                                  ref.read(swapProvider).switchToPegs();
+                                },
+                                onPegOutPressed: () {
+                                  ref.read(swapProvider).switchToPegs();
+                                  ref.read(swapProvider).toggleAssets();
+                                },
                               ),
                             ),
                           ),
-                          Padding(
-                            padding: EdgeInsets.only(top: 8.h),
-                            child: buildDeliverAmount(),
-                          ),
+                          if (ref.watch(swapProvider).swapType() ==
+                              SwapType.atomic)
+                            Text(
+                              'Instant Swap'.tr(),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          buildDeliverAmount(),
                         ],
                       ),
                     ),
@@ -226,7 +235,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
 
   Widget buildBottomButton() {
     return Padding(
-      padding: EdgeInsets.only(top: 16.h, bottom: 24.h),
+      padding: const EdgeInsets.only(top: 16, bottom: 24),
       child: Consumer(
         builder: (context, ref, _) {
           final swapType = ref.watch(swapProvider).swapType();
@@ -248,7 +257,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
 
           return CustomBigButton(
             width: double.infinity,
-            height: 54.h,
+            height: 54,
             enabled: enabled,
             backgroundColor: const Color(0xFF00C5FF),
             onPressed:
@@ -258,21 +267,21 @@ class SwapMainState extends ConsumerState<SwapMain> {
               children: [
                 Text(
                   swapTypeStr,
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
                 ),
                 if (swapState == SwapState.sent) ...[
-                  Padding(
-                    padding: EdgeInsets.only(left: 84.w),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 84),
                     child: SizedBox(
-                      width: 32.w,
-                      height: 32.w,
+                      width: 32,
+                      height: 32,
                       child: SpinKitCircle(
                         color: Colors.white,
-                        size: 32.w,
+                        size: 32,
                       ),
                     ),
                   ),
@@ -333,7 +342,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
 
         return SwapSideAmount(
           text: 'Receive'.tr(),
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           controller: swapRecvAmountController!,
           addressController: swapAddressRecvController!,
           isMaxVisible: false,
@@ -433,9 +442,16 @@ class SwapMainState extends ConsumerState<SwapMain> {
               controller: swapSendAmountController!, newValue: newValue);
         });
 
+        final showDeliverDollarConversion = swapType == SwapType.pegOut;
+        final dollarConversion2 = showDeliverDollarConversion
+            ? ref.read(requestOrderProvider).dollarConversionFromString(
+                ref.read(swapProvider).swapSendAsset!.asset,
+                swapSendAmountController!.text)
+            : null;
+
         return SwapSideAmount(
           text: 'Deliver'.tr(),
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           controller: swapSendAmountController!,
           focusNode: deliverFocusNode,
           isMaxVisible: true,
@@ -453,6 +469,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
           dropdownValue: swapSendAsset,
           availableAssets: swapSendAssets,
           labelGroupValue: swapSendWallet,
+          dollarConversion2: dollarConversion2,
           swapType: swapType,
           showInsufficientFunds: showInsufficientFunds,
           errorDescription: serverError,

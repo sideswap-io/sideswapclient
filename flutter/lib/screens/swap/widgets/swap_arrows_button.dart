@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
-
 class SwapArrowsButton extends StatelessWidget {
   const SwapArrowsButton({
     super.key,
@@ -29,8 +27,8 @@ class SwapArrowsButton extends StatelessWidget {
           child: Center(
             child: SvgPicture.asset(
               'assets/swap_arrows.svg',
-              width: 22.w,
-              height: 22.w,
+              width: 22,
+              height: 22,
             ),
           ),
         ),

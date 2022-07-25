@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class TxDetailsRow extends StatelessWidget {
   const TxDetailsRow({
@@ -22,16 +19,16 @@ class TxDetailsRow extends StatelessWidget {
       children: [
         Text(
           description,
-          style: GoogleFonts.roboto(
-            fontSize: 15.sp,
+          style: const TextStyle(
+            fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: const Color(0xFF00C5FF),
+            color: Color(0xFF00C5FF),
           ),
         ),
         Text(
           details,
-          style: GoogleFonts.roboto(
-            fontSize: 14.sp,
+          style: TextStyle(
+            fontSize: 14,
             fontWeight: FontWeight.normal,
             color: detailsColor,
           ),

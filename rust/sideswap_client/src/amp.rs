@@ -97,6 +97,10 @@ impl Amp {
     ) -> Result<gdk_json::PreviousAddresses, anyhow::Error> {
         unsafe { get_previous_addresses(&mut self.0.lock().unwrap(), last_pointer) }
     }
+
+    pub fn logout(&self) {
+        unsafe { logout(&mut self.0.lock().unwrap()) }
+    }
 }
 
 #[derive(Clone)]
@@ -114,7 +118,6 @@ pub enum To {
     JadeAuthUser(bool),
 
     Login(LoginInfo),
-    Logout,
     AppState(bool),
     GetRecvAddr,
     CreateTx(ffi::proto::CreateTx),
@@ -895,13 +898,14 @@ unsafe fn try_connect(
     );
 
     let mut call = std::ptr::null_mut();
-    let mnemonic = login_info.mnemonic.clone().unwrap_or_default();
-    let mnemonic = CString::new(mnemonic.clone()).unwrap();
     let hw_device = HwData::get_hw_device(hw_data);
+    let login_user = gdk_json::LoginUser {
+        mnemonic: login_info.mnemonic.clone(),
+    };
     let rc = gdk::GA_register_user(
         session,
         GdkJson::new(&hw_device).as_ptr(),
-        mnemonic.as_ptr(),
+        GdkJson::new(&login_user).as_ptr(),
         &mut call,
     );
     ensure!(
@@ -1113,9 +1117,11 @@ unsafe fn load_transactions(data: &mut Data) -> Result<Vec<gdk_json::Transaction
 }
 
 unsafe fn try_update_tx_list(data: &mut Data) -> Result<(), anyhow::Error> {
-    ensure!(data.top_block.is_some());
+    let top_block = match data.top_block {
+        Some(v) => v,
+        None => return Ok(()),
+    };
     let transaction_list = load_transactions(data)?;
-    let top_block = data.top_block.unwrap();
     let mut items = Vec::new();
     let mut pending_txs = false;
     for tx in transaction_list {
@@ -1801,6 +1807,7 @@ unsafe fn get_previous_addresses(
         .ok_or_else(|| anyhow!("no session"))?;
 
     let mut call = std::ptr::null_mut();
+    debug!("load AMP addresses, last_pointer: {}", last_pointer);
     let previous_addresses = gdk_json::PreviousAddressesOpts {
         subaccount: wallet.account.pointer,
         last_pointer,
@@ -1964,7 +1971,6 @@ pub fn start_processing(
                 To::JadeAuthUser(result) => jade_process_auth_user(&mut data, result),
 
                 To::Login(info) => login(&mut data, info),
-                To::Logout => logout(&mut data),
                 To::AppState(active) => app_state(&mut data, active),
                 To::GetRecvAddr => get_recv_addr(&mut data),
                 To::CreateTx(tx) => create_tx(&mut data, tx),

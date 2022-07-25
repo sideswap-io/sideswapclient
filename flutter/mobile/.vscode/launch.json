@@ -5,19 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "desktop",
+            "name": "mobile (debug mode)",
             "request": "launch",
             "type": "dart",
             "program": "lib/main_mobile.dart",
         },
         {
-            "name": "desktop (profile mode)",
+            "name": "mobile (desktop debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main_mobile.dart",
+            "args": [
+                "--dart-entrypoint-args", "--mode=mobile"
+            ]
+        },
+        {
+            "name": "mobile (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
         },
         {
-            "name": "desktop (release mode)",
+            "name": "mobile (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",

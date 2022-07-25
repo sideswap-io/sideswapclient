@@ -4,12 +4,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:marquee/marquee.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common_platform.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -108,16 +106,16 @@ class SwapSideAmount extends ConsumerStatefulWidget {
 }
 
 class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
-  final _labelStyle = GoogleFonts.roboto(
-    fontSize: 15.sp,
+  final _labelStyle = const TextStyle(
+    fontSize: 15,
     fontWeight: FontWeight.w500,
-    color: const Color(0xFF00C5FF),
+    color: Color(0xFF00C5FF),
   );
 
-  final _balanceStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
+  final _balanceStyle = const TextStyle(
+    fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: const Color(0xFF709EBA),
+    color: Color(0xFF709EBA),
   );
 
   @override
@@ -146,12 +144,12 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
         Padding(
           padding: widget.padding,
           child: SizedBox(
-            height: 20.h,
+            height: 20,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(
-                  width: 122.w,
+                  width: 122,
                   child: Row(
                     children: [
                       Text(
@@ -166,7 +164,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     widget.labelGroupValue == SwapWallet.extern &&
                     widget.feeRates.isNotEmpty) ...[
                   Padding(
-                    padding: EdgeInsets.only(left: 24.w),
+                    padding: const EdgeInsets.only(left: 24),
                     child: Text(
                       'Fee suggestions'.tr(),
                       style: _labelStyle,
@@ -177,10 +175,10 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                   if (widget.showInsufficientFunds && !widget.readOnly) ...[
                     Text(
                       'Insufficient funds'.tr(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 14.sp,
+                      style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFFFF7878),
+                        color: Color(0xFFFF7878),
                       ),
                     ),
                   ] else ...[
@@ -190,10 +188,10 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                       widget.dollarConversion2!.isNotEmpty)
                     Text(
                       '≈ ${widget.dollarConversion2}',
-                      style: GoogleFonts.roboto(
-                        fontSize: 13.sp,
+                      style: const TextStyle(
+                        fontSize: 13,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFF83B4D2),
+                        color: Color(0xFF83B4D2),
                       ),
                     ),
                 ],
@@ -201,10 +199,10 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
-                        final textStyle = GoogleFonts.roboto(
-                          fontSize: 14.sp,
+                        const textStyle = TextStyle(
+                          fontSize: 14,
                           fontWeight: FontWeight.normal,
-                          color: const Color(0xFFFF7878),
+                          color: Color(0xFFFF7878),
                         );
                         final renderParagraph = RenderParagraph(
                           TextSpan(
@@ -256,11 +254,11 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 10.h),
+          padding: const EdgeInsets.only(top: 0),
           child: Padding(
             padding: widget.padding,
             child: SizedBox(
-              height: 43.h,
+              height: 43,
               child: TickerAmountTextField(
                 readOnly: widget.readOnly,
                 dropdownReadOnly: widget.dropdownReadOnly,
@@ -286,9 +284,9 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
         ),
         if (widget.swapType != SwapType.atomic && widget.visibleToggles) ...[
           Padding(
-            padding: EdgeInsets.only(top: 14.h),
+            padding: const EdgeInsets.only(top: 14),
             child: SizedBox(
-              height: 18.h,
+              height: 18,
               child: Row(
                 children: [
                   LabeledRadio<SwapWallet>(
@@ -309,7 +307,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
           ),
         ],
         Padding(
-          padding: EdgeInsets.only(top: 10.h),
+          padding: const EdgeInsets.only(top: 10),
           child: Padding(
             padding: widget.padding,
             child: Row(
@@ -358,12 +356,12 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     widget.labelGroupValue == SwapWallet.extern &&
                     widget.isAddressLabelVisible) ...[
                   Container(
-                    width: 343.w,
-                    height: 98.h,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF226F99),
+                    width: 343,
+                    height: 98,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF226F99),
                       borderRadius: BorderRadius.all(
-                        Radius.circular(8.w),
+                        Radius.circular(8),
                       ),
                     ),
                     child: Row(
@@ -373,11 +371,11 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                         Flexible(
                           flex: 71,
                           child: Padding(
-                            padding: EdgeInsets.all(16.w),
+                            padding: const EdgeInsets.all(16),
                             child: Text(
                               widget.addressController?.text ?? '',
-                              style: GoogleFonts.roboto(
-                                fontSize: 16.sp,
+                              style: const TextStyle(
+                                fontSize: 16,
                                 fontWeight: FontWeight.normal,
                                 color: Colors.white,
                               ),
@@ -390,19 +388,19 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                           child: Material(
                             color: const Color(0xFF226F99),
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(21.w),
+                              borderRadius: BorderRadius.circular(21),
                               onTap: widget.onAddressLabelClose,
                               child: Container(
-                                width: 42.w,
-                                height: 42.w,
+                                width: 42,
+                                height: 42,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(21.w),
+                                  borderRadius: BorderRadius.circular(21),
                                 ),
                                 child: Center(
                                   child: SvgPicture.asset(
                                     'assets/close.svg',
-                                    width: 14.w,
-                                    height: 14.w,
+                                    width: 14,
+                                    height: 14,
                                   ),
                                 ),
                               ),
@@ -432,14 +430,14 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     widget.swapType == SwapType.pegIn) ...[
                   Expanded(
                     child: SizedBox(
-                      height: 36.h,
+                      height: 36,
                       child: Text(
                         'SideSwap will generate a Peg-In address for you to deliver BTC into'
                             .tr(),
-                        style: GoogleFonts.roboto(
-                          fontSize: 12.sp,
+                        style: const TextStyle(
+                          fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: const Color(0xFF709EBA),
+                          color: Color(0xFF709EBA),
                         ),
                       ),
                     ),
@@ -449,14 +447,14 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     widget.swapType == SwapType.pegIn) ...[
                   Expanded(
                     child: SizedBox(
-                      height: 36.h,
+                      height: 36,
                       child: Text(
                         'Your SideSwap wallet will auto-generate a L-BTC address with which to receive the Peg-In amount'
                             .tr(),
-                        style: GoogleFonts.roboto(
-                          fontSize: 12.sp,
+                        style: const TextStyle(
+                          fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: const Color(0xFF709EBA),
+                          color: Color(0xFF709EBA),
                         ),
                       ),
                     ),
@@ -468,10 +466,10 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     if (widget.isMaxVisible &&
                         widget.labelGroupValue != SwapWallet.extern) ...[
                       Container(
-                        width: 54.w,
-                        height: 24.h,
+                        width: 54,
+                        height: 24,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.w),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: const Color(0xFF00C5FF),
                             width: 2,
@@ -482,18 +480,18 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                           onPressed: widget.onMaxPressed,
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            shape: RoundedRectangleBorder(
+                            shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.all(
-                                Radius.circular(8.w),
+                                Radius.circular(8),
                               ),
                             ),
                           ),
-                          child: Text(
+                          child: const Text(
                             'MAX',
-                            style: GoogleFonts.roboto(
-                              fontSize: 10.sp,
+                            style: TextStyle(
+                              fontSize: 10,
                               fontWeight: FontWeight.normal,
-                              color: const Color(0xFF00C5FF),
+                              color: Color(0xFF00C5FF),
                             ),
                           ),
                         ),
@@ -501,7 +499,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     ],
                     if (widget.dollarConversion.isNotEmpty) ...[
                       Padding(
-                        padding: EdgeInsets.only(top: 8.h),
+                        padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           '≈ ${widget.dollarConversion}',
                           style: _balanceStyle,

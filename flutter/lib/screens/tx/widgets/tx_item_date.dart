@@ -1,8 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class TxItemDate extends StatelessWidget {
   const TxItemDate({
@@ -15,7 +12,7 @@ class TxItemDate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 27.h,
+      height: 27,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -23,8 +20,8 @@ class TxItemDate extends StatelessWidget {
             DateFormat.yMMMd(context.locale.toLanguageTag()).format(
               DateTime.fromMillisecondsSinceEpoch(createdAt),
             ),
-            style: GoogleFonts.roboto(
-              fontSize: 14.sp,
+            style: const TextStyle(
+              fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Colors.white,
             ),

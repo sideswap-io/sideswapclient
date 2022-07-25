@@ -4,11 +4,9 @@ import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
@@ -71,8 +69,8 @@ class TxDetailsBottomButtonsState
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CustomBigButton(
-          height: 54.h,
-          width: 251.w,
+          height: 54,
+          width: 251,
           enabled: widget.enabled,
           onPressed: () async {
             await showDialog<void>(
@@ -93,14 +91,14 @@ class TxDetailsBottomButtonsState
             );
           },
           child: Padding(
-            padding: EdgeInsets.only(left: 16.w, right: 20.w),
+            padding: const EdgeInsets.only(left: 16, right: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'View in external explorer'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
@@ -110,8 +108,8 @@ class TxDetailsBottomButtonsState
                   alignment: Alignment.center,
                   child: SvgPicture.asset(
                     'assets/back_arrow.svg',
-                    width: 8.16.w,
-                    height: 14.73.w,
+                    width: 8.16,
+                    height: 14.73,
                     color: const Color(0xFF00C5FF),
                   ),
                 ),
@@ -120,8 +118,8 @@ class TxDetailsBottomButtonsState
           ),
         ),
         CustomBigButton(
-          height: 54.h,
-          width: 60.w,
+          height: 54,
+          width: 60,
           enabled: widget.enabled,
           onPressed: () async {
             await showDialog<void>(
@@ -143,8 +141,8 @@ class TxDetailsBottomButtonsState
           },
           child: SvgPicture.asset(
             'assets/share2.svg',
-            width: 22.w,
-            height: 26.w,
+            width: 22,
+            height: 26,
             color: const Color(0xFF00C5FF),
           ),
         ),

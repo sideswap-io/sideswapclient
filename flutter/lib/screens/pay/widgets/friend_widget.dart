@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/regexp_text_highlight.dart';
 import 'package:sideswap/models/friends_provider.dart';
 
@@ -32,27 +30,27 @@ class FriendWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final internalContentPadding =
-        contentPadding ?? EdgeInsets.only(left: 12.w, right: 12.w);
-    final internalWidth = width ?? 343.w;
+        contentPadding ?? const EdgeInsets.only(left: 12, right: 12);
+    final internalWidth = width ?? 343;
 
     return Material(
       color: backgroundColor,
-      borderRadius: BorderRadius.circular(8.w),
+      borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(8.w),
+        borderRadius: BorderRadius.circular(8),
         child: SizedBox(
           width: internalWidth,
-          height: 72.h,
+          height: 72,
           child: Row(
             children: [
               Padding(
                 padding: EdgeInsets.only(left: internalContentPadding.left),
                 child: Container(
-                  width: 49.w,
-                  height: 49.w,
+                  width: 49,
+                  height: 49,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(24.w),
+                    borderRadius: BorderRadius.circular(24),
                     color: const Color(0xFF8EB1C4),
                   ),
                   child: Center(
@@ -70,11 +68,11 @@ class FriendWidget extends StatelessWidget {
                                 ? Colors.transparent
                                 : Color(friend.backgroundColor),
                             foregroundImage: avatar,
-                            radius: 23.w,
+                            radius: 23,
                             child: Text(
                               avatarText,
-                              style: GoogleFonts.roboto(
-                                fontSize: 17.sp,
+                              style: const TextStyle(
+                                fontSize: 17,
                                 fontWeight: FontWeight.normal,
                                 color: Colors.white,
                               ),
@@ -86,7 +84,7 @@ class FriendWidget extends StatelessWidget {
               ),
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(left: 10.w),
+                  padding: const EdgeInsets.only(left: 10),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,26 +94,26 @@ class FriendWidget extends StatelessWidget {
                         maxLines: 1,
                         highlightRegex:
                             RegExp('(${highlightName?.toLowerCase()})'),
-                        highlightStyle: GoogleFonts.roboto(
-                          fontSize: 18.sp,
+                        highlightStyle: const TextStyle(
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF00B4E9),
+                          color: Color(0xFF00B4E9),
                         ),
-                        nonHighlightStyle: GoogleFonts.roboto(
-                          fontSize: 18.sp,
+                        nonHighlightStyle: const TextStyle(
+                          fontSize: 18,
                           fontWeight: FontWeight.normal,
                           color: Colors.white,
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 4.h),
+                        padding: const EdgeInsets.only(top: 4),
                         child: customDescription ??
                             Text(
                               friend.contact.phone,
-                              style: GoogleFonts.roboto(
-                                fontSize: 15.sp,
+                              style: const TextStyle(
+                                fontSize: 15,
                                 fontWeight: FontWeight.normal,
-                                color: const Color(0xFF709EBA),
+                                color: Color(0xFF709EBA),
                               ),
                             ),
                       ),
@@ -126,8 +124,8 @@ class FriendWidget extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(right: internalContentPadding.right),
                 child: Container(
-                  width: 24.w,
-                  height: 24.w,
+                  width: 24,
+                  height: 24,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: showTrailingIcon
@@ -139,8 +137,8 @@ class FriendWidget extends StatelessWidget {
                       visible: showTrailingIcon,
                       child: SvgPicture.asset(
                         'assets/logo.svg',
-                        width: 14.w,
-                        height: 14.w,
+                        width: 14,
+                        height: 14,
                       ),
                     ),
                   ),

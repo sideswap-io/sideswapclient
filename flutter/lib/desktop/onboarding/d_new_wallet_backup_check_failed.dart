@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_error_icon.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo_background.dart';
@@ -28,7 +27,7 @@ class DNewWalletBackupCheckFailed extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 32),
               child: Text(
                 'Oops!'.tr(),
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -41,7 +40,7 @@ class DNewWalletBackupCheckFailed extends ConsumerWidget {
                 'Your wallet could not be re-created. Please ensure the words exactly matches your recovery seed.'
                     .tr(),
                 textAlign: TextAlign.center,
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,

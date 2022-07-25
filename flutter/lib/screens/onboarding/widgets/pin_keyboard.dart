@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/pin_keyboard_provider.dart';
 import 'package:sideswap/models/pin_protection_provider.dart';
 
@@ -21,36 +19,36 @@ class PinKeyboard extends ConsumerStatefulWidget {
 }
 
 class PinKeyboardState extends ConsumerState<PinKeyboard> {
-  final _buttonStyle = GoogleFonts.roboto(
-    fontSize: 26.sp,
+  final _buttonStyle = const TextStyle(
+    fontSize: 26,
     fontWeight: FontWeight.w500,
-    color: const Color(0xFF00C5FF),
+    color: Color(0xFF00C5FF),
   );
 
   @override
   Widget build(BuildContext context) {
-    final itemWidth = 96.w;
-    final itemHeight = 57.h;
+    const itemWidth = 96;
+    const itemHeight = 57;
 
     return SizedBox(
-      width: 319.w,
-      height: 278.h,
+      width: 319,
+      height: 278,
       child: GridView.count(
         crossAxisCount: 3,
         addRepaintBoundaries: false,
         shrinkWrap: false,
         padding: EdgeInsets.zero,
-        mainAxisSpacing: 16.h,
-        crossAxisSpacing: 16.w,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
         childAspectRatio: itemWidth / itemHeight,
         physics: const NeverScrollableScrollPhysics(),
         children: List.generate(12, (index) {
           Widget child;
           if (index == 9) {
-            child = Icon(
+            child = const Icon(
               Icons.backspace_outlined,
-              color: const Color(0xFF00C5FF),
-              size: 28.w,
+              color: Color(0xFF00C5FF),
+              size: 28,
             );
           } else if (index == 10) {
             child = Text(
@@ -58,8 +56,8 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
               style: _buttonStyle,
             );
           } else if (index == 11) {
-            final textStyle = GoogleFonts.roboto(
-              fontSize: 18.sp,
+            const textStyle = TextStyle(
+              fontSize: 18,
             );
             switch (widget.acceptType) {
               case PinKeyboardAcceptType.icon:
@@ -104,16 +102,16 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
           return Material(
             color: const Color(0xFF135579),
             // elevation: 1,
-            borderRadius: BorderRadius.all(Radius.circular(8.w)),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
             child: InkWell(
               onTap: () {
                 HapticFeedback.mediumImpact();
                 ref.read(pinKeyboardProvider).keyPressed(index);
               },
-              borderRadius: BorderRadius.all(Radius.circular(8.w)),
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(8.w)),
+                  borderRadius: const BorderRadius.all(Radius.circular(8)),
                   border: Border.all(
                     color: const Color(0xFF23729D),
                   ),

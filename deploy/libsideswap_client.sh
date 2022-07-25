@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -o errexit -o pipefail -o noclobber -o nounset
 
 cd "$(dirname "$0")/../rust/sideswap_client"

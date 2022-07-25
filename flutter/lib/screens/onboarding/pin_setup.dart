@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/pin_available_provider.dart';
@@ -74,28 +72,28 @@ class PinSetupState extends ConsumerState<PinSetup> {
                 child: Center(
                   child: Column(
                     children: [
-                      Padding(
-                        padding: EdgeInsets.only(top: 24.h),
-                        child: const Divider(
+                      const Padding(
+                        padding: EdgeInsets.only(top: 24),
+                        child: Divider(
                           thickness: 1,
                           height: 1,
                           color: Color(0xFF23729D),
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 32.h),
+                        padding: const EdgeInsets.only(top: 32),
                         child: Text(
-                          'Set your PIN (6-8 chars)'.tr(),
-                          style: GoogleFonts.roboto(
-                            fontSize: 15.sp,
+                          'Set your PIN (6-8 digits)'.tr(),
+                          style: const TextStyle(
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF00C5FF),
+                            color: Color(0xFF00C5FF),
                           ),
                         ),
                       ),
                       Padding(
                         padding:
-                            EdgeInsets.only(top: 10.h, left: 16.w, right: 16.w),
+                            const EdgeInsets.only(top: 10, left: 16, right: 16),
                         child: Consumer(
                           builder: (context, ref, child) {
                             final pin = ref.watch(pinSetupProvider).firstPin;
@@ -117,19 +115,19 @@ class PinSetupState extends ConsumerState<PinSetup> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 22.h),
+                        padding: const EdgeInsets.only(top: 22),
                         child: Text(
                           'Confirm your PIN'.tr(),
-                          style: GoogleFonts.roboto(
-                            fontSize: 15.sp,
+                          style: const TextStyle(
+                            fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF00C5FF),
+                            color: Color(0xFF00C5FF),
                           ),
                         ),
                       ),
                       Padding(
                         padding:
-                            EdgeInsets.only(top: 10.h, left: 16.w, right: 16.w),
+                            const EdgeInsets.only(top: 10, left: 16, right: 16),
                         child: Consumer(
                           builder: (context, ref, child) {
                             final pin = ref.watch(pinSetupProvider).secondPin;
@@ -157,7 +155,7 @@ class PinSetupState extends ConsumerState<PinSetup> {
                       ),
                       const Spacer(),
                       Padding(
-                        padding: EdgeInsets.only(bottom: 32.h),
+                        padding: const EdgeInsets.only(bottom: 32),
                         child: Consumer(
                           builder: (context, ref, child) {
                             final isNewWallet =

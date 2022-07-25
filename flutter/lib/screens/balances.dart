@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -39,7 +37,7 @@ TxType txType(Tx tx) {
   }
   if (tx.balances.length == 2 &&
       anyPositive &&
-      anyPositive &&
+      anyNegative &&
       (tx.balances[0].assetId != tx.balances[1].assetId)) {
     return TxType.swap;
   }
@@ -142,40 +140,40 @@ class WalletTxMemoState extends State<WalletTxMemo> {
       body: SafeArea(
         child: SizedBox(
           width: double.maxFinite,
-          height: 176.h,
+          height: 176,
           child: Column(
             children: [
               const CustomAppBar(),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.w),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(top: 24.h),
+                      padding: const EdgeInsets.only(top: 24),
                       child: Row(
                         children: [
                           Text(
                             'My notes'.tr(),
-                            style: GoogleFonts.roboto(
-                              fontSize: 15.sp,
+                            style: const TextStyle(
+                              fontSize: 15,
                               fontWeight: FontWeight.normal,
-                              color: const Color(0xFF00C5FF),
+                              color: Color(0xFF00C5FF),
                             ),
                           ),
                           const Spacer(),
                           Text(
                             'Only visible to you'.tr(),
-                            style: GoogleFonts.roboto(
-                              fontSize: 14.sp,
+                            style: const TextStyle(
+                              fontSize: 14,
                               fontWeight: FontWeight.normal,
-                              color: const Color(0xFF709EBA),
+                              color: Color(0xFF709EBA),
                             ),
                           ),
                         ],
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 10.h),
+                      padding: const EdgeInsets.only(top: 10),
                       child: Consumer(
                         builder: (context, ref, child) {
                           final tx = ref.watch(walletProvider).txDetails.tx;
@@ -189,10 +187,10 @@ class WalletTxMemoState extends State<WalletTxMemo> {
                             onFieldSubmitted: (value) {
                               ref.read(walletProvider).goBack();
                             },
-                            style: GoogleFonts.roboto(
-                              fontSize: 17.sp,
+                            style: const TextStyle(
+                              fontSize: 17,
                               fontWeight: FontWeight.normal,
-                              color: const Color(0xFF002241),
+                              color: Color(0xFF002241),
                             ),
                             decoration: const SideSwapInputDecoration(
                               hintText: '',

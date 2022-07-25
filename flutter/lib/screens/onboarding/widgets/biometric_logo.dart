@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/screens/onboarding/widgets/biometric_shape_border.dart';
 
 class BiometricLogo extends StatelessWidget {
@@ -14,20 +13,20 @@ class BiometricLogo extends StatelessWidget {
       children: [
         Center(
           child: Container(
-            width: 169.w,
-            height: 202.h,
-            decoration: ShapeDecoration(
+            width: 169,
+            height: 202,
+            decoration: const ShapeDecoration(
               shape: BiometricShapeBorder(
-                borderLength: 41.w,
+                borderLength: 41,
                 borderWidth: 6,
-                borderRadius: 12.w,
+                borderRadius: 12,
               ),
             ),
-            child: Center(
+            child: const Center(
               child: Icon(
                 Icons.fingerprint,
-                size: 72.h,
-                color: const Color(0xFFCAF3FF),
+                size: 72,
+                color: Color(0xFFCAF3FF),
               ),
             ),
           ),
@@ -35,20 +34,20 @@ class BiometricLogo extends StatelessWidget {
         Center(
           //heightFactor: 6,
           child: Padding(
-            padding: EdgeInsets.only(top: 63.h),
+            padding: const EdgeInsets.only(top: 63),
             child: Container(
-              width: 169.w,
-              height: 28.h,
+              width: 169,
+              height: 28,
               color: const Color(0xFF135579).withOpacity(0.79),
             ),
           ),
         ),
         Center(
           child: Padding(
-            padding: EdgeInsets.only(top: 91.h),
+            padding: const EdgeInsets.only(top: 91),
             child: Container(
-              width: 259.w,
-              height: 3.h,
+              width: 259,
+              height: 3,
               decoration: const BoxDecoration(
                 color: Color(0xFFCAF3FF),
                 borderRadius: BorderRadius.only(
@@ -61,12 +60,12 @@ class BiometricLogo extends StatelessWidget {
         ),
         Center(
           child: Padding(
-            padding: EdgeInsets.only(top: 94.h),
+            padding: const EdgeInsets.only(top: 94),
             child: Opacity(
               opacity: 1.0,
               child: Container(
-                width: 259.w,
-                height: 84.h,
+                width: 259,
+                height: 84,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,

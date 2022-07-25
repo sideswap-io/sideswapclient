@@ -426,6 +426,7 @@ pub struct PreviousAddressesOpts {
 #[derive(Deserialize)]
 pub struct PreviousAddress {
     pub address: String,
+    pub unblinded_address: String,
     pub address_type: String,
     pub branch: u32,
     pub pointer: u32,
@@ -438,7 +439,6 @@ pub struct PreviousAddress {
 
 #[derive(Deserialize)]
 pub struct PreviousAddresses {
-    pub last_pointer: u32,
+    pub last_pointer: Option<u32>,
     pub list: Vec<PreviousAddress>,
-    pub subaccount: i32,
 }

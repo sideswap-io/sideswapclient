@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class OrderTrackingSliderThumbShape extends SliderComponentShape {
   OrderTrackingSliderThumbShape({
@@ -24,7 +23,7 @@ class OrderTrackingSliderThumbShape extends SliderComponentShape {
   var borderColor = const Color(0xFF1B8BC8);
   var circleColor = const Color(0xFF043857);
   final double? customRadius;
-  final double defaultRadius = 14.0.r;
+  final double defaultRadius = 14.0;
   final double stokeRatio;
 
   @override

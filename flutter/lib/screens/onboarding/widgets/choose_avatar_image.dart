@@ -1,8 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/screens/onboarding/import_avatar_resizer.dart';
 import 'package:sideswap/screens/onboarding/widgets/image_source_chooser.dart';
@@ -18,7 +16,7 @@ class ChooseAvatarImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10.w),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Column(
         children: [
           Expanded(
@@ -28,14 +26,14 @@ class ChooseAvatarImage extends StatelessWidget {
             resizerData: resizerData,
           ),
           Padding(
-            padding: EdgeInsets.only(top: 10.h),
+            padding: const EdgeInsets.only(top: 10),
             child: CustomBigButton(
               width: double.maxFinite,
-              height: 57.h,
+              height: 57,
               text: 'CANCEL'.tr(),
-              shape: RoundedRectangleBorder(
+              shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(
-                  Radius.circular(14.w),
+                  Radius.circular(14),
                 ),
               ),
               backgroundColor: Colors.white.withOpacity(0.92),
@@ -43,13 +41,13 @@ class ChooseAvatarImage extends StatelessWidget {
               onPressed: () async {
                 Navigator.pop(context);
               },
-              textStyle: GoogleFonts.sourceSansPro(
-                fontSize: 20.sp,
+              textStyle: const TextStyle(
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          SizedBox(height: 32.h),
+          const SizedBox(height: 32),
         ],
       ),
     );

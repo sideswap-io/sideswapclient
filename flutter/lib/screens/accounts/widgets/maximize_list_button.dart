@@ -2,8 +2,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
-
 class MaximizeListButton extends StatefulWidget {
   const MaximizeListButton({
     super.key,
@@ -25,10 +23,10 @@ class MaximizeListButtonState extends State<MaximizeListButton> {
       color: Colors.transparent,
       child: InkWell(
         onTap: widget.onPressed,
-        borderRadius: BorderRadius.circular(48.w),
+        borderRadius: BorderRadius.circular(48),
         child: SizedBox(
-          width: 48.w,
-          height: 48.w,
+          width: 48,
+          height: 48,
           child: Center(
             child: Transform(
               transform: Matrix4.rotationX(widget.position * pi),
@@ -38,8 +36,8 @@ class MaximizeListButtonState extends State<MaximizeListButton> {
                 alignment: Alignment.center,
                 child: SvgPicture.asset(
                   'assets/mini_button.svg',
-                  width: 22.w,
-                  height: 13.h,
+                  width: 22,
+                  height: 13,
                   color: Colors.white,
                 ),
               ),

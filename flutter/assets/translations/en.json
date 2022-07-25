@@ -293,7 +293,7 @@
   "SEND": "SEND",
   "Send": "Send",
   "Sent": "Sent",
-  "Set your PIN (6-8 chars)": "Set your PIN (6-8 chars)",
+  "Set your PIN (6-8 digits)": "Set your PIN (6-8 digits)",
   "Settings": "Settings",
   "Share the following link with your trade counterpart:": "Share the following link with your trade counterpart:",
   "SHARE": "SHARE",
@@ -422,5 +422,9 @@
       "other": "{} hours"
   },
   "Wallet loading...": "Wallet loading...",
-  "Languages": "Languages"
+  "Languages": "Languages",
+  "New app version available: {}. Would you like to download it now?": "New app version available: {}. Would you like to download it now?",
+  "Swap Markets": "Swap Markets",
+  "Instant Swap": "Instant Swap",
+  "Environment": "Environment"
 }

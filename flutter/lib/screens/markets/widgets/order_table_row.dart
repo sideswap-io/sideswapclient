@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
@@ -85,9 +83,8 @@ class OrderTableRow extends StatefulWidget {
 }
 
 class OrderTableRowState extends State<OrderTableRow> {
-  late TextStyle defaultFontStyle = GoogleFonts.roboto(
-    fontSize:
-        widget.orderTableRowType == OrderTableRowType.normal ? 16.sp : 14.sp,
+  late TextStyle defaultFontStyle = TextStyle(
+    fontSize: widget.orderTableRowType == OrderTableRowType.normal ? 16 : 14,
     fontWeight: FontWeight.normal,
     color: Colors.white,
   );
@@ -97,8 +94,8 @@ class OrderTableRowState extends State<OrderTableRow> {
     return Padding(
       padding: EdgeInsets.only(
           top: widget.orderTableRowType == OrderTableRowType.normal
-              ? widget.topPadding ?? 15.h
-              : widget.topPadding ?? 12.h),
+              ? widget.topPadding ?? 15
+              : widget.topPadding ?? 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -112,7 +109,7 @@ class OrderTableRowState extends State<OrderTableRow> {
                     style: widget.style ?? defaultFontStyle,
                   ),
                   if (widget.showAmpFlag) const AmpFlag(),
-                  SizedBox(width: 5.w),
+                  const SizedBox(width: 5),
                 ],
               ),
               Expanded(
@@ -132,10 +129,10 @@ class OrderTableRowState extends State<OrderTableRow> {
                     ),
                     if (widget.icon != null) ...[
                       Padding(
-                        padding: EdgeInsets.only(left: 8.w),
+                        padding: const EdgeInsets.only(left: 8),
                         child: SizedBox(
-                          width: 24.w,
-                          height: 24.w,
+                          width: 24,
+                          height: 24,
                           child: widget.icon,
                         ),
                       ),
@@ -151,21 +148,21 @@ class OrderTableRowState extends State<OrderTableRow> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(top: 8.h),
+                  padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     '≈ ${widget.dollarConversion}',
-                    style: GoogleFonts.roboto(
-                      fontSize: 14.sp,
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.normal,
-                      color: const Color(0xFF709EBA),
+                      color: Color(0xFF709EBA),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: 8.w),
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
                   child: SizedBox(
-                    width: 24.w,
-                    height: 24.w,
+                    width: 24,
+                    height: 24,
                   ),
                 ),
               ],
@@ -175,8 +172,8 @@ class OrderTableRowState extends State<OrderTableRow> {
             Padding(
               padding: EdgeInsets.only(
                   top: widget.orderTableRowType == OrderTableRowType.normal
-                      ? 12.h
-                      : 10.h),
+                      ? 12
+                      : 10),
               child: const Divider(
                 height: 1,
                 thickness: 1,

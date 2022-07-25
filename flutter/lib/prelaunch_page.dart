@@ -3,10 +3,8 @@ import 'dart:math' as math show sin, pi;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/initialize_app_provider.dart';
@@ -82,12 +80,12 @@ class _PreLaunchPageBodyState extends State<PreLaunchPageBody>
       children: [
         Center(
           child: Padding(
-            padding: EdgeInsets.only(top: FlavorConfig.isDesktop ? 200 : 180.h),
+            padding: EdgeInsets.only(top: FlavorConfig.isDesktop ? 200 : 180),
             child: Center(
               child: SvgPicture.asset(
                 'assets/logo.svg',
-                width: FlavorConfig.isDesktop ? 110 : 110.w,
-                height: FlavorConfig.isDesktop ? 108 : 108.h,
+                width: 110,
+                height: 108,
               ),
             ),
           ),
@@ -95,11 +93,11 @@ class _PreLaunchPageBodyState extends State<PreLaunchPageBody>
         FlavorConfig.isDesktop
             ? Container()
             : Padding(
-                padding: EdgeInsets.only(top: 30.h),
+                padding: const EdgeInsets.only(top: 30),
                 child: Text(
                   'Wallet loading...'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
@@ -107,10 +105,10 @@ class _PreLaunchPageBodyState extends State<PreLaunchPageBody>
               ),
         Center(
           child: Padding(
-            padding: EdgeInsets.only(top: FlavorConfig.isDesktop ? 241 : 239.h),
+            padding: const EdgeInsets.only(top: 241),
             child: SizedBox(
-              width: FlavorConfig.isDesktop ? 66 : 66.w,
-              height: FlavorConfig.isDesktop ? 10 : 10.w,
+              width: 66,
+              height: 10,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -121,8 +119,8 @@ class _PreLaunchPageBodyState extends State<PreLaunchPageBody>
                           DelayTween(begin: 0.2, end: 1.0, delay: delays[i])
                               .animate(_controller),
                       child: Container(
-                        width: FlavorConfig.isDesktop ? 10 : 10.w,
-                        height: FlavorConfig.isDesktop ? 10 : 10.w,
+                        width: 10,
+                        height: 10,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _color,

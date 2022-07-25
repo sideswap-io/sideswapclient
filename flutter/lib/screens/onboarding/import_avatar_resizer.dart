@@ -7,7 +7,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as image;
 import 'package:vector_math/vector_math_64.dart' as vector;
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -63,7 +62,7 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
     }
 
     final position = data.position;
-    final size = Size(MediaQuery.of(context).size.width, 375.h);
+    final size = Size(MediaQuery.of(context).size.width, 375);
 
     final drawOutput =
         Rect.fromLTWH(position.dx, position.dy, size.width, size.height);
@@ -122,16 +121,16 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
         ),
         body: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.only(top: 40.h),
-              child: const AvatarResizer(),
+            const Padding(
+              padding: EdgeInsets.only(top: 40),
+              child: AvatarResizer(),
             ),
             Expanded(child: Container()),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: CustomBigButton(
                 width: double.maxFinite,
-                height: 54.h,
+                height: 54,
                 text: 'SAVE'.tr(),
                 backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () async {
@@ -147,9 +146,7 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
                 },
               ),
             ),
-            SizedBox(
-              height: 40.h,
-            )
+            const SizedBox(height: 40)
           ],
         ),
       ),
@@ -164,9 +161,9 @@ class AvatarResizer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 375.h,
-      child: const DragImage(
+    return const SizedBox(
+      height: 375,
+      child: DragImage(
         position: Offset(0, 0),
       ),
     );
@@ -218,7 +215,7 @@ class DragImageState extends ConsumerState<DragImage> {
                   top: _data.position.dy,
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: 375.h,
+                    height: 375,
                     child: Transform(
                       transform: Matrix4.diagonal3(
                           vector.Vector3(_data.zoom, _data.zoom, _data.zoom)),

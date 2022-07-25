@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class DPinInputDecoration extends InputDecoration {
   const DPinInputDecoration({
@@ -15,7 +14,8 @@ class DPinInputDecoration extends InputDecoration {
     super.errorText,
     super.errorStyle,
     super.errorMaxLines,
-    FloatingLabelBehavior super.floatingLabelBehavior = FloatingLabelBehavior.auto,
+    FloatingLabelBehavior super.floatingLabelBehavior =
+        FloatingLabelBehavior.auto,
     super.isCollapsed,
     super.isDense,
     super.contentPadding,
@@ -48,10 +48,10 @@ class DPinInputDecoration extends InputDecoration {
   });
 
   @override
-  TextStyle? get errorStyle => GoogleFonts.roboto(
+  TextStyle? get errorStyle => const TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFFFF7878),
+        color: Color(0xFFFF7878),
       );
 
   @override
@@ -60,10 +60,10 @@ class DPinInputDecoration extends InputDecoration {
   @override
   TextStyle get hintStyle =>
       super.hintStyle ??
-      GoogleFonts.roboto(
+      const TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.normal,
-        color: const Color(0xFF84ADC6),
+        color: Color(0xFF84ADC6),
       );
 
   @override

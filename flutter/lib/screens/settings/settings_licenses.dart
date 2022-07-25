@@ -3,11 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sideswap/app_version.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 
@@ -56,11 +54,11 @@ class SettingsLicensesState extends State<SettingsLicenses> {
         if (paragraph.indent == LicenseParagraph.centeredIndent) {
           tempSubWidget.add(
             Padding(
-              padding: EdgeInsets.only(top: 16.h),
+              padding: const EdgeInsets.only(top: 16),
               child: Text(
                 paragraph.text,
-                style: GoogleFonts.roboto(
-                  fontSize: 12.sp,
+                style: const TextStyle(
+                  fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -161,58 +159,45 @@ class SettingsLicensesState extends State<SettingsLicenses> {
                 child: Center(
                   child: Column(
                     children: [
+                      const Text(
+                        'SideSwap',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.normal,
+                          color: Colors.white,
+                        ),
+                      ),
                       Padding(
-                        padding: EdgeInsets.only(top: 0.h),
+                        padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          'SideSwap',
-                          style: GoogleFonts.roboto(
-                            fontSize: 24.sp,
+                          'VERSION'.tr(args: [appVersionFull]),
+                          style: const TextStyle(
+                            fontSize: 16,
                             fontWeight: FontWeight.normal,
                             color: Colors.white,
                           ),
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.only(top: 8.h),
-                        child: FutureBuilder(
-                          future: PackageInfo.fromPlatform(),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              final packageInfo = snapshot.data as PackageInfo;
-                              return Text(
-                                'VERSION'.tr(args: [packageInfo.version]),
-                                style: GoogleFonts.roboto(
-                                  fontSize: 16.sp,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                              );
-                            }
-
-                            return Container();
-                          },
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 8.h),
+                        padding: const EdgeInsets.only(top: 8),
                         child: Text(
                           'Copyright © 2021 SideSwap',
-                          style: GoogleFonts.roboto(
-                            fontSize: 10.sp,
+                          style: TextStyle(
+                            fontSize: 10,
                             fontWeight: FontWeight.normal,
                             color: Colors.white.withOpacity(0.6),
                           ),
                         ),
                       ),
                       if (!_loaded) ...[
-                        Padding(
-                          padding: EdgeInsets.only(top: 16.h),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 16),
                           child: Center(
                             child: Padding(
-                              padding: EdgeInsets.only(top: 32.h),
+                              padding: EdgeInsets.only(top: 32),
                               child: SpinKitThreeBounce(
                                 color: Colors.white,
-                                size: 24.w,
+                                size: 24,
                               ),
                             ),
                           ),
@@ -222,7 +207,7 @@ class SettingsLicensesState extends State<SettingsLicenses> {
                         child: SizedBox(
                           height: 100,
                           child: Padding(
-                            padding: EdgeInsets.only(top: 16.h),
+                            padding: const EdgeInsets.only(top: 16),
                             child: ListView.separated(
                               itemCount: _licenses.length,
                               separatorBuilder: (context, index) =>

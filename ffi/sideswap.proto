@@ -642,6 +642,7 @@ message From {
     PriceUpdate price_update = 6;
     Empty wallet_loaded = 7;
     Empty sync_complete = 14;
+    Empty logout = 16;
 
     EncryptPin encrypt_pin = 10;
     DecryptPin decrypt_pin = 11;

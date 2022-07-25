@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -21,7 +20,7 @@ class SideSwapPopup extends ConsumerWidget {
     this.sideSwapBackground = true,
     this.backgroundCoverColor,
     this.extendBodyBehindAppBar = false,
-  })  : _backgroundColor = backgroundColor ?? const Color(0xFF135579);
+  }) : _backgroundColor = backgroundColor ?? const Color(0xFF135579);
 
   final Widget? child;
   final AppBar? appBar;
@@ -38,6 +37,8 @@ class SideSwapPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return SideSwapScaffold(
       extendBodyBehindAppBar: extendBodyBehindAppBar,
       sideSwapBackground: sideSwapBackground,
@@ -47,62 +48,51 @@ class SideSwapPopup extends ConsumerWidget {
       body: SafeArea(
         child: Padding(
           padding: padding,
-          child: LayoutBuilder(
-            builder: (context, constraints) => SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minWidth: constraints.maxWidth,
-                  minHeight: constraints.maxHeight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-                child: IntrinsicHeight(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 10.h),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16.w),
-                          topRight: Radius.circular(16.w),
-                        ),
-                        color: _backgroundColor,
-                      ),
-                      child: Stack(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal:
-                                    enableInsideHorizontalPadding ? 16.w : 0.w),
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                  top: enableInsideTopPadding ? 28.h : 0.h),
-                              child: child,
-                            ),
-                          ),
-                          if (!hideCloseButton) ...[
-                            Align(
-                              alignment: Alignment.topRight,
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                    top: enableInsideTopPadding ? 25.h : 0.h,
-                                    right: 22.w),
-                                child: CustomBackButton(
-                                  width: 18.w,
-                                  height: 18.w,
-                                  buttonType: CustomBackButtonType.close,
-                                  onPressed: () {
-                                    if (onClose != null) {
-                                      onClose!();
-                                    } else {
-                                      ref.read(walletProvider).goBack();
-                                    }
-                                  },
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                color: _backgroundColor,
+              ),
+              child: SizedBox(
+                height: screenHeight + padding.collapsedSize.height + 10,
+                child: Stack(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: enableInsideHorizontalPadding ? 16 : 0),
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                            top: enableInsideTopPadding ? 28 : 0),
+                        child: child,
                       ),
                     ),
-                  ),
+                    if (!hideCloseButton) ...[
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                              top: enableInsideTopPadding ? 25 : 0, right: 22),
+                          child: CustomBackButton(
+                            width: 18,
+                            height: 18,
+                            buttonType: CustomBackButtonType.close,
+                            onPressed: () {
+                              if (onClose != null) {
+                                onClose!();
+                              } else {
+                                ref.read(walletProvider).goBack();
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ),

@@ -358,7 +358,7 @@ class _DetailsField extends ConsumerWidget {
         const SizedBox(height: 8),
         if (dollarPrice != null)
           Text(
-            '≈ \$ ${dollarPrice.toStringAsFixed(2)}',
+            '≈ \$ ${formatThousandsSep(dollarPrice)}',
             style: const TextStyle(
               fontSize: 12,
               color: Color(0xFF87C1E1),

@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
@@ -64,10 +63,10 @@ class DPinKeyboard extends HookConsumerWidget {
               },
             ),
             textStyle: ButtonState.all(
-              GoogleFonts.roboto(
+              const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF00C5FF),
+                color: Color(0xFF00C5FF),
                 letterSpacing: 0.5,
               ),
             ),
@@ -81,7 +80,7 @@ class DPinKeyboard extends HookConsumerWidget {
         ?.merge(
           DButtonStyle(
             textStyle: ButtonState.all(
-              GoogleFonts.roboto(
+              const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -115,7 +114,7 @@ class DPinKeyboard extends HookConsumerWidget {
               break;
             case 11:
               buttonStyle = defaultEnterButtonStyle;
-              final textStyle = GoogleFonts.roboto(
+              const textStyle = TextStyle(
                 fontSize: 14,
               );
 

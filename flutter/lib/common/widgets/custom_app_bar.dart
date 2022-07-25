@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -46,18 +44,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         alignment: Alignment.centerRight,
                         child: Padding(
                           padding: EdgeInsets.only(
-                            right: trailingWidget != null ? 10.w : 22.w,
+                            right: trailingWidget != null ? 10 : 22,
                           ),
                           child: trailingWidget != null
                               ? Material(
                                   color: Colors.transparent,
-                                  borderRadius: BorderRadius.circular(42.w),
+                                  borderRadius: BorderRadius.circular(42),
                                   child: InkWell(
                                     onTap: onTrailingButtonPressed,
-                                    borderRadius: BorderRadius.circular(42.w),
+                                    borderRadius: BorderRadius.circular(42),
                                     child: Container(
-                                      width: 48.w,
-                                      height: 48.w,
+                                      width: 48,
+                                      height: 48,
                                       decoration: const BoxDecoration(
                                         shape: BoxShape.circle,
                                       ),
@@ -68,8 +66,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                                   ),
                                 )
                               : CustomBackButton(
-                                  width: 18.w,
-                                  height: 18.w,
+                                  width: 18,
+                                  height: 18,
                                   buttonType: CustomBackButtonType.close,
                                   color: backButtonColor ?? Colors.white,
                                   onPressed: onTrailingButtonPressed,
@@ -84,8 +82,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           child: Text(
                             title ?? '',
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.roboto(
-                              fontSize: 22.sp,
+                            style: const TextStyle(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),

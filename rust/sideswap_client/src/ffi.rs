@@ -339,7 +339,7 @@ fn init_log(work_dir: &str) {
         .format(log_format)
         .use_utc()
         .log_to_file(flexi_logger::FileSpec::try_from(path).unwrap())
-        .duplicate_to_stderr(flexi_logger::Duplicate::Info)
+        .duplicate_to_stderr(flexi_logger::Duplicate::Error)
         .start();
 }
 

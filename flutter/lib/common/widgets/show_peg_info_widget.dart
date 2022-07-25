@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 
@@ -27,37 +25,37 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 343.w,
-      height: 390.h,
-      decoration: BoxDecoration(
+      width: 343,
+      height: 390,
+      decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(
-          Radius.circular(8.w),
+          Radius.circular(8),
         ),
-        color: const Color(0xFF1C6086),
+        color: Color(0xFF1C6086),
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             CircleAvatar(
               backgroundColor: Colors.white,
-              radius: 28.w,
+              radius: 28,
               child: SvgPicture.asset(
                 'assets/info.svg',
-                width: 13.w,
-                height: 32.h,
+                width: 13,
+                height: 32,
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 24.h),
+              padding: const EdgeInsets.only(top: 24),
               child: SizedBox(
-                height: 66.h,
+                height: 66,
                 child: SingleChildScrollView(
                   child: Text(
                     widget.text,
-                    style: GoogleFonts.roboto(
-                      fontSize: 16.sp,
+                    style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
@@ -66,9 +64,9 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
                 ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.only(top: 22.h),
-              child: const Divider(
+            const Padding(
+              padding: EdgeInsets.only(top: 22),
+              child: Divider(
                 height: 1,
                 thickness: 1,
                 color: Color(0xFF357CA4),
@@ -83,11 +81,11 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
               },
               value: internalValue,
               child: Padding(
-                padding: EdgeInsets.only(left: 8.w),
+                padding: const EdgeInsets.only(left: 8),
                 child: Text(
                   "Don't show again".tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 14.sp,
+                  style: const TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
@@ -101,10 +99,10 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
             ),
             const Spacer(),
             Padding(
-              padding: EdgeInsets.only(top: 32.h),
+              padding: const EdgeInsets.only(top: 32),
               child: CustomBigButton(
-                width: 295.w,
-                height: 54.h,
+                width: 295,
+                height: 54,
                 text: 'OK'.tr(),
                 backgroundColor: const Color(0xFF00C5FF),
                 onPressed: () {

@@ -1,10 +1,8 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
@@ -63,15 +61,15 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
             TxCircleImage(
               txCircleImageType:
                   isPegIn ? TxCircleImageType.pegIn : TxCircleImageType.pegOut,
-              width: 24.w,
-              height: 24.w,
+              width: 24,
+              height: 24,
             ),
             Padding(
-              padding: EdgeInsets.only(left: 8.w),
+              padding: const EdgeInsets.only(left: 8),
               child: Text(
                 isPegIn ? 'Peg-In'.tr() : 'Peg-Out'.tr(),
-                style: GoogleFonts.roboto(
-                  fontSize: 24.sp,
+                style: const TextStyle(
+                  fontSize: 24,
                   fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),
@@ -80,19 +78,19 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
           ],
         ),
         Padding(
-          padding: EdgeInsets.only(top: 11.h),
+          padding: const EdgeInsets.only(top: 11),
           child: Text(
             _timestampStr,
-            style: GoogleFonts.roboto(
-              fontSize: 16.sp,
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.normal,
               color: Colors.white,
             ),
           ),
         ),
-        Padding(
-          padding: EdgeInsets.only(top: 18.h),
-          child: const SizedBox(),
+        const Padding(
+          padding: EdgeInsets.only(top: 18),
+          child: SizedBox(),
         ),
         TxDetailsRow(
           description:
@@ -103,7 +101,7 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 12.h),
+          padding: const EdgeInsets.only(top: 12),
           child: TxDetailsRow(
             description: isPegIn ? 'L-BTC received'.tr() : 'BTC received'.tr(),
             details: amountStrNamed(
@@ -114,14 +112,14 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 12.h),
+          padding: const EdgeInsets.only(top: 12),
           child: TxDetailsRow(
             description: 'Conversion rate'.tr(),
             details: conversionRate,
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 12.h),
+          padding: const EdgeInsets.only(top: 12),
           child: TxDetailsRow(
             description: 'Status'.tr(),
             details: _status,
@@ -130,15 +128,15 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
                 : Colors.white,
           ),
         ),
-        Padding(
-          padding: EdgeInsets.only(top: 12.5.h),
-          child: const DottedLine(
+        const Padding(
+          padding: EdgeInsets.only(top: 12.5),
+          child: DottedLine(
             dashColor: Colors.white,
             dashGapColor: Colors.transparent,
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 20.5.h),
+          padding: const EdgeInsets.only(top: 20.5),
           child: TxDetailsColumn(
             description: isPegIn
                 ? 'BTC Peg-in address'.tr()
@@ -147,7 +145,7 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 16.h),
+          padding: const EdgeInsets.only(top: 16),
           child: TxDetailsColumn(
             description: isPegIn
                 ? 'L-BTC receiving address'.tr()
@@ -156,7 +154,7 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 16.h),
+          padding: const EdgeInsets.only(top: 16),
           child: TxDetailsColumn(
             description: 'Transaction ID'.tr(),
             details: widget.transItem.peg.txidSend,
@@ -165,7 +163,7 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
         ),
         const Spacer(),
         Padding(
-          padding: EdgeInsets.only(bottom: 40.h),
+          padding: const EdgeInsets.only(bottom: 40),
           child: TxDetailsBottomButtons(
             id: widget.transItem.peg.txidRecv,
             isLiquid: isPegIn,

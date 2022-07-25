@@ -3,9 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sideswap/app_version.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
@@ -84,7 +83,7 @@ class DSettingsLicenses extends HookConsumerWidget {
                 padding: const EdgeInsets.only(top: 16),
                 child: Text(
                   paragraph.text,
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -178,29 +177,19 @@ class DSettingsLicenses extends HookConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Column(
               children: [
-                FutureBuilder(
-                  future: PackageInfo.fromPlatform(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final packageInfo = snapshot.data as PackageInfo;
-                      return Text(
-                        'VERSION'.tr(args: [packageInfo.version]),
-                        style: GoogleFonts.roboto(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: Colors.white,
-                        ),
-                      );
-                    }
-
-                    return Container();
-                  },
+                Text(
+                  'VERSION'.tr(args: [appVersionFull]),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.white,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
                     'Copyright © 2022 SideSwap',
-                    style: GoogleFonts.roboto(
+                    style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.normal,
                       color: Colors.white.withOpacity(0.6),

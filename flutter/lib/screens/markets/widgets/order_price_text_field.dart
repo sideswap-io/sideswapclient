@@ -1,10 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
@@ -37,63 +35,63 @@ class OrderPriceTextField extends ConsumerWidget {
         focusNode?.requestFocus();
       },
       child: Container(
-        height: 84.h,
+        height: 84,
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(8.r),
+          borderRadius: BorderRadius.circular(8),
           color: Colors.white,
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 12.h),
+                padding: const EdgeInsets.only(top: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'Price'.tr(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 14.sp,
+                      style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: const Color(0xFF00C5FF),
+                        color: Color(0xFF00C5FF),
                       ),
                     ),
                     Text(
                       dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
-                      style: GoogleFonts.roboto(
-                        fontSize: 14.sp,
+                      style: const TextStyle(
+                        fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: const Color(0xFF709EBA),
+                        color: Color(0xFF709EBA),
                       ),
                     ),
                   ],
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: 17.h),
+                padding: const EdgeInsets.only(bottom: 17),
                 child: SizedBox(
-                  height: 29.h,
+                  height: 29,
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Row(
                         children: [
                           SizedBox(
-                            width: 24.w,
-                            height: 24.w,
+                            width: 24,
+                            height: 24,
                             child: icon,
                           ),
                           Padding(
-                            padding: EdgeInsets.only(left: 5.w),
+                            padding: const EdgeInsets.only(left: 5),
                             child: Text(
                               asset?.ticker ?? '',
-                              style: GoogleFonts.roboto(
-                                fontSize: 17.sp,
+                              style: const TextStyle(
+                                fontSize: 17,
                                 fontWeight: FontWeight.normal,
-                                color: const Color(0xFF84ADC6),
+                                color: Color(0xFF84ADC6),
                               ),
                             ),
                           ),
@@ -101,15 +99,15 @@ class OrderPriceTextField extends ConsumerWidget {
                       ),
                       const Spacer(),
                       SizedBox(
-                        width: 190.w,
+                        width: 190,
                         child: Padding(
-                          padding: EdgeInsets.only(left: 14.w),
+                          padding: const EdgeInsets.only(left: 14),
                           child: TextField(
                             controller: controller,
                             focusNode: focusNode,
                             textAlign: TextAlign.end,
-                            style: GoogleFonts.roboto(
-                              fontSize: 24.sp,
+                            style: const TextStyle(
+                              fontSize: 24,
                               fontWeight: FontWeight.normal,
                               color: Colors.black,
                             ),
@@ -129,7 +127,7 @@ class OrderPriceTextField extends ConsumerWidget {
                                 decimalRange: precision,
                               ),
                             ],
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               isCollapsed: true,
                               isDense: true,
                               contentPadding: EdgeInsets.zero,
@@ -140,10 +138,10 @@ class OrderPriceTextField extends ConsumerWidget {
                               errorBorder: InputBorder.none,
                               disabledBorder: InputBorder.none,
                               hintText: '0.0',
-                              hintStyle: GoogleFonts.roboto(
-                                fontSize: 24.sp,
+                              hintStyle: TextStyle(
+                                fontSize: 24,
                                 fontWeight: FontWeight.normal,
-                                color: const Color(0xFF84ADC6),
+                                color: Color(0xFF84ADC6),
                               ),
                             ),
                           ),

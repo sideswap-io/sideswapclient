@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/payment_requests_provider.dart';
@@ -35,30 +33,30 @@ class ConfirmRequestPayment extends ConsumerWidget {
       child: SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.only(top: 32.h),
+            padding: const EdgeInsets.only(top: 32),
             child: Column(
               children: [
                 Text(
                   'Confirm the payment'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 18.sp,
+                  style: const TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 24.h),
+                  padding: const EdgeInsets.only(top: 24),
                   child: FriendWidget(
                     friend: request.friend,
                     backgroundColor: const Color(0xFF135579),
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 24.h),
+                  padding: const EdgeInsets.only(top: 24),
                   child: Text(
                     '$amount $ticker',
-                    style: GoogleFonts.roboto(
-                      fontSize: 24.sp,
+                    style: const TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.w500,
                       color: Colors.white,
                     ),
@@ -67,7 +65,7 @@ class ConfirmRequestPayment extends ConsumerWidget {
                 const Spacer(),
                 CustomBigButton(
                   width: double.maxFinite,
-                  height: 54.h,
+                  height: 54,
                   text: 'CONFIRM'.tr(),
                   backgroundColor: const Color(0xFF00C5FF),
                   textColor: Colors.white,
@@ -86,10 +84,10 @@ class ConfirmRequestPayment extends ConsumerWidget {
                   },
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+                  padding: const EdgeInsets.only(top: 16, bottom: 16),
                   child: CustomBigButton(
                     width: double.maxFinite,
-                    height: 54.h,
+                    height: 54,
                     text: 'CANCEL'.tr(),
                     backgroundColor: Colors.transparent,
                     textColor: Colors.white,

@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -19,34 +17,34 @@ class ConfirmPhoneBottomPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      height: 227.h,
-      decoration: BoxDecoration(
+      height: 227,
+      decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16.w),
-          topRight: Radius.circular(16.w),
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
         ),
-        color: const Color(0xFF135579),
+        color: Color(0xFF135579),
       ),
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 29.h),
+            padding: const EdgeInsets.only(top: 29),
             child: Text(
               'SideSwap Friends'.tr(),
-              style: GoogleFonts.roboto(
-                fontSize: 16.sp,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.normal,
                 color: Colors.white,
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 22.h, left: 28.w, right: 28.w),
+            padding: const EdgeInsets.only(top: 22, left: 28, right: 28),
             child: Text(
               'Confirm your phone number to send funds to friends'.tr(),
               textAlign: TextAlign.center,
-              style: GoogleFonts.roboto(
-                fontSize: 18.sp,
+              style: const TextStyle(
+                fontSize: 18,
                 fontWeight: FontWeight.normal,
                 color: Colors.white,
               ),
@@ -54,12 +52,12 @@ class ConfirmPhoneBottomPanel extends StatelessWidget {
           ),
           const Spacer(),
           Padding(
-              padding: EdgeInsets.only(bottom: 36.h, left: 16.w, right: 16.w),
+              padding: const EdgeInsets.only(bottom: 36, left: 16, right: 16),
               child: Consumer(
                 builder: (context, ref, _) {
                   return CustomBigButton(
                     width: double.maxFinite,
-                    height: 54.h,
+                    height: 54,
                     text: 'CONFIRM PHONE NUMBER'.tr(),
                     backgroundColor: const Color(0xFF003251),
                     textColor: const Color(0xFF00B4E9),

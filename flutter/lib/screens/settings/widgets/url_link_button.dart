@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 
 class UrlLinkButton extends StatelessWidget {
   const UrlLinkButton({
@@ -21,9 +19,9 @@ class UrlLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 4.h),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       width: double.maxFinite,
-      height: 56.h,
+      height: 56,
       child: TextButton(
         onPressed: () async {
           if (url.isNotEmpty) {
@@ -37,9 +35,9 @@ class UrlLinkButton extends StatelessWidget {
         style: TextButton.styleFrom(
           primary: Colors.white,
           backgroundColor: const Color(0xFF135579),
-          shape: RoundedRectangleBorder(
+          shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
-              Radius.circular(8.w),
+              Radius.circular(8),
             ),
           ),
           side: const BorderSide(
@@ -53,26 +51,24 @@ class UrlLinkButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 16.w),
+              padding: const EdgeInsets.only(left: 16),
               child: SizedBox(
-                width: 24.w,
-                height: 24.w,
+                width: 24,
+                height: 24,
                 child: icon,
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 17.w),
+              padding: const EdgeInsets.only(left: 17),
               child: Text(
                 text,
-                style: GoogleFonts.roboto(
-                  fontSize: 14.sp,
+                style: TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.normal,
                   color: const Color(0xFF00C5FF),
-                  textStyle: TextStyle(
-                    decoration: url.isNotEmpty
-                        ? TextDecoration.underline
-                        : TextDecoration.none,
-                  ),
+                  decoration: url.isNotEmpty
+                      ? TextDecoration.underline
+                      : TextDecoration.none,
                 ),
               ),
             ),

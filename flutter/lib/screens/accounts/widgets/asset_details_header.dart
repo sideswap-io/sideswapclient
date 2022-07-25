@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
@@ -37,8 +35,8 @@ class AssetDetailsHeader extends ConsumerWidget {
               final asset = wallet.assets[account.asset];
               return Text(
                 asset?.name ?? '',
-                style: GoogleFonts.roboto(
-                  fontSize: 17.sp,
+                style: const TextStyle(
+                  fontSize: 17,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,
                 ),
@@ -47,26 +45,23 @@ class AssetDetailsHeader extends ConsumerWidget {
           ),
           if (isAmp)
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 borderRadius: BorderRadius.all(
-                  Radius.circular(8.w),
+                  Radius.circular(8),
                 ),
-                color: const Color(0xFF1C6086),
+                color: Color(0xFF1C6086),
               ),
-              padding: EdgeInsets.symmetric(
-                vertical: 6.w,
-                horizontal: 8.w,
-              ),
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
               margin: const EdgeInsets.all(8.0),
-              child: Text('AMP wallet',
-                  style: GoogleFonts.roboto(
-                    fontSize: 14.sp,
+              child: const Text('AMP wallet',
+                  style: TextStyle(
+                    fontSize: 14,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   )),
             ),
           Padding(
-            padding: EdgeInsets.only(top: 8.h),
+            padding: const EdgeInsets.only(top: 8),
             child: Consumer(
               builder: (context, ref, child) {
                 final wallet = ref.watch(walletProvider);
@@ -82,8 +77,8 @@ class AssetDetailsHeader extends ConsumerWidget {
                     '${amountStr(balance ?? 0, precision: precision)} $ticker';
                 return Text(
                   balanceStr,
-                  style: GoogleFonts.roboto(
-                    fontSize: 28.sp,
+                  style: const TextStyle(
+                    fontSize: 28,
                     fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
@@ -92,7 +87,7 @@ class AssetDetailsHeader extends ConsumerWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 4.h),
+            padding: const EdgeInsets.only(top: 4),
             child: Consumer(
               builder: (context, ref, child) {
                 final wallet = ref.watch(walletProvider);
@@ -116,17 +111,17 @@ class AssetDetailsHeader extends ConsumerWidget {
 
                 return Text(
                   visibleConversion ? '≈ $dollarConversion' : '',
-                  style: GoogleFonts.roboto(
-                    fontSize: 20.sp,
+                  style: const TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.normal,
-                    color: const Color(0xFF6B91A8),
+                    color: Color(0xFF6B91A8),
                   ),
                 );
               },
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 22.h),
+            padding: const EdgeInsets.only(top: 22),
             child: Consumer(builder: (context, ref, child) {
               final wallet = ref.read(walletProvider);
               final account = wallet.selectedWalletAsset!;
@@ -152,14 +147,12 @@ class AssetDetailsHeader extends ConsumerWidget {
                     buttonBackground: Colors.white,
                     child: SvgPicture.asset(
                       'assets/bottom_left_arrow.svg',
-                      width: 28.w,
-                      height: 28.w,
+                      width: 28,
+                      height: 28,
                     ),
                   ),
                   if (instantSwapVisible || p2pSwapVisible) ...[
-                    Container(
-                      width: 32.w,
-                    ),
+                    Container(width: 32),
                     RoundedButtonWithLabel(
                       onTap: () {
                         if (instantSwapVisible) {
@@ -186,14 +179,12 @@ class AssetDetailsHeader extends ConsumerWidget {
                       buttonBackground: Colors.white,
                       child: SvgPicture.asset(
                         'assets/asset_swap_arrows.svg',
-                        width: 28.w,
-                        height: 28.w,
+                        width: 28,
+                        height: 28,
                       ),
                     ),
                   ],
-                  Container(
-                    width: 32.w,
-                  ),
+                  Container(width: 32),
                   RoundedButtonWithLabel(
                     onTap: () {
                       ref.read(walletProvider).selectPaymentPage();
@@ -202,8 +193,8 @@ class AssetDetailsHeader extends ConsumerWidget {
                     buttonBackground: Colors.white,
                     child: SvgPicture.asset(
                       'assets/top_right_arrow.svg',
-                      width: 28.w,
-                      height: 28.w,
+                      width: 28,
+                      height: 28,
                     ),
                   ),
                 ],

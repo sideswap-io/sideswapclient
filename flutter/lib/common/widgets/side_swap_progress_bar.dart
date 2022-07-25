@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class SideSwapProgressBar extends StatefulWidget {
   const SideSwapProgressBar({
@@ -58,9 +55,9 @@ class SideSwapProgressBarState extends State<SideSwapProgressBar> {
         children: [
           Container(
             key: _containerKey,
-            height: 4.w,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(2.w)),
+            height: 4,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(2)),
               color: Colors.white,
             ),
             child: Row(
@@ -69,10 +66,10 @@ class SideSwapProgressBarState extends State<SideSwapProgressBar> {
                   AnimatedContainer(
                     duration: widget.duration,
                     width: _maxWidth * (widget.percent / 100),
-                    height: 8.w,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00C5FF),
-                      borderRadius: BorderRadius.all(Radius.circular(2.w)),
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF00C5FF),
+                      borderRadius: BorderRadius.all(Radius.circular(2)),
                     ),
                   ),
                 ],
@@ -82,11 +79,11 @@ class SideSwapProgressBarState extends State<SideSwapProgressBar> {
           Visibility(
             visible: widget.displayText,
             child: Padding(
-              padding: EdgeInsets.only(top: 12.w),
+              padding: const EdgeInsets.only(top: 12),
               child: Text(
                 widget.text ?? '${widget.percent} %',
-                style: GoogleFonts.roboto(
-                  fontSize: 16.sp,
+                style: const TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.normal,
                   color: Colors.white,
                 ),

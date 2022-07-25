@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sideswap/app_version.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
@@ -42,27 +41,18 @@ class DSettingsAboutUs extends HookConsumerWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 0),
-                    child: FutureBuilder<void>(
-                      future: PackageInfo.fromPlatform(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          final packageInfo = snapshot.data as PackageInfo;
-                          return GestureDetector(
-                            onLongPress: () {
-                              // showExportLogMenu(context);
-                            },
-                            child: Text(
-                              'VERSION'.tr(args: [packageInfo.version]),
-                              style: GoogleFonts.roboto(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFF00C5FF),
-                              ),
-                            ),
-                          );
-                        }
-                        return Container();
+                    child: GestureDetector(
+                      onLongPress: () {
+                        // showExportLogMenu(context);
                       },
+                      child: Text(
+                        'VERSION'.tr(args: [appVersionFull]),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00C5FF),
+                        ),
+                      ),
                     ),
                   ),
                   const Padding(

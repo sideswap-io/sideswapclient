@@ -3,10 +3,8 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
@@ -24,8 +22,8 @@ class PaymentConfirmPhoneSuccess extends ConsumerStatefulWidget {
 
 class PaymentConfirmPhoneSuccessState
     extends ConsumerState<PaymentConfirmPhoneSuccess> {
-  final _defaultTextStyle = GoogleFonts.roboto(
-    fontSize: 16.sp,
+  final _defaultTextStyle = const TextStyle(
+    fontSize: 16,
     fontWeight: FontWeight.normal,
     color: Colors.white,
   );
@@ -65,41 +63,41 @@ class PaymentConfirmPhoneSuccessState
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: 40.h),
+              padding: const EdgeInsets.only(top: 40),
               child: Container(
-                width: 100.w,
-                height: 100.w,
+                width: 100,
+                height: 100,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: const Color(0xFF00C5FF),
                     style: BorderStyle.solid,
-                    width: 4.w,
+                    width: 4,
                   ),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
                     'assets/success.svg',
-                    width: 33.w,
-                    height: 33.w,
+                    width: 33,
+                    height: 33,
                     color: const Color(0xFFCAF3FF),
                   ),
                 ),
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(top: 22.h),
+              padding: const EdgeInsets.only(top: 22),
               child: Text(
                 'Success!'.tr(),
-                style: GoogleFonts.roboto(
-                  fontSize: 22.sp,
+                style: const TextStyle(
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
               ),
             ),
             Padding(
-                padding: EdgeInsets.only(top: 12.h, left: 24.w, right: 24.w),
+                padding: const EdgeInsets.only(top: 12, left: 24, right: 24),
                 child: Consumer(
                   builder: (context, ref, _) {
                     final countryPhoneNumber = ref.watch(
@@ -130,7 +128,7 @@ class PaymentConfirmPhoneSuccessState
                 )),
             const Spacer(),
             Container(
-              height: 324.h,
+              height: 324,
               color: const Color(0xFF004666),
               child: Center(
                 child: Consumer(
@@ -149,11 +147,11 @@ class PaymentConfirmPhoneSuccessState
                     return Column(
                       children: [
                         Padding(
-                          padding: EdgeInsets.only(top: 48.h),
+                          padding: const EdgeInsets.only(top: 48),
                           child: Text(
                             'Want to import contacts?'.tr(),
-                            style: GoogleFonts.roboto(
-                              fontSize: 22.sp,
+                            style: const TextStyle(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -163,8 +161,8 @@ class PaymentConfirmPhoneSuccessState
                           visible: contactsLoadingState ==
                               ContactsLoadingState.running,
                           child: Padding(
-                            padding: EdgeInsets.only(
-                                top: 32.w, right: 16.w, left: 16.w),
+                            padding: const EdgeInsets.only(
+                                top: 32, right: 16, left: 16),
                             child: SideSwapProgressBar(
                               percent: percent,
                             ),
@@ -172,10 +170,10 @@ class PaymentConfirmPhoneSuccessState
                         ),
                         const Spacer(),
                         Padding(
-                          padding: EdgeInsets.only(left: 16.w, right: 16.w),
+                          padding: const EdgeInsets.only(left: 16, right: 16),
                           child: CustomBigButton(
                             width: double.maxFinite,
-                            height: 54.h,
+                            height: 54,
                             text: 'IMPORT CONTACTS'.tr(),
                             backgroundColor: const Color(0xFF00C5FF),
                             enabled: contactsLoadingState !=
@@ -186,11 +184,11 @@ class PaymentConfirmPhoneSuccessState
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.only(
-                              top: 7.h, bottom: 15.h, left: 16.w, right: 16.w),
+                          padding: const EdgeInsets.only(
+                              top: 7, bottom: 15, left: 16, right: 16),
                           child: CustomBigButton(
                             width: double.maxFinite,
-                            height: 54.h,
+                            height: 54,
                             text: 'NOT NOW'.tr(),
                             backgroundColor: Colors.transparent,
                             enabled: contactsLoadingState !=

@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -72,18 +70,18 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 38.h),
+            padding: const EdgeInsets.only(top: 38),
             child: Text(
               'Confirm phone number'.tr(),
-              style: GoogleFonts.roboto(
-                fontSize: 22.sp,
+              style: const TextStyle(
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(top: 18.h),
+            padding: const EdgeInsets.only(top: 18),
             child: CountryPhoneNumber(
               phoneNumberCallback: phoneNumberValidator,
               focusNode: _numberFocusNode,
@@ -93,9 +91,9 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
             builder: (context, ref, child) {
               final step = ref.watch(phoneProvider).smsCodeStep;
               if (step != SmsCodeStep.hidden) {
-                return Padding(
-                  padding: EdgeInsets.only(top: 24.h),
-                  child: const SmsDigitCode(),
+                return const Padding(
+                  padding: EdgeInsets.only(top: 24),
+                  child: SmsDigitCode(),
                 );
               } else {
                 return Container();
@@ -114,9 +112,9 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
 
               if (smsStep == SmsCodeStep.hidden) {
                 return Padding(
-                  padding: EdgeInsets.only(bottom: 24.h),
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: CustomBigButton(
-                    height: 54.h,
+                    height: 54,
                     width: double.maxFinite,
                     enabled: phoneStep == PhoneRegisterStep.numberEntered,
                     backgroundColor: const Color(0xFF00C5FF),
@@ -129,9 +127,9 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
                 );
               } else {
                 return Padding(
-                  padding: EdgeInsets.only(bottom: 24.h),
+                  padding: const EdgeInsets.only(bottom: 24),
                   child: CustomBigButton(
-                    height: 54.h,
+                    height: 54,
                     width: double.maxFinite,
                     enabled: enabledSmsButton,
                     backgroundColor: const Color(0xFF00C5FF),

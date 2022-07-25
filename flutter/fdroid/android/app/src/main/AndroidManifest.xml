@@ -26,7 +26,7 @@
 
     <application
         android:label="SideSwap"
-        android:icon="@mipmap/notification_icon"
+        android:icon="@mipmap/launcher_icon"
         android:allowBackup="false"
         android:extractNativeLibs="true"
         >

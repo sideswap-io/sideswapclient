@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
@@ -35,10 +34,13 @@ class DPinSetup extends ConsumerWidget {
       return SideSwapScaffoldPage(
         onEscapeKey: onEscapeKey ??
             () {
-              ref.read(pinSetupProvider).onBack();
-              if (ref.read(pinSetupProvider).isNewWallet) {
-                ref.read(walletProvider).setNewWalletPinWelcome();
-              }
+              Future.microtask(() {
+                if (ref.read(pinSetupProvider).isNewWallet) {
+                  ref.read(walletProvider).setNewWalletPinWelcome();
+                  return;
+                }
+                ref.read(pinSetupProvider).onBack();
+              });
             },
         content: const DPinSetupContent(),
       );
@@ -46,7 +48,7 @@ class DPinSetup extends ConsumerWidget {
       return WillPopScope(
         onWillPop: () async {
           ref.read(walletProvider).settingsViewPage();
-          return false;
+          return true;
         },
         child: DContentDialog(
           title: DContentDialogTitle(
@@ -85,8 +87,8 @@ class DPinSetupContent extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final firstPinOldValue = useState('');
     final secondPinOldValue = useState('');
-    final firstPinFocusNode = useFocusNode();
-    final secondPinFocusNode = useFocusNode();
+    final firstPinFocusNode = useFocusNode(skipTraversal: true);
+    final secondPinFocusNode = useFocusNode(skipTraversal: true);
 
     useEffect(() {
       firstPinFocusNode.requestFocus();
@@ -134,6 +136,9 @@ class DPinSetupContent extends HookConsumerWidget {
     final isNewWallet = ref.read(pinSetupProvider).isNewWallet;
     final isPinEnabled = ref.watch(pinAvailableProvider);
 
+    final firstPinKeyboardFocusNode = useFocusNode();
+    final secondPinKeyboardFocusNode = useFocusNode();
+
     return Center(
       child: SizedBox(
         width: 344,
@@ -145,11 +150,11 @@ class DPinSetupContent extends HookConsumerWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Set your PIN (6-8 chars)'.tr(),
-                  style: GoogleFonts.roboto(
+                  'Set your PIN (6-8 digits)'.tr(),
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF00C5FF),
+                    color: Color(0xFF00C5FF),
                   ),
                 ),
               ),
@@ -165,22 +170,30 @@ class DPinSetupContent extends HookConsumerWidget {
                   }
                   final enabled = ref.watch(pinSetupProvider).firstPinEnabled;
 
-                  return DPinTextField(
-                    focusNode: firstPinFocusNode,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(8),
-                    ],
-                    enabled: enabled,
-                    pin: pin,
-                    onChanged: (value) {
-                      ref
-                          .read(pinKeyboardProvider)
-                          .onDesktopKeyChanged(firstPinOldValue.value, value);
+                  return RawKeyboardListener(
+                    focusNode: firstPinKeyboardFocusNode,
+                    onKey: (RawKeyEvent event) {
+                      if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
+                        secondPinFocusNode.requestFocus();
+                      }
                     },
-                    onSubmitted: (_) {
-                      ref.read(pinKeyboardProvider).keyPressed(11);
-                    },
+                    child: DPinTextField(
+                      focusNode: firstPinFocusNode,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(8),
+                      ],
+                      enabled: enabled,
+                      pin: pin,
+                      onChanged: (value) {
+                        ref
+                            .read(pinKeyboardProvider)
+                            .onDesktopKeyChanged(firstPinOldValue.value, value);
+                      },
+                      onSubmitted: (_) {
+                        ref.read(pinKeyboardProvider).keyPressed(11);
+                      },
+                    ),
                   );
                 }),
               ),
@@ -191,10 +204,10 @@ class DPinSetupContent extends HookConsumerWidget {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Confirm your PIN'.tr(),
-                  style: GoogleFonts.roboto(
+                  style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF00C5FF),
+                    color: Color(0xFF00C5FF),
                   ),
                 ),
               ),
@@ -211,24 +224,31 @@ class DPinSetupContent extends HookConsumerWidget {
                   final enabled = ref.watch(pinSetupProvider).secondPinEnabled;
                   final state = ref.watch(pinSetupProvider).state;
                   final errorMessage = ref.watch(pinSetupProvider).errorMessage;
-                  return DPinTextField(
-                    focusNode: secondPinFocusNode,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(8),
-                    ],
-                    enabled: enabled,
-                    pin: pin,
-                    error: state == PinSetupStateEnum.error,
-                    errorMessage: errorMessage,
-                    onChanged: (value) {
-                      ref
-                          .read(pinKeyboardProvider)
-                          .onDesktopKeyChanged(secondPinOldValue.value, value);
+                  return RawKeyboardListener(
+                    focusNode: secondPinKeyboardFocusNode,
+                    onKey: (RawKeyEvent event) {
+                      if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
+                        firstPinFocusNode.requestFocus();
+                      }
                     },
-                    onSubmitted: (_) {
-                      ref.read(pinKeyboardProvider).keyPressed(11);
-                    },
+                    child: DPinTextField(
+                      focusNode: secondPinFocusNode,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(8),
+                      ],
+                      enabled: enabled,
+                      pin: pin,
+                      error: state == PinSetupStateEnum.error,
+                      errorMessage: errorMessage,
+                      onChanged: (value) {
+                        ref.read(pinKeyboardProvider).onDesktopKeyChanged(
+                            secondPinOldValue.value, value);
+                      },
+                      onSubmitted: (_) {
+                        ref.read(pinKeyboardProvider).keyPressed(11);
+                      },
+                    ),
                   );
                 }),
               ),

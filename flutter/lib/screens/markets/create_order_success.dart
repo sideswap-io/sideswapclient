@@ -4,7 +4,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/helpers.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
@@ -32,7 +31,7 @@ class CreateOrderSuccess extends ConsumerWidget {
       child: ResultPage(
         resultType: ResultPageType.success,
         header: 'Order created'.tr(),
-        topPadding: 40.h,
+        topPadding: 40,
         descriptionWidget: Column(
           children: [
             OrderTable(
@@ -41,9 +40,9 @@ class CreateOrderSuccess extends ConsumerWidget {
             ),
             if (orderDetailsData.private) ...[
               Padding(
-                padding: EdgeInsets.only(top: 30.h, bottom: 16.h),
+                padding: const EdgeInsets.only(top: 30, bottom: 16),
                 child: ShareAndCopyButtonsRow(
-                  buttonWidth: 166.w,
+                  buttonWidth: 166,
                   onShare: () async {
                     await Share.share(ref
                         .read(requestOrderProvider)
@@ -66,7 +65,7 @@ class CreateOrderSuccess extends ConsumerWidget {
             ? Colors.transparent
             : const Color(0xFF00C5FF),
         buttonSide: orderDetailsData.private
-            ? BorderSide(color: const Color(0xFF00C5FF), width: 2.w)
+            ? const BorderSide(color: Color(0xFF00C5FF), width: 2)
             : null,
         onPressed: () {
           // clear old order data

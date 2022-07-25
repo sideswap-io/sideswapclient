@@ -1,16 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:xrange/xrange.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/markets/widgets/order_tracking_slider_thumb_shape.dart';
 import 'package:sideswap/screens/markets/widgets/order_tracking_slider_track_shape.dart';
 
 class OrderTrackingSlider extends StatelessWidget {
-  OrderTrackingSlider({
+  const OrderTrackingSlider({
     super.key,
     required this.value,
     required this.onChanged,
@@ -33,8 +31,8 @@ class OrderTrackingSlider extends StatelessWidget {
   final String dollarConversion;
   final bool invertColors;
 
-  final trackingValueStyle = GoogleFonts.roboto(
-    fontSize: 14.sp,
+  final trackingValueStyle = const TextStyle(
+    fontSize: 14,
     fontWeight: FontWeight.w500,
     color: Colors.white,
   );
@@ -56,35 +54,35 @@ class OrderTrackingSlider extends StatelessWidget {
         invertColors ? circleNegativeColor : circlePositiveColor;
 
     return Container(
-      height: 143.h,
+      height: 110,
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: BorderRadius.circular(8),
         color: const Color(0xFF043857),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 14.h, left: 16.w, right: 16.w),
+            padding: const EdgeInsets.only(top: 4, left: 16, right: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Price'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 15.sp,
+                  style: const TextStyle(
+                    fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF00C5FF),
+                    color: Color(0xFF00C5FF),
                   ),
                 ),
                 if (dollarConversion.isNotEmpty) ...[
                   Text(
                     '≈ $dollarConversion',
-                    style: GoogleFonts.roboto(
-                      fontSize: 14.sp,
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.normal,
-                      color: const Color(0xFF709EBA),
+                      color: Color(0xFF709EBA),
                     ),
                   ),
                 ],
@@ -92,26 +90,26 @@ class OrderTrackingSlider extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(left: 16.w, right: 16.w),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             child: SizedBox(
-              height: 29.h,
+              height: 29,
               child: Row(
                 children: [
                   Row(
                     children: [
                       SizedBox(
-                        width: 24.r,
-                        height: 24.r,
+                        width: 24,
+                        height: 24,
                         child: icon,
                       ),
                       Padding(
-                        padding: EdgeInsets.only(left: 8.w),
+                        padding: const EdgeInsets.only(left: 8),
                         child: Text(
                           ticker,
-                          style: GoogleFonts.roboto(
-                            fontSize: 17.sp,
+                          style: const TextStyle(
+                            fontSize: 17,
                             fontWeight: FontWeight.normal,
-                            color: const Color(0xFF84ADC6),
+                            color: Color(0xFF84ADC6),
                           ),
                         ),
                       ),
@@ -120,8 +118,8 @@ class OrderTrackingSlider extends StatelessWidget {
                   const Spacer(),
                   Text(
                     price,
-                    style: GoogleFonts.roboto(
-                      fontSize: 24.sp,
+                    style: const TextStyle(
+                      fontSize: 24,
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
@@ -131,7 +129,7 @@ class OrderTrackingSlider extends StatelessWidget {
             ),
           ),
           SizedBox(
-            height: 27.h,
+            height: 27,
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
                 thumbShape: OrderTrackingSliderThumbShape(
@@ -148,7 +146,7 @@ class OrderTrackingSlider extends StatelessWidget {
                   negativeColor: startColor,
                   positiveColor: endColor,
                 ),
-                trackHeight: 10.h,
+                trackHeight: 10,
               ),
               child: Slider(
                 min: minPercent.toDouble(),
@@ -180,7 +178,7 @@ class OrderTrackingSlider extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(bottom: 14.h, left: 16.w, right: 16.w),
+            padding: const EdgeInsets.only(bottom: 14, left: 16, right: 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

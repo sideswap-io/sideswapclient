@@ -1,128 +1,109 @@
-import 'dart:ui';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/friends_provider.dart';
+import 'package:sideswap/models/payment_provider.dart';
+import 'package:sideswap/models/qrcode_models.dart';
+import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/widgets/confirm_phone_bottom_panel.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel.dart';
 import 'package:sideswap/screens/pay/widgets/payment_continue_button.dart';
 import 'package:sideswap/screens/pay/widgets/whom_to_pay_text_field.dart';
 
-class PaymentPage extends ConsumerStatefulWidget {
-  const PaymentPage({super.key});
+class PaymentPage extends HookConsumerWidget {
+  const PaymentPage({Key? key}) : super(key: key);
 
-  @override
-  PaymentPageState createState() => PaymentPageState();
-}
-
-class PaymentPageState extends ConsumerState<PaymentPage>
-    with WidgetsBindingObserver {
-  late TextEditingController addressController;
-  String? errorText;
-  AddrType addrType = AddrType.elements;
-  bool continueEnabled = false;
-  Friend? friend;
-  double overlap = .0;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    addressController = TextEditingController()..addListener(onAddressChanged);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    addressController.dispose();
-    super.dispose();
-  }
-
-  void onAddressChanged() {
-    if (addressController.text.isEmpty) {
-      setState(() {
-        errorText = null;
-        continueEnabled = false;
-        friend = null;
-      });
-    }
-  }
-
-  bool validate() {
-    final newErrorText = ref
-        .read(walletProvider)
-        .commonAddrErrorStr(addressController.text, addrType);
+  bool validate(String addressText, String newErrorText, Friend? friend) {
     if (newErrorText.isNotEmpty) {
-      friend =
-          ref.read(friendsProvider).getFriendByName(addressController.text);
       if (friend != null) {
-        // friend found
-        setState(() {
-          errorText = null;
-          continueEnabled = false;
-        });
         return true;
       }
-
-      setState(() {
-        errorText = newErrorText;
-        continueEnabled = false;
-      });
-    } else if (addressController.text.isNotEmpty) {
-      setState(() {
-        errorText = null;
-        continueEnabled = true;
-      });
+    } else if (addressText.isNotEmpty) {
       return true;
-    }
-
-    if (newErrorText.isEmpty) {
-      setState(() {
-        errorText = null;
-      });
-      return false;
     }
 
     return false;
   }
 
   @override
-  void didChangeMetrics() {
-    final renderObject = context.findRenderObject();
-    final renderBox = renderObject as RenderBox;
-    final offset = renderBox.localToGlobal(Offset.zero);
-    final widgetRect = Rect.fromLTWH(
-      offset.dx,
-      offset.dy,
-      renderBox.size.width,
-      renderBox.size.height,
-    );
-    final keyboardTopPixels =
-        window.physicalSize.height - window.viewInsets.bottom;
-    final keyboardTopPoints = keyboardTopPixels / window.devicePixelRatio;
-    overlap = widgetRect.bottom - keyboardTopPoints;
-    if (overlap >= 0) {
-      setState(() {});
-    }
-  }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final addressController = useTextEditingController();
+    final continueEnabled = useState(false);
+    final errorText = useState<String?>(null);
+    final friend = useState<Friend?>(null);
+    const addrType = AddrType.elements;
 
-  @override
-  Widget build(BuildContext context) {
+    final addressText = useValueListenable(addressController);
+
+    useEffect(() {
+      if (addressController.text.isEmpty) {
+        errorText.value = null;
+        continueEnabled.value = false;
+        friend.value = null;
+      }
+
+      final newErrorText = ref
+          .read(walletProvider)
+          .commonAddrErrorStr(addressController.text, addrType);
+
+      if (newErrorText.isNotEmpty) {
+        friend.value =
+            ref.read(friendsProvider).getFriendByName(addressController.text);
+        if (friend.value != null) {
+          errorText.value = null;
+        } else {
+          errorText.value = newErrorText;
+        }
+
+        continueEnabled.value = false;
+      } else {
+        errorText.value = null;
+        if (addressController.text.isNotEmpty) {
+          continueEnabled.value = true;
+        }
+      }
+
+      return;
+    }, [addressText]);
+
+    ref.listen<QrCodeResultModel>(qrcodeResultModelProvider, (_, next) {
+      next.when(
+          empty: () {},
+          data: (result) {
+            addressController.text = result?.address ?? '';
+
+            friend.value =
+                ref.read(friendsProvider).getFriendByName(addressText.text);
+            final newErrorText = ref
+                .read(walletProvider)
+                .commonAddrErrorStr(addressController.text, addrType);
+
+            if (validate(addressController.text, newErrorText, friend.value)) {
+              ref.read(paymentProvider).selectPaymentAmountPage(
+                    PaymentAmountPageArguments(
+                      result: result,
+                    ),
+                  );
+              return;
+            }
+          });
+    });
+
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Whom to pay'.tr(),
       ),
       body: SafeArea(
-        child: Consumer(
-          builder: (context, ref, _) {
+        child: HookBuilder(
+          builder: (_) {
             final isPhoneRegistered =
                 ref.watch(configProvider.select((p) => p.phoneKey.isNotEmpty));
 
@@ -134,28 +115,28 @@ class PaymentPageState extends ConsumerState<PaymentPage>
                     children: [
                       Padding(
                         padding:
-                            EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
+                            const EdgeInsets.only(top: 32, left: 16, right: 16),
                         child: WhomToPayTextField(
-                          validator: validate,
                           addressController: addressController,
-                          errorText: errorText,
+                          errorText: errorText.value,
                           addrType: addrType,
                         ),
                       ),
-                      if (continueEnabled) ...[
+                      if (continueEnabled.value) ...[
                         Padding(
-                          padding: EdgeInsets.only(
-                              top: 24.h, left: 16.w, right: 16.w),
+                          padding: const EdgeInsets.only(
+                              top: 24, left: 16, right: 16),
                           child: PaymentContinueButton(
-                            enabled: continueEnabled,
-                            errorText: errorText,
+                            enabled: continueEnabled.value,
+                            errorText: errorText.value,
                             addressController: addressController,
                           ),
                         ),
                       ],
                       FriendsPanel(
-                        searchString:
-                            friend != null ? addressController.text : null,
+                        searchString: friend.value != null
+                            ? addressController.text
+                            : null,
                       ),
                     ],
                   ),
@@ -171,21 +152,20 @@ class PaymentPageState extends ConsumerState<PaymentPage>
                         child: Column(
                           children: [
                             Padding(
-                              padding: EdgeInsets.only(
-                                  top: 32.h, left: 16.w, right: 16.w),
+                              padding: const EdgeInsets.only(
+                                  top: 32, left: 16, right: 16),
                               child: WhomToPayTextField(
-                                validator: validate,
                                 addressController: addressController,
-                                errorText: errorText,
+                                errorText: errorText.value,
                               ),
                             ),
-                            if (continueEnabled) ...[
+                            if (continueEnabled.value) ...[
                               Padding(
-                                padding: EdgeInsets.only(
-                                    top: 24.h, left: 16.w, right: 16.w),
+                                padding: const EdgeInsets.only(
+                                    top: 24, left: 16, right: 16),
                                 child: PaymentContinueButton(
-                                  enabled: continueEnabled,
-                                  errorText: errorText,
+                                  enabled: continueEnabled.value,
+                                  errorText: errorText.value,
                                   addressController: addressController,
                                 ),
                               ),
@@ -204,21 +184,32 @@ class PaymentPageState extends ConsumerState<PaymentPage>
                 children: [
                   Padding(
                     padding:
-                        EdgeInsets.only(top: 32.h, left: 16.w, right: 16.w),
-                    child: WhomToPayTextField(
-                      validator: validate,
-                      addressController: addressController,
-                      errorText: errorText,
+                        const EdgeInsets.only(top: 32, left: 16, right: 16),
+                    child: HookBuilder(
+                      builder: (_) {
+                        final errorTextField = useValueListenable(errorText);
+                        return WhomToPayTextField(
+                          addressController: addressController,
+                          errorText: errorTextField,
+                        );
+                      },
                     ),
                   ),
                   const Spacer(),
                   Padding(
                     padding:
-                        EdgeInsets.only(bottom: 16.h, left: 16.w, right: 16.w),
-                    child: PaymentContinueButton(
-                      enabled: continueEnabled,
-                      errorText: errorText,
-                      addressController: addressController,
+                        const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                    child: HookBuilder(
+                      builder: (_) {
+                        final buttonContinueEnabled =
+                            useValueListenable(continueEnabled);
+                        final buttonErrorText = useValueListenable(errorText);
+                        return PaymentContinueButton(
+                          enabled: buttonContinueEnabled,
+                          errorText: buttonErrorText,
+                          addressController: addressController,
+                        );
+                      },
                     ),
                   ),
                 ],

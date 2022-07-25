@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
@@ -35,7 +34,7 @@ class DSettingsPinSuccess extends ConsumerWidget {
               padding: const EdgeInsets.only(top: 32),
               child: Text(
                 'PIN successfully enabled'.tr(),
-                style: GoogleFonts.roboto(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),

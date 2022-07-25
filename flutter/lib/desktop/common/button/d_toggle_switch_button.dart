@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
@@ -239,28 +238,28 @@ class DToggleSwitchThemeData with Diagnosticable {
         );
       }),
       checkedTextStyle1: ButtonState.resolveWith((states) {
-        return GoogleFonts.roboto(
+        return const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: Colors.white,
         );
       }),
       uncheckedTextStyle1: ButtonState.resolveWith((states) {
-        return GoogleFonts.roboto(
+        return const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: const Color(0xFF78AECC),
+          color: Color(0xFF78AECC),
         );
       }),
       checkedTextStyle2: ButtonState.resolveWith((states) {
-        return GoogleFonts.roboto(
+        return const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: const Color(0xFF78AECC),
+          color: Color(0xFF78AECC),
         );
       }),
       uncheckedTextStyle2: ButtonState.resolveWith((states) {
-        return GoogleFonts.roboto(
+        return const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
           color: Colors.white,

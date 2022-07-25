@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
@@ -19,31 +17,30 @@ class OrderType extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 51.h,
+      height: 51,
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.all(Radius.circular(8.r)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         color: backgroundColor,
       ),
       child: Padding(
-        padding:
-            EdgeInsets.only(top: 8.h, bottom: 8.h, left: 12.w, right: 12.w),
+        padding: const EdgeInsets.only(top: 8, bottom: 8, left: 12, right: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               'Order type:'.tr(),
-              style: GoogleFonts.roboto(
-                fontSize: 16.sp,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.normal,
                 color: Colors.white,
               ),
             ),
             SwitchButton(
-              width: 142.w,
-              height: 35.h,
-              borderRadius: 8.r,
-              borderWidth: 2.r,
+              width: 142,
+              height: 35,
+              borderRadius: 8,
+              borderWidth: 2,
               activeText: 'Public'.tr(),
               inactiveText: 'Private'.tr(),
               value: value,

@@ -2,11 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -18,6 +16,7 @@ import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/markets/widgets/order_price_field.dart';
+import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 
 class OrderEntry extends ConsumerStatefulWidget {
@@ -39,7 +38,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
   bool isContinued = false;
   String receiveConversion = '';
   String priceConversion = '';
-  bool trackingSelected = true;
+  bool trackingSelected = false;
   double sliderValue = 0;
   String trackingPrice = '';
   bool displaySlider = false;
@@ -94,13 +93,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
     ref.read(marketsProvider).subscribeIndexPrice(
         ref.read(requestOrderProvider).tokenAccountAsset().asset);
 
-    final indexPrice = ref.read(requestOrderProvider).indexPrice;
-    final isToken = ref.read(requestOrderProvider).isDeliverToken();
-
     displaySlider = isTracking(ref);
-    if (!isTracking(ref) && (!isToken && indexPrice.isNotEmpty)) {
-      displaySlider = true;
-    }
 
     focusEnterAmount(ref, context);
   }
@@ -270,15 +263,14 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
   void onToggleTracking(bool value) {
     setState(() {
       trackingSelected = value;
-
-      if (!isTracking(ref)) {
-        priceAmountController.text = '';
-      } else {
-        sliderValue = 0;
-      }
+      priceAmountController.text = '';
+      sliderValue = 0;
+      trackingPrice = '';
+      displaySlider = isTracking(ref);
     });
-
-    calculateTrackingPrice(ref);
+    if (value) {
+      calculateTrackingPrice(ref);
+    }
   }
 
   void calculateTrackingPrice(WidgetRef ref) {
@@ -300,7 +292,13 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
 
   @override
   Widget build(BuildContext context) {
-    final isToken = ref.read(requestOrderProvider).isDeliverToken();
+    final indexPrice = ref.watch(requestOrderProvider).indexPrice;
+    final requestOrder = ref.watch(requestOrderProvider);
+    final marketTyple = requestOrder.marketType();
+    final isStablecoin = marketTyple == MarketType.stablecoin;
+    final isToken = marketTyple == MarketType.token;
+    final deliverLiquid = requestOrder.isDeliverLiquid();
+
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Order entry'.tr(),
@@ -338,33 +336,41 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                       children: [
                         Padding(
                           padding: EdgeInsets.only(
-                              top: displaySlider ? 255.h : 228.h),
+                              top: displaySlider
+                                  ? 215
+                                  : (isStablecoin ? 200 : 180)),
                           child: Container(
                             color: const Color(0xFF135579),
                           ),
                         ),
                         Padding(
                           padding: EdgeInsets.only(
-                              top: 147.h, left: 16.w, right: 16.w),
-                          child: Consumer(
-                            builder: (context, ref, child) {
+                              top: displaySlider
+                                  ? 115
+                                  : (isStablecoin ? 115 : 95),
+                              left: 16,
+                              right: 16),
+                          child: Builder(
+                            builder: (context) {
                               final asset =
                                   ref.watch(requestOrderProvider).priceAsset;
+                              final productAssetId = ref
+                                  .watch(requestOrderProvider)
+                                  .tokenAccountAsset()
+                                  .asset;
+                              final productAsset = ref
+                                  .watch(walletProvider)
+                                  .assets[productAssetId]!;
                               final icon = ref
                                   .watch(requestOrderProvider)
                                   .priceAssetIcon();
-                              final indexPrice =
-                                  ref.watch(requestOrderProvider).indexPrice;
 
                               displaySlider = isTracking(ref);
-                              if (!isTracking(ref) &&
-                                  (!isToken && indexPrice.isNotEmpty)) {
-                                displaySlider = true;
-                              }
 
                               return OrderPriceField(
                                 focusNode: priceFocusNode,
                                 asset: asset,
+                                productAsset: productAsset,
                                 icon: icon,
                                 controller: priceAmountController,
                                 dollarConversion: priceConversion,
@@ -395,21 +401,20 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                         Column(
                           children: [
                             Padding(
-                              padding: EdgeInsets.only(
-                                  top: 12.h, left: 16.w, right: 16.w),
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  final requests =
-                                      ref.watch(requestOrderProvider);
+                              padding: const EdgeInsets.only(
+                                  top: 0, left: 16, right: 16),
+                              child: Builder(
+                                builder: (context) {
                                   final deliverAssetId =
-                                      requests.deliverAssetId;
+                                      requestOrder.deliverAssetId;
                                   final deliverAssets =
-                                      requests.deliverAssets();
+                                      requestOrder.deliverAssets();
                                   final disabledAssets =
-                                      requests.disabledAssets();
-                                  final balance = requests.deliverBalance();
+                                      requestOrder.disabledAssets();
+                                  final balance = requestOrder.deliverBalance();
                                   final precision =
-                                      requests.deliverAsset()?.precision ?? 0;
+                                      requestOrder.deliverAsset()?.precision ??
+                                          0;
                                   final hint = DecimalCutterTextInputFormatter(
                                     decimalRange: precision,
                                   )
@@ -419,7 +424,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                           const TextEditingValue(
                                               text: '0.00000000'))
                                       .text;
-                                  final readOnly = !requests.isSellOrder();
+                                  final readOnly = !requestOrder.isSellOrder();
                                   return SwapSideAmount(
                                     text: 'Deliver'.tr(),
                                     focusNode: deliverFocusNode,
@@ -456,21 +461,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                       focusEnterAmount(ref, context);
                                     },
                                     onMaxPressed: () {
-                                      var amount = balance;
-                                      final newValue =
-                                          replaceCharacterOnPosition(
-                                        input: amount,
-                                      );
-
-                                      deliverController.text = newValue;
-
-                                      deliverController.value =
-                                          TextEditingValue(
-                                        text: newValue,
-                                        selection: TextSelection.collapsed(
-                                            offset: newValue.length),
-                                      );
-
+                                      setValue(deliverController, balance);
                                       validate(ref);
                                     },
                                     onEditingCompleted: () {
@@ -490,11 +481,15 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                             ),
                             Padding(
                               padding: EdgeInsets.only(
-                                  top: displaySlider ? 252.h : 193.h,
-                                  left: 16.w,
-                                  right: 16.w),
-                              child: Consumer(
-                                builder: (context, ref, child) {
+                                  top: displaySlider
+                                      ? 190
+                                      : (isStablecoin
+                                          ? 160
+                                          : (deliverLiquid ? 150 : 140)),
+                                  left: 16,
+                                  right: 16),
+                              child: Builder(
+                                builder: (context) {
                                   final requests =
                                       ref.watch(requestOrderProvider);
                                   final receiveAsset = requests.receiveAssetId;
@@ -559,14 +554,11 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                             ),
                             const Spacer(),
                             Padding(
-                              padding: EdgeInsets.only(
-                                  top: 29.h,
-                                  bottom: 24.h,
-                                  left: 16.w,
-                                  right: 16.w),
+                              padding: const EdgeInsets.only(
+                                  top: 29, bottom: 24, left: 16, right: 16),
                               child: CustomBigButton(
                                 width: double.maxFinite,
-                                height: 54.h,
+                                height: 54,
                                 backgroundColor: const Color(0xFF00C5FF),
                                 enabled: isValid,
                                 onPressed: isValid ? onContinue : null,
@@ -575,21 +567,21 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                   children: [
                                     Text(
                                       'CONTINUE'.tr(),
-                                      style: GoogleFonts.roboto(
-                                        fontSize: 16.sp,
+                                      style: const TextStyle(
+                                        fontSize: 16,
                                         fontWeight: FontWeight.normal,
                                         color: Colors.white,
                                       ),
                                     ),
                                     if (isContinued) ...[
-                                      Padding(
-                                        padding: EdgeInsets.only(left: 124.w),
+                                      const Padding(
+                                        padding: EdgeInsets.only(left: 124),
                                         child: SizedBox(
-                                          width: 32.w,
-                                          height: 32.w,
+                                          width: 32,
+                                          height: 32,
                                           child: SpinKitCircle(
                                             color: Colors.white,
-                                            size: 32.w,
+                                            size: 32,
                                           ),
                                         ),
                                       ),

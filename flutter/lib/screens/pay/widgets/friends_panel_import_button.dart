@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/contact_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_import_button_painter.dart';
 
@@ -54,14 +52,14 @@ class FriendsPanelImportButtonState
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.all(Radius.circular(8.w)),
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
       child: Material(
-        borderRadius: BorderRadius.all(Radius.circular(8.w)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         child: InkWell(
           onTap: () {
             ref.read(contactProvider).loadContacts();
           },
-          borderRadius: BorderRadius.all(Radius.circular(8.w)),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           child: SizedBox(
             width: widget.width,
             height: widget.height,
@@ -80,8 +78,8 @@ class FriendsPanelImportButtonState
                   child: Center(
                     child: Text(
                       '+ IMPORT'.tr(),
-                      style: GoogleFonts.roboto(
-                        fontSize: 12.sp,
+                      style: const TextStyle(
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
@@ -28,10 +27,10 @@ class DSettingsCustomHost extends HookConsumerWidget {
     final settingsDialogTheme =
         ref.watch(desktopAppThemeProvider).settingsDialogTheme;
 
-    final textStyle = GoogleFonts.roboto(
+    const textStyle = TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w500,
-      color: const Color(0xFF00C5FF),
+      color: Color(0xFF00C5FF),
     );
 
     final useTls = useState(false);

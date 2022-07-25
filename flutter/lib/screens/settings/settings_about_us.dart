@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/helpers.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/screens/settings/settings_licenses.dart';
@@ -57,35 +55,26 @@ class SettingsAboutUs extends StatelessWidget {
         title: 'About us'.tr(),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: 90.h),
-              child: FutureBuilder<void>(
-                future: PackageInfo.fromPlatform(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    final packageInfo = snapshot.data as PackageInfo;
-                    return GestureDetector(
-                      onLongPress: () {
-                        showExportLogMenu(context);
-                      },
-                      child: Text(
-                        'VERSION'.tr(args: [packageInfo.version]),
-                        style: GoogleFonts.roboto(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF00C5FF),
-                        ),
-                      ),
-                    );
-                  }
-                  return Container();
+              padding: const EdgeInsets.only(top: 90),
+              child: GestureDetector(
+                onLongPress: () {
+                  showExportLogMenu(context);
                 },
+                child: Text(
+                  'VERSION'.tr(args: [appVersionFull]),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF00C5FF),
+                  ),
+                ),
               ),
             ),
-            SizedBox(height: 30.h),
+            const SizedBox(height: 30),
             SizedBox(
               width: double.maxFinite,
               child: Column(
@@ -96,8 +85,8 @@ class SettingsAboutUs extends StatelessWidget {
                     text: SettingsAboutUsData.urlWebText,
                     icon: SvgPicture.asset(
                       'assets/web_icon.svg',
-                      width: 24.w,
-                      height: 24.w,
+                      width: 24,
+                      height: 24,
                     ),
                   ),
                   UrlLinkButton(
@@ -105,8 +94,8 @@ class SettingsAboutUs extends StatelessWidget {
                     text: SettingsAboutUsData.urlGithubText,
                     icon: SvgPicture.asset(
                       'assets/github_icon.svg',
-                      width: 24.w,
-                      height: 24.w,
+                      width: 24,
+                      height: 24,
                     ),
                   ),
                   UrlLinkButton(
@@ -114,8 +103,8 @@ class SettingsAboutUs extends StatelessWidget {
                     text: SettingsAboutUsData.urlTwitterText,
                     icon: SvgPicture.asset(
                       'assets/twitter_icon.svg',
-                      width: 24.w,
-                      height: 24.w,
+                      width: 24,
+                      height: 24,
                     ),
                   ),
                   UrlLinkButton(
@@ -123,15 +112,15 @@ class SettingsAboutUs extends StatelessWidget {
                     text: SettingsAboutUsData.urlTelegramText,
                     icon: SvgPicture.asset(
                       'assets/telegram_icon.svg',
-                      width: 24.w,
-                      height: 24.w,
+                      width: 24,
+                      height: 24,
                     ),
                   ),
                   UrlLinkButton(
                     text: 'Licenses',
-                    icon: Icon(
+                    icon: const Icon(
                       Icons.copyright,
-                      size: 24.w,
+                      size: 24,
                     ),
                     onPressed: () {
                       Navigator.of(context).push<void>(
@@ -146,8 +135,8 @@ class SettingsAboutUs extends StatelessWidget {
                     text: 'Privacy Policy'.tr(),
                     icon: SvgPicture.asset(
                       'assets/web_icon.svg',
-                      width: 24.w,
-                      height: 24.w,
+                      width: 24,
+                      height: 24,
                     ),
                   ),
                 ],

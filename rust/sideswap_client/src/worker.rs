@@ -407,7 +407,7 @@ fn get_peg_item(peg: &PegStatus, tx: &TxStatus) -> ffi::proto::TransItem {
 }
 
 impl Data {
-    fn load_gdk_asset(&self, asset_id: &AssetId) -> Result<Asset, anyhow::Error> {
+    fn load_gdk_asset(&self, asset_ids: &[AssetId]) -> Result<Vec<Asset>, anyhow::Error> {
         let ctx = self.ctx.as_ref().ok_or_else(|| anyhow!("ctx is not set"))?;
         let assets = ctx
             .session
@@ -416,46 +416,45 @@ impl Data {
                 assets: true,
                 refresh: false,
             })
-            .or_else(|_| {
-                ctx.session
-                    .refresh_assets(&gdk_common::model::RefreshAssets {
-                        icons: true,
-                        assets: true,
-                        refresh: true,
-                    })
-            })
             .map_err(|e| anyhow!("loading asset list failed: {}", e))?;
         let gdk_assets = serde_json::from_value::<sideswap_api::gdk::GdkAssets>(assets)?;
-        let icon = gdk_assets
-            .icons
-            .get(asset_id)
-            .cloned()
-            .unwrap_or_else(|| base64::encode(DEFAULT_ICON));
-        let v = gdk_assets
-            .assets
-            .get(asset_id)
-            .ok_or_else(|| anyhow!("asset not found"))?;
-        let default_ticker = || Ticker(format!("{:0.4}", &asset_id.to_string()));
-        let default_name = || format!("{:0.8}...", &asset_id.to_string());
-        let asset = Asset {
-            asset_id: asset_id.clone(),
-            name: v.name.clone().unwrap_or_else(default_name),
-            ticker: v.ticker.clone().unwrap_or_else(default_ticker),
-            icon: Some(icon),
-            precision: v.precision.unwrap_or_default(),
-            icon_url: None,
-            instant_swaps: Some(false),
-            domain: v.entity.as_ref().and_then(|v| v.domain.as_ref()).cloned(),
-            domain_agent: None,
-        };
-        Ok(asset)
+        let result = asset_ids
+            .iter()
+            .filter_map(|asset_id| {
+                gdk_assets.assets.get(asset_id).map(|v| {
+                    let icon = gdk_assets
+                        .icons
+                        .get(asset_id)
+                        .cloned()
+                        .unwrap_or_else(|| base64::encode(DEFAULT_ICON));
+                    let default_ticker = || Ticker(format!("{:0.4}", &asset_id.to_string()));
+                    let default_name = || format!("{:0.8}...", &asset_id.to_string());
+                    Asset {
+                        asset_id: asset_id.clone(),
+                        name: v.name.clone().unwrap_or_else(default_name),
+                        ticker: v.ticker.clone().unwrap_or_else(default_ticker),
+                        icon: Some(icon),
+                        precision: v.precision.unwrap_or_default(),
+                        icon_url: None,
+                        instant_swaps: Some(false),
+                        domain: v.entity.as_ref().and_then(|v| v.domain.as_ref()).cloned(),
+                        domain_agent: None,
+                    }
+                })
+            })
+            .collect();
+        Ok(result)
     }
 
     fn try_add_asset(&mut self, asset_id: &AssetId) -> Result<(), anyhow::Error> {
         if self.assets.get(asset_id).is_some() {
             return Ok(());
         }
-        let asset = self.load_gdk_asset(asset_id)?;
+        let asset = self
+            .load_gdk_asset(&[*asset_id])?
+            .into_iter()
+            .next()
+            .ok_or_else(|| anyhow!("asset not found in gdk registry: {}", asset_id))?;
         self.register_asset(asset, false, false, false);
         Ok(())
     }
@@ -580,28 +579,30 @@ impl Data {
             .cloned()
             .collect::<Vec<_>>();
         if !new_asset_ids.is_empty() {
+            let new_assets = self.load_gdk_asset(&new_asset_ids).ok().unwrap_or_default();
             for asset_id in new_asset_ids.iter() {
                 info!("try add new asset: {}", asset_id);
-                let (asset, unregistered) = match self.load_gdk_asset(asset_id) {
-                    Ok(asset) => (asset, false),
-                    Err(e) => {
-                        warn!("can't load GDK asset {}: {}", asset_id, e);
-                        (
-                            Asset {
-                                asset_id: asset_id.clone(),
-                                name: format!("{:0.8}...", &asset_id.to_string()),
-                                ticker: Ticker(format!("{:0.4}", &asset_id.to_string())),
-                                icon: Some(base64::encode(DEFAULT_ICON)),
-                                precision: 8,
-                                icon_url: None,
-                                instant_swaps: Some(false),
-                                domain: None,
-                                domain_agent: None,
-                            },
-                            true,
-                        )
-                    }
-                };
+                let (asset, unregistered) =
+                    match new_assets.iter().find(|asset| asset.asset_id == *asset_id) {
+                        Some(asset) => (asset.clone(), false),
+                        None => {
+                            warn!("can't find GDK asset {}", asset_id);
+                            (
+                                Asset {
+                                    asset_id: asset_id.clone(),
+                                    name: format!("{:0.8}...", &asset_id.to_string()),
+                                    ticker: Ticker(format!("{:0.4}", &asset_id.to_string())),
+                                    icon: Some(base64::encode(DEFAULT_ICON)),
+                                    precision: 8,
+                                    icon_url: None,
+                                    instant_swaps: Some(false),
+                                    domain: None,
+                                    domain_agent: None,
+                                },
+                                true,
+                            )
+                        }
+                    };
                 self.register_asset(asset, false, false, unregistered);
             }
         }
@@ -1943,7 +1944,7 @@ impl Data {
     fn process_logout_request(&mut self) {
         debug!("process logout request...");
 
-        self.send_amp(amp::To::Logout);
+        self.amp.logout();
 
         let _ = self.ctx.as_mut().unwrap().session.disconnect();
 
@@ -1955,6 +1956,9 @@ impl Data {
         self.save_settings();
 
         self.restart_websocket();
+
+        self.ui
+            .send(ffi::proto::from::Msg::Logout(ffi::proto::Empty {}));
     }
 
     fn try_change_network(
@@ -4058,8 +4062,10 @@ impl Data {
     }
 
     fn update_address_registrations(&mut self) {
-        match (self.connected, &self.settings.device_key, &self.ctx) {
-            (true, Some(device_key), Some(ctx)) => loop {
+        if let (true, Some(device_key), Some(ctx)) =
+            (self.connected, &self.settings.device_key, &self.ctx)
+        {
+            loop {
                 // Register in batches
                 let wallet = ctx.session.wallet.as_ref().expect("wallet must be set");
                 let indices = wallet
@@ -4131,8 +4137,52 @@ impl Data {
                         break;
                     }
                 }
-            },
-            _ => {}
+            }
+
+            loop {
+                let last_external_amp = self.settings.last_external_amp.unwrap_or_default();
+                let previous_addresses =
+                    match self.amp.get_previous_addresses(last_external_amp + 11) {
+                        Ok(v) => v,
+                        Err(_) => {
+                            // Not an error (if AMP session is stopped on desktop, for example)
+                            break;
+                        }
+                    };
+                let previous_addresses_iter = previous_addresses
+                    .list
+                    .iter()
+                    .filter(|a| a.branch == 1 && a.pointer > last_external_amp);
+                let addresses = previous_addresses_iter
+                    .clone()
+                    .map(|a| a.unblinded_address.clone())
+                    .collect::<Vec<_>>();
+                if addresses.is_empty() {
+                    debug!("no new AMP addresses to register");
+                    break;
+                }
+                let max_pointer = previous_addresses_iter.map(|v| v.pointer).max().unwrap();
+                let registered_count = addresses.len();
+                let addr_req = RegisterAddressesRequest {
+                    device_key: device_key.clone(),
+                    addresses,
+                };
+                let addr_resp = send_request!(self, RegisterAddresses, addr_req);
+                match addr_resp {
+                    Ok(_) => {
+                        debug!(
+                            "new AMP addresses succesfully registered, max_pointer: {}, count: {}",
+                            max_pointer, registered_count
+                        );
+                        self.settings.last_external_amp = Some(max_pointer);
+                        self.save_settings();
+                    }
+                    Err(e) => {
+                        error!("AMP address update failed: {}", e);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -4314,6 +4364,7 @@ impl Data {
                 account: get_account(account),
             },
         ));
+        self.update_address_registrations();
     }
 
     fn process_amp_create_tx_result(&mut self, result: ffi::proto::from::CreateTxResult) {
@@ -4357,6 +4408,9 @@ impl Data {
     }
 
     fn process_amp_message(&mut self, account: AccountId, msg: amp::From) {
+        if self.ctx.is_none() {
+            return;
+        }
         match msg {
             amp::From::Register(result) => self.process_amp_register_result(result),
             amp::From::Balances(balances) => self.process_amp_balance(account, balances),

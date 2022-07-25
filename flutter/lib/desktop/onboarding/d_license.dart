@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
@@ -28,7 +27,7 @@ class DLicense extends ConsumerWidget {
       title: Center(
         child: Text(
           'Terms and conditions'.tr(),
-          style: GoogleFonts.roboto(
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -47,7 +46,7 @@ class DLicense extends ConsumerWidget {
                   if (snapshot.hasData) {
                     return Text(
                       snapshot.data as String,
-                      style: GoogleFonts.roboto(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
                         color: Colors.white,

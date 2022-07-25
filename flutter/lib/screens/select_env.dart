@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -67,9 +66,9 @@ class SelectEnvState extends ConsumerState<SelectEnv> {
                     width: 100,
                     height: 40,
                     child: Center(
-                        child: Text(
+                        child: const Text(
                       'Switch',
-                      style: GoogleFonts.roboto(
+                      style: TextStyle(
                         color: Colors.white,
                       ),
                     ).tr()),

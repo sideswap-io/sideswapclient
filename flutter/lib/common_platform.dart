@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 late final CommonPlatform commonPlatform;
@@ -15,4 +16,12 @@ abstract class CommonPlatform {
   Future<bool> requestCameraPermission();
 
   Widget getAddressQrScanner({required bool bitcoinAddress});
+
+  // Different versions of flutter_local_notifications is used on mobile and desktop
+  // until this PR is merged: https://github.com/MaikuB/flutter_local_notifications/pull/1473
+  // (version from the PR crashes on iOS trying open local notification).
+  InitializationSettings getLocalNotificationsInitializationSettings({
+    Future<dynamic> Function(int, String?, String?, String?)?
+        onDidReceiveLocalNotification,
+  });
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:sideswap/desktop/common/decorations/d_pin_input_decoration.dart';
 import 'package:sideswap/desktop/pin/widgets/d_pin_icon_button.dart';
 
@@ -51,7 +50,7 @@ class DPinTextField extends HookWidget {
             keyboardType: keyboardType,
             inputFormatters: inputFormatters,
             enabled: enabled,
-            style: GoogleFonts.roboto(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.normal,
               color: Colors.black,

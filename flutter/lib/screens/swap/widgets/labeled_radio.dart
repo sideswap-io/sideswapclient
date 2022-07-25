@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import 'package:sideswap/common/screen_utils.dart';
 
 class LabeledRadio<T> extends StatelessWidget {
   const LabeledRadio({
@@ -23,14 +20,14 @@ class LabeledRadio<T> extends StatelessWidget {
         (groupValue == value) ? Colors.white : const Color(0xFF709EBA);
 
     return Padding(
-      padding: EdgeInsets.only(left: 12.w),
+      padding: const EdgeInsets.only(left: 12),
       child: InkWell(
         onTap: onChanged == null ? null : () => onChanged!(value),
         child: Row(
           children: <Widget>[
             SizedBox(
-              width: 22.w,
-              height: 22.h,
+              width: 22,
+              height: 22,
               child: Theme(
                 data: Theme.of(context).copyWith(
                   unselectedWidgetColor: const Color(0xFF709EBA),
@@ -50,11 +47,11 @@ class LabeledRadio<T> extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: EdgeInsets.only(left: 4.w),
+              padding: const EdgeInsets.only(left: 4),
               child: Text(
                 label,
-                style: GoogleFonts.roboto(
-                  fontSize: 15.sp,
+                style: TextStyle(
+                  fontSize: 15,
                   fontWeight: FontWeight.normal,
                   color: textColor,
                 ),

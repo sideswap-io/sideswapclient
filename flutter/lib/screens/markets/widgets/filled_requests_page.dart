@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_item.dart';
 
@@ -41,8 +40,7 @@ class FilledRequestsPageState extends State<FilledRequestsPage> {
   void shouldDisplayScrollbar() {
     final renderBox = listViewKey.currentContext?.findRenderObject();
     if (renderBox != null) {
-      if (widget.requests.length * 210.h >
-          (renderBox as RenderBox).size.height) {
+      if (widget.requests.length * 210 > (renderBox as RenderBox).size.height) {
         setState(() {
           isScrollbarVisible = true;
         });
@@ -84,13 +82,13 @@ class FilledRequestsPageState extends State<FilledRequestsPage> {
                 children: [
                   Expanded(
                     child: Padding(
-                      padding: EdgeInsets.only(top: 16.h),
+                      padding: const EdgeInsets.only(top: 16),
                       child: SizedBox(
                         height: 100,
                         child: RawScrollbar(
                           thumbVisibility: isScrollbarVisible,
                           thickness: 3,
-                          radius: Radius.circular(2.r),
+                          radius: const Radius.circular(2),
                           controller: scrollController,
                           thumbColor: const Color(0xFF78AECC),
                           child: ListView.builder(
@@ -102,8 +100,8 @@ class FilledRequestsPageState extends State<FilledRequestsPage> {
                               return widget.requests[index].requestOrderType ==
                                       RequestOrderType.order
                                   ? Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 16.w),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
                                       child: OrderItem(
                                         requestOrder: widget.requests[index],
                                       ),

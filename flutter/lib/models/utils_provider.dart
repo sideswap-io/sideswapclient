@@ -1,11 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/desktop/d_home.dart';
@@ -49,8 +47,8 @@ class UtilsProvider {
       case SettingsDialogIcon.error:
         iconWidget = SvgPicture.asset(
           'assets/error.svg',
-          width: 22.w,
-          height: 22.w,
+          width: 22,
+          height: 22,
           color: const Color(0xFFFF7878),
         );
         borderColor = const Color(0xFFFF7878);
@@ -58,8 +56,8 @@ class UtilsProvider {
       case SettingsDialogIcon.restart:
         iconWidget = SvgPicture.asset(
           'assets/restart.svg',
-          width: 22.w,
-          height: 22.w,
+          width: 22,
+          height: 22,
           color: const Color(0xFF00C5FF),
         );
         borderColor = const Color(0xFF00C5FF);
@@ -72,26 +70,26 @@ class UtilsProvider {
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.w),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(
-                Radius.circular(8.w),
+                Radius.circular(8),
               ),
-              color: const Color(0xFF1C6086),
+              color: Color(0xFF1C6086),
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 66.w,
-                    height: 66.w,
+                    width: 66,
+                    height: 66,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(60.w),
+                      borderRadius: BorderRadius.circular(60),
                       border: Border.all(
                         color: borderColor!,
                         width: 2,
@@ -103,11 +101,11 @@ class UtilsProvider {
                     ),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 32.h),
+                    padding: const EdgeInsets.only(top: 32),
                     child: Text(
                       title,
-                      style: GoogleFonts.roboto(
-                        fontSize: 20.sp,
+                      style: const TextStyle(
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
@@ -116,11 +114,11 @@ class UtilsProvider {
                   ),
                   if (description.isNotEmpty) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 12.h),
+                      padding: const EdgeInsets.only(top: 12),
                       child: Text(
                         description,
-                        style: GoogleFonts.roboto(
-                          fontSize: 16.sp,
+                        style: const TextStyle(
+                          fontSize: 16,
                           fontWeight: FontWeight.normal,
                           color: Colors.white,
                         ),
@@ -129,10 +127,10 @@ class UtilsProvider {
                     ),
                   ],
                   Padding(
-                    padding: EdgeInsets.only(top: 32.h),
+                    padding: const EdgeInsets.only(top: 32),
                     child: CustomBigButton(
                       width: double.maxFinite,
-                      height: 54.h,
+                      height: 54,
                       text: buttonText,
                       backgroundColor: const Color(0xFF00C5FF),
                       onPressed: () {
@@ -142,10 +140,10 @@ class UtilsProvider {
                   ),
                   if (secondButtonText.isNotEmpty) ...[
                     Padding(
-                      padding: EdgeInsets.only(top: 8.h),
+                      padding: const EdgeInsets.only(top: 8),
                       child: CustomBigButton(
                         width: double.maxFinite,
-                        height: 54.h,
+                        height: 54,
                         text: secondButtonText,
                         backgroundColor: Colors.transparent,
                         textColor: const Color(0xFF00C5FF),
@@ -185,29 +183,29 @@ class UtilsProvider {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.w),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Container(
-            width: 343.w,
-            height: 378.h,
-            decoration: BoxDecoration(
+            width: 343,
+            height: 378,
+            decoration: const BoxDecoration(
               borderRadius: BorderRadius.all(
-                Radius.circular(8.w),
+                Radius.circular(8),
               ),
-              color: const Color(0xFF1C6086),
+              color: Color(0xFF1C6086),
             ),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 32.h),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Flexible(
                     flex: 2,
                     child: Container(
-                      width: 60.w,
-                      height: 60.w,
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(60.w),
+                        borderRadius: BorderRadius.circular(60),
                         border: Border.all(
                           color: const Color(0xFFFF7878),
                           width: 2,
@@ -217,8 +215,8 @@ class UtilsProvider {
                       child: Center(
                         child: SvgPicture.asset(
                           'assets/error.svg',
-                          width: 23.w,
-                          height: 23.w,
+                          width: 23,
+                          height: 23,
                           color: const Color(0xFFFF7878),
                         ),
                       ),
@@ -227,14 +225,14 @@ class UtilsProvider {
                   Expanded(
                     flex: 6,
                     child: Padding(
-                      padding: EdgeInsets.only(top: 32.h),
+                      padding: const EdgeInsets.only(top: 32),
                       child: SizedBox(
-                        height: 75.h,
+                        height: 75,
                         child: SingleChildScrollView(
                           child: Text(
                             errorDescription,
-                            style: GoogleFonts.roboto(
-                              fontSize: 20.sp,
+                            style: const TextStyle(
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -248,10 +246,10 @@ class UtilsProvider {
                   Flexible(
                     flex: 3,
                     child: Padding(
-                      padding: EdgeInsets.only(top: 16.h),
+                      padding: const EdgeInsets.only(top: 16),
                       child: CustomBigButton(
-                        width: 279.w,
-                        height: 54.h,
+                        width: 279,
+                        height: 54,
                         text: buttonText ?? 'TRY AGAIN'.tr(),
                         backgroundColor: const Color(0xFF00C5FF),
                         onPressed: () {
@@ -322,49 +320,46 @@ class _InsufficientFunds extends ConsumerWidget {
 
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.w),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Container(
-        width: 343.w,
-        height: 378.h,
-        decoration: BoxDecoration(
+        width: 343,
+        height: 378,
+        decoration: const BoxDecoration(
           borderRadius: BorderRadius.all(
-            Radius.circular(8.w),
+            Radius.circular(8),
           ),
-          color: const Color(0xFF1C6086),
+          color: Color(0xFF1C6086),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 32.h),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Flexible(
-                flex: 2,
-                child: Container(
-                  width: 60.w,
-                  height: 60.w,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(60.w),
-                    border: Border.all(
-                      color: const Color(0xFFFF7878),
-                      width: 2,
-                      style: BorderStyle.solid,
-                    ),
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(60),
+                  border: Border.all(
+                    color: const Color(0xFFFF7878),
+                    width: 2,
+                    style: BorderStyle.solid,
                   ),
-                  child: Center(
-                    child: SvgPicture.asset(
-                      'assets/error.svg',
-                      width: 23.w,
-                      height: 23.w,
-                      color: const Color(0xFFFF7878),
-                    ),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    'assets/error.svg',
+                    width: 23,
+                    height: 23,
+                    color: const Color(0xFFFF7878),
                   ),
                 ),
               ),
               Expanded(
                 flex: 6,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 32.h),
+                  padding: const EdgeInsets.only(top: 32),
                   child: Column(
                     children: [
                       Text(
@@ -373,7 +368,7 @@ class _InsufficientFunds extends ConsumerWidget {
                           fontSize: 18,
                         ),
                       ),
-                      SizedBox(height: 20.h),
+                      const SizedBox(height: 20),
                       Row(
                         children: [
                           Text(
@@ -384,12 +379,12 @@ class _InsufficientFunds extends ConsumerWidget {
                           ),
                           const Spacer(),
                           icon,
-                          SizedBox(width: 12.w),
+                          const SizedBox(width: 12),
                           Text(availableStr),
-                          SizedBox(width: 8.w),
+                          const SizedBox(width: 8),
                         ],
                       ),
-                      SizedBox(height: 12.h),
+                      const SizedBox(height: 12),
                       Row(
                         children: [
                           Text(
@@ -400,9 +395,9 @@ class _InsufficientFunds extends ConsumerWidget {
                           ),
                           const Spacer(),
                           icon,
-                          SizedBox(width: 12.w),
+                          const SizedBox(width: 12),
                           Text(requiredStr),
-                          SizedBox(width: 8.w),
+                          const SizedBox(width: 8),
                         ],
                       ),
                     ],
@@ -413,10 +408,10 @@ class _InsufficientFunds extends ConsumerWidget {
               Flexible(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 16.h),
+                  padding: const EdgeInsets.only(top: 16),
                   child: CustomBigButton(
-                    width: 279.w,
-                    height: 54.h,
+                    width: 279,
+                    height: 54,
                     text: 'OK'.tr(),
                     backgroundColor: const Color(0xFF00C5FF),
                     onPressed: () {
@@ -445,29 +440,29 @@ class _UnregisteredGaid extends ConsumerWidget {
     final ampId = ref.watch(walletProvider).ampId;
     return Dialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.w),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Container(
-        width: 390.w,
-        height: 378.h,
-        decoration: BoxDecoration(
+        width: 390,
+        height: 378,
+        decoration: const BoxDecoration(
           borderRadius: BorderRadius.all(
-            Radius.circular(8.w),
+            Radius.circular(8),
           ),
-          color: const Color(0xFF1C6086),
+          color: Color(0xFF1C6086),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 32.h),
+          padding: const EdgeInsets.symmetric(vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Flexible(
                 flex: 2,
                 child: Container(
-                  width: 60.w,
-                  height: 60.w,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(60.w),
+                    borderRadius: BorderRadius.circular(60),
                     border: Border.all(
                       color: const Color(0xFFFF7878),
                       width: 2,
@@ -477,8 +472,8 @@ class _UnregisteredGaid extends ConsumerWidget {
                   child: Center(
                     child: SvgPicture.asset(
                       'assets/error.svg',
-                      width: 23.w,
-                      height: 23.w,
+                      width: 23,
+                      height: 23,
                       color: const Color(0xFFFF7878),
                     ),
                   ),
@@ -487,17 +482,17 @@ class _UnregisteredGaid extends ConsumerWidget {
               Expanded(
                 flex: 6,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 32.h),
+                  padding: const EdgeInsets.only(top: 32),
                   child: Column(
                     children: [
                       Text(
                         'Please register your AMP ID at'.tr(),
                       ),
-                      SizedBox(height: 8.h),
+                      const SizedBox(height: 8),
                       DUrlLink(
                         text: 'https://${msg.domainAgent}',
                       ),
-                      SizedBox(height: 20.h),
+                      const SizedBox(height: 20),
                       if (ampId != null)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -513,10 +508,10 @@ class _UnregisteredGaid extends ConsumerWidget {
               Flexible(
                 flex: 3,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 16.h),
+                  padding: const EdgeInsets.only(top: 16),
                   child: CustomBigButton(
-                    width: 279.w,
-                    height: 54.h,
+                    width: 279,
+                    height: 54,
                     text: 'OK'.tr(),
                     backgroundColor: const Color(0xFF00C5FF),
                     onPressed: () {

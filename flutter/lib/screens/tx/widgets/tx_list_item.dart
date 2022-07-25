@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -21,13 +20,13 @@ class TxListItem extends StatelessWidget {
     required this.txItem,
   });
 
-  static final itemHeight = 46.h;
-  static final itemWithDateHeight = 95.h;
+  static const itemHeight = 46.0;
+  static const itemWithDateHeight = 95.0;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16.h),
+      padding: const EdgeInsets.only(bottom: 16),
       child: SizedBox(
         height: txItem.showDate ? itemWithDateHeight : itemHeight,
         child: Column(

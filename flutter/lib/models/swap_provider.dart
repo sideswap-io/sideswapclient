@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/show_peg_info_widget.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -355,7 +354,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.w),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: ShowPegInfoWidget(
             text:
@@ -388,7 +387,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.w),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: ShowPegInfoWidget(
             text: 'PEGOUT_WARNING'.tr(),

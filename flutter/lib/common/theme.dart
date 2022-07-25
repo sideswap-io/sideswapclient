@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
-
 final Map<int, Color> _customAppMaterialColor = {
   50: const Color.fromRGBO(19, 85, 121, .1),
   100: const Color.fromRGBO(19, 85, 121, .2),
@@ -24,6 +22,7 @@ final appTheme = ThemeData(
   textSelectionTheme: const TextSelectionThemeData(
     selectionHandleColor: Color(0xFFA8D6EA),
   ),
+  fontFamily: 'Roboto',
   textTheme: const TextTheme(
     headline1: TextStyle(
       fontFamily: 'Corben',
@@ -54,13 +53,13 @@ const fontNormal = TextStyle(
 
 final fontNormalGray = fontNormal.merge(const TextStyle(color: Colors.grey));
 
-final fontSwapAssetTicker = TextStyle(
+const fontSwapAssetTicker = TextStyle(
   fontFamily: 'Roboto',
-  color: const Color(0xFFFFFFFF),
+  color: Color(0xFFFFFFFF),
   fontWeight: FontWeight.w400,
-  fontSize: 22.w,
+  fontSize: 22,
 );
 
-final fontSwapAssetAmount = fontSwapAssetTicker;
+const fontSwapAssetAmount = fontSwapAssetTicker;
 
 const colorPanels = Color(0xFF003E78);

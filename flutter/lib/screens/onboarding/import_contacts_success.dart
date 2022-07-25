@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
@@ -22,12 +20,12 @@ class ImportContactsSuccess extends ConsumerWidget {
         resultType: ResultPageType.success,
         header: 'Success!'.tr(),
         descriptionWidget: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Your contacts has been successfully linked to the wallet'.tr(),
             textAlign: TextAlign.center,
-            style: GoogleFonts.roboto(
-              fontSize: 16.sp,
+            style: const TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.normal,
               color: Colors.white,
             ),

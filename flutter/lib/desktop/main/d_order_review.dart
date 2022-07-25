@@ -30,6 +30,8 @@ enum ReviewState {
   disabled,
 }
 
+const twoStepEnabled = false;
+
 String getTitle(ReviewScreen screen, ReviewState state) {
   switch (screen) {
     case ReviewScreen.submitStart:
@@ -248,6 +250,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                         assetId: priceInLiquid
                             ? wallet.liquidAssetId()
                             : asset.assetId,
+                        isPriceField: true,
                         caption: isSell ? 'Bid price'.tr() : 'Offer price'.tr(),
                         controller: controllerPrice,
                         autofocus: widget.screen == ReviewScreen.edit,
@@ -326,8 +329,9 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                           _Field(name: 'Fee'.tr(), value: Text(feeValue)),
                         ]
                       : [],
-                  if (widget.screen == ReviewScreen.submitStart ||
-                      widget.screen == ReviewScreen.edit)
+                  if (twoStepEnabled &&
+                      (widget.screen == ReviewScreen.submitStart ||
+                          widget.screen == ReviewScreen.edit))
                     _SignTypeControls(
                       twoStep: twoStep,
                       onTwoStepChanged: (widget.screen == ReviewScreen.edit)

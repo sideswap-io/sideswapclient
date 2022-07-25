@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/models/tx_item.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
@@ -62,10 +60,10 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
 
   @override
   Widget build(BuildContext context) {
-    final logoHeightMax = 64.w;
-    final logoHeightMin = 36.w;
-    final logoPaddingMax = 32.h;
-    final logoPaddingMin = 24.h;
+    const logoHeightMax = 64.0;
+    const logoHeightMin = 36.0;
+    const logoPaddingMax = 32.0;
+    const logoPaddingMin = 24.0;
 
     return Stack(
       children: [
@@ -81,7 +79,7 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
             return Stack(
               children: [
                 Padding(
-                  padding: EdgeInsets.only(top: 16.h),
+                  padding: const EdgeInsets.only(top: 16),
                   child: CustomBackButton(
                     onPressed: () {
                       final uiStateArgs = ref.read(uiStateArgsProvider);
@@ -114,7 +112,7 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                 Align(
                   alignment: Alignment.topCenter,
                   child: Padding(
-                    padding: EdgeInsets.only(top: 106.h),
+                    padding: const EdgeInsets.only(top: 106),
                     child: AssetDetailsHeader(
                       percent: percent,
                     ),
@@ -149,21 +147,21 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                 _hightPercentController.add(1 - position);
               },
               color: const Color(0xFF135579),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.w),
-                topRight: Radius.circular(16.w),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
               ),
               header: SizedBox(
-                height: 68.h,
+                height: 73,
                 width: MediaQuery.of(context).size.width,
                 child: Stack(
                   children: [
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Padding(
-                        padding: EdgeInsets.only(left: 16.w),
+                        padding: const EdgeInsets.only(left: 16),
                         child: SizedBox(
-                          height: assetList.isNotEmpty ? 28.h : 50.h,
+                          height: assetList.isNotEmpty ? 28 : 55,
                           width: MediaQuery.of(context).size.width,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -173,24 +171,21 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                                 children: [
                                   Text(
                                     'Transactions'.tr(),
-                                    style: GoogleFonts.roboto(
-                                      fontSize: 22.sp,
+                                    style: const TextStyle(
+                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ),
                                   if (assetList.isEmpty) ...[
-                                    Flexible(
-                                      flex: 1,
-                                      child: Padding(
-                                        padding: EdgeInsets.only(top: 10.h),
-                                        child: Text(
-                                          'No transactions yet',
-                                          style: GoogleFonts.roboto(
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.normal,
-                                            color: const Color(0xFFAED7FF),
-                                          ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(top: 10),
+                                      child: Text(
+                                        'No transactions yet',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.normal,
+                                          color: Color(0xFFAED7FF),
                                         ),
                                       ),
                                     ),
@@ -207,7 +202,7 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Padding(
-                          padding: EdgeInsets.only(right: 3.w),
+                          padding: const EdgeInsets.only(right: 3),
                           child: MaximizeListButton(
                             position: _panelPosition,
                             onPressed: () {
@@ -226,14 +221,15 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
               ),
               panelBuilder: (sc) {
                 return Padding(
-                  padding: EdgeInsets.only(top: 68.h),
+                  padding: const EdgeInsets.only(top: 68),
                   child: ListView.builder(
                     controller: sc,
                     itemCount: assetList.isNotEmpty ? assetList.length : 2,
                     itemBuilder: (context, index) {
                       return assetList.isNotEmpty
                           ? Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16.w),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: TxListItem(
                                 assetId: _asset.asset,
                                 accountType: _asset.account,

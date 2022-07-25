@@ -42,7 +42,7 @@ class _CandlesticksState extends State<Candlesticks> {
 
   /// candleWidth controls the width of the single candles.
   ///  range: [2...10]
-  double candleWidth = 6;
+  double candleWidth = (Platform.isAndroid || Platform.isIOS) ? 4.0 : 6.0;
 
   /// true when widget.onLoadMoreCandles is fetching new candles.
   bool isCallingLoadMore = false;

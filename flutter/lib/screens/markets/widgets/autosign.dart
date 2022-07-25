@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
@@ -19,15 +17,14 @@ class AutoSign extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 90.h,
+      height: 90,
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
-        borderRadius: BorderRadius.all(Radius.circular(8.r)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         color: backgroundColor,
       ),
       child: Padding(
-        padding:
-            EdgeInsets.only(top: 6.h, bottom: 12.h, left: 12.w, right: 12.w),
+        padding: const EdgeInsets.only(top: 6, bottom: 12, left: 12, right: 12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -36,17 +33,17 @@ class AutoSign extends StatelessWidget {
               children: [
                 Text(
                   'Auto-sign'.tr(),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
                 ),
                 SwitchButton(
-                  width: 142.w,
-                  height: 35.h,
-                  borderRadius: 8.r,
-                  borderWidth: 2.r,
+                  width: 142,
+                  height: 35,
+                  borderRadius: 8,
+                  borderWidth: 2,
                   activeText: 'On'.tr(),
                   inactiveText: 'Off'.tr(),
                   value: value,
@@ -57,10 +54,10 @@ class AutoSign extends StatelessWidget {
             Text(
               'If someone confirms your order in the order book, SideSwap will automatically confirm the order'
                   .tr(),
-              style: GoogleFonts.roboto(
-                fontSize: 14.sp,
+              style: const TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.normal,
-                color: const Color(0xFF569BBA),
+                color: Color(0xFF569BBA),
                 letterSpacing: -0.1,
               ),
             ),

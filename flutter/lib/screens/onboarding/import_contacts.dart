@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -65,16 +63,16 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
             }
             return Column(
               children: [
-                Padding(
-                  padding: EdgeInsets.only(top: 56.h),
-                  child: const ImportContactsImage(),
+                const Padding(
+                  padding: EdgeInsets.only(top: 56),
+                  child: ImportContactsImage(),
                 ),
                 Padding(
-                  padding: EdgeInsets.only(top: 32.h),
+                  padding: const EdgeInsets.only(top: 32),
                   child: Text(
                     'Want to import contacts?'.tr(),
-                    style: GoogleFonts.roboto(
-                      fontSize: 22.sp,
+                    style: const TextStyle(
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -84,24 +82,24 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
                   visible: contactsLoadingState == ContactsLoadingState.running,
                   child: Padding(
                     padding:
-                        EdgeInsets.only(top: 32.w, right: 16.w, left: 16.w),
+                        const EdgeInsets.only(top: 32, right: 16, left: 16),
                     child: SideSwapProgressBar(
                       percent: percent,
                     ),
                   ),
                 ),
                 const Spacer(),
-                Padding(
-                  padding: EdgeInsets.only(bottom: 32.h),
-                  child: const PageDots(
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 32),
+                  child: PageDots(
                     maxSelectedDots: 4,
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: CustomBigButton(
                     width: double.maxFinite,
-                    height: 54.h,
+                    height: 54,
                     backgroundColor: const Color(0xFF00C5FF),
                     text: 'YES'.tr(),
                     enabled:
@@ -112,12 +110,12 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
                   ),
                 ),
                 Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Padding(
-                    padding: EdgeInsets.only(top: 16.h, bottom: 16.h),
+                    padding: const EdgeInsets.only(top: 16, bottom: 16),
                     child: CustomBigButton(
                       width: double.maxFinite,
-                      height: 54.h,
+                      height: 54,
                       backgroundColor: Colors.transparent,
                       text: 'NOT NOW'.tr(),
                       textColor: const Color(0xFF00C5FF),

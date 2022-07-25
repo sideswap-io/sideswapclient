@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/wallet.dart';
 
 class MnemonicCheckRow extends ConsumerWidget {
@@ -25,16 +23,16 @@ class MnemonicCheckRow extends ConsumerWidget {
       children: [
         Text(
           'WORD_HASH'.tr(args: ['${wordIndex + 1}']),
-          style: GoogleFonts.roboto(
-            fontSize: 15.sp,
+          style: const TextStyle(
+            fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: const Color(0xFF00C5FF),
+            color: Color(0xFF00C5FF),
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(top: 10.h),
+          padding: const EdgeInsets.only(top: 10),
           child: SizedBox(
-            height: 39.h,
+            height: 39,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: List<Widget>.generate(
@@ -48,14 +46,14 @@ class MnemonicCheckRow extends ConsumerWidget {
                   return Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(8.w),
+                      borderRadius: BorderRadius.circular(8),
                       onTap: () {
                         onTap(index);
                       },
                       child: Container(
-                        width: 109.w,
+                        width: 109,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8.w),
+                          borderRadius: BorderRadius.circular(8),
                           border: Border.all(
                             color: isSelected
                                 ? Colors.white
@@ -68,8 +66,8 @@ class MnemonicCheckRow extends ConsumerWidget {
                         child: Center(
                           child: Text(
                             words[index],
-                            style: GoogleFonts.roboto(
-                              fontSize: 14.sp,
+                            style: TextStyle(
+                              fontSize: 14,
                               fontWeight: FontWeight.normal,
                               color: isSelected ? Colors.black : Colors.white,
                             ),

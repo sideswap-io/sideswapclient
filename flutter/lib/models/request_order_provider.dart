@@ -263,9 +263,19 @@ class RequestOrderProvider extends ChangeNotifier {
   Asset? _priceAsset;
 
   bool isStablecoinMarket() {
+    return marketType() == MarketType.stablecoin;
+  }
+
+  MarketType marketType() {
     final tokenAssetId = tokenAccountAsset().asset;
     final tokenAsset = ref.read(walletProvider).assets[tokenAssetId]!;
-    return tokenAsset.swapMarket;
+    if (tokenAsset.swapMarket) {
+      return MarketType.stablecoin;
+    }
+    if (tokenAsset.ampMarket) {
+      return MarketType.amp;
+    }
+    return MarketType.token;
   }
 
   Asset get priceAsset {

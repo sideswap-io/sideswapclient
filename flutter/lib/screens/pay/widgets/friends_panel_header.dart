@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_import_button.dart';
 
@@ -23,9 +21,9 @@ class FriendsPanelHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: MediaQuery.of(context).size.width,
-      height: 80.h,
+      height: 80,
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
             Consumer(
@@ -34,8 +32,8 @@ class FriendsPanelHeader extends StatelessWidget {
                     ref.watch(friendsProvider).friends.length;
                 return Text(
                   'SIDESWAP_FRIENDS'.tr(args: ['$friendsCounter']),
-                  style: GoogleFonts.roboto(
-                    fontSize: 16.sp,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.normal,
                     color: Colors.white,
                   ),
@@ -44,15 +42,15 @@ class FriendsPanelHeader extends StatelessWidget {
             ),
             const Spacer(),
             FriendsPanelImportButton(
-              width: 63.w,
-              height: 28.h,
+              width: 63,
+              height: 28,
               onPressed: () {},
             ),
             Padding(
-              padding: EdgeInsets.only(left: 6.w),
+              padding: const EdgeInsets.only(left: 6),
               child: FriendsPanelInviteButton(
-                width: 63.w,
-                height: 28.h,
+                width: 63,
+                height: 28,
                 onPressed: () {},
               ),
             ),

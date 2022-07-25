@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/screen_utils.dart';
 import 'package:sideswap/models/friends_provider.dart';
 import 'package:sideswap/models/payment_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
@@ -37,7 +36,7 @@ class FriendsPanelState extends State<FriendsPanel> {
               itemBuilder: (context, index) {
                 return Padding(
                   padding:
-                      EdgeInsets.only(bottom: 8.h, left: 16.w, right: 16.w),
+                      const EdgeInsets.only(bottom: 8, left: 16, right: 16),
                   child: FriendWidget(
                     friend: friends[index],
                     highlightName: widget.searchString,
