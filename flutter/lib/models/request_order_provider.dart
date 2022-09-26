@@ -45,8 +45,8 @@ class RequestOrderProvider extends ChangeNotifier {
   final Ref ref;
 
   RequestOrderProvider(this.ref) {
-    _deliverAssetId = AccountAsset(
-        AccountType.regular, ref.read(walletProvider).liquidAssetId());
+    _deliverAssetId =
+        AccountAsset(AccountType.reg, ref.read(walletProvider).liquidAssetId());
   }
 
   RequestOrder? currentRequestOrderView;
@@ -141,8 +141,7 @@ class RequestOrderProvider extends ChangeNotifier {
         .entries
         .where((item) =>
             item.value > 0 ||
-            (item.key.asset == liquid &&
-                item.key.account == AccountType.regular))
+            (item.key.asset == liquid && item.key.account == AccountType.reg))
         .map((item) => item.key)
         .toList();
     assets.sort();
@@ -214,12 +213,12 @@ class RequestOrderProvider extends ChangeNotifier {
           .where((e) =>
               (e.swapMarket || e.ampMarket) && e.ticker != kLiquidBitcoinTicker)
           .map((e) => AccountAsset(
-              e.ampMarket ? AccountType.amp : AccountType.regular, e.assetId))
+              e.ampMarket ? AccountType.amp : AccountType.reg, e.assetId))
           .toList();
     }
 
     final liquid = ref.read(walletProvider).liquidAssetId();
-    return [AccountAsset(AccountType.regular, liquid)];
+    return [AccountAsset(AccountType.reg, liquid)];
   }
 
   String dollarConversion(String assetId, num amount) {

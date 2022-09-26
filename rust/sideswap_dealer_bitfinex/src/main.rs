@@ -9,6 +9,8 @@ pub mod proto {
     ));
 }
 
+use elements as elements_pset;
+
 #[allow(non_snake_case)]
 extern "C" {
     fn cgoStartApp(port: u16, logFilePort: *const libc::c_char);
@@ -27,7 +29,7 @@ use sideswap_api::*;
 use sideswap_common::*;
 use sideswap_dealer::dealer::*;
 use sideswap_dealer::rpc;
-use std::collections::{BTreeMap, BTreeSet, VecDeque};
+use std::collections::{BTreeMap, BTreeSet};
 use std::convert::Infallible;
 use std::net::TcpListener;
 use std::str::FromStr;
@@ -35,8 +37,6 @@ use storage::*;
 use types::{Amount, TxOut};
 
 type Timestamp = std::time::Instant;
-
-const ACCEPT_GRACE_PERIOD: std::time::Duration = std::time::Duration::from_secs(65);
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
 pub struct ExchangeTicker(String);
@@ -163,31 +163,8 @@ enum Msg {
     Dealer(From),
 }
 
-struct QuoteTimestamp {
-    quote: Quote,
-    timestamp: std::time::Instant,
-}
-
-struct ActiveSwap {
-    ticker: Option<DealerTicker>,
-    rfq: MatchRfq,
-    send_bitcoin: bool,
-    quote_last: Result<Quote, RfqRejectReason>,
-    quotes_old: VecDeque<QuoteTimestamp>,
-    swap: Option<Swap>,
-    accepted: bool,
-    last_updated: std::time::Instant,
-}
-
 struct InstantSwap {
     send_asset: AssetId,
-}
-
-#[derive(Eq, PartialEq, Clone, Debug)]
-struct Quote {
-    proposal: i64,
-    change_amount: i64,
-    txouts: Vec<TxOut>,
 }
 
 type Utxos = BTreeMap<TxOut, Utxo>;
@@ -197,15 +174,6 @@ struct Price {
     pub bid: f64,
     pub ask: f64,
     pub timestamp: std::time::Instant,
-}
-
-fn free_reservation(order_id: &OrderId, utxos: &mut Utxos) {
-    for utxo in utxos
-        .values_mut()
-        .filter(|utxo| utxo.reserve.as_ref() == Some(&order_id))
-    {
-        utxo.reserve = None;
-    }
 }
 
 fn send_msg(tx: &module::Sender, msg: proto::to::Msg) {
@@ -326,134 +294,6 @@ fn get_prices(
     result
 }
 
-fn get_new_quote(
-    assets: &Assets,
-    module_price: &Option<Price>,
-    active_swap: &ActiveSwap,
-    utxos: &Utxos,
-    server_status: &ServerStatus,
-    interest: f64,
-    args: &Args,
-    exchange_balances: &ExchangeBalances,
-) -> Result<Quote, RfqRejectReason> {
-    let send_bitcoin = active_swap.send_bitcoin;
-    let rfq = &active_swap.rfq;
-    let asset_send = assets
-        .iter()
-        .find(|v: &&Asset| v.asset_id == rfq.recv_asset)
-        .expect("buy_asset must be known");
-    let asset_recv = assets
-        .iter()
-        .find(|v| v.asset_id == rfq.send_asset)
-        .expect("sell_asset must be known");
-    assert!(asset_send.ticker.0 == TICKER_LBTC || asset_recv.ticker.0 == TICKER_LBTC);
-
-    let other_asset = if send_bitcoin { asset_recv } else { asset_send };
-    let dealer_ticker = DEALER_TICKERS
-        .iter()
-        .find(|ticker| ticker.0 == other_asset.ticker.0);
-    if dealer_ticker.is_none() {
-        return Err(RfqRejectReason::NoDealer);
-    }
-    let module_price = match module_price.as_ref() {
-        Some(v) => v,
-        None => return Err(RfqRejectReason::ServerError),
-    };
-    let md_price = if send_bitcoin {
-        module_price.bid
-    } else {
-        module_price.ask
-    };
-    let proposal = if send_bitcoin {
-        rfq.send_amount / (md_price * interest) as i64
-    } else {
-        rfq.send_amount * (md_price / interest) as i64
-    };
-    let (bitcoin_amount, asset_amount) = if send_bitcoin {
-        (proposal, rfq.send_amount)
-    } else {
-        (rfq.send_amount, proposal)
-    };
-    if proposal <= 0 {
-        return Err(RfqRejectReason::AmountLow);
-    }
-
-    let low_btc = !send_bitcoin
-        && get_exchange_balance(exchange_balances, &args.bitfinex_currency_btc) < bitcoin_amount;
-    let low_usdt = send_bitcoin
-        && other_asset.ticker.0 == TICKER_USDT
-        && get_exchange_balance(exchange_balances, &args.bitfinex_currency_usdt) < asset_amount;
-    let low_eurx = send_bitcoin
-        && other_asset.ticker.0 == TICKER_EURX
-        && get_exchange_balance(exchange_balances, &args.bitfinex_currency_eur) < asset_amount
-        && args.env.data().mainnet;
-    if low_btc || low_usdt || low_eurx {
-        return Err(RfqRejectReason::AmountHigh);
-    }
-
-    let mut asset_utxos: Vec<Utxo> = utxos
-        .values()
-        .filter(|utxo| utxo.item.asset == asset_send.asset_id && utxo.reserve.is_none())
-        .cloned()
-        .collect();
-
-    let utxos_amounts: Vec<i64> = asset_utxos.iter().map(|utxo| utxo.amount).collect();
-    let total: i64 = utxos_amounts.iter().sum();
-    if total == 0 {
-        return Err(RfqRejectReason::NoDealer);
-    }
-    if total < proposal {
-        return Err(RfqRejectReason::AmountHigh);
-    }
-
-    // TODO: Always send with change to keep things simple (and remove corner cases)
-    let selected = types::select_utxo(utxos_amounts, proposal);
-    let selected_amount = selected.iter().sum::<i64>();
-    let change_amount = selected_amount - proposal;
-    assert!(change_amount >= 0);
-    let with_change = change_amount > 0;
-    let vin_count = rfq.utxo_count + selected.len() as i32;
-    let vout_count = 2 + rfq.with_change as i32 + with_change as i32;
-    let expected_fee = sideswap_common::types::expected_network_fee(
-        vin_count,
-        vout_count,
-        server_status.elements_fee_rate,
-    )
-    .to_sat();
-
-    let mut selected_utxos = Vec::new();
-    for amount in selected {
-        let index = asset_utxos
-            .iter()
-            .position(|v| v.amount == amount)
-            .expect("utxo must exists");
-        let utxo = asset_utxos.swap_remove(index);
-        let txout = TxOut::new(utxo.item.txid.clone(), utxo.item.vout);
-        selected_utxos.push(txout);
-    }
-
-    if send_bitcoin {
-        Ok(Quote {
-            proposal,
-            change_amount,
-            txouts: selected_utxos,
-        })
-    } else {
-        let corrected_proposal = (rfq.send_amount - expected_fee) * (md_price / interest) as i64;
-        let corrected_change = selected_amount - corrected_proposal;
-        if corrected_proposal <= 0 {
-            return Err(RfqRejectReason::AmountLow);
-        }
-        //debug!("propsal: {}, corrected: {}", proposal, corrected_proposal);
-
-        Ok(Quote {
-            proposal: corrected_proposal,
-            change_amount: corrected_change,
-            txouts: selected_utxos,
-        })
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum CliRequest {
@@ -485,7 +325,7 @@ fn process_cli_client(
     msg_tx: crossbeam_channel::Sender<Msg>,
     stream: std::net::TcpStream,
 ) -> Result<(), anyhow::Error> {
-    let mut websocket = tungstenite::server::accept(stream)?;
+    let mut websocket = tungstenite::accept(stream)?;
     loop {
         let msg = match websocket.read_message() {
             Ok(v) => v,
@@ -809,7 +649,6 @@ fn main() {
     let mut assets = Vec::new();
     let mut utxos = Utxos::new();
     let mut server_status = None;
-    let mut swaps: BTreeMap<OrderId, ActiveSwap> = BTreeMap::new();
     let mut instant_swaps: BTreeMap<OrderId, InstantSwap> = BTreeMap::new();
     let mut server_connected = false;
     let mut module_connected = false;
@@ -939,88 +778,6 @@ fn main() {
             }
         }
 
-        // Send quote updates
-        for (order_id, active_swap) in swaps.iter_mut() {
-            if active_swap.accepted {
-                continue;
-            }
-            let module_price = active_swap
-                .ticker
-                .as_ref()
-                .map(|ticker| module_prices.get(&ticker))
-                .flatten()
-                .cloned();
-            let server_status = server_status.as_ref().expect("server_status must exists");
-
-            let interest = if active_swap.ticker == Some(DEALER_USDT) {
-                INTEREST_DEFAULT_USDT
-            } else if active_swap.ticker == Some(DEALER_EURX) {
-                INTEREST_DEFAULT_EURX
-            } else {
-                panic!("unexpected asset");
-            };
-
-            let quote_new = get_new_quote(
-                &assets,
-                &module_price,
-                &active_swap,
-                &utxos,
-                &server_status,
-                interest,
-                &args,
-                &exchange_balances,
-            );
-            // No need to send update
-            if active_swap.quote_last == quote_new {
-                continue;
-            }
-            // Skip update if that just quote amount update
-            if now.duration_since(active_swap.last_updated) < std::time::Duration::from_secs(1)
-                && active_swap.quote_last.is_ok()
-                && quote_new.is_ok()
-            {
-                continue;
-            }
-            if let Err(reason) = &quote_new {
-                warn!("reject quote: {}, reason: {:?}", order_id, reason);
-            }
-            let quote_new_copy = quote_new.clone();
-            let quote_request = quote_new.map(|v| MatchQuote {
-                send_amount: v.proposal,
-                utxo_count: v.txouts.len() as i32,
-                with_change: v.change_amount > 0,
-            });
-            let quote_result = send_request!(
-                send_request,
-                MatchQuote,
-                MatchQuoteRequest {
-                    order_id: order_id.clone(),
-                    quote: quote_request,
-                }
-            );
-            // RFQ might be already removed
-            if let Err(e) = quote_result {
-                error!("send quote request failed: {}", &e);
-                continue;
-            }
-
-            let now = std::time::Instant::now();
-            if let Ok(v) = &quote_new_copy {
-                active_swap.quotes_old.push_back(QuoteTimestamp {
-                    quote: v.clone(),
-                    timestamp: now,
-                });
-            }
-            // Remove only outdated quotes, to make sure there is always non-expired quote that user still might accept
-            while active_swap.quotes_old.len() >= 2
-                && now - active_swap.quotes_old[1].timestamp > ACCEPT_GRACE_PERIOD
-            {
-                active_swap.quotes_old.pop_front();
-            }
-            active_swap.quote_last = quote_new_copy;
-            active_swap.last_updated = now;
-        }
-
         match msg {
             Msg::Connected => {
                 info!("connected to server");
@@ -1068,206 +825,9 @@ fn main() {
                 warn!("disconnected from server");
                 send_notification("disconnected from the server", &args.notifications.url);
                 server_connected = false;
-                swaps.clear();
-                for utxo in utxos.values_mut() {
-                    utxo.reserve = None;
-                }
             }
 
             Msg::Notification(notification) => match notification {
-                Notification::RfqCreated(req) => {
-                    let asset_send = assets
-                        .iter()
-                        .find(|v: &&Asset| v.asset_id == req.rfq.recv_asset)
-                        .expect("recv_asset must be known");
-                    let asset_recv = assets
-                        .iter()
-                        .find(|v: &&Asset| v.asset_id == req.rfq.send_asset)
-                        .expect("recv_asset must be known");
-                    let send_bitcoin = asset_send.ticker.0 == TICKER_LBTC;
-                    let other_asset = if send_bitcoin { asset_recv } else { asset_send };
-                    let dealer_ticker = DEALER_TICKERS
-                        .iter()
-                        .find(|ticker| ticker.0 == other_asset.ticker.0)
-                        .cloned()
-                        .cloned();
-                    swaps.insert(
-                        req.order_id,
-                        ActiveSwap {
-                            ticker: dealer_ticker,
-                            rfq: req.rfq,
-                            send_bitcoin,
-                            quote_last: Err(RfqRejectReason::ServerError),
-                            quotes_old: VecDeque::new(),
-                            swap: None,
-                            accepted: false,
-                            last_updated: std::time::Instant::now(),
-                        },
-                    );
-                }
-
-                Notification::RfqRemoved(req) => {
-                    if req.status == RfqStatus::Accepted {
-                        debug!("rfq accepted...");
-                        let active_swap = swaps.get_mut(&req.order_id).expect("swap must exists");
-                        active_swap.accepted = true;
-                    } else {
-                        debug!("rfq rejected");
-                        swaps.remove(&req.order_id);
-                    }
-                }
-
-                Notification::Swap(swap) => {
-                    let active_swap = swaps.get_mut(&swap.order_id).expect("swap must exists");
-                    match &swap.state {
-                        SwapState::WaitPsbt(sw) => {
-                            let quote = &active_swap
-                                .quotes_old
-                                .iter()
-                                .rev()
-                                .find(|item| item.quote.proposal == sw.send_amount)
-                                .expect("quote must exists")
-                                .quote;
-                            for txout in quote.txouts.iter() {
-                                let utxo = utxos
-                                    .values_mut()
-                                    .find(|utxo| {
-                                        utxo.item.txid == txout.txid && utxo.item.vout == txout.vout
-                                    })
-                                    .expect("utxo must exists");
-                                utxo.reserve = Some(swap.order_id.clone());
-                            }
-
-                            // TODO: Check assets and amounts
-                            active_swap.swap = Some(sw.clone());
-
-                            let sw = active_swap.swap.as_ref().expect("swap must be set");
-                            let new_address = make_rpc_call::<String>(
-                                &rpc_http_client,
-                                &args.rpc,
-                                &rpc::get_new_address(),
-                            )
-                            .expect("getting new address failed");
-
-                            let inputs: Vec<_> = utxos
-                                .values()
-                                .filter(|utxo| utxo.reserve.as_ref() == Some(&swap.order_id))
-                                .map(|utxo| utxo.item.tx_out())
-                                .collect();
-                            let mut outputs_amounts: BTreeMap<String, serde_json::Value> =
-                                BTreeMap::new();
-                            let mut outputs_assets: BTreeMap<String, String> = BTreeMap::new();
-
-                            outputs_amounts.insert(
-                                new_address.clone(),
-                                Amount::from_sat(sw.recv_amount).to_rpc(),
-                            );
-                            outputs_assets.insert(new_address.clone(), sw.recv_asset.to_string());
-
-                            if quote.change_amount > 0 {
-                                let change_address = make_rpc_call::<String>(
-                                    &rpc_http_client,
-                                    &args.rpc,
-                                    &rpc::get_new_address(),
-                                )
-                                .expect("getting new address failed");
-                                outputs_amounts.insert(
-                                    change_address.clone(),
-                                    Amount::from_sat(quote.change_amount).to_rpc(),
-                                );
-                                outputs_assets.insert(change_address, sw.send_asset.to_string());
-                            }
-
-                            let raw_tx = make_rpc_call::<String>(
-                                &rpc_http_client,
-                                &args.rpc,
-                                &rpc::create_raw_tx(
-                                    &inputs,
-                                    &outputs_amounts,
-                                    0,
-                                    false,
-                                    &outputs_assets,
-                                ),
-                            )
-                            .expect("creating raw tx failed");
-
-                            let psbt = make_rpc_call::<String>(
-                                &rpc_http_client,
-                                &args.rpc,
-                                &rpc::convert_to_psbt(&raw_tx),
-                            )
-                            .expect("converting PSBT failed");
-
-                            let psbt = make_rpc_call::<rpc::FillPsbtData>(
-                                &rpc_http_client,
-                                &args.rpc,
-                                &rpc::fill_psbt_data(&psbt),
-                            )
-                            .expect("converting PSBT failed");
-
-                            send_request!(
-                                send_request,
-                                Swap,
-                                SwapRequest {
-                                    order_id: swap.order_id.clone(),
-                                    action: SwapAction::Psbt(psbt.psbt),
-                                }
-                            )
-                            .expect("sending psbt failed");
-                        }
-                        SwapState::WaitSign(psbt) => {
-                            let result = make_rpc_call::<rpc::WalletSignPsbt>(
-                                &rpc_http_client,
-                                &args.rpc,
-                                &rpc::wallet_sign_psbt(&psbt),
-                            )
-                            .expect("signing PSBT failed");
-
-                            send_request!(
-                                send_request,
-                                Swap,
-                                SwapRequest {
-                                    order_id: swap.order_id.clone(),
-                                    action: SwapAction::Sign(result.psbt),
-                                }
-                            )
-                            .expect("sending signed PSBT failed");
-                        }
-                        SwapState::Failed(error) => {
-                            info!("swap failed: {:?}", error);
-                            free_reservation(&swap.order_id, &mut utxos);
-                            swaps.remove(&swap.order_id);
-                        }
-                        SwapState::Done(txid) => {
-                            let swap = active_swap.swap.as_ref().expect("swap must be set");
-                            let dealer_ticker = active_swap
-                                .ticker
-                                .as_ref()
-                                .expect("dealer ticker must be know")
-                                .clone();
-                            let bitcoin_amount = Amount::from_sat(if active_swap.send_bitcoin {
-                                swap.send_amount
-                            } else {
-                                swap.recv_amount
-                            });
-                            hedge_order(
-                                &args,
-                                &txid,
-                                dealer_ticker,
-                                bitcoin_amount,
-                                active_swap.send_bitcoin,
-                                &mut balancing_blocked,
-                                &mut profit_reports,
-                                &wallet_balances,
-                                &exchange_balances,
-                                &book_names,
-                                &mod_tx,
-                                &mut pending_orders,
-                            );
-                        }
-                    }
-                }
-
                 Notification::ServerStatus(status) => server_status = Some(status),
 
                 Notification::OrderCreated(order) if order.own.is_none() => {
@@ -1415,7 +975,7 @@ fn main() {
                                 elements_pset::SigHashType::All,
                             );
                             let public_key = private_key.public_key(&secp);
-                            let pset_input = pset.inputs.get_mut(index).unwrap();
+                            let pset_input = pset.inputs_mut().get_mut(index).unwrap();
                             pset_input.final_script_sig =
                                 utxo.item.redeem_script.as_ref().map(|s| {
                                     elements_pset::script::Builder::new()
@@ -1564,7 +1124,6 @@ fn main() {
                         Utxo {
                             amount: Amount::from_rpc(&item.amount).to_sat(),
                             item,
-                            reserve: None,
                         }
                     });
                 }

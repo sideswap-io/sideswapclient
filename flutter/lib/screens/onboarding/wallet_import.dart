@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -252,7 +253,7 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     _textFieldLeftPadding =
-        (screenWidth - _textFieldWidth - (8 * _textFieldPadding)) / 2;
+        max((screenWidth - _textFieldWidth - (8 * _textFieldPadding)) / 2, 0);
 
     return Column(
       children: [

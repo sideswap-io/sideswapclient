@@ -165,7 +165,7 @@ class DesktopTxHistoryState extends State<DesktopTxHistory> {
                                       multipleOutputs: recvMultipleOutputs,
                                     ),
                                     _Confs(tx: tx),
-                                    _Link(txid: tx.id),
+                                    _Link(txid: tx.tx.txid),
                                   ],
                                 ),
                                 onPressed: () {
@@ -266,9 +266,9 @@ class _Wallet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isAmp =
-        tx.tx.balances.any((e) => AccountType.fromPb(e.account).isAmp());
+        tx.tx.balances.any((e) => AccountType.fromPb(tx.account).isAmp());
     final isRegular =
-        tx.tx.balances.any((e) => AccountType.fromPb(e.account).isRegular());
+        tx.tx.balances.any((e) => AccountType.fromPb(tx.account).isRegular());
     final accountName = tx.hasPeg()
         ? ''
         : ((isAmp && isRegular)

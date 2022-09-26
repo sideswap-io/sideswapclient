@@ -1,3 +1,4 @@
+use elements as elements_pset;
 use std::str::FromStr;
 
 pub const SERVER_FEE_SHARE: f64 = 0.002;

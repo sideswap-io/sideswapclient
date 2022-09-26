@@ -364,13 +364,16 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                         ],
                         Text(
                           enabled
-                              ? orderType == OrderDetailsDataType.submit ||
+                              ? (orderType == OrderDetailsDataType.submit ||
                                       orderType == OrderDetailsDataType.sign
                                   ? 'SUBMIT'.tr()
-                                  : 'SUBMIT RESPONSE'.tr()
-                              : orderType == OrderDetailsDataType.sign
+                                  : 'SUBMIT RESPONSE'.tr())
+                              : (orderType == OrderDetailsDataType.sign ||
+                                      (orderType ==
+                                              OrderDetailsDataType.quote &&
+                                          orderDetailsData.twoStep)
                                   ? 'Broadcasting'.tr()
-                                  : 'Awaiting acceptance'.tr(),
+                                  : 'Awaiting acceptance'.tr()),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.normal,

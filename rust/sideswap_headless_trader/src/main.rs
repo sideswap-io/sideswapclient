@@ -68,7 +68,7 @@ fn main() {
     let account_id = if amp {
         sideswap_client::worker::ACCOUNT_ID_AMP
     } else {
-        sideswap_client::worker::ACCOUNT_ID_REGULAR
+        sideswap_client::worker::ACCOUNT_ID_REG
     };
 
     loop {
@@ -159,6 +159,7 @@ fn main() {
                         private: Some(false),
                         ttl_seconds: None,
                         two_step: None,
+                        tx_chaining_allowed: Some(false),
                     }),
                 );
             }

@@ -23,18 +23,13 @@ message Balance {
   required int64 amount = 2;
 }
 
-message TxBalance {
-  required string asset_id = 1;
-  required int64 amount = 2;
-  required Account account = 3;
-}
-
 message Asset {
   required string asset_id = 1;
   required string name = 2;
   required string ticker = 3;
   required string icon = 4;
   required uint32 precision = 5;
+  required bool instant_swaps = 11;
   required bool swap_market = 6;
   required bool amp_market = 9;
   required bool unregistered = 8;
@@ -43,12 +38,13 @@ message Asset {
 }
 
 message Tx {
-  repeated TxBalance balances = 1;
+  repeated Balance balances = 1;
   required string txid = 2;
   required int64 network_fee = 3;
   required int64 size = 5;
   required int64 vsize = 6;
   required string memo = 4;
+  repeated Balance balances_all = 7;
 }
 
 message Peg {
@@ -70,6 +66,7 @@ message TransItem {
   required string id = 1;
   required int64 created_at = 2;
   optional Confs confs = 3;
+  required Account account = 4;
 
   oneof item {
     Tx tx = 10;
@@ -225,16 +222,27 @@ message To {
   message PegInRequest {
   }
 
-  message PegOutRequest {
-    required int64 send_amount = 1;
-    required string recv_addr = 2;
-    required int32 blocks = 3;
+  message PegOutAmount {
+    required int64 amount = 1;
+    required bool is_send_entered = 2;
+    required double fee_rate = 3;
     required Account account = 4;
   }
 
+  message PegOutRequest {
+    required int64 send_amount = 1;
+    required int64 recv_amount = 2;
+    required bool is_send_entered = 4;
+    required double fee_rate = 5;
+    required string recv_addr = 6;
+    required int32 blocks = 7;
+    required Account account = 8;
+  }
+
   message SetMemo {
-    required string txid = 1;
-    required string memo = 2;
+    required Account account = 1;
+    required string txid = 2;
+    required string memo = 3;
   }
 
   message SendTx {
@@ -292,6 +300,7 @@ message To {
     optional bool private = 4;
     optional bool two_step = 6;
     optional uint64 ttl_seconds = 5;
+    optional bool tx_chaining_allowed = 7;
   }
 
   message EditOrder {
@@ -352,6 +361,7 @@ message To {
 
     SwapRequest swap_request = 20;
     PegInRequest peg_in_request = 21;
+    PegOutAmount peg_out_amount = 24;
     PegOutRequest peg_out_request = 22;
     SwapDetails swap_accept = 23;
 
@@ -451,6 +461,21 @@ message From {
     required string recv_addr = 6;
   }
 
+  message PegOutAmount {
+    message Amounts {
+      required int64 send_amount = 1;
+      required int64 recv_amount = 2;
+      required bool is_send_entered = 4;
+      required double fee_rate = 5;
+      required Account account = 6;
+    }
+
+    oneof result {
+      string error_msg = 1;
+      Amounts amounts = 2;
+    }
+  }
+
   message RecvAddress {
     required Address addr = 1;
     required Account account = 2;
@@ -525,6 +550,8 @@ message From {
     required Step step = 7;
     required bool index_price = 9;
     required bool auto_sign = 11;
+    optional bool two_step = 12;
+    optional bool tx_chaining_required = 13;
   }
 
   message SubmitResult {
@@ -648,6 +675,7 @@ message From {
     DecryptPin decrypt_pin = 11;
 
     PeginWaitTx pegin_wait_tx = 21;
+    PegOutAmount peg_out_amount = 24;
     TransItem swap_succeed = 22;
     string swap_failed = 23;
 

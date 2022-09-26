@@ -226,6 +226,7 @@ class TokenMarketOrderDetailsState
                       },
                     ),
                     const Spacer(),
+                    const SizedBox(height: 12),
                     Padding(
                       padding: const EdgeInsets.only(
                           bottom: 40, left: 16, right: 16),

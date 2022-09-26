@@ -46,7 +46,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
                         // showExportLogMenu(context);
                       },
                       child: Text(
-                        'VERSION'.tr(args: [appVersionFull]),
+                        'VERSION'.tr(args: [appVersion]),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

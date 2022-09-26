@@ -90,31 +90,38 @@ pub struct UnspentOutputsArgs {
     pub num_confs: i32,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UnspentOutput {
+    pub address_type: String,
+    // pub block_height: u32,
     pub txhash: Txid,
+    pub pointer: u32,
     pub pt_idx: u32,
     pub asset_id: AssetId,
     pub satoshi: u64,
     pub amountblinder: Option<BlindingFactor>,
     pub assetblinder: Option<BlindingFactor>,
+    pub subaccount: u32,
+    pub is_internal: bool,
+    pub nonce_commitment: Option<String>,
+    pub confidential: bool,
+    #[serde(rename = "asset_tag")]
+    pub asset_commitment: Option<String>,
+    #[serde(rename = "commitment")]
+    pub value_commitment: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_sighash: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delayed_signature: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prevout_script: Option<String>,
 }
 
 pub type UnspentOutputs = std::collections::BTreeMap<AssetId, Vec<UnspentOutput>>;
 
 #[derive(Deserialize)]
-pub struct UnspentOutputsParsedResult {
+pub struct UnspentOutputsResult {
     pub unspent_outputs: UnspentOutputs,
-}
-
-#[derive(Deserialize)]
-pub struct UnspentOutputsJsonResult {
-    pub unspent_outputs: serde_json::Value,
-}
-
-#[derive(Deserialize)]
-pub struct UnspentOutputsJsonMapResult {
-    pub unspent_outputs: BTreeMap<sideswap_api::AssetId, Vec<serde_json::Value>>,
 }
 
 #[derive(Deserialize, Debug, PartialEq, Eq)]
@@ -212,6 +219,7 @@ pub struct TransactionInput {
     pub satoshi: Option<u64>,
     pub assetblinder: Option<BlindingFactor>,
     pub amountblinder: Option<BlindingFactor>,
+    pub is_relevant: bool,
 }
 
 #[derive(Deserialize, Debug)]
@@ -220,6 +228,7 @@ pub struct TransactionOutput {
     pub satoshi: Option<u64>,
     pub assetblinder: Option<BlindingFactor>,
     pub amountblinder: Option<BlindingFactor>,
+    pub is_relevant: bool,
 }
 
 #[derive(Deserialize, Debug)]
@@ -240,7 +249,7 @@ pub struct TransactionList {
     pub transactions: Vec<Transaction>,
 }
 
-pub type BalanceList = BTreeMap<sideswap_api::AssetId, u64>;
+pub type BalanceList = BTreeMap<sideswap_api::AssetId, i64>;
 
 #[derive(Serialize, Debug)]
 pub struct RecvAddrOpt {
@@ -249,7 +258,11 @@ pub struct RecvAddrOpt {
 
 #[derive(Deserialize, Debug)]
 pub struct RecvAddrResult {
+    pub address_type: String,
     pub address: String,
+    pub pointer: u32,
+    pub script: String,
+    pub subaccount: u32,
 }
 
 #[derive(Serialize, Debug)]
@@ -263,39 +276,49 @@ pub struct TxAddressee {
 pub struct CreateTransactionOpt {
     pub subaccount: i32,
     pub addressees: Vec<TxAddressee>,
-    pub utxos: serde_json::Value,
+    pub utxos: BTreeMap<AssetId, Vec<UnspentOutput>>,
     pub send_all: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub utxo_strategy: Option<gdk_common::model::UtxoStrategy>,
+    pub is_partial: Option<bool>,
+    pub used_utxos: Option<Vec<UnspentOutput>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct CreateTransactionResult {
-    pub fee: u64,
+    pub fee: Option<u64>,
+    pub error: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct CreatedTransactionOutput {
     pub address: Option<String>,
-    pub asset_id: String,
+    pub asset_id: AssetId,
     pub satoshi: u64,
     pub is_change: bool,
     pub is_fee: bool,
+    pub amountblinder: Option<BlindingFactor>,
+    pub assetblinder: Option<BlindingFactor>,
+    pub eph_private_key: Option<secp256k1::SecretKey>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SignTransactionResult {
     pub transaction_outputs: Vec<CreatedTransactionOutput>,
     pub transaction: String,
-    pub fee: u64,
+    pub fee: Option<u64>,
+    pub used_utxos: Vec<UnspentOutput>,
+    pub error: String,
 }
 
 #[derive(Serialize, Debug)]
 pub struct PsetDetailsOpt {
     pub psbt: String,
-    pub utxos: Vec<serde_json::Value>,
+    pub utxos: Vec<UnspentOutput>,
 }
 
 #[derive(Deserialize, Debug)]
-pub struct PsetInput {
+pub struct PsetInputOutput {
     pub asset_id: AssetId,
     pub satoshi: u64,
     pub subaccount: i32,
@@ -303,14 +326,14 @@ pub struct PsetInput {
 
 #[derive(Deserialize, Debug)]
 pub struct PsetDetailsResult {
-    pub inputs: Vec<PsetInput>,
-    pub outputs: Vec<PsetInput>,
+    pub inputs: Vec<PsetInputOutput>,
+    pub outputs: Vec<PsetInputOutput>,
 }
 
 #[derive(Serialize, Debug)]
 pub struct SignPsetOpt {
     pub psbt: String,
-    pub utxos: Vec<serde_json::Value>,
+    pub utxos: Vec<UnspentOutput>,
     pub blinding_nonces: Vec<String>,
 }
 
@@ -327,8 +350,8 @@ pub struct SendTransactionResult {
 #[derive(Serialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum ReconnectHint {
-    Now,
-    Disable,
+    Connect,
+    Disconnect,
 }
 
 #[derive(Serialize, Debug)]
@@ -340,7 +363,7 @@ pub struct ReconnectHintOpt {
 pub struct NotificationBlock {
     pub block_hash: String,
     pub block_height: u32,
-    pub initial_timestamp: u32,
+    pub initial_timestamp: Option<u32>,
     pub previous_hash: String,
 }
 
@@ -370,6 +393,7 @@ pub struct NotificationNetwork {
 
 #[derive(Deserialize, Debug)]
 pub struct Notification {
+    pub event: String,
     pub block: Option<NotificationBlock>,
     pub transaction: Option<NotificationTransaction>,
     pub network: Option<NotificationNetwork>,
@@ -420,21 +444,22 @@ pub struct SignTx {
 #[derive(Serialize)]
 pub struct PreviousAddressesOpts {
     pub subaccount: i32,
-    pub last_pointer: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_pointer: Option<u32>,
 }
 
 #[derive(Deserialize)]
 pub struct PreviousAddress {
     pub address: String,
-    pub unblinded_address: String,
-    pub address_type: String,
-    pub branch: u32,
     pub pointer: u32,
-    pub script: String,
-    pub script_type: u32,
-    pub subaccount: i32,
-    pub subtype: i32,
-    pub tx_count: u32,
+    // pub branch: u32,
+    // pub unblinded_address: String,
+    // pub address_type: String,
+    // pub script: String,
+    // pub script_type: u32,
+    // pub subaccount: i32,
+    // pub subtype: i32,
+    // pub tx_count: u32,
 }
 
 #[derive(Deserialize)]

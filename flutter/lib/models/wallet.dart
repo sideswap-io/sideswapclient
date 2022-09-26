@@ -255,7 +255,7 @@ class WalletChangeNotifier with ChangeNotifier {
   AccountAsset? selectedWalletAsset;
 
   final recvAddresses = <AccountType, String>{};
-  AccountType recvAddressAccount = AccountType.regular;
+  AccountType recvAddressAccount = AccountType.reg;
 
   Map<int, List<String>> backupCheckAllWords = {};
   Map<int, int> backupCheckSelectedWords = {};
@@ -410,6 +410,7 @@ class WalletChangeNotifier with ChangeNotifier {
       }
     }
 
+    // Initiate wallet unlock after startup
     if (status == Status.lockedWalet) {
       await unlockWallet();
     }
@@ -436,11 +437,11 @@ class WalletChangeNotifier with ChangeNotifier {
     if (_allAccountsNeedUpdate) {
       // Use array to show registered on the server assets first
       final newList = <AccountAsset>[];
-      newList.add(AccountAsset(AccountType.regular, liquidAssetId()));
+      newList.add(AccountAsset(AccountType.reg, liquidAssetId()));
       //newList.add(AccountAsset(AccountType.amp, liquidAssetId()));
       for (final asset in assets.values) {
         if (asset.swapMarket) {
-          newList.add(AccountAsset(AccountType.regular, asset.assetId));
+          newList.add(AccountAsset(AccountType.reg, asset.assetId));
         } else if (asset.ampMarket) {
           newList.add(AccountAsset(AccountType.amp, asset.assetId));
         }
@@ -482,14 +483,14 @@ class WalletChangeNotifier with ChangeNotifier {
       for (final item in allTxs.values) {
         final tx = item.tx;
         for (final balance in tx.balances) {
-          final account = getAccountType(balance.account);
+          final account = getAccountType(item.account);
           _addTxItem(list, account, balance.assetId, item);
         }
       }
 
       for (final order in allPegs.entries) {
         for (final item in order.value) {
-          _addTxItem(list, AccountType.regular, liquidAssetId(), item);
+          _addTxItem(list, AccountType.reg, liquidAssetId(), item);
         }
       }
 
@@ -564,7 +565,7 @@ class WalletChangeNotifier with ChangeNotifier {
         _eurxAssetId = from.envSettings.eurxAssetId;
         _liquidAssetId = from.envSettings.policyAssetId;
         AccountAsset.liquidAssetId = _liquidAssetId;
-        defaultAccounts.add(AccountAsset(AccountType.regular, _liquidAssetId));
+        defaultAccounts.add(AccountAsset(AccountType.reg, _liquidAssetId));
         break;
       case From_Msg.updatedTxs:
         updateTxs(from.updatedTxs);
@@ -605,6 +606,10 @@ class WalletChangeNotifier with ChangeNotifier {
         showSwapTxDetails(txItem);
         ref.read(swapProvider).swapReset();
         ref.read(swapProvider).clearAmounts();
+        break;
+
+      case From_Msg.pegOutAmount:
+        ref.read(swapProvider).onPegOutAmountReceived(from.pegOutAmount);
         break;
 
       case From_Msg.peginWaitTx:
@@ -696,8 +701,11 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.serverStatus:
         _serverStatus = from.serverStatus;
-        // TODO: Allow pegs only after that
         notifyListeners();
+        // Refresh peg-out amounts
+        ref
+            .read(priceStreamSubscribeChangeNotifierProvider)
+            .subscribeToPriceStream();
         break;
 
       case From_Msg.priceUpdate:
@@ -847,6 +855,8 @@ class WalletChangeNotifier with ChangeNotifier {
           isTracking: indexPrice,
           autoSign: autoSign,
           marketType: getMarketType(asset),
+          twoStep: fromSr.twoStep,
+          txChainingRequired: fromSr.txChainingRequired,
         );
         if (orderType == OrderDetailsDataType.quote ||
             orderType == OrderDetailsDataType.sign) {
@@ -886,9 +896,13 @@ class WalletChangeNotifier with ChangeNotifier {
             }
             if (from.submitResult.whichResult() ==
                 From_SubmitResult_Result.error) {
-              await ref.read(utilsProvider).showErrorDialog(
-                  from.submitResult.error,
-                  buttonText: 'CONTINUE'.tr());
+              final errorText =
+                  from.submitResult.error == 'id_insufficient_funds'
+                      ? 'Insufficient LBTC in AMP wallet'.tr()
+                      : from.submitResult.error;
+              await ref
+                  .read(utilsProvider)
+                  .showErrorDialog(errorText, buttonText: 'CONTINUE'.tr());
             } else {
               await ref
                   .read(utilsProvider)
@@ -1107,7 +1121,7 @@ class WalletChangeNotifier with ChangeNotifier {
       assetsList.add(asset.assetId);
     }
     if (asset.swapMarket) {
-      defaultAccounts.add(AccountAsset(AccountType.regular, asset.assetId));
+      defaultAccounts.add(AccountAsset(AccountType.reg, asset.assetId));
     }
     if (asset.ampMarket) {
       defaultAccounts.add(AccountAsset(AccountType.amp, asset.assetId));
@@ -1600,8 +1614,8 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void startAssetReceiveAddr() {
     recvAddresses.clear();
-    recvAddressAccount = AccountType.regular;
-    toggleRecvAddrType(AccountType.regular);
+    recvAddressAccount = AccountType.reg;
+    toggleRecvAddrType(AccountType.reg);
   }
 
   void selectAssetReceiveFromWalletMain() {
@@ -1821,6 +1835,8 @@ class WalletChangeNotifier with ChangeNotifier {
 
     var msg = To();
     msg.setMemo = To_SetMemo();
+    // FIXME: Use correct account type here
+    msg.setMemo.account = getAccount(AccountType.reg);
     msg.setMemo.txid = txid;
     msg.setMemo.memo = _currentTxMemoUpdate;
     sendMsg(msg);
@@ -1891,14 +1907,17 @@ class WalletChangeNotifier with ChangeNotifier {
       await _logout();
       status = Status.loading;
       notifyListeners();
+    } else {
+      await logoutComplete();
     }
   }
 
-  void logoutComplete() async {
+  Future<void> logoutComplete() async {
     await ref.read(configProvider).deleteConfig();
     ref.read(balancesProvider.notifier).clear();
     ref.read(uiStateArgsProvider).clear();
     ref.read(phoneProvider).clearData();
+    ref.read(pinProtectionProvider).reset();
     allTxs.clear();
     allPegs.clear();
     allPegsById.clear();
@@ -2198,6 +2217,7 @@ class WalletChangeNotifier with ChangeNotifier {
     bool accept = false,
     bool private = true,
     int ttlSeconds = kOneWeek,
+    bool allowTxChaining = false,
   }) {
     orderDetailsData =
         orderDetailsData.copyWith(accept: accept, private: private);
@@ -2213,6 +2233,7 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.submitDecision.twoStep = twoStep;
     msg.submitDecision.private = orderDetailsData.private;
     msg.submitDecision.ttlSeconds = Int64(ttlSeconds);
+    msg.submitDecision.txChainingAllowed = allowTxChaining;
     sendMsg(msg);
   }
 
@@ -2490,7 +2511,7 @@ class WalletChangeNotifier with ChangeNotifier {
         .map((e) => e.key)
         .toList();
     if (allAssets.isEmpty) {
-      return [AccountAsset(AccountType.regular, liquidAssetId())];
+      return [AccountAsset(AccountType.reg, liquidAssetId())];
     }
     return allAssets;
   }
@@ -2628,6 +2649,23 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
+  void getPegOutAmount(
+    int? sendAmount,
+    int? recvAmount,
+    double feeRate,
+    AccountType accountType,
+  ) {
+    assert((sendAmount == null) != (recvAmount == null));
+    final msg = To();
+    msg.pegOutAmount = To_PegOutAmount();
+    msg.pegOutAmount.feeRate = feeRate;
+    msg.pegOutAmount.isSendEntered = sendAmount != null;
+    msg.pegOutAmount.amount =
+        sendAmount != null ? Int64(sendAmount) : Int64(recvAmount!);
+    msg.pegOutAmount.account = getAccount(accountType);
+    sendMsg(msg);
+  }
+
   Future<void> _processRegisterAmpResult(From_RegisterAmp msg) async {
     switch (msg.whichResult()) {
       case From_RegisterAmp_Result.ampId:
@@ -2681,7 +2719,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   bool isTestnet() {
-    return env() == SIDESWAP_ENV_TESTNET;
+    return env() == SIDESWAP_ENV_TESTNET || env() == SIDESWAP_ENV_LOCAL_TESTNET;
   }
 
   void jadeAction(AccountType account, To_JadeAction_Action action) {

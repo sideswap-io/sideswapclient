@@ -426,5 +426,16 @@
   "New app version available: {}. Would you like to download it now?": "New app version available: {}. Would you like to download it now?",
   "Swap Markets": "Swap Markets",
   "Instant Swap": "Instant Swap",
-  "Environment": "Environment"
+  "Environment": "Environment",
+  "Order book": "Order book",
+  "SELL": "SELL",
+  "Awaiting swap broadcast": "Awaiting swap broadcast",
+  "Offline": "Offline",
+  "Online": "Online",
+  "Sign type": "Sign type",
+  "Time-to-live": "Time-to-live",
+  "Offline swaps may not have a return balance. Do you wish to auto-create the correct input amount when submitting your order?": "Offline swaps may not have a return balance. Do you wish to auto-create the correct input amount when submitting your order?",
+  "Yes, only once": "Yes, only once",
+  "Yes, do not ask me again": "Yes, do not ask me again",
+  "Insufficient LBTC in AMP wallet": "Insufficient LBTC in AMP wallet"
 }

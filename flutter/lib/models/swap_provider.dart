@@ -115,17 +115,15 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     if (swapPeg) {
       final swapPegList = <AccountAsset>[];
 
-      swapPegList
-          .add(AccountAsset(AccountType.regular, wallet.bitcoinAssetId()));
-      swapPegList
-          .add(AccountAsset(AccountType.regular, wallet.liquidAssetId()));
+      swapPegList.add(AccountAsset(AccountType.reg, wallet.bitcoinAssetId()));
+      swapPegList.add(AccountAsset(AccountType.reg, wallet.liquidAssetId()));
       swapPegList.add(AccountAsset(AccountType.amp, wallet.liquidAssetId()));
 
       return swapPegList;
     }
     return wallet.assets.entries
-        .where((e) => e.key == wallet.liquidAssetId() || e.value.swapMarket)
-        .map((e) => AccountAsset(AccountType.regular, e.key))
+        .where((e) => e.key == wallet.liquidAssetId() || e.value.instantSwaps)
+        .map((e) => AccountAsset(AccountType.reg, e.key))
         .toList();
   }
 
@@ -133,18 +131,18 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     final wallet = ref.read(walletProvider);
     if (swapPeg) {
       if (swapSendAsset?.asset == wallet.liquidAssetId()) {
-        return [AccountAsset(AccountType.regular, wallet.bitcoinAssetId())];
+        return [AccountAsset(AccountType.reg, wallet.bitcoinAssetId())];
       }
-      return [AccountAsset(AccountType.regular, wallet.liquidAssetId())];
+      return [AccountAsset(AccountType.reg, wallet.liquidAssetId())];
     }
 
     if (swapSendAsset?.asset != wallet.liquidAssetId()) {
-      return [AccountAsset(AccountType.regular, wallet.liquidAssetId())];
+      return [AccountAsset(AccountType.reg, wallet.liquidAssetId())];
     }
 
     return wallet.assets.entries
-        .where((e) => e.value.swapMarket)
-        .map((e) => AccountAsset(AccountType.regular, e.key))
+        .where((e) => e.value.instantSwaps)
+        .map((e) => AccountAsset(AccountType.reg, e.key))
         .toList();
   }
 
@@ -155,10 +153,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
     if (swapSendAsset == null) {
       _swapPeg = false;
-      _swapSendAsset =
-          AccountAsset(AccountType.regular, wallet.liquidAssetId());
-      _swapRecvAsset =
-          AccountAsset(AccountType.regular, wallet.tetherAssetId());
+      _swapSendAsset = AccountAsset(AccountType.reg, wallet.liquidAssetId());
+      _swapRecvAsset = AccountAsset(AccountType.reg, wallet.tetherAssetId());
     }
     final sendAssetsAllowed = swapSendAssets();
     if (!sendAssetsAllowed.contains(swapSendAsset)) {
@@ -336,6 +332,27 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
   }
 
+  void onPegOutAmountReceived(From_PegOutAmount value) {
+    switch (value.whichResult()) {
+      case From_PegOutAmount_Result.errorMsg:
+        ref.read(swapNetworkErrorStateProvider.notifier).state = value.errorMsg;
+        break;
+      case From_PegOutAmount_Result.amounts:
+        if (value.amounts.isSendEntered) {
+          ref
+              .read(swapRecvAmountChangeNotifierProvider)
+              .setAmount(amountStr(value.amounts.recvAmount.toInt()));
+        } else {
+          ref
+              .read(swapSendAmountChangeNotifierProvider)
+              .setAmount(amountStr(value.amounts.sendAmount.toInt()));
+        }
+        break;
+      case From_PegOutAmount_Result.notSet:
+        throw Exception('unexpected message');
+    }
+  }
+
   void showPegInInformation() async {
     final prefs = await SharedPreferences.getInstance();
     final internalHidePegInInfo = prefs.getBool(hidePegInInfo) ?? false;
@@ -466,9 +483,9 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   void switchToPegs() {
     setSwapPeg(true);
     setSelectedLeftAsset(AccountAsset(
-        AccountType.regular, ref.read(walletProvider).bitcoinAssetId()));
+        AccountType.reg, ref.read(walletProvider).bitcoinAssetId()));
     setSelectedRightAsset(AccountAsset(
-        AccountType.regular, ref.read(walletProvider).liquidAssetId()));
+        AccountType.reg, ref.read(walletProvider).liquidAssetId()));
     swapRecvAddressExternal = '';
     clearAmounts();
     swapReset();
@@ -525,13 +542,19 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     }
 
     if (type == SwapType.pegOut) {
-      final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider);
+      final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider)
+          as SwapCurrentFeeRateData;
+      final subscribe = ref.read(swapPriceSubscribeStateNotifierProvider);
+
       final msg = To();
       msg.pegOutRequest = To_PegOutRequest();
       msg.pegOutRequest.sendAmount = Int64(sendAmount);
+      msg.pegOutRequest.recvAmount = Int64(recvAmount);
+      msg.pegOutRequest.isSendEntered =
+          subscribe == const SwapPriceSubscribeState.send();
       msg.pegOutRequest.recvAddr = swapRecvAddressExternal;
-      msg.pegOutRequest.blocks =
-          feeRate is SwapCurrentFeeRateData ? feeRate.feeRate.blocks : 2;
+      msg.pegOutRequest.blocks = feeRate.feeRate.blocks;
+      msg.pegOutRequest.feeRate = feeRate.feeRate.value;
       msg.pegOutRequest.account = getAccount(swapSendAsset!.account);
       wallet.sendMsg(msg);
       ref.read(swapStateProvider.notifier).state = SwapState.sent;
@@ -613,6 +636,9 @@ class BitcoinCurrentFeeRateStateNotifierProvider
 
   void setFeeRate(FeeRate feeRate) {
     state = SwapCurrentFeeRate.data(feeRate: feeRate);
+    ref
+        .read(priceStreamSubscribeChangeNotifierProvider)
+        .subscribeToPriceStream();
   }
 
   void setEmpty() {
@@ -789,6 +815,21 @@ class PriceStreamSubscribeProvider extends ChangeNotifier {
             sendAmount,
             recvAmount,
           );
+    } else if (type == SwapType.pegOut) {
+      final subscribe = ref.read(swapPriceSubscribeStateNotifierProvider);
+      final swapSendAsset = ref.read(swapProvider).swapSendAsset;
+      final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider);
+      final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
+          ? ref.read(swapSendAmountChangeNotifierProvider).satoshiAmount
+          : null;
+      final recvAmount = (subscribe == const SwapPriceSubscribeState.recv())
+          ? ref.read(swapRecvAmountChangeNotifierProvider).satoshiAmount
+          : null;
+      if (((sendAmount ?? 0) > 0 || (recvAmount ?? 0) > 0) &&
+          feeRate is SwapCurrentFeeRateData) {
+        ref.read(walletProvider).getPegOutAmount(sendAmount, recvAmount,
+            feeRate.feeRate.value, swapSendAsset!.account);
+      }
     }
   }
 }

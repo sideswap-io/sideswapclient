@@ -498,3 +498,6 @@ final _formatterThousandsSep = NumberFormat("#,##0.00");
 String formatThousandsSep(double value) {
   return _formatterThousandsSep.format(value).replaceAll(',', ' ');
 }
+
+final alphaNumFormatter =
+    FilteringTextInputFormatter.allow(RegExp("[a-zA-Z0-9]"));

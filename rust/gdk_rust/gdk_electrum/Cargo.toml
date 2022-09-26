@@ -5,34 +5,32 @@ authors = ["Riccardo Casatta <riccardo@casatta.it>"]
 edition = "2018"
 
 [features]
-android_log = ["android_logger"]
+testing = []
 
 [dependencies]
 log = "0.4.8"
 rand = "0.6.5"
-hex = "0.4.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_cbor = "0.11.1"
-sha2 = "0.8.0"
+thiserror = "1.0"
 # FIXME: unpin zeroize once we bump MSRV (needs rebuild of docker images)
 zeroize = "<1.4.0"
 aes-gcm-siv = "0.10.0"
 gdk-common = { path = "../gdk_common" }
+gdk-registry = { path = "../gdk_registry" }
 libc = "0.2"
-android_logger = { version = "0.8.6", optional = true }
 electrum-client = { version = "0.8.0", default-features = false, features = [ "proxy", "use-rustls" ] }
-ureq = { version = "1.5.5", features = ["json", "socks-proxy"] }
+ureq = { version = "2.4.0", features = ["json", "socks-proxy", "gzip", "brotli"] }
 block-modes = "0.8.0"
 aes = "0.7.0"
-tempdir = "0.3.7"
-secp256k1 = { version = "0.20.0", features = [ "recovery", "rand"] }
+tempfile = "3.2.0"
 lazy_static = "1.4.0"
-ron = "*"
-# We need to pin half (transitive dep from serde_cbor) to stay compatible with Rust 1.49.0
-half = "~1.7"
+secp256k1-sys = "=0.4.1" # 0.4.2 has compatibility issues with secp256k1-zkp-sys v0.4.0
 
-# remember to update secp256k1 deps if increasing this one, unfortunately we can't use the rexported one from bitcoin because we need recovery feature
 bitcoin = { version = "0.27", features = [ "use-serde", "rand" ] }
 #elements = { version = "0.18", features = ["serde-feature"] }
-elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "53d5729f8cdc3623f9f110edba86aeaa9059af5b", features = ["serde-feature"] }
+elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "0edddf730ff8fd441d3af28bc600b8bc8a8df5a9", features = ["serde-feature"] }
+
+[dev-dependencies]
+env_logger = "0.9.0"

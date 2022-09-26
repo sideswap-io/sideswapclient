@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/widgets/prompt_allow_tx_chaining.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
@@ -30,7 +31,7 @@ enum ReviewState {
   disabled,
 }
 
-const twoStepEnabled = false;
+const twoStepEnabled = true;
 
 String getTitle(ReviewScreen screen, ReviewState state) {
   switch (screen) {
@@ -50,7 +51,7 @@ String getTitle(ReviewScreen screen, ReviewState state) {
   }
 }
 
-String getButtonTitle(ReviewScreen screen, ReviewState state) {
+String getButtonTitle(ReviewScreen screen, ReviewState state, bool twoStep) {
   switch (screen) {
     case ReviewScreen.submitStart:
       return 'Create order'.tr();
@@ -58,6 +59,9 @@ String getButtonTitle(ReviewScreen screen, ReviewState state) {
       return 'Order successfully created'.tr();
     case ReviewScreen.quote:
       if (state == ReviewState.disabled) {
+        if (twoStep) {
+          return 'Awaiting swap broadcast'.tr();
+        }
         return 'Awaiting countersigning'.tr();
       }
       return 'Accept order'.tr();
@@ -96,7 +100,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
   bool autoSignOld = true;
   bool public = true;
   int ttl = kOneWeek;
-  bool twoStep = false;
+  bool twoStep = true;
 
   // Edit order values
   bool isTracking = false;
@@ -108,8 +112,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
   void initState() {
     super.initState();
     // TODO: Update default ttl depending on order type here
+    final wallet = ref.read(walletProvider);
     if (widget.screen == ReviewScreen.edit) {
-      final wallet = ref.read(walletProvider);
       final order = wallet.orderDetailsData;
       final asset = wallet.assets[order.assetId]!;
       final pricedInLiquid = isPricedInLiquid(asset);
@@ -122,6 +126,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
       priceTrackerValue =
           indexPriceToTrackerValue(wallet.orderDetailsData.indexPrice);
       controllerPrice.text = priceStr(order.priceAmount, pricedInLiquid);
+    } else {
+      twoStep = !wallet.orderDetailsData.isTracking;
     }
   }
 
@@ -132,6 +138,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
   }
 
   Future<void> handleSubmit() async {
+    final wallet = ref.read(walletProvider);
+
     if (widget.screen == ReviewScreen.edit) {
       if (autoSign &&
           !autoSignOld &&
@@ -139,7 +147,6 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
         return;
       }
 
-      final wallet = ref.read(walletProvider);
       final orderId = wallet.orderDetailsData.orderId;
       final price =
           isTracking ? null : (double.tryParse(controllerPrice.text) ?? 0.0);
@@ -149,6 +156,16 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
       wallet.modifyOrderPrice(orderId, price: price, indexPrice: indexPrice);
       handleClose();
       return;
+    }
+
+    bool allowChaining = false;
+    if (widget.screen == ReviewScreen.submitStart &&
+        twoStep &&
+        wallet.orderDetailsData.txChainingRequired) {
+      allowChaining = await allowTxChaining(context);
+      if (!allowChaining) {
+        return;
+      }
     }
 
     if (!await ref.read(walletProvider).isAuthenticated()) {
@@ -161,6 +178,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
           accept: true,
           private: !public,
           ttlSeconds: ttl,
+          allowTxChaining: allowChaining,
         );
 
     switch (widget.screen) {
@@ -217,6 +235,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
             .read(requestOrderProvider)
             .dollarConversion(wallet.liquidAssetId(), order.priceAmount)
         : '';
+    final orderType = order.twoStep ? 'Offline'.tr() : 'Online'.tr();
 
     return DPopupWithClose(
       width: 580,
@@ -329,6 +348,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                           _Field(name: 'Fee'.tr(), value: Text(feeValue)),
                         ]
                       : [],
+                  if (widget.screen == ReviewScreen.quote)
+                    _Field(name: 'Order Type'.tr(), value: Text(orderType)),
                   if (twoStepEnabled &&
                       (widget.screen == ReviewScreen.submitStart ||
                           widget.screen == ReviewScreen.edit))
@@ -414,7 +435,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                 height: 44,
                 onPressed: (state == ReviewState.idle) ? handleSubmit : null,
                 autofocus: widget.screen != ReviewScreen.edit,
-                child: Text(getButtonTitle(widget.screen, state).toUpperCase()),
+                child: Text(getButtonTitle(widget.screen, state, order.twoStep)
+                    .toUpperCase()),
               ),
             ),
           if (widget.screen == ReviewScreen.submitSucceed && !order.private)
@@ -839,10 +861,14 @@ class _SignTypeControls extends StatelessWidget {
                 width: 142,
                 height: 32,
                 child: DToggleButton(
-                  offText: 'Online'.tr(),
-                  onText: 'Offline'.tr(),
-                  value: twoStep,
-                  onChanged: onTwoStepChanged,
+                  offText: 'Offline'.tr(),
+                  onText: 'Online'.tr(),
+                  value: !twoStep,
+                  onChanged: onTwoStepChanged != null
+                      ? (value) {
+                          onTwoStepChanged!(!value);
+                        }
+                      : null,
                 ),
               ),
             ],

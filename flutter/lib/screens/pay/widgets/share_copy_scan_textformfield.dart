@@ -156,6 +156,7 @@ class ShareCopyScanTextFormFieldState
                       selectAll: true,
                     ),
                     onEditingComplete: widget.onEditingCompleted,
+                    inputFormatters: [alphaNumFormatter],
                     decoration: SideSwapInputDecoration(
                       hintStyle: widget.hintStyle,
                       hintText: widget.hintText,

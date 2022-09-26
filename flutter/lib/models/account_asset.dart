@@ -5,7 +5,7 @@ class AccountType {
   final int id;
   const AccountType(this.id);
 
-  static AccountType get regular {
+  static AccountType get reg {
     return const AccountType(0);
   }
 
@@ -18,7 +18,7 @@ class AccountType {
   }
 
   bool isRegular() {
-    return this == regular;
+    return this == reg;
   }
 
   bool isAmp() {

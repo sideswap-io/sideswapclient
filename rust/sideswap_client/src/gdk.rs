@@ -516,6 +516,20 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = " Decrypt json with server provided key protected by a PIN."]
+    #[doc = ""]
+    #[doc = " :param session: The session to use."]
+    #[doc = " :param details: The :ref:`decrypt-with-pin-details` to decrypt."]
+    #[doc = " :param call: Destination for the resulting GA_auth_handler to complete the action."]
+    #[doc = "|     The call handlers result is the decrypted json."]
+    #[doc = "|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
+    pub fn GA_decrypt_with_pin(
+        session: *mut GA_session,
+        details: *const GA_json,
+        call: *mut *mut GA_auth_handler,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
     #[doc = " Disable all PIN logins previously set."]
     #[doc = ""]
     #[doc = " After calling this method, the user will not be able to login with PIN"]

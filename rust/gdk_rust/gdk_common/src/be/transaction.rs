@@ -1,13 +1,13 @@
 use crate::be::*;
 use crate::error::Error;
-use crate::model::Balances;
+use crate::model::{Balances, TransactionType};
 use crate::scripts::{p2pkh_script, ScriptType};
 use crate::NetworkId;
 use crate::{bail, ensure};
 use bitcoin::blockdata::script::Instruction;
 use bitcoin::consensus::encode::deserialize as btc_des;
 use bitcoin::consensus::encode::serialize as btc_ser;
-use bitcoin::hashes::hex::ToHex;
+use bitcoin::hashes::hex::{FromHex, ToHex};
 use bitcoin::hashes::Hash;
 use bitcoin::secp256k1::{self, Message, Secp256k1, Signature};
 use bitcoin::util::bip143::SigHashCache;
@@ -56,8 +56,15 @@ impl BETransaction {
         }
     }
 
+    pub fn is_elements(&self) -> bool {
+        match self {
+            BETransaction::Bitcoin(_) => false,
+            BETransaction::Elements(_) => true,
+        }
+    }
+
     pub fn from_hex(hex: &str, id: NetworkId) -> Result<Self, crate::error::Error> {
-        Self::deserialize(&hex::decode(hex)?, id)
+        Self::deserialize(&Vec::<u8>::from_hex(hex)?, id)
     }
 
     pub fn serialize(&self) -> Vec<u8> {
@@ -102,6 +109,20 @@ impl BETransaction {
         }
     }
 
+    pub fn version(&self) -> u32 {
+        match self {
+            Self::Bitcoin(tx) => tx.version as u32,
+            Self::Elements(tx) => tx.version,
+        }
+    }
+
+    pub fn lock_time(&self) -> u32 {
+        match self {
+            Self::Bitcoin(tx) => tx.lock_time,
+            Self::Elements(tx) => tx.lock_time,
+        }
+    }
+
     pub fn previous_outputs(&self) -> Vec<BEOutPoint> {
         match self {
             Self::Bitcoin(tx) => {
@@ -135,6 +156,21 @@ impl BETransaction {
         }
     }
 
+    pub fn previous_sequence_and_outpoints(&self) -> Vec<(u32, BEOutPoint)> {
+        match self {
+            Self::Bitcoin(tx) => tx
+                .input
+                .iter()
+                .map(|i| (i.sequence, BEOutPoint::Bitcoin(i.previous_output)))
+                .collect(),
+            Self::Elements(tx) => tx
+                .input
+                .iter()
+                .map(|i| (i.sequence, BEOutPoint::Elements(i.previous_output)))
+                .collect(),
+        }
+    }
+
     pub fn input_len(&self) -> usize {
         match self {
             Self::Bitcoin(tx) => tx.input.len(),
@@ -146,6 +182,13 @@ impl BETransaction {
         match self {
             Self::Bitcoin(tx) => tx.output.len(),
             Self::Elements(tx) => tx.output.len(),
+        }
+    }
+
+    pub fn outpoint(&self, vout: u32) -> BEOutPoint {
+        match self {
+            Self::Bitcoin(tx) => BEOutPoint::new_bitcoin(tx.txid(), vout),
+            Self::Elements(tx) => BEOutPoint::new_elements(tx.txid(), vout),
         }
     }
 
@@ -238,6 +281,16 @@ impl BETransaction {
                     vout,
                 };
                 all_unblinded.get(&outpoint).map(|unblinded| unblinded.value_bf.to_hex())
+            }
+        }
+    }
+
+    pub fn output_is_confidential(&self, vout: u32) -> bool {
+        match self {
+            Self::Bitcoin(_) => false,
+            Self::Elements(tx) => {
+                let output = &tx.output[vout as usize];
+                output.asset.is_confidential() && output.value.is_confidential()
             }
         }
     }
@@ -771,6 +824,24 @@ impl BETransaction {
         }
     }
 
+    pub fn type_(&self, balances: &Balances, is_redeposit: bool) -> TransactionType {
+        // We define an incoming txs if there are more assets received by the wallet than spent
+        // when they are equal it's an outgoing tx because the special asset liquid BTC
+        // is negative due to the fee being paid
+        // TODO how do we label issuance tx?
+        let negatives = balances.iter().filter(|(_, v)| **v < 0).count();
+        let positives = balances.iter().filter(|(_, v)| **v > 0).count();
+        if balances.is_empty() && self.is_elements() {
+            TransactionType::NotUnblindable
+        } else if is_redeposit {
+            TransactionType::Redeposit
+        } else if positives > negatives {
+            TransactionType::Incoming
+        } else {
+            TransactionType::Outgoing
+        }
+    }
+
     /// Return a copy of the transaction with the outputs matched by `f` only
     pub fn filter_outputs<F>(
         &self,
@@ -839,6 +910,21 @@ impl BETransaction {
         secp.verify(&message, &Signature::from_der(&sig)?, &public_key.key)?;
         Ok(())
     }
+
+    pub fn creates_script_pubkey(&self, script_pubkey: &BEScript) -> bool {
+        (0..self.output_len() as u32).any(|vout| &self.output_script(vout) == script_pubkey)
+    }
+
+    pub fn spends_script_pubkey(&self, script_pubkey: &BEScript, all_txs: &BETransactions) -> bool {
+        for (_, outpoint) in self.previous_sequence_and_outpoints() {
+            if let Some(s) = all_txs.get_previous_output_script_pubkey(&outpoint) {
+                if &s == script_pubkey {
+                    return true;
+                }
+            }
+        }
+        false
+    }
 }
 
 fn mock_pubkey() -> secp256k1::PublicKey {
@@ -875,6 +961,12 @@ pub struct BETransactionEntry {
     pub weight: usize,
 }
 
+impl BETransactionEntry {
+    pub fn fee_rate(&self, fee: u64) -> u64 {
+        (fee as f64 / self.weight as f64 * 4000.0) as u64
+    }
+}
+
 impl Deref for BETransactions {
     type Target = HashMap<BETxid, BETransactionEntry>;
     fn deref(&self) -> &<Self as Deref>::Target {
@@ -890,6 +982,18 @@ impl BETransactions {
     pub fn get_previous_output_script_pubkey(&self, outpoint: &BEOutPoint) -> Option<BEScript> {
         self.0.get(&outpoint.txid()).map(|txe| txe.tx.output_script(outpoint.vout()))
     }
+
+    pub fn get_previous_output_address(
+        &self,
+        outpoint: &BEOutPoint,
+        network: NetworkId,
+    ) -> Option<String> {
+        match self.0.get(&outpoint.txid()) {
+            None => None,
+            Some(txe) => txe.tx.output_address(outpoint.vout(), network),
+        }
+    }
+
     pub fn get_previous_output_value(
         &self,
         outpoint: &BEOutPoint,
@@ -932,6 +1036,20 @@ impl BETransactions {
             None => None,
             Some(txe) => txe.tx.output_amountblinder_hex(outpoint.vout, &all_unblinded),
         }
+    }
+
+    /// Get the number of transactions where at least one input or output has a certain script
+    /// pubkey.
+    pub fn tx_count(&self, script_pubkey: &BEScript) -> u32 {
+        let mut tot = 0;
+        for txe in self.values() {
+            if txe.tx.creates_script_pubkey(&script_pubkey)
+                || txe.tx.spends_script_pubkey(&script_pubkey, &self)
+            {
+                tot += 1;
+            }
+        }
+        tot
     }
 }
 

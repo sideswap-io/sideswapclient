@@ -89,11 +89,13 @@ class OrderPriceField extends ConsumerWidget {
                     }
 
                     return GestureDetector(
-                      onTap: marketType == MarketType.stablecoin
-                          ? null
-                          : () {
-                              setValue(controller, lastPrice);
-                            },
+                      onTap: () {
+                        setValue(
+                            controller,
+                            marketType == MarketType.stablecoin
+                                ? indexPrice
+                                : lastPrice);
+                      },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [

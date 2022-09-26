@@ -12,8 +12,7 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 sideswap_api = { version = "*", path = "../sideswap_api" }
 sideswap_common = { version = "*", path = "../sideswap_common" }
 sideswap_jade = { version = "*", path = "../sideswap_jade" }
-elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "53d5729f8cdc3623f9f110edba86aeaa9059af5b", features = ["serde-feature"] }
-elements_pset = { package = "elements", git = "https://github.com/sanket1729/rust-elements", rev = "dc350a0b8664cdd5b051443810a6a1f99a6173da" }
+elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "0edddf730ff8fd441d3af28bc600b8bc8a8df5a9", features = ["serde-feature"] }
 bitcoin = { version = "0.27.1", features = [ "use-serde" ] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -23,23 +22,27 @@ anyhow = "*"
 flexi_logger = "0.22.0"
 derive_more = "*"
 base64 = "*"
-gdk-rust = { path = "../gdk_rust" }
 gdk-electrum = { path = "../gdk_rust/gdk_electrum" }
 gdk-common = { path = "../gdk_rust/gdk_common" }
+gdk-registry = { path = "../gdk_rust/gdk_registry" }
+gdk-rust = { path = "../gdk_rust/gdk_rust" }
 libc = "*"
-prost = "0.6.1"
+prost = "0.10.4"
 bytes = "*"
 allo-isolate = "*"
 chrono = "*"
 hex = "*"
 rand = "0.6.5"
 bip39 = "1.0.1"
-ureq = "1.5"
-time = {version= "0.3.5", features = ["local-offset", "formatting", "macros", "parsing"]}
+ureq = { version = "2.4.0", features = ["json"] }
+time = {version= "=0.3.5", features = ["local-offset", "formatting", "macros", "parsing"]}
 crossbeam-channel = "0.5.1"
 tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
-secp256k1 = "*"
+secp256k1 = { version = "0.20.3", features = ["rand"] }
+block-modes = "0.8.0"
+once_cell = "*"
 
 [build-dependencies]
-prost-build = "0.6.1"
+prost-build = "0.10.4"
 vergen = { version = "5", default-features = false, features = ["build", "rustc", "git"] }
+git2 = { version = "0.13.25", default-features = false, features = [] } # newer versions require rust 1.60 - https://github.com/rust-lang/git2-rs/issues/838

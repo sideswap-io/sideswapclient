@@ -9,10 +9,13 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/common/widgets/prompt_allow_tx_chaining.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/markets/widgets/sign_type.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/autosign.dart';
 import 'package:sideswap/screens/markets/widgets/order_type.dart';
@@ -35,6 +38,7 @@ class CreateOrderView extends ConsumerStatefulWidget {
 class CreateOrderViewState extends ConsumerState<CreateOrderView> {
   bool autoSignValue = true;
   bool orderTypePublicValue = true;
+  bool twoStepSwapValue = true;
 
   late OrderDetailsData orderDetailsData;
   bool editMode = false;
@@ -61,6 +65,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
       editMode = widget.requestOrder != null;
       final expires = widget.requestOrder!.getExpireDescription();
       expiresTitle = 'TTL: $expires';
+      twoStepSwapValue = widget.requestOrder!.twoStep;
 
       // Close current view when request expire
       _expireTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -82,6 +87,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
       autoSignValue = orderDetailsData.autoSign;
       orderTypePublicValue = !orderDetailsData.private;
       ttlSeconds = kOneWeek;
+      twoStepSwapValue = !orderDetailsData.isTracking;
 
       final isToken =
           ref.read(requestOrderProvider).isAssetToken(orderDetailsData.assetId);
@@ -115,6 +121,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
             autosign: autoSignValue,
             private: !orderTypePublicValue,
             ttlSeconds: ttlSeconds,
+            twoStep: twoStepSwapValue,
           );
       ref.read(walletProvider).setRegistered();
     }
@@ -184,6 +191,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
 
                     return CreateOrderViewBody(
                       autoSignValue: autoSignValue,
+                      twoStepSignValue: twoStepSwapValue,
                       editMode: editMode,
                       orderDetailsData: orderDetailsData,
                       orderTypeValue: orderTypePublicValue,
@@ -193,19 +201,33 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
                       onPressed: buttonDisabled
                           ? null
                           : () async {
-                              if (await ref
-                                  .read(walletProvider)
-                                  .isAuthenticated()) {
-                                ref.read(walletProvider).setSubmitDecision(
-                                      accept: true,
-                                      autosign: autoSignValue,
-                                      private: !orderTypePublicValue,
-                                      ttlSeconds: ttlSeconds,
-                                    );
-                                setState(() {
-                                  buttonDisabled = true;
-                                });
+                              final wallet = ref.read(walletProvider);
+
+                              bool allowChaining = false;
+                              if (twoStepSwapValue &&
+                                  wallet.orderDetailsData.txChainingRequired) {
+                                allowChaining = await allowTxChaining(context);
+                                if (!allowChaining) {
+                                  return;
+                                }
                               }
+
+                              if (!await wallet.isAuthenticated()) {
+                                return;
+                              }
+
+                              ref.read(walletProvider).setSubmitDecision(
+                                    accept: true,
+                                    autosign: autoSignValue,
+                                    private: !orderTypePublicValue,
+                                    ttlSeconds: ttlSeconds,
+                                    twoStep: twoStepSwapValue,
+                                    allowTxChaining: allowChaining,
+                                  );
+
+                              setState(() {
+                                buttonDisabled = true;
+                              });
                             },
                       onAutoSignToggle: editMode
                           ? (value) {
@@ -225,6 +247,13 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
                           : (value) {
                               setState(() {
                                 orderTypePublicValue = value;
+                              });
+                            },
+                      onTwoStepSignToggle: editMode
+                          ? null
+                          : (value) {
+                              setState(() {
+                                twoStepSwapValue = value;
                               });
                             },
                       onModifyPrice: () async {
@@ -273,9 +302,11 @@ class CreateOrderViewBody extends ConsumerWidget {
     required this.editMode,
     required this.orderTypeValue,
     required this.orderDetailsData,
+    required this.twoStepSignValue,
     required this.onPressed,
     this.onAutoSignToggle,
     this.onOrderTypeToggle,
+    this.onTwoStepSignToggle,
     this.requestOrder,
     this.onModifyPrice,
     this.onTtlChanged,
@@ -286,9 +317,11 @@ class CreateOrderViewBody extends ConsumerWidget {
   final bool autoSignValue;
   final bool editMode;
   final bool orderTypeValue;
+  final bool twoStepSignValue;
   final OrderDetailsData orderDetailsData;
   final void Function(bool)? onAutoSignToggle;
   final void Function(bool)? onOrderTypeToggle;
+  final void Function(bool)? onTwoStepSignToggle;
   final RequestOrder? requestOrder;
   final void Function()? onModifyPrice;
   final void Function(int?)? onTtlChanged;
@@ -306,11 +339,20 @@ class CreateOrderViewBody extends ConsumerWidget {
             OrderTable(
               orderDetailsData: orderDetailsData,
             ),
+            const SizedBox(height: 13),
+            if (twoStepEnabled)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: SignType(
+                  twoStep: twoStepSignValue,
+                  onToggle: onTwoStepSignToggle,
+                ),
+              ),
             Padding(
-              padding: const EdgeInsets.only(top: 21),
+              padding: const EdgeInsets.only(top: 8),
               child: AutoSign(
-                value: autoSignValue,
-                onToggle: onAutoSignToggle,
+                value: autoSignValue || twoStepSignValue,
+                onToggle: twoStepSignValue ? null : onAutoSignToggle,
               ),
             ),
             Padding(

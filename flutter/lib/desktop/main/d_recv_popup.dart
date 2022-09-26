@@ -29,9 +29,7 @@ class DReceivePopup extends ConsumerWidget {
             height: 36,
             child: TopRecvButtons(
               onRegularPressed: () {
-                ref
-                    .read(walletProvider)
-                    .toggleRecvAddrType(AccountType.regular);
+                ref.read(walletProvider).toggleRecvAddrType(AccountType.reg);
               },
               onAmpPressed: () {
                 ref.read(walletProvider).toggleRecvAddrType(AccountType.amp);

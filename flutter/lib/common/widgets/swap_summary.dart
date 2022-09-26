@@ -39,7 +39,7 @@ class SwapSummary extends ConsumerWidget {
   final TxCircleImageType txCircleImageType;
   final String timestampStr;
   final String status;
-  final List<TxBalance> balances;
+  final List<Balance> balances;
   final int networkFee;
   final Confs confs;
   final Tx tx;

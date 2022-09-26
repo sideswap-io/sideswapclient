@@ -128,7 +128,7 @@ class AssetDetailsHeader extends ConsumerWidget {
               final asset = wallet.assets[account.asset]!;
               final instantSwapVisible = (asset.swapMarket ||
                       asset.assetId == wallet.liquidAssetId()) &&
-                  account.account == AccountType.regular;
+                  account.account == AccountType.reg;
               final isAmpAsset = wallet.ampAssets.contains(account.asset);
               final isAmpAccount = account.account == AccountType.amp;
               final balance = ref.read(balancesProvider).balances[account] ?? 0;
@@ -161,14 +161,14 @@ class AssetDetailsHeader extends ConsumerWidget {
                         } else {
                           if (balance > 0 || !account.account.isAmp()) {
                             ref.read(requestOrderProvider).receiveAssetId =
-                                AccountAsset(AccountType.regular,
-                                    wallet.liquidAssetId());
+                                AccountAsset(
+                                    AccountType.reg, wallet.liquidAssetId());
                             ref.read(requestOrderProvider).deliverAssetId =
                                 account;
                           } else {
                             ref.read(requestOrderProvider).deliverAssetId =
-                                AccountAsset(AccountType.regular,
-                                    wallet.liquidAssetId());
+                                AccountAsset(
+                                    AccountType.reg, wallet.liquidAssetId());
                             ref.read(requestOrderProvider).receiveAssetId =
                                 account;
                           }

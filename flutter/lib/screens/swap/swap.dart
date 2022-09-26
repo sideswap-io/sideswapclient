@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -122,7 +124,9 @@ class SwapMainState extends ConsumerState<SwapMain> {
         }
       },
       child: LayoutBuilder(
-        builder: (context, constraints) {
+        builder: (context, constraints2) {
+          final constraints = constraints2.copyWith(
+              maxHeight: max(420, constraints2.maxHeight));
           final middle = (constraints.maxHeight - 60) / 2;
           return SingleChildScrollView(
             child: ConstrainedBox(
@@ -307,7 +311,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
             .watch(walletProvider)
             .getPrecisionForAssetId(assetId: swapRecvAsset.asset);
         final swapRecvAccount =
-            AccountAsset(AccountType.regular, swapRecvAsset.asset);
+            AccountAsset(AccountType.reg, swapRecvAsset.asset);
         final balance = ref
             .watch(balancesProvider.select((p) => p.balances[swapRecvAccount]));
         final balanceStr = amountStr(balance ?? 0, precision: precision);
@@ -346,7 +350,7 @@ class SwapMainState extends ConsumerState<SwapMain> {
           controller: swapRecvAmountController!,
           addressController: swapAddressRecvController!,
           isMaxVisible: false,
-          readOnly: swapType != SwapType.atomic || swapState != SwapState.idle,
+          readOnly: swapType == SwapType.pegIn || swapState != SwapState.idle,
           hintText: '0.0',
           showHintText: swapType == SwapType.atomic,
           dropdownReadOnly:

@@ -1,6 +1,9 @@
-pub fn get_network(env: sideswap_common::env::Env) -> gdk_common::Network {
+pub fn get_network(
+    env: sideswap_common::env::Env,
+    state_dir: String,
+) -> gdk_common::NetworkParameters {
     let data = env.data();
-    gdk_common::Network {
+    gdk_common::NetworkParameters {
         name: data.name.to_owned(),
         network: data.electum_network.to_owned(),
         development: data.development,
@@ -10,6 +13,7 @@ pub fn get_network(env: sideswap_common::env::Env) -> gdk_common::Network {
         address_explorer_url: data.address_explorer_url.to_owned(),
         electrum_tls: Some(data.electrum_tls),
         electrum_url: Some(data.electrum_url.to_owned()),
+        electrum_onion_url: None,
         validate_domain: Some(data.mainnet),
         policy_asset: Some(data.policy_asset.to_owned()),
         sync_interval: None,
@@ -19,8 +23,14 @@ pub fn get_network(env: sideswap_common::env::Env) -> gdk_common::Network {
         spv_enabled: Some(false),
         asset_registry_url: Some(data.asset_registry_url.to_owned()),
         asset_registry_onion_url: None,
+        pin_server_url: crate::pin::PIN_SERVER_URL.to_owned(),
+        pin_server_onion_url: String::new(),
+        pin_server_public_key: crate::pin::PIN_SERVER_PUBLIC_KEY.to_owned(),
         spv_multi: Some(false),
         spv_servers: None,
-        taproot_enabled_at: Some(0xffffffff),
+        proxy: None,
+        use_tor: None,
+        max_reorg_blocks: None,
+        state_dir,
     }
 }

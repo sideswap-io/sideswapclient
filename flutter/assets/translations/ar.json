@@ -400,5 +400,16 @@
   "Your photo has been successfully added": "أضيفت صورتك بنجاح",
   "Your recovery 12 words": "عبارة استرداد محفظتك",
   "Your SideSwap wallet will auto-generate a L-BTC address with which to receive the Peg-In amount": "سينشئ SideSwap عنوان L-BTC تلقائيًا لتلقي مبلغ الإقفال",
-  "Your wallet could not be re-created. Please ensure the words exactly matches your recovery seed.": "لا يمكن إعادة إنشاء محفظتك. يرجى التأكد من تطابق الكلمات تمامًا مع بذرة الاسترداد."
+  "Your wallet could not be re-created. Please ensure the words exactly matches your recovery seed.": "لا يمكن إعادة إنشاء محفظتك. يرجى التأكد من تطابق الكلمات تمامًا مع بذرة الاسترداد.",
+  "Order book": "Order book",
+  "SELL": "SELL",
+  "Awaiting swap broadcast": "Awaiting swap broadcast",
+  "Offline": "Offline",
+  "Online": "Online",
+  "Sign type": "Sign type",
+  "Time-to-live": "Time-to-live",
+  "Offline swaps may not have a return balance. Do you wish to auto-create the correct input amount when submitting your order?": "Offline swaps may not have a return balance. Do you wish to auto-create the correct input amount when submitting your order?",
+  "Yes, only once": "Yes, only once",
+  "Yes, do not ask me again": "Yes, do not ask me again",
+  "Insufficient LBTC in AMP wallet": "Insufficient LBTC in AMP wallet"
 }

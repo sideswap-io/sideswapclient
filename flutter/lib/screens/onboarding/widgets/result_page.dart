@@ -44,7 +44,7 @@ class ResultPage extends StatelessWidget {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(top: topPadding ?? 100),
+            padding: EdgeInsets.only(top: topPadding ?? 40),
             child: Container(
               width: 166,
               height: 166,

@@ -19,6 +19,12 @@ pub struct SettingsPersistent {
     pub unregister_phone_requests: Option<BTreeSet<sideswap_api::PhoneKey>>,
 }
 
+#[derive(Serialize, Deserialize, Default, Clone)]
+pub struct AmpPrevAddrs {
+    pub last_pointer: u32,
+    pub list: Vec<String>,
+}
+
 // All will be cleared after new wallet import!
 #[derive(Serialize, Deserialize, Default)]
 pub struct Settings {
@@ -26,10 +32,12 @@ pub struct Settings {
 
     pub pegs: Option<Vec<Peg>>,
     pub device_key: Option<String>,
-    pub last_external: Option<u32>,
-    pub last_internal: Option<u32>,
-    pub last_external_amp: Option<u32>,
+    pub last_external_new: Option<u32>,
+    pub last_internal_new: Option<u32>,
+    pub last_external_amp_new: Option<u32>,
     pub session_id: Option<SessionId>,
+    pub amp_prev_addrs: Option<AmpPrevAddrs>,
+    pub master_pub_key: Option<bitcoin::util::bip32::ExtendedPubKey>,
 }
 
 impl Settings {

@@ -129,6 +129,7 @@ async fn main() {
             }
             tungstenite::Message::Ping(_) => {}
             tungstenite::Message::Pong(_) => {}
+            tungstenite::Message::Frame(_) => {}
             tungstenite::Message::Close(_) => {
                 debug!("close message received");
                 break;

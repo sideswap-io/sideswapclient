@@ -84,7 +84,7 @@ class AssetSelectItem extends ConsumerWidget {
                         final balances = ref.watch(balancesProvider);
                         final selected = !wallet.disabledAssetAccount(account);
                         final forceEnabled =
-                            (account.account == AccountType.regular &&
+                            (account.account == AccountType.reg &&
                                     account.asset == wallet.liquidAssetId()) ||
                                 (balances.balances[account] ?? 0) > 0;
 

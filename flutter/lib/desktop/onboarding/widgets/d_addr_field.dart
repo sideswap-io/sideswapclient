@@ -12,12 +12,14 @@ class DAddrTextField extends ConsumerStatefulWidget {
     super.key,
     required this.controller,
     required this.onChanged,
+    this.focusNode,
     this.autofocus = false,
   });
 
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final bool autofocus;
+  final FocusNode? focusNode;
 
   @override
   DAddrTextFieldState createState() => DAddrTextFieldState();
@@ -68,6 +70,7 @@ class DAddrTextFieldState extends ConsumerState<DAddrTextField> {
     }
 
     return TextField(
+      focusNode: widget.focusNode,
       controller: widget.controller,
       decoration: DSideSwapInputDecoration(
         hintText: 'Address'.tr(),
@@ -83,6 +86,9 @@ class DAddrTextFieldState extends ConsumerState<DAddrTextField> {
       },
       autofocus: widget.autofocus,
       style: const TextStyle(color: Colors.black),
+      inputFormatters: [
+        alphaNumFormatter,
+      ],
     );
   }
 }

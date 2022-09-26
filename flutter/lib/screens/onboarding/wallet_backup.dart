@@ -25,81 +25,83 @@ class WalletBackup extends HookConsumerWidget {
 
     return SideSwapPopup(
       enableInsideHorizontalPadding: false,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 38, left: 16, right: 56),
-            child: SizedBox(
-              width: 303,
-              height: 56,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 38, left: 16, right: 56),
+              child: SizedBox(
+                width: 303,
+                height: 56,
+                child: Text(
+                  'Save your 12 word recovery phrase'.tr(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 24, left: 16, right: 16),
               child: Text(
-                'Save your 12 word recovery phrase'.tr(),
+                'Please ensure you write down and save your 12 word recovery phrase. Without your recovery phrase, there is no way to restore access to your wallet and all balances will be irretrievably lost without recourse.'
+                    .tr(),
                 style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
                   color: Colors.white,
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 24, left: 16, right: 16),
-            child: Text(
-              'Please ensure you write down and save your 12 word recovery phrase. Without your recovery phrase, there is no way to restore access to your wallet and all balances will be irretrievably lost without recourse.'
-                  .tr(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.white,
+            Padding(
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+              child: Text(
+                'Remember to always keep a copy safely stored offline.'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
-            child: Text(
-              'Remember to always keep a copy safely stored offline.'.tr(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.white,
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final words = <ValueNotifier<String>>[];
+                  ref.watch(walletProvider).getMnemonicWords().forEach((e) {
+                    words.add(ValueNotifier<String>(e));
+                  });
+                  return MnemonicTable(
+                    onCheckField: (_) {
+                      return true;
+                    },
+                    onCheckError: (_) {
+                      return false;
+                    },
+                    currentSelectedItem: -1,
+                    words: words,
+                  );
+                },
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 32),
-            child: Consumer(
-              builder: (context, ref, child) {
-                final words = <ValueNotifier<String>>[];
-                ref.watch(walletProvider).getMnemonicWords().forEach((e) {
-                  words.add(ValueNotifier<String>(e));
-                });
-                return MnemonicTable(
-                  onCheckField: (_) {
-                    return true;
-                  },
-                  onCheckError: (_) {
-                    return false;
-                  },
-                  currentSelectedItem: -1,
-                  words: words,
-                );
-              },
+            // const Spacer(),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40, left: 16, right: 16),
+              child: CustomBigButton(
+                width: double.maxFinite,
+                height: 54,
+                text: 'CONFIRM YOUR WORDS'.tr(),
+                backgroundColor: const Color(0xFF00C5FF),
+                onPressed: () {
+                  ref.read(walletProvider).backupNewWalletCheck();
+                },
+              ),
             ),
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 40, left: 16, right: 16),
-            child: CustomBigButton(
-              width: double.maxFinite,
-              height: 54,
-              text: 'CONFIRM YOUR WORDS'.tr(),
-              backgroundColor: const Color(0xFF00C5FF),
-              onPressed: () {
-                ref.read(walletProvider).backupNewWalletCheck();
-              },
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

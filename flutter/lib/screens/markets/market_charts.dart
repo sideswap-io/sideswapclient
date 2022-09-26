@@ -270,23 +270,20 @@ class _AssetDetails extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Table(
-                  children: [
-                    assetDetailsUrl(
-                      'Issuer'.tr(),
-                      'https://${asset.domain}',
-                    ),
-                    assetDetailsUrl(
-                      'Asset'.tr(),
-                      assetUrl,
-                    ),
-                    if (asset.hasDomainAgent())
-                      assetDetailsUrl(
-                        'Registration Agent'.tr(),
-                        'https://${asset.domainAgent}',
-                      ),
-                  ],
+                if (asset.hasDomain())
+                  assetDetailsUrl(
+                    'Issuer'.tr(),
+                    'https://${asset.domain}',
+                  ),
+                assetDetailsUrl(
+                  'Asset'.tr(),
+                  assetUrl,
                 ),
+                if (asset.hasDomainAgent())
+                  assetDetailsUrl(
+                    'Registration Agent'.tr(),
+                    'https://${asset.domainAgent}',
+                  ),
               ],
             ),
         ],
@@ -294,21 +291,20 @@ class _AssetDetails extends ConsumerWidget {
     );
   }
 
-  TableRow assetDetailsUrl(String name, String value) {
-    return TableRow(
+  Widget assetDetailsUrl(String name, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12, right: 16),
-          child: Text(
-            '$name:',
-            style: const TextStyle(
-              color: Color(0xFF87C1E1),
-            ),
+        Text(
+          '$name:',
+          style: const TextStyle(
+            color: Color(0xFF87C1E1),
           ),
         ),
         DUrlLink(
           text: value,
         ),
+        const SizedBox(height: 8),
       ],
     );
   }

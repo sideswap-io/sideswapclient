@@ -170,7 +170,7 @@ class SettingsLicensesState extends State<SettingsLicenses> {
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          'VERSION'.tr(args: [appVersionFull]),
+                          'VERSION'.tr(args: [appVersion]),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.normal,

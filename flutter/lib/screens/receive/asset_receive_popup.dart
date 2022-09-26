@@ -16,30 +16,36 @@ class AssetReceivePopup extends StatelessWidget {
       final isAmp = ref.watch(walletProvider).recvAddressAccount.isAmp();
       return SideSwapPopup(
         enableInsideTopPadding: false,
-        child: Column(
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Receive',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.normal,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    'Receive',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
                 ),
-              ),
+                TopRecvButtons(
+                  onRegularPressed: () {
+                    ref
+                        .read(walletProvider)
+                        .toggleRecvAddrType(AccountType.reg);
+                  },
+                  onAmpPressed: () {
+                    ref
+                        .read(walletProvider)
+                        .toggleRecvAddrType(AccountType.amp);
+                  },
+                ),
+                AssetReceiveWidget(key: Key(isAmp.toString()), isAmp: isAmp),
+              ],
             ),
-            TopRecvButtons(
-              onRegularPressed: () {
-                ref
-                    .read(walletProvider)
-                    .toggleRecvAddrType(AccountType.regular);
-              },
-              onAmpPressed: () {
-                ref.read(walletProvider).toggleRecvAddrType(AccountType.amp);
-              },
-            ),
-            AssetReceiveWidget(key: Key(isAmp.toString()), isAmp: isAmp),
-          ],
+          ),
         ),
       );
     });

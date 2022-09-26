@@ -7,10 +7,10 @@ edition = "2018"
 sideswap_common = { version = "*", path = "../sideswap_common" }
 sideswap_client = { version = "*", path = "../sideswap_client" }
 clap = "*"
-tokio-tungstenite = { version = "*", features = [ "stream" ] }
+tokio-tungstenite = { version = "0.17.2", features = [ "stream" ] }
 tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time", "rt-multi-thread"] }
-tungstenite = { version = "0.13.0", default-features = false, features = [] }
+tungstenite = { version = "0.17.2", default-features = false, features = [] }
 log = "*"
 futures-util = "*"
 serde_json = "1.0"
-prost = "0.6.1"
+prost = "0.10.4"

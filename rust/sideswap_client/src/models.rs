@@ -15,5 +15,6 @@ pub struct Transaction {
     pub memo: String,
     pub balances: Vec<Balance>,
     pub created_at: i64,
-    pub pending_confs: Option<u8>,
+    pub block_height: u32,
+    pub balances_all: Vec<Balance>,
 }

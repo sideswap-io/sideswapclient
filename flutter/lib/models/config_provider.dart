@@ -25,7 +25,6 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const useBiometricProtectionField = 'biometric_protection';
   static const licenseAcceptedField = 'license_accepted';
   static const envField = 'env';
-  static const txItemList = 'txItemList';
   static const phoneKeyField = 'phoneKey';
   static const phoneNumberField = 'phoneNumber';
   static const usePinProtectionField = 'pinProtectionField';

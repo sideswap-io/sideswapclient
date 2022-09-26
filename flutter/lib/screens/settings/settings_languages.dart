@@ -34,19 +34,10 @@ class Languages extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Text(
-                'Language'.tr(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 18),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 118),
+                padding: const EdgeInsets.symmetric(horizontal: 90),
                 child: ListView.builder(
                   itemCount: languages.length,
                   itemBuilder: (context, index) {
@@ -111,7 +102,7 @@ class Languages extends ConsumerWidget {
             Container(
               color: const Color(0xFF135579),
               padding:
-                  const EdgeInsets.symmetric(vertical: 40, horizontal: 118),
+                  const EdgeInsets.symmetric(vertical: 20, horizontal: 118),
               child: DCustomTextBigButton(
                 onPressed: close(context),
                 child: Text(

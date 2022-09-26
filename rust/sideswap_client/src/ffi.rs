@@ -115,7 +115,12 @@ pub extern "C" fn sideswap_client_start(
         std::process::abort();
     }));
 
-    info!("started: {}", env!("VERGEN_GIT_SHA"));
+    info!(
+        "started: {} ({}/{})",
+        env!("VERGEN_GIT_SHA"),
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+    );
 
     let start_params = StartParams { work_dir, version };
 

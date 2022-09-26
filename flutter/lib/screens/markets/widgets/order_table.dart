@@ -45,6 +45,8 @@ class OrderTable extends ConsumerWidget {
             bitcoinAsset.assetId, double.tryParse(priceAmount) ?? 0)
         : null;
     final isAmp = wallet.ampAssets.contains(asset.assetId);
+    final showOrderType =
+        orderDetailsData.orderType == OrderDetailsDataType.quote;
 
     return Column(
       children: [
@@ -87,7 +89,7 @@ class OrderTable extends ConsumerWidget {
         if (useTokenView) ...[
           OrderTableRow.assetAmount(
               description: 'Total price'.tr(),
-              displayDivider: false,
+              displayDivider: showOrderType,
               orderTableRowType: orderTableRowType,
               enabled: enabled,
               amount: bitcoinAmount,
@@ -103,13 +105,20 @@ class OrderTable extends ConsumerWidget {
           ),
           OrderTableRow.assetAmount(
             description: 'Receive'.tr(),
-            displayDivider: false,
+            displayDivider: showOrderType,
             orderTableRowType: orderTableRowType,
             enabled: enabled,
             amount: receiveAmount,
             assetId: recvAsset.assetId,
           ),
         ],
+        if (showOrderType)
+          OrderTableRow(
+            description: 'Order Type'.tr(),
+            value: orderDetailsData.twoStep ? 'Offline'.tr() : 'Online'.tr(),
+            orderTableRowType: orderTableRowType,
+            displayDivider: false,
+          ),
       ],
     );
   }

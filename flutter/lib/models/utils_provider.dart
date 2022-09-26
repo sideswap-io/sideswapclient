@@ -428,6 +428,55 @@ class _InsufficientFunds extends ConsumerWidget {
   }
 }
 
+class _AmpId extends StatelessWidget {
+  const _AmpId({
+    required this.ampId,
+  });
+
+  final String ampId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 10),
+        const Text(
+          'AMP ID:',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            ampId,
+            style: const TextStyle(
+              fontSize: 14,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        IconButton(
+          padding: EdgeInsets.zero,
+          onPressed: () async {
+            await copyToClipboard(
+              context,
+              ampId,
+            );
+          },
+          icon: SvgPicture.asset(
+            'assets/copy2.svg',
+            width: 20,
+            height: 20,
+          ),
+        )
+      ],
+    );
+  }
+}
+
 class _UnregisteredGaid extends ConsumerWidget {
   const _UnregisteredGaid({
     required this.msg,
@@ -493,13 +542,7 @@ class _UnregisteredGaid extends ConsumerWidget {
                         text: 'https://${msg.domainAgent}',
                       ),
                       const SizedBox(height: 20),
-                      if (ampId != null)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AmpId(ampId: ampId),
-                          ],
-                        ),
+                      if (ampId != null) _AmpId(ampId: ampId),
                     ],
                   ),
                 ),

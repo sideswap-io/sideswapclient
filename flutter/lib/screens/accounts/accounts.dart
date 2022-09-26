@@ -120,7 +120,7 @@ class Accounts extends ConsumerWidget {
                           .toSet();
                       // Always show regular L-BTC account
                       alwaysEnabledAccounts.add(AccountAsset(
-                          AccountType.regular, wallet.liquidAssetId()));
+                          AccountType.reg, wallet.liquidAssetId()));
                       final availableAssets = wallet
                           .getAllAccounts()
                           .where((item) =>

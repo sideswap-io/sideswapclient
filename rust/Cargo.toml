@@ -11,10 +11,8 @@ members = [
     "sideswap_dealer_ws",
     "sideswap_dealer_example",
     "sideswap_dealer_bitfinex",
-    "gdk_rust",
+    "gdk_rust/gdk_common",
+    "gdk_rust/gdk_electrum",
+    "gdk_rust/gdk_rust",
+    "gdk_rust/gdk_registry",
 ]
-
-# from GDK:
-# required for https://github.com/rust-bitcoin/rust-bitcoin/pull/511 (merged but unreleased)
-[patch.crates-io]
-bitcoin = { git = "https://github.com/rust-bitcoin/rust-bitcoin", rev = "5bd61967b231939626dd847fd82cc5da33052dc1", features = [ "use-serde" ] }

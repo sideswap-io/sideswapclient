@@ -57,6 +57,7 @@ class OrderDetailsData {
     this.isTracking = false,
     this.private = false,
     this.twoStep = false,
+    this.txChainingRequired = false,
     this.autoSign = false,
     this.own = false,
     this.indexPrice = 0,
@@ -78,6 +79,7 @@ class OrderDetailsData {
   final bool isTracking;
   final bool private;
   final bool twoStep;
+  final bool txChainingRequired;
   final bool autoSign;
   final bool own;
   final double indexPrice;
@@ -163,6 +165,7 @@ class OrderDetailsData {
       own: own ?? this.own,
       indexPrice: indexPrice ?? this.indexPrice,
       marketType: marketType,
+      twoStep: twoStep,
     );
   }
 

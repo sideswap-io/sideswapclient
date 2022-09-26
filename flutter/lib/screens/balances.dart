@@ -20,19 +20,12 @@ enum TxType {
 TxType txType(Tx tx) {
   var anyPositive = false;
   var anyNegative = false;
-  var anyRegular = false;
-  var anyAmp = false;
   for (var balance in tx.balances) {
     if (balance.amount > 0) {
       anyPositive = true;
     }
     if (balance.amount < 0) {
       anyNegative = true;
-    }
-    if (AccountType.fromPb(balance.account).isAmp()) {
-      anyAmp = true;
-    } else {
-      anyRegular = true;
     }
   }
   if (tx.balances.length == 2 &&
@@ -52,9 +45,6 @@ TxType txType(Tx tx) {
   }
   if (anyNegative && !anyPositive) {
     return TxType.sent;
-  }
-  if (anyAmp && anyRegular) {
-    return TxType.internal;
   }
 
   return TxType.unknown;
@@ -97,11 +87,10 @@ String pegTypeName(bool isPegIn) {
   return 'Peg-Out'.tr();
 }
 
-int txAssetAmount(Tx tx, String assetId, AccountType accountType) {
+int txAssetAmount(Tx tx, String assetId) {
   var sum = 0;
   for (var balance in tx.balances) {
-    if (balance.assetId == assetId &&
-        getAccountType(balance.account) == accountType) {
+    if (balance.assetId == assetId) {
       sum += balance.amount.toInt();
     }
   }

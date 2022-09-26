@@ -14,10 +14,10 @@ serde_json = "*"
 reqwest = { version = "*", default-features = false, features = ["blocking", "json", "rustls-tls"] }
 anyhow = "*"
 serde = { version = "1.0", features = ["derive"] }
-config = "*"
-tungstenite = { version = "0.13.0", default-features = false, features = [] }
+config = "0.11.0"
+tungstenite = { version = "0.17.2", default-features = false, features = [] }
 url = "*"
-async-tungstenite = { version = "*", features = ["async-std-runtime", "async-tls"] }
+async-tungstenite = { version = "0.17.2", features = ["async-std-runtime", "async-tls"] }
 async-std = "*"
 async-tls = "*"
 rustls = { version = "*", features = ["dangerous_configuration"] }
@@ -25,15 +25,15 @@ futures = "*"
 futures-util = "*"
 webpki = "*"
 tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
-prost = "0.7.0"
+prost = "0.10.4"
 libc = "*"
 signal-hook = "*"
 hyper = { version = "*", features = ["server"] }
-elements_pset = { package = "elements", git = "https://github.com/sanket1729/rust-elements", rev = "dc350a0b8664cdd5b051443810a6a1f99a6173da" }
+elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "0edddf730ff8fd441d3af28bc600b8bc8a8df5a9", features = ["serde-feature"] }
 base64 = "*"
 hex = "*"
-rand = "0.6.5"
+rand = "0.7.3"
 crossbeam-channel = "0.5.1"
 
 [build-dependencies]
-prost-build = "0.7.0"
+prost-build = "0.10.4"

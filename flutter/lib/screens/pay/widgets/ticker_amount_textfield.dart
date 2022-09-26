@@ -6,10 +6,8 @@ import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/swap_provider.dart';
 import 'package:sideswap/models/wallet.dart';
-import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/pay/payment_select_account.dart';
-import 'package:sideswap/screens/pay/widgets/fee_rates_dropdown.dart';
 
 class TickerAmountTextField extends StatefulWidget {
   const TickerAmountTextField({
@@ -27,7 +25,6 @@ class TickerAmountTextField extends StatefulWidget {
     this.showError = false,
     this.hintText = '',
     this.showHintText = false,
-    this.feeRates = const <FeeRate>[],
     this.onSubmitted,
     this.onEditingComplete,
     this.textInputAction,
@@ -47,7 +44,6 @@ class TickerAmountTextField extends StatefulWidget {
   final bool showError;
   final String hintText;
   final bool showHintText;
-  final List<FeeRate> feeRates;
   final void Function(String)? onSubmitted;
   final void Function()? onEditingComplete;
   final TextInputAction? textInputAction;
@@ -72,14 +68,11 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
 
   FocusNode _textfieldFocusNode = FocusNode();
   bool _visibleHintText = false;
-  FeeRate? _feeRate;
 
   @override
   void initState() {
     super.initState();
     _visibleHintText = widget.showHintText;
-
-    _feeRate = widget.feeRates.isNotEmpty ? widget.feeRates.first : null;
 
     _textfieldFocusNode = widget.focusNode ?? FocusNode();
     _textfieldFocusNode.addListener(() {
@@ -95,17 +88,6 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
         }
       });
     });
-  }
-
-  @override
-  void didUpdateWidget(covariant TickerAmountTextField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.feeRates != oldWidget.feeRates && widget.feeRates.isNotEmpty) {
-      setState(() {
-        final blocks = _feeRate?.blocks ?? 2;
-        _feeRate = widget.feeRates.firstWhere((e) => e.blocks == blocks);
-      });
-    }
   }
 
   Widget buildDropdown() {
@@ -271,7 +253,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
 
     return Container(
       height: 43,
-      decoration: widget.feeRates.isNotEmpty ? null : borderDecoration,
+      decoration: borderDecoration,
       child: Column(
         children: [
           SizedBox(
@@ -279,35 +261,31 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
-                  decoration:
-                      widget.feeRates.isNotEmpty ? borderDecoration : null,
-                  child: Row(
-                    children: [
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final icon = ref.watch(walletProvider.select((p) =>
-                              p.assetImagesSmall[widget.dropdownValue.asset]));
+                Row(
+                  children: [
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final icon = ref.watch(walletProvider.select((p) =>
+                            p.assetImagesSmall[widget.dropdownValue.asset]));
 
-                          return SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: Center(child: icon),
-                          );
-                        },
-                      ),
-                      Padding(
-                          padding: const EdgeInsets.only(left: 8),
-                          child: (widget.showAccountsInPopup)
-                              ? GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: widget.dropdownReadOnly
-                                      ? null
-                                      : showAccountsPopup,
-                                  child: IgnorePointer(child: buildDropdown()))
-                              : buildDropdown()),
-                    ],
-                  ),
+                        return SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: Center(child: icon),
+                        );
+                      },
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: (widget.showAccountsInPopup)
+                            ? GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: widget.dropdownReadOnly
+                                    ? null
+                                    : showAccountsPopup,
+                                child: IgnorePointer(child: buildDropdown()))
+                            : buildDropdown()),
+                  ],
                 ),
                 Expanded(
                   child: Consumer(
@@ -315,11 +293,6 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       final swapType = ref.watch(swapProvider).swapType();
                       if (swapType == SwapType.pegIn && widget.readOnly) {
                         _visibleHintText = false;
-                      }
-
-                      if (widget.feeRates.isNotEmpty) {
-                        return FeeRatesDropdown(
-                            borderDecoration: borderDecoration);
                       }
 
                       final assetPrecision = ref.watch(walletProvider.select(

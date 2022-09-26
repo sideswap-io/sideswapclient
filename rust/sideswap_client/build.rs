@@ -17,7 +17,7 @@ fn main() {
     match target_os.as_str() {
         "android" => {
             println!("cargo:rustc-link-lib=dylib=greenaddress");
-            println!("cargo:rustc-link-search=native={}", gdk_dir,);
+            println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         "linux" => {
             println!("cargo:rustc-link-lib=static=greenaddress_full");
@@ -42,7 +42,7 @@ fn main() {
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         "macos" => {
-            println!("cargo:rustc-link-lib=dylib=greenaddress");
+            println!("cargo:rustc-link-lib=static=greenaddress_full");
             println!("cargo:rustc-link-lib=dylib=c++");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }

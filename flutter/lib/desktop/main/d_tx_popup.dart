@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -10,7 +12,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
 
-class DTxPopup extends ConsumerWidget {
+class DTxPopup extends ConsumerStatefulWidget {
   const DTxPopup({
     super.key,
     required this.id,
@@ -18,14 +20,29 @@ class DTxPopup extends ConsumerWidget {
 
   final String id;
 
+  @override
+  DTxPopupState createState() => DTxPopupState();
+}
+
+class DTxPopupState extends ConsumerState<DTxPopup> {
+  final scrollController = ScrollController();
+
   void openTx(WidgetRef ref, bool unblinded) {
-    openTxidUrl(ref, id, true, unblinded);
+    final wallet = ref.read(walletProvider);
+    final txid = wallet.allTxs[widget.id]!.tx.txid;
+    openTxidUrl(ref, txid, true, unblinded);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final wallet = ref.watch(walletProvider);
-    final tx = wallet.allTxs[id]!;
+    final tx = wallet.allTxs[widget.id]!;
     final type = txType(tx.tx);
     final typeName = txTypeName(type);
     final timestampStr = txDateStrLong(
@@ -36,6 +53,13 @@ class DTxPopup extends ConsumerWidget {
     final count = tx.hasConfs() ? tx.confs.count : 2;
     final total = tx.hasConfs() ? tx.confs.total : 2;
     final confsStr = '$count/$total';
+
+    final allBalances = tx.tx.balancesAll
+        .map((e) => _Balance(
+              assetId: e.assetId,
+              amount: e.amount.toInt(),
+            ))
+        .toList();
 
     return DPopupWithClose(
       width: 580,
@@ -92,13 +116,16 @@ class DTxPopup extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Column(
-                  children: tx.tx.balances
-                      .map((e) => _Balance(
-                            assetId: e.assetId,
-                            amount: e.amount.toInt(),
-                          ))
-                      .toList(),
+                SizedBox(
+                  height: min(allBalances.length, 3) * 42,
+                  child: Scrollbar(
+                    controller: scrollController,
+                    thumbVisibility: true,
+                    child: ListView(
+                      controller: scrollController,
+                      children: allBalances,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Padding(
@@ -118,12 +145,13 @@ class DTxPopup extends ConsumerWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              tx.id,
+                              tx.tx.txid,
                             ),
                           ),
                           const SizedBox(width: 40),
                           IconButton(
-                            onPressed: () => copyToClipboard(context, tx.id),
+                            onPressed: () =>
+                                copyToClipboard(context, tx.tx.txid),
                             icon: SvgPicture.asset('assets/copy2.svg',
                                 width: 22, height: 22),
                           )

@@ -187,6 +187,43 @@ pub fn asset_int_amount(asset_amount: f64, asset_precision: u8) -> i64 {
     f64::round(asset_amount * asset_scale(asset_precision)) as i64
 }
 
+pub struct PegOutAmountReq {
+    pub amount: i64,
+    pub is_send_entered: bool,
+    pub fee_rate: f64,
+    pub min_peg_out_amount: i64,
+    pub server_fee_percent_peg_out: f64,
+    pub peg_out_bitcoin_tx_vsize: i32,
+}
+
+pub struct PegOutAmountResp {
+    pub send_amount: i64,
+    pub recv_amount: i64,
+}
+
+pub fn peg_out_amount(req: PegOutAmountReq) -> Result<PegOutAmountResp, anyhow::Error> {
+    ensure!(req.amount > 0);
+    let peg_out_rate = 1.0 - req.server_fee_percent_peg_out / 100.0;
+    let fixed_fee = (req.peg_out_bitcoin_tx_vsize as f64 * req.fee_rate).round() as i64;
+    let (send_amount, recv_amount) = if req.is_send_entered {
+        let recv_amount = (req.amount as f64 * peg_out_rate).round() as i64 - fixed_fee;
+        (req.amount, recv_amount)
+    } else {
+        let send_amount = ((req.amount + fixed_fee) as f64 / peg_out_rate).round() as i64;
+        (send_amount, req.amount)
+    };
+    ensure!(
+        send_amount >= req.min_peg_out_amount,
+        "Min {}",
+        Amount::from_sat(req.min_peg_out_amount).to_bitcoin()
+    );
+    ensure!(recv_amount > 0, "Amount to receive is negative");
+    Ok(PegOutAmountResp {
+        send_amount,
+        recv_amount,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

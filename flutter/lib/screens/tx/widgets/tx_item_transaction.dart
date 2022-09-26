@@ -60,8 +60,8 @@ class TxItemTransaction extends StatelessWidget {
                               final asset = ref
                                   .watch(walletProvider)
                                   .getAssetById(assetId);
-                              final amount = txAssetAmount(
-                                  transItem.tx, assetId, accountType);
+                              final amount =
+                                  txAssetAmount(transItem.tx, assetId);
                               final ticker = asset?.ticker;
                               final precision = ref
                                   .watch(walletProvider)

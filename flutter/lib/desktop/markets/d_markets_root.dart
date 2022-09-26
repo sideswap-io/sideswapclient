@@ -57,7 +57,7 @@ bool isPricedInLiquid(Asset asset) {
 
 AccountAsset getBalanceAccount(Asset asset) {
   return AccountAsset(
-    asset.ampMarket ? AccountType.amp : AccountType.regular,
+    asset.ampMarket ? AccountType.amp : AccountType.reg,
     asset.assetId,
   );
 }
@@ -252,7 +252,7 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
     final asset = wallet.assets[widget.selectedAssetId]!;
     final account = isPricedInLiquid(asset)
         ? getBalanceAccount(asset)
-        : AccountAsset(AccountType.regular, wallet.liquidAssetId());
+        : AccountAsset(AccountType.reg, wallet.liquidAssetId());
     final balance = ref.watch(balancesProvider).balances[account] ?? 0;
     final balanceStr = amountStr(balance, precision: asset.precision);
     setState(() {
@@ -408,10 +408,11 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
                       },
                     ),
                     const SizedBox(height: 8),
-                    _BalanceLine(
-                      assetId: balanceAssetId,
-                      onMaxPressed: isSell ? handleMax : null,
-                    ),
+                    if (isSell)
+                      _BalanceLine(
+                        assetId: balanceAssetId,
+                        onMaxPressed: handleMax,
+                      ),
                     const SizedBox(height: 8),
                     DOrderAmountEnter(
                       caption: isSell ? 'Offer price'.tr() : 'Bid price'.tr(),
@@ -425,6 +426,11 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
                       readonly: trackingToggled,
                       hintText: priceHint,
                     ),
+                    if (!isSell)
+                      _BalanceLine(
+                        assetId: balanceAssetId,
+                        onMaxPressed: null,
+                      ),
                     if (trackingAvailable)
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
@@ -517,7 +523,7 @@ class _AssetSelector extends ConsumerWidget {
         .watch(balancesProvider)
         .balances
         .entries
-        .where((e) => e.key.account == AccountType.regular && e.value > 0)
+        .where((e) => e.key.account == AccountType.reg && e.value > 0)
         .map((e) => e.key.asset);
     final tokenAssetsToBuy = ref
         .watch(marketsProvider)
@@ -1041,16 +1047,29 @@ class _OrdersPanel extends ConsumerWidget {
       width: 631,
       child: Column(
         children: [
-          Row(
-            children: [
-              const Spacer(),
-              _IndexPrice(selectedAssetId: selectedAssetId),
-              Expanded(
-                child: SizedBox(
+          Container(
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+              color: Color(0xFF1C6086),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            height: 56,
+            child: Row(
+              children: [
+                Text(
+                  'Order book'.tr(),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Spacer(),
+                _IndexPrice(selectedAssetId: selectedAssetId),
+                const Spacer(),
+                SizedBox(
                   height: 40,
                   child: Row(
                     children: [
-                      const Spacer(),
                       if (chartAvailable)
                         _ChartButton(
                           onPressed: onChartsPressed,
@@ -1058,8 +1077,8 @@ class _OrdersPanel extends ConsumerWidget {
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(height: 17),
           Row(children: const [
@@ -1255,42 +1274,54 @@ class _IndexPrice extends ConsumerWidget {
 
     return Visibility(
       visible: indexPrice != 0 || lastPrice != 0,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
-          border: Border.all(
-            color: const Color(0xFF1C6086),
+      child: Row(
+        children: [
+          Container(
+            width: 1,
+            color: const Color(0xFF28749E),
           ),
-        ),
-        child: Row(
-          children: [
-            Text(
-              indexPrice != 0 ? 'Index price:'.tr() : 'Last price:'.tr(),
-              style: const TextStyle(
-                color: Color(0xFF3983AD),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              border: Border.all(
+                color: const Color(0xFF1C6086),
               ),
             ),
-            const SizedBox(width: 3),
-            Text(
-              indexPrice != 0 ? indexPriceStr : lastPriceStr,
-              style: const TextStyle(
-                fontSize: 13,
-              ),
+            child: Row(
+              children: [
+                Text(
+                  indexPrice != 0 ? 'Index price:'.tr() : 'Last price:'.tr(),
+                  style: const TextStyle(
+                    color: Color(0xFF3983AD),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  indexPrice != 0 ? indexPriceStr : lastPriceStr,
+                  style: const TextStyle(
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                icon,
+                const SizedBox(width: 3),
+                Text(
+                  asset.ticker,
+                  style: const TextStyle(
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 5),
-            icon,
-            const SizedBox(width: 3),
-            Text(
-              asset.ticker,
-              style: const TextStyle(
-                fontSize: 13,
-              ),
-            ),
-          ],
-        ),
+          ),
+          Container(
+            width: 1,
+            color: const Color(0xFF28749E),
+          ),
+        ],
       ),
     );
   }

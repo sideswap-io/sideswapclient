@@ -1,21 +1,24 @@
-use crate::determine_electrum_url_from_net;
+use crate::determine_electrum_url;
 use crate::error::Error;
-use crate::headers::bitcoin::HeadersChain;
+use crate::headers::bitcoin::{HeadersChain, HEADERS_FILE_MUTEX};
 use crate::headers::liquid::Verifier;
+use ::bitcoin::hashes::hex::ToHex;
 use ::bitcoin::hashes::{sha256, sha256d, Hash};
 use aes_gcm_siv::aead::{Aead, NewAead};
 use aes_gcm_siv::{Aes256GcmSiv, Key, Nonce};
-use electrum_client::{ElectrumApi, GetMerkleRes};
+use electrum_client::{Client, ElectrumApi, GetMerkleRes};
 use gdk_common::be::{BETxid, BETxidConvert};
-use gdk_common::model::{SPVVerifyResult, SPVVerifyTx};
+use gdk_common::model::{
+    SPVCommonParams, SPVDownloadHeadersParams, SPVDownloadHeadersResult, SPVVerifyTxParams,
+    SPVVerifyTxResult,
+};
 use gdk_common::NetworkId;
-use log::{info, warn};
+use log::{debug, info, warn};
 use rand::{thread_rng, Rng};
 use std::collections::HashSet;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::path::PathBuf;
-use std::sync::Mutex;
+use std::path::{Path, PathBuf};
 
 pub mod bitcoin;
 pub mod liquid;
@@ -54,32 +57,96 @@ where
     Ok(N::from_slice(&current)?)
 }
 
-lazy_static! {
-    static ref SPV_MUTEX: Mutex<()> = Mutex::new(());
+trait ParamsMethods {
+    fn build_client(&self) -> Result<Client, Error>;
+    fn headers_chain(&self) -> Result<HeadersChain, Error>;
+    fn verified_cache(&self) -> Result<VerifiedCache, Error>;
+    fn bitcoin_network(&self) -> Option<::bitcoin::Network>;
 }
 
+impl ParamsMethods for SPVCommonParams {
+    fn build_client(&self) -> Result<Client, Error> {
+        let url = determine_electrum_url(&self.network)?;
+        url.build_client(self.network.proxy.as_deref(), self.timeout)
+    }
+    fn headers_chain(&self) -> Result<HeadersChain, Error> {
+        let network = self.bitcoin_network().expect("headers_chain available only on bitcoin");
+        Ok(HeadersChain::new(&self.network.state_dir, network)?)
+    }
+    fn verified_cache(&self) -> Result<VerifiedCache, Error> {
+        Ok(VerifiedCache::new(&self.network.state_dir, self.network.id(), &self.encryption_key))
+    }
+    fn bitcoin_network(&self) -> Option<::bitcoin::Network> {
+        self.network.id().get_bitcoin_network()
+    }
+}
+
+/// Download headers and persist locally, needed to verify tx with `spv_verify_tx`.
+///
+/// Used to expose SPV functionality through C interface
+pub fn download_headers(
+    input: &SPVDownloadHeadersParams,
+) -> Result<SPVDownloadHeadersResult, Error> {
+    let network =
+        input.params.bitcoin_network().expect("download_headers only in bitcoin networks");
+    let _lock = HEADERS_FILE_MUTEX
+        .get(&network)
+        .expect("unreachable because map populate with every enum variants")
+        .lock()?;
+    debug!("download_headers {:?}", input);
+    let client = input.params.build_client()?;
+    let mut chain = input.params.headers_chain()?;
+    let headers_to_download = input.headers_to_download.unwrap_or(2016);
+    let headers = client.block_headers(chain.height() as usize + 1, headers_to_download)?.headers;
+    info!("height:{} downloaded_headers:{}", chain.height(), headers.len());
+    let mut reorg_happened = false;
+    if let Err(Error::InvalidHeaders) = chain.push(headers) {
+        warn!(
+            "invalid headers, possible reorg, invalidating latest headers and latest verified tx"
+        );
+        let mut cache = input.params.verified_cache()?;
+        chain.remove(input.params.network.max_reorg_blocks.unwrap_or(144))?;
+        cache.remove(input.params.network.max_reorg_blocks.unwrap_or(144))?;
+        reorg_happened = true;
+    }
+    info!("downloaded {:?}", chain.height());
+
+    Ok(SPVDownloadHeadersResult {
+        height: chain.height(),
+        reorg: reorg_happened,
+    })
+}
+
+/// Verify that the given transaction identified by `input.txid` is included in a headers chain
+/// downloaded with `download_headers`.
+///
+/// A network call to download the inclusion proof will be performed if the tx is not already present
+/// in the cache and verified previously.
+///
 /// used to expose SPV functionality through C interface
-pub fn spv_verify_tx(input: &SPVVerifyTx) -> Result<SPVVerifyResult, Error> {
-    let _ = SPV_MUTEX.lock().unwrap();
+pub fn spv_verify_tx(input: &SPVVerifyTxParams) -> Result<SPVVerifyTxResult, Error> {
+    let mut _lock;
+    if let NetworkId::Bitcoin(network) = input.params.network.id() {
+        // Liquid hasn't a shared headers chain file
+        _lock = HEADERS_FILE_MUTEX
+            .get(&network)
+            .expect("unreachable because map populate with every enum variants")
+            .lock()?;
+    }
+    debug!("spv_verify_tx {:?}", input);
+    let txid = BETxid::from_hex(&input.txid, input.params.network.id())?;
 
-    info!("spv_verify_tx {:?}", input);
-    let txid = BETxid::from_hex(&input.txid, input.network.id())?;
-
-    let mut cache: VerifiedCache =
-        VerifiedCache::new(&input.path, input.network.id(), &input.encryption_key)?;
-    if cache.contains(&txid)? {
+    let mut cache = input.params.verified_cache()?;
+    if cache.contains(&txid, input.height)? {
         info!("verified cache hit for {}", txid);
-        return Ok(SPVVerifyResult::Verified);
+        return Ok(SPVVerifyTxResult::Verified);
     }
 
-    let url = determine_electrum_url_from_net(&input.network)?;
-    let client = url.build_client(input.tor_proxy.as_deref())?;
+    let client = input.params.build_client()?;
 
-    match input.network.id() {
-        NetworkId::Bitcoin(bitcoin_network) => {
-            let mut path: PathBuf = (&input.path).into();
-            path.push(format!("headers_chain_{}", bitcoin_network));
-            let mut chain = HeadersChain::new(path, bitcoin_network)?;
+    match input.params.network.id() {
+        NetworkId::Bitcoin(_bitcoin_network) => {
+            let chain = input.params.headers_chain().expect("match verified we are bitcoin type");
 
             if input.height <= chain.height() {
                 let btxid = txid.ref_bitcoin().unwrap();
@@ -88,30 +155,23 @@ pub fn spv_verify_tx(input: &SPVVerifyTx) -> Result<SPVVerifyResult, Error> {
                     Ok(proof) => proof,
                     Err(e) => {
                         warn!("failed fetching merkle inclusion proof for {}: {:?}", txid, e);
-                        return Ok(SPVVerifyResult::NotVerified);
+                        return Ok(SPVVerifyTxResult::NotVerified);
                     }
                 };
                 if chain.verify_tx_proof(btxid, input.height, proof).is_ok() {
-                    cache.write(&txid)?;
-                    Ok(SPVVerifyResult::Verified)
+                    cache.write(&txid, input.height)?;
+                    Ok(SPVVerifyTxResult::Verified)
                 } else {
-                    Ok(SPVVerifyResult::NotVerified)
+                    Ok(SPVVerifyTxResult::NotVerified)
                 }
             } else {
                 info!(
-                    "chain height ({}) not enough to verify, downloading 2016 headers",
-                    chain.height()
+                    "chain height ({}) not enough to verify tx at height {}",
+                    chain.height(),
+                    input.height
                 );
-                let headers_to_download = input.headers_to_download.unwrap_or(2016).min(2016);
-                let headers =
-                    client.block_headers(chain.height() as usize + 1, headers_to_download)?.headers;
-                if let Err(Error::InvalidHeaders) = chain.push(headers) {
-                    // handle reorgs
-                    chain.remove(144)?;
-                    cache.clear()?;
-                    // XXX clear affected blocks/txs more surgically?
-                }
-                Ok(SPVVerifyResult::InProgress)
+
+                Ok(SPVVerifyTxResult::InProgress)
             }
         }
         NetworkId::Elements(elements_network) => {
@@ -120,51 +180,69 @@ pub fn spv_verify_tx(input: &SPVVerifyTx) -> Result<SPVVerifyResult, Error> {
                     Ok(proof) => proof,
                     Err(e) => {
                         warn!("failed fetching merkle inclusion proof for {}: {:?}", txid, e);
-                        return Ok(SPVVerifyResult::NotVerified);
+                        return Ok(SPVVerifyTxResult::NotVerified);
                     }
                 };
             let verifier = Verifier::new(elements_network);
             let header_bytes = client.block_header_raw(input.height as usize)?;
             let header: elements::BlockHeader = elements::encode::deserialize(&header_bytes)?;
             if verifier.verify_tx_proof(txid.ref_elements().unwrap(), proof, &header).is_ok() {
-                cache.write(&txid)?;
-                Ok(SPVVerifyResult::Verified)
+                cache.write(&txid, input.height)?;
+                Ok(SPVVerifyTxResult::Verified)
             } else {
-                Ok(SPVVerifyResult::NotVerified)
+                Ok(SPVVerifyTxResult::NotVerified)
             }
         }
     }
 }
 
 struct VerifiedCache {
-    set: HashSet<BETxid>,
+    set: HashSet<(BETxid, u32)>,
+    store: Option<Store>,
+}
+
+struct Store {
     filepath: PathBuf,
     cipher: Aes256GcmSiv,
 }
 
 impl VerifiedCache {
-    fn new(path: &str, network: NetworkId, key: &str) -> Result<Self, Error> {
-        let mut filepath: PathBuf = path.into();
-        let filename_preimage = format!("{:?}{}", network, key);
-        let filename = hex::encode(sha256::Hash::hash(filename_preimage.as_bytes()));
-        let key_bytes = sha256::Hash::hash(key.as_bytes()).into_inner();
-        filepath.push(format!("verified_cache_{}", filename));
-        let cipher = Aes256GcmSiv::new(Key::from_slice(&key_bytes));
-        let set = match VerifiedCache::read_and_decrypt(&mut filepath, &cipher) {
-            Ok(set) => set,
-            Err(_) => HashSet::new(),
-        };
-        Ok(VerifiedCache {
-            set,
-            filepath,
-            cipher,
-        })
+    /// If an `encription_key` is provided try to load a persisted cache of verified tx inside
+    /// given `path` in a file name dependent on the given `network`
+    fn new<P: AsRef<Path>>(path: P, network: NetworkId, encription_key: &Option<String>) -> Self {
+        std::fs::create_dir_all(path.as_ref()).expect("given path should be writeable");
+        match encription_key {
+            Some(key) => {
+                let mut filepath: PathBuf = path.as_ref().into();
+                let filename_preimage = format!("{:?}{}", network, key);
+                let filename = sha256::Hash::hash(filename_preimage.as_bytes()).as_ref().to_hex();
+                let key_bytes = sha256::Hash::hash(key.as_bytes()).into_inner();
+                filepath.push(format!("verified_cache_{}", filename));
+                let cipher = Aes256GcmSiv::new(Key::from_slice(&key_bytes));
+                let set = match VerifiedCache::read_and_decrypt(&mut filepath, &cipher) {
+                    Ok(set) => set,
+                    Err(_) => HashSet::new(),
+                };
+                let store = Some(Store {
+                    filepath,
+                    cipher,
+                });
+                VerifiedCache {
+                    set,
+                    store,
+                }
+            }
+            None => VerifiedCache {
+                set: HashSet::new(),
+                store: None,
+            },
+        }
     }
 
     fn read_and_decrypt(
         filepath: &mut PathBuf,
         cipher: &Aes256GcmSiv,
-    ) -> Result<HashSet<BETxid>, Error> {
+    ) -> Result<HashSet<(BETxid, u32)>, Error> {
         let mut file = File::open(&filepath)?;
         let mut nonce_bytes = [0u8; 12]; // 96 bits
         file.read_exact(&mut nonce_bytes)?;
@@ -175,29 +253,33 @@ impl VerifiedCache {
         Ok(serde_cbor::from_slice(&plaintext)?)
     }
 
-    fn contains(&self, txid: &BETxid) -> Result<bool, Error> {
-        Ok(self.set.contains(txid))
+    fn contains(&self, txid: &BETxid, height: u32) -> Result<bool, Error> {
+        Ok(self.set.contains(&(txid.clone(), height)))
     }
 
-    fn write(&mut self, txid: &BETxid) -> Result<(), Error> {
-        self.set.insert(txid.clone());
+    fn write(&mut self, txid: &BETxid, height: u32) -> Result<(), Error> {
+        self.set.insert((txid.clone(), height));
         self.flush()
     }
 
-    fn clear(&mut self) -> Result<(), Error> {
-        self.set.clear();
+    /// remove all verified txid with height greater than given height
+    fn remove(&mut self, height: u32) -> Result<(), Error> {
+        self.set = self.set.iter().filter(|e| e.1 < height).cloned().collect();
         self.flush()
     }
 
     fn flush(&mut self) -> Result<(), Error> {
-        let mut file = File::create(&self.filepath)?;
-        let mut nonce_bytes = [0u8; 12]; // 96 bits
-        thread_rng().fill(&mut nonce_bytes);
-        let plaintext = serde_cbor::to_vec(&self.set)?;
-        let nonce = Nonce::from_slice(&nonce_bytes);
-        let ciphertext = self.cipher.encrypt(nonce, plaintext.as_ref())?;
-        file.write(&nonce)?;
-        file.write(&ciphertext)?;
+        if let Some(store) = &self.store {
+            let mut file = File::create(&store.filepath)?;
+            let mut nonce_bytes = [0u8; 12]; // 96 bits
+            thread_rng().fill(&mut nonce_bytes);
+            let plaintext = serde_cbor::to_vec(&self.set)?;
+            let nonce = Nonce::from_slice(&nonce_bytes);
+            let ciphertext = store.cipher.encrypt(nonce, plaintext.as_ref())?;
+            file.write(&nonce)?;
+            file.write(&ciphertext)?;
+        }
+
         Ok(())
     }
 }

@@ -48,7 +48,6 @@ class UrlLinkButton extends StatelessWidget {
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 16),
@@ -58,17 +57,19 @@ class UrlLinkButton extends StatelessWidget {
                 child: icon,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 17),
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                  color: const Color(0xFF00C5FF),
-                  decoration: url.isNotEmpty
-                      ? TextDecoration.underline
-                      : TextDecoration.none,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(left: 17),
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.normal,
+                    color: const Color(0xFF00C5FF),
+                    decoration: url.isNotEmpty
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
+                  ),
                 ),
               ),
             ),

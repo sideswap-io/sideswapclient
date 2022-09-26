@@ -40,6 +40,7 @@ class DSendPopupCreate extends ConsumerStatefulWidget {
 class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
   TextEditingController addressController = TextEditingController();
   TextEditingController amountController = TextEditingController();
+  FocusNode addressFocusNode = FocusNode();
   FocusNode amountFocusNode = FocusNode();
 
   late AccountAsset selected;
@@ -50,7 +51,7 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
   @override
   void initState() {
     final wallet = ref.read(walletProvider);
-    selected = AccountAsset(AccountType.regular, wallet.liquidAssetId());
+    selected = AccountAsset(AccountType.reg, wallet.liquidAssetId());
     super.initState();
   }
 
@@ -58,6 +59,7 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
   void dispose() {
     amountController.dispose();
     addressController.dispose();
+    addressFocusNode.dispose();
     amountFocusNode.dispose();
     super.dispose();
   }
@@ -69,7 +71,7 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
     return balanceStr;
   }
 
-  void validate({bool requestAmountFocus = false}) {
+  void validate({bool requestFocus = false}) {
     setState(() {
       receiveConversion = ref
           .read(requestOrderProvider)
@@ -81,8 +83,12 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
       final balance = double.tryParse(getBalanceStr(selected)) ?? 0.0;
       showInsufficientFunds = amount > balance;
       enabled = addressValid && amount > 0 && amount <= balance;
-      if (requestAmountFocus && addressValid) {
-        amountFocusNode.requestFocus();
+      if (requestFocus) {
+        if (addressValid) {
+          amountFocusNode.requestFocus();
+        } else {
+          addressFocusNode.requestFocus();
+        }
       }
     });
   }
@@ -103,7 +109,7 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
     final wallet = ref.watch(walletProvider);
     final balances = ref.watch(balancesProvider);
     final defaultAccount =
-        AccountAsset(AccountType.regular, wallet.liquidAssetId());
+        AccountAsset(AccountType.reg, wallet.liquidAssetId());
     final accounts = wallet
         .getAllAccounts()
         .where((account) =>
@@ -139,11 +145,12 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
               child: Column(
                 children: [
                   DAddrTextField(
+                    focusNode: addressFocusNode,
                     autofocus: true,
                     onChanged: (value) {
                       setState(
                         () {
-                          validate(requestAmountFocus: true);
+                          validate(requestFocus: true);
                         },
                       );
                     },
@@ -174,8 +181,8 @@ class _DSendPopupState extends ConsumerState<DSendPopupCreate> {
                   if (selected != value) {
                     selected = value;
                     amountController.clear();
-                    validate(requestAmountFocus: true);
                   }
+                  validate(requestFocus: true);
                 });
               },
               onChanged: (_) {

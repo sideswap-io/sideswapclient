@@ -51,7 +51,7 @@ class MnemonicCheckRow extends ConsumerWidget {
                         onTap(index);
                       },
                       child: Container(
-                        width: 109,
+                        width: 90,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(

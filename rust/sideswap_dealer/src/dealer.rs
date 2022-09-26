@@ -1,4 +1,5 @@
 use super::rpc;
+use elements as elements_pset;
 use serde::{Deserialize, Serialize};
 use sideswap_api::*;
 use sideswap_common::types;
@@ -89,7 +90,6 @@ enum Msg {
 #[derive(Clone, Debug)]
 pub struct Utxo {
     pub item: rpc::UnspentItem,
-    pub reserve: Option<OrderId>,
     pub amount: i64,
 }
 
@@ -308,6 +308,7 @@ fn get_pset(
         inputs,
         recv_addr: Some(recv_addr),
         recv_gaid: None,
+        recv_device_key: None,
         change_addr,
         signed_half: None,
     };
@@ -355,7 +356,7 @@ fn sign_pset(
                 elements_pset::SigHashType::All,
             );
             let public_key = private_key.public_key(&secp);
-            let pset_input = pset.inputs.get_mut(index).unwrap();
+            let pset_input = pset.inputs_mut().get_mut(index).unwrap();
             pset_input.final_script_sig = utxo.item.redeem_script.as_ref().map(|s| {
                 elements_pset::script::Builder::new()
                     .push_slice(&hex::decode(s).unwrap())
@@ -866,7 +867,6 @@ fn worker(
                         Utxo {
                             amount: Amount::from_rpc(&item.amount).to_sat(),
                             item,
-                            reserve: None,
                         }
                     });
                 }
@@ -962,6 +962,7 @@ fn worker(
                                     inputs: pset_req.inputs,
                                     recv_addr: pset_req.recv_addr,
                                     recv_gaid: None,
+                                    recv_device_key: None,
                                     change_addr: pset_req.change_addr,
                                 };
                                 let addr_result =

@@ -24,6 +24,14 @@ class _DOpenUrlState extends ConsumerState<DOpenUrl> {
     super.dispose();
   }
 
+  void trySubmit() {
+    final handleResult =
+        ref.read(universalLinkProvider).handleAppUrlStr(controller.text);
+    if (handleResult == HandleResult.success) {
+      Navigator.pop(context);
+    }
+  }
+
   void handleSubmit() {
     Navigator.pop(context);
     final handleResult =
@@ -58,6 +66,7 @@ class _DOpenUrlState extends ConsumerState<DOpenUrl> {
                 onPastePressed: () async {
                   await handlePasteSingleLine(controller);
                   setState(() {});
+                  trySubmit();
                 },
               ),
               onChanged: (value) {},

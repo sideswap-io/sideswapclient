@@ -92,10 +92,10 @@ class BuySellButton extends ConsumerWidget {
     final swapMarket = ref.watch(swapMarketProvider);
     final wallet = ref.watch(walletProvider);
     final bitcoinAccount =
-        AccountAsset(AccountType.regular, wallet.liquidAssetId());
+        AccountAsset(AccountType.reg, wallet.liquidAssetId());
     final asset = wallet.assets[swapMarket.currentProduct.assetId]!;
     final assetAccount = AccountAsset(
-        asset.ampMarket ? AccountType.amp : AccountType.regular, asset.assetId);
+        asset.ampMarket ? AccountType.amp : AccountType.reg, asset.assetId);
     final sendBitcoin = isSell == asset.swapMarket;
     final deliverAsset = sendBitcoin ? bitcoinAccount : assetAccount;
     final receiveAsset = sendBitcoin ? assetAccount : bitcoinAccount;

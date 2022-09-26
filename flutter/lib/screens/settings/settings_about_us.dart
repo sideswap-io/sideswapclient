@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/app_version.dart';
+import 'package:sideswap/common/custom_scrollable_container.dart';
 import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -54,95 +55,99 @@ class SettingsAboutUs extends StatelessWidget {
       appBar: CustomAppBar(
         title: 'About us'.tr(),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 90),
-              child: GestureDetector(
-                onLongPress: () {
-                  showExportLogMenu(context);
-                },
-                child: Text(
-                  'VERSION'.tr(args: [appVersionFull]),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF00C5FF),
+      body: SafeArea(
+        child: CustomScrollableContainer(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: GestureDetector(
+                    onLongPress: () {
+                      showExportLogMenu(context);
+                    },
+                    child: Text(
+                      'VERSION'.tr(args: [appVersion]),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF00C5FF),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  UrlLinkButton(
-                    url: SettingsAboutUsData.urlWeb,
-                    text: SettingsAboutUsData.urlWebText,
-                    icon: SvgPicture.asset(
-                      'assets/web_icon.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                  UrlLinkButton(
-                    url: SettingsAboutUsData.urlGitHub,
-                    text: SettingsAboutUsData.urlGithubText,
-                    icon: SvgPicture.asset(
-                      'assets/github_icon.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                  UrlLinkButton(
-                    url: SettingsAboutUsData.urlTwitter,
-                    text: SettingsAboutUsData.urlTwitterText,
-                    icon: SvgPicture.asset(
-                      'assets/twitter_icon.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                  UrlLinkButton(
-                    url: SettingsAboutUsData.urlTelegram,
-                    text: SettingsAboutUsData.urlTelegramText,
-                    icon: SvgPicture.asset(
-                      'assets/telegram_icon.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                  UrlLinkButton(
-                    text: 'Licenses',
-                    icon: const Icon(
-                      Icons.copyright,
-                      size: 24,
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).push<void>(
-                        MaterialPageRoute(
-                          builder: (context) => const SettingsLicenses(),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: double.maxFinite,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      UrlLinkButton(
+                        url: SettingsAboutUsData.urlWeb,
+                        text: SettingsAboutUsData.urlWebText,
+                        icon: SvgPicture.asset(
+                          'assets/web_icon.svg',
+                          width: 24,
+                          height: 24,
                         ),
-                      );
-                    },
+                      ),
+                      UrlLinkButton(
+                        url: SettingsAboutUsData.urlGitHub,
+                        text: SettingsAboutUsData.urlGithubText,
+                        icon: SvgPicture.asset(
+                          'assets/github_icon.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                      ),
+                      UrlLinkButton(
+                        url: SettingsAboutUsData.urlTwitter,
+                        text: SettingsAboutUsData.urlTwitterText,
+                        icon: SvgPicture.asset(
+                          'assets/twitter_icon.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                      ),
+                      UrlLinkButton(
+                        url: SettingsAboutUsData.urlTelegram,
+                        text: SettingsAboutUsData.urlTelegramText,
+                        icon: SvgPicture.asset(
+                          'assets/telegram_icon.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                      ),
+                      UrlLinkButton(
+                        text: 'Licenses',
+                        icon: const Icon(
+                          Icons.copyright,
+                          size: 24,
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).push<void>(
+                            MaterialPageRoute(
+                              builder: (context) => const SettingsLicenses(),
+                            ),
+                          );
+                        },
+                      ),
+                      UrlLinkButton(
+                        url: SettingsAboutUsData.urlPrivacyPolicy,
+                        text: 'Privacy Policy'.tr(),
+                        icon: SvgPicture.asset(
+                          'assets/web_icon.svg',
+                          width: 24,
+                          height: 24,
+                        ),
+                      ),
+                    ],
                   ),
-                  UrlLinkButton(
-                    url: SettingsAboutUsData.urlPrivacyPolicy,
-                    text: 'Privacy Policy'.tr(),
-                    icon: SvgPicture.asset(
-                      'assets/web_icon.svg',
-                      width: 24,
-                      height: 24,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

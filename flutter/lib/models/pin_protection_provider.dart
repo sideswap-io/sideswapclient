@@ -120,6 +120,10 @@ class PinProtectionProvider extends ChangeNotifier {
     }
   }
 
+  void reset() {
+    wrongCount = 0;
+  }
+
   void _onNumber(String number) {
     if (pinCode.length == PinSetupProvider.maxPinLength) {
       return;
@@ -187,7 +191,7 @@ class PinProtectionProvider extends ChangeNotifier {
           case 2:
             errorMessage = 'Wrong PIN code. Last attempt remaining.'.tr();
             break;
-          case 3:
+          default:
             ref.read(walletProvider).settingsDeletePromptConfirm();
             return;
         }

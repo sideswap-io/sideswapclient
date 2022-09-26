@@ -29,75 +29,80 @@ class WalletBackupCheckState extends ConsumerState<WalletBackupCheck> {
   Widget build(BuildContext context) {
     return SideSwapPopup(
       enableInsideTopPadding: false,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 38),
-            child: SizedBox(
-              width: 303,
-              height: 29,
-              child: Text(
-                'Select the correct word'.tr(),
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 38),
+              child: SizedBox(
+                width: 303,
+                height: 29,
+                child: Text(
+                  'Select the correct word'.tr(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Consumer(
-              builder: (context, ref, child) {
-                final wordIndices =
-                    ref.watch(walletProvider).backupCheckAllWords.keys.toList();
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final wordIndices = ref
+                      .watch(walletProvider)
+                      .backupCheckAllWords
+                      .keys
+                      .toList();
 
-                return Column(
-                  children: List<Widget>.generate(
-                    wordIndices.length,
-                    (int index) {
-                      final wordIndex = wordIndices[index];
-                      final words = ref
-                              .read(walletProvider)
-                              .backupCheckAllWords[wordIndex] ??
-                          [];
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 32),
-                        child: MnemonicCheckRow(
-                          wordIndex: wordIndex,
-                          words: words,
-                          onTap: (index) {
-                            ref
+                  return Column(
+                    children: List<Widget>.generate(
+                      wordIndices.length,
+                      (int index) {
+                        final wordIndex = wordIndices[index];
+                        final words = ref
                                 .read(walletProvider)
-                                .backupNewWalletSelect(wordIndex, index);
-                            validate(ref, context);
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
+                                .backupCheckAllWords[wordIndex] ??
+                            [];
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 32),
+                          child: MnemonicCheckRow(
+                            wordIndex: wordIndex,
+                            words: words,
+                            onTap: (index) {
+                              ref
+                                  .read(walletProvider)
+                                  .backupNewWalletSelect(wordIndex, index);
+                              validate(ref, context);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-          const Spacer(),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 40),
-            child: CustomBigButton(
-              height: 54,
-              width: double.maxFinite,
-              text: 'CONFIRM'.tr(),
-              backgroundColor: const Color(0xFF00C5FF),
-              onPressed: _canContinue
-                  ? () {
-                      ref.read(walletProvider).backupNewWalletVerify();
-                    }
-                  : null,
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: CustomBigButton(
+                height: 54,
+                width: double.maxFinite,
+                text: 'CONFIRM'.tr(),
+                backgroundColor: const Color(0xFF00C5FF),
+                onPressed: _canContinue
+                    ? () {
+                        ref.read(walletProvider).backupNewWalletVerify();
+                      }
+                    : null,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

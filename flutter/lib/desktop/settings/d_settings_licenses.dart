@@ -178,7 +178,7 @@ class DSettingsLicenses extends HookConsumerWidget {
             child: Column(
               children: [
                 Text(
-                  'VERSION'.tr(args: [appVersionFull]),
+                  'VERSION'.tr(args: [appVersion]),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.normal,

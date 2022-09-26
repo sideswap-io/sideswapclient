@@ -64,14 +64,14 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
           return account;
         }
       }
-      return AccountAsset(AccountType.regular, payAssetId);
+      return AccountAsset(AccountType.reg, payAssetId);
     }
     final account = ref.read(walletProvider).selectedWalletAsset;
     if (account != null) {
       return account;
     }
     return AccountAsset(
-        AccountType.regular, ref.read(walletProvider).liquidAssetId());
+        AccountType.reg, ref.read(walletProvider).liquidAssetId());
   }
 
   @override

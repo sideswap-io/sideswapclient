@@ -6,9 +6,9 @@ use std::str::FromStr;
 use bitcoin::blockdata::constants::{max_target, DIFFCHANGE_INTERVAL, DIFFCHANGE_TIMESPAN};
 use bitcoin::BlockHash;
 use bitcoin::{util::uint::Uint256, util::BitArray, BlockHeader};
-use electrum_client::{Client as ElectrumClient, ConfigBuilder, ElectrumApi};
+use electrum_client::{Client as ElectrumClient, ElectrumApi};
 
-use gdk_common::network::Network;
+use gdk_common::network::NetworkParameters;
 
 use crate::error::Error;
 use crate::headers::bitcoin::HeadersChain;
@@ -19,12 +19,12 @@ const MAX_CHUNK_SIZE: u32 = 200;
 const MAX_FORK_DEPTH: u32 = DIFFCHANGE_INTERVAL * 3;
 const SERVERS_PER_ROUND: usize = 3;
 
-const TIMEOUT: u8 = 3; // connect, read and write timeout
-
 #[derive(Debug)]
 pub struct SpvCrossValidator {
     servers: Vec<ElectrumUrl>,
+    proxy: Option<String>,
     last_result: CrossValidationResult,
+    timeout: Option<u8>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
@@ -93,7 +93,13 @@ impl SpvCrossValidator {
         // Cross-validate against the secondary servers, keeping track of the most severe
         // validation result seen so far
         for server_url in &round_servers {
-            let server_result = match spv_cross_validate(chain, &local_tip_hash, server_url) {
+            let server_result = match spv_cross_validate(
+                chain,
+                &local_tip_hash,
+                server_url,
+                self.timeout,
+                &self.proxy,
+            ) {
                 Ok(r) => r,
                 Err(e) => {
                     warn!("SPV cross validation via {:?} failed with: {:?}", server_url, e);
@@ -117,11 +123,17 @@ impl SpvCrossValidator {
         curr_result
     }
 
-    pub fn from_network(network: &Network) -> Result<Option<Self>, Error> {
+    pub fn from_network(
+        network: &NetworkParameters,
+        proxy: &Option<String>,
+        timeout: Option<u8>,
+    ) -> Result<Option<Self>, Error> {
         Ok(if !network.liquid && network.spv_multi.unwrap_or(false) {
             Some(SpvCrossValidator {
                 servers: get_cross_servers(network)?,
                 last_result: CrossValidationResult::Valid,
+                proxy: proxy.clone(),
+                timeout,
             })
         } else {
             None
@@ -139,8 +151,10 @@ pub fn spv_cross_validate(
     chain: &HeadersChain,
     local_tip_hash: &BlockHash,
     server_url: &ElectrumUrl,
+    timeout: Option<u8>,
+    proxy: &Option<String>,
 ) -> Result<CrossValidationResult, CrossValidationError> {
-    let client = server_url.build_config(ConfigBuilder::new().timeout(Some(TIMEOUT))?)?;
+    let client = server_url.build_client(proxy.as_deref(), timeout)?;
     let remote_tip = client.block_headers_subscribe()?;
     let remote_tip_hash = remote_tip.header.block_hash();
     let remote_tip_height = remote_tip.height as u32;
@@ -386,22 +400,31 @@ fn parse_server_file(sl: &str) -> Vec<ElectrumUrl> {
     sl.lines().map(FromStr::from_str).collect::<Result<_, _>>().unwrap()
 }
 
-pub fn get_cross_servers(network: &Network) -> Result<Vec<ElectrumUrl>, Error> {
+pub fn get_cross_servers(network: &NetworkParameters) -> Result<Vec<ElectrumUrl>, Error> {
     let net = network.id().get_bitcoin_network().expect("spv cross-validation is bitcoin-only");
 
     let servers = match &network.spv_servers {
         Some(servers) if !servers.is_empty() => {
+            // If the user sets the list, we assume all of them should be used
             servers.iter().map(String::as_ref).map(FromStr::from_str).collect()
         }
-        _ => Ok(match net {
-            bitcoin::Network::Bitcoin => SERVER_LIST_MAINNET.clone(),
-            bitcoin::Network::Testnet => SERVER_LIST_TESTNET.clone(),
-            bitcoin::Network::Regtest | bitcoin::Network::Signet => vec![],
-        }),
+        _ => {
+            let mut servers = match net {
+                bitcoin::Network::Bitcoin => SERVER_LIST_MAINNET.clone(),
+                bitcoin::Network::Testnet => SERVER_LIST_TESTNET.clone(),
+                bitcoin::Network::Regtest | bitcoin::Network::Signet => vec![],
+            };
+            // Filter the default cross validation servers list.
+            // Note that if the user is using tor it might still want to use non-onion urls,
+            // but we are filtering them out.
+            let use_tor = network.use_tor();
+            servers.retain(|u| u.is_onion() == use_tor);
+            Ok(servers)
+        }
     }?;
 
     // Don't cross validation against the primary server
-    let primary_server = super::determine_electrum_url_from_net(network)?;
+    let primary_server = super::determine_electrum_url(network)?;
     let primary_url = primary_server.url();
     Ok(servers.into_iter().filter(|s| s.url() != primary_url).collect())
 }

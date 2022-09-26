@@ -17,6 +17,7 @@ import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
+import 'package:sideswap/screens/pay/widgets/fee_rates_dropdown.dart';
 import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 import 'package:sideswap/screens/swap/widgets/labeled_radio.dart';
@@ -160,41 +161,28 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     ],
                   ),
                 ),
-                if (widget.swapType == SwapType.pegOut &&
-                    widget.labelGroupValue == SwapWallet.extern &&
-                    widget.feeRates.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 24),
-                    child: Text(
-                      'Fee suggestions'.tr(),
-                      style: _labelStyle,
+                if (widget.showInsufficientFunds && !widget.readOnly) ...[
+                  Text(
+                    'Insufficient funds'.tr(),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                      color: Color(0xFFFF7878),
                     ),
                   ),
-                  const Spacer(),
                 ] else ...[
-                  if (widget.showInsufficientFunds && !widget.readOnly) ...[
-                    Text(
-                      'Insufficient funds'.tr(),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: Color(0xFFFF7878),
-                      ),
-                    ),
-                  ] else ...[
-                    Container(),
-                  ],
-                  if (widget.dollarConversion2 != null &&
-                      widget.dollarConversion2!.isNotEmpty)
-                    Text(
-                      '≈ ${widget.dollarConversion2}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.normal,
-                        color: Color(0xFF83B4D2),
-                      ),
-                    ),
+                  Container(),
                 ],
+                if (widget.dollarConversion2 != null &&
+                    widget.dollarConversion2!.isNotEmpty)
+                  Text(
+                    '≈ ${widget.dollarConversion2}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.normal,
+                      color: Color(0xFF83B4D2),
+                    ),
+                  ),
                 if (widget.errorDescription.isNotEmpty && !widget.readOnly) ...[
                   Expanded(
                     child: LayoutBuilder(
@@ -273,7 +261,6 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                 onChanged: widget.onChanged,
                 hintText: widget.hintText,
                 showHintText: widget.showHintText,
-                feeRates: widget.feeRates,
                 onSubmitted: widget.onSubmitted,
                 onEditingComplete: widget.onEditingCompleted,
                 textInputAction: widget.textInputAction,
@@ -355,37 +342,32 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                 if (widget.swapType == SwapType.pegOut &&
                     widget.labelGroupValue == SwapWallet.extern &&
                     widget.isAddressLabelVisible) ...[
-                  Container(
-                    width: 343,
-                    height: 98,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF226F99),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(8),
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF226F99),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(8),
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Flexible(
-                          flex: 71,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Text(
-                              widget.addressController?.text ?? '',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text(
+                                widget.addressController?.text ?? '',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const Spacer(),
-                        Flexible(
-                          flex: 10,
-                          child: Material(
+                          Material(
                             color: const Color(0xFF226F99),
                             child: InkWell(
                               borderRadius: BorderRadius.circular(21),
@@ -405,9 +387,9 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                                 ),
                               ),
                             ),
-                          ),
-                        )
-                      ],
+                          )
+                        ],
+                      ),
                     ),
                   )
                 ],
@@ -512,6 +494,26 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
             ),
           ),
         ),
+        if (widget.swapType == SwapType.pegOut &&
+            widget.labelGroupValue == SwapWallet.extern)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Padding(
+              padding: widget.padding,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Fee suggestions'.tr(),
+                    style: _labelStyle,
+                  ),
+                  const SizedBox(width: 8),
+                  const FeeRatesDropdown(),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
