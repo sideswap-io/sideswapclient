@@ -46,7 +46,8 @@ class TokenMarketOrderDetailsState
 
     // Close current view when request expire
     _expireTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!widget.requestOrder.getExpiresAt().isNegative) {
+      final expiresAt = widget.requestOrder.getExpiresAt();
+      if (expiresAt == null || !expiresAt.isNegative) {
         final expires = widget.requestOrder.getExpireDescription();
         setState(() {
           expiresTitle = 'TTL: $expires';

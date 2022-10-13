@@ -11,15 +11,17 @@ class DTtlPopup extends ConsumerWidget {
   const DTtlPopup({
     super.key,
     this.selected,
+    required this.offline,
   });
 
   final int? selected;
+  final bool offline;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DPopupWithClose(
       width: 580,
-      height: 606,
+      height: 670,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -32,7 +34,7 @@ class DTtlPopup extends ConsumerWidget {
           ),
           const SizedBox(height: 23),
           Column(
-            children: availableTtlValues()
+            children: availableTtlValues(offline)
                 .map((e) => _TtlValue(
                       ttl: e,
                       selected: selected == e,

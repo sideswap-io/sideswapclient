@@ -5,7 +5,7 @@ SideSwap trader
 
 - Install Rust compiler
 
-- Build GDK version 0.0.51
+- Build GDK version 0.0.55
 
 - Export `GDK_DIR` env variable with the directory path where `libgreenaddress_full.a` file is located
 

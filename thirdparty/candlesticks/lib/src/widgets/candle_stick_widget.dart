@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:candlesticks/src/models/candle.dart';
 import 'package:flutter/material.dart';
-import '../models/candle.dart';
 
 class CandleStickWidget extends LeafRenderObjectWidget {
   final List<Candle> candles;

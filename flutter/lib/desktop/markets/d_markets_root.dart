@@ -194,6 +194,7 @@ class _MakeOrderPanel extends ConsumerStatefulWidget {
 class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
   TextEditingController controllerAmount = TextEditingController();
   TextEditingController controllerPrice = TextEditingController();
+  FocusNode focusNodeAmount = FocusNode();
   FocusNode focusNodePrice = FocusNode();
 
   bool isSell = true;
@@ -206,6 +207,7 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
     controllerAmount.dispose();
     controllerPrice.dispose();
     focusNodePrice.dispose();
+    focusNodeAmount.dispose();
     super.dispose();
   }
 
@@ -279,6 +281,7 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
     setState(() {
       isSell = value;
       controllerAmount.clear();
+      focusNodeAmount.requestFocus();
     });
   }
 
@@ -394,61 +397,67 @@ class _MakeOrderPanelState extends ConsumerState<_MakeOrderPanel> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Column(
-                  children: [
-                    DOrderAmountEnter(
-                      caption: 'Amount'.tr(),
-                      assetId: pricedInLiquid
-                          ? widget.selectedAssetId
-                          : wallet.liquidAssetId(),
-                      controller: controllerAmount,
-                      autofocus: true,
-                      onEditingComplete: () {
-                        focusNodePrice.requestFocus();
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    if (isSell)
-                      _BalanceLine(
-                        assetId: balanceAssetId,
-                        onMaxPressed: handleMax,
+                child: FocusTraversalGroup(
+                  child: Column(
+                    children: [
+                      DOrderAmountEnter(
+                        caption: 'Amount'.tr(),
+                        assetId: pricedInLiquid
+                            ? widget.selectedAssetId
+                            : wallet.liquidAssetId(),
+                        controller: controllerAmount,
+                        autofocus: true,
+                        focusNode: focusNodeAmount,
+                        onEditingComplete: () {
+                          focusNodePrice.requestFocus();
+                        },
                       ),
-                    const SizedBox(height: 8),
-                    DOrderAmountEnter(
-                      caption: isSell ? 'Offer price'.tr() : 'Bid price'.tr(),
-                      assetId: pricedInLiquid
-                          ? wallet.liquidAssetId()
-                          : widget.selectedAssetId,
-                      controller: controllerPrice,
-                      isPriceField: true,
-                      focusNode: focusNodePrice,
-                      onEditingComplete: handleSubmit,
-                      readonly: trackingToggled,
-                      hintText: priceHint,
-                    ),
-                    if (!isSell)
-                      _BalanceLine(
-                        assetId: balanceAssetId,
-                        onMaxPressed: null,
-                      ),
-                    if (trackingAvailable)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: DEnterTrackingPrice(
-                          trackingToggled: trackingToggled,
-                          trackingValue: trackingValue,
-                          invertColors: !isSell,
-                          onTrackingChanged: handleTrackingChanged,
-                          onTrackingToggle: handleTrackingToggled,
+                      const SizedBox(height: 8),
+                      if (isSell)
+                        FocusTraversalGroup(
+                          descendantsAreFocusable: false,
+                          child: _BalanceLine(
+                            assetId: balanceAssetId,
+                            onMaxPressed: handleMax,
+                          ),
                         ),
+                      const SizedBox(height: 8),
+                      DOrderAmountEnter(
+                        caption: isSell ? 'Offer price'.tr() : 'Bid price'.tr(),
+                        assetId: pricedInLiquid
+                            ? wallet.liquidAssetId()
+                            : widget.selectedAssetId,
+                        controller: controllerPrice,
+                        isPriceField: true,
+                        focusNode: focusNodePrice,
+                        onEditingComplete: handleSubmit,
+                        readonly: trackingToggled,
+                        hintText: priceHint,
                       ),
-                    const Spacer(),
-                    _MakeOrderButton(
-                      isSell: isSell,
-                      onPressed: handleSubmit,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                      if (!isSell)
+                        _BalanceLine(
+                          assetId: balanceAssetId,
+                          onMaxPressed: null,
+                        ),
+                      if (trackingAvailable)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: DEnterTrackingPrice(
+                            trackingToggled: trackingToggled,
+                            trackingValue: trackingValue,
+                            invertColors: !isSell,
+                            onTrackingChanged: handleTrackingChanged,
+                            onTrackingToggle: handleTrackingToggled,
+                          ),
+                        ),
+                      const Spacer(),
+                      _MakeOrderButton(
+                        isSell: isSell,
+                        onPressed: handleSubmit,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 ),
               ),
             ),

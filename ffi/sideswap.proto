@@ -122,7 +122,7 @@ message Order {
   required int64 asset_amount = 5;
   required double price = 6;
   required int64 created_at = 7;
-  required int64 expires_at = 8;
+  optional int64 expires_at = 8;
   required bool private = 9;
   required bool two_step = 17;
   required bool auto_sign = 11;
@@ -334,13 +334,8 @@ message To {
     required string asset_id = 1;
   }
 
-  message JadeAction {
-    enum Action {
-      UNLOCK = 1;
-      LOGIN = 2;
-    }
-    required Account account = 1;
-    required Action action = 2;
+  message JadeLogin {
+    required string port = 1;
   }
 
   oneof msg {
@@ -386,7 +381,7 @@ message To {
     MarketDataSubscribe market_data_subscribe = 60;
     Empty market_data_unsubscribe = 61;
 
-    JadeAction jade_action = 70;
+    JadeLogin jade_login = 70;
   }
 }
 
@@ -637,22 +632,21 @@ message From {
     required ChartPoint update = 2;
   }
 
-  message JadeUpdated {
-    enum Status {
-      UNKNOWN = 0;
-      UNINIT = 1;
-      LOCKED = 2;
-      UNLOCKED = 3;
-      CONNECTED = 4;
+  message JadePorts {
+    enum State {
+      IDLE = 0;
+      CONNECTING = 1;
+      UNLOCKING = 2;
+      CONNECTED = 3;
     }
 
-    required Account account = 1;
-    required Status status = 2;
-    required string name = 3;
-  }
+    message Port {
+      required string port = 1;
+      optional string serial = 2;
+      required State state = 3;
+    }
 
-  message JadeRemoved {
-    required Account account = 1;
+    repeated Port ports = 1;
   }
 
   oneof msg {
@@ -714,8 +708,7 @@ message From {
     MarketDataSubscribe market_data_subscribe = 70;
     MarketDataUpdate market_data_update = 71;
 
-    JadeUpdated jade_updated = 80;
-    JadeRemoved jade_removed = 81;
+    JadePorts jade_ports = 80;
   }
 }
 

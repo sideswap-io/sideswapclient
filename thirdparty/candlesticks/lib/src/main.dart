@@ -6,7 +6,6 @@ import 'package:candlesticks/src/widgets/mobile_chart.dart';
 import 'package:candlesticks/src/widgets/desktop_chart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'models/candle.dart';
 import 'dart:io' show Platform;
 
 /// StatefulWidget that holds Chart's State (index of

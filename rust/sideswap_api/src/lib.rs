@@ -630,7 +630,7 @@ pub struct OrderCreatedNotification {
     pub order_id: OrderId,
     pub details: Details,
     pub created_at: Timestamp,
-    pub expires_at: Timestamp,
+    pub expires_at: Option<Timestamp>,
     pub own: Option<Own>,
 }
 

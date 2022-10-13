@@ -191,7 +191,6 @@ pub struct SignTxSigningInput {
     pub assetblinder: Option<BlindingFactor>,
     pub amountblinder: Option<BlindingFactor>,
     pub user_path: Vec<u32>,
-    pub script: String,
     pub prevout_script: String,
     pub commitment: String,
 }
@@ -202,8 +201,7 @@ pub struct SignTxOutput {
     pub satoshi: u64,
     pub is_fee: bool,
     pub is_change: bool,
-    pub script: String,
-    pub public_key: Option<String>,
+    pub blinding_key: Option<String>,
     pub user_path: Option<Vec<u32>>,
 }
 

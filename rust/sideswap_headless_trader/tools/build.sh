@@ -3,7 +3,7 @@ set -e
 
 apt update -qq
 apt upgrade -yqq
-apt install --no-install-recommends unzip autoconf automake autotools-dev pkg-config build-essential libtool python3{,-dev,-pip,-virtualenv} python{,-dev}-is-python3 ninja-build clang{,-format,-tidy} git swig openjdk-11-jdk curl libudev-dev lld -yqq
+apt install --no-install-recommends unzip autoconf automake autotools-dev pkg-config build-essential libtool python3{,-dev,-pip,-virtualenv} python{,-dev}-is-python3 ninja-build clang{,-format,-tidy} git swig openjdk-11-jdk curl libudev-dev lld cmake -yqq
 apt clean
 
 update-java-alternatives -s java-1.11.0-openjdk-amd64
@@ -18,7 +18,7 @@ mkdir /build
 cd /build
 git clone https://github.com/blockstream/gdk
 cd gdk
-git checkout release_0.0.53
+git checkout release_0.0.55
 ./tools/build.sh --clang
 
 cd /build

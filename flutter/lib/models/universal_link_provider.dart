@@ -115,7 +115,7 @@ class UniversalLinkProvider with ChangeNotifier {
 
   HandleResult handleSubmitOrder(Uri uri) {
     final orderId = uri.queryParameters['order_id'];
-    if (orderId != null) {
+    if (orderId != null && orderId.length == 64) {
       ref.read(walletProvider).linkOrder(orderId);
       return HandleResult.success;
     }

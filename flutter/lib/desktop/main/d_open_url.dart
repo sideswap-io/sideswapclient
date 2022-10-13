@@ -69,7 +69,9 @@ class _DOpenUrlState extends ConsumerState<DOpenUrl> {
                   trySubmit();
                 },
               ),
-              onChanged: (value) {},
+              onChanged: (value) {
+                trySubmit();
+              },
               autofocus: true,
               style: const TextStyle(color: Colors.black),
             ),

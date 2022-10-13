@@ -1,4 +1,4 @@
-# SideSwap server (and Liquid network)
+# SideSwap prod server (and Liquid network)
 env = "Prod"
 
 # Work dir to store temporary files
@@ -7,11 +7,18 @@ work_dir = "/tmp/work_dir"
 # Mnemonic that has existing B-JDE balance and will receive L-BTC balance
 mnemonic = "<YOUR_MNEMONIC>"
 
-# How many orders should be submitted at the same time (distinct UTXOs are required)
-order_count = 2
+# First asset
+[[sell_assets]]
+asset_id = "78557eb89ea8439dc1a519f4eb0267c86b261068648a0f84a5c6b55ca39b66f1" # B-JDE
+asset_precision = 0 # Asset precision as registered in GDK database, will be checked
+price_usdt = 42.5 # Price of 1 B-JDE in USDt (will be converted to price in L-BTC)
+offer_amount = 1.0 # How much is to sell at once, as a float number
+amp_asset = false
 
-# Price of 1 B-JDE in USDt
-price_usdt = 50
-
-# B-JDE
-trading_asset_id = "78557eb89ea8439dc1a519f4eb0267c86b261068648a0f84a5c6b55ca39b66f1"
+# Second asset
+# [[sell_assets]]
+# asset_id = "<ASSET_ID>"
+# asset_precision = 2
+# price_usdt = 123
+# offer_amount = 0.01
+# amp_asset = false

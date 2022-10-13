@@ -263,7 +263,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       padding: const EdgeInsets.only(top: 6),
                       child: TimeToLive(
                           dropdownValue: ttlSeconds,
-                          dropdownItems: availableTtlValues(),
+                          dropdownItems: availableTtlValues(false),
                           onChanged: (value) {
                             setState(() {
                               ttlSeconds = value!;

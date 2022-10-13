@@ -27,7 +27,7 @@ class SettingsSecurity extends StatelessWidget {
             child: TextButton(
               onPressed: () {},
               style: TextButton.styleFrom(
-                primary: Colors.white,
+                foregroundColor: Colors.white,
                 backgroundColor: const Color(0xFF135579),
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(

@@ -97,7 +97,7 @@ class SettingsButtonState extends State<SettingsButton> {
       child: TextButton(
         onPressed: widget.onPressed,
         style: TextButton.styleFrom(
-          primary: Colors.white,
+          foregroundColor: Colors.white,
           backgroundColor:
               widget.transparent ? Colors.transparent : const Color(0xFF135579),
           shape: const RoundedRectangleBorder(

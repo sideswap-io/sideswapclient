@@ -13,31 +13,41 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 final requestOrderProvider = ChangeNotifierProvider<RequestOrderProvider>(
     (ref) => RequestOrderProvider(ref));
 
-extension DurationExtensions on Duration {
+extension DurationExtensions on Duration? {
   String toStringCustom() {
-    if (inDays > 0) {
-      return '${inDays}d ${inHours.remainder(24)}h';
+    final duration = this;
+    if (duration == null || duration.inSeconds == 0) {
+      return unlimitedTtl;
     }
-    if (inHours > 0) {
-      return '${inHours}h ${inMinutes.remainder(60)}m';
+
+    if (duration.inDays > 0) {
+      return '${duration.inDays}d ${duration.inHours.remainder(24)}h';
     }
-    if (inMinutes > 0) {
-      return '${inMinutes}m ${inSeconds.remainder(60)}s';
+    if (duration.inHours > 0) {
+      return '${duration.inHours}h ${duration.inMinutes.remainder(60)}m';
     }
-    return '${inSeconds}s';
+    if (duration.inMinutes > 0) {
+      return '${duration.inMinutes}m ${duration.inSeconds.remainder(60)}s';
+    }
+    return '${duration.inSeconds}s';
   }
 
   String toStringCustomShort() {
-    if (inDays > 0) {
-      return '${inDays}d';
+    final duration = this;
+    if (duration == null || duration.inSeconds == 0) {
+      return unlimitedTtl;
     }
-    if (inHours > 0) {
-      return '${inHours}h';
+
+    if (duration.inDays > 0) {
+      return '${duration.inDays}d';
     }
-    if (inMinutes > 0) {
-      return '${inMinutes}m';
+    if (duration.inHours > 0) {
+      return '${duration.inHours}h';
     }
-    return '${inSeconds}s';
+    if (duration.inMinutes > 0) {
+      return '${duration.inMinutes}m';
+    }
+    return '${duration.inSeconds}s';
   }
 }
 

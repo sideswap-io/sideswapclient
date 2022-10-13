@@ -61,7 +61,7 @@ class _DHoverButtonState extends State<DHoverButton> {
   void initState() {
     super.initState();
     node = widget.focusNode ?? _createFocusNode();
-    void _handleActionTap() async {
+    void handleActionTap() async {
       if (!enabled) return;
       setState(() => _pressing = true);
       widget.onPressed?.call();
@@ -71,10 +71,10 @@ class _DHoverButtonState extends State<DHoverButton> {
 
     _actionMap = <Type, Action<Intent>>{
       ActivateIntent: CallbackAction<ActivateIntent>(
-        onInvoke: (ActivateIntent intent) => _handleActionTap(),
+        onInvoke: (ActivateIntent intent) => handleActionTap(),
       ),
       ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
-        onInvoke: (ButtonActivateIntent intent) => _handleActionTap(),
+        onInvoke: (ButtonActivateIntent intent) => handleActionTap(),
       ),
     };
   }

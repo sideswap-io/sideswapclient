@@ -39,8 +39,11 @@ const int kSixHours = kOneHour * 6;
 const int kTwelveHours = kSixHours * 2;
 const int kOneDay = kSixHours * 4;
 const int kOneWeek = kOneDay * 7;
+const int kInfTtl = 0;
 
-List<int> availableTtlValues() {
+final unlimitedTtl = 'Inf'.tr();
+
+List<int> availableTtlValues(bool offline) {
   return [
     kTenMinutes,
     kHalfHour,
@@ -49,6 +52,7 @@ List<int> availableTtlValues() {
     kTwelveHours,
     kOneDay,
     kOneWeek,
+    if (offline) kInfTtl,
   ];
 }
 

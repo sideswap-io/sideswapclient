@@ -31,7 +31,7 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
           widget.onChanged(!widget.value);
         },
         style: TextButton.styleFrom(
-          primary: Colors.white,
+          foregroundColor: Colors.white,
           backgroundColor: const Color(0xFF135579),
           padding: EdgeInsets.zero,
           shape: const RoundedRectangleBorder(

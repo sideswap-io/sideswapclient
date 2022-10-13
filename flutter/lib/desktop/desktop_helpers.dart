@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/main/d_asset_info.dart';
+import 'package:sideswap/desktop/main/d_jade_import.dart';
 import 'package:sideswap/desktop/main/d_open_url.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/desktop/main/d_recv_popup.dart';
@@ -88,6 +89,16 @@ void desktopOpenAccount(BuildContext context, AccountAsset account) {
     context: context,
     builder: (context) {
       return DAssetInfo(account: account);
+    },
+    routeSettings: const RouteSettings(name: _popupRouteName),
+  );
+}
+
+void desktopImportJade(BuildContext context) {
+  showDialog<void>(
+    context: context,
+    builder: (context) {
+      return const DJadeImport();
     },
     routeSettings: const RouteSettings(name: _popupRouteName),
   );

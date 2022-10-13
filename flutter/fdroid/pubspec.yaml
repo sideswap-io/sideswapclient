@@ -239,6 +239,10 @@ flutter:
     - assets/language.svg
     - assets/peg-in-out.svg
     - assets/peg-in-out_active.svg
+    - assets/jade.svg
+    - assets/jade_front_idle.svg
+    - assets/jade_front_unlock.svg
+    - assets/question_mark.svg
 
   fonts:
     - family: Roboto

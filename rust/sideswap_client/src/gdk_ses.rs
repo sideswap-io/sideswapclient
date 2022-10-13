@@ -9,9 +9,52 @@ pub struct LoginInfo {
     pub env: Env,
     pub mnemonic: Option<String>,
     pub network: ffi::proto::network_settings::Selected,
-    pub jade_port: Option<sideswap_jade::Port>,
     pub cache_dir: String,
     pub worker: crossbeam_channel::Sender<worker::Message>,
+    pub hw_data: Option<HwData>,
+}
+
+#[derive(Clone)]
+pub struct HwData {
+    pub env: Env,
+    pub name: String,
+    pub jade: std::sync::Arc<sideswap_jade::Jade>,
+    pub resp_receiver: std::sync::Arc<std::sync::mpsc::Receiver<sideswap_jade::Resp>>,
+}
+
+impl HwData {
+    pub fn clear_queue(&self) {
+        // TODO: Should we clear pending queue here?
+        while let Ok(msg) = self.resp_receiver.try_recv() {
+            warn!("unexpected Jade response ignored: {:?}", msg);
+        }
+    }
+
+    pub fn get_resp_with_timeout(
+        &self,
+        time: std::time::Duration,
+    ) -> Result<sideswap_jade::Resp, anyhow::Error> {
+        self.resp_receiver
+            .recv_timeout(time)
+            .map_err(|_| anyhow!("Jade receive timeout"))
+    }
+
+    pub fn get_resp(&self) -> Result<sideswap_jade::Resp, anyhow::Error> {
+        self.get_resp_with_timeout(std::time::Duration::from_secs(10))
+    }
+
+    pub fn get_hw_device(hw_data: Option<&Self>) -> crate::gdk_json::HwDevice {
+        crate::gdk_json::HwDevice {
+            device: hw_data.map(|hw_data| crate::gdk_json::HwDeviceDetails {
+                name: hw_data.name.clone(),
+                supports_ae_protocol: 1,
+                supports_arbitrary_scripts: true,
+                supports_host_unblinding: true,
+                supports_liquid: 1,
+                supports_low_r: true,
+            }),
+        }
+    }
 }
 
 pub trait GdkSes {

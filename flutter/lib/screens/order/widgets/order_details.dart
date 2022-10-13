@@ -62,7 +62,7 @@ class OrderDetailsData {
     this.own = false,
     this.indexPrice = 0,
     this.createdAt = 0,
-    this.expiresAt = 0,
+    this.expiresAt,
   });
 
   final int bitcoinAmount;
@@ -85,7 +85,7 @@ class OrderDetailsData {
   final double indexPrice;
   final MarketType marketType;
   final int createdAt;
-  final int expiresAt;
+  final int? expiresAt;
 
   factory OrderDetailsData.empty() {
     return OrderDetailsData(

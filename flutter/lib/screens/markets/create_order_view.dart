@@ -11,7 +11,6 @@ import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/prompt_allow_tx_chaining.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/models/markets_provider.dart';
 import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -45,7 +44,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
   String expiresTitle = '';
   Timer? _expireTimer;
   bool isModifyDialogOpened = false;
-  int ttlSeconds = kOneWeek;
+  int ttlSeconds = kInfTtl;
   bool ttlLocked = false;
   bool buttonDisabled = false;
 
@@ -69,7 +68,8 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
 
       // Close current view when request expire
       _expireTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (!widget.requestOrder!.getExpiresAt().isNegative) {
+        final expiresAt = widget.requestOrder!.getExpiresAt();
+        if (expiresAt == null || !expiresAt.isNegative) {
           final expires = widget.requestOrder!.getExpireDescription();
           setState(() {
             expiresTitle = 'TTL: $expires';
@@ -86,14 +86,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
       orderDetailsData = ref.read(walletProvider).orderDetailsData;
       autoSignValue = orderDetailsData.autoSign;
       orderTypePublicValue = !orderDetailsData.private;
-      ttlSeconds = kOneWeek;
       twoStepSwapValue = !orderDetailsData.isTracking;
-
-      final isToken =
-          ref.read(requestOrderProvider).isAssetToken(orderDetailsData.assetId);
-      if (isToken) {
-        ttlSeconds = kOneWeek;
-      }
     }
 
     ref.read(marketsProvider).subscribeIndexPrice(orderDetailsData.assetId);
@@ -254,6 +247,10 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
                           : (value) {
                               setState(() {
                                 twoStepSwapValue = value;
+                                if (!twoStepSwapValue &&
+                                    ttlSeconds == kInfTtl) {
+                                  ttlSeconds = kOneWeek;
+                                }
                               });
                             },
                       onModifyPrice: () async {
@@ -340,14 +337,13 @@ class CreateOrderViewBody extends ConsumerWidget {
               orderDetailsData: orderDetailsData,
             ),
             const SizedBox(height: 13),
-            if (twoStepEnabled)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: SignType(
-                  twoStep: twoStepSignValue,
-                  onToggle: onTwoStepSignToggle,
-                ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SignType(
+                twoStep: twoStepSignValue,
+                onToggle: onTwoStepSignToggle,
               ),
+            ),
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: AutoSign(
@@ -367,7 +363,7 @@ class CreateOrderViewBody extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 8),
                 child: TimeToLive(
                   dropdownValue: ttlSeconds,
-                  dropdownItems: availableTtlValues(),
+                  dropdownItems: availableTtlValues(twoStepSignValue),
                   onChanged: onTtlChanged,
                   locked: onTtlChanged == null ? true : false,
                 ),

@@ -4,7 +4,6 @@ import 'dart:ffi' as ffi;
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -324,7 +323,7 @@ class WalletChangeNotifier with ChangeNotifier {
   PublishSubject<PinDecryptedData> pinDecryptDataSubject =
       PublishSubject<PinDecryptedData>();
 
-  final jades = <AccountType, From_JadeUpdated>{};
+  var jades = <From_JadePorts_Port>[];
 
   void sendMsg(To to) {
     if (kDebugMode) {
@@ -980,7 +979,8 @@ class WalletChangeNotifier with ChangeNotifier {
           assetAmount: oc.order.assetAmount.toInt(),
           price: price,
           createdAt: oc.order.createdAt.toInt(),
-          expiresAt: oc.order.expiresAt.toInt(),
+          expiresAt:
+              oc.order.hasExpiresAt() ? oc.order.expiresAt.toInt() : null,
           private: oc.order.private,
           sendBitcoins: sendBitcoins,
           twoStep: oc.order.twoStep,
@@ -1072,15 +1072,15 @@ class WalletChangeNotifier with ChangeNotifier {
         // Not used.
         break;
 
-      case From_Msg.jadeUpdated:
-        final account = getAccountType(from.jadeUpdated.account);
-        jades[account] = from.jadeUpdated;
-        notifyListeners();
-        break;
-      case From_Msg.jadeRemoved:
-        final account = getAccountType(from.jadeRemoved.account);
-        jades.remove(account);
-        // FIXME: Remove accounts and balances here
+      case From_Msg.jadePorts:
+        jades = from.jadePorts.ports.toList();
+        final connected =
+            jades.any((jade) => jade.state == From_JadePorts_State.CONNECTED);
+        if (connected) {
+          desktopClosePopups(navigatorKey.currentContext!);
+          status = Status.walletLoading;
+          loggedIn = true;
+        }
         notifyListeners();
         break;
       case From_Msg.logout:
@@ -2028,8 +2028,12 @@ class WalletChangeNotifier with ChangeNotifier {
       _mnemonic = await _encryption
           .decryptBiometric(ref.read(configProvider).mnemonicEncrypted);
     } else {
-      _mnemonic = await _encryption
-          .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
+      final mnemonicEncrypted = ref.read(configProvider).mnemonicEncrypted;
+      // Temporary workaround for Jade
+      if (mnemonicEncrypted.isEmpty) {
+        return true;
+      }
+      _mnemonic = await _encryption.decryptFallback(mnemonicEncrypted);
     }
 
     if (validateMnemonic(_mnemonic)) {
@@ -2722,11 +2726,10 @@ class WalletChangeNotifier with ChangeNotifier {
     return env() == SIDESWAP_ENV_TESTNET || env() == SIDESWAP_ENV_LOCAL_TESTNET;
   }
 
-  void jadeAction(AccountType account, To_JadeAction_Action action) {
+  void jadeLogin(String port) {
     final msg = To();
-    msg.jadeAction = To_JadeAction();
-    msg.jadeAction.account = getAccount(account);
-    msg.jadeAction.action = action;
+    msg.jadeLogin = To_JadeLogin();
+    msg.jadeLogin.port = port;
     sendMsg(msg);
   }
 }

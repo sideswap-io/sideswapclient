@@ -358,8 +358,6 @@ class SwapAmountRow extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: CustomPaint(
         painter: SwapAmountRowBackground(
-          expiresAt: requestOrder.expiresAt,
-          createdAt: requestOrder.createdAt,
           type: type,
           radius: const Radius.circular(4),
         ),
@@ -425,15 +423,10 @@ class SwapAmountRow extends StatelessWidget {
 }
 
 class SwapAmountRowBackground extends CustomPainter {
-  final int expiresAt;
-  final int createdAt;
   final SwapAmountRowType type;
   final Radius radius;
-  final bool displayTimer = false;
 
   SwapAmountRowBackground({
-    required this.expiresAt,
-    required this.createdAt,
     this.type = SwapAmountRowType.bid,
     this.radius = const Radius.circular(0),
   });
@@ -445,67 +438,13 @@ class SwapAmountRowBackground extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final backgroundPaint = Paint()..color = backgroundColor;
     final rect = Offset.zero & size;
 
-    if (!displayTimer) {
-      var expirePaint = Paint()..color = expireColor.withOpacity(0.14);
-      if (type == SwapAmountRowType.ask) {
-        expirePaint = Paint()..color = expireColor.withOpacity(0.14);
-      }
-      canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), expirePaint);
-      return;
+    var expirePaint = Paint()..color = expireColor.withOpacity(0.14);
+    if (type == SwapAmountRowType.ask) {
+      expirePaint = Paint()..color = expireColor.withOpacity(0.14);
     }
-
-    canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), backgroundPaint);
-
-    final expired = DateTime.fromMillisecondsSinceEpoch(expiresAt);
-    final created = DateTime.fromMillisecondsSinceEpoch(createdAt);
-
-    final maxSeconds = expired.difference(created).inSeconds;
-    final currentSeconds = expired.difference(DateTime.now()).inSeconds;
-
-    var expireWidth = convertToNewRange(
-      value: currentSeconds.toDouble(),
-      minValue: 0,
-      maxValue: maxSeconds.toDouble(),
-      newMin: 0,
-      newMax: rect.width,
-    );
-
-    if (expireWidth < 0) {
-      expireWidth = 0;
-    }
-
-    if (type == SwapAmountRowType.bid) {
-      final expireRect = Rect.fromLTRB(
-          rect.right - expireWidth, rect.top, rect.right, rect.bottom);
-      final expirePaint = Paint()..color = expireColor.withOpacity(0.14);
-      final widthDiff = rect.width - expireWidth;
-      if (widthDiff >= radius.x) {
-        canvas.drawRRect(
-            RRect.fromRectAndCorners(expireRect,
-                topRight: radius, bottomRight: radius),
-            expirePaint);
-      } else {
-        canvas.drawRRect(
-            RRect.fromRectAndRadius(expireRect, radius), expirePaint);
-      }
-    } else {
-      final expireRect = Rect.fromLTRB(
-          rect.left, rect.top, rect.left + expireWidth, rect.bottom);
-      final expirePaint = Paint()..color = expireColor.withOpacity(0.24);
-      final widthDiff = rect.width - expireWidth;
-      if (widthDiff >= radius.x) {
-        canvas.drawRRect(
-            RRect.fromRectAndCorners(expireRect,
-                topLeft: radius, bottomLeft: radius),
-            expirePaint);
-      } else {
-        canvas.drawRRect(
-            RRect.fromRectAndRadius(expireRect, radius), expirePaint);
-      }
-    }
+    canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), expirePaint);
   }
 
   @override

@@ -31,8 +31,6 @@ enum ReviewState {
   disabled,
 }
 
-const twoStepEnabled = true;
-
 String getTitle(ReviewScreen screen, ReviewState state) {
   switch (screen) {
     case ReviewScreen.submitStart:
@@ -72,7 +70,10 @@ String getButtonTitle(ReviewScreen screen, ReviewState state, bool twoStep) {
   }
 }
 
-String getTtlDescription(int seconds) {
+String getTtlDescription(int? seconds) {
+  if (seconds == null || seconds == 0) {
+    return unlimitedTtl;
+  }
   final sec = Duration(seconds: seconds);
   if (sec.inHours >= 1) {
     return 'HOURS'.plural(sec.inHours, args: ['${sec.inHours}']);
@@ -99,7 +100,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
   bool autoSign = true;
   bool autoSignOld = true;
   bool public = true;
-  int ttl = kOneWeek;
+  int ttl = kInfTtl;
   bool twoStep = true;
 
   // Edit order values
@@ -226,7 +227,9 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
     final feeValue = amountStrNamed(order.fee, kLiquidBitcoinTicker);
     final autoSignValue = order.autoSign ? 'On'.tr() : 'Off'.tr();
     final orderTypeValue = order.private ? 'Private'.tr() : 'Public'.tr();
-    final ttlSeconds = ((order.expiresAt - order.createdAt) / 1000).round();
+    final ttlSeconds = order.expiresAt != null
+        ? ((order.expiresAt! - order.createdAt) / 1000).round()
+        : null;
     final ttlValue = getTtlDescription(ttlSeconds);
     final shareUrl = ref.read(requestOrderProvider).getAddressToShare(order);
     final isSell = order.sellBitcoin == asset.swapMarket;
@@ -350,9 +353,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                       : [],
                   if (widget.screen == ReviewScreen.quote)
                     _Field(name: 'Order Type'.tr(), value: Text(orderType)),
-                  if (twoStepEnabled &&
-                      (widget.screen == ReviewScreen.submitStart ||
-                          widget.screen == ReviewScreen.edit))
+                  if ((widget.screen == ReviewScreen.submitStart ||
+                      widget.screen == ReviewScreen.edit))
                     _SignTypeControls(
                       twoStep: twoStep,
                       onTwoStepChanged: (widget.screen == ReviewScreen.edit)
@@ -362,6 +364,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                                 twoStep = value;
                                 if (twoStep) {
                                   autoSign = true;
+                                } else if (ttl == kInfTtl) {
+                                  ttl = kOneWeek;
                                 }
                               });
                             },
@@ -817,6 +821,7 @@ class _CreateOrderControls extends StatelessWidget {
                     builder: (context) {
                       return DTtlPopup(
                         selected: ttl,
+                        offline: twoStep,
                       );
                     },
                   );

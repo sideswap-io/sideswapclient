@@ -7,6 +7,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/desktop/markets/d_markets_root.dart';
+import 'package:sideswap/desktop/widgets/d_back_button.dart';
 import 'package:sideswap/models/market_data_provider.dart';
 import 'package:sideswap/models/token_market_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -68,28 +69,8 @@ class _DChartsState extends ConsumerState<DCharts> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  DHoverButton(
-                    builder: (context, states) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 7, horizontal: 12),
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
-                          border: Border.all(
-                            color: const Color(0xFF00C5FF),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            SvgPicture.asset('assets/arrow_back3.svg'),
-                            const SizedBox(width: 7),
-                            Text('Back'.tr()),
-                          ],
-                        ),
-                      );
-                    },
-                    onPressed: widget.onBackPressed,
+                  DBackButton(
+                    onBackPressed: widget.onBackPressed,
                   ),
                 ],
               ),

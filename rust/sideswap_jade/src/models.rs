@@ -132,7 +132,6 @@ pub struct RespGetCommitments {
     pub vbf: ByteBuf,
     pub asset_generator: ByteBuf,
     pub value_commitment: ByteBuf,
-    pub hmac: ByteBuf,
     pub asset_id: ByteBuf,
     pub value: u64,
 }
@@ -162,8 +161,6 @@ pub struct TrustedCommitment {
     pub abf: Option<ByteBuf>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vbf: Option<ByteBuf>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub hmac: Option<ByteBuf>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value_commitment: Option<ByteBuf>,
 }

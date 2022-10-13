@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:sideswap/common/helpers.dart';
 
 class TimeToLive extends StatefulWidget {
   const TimeToLive({
@@ -26,6 +27,9 @@ class TimeToLiveState extends State<TimeToLive> {
   final _dropdownButtonKey = GlobalKey();
 
   String getTtlDescription(int seconds) {
+    if (seconds == 0) {
+      return unlimitedTtl;
+    }
     final sec = Duration(seconds: seconds);
     if (sec.inHours >= 1) {
       return '${sec.inHours}h';

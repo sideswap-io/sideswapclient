@@ -45,7 +45,7 @@ class CustomBigButton extends StatelessWidget {
         style: buttonStyle ??
             TextButton.styleFrom(
               padding: EdgeInsets.zero,
-              primary: enabled
+              foregroundColor: enabled
                   ? textColor ?? Colors.white
                   : textColor?.withOpacity(0.5) ??
                       Colors.white.withOpacity(0.5),

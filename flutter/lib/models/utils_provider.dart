@@ -6,7 +6,6 @@ import 'package:sideswap/common/helpers.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
-import 'package:sideswap/desktop/d_home.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/flavor_config.dart';

@@ -28,23 +28,31 @@ extension RequestOrderEx on RequestOrder {
     return shortFormat.format(getCreatedAt());
   }
 
-  Duration getExpiresAt() {
-    return DateTime.fromMillisecondsSinceEpoch(expiresAt)
+  Duration? getExpiresAt() {
+    if (expiresAt == null) {
+      return null;
+    }
+    return DateTime.fromMillisecondsSinceEpoch(expiresAt!)
         .difference(DateTime.now());
   }
 
   bool isExpired() {
-    return getExpiresAt().isNegative;
+    final expiresAt = getExpiresAt();
+    return expiresAt != null && expiresAt.isNegative;
   }
 
-  Duration getExpireDuration() {
-    final expireAt = DateTime.fromMillisecondsSinceEpoch(expiresAt);
+  Duration? getExpireDuration() {
+    if (expiresAt == null) {
+      return null;
+    }
+    final expireAt = DateTime.fromMillisecondsSinceEpoch(expiresAt!);
     final duration = expireAt.difference(DateTime.now());
     return duration;
   }
 
   String getExpireDescription() {
-    return getExpireDuration().toStringCustom();
+    final duration = getExpireDuration();
+    return duration.toStringCustom();
   }
 
   int get bitcoinAmountWithFee {
@@ -60,7 +68,7 @@ class RequestOrder {
   final int assetAmount;
   final double price;
   final int createdAt;
-  final int expiresAt;
+  final int? expiresAt;
   final RequestOrderType requestOrderType = RequestOrderType.order;
   final bool private;
   final bool sendBitcoins;

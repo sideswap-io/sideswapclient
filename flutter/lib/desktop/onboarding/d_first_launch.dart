@@ -8,6 +8,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
+import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/locales_provider.dart';
@@ -162,6 +163,24 @@ class DFirstLaunch extends ConsumerWidget {
                     ref.read(walletProvider).setReviewLicenseImportWallet();
                   },
                   child: Text('IMPORT WALLET'.tr()),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: DCustomTextBigButton(
+                  onPressed: () {
+                    desktopImportJade(context);
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/jade.svg',
+                      ),
+                      const SizedBox(width: 10),
+                      Text('JADE'.tr()),
+                    ],
+                  ),
                 ),
               ),
               Expanded(child: Container()),

@@ -15,7 +15,6 @@ import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/utils_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/protobuf/sideswap.pbenum.dart';
 
 class DesktopHome extends ConsumerStatefulWidget {
   const DesktopHome({super.key});
@@ -134,35 +133,6 @@ class DesktopHomeState extends ConsumerState<DesktopHome> {
                       isAmp: true,
                       accounts: ampAccounts,
                     ),
-                    Column(
-                        children: wallet.jades.values
-                            .map((jade) => _SubAccount(
-                                  name: jade.name,
-                                  isAmp: false,
-                                  accounts: wallet
-                                      .getAllAccounts()
-                                      .where((e) =>
-                                          e.account ==
-                                          getAccountType(jade.account))
-                                      .toList(),
-                                  onUnlock: jade.status ==
-                                          From_JadeUpdated_Status.LOCKED
-                                      ? () {
-                                          wallet.jadeAction(
-                                              getAccountType(jade.account),
-                                              To_JadeAction_Action.UNLOCK);
-                                        }
-                                      : null,
-                                  onLogin: jade.status ==
-                                          From_JadeUpdated_Status.UNLOCKED
-                                      ? () {
-                                          wallet.jadeAction(
-                                              getAccountType(jade.account),
-                                              To_JadeAction_Action.LOGIN);
-                                        }
-                                      : null,
-                                ))
-                            .toList()),
                   ],
                 ),
               ),
@@ -364,15 +334,11 @@ class _SubAccount extends StatefulWidget {
     required this.name,
     required this.isAmp,
     required this.accounts,
-    this.onUnlock,
-    this.onLogin,
   });
 
   final String name;
   final bool isAmp;
   final List<AccountAsset> accounts;
-  final VoidCallback? onUnlock;
-  final VoidCallback? onLogin;
 
   @override
   State<_SubAccount> createState() => _SubAccountState();
@@ -411,20 +377,6 @@ class _SubAccountState extends State<_SubAccount> {
                     _expanded ? 'assets/arrow_down.svg' : 'assets/arrow_up.svg',
                   ),
                   const Spacer(),
-                  if (widget.onUnlock != null)
-                    DHoverButton(
-                      builder: (context, states) {
-                        return Text('Unlock'.tr());
-                      },
-                      onPressed: widget.onUnlock,
-                    ),
-                  if (widget.onLogin != null)
-                    DHoverButton(
-                      builder: (context, states) {
-                        return Text('Login'.tr());
-                      },
-                      onPressed: widget.onLogin,
-                    ),
                 ],
               ),
             ),
