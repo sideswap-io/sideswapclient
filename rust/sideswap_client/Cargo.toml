@@ -37,7 +37,7 @@ bip39 = "1.0.1"
 ureq = { version = "2.4.0", features = ["json"] }
 time = {version= "=0.3.5", features = ["local-offset", "formatting", "macros", "parsing"]}
 crossbeam-channel = "0.5.1"
-tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
+tokio = { version = "1.20.3", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 secp256k1 = { version = "0.20.3", features = ["rand"] }
 block-modes = "0.8.0"
 once_cell = "*"
