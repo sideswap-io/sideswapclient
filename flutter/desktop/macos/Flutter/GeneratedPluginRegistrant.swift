@@ -8,7 +8,7 @@ import Foundation
 import file_selector_macos
 import flutter_local_notifications
 import path_provider_macos
-import share_plus_macos
+import share_plus
 import shared_preferences_macos
 import url_launcher_macos
 import window_manager

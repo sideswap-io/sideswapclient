@@ -2,6 +2,7 @@ use crate::ffi;
 use crate::gdk;
 use crate::gdk_json;
 use crate::gdk_ses;
+use crate::gdk_ses::NotifCallback;
 use crate::models;
 use crate::models::Transaction;
 use crate::swaps;
@@ -33,13 +34,16 @@ pub struct GdkSesCpp {
     session: *mut gdk::GA_session,
     subaccount: Option<i32>,
     receiving_id: Option<String>,
-    signed_tx: Option<serde_json::Value>,
     policy_asset: AssetId,
 }
 
 impl gdk_ses::GdkSes for GdkSesCpp {
     fn login(&mut self) -> Result<(), anyhow::Error> {
         unsafe { login(self) }
+    }
+
+    fn set_watch_only(&mut self, username: &str, password: &str) -> Result<(), anyhow::Error> {
+        unsafe { set_watch_only(self, username, password) }
     }
 
     fn connect(&mut self) {
@@ -77,15 +81,12 @@ impl gdk_ses::GdkSes for GdkSesCpp {
         unsafe { try_get_recv_addr(self) }
     }
 
-    fn create_tx(
-        &mut self,
-        tx: ffi::proto::CreateTx,
-    ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+    fn create_tx(&mut self, tx: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error> {
         unsafe { try_create_tx(self, tx) }
     }
 
-    fn send_tx(&mut self) -> Result<sideswap_api::Txid, anyhow::Error> {
-        unsafe { try_send_tx(self) }
+    fn send_tx(&mut self, tx: &serde_json::Value) -> Result<sideswap_api::Txid, anyhow::Error> {
+        unsafe { try_send_tx(self, tx) }
     }
 
     fn get_utxos(&self) -> Result<ffi::proto::from::UtxoUpdate, anyhow::Error> {
@@ -115,7 +116,7 @@ impl gdk_ses::GdkSes for GdkSesCpp {
     }
 
     fn get_previous_addresses(
-        &self,
+        &mut self,
         last_pointer: Option<u32>,
         internal: bool,
     ) -> Result<gdk_json::PreviousAddresses, anyhow::Error> {
@@ -130,7 +131,7 @@ impl gdk_ses::GdkSes for GdkSesCpp {
     }
 
     fn sig_single_maker_tx(
-        &self,
+        &mut self,
         input: &swaps::SigSingleInput,
         output: &swaps::SigSingleOutput,
     ) -> Result<swaps::SigSingleMaker, anyhow::Error> {
@@ -138,7 +139,7 @@ impl gdk_ses::GdkSes for GdkSesCpp {
     }
 
     fn verify_and_sign_pset(
-        &self,
+        &mut self,
         amounts: &crate::swaps::Amounts,
         pset: &str,
         nonces: &[String],
@@ -233,7 +234,59 @@ impl Drop for AuthHandlerOwner {
     }
 }
 
+fn unlock_hw(hw_data: &HwData) -> Result<(), anyhow::Error> {
+    hw_data.clear_queue();
+    hw_data.jade.send(sideswap_jade::Req::ReadStatus);
+    hw_data.set_status(gdk_ses::JadeStatus::ReadStatus);
+    let resp = hw_data.get_resp();
+    let status = match resp {
+        Ok(sideswap_jade::Resp::ReadStatus(v)) => v,
+        resp => bail!("unexpected Jade response: {:?}", resp),
+    };
+    debug!("jade state: {:?}", status.jade_state);
+
+    match status.jade_state {
+        sideswap_jade::models::State::Ready => {
+            debug!("jade already unlocked");
+        }
+        sideswap_jade::models::State::Locked => {
+            let network = if hw_data.env.data().mainnet {
+                sideswap_jade::models::JadeNetwork::Liquid
+            } else {
+                sideswap_jade::models::JadeNetwork::TestnetLiquid
+            };
+            hw_data.jade.send(sideswap_jade::Req::AuthUser(network));
+            hw_data.set_status(gdk_ses::JadeStatus::AuthUser);
+            let resp = hw_data.get_resp_with_timeout(std::time::Duration::from_secs(360));
+            let res = match resp {
+                Ok(sideswap_jade::Resp::AuthUser(v)) => v,
+                resp => bail!("unexpected Jade response: {:?}", resp),
+            };
+            debug!("jade unlock result: {}", res);
+            ensure!(res, "unlock failed");
+        }
+        sideswap_jade::models::State::Uninit
+        | sideswap_jade::models::State::Unsaved
+        | sideswap_jade::models::State::Temp => {
+            bail!("unexpected jade state: {:?}", status.jade_state);
+        }
+    }
+
+    Ok(())
+}
+
 unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
+    hw_data: Option<&HwData>,
+    call: *mut gdk::GA_auth_handler,
+) -> Result<T, anyhow::Error> {
+    let result = run_auth_handler(hw_data, call);
+    if let Some(hw_data) = hw_data {
+        hw_data.set_status(gdk_ses::JadeStatus::Idle);
+    }
+    result
+}
+
+unsafe fn run_auth_handler<T: serde::de::DeserializeOwned>(
     hw_data: Option<&HwData>,
     call: *mut gdk::GA_auth_handler,
 ) -> Result<T, anyhow::Error> {
@@ -257,6 +310,10 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
         let required_data = result
             .required_data
             .ok_or_else(|| anyhow!("required_data is empty"))?;
+
+        // Check that device is online and unlock it if needed
+        unlock_hw(hw_data)?;
+
         match required_data.action {
             gdk_json::HwAction::GetXpubs => {
                 let paths = required_data.paths.unwrap();
@@ -265,16 +322,18 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 for path in paths {
                     hw_data.clear_queue();
                     let network = if hw_data.env.data().mainnet {
-                        sideswap_jade::Network::Liquid
+                        sideswap_jade::models::JadeNetwork::Liquid
                     } else {
-                        sideswap_jade::Network::TestnetLiquid
+                        sideswap_jade::models::JadeNetwork::TestnetLiquid
                     };
-                    hw_data.jade.resolve_xpub(network, path);
-                    let resp = hw_data.get_resp()?;
+                    hw_data.jade.send(sideswap_jade::Req::ResolveXpub(
+                        sideswap_jade::models::ResolveXpubReq { network, path },
+                    ));
+                    let resp = hw_data.get_resp();
                     let resp = match resp {
-                        sideswap_jade::Resp::ResolveXpub(v) => v,
+                        Ok(sideswap_jade::Resp::ResolveXpub(v)) => v,
                         resp => bail!("unexpected Jade response: {:?}", resp),
-                    }?;
+                    };
                     xpubs.push(resp);
                 }
                 let result = gdk_json::GetXPubsRes { xpubs };
@@ -291,16 +350,18 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
 
                 for script in scripts.iter() {
                     let script = hex::decode(&script).unwrap();
-                    hw_data.jade.get_blinding_key(script);
+                    hw_data
+                        .jade
+                        .send(sideswap_jade::Req::GetBlindingKey(script));
                 }
 
                 let mut blinding_keys = Vec::new();
                 for _ in scripts.iter() {
-                    let resp = hw_data.get_resp()?;
+                    let resp = hw_data.get_resp();
                     let resp = match resp {
-                        sideswap_jade::Resp::GetBlindingKey(v) => v,
+                        Ok(sideswap_jade::Resp::GetBlindingKey(v)) => v,
                         resp => bail!("unexpected Jade response: {:?}", resp),
-                    }?;
+                    };
                     blinding_keys.push(hex::encode(&resp));
                 }
                 let result = gdk_json::GetBlindingPublicKeys {
@@ -323,28 +384,35 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 for (script, public_key) in scripts.iter().zip(public_keys.iter()) {
                     let script = hex::decode(&script).unwrap();
                     let public_key = hex::decode(&public_key).unwrap();
-                    hw_data.jade.get_shared_nonce(script.clone(), public_key);
+                    hw_data.jade.send(sideswap_jade::Req::GetSharedNonce(
+                        sideswap_jade::models::GetSharedNonceReq {
+                            script: script.clone(),
+                            their_pubkey: public_key,
+                        },
+                    ));
                     if blinding_keys_required {
-                        hw_data.jade.get_blinding_key(script);
+                        hw_data
+                            .jade
+                            .send(sideswap_jade::Req::GetBlindingKey(script));
                     }
                 }
 
                 let mut nonces = Vec::new();
                 let mut blinding_keys = Vec::new();
                 for _ in scripts.iter() {
-                    let resp = hw_data.get_resp()?;
+                    let resp = hw_data.get_resp();
                     let resp = match resp {
-                        sideswap_jade::Resp::GetSharedNonce(v) => v,
+                        Ok(sideswap_jade::Resp::GetSharedNonce(v)) => v,
                         resp => bail!("unexpected Jade response: {:?}", resp),
-                    }?;
+                    };
                     nonces.push(hex::encode(&resp));
 
                     if blinding_keys_required {
-                        let resp = hw_data.get_resp()?;
+                        let resp = hw_data.get_resp();
                         let resp = match resp {
-                            sideswap_jade::Resp::GetBlindingKey(v) => v,
+                            Ok(sideswap_jade::Resp::GetBlindingKey(v)) => v,
                             resp => bail!("unexpected Jade response: {:?}", resp),
-                        }?;
+                        };
                         blinding_keys.push(hex::encode(&resp));
                     }
                 }
@@ -359,6 +427,8 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
             }
 
             gdk_json::HwAction::SignTx => {
+                hw_data.set_status(gdk_ses::JadeStatus::SignTx);
+
                 let transaction = required_data.transaction.unwrap();
                 let signing_inputs = required_data.signing_inputs.unwrap();
                 let transaction_outputs = required_data.transaction_outputs.unwrap();
@@ -417,17 +487,19 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     let public_key = hex::decode(output.blinding_key.as_ref().unwrap()).unwrap();
 
                     let vbf = if output_index == last_blinded_index {
-                        hw_data.jade.get_blinding_factor(
-                            hash_prevouts.clone(),
-                            output_index as u32,
-                            sideswap_jade::BlindingFactorType::Asset,
-                        );
+                        hw_data.jade.send(sideswap_jade::Req::GetBlindingFactor(
+                            sideswap_jade::models::GetBlindingFactorReq {
+                                hash_prevouts: hash_prevouts.clone(),
+                                output_index: output_index as u32,
+                                factor_type: sideswap_jade::models::BlindingFactorType::Asset,
+                            },
+                        ));
 
-                        let resp = hw_data.get_resp()?;
+                        let resp = hw_data.get_resp();
                         let abf = match resp {
-                            sideswap_jade::Resp::GetBlindingFactor(v) => v,
+                            Ok(sideswap_jade::Resp::GetBlindingFactor(v)) => v,
                             resp => bail!("unexpected Jade response: {:?}", resp),
-                        }?;
+                        };
                         let abf =
                             elements::confidential::AssetBlindingFactor::from_slice(&abf).unwrap();
 
@@ -471,19 +543,21 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                         None
                     };
 
-                    hw_data.jade.get_commitments(
-                        asset_id_rev.clone(),
-                        output.satoshi,
-                        hash_prevouts.clone(),
-                        output_index as u32,
-                        vbf,
-                    );
+                    hw_data.jade.send(sideswap_jade::Req::GetCommitments(
+                        sideswap_jade::models::GetCommitmentsReq {
+                            asset_id: asset_id_rev.clone(),
+                            value: output.satoshi,
+                            hash_prevouts: hash_prevouts.clone(),
+                            output_index: output_index as u32,
+                            vbf,
+                        },
+                    ));
 
-                    let resp = hw_data.get_resp()?;
+                    let resp = hw_data.get_resp();
                     let commitment = match resp {
-                        sideswap_jade::Resp::GetCommitments(v) => v,
+                        Ok(sideswap_jade::Resp::GetCommitments(v)) => v,
                         resp => bail!("unexpected Jade response: {:?}", resp),
-                    }?;
+                    };
 
                     outputs.push(Output {
                         value: output.satoshi,
@@ -519,9 +593,9 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 debug!("blinding succeed: {:?}", &outputs);
 
                 let network = if hw_data.env.data().mainnet {
-                    sideswap_jade::Network::Liquid
+                    sideswap_jade::models::JadeNetwork::Liquid
                 } else {
-                    sideswap_jade::Network::TestnetLiquid
+                    sideswap_jade::models::JadeNetwork::TestnetLiquid
                 };
 
                 let sign_tx = sideswap_jade::models::ReqSignTx {
@@ -533,44 +607,48 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     change,
                 };
 
-                hw_data.jade.sign_tx(sign_tx);
+                hw_data.jade.send(sideswap_jade::Req::SignTx(sign_tx));
                 // TODO: Decide how much we should wait here
-                let resp = hw_data.get_resp_with_timeout(std::time::Duration::from_secs(120))?;
+                let resp = hw_data.get_resp_with_timeout(std::time::Duration::from_secs(120));
                 let sign_tx_result = match resp {
-                    sideswap_jade::Resp::SignTx(v) => v,
+                    Ok(sideswap_jade::Resp::SignTx(v)) => v,
                     resp => bail!("unexpected Jade response: {:?}", resp),
-                }?;
+                };
                 ensure!(sign_tx_result, "sign tx request failed");
 
                 let mut signer_commitments = Vec::new();
                 for input in signing_inputs.iter() {
-                    hw_data.jade.tx_input(sideswap_jade::models::ReqTxInput {
-                        is_witness: true,
-                        path: input.user_path.clone(),
-                        script: ByteBuf::from(hex::decode(&input.prevout_script).unwrap()),
-                        value_commitment: ByteBuf::from(hex::decode(&input.commitment).unwrap()),
-                        ae_host_commitment: ByteBuf::from(
-                            hex::decode(&input.ae_host_commitment).unwrap(),
-                        ),
-                    });
-                    let resp = hw_data.get_resp()?;
+                    hw_data.jade.send(sideswap_jade::Req::TxInput(
+                        sideswap_jade::models::ReqTxInput {
+                            is_witness: true,
+                            path: input.user_path.clone(),
+                            script: ByteBuf::from(hex::decode(&input.prevout_script).unwrap()),
+                            value_commitment: ByteBuf::from(
+                                hex::decode(&input.commitment).unwrap(),
+                            ),
+                            ae_host_commitment: ByteBuf::from(
+                                hex::decode(&input.ae_host_commitment).unwrap(),
+                            ),
+                        },
+                    ));
+                    let resp = hw_data.get_resp();
                     let tx_input = match resp {
-                        sideswap_jade::Resp::TxInput(v) => v,
+                        Ok(sideswap_jade::Resp::TxInput(v)) => v,
                         resp => bail!("unexpected Jade response: {:?}", resp),
-                    }?;
+                    };
                     signer_commitments.push(hex::encode(&tx_input));
                 }
 
                 let mut signatures = Vec::new();
                 for input in signing_inputs.iter() {
-                    hw_data
-                        .jade
-                        .get_signature(hex::decode(&input.ae_host_entropy).unwrap());
-                    let resp = hw_data.get_resp()?;
+                    hw_data.jade.send(sideswap_jade::Req::GetSignature(
+                        hex::decode(&input.ae_host_entropy).unwrap(),
+                    ));
+                    let resp = hw_data.get_resp();
                     let signature = match resp {
-                        sideswap_jade::Resp::GetSignature(v) => v,
+                        Ok(sideswap_jade::Resp::GetSignature(v)) => v,
                         resp => bail!("unexpected Jade response: {:?}", resp),
-                    }?;
+                    };
                     signatures.push(hex::encode(&signature));
                 }
 
@@ -620,19 +698,27 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
 
                 hw_data.clear_queue();
 
-                hw_data.jade.sign_message(path, message, ae_host_commitment);
-                let resp = hw_data.get_resp()?;
+                hw_data.jade.send(sideswap_jade::Req::SignMessage(
+                    sideswap_jade::models::SignMessageReq {
+                        path,
+                        message,
+                        ae_host_commitment,
+                    },
+                ));
+                let resp = hw_data.get_resp();
                 let signer_commitment = match resp {
-                    sideswap_jade::Resp::SignMessage(v) => v,
+                    Ok(sideswap_jade::Resp::SignMessage(v)) => v,
                     resp => bail!("unexpected Jade response: {:?}", resp),
-                }?;
+                };
 
-                hw_data.jade.get_signature(ae_host_entropy);
-                let resp = hw_data.get_resp()?;
+                hw_data
+                    .jade
+                    .send(sideswap_jade::Req::GetSignature(ae_host_entropy));
+                let resp = hw_data.get_resp();
                 let signature = match resp {
-                    sideswap_jade::Resp::GetSignature(v) => v,
+                    Ok(sideswap_jade::Resp::GetSignature(v)) => v,
                     resp => bail!("unexpected Jade response: {:?}", resp),
-                }?;
+                };
 
                 // Convert signature into DER format
                 let signature = match signature.len() {
@@ -681,7 +767,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
 
 struct NotifContext {
     account_id: AccountId,
-    worker: crossbeam_channel::Sender<worker::Message>,
+    notif_callback: NotifCallback,
     session: *const gdk::GA_session,
 }
 
@@ -699,12 +785,7 @@ unsafe extern "C" fn notification_callback_cpp(
     );
     let details = details.to_json::<gdk_json::Notification>().unwrap();
 
-    let result = context
-        .worker
-        .send(worker::Message::Notif(context.account_id, details));
-    if let Err(e) = result {
-        error!("sending notification message failed: {}", e);
-    }
+    (*context.notif_callback)(context.account_id, details);
 }
 
 fn last_gdk_error_details() -> Result<String, anyhow::Error> {
@@ -845,7 +926,7 @@ unsafe fn try_get_recv_addr(data: &GdkSesCpp) -> Result<String, anyhow::Error> {
 unsafe fn try_create_tx(
     data: &mut GdkSesCpp,
     tx: ffi::proto::CreateTx,
-) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+) -> Result<serde_json::Value, anyhow::Error> {
     let session = data.session;
     let subaccount = data.get_subaccount()?;
     let send_asset = AssetId::from_str(&tx.balance.asset_id).unwrap();
@@ -915,8 +996,17 @@ unsafe fn try_create_tx(
     ensure!(created_tx.error.is_empty(), "{}", created_tx.error);
     ensure!(created_tx.fee.unwrap_or_default() > 0, "network fee is 0");
 
+    Ok(created_tx_json)
+}
+
+unsafe fn try_send_tx(
+    data: &mut GdkSesCpp,
+    tx: &serde_json::Value,
+) -> Result<sideswap_api::Txid, anyhow::Error> {
+    let session = data.session;
+
     let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_sign_transaction(session, GdkJson::new(&created_tx_json).as_ptr(), &mut call);
+    let rc = gdk::GA_sign_transaction(session, GdkJson::new(&tx).as_ptr(), &mut call);
     ensure!(
         rc == 0,
         "GA_sign_transaction failed: {}",
@@ -928,38 +1018,15 @@ unsafe fn try_create_tx(
         serde_json::from_value::<gdk_json::SignTransactionResult>(signed_tx_json.clone())
             .map_err(|e| anyhow!("parsing signed transaction JSON failed: {}", e))?;
     ensure!(signed_tx.error.is_empty(), "{}", signed_tx.error);
-    debug!("created tx: {:?}", &created_tx);
+    debug!("signed tx: {:?}", &signed_tx);
 
     ensure!(signed_tx
         .transaction_outputs
         .iter()
-        .all(|v| v.address.is_none() == v.is_fee));
-    let addressees = signed_tx
-        .transaction_outputs
-        .iter()
-        .filter(|v| !v.is_change && !v.is_fee)
-        .map(|v| gdk_common::model::AddressAmount {
-            address: v.address.as_ref().unwrap().clone(),
-            satoshi: v.satoshi,
-            asset_id: Some(v.asset_id.to_string()),
-        })
-        .collect::<Vec<_>>();
-    let result = worker::get_created_tx(&tx, &signed_tx.transaction, &addressees)?;
-
-    data.signed_tx = Some(signed_tx_json);
-
-    Ok(result)
-}
-
-unsafe fn try_send_tx(data: &mut GdkSesCpp) -> Result<sideswap_api::Txid, anyhow::Error> {
-    let signed_tx = data
-        .signed_tx
-        .take()
-        .ok_or_else(|| anyhow!("signed transaction not found"))?;
-    let session = data.session;
+        .all(|v| v.address.is_none() == v.is_fee.unwrap_or_default()));
 
     let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_send_transaction(session, GdkJson::new(&signed_tx).as_ptr(), &mut call);
+    let rc = gdk::GA_send_transaction(session, GdkJson::new(&signed_tx_json).as_ptr(), &mut call);
     ensure!(
         rc == 0,
         "GA_send_transaction failed: {}",
@@ -1217,7 +1284,7 @@ unsafe fn sig_single_maker_utxo(
         .find(|(_, output)| {
             output.address.as_ref() == Some(&recv_addr.address)
                 && output.satoshi == input.value
-                && output.asset_id == send_asset
+                && output.asset_id == Some(send_asset)
         })
         .ok_or_else(|| anyhow!("constructed UTXO not found"))?;
     let output_asset_bf = output
@@ -1246,7 +1313,7 @@ unsafe fn sig_single_maker_utxo(
         txhash: sideswap_api::Hash32::from_slice(&tx.txid().into_inner()).unwrap(),
         pointer: recv_addr.pointer,
         pt_idx: pt_idx as u32,
-        asset_id: output.asset_id,
+        asset_id: output.asset_id.unwrap(),
         satoshi: input.value,
         amountblinder: Some(output_value_bf),
         assetblinder: Some(output_asset_bf),
@@ -1721,30 +1788,46 @@ unsafe fn login(data: &mut GdkSesCpp) -> Result<(), anyhow::Error> {
     let session = data.session;
     let hw_data = data.login_info.hw_data.as_ref();
 
-    let mut call = std::ptr::null_mut();
-    let hw_device = HwData::get_hw_device(hw_data);
-    let login_user = gdk_json::LoginUser {
-        mnemonic: data.login_info.mnemonic.clone(),
-    };
-    let rc = gdk::GA_register_user(
-        session,
-        GdkJson::new(&hw_device).as_ptr(),
-        GdkJson::new(&login_user).as_ptr(),
-        &mut call,
-    );
-    ensure!(
-        rc == 0,
-        "GA_register_user failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let register_result = run_auth_handler_impl::<serde_json::Value>(hw_data, call)
-        .map_err(|e| anyhow!("registration failed: {}", e))?;
-    debug!("registration result: {}", register_result);
+    if data.login_info.watch_only.is_none() {
+        let mut call = std::ptr::null_mut();
+        let hw_device = HwData::get_hw_device(hw_data);
+        let login_user = gdk_json::LoginUser {
+            mnemonic: data.login_info.mnemonic.clone(),
+            username: None,
+            password: None,
+        };
+        let rc = gdk::GA_register_user(
+            session,
+            GdkJson::new(&hw_device).as_ptr(),
+            GdkJson::new(&login_user).as_ptr(),
+            &mut call,
+        );
+        ensure!(
+            rc == 0,
+            "GA_register_user failed: {}",
+            last_gdk_error_details().unwrap_or_default()
+        );
+        let register_result = run_auth_handler_impl::<serde_json::Value>(hw_data, call)
+            .map_err(|e| anyhow!("registration failed: {}", e))?;
+        debug!("registration result: {}", register_result);
+    }
 
     let mnemonic = data.login_info.mnemonic.clone();
+    let username = data
+        .login_info
+        .watch_only
+        .as_ref()
+        .map(|watch_only| watch_only.username.clone());
+    let password = data
+        .login_info
+        .watch_only
+        .as_ref()
+        .map(|watch_only| watch_only.password.clone());
     let hw_device = HwData::get_hw_device(hw_data);
     let login_user = gdk_json::LoginUser {
         mnemonic: mnemonic.clone(),
+        username,
+        password,
     };
     let mut call = std::ptr::null_mut();
     let rc = gdk::GA_login_user(
@@ -1812,6 +1895,23 @@ unsafe fn login(data: &mut GdkSesCpp) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+unsafe fn set_watch_only(
+    data: &mut GdkSesCpp,
+    username: &str,
+    password: &str,
+) -> Result<(), anyhow::Error> {
+    let session = data.session;
+    let username = CString::new(username).unwrap();
+    let password = CString::new(password).unwrap();
+    let rc = gdk::GA_set_watch_only(session, username.as_ptr(), password.as_ptr());
+    ensure!(
+        rc == 0,
+        "GA_set_watch_only failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+    Ok(())
+}
+
 unsafe fn reconnect_hint(data: &mut GdkSesCpp, hint: gdk_json::ReconnectHint) {
     debug!("send reconnect hint: {:?}", hint);
     let session = data.session;
@@ -1825,7 +1925,10 @@ unsafe fn reconnect_hint(data: &mut GdkSesCpp, hint: gdk_json::ReconnectHint) {
     );
 }
 
-pub unsafe fn start_processing_impl(info: gdk_ses::LoginInfo) -> Box<dyn gdk_ses::GdkSes> {
+pub unsafe fn start_processing_impl(
+    info: gdk_ses::LoginInfo,
+    notif_callback: NotifCallback,
+) -> Box<dyn gdk_ses::GdkSes> {
     let datadir = info.cache_dir.to_owned();
     GDK_INITIALIZED.call_once(move || {
         let config = gdk_json::InitConfig {
@@ -1842,7 +1945,7 @@ pub unsafe fn start_processing_impl(info: gdk_ses::LoginInfo) -> Box<dyn gdk_ses
 
     let notif_context = Box::into_raw(Box::new(NotifContext {
         account_id: info.account_id,
-        worker: info.worker.clone(),
+        notif_callback,
         session,
     }));
 
@@ -1871,7 +1974,6 @@ pub unsafe fn start_processing_impl(info: gdk_ses::LoginInfo) -> Box<dyn gdk_ses
     let data = GdkSesCpp {
         hw_data: info.hw_data.clone(),
         session,
-        signed_tx: None,
         policy_asset,
         login_info: info,
         subaccount: None,
@@ -1881,6 +1983,9 @@ pub unsafe fn start_processing_impl(info: gdk_ses::LoginInfo) -> Box<dyn gdk_ses
     Box::new(data)
 }
 
-pub fn start_processing(info: gdk_ses::LoginInfo) -> Box<dyn gdk_ses::GdkSes> {
-    unsafe { start_processing_impl(info) }
+pub fn start_processing(
+    info: gdk_ses::LoginInfo,
+    notif_callback: NotifCallback,
+) -> Box<dyn gdk_ses::GdkSes> {
+    unsafe { start_processing_impl(info, notif_callback) }
 }

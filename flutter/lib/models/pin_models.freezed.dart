@@ -26,10 +26,10 @@ mixin _$PinSetupCallerState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? settings,
-    TResult Function()? pinWelcome,
-    TResult Function()? newWalletPinWelcome,
+    TResult? Function()? empty,
+    TResult? Function()? settings,
+    TResult? Function()? pinWelcome,
+    TResult? Function()? newWalletPinWelcome,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -52,10 +52,10 @@ mixin _$PinSetupCallerState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupCallerStateEmpty value)? empty,
-    TResult Function(PinSetupCallerStateSettings value)? settings,
-    TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
-    TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
+    TResult? Function(PinSetupCallerStateEmpty value)? empty,
+    TResult? Function(PinSetupCallerStateSettings value)? settings,
+    TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
+    TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
         newWalletPinWelcome,
   }) =>
       throw _privateConstructorUsedError;
@@ -75,17 +75,18 @@ mixin _$PinSetupCallerState {
 abstract class $PinSetupCallerStateCopyWith<$Res> {
   factory $PinSetupCallerStateCopyWith(
           PinSetupCallerState value, $Res Function(PinSetupCallerState) then) =
-      _$PinSetupCallerStateCopyWithImpl<$Res>;
+      _$PinSetupCallerStateCopyWithImpl<$Res, PinSetupCallerState>;
 }
 
 /// @nodoc
-class _$PinSetupCallerStateCopyWithImpl<$Res>
+class _$PinSetupCallerStateCopyWithImpl<$Res, $Val extends PinSetupCallerState>
     implements $PinSetupCallerStateCopyWith<$Res> {
   _$PinSetupCallerStateCopyWithImpl(this._value, this._then);
 
-  final PinSetupCallerState _value;
   // ignore: unused_field
-  final $Res Function(PinSetupCallerState) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -97,15 +98,11 @@ abstract class _$$PinSetupCallerStateEmptyCopyWith<$Res> {
 
 /// @nodoc
 class __$$PinSetupCallerStateEmptyCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res>
+    extends _$PinSetupCallerStateCopyWithImpl<$Res, _$PinSetupCallerStateEmpty>
     implements _$$PinSetupCallerStateEmptyCopyWith<$Res> {
   __$$PinSetupCallerStateEmptyCopyWithImpl(_$PinSetupCallerStateEmpty _value,
       $Res Function(_$PinSetupCallerStateEmpty) _then)
-      : super(_value, (v) => _then(v as _$PinSetupCallerStateEmpty));
-
-  @override
-  _$PinSetupCallerStateEmpty get _value =>
-      super._value as _$PinSetupCallerStateEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -142,10 +139,10 @@ class _$PinSetupCallerStateEmpty implements PinSetupCallerStateEmpty {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? settings,
-    TResult Function()? pinWelcome,
-    TResult Function()? newWalletPinWelcome,
+    TResult? Function()? empty,
+    TResult? Function()? settings,
+    TResult? Function()? pinWelcome,
+    TResult? Function()? newWalletPinWelcome,
   }) {
     return empty?.call();
   }
@@ -180,10 +177,10 @@ class _$PinSetupCallerStateEmpty implements PinSetupCallerStateEmpty {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupCallerStateEmpty value)? empty,
-    TResult Function(PinSetupCallerStateSettings value)? settings,
-    TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
-    TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
+    TResult? Function(PinSetupCallerStateEmpty value)? empty,
+    TResult? Function(PinSetupCallerStateSettings value)? settings,
+    TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
+    TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
         newWalletPinWelcome,
   }) {
     return empty?.call(this);
@@ -220,16 +217,13 @@ abstract class _$$PinSetupCallerStateSettingsCopyWith<$Res> {
 
 /// @nodoc
 class __$$PinSetupCallerStateSettingsCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res>
+    extends _$PinSetupCallerStateCopyWithImpl<$Res,
+        _$PinSetupCallerStateSettings>
     implements _$$PinSetupCallerStateSettingsCopyWith<$Res> {
   __$$PinSetupCallerStateSettingsCopyWithImpl(
       _$PinSetupCallerStateSettings _value,
       $Res Function(_$PinSetupCallerStateSettings) _then)
-      : super(_value, (v) => _then(v as _$PinSetupCallerStateSettings));
-
-  @override
-  _$PinSetupCallerStateSettings get _value =>
-      super._value as _$PinSetupCallerStateSettings;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -266,10 +260,10 @@ class _$PinSetupCallerStateSettings implements PinSetupCallerStateSettings {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? settings,
-    TResult Function()? pinWelcome,
-    TResult Function()? newWalletPinWelcome,
+    TResult? Function()? empty,
+    TResult? Function()? settings,
+    TResult? Function()? pinWelcome,
+    TResult? Function()? newWalletPinWelcome,
   }) {
     return settings?.call();
   }
@@ -304,10 +298,10 @@ class _$PinSetupCallerStateSettings implements PinSetupCallerStateSettings {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupCallerStateEmpty value)? empty,
-    TResult Function(PinSetupCallerStateSettings value)? settings,
-    TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
-    TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
+    TResult? Function(PinSetupCallerStateEmpty value)? empty,
+    TResult? Function(PinSetupCallerStateSettings value)? settings,
+    TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
+    TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
         newWalletPinWelcome,
   }) {
     return settings?.call(this);
@@ -344,16 +338,13 @@ abstract class _$$PinSetupCallerStatePinWelcomeCopyWith<$Res> {
 
 /// @nodoc
 class __$$PinSetupCallerStatePinWelcomeCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res>
+    extends _$PinSetupCallerStateCopyWithImpl<$Res,
+        _$PinSetupCallerStatePinWelcome>
     implements _$$PinSetupCallerStatePinWelcomeCopyWith<$Res> {
   __$$PinSetupCallerStatePinWelcomeCopyWithImpl(
       _$PinSetupCallerStatePinWelcome _value,
       $Res Function(_$PinSetupCallerStatePinWelcome) _then)
-      : super(_value, (v) => _then(v as _$PinSetupCallerStatePinWelcome));
-
-  @override
-  _$PinSetupCallerStatePinWelcome get _value =>
-      super._value as _$PinSetupCallerStatePinWelcome;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -390,10 +381,10 @@ class _$PinSetupCallerStatePinWelcome implements PinSetupCallerStatePinWelcome {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? settings,
-    TResult Function()? pinWelcome,
-    TResult Function()? newWalletPinWelcome,
+    TResult? Function()? empty,
+    TResult? Function()? settings,
+    TResult? Function()? pinWelcome,
+    TResult? Function()? newWalletPinWelcome,
   }) {
     return pinWelcome?.call();
   }
@@ -428,10 +419,10 @@ class _$PinSetupCallerStatePinWelcome implements PinSetupCallerStatePinWelcome {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupCallerStateEmpty value)? empty,
-    TResult Function(PinSetupCallerStateSettings value)? settings,
-    TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
-    TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
+    TResult? Function(PinSetupCallerStateEmpty value)? empty,
+    TResult? Function(PinSetupCallerStateSettings value)? settings,
+    TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
+    TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
         newWalletPinWelcome,
   }) {
     return pinWelcome?.call(this);
@@ -469,17 +460,13 @@ abstract class _$$PinSetupCallerStateNewWalletPinWelcomeCopyWith<$Res> {
 
 /// @nodoc
 class __$$PinSetupCallerStateNewWalletPinWelcomeCopyWithImpl<$Res>
-    extends _$PinSetupCallerStateCopyWithImpl<$Res>
+    extends _$PinSetupCallerStateCopyWithImpl<$Res,
+        _$PinSetupCallerStateNewWalletPinWelcome>
     implements _$$PinSetupCallerStateNewWalletPinWelcomeCopyWith<$Res> {
   __$$PinSetupCallerStateNewWalletPinWelcomeCopyWithImpl(
       _$PinSetupCallerStateNewWalletPinWelcome _value,
       $Res Function(_$PinSetupCallerStateNewWalletPinWelcome) _then)
-      : super(_value,
-            (v) => _then(v as _$PinSetupCallerStateNewWalletPinWelcome));
-
-  @override
-  _$PinSetupCallerStateNewWalletPinWelcome get _value =>
-      super._value as _$PinSetupCallerStateNewWalletPinWelcome;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -517,10 +504,10 @@ class _$PinSetupCallerStateNewWalletPinWelcome
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? settings,
-    TResult Function()? pinWelcome,
-    TResult Function()? newWalletPinWelcome,
+    TResult? Function()? empty,
+    TResult? Function()? settings,
+    TResult? Function()? pinWelcome,
+    TResult? Function()? newWalletPinWelcome,
   }) {
     return newWalletPinWelcome?.call();
   }
@@ -555,10 +542,10 @@ class _$PinSetupCallerStateNewWalletPinWelcome
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupCallerStateEmpty value)? empty,
-    TResult Function(PinSetupCallerStateSettings value)? settings,
-    TResult Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
-    TResult Function(PinSetupCallerStateNewWalletPinWelcome value)?
+    TResult? Function(PinSetupCallerStateEmpty value)? empty,
+    TResult? Function(PinSetupCallerStateSettings value)? settings,
+    TResult? Function(PinSetupCallerStatePinWelcome value)? pinWelcome,
+    TResult? Function(PinSetupCallerStateNewWalletPinWelcome value)?
         newWalletPinWelcome,
   }) {
     return newWalletPinWelcome?.call(this);
@@ -598,9 +585,9 @@ mixin _$PinSetupExitState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? back,
-    TResult Function()? success,
+    TResult? Function()? empty,
+    TResult? Function()? back,
+    TResult? Function()? success,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -620,9 +607,9 @@ mixin _$PinSetupExitState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupExitStateEmpty value)? empty,
-    TResult Function(PinSetupExitStateBack value)? back,
-    TResult Function(PinSetupExitStateSuccess value)? success,
+    TResult? Function(PinSetupExitStateEmpty value)? empty,
+    TResult? Function(PinSetupExitStateBack value)? back,
+    TResult? Function(PinSetupExitStateSuccess value)? success,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -639,17 +626,18 @@ mixin _$PinSetupExitState {
 abstract class $PinSetupExitStateCopyWith<$Res> {
   factory $PinSetupExitStateCopyWith(
           PinSetupExitState value, $Res Function(PinSetupExitState) then) =
-      _$PinSetupExitStateCopyWithImpl<$Res>;
+      _$PinSetupExitStateCopyWithImpl<$Res, PinSetupExitState>;
 }
 
 /// @nodoc
-class _$PinSetupExitStateCopyWithImpl<$Res>
+class _$PinSetupExitStateCopyWithImpl<$Res, $Val extends PinSetupExitState>
     implements $PinSetupExitStateCopyWith<$Res> {
   _$PinSetupExitStateCopyWithImpl(this._value, this._then);
 
-  final PinSetupExitState _value;
   // ignore: unused_field
-  final $Res Function(PinSetupExitState) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -661,15 +649,11 @@ abstract class _$$PinSetupExitStateEmptyCopyWith<$Res> {
 
 /// @nodoc
 class __$$PinSetupExitStateEmptyCopyWithImpl<$Res>
-    extends _$PinSetupExitStateCopyWithImpl<$Res>
+    extends _$PinSetupExitStateCopyWithImpl<$Res, _$PinSetupExitStateEmpty>
     implements _$$PinSetupExitStateEmptyCopyWith<$Res> {
   __$$PinSetupExitStateEmptyCopyWithImpl(_$PinSetupExitStateEmpty _value,
       $Res Function(_$PinSetupExitStateEmpty) _then)
-      : super(_value, (v) => _then(v as _$PinSetupExitStateEmpty));
-
-  @override
-  _$PinSetupExitStateEmpty get _value =>
-      super._value as _$PinSetupExitStateEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -704,9 +688,9 @@ class _$PinSetupExitStateEmpty implements PinSetupExitStateEmpty {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? back,
-    TResult Function()? success,
+    TResult? Function()? empty,
+    TResult? Function()? back,
+    TResult? Function()? success,
   }) {
     return empty?.call();
   }
@@ -738,9 +722,9 @@ class _$PinSetupExitStateEmpty implements PinSetupExitStateEmpty {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupExitStateEmpty value)? empty,
-    TResult Function(PinSetupExitStateBack value)? back,
-    TResult Function(PinSetupExitStateSuccess value)? success,
+    TResult? Function(PinSetupExitStateEmpty value)? empty,
+    TResult? Function(PinSetupExitStateBack value)? back,
+    TResult? Function(PinSetupExitStateSuccess value)? success,
   }) {
     return empty?.call(this);
   }
@@ -773,14 +757,11 @@ abstract class _$$PinSetupExitStateBackCopyWith<$Res> {
 
 /// @nodoc
 class __$$PinSetupExitStateBackCopyWithImpl<$Res>
-    extends _$PinSetupExitStateCopyWithImpl<$Res>
+    extends _$PinSetupExitStateCopyWithImpl<$Res, _$PinSetupExitStateBack>
     implements _$$PinSetupExitStateBackCopyWith<$Res> {
   __$$PinSetupExitStateBackCopyWithImpl(_$PinSetupExitStateBack _value,
       $Res Function(_$PinSetupExitStateBack) _then)
-      : super(_value, (v) => _then(v as _$PinSetupExitStateBack));
-
-  @override
-  _$PinSetupExitStateBack get _value => super._value as _$PinSetupExitStateBack;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -815,9 +796,9 @@ class _$PinSetupExitStateBack implements PinSetupExitStateBack {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? back,
-    TResult Function()? success,
+    TResult? Function()? empty,
+    TResult? Function()? back,
+    TResult? Function()? success,
   }) {
     return back?.call();
   }
@@ -849,9 +830,9 @@ class _$PinSetupExitStateBack implements PinSetupExitStateBack {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupExitStateEmpty value)? empty,
-    TResult Function(PinSetupExitStateBack value)? back,
-    TResult Function(PinSetupExitStateSuccess value)? success,
+    TResult? Function(PinSetupExitStateEmpty value)? empty,
+    TResult? Function(PinSetupExitStateBack value)? back,
+    TResult? Function(PinSetupExitStateSuccess value)? success,
   }) {
     return back?.call(this);
   }
@@ -884,15 +865,11 @@ abstract class _$$PinSetupExitStateSuccessCopyWith<$Res> {
 
 /// @nodoc
 class __$$PinSetupExitStateSuccessCopyWithImpl<$Res>
-    extends _$PinSetupExitStateCopyWithImpl<$Res>
+    extends _$PinSetupExitStateCopyWithImpl<$Res, _$PinSetupExitStateSuccess>
     implements _$$PinSetupExitStateSuccessCopyWith<$Res> {
   __$$PinSetupExitStateSuccessCopyWithImpl(_$PinSetupExitStateSuccess _value,
       $Res Function(_$PinSetupExitStateSuccess) _then)
-      : super(_value, (v) => _then(v as _$PinSetupExitStateSuccess));
-
-  @override
-  _$PinSetupExitStateSuccess get _value =>
-      super._value as _$PinSetupExitStateSuccess;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -928,9 +905,9 @@ class _$PinSetupExitStateSuccess implements PinSetupExitStateSuccess {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? back,
-    TResult Function()? success,
+    TResult? Function()? empty,
+    TResult? Function()? back,
+    TResult? Function()? success,
   }) {
     return success?.call();
   }
@@ -962,9 +939,9 @@ class _$PinSetupExitStateSuccess implements PinSetupExitStateSuccess {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(PinSetupExitStateEmpty value)? empty,
-    TResult Function(PinSetupExitStateBack value)? back,
-    TResult Function(PinSetupExitStateSuccess value)? success,
+    TResult? Function(PinSetupExitStateEmpty value)? empty,
+    TResult? Function(PinSetupExitStateBack value)? back,
+    TResult? Function(PinSetupExitStateSuccess value)? success,
   }) {
     return success?.call(this);
   }

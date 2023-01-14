@@ -28,7 +28,6 @@ class TopSwapButtons extends StatelessWidget {
         ? _colorToggleBackgroundDesktop
         : _colorToggleBackgroundMobile;
     return Container(
-      width: double.maxFinite, //286.w,
       height: 36,
       decoration: BoxDecoration(
         color: colorToggleBackground,

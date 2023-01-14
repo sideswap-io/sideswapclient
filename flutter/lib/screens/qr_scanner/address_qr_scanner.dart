@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
@@ -16,6 +15,13 @@ import 'package:sideswap/models/universal_link_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/qr_scanner/qr_overlay_shape.dart';
 import 'package:sideswap/screens/qr_scanner/qr_scanner_overlay_clipper.dart';
+
+void useAsyncEffect(Future<Dispose?> Function() effect, [List<Object?>? keys]) {
+  useEffect(() {
+    final disposeFuture = Future.microtask(effect);
+    return () => disposeFuture.then((dispose) => dispose?.call());
+  }, keys);
+}
 
 class AddressQrScanner extends HookConsumerWidget {
   final QrCodeAddressType? expectedAddress;
@@ -85,35 +91,33 @@ class AddressQrScanner extends HookConsumerWidget {
       ));
     }, const []);
 
-    useValueChanged<ValueNotifier<bool>, void>(hasCameraPermission, (_, __) {
+    useAsyncEffect(() async {
+      final navigator = Navigator.of(context);
+
+      if (!await commonPlatform.hasCameraPermission()) {
+        hasCameraPermission.value =
+            await commonPlatform.requestCameraPermission();
+      } else {
+        hasCameraPermission.value = true;
+      }
+
       if (!hasCameraPermission.value) {
         logger.w('Requesting camera permission failed');
-        Navigator.of(context).pop();
+        navigator.pop();
       }
-    });
 
-    useEffect(() {
-      Future.microtask(() async {
-        if (!await commonPlatform.hasCameraPermission()) {
-          hasCameraPermission.value =
-              await commonPlatform.requestCameraPermission();
-        } else {
-          hasCameraPermission.value = true;
-        }
-      });
       return;
     }, const []);
 
-    final cameraController = useMemoized(() {
+    final cameraController = useMemoized<MobileScannerController?>(() {
+      if (!hasCameraPermission.value) {
+        return null;
+      }
       return MobileScannerController(
         facing: CameraFacing.back,
         torchEnabled: false,
       );
-    });
-
-    useEffect(() {
-      return cameraController.dispose;
-    }, [cameraController]);
+    }, [hasCameraPermission.value]);
 
     var barCodeTimer = useMemoized<Timer?>(() {
       return null;
@@ -121,6 +125,7 @@ class AddressQrScanner extends HookConsumerWidget {
 
     return SideSwapScaffold(
       onWillPop: () async {
+        cameraController?.dispose();
         Navigator.of(context).pop();
         return true;
       },
@@ -161,9 +166,9 @@ class AddressQrScanner extends HookConsumerWidget {
                   }),
               ClipPath(
                 clipper: QrScannerOverlayClipper(
-                  innerWidth: 285.r,
-                  innerHeight: 285.r,
-                  radius: 25.r,
+                  innerWidth: 285,
+                  innerHeight: 285,
+                  radius: 25,
                 ),
                 child: Container(
                   color: Colors.black.withOpacity(0.5),
@@ -171,11 +176,11 @@ class AddressQrScanner extends HookConsumerWidget {
               ),
               Center(
                 child: Container(
-                  width: 285.r,
-                  height: 285.r,
-                  decoration: ShapeDecoration(
+                  width: 285,
+                  height: 285,
+                  decoration: const ShapeDecoration(
                       shape: QrScannerOverlayShape(
-                    radius: 25.r,
+                    radius: 25,
                     borderWidth: 4,
                   )),
                 ),

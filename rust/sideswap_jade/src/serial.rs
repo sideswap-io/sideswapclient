@@ -3,7 +3,7 @@ pub use crate::reader::BufReader;
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Port {
     pub port_name: String,
-    pub serial_number: Option<String>,
+    pub serial_number: String,
 }
 
 pub struct Handle {
@@ -27,10 +27,15 @@ impl Handle {
                     if (usb_port.vid == 0x10C4 && usb_port.pid == 0xEA60)
                         || (usb_port.vid == 0x1A86 && usb_port.pid == 0x55D4) =>
                 {
-                    Some(Port {
-                        port_name: port.port_name,
-                        serial_number: usb_port.serial_number,
-                    })
+                    if let Some(serial_number) = usb_port.serial_number {
+                        Some(Port {
+                            port_name: port.port_name,
+                            serial_number: serial_number,
+                        })
+                    } else {
+                        warn!("no serial number found for usb port {:?}", &usb_port);
+                        None
+                    }
                 }
                 _ => None,
             })

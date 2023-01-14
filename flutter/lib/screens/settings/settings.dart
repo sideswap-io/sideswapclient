@@ -52,12 +52,14 @@ class SettingsState extends ConsumerState<Settings> {
               children: [
                 const Padding(
                   padding: EdgeInsets.only(top: 40),
-                  child: Text('AMP ID:',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.white,
-                      )),
+                  child: Text(
+                    'AMP ID:',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 const SizedBox(
                   height: 8,
@@ -189,24 +191,19 @@ class SettingsState extends ConsumerState<Settings> {
                             },
                           ),
                         ),
-                        Visibility(
-                          visible: !isBiometricAvailable || isPinEnabled,
-                          child: SettingsSecurity(
-                            icon: Icons.fiber_pin_outlined,
-                            description: 'PIN protection'.tr(),
-                            value: isPinEnabled,
-                            onTap: () async {
-                              if (isPinEnabled) {
-                                await ref
-                                    .read(walletProvider)
-                                    .disablePinProtection();
-                              } else {
-                                ref
-                                    .read(pinSetupProvider)
-                                    .initPinSetupSettings();
-                              }
-                            },
-                          ),
+                        SettingsSecurity(
+                          icon: Icons.fiber_pin_outlined,
+                          description: 'PIN protection'.tr(),
+                          value: isPinEnabled,
+                          onTap: () async {
+                            if (isPinEnabled) {
+                              await ref
+                                  .read(walletProvider)
+                                  .disablePinProtection();
+                            } else {
+                              ref.read(pinSetupProvider).initPinSetupSettings();
+                            }
+                          },
                         ),
                       ],
                     );
@@ -241,7 +238,7 @@ class SettingsState extends ConsumerState<Settings> {
                 const SizedBox(height: 16),
                 SettingsButton(
                   type: SettingsButtonType.delete,
-                  text: 'Delete wallet',
+                  text: 'Delete wallet'.tr(),
                   transparent: true,
                   onPressed: () {
                     showDeleteWalletDialog(context);

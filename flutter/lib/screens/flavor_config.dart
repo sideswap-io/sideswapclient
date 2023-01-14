@@ -8,11 +8,13 @@ enum Flavor {
 class FlavorValues {
   bool enableOnboardingUserFeatures;
   bool enableNetworkSettings;
+  bool enableJade;
   bool isDesktop;
 
   FlavorValues({
     required this.enableOnboardingUserFeatures,
     required this.enableNetworkSettings,
+    required this.enableJade,
     this.isDesktop = false,
   });
 }
@@ -41,4 +43,5 @@ class FlavorConfig {
   static bool get enableNetworkSettings =>
       _instance.values.enableNetworkSettings;
   static bool get isDesktop => _instance.values.isDesktop;
+  static bool get enableJade => _instance.values.enableJade;
 }

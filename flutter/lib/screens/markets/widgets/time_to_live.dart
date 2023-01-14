@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 
 class TimeToLive extends StatefulWidget {
   const TimeToLive({

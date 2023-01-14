@@ -17,4 +17,4 @@ base64 = "*"
 crossbeam-channel = "0.5.1"
 
 [target.'cfg(any(target_os = "windows", target_os = "linux", target_os = "macos"))'.dependencies]
-serialport = "4.1.0"
+serialport = { git = "https://github.com/serialport/serialport-rs", rev = "08c1b61f6c748776a8a2786b88ccf7c25623719a" }

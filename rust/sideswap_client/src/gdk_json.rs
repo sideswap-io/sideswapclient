@@ -24,6 +24,11 @@ pub struct LoginUser {
     // GDK is expecting JSON without mnemonic field for HW wallets (null is not enough)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mnemonic: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub password: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -263,7 +268,7 @@ pub struct RecvAddrResult {
     pub subaccount: u32,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct TxAddressee {
     pub address: String,
     pub satoshi: u64,
@@ -284,6 +289,9 @@ pub struct CreateTransactionOpt {
 
 #[derive(Deserialize, Debug)]
 pub struct CreateTransactionResult {
+    pub addressees: Vec<TxAddressee>,
+    pub transaction_outputs: Vec<CreatedTransactionOutput>,
+    pub transaction: String,
     pub fee: Option<u64>,
     pub error: String,
 }
@@ -291,10 +299,10 @@ pub struct CreateTransactionResult {
 #[derive(Deserialize, Debug)]
 pub struct CreatedTransactionOutput {
     pub address: Option<String>,
-    pub asset_id: AssetId,
+    pub asset_id: Option<AssetId>, // Mandatory in GDK c++, missing in GDK rust
     pub satoshi: u64,
     pub is_change: bool,
-    pub is_fee: bool,
+    pub is_fee: Option<bool>, // Mandatory in GDK c++, missing in GDK rust
     pub amountblinder: Option<BlindingFactor>,
     pub assetblinder: Option<BlindingFactor>,
     pub eph_private_key: Option<secp256k1::SecretKey>,

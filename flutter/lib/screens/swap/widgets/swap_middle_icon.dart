@@ -9,46 +9,41 @@ class SwapMiddleIcon extends ConsumerWidget {
   const SwapMiddleIcon({
     super.key,
     required this.visibleToggles,
-    required this.middle,
     this.onTap,
   });
 
   final _swapIconSize = 48.0;
   final bool visibleToggles;
   final VoidCallback? onTap;
-  final double middle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
-      padding: EdgeInsets.only(top: middle - _swapIconSize / 2),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        child: Row(
-          children: [
-            SwapArrowsButton(
-              radius: _swapIconSize,
-              onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Row(
+        children: [
+          SwapArrowsButton(
+            radius: _swapIconSize,
+            onTap: onTap,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Consumer(
+              builder: (context, ref, _) {
+                final price = ref.watch(swapPriceStateNotifierProvider);
+                return Visibility(
+                  visible: price != null,
+                  child: RoundedTextLabel(
+                    text: ref
+                            .read(swapPriceStateNotifierProvider.notifier)
+                            .getPriceText() ??
+                        '',
+                  ),
+                );
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final price = ref.watch(swapPriceStateNotifierProvider);
-                  return Visibility(
-                    visible: price != null,
-                    child: RoundedTextLabel(
-                      text: ref
-                              .read(swapPriceStateNotifierProvider.notifier)
-                              .getPriceText() ??
-                          '',
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

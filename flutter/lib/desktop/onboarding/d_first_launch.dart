@@ -15,6 +15,7 @@ import 'package:sideswap/models/locales_provider.dart';
 import 'package:sideswap/models/mnemonic_table_provider.dart';
 import 'package:sideswap/models/select_env_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 
 class DFirstLaunch extends ConsumerWidget {
   const DFirstLaunch({super.key});
@@ -159,30 +160,32 @@ class DFirstLaunch extends ConsumerWidget {
                 padding: const EdgeInsets.only(top: 8.0),
                 child: DCustomTextBigButton(
                   onPressed: () {
-                    ref.refresh(mnemonicWordItemsProvider);
+                    ref.invalidate(mnemonicWordItemsProvider);
                     ref.read(walletProvider).setReviewLicenseImportWallet();
                   },
                   child: Text('IMPORT WALLET'.tr()),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: DCustomTextBigButton(
-                  onPressed: () {
-                    desktopImportJade(context);
-                  },
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/jade.svg',
-                      ),
-                      const SizedBox(width: 10),
-                      Text('JADE'.tr()),
-                    ],
+              if (FlavorConfig.enableJade) ...[
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: DCustomTextBigButton(
+                    onPressed: () {
+                      desktopImportJade(context);
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/jade.svg',
+                        ),
+                        const SizedBox(width: 10),
+                        Text('JADE'.tr()),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
               Expanded(child: Container()),
             ],
           ),

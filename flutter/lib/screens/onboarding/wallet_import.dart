@@ -445,7 +445,7 @@ class WalletImportState extends State<WalletImport> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Container(
                         width: double.maxFinite,
-                        height: 36,
+                        height: 39,
                         decoration: BoxDecoration(
                           color: _colorToggleBackground,
                           borderRadius:

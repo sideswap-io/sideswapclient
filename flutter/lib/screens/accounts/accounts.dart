@@ -6,9 +6,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/balances_provider.dart';
 import 'package:sideswap/models/ui_state_args_provider.dart';
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
+import 'package:sideswap/screens/accounts/widgets/csv_export_button.dart';
 
 class Accounts extends ConsumerWidget {
   const Accounts({super.key});
@@ -16,6 +16,7 @@ class Accounts extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final syncComplete = ref.watch(walletProvider).syncComplete;
+
     return Stack(
       children: [
         Padding(
@@ -32,41 +33,9 @@ class Accounts extends ConsumerWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                           color: Colors.white),
-                    ).tr(),
-                    const Spacer(),
-                    Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () {
-                          final wallet = ref.read(walletProvider);
-                          final list =
-                              exportTxList(wallet.allTxs.values, wallet.assets);
-                          final csv = convertToCsv(list);
-                          shareCsv(csv);
-                        },
-                        borderRadius: BorderRadius.circular(21),
-                        child: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                          ),
-                          child: Row(
-                            children: [
-                              const Spacer(),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: SvgPicture.asset(
-                                  'assets/export.svg',
-                                  width: 22,
-                                  height: 21,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ),
+                    const Spacer(),
+                    const CsvExportButton(),
                     Material(
                       color: Colors.transparent,
                       child: InkWell(

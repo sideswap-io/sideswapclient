@@ -28,6 +28,8 @@ class SettingsAboutUs extends StatelessWidget {
   const SettingsAboutUs({super.key});
 
   void showExportLogMenu(BuildContext context) async {
+    final box = context.findRenderObject() as RenderBox?;
+
     final result = await showMenu(
       context: context,
       position: const RelativeRect.fromLTRB(0, 0, 0, 0),
@@ -42,10 +44,12 @@ class SettingsAboutUs extends StatelessWidget {
         ),
       ],
     );
-    if (result == 1) {
-      shareLogFile("sideswap.log");
-    } else if (result == 2) {
-      shareLogFile("sideswap_prev.log");
+    if (box != null) {
+      if (result == 1) {
+        shareLogFile("sideswap.log", box);
+      } else if (result == 2) {
+        shareLogFile("sideswap_prev.log", box);
+      }
     }
   }
 

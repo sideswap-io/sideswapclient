@@ -25,6 +25,12 @@ pub struct AmpPrevAddrs {
     pub list: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize, Default, Clone)]
+pub struct WatchOnly {
+    pub username: String,
+    pub password: String,
+}
+
 // All will be cleared after new wallet import!
 #[derive(Serialize, Deserialize, Default)]
 pub struct Settings {
@@ -38,6 +44,7 @@ pub struct Settings {
     pub session_id: Option<SessionId>,
     pub amp_prev_addrs: Option<AmpPrevAddrs>,
     pub master_pub_key: Option<bitcoin::util::bip32::ExtendedPubKey>,
+    pub watch_only: Option<WatchOnly>,
 }
 
 impl Settings {

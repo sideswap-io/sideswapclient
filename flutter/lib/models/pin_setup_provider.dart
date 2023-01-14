@@ -273,6 +273,10 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   void onTap() {
+    if (!secondPinEnabled) {
+      return;
+    }
+
     if (fieldState == PinFieldState.firstPin) {
       fieldState = PinFieldState.secondPin;
     } else {

@@ -998,3 +998,35 @@ final swapAddressErrorStateProvider =
 
 final showAddressLabelStateProvider =
     StateProvider.autoDispose<bool>((ref) => false);
+
+final swapEnabledStateProvider = StateProvider.autoDispose<bool>((ref) {
+  final swapType = ref.watch(swapProvider).swapType();
+  final sendSatoshiAmount =
+      ref.watch(swapSendAmountChangeNotifierProvider).satoshiAmount;
+  final recvSatoshiAmount =
+      ref.watch(swapRecvAmountChangeNotifierProvider).satoshiAmount;
+  final insufficientFunds = ref.watch(showInsufficientFundsProvider);
+  final addressErrorText = ref.watch(swapAddressErrorStateProvider);
+  final addressRecvExternal = ref.watch(swapProvider).swapRecvAddressExternal;
+  final swapState = ref.watch(swapStateProvider);
+
+  bool enabled;
+  switch (swapType) {
+    case SwapType.atomic:
+      enabled =
+          sendSatoshiAmount > 0 && recvSatoshiAmount > 0 && !insufficientFunds;
+      break;
+    case SwapType.pegIn:
+      enabled = true;
+      break;
+    case SwapType.pegOut:
+      enabled = sendSatoshiAmount > 0 &&
+          !insufficientFunds &&
+          addressRecvExternal.isNotEmpty &&
+          addressErrorText == null;
+      break;
+  }
+
+  enabled = enabled && swapState == SwapState.idle;
+  return enabled;
+});

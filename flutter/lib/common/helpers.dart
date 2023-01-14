@@ -9,6 +9,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -202,7 +203,6 @@ class CustomTitle extends StatelessWidget {
 
 Future<void> copyToClipboard(BuildContext context, String addr,
     {bool displaySnackbar = true}) async {
-  await Clipboard.setData(ClipboardData(text: addr));
   if (displaySnackbar) {
     final flushbar = Flushbar<void>(
       messageText: Text('Copied'.tr()),
@@ -211,6 +211,8 @@ Future<void> copyToClipboard(BuildContext context, String addr,
     );
     await flushbar.show(context);
   }
+
+  await Clipboard.setData(ClipboardData(text: addr));
 }
 
 void setValue(TextEditingController controller, String value) {
@@ -395,71 +397,15 @@ List<TransItem> selectTransactions(
   return result;
 }
 
-List<List<String>> exportTxList(
-    Iterable<TransItem> txs, Map<String, Asset> assets) {
-  var result = <List<String>>[];
-
-  var usedAssets = SplayTreeSet<String>();
-  for (final tx in txs) {
-    for (final balance in tx.tx.balances) {
-      usedAssets.add(balance.assetId);
-    }
-  }
-  // Keep only known assets where
-  usedAssets.remove((String asset) => !assets.containsKey(asset));
-
-  // Header
-  var line = <String>[];
-  line.add("txid");
-  line.add("type");
-  line.add("timestamp");
-  line.add("network fee");
-  line.add("memo");
-  for (final asset in usedAssets) {
-    line.add(assets[asset]!.name);
-  }
-  result.add(line);
-
-  // Items
-  var txsSorted = txs.toList();
-  txsSorted.sort((a, b) => a.createdAt.compareTo(b.createdAt));
-  for (var tx in txsSorted) {
-    var line = <String>[];
-    line.add(tx.tx.txid);
-    line.add(txTypeName(txType(tx.tx)));
-    line.add(txDateCsvExport(tx.createdAt.toInt()));
-    line.add(amountStr(tx.tx.networkFee.toInt()));
-    line.add(tx.tx.memo);
-    for (final assetId in usedAssets) {
-      final asset = assets[assetId]!;
-      var balance = 0;
-      tx.tx.balances
-          .where((balance) => balance.assetId == asset.assetId)
-          .forEach((item) => balance += item.amount.toInt());
-      line.add(amountStr(balance, precision: asset.precision));
-    }
-    result.add(line);
-  }
-
-  return result;
-}
-
-String convertToCsv(List<List<String>> values) {
-  return const ListToCsvConverter().convert(values);
-}
-
-Future<void> shareCsv(String data) async {
-  final dir = (await getApplicationSupportDirectory()).path;
-  final fileName = '$dir/data.csv';
-  await File(fileName).writeAsString(data);
-  Share.shareFiles([fileName], text: 'Transactions list');
-}
-
-Future<void> shareLogFile(String name) async {
-  final dir = (await getApplicationSupportDirectory()).path;
-  final fileName = '$dir/$name';
+Future<void> shareLogFile(String name, RenderBox box) async {
+  final dir = (await getTemporaryDirectory()).path;
+  final path = '$dir/$name';
   try {
-    await Share.shareFiles([fileName], text: 'Log file');
+    await Share.shareFiles(
+      [path],
+      text: 'Log file',
+      sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size,
+    );
   } on PlatformException {
     logger.e('share log failed');
   }

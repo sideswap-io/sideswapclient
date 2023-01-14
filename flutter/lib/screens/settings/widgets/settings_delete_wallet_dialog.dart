@@ -88,12 +88,14 @@ void showDeleteWalletDialog(BuildContext context) {
                       text: 'YES'.tr(),
                       backgroundColor: const Color(0xFF00C5FF),
                       onPressed: () async {
+                        final navigator =
+                            Navigator.of(context, rootNavigator: true);
                         if (await ref.read(walletProvider).isAuthenticated()) {
                           await ref
                               .read(walletProvider)
                               .settingsDeletePromptConfirm();
                         }
-                        Navigator.of(context, rootNavigator: true).pop();
+                        navigator.pop();
                       },
                     );
                   },

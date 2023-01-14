@@ -29,7 +29,6 @@ import 'package:sideswap/models/request_order_provider.dart';
 import 'package:sideswap/models/token_market_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:vibration/vibration.dart';
-import 'package:move_to_background/move_to_background.dart';
 
 import 'package:sideswap/common/bitmap_helper.dart';
 import 'package:sideswap/common/encryption.dart';
@@ -233,6 +232,10 @@ class WalletChangeNotifier with ChangeNotifier {
 
   bool loggedIn = false;
 
+  bool jadeRegistering = false;
+
+  From_JadeStatus_Status jadeStatus = From_JadeStatus_Status.IDLE;
+
   final disabledAccounts = <AccountAsset>{};
 
   late GlobalKey<NavigatorState> navigatorKey;
@@ -393,7 +396,9 @@ class WalletChangeNotifier with ChangeNotifier {
       config.deleteConfig();
     }
 
-    if (config.mnemonicEncrypted.isNotEmpty) {
+    if (config.jadeId != null) {
+      jadeLogin(config.jadeId!);
+    } else if (config.mnemonicEncrypted.isNotEmpty) {
       if (await _encryption.canAuthenticate() &&
           config.useBiometricProtection) {
         status = Status.lockedWalet;
@@ -1074,17 +1079,48 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.jadePorts:
         jades = from.jadePorts.ports.toList();
-        final connected =
-            jades.any((jade) => jade.state == From_JadePorts_State.CONNECTED);
-        if (connected) {
-          desktopClosePopups(navigatorKey.currentContext!);
-          status = Status.walletLoading;
-          loggedIn = true;
-        }
         notifyListeners();
         break;
       case From_Msg.logout:
         logoutComplete();
+        break;
+      case From_Msg.jadeRegister:
+        switch (from.jadeRegister.whichResult()) {
+          case From_JadeRegister_Result.succeed:
+            desktopClosePopups(navigatorKey.currentContext!);
+            final jadeId = from.jadeRegister.jadeId;
+            ref.read(configProvider).setJadeId(jadeId);
+            jadeLogin(jadeId);
+            break;
+          case From_JadeRegister_Result.failed:
+            await ref.read(utilsProvider).showErrorDialog(
+                from.jadeRegister.failed,
+                buttonText: 'OK'.tr());
+            break;
+          case From_JadeRegister_Result.notSet:
+            throw Exception('invalid empty message');
+        }
+        jadeRegistering = false;
+        notifyListeners();
+        break;
+      case From_Msg.jadeLogin:
+        switch (from.jadeLogin.whichResult()) {
+          case From_JadeLogin_Result.succeed:
+            // Nothing to do, regular login process
+            loggedIn = true;
+            break;
+          case From_JadeLogin_Result.failed:
+            await ref
+                .read(utilsProvider)
+                .showErrorDialog(from.jadeLogin.failed, buttonText: 'OK'.tr());
+            break;
+          case From_JadeLogin_Result.notSet:
+            throw Exception('invalid empty message');
+        }
+        break;
+      case From_Msg.jadeStatus:
+        jadeStatus = from.jadeStatus.status;
+        notifyListeners();
         break;
     }
   }
@@ -1928,7 +1964,9 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> unlockWallet() async {
-    if (ref.read(configProvider).usePinProtection) {
+    final config = ref.read(configProvider);
+
+    if (config.usePinProtection) {
       if (await ref
           .read(pinProtectionProvider)
           .pinBlockadeUnlocked(showBackButton: false)) {
@@ -1941,13 +1979,12 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    if (ref.read(configProvider).useBiometricProtection) {
-      _mnemonic = await _encryption
-          .decryptBiometric(ref.read(configProvider).mnemonicEncrypted);
+    if (config.useBiometricProtection) {
+      _mnemonic = await _encryption.decryptBiometric(config.mnemonicEncrypted);
     } else {
-      _mnemonic = await _encryption
-          .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
+      _mnemonic = await _encryption.decryptFallback(config.mnemonicEncrypted);
     }
+
     if (validateMnemonic(_mnemonic)) {
       _login(_mnemonic);
     } else {
@@ -2380,6 +2417,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> enablePinProtection() async {
+    await ref.read(configProvider).setUseBiometricProtection(false);
     await ref.read(configProvider).setUsePinProtection(true);
     notifyListeners();
   }
@@ -2414,12 +2452,6 @@ class WalletChangeNotifier with ChangeNotifier {
     processPendingPushMessages();
   }
 
-  void minimizeApp() {
-    if (Platform.isAndroid) {
-      unawaited(MoveToBackground.moveTaskToBack());
-    }
-  }
-
   void setCreateOrderEntry() {
     ref.read(requestOrderProvider).validateDeliverAsset();
     status = Status.createOrderEntry;
@@ -2448,7 +2480,15 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    status = Status.createOrderSuccess;
+    // omit create order success screen
+    // status = Status.createOrderSuccess;
+
+    if (orderDetailsData.private) {
+      status = Status.createOrderSuccess;
+    } else {
+      status = Status.registered;
+    }
+
     notifyListeners();
   }
 
@@ -2726,10 +2766,29 @@ class WalletChangeNotifier with ChangeNotifier {
     return env() == SIDESWAP_ENV_TESTNET || env() == SIDESWAP_ENV_LOCAL_TESTNET;
   }
 
-  void jadeLogin(String port) {
+  void jadeLogin(String jadeId) {
     final msg = To();
     msg.jadeLogin = To_JadeLogin();
-    msg.jadeLogin.port = port;
+    msg.jadeLogin.jadeId = jadeId;
+    sendMsg(msg);
+
+    status = Status.walletLoading;
+    notifyListeners();
+  }
+
+  void jadeRegister(String jadeId) {
+    final msg = To();
+    msg.jadeRegister = To_JadeRegister();
+    msg.jadeRegister.jadeId = jadeId;
+    sendMsg(msg);
+
+    jadeRegistering = true;
+    notifyListeners();
+  }
+
+  void jadeRescan() {
+    final msg = To();
+    msg.jadeRescan = Empty();
     sendMsg(msg);
   }
 }

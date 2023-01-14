@@ -20,7 +20,7 @@ class TxListItem extends StatelessWidget {
     required this.txItem,
   });
 
-  static const itemHeight = 46.0;
+  static const itemHeight = 50.0;
   static const itemWithDateHeight = 95.0;
 
   @override

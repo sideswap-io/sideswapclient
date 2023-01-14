@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:sideswap/app_version.dart';
+import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/models/config_provider.dart';
 
 final appReleasesProvider =
@@ -33,17 +34,21 @@ class AppReleasesChangeNotifier with ChangeNotifier {
   }
 
   void reload() async {
-    final url = Uri.parse('https://app.sideswap.io/app_releases.json');
-    final response = await http.get(url);
+    try {
+      final url = Uri.parse('https://app.sideswap.io/app_releases.json');
+      final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      final appReleases = jsonDecode(response.body) as Map<String, dynamic>;
-      final desktop = (appReleases["desktop"] as Map<String, dynamic>);
-      versionDesktopLatest = desktop['version'] as String;
-      buildDesktopLatest = desktop['build'] as int;
-      changesDesktopLatest = desktop['changes'] as String;
+      if (response.statusCode == 200) {
+        final appReleases = jsonDecode(response.body) as Map<String, dynamic>;
+        final desktop = (appReleases["desktop"] as Map<String, dynamic>);
+        versionDesktopLatest = desktop['version'] as String;
+        buildDesktopLatest = desktop['build'] as int;
+        changesDesktopLatest = desktop['changes'] as String;
 
-      notifyListeners();
+        notifyListeners();
+      }
+    } catch (e) {
+      logger.e(e);
     }
   }
 

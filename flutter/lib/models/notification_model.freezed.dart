@@ -33,33 +33,37 @@ mixin _$FCMPayload {
 abstract class $FCMPayloadCopyWith<$Res> {
   factory $FCMPayloadCopyWith(
           FCMPayload value, $Res Function(FCMPayload) then) =
-      _$FCMPayloadCopyWithImpl<$Res>;
+      _$FCMPayloadCopyWithImpl<$Res, FCMPayload>;
+  @useResult
   $Res call({FCMPayloadType? type, String? txid});
 }
 
 /// @nodoc
-class _$FCMPayloadCopyWithImpl<$Res> implements $FCMPayloadCopyWith<$Res> {
+class _$FCMPayloadCopyWithImpl<$Res, $Val extends FCMPayload>
+    implements $FCMPayloadCopyWith<$Res> {
   _$FCMPayloadCopyWithImpl(this._value, this._then);
 
-  final FCMPayload _value;
   // ignore: unused_field
-  final $Res Function(FCMPayload) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? type = freezed,
     Object? txid = freezed,
   }) {
     return _then(_value.copyWith(
-      type: type == freezed
+      type: freezed == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as FCMPayloadType?,
-      txid: txid == freezed
+      txid: freezed == txid
           ? _value.txid
           : txid // ignore: cast_nullable_to_non_nullable
               as String?,
-    ));
+    ) as $Val);
   }
 }
 
@@ -70,30 +74,30 @@ abstract class _$$_FCMPayloadCopyWith<$Res>
           _$_FCMPayload value, $Res Function(_$_FCMPayload) then) =
       __$$_FCMPayloadCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call({FCMPayloadType? type, String? txid});
 }
 
 /// @nodoc
-class __$$_FCMPayloadCopyWithImpl<$Res> extends _$FCMPayloadCopyWithImpl<$Res>
+class __$$_FCMPayloadCopyWithImpl<$Res>
+    extends _$FCMPayloadCopyWithImpl<$Res, _$_FCMPayload>
     implements _$$_FCMPayloadCopyWith<$Res> {
   __$$_FCMPayloadCopyWithImpl(
       _$_FCMPayload _value, $Res Function(_$_FCMPayload) _then)
-      : super(_value, (v) => _then(v as _$_FCMPayload));
+      : super(_value, _then);
 
-  @override
-  _$_FCMPayload get _value => super._value as _$_FCMPayload;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? type = freezed,
     Object? txid = freezed,
   }) {
     return _then(_$_FCMPayload(
-      type: type == freezed
+      type: freezed == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as FCMPayloadType?,
-      txid: txid == freezed
+      txid: freezed == txid
           ? _value.txid
           : txid // ignore: cast_nullable_to_non_nullable
               as String?,
@@ -124,25 +128,25 @@ class _$_FCMPayload extends _FCMPayload {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMPayload &&
-            const DeepCollectionEquality().equals(other.type, type) &&
-            const DeepCollectionEquality().equals(other.txid, txid));
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.txid, txid) || other.txid == txid));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(type),
-      const DeepCollectionEquality().hash(txid));
+  int get hashCode => Object.hash(runtimeType, type, txid);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMPayloadCopyWith<_$_FCMPayload> get copyWith =>
       __$$_FCMPayloadCopyWithImpl<_$_FCMPayload>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMPayloadToJson(this);
+    return _$$_FCMPayloadToJson(
+      this,
+    );
   }
 }
 
@@ -155,9 +159,9 @@ abstract class _FCMPayload extends FCMPayload {
       _$_FCMPayload.fromJson;
 
   @override
-  FCMPayloadType? get type => throw _privateConstructorUsedError;
+  FCMPayloadType? get type;
   @override
-  String? get txid => throw _privateConstructorUsedError;
+  String? get txid;
   @override
   @JsonKey(ignore: true)
   _$$_FCMPayloadCopyWith<_$_FCMPayload> get copyWith =>
@@ -183,34 +187,37 @@ mixin _$FCMNotification {
 abstract class $FCMNotificationCopyWith<$Res> {
   factory $FCMNotificationCopyWith(
           FCMNotification value, $Res Function(FCMNotification) then) =
-      _$FCMNotificationCopyWithImpl<$Res>;
+      _$FCMNotificationCopyWithImpl<$Res, FCMNotification>;
+  @useResult
   $Res call({String? title, String? body});
 }
 
 /// @nodoc
-class _$FCMNotificationCopyWithImpl<$Res>
+class _$FCMNotificationCopyWithImpl<$Res, $Val extends FCMNotification>
     implements $FCMNotificationCopyWith<$Res> {
   _$FCMNotificationCopyWithImpl(this._value, this._then);
 
-  final FCMNotification _value;
   // ignore: unused_field
-  final $Res Function(FCMNotification) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? title = freezed,
     Object? body = freezed,
   }) {
     return _then(_value.copyWith(
-      title: title == freezed
+      title: freezed == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
               as String?,
-      body: body == freezed
+      body: freezed == body
           ? _value.body
           : body // ignore: cast_nullable_to_non_nullable
               as String?,
-    ));
+    ) as $Val);
   }
 }
 
@@ -221,31 +228,30 @@ abstract class _$$_FCMNotificationCopyWith<$Res>
           _$_FCMNotification value, $Res Function(_$_FCMNotification) then) =
       __$$_FCMNotificationCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call({String? title, String? body});
 }
 
 /// @nodoc
 class __$$_FCMNotificationCopyWithImpl<$Res>
-    extends _$FCMNotificationCopyWithImpl<$Res>
+    extends _$FCMNotificationCopyWithImpl<$Res, _$_FCMNotification>
     implements _$$_FCMNotificationCopyWith<$Res> {
   __$$_FCMNotificationCopyWithImpl(
       _$_FCMNotification _value, $Res Function(_$_FCMNotification) _then)
-      : super(_value, (v) => _then(v as _$_FCMNotification));
+      : super(_value, _then);
 
-  @override
-  _$_FCMNotification get _value => super._value as _$_FCMNotification;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? title = freezed,
     Object? body = freezed,
   }) {
     return _then(_$_FCMNotification(
-      title: title == freezed
+      title: freezed == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
               as String?,
-      body: body == freezed
+      body: freezed == body
           ? _value.body
           : body // ignore: cast_nullable_to_non_nullable
               as String?,
@@ -276,25 +282,25 @@ class _$_FCMNotification implements _FCMNotification {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMNotification &&
-            const DeepCollectionEquality().equals(other.title, title) &&
-            const DeepCollectionEquality().equals(other.body, body));
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.body, body) || other.body == body));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(title),
-      const DeepCollectionEquality().hash(body));
+  int get hashCode => Object.hash(runtimeType, title, body);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMNotificationCopyWith<_$_FCMNotification> get copyWith =>
       __$$_FCMNotificationCopyWithImpl<_$_FCMNotification>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMNotificationToJson(this);
+    return _$$_FCMNotificationToJson(
+      this,
+    );
   }
 }
 
@@ -306,9 +312,9 @@ abstract class _FCMNotification implements FCMNotification {
       _$_FCMNotification.fromJson;
 
   @override
-  String? get title => throw _privateConstructorUsedError;
+  String? get title;
   @override
-  String? get body => throw _privateConstructorUsedError;
+  String? get body;
   @override
   @JsonKey(ignore: true)
   _$$_FCMNotificationCopyWith<_$_FCMNotification> get copyWith =>
@@ -331,40 +337,45 @@ mixin _$FCMData {
 /// @nodoc
 abstract class $FCMDataCopyWith<$Res> {
   factory $FCMDataCopyWith(FCMData value, $Res Function(FCMData) then) =
-      _$FCMDataCopyWithImpl<$Res>;
+      _$FCMDataCopyWithImpl<$Res, FCMData>;
+  @useResult
   $Res call({FCMDetails? details});
 
   $FCMDetailsCopyWith<$Res>? get details;
 }
 
 /// @nodoc
-class _$FCMDataCopyWithImpl<$Res> implements $FCMDataCopyWith<$Res> {
+class _$FCMDataCopyWithImpl<$Res, $Val extends FCMData>
+    implements $FCMDataCopyWith<$Res> {
   _$FCMDataCopyWithImpl(this._value, this._then);
 
-  final FCMData _value;
   // ignore: unused_field
-  final $Res Function(FCMData) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? details = freezed,
   }) {
     return _then(_value.copyWith(
-      details: details == freezed
+      details: freezed == details
           ? _value.details
           : details // ignore: cast_nullable_to_non_nullable
               as FCMDetails?,
-    ));
+    ) as $Val);
   }
 
   @override
+  @pragma('vm:prefer-inline')
   $FCMDetailsCopyWith<$Res>? get details {
     if (_value.details == null) {
       return null;
     }
 
     return $FCMDetailsCopyWith<$Res>(_value.details!, (value) {
-      return _then(_value.copyWith(details: value));
+      return _then(_value.copyWith(details: value) as $Val);
     });
   }
 }
@@ -375,6 +386,7 @@ abstract class _$$_FCMDataCopyWith<$Res> implements $FCMDataCopyWith<$Res> {
           _$_FCMData value, $Res Function(_$_FCMData) then) =
       __$$_FCMDataCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call({FCMDetails? details});
 
   @override
@@ -382,20 +394,19 @@ abstract class _$$_FCMDataCopyWith<$Res> implements $FCMDataCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$_FCMDataCopyWithImpl<$Res> extends _$FCMDataCopyWithImpl<$Res>
+class __$$_FCMDataCopyWithImpl<$Res>
+    extends _$FCMDataCopyWithImpl<$Res, _$_FCMData>
     implements _$$_FCMDataCopyWith<$Res> {
   __$$_FCMDataCopyWithImpl(_$_FCMData _value, $Res Function(_$_FCMData) _then)
-      : super(_value, (v) => _then(v as _$_FCMData));
+      : super(_value, _then);
 
-  @override
-  _$_FCMData get _value => super._value as _$_FCMData;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? details = freezed,
   }) {
     return _then(_$_FCMData(
-      details: details == freezed
+      details: freezed == details
           ? _value.details
           : details // ignore: cast_nullable_to_non_nullable
               as FCMDetails?,
@@ -424,22 +435,24 @@ class _$_FCMData implements _FCMData {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMData &&
-            const DeepCollectionEquality().equals(other.details, details));
+            (identical(other.details, details) || other.details == details));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(details));
+  int get hashCode => Object.hash(runtimeType, details);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMDataCopyWith<_$_FCMData> get copyWith =>
       __$$_FCMDataCopyWithImpl<_$_FCMData>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMDataToJson(this);
+    return _$$_FCMDataToJson(
+      this,
+    );
   }
 }
 
@@ -449,7 +462,7 @@ abstract class _FCMData implements FCMData {
   factory _FCMData.fromJson(Map<String, dynamic> json) = _$_FCMData.fromJson;
 
   @override
-  FCMDetails? get details => throw _privateConstructorUsedError;
+  FCMDetails? get details;
   @override
   @JsonKey(ignore: true)
   _$$_FCMDataCopyWith<_$_FCMData> get copyWith =>
@@ -480,7 +493,8 @@ mixin _$FCMDetails {
 abstract class $FCMDetailsCopyWith<$Res> {
   factory $FCMDetailsCopyWith(
           FCMDetails value, $Res Function(FCMDetails) then) =
-      _$FCMDetailsCopyWithImpl<$Res>;
+      _$FCMDetailsCopyWithImpl<$Res, FCMDetails>;
+  @useResult
   $Res call(
       {FCMTx? tx,
       @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
@@ -494,13 +508,16 @@ abstract class $FCMDetailsCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$FCMDetailsCopyWithImpl<$Res> implements $FCMDetailsCopyWith<$Res> {
+class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
+    implements $FCMDetailsCopyWith<$Res> {
   _$FCMDetailsCopyWithImpl(this._value, this._then);
 
-  final FCMDetails _value;
   // ignore: unused_field
-  final $Res Function(FCMDetails) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? tx = freezed,
@@ -509,66 +526,70 @@ class _$FCMDetailsCopyWithImpl<$Res> implements $FCMDetailsCopyWith<$Res> {
     Object? orderCancelled = freezed,
   }) {
     return _then(_value.copyWith(
-      tx: tx == freezed
+      tx: freezed == tx
           ? _value.tx
           : tx // ignore: cast_nullable_to_non_nullable
               as FCMTx?,
-      pegPayout: pegPayout == freezed
+      pegPayout: freezed == pegPayout
           ? _value.pegPayout
           : pegPayout // ignore: cast_nullable_to_non_nullable
               as FCMPeg?,
-      pegDetected: pegDetected == freezed
+      pegDetected: freezed == pegDetected
           ? _value.pegDetected
           : pegDetected // ignore: cast_nullable_to_non_nullable
               as FCMPeg?,
-      orderCancelled: orderCancelled == freezed
+      orderCancelled: freezed == orderCancelled
           ? _value.orderCancelled
           : orderCancelled // ignore: cast_nullable_to_non_nullable
               as FCMOrderCancelled?,
-    ));
+    ) as $Val);
   }
 
   @override
+  @pragma('vm:prefer-inline')
   $FCMTxCopyWith<$Res>? get tx {
     if (_value.tx == null) {
       return null;
     }
 
     return $FCMTxCopyWith<$Res>(_value.tx!, (value) {
-      return _then(_value.copyWith(tx: value));
+      return _then(_value.copyWith(tx: value) as $Val);
     });
   }
 
   @override
+  @pragma('vm:prefer-inline')
   $FCMPegCopyWith<$Res>? get pegPayout {
     if (_value.pegPayout == null) {
       return null;
     }
 
     return $FCMPegCopyWith<$Res>(_value.pegPayout!, (value) {
-      return _then(_value.copyWith(pegPayout: value));
+      return _then(_value.copyWith(pegPayout: value) as $Val);
     });
   }
 
   @override
+  @pragma('vm:prefer-inline')
   $FCMPegCopyWith<$Res>? get pegDetected {
     if (_value.pegDetected == null) {
       return null;
     }
 
     return $FCMPegCopyWith<$Res>(_value.pegDetected!, (value) {
-      return _then(_value.copyWith(pegDetected: value));
+      return _then(_value.copyWith(pegDetected: value) as $Val);
     });
   }
 
   @override
+  @pragma('vm:prefer-inline')
   $FCMOrderCancelledCopyWith<$Res>? get orderCancelled {
     if (_value.orderCancelled == null) {
       return null;
     }
 
     return $FCMOrderCancelledCopyWith<$Res>(_value.orderCancelled!, (value) {
-      return _then(_value.copyWith(orderCancelled: value));
+      return _then(_value.copyWith(orderCancelled: value) as $Val);
     });
   }
 }
@@ -580,6 +601,7 @@ abstract class _$$_FCMDetailsCopyWith<$Res>
           _$_FCMDetails value, $Res Function(_$_FCMDetails) then) =
       __$$_FCMDetailsCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call(
       {FCMTx? tx,
       @JsonKey(name: 'peg_payout') FCMPeg? pegPayout,
@@ -597,15 +619,14 @@ abstract class _$$_FCMDetailsCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_FCMDetailsCopyWithImpl<$Res> extends _$FCMDetailsCopyWithImpl<$Res>
+class __$$_FCMDetailsCopyWithImpl<$Res>
+    extends _$FCMDetailsCopyWithImpl<$Res, _$_FCMDetails>
     implements _$$_FCMDetailsCopyWith<$Res> {
   __$$_FCMDetailsCopyWithImpl(
       _$_FCMDetails _value, $Res Function(_$_FCMDetails) _then)
-      : super(_value, (v) => _then(v as _$_FCMDetails));
+      : super(_value, _then);
 
-  @override
-  _$_FCMDetails get _value => super._value as _$_FCMDetails;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? tx = freezed,
@@ -614,19 +635,19 @@ class __$$_FCMDetailsCopyWithImpl<$Res> extends _$FCMDetailsCopyWithImpl<$Res>
     Object? orderCancelled = freezed,
   }) {
     return _then(_$_FCMDetails(
-      tx: tx == freezed
+      tx: freezed == tx
           ? _value.tx
           : tx // ignore: cast_nullable_to_non_nullable
               as FCMTx?,
-      pegPayout: pegPayout == freezed
+      pegPayout: freezed == pegPayout
           ? _value.pegPayout
           : pegPayout // ignore: cast_nullable_to_non_nullable
               as FCMPeg?,
-      pegDetected: pegDetected == freezed
+      pegDetected: freezed == pegDetected
           ? _value.pegDetected
           : pegDetected // ignore: cast_nullable_to_non_nullable
               as FCMPeg?,
-      orderCancelled: orderCancelled == freezed
+      orderCancelled: freezed == orderCancelled
           ? _value.orderCancelled
           : orderCancelled // ignore: cast_nullable_to_non_nullable
               as FCMOrderCancelled?,
@@ -668,31 +689,31 @@ class _$_FCMDetails implements _FCMDetails {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMDetails &&
-            const DeepCollectionEquality().equals(other.tx, tx) &&
-            const DeepCollectionEquality().equals(other.pegPayout, pegPayout) &&
-            const DeepCollectionEquality()
-                .equals(other.pegDetected, pegDetected) &&
-            const DeepCollectionEquality()
-                .equals(other.orderCancelled, orderCancelled));
+            (identical(other.tx, tx) || other.tx == tx) &&
+            (identical(other.pegPayout, pegPayout) ||
+                other.pegPayout == pegPayout) &&
+            (identical(other.pegDetected, pegDetected) ||
+                other.pegDetected == pegDetected) &&
+            (identical(other.orderCancelled, orderCancelled) ||
+                other.orderCancelled == orderCancelled));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(tx),
-      const DeepCollectionEquality().hash(pegPayout),
-      const DeepCollectionEquality().hash(pegDetected),
-      const DeepCollectionEquality().hash(orderCancelled));
+  int get hashCode =>
+      Object.hash(runtimeType, tx, pegPayout, pegDetected, orderCancelled);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMDetailsCopyWith<_$_FCMDetails> get copyWith =>
       __$$_FCMDetailsCopyWithImpl<_$_FCMDetails>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMDetailsToJson(this);
+    return _$$_FCMDetailsToJson(
+      this,
+    );
   }
 }
 
@@ -710,16 +731,16 @@ abstract class _FCMDetails implements FCMDetails {
       _$_FCMDetails.fromJson;
 
   @override
-  FCMTx? get tx => throw _privateConstructorUsedError;
+  FCMTx? get tx;
   @override
   @JsonKey(name: 'peg_payout')
-  FCMPeg? get pegPayout => throw _privateConstructorUsedError;
+  FCMPeg? get pegPayout;
   @override
   @JsonKey(name: 'peg_detected')
-  FCMPeg? get pegDetected => throw _privateConstructorUsedError;
+  FCMPeg? get pegDetected;
   @override
   @JsonKey(name: 'order_cancelled')
-  FCMOrderCancelled? get orderCancelled => throw _privateConstructorUsedError;
+  FCMOrderCancelled? get orderCancelled;
   @override
   @JsonKey(ignore: true)
   _$$_FCMDetailsCopyWith<_$_FCMDetails> get copyWith =>
@@ -745,35 +766,39 @@ mixin _$FCMTx {
 /// @nodoc
 abstract class $FCMTxCopyWith<$Res> {
   factory $FCMTxCopyWith(FCMTx value, $Res Function(FCMTx) then) =
-      _$FCMTxCopyWithImpl<$Res>;
+      _$FCMTxCopyWithImpl<$Res, FCMTx>;
+  @useResult
   $Res call(
       {@JsonKey(name: 'tx_type') FCMTxType? txType,
       @JsonKey(name: 'txid') String? txId});
 }
 
 /// @nodoc
-class _$FCMTxCopyWithImpl<$Res> implements $FCMTxCopyWith<$Res> {
+class _$FCMTxCopyWithImpl<$Res, $Val extends FCMTx>
+    implements $FCMTxCopyWith<$Res> {
   _$FCMTxCopyWithImpl(this._value, this._then);
 
-  final FCMTx _value;
   // ignore: unused_field
-  final $Res Function(FCMTx) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? txType = freezed,
     Object? txId = freezed,
   }) {
     return _then(_value.copyWith(
-      txType: txType == freezed
+      txType: freezed == txType
           ? _value.txType
           : txType // ignore: cast_nullable_to_non_nullable
               as FCMTxType?,
-      txId: txId == freezed
+      txId: freezed == txId
           ? _value.txId
           : txId // ignore: cast_nullable_to_non_nullable
               as String?,
-    ));
+    ) as $Val);
   }
 }
 
@@ -782,31 +807,30 @@ abstract class _$$_FCMTxCopyWith<$Res> implements $FCMTxCopyWith<$Res> {
   factory _$$_FCMTxCopyWith(_$_FCMTx value, $Res Function(_$_FCMTx) then) =
       __$$_FCMTxCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call(
       {@JsonKey(name: 'tx_type') FCMTxType? txType,
       @JsonKey(name: 'txid') String? txId});
 }
 
 /// @nodoc
-class __$$_FCMTxCopyWithImpl<$Res> extends _$FCMTxCopyWithImpl<$Res>
+class __$$_FCMTxCopyWithImpl<$Res> extends _$FCMTxCopyWithImpl<$Res, _$_FCMTx>
     implements _$$_FCMTxCopyWith<$Res> {
   __$$_FCMTxCopyWithImpl(_$_FCMTx _value, $Res Function(_$_FCMTx) _then)
-      : super(_value, (v) => _then(v as _$_FCMTx));
+      : super(_value, _then);
 
-  @override
-  _$_FCMTx get _value => super._value as _$_FCMTx;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? txType = freezed,
     Object? txId = freezed,
   }) {
     return _then(_$_FCMTx(
-      txType: txType == freezed
+      txType: freezed == txType
           ? _value.txType
           : txType // ignore: cast_nullable_to_non_nullable
               as FCMTxType?,
-      txId: txId == freezed
+      txId: freezed == txId
           ? _value.txId
           : txId // ignore: cast_nullable_to_non_nullable
               as String?,
@@ -841,25 +865,25 @@ class _$_FCMTx implements _FCMTx {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMTx &&
-            const DeepCollectionEquality().equals(other.txType, txType) &&
-            const DeepCollectionEquality().equals(other.txId, txId));
+            (identical(other.txType, txType) || other.txType == txType) &&
+            (identical(other.txId, txId) || other.txId == txId));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(txType),
-      const DeepCollectionEquality().hash(txId));
+  int get hashCode => Object.hash(runtimeType, txType, txId);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMTxCopyWith<_$_FCMTx> get copyWith =>
       __$$_FCMTxCopyWithImpl<_$_FCMTx>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMTxToJson(this);
+    return _$$_FCMTxToJson(
+      this,
+    );
   }
 }
 
@@ -872,10 +896,10 @@ abstract class _FCMTx implements FCMTx {
 
   @override
   @JsonKey(name: 'tx_type')
-  FCMTxType? get txType => throw _privateConstructorUsedError;
+  FCMTxType? get txType;
   @override
   @JsonKey(name: 'txid')
-  String? get txId => throw _privateConstructorUsedError;
+  String? get txId;
   @override
   @JsonKey(ignore: true)
   _$$_FCMTxCopyWith<_$_FCMTx> get copyWith =>
@@ -909,7 +933,8 @@ mixin _$FCMPeg {
 /// @nodoc
 abstract class $FCMPegCopyWith<$Res> {
   factory $FCMPegCopyWith(FCMPeg value, $Res Function(FCMPeg) then) =
-      _$FCMPegCopyWithImpl<$Res>;
+      _$FCMPegCopyWithImpl<$Res, FCMPeg>;
+  @useResult
   $Res call(
       {@JsonKey(name: 'order_id') String? orderId,
       @JsonKey(name: 'peg_in') bool? pegIn,
@@ -921,13 +946,16 @@ abstract class $FCMPegCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$FCMPegCopyWithImpl<$Res> implements $FCMPegCopyWith<$Res> {
+class _$FCMPegCopyWithImpl<$Res, $Val extends FCMPeg>
+    implements $FCMPegCopyWith<$Res> {
   _$FCMPegCopyWithImpl(this._value, this._then);
 
-  final FCMPeg _value;
   // ignore: unused_field
-  final $Res Function(FCMPeg) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? orderId = freezed,
@@ -939,35 +967,35 @@ class _$FCMPegCopyWithImpl<$Res> implements $FCMPegCopyWith<$Res> {
     Object? payout = freezed,
   }) {
     return _then(_value.copyWith(
-      orderId: orderId == freezed
+      orderId: freezed == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
               as String?,
-      pegIn: pegIn == freezed
+      pegIn: freezed == pegIn
           ? _value.pegIn
           : pegIn // ignore: cast_nullable_to_non_nullable
               as bool?,
-      txHash: txHash == freezed
+      txHash: freezed == txHash
           ? _value.txHash
           : txHash // ignore: cast_nullable_to_non_nullable
               as String?,
-      vout: vout == freezed
+      vout: freezed == vout
           ? _value.vout
           : vout // ignore: cast_nullable_to_non_nullable
               as int?,
-      createdAt: createdAt == freezed
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as int?,
-      payoutTxId: payoutTxId == freezed
+      payoutTxId: freezed == payoutTxId
           ? _value.payoutTxId
           : payoutTxId // ignore: cast_nullable_to_non_nullable
               as String?,
-      payout: payout == freezed
+      payout: freezed == payout
           ? _value.payout
           : payout // ignore: cast_nullable_to_non_nullable
               as int?,
-    ));
+    ) as $Val);
   }
 }
 
@@ -976,6 +1004,7 @@ abstract class _$$_FCMPegCopyWith<$Res> implements $FCMPegCopyWith<$Res> {
   factory _$$_FCMPegCopyWith(_$_FCMPeg value, $Res Function(_$_FCMPeg) then) =
       __$$_FCMPegCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call(
       {@JsonKey(name: 'order_id') String? orderId,
       @JsonKey(name: 'peg_in') bool? pegIn,
@@ -987,14 +1016,13 @@ abstract class _$$_FCMPegCopyWith<$Res> implements $FCMPegCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$_FCMPegCopyWithImpl<$Res> extends _$FCMPegCopyWithImpl<$Res>
+class __$$_FCMPegCopyWithImpl<$Res>
+    extends _$FCMPegCopyWithImpl<$Res, _$_FCMPeg>
     implements _$$_FCMPegCopyWith<$Res> {
   __$$_FCMPegCopyWithImpl(_$_FCMPeg _value, $Res Function(_$_FCMPeg) _then)
-      : super(_value, (v) => _then(v as _$_FCMPeg));
+      : super(_value, _then);
 
-  @override
-  _$_FCMPeg get _value => super._value as _$_FCMPeg;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? orderId = freezed,
@@ -1006,31 +1034,31 @@ class __$$_FCMPegCopyWithImpl<$Res> extends _$FCMPegCopyWithImpl<$Res>
     Object? payout = freezed,
   }) {
     return _then(_$_FCMPeg(
-      orderId: orderId == freezed
+      orderId: freezed == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
               as String?,
-      pegIn: pegIn == freezed
+      pegIn: freezed == pegIn
           ? _value.pegIn
           : pegIn // ignore: cast_nullable_to_non_nullable
               as bool?,
-      txHash: txHash == freezed
+      txHash: freezed == txHash
           ? _value.txHash
           : txHash // ignore: cast_nullable_to_non_nullable
               as String?,
-      vout: vout == freezed
+      vout: freezed == vout
           ? _value.vout
           : vout // ignore: cast_nullable_to_non_nullable
               as int?,
-      createdAt: createdAt == freezed
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
               as int?,
-      payoutTxId: payoutTxId == freezed
+      payoutTxId: freezed == payoutTxId
           ? _value.payoutTxId
           : payoutTxId // ignore: cast_nullable_to_non_nullable
               as String?,
-      payout: payout == freezed
+      payout: freezed == payout
           ? _value.payout
           : payout // ignore: cast_nullable_to_non_nullable
               as int?,
@@ -1083,36 +1111,33 @@ class _$_FCMPeg implements _FCMPeg {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMPeg &&
-            const DeepCollectionEquality().equals(other.orderId, orderId) &&
-            const DeepCollectionEquality().equals(other.pegIn, pegIn) &&
-            const DeepCollectionEquality().equals(other.txHash, txHash) &&
-            const DeepCollectionEquality().equals(other.vout, vout) &&
-            const DeepCollectionEquality().equals(other.createdAt, createdAt) &&
-            const DeepCollectionEquality()
-                .equals(other.payoutTxId, payoutTxId) &&
-            const DeepCollectionEquality().equals(other.payout, payout));
+            (identical(other.orderId, orderId) || other.orderId == orderId) &&
+            (identical(other.pegIn, pegIn) || other.pegIn == pegIn) &&
+            (identical(other.txHash, txHash) || other.txHash == txHash) &&
+            (identical(other.vout, vout) || other.vout == vout) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.payoutTxId, payoutTxId) ||
+                other.payoutTxId == payoutTxId) &&
+            (identical(other.payout, payout) || other.payout == payout));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(orderId),
-      const DeepCollectionEquality().hash(pegIn),
-      const DeepCollectionEquality().hash(txHash),
-      const DeepCollectionEquality().hash(vout),
-      const DeepCollectionEquality().hash(createdAt),
-      const DeepCollectionEquality().hash(payoutTxId),
-      const DeepCollectionEquality().hash(payout));
+      runtimeType, orderId, pegIn, txHash, vout, createdAt, payoutTxId, payout);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMPegCopyWith<_$_FCMPeg> get copyWith =>
       __$$_FCMPegCopyWithImpl<_$_FCMPeg>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMPegToJson(this);
+    return _$$_FCMPegToJson(
+      this,
+    );
   }
 }
 
@@ -1130,23 +1155,23 @@ abstract class _FCMPeg implements FCMPeg {
 
   @override
   @JsonKey(name: 'order_id')
-  String? get orderId => throw _privateConstructorUsedError;
+  String? get orderId;
   @override
   @JsonKey(name: 'peg_in')
-  bool? get pegIn => throw _privateConstructorUsedError;
+  bool? get pegIn;
   @override
   @JsonKey(name: 'tx_hash')
-  String? get txHash => throw _privateConstructorUsedError;
+  String? get txHash;
   @override
-  int? get vout => throw _privateConstructorUsedError;
+  int? get vout;
   @override
   @JsonKey(name: 'created_at')
-  int? get createdAt => throw _privateConstructorUsedError;
+  int? get createdAt;
   @override
   @JsonKey(name: 'payout_txid')
-  String? get payoutTxId => throw _privateConstructorUsedError;
+  String? get payoutTxId;
   @override
-  int? get payout => throw _privateConstructorUsedError;
+  int? get payout;
   @override
   @JsonKey(ignore: true)
   _$$_FCMPegCopyWith<_$_FCMPeg> get copyWith =>
@@ -1172,29 +1197,32 @@ mixin _$FCMOrderCancelled {
 abstract class $FCMOrderCancelledCopyWith<$Res> {
   factory $FCMOrderCancelledCopyWith(
           FCMOrderCancelled value, $Res Function(FCMOrderCancelled) then) =
-      _$FCMOrderCancelledCopyWithImpl<$Res>;
+      _$FCMOrderCancelledCopyWithImpl<$Res, FCMOrderCancelled>;
+  @useResult
   $Res call({@JsonKey(name: 'order_id') String? orderId});
 }
 
 /// @nodoc
-class _$FCMOrderCancelledCopyWithImpl<$Res>
+class _$FCMOrderCancelledCopyWithImpl<$Res, $Val extends FCMOrderCancelled>
     implements $FCMOrderCancelledCopyWith<$Res> {
   _$FCMOrderCancelledCopyWithImpl(this._value, this._then);
 
-  final FCMOrderCancelled _value;
   // ignore: unused_field
-  final $Res Function(FCMOrderCancelled) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? orderId = freezed,
   }) {
     return _then(_value.copyWith(
-      orderId: orderId == freezed
+      orderId: freezed == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
               as String?,
-    ));
+    ) as $Val);
   }
 }
 
@@ -1205,26 +1233,25 @@ abstract class _$$_FCMOrderCancelledCopyWith<$Res>
           $Res Function(_$_FCMOrderCancelled) then) =
       __$$_FCMOrderCancelledCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call({@JsonKey(name: 'order_id') String? orderId});
 }
 
 /// @nodoc
 class __$$_FCMOrderCancelledCopyWithImpl<$Res>
-    extends _$FCMOrderCancelledCopyWithImpl<$Res>
+    extends _$FCMOrderCancelledCopyWithImpl<$Res, _$_FCMOrderCancelled>
     implements _$$_FCMOrderCancelledCopyWith<$Res> {
   __$$_FCMOrderCancelledCopyWithImpl(
       _$_FCMOrderCancelled _value, $Res Function(_$_FCMOrderCancelled) _then)
-      : super(_value, (v) => _then(v as _$_FCMOrderCancelled));
+      : super(_value, _then);
 
-  @override
-  _$_FCMOrderCancelled get _value => super._value as _$_FCMOrderCancelled;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? orderId = freezed,
   }) {
     return _then(_$_FCMOrderCancelled(
-      orderId: orderId == freezed
+      orderId: freezed == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
               as String?,
@@ -1254,23 +1281,25 @@ class _$_FCMOrderCancelled implements _FCMOrderCancelled {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMOrderCancelled &&
-            const DeepCollectionEquality().equals(other.orderId, orderId));
+            (identical(other.orderId, orderId) || other.orderId == orderId));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(orderId));
+  int get hashCode => Object.hash(runtimeType, orderId);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMOrderCancelledCopyWith<_$_FCMOrderCancelled> get copyWith =>
       __$$_FCMOrderCancelledCopyWithImpl<_$_FCMOrderCancelled>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMOrderCancelledToJson(this);
+    return _$$_FCMOrderCancelledToJson(
+      this,
+    );
   }
 }
 
@@ -1284,7 +1313,7 @@ abstract class _FCMOrderCancelled implements FCMOrderCancelled {
 
   @override
   @JsonKey(name: 'order_id')
-  String? get orderId => throw _privateConstructorUsedError;
+  String? get orderId;
   @override
   @JsonKey(ignore: true)
   _$$_FCMOrderCancelledCopyWith<_$_FCMOrderCancelled> get copyWith =>
@@ -1310,7 +1339,8 @@ mixin _$FCMMessage {
 abstract class $FCMMessageCopyWith<$Res> {
   factory $FCMMessageCopyWith(
           FCMMessage value, $Res Function(FCMMessage) then) =
-      _$FCMMessageCopyWithImpl<$Res>;
+      _$FCMMessageCopyWithImpl<$Res, FCMMessage>;
+  @useResult
   $Res call({FCMNotification? notification, FCMData? data});
 
   $FCMNotificationCopyWith<$Res>? get notification;
@@ -1318,49 +1348,54 @@ abstract class $FCMMessageCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$FCMMessageCopyWithImpl<$Res> implements $FCMMessageCopyWith<$Res> {
+class _$FCMMessageCopyWithImpl<$Res, $Val extends FCMMessage>
+    implements $FCMMessageCopyWith<$Res> {
   _$FCMMessageCopyWithImpl(this._value, this._then);
 
-  final FCMMessage _value;
   // ignore: unused_field
-  final $Res Function(FCMMessage) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? notification = freezed,
     Object? data = freezed,
   }) {
     return _then(_value.copyWith(
-      notification: notification == freezed
+      notification: freezed == notification
           ? _value.notification
           : notification // ignore: cast_nullable_to_non_nullable
               as FCMNotification?,
-      data: data == freezed
+      data: freezed == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
               as FCMData?,
-    ));
+    ) as $Val);
   }
 
   @override
+  @pragma('vm:prefer-inline')
   $FCMNotificationCopyWith<$Res>? get notification {
     if (_value.notification == null) {
       return null;
     }
 
     return $FCMNotificationCopyWith<$Res>(_value.notification!, (value) {
-      return _then(_value.copyWith(notification: value));
+      return _then(_value.copyWith(notification: value) as $Val);
     });
   }
 
   @override
+  @pragma('vm:prefer-inline')
   $FCMDataCopyWith<$Res>? get data {
     if (_value.data == null) {
       return null;
     }
 
     return $FCMDataCopyWith<$Res>(_value.data!, (value) {
-      return _then(_value.copyWith(data: value));
+      return _then(_value.copyWith(data: value) as $Val);
     });
   }
 }
@@ -1372,6 +1407,7 @@ abstract class _$$_FCMMessageCopyWith<$Res>
           _$_FCMMessage value, $Res Function(_$_FCMMessage) then) =
       __$$_FCMMessageCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call({FCMNotification? notification, FCMData? data});
 
   @override
@@ -1381,26 +1417,25 @@ abstract class _$$_FCMMessageCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_FCMMessageCopyWithImpl<$Res> extends _$FCMMessageCopyWithImpl<$Res>
+class __$$_FCMMessageCopyWithImpl<$Res>
+    extends _$FCMMessageCopyWithImpl<$Res, _$_FCMMessage>
     implements _$$_FCMMessageCopyWith<$Res> {
   __$$_FCMMessageCopyWithImpl(
       _$_FCMMessage _value, $Res Function(_$_FCMMessage) _then)
-      : super(_value, (v) => _then(v as _$_FCMMessage));
+      : super(_value, _then);
 
-  @override
-  _$_FCMMessage get _value => super._value as _$_FCMMessage;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? notification = freezed,
     Object? data = freezed,
   }) {
     return _then(_$_FCMMessage(
-      notification: notification == freezed
+      notification: freezed == notification
           ? _value.notification
           : notification // ignore: cast_nullable_to_non_nullable
               as FCMNotification?,
-      data: data == freezed
+      data: freezed == data
           ? _value.data
           : data // ignore: cast_nullable_to_non_nullable
               as FCMData?,
@@ -1431,26 +1466,26 @@ class _$_FCMMessage implements _FCMMessage {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$_FCMMessage &&
-            const DeepCollectionEquality()
-                .equals(other.notification, notification) &&
-            const DeepCollectionEquality().equals(other.data, data));
+            (identical(other.notification, notification) ||
+                other.notification == notification) &&
+            (identical(other.data, data) || other.data == data));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(notification),
-      const DeepCollectionEquality().hash(data));
+  int get hashCode => Object.hash(runtimeType, notification, data);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$_FCMMessageCopyWith<_$_FCMMessage> get copyWith =>
       __$$_FCMMessageCopyWithImpl<_$_FCMMessage>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMMessageToJson(this);
+    return _$$_FCMMessageToJson(
+      this,
+    );
   }
 }
 
@@ -1463,9 +1498,9 @@ abstract class _FCMMessage implements FCMMessage {
       _$_FCMMessage.fromJson;
 
   @override
-  FCMNotification? get notification => throw _privateConstructorUsedError;
+  FCMNotification? get notification;
   @override
-  FCMData? get data => throw _privateConstructorUsedError;
+  FCMData? get data;
   @override
   @JsonKey(ignore: true)
   _$$_FCMMessageCopyWith<_$_FCMMessage> get copyWith =>

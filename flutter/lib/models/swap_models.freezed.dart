@@ -25,9 +25,9 @@ mixin _$SwapPriceSubscribeState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? send,
-    TResult Function()? recv,
+    TResult? Function()? empty,
+    TResult? Function()? send,
+    TResult? Function()? recv,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -47,9 +47,9 @@ mixin _$SwapPriceSubscribeState {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapPriceSubscribeStateEmpty value)? empty,
-    TResult Function(SwapPriceSubscribeStateSend value)? send,
-    TResult Function(SwapPriceSubscribeStateRecv value)? recv,
+    TResult? Function(SwapPriceSubscribeStateEmpty value)? empty,
+    TResult? Function(SwapPriceSubscribeStateSend value)? send,
+    TResult? Function(SwapPriceSubscribeStateRecv value)? recv,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -66,17 +66,19 @@ mixin _$SwapPriceSubscribeState {
 abstract class $SwapPriceSubscribeStateCopyWith<$Res> {
   factory $SwapPriceSubscribeStateCopyWith(SwapPriceSubscribeState value,
           $Res Function(SwapPriceSubscribeState) then) =
-      _$SwapPriceSubscribeStateCopyWithImpl<$Res>;
+      _$SwapPriceSubscribeStateCopyWithImpl<$Res, SwapPriceSubscribeState>;
 }
 
 /// @nodoc
-class _$SwapPriceSubscribeStateCopyWithImpl<$Res>
+class _$SwapPriceSubscribeStateCopyWithImpl<$Res,
+        $Val extends SwapPriceSubscribeState>
     implements $SwapPriceSubscribeStateCopyWith<$Res> {
   _$SwapPriceSubscribeStateCopyWithImpl(this._value, this._then);
 
-  final SwapPriceSubscribeState _value;
   // ignore: unused_field
-  final $Res Function(SwapPriceSubscribeState) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -89,16 +91,13 @@ abstract class _$$SwapPriceSubscribeStateEmptyCopyWith<$Res> {
 
 /// @nodoc
 class __$$SwapPriceSubscribeStateEmptyCopyWithImpl<$Res>
-    extends _$SwapPriceSubscribeStateCopyWithImpl<$Res>
+    extends _$SwapPriceSubscribeStateCopyWithImpl<$Res,
+        _$SwapPriceSubscribeStateEmpty>
     implements _$$SwapPriceSubscribeStateEmptyCopyWith<$Res> {
   __$$SwapPriceSubscribeStateEmptyCopyWithImpl(
       _$SwapPriceSubscribeStateEmpty _value,
       $Res Function(_$SwapPriceSubscribeStateEmpty) _then)
-      : super(_value, (v) => _then(v as _$SwapPriceSubscribeStateEmpty));
-
-  @override
-  _$SwapPriceSubscribeStateEmpty get _value =>
-      super._value as _$SwapPriceSubscribeStateEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -134,9 +133,9 @@ class _$SwapPriceSubscribeStateEmpty implements SwapPriceSubscribeStateEmpty {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? send,
-    TResult Function()? recv,
+    TResult? Function()? empty,
+    TResult? Function()? send,
+    TResult? Function()? recv,
   }) {
     return empty?.call();
   }
@@ -168,9 +167,9 @@ class _$SwapPriceSubscribeStateEmpty implements SwapPriceSubscribeStateEmpty {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapPriceSubscribeStateEmpty value)? empty,
-    TResult Function(SwapPriceSubscribeStateSend value)? send,
-    TResult Function(SwapPriceSubscribeStateRecv value)? recv,
+    TResult? Function(SwapPriceSubscribeStateEmpty value)? empty,
+    TResult? Function(SwapPriceSubscribeStateSend value)? send,
+    TResult? Function(SwapPriceSubscribeStateRecv value)? recv,
   }) {
     return empty?.call(this);
   }
@@ -204,16 +203,13 @@ abstract class _$$SwapPriceSubscribeStateSendCopyWith<$Res> {
 
 /// @nodoc
 class __$$SwapPriceSubscribeStateSendCopyWithImpl<$Res>
-    extends _$SwapPriceSubscribeStateCopyWithImpl<$Res>
+    extends _$SwapPriceSubscribeStateCopyWithImpl<$Res,
+        _$SwapPriceSubscribeStateSend>
     implements _$$SwapPriceSubscribeStateSendCopyWith<$Res> {
   __$$SwapPriceSubscribeStateSendCopyWithImpl(
       _$SwapPriceSubscribeStateSend _value,
       $Res Function(_$SwapPriceSubscribeStateSend) _then)
-      : super(_value, (v) => _then(v as _$SwapPriceSubscribeStateSend));
-
-  @override
-  _$SwapPriceSubscribeStateSend get _value =>
-      super._value as _$SwapPriceSubscribeStateSend;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -249,9 +245,9 @@ class _$SwapPriceSubscribeStateSend implements SwapPriceSubscribeStateSend {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? send,
-    TResult Function()? recv,
+    TResult? Function()? empty,
+    TResult? Function()? send,
+    TResult? Function()? recv,
   }) {
     return send?.call();
   }
@@ -283,9 +279,9 @@ class _$SwapPriceSubscribeStateSend implements SwapPriceSubscribeStateSend {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapPriceSubscribeStateEmpty value)? empty,
-    TResult Function(SwapPriceSubscribeStateSend value)? send,
-    TResult Function(SwapPriceSubscribeStateRecv value)? recv,
+    TResult? Function(SwapPriceSubscribeStateEmpty value)? empty,
+    TResult? Function(SwapPriceSubscribeStateSend value)? send,
+    TResult? Function(SwapPriceSubscribeStateRecv value)? recv,
   }) {
     return send?.call(this);
   }
@@ -319,16 +315,13 @@ abstract class _$$SwapPriceSubscribeStateRecvCopyWith<$Res> {
 
 /// @nodoc
 class __$$SwapPriceSubscribeStateRecvCopyWithImpl<$Res>
-    extends _$SwapPriceSubscribeStateCopyWithImpl<$Res>
+    extends _$SwapPriceSubscribeStateCopyWithImpl<$Res,
+        _$SwapPriceSubscribeStateRecv>
     implements _$$SwapPriceSubscribeStateRecvCopyWith<$Res> {
   __$$SwapPriceSubscribeStateRecvCopyWithImpl(
       _$SwapPriceSubscribeStateRecv _value,
       $Res Function(_$SwapPriceSubscribeStateRecv) _then)
-      : super(_value, (v) => _then(v as _$SwapPriceSubscribeStateRecv));
-
-  @override
-  _$SwapPriceSubscribeStateRecv get _value =>
-      super._value as _$SwapPriceSubscribeStateRecv;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -364,9 +357,9 @@ class _$SwapPriceSubscribeStateRecv implements SwapPriceSubscribeStateRecv {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function()? send,
-    TResult Function()? recv,
+    TResult? Function()? empty,
+    TResult? Function()? send,
+    TResult? Function()? recv,
   }) {
     return recv?.call();
   }
@@ -398,9 +391,9 @@ class _$SwapPriceSubscribeStateRecv implements SwapPriceSubscribeStateRecv {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapPriceSubscribeStateEmpty value)? empty,
-    TResult Function(SwapPriceSubscribeStateSend value)? send,
-    TResult Function(SwapPriceSubscribeStateRecv value)? recv,
+    TResult? Function(SwapPriceSubscribeStateEmpty value)? empty,
+    TResult? Function(SwapPriceSubscribeStateSend value)? send,
+    TResult? Function(SwapPriceSubscribeStateRecv value)? recv,
   }) {
     return recv?.call(this);
   }
@@ -434,8 +427,8 @@ mixin _$SwapCurrentFeeRate {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(FeeRate feeRate)? data,
+    TResult? Function()? empty,
+    TResult? Function(FeeRate feeRate)? data,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -453,8 +446,8 @@ mixin _$SwapCurrentFeeRate {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapCurrentFeeRateEmpty value)? empty,
-    TResult Function(SwapCurrentFeeRateData value)? data,
+    TResult? Function(SwapCurrentFeeRateEmpty value)? empty,
+    TResult? Function(SwapCurrentFeeRateData value)? data,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -470,17 +463,18 @@ mixin _$SwapCurrentFeeRate {
 abstract class $SwapCurrentFeeRateCopyWith<$Res> {
   factory $SwapCurrentFeeRateCopyWith(
           SwapCurrentFeeRate value, $Res Function(SwapCurrentFeeRate) then) =
-      _$SwapCurrentFeeRateCopyWithImpl<$Res>;
+      _$SwapCurrentFeeRateCopyWithImpl<$Res, SwapCurrentFeeRate>;
 }
 
 /// @nodoc
-class _$SwapCurrentFeeRateCopyWithImpl<$Res>
+class _$SwapCurrentFeeRateCopyWithImpl<$Res, $Val extends SwapCurrentFeeRate>
     implements $SwapCurrentFeeRateCopyWith<$Res> {
   _$SwapCurrentFeeRateCopyWithImpl(this._value, this._then);
 
-  final SwapCurrentFeeRate _value;
   // ignore: unused_field
-  final $Res Function(SwapCurrentFeeRate) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -492,15 +486,11 @@ abstract class _$$SwapCurrentFeeRateEmptyCopyWith<$Res> {
 
 /// @nodoc
 class __$$SwapCurrentFeeRateEmptyCopyWithImpl<$Res>
-    extends _$SwapCurrentFeeRateCopyWithImpl<$Res>
+    extends _$SwapCurrentFeeRateCopyWithImpl<$Res, _$SwapCurrentFeeRateEmpty>
     implements _$$SwapCurrentFeeRateEmptyCopyWith<$Res> {
   __$$SwapCurrentFeeRateEmptyCopyWithImpl(_$SwapCurrentFeeRateEmpty _value,
       $Res Function(_$SwapCurrentFeeRateEmpty) _then)
-      : super(_value, (v) => _then(v as _$SwapCurrentFeeRateEmpty));
-
-  @override
-  _$SwapCurrentFeeRateEmpty get _value =>
-      super._value as _$SwapCurrentFeeRateEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -535,8 +525,8 @@ class _$SwapCurrentFeeRateEmpty implements SwapCurrentFeeRateEmpty {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(FeeRate feeRate)? data,
+    TResult? Function()? empty,
+    TResult? Function(FeeRate feeRate)? data,
   }) {
     return empty?.call();
   }
@@ -566,8 +556,8 @@ class _$SwapCurrentFeeRateEmpty implements SwapCurrentFeeRateEmpty {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapCurrentFeeRateEmpty value)? empty,
-    TResult Function(SwapCurrentFeeRateData value)? data,
+    TResult? Function(SwapCurrentFeeRateEmpty value)? empty,
+    TResult? Function(SwapCurrentFeeRateData value)? data,
   }) {
     return empty?.call(this);
   }
@@ -595,27 +585,25 @@ abstract class _$$SwapCurrentFeeRateDataCopyWith<$Res> {
   factory _$$SwapCurrentFeeRateDataCopyWith(_$SwapCurrentFeeRateData value,
           $Res Function(_$SwapCurrentFeeRateData) then) =
       __$$SwapCurrentFeeRateDataCopyWithImpl<$Res>;
+  @useResult
   $Res call({FeeRate feeRate});
 }
 
 /// @nodoc
 class __$$SwapCurrentFeeRateDataCopyWithImpl<$Res>
-    extends _$SwapCurrentFeeRateCopyWithImpl<$Res>
+    extends _$SwapCurrentFeeRateCopyWithImpl<$Res, _$SwapCurrentFeeRateData>
     implements _$$SwapCurrentFeeRateDataCopyWith<$Res> {
   __$$SwapCurrentFeeRateDataCopyWithImpl(_$SwapCurrentFeeRateData _value,
       $Res Function(_$SwapCurrentFeeRateData) _then)
-      : super(_value, (v) => _then(v as _$SwapCurrentFeeRateData));
+      : super(_value, _then);
 
-  @override
-  _$SwapCurrentFeeRateData get _value =>
-      super._value as _$SwapCurrentFeeRateData;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? feeRate = freezed,
+    Object? feeRate = null,
   }) {
     return _then(_$SwapCurrentFeeRateData(
-      feeRate: feeRate == freezed
+      feeRate: null == feeRate
           ? _value.feeRate
           : feeRate // ignore: cast_nullable_to_non_nullable
               as FeeRate,
@@ -641,15 +629,15 @@ class _$SwapCurrentFeeRateData implements SwapCurrentFeeRateData {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapCurrentFeeRateData &&
-            const DeepCollectionEquality().equals(other.feeRate, feeRate));
+            (identical(other.feeRate, feeRate) || other.feeRate == feeRate));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(feeRate));
+  int get hashCode => Object.hash(runtimeType, feeRate);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$SwapCurrentFeeRateDataCopyWith<_$SwapCurrentFeeRateData> get copyWith =>
       __$$SwapCurrentFeeRateDataCopyWithImpl<_$SwapCurrentFeeRateData>(
           this, _$identity);
@@ -666,8 +654,8 @@ class _$SwapCurrentFeeRateData implements SwapCurrentFeeRateData {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(FeeRate feeRate)? data,
+    TResult? Function()? empty,
+    TResult? Function(FeeRate feeRate)? data,
   }) {
     return data?.call(feeRate);
   }
@@ -697,8 +685,8 @@ class _$SwapCurrentFeeRateData implements SwapCurrentFeeRateData {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapCurrentFeeRateEmpty value)? empty,
-    TResult Function(SwapCurrentFeeRateData value)? data,
+    TResult? Function(SwapCurrentFeeRateEmpty value)? empty,
+    TResult? Function(SwapCurrentFeeRateData value)? data,
   }) {
     return data?.call(this);
   }
@@ -721,7 +709,7 @@ abstract class SwapCurrentFeeRateData implements SwapCurrentFeeRate {
   const factory SwapCurrentFeeRateData({required final FeeRate feeRate}) =
       _$SwapCurrentFeeRateData;
 
-  FeeRate get feeRate => throw _privateConstructorUsedError;
+  FeeRate get feeRate;
   @JsonKey(ignore: true)
   _$$SwapCurrentFeeRateDataCopyWith<_$SwapCurrentFeeRateData> get copyWith =>
       throw _privateConstructorUsedError;
@@ -737,8 +725,8 @@ mixin _$SwapRecvAmountPriceStream {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String value)? data,
+    TResult? Function()? empty,
+    TResult? Function(String value)? data,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -756,8 +744,8 @@ mixin _$SwapRecvAmountPriceStream {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapRecvAmountPriceStreamEmpty value)? empty,
-    TResult Function(SwapRecvAmountPriceStreamData value)? data,
+    TResult? Function(SwapRecvAmountPriceStreamEmpty value)? empty,
+    TResult? Function(SwapRecvAmountPriceStreamData value)? data,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -773,17 +761,19 @@ mixin _$SwapRecvAmountPriceStream {
 abstract class $SwapRecvAmountPriceStreamCopyWith<$Res> {
   factory $SwapRecvAmountPriceStreamCopyWith(SwapRecvAmountPriceStream value,
           $Res Function(SwapRecvAmountPriceStream) then) =
-      _$SwapRecvAmountPriceStreamCopyWithImpl<$Res>;
+      _$SwapRecvAmountPriceStreamCopyWithImpl<$Res, SwapRecvAmountPriceStream>;
 }
 
 /// @nodoc
-class _$SwapRecvAmountPriceStreamCopyWithImpl<$Res>
+class _$SwapRecvAmountPriceStreamCopyWithImpl<$Res,
+        $Val extends SwapRecvAmountPriceStream>
     implements $SwapRecvAmountPriceStreamCopyWith<$Res> {
   _$SwapRecvAmountPriceStreamCopyWithImpl(this._value, this._then);
 
-  final SwapRecvAmountPriceStream _value;
   // ignore: unused_field
-  final $Res Function(SwapRecvAmountPriceStream) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -796,16 +786,13 @@ abstract class _$$SwapRecvAmountPriceStreamEmptyCopyWith<$Res> {
 
 /// @nodoc
 class __$$SwapRecvAmountPriceStreamEmptyCopyWithImpl<$Res>
-    extends _$SwapRecvAmountPriceStreamCopyWithImpl<$Res>
+    extends _$SwapRecvAmountPriceStreamCopyWithImpl<$Res,
+        _$SwapRecvAmountPriceStreamEmpty>
     implements _$$SwapRecvAmountPriceStreamEmptyCopyWith<$Res> {
   __$$SwapRecvAmountPriceStreamEmptyCopyWithImpl(
       _$SwapRecvAmountPriceStreamEmpty _value,
       $Res Function(_$SwapRecvAmountPriceStreamEmpty) _then)
-      : super(_value, (v) => _then(v as _$SwapRecvAmountPriceStreamEmpty));
-
-  @override
-  _$SwapRecvAmountPriceStreamEmpty get _value =>
-      super._value as _$SwapRecvAmountPriceStreamEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -841,8 +828,8 @@ class _$SwapRecvAmountPriceStreamEmpty
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String value)? data,
+    TResult? Function()? empty,
+    TResult? Function(String value)? data,
   }) {
     return empty?.call();
   }
@@ -872,8 +859,8 @@ class _$SwapRecvAmountPriceStreamEmpty
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapRecvAmountPriceStreamEmpty value)? empty,
-    TResult Function(SwapRecvAmountPriceStreamData value)? data,
+    TResult? Function(SwapRecvAmountPriceStreamEmpty value)? empty,
+    TResult? Function(SwapRecvAmountPriceStreamData value)? data,
   }) {
     return empty?.call(this);
   }
@@ -904,28 +891,27 @@ abstract class _$$SwapRecvAmountPriceStreamDataCopyWith<$Res> {
           _$SwapRecvAmountPriceStreamData value,
           $Res Function(_$SwapRecvAmountPriceStreamData) then) =
       __$$SwapRecvAmountPriceStreamDataCopyWithImpl<$Res>;
+  @useResult
   $Res call({String value});
 }
 
 /// @nodoc
 class __$$SwapRecvAmountPriceStreamDataCopyWithImpl<$Res>
-    extends _$SwapRecvAmountPriceStreamCopyWithImpl<$Res>
+    extends _$SwapRecvAmountPriceStreamCopyWithImpl<$Res,
+        _$SwapRecvAmountPriceStreamData>
     implements _$$SwapRecvAmountPriceStreamDataCopyWith<$Res> {
   __$$SwapRecvAmountPriceStreamDataCopyWithImpl(
       _$SwapRecvAmountPriceStreamData _value,
       $Res Function(_$SwapRecvAmountPriceStreamData) _then)
-      : super(_value, (v) => _then(v as _$SwapRecvAmountPriceStreamData));
+      : super(_value, _then);
 
-  @override
-  _$SwapRecvAmountPriceStreamData get _value =>
-      super._value as _$SwapRecvAmountPriceStreamData;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? value = freezed,
+    Object? value = null,
   }) {
     return _then(_$SwapRecvAmountPriceStreamData(
-      value: value == freezed
+      value: null == value
           ? _value.value
           : value // ignore: cast_nullable_to_non_nullable
               as String,
@@ -951,15 +937,15 @@ class _$SwapRecvAmountPriceStreamData implements SwapRecvAmountPriceStreamData {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapRecvAmountPriceStreamData &&
-            const DeepCollectionEquality().equals(other.value, value));
+            (identical(other.value, value) || other.value == value));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(value));
+  int get hashCode => Object.hash(runtimeType, value);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$SwapRecvAmountPriceStreamDataCopyWith<_$SwapRecvAmountPriceStreamData>
       get copyWith => __$$SwapRecvAmountPriceStreamDataCopyWithImpl<
           _$SwapRecvAmountPriceStreamData>(this, _$identity);
@@ -976,8 +962,8 @@ class _$SwapRecvAmountPriceStreamData implements SwapRecvAmountPriceStreamData {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String value)? data,
+    TResult? Function()? empty,
+    TResult? Function(String value)? data,
   }) {
     return data?.call(value);
   }
@@ -1007,8 +993,8 @@ class _$SwapRecvAmountPriceStreamData implements SwapRecvAmountPriceStreamData {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapRecvAmountPriceStreamEmpty value)? empty,
-    TResult Function(SwapRecvAmountPriceStreamData value)? data,
+    TResult? Function(SwapRecvAmountPriceStreamEmpty value)? empty,
+    TResult? Function(SwapRecvAmountPriceStreamData value)? data,
   }) {
     return data?.call(this);
   }
@@ -1032,7 +1018,7 @@ abstract class SwapRecvAmountPriceStreamData
   const factory SwapRecvAmountPriceStreamData({required final String value}) =
       _$SwapRecvAmountPriceStreamData;
 
-  String get value => throw _privateConstructorUsedError;
+  String get value;
   @JsonKey(ignore: true)
   _$$SwapRecvAmountPriceStreamDataCopyWith<_$SwapRecvAmountPriceStreamData>
       get copyWith => throw _privateConstructorUsedError;
@@ -1048,8 +1034,8 @@ mixin _$SwapSendAmountPriceStream {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String value)? data,
+    TResult? Function()? empty,
+    TResult? Function(String value)? data,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -1067,8 +1053,8 @@ mixin _$SwapSendAmountPriceStream {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapSendAmountPriceStreamEmpty value)? empty,
-    TResult Function(SwapSendAmountPriceStreamData value)? data,
+    TResult? Function(SwapSendAmountPriceStreamEmpty value)? empty,
+    TResult? Function(SwapSendAmountPriceStreamData value)? data,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -1084,17 +1070,19 @@ mixin _$SwapSendAmountPriceStream {
 abstract class $SwapSendAmountPriceStreamCopyWith<$Res> {
   factory $SwapSendAmountPriceStreamCopyWith(SwapSendAmountPriceStream value,
           $Res Function(SwapSendAmountPriceStream) then) =
-      _$SwapSendAmountPriceStreamCopyWithImpl<$Res>;
+      _$SwapSendAmountPriceStreamCopyWithImpl<$Res, SwapSendAmountPriceStream>;
 }
 
 /// @nodoc
-class _$SwapSendAmountPriceStreamCopyWithImpl<$Res>
+class _$SwapSendAmountPriceStreamCopyWithImpl<$Res,
+        $Val extends SwapSendAmountPriceStream>
     implements $SwapSendAmountPriceStreamCopyWith<$Res> {
   _$SwapSendAmountPriceStreamCopyWithImpl(this._value, this._then);
 
-  final SwapSendAmountPriceStream _value;
   // ignore: unused_field
-  final $Res Function(SwapSendAmountPriceStream) _then;
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
 }
 
 /// @nodoc
@@ -1107,16 +1095,13 @@ abstract class _$$SwapSendAmountPriceStreamEmptyCopyWith<$Res> {
 
 /// @nodoc
 class __$$SwapSendAmountPriceStreamEmptyCopyWithImpl<$Res>
-    extends _$SwapSendAmountPriceStreamCopyWithImpl<$Res>
+    extends _$SwapSendAmountPriceStreamCopyWithImpl<$Res,
+        _$SwapSendAmountPriceStreamEmpty>
     implements _$$SwapSendAmountPriceStreamEmptyCopyWith<$Res> {
   __$$SwapSendAmountPriceStreamEmptyCopyWithImpl(
       _$SwapSendAmountPriceStreamEmpty _value,
       $Res Function(_$SwapSendAmountPriceStreamEmpty) _then)
-      : super(_value, (v) => _then(v as _$SwapSendAmountPriceStreamEmpty));
-
-  @override
-  _$SwapSendAmountPriceStreamEmpty get _value =>
-      super._value as _$SwapSendAmountPriceStreamEmpty;
+      : super(_value, _then);
 }
 
 /// @nodoc
@@ -1152,8 +1137,8 @@ class _$SwapSendAmountPriceStreamEmpty
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String value)? data,
+    TResult? Function()? empty,
+    TResult? Function(String value)? data,
   }) {
     return empty?.call();
   }
@@ -1183,8 +1168,8 @@ class _$SwapSendAmountPriceStreamEmpty
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapSendAmountPriceStreamEmpty value)? empty,
-    TResult Function(SwapSendAmountPriceStreamData value)? data,
+    TResult? Function(SwapSendAmountPriceStreamEmpty value)? empty,
+    TResult? Function(SwapSendAmountPriceStreamData value)? data,
   }) {
     return empty?.call(this);
   }
@@ -1215,28 +1200,27 @@ abstract class _$$SwapSendAmountPriceStreamDataCopyWith<$Res> {
           _$SwapSendAmountPriceStreamData value,
           $Res Function(_$SwapSendAmountPriceStreamData) then) =
       __$$SwapSendAmountPriceStreamDataCopyWithImpl<$Res>;
+  @useResult
   $Res call({String value});
 }
 
 /// @nodoc
 class __$$SwapSendAmountPriceStreamDataCopyWithImpl<$Res>
-    extends _$SwapSendAmountPriceStreamCopyWithImpl<$Res>
+    extends _$SwapSendAmountPriceStreamCopyWithImpl<$Res,
+        _$SwapSendAmountPriceStreamData>
     implements _$$SwapSendAmountPriceStreamDataCopyWith<$Res> {
   __$$SwapSendAmountPriceStreamDataCopyWithImpl(
       _$SwapSendAmountPriceStreamData _value,
       $Res Function(_$SwapSendAmountPriceStreamData) _then)
-      : super(_value, (v) => _then(v as _$SwapSendAmountPriceStreamData));
+      : super(_value, _then);
 
-  @override
-  _$SwapSendAmountPriceStreamData get _value =>
-      super._value as _$SwapSendAmountPriceStreamData;
-
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? value = freezed,
+    Object? value = null,
   }) {
     return _then(_$SwapSendAmountPriceStreamData(
-      value: value == freezed
+      value: null == value
           ? _value.value
           : value // ignore: cast_nullable_to_non_nullable
               as String,
@@ -1262,15 +1246,15 @@ class _$SwapSendAmountPriceStreamData implements SwapSendAmountPriceStreamData {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapSendAmountPriceStreamData &&
-            const DeepCollectionEquality().equals(other.value, value));
+            (identical(other.value, value) || other.value == value));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(value));
+  int get hashCode => Object.hash(runtimeType, value);
 
   @JsonKey(ignore: true)
   @override
+  @pragma('vm:prefer-inline')
   _$$SwapSendAmountPriceStreamDataCopyWith<_$SwapSendAmountPriceStreamData>
       get copyWith => __$$SwapSendAmountPriceStreamDataCopyWithImpl<
           _$SwapSendAmountPriceStreamData>(this, _$identity);
@@ -1287,8 +1271,8 @@ class _$SwapSendAmountPriceStreamData implements SwapSendAmountPriceStreamData {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult Function()? empty,
-    TResult Function(String value)? data,
+    TResult? Function()? empty,
+    TResult? Function(String value)? data,
   }) {
     return data?.call(value);
   }
@@ -1318,8 +1302,8 @@ class _$SwapSendAmountPriceStreamData implements SwapSendAmountPriceStreamData {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult Function(SwapSendAmountPriceStreamEmpty value)? empty,
-    TResult Function(SwapSendAmountPriceStreamData value)? data,
+    TResult? Function(SwapSendAmountPriceStreamEmpty value)? empty,
+    TResult? Function(SwapSendAmountPriceStreamData value)? data,
   }) {
     return data?.call(this);
   }
@@ -1343,7 +1327,7 @@ abstract class SwapSendAmountPriceStreamData
   const factory SwapSendAmountPriceStreamData({required final String value}) =
       _$SwapSendAmountPriceStreamData;
 
-  String get value => throw _privateConstructorUsedError;
+  String get value;
   @JsonKey(ignore: true)
   _$$SwapSendAmountPriceStreamDataCopyWith<_$SwapSendAmountPriceStreamData>
       get copyWith => throw _privateConstructorUsedError;

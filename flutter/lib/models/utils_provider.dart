@@ -175,6 +175,18 @@ class UtilsProvider {
       return;
     }
 
+    if (errorDescription.contains('User declined to sign transaction')) {
+      errorDescription = 'Transaction sign declined'.tr();
+    }
+
+    if (errorDescription.contains('jade response timeout')) {
+      errorDescription = 'Please make sure Jade is turned on'.tr();
+    }
+
+    if (errorDescription.contains('jade is not connected')) {
+      errorDescription = 'Please make sure Jade is connected'.tr();
+    }
+
     await showDialog<void>(
       context: context,
       barrierDismissible:

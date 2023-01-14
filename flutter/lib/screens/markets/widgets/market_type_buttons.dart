@@ -35,7 +35,7 @@ class MarketTypeButtonsState extends State<MarketTypeButtons> {
   Widget build(BuildContext context) {
     return Container(
       width: double.maxFinite,
-      height: 36,
+      height: 39,
       decoration: BoxDecoration(
         color: colorToggleBackground,
         borderRadius: const BorderRadius.all(Radius.circular(10.0)),

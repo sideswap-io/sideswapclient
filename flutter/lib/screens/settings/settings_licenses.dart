@@ -29,6 +29,7 @@ class SettingsLicensesState extends State<SettingsLicenses> {
 
   Future<void> _initLicenses() async {
     // most of these part are taken from flutter showLicensePage
+    final theme = Theme.of(context);
     await for (final LicenseEntry license in LicenseRegistry.licenses) {
       var tempSubWidget = <Widget>[];
       final paragraphs =
@@ -95,7 +96,7 @@ class SettingsLicensesState extends State<SettingsLicenses> {
       }
 
       final widget = Theme(
-        data: Theme.of(context).copyWith(
+        data: theme.copyWith(
           dividerColor: Colors.transparent,
           colorScheme: ColorScheme.fromSwatch()
               .copyWith(secondary: const Color(0xFF00C5FF)),

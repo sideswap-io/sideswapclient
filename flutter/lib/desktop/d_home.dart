@@ -1,18 +1,15 @@
 import 'dart:math';
-import 'dart:typed_data';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/models/app_releases_provider.dart';
 import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/utils_provider.dart';
+import 'package:sideswap/models/csv_provider.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/models/account_asset.dart';
 
@@ -24,52 +21,31 @@ class DesktopHome extends ConsumerStatefulWidget {
 }
 
 class DesktopHomeState extends ConsumerState<DesktopHome> {
-  Future<void> handleExport(WalletChangeNotifier wallet) async {
-    final list = exportTxList(wallet.allTxs.values, wallet.assets);
-    final csv = convertToCsv(list);
-
-    try {
-      final defaultPath = await getApplicationDocumentsDirectory();
-      const defaultName = 'transactions.csv';
-      final path = await getSavePath(
-        initialDirectory: defaultPath.path,
-        suggestedName: defaultName,
-      );
-      if (path != null) {
-        final data = Uint8List.fromList(csv.codeUnits);
-        final file =
-            XFile.fromData(data, name: defaultName, mimeType: 'text/plain');
-        await file.saveTo(path);
-      }
-    } catch (e) {
-      ref.read(utilsProvider).showErrorDialog(
-            e.toString(),
-            buttonText: 'OK'.tr(),
-          );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer(
       builder: (BuildContext context, WidgetRef ref, Widget? child) {
-        final wallet = ref.watch(walletProvider);
         final balances = ref.watch(balancesProvider);
-        final allVisibleAccounts = wallet
+        final defaultAccounts =
+            ref.watch(walletProvider.select((value) => value.defaultAccounts));
+        final syncComplete =
+            ref.watch(walletProvider.select((value) => value.syncComplete));
+        final ampId = ref.watch(walletProvider.select((value) => value.ampId));
+        final appReleases = ref.watch(appReleasesProvider);
+
+        final allVisibleAccounts = ref
+            .read(walletProvider)
             .getAllAccounts()
             .where((e) =>
-                wallet.defaultAccounts.contains(e) ||
-                (balances.balances[e] ?? 0) > 0)
+                defaultAccounts.contains(e) || (balances.balances[e] ?? 0) > 0)
             .toList();
         final regularAccounts =
             allVisibleAccounts.where((e) => e.account.isRegular()).toList();
         final ampAccounts =
             allVisibleAccounts.where((e) => e.account.isAmp()).toList();
-        final allNewTxs = wallet.getAllNewTxsSorted();
-        final showUnconfirmed = allNewTxs.isNotEmpty && wallet.syncComplete;
+        final allNewTxs = ref.read(walletProvider).getAllNewTxsSorted();
+        final showUnconfirmed = allNewTxs.isNotEmpty && syncComplete;
         final unconfirmedHeight = min(allNewTxs.length, 3) * 40 + 50;
-        final ampId = wallet.ampId;
-        final appReleases = ref.watch(appReleasesProvider);
         final showNewRelease = appReleases.newDesktopReleaseAvailable();
 
         return Column(
@@ -93,11 +69,19 @@ class DesktopHomeState extends ConsumerState<DesktopHome> {
                           const Spacer(),
                           if (ampId != null) AmpId(ampId: ampId),
                           const SizedBox(width: 16),
-                          DHoverButton(
-                            builder: (context, states) {
-                              return SvgPicture.asset('assets/export.svg');
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final csvStateProvider =
+                                  ref.watch(csvStateNotifierProvider.notifier);
+                              return DHoverButton(
+                                builder: (context, states) {
+                                  return SvgPicture.asset('assets/export.svg');
+                                },
+                                onPressed: () async {
+                                  await csvStateProvider.save();
+                                },
+                              );
                             },
-                            onPressed: () => handleExport(wallet),
                           ),
                         ],
                       ),

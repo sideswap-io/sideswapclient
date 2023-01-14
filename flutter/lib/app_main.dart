@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:secure_application/secure_application.dart';
 
 import 'package:sideswap/common/theme.dart';
@@ -121,32 +120,31 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 667),
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, _) => MaterialApp(
-        title: 'SideSwap',
-        debugShowCheckedModeBanner: false,
-        theme: appTheme,
-        localizationsDelegates: context.localizationDelegates,
-        supportedLocales: context.supportedLocales,
-        locale: context.locale,
-        builder: (context, widget) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-            child: widget!,
-          );
-        },
-        home: SecureApplication(
+    return MaterialApp(
+      title: 'SideSwap',
+      debugShowCheckedModeBanner: false,
+      theme: appTheme,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      builder: (context, widget) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          child: Builder(builder: (context) {
+            return widget!;
+          }),
+        );
+      },
+      home: Builder(builder: (context) {
+        return SecureApplication(
           nativeRemoveDelay: 100,
           onNeedUnlock: (secureApplicationController) async {
             secureApplicationController?.unlock();
             return SecureApplicationAuthenticationStatus.NONE;
           },
           child: _RootWidget(),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

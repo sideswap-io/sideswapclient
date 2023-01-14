@@ -1,4 +1,7 @@
+use crate::gdk_ses::NotifCallback;
+
 use super::*;
+use rand::Rng;
 use settings::{Peg, PegDir};
 use sideswap_api::*;
 use sideswap_common::env::Env;
@@ -37,11 +40,6 @@ pub type AccountId = i32;
 pub const ACCOUNT_ID_REG: AccountId = 0;
 pub const ACCOUNT_ID_AMP: AccountId = 1;
 
-#[cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))]
-pub const ENABLE_JADE: bool = true;
-#[cfg(any(target_os = "android", target_os = "ios"))]
-pub const ENABLE_JADE: bool = false;
-
 struct ActivePeg {
     order_id: OrderId,
 }
@@ -74,22 +72,17 @@ struct SubmitData {
     signed: bool,
 }
 
+#[derive(Clone)]
 struct UiData {
     from_sender: crossbeam_channel::Sender<ffi::FromMsg>,
-    ui_stopped: std::sync::atomic::AtomicBool,
+    ui_stopped: std::sync::Arc<std::sync::atomic::AtomicBool>,
 }
 
-#[derive(Debug, Eq, PartialEq, Clone, Copy)]
-enum JadeState {
-    Idle,
-    Connecting,
-    Unlocking,
-    Connected,
-}
-
+// FIXME: Add serial based on MAC-address
 struct JadeData {
-    port: sideswap_jade::Port,
-    state: JadeState,
+    jade_id: jade_mng::JadeId,
+    port_name: String,
+    serial: String,
 }
 
 pub struct Data {
@@ -108,6 +101,7 @@ pub struct Data {
     ws_hint: tokio::sync::mpsc::UnboundedSender<()>,
     resp_receiver: crossbeam_channel::Receiver<ServerResp>,
     params: ffi::StartParams,
+    unsigned_tx: Option<serde_json::Value>,
 
     agent: ureq::Agent,
     sync_complete: bool,
@@ -149,7 +143,10 @@ pub struct Data {
     last_connection_check: std::time::Instant,
     last_blocks: BTreeMap<AccountId, gdk_json::NotificationBlock>,
 
+    jade_mng: jade_mng::JadeMng,
     jades: Vec<JadeData>,
+    jades_scan_result: Option<String>,
+    jade_status_callback: gdk_ses::JadeStatusCallback,
 }
 
 pub struct ActiveSwap {
@@ -174,7 +171,6 @@ pub enum Message {
     AssetDetails(AssetDetailsResponse),
     BackgroundMessage(String, crossbeam_channel::Sender<()>),
     IdleTimer,
-    ScanJade(Vec<sideswap_jade::Port>),
 }
 
 macro_rules! send_request {
@@ -220,24 +216,43 @@ pub fn get_account(id: AccountId) -> ffi::proto::Account {
 
 pub fn get_created_tx(
     req: &ffi::proto::CreateTx,
-    hex: &str,
-    addressees: &[gdk_common::model::AddressAmount],
+    unsigned_tx: &serde_json::Value,
 ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
-    let tx: elements::Transaction = elements::encode::deserialize(&hex::decode(hex)?)?;
+    let unsigned_tx =
+        serde_json::from_value::<gdk_json::CreateTransactionResult>(unsigned_tx.clone())?;
+    let tx: elements::Transaction =
+        elements::encode::deserialize(&hex::decode(&unsigned_tx.transaction)?)?;
 
     let network_fee = tx.all_fees().values().cloned().sum::<u64>() as i64;
     let vsize = (tx.get_weight() + 3) / 4;
     let fee_per_byte = network_fee as f64 / vsize as f64;
 
-    ensure!(addressees.iter().all(|v| v.asset_id.is_some()));
-    let addressees = addressees
+    let addressees = unsigned_tx
+        .addressees
         .iter()
-        .map(|v| ffi::proto::AddressAmount {
-            address: v.address.clone(),
-            amount: v.satoshi as i64,
-            asset_id: v.asset_id().unwrap().to_string(),
+        .map(|addr| {
+            let amount = if req.account.id == ACCOUNT_ID_REG {
+                addr.satoshi
+            } else if req.account.id == ACCOUNT_ID_AMP {
+                // Take satoshi value from transaction_outputs field,
+                // because addressees filed does not exclude network fee when sending all in GDK c++
+                let output = unsigned_tx
+                    .transaction_outputs
+                    .iter()
+                    .filter(|txout| txout.address.as_ref() == Some(&addr.address))
+                    .collect::<Vec<_>>();
+                ensure!(output.len() == 1);
+                output[0].satoshi
+            } else {
+                bail!("unknown account id");
+            };
+            Ok(ffi::proto::AddressAmount {
+                address: addr.address.clone(),
+                amount: amount as i64,
+                asset_id: addr.asset_id.to_string(),
+            })
         })
-        .collect();
+        .collect::<Result<Vec<_>, _>>()?;
 
     Ok(ffi::proto::CreatedTx {
         req: req.clone(),
@@ -322,15 +337,6 @@ fn get_peg_item(peg: &PegStatus, tx: &TxStatus) -> ffi::proto::TransItem {
     tx_item
 }
 
-fn convert_jade_state(state: &JadeState) -> ffi::proto::from::jade_ports::State {
-    match state {
-        JadeState::Idle => ffi::proto::from::jade_ports::State::Idle,
-        JadeState::Connecting => ffi::proto::from::jade_ports::State::Connecting,
-        JadeState::Unlocking => ffi::proto::from::jade_ports::State::Unlocking,
-        JadeState::Connected => ffi::proto::from::jade_ports::State::Connected,
-    }
-}
-
 fn get_registry_config(env: Env) -> gdk_registry::param::Config {
     let network = match env.data().network {
         env::Network::Mainnet => gdk_registry::param::ElementsNetwork::Liquid,
@@ -413,14 +419,6 @@ fn load_all_addresses(
             return Ok((result_pointer, result));
         }
         last_pointer = list.last_pointer;
-    }
-}
-
-fn start_wallet_processing(info: gdk_ses::LoginInfo) -> Box<dyn gdk_ses::GdkSes> {
-    if info.account_id == ACCOUNT_ID_REG {
-        gdk_rust::start_processing(info)
-    } else {
-        gdk_cpp::start_processing(info)
     }
 }
 
@@ -706,7 +704,7 @@ impl Data {
         self.process_pending_succeed();
     }
 
-    fn send_gaid_id(&mut self) {
+    fn send_gaid(&mut self) {
         match self
             .get_wallet_mut(ACCOUNT_ID_AMP)
             .and_then(|wallet| wallet.get_gaid())
@@ -1068,7 +1066,7 @@ impl Data {
             match connect_result {
                 Ok(_) => {
                     if account_id == ACCOUNT_ID_AMP {
-                        self.send_gaid_id();
+                        self.send_gaid();
                         debug!("AMP connected");
                         self.amp_connected = true;
                         self.process_pending_requests();
@@ -1479,12 +1477,24 @@ impl Data {
         }
     }
 
+    fn try_process_create_tx(
+        &mut self,
+        req: ffi::proto::CreateTx,
+    ) -> Result<(serde_json::Value, ffi::proto::CreatedTx), anyhow::Error> {
+        let unsigned_tx = self
+            .get_wallet_mut(req.account.id)?
+            .create_tx(req.clone())?;
+        let info = get_created_tx(&req, &unsigned_tx)?;
+        Ok((unsigned_tx, info))
+    }
+
     fn process_create_tx(&mut self, req: ffi::proto::CreateTx) {
-        let result = match self
-            .get_wallet_mut(req.account.id)
-            .and_then(|wallet| wallet.create_tx(req))
-        {
-            Ok(tx) => ffi::proto::from::create_tx_result::Result::CreatedTx(tx),
+        let result = self.try_process_create_tx(req);
+        let result = match result {
+            Ok((unsigned_tx, info)) => {
+                self.unsigned_tx = Some(unsigned_tx);
+                ffi::proto::from::create_tx_result::Result::CreatedTx(info)
+            }
             Err(e) => ffi::proto::from::create_tx_result::Result::ErrorMsg(e.to_string()),
         };
         self.ui.send(ffi::proto::from::Msg::CreateTxResult(
@@ -1495,10 +1505,27 @@ impl Data {
         self.update_address_registrations();
     }
 
+    fn try_process_send_tx(
+        &mut self,
+        req: ffi::proto::to::SendTx,
+    ) -> Result<sideswap_api::Txid, anyhow::Error> {
+        let unsigned_tx = self
+            .unsigned_tx
+            .take()
+            .ok_or_else(|| anyhow!("transaction not found"))?;
+
+        let result = self.get_wallet_mut(req.account.id)?.send_tx(&unsigned_tx);
+
+        if result.is_err() {
+            // Allow retry (if Jade is offline for example)
+            self.unsigned_tx = Some(unsigned_tx);
+        }
+
+        result
+    }
+
     fn process_send_tx(&mut self, req: ffi::proto::to::SendTx) {
-        let result = self
-            .get_wallet_mut(req.account.id)
-            .and_then(|wallet| wallet.send_tx());
+        let result = self.try_process_send_tx(req);
 
         match result {
             Ok(txid) => {
@@ -1535,20 +1562,29 @@ impl Data {
 
     // logins
 
+    fn get_notif_callback(&self) -> NotifCallback {
+        let msg_sender = self.msg_sender.clone();
+
+        Box::new(move |account_id, details| {
+            let result = msg_sender.send(worker::Message::Notif(account_id, details));
+            if let Err(e) = result {
+                error!("sending notification message failed: {}", e);
+            }
+        })
+    }
+
     fn process_login_request(
         &mut self,
         mnemonic: Option<&String>,
         send_utxo_updates: Option<bool>,
         network: &Option<ffi::proto::network_settings::Selected>,
-        hw_data: Option<gdk_ses::HwData>,
+        jade: Option<(gdk_ses::HwData, settings::WatchOnly)>,
     ) {
         debug!("process login request...");
 
         self.send_utxo_updates = send_utxo_updates.unwrap_or(false);
 
-        let network = network.clone().unwrap_or_else(|| {
-            ffi::proto::network_settings::Selected::Blockstream(ffi::proto::Empty {})
-        });
+        let network = network.clone();
 
         if mnemonic.is_some() {
             let info_reg = gdk_ses::LoginInfo {
@@ -1557,26 +1593,48 @@ impl Data {
                 mnemonic: mnemonic.cloned(),
                 network: network.clone(),
                 cache_dir: self.cache_path().to_str().unwrap().to_owned(),
-                worker: self.msg_sender.clone(),
                 hw_data: None,
+                watch_only: None,
             };
 
-            self.wallets
-                .insert(ACCOUNT_ID_REG, gdk_rust::start_processing(info_reg));
+            self.wallets.insert(
+                ACCOUNT_ID_REG,
+                gdk_rust::start_processing(info_reg, self.get_notif_callback()),
+            );
         }
 
-        let info_amp = gdk_ses::LoginInfo {
-            account_id: ACCOUNT_ID_AMP,
-            env: self.env,
-            mnemonic: mnemonic.cloned(),
-            network: network.clone(),
-            cache_dir: self.cache_path().to_str().unwrap().to_owned(),
-            worker: self.msg_sender.clone(),
-            hw_data,
+        let wallet_amp = match jade {
+            Some(jade) => {
+                let watch_only = gdk_ses::WatchOnly {
+                    username: jade.1.username,
+                    password: jade.1.password,
+                };
+                let info_amp = gdk_ses::LoginInfo {
+                    account_id: ACCOUNT_ID_AMP,
+                    env: self.env,
+                    mnemonic: mnemonic.cloned(),
+                    network: network.clone(),
+                    cache_dir: self.cache_path().to_str().unwrap().to_owned(),
+                    hw_data: Some(jade.0),
+                    watch_only: Some(watch_only),
+                };
+                gdk_jade::start_processing(info_amp, self.get_notif_callback())
+            }
+            None => {
+                let info_amp = gdk_ses::LoginInfo {
+                    account_id: ACCOUNT_ID_AMP,
+                    env: self.env,
+                    mnemonic: mnemonic.cloned(),
+                    network: network.clone(),
+                    cache_dir: self.cache_path().to_str().unwrap().to_owned(),
+                    hw_data: None,
+                    watch_only: None,
+                };
+                gdk_cpp::start_processing(info_amp, self.get_notif_callback())
+            }
         };
 
-        self.wallets
-            .insert(ACCOUNT_ID_AMP, gdk_cpp::start_processing(info_amp));
+        self.wallets.insert(ACCOUNT_ID_AMP, wallet_amp);
 
         if self.skip_wallet_sync() {
             info!("skip wallet sync delay");
@@ -1631,7 +1689,7 @@ impl Data {
         req: ffi::proto::to::ChangeNetwork,
     ) -> Result<(), anyhow::Error> {
         debug!("process change network request...");
-        let network = req.network.selected.unwrap();
+        let network = req.network.selected;
         let wallet_old = self
             .wallets
             .remove(&ACCOUNT_ID_REG)
@@ -1640,7 +1698,7 @@ impl Data {
         login_info.network = network;
 
         drop(wallet_old);
-        let wallet = start_wallet_processing(login_info);
+        let wallet = gdk_rust::start_processing(login_info, self.get_notif_callback());
         self.wallets.insert(wallet.login_info().account_id, wallet);
 
         Ok(())
@@ -3466,6 +3524,8 @@ impl Data {
             }
             ffi::proto::to::Msg::MarketDataUnsubscribe(_) => self.process_market_data_unsubscribe(),
             ffi::proto::to::Msg::JadeLogin(msg) => self.process_jade_login_request(msg),
+            ffi::proto::to::Msg::JadeRescan(_) => self.process_jade_rescan_request(),
+            ffi::proto::to::Msg::JadeRegister(msg) => self.process_jade_register_request(msg),
         }
     }
 
@@ -3796,132 +3856,156 @@ impl Data {
             .ok_or_else(|| anyhow!("wallet not found"))
     }
 
-    fn get_jade_mut(&mut self, port_name: &str) -> Result<&mut JadeData, anyhow::Error> {
-        self.jades
-            .iter_mut()
-            .find(|data| data.port.port_name == port_name)
-            .ok_or_else(|| anyhow!("unknown port name"))
-    }
-
     fn try_process_jade_login_request(
         &mut self,
         msg: ffi::proto::to::JadeLogin,
     ) -> Result<(), anyhow::Error> {
-        let data = self.get_jade_mut(&msg.port)?;
-        ensure!(data.state == JadeState::Idle);
-        data.state = JadeState::Connecting;
-        self.sync_jade();
+        let watch_only = self
+            .settings
+            .watch_only
+            .clone()
+            .ok_or_else(|| anyhow!("w/o login and password not found"))?;
 
-        let (resp_sender, resp_receiver) = std::sync::mpsc::channel();
-        let callback = move |msg| {
-            let _ = resp_sender.send(msg);
-        };
+        let jade_port = self.jade_mng.open(&msg.jade_id);
 
-        let data = self.get_jade_mut(&msg.port).unwrap();
-        let jade_result = sideswap_jade::Jade::new(data.port.clone(), callback);
-        let jade = match jade_result {
-            Ok(jade) => {
-                data.state = JadeState::Unlocking;
-                self.sync_jade();
-                jade
-            }
-            Err(e) => {
-                bail!("openning jade device failed: {}", e);
-            }
-        };
-
-        jade.read_status();
-        let resp = resp_receiver.recv_timeout(std::time::Duration::from_secs(10));
-        let status = match resp {
-            Ok(sideswap_jade::Resp::ReadStatus(v)) => v,
-            _ => bail!("unexpected Jade response"),
-        }?;
-        debug!("jade state: {:?}", status.jade_state);
-
-        match status.jade_state {
-            sideswap_jade::models::State::Ready => {
-                debug!("jade already unlocked");
-            }
-            sideswap_jade::models::State::Locked => {
-                let network = if self.env.data().mainnet {
-                    sideswap_jade::Network::Liquid
-                } else {
-                    sideswap_jade::Network::TestnetLiquid
-                };
-                jade.auth_user(network);
-                let resp = resp_receiver.recv_timeout(std::time::Duration::from_secs(360));
-                let res = match resp {
-                    Ok(sideswap_jade::Resp::AuthUser(v)) => v,
-                    _ => bail!("unexpected Jade response"),
-                }?;
-                debug!("jade unlock result: {}", res);
-                ensure!(res, "unlock failed");
-            }
-            sideswap_jade::models::State::Uninit
-            | sideswap_jade::models::State::Unsaved
-            | sideswap_jade::models::State::Temp => {
-                bail!("unexpected jade state: {:?}", status.jade_state);
-            }
-        }
-
-        let data = self.get_jade_mut(&msg.port).unwrap();
-        data.state = JadeState::Connected;
-
-        let name = format!(
-            "Jade {}",
-            data.port.serial_number.clone().unwrap_or_default()
-        );
-
+        // FIXME: Use name based on MAC address
+        let name = format!("Jade {}", msg.jade_id);
         let hw_data = gdk_ses::HwData {
             env: self.env,
             name,
-            jade: std::sync::Arc::new(jade),
-            resp_receiver: std::sync::Arc::new(resp_receiver),
+            jade: std::sync::Arc::new(jade_port),
+            status_callback: self.jade_status_callback.clone(),
         };
 
         self.sync_jade();
 
-        self.process_login_request(None, None, &None, Some(hw_data));
+        self.process_login_request(None, None, &None, Some((hw_data, watch_only)));
 
         Ok(())
     }
 
     fn process_jade_login_request(&mut self, msg: ffi::proto::to::JadeLogin) {
         let result = self.try_process_jade_login_request(msg.clone());
-        if let Err(e) = result {
-            self.show_message(&format!("{}", e));
-            if let Ok(data) = self.get_jade_mut(&msg.port) {
-                data.state = JadeState::Idle;
-                self.sync_jade();
+        let result = match result {
+            Ok(_) => {
+                info!("jade login succeed");
+                ffi::proto::from::jade_login::Result::Succeed(ffi::proto::Empty {})
             }
-        }
+            Err(e) => {
+                error!("jade login failed: {}", e);
+                ffi::proto::from::jade_login::Result::Failed(e.to_string())
+            }
+        };
+        let from = ffi::proto::from::JadeLogin {
+            result: Some(result),
+        };
+        self.ui.send(ffi::proto::from::Msg::JadeLogin(from));
     }
 
-    fn process_scan_jade(&mut self, ports: Vec<sideswap_jade::Port>) {
+    fn process_jade_rescan_request(&mut self) {
+        let ports_result = self.jade_mng.ports();
+        let new_result = match &ports_result {
+            Ok(v) => format!("succeed: {:?}", v),
+            Err(e) => format!("failed: {}", e),
+        };
+        if self.jades_scan_result.as_ref() != Some(&new_result) {
+            debug!("jade ports scan: {}", new_result);
+            self.jades_scan_result = Some(new_result);
+        }
+        self.process_scan_jade(ports_result.unwrap_or_default());
+    }
+
+    fn try_process_jade_register_request(
+        &mut self,
+        msg: ffi::proto::to::JadeRegister,
+    ) -> Result<(), anyhow::Error> {
+        let jade_port = self.jade_mng.open(&msg.jade_id);
+        let hw_data = gdk_ses::HwData {
+            env: self.env,
+            name: "Jade".to_owned(),
+            jade: std::sync::Arc::new(jade_port),
+            status_callback: self.jade_status_callback.clone(),
+        };
+
+        let login_info = gdk_ses::LoginInfo {
+            account_id: ACCOUNT_ID_AMP,
+            env: self.env,
+            mnemonic: None,
+            network: None,
+            cache_dir: self.cache_path().to_str().unwrap().to_owned(),
+            hw_data: Some(hw_data),
+            watch_only: None,
+        };
+
+        let notif_ballback = Box::new(move |_account_id, _details| {});
+        let mut wallet = gdk_cpp::start_processing(login_info, notif_ballback);
+
+        wallet.login()?;
+
+        let username = format!(
+            "sswp_{}",
+            hex::encode(&rand::thread_rng().gen::<[u8; 10]>())
+        );
+        let password = hex::encode(&rand::thread_rng().gen::<[u8; 16]>());
+        wallet.set_watch_only(&username, &password)?;
+
+        self.settings.watch_only = Some(settings::WatchOnly { username, password });
+        self.save_settings();
+
+        Ok(())
+    }
+
+    fn process_jade_register_request(&mut self, msg: ffi::proto::to::JadeRegister) {
+        let jade_id = msg.jade_id.clone();
+        let result = self.try_process_jade_register_request(msg);
+        let result = match result {
+            Ok(_) => {
+                info!("jade registration succeed");
+                ffi::proto::from::jade_register::Result::Succeed(ffi::proto::Empty {})
+            }
+            Err(e) => {
+                error!("jade registration failed: {}", e);
+                ffi::proto::from::jade_register::Result::Failed(e.to_string())
+            }
+        };
+        let from = ffi::proto::from::JadeRegister {
+            jade_id,
+            result: Some(result),
+        };
+        self.ui.send(ffi::proto::from::Msg::JadeRegister(from));
+    }
+
+    fn process_scan_jade(&mut self, ports: Vec<crate::jade_mng::ManagedPort>) {
         let mut sync_required = false;
 
         for port in ports.iter() {
-            if self.jades.iter().find(|data| data.port == *port).is_none() {
-                debug!("new jade device detected: {}", port.port_name);
+            if self
+                .jades
+                .iter()
+                .find(|data| data.jade_id == port.jade_id)
+                .is_none()
+            {
+                debug!("new jade device detected: {}", port.jade_id);
                 self.jades.push(JadeData {
-                    port: port.clone(),
-                    state: JadeState::Idle,
+                    jade_id: port.jade_id.clone(),
+                    port_name: port.port_name.clone(),
+                    serial: port.serial.clone(),
                 });
                 sync_required = true;
             }
         }
 
         loop {
-            let removed = self
-                .jades
-                .iter()
-                .enumerate()
-                .find(|(_, data)| ports.iter().find(|port| data.port == **port).is_none());
+            let removed = self.jades.iter().enumerate().find(|(_, data)| {
+                ports
+                    .iter()
+                    .find(|port| data.jade_id == port.jade_id)
+                    .is_none()
+            });
             match removed {
                 Some((index, _)) => {
-                    // FIXME: Stop wallets when Jade is disconnected
                     let data = self.jades.remove(index);
-                    debug!("jade device removed: {}", data.port.port_name);
+                    debug!("jade device removed: {}", data.jade_id);
                     sync_required = true;
                 }
                 None => break,
@@ -3938,9 +4022,9 @@ impl Data {
             .jades
             .iter()
             .map(|data| ffi::proto::from::jade_ports::Port {
-                port: data.port.port_name.clone(),
-                serial: data.port.serial_number.clone(),
-                state: i32::from(convert_jade_state(&data.state)),
+                jade_id: data.jade_id.clone(),
+                port: data.port_name.clone(),
+                serial: data.serial.clone(),
             })
             .collect();
         self.ui.send(ffi::proto::from::Msg::JadePorts(
@@ -3958,7 +4042,7 @@ pub fn start_processing(
 ) {
     let ui = UiData {
         from_sender,
-        ui_stopped: std::sync::atomic::AtomicBool::new(false),
+        ui_stopped: Default::default(),
     };
     let env_settings = ffi::proto::from::EnvSettings {
         policy_asset_id: env.data().policy_asset.to_owned(),
@@ -3977,6 +4061,29 @@ pub fn start_processing(
     );
 
     ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+
+    let ui_copy = ui.clone();
+    let last_jade_status =
+        std::sync::Arc::new(std::sync::Mutex::new(gdk_ses::JadeStatus::Idle as i32));
+    let jade_status_callback: gdk_ses::JadeStatusCallback =
+        std::sync::Arc::new(Box::new(move |status: gdk_ses::JadeStatus| {
+            let status: i32 = match status {
+                gdk_ses::JadeStatus::Idle => ffi::proto::from::jade_status::Status::Idle,
+                gdk_ses::JadeStatus::ReadStatus => {
+                    ffi::proto::from::jade_status::Status::ReadStatus
+                }
+                gdk_ses::JadeStatus::AuthUser => ffi::proto::from::jade_status::Status::AuthUser,
+                gdk_ses::JadeStatus::SignTx => ffi::proto::from::jade_status::Status::SignTx,
+            }
+            .into();
+            let mut last_status = last_jade_status.lock().unwrap();
+            if *last_status != status {
+                ui_copy.send(ffi::proto::from::Msg::JadeStatus(
+                    ffi::proto::from::JadeStatus { status },
+                ));
+                *last_status = status;
+            }
+        }));
 
     let msg_sender_copy = msg_sender.clone();
     std::thread::spawn(move || {
@@ -4081,6 +4188,7 @@ pub fn start_processing(
         ws_hint,
         resp_receiver,
         params,
+        unsigned_tx: None,
         agent: ureq::agent(),
         sync_complete: false,
         wallet_loaded_sent: false,
@@ -4118,7 +4226,10 @@ pub fn start_processing(
         subscribed_market_data: None,
         last_connection_check: std::time::Instant::now(),
         last_blocks: BTreeMap::new(),
+        jade_mng: jade_mng::JadeMng::new(),
         jades: Vec::new(),
+        jades_scan_result: None,
+        jade_status_callback,
     };
 
     if let Err(error) = gdk_registry::init(&state.registry_path()) {
@@ -4141,32 +4252,6 @@ pub fn start_processing(
         error!("can't load assets: {}", &e);
     }
 
-    if ENABLE_JADE {
-        let msg_sender_copy = msg_sender.clone();
-        std::thread::spawn(move || {
-            debug!("start scan jade thread");
-            let mut last_result = None;
-            loop {
-                std::thread::sleep(std::time::Duration::from_secs(10));
-                let ports_result = sideswap_jade::Handle::ports();
-                let new_result = match &ports_result {
-                    Ok(v) => format!("succeed: {:?}", v),
-                    Err(e) => format!("failed: {}", e),
-                };
-                if last_result.as_ref() != Some(&new_result) {
-                    debug!("jade ports scan: {}", new_result);
-                    last_result = Some(new_result);
-                }
-                let send_result =
-                    msg_sender_copy.send(Message::ScanJade(ports_result.unwrap_or_default()));
-                if send_result.is_err() {
-                    break;
-                }
-            }
-            debug!("quit scan jade thread");
-        });
-    }
-
     while let Ok(a) = msg_receiver.recv() {
         let started = std::time::Instant::now();
 
@@ -4185,7 +4270,6 @@ pub fn start_processing(
                 state.process_background_message(data, sender)
             }
             Message::IdleTimer => state.process_idle_timer(),
-            Message::ScanJade(ports) => state.process_scan_jade(ports),
         }
 
         let stopped = std::time::Instant::now();

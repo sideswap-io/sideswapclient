@@ -63,6 +63,7 @@ Future<void> startApp(List<String> args) async {
   }
 
   await EasyLocalization.ensureInitialized();
+  await Future<void>.delayed(const Duration(seconds: 2));
   final sharedPrefs = await SharedPreferences.getInstance();
 
   if (runMobile && _isDesktop() || _isMobile()) {
@@ -75,6 +76,7 @@ Future<void> startApp(List<String> args) async {
       values: FlavorValues(
         enableOnboardingUserFeatures: false,
         enableNetworkSettings: true,
+        enableJade: false,
       ),
     );
 
@@ -91,6 +93,7 @@ Future<void> startApp(List<String> args) async {
     values: FlavorValues(
       enableOnboardingUserFeatures: false,
       enableNetworkSettings: true,
+      enableJade: false,
       isDesktop: _isDesktop(),
     ),
   );

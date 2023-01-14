@@ -1,13 +1,46 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+
+class _JadeRescanTimer extends ConsumerStatefulWidget {
+  const _JadeRescanTimer();
+
+  @override
+  ConsumerState<_JadeRescanTimer> createState() => _JadeRescanTimerState();
+}
+
+class _JadeRescanTimerState extends ConsumerState<_JadeRescanTimer> {
+  late Timer timer;
+
+  @override
+  void initState() {
+    super.initState();
+    timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      ref.read(walletProvider).jadeRescan();
+    });
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container();
+  }
+}
 
 class DJadeImport extends ConsumerWidget {
   const DJadeImport({super.key});
@@ -16,14 +49,12 @@ class DJadeImport extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final wallet = ref.watch(walletProvider);
     final hasJade = wallet.jades.isNotEmpty;
-    final unlocking = wallet.jades.any((jade) =>
-        jade.state == From_JadePorts_State.UNLOCKING ||
-        jade.state == From_JadePorts_State.CONNECTED);
     return SideSwapScaffoldPage(
       content: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
+            const _JadeRescanTimer(),
             Row(
               children: [
                 _TopButton(
@@ -42,26 +73,26 @@ class DJadeImport extends ConsumerWidget {
                 _TopButton(
                   text: 'Get Jade'.tr(),
                   icon: 'assets/jade.svg',
+                  onPressed: () {
+                    openUrl(
+                        'https://store.blockstream.com/product/blockstream-jade-hardware-wallet/');
+                  },
                 ),
               ],
             ),
             const SizedBox(height: 100),
-            SvgPicture.asset(unlocking
-                ? 'assets/jade_front_unlock.svg'
-                : 'assets/jade_front_idle.svg'),
+            SvgPicture.asset('assets/jade_front_idle.svg'),
             const SizedBox(height: 32),
             Text(
               hasJade
-                  ? (unlocking
-                      ? 'Enter PIN on your Jade device'.tr()
-                      : 'Jade is ready to start'.tr())
+                  ? ('Jade is ready to start'.tr())
                   : 'Please connect your Jade device'.tr(),
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            if (hasJade && !unlocking)
+            if (hasJade)
               Padding(
                 padding: const EdgeInsets.only(top: 24),
                 child: Column(
@@ -89,20 +120,6 @@ class DJadeImport extends ConsumerWidget {
   }
 }
 
-String getStateText(From_JadePorts_State state) {
-  switch (state) {
-    case From_JadePorts_State.IDLE:
-      return 'Idle'.tr();
-    case From_JadePorts_State.CONNECTING:
-      return 'Connecting'.tr();
-    case From_JadePorts_State.UNLOCKING:
-      return 'Unlocking'.tr();
-    case From_JadePorts_State.CONNECTED:
-      return 'Connected'.tr();
-  }
-  return 'Invalid'.tr();
-}
-
 class _JadeDevice extends ConsumerWidget {
   const _JadeDevice({
     super.key,
@@ -113,6 +130,7 @@ class _JadeDevice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final jadeRegistering = ref.watch(walletProvider).jadeRegistering;
     return Column(
       children: [
         Container(
@@ -140,10 +158,6 @@ class _JadeDevice extends ConsumerWidget {
               ),
               const SizedBox(height: 6),
               _DetailsLine(
-                title: 'Status',
-                value: getStateText(port.state),
-              ),
-              _DetailsLine(
                 title: 'Port',
                 value: port.port,
               ),
@@ -157,10 +171,12 @@ class _JadeDevice extends ConsumerWidget {
         ),
         const SizedBox(height: 32),
         DCustomFilledBigButton(
-          onPressed: () {
-            ref.read(walletProvider).jadeLogin(port.port);
-          },
-          child: Text('UNLOCK'.tr()),
+          onPressed: jadeRegistering
+              ? null
+              : () {
+                  ref.read(walletProvider).jadeRegister(port.jadeId);
+                },
+          child: Text('REGISTER'.tr()),
         ),
       ],
     );

@@ -43,7 +43,7 @@ class HomeBottomPanel extends ConsumerWidget {
       child: Center(
         child: SizedBox(
           width: 268,
-          height: 106,
+          height: 109,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

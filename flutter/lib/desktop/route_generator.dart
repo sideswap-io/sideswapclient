@@ -167,6 +167,7 @@ class RouteContainer extends ConsumerStatefulWidget {
 class _RouteContainerState extends ConsumerState<RouteContainer> {
   Future<void> onStatus(Status status) async {
     final context = ref.read(walletProvider).navigatorKey.currentContext!;
+    final navigator = Navigator.of(context);
 
     var routeName = RouteName.errorRoute;
     switch (status) {
@@ -203,8 +204,8 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
         routeName = RouteName.pinSetup;
 
         if (!ref.read(pinSetupProvider).isNewWallet) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, routeName, (route) => route.isFirst);
+          navigator.pushNamedAndRemoveUntil(
+              routeName, (route) => route.isFirst);
           return;
         }
         break;
@@ -221,8 +222,7 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
         }
 
         routeName = RouteName.pinSuccess;
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeName, (route) => route.isFirst);
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
         return;
       case Status.importAvatar:
       case Status.importAvatarSuccess:
@@ -252,31 +252,27 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
         routeName = RouteName.registered;
 
         if (Navigator.canPop(context)) {
-          Navigator.popUntil(context, (route) => route.isFirst);
+          navigator.popUntil((route) => route.isFirst);
         } else {
-          Navigator.pushReplacementNamed(context, routeName);
+          navigator.pushReplacementNamed(routeName);
         }
 
         return;
       case Status.settingsPage:
         routeName = RouteName.settingsPage;
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeName, (route) => route.isFirst);
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
         return;
       case Status.settingsBackup:
         routeName = RouteName.settingsBackup;
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeName, (route) => route.isFirst);
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
         return;
       case Status.settingsAboutUs:
         routeName = RouteName.settingsAboutUs;
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeName, (route) => route.isFirst);
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
         return;
       case Status.settingsNetwork:
         routeName = RouteName.settingsNetwork;
-        Navigator.pushNamedAndRemoveUntil(
-            context, routeName, (route) => route.isFirst);
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
         return;
 
       case Status.lockedWalet:
@@ -307,8 +303,7 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
         break;
     }
 
-    await Navigator.pushNamedAndRemoveUntil(
-        context, routeName, (route) => false);
+    await navigator.pushNamedAndRemoveUntil(routeName, (route) => false);
   }
 
   @override

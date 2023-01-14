@@ -2,7 +2,7 @@ use serde_bytes::ByteBuf;
 
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Network {
+pub enum StatusNetwork {
     All,
     Main,
     Test,
@@ -16,6 +16,25 @@ pub enum State {
     Unsaved,
     Locked,
     Uninit,
+}
+
+#[derive(Debug)]
+pub enum JadeNetwork {
+    // Mainnet,       // Bitcoin mainnet
+    // Testnet,       // Bitcoin testnet
+    Liquid,        // Liquid mainnet
+    TestnetLiquid, // Liquid testnet
+}
+
+impl JadeNetwork {
+    pub fn name(&self) -> &'static str {
+        match self {
+            // JadeNetwork::Mainnet => "mainnet",
+            // JadeNetwork::Testnet => "testnet",
+            JadeNetwork::Liquid => "liquid",
+            JadeNetwork::TestnetLiquid => "testnet-liquid",
+        }
+    }
 }
 
 #[derive(serde::Serialize)]
@@ -38,12 +57,53 @@ pub struct Error {
     pub message: String,
 }
 
+#[derive(Debug)]
+pub enum BlindingFactorType {
+    Asset,
+    Value,
+}
+
+#[derive(Debug)]
+pub struct ResolveXpubReq {
+    pub network: JadeNetwork,
+    pub path: Vec<u32>,
+}
+
+#[derive(Debug)]
+pub struct SignMessageReq {
+    pub path: Vec<u32>,
+    pub message: String,
+    pub ae_host_commitment: Vec<u8>,
+}
+
+#[derive(Debug)]
+pub struct GetSharedNonceReq {
+    pub script: Vec<u8>,
+    pub their_pubkey: Vec<u8>,
+}
+
+#[derive(Debug)]
+pub struct GetBlindingFactorReq {
+    pub hash_prevouts: Vec<u8>,
+    pub output_index: u32,
+    pub factor_type: BlindingFactorType,
+}
+
+#[derive(Debug)]
+pub struct GetCommitmentsReq {
+    pub asset_id: Vec<u8>,
+    pub value: u64,
+    pub hash_prevouts: Vec<u8>,
+    pub output_index: u32,
+    pub vbf: Option<Vec<u8>>,
+}
+
 #[derive(Debug, serde::Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub struct RespVersionInfo {
     pub jade_version: String,
     pub jade_state: State,
-    pub jade_networks: Network,
+    pub jade_networks: StatusNetwork,
     pub jade_has_pin: bool,
 }
 

@@ -1,7 +1,9 @@
 use std::{collections::BTreeMap, str::FromStr};
 
 use crate::{
-    envs, ffi, gdk_json, gdk_ses, models, swaps,
+    envs, ffi, gdk_json,
+    gdk_ses::{self, NotifCallback},
+    models, swaps,
     worker::{self, AccountId, PegPayment, ACCOUNT_ID_REG},
 };
 use bitcoin::hashes::hex::ToHex;
@@ -11,20 +13,14 @@ use sideswap_api::{AssetId, Hash32, Txid};
 
 struct GdkSesRust {
     login_info: gdk_ses::LoginInfo,
-
     session: ElectrumSession,
-    send_tx: Option<SendTx>,
 }
 
 const ACCOUNT: u32 = 0;
 
 struct NotifContext {
     account_id: AccountId,
-    worker: crossbeam_channel::Sender<worker::Message>,
-}
-
-struct SendTx {
-    tx_signed: gdk_common::model::TransactionMeta,
+    notif_callback: NotifCallback,
 }
 
 fn get_blinded_value(unblinded: &elements::TxOutSecrets) -> String {
@@ -112,6 +108,10 @@ impl crate::gdk_ses::GdkSes for GdkSesRust {
         Ok(())
     }
 
+    fn set_watch_only(&mut self, _username: &str, _password: &str) -> Result<(), anyhow::Error> {
+        bail!("not implemented");
+    }
+
     fn connect(&mut self) {}
 
     fn disconnect(&mut self) {}
@@ -165,10 +165,7 @@ impl crate::gdk_ses::GdkSes for GdkSesRust {
             .address)
     }
 
-    fn create_tx(
-        &mut self,
-        req: ffi::proto::CreateTx,
-    ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+    fn create_tx(&mut self, req: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error> {
         let liquid_asset_id = AssetId::from_str(self.login_info.env.data().policy_asset).unwrap();
         let send_asset = AssetId::from_str(&req.balance.asset_id).unwrap();
         let send_amount = req.balance.amount;
@@ -228,37 +225,28 @@ impl crate::gdk_ses::GdkSes for GdkSesRust {
             confidential_utxos_only: false,
             utxo_strategy: gdk_common::model::UtxoStrategy::Default,
         };
-        let tx_detail_unsigned = self
+        let tx_detail = self
             .session
             .create_transaction(&mut details)
             .map_err(|e| anyhow!("{}", e))?;
-        let network_fee = tx_detail_unsigned.fee as i64;
+        let network_fee = tx_detail.fee as i64;
         ensure!(network_fee > 0, "network fee is 0");
+        let tx_detail = serde_json::to_value(&tx_detail).unwrap();
+        Ok(tx_detail)
+    }
+
+    fn send_tx(&mut self, tx: &serde_json::Value) -> Result<sideswap_api::Txid, anyhow::Error> {
+        let tx_unsigned = serde_json::from_value::<gdk_common::model::TransactionMeta>(tx.clone())?;
 
         let tx_signed = self
             .session
-            .sign_transaction(&tx_detail_unsigned)
+            .sign_transaction(&tx_unsigned)
             .map_err(|e| anyhow!("transaction sign failed: {}", e.to_string()))?;
 
-        let addressees = &tx_signed
-            .create_transaction
-            .as_ref()
-            .ok_or_else(|| anyhow!("create_transaction is not set"))?
-            .addressees;
-        let result = worker::get_created_tx(&req, &tx_signed.hex, addressees)?;
-
-        self.send_tx = Some(SendTx { tx_signed });
-
-        Ok(result)
-    }
-
-    fn send_tx(&mut self) -> Result<sideswap_api::Txid, anyhow::Error> {
-        let send_tx = self.send_tx.take().ok_or(anyhow!("no transaction found"))?;
-        let tx_detail_signed = send_tx.tx_signed;
-        let txid = sideswap_api::Txid::from_str(&tx_detail_signed.txid).unwrap();
+        let txid = sideswap_api::Txid::from_str(&tx_signed.txid).unwrap();
 
         self.session
-            .send_transaction(&tx_detail_signed)
+            .send_transaction(&tx_signed)
             .map_err(|e| anyhow!("send failed: {}", e.to_string()))?;
         Ok(txid)
     }
@@ -475,7 +463,7 @@ impl crate::gdk_ses::GdkSes for GdkSesRust {
     }
 
     fn get_previous_addresses(
-        &self,
+        &mut self,
         last_pointer: Option<u32>,
         is_internal: bool,
     ) -> Result<gdk_json::PreviousAddresses, anyhow::Error> {
@@ -554,7 +542,7 @@ impl crate::gdk_ses::GdkSes for GdkSesRust {
     }
 
     fn sig_single_maker_tx(
-        &self,
+        &mut self,
         input: &crate::swaps::SigSingleInput,
         output: &crate::swaps::SigSingleOutput,
     ) -> Result<crate::swaps::SigSingleMaker, anyhow::Error> {
@@ -564,7 +552,7 @@ impl crate::gdk_ses::GdkSes for GdkSesRust {
     }
 
     fn verify_and_sign_pset(
-        &self,
+        &mut self,
         amounts: &crate::swaps::Amounts,
         pset: &str,
         _nonces: &[String],
@@ -598,17 +586,19 @@ extern "C" fn notification_callback_rust(context: *const libc::c_void, json: *co
     let json = json.to_str().unwrap();
     debug!("new notification from {}: {}", context.account_id, json);
     let details = serde_json::from_str(json).unwrap();
-    let result = context
-        .worker
-        .send(worker::Message::Notif(context.account_id, details));
-    if let Err(e) = result {
-        error!("sending notification message failed: {}", e);
-    }
+    (*context.notif_callback)(context.account_id, details);
 }
 
-pub fn start_processing(info: gdk_ses::LoginInfo) -> Box<dyn crate::gdk_ses::GdkSes> {
+pub fn start_processing(
+    info: gdk_ses::LoginInfo,
+    notif_callback: NotifCallback,
+) -> Box<dyn crate::gdk_ses::GdkSes> {
     let parsed_network = envs::get_network(info.env, info.cache_dir.clone());
-    let url = match &info.network {
+    let network = info
+        .network
+        .as_ref()
+        .unwrap_or(&{ ffi::proto::network_settings::Selected::Blockstream(ffi::proto::Empty {}) });
+    let url = match network {
         ffi::proto::network_settings::Selected::Sideswap(_)
             if info.env.data().network == sideswap_common::env::Network::Mainnet =>
         {
@@ -639,7 +629,7 @@ pub fn start_processing(info: gdk_ses::LoginInfo) -> Box<dyn crate::gdk_ses::Gdk
 
     let notif_context = Box::new(NotifContext {
         account_id: info.account_id,
-        worker: info.worker.clone(),
+        notif_callback,
     });
     let notif_context = Box::into_raw(notif_context);
 
@@ -656,7 +646,6 @@ pub fn start_processing(info: gdk_ses::LoginInfo) -> Box<dyn crate::gdk_ses::Gdk
     let ses = GdkSesRust {
         login_info: info,
         session,
-        send_tx: None,
     };
     Box::new(ses)
 }

@@ -182,6 +182,12 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
                       }
                     }
 
+                    ttlSeconds = twoStepSwapValue
+                        ? kInfTtl
+                        : ttlSeconds == 0
+                            ? kTenMinutes
+                            : ttlSeconds;
+
                     return CreateOrderViewBody(
                       autoSignValue: autoSignValue,
                       twoStepSignValue: twoStepSwapValue,

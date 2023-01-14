@@ -11,6 +11,7 @@ List<String> supportedLanguages() {
     'ru',
     'ar',
     'ur',
+    'zh',
   ];
 }
 
@@ -28,6 +29,8 @@ String localeName(String lang) {
       return 'اَلْعَرَبِيَّةُ';
     case 'ur':
       return 'اُردُو';
+    case 'zh':
+      return '中国人';
   }
   return lang;
 }

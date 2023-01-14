@@ -54,7 +54,7 @@ class OrderTrackingSlider extends StatelessWidget {
         invertColors ? circleNegativeColor : circlePositiveColor;
 
     return Container(
-      height: 110,
+      height: 112,
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
         borderRadius: BorderRadius.circular(8),

@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/desktop/pin/d_pin_protection.dart';
@@ -9,6 +11,7 @@ import 'package:sideswap/models/local_notifications_service.dart';
 import 'package:sideswap/models/pin_protection_provider.dart';
 import 'package:sideswap/models/select_env_provider.dart';
 import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class DesktopRootWidget extends ConsumerStatefulWidget {
   const DesktopRootWidget({super.key});
@@ -101,6 +104,57 @@ class _DesktopRootWidgetState extends ConsumerState<DesktopRootWidget> {
               logger.e('Env error :${_.error.toString()}');
               return Container();
             });
+          },
+        ),
+        Consumer(
+          builder: (context, ref, child) {
+            final status =
+                ref.watch(walletProvider.select((wallet) => wallet.jadeStatus));
+            String statusText = '';
+            switch (status) {
+              case From_JadeStatus_Status.AUTH_USER:
+                statusText = 'Please enter PIN'.tr();
+                break;
+              case From_JadeStatus_Status.IDLE:
+                statusText = 'Idle'.tr();
+                break;
+              case From_JadeStatus_Status.READ_STATUS:
+                statusText = 'Connecting...'.tr();
+                break;
+              case From_JadeStatus_Status.SIGN_TX:
+                statusText = 'Please sign tx'.tr();
+                break;
+            }
+            return Visibility(
+              visible: status != From_JadeStatus_Status.IDLE,
+              child: Center(
+                child: Container(
+                  width: 200,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.all(
+                      Radius.circular(8),
+                    ),
+                    color: const Color(0xFF144866),
+                    border:
+                        Border.all(color: const Color(0xFF00C5FF), width: 1.0),
+                  ),
+                  child: Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SpinKitCircle(
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(statusText),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
           },
         ),
       ],

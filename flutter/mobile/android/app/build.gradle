@@ -27,7 +27,8 @@ apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -49,7 +50,7 @@ android {
     defaultConfig {
         applicationId "io.sideswap"
         minSdkVersion 23
-        targetSdkVersion 31
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
@@ -68,9 +69,10 @@ flutter {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "androidx.biometric:biometric:1.1.0"
-    implementation "com.google.firebase:firebase-messaging:22.0.0"
+    implementation "com.google.firebase:firebase-messaging:23.1.0"
     implementation platform('com.google.firebase:firebase-bom:26.5.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'androidx.fragment:fragment-ktx:1.5.4'
 }
 
 apply plugin: 'com.google.gms.google-services'

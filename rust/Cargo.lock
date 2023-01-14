@@ -9,7 +9,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0e9889e6db118d49d88d84728d0e964d973a5680befb5f85f55141beea5c20b"
 dependencies = [
  "libc",
- "mach 0.1.2",
+ "mach",
 ]
 
 [[package]]
@@ -20,7 +20,7 @@ checksum = "99696c398cbaf669d2368076bdb3d627fb0ce51a26899d7c61228c5c0af3bf4a"
 dependencies = [
  "CoreFoundation-sys",
  "libc",
- "mach 0.1.2",
+ "mach",
 ]
 
 [[package]]
@@ -1566,10 +1566,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "mach"
-version = "0.3.2"
+name = "mach2"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b823e83b2affd8f40a9ee8c29dbc56404c1e34cd2710921f2801e2cf29527afa"
+checksum = "6d0d1830bcd151a6fc4aea1369af235b36c1528fe976b8ff678683c9995eade8"
 dependencies = [
  "libc",
 ]
@@ -2466,16 +2466,15 @@ dependencies = [
 
 [[package]]
 name = "serialport"
-version = "4.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aab92efb5cf60ad310548bc3f16fa6b0d950019cb7ed8ff41968c3d03721cf12"
+version = "4.2.1-alpha.0"
+source = "git+https://github.com/serialport/serialport-rs?rev=08c1b61f6c748776a8a2786b88ccf7c25623719a#08c1b61f6c748776a8a2786b88ccf7c25623719a"
 dependencies = [
  "CoreFoundation-sys",
  "IOKit-sys",
  "bitflags",
  "cfg-if",
  "libudev",
- "mach 0.3.2",
+ "mach2",
  "nix",
  "regex",
  "winapi",

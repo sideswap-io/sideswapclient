@@ -8,6 +8,7 @@ import 'package:sideswap/desktop/settings/d_settings_delete_wallet.dart';
 import 'package:sideswap/desktop/settings/d_settings_env.dart';
 import 'package:sideswap/desktop/settings/d_settings_pin_disable_success.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/models/config_provider.dart';
 import 'package:sideswap/models/pin_available_provider.dart';
 import 'package:sideswap/models/pin_setup_provider.dart';
 import 'package:sideswap/models/wallet.dart';
@@ -23,6 +24,8 @@ class DSettings extends ConsumerWidget {
     final settingsDialogTheme =
         ref.watch(desktopAppThemeProvider).settingsDialogTheme;
     final isPinEnabled = ref.watch(pinAvailableProvider);
+    final config = ref.watch(configProvider);
+    final isJade = config.jadeId != null;
 
     return WillPopScope(
       onWillPop: () async {
@@ -41,12 +44,15 @@ class DSettings extends ConsumerWidget {
             height: 509,
             child: Column(
               children: [
-                DSettingsButton(
-                  title: 'View my recovery phrase'.tr(),
-                  onPressed: () {
-                    ref.read(walletProvider).settingsViewBackup();
-                  },
-                  icon: DSettingsButtonIcon.recovery,
+                Visibility(
+                  visible: !isJade,
+                  child: DSettingsButton(
+                    title: 'View my recovery phrase'.tr(),
+                    onPressed: () {
+                      ref.read(walletProvider).settingsViewBackup();
+                    },
+                    icon: DSettingsButtonIcon.recovery,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
@@ -58,30 +64,33 @@ class DSettings extends ConsumerWidget {
                     icon: DSettingsButtonIcon.about,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: DSettingsButton(
-                    title: 'PIN protection'.tr(),
-                    onPressed: () async {
-                      if (isPinEnabled) {
-                        final ret = await ref
-                            .read(walletProvider)
-                            .disablePinProtection();
-                        if (ret) {
-                          ref.read(walletProvider).setRegistered();
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              RawDialogRoute<Widget>(
-                                pageBuilder: (_, __, ___) =>
-                                    const DSettingsPinDisableSuccess(),
-                              ),
-                              (route) => route.isFirst);
+                Visibility(
+                  visible: !isJade,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: DSettingsButton(
+                      title: 'PIN protection'.tr(),
+                      onPressed: () async {
+                        if (isPinEnabled) {
+                          final navigator = Navigator.of(context);
+                          final ret = await ref
+                              .read(walletProvider)
+                              .disablePinProtection();
+                          if (ret) {
+                            ref.read(walletProvider).setRegistered();
+                            navigator.pushAndRemoveUntil(
+                                RawDialogRoute<Widget>(
+                                  pageBuilder: (_, __, ___) =>
+                                      const DSettingsPinDisableSuccess(),
+                                ),
+                                (route) => route.isFirst);
+                          }
+                        } else {
+                          ref.read(pinSetupProvider).initPinSetupSettings();
                         }
-                      } else {
-                        ref.read(pinSetupProvider).initPinSetupSettings();
-                      }
-                    },
-                    icon: DSettingsButtonIcon.password,
+                      },
+                      icon: DSettingsButtonIcon.password,
+                    ),
                   ),
                 ),
                 Padding(
@@ -117,17 +126,20 @@ class DSettings extends ConsumerWidget {
                     icon: DSettingsButtonIcon.language,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: DSettingsButton(
-                    title: 'Environment'.tr(),
-                    onPressed: () {
-                      Navigator.of(context, rootNavigator: true).push<void>(
-                          DialogRoute(
-                              builder: ((context) => const DSettingsEnv()),
-                              context: context));
-                    },
-                    icon: DSettingsButtonIcon.network,
+                Visibility(
+                  visible: !isJade,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: DSettingsButton(
+                      title: 'Environment'.tr(),
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true).push<void>(
+                            DialogRoute(
+                                builder: ((context) => const DSettingsEnv()),
+                                context: context));
+                      },
+                      icon: DSettingsButtonIcon.network,
+                    ),
                   ),
                 ),
                 Padding(

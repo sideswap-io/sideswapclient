@@ -70,11 +70,12 @@ class ConfirmRequestPayment extends ConsumerWidget {
                   backgroundColor: const Color(0xFF00C5FF),
                   textColor: Colors.white,
                   onPressed: () async {
+                    final navigator =
+                        Navigator.of(context, rootNavigator: true);
                     final authenticated =
                         await ref.read(walletProvider).isAuthenticated();
                     if (authenticated) {
-                      await Navigator.of(context, rootNavigator: true)
-                          .push<void>(
+                      await navigator.push<void>(
                         MaterialPageRoute(
                           builder: (context) =>
                               ConfirmRequestPaymentSuccess(request: request),

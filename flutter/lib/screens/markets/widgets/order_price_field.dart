@@ -66,7 +66,7 @@ class OrderPriceField extends ConsumerWidget {
       child: Column(
         children: [
           SizedBox(
-            height: 32,
+            height: 34,
             child: Row(
               mainAxisAlignment: marketType == MarketType.stablecoin
                   ? MainAxisAlignment.spaceBetween

@@ -3,10 +3,10 @@ description: Sideswap Client.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.2.4+55
+version: 1.2.5+56
 
 environment:
-  sdk: ">=2.17.0 <3.0.0"
+  sdk: ">=2.18.0 <3.0.0"
 
 dependencies:
   flutter:
@@ -14,99 +14,95 @@ dependencies:
   flutter_lints: ^2.0.1
   # secure recovery page
   secure_application: ^3.8.0
-  animations: ^2.0.3
-  another_flushbar: ^1.10.27
+  animations: ^2.0.7
+  another_flushbar: ^1.12.29
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.4
+  cupertino_icons: ^1.0.5
   delayed_display: ^2.0.0
   dotted_line: ^3.1.0
   easy_localization: ^3.0.1
   enum_to_string: ^2.0.1
   # testing only - remove if not used
   faker: ^2.0.0
-  #firebase_core: ^1.17.1
+  #firebase_core: ^2.3.0
   #firebase notifications
-  #firebase_messaging: ^11.4.1
+  #firebase_messaging: ^14.0.4
   fixnum: ^1.0.1
   # contacts
-  flutter_contacts: ^1.1.4
+  flutter_contacts: ^1.1.5+1
   # icon generator
   flutter_launcher_icons_maker: ^0.10.2
   #notifications
   flutter_local_notifications: ^9.7.0
-  flutter_plugin_android_lifecycle: ^2.0.6
-  # screen scaling
-  flutter_screenutil: ^5.5.3+2
+  flutter_plugin_android_lifecycle: ^2.0.7
   # license loading indicator
   flutter_spinkit: ^5.1.0
   flutter_svg: ^1.1.0
   # switch
   flutter_switch: ^0.3.2
   # mnemonic words suggestions
-  flutter_typeahead: ^4.0.0
+  flutter_typeahead: ^4.1.1
   # notification payload parsing
-  freezed_annotation: ^2.0.3
-  # because of 1.0.3 bug https://github.com/rrousselGit/river_pod/issues/815
-  hooks_riverpod: ^2.0.0-dev.9
-  flutter_hooks: ^0.18.4
-  image: ^3.1.3 # update me
+  freezed_annotation: ^2.2.0
+  hooks_riverpod: ^2.1.1
+  flutter_hooks: ^0.18.5+1
+  image: ^3.2.2
   # avatar
-  image_picker: ^0.8.5+3
-  json_annotation: ^4.5.0
+  image_picker: ^0.8.6
+  json_annotation: ^4.7.0
   # logger
   logger: ^1.1.0
   # marqee text
-  marquee: ^2.2.2
+  marquee: ^2.2.3
   # background
-  path_drawing: ^1.0.0
-  path_provider: ^2.0.10
+  path_drawing: ^1.0.1
+  path_provider: ^2.0.11
   # permissions (contacts)
-  permission_handler: ^9.2.0
+  permission_handler: ^10.2.0
   # pin
   pinput: ^1.2.2 # update me
-  protobuf: ^2.0.1
-  mobile_scanner: ^1.1.1
+  protobuf: ^2.1.0
+  mobile_scanner: ^2.1.0
   qr_flutter: ^4.0.0
   # rxdart
-  rxdart: ^0.27.3
-  share_plus: ^4.0.4
+  rxdart: ^0.27.5
+  share_plus: ^6.2.0
   shared_preferences: ^2.0.15
   # sliding tx list
   sliding_up_panel: ^2.0.0+1
   # deep/app links
-  uni_links: ^0.5.1
-  url_launcher: ^6.1.2
+  uni_links: ^0.5.1 # replace by app_links
+  url_launcher: ^6.1.6
   # sound notification
   flutter_ringtone_player: ^3.2.0
-  vibration: ^1.7.4-nullsafety.0
-  move_to_background: ^1.0.2
+  vibration: ^1.7.6
   decimal: ^1.5.0 # update me
   xrange: ^2.0.0
   # list comparision
   collection: ^1.16.0
   csv: ^5.0.1
-  tuple: ^2.0.0
+  tuple: ^2.0.1
   vector_math: ^2.1.2
-  http: ^0.13.4
+  http: ^0.13.5
 
   #desktop
-  window_manager: ^0.2.3
+  window_manager: ^0.2.3 # update me
   args: ^2.3.1
   matrix4_transform: ^2.0.1
   candlesticks:
     path: thirdparty/candlesticks
-  file_selector: ^0.8.4+2
-  file_selector_linux: ^0.0.2+1
-  file_selector_macos: ^0.8.2+1
-  file_selector_windows: ^0.8.2+1
-  ffi: ^2.0.0
+  file_selector: ^0.8.4+2 # update me
+  file_selector_linux: ^0.0.2+1 # update me
+  file_selector_macos: ^0.8.2+1 # update me
+  file_selector_windows: ^0.8.2+1 # update me
+  ffi: ^2.0.1
 
 
 dependency_overrides:
-  rxdart: ^0.27.3
-  ffi: ^2.0.0
+  rxdart: ^0.27.5
+  ffi: ^2.0.1
 
   flutter_local_notifications_platform_interface:
     git:
@@ -117,10 +113,10 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  analyzer: ^4.1.0
-  build_runner: ^2.1.11
-  freezed: ^2.0.3+1
-  json_serializable: ^6.2.0
+  analyzer: ^5.1.0
+  build_runner: ^2.3.0
+  freezed: ^2.1.1
+  json_serializable: ^6.5.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

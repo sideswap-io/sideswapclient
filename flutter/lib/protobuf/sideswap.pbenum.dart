@@ -26,22 +26,22 @@ class From_SubmitReview_Step extends $pb.ProtobufEnum {
   const From_SubmitReview_Step._($core.int v, $core.String n) : super(v, n);
 }
 
-class From_JadePorts_State extends $pb.ProtobufEnum {
-  static const From_JadePorts_State IDLE = From_JadePorts_State._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'IDLE');
-  static const From_JadePorts_State CONNECTING = From_JadePorts_State._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CONNECTING');
-  static const From_JadePorts_State UNLOCKING = From_JadePorts_State._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'UNLOCKING');
-  static const From_JadePorts_State CONNECTED = From_JadePorts_State._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'CONNECTED');
+class From_JadeStatus_Status extends $pb.ProtobufEnum {
+  static const From_JadeStatus_Status IDLE = From_JadeStatus_Status._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'IDLE');
+  static const From_JadeStatus_Status READ_STATUS = From_JadeStatus_Status._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'READ_STATUS');
+  static const From_JadeStatus_Status AUTH_USER = From_JadeStatus_Status._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AUTH_USER');
+  static const From_JadeStatus_Status SIGN_TX = From_JadeStatus_Status._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SIGN_TX');
 
-  static const $core.List<From_JadePorts_State> values = <From_JadePorts_State> [
+  static const $core.List<From_JadeStatus_Status> values = <From_JadeStatus_Status> [
     IDLE,
-    CONNECTING,
-    UNLOCKING,
-    CONNECTED,
+    READ_STATUS,
+    AUTH_USER,
+    SIGN_TX,
   ];
 
-  static final $core.Map<$core.int, From_JadePorts_State> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static From_JadePorts_State? valueOf($core.int value) => _byValue[value];
+  static final $core.Map<$core.int, From_JadeStatus_Status> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static From_JadeStatus_Status? valueOf($core.int value) => _byValue[value];
 
-  const From_JadePorts_State._($core.int v, $core.String n) : super(v, n);
+  const From_JadeStatus_Status._($core.int v, $core.String n) : super(v, n);
 }
 

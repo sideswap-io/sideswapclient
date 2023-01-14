@@ -19,7 +19,7 @@ class TxItemTransaction extends StatelessWidget {
   final TransItem transItem;
   final String assetId;
   final AccountType accountType;
-  static const double itemHeight = 46.0;
+  static const double itemHeight = 50.0;
 
   @override
   Widget build(BuildContext context) {

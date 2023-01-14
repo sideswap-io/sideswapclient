@@ -22,6 +22,7 @@ final configProvider =
 
 class ConfigChangeNotifierProvider with ChangeNotifier {
   static const mnemonicEncryptedField = 'mnemonic_encrypted';
+  static const jadeIdField = 'jade_id';
   static const useBiometricProtectionField = 'biometric_protection';
   static const licenseAcceptedField = 'license_accepted';
   static const envField = 'env';
@@ -55,6 +56,15 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
           mnemonicEncryptedField, base64.encode(mnemonicEncrypted));
     }
 
+    notifyListeners();
+  }
+
+  String? get jadeId {
+    return prefs.getString(jadeIdField);
+  }
+
+  Future<void> setJadeId(String jadeId) async {
+    await prefs.setString(jadeIdField, jadeId);
     notifyListeners();
   }
 

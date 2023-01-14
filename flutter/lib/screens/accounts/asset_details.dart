@@ -161,7 +161,7 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                       child: Padding(
                         padding: const EdgeInsets.only(left: 16),
                         child: SizedBox(
-                          height: assetList.isNotEmpty ? 28 : 55,
+                          height: assetList.isNotEmpty ? 32 : 55,
                           width: MediaQuery.of(context).size.width,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -17,7 +17,6 @@ class DMnemonicTextBox extends HookConsumerWidget {
 
   void onSubmitted(String value, WidgetRef ref, FocusNode focusNode) {
     ref.read(mnemonicTableProvider).validateOnSubmit(value, currentIndex);
-    ref.read(mnemonicTableProvider).importMnemonic();
     focusNode.requestFocus();
   }
 
@@ -83,9 +82,15 @@ class DMnemonicTextBox extends HookConsumerWidget {
                 return RawKeyboardListener(
                   focusNode: keyboardListenerFocusNode,
                   onKey: (RawKeyEvent event) {
-                    if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
+                    if (event.isKeyPressed(LogicalKeyboardKey.tab) ||
+                        event.isKeyPressed(LogicalKeyboardKey.enter)) {
                       onSubmitted(textEditingController.text, ref, focusNode);
                       onFieldSubmitted();
+                      final wordItems =
+                          ref.read(mnemonicTableProvider).wordItems;
+                      if (currentIndex + 1 == wordItems.length) {
+                        ref.read(mnemonicTableProvider).importMnemonic();
+                      }
                     }
                   },
                   child: TextField(

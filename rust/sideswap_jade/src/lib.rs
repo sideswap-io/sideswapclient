@@ -11,76 +11,60 @@ pub use serial::FromPort;
 pub use serial::Handle;
 pub use serial::Port;
 
-#[derive(Debug)]
-pub enum Network {
-    // Mainnet,       // Bitcoin mainnet
-    // Testnet,       // Bitcoin testnet
-    Liquid,        // Liquid mainnet
-    TestnetLiquid, // Liquid testnet
-}
-
-impl Network {
-    pub fn name(&self) -> &'static str {
-        match self {
-            // Network::Mainnet => "mainnet",
-            // Network::Testnet => "testnet",
-            Network::Liquid => "liquid",
-            Network::TestnetLiquid => "testnet-liquid",
-        }
-    }
-}
+use models::*;
 
 #[derive(Debug)]
-enum WorkerReq {
-    Quit,
-
-    FromPort(serial::FromPort),
-
+pub enum Req {
     ReadStatus,
-    AuthUser(Network),
-    ResolveXpub(Network, Vec<u32>),
-    SignMessage(Vec<u32>, String, Vec<u8>),
+    AuthUser(JadeNetwork),
+    ResolveXpub(ResolveXpubReq),
+    SignMessage(SignMessageReq),
     GetSignature(Vec<u8>),
-    GetSharedNonce(Vec<u8>, Vec<u8>),
+    GetSharedNonce(GetSharedNonceReq),
     GetBlindingKey(Vec<u8>),
-    GetBlindingFactor(Vec<u8>, u32, BlindingFactorType),
-    GetCommitments(Vec<u8>, u64, Vec<u8>, u32, Option<Vec<u8>>),
+    GetBlindingFactor(GetBlindingFactorReq),
+    GetCommitments(GetCommitmentsReq),
     SignTx(models::ReqSignTx),
     TxInput(models::ReqTxInput),
 }
 
 #[derive(Debug)]
 pub enum Resp {
-    FatalError(anyhow::Error),
+    ReadStatus(models::RespVersionInfo),
+    AuthUser(bool),
+    ResolveXpub(String),
+    SignMessage(Vec<u8>),
+    GetSignature(Vec<u8>),
+    GetSharedNonce(Vec<u8>),
+    GetBlindingKey(Vec<u8>),
+    GetBlindingFactor(Vec<u8>),
+    GetCommitments(models::RespGetCommitments),
+    SignTx(bool),
+    TxInput(Vec<u8>),
+}
 
-    ReadStatus(Result<models::RespVersionInfo, anyhow::Error>),
-    AuthUser(Result<bool, anyhow::Error>),
-    ResolveXpub(Result<String, anyhow::Error>),
-    SignMessage(Result<Vec<u8>, anyhow::Error>),
-    GetSignature(Result<Vec<u8>, anyhow::Error>),
-    GetSharedNonce(Result<Vec<u8>, anyhow::Error>),
-    GetBlindingKey(Result<Vec<u8>, anyhow::Error>),
-    GetBlindingFactor(Result<Vec<u8>, anyhow::Error>),
-    GetCommitments(Result<models::RespGetCommitments, anyhow::Error>),
-    SignTx(Result<bool, anyhow::Error>),
-    TxInput(Result<Vec<u8>, anyhow::Error>),
+#[derive(Debug)]
+enum WorkerReq {
+    Req(Req),
+    Quit,
+    FromPort(serial::FromPort),
+}
+
+#[derive(Debug)]
+pub enum WorkerResp {
+    Resp(Result<Resp, anyhow::Error>),
+    FatalError(anyhow::Error),
 }
 
 pub struct Jade {
     sender: std::sync::mpsc::Sender<WorkerReq>,
 }
 
-#[derive(Debug)]
-pub enum BlindingFactorType {
-    Asset,
-    Value,
-}
-
 impl Jade {
     // Provided callback must not block when invoked
     pub fn new<F>(port: Port, callback: F) -> Result<Self, anyhow::Error>
     where
-        F: 'static + Send + FnMut(Resp) -> (),
+        F: 'static + Send + FnMut(WorkerResp) -> (),
     {
         let (sender, receiver) = std::sync::mpsc::channel();
 
@@ -102,82 +86,8 @@ impl Jade {
         Ok(Self { sender })
     }
 
-    pub fn read_status(&self) {
-        self.sender.send(WorkerReq::ReadStatus).unwrap();
-    }
-
-    pub fn auth_user(&self, network: Network) {
-        self.sender.send(WorkerReq::AuthUser(network)).unwrap();
-    }
-
-    pub fn resolve_xpub(&self, network: Network, path: Vec<u32>) {
-        self.sender
-            .send(WorkerReq::ResolveXpub(network, path))
-            .unwrap();
-    }
-
-    pub fn sign_message(&self, path: Vec<u32>, message: String, ae_host_commitment: Vec<u8>) {
-        self.sender
-            .send(WorkerReq::SignMessage(path, message, ae_host_commitment))
-            .unwrap();
-    }
-
-    pub fn get_signature(&self, ae_host_entropy: Vec<u8>) {
-        self.sender
-            .send(WorkerReq::GetSignature(ae_host_entropy))
-            .unwrap();
-    }
-
-    pub fn get_shared_nonce(&self, script: Vec<u8>, their_pubkey: Vec<u8>) {
-        self.sender
-            .send(WorkerReq::GetSharedNonce(script, their_pubkey))
-            .unwrap();
-    }
-
-    pub fn get_blinding_key(&self, script: Vec<u8>) {
-        self.sender.send(WorkerReq::GetBlindingKey(script)).unwrap();
-    }
-
-    pub fn get_blinding_factor(
-        &self,
-        hash_prevouts: Vec<u8>,
-        output_index: u32,
-        factor_type: BlindingFactorType,
-    ) {
-        self.sender
-            .send(WorkerReq::GetBlindingFactor(
-                hash_prevouts,
-                output_index,
-                factor_type,
-            ))
-            .unwrap();
-    }
-
-    pub fn get_commitments(
-        &self,
-        asset_id: Vec<u8>,
-        value: u64,
-        hash_prevouts: Vec<u8>,
-        output_index: u32,
-        vbf: Option<Vec<u8>>,
-    ) {
-        self.sender
-            .send(WorkerReq::GetCommitments(
-                asset_id,
-                value,
-                hash_prevouts,
-                output_index,
-                vbf,
-            ))
-            .unwrap();
-    }
-
-    pub fn sign_tx(&self, msg: models::ReqSignTx) {
-        self.sender.send(WorkerReq::SignTx(msg)).unwrap();
-    }
-
-    pub fn tx_input(&self, msg: models::ReqTxInput) {
-        self.sender.send(WorkerReq::TxInput(msg)).unwrap();
+    pub fn send(&self, req: Req) {
+        self.sender.send(WorkerReq::Req(req)).unwrap();
     }
 }
 
@@ -292,7 +202,7 @@ fn handle_http_request(
 
 fn handle_port_msg<F>(state: &mut State, callback: &mut F, handle: &mut Handle, data: Vec<u8>)
 where
-    F: FnMut(Resp) -> (),
+    F: FnMut(WorkerResp) -> (),
 {
     let jade_resp =
         ciborium::de::from_reader::<models::Resp<ciborium::value::Value>, _>(data.as_slice());
@@ -300,7 +210,7 @@ where
     let jade_resp = match jade_resp {
         Ok(v) => v,
         Err(e) => {
-            callback(Resp::FatalError(anyhow!(
+            callback(WorkerResp::FatalError(anyhow!(
                 "unexpected response from Jade: {}",
                 e
             )));
@@ -326,19 +236,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::ReadStatus(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::ReadStatus(Ok(v)));
+                        callback(WorkerResp::Resp(Ok(Resp::ReadStatus(v))));
                     }
                     _ => {
-                        callback(Resp::ReadStatus(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing ReadStatus response failed: {}",
                     e
                 ))),
@@ -351,7 +261,7 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::AuthUser(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
@@ -369,7 +279,7 @@ where
                                 };
                                 let result = handle.send(&req);
                                 if let Err(e) = result {
-                                    callback(Resp::FatalError(e));
+                                    callback(WorkerResp::FatalError(e));
                                 } else {
                                     let next_step =
                                         if v.http_request.on_reply == "handshake_complete" {
@@ -383,7 +293,7 @@ where
                                 }
                             }
                             Err(e) => {
-                                callback(Resp::AuthUser(Err(anyhow!(
+                                callback(WorkerResp::Resp(Err(anyhow!(
                                     "auth request failed: {}",
                                     e
                                 ))));
@@ -392,10 +302,10 @@ where
                         }
                     }
                     _ => {
-                        callback(Resp::AuthUser(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing AuthUser response failed: {}",
                     e
                 ))),
@@ -409,19 +319,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::AuthUser(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::AuthUser(Ok(v)));
+                        callback(WorkerResp::Resp(Ok(Resp::AuthUser(v))));
                     }
                     _ => {
-                        callback(Resp::AuthUser(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing AuthComplete response failed: {}",
                     e
                 ))),
@@ -434,19 +344,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::ResolveXpub(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::ResolveXpub(Ok(v)));
+                        callback(WorkerResp::Resp(Ok(Resp::ResolveXpub(v))));
                     }
                     _ => {
-                        callback(Resp::ResolveXpub(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing ReadStatus response failed: {}",
                     e
                 ))),
@@ -460,19 +370,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::SignMessage(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::SignMessage(Ok(v.into_vec())));
+                        callback(WorkerResp::Resp(Ok(Resp::SignMessage(v.into_vec()))));
                     }
                     _ => {
-                        callback(Resp::SignMessage(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing SignMessage response failed: {}",
                     e
                 ))),
@@ -486,23 +396,23 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::GetSignature(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(ciborium::value::Value::Text(v))) => {
                         let v = base64::decode(&v).unwrap();
-                        callback(Resp::GetSignature(Ok(v)));
+                        callback(WorkerResp::Resp(Ok(Resp::GetSignature(v))));
                     }
                     (None, Some(ciborium::value::Value::Bytes(v))) => {
-                        callback(Resp::GetSignature(Ok(v)));
+                        callback(WorkerResp::Resp(Ok(Resp::GetSignature(v))));
                     }
                     _ => {
-                        callback(Resp::GetSignature(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing GetSignature response failed: {}",
                     e
                 ))),
@@ -516,19 +426,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::GetSignature(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::GetSharedNonce(Ok(v.into_vec())));
+                        callback(WorkerResp::Resp(Ok(Resp::GetSharedNonce(v.into_vec()))));
                     }
                     _ => {
-                        callback(Resp::GetSharedNonce(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing GetSharedNonce response failed: {}",
                     e
                 ))),
@@ -542,19 +452,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::GetBlindingKey(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::GetBlindingKey(Ok(v.into_vec())));
+                        callback(WorkerResp::Resp(Ok(Resp::GetBlindingKey(v.into_vec()))));
                     }
                     _ => {
-                        callback(Resp::GetBlindingKey(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing GetBlindingKey response failed: {}",
                     e
                 ))),
@@ -568,19 +478,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::GetBlindingFactor(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::GetBlindingFactor(Ok(v.into_vec())));
+                        callback(WorkerResp::Resp(Ok(Resp::GetBlindingFactor(v.into_vec()))));
                     }
                     _ => {
-                        callback(Resp::GetBlindingFactor(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing GetBlindingFactor response failed: {}",
                     e
                 ))),
@@ -594,19 +504,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::GetCommitments(Err(anyhow!(
+                        callback(WorkerResp::Resp(Err(anyhow!(
                             "request failed: {}",
                             e.message
                         ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::GetCommitments(Ok(v)));
+                        callback(WorkerResp::Resp(Ok(Resp::GetCommitments(v))));
                     }
                     _ => {
-                        callback(Resp::GetCommitments(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing GetCommitments response failed: {}",
                     e
                 ))),
@@ -619,16 +529,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::SignTx(Err(anyhow!("request failed: {}", e.message))));
+                        callback(WorkerResp::Resp(Err(anyhow!(
+                            "request failed: {}",
+                            e.message
+                        ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::SignTx(Ok(v)));
+                        callback(WorkerResp::Resp(Ok(Resp::SignTx(v))));
                     }
                     _ => {
-                        callback(Resp::SignTx(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing SignTx response failed: {}",
                     e
                 ))),
@@ -641,16 +554,19 @@ where
             match resp {
                 Ok(v) => match (v.error, v.result) {
                     (Some(e), _) => {
-                        callback(Resp::TxInput(Err(anyhow!("request failed: {}", e.message))));
+                        callback(WorkerResp::Resp(Err(anyhow!(
+                            "request failed: {}",
+                            e.message
+                        ))));
                     }
                     (None, Some(v)) => {
-                        callback(Resp::TxInput(Ok(v.into_vec())));
+                        callback(WorkerResp::Resp(Ok(Resp::TxInput(v.into_vec()))));
                     }
                     _ => {
-                        callback(Resp::TxInput(Err(anyhow!("unexpected response"))));
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
                     }
                 },
-                Err(e) => callback(Resp::FatalError(anyhow!(
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
                     "parsing TxInput response failed: {}",
                     e
                 ))),
@@ -664,7 +580,7 @@ fn worker<F>(
     mut handle: serial::Handle,
     mut callback: F,
 ) where
-    F: FnMut(Resp) -> (),
+    F: FnMut(WorkerResp) -> (),
 {
     let mut state = State {
         pending_requests: std::collections::BTreeMap::new(),
@@ -684,11 +600,11 @@ fn worker<F>(
                     handle_port_msg(&mut state, &mut callback, &mut handle, data);
                 }
                 FromPort::FatalError(e) => {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 }
             },
 
-            WorkerReq::ReadStatus => {
+            WorkerReq::Req(Req::ReadStatus) => {
                 // Remove all old status requests
                 state
                     .pending_requests
@@ -703,7 +619,7 @@ fn worker<F>(
                     };
                     let result = handle.send(&req);
                     if let Err(e) = result {
-                        callback(Resp::FatalError(e));
+                        callback(WorkerResp::FatalError(e));
                     } else {
                         state
                             .pending_requests
@@ -712,7 +628,7 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::AuthUser(network) => {
+            WorkerReq::Req(Req::AuthUser(network)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqAuthUser> {
                     id: state.last_request_id.to_string(),
@@ -723,7 +639,7 @@ fn worker<F>(
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -731,19 +647,19 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::ResolveXpub(network, path) => {
+            WorkerReq::Req(Req::ResolveXpub(req)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqGetXPub> {
                     id: state.last_request_id.to_string(),
                     method: "get_xpub".to_owned(),
                     params: Some(models::ReqGetXPub {
-                        network: network.name().to_owned(),
-                        path,
+                        network: req.network.name().to_owned(),
+                        path: req.path,
                     }),
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -751,20 +667,20 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::SignMessage(path, message, ae_host_commitment) => {
+            WorkerReq::Req(Req::SignMessage(req)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqSignMessage> {
                     id: state.last_request_id.to_string(),
                     method: "sign_message".to_owned(),
                     params: Some(models::ReqSignMessage {
-                        path,
-                        message,
-                        ae_host_commitment: serde_bytes::ByteBuf::from(ae_host_commitment),
+                        path: req.path,
+                        message: req.message,
+                        ae_host_commitment: serde_bytes::ByteBuf::from(req.ae_host_commitment),
                     }),
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -772,7 +688,7 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::GetSignature(ae_host_entropy) => {
+            WorkerReq::Req(Req::GetSignature(ae_host_entropy)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqGetSignature> {
                     id: state.last_request_id.to_string(),
@@ -783,7 +699,7 @@ fn worker<F>(
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -791,19 +707,19 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::GetSharedNonce(script, their_pubkey) => {
+            WorkerReq::Req(Req::GetSharedNonce(req)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqGetSharedNonce> {
                     id: state.last_request_id.to_string(),
                     method: "get_shared_nonce".to_owned(),
                     params: Some(models::ReqGetSharedNonce {
-                        script: serde_bytes::ByteBuf::from(script),
-                        their_pubkey: serde_bytes::ByteBuf::from(their_pubkey),
+                        script: serde_bytes::ByteBuf::from(req.script),
+                        their_pubkey: serde_bytes::ByteBuf::from(req.their_pubkey),
                     }),
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -811,7 +727,7 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::GetBlindingKey(script) => {
+            WorkerReq::Req(Req::GetBlindingKey(script)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqGetBlindingKey> {
                     id: state.last_request_id.to_string(),
@@ -822,7 +738,7 @@ fn worker<F>(
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -830,9 +746,9 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::GetBlindingFactor(hash_prevouts, output_index, factor_type) => {
+            WorkerReq::Req(Req::GetBlindingFactor(req)) => {
                 state.last_request_id += 1;
-                let type_ = match factor_type {
+                let type_ = match req.factor_type {
                     BlindingFactorType::Asset => "ASSET",
                     BlindingFactorType::Value => "VALUE",
                 };
@@ -840,14 +756,14 @@ fn worker<F>(
                     id: state.last_request_id.to_string(),
                     method: "get_blinding_factor".to_owned(),
                     params: Some(models::ReqGetBlindingFactor {
-                        hash_prevouts: serde_bytes::ByteBuf::from(hash_prevouts),
-                        output_index,
+                        hash_prevouts: serde_bytes::ByteBuf::from(req.hash_prevouts),
+                        output_index: req.output_index,
                         type_: type_.to_owned(),
                     }),
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -855,22 +771,22 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::GetCommitments(asset_id, value, hash_prevouts, output_index, vbf) => {
+            WorkerReq::Req(Req::GetCommitments(req)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqGetCommitments> {
                     id: state.last_request_id.to_string(),
                     method: "get_commitments".to_owned(),
                     params: Some(models::ReqGetCommitments {
-                        asset_id: serde_bytes::ByteBuf::from(asset_id),
-                        value,
-                        hash_prevouts: serde_bytes::ByteBuf::from(hash_prevouts),
-                        output_index,
-                        vbf: vbf.map(|vbf| serde_bytes::ByteBuf::from(vbf)),
+                        asset_id: serde_bytes::ByteBuf::from(req.asset_id),
+                        value: req.value,
+                        hash_prevouts: serde_bytes::ByteBuf::from(req.hash_prevouts),
+                        output_index: req.output_index,
+                        vbf: req.vbf.map(|vbf| serde_bytes::ByteBuf::from(vbf)),
                     }),
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -878,7 +794,7 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::SignTx(msg) => {
+            WorkerReq::Req(Req::SignTx(msg)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqSignTx> {
                     id: state.last_request_id.to_string(),
@@ -887,7 +803,7 @@ fn worker<F>(
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests
@@ -895,7 +811,7 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::TxInput(msg) => {
+            WorkerReq::Req(Req::TxInput(msg)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqTxInput> {
                     id: state.last_request_id.to_string(),
@@ -904,7 +820,7 @@ fn worker<F>(
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
-                    callback(Resp::FatalError(e));
+                    callback(WorkerResp::FatalError(e));
                 } else {
                     state
                         .pending_requests

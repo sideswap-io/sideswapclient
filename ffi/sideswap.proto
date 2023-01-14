@@ -334,8 +334,12 @@ message To {
     required string asset_id = 1;
   }
 
+  message JadeRegister {
+    required string jade_id = 1;
+  }
+
   message JadeLogin {
-    required string port = 1;
+    required string jade_id = 1;
   }
 
   oneof msg {
@@ -381,7 +385,9 @@ message To {
     MarketDataSubscribe market_data_subscribe = 60;
     Empty market_data_unsubscribe = 61;
 
+    JadeRegister jade_register = 69;
     JadeLogin jade_login = 70;
+    Empty jade_rescan = 71;
   }
 }
 
@@ -633,20 +639,39 @@ message From {
   }
 
   message JadePorts {
-    enum State {
-      IDLE = 0;
-      CONNECTING = 1;
-      UNLOCKING = 2;
-      CONNECTED = 3;
-    }
-
     message Port {
-      required string port = 1;
-      optional string serial = 2;
-      required State state = 3;
+      required string jade_id = 1;
+      required string port = 2;
+      required string serial = 3;
     }
 
     repeated Port ports = 1;
+  }
+
+  message JadeRegister {
+    required string jade_id = 1;
+
+    oneof result {
+      Empty succeed = 2;
+      string failed = 3;
+    }
+  }
+
+  message JadeLogin {
+    oneof result {
+      Empty succeed = 1;
+      string failed = 2;
+    }
+  }
+
+  message JadeStatus {
+    enum Status {
+      IDLE = 1;
+      READ_STATUS = 2;
+      AUTH_USER = 3;
+      SIGN_TX = 4;
+    }
+    required Status status = 1;
   }
 
   oneof msg {
@@ -709,6 +734,9 @@ message From {
     MarketDataUpdate market_data_update = 71;
 
     JadePorts jade_ports = 80;
+    JadeRegister jade_register = 81;
+    JadeLogin jade_login = 82;
+    JadeStatus jade_status = 83;
   }
 }
 

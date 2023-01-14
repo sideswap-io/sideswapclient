@@ -36,6 +36,8 @@ void desktopShowSendTx(BuildContext context, WidgetRef ref) {
       return const DSendPopup();
     },
     routeSettings: const RouteSettings(name: _popupRouteName),
+    // Non-root navigator used so Jade status popup is visible
+    useRootNavigator: false,
   );
 }
 
@@ -101,11 +103,16 @@ void desktopImportJade(BuildContext context) {
       return const DJadeImport();
     },
     routeSettings: const RouteSettings(name: _popupRouteName),
+    // Non-root navigator used so Jade status popup is visible
+    useRootNavigator: false,
   );
 }
 
 void desktopClosePopups(BuildContext context) {
   Navigator.of(context, rootNavigator: true).popUntil((route) {
+    return route.settings.name != _popupRouteName;
+  });
+  Navigator.of(context, rootNavigator: false).popUntil((route) {
     return route.settings.name != _popupRouteName;
   });
 }
