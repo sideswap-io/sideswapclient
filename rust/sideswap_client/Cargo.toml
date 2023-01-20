@@ -45,4 +45,4 @@ once_cell = "*"
 [build-dependencies]
 prost-build = "0.10.4"
 vergen = { version = "5", default-features = false, features = ["build", "rustc", "git"] }
-git2 = { version = "0.13.25", default-features = false, features = [] } # newer versions require rust 1.60 - https://github.com/rust-lang/git2-rs/issues/838
+git2 = { version = "0.16.1", default-features = false, features = [] } # newer versions require rust 1.60 - https://github.com/rust-lang/git2-rs/issues/838
