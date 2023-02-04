@@ -24,7 +24,7 @@ rustls = { version = "*", features = ["dangerous_configuration"] }
 futures = "*"
 futures-util = "*"
 webpki = "*"
-tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
+tokio = { version = "1.20.4", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 prost = "0.10.4"
 libc = "*"
 signal-hook = "*"

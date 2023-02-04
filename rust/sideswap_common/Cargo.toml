@@ -12,7 +12,7 @@ log = "*"
 async-tungstenite = { version = "0.17.2", features = ["tokio-runtime", "tokio-rustls-webpki-roots"] }
 futures = "*"
 futures-util = "*"
-tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
+tokio = { version = "1.20.4", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 tungstenite = { version = "0.17.2", default-features = false, features = [] }
 derive_more = "*"
 bitcoin = { version = "0.27" }

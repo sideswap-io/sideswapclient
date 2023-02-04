@@ -16,7 +16,7 @@ config = "0.11.0"
 log4rs = "*"
 tokio-tungstenite = { version = "0.17.2", features = [ "stream" ] }
 futures = "*"
-tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
+tokio = { version = "1.20.4", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
 futures-channel = "*"
 futures-util = "*"
 tungstenite = { version = "0.17.2", default-features = false, features = [] }
