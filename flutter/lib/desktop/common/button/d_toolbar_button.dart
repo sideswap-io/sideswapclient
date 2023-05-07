@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/common/d_focus.dart';
@@ -36,7 +37,7 @@ class DTopToolbarButton extends StatelessWidget {
                         ? BoxDecoration(
                             shape: BoxShape.circle,
                             color: states.isHovering
-                                ? const Color(0xFF00C5FF)
+                                ? SideSwapColors.brightTurquoise
                                 : Colors.white,
                           )
                         : null,
@@ -45,11 +46,13 @@ class DTopToolbarButton extends StatelessWidget {
                         icon,
                         width: name.isNotEmpty ? 8 : 18,
                         height: name.isNotEmpty ? 8 : 18,
-                        color: name.isNotEmpty
-                            ? const Color(0xFF021C36)
-                            : states.isHovering
-                                ? const Color(0xFF00C5FF)
-                                : Colors.white,
+                        colorFilter: ColorFilter.mode(
+                            name.isNotEmpty
+                                ? const Color(0xFF021C36)
+                                : states.isHovering
+                                    ? SideSwapColors.brightTurquoise
+                                    : Colors.white,
+                            BlendMode.srcIn),
                       ),
                     ),
                   ),
@@ -60,7 +63,7 @@ class DTopToolbarButton extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         color: states.isHovering
-                            ? const Color(0xFF00C5FF)
+                            ? SideSwapColors.brightTurquoise
                             : Colors.white,
                       ),
                     ),

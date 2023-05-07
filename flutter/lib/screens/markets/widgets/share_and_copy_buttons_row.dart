@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -23,7 +24,7 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
         CustomBigButton(
           width: buttonWidth ?? 160,
           height: 54,
-          backgroundColor: const Color(0xFF00C5FF),
+          backgroundColor: SideSwapColors.brightTurquoise,
           onPressed: onShare,
           child: Padding(
             padding: const EdgeInsets.only(left: 16, right: 20),
@@ -42,7 +43,8 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
                   'assets/share3.svg',
                   width: 20,
                   height: 24,
-                  color: Colors.white,
+                  colorFilter:
+                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 ),
               ],
             ),
@@ -51,7 +53,7 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
         CustomBigButton(
           width: buttonWidth ?? 160,
           height: 54,
-          backgroundColor: const Color(0xFF00C5FF),
+          backgroundColor: SideSwapColors.brightTurquoise,
           onPressed: onCopy,
           child: Padding(
             padding: const EdgeInsets.only(left: 16, right: 20),
@@ -70,7 +72,8 @@ class ShareAndCopyButtonsRow extends StatelessWidget {
                   'assets/copy.svg',
                   width: 20,
                   height: 24,
-                  color: Colors.white,
+                  colorFilter:
+                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 ),
               ],
             ),

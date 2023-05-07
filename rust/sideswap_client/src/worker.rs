@@ -170,6 +170,7 @@ pub enum Message {
     MarketDataResponse(MarketDataSubscribeResponse),
     AssetDetails(AssetDetailsResponse),
     BackgroundMessage(String, crossbeam_channel::Sender<()>),
+    GaidStatus(GaidStatusResponse),
     IdleTimer,
 }
 
@@ -3526,6 +3527,7 @@ impl Data {
             ffi::proto::to::Msg::JadeLogin(msg) => self.process_jade_login_request(msg),
             ffi::proto::to::Msg::JadeRescan(_) => self.process_jade_rescan_request(),
             ffi::proto::to::Msg::JadeRegister(msg) => self.process_jade_register_request(msg),
+            ffi::proto::to::Msg::GaidStatus(msg) => self.process_gaid_status_req(msg),
         }
     }
 
@@ -4031,6 +4033,35 @@ impl Data {
             ffi::proto::from::JadePorts { ports },
         ))
     }
+
+    fn process_gaid_status_req(&mut self, msg: ffi::proto::to::GaidStatus) {
+        if !self.connected {
+            self.ui.send(ffi::proto::from::Msg::GaidStatus(
+                ffi::proto::from::GaidStatus {
+                    gaid: msg.gaid,
+                    asset_id: msg.asset_id,
+                    error: Some("Not connected".to_owned()),
+                },
+            ));
+            return;
+        }
+
+        let asset_id = AssetId::from_str(&msg.asset_id).unwrap();
+        let _request_id = self.send_request_msg(Request::GaidStatus(GaidStatusRequest {
+            gaid: msg.gaid,
+            asset_id,
+        }));
+    }
+
+    fn process_gaid_status_resp(&mut self, resp: GaidStatusResponse) {
+        self.ui.send(ffi::proto::from::Msg::GaidStatus(
+            ffi::proto::from::GaidStatus {
+                gaid: resp.gaid,
+                asset_id: resp.asset_id.to_string(),
+                error: resp.error,
+            },
+        ));
+    }
 }
 
 pub fn start_processing(
@@ -4149,6 +4180,10 @@ pub fn start_processing(
                         Notification::UpdatePriceStream(msg),
                     ))
                     .unwrap(),
+                ws::WrappedResponse::Response(ResponseMessage::Response(
+                    _,
+                    Ok(Response::GaidStatus(resp)),
+                )) => msg_sender_copy.send(Message::GaidStatus(resp)).unwrap(),
                 ws::WrappedResponse::Response(ResponseMessage::Response(req_id, result)) => {
                     resp_sender.send(ServerResp(req_id, result)).unwrap();
                 }
@@ -4269,6 +4304,7 @@ pub fn start_processing(
             Message::BackgroundMessage(data, sender) => {
                 state.process_background_message(data, sender)
             }
+            Message::GaidStatus(resp) => state.process_gaid_status_resp(resp),
             Message::IdleTimer => state.process_idle_timer(),
         }
 

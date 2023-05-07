@@ -7,9 +7,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/universal_link_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/universal_link_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button_with_label.dart';
@@ -79,10 +83,11 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
             .select((p) => p.serverStatus?.serverFeePercentPegIn));
         final serverFeePercentPegOut = ref.watch(walletProvider
             .select((p) => p.serverStatus?.serverFeePercentPegOut));
+        final liquidAssetId = ref.watch(liquidAssetIdProvider);
         var percentConversion =
             (serverFeePercentPegIn == null || serverFeePercentPegOut == null)
                 ? 0
-                : assetSend == ref.watch(walletProvider).liquidAssetId()
+                : assetSend == liquidAssetId
                     ? 100 - serverFeePercentPegOut
                     : 100 - serverFeePercentPegIn;
 
@@ -120,11 +125,21 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                   if (widget.isPegIn && minPegIn != 0) ...[
                     Padding(
                       padding: const EdgeInsets.only(top: 16.0),
-                      child: Text('Min amount: ${amountStr(minPegIn)} BTC',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.normal,
-                          )),
+                      child: Consumer(
+                        builder: (context, ref, child) {
+                          final amountProvider =
+                              ref.watch(amountToStringProvider);
+                          final minAmountStr = amountProvider.amountToString(
+                              AmountToStringParameters(amount: minPegIn));
+                          return Text(
+                            'Min amount: $minAmountStr BTC',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                   if (!widget.isPegIn) ...[
@@ -218,7 +233,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                             child: Container(
                               height: double.maxFinite,
                               width: double.maxFinite,
-                              color: const Color(0xFF135579),
+                              color: SideSwapColors.chathamsBlue,
                             ),
                           ),
                           Padding(
@@ -245,7 +260,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
-                                  color: Color(0xFF00C5FF),
+                                  color: SideSwapColors.brightTurquoise,
                                 ),
                               ),
                             ),

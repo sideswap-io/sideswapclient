@@ -2,10 +2,11 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
-import 'package:sideswap/models/mnemonic_table_provider.dart';
+import 'package:sideswap/providers/mnemonic_table_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 class DMnemonicTable extends StatefulWidget {
@@ -31,10 +32,10 @@ class DMnemonicTable extends StatefulWidget {
   final bool enabled;
 
   @override
-  State<DMnemonicTable> createState() => _DMnemonicTableState();
+  State<DMnemonicTable> createState() => DMnemonicTableState();
 }
 
-class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
+class DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
   bool isFocused = true;
 
   @override
@@ -102,7 +103,7 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                       return const Color(0xFF23729D);
                     }
 
-                    return const Color(0xFF1C6086);
+                    return SideSwapColors.blumine;
                   }),
                   border: ButtonState.resolveWith((states) {
                     if (states.isDisabled) {
@@ -110,7 +111,8 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                     }
 
                     return widget.itemSelected == index
-                        ? const BorderSide(color: Color(0xFF00C5FF))
+                        ? const BorderSide(
+                            color: SideSwapColors.brightTurquoise)
                         : const BorderSide(color: Color(0xFF23729D));
                   }),
                   shape: ButtonState.resolveWith((states) {
@@ -134,7 +136,7 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.normal,
-                            color: Color(0xFF00C5FF),
+                            color: SideSwapColors.brightTurquoise,
                           ),
                         ),
                       ),
@@ -154,7 +156,7 @@ class _DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
                               color: wordItem.correct ||
                                       widget.itemSelected == index
                                   ? Colors.white
-                                  : const Color(0xFFFF7878),
+                                  : SideSwapColors.bitterSweet,
                             ),
                           ),
                         ),

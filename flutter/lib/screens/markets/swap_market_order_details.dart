@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
@@ -89,7 +91,7 @@ class SwapMarketOrderDetailsState
                           child: Consumer(
                             builder: (context, ref, _) {
                               final assetPrecision = ref
-                                  .watch(walletProvider)
+                                  .watch(assetUtilsProvider)
                                   .getPrecisionForAssetId(
                                       assetId: widget.requestOrder.assetId);
 
@@ -112,7 +114,7 @@ class SwapMarketOrderDetailsState
                       child: CustomBigButton(
                         width: double.maxFinite,
                         height: 54,
-                        backgroundColor: const Color(0xFF00C5FF),
+                        backgroundColor: SideSwapColors.brightTurquoise,
                         text: 'SWAP'.tr(),
                         onPressed: () {
                           Navigator.of(context, rootNavigator: true).pop();

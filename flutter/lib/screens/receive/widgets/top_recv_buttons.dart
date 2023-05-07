@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class TopRecvButtons extends StatelessWidget {

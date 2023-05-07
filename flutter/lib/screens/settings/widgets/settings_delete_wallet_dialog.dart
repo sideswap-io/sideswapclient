@@ -2,9 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 void showDeleteWalletDialog(BuildContext context) {
   showDialog<void>(
@@ -22,7 +23,7 @@ void showDeleteWalletDialog(BuildContext context) {
             borderRadius: BorderRadius.all(
               Radius.circular(8),
             ),
-            color: Color(0xFF1C6086),
+            color: SideSwapColors.blumine,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -33,9 +34,9 @@ void showDeleteWalletDialog(BuildContext context) {
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF135579),
+                    color: SideSwapColors.chathamsBlue,
                     border: Border.all(
-                      color: const Color(0xFFFF7878),
+                      color: SideSwapColors.bitterSweet,
                       style: BorderStyle.solid,
                       width: 3,
                     ),
@@ -45,7 +46,8 @@ void showDeleteWalletDialog(BuildContext context) {
                       'assets/delete.svg',
                       width: 20,
                       height: 22,
-                      color: const Color(0xFFFF7878),
+                      colorFilter: const ColorFilter.mode(
+                          SideSwapColors.bitterSweet, BlendMode.srcIn),
                     ),
                   ),
                 ),
@@ -86,7 +88,7 @@ void showDeleteWalletDialog(BuildContext context) {
                       width: 279,
                       height: 54,
                       text: 'YES'.tr(),
-                      backgroundColor: const Color(0xFF00C5FF),
+                      backgroundColor: SideSwapColors.brightTurquoise,
                       onPressed: () async {
                         final navigator =
                             Navigator.of(context, rootNavigator: true);

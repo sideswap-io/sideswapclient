@@ -2,9 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import 'package:sideswap/models/pin_keyboard_provider.dart';
-import 'package:sideswap/models/pin_protection_provider.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/pin_keyboard_provider.dart';
+import 'package:sideswap/providers/pin_protection_provider.dart';
 
 class PinKeyboard extends ConsumerStatefulWidget {
   const PinKeyboard({
@@ -22,7 +22,7 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
   final _buttonStyle = const TextStyle(
     fontSize: 26,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF00C5FF),
+    color: SideSwapColors.brightTurquoise,
   );
 
   @override
@@ -47,7 +47,7 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
           if (index == 9) {
             child = const Icon(
               Icons.backspace_outlined,
-              color: Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
               size: 28,
             );
           } else if (index == 10) {
@@ -100,7 +100,7 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
           }
 
           return Material(
-            color: const Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
             // elevation: 1,
             borderRadius: const BorderRadius.all(Radius.circular(8)),
             child: InkWell(
@@ -116,7 +116,7 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
                     color: const Color(0xFF23729D),
                   ),
                   color: index == 11
-                      ? const Color(0xFF00C5FF)
+                      ? SideSwapColors.brightTurquoise
                       : Colors.transparent,
                 ),
                 child: Center(

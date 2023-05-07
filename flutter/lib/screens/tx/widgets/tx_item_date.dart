@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class TxItemDate extends StatelessWidget {
   const TxItemDate({
@@ -31,7 +32,7 @@ class TxItemDate extends StatelessWidget {
           ),
           const Divider(
             height: 1,
-            color: Color(0xFF2B6F95),
+            color: SideSwapColors.jellyBean,
           ),
         ],
       ),

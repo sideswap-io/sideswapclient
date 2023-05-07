@@ -4,8 +4,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/common/widgets/swap_summary.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_peg.dart';
@@ -16,11 +19,12 @@ class TxDetailsPopup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transItem = ref.watch(walletProvider.select((p) => p.txDetails));
-    final liquidAssetId = ref.watch(walletProvider).liquidAssetId();
-    final asset = ref.watch(walletProvider
-        .select((p) => p.selectedWalletAsset?.asset ?? liquidAssetId));
-    final ticker = ref.watch(walletProvider).getAssetById(asset)?.ticker ??
-        kLiquidBitcoinTicker;
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final selectedWalletAsset = ref.watch(selectedWalletAssetProvider);
+    final assetId = selectedWalletAsset?.asset ?? liquidAssetId;
+    final asset =
+        ref.watch(assetsStateProvider.select((value) => value[assetId]));
+    final ticker = asset?.ticker ?? kLiquidBitcoinTicker;
 
     return SideSwapPopup(
       child: Builder(
@@ -43,16 +47,17 @@ class TxDetailsPopup extends ConsumerWidget {
                   transItem.tx.balances.firstWhere((e) => e.amount < 0);
               final balanceReceived =
                   transItem.tx.balances.firstWhere((e) => e.amount >= 0);
-              final assetSent = ref
-                  .watch(walletProvider)
-                  .getAssetById(balanceDelivered.assetId);
-              final assetRecv = ref
-                  .watch(walletProvider)
-                  .getAssetById(balanceReceived.assetId);
+              final assetSent = ref.watch(assetsStateProvider
+                  .select((value) => value[balanceDelivered.assetId]));
+              final assetRecv = ref.watch(assetsStateProvider
+                  .select((value) => value[balanceReceived.assetId]));
               final deliveredPrecision = assetSent?.precision ?? 8;
               final receivedPrecision = assetRecv?.precision ?? 8;
-              delivered = amountStr(balanceDelivered.amount.toInt().abs(),
-                  precision: deliveredPrecision);
+              final amountProvider = ref.watch(amountToStringProvider);
+              delivered = amountProvider.amountToString(
+                  AmountToStringParameters(
+                      amount: balanceDelivered.amount.toInt().abs(),
+                      precision: deliveredPrecision));
               final sentBitcoin = balanceDelivered.assetId == liquidAssetId;
               final asset = sentBitcoin ? assetRecv : assetSent;
 
@@ -63,8 +68,9 @@ class TxDetailsPopup extends ConsumerWidget {
                 currencyChar: assetSentTicker,
                 currencyCharAlignment: CurrencyCharAlignment.end,
               );
-              received = amountStr(balanceReceived.amount.toInt(),
-                  precision: receivedPrecision);
+              received = amountProvider.amountToString(AmountToStringParameters(
+                  amount: balanceReceived.amount.toInt(),
+                  precision: receivedPrecision));
               received = replaceCharacterOnPosition(
                 input: received,
                 currencyChar: assetRecvTicker,

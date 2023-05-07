@@ -26,19 +26,17 @@ fn main() {
         }
         "windows" => {
             println!("cargo:rustc-link-lib=static=greenaddress_full");
-            println!("cargo:rustc-link-lib=static=boost_filesystem");
             println!("cargo:rustc-link-lib=dylib=stdc++.dll");
             println!("cargo:rustc-link-lib=dylib=ssp.dll");
             println!("cargo:rustc-link-lib=dylib=crypt32");
             println!("cargo:rustc-link-lib=dylib=shell32");
             println!("cargo:rustc-link-lib=dylib=iphlpapi");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
-            println!("cargo:rustc-link-search=native={}/../boost/build/lib", gdk_dir);
             println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-w64-mingw32/10-posix");
         }
         "ios" => {
             println!("cargo:rustc-link-lib=static=greenaddress_full");
-            println!("cargo:rustc-link-lib=dylib=stdc++");
+            println!("cargo:rustc-link-lib=dylib=c++");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         "macos" => {

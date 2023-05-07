@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/permission_handler.dart';
 import 'package:sideswap/common_platform.dart';
-import 'package:sideswap/models/notifications_service.dart';
-import 'package:sideswap/models/qrcode_provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:sideswap/providers/notifications_service_provider.dart';
+import 'package:sideswap/providers/qrcode_provider.dart';
 
 import 'screens/qr_scanner/address_qr_scanner.dart';
 

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/desktop_root_widget.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/locales_provider.dart';
+import 'package:sideswap/providers/locales_provider.dart';
 
 class DSideSwapScrollBehavior extends MaterialScrollBehavior {
   // Override behavior methods and getters like dragDevices
@@ -40,6 +40,7 @@ class DesktopApp extends StatelessWidget {
     return Consumer(
       builder: (context, ref, _) {
         final desktopAppTheme = ref.watch(desktopAppThemeProvider);
+
         return MaterialApp(
           title: 'SideSwap',
           showSemanticsDebugger: false,
@@ -49,14 +50,8 @@ class DesktopApp extends StatelessWidget {
           locale: context.locale,
           themeMode: desktopAppTheme.mode,
           darkTheme: ThemeData(
-            brightness: Brightness.dark,
-            textTheme: const TextTheme(
-              headline3: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
+            brightness: desktopAppTheme.brightness,
+            textTheme: desktopAppTheme.textTheme,
             colorScheme: desktopAppTheme.darkScheme,
             scaffoldBackgroundColor: desktopAppTheme.scaffoldBackgroundColor,
             visualDensity: desktopAppTheme.visualDensity,

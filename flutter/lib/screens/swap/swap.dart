@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/swap_models.dart';
-import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_background.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_button.dart';
 import 'package:sideswap/screens/swap/widgets/swap_deliver_amount.dart';
@@ -105,7 +105,7 @@ class SwapMain extends HookConsumerWidget {
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final middle = swapType == SwapType.atomic ? 181.0 : 191.0;
+          final middle = swapType == SwapType.atomic ? 191.0 : 191.0;
 
           return SingleChildScrollView(
             child: ConstrainedBox(

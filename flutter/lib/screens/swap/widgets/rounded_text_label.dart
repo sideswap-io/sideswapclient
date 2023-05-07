@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class RoundedTextLabel extends StatelessWidget {
   const RoundedTextLabel({
     super.key,
     required this.text,
-    this.color = const Color(0xFFA8D6EA),
+    this.color = SideSwapColors.regentStBlue,
     this.allRectRadius = false,
     this.height,
   });

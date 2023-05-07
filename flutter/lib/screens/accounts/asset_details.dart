@@ -3,13 +3,15 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
 
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/models/tx_item.dart';
-import 'package:sideswap/models/ui_state_args_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/accounts/widgets/asset_details_header.dart';
 import 'package:sideswap/screens/accounts/widgets/maximize_list_button.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
@@ -33,9 +35,6 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
 
   late PanelController _panelController;
 
-  late AccountAsset _asset;
-  var _txItemMap = <AccountAsset, List<TxItem>>{};
-
   double normalize(double value, double min, double max) {
     return (value - min) / (max - min);
   }
@@ -48,8 +47,6 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
   void initState() {
     super.initState();
     _panelController = PanelController();
-    _asset = ref.read(walletProvider).selectedWalletAsset!;
-    _txItemMap = ref.read(walletProvider).getAllAssets();
   }
 
   @override
@@ -96,14 +93,15 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                     padding: EdgeInsets.only(top: logoPadding),
                     child: Consumer(
                       builder: (context, ref, child) {
-                        final wallet = ref.watch(walletProvider);
-                        final assetId = wallet.selectedWalletAsset!.asset;
-                        final assetImagesBig =
-                            ref.watch(walletProvider).assetImagesBig[assetId];
+                        final selectedWalletAsset =
+                            ref.watch(selectedWalletAssetProvider);
+                        final assetId = selectedWalletAsset?.asset;
+                        final icon =
+                            ref.watch(assetImageProvider).getBigImage(assetId);
                         return SizedBox(
                           width: logoHeight,
                           height: logoHeight,
-                          child: assetImagesBig,
+                          child: icon,
                         );
                       },
                     ),
@@ -124,9 +122,9 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
         ),
         Consumer(
           builder: (context, ref, child) {
-            _asset = ref.watch(walletProvider).selectedWalletAsset!;
-            _txItemMap = ref.watch(walletProvider).getAllAssets();
-            final assetList = _txItemMap[_asset] ?? <TxItem>[];
+            final selectedWalletAsset = ref.watch(selectedWalletAssetProvider);
+            final allAssets = ref.watch(allAssetsProvider);
+            final assetList = allAssets[selectedWalletAsset] ?? <TxItem>[];
 
             final minimizedPadding = MediaQuery.of(context).padding.top + 40;
             final maximizedPadding = MediaQuery.of(context).padding.top + 70;
@@ -146,7 +144,7 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
 
                 _hightPercentController.add(1 - position);
               },
-              color: const Color(0xFF135579),
+              color: SideSwapColors.chathamsBlue,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -231,8 +229,9 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: TxListItem(
-                                assetId: _asset.asset,
-                                accountType: _asset.account,
+                                assetId: selectedWalletAsset?.asset ?? '',
+                                accountType: selectedWalletAsset?.account ??
+                                    AccountType.reg,
                                 txItem: assetList[index],
                               ),
                             )

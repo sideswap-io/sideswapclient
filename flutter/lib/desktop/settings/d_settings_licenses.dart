@@ -7,11 +7,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/app_version.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DLicenses {
   LicenseEntry licenseEntry;
@@ -226,7 +227,7 @@ class DSettingsLicenses extends HookConsumerWidget {
                             controller: controller,
                             itemCount: licenses.length,
                             separatorBuilder: (context, index) => const Divider(
-                              color: Color(0xFF135579),
+                              color: SideSwapColors.chathamsBlue,
                             ),
                             itemBuilder: (context, index) {
                               return licenses.elementAt(index);

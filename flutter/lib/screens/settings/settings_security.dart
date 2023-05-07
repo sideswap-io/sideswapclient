@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class SettingsSecurity extends StatelessWidget {
   const SettingsSecurity({
@@ -28,14 +29,14 @@ class SettingsSecurity extends StatelessWidget {
               onPressed: () {},
               style: TextButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: const Color(0xFF135579),
+                backgroundColor: SideSwapColors.chathamsBlue,
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
                     Radius.circular(8),
                   ),
                 ),
                 side: const BorderSide(
-                  color: Color(0xFF135579),
+                  color: SideSwapColors.chathamsBlue,
                   width: 1,
                   style: BorderStyle.solid,
                 ),
@@ -49,7 +50,7 @@ class SettingsSecurity extends StatelessWidget {
                     child: Icon(
                       icon,
                       size: 24,
-                      color: const Color(0xFF00C5FF),
+                      color: SideSwapColors.brightTurquoise,
                     ),
                   ),
                   Padding(
@@ -73,7 +74,7 @@ class SettingsSecurity extends StatelessWidget {
                       height: 31,
                       toggleSize: 27,
                       padding: 2,
-                      activeColor: const Color(0xFF00C5FF),
+                      activeColor: SideSwapColors.brightTurquoise,
                       inactiveColor: const Color(0xFF164D6A),
                       toggleColor: Colors.white,
                     ),

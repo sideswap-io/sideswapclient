@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
@@ -63,9 +64,9 @@ class CreateOrderSuccess extends ConsumerWidget {
         buttonText: 'OK'.tr(),
         buttonBackgroundColor: orderDetailsData.private
             ? Colors.transparent
-            : const Color(0xFF00C5FF),
+            : SideSwapColors.brightTurquoise,
         buttonSide: orderDetailsData.private
-            ? const BorderSide(color: Color(0xFF00C5FF), width: 2)
+            ? const BorderSide(color: SideSwapColors.brightTurquoise, width: 2)
             : null,
         onPressed: () {
           // clear old order data

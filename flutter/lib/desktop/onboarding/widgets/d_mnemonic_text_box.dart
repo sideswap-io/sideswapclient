@@ -3,7 +3,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/models/mnemonic_table_provider.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/mnemonic_table_provider.dart';
 
 class DMnemonicTextBox extends HookConsumerWidget {
   const DMnemonicTextBox(
@@ -108,7 +109,7 @@ class DMnemonicTextBox extends HookConsumerWidget {
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF00C5FF),
+                            color: SideSwapColors.brightTurquoise,
                           ),
                         ),
                       ),
@@ -208,7 +209,7 @@ class OptionsView extends StatelessWidget {
                   }
                   return Container(
                     color: highlight
-                        ? const Color(0xFF1b8bc8)
+                        ? SideSwapColors.navyBlue
                         : const Color(0xFF062d44),
                     padding: const EdgeInsets.all(16.0),
                     child: Text(option),

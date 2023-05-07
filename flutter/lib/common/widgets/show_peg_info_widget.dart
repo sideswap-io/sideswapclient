@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
@@ -31,7 +32,7 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
         borderRadius: BorderRadius.all(
           Radius.circular(8),
         ),
-        color: Color(0xFF1C6086),
+        color: SideSwapColors.blumine,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -104,7 +105,7 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
                 width: 295,
                 height: 54,
                 text: 'OK'.tr(),
-                backgroundColor: const Color(0xFF00C5FF),
+                backgroundColor: SideSwapColors.brightTurquoise,
                 onPressed: () {
                   Navigator.of(context, rootNavigator: true).pop();
                 },

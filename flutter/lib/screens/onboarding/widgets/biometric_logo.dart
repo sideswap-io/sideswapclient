@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/screens/onboarding/widgets/biometric_shape_border.dart';
 
@@ -38,7 +39,7 @@ class BiometricLogo extends StatelessWidget {
             child: Container(
               width: 169,
               height: 28,
-              color: const Color(0xFF135579).withOpacity(0.79),
+              color: SideSwapColors.chathamsBlue.withOpacity(0.79),
             ),
           ),
         ),

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
 class AutoSign extends StatelessWidget {
   const AutoSign({
     super.key,
-    this.backgroundColor = const Color(0xFF014767),
+    this.backgroundColor = SideSwapColors.chathamsBlue,
     required this.value,
     this.onToggle,
   });
@@ -57,7 +58,7 @@ class AutoSign extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.normal,
-                color: Color(0xFF569BBA),
+                color: SideSwapColors.hippieBlue,
                 letterSpacing: -0.1,
               ),
             ),

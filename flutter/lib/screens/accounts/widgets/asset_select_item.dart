@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
 class AssetSelectItem extends ConsumerWidget {
@@ -13,15 +15,15 @@ class AssetSelectItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wallet = ref.read(walletProvider);
-    final assetImage = wallet.assetImagesBig[account.asset];
-    final asset = wallet.assets[account.asset]!;
+    final icon = ref.watch(assetImageProvider).getBigImage(account.asset);
+    final asset =
+        ref.watch(assetsStateProvider.select((value) => value[account.asset]));
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: SizedBox(
         height: 71,
         child: Material(
-          color: const Color(0xFF135579),
+          color: SideSwapColors.chathamsBlue,
           borderRadius: BorderRadius.circular(8),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
@@ -37,7 +39,7 @@ class AssetSelectItem extends ConsumerWidget {
                     SizedBox(
                       width: 45,
                       height: 45,
-                      child: assetImage,
+                      child: icon,
                     ),
                     Expanded(
                       child: Padding(
@@ -49,7 +51,7 @@ class AssetSelectItem extends ConsumerWidget {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4),
                               child: Text(
-                                asset.name,
+                                asset?.name ?? '',
                                 overflow: TextOverflow.clip,
                                 maxLines: 1,
                                 textAlign: TextAlign.left,
@@ -63,7 +65,7 @@ class AssetSelectItem extends ConsumerWidget {
                             Row(
                               children: [
                                 Text(
-                                  asset.ticker,
+                                  asset?.ticker ?? '',
                                   textAlign: TextAlign.right,
                                   style: const TextStyle(
                                     fontSize: 15,
@@ -83,9 +85,10 @@ class AssetSelectItem extends ConsumerWidget {
                         final wallet = ref.read(walletProvider);
                         final balances = ref.watch(balancesProvider);
                         final selected = !wallet.disabledAssetAccount(account);
+                        final liquidAssetId = ref.watch(liquidAssetIdProvider);
                         final forceEnabled =
                             (account.account == AccountType.reg &&
-                                    account.asset == wallet.liquidAssetId()) ||
+                                    account.asset == liquidAssetId) ||
                                 (balances.balances[account] ?? 0) > 0;
 
                         return FlutterSwitch(
@@ -96,7 +99,7 @@ class AssetSelectItem extends ConsumerWidget {
                           height: 31,
                           toggleSize: 27,
                           padding: 2,
-                          activeColor: const Color(0xFF00C5FF),
+                          activeColor: SideSwapColors.brightTurquoise,
                           inactiveColor: const Color(0xFF164D6A),
                           toggleColor: Colors.white,
                         );

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class TimeToLive extends StatefulWidget {
   const TimeToLive({
     super.key,
-    this.backgroundColor = const Color(0xFF014767),
+    this.backgroundColor = SideSwapColors.chathamsBlue,
     required this.dropdownValue,
     required this.dropdownItems,
     this.onChanged,
@@ -96,14 +96,15 @@ class TimeToLiveState extends State<TimeToLive> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFF78AECC),
+                        color: SideSwapColors.ceruleanFrost,
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 7),
                       child: SvgPicture.asset(
                         'assets/lock.svg',
-                        color: const Color(0xFF78AECC),
+                        colorFilter: const ColorFilter.mode(
+                            SideSwapColors.ceruleanFrost, BlendMode.srcIn),
                         width: 10,
                         height: 13,
                       ),
@@ -128,7 +129,7 @@ class TimeToLiveState extends State<TimeToLive> {
                           ),
                         )
                         .toList(),
-                    dropdownColor: const Color(0xFF2B6F95),
+                    dropdownColor: SideSwapColors.jellyBean,
                     onChanged: widget.onChanged,
                   ),
                 ),

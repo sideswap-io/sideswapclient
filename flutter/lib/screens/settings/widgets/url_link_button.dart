@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class UrlLinkButton extends StatelessWidget {
   const UrlLinkButton({
@@ -34,14 +35,14 @@ class UrlLinkButton extends StatelessWidget {
         },
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: const Color(0xFF135579),
+          backgroundColor: SideSwapColors.chathamsBlue,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(8),
             ),
           ),
           side: const BorderSide(
-            color: Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
             width: 1,
             style: BorderStyle.solid,
           ),
@@ -65,7 +66,7 @@ class UrlLinkButton extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
-                    color: const Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                     decoration: url.isNotEmpty
                         ? TextDecoration.underline
                         : TextDecoration.none,

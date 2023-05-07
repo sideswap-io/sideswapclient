@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:xrange/xrange.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -26,7 +27,7 @@ class OrderTrackingSlider extends StatelessWidget {
   final int minPercent;
   final int maxPercent;
   final Asset? asset;
-  final Image? icon;
+  final Widget? icon;
   final String price;
   final String dollarConversion;
   final bool invertColors;
@@ -37,8 +38,8 @@ class OrderTrackingSlider extends StatelessWidget {
     color: Colors.white,
   );
 
-  final negativeColor = const Color(0xFFFF7878);
-  final positiveColor = const Color(0xFF2CCCBF);
+  final negativeColor = SideSwapColors.bitterSweet;
+  final positiveColor = SideSwapColors.turquoise;
   final circleNegativeColor = const Color(0xFF3E475F);
   final circlePositiveColor = const Color(0xFF147385);
 
@@ -73,7 +74,7 @@ class OrderTrackingSlider extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                   ),
                 ),
                 if (dollarConversion.isNotEmpty) ...[
@@ -109,7 +110,7 @@ class OrderTrackingSlider extends StatelessWidget {
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.normal,
-                            color: Color(0xFF84ADC6),
+                            color: SideSwapColors.glacier,
                           ),
                         ),
                       ),

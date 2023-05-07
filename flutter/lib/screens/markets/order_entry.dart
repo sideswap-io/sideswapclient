@@ -5,18 +5,20 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_price_field.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 
 class OrderEntry extends ConsumerStatefulWidget {
@@ -58,7 +60,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
       if (requestOrder.isSellOrder()) {
         receiveController.text = requestOrder.calculateReceiveAmount(
             deliverController.text, priceAmountController.text);
-        validate(ref);
+        validate();
       }
     });
 
@@ -68,7 +70,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
       if (!requestOrder.isSellOrder()) {
         deliverController.text = requestOrder.calculateDeliverAmount(
             receiveController.text, priceAmountController.text);
-        validate(ref);
+        validate();
       }
     });
 
@@ -81,7 +83,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
         deliverController.text = requestOrder.calculateDeliverAmount(
             receiveController.text, priceAmountController.text);
       }
-      validate(ref);
+      validate();
     });
 
     deliverFocusNode = FocusNode();
@@ -93,16 +95,15 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
     ref.read(marketsProvider).subscribeIndexPrice(
         ref.read(requestOrderProvider).tokenAccountAsset().asset);
 
-    displaySlider = isTracking(ref);
+    displaySlider = isTracking();
 
-    focusEnterAmount(ref, context);
+    focusEnterAmount();
   }
 
-  bool isTracking(WidgetRef ref) {
-    final requests = ref.read(requestOrderProvider);
-    final indexPrice = requests.indexPrice;
+  bool isTracking() {
+    final requestOrderIndexPrice = ref.read(requestOrderIndexPriceProvider);
     final isToken = ref.read(requestOrderProvider).isDeliverToken();
-    return trackingSelected && !isToken && indexPrice.isNotEmpty;
+    return trackingSelected && !isToken && requestOrderIndexPrice.isNotEmpty;
   }
 
   @override
@@ -116,27 +117,27 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
     super.dispose();
   }
 
-  void focusEnterAmount(WidgetRef ref, BuildContext context) {
+  void focusEnterAmount() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (ref.read(requestOrderProvider).isSellOrder()) {
         FocusScope.of(context).requestFocus(deliverFocusNode);
-        setValue(deliverController, '');
+        setControllerValue(deliverController, '');
       } else {
         FocusScope.of(context).requestFocus(receiveFocusNode);
-        setValue(receiveController, '');
+        setControllerValue(receiveController, '');
       }
     });
   }
 
-  void clearData(WidgetRef ref) {
+  void clearData() {
     deliverController.clear();
     priceAmountController.clear();
     receiveController.clear();
-    validate(ref);
+    validate();
   }
 
-  void validate(WidgetRef ref) {
-    updateDollarConversion(ref);
+  void validate() {
+    updateDollarConversion();
 
     final precision =
         ref.read(requestOrderProvider).deliverAsset()?.precision ?? 0;
@@ -188,10 +189,10 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
     }
   }
 
-  void updateDollarConversion(WidgetRef ref) {
-    final priceAssetId = ref.read(requestOrderProvider).priceAsset.assetId;
+  void updateDollarConversion() {
+    final priceAssetId = ref.read(requestOrderProvider).priceAsset?.assetId;
     setState(() {
-      if (priceAssetId == ref.read(walletProvider).tetherAssetId()) {
+      if (priceAssetId == ref.read(tetherAssetIdProvider)) {
         priceConversion = '';
       } else {
         priceConversion = ref
@@ -204,7 +205,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
     final receiveAssetId = ref.read(requestOrderProvider).receiveAssetId;
 
     setState(() {
-      if (receiveAssetId.asset == ref.read(walletProvider).tetherAssetId()) {
+      if (receiveAssetId.asset == ref.read(tetherAssetIdProvider)) {
         receiveConversion = '';
       } else {
         receiveConversion = ref
@@ -235,11 +236,11 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
     var price = priceAmount;
 
     var trackingPercent = .0;
-    if (isTracking(ref)) {
-      final indexPrice =
-          double.tryParse(ref.read(requestOrderProvider).indexPrice) ?? 0;
+    if (isTracking()) {
+      final requestOrderIndexPrice =
+          double.tryParse(ref.read(requestOrderIndexPriceProvider)) ?? 0;
       trackingPercent = 1 + (sliderValue / 100);
-      price = indexPrice;
+      price = requestOrderIndexPrice;
     }
 
     final accountAsset = ref.read(requestOrderProvider).tokenAccountAsset();
@@ -250,7 +251,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
           amount,
           price,
           isAssetAmount: isAssetAmount,
-          indexPrice: isTracking(ref) ? trackingPercent : null,
+          indexPrice: isTracking() ? trackingPercent : null,
           account: accountAsset.account,
         );
 
@@ -266,18 +267,20 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
       priceAmountController.text = '';
       sliderValue = 0;
       trackingPrice = '';
-      displaySlider = isTracking(ref);
+      displaySlider = isTracking();
     });
     if (value) {
-      calculateTrackingPrice(ref);
+      calculateTrackingPrice();
     }
   }
 
-  void calculateTrackingPrice(WidgetRef ref) {
-    final ticker = ref.read(requestOrderProvider).priceAsset.ticker;
+  void calculateTrackingPrice() {
+    final ticker = ref.read(requestOrderProvider).priceAsset?.ticker ?? '';
 
-    final trackingPriceFixed = ref.read(marketsProvider).calculateTrackingPrice(
-        sliderValue, ref.read(requestOrderProvider).priceAsset.assetId);
+    final trackingAsset = ref.read(requestOrderProvider).priceAsset;
+    final trackingPriceFixed = ref
+        .read(indexPriceForAssetProvider(trackingAsset?.assetId))
+        .calculateTrackingPrice(sliderValue);
 
     setState(() {
       if ((double.tryParse(trackingPriceFixed) ?? 0) != 0) {
@@ -292,7 +295,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
 
   @override
   Widget build(BuildContext context) {
-    final indexPrice = ref.watch(requestOrderProvider).indexPrice;
+    final requestOrderIndexPrice = ref.watch(requestOrderIndexPriceProvider);
     final requestOrder = ref.watch(requestOrderProvider);
     final marketTyple = requestOrder.marketType();
     final isStablecoin = marketTyple == MarketType.stablecoin;
@@ -340,7 +343,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                   ? 215
                                   : (isStablecoin ? 200 : 180)),
                           child: Container(
-                            color: const Color(0xFF135579),
+                            color: SideSwapColors.chathamsBlue,
                           ),
                         ),
                         Padding(
@@ -358,14 +361,13 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                   .watch(requestOrderProvider)
                                   .tokenAccountAsset()
                                   .asset;
-                              final productAsset = ref
-                                  .watch(walletProvider)
-                                  .assets[productAssetId]!;
+                              final productAsset = ref.watch(assetsStateProvider
+                                  .select((value) => value[productAssetId]));
                               final icon = ref
-                                  .watch(requestOrderProvider)
-                                  .priceAssetIcon();
+                                  .watch(assetImageProvider)
+                                  .getSmallImage(asset?.assetId);
 
-                              displaySlider = isTracking(ref);
+                              displaySlider = isTracking();
 
                               return OrderPriceField(
                                 focusNode: priceFocusNode,
@@ -374,14 +376,15 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                 icon: icon,
                                 controller: priceAmountController,
                                 dollarConversion: priceConversion,
-                                tracking: isTracking(ref),
+                                tracking: isTracking(),
                                 trackingPrice: trackingPrice,
                                 displaySlider: displaySlider,
-                                onToggleTracking: isToken || indexPrice.isEmpty
-                                    ? null
-                                    : onToggleTracking,
+                                onToggleTracking:
+                                    isToken || requestOrderIndexPrice.isEmpty
+                                        ? null
+                                        : onToggleTracking,
                                 onEditingComplete: () {
-                                  validate(ref);
+                                  validate();
                                   SystemChannels.textInput
                                       .invokeMethod<void>('TextInput.hide');
                                 },
@@ -391,7 +394,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                     sliderValue = value;
                                   });
 
-                                  calculateTrackingPrice(ref);
+                                  calculateTrackingPrice();
                                 },
                                 invertColors: inversePrice,
                               );
@@ -452,21 +455,22 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                       ref
                                           .read(requestOrderProvider)
                                           .deliverAssetId = value;
-                                      clearData(ref);
+                                      clearData();
                                       setState(() {
                                         inversePrice = !ref
                                             .read(requestOrderProvider)
                                             .isDeliverLiquid();
                                       });
-                                      focusEnterAmount(ref, context);
+                                      focusEnterAmount();
                                     },
                                     onMaxPressed: () {
-                                      setValue(deliverController, balance);
-                                      validate(ref);
+                                      setControllerValue(
+                                          deliverController, balance);
+                                      validate();
                                     },
                                     onEditingCompleted: () {
                                       if (displaySlider) {
-                                        validate(ref);
+                                        validate();
                                       }
                                       if (displaySlider) {
                                         FocusScope.of(context).unfocus();
@@ -534,12 +538,12 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                                       ref
                                           .read(requestOrderProvider)
                                           .receiveAssetId = value;
-                                      clearData(ref);
-                                      focusEnterAmount(ref, context);
+                                      clearData();
+                                      focusEnterAmount();
                                     },
                                     onEditingCompleted: () {
                                       if (displaySlider) {
-                                        validate(ref);
+                                        validate();
                                       }
                                       if (displaySlider) {
                                         FocusScope.of(context).unfocus();
@@ -559,7 +563,7 @@ class OrderEntryState extends ConsumerState<OrderEntry> {
                               child: CustomBigButton(
                                 width: double.maxFinite,
                                 height: 54,
-                                backgroundColor: const Color(0xFF00C5FF),
+                                backgroundColor: SideSwapColors.brightTurquoise,
                                 enabled: isValid,
                                 onPressed: isValid ? onContinue : null,
                                 child: Stack(

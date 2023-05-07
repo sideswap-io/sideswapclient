@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
-import 'package:sideswap/models/phone_provider.dart';
+import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 
 class ConfirmPhoneSuccess extends ConsumerWidget {

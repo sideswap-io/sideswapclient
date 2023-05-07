@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 
 enum EmptyRequestLogoIcon {
@@ -63,9 +64,9 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF135579),
+                  color: SideSwapColors.chathamsBlue,
                   border: Border.all(
-                    color: const Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                     width: 2,
                   ),
                 ),
@@ -81,14 +82,14 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
                     EmptyTextContainer(
                       width: 26,
                       height: 6,
-                      color: Color(0xFF135579),
+                      color: SideSwapColors.chathamsBlue,
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 4),
                       child: EmptyTextContainer(
                         width: 60,
                         height: 6,
-                        color: Color(0xFF135579),
+                        color: SideSwapColors.chathamsBlue,
                       ),
                     ),
                   ],
@@ -98,7 +99,7 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
                   child: EmptyTextContainer(
                     width: 95,
                     height: 6,
-                    color: Color(0xFF135579),
+                    color: SideSwapColors.chathamsBlue,
                   ),
                 ),
                 Padding(
@@ -110,14 +111,14 @@ class EmptyRequestsLogoContainer extends StatelessWidget {
                         height: 14,
                         color: Colors.transparent,
                         border: Border.all(
-                            color: const Color(0xFF00C5FF), width: 2),
+                            color: SideSwapColors.brightTurquoise, width: 2),
                       ),
                       const Padding(
                         padding: EdgeInsets.only(left: 4),
                         child: EmptyTextContainer(
                           width: 50,
                           height: 14,
-                          color: Color(0xFF00C5FF),
+                          color: SideSwapColors.brightTurquoise,
                         ),
                       ),
                     ],

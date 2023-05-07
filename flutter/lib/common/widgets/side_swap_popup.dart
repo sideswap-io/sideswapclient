@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class SideSwapPopup extends ConsumerWidget {
   const SideSwapPopup({
@@ -20,7 +21,10 @@ class SideSwapPopup extends ConsumerWidget {
     this.sideSwapBackground = true,
     this.backgroundCoverColor,
     this.extendBodyBehindAppBar = false,
-  }) : _backgroundColor = backgroundColor ?? const Color(0xFF135579);
+    this.persistentFooterButtons,
+    this.bottomNavigationBar,
+    this.bottomSheet,
+  }) : _backgroundColor = backgroundColor ?? SideSwapColors.blumine;
 
   final Widget? child;
   final AppBar? appBar;
@@ -34,6 +38,9 @@ class SideSwapPopup extends ConsumerWidget {
   final bool sideSwapBackground;
   final Color? backgroundCoverColor;
   final bool extendBodyBehindAppBar;
+  final List<Widget>? persistentFooterButtons;
+  final Widget? bottomNavigationBar;
+  final Widget? bottomSheet;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,6 +52,9 @@ class SideSwapPopup extends ConsumerWidget {
       backgroundColor: backgroundCoverColor,
       onWillPop: onWillPop,
       appBar: appBar,
+      persistentFooterButtons: persistentFooterButtons,
+      bottomNavigationBar: bottomNavigationBar,
+      bottomSheet: bottomSheet,
       body: SafeArea(
         child: Padding(
           padding: padding,

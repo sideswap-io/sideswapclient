@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/screens/onboarding/widgets/biometric_logo.dart';
@@ -56,7 +56,7 @@ class WalletBiometricPrompt extends StatelessWidget {
                 width: double.infinity,
                 height: 54,
                 text: 'YES'.tr(),
-                backgroundColor: const Color(0xFF00C5FF),
+                backgroundColor: SideSwapColors.brightTurquoise,
                 onPressed: onYesPressed,
               ),
             ),
@@ -68,7 +68,7 @@ class WalletBiometricPrompt extends StatelessWidget {
                   width: double.infinity,
                   height: 54,
                   text: 'NOT NOW'.tr(),
-                  textColor: const Color(0xFF00C5FF),
+                  textColor: SideSwapColors.brightTurquoise,
                   backgroundColor: Colors.transparent,
                   onPressed: onNoPressed,
                 ),

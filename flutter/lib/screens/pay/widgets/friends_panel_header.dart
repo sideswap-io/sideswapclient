@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/friends_provider.dart';
+import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_import_button.dart';
 
 import 'friends_panel_invite_button.dart';

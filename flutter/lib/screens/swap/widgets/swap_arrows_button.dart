@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class SwapArrowsButton extends StatelessWidget {
   const SwapArrowsButton({
     super.key,
     required this.radius,
     this.onTap,
-    this.color = const Color(0xFF00C5FF),
+    this.color = SideSwapColors.brightTurquoise,
   });
 
   final double radius;

@@ -1,11 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.556 5.821" height="22" width="21">
-  <defs>
-    <clipPath id="a">
-      <path fill="#fff" d="M0 0h22v22H0z"/>
-    </clipPath>
-  </defs>
-  <g clip-path="url(#a)" clip-rule="evenodd" fill="#fff" fill-rule="evenodd" transform="matrix(.26458 0 0 .26458 -.132 0)">
-    <path d="M6 7a1 1 0 00-1 1v10.586l-2.793-2.793a1 1 0 00-1.414 1.414l4.5 4.5a1 1 0 001.414 0l4.5-4.5a1 1 0 00-1.414-1.414L7 18.586V8a1 1 0 00-1-1z"/>
-    <path d="M16 15a1 1 0 01-1-1V3.414l-2.793 2.793a1 1 0 11-1.414-1.414l4.5-4.5a1 1 0 011.414 0l4.5 4.5a1 1 0 01-1.414 1.414L17 3.414V14a1 1 0 01-1 1z" opacity=".7"/>
-  </g>
-</svg>
+<svg width="20.975" height="21.999" version="1.1" viewBox="0 0 5.5495 5.8205" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><defs><clipPath id="a"><path d="m0 0h22v22h-22z" fill="#fff"/></clipPath></defs><g transform="translate(-111.01 -141.38)"><g transform="matrix(.26457 0 0 .26457 110.88 141.38)" clip-path="url(#a)" clip-rule="evenodd" fill="#fff" fill-rule="evenodd"><path d="m6 7a1 1 0 0 0-1 1v10.586l-2.793-2.793a1 1 0 0 0-1.414 1.414l4.5 4.5a1 1 0 0 0 1.414 0l4.5-4.5a1 1 0 0 0-1.414-1.414l-2.793 2.793v-10.586a1 1 0 0 0-1-1z"/><path d="m16 15a1 1 0 0 1-1-1v-10.586l-2.793 2.793a1 1 0 1 1-1.414-1.414l4.5-4.5a1 1 0 0 1 1.414 0l4.5 4.5a1 1 0 0 1-1.414 1.414l-2.793-2.793v10.586a1 1 0 0 1-1 1z" opacity=".7"/></g></g></svg>

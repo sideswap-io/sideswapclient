@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/common/d_focus.dart';
@@ -219,10 +220,10 @@ class DToggleSwitchThemeData with Diagnosticable {
           color: !states.isDisabled
               ? states.isHovering
                   ? states.isPressing
-                      ? const Color(0xFF1B8BC8).lerpWith(Colors.black, 0.2)
-                      : const Color(0xFF1B8BC8).lerpWith(Colors.black, 0.1)
-                  : const Color(0xFF1B8BC8)
-              : const Color(0xFF1B8BC8).lerpWith(Colors.white, 0.1),
+                      ? SideSwapColors.navyBlue.lerpWith(Colors.black, 0.2)
+                      : SideSwapColors.navyBlue.lerpWith(Colors.black, 0.1)
+                  : SideSwapColors.navyBlue
+              : SideSwapColors.navyBlue.lerpWith(Colors.white, 0.1),
         );
       }),
       uncheckedThumbDecoration: ButtonState.resolveWith((states) {
@@ -231,10 +232,10 @@ class DToggleSwitchThemeData with Diagnosticable {
           color: !states.isDisabled
               ? states.isHovering
                   ? states.isPressing
-                      ? const Color(0xFF1B8BC8).lerpWith(Colors.black, 0.2)
-                      : const Color(0xFF1B8BC8).lerpWith(Colors.black, 0.1)
-                  : const Color(0xFF1B8BC8)
-              : const Color(0xFF1B8BC8).lerpWith(Colors.white, 0.1),
+                      ? SideSwapColors.navyBlue.lerpWith(Colors.black, 0.2)
+                      : SideSwapColors.navyBlue.lerpWith(Colors.black, 0.1)
+                  : SideSwapColors.navyBlue
+              : SideSwapColors.navyBlue.lerpWith(Colors.white, 0.1),
         );
       }),
       checkedTextStyle1: ButtonState.resolveWith((states) {
@@ -248,14 +249,14 @@ class DToggleSwitchThemeData with Diagnosticable {
         return const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: Color(0xFF78AECC),
+          color: SideSwapColors.ceruleanFrost,
         );
       }),
       checkedTextStyle2: ButtonState.resolveWith((states) {
         return const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w400,
-          color: Color(0xFF78AECC),
+          color: SideSwapColors.ceruleanFrost,
         );
       }),
       uncheckedTextStyle2: ButtonState.resolveWith((states) {

@@ -4,7 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/contact_provider.dart';
+import 'package:sideswap/providers/contact_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_import_button_painter.dart';
 
 class FriendsPanelImportButton extends ConsumerStatefulWidget {

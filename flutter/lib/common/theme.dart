@@ -1,65 +1,65 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
-final Map<int, Color> _customAppMaterialColor = {
-  50: const Color.fromRGBO(19, 85, 121, .1),
-  100: const Color.fromRGBO(19, 85, 121, .2),
-  200: const Color.fromRGBO(19, 85, 121, .3),
-  300: const Color.fromRGBO(19, 85, 121, .4),
-  400: const Color.fromRGBO(19, 85, 121, .5),
-  500: const Color.fromRGBO(19, 85, 121, .6),
-  600: const Color.fromRGBO(19, 85, 121, .7),
-  700: const Color.fromRGBO(19, 85, 121, .8),
-  800: const Color.fromRGBO(19, 85, 121, .9),
-  900: const Color.fromRGBO(19, 85, 121, 1),
-};
+final mobileAppThemeProvider =
+    AutoDisposeStateProvider<MobileThemeData>((ref) => MobileThemeData(ref));
 
-final customAppColor = MaterialColor(0xFF135579, _customAppMaterialColor);
+class MobileThemeData {
+  final Ref ref;
 
-final appTheme = ThemeData(
-  brightness: Brightness.dark,
-  primarySwatch: customAppColor,
-  scaffoldBackgroundColor: const Color(0xFF135579),
-  textSelectionTheme: const TextSelectionThemeData(
-    selectionHandleColor: Color(0xFFA8D6EA),
-  ),
-  fontFamily: 'Roboto',
-  textTheme: const TextTheme(
-    headline1: TextStyle(
-      fontFamily: 'Corben',
-      fontWeight: FontWeight.w700,
-      fontSize: 24,
-      color: Colors.black,
-    ),
-  ),
-);
+  MobileThemeData(this.ref);
 
-const mainDecoration = BoxDecoration(
-    gradient: LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [Color(0xFF003E78), Color(0xFF000E3F)]));
+  ThemeData themeData() {
+    return ThemeData(
+      brightness: Brightness.dark,
+      primarySwatch: SideSwapColors.chathamsBlue,
+      scaffoldBackgroundColor: SideSwapColors.chathamsBlue,
+      textSelectionTheme: textSelectionTheme(),
+      textTheme: textTheme(),
+    );
+  }
 
-const fontBigTitle = TextStyle(
-  fontFamily: 'Roboto',
-  fontWeight: FontWeight.w400,
-  fontSize: 32,
-);
+  TextSelectionThemeData textSelectionTheme() {
+    return const TextSelectionThemeData(
+      selectionHandleColor: SideSwapColors.regentStBlue,
+    );
+  }
 
-const fontNormal = TextStyle(
-  fontFamily: 'SF Pro Text',
-  fontWeight: FontWeight.w400,
-  fontSize: 16,
-);
-
-final fontNormalGray = fontNormal.merge(const TextStyle(color: Colors.grey));
-
-const fontSwapAssetTicker = TextStyle(
-  fontFamily: 'Roboto',
-  color: Color(0xFFFFFFFF),
-  fontWeight: FontWeight.w400,
-  fontSize: 22,
-);
-
-const fontSwapAssetAmount = fontSwapAssetTicker;
-
-const colorPanels = Color(0xFF003E78);
+  TextTheme textTheme({TextTheme? value}) {
+    return const TextTheme(
+      displayLarge: TextStyle(
+        fontFamily: 'Corben',
+        fontWeight: FontWeight.w700,
+        fontSize: 24,
+        color: Colors.black,
+      ),
+      titleLarge: TextStyle(
+        fontFamily: 'Roboto',
+        fontWeight: FontWeight.bold,
+        fontSize: 22,
+        color: Colors.white,
+        letterSpacing: 0.22,
+      ),
+      labelMedium: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.normal,
+        fontFamily: 'Roboto',
+        color: Colors.white,
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.normal,
+        fontFamily: 'Roboto',
+        color: Colors.white,
+        height: 1.22,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.normal,
+        fontFamily: 'Roboto',
+        color: Colors.white,
+      ),
+    ).merge(value);
+  }
+}

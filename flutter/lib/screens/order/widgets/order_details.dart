@@ -1,5 +1,6 @@
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/markets_provider.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 
 enum OrderDetailsDataType {
   submit,
@@ -7,31 +8,11 @@ enum OrderDetailsDataType {
   sign,
 }
 
-enum MarketType {
-  stablecoin,
-  amp,
-  token,
-}
-
 extension OrderDetailsDataEx on OrderDetailsData {
   bool isDataAvailable() {
     return orderId.isNotEmpty &&
-        bitcoinAmountStr.isNotEmpty &&
         priceAmountStr.isNotEmpty &&
-        assetAmountStr.isNotEmpty &&
         assetId.isNotEmpty;
-  }
-
-  String get bitcoinAmountStr {
-    return amountStr(bitcoinAmount, precision: bitcoinPrecision);
-  }
-
-  String get assetAmountStr {
-    return amountStr(assetAmount, precision: assetPrecision);
-  }
-
-  String get feeStr {
-    return amountStr(fee, precision: bitcoinPrecision);
   }
 
   String get priceAmountStr {

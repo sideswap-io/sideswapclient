@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class SideSwapProgressBar extends StatefulWidget {
   const SideSwapProgressBar({
@@ -68,7 +69,7 @@ class SideSwapProgressBarState extends State<SideSwapProgressBar> {
                     width: _maxWidth * (widget.percent / 100),
                     height: 8,
                     decoration: const BoxDecoration(
-                      color: Color(0xFF00C5FF),
+                      color: SideSwapColors.brightTurquoise,
                       borderRadius: BorderRadius.all(Radius.circular(2)),
                     ),
                   ),

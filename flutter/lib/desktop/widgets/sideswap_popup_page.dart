@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
@@ -60,10 +61,11 @@ class SideSwapPopupPage extends ConsumerWidget {
                         right: 24),
                     bodyPadding: EdgeInsets.zero,
                     decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(8),
-                        ),
-                        color: Color(0xFF1C6086)),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(8),
+                      ),
+                      color: SideSwapColors.blumine,
+                    ),
                   ),
                 ),
             constraints: constraints,

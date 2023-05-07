@@ -4,9 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/ui_state_args_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 import 'package:sideswap/screens/accounts/widgets/csv_export_button.dart';
 
@@ -15,7 +16,7 @@ class Accounts extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final syncComplete = ref.watch(walletProvider).syncComplete;
+    final syncComplete = ref.watch(syncCompleteStateProvider);
 
     return Stack(
       children: [
@@ -82,16 +83,18 @@ class Accounts extends ConsumerWidget {
                       final wallet = ref.watch(walletProvider);
                       final balances = ref.watch(balancesProvider);
                       final disabledAccounts = wallet.disabledAccounts;
+                      final liquidAssetId = ref.watch(liquidAssetIdProvider);
+                      final allAccounts = ref.watch(allAccountsProvider);
+
                       // Always show accounts with positive balance
                       final alwaysEnabledAccounts = balances.balances.entries
                           .where((e) => e.value > 0)
                           .map((e) => e.key)
                           .toSet();
                       // Always show regular L-BTC account
-                      alwaysEnabledAccounts.add(AccountAsset(
-                          AccountType.reg, wallet.liquidAssetId()));
-                      final availableAssets = wallet
-                          .getAllAccounts()
+                      alwaysEnabledAccounts
+                          .add(AccountAsset(AccountType.reg, liquidAssetId));
+                      final availableAssets = allAccounts
                           .where((item) =>
                               !disabledAccounts.contains(item) ||
                               alwaysEnabledAccounts.contains(item))

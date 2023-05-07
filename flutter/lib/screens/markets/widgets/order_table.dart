@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
@@ -23,9 +23,13 @@ class OrderTable extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wallet = ref.read(walletProvider);
-    final bitcoinAsset = wallet.assets[wallet.liquidAssetId()]!;
-    final asset = wallet.assets[orderDetailsData.assetId]!;
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final bitcoinAsset =
+        ref.watch(assetsStateProvider.select((value) => value[liquidAssetId]));
+    final asset = ref.watch(
+        assetsStateProvider.select((value) => value[orderDetailsData.assetId]));
+    final assetIcon =
+        ref.watch(assetImageProvider).getSmallImage(asset?.assetId);
     final sellBitcoin = orderDetailsData.sellBitcoin;
     final sendAsset = sellBitcoin ? bitcoinAsset : asset;
     final recvAsset = sellBitcoin ? asset : bitcoinAsset;
@@ -37,14 +41,17 @@ class OrderTable extends ConsumerWidget {
         : (orderDetailsData.bitcoinAmount - orderDetailsData.fee);
     final assetAmount = orderDetailsData.assetAmount;
     final bitcoinAmount = orderDetailsData.bitcoinAmount;
-    final isStablecoin = asset.swapMarket;
+    final isStablecoin = asset?.swapMarket ?? false;
     final priceAsset = isStablecoin ? asset : bitcoinAsset;
+    final priceAssetIcon =
+        ref.watch(assetImageProvider).getSmallImage(priceAsset?.assetId);
     final priceAmount = orderDetailsData.priceAmountStr;
     final priceDollarConversion = !isStablecoin
         ? ref.read(requestOrderProvider).dollarConversion(
-            bitcoinAsset.assetId, double.tryParse(priceAmount) ?? 0)
+            bitcoinAsset?.assetId, double.tryParse(priceAmount) ?? 0)
         : null;
-    final isAmp = wallet.ampAssets.contains(asset.assetId);
+    final isAmp =
+        ref.watch(assetUtilsProvider).isAmpMarket(assetId: asset?.assetId);
     final showOrderType =
         orderDetailsData.orderType == OrderDetailsDataType.quote;
 
@@ -53,21 +60,21 @@ class OrderTable extends ConsumerWidget {
         if (useTokenView) ...[
           OrderTableRow(
             description: 'Name'.tr(),
-            value: asset.name,
-            icon: wallet.assetImagesSmall[asset.assetId],
+            value: asset?.name ?? '',
+            icon: assetIcon,
           ),
           OrderTableRow(
             description: 'Ticker'.tr(),
             showAmpFlag: isAmp,
-            value: asset.ticker,
-            icon: wallet.assetImagesSmall[asset.assetId],
+            value: asset?.ticker ?? '',
+            icon: assetIcon,
           ),
           OrderTableRow.assetAmount(
             description: 'Amount'.tr(),
             orderTableRowType: orderTableRowType,
             enabled: enabled,
             amount: assetAmount,
-            assetId: asset.assetId,
+            assetId: asset?.assetId,
           ),
         ] else ...[
           OrderTableRow.assetAmount(
@@ -75,13 +82,13 @@ class OrderTable extends ConsumerWidget {
             orderTableRowType: orderTableRowType,
             enabled: enabled,
             amount: deliverAmount,
-            assetId: sendAsset.assetId,
+            assetId: sendAsset?.assetId,
           ),
         ],
         OrderTableRow(
           description: 'Price'.tr(),
-          value: '$priceAmount ${priceAsset.ticker}',
-          icon: wallet.assetImagesSmall[priceAsset.assetId]!,
+          value: '$priceAmount ${priceAsset?.ticker ?? ''}',
+          icon: priceAssetIcon,
           orderTableRowType: orderTableRowType,
           dollarConversion: priceDollarConversion,
           enabled: enabled,
@@ -93,14 +100,14 @@ class OrderTable extends ConsumerWidget {
               orderTableRowType: orderTableRowType,
               enabled: enabled,
               amount: bitcoinAmount,
-              assetId: wallet.liquidAssetId()),
+              assetId: liquidAssetId),
         ] else ...[
           OrderTableRow.assetAmount(
             description: 'Fee'.tr(),
             orderTableRowType: orderTableRowType,
             enabled: enabled,
             amount: orderDetailsData.fee,
-            assetId: bitcoinAsset.assetId,
+            assetId: bitcoinAsset?.assetId,
             showDollarConversion: false,
           ),
           OrderTableRow.assetAmount(
@@ -109,7 +116,7 @@ class OrderTable extends ConsumerWidget {
             orderTableRowType: orderTableRowType,
             enabled: enabled,
             amount: receiveAmount,
-            assetId: recvAsset.assetId,
+            assetId: recvAsset?.assetId,
           ),
         ],
         if (showOrderType)

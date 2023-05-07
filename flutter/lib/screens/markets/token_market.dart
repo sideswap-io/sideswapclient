@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/token_market_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/token_market_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/markets/token_market_order_details.dart';
 import 'package:sideswap/screens/markets/widgets/order_item.dart';
 
@@ -25,14 +26,12 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
     super.initState();
 
     currentDropdownValue = ref
-        .read(tokenMarketProvider)
-        .getDropdownValues()
+        .read(tokenMarketDropdownValuesProvider)
         .where((e) => e.assetId.isEmpty)
         .first;
 
-    tokenRequestOrders.addAll(ref
-        .read(tokenMarketProvider)
-        .getTokenList(currentDropdownValue.assetId));
+    tokenRequestOrders.addAll(
+        ref.read(tokenMarketOrdersByAssetId(currentDropdownValue.assetId)));
 
     WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
   }
@@ -65,7 +64,7 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF00C5FF),
+                color: SideSwapColors.brightTurquoise,
               ),
             ),
           ),
@@ -73,8 +72,7 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
             padding: const EdgeInsets.only(top: 4, left: 16, right: 16),
             child: Consumer(
               builder: (context, ref, child) {
-                final values =
-                    ref.watch(tokenMarketProvider).getDropdownValues();
+                final values = ref.watch(tokenMarketDropdownValuesProvider);
                 if (!values.any((e) => e == currentDropdownValue)) {
                   currentDropdownValue =
                       values.where((e) => e.assetId.isEmpty).first;
@@ -145,7 +143,7 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
                       fontWeight: FontWeight.normal,
                       color: Colors.white,
                     ),
-                    dropdownColor: const Color(0xFF2B6F95),
+                    dropdownColor: SideSwapColors.jellyBean,
                     onChanged: (value) {
                       if (value == null) {
                         return;
@@ -165,15 +163,13 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
             child: Divider(
               thickness: 1,
               height: 1,
-              color: Color(0xFF2B6F95),
+              color: SideSwapColors.jellyBean,
             ),
           ),
           Consumer(
             builder: (context, ref, child) {
-              ref.watch(tokenMarketProvider).tokenMarketOrders;
-              final newTokenMarketOrders = ref
-                  .read(tokenMarketProvider)
-                  .getTokenList(currentDropdownValue.assetId);
+              final newTokenMarketOrders = ref.watch(
+                  tokenMarketOrdersByAssetId(currentDropdownValue.assetId));
               tokenRequestOrders.clear();
               tokenRequestOrders.addAll(newTokenMarketOrders);
               return Expanded(
@@ -184,7 +180,7 @@ class TokenMarketState extends ConsumerState<TokenMarket> {
                     thickness: 3,
                     radius: const Radius.circular(2),
                     controller: scrollController,
-                    thumbColor: const Color(0xFF78AECC),
+                    thumbColor: SideSwapColors.ceruleanFrost,
                     child: Padding(
                       padding: const EdgeInsets.only(left: 16, right: 16),
                       child: ListView.builder(

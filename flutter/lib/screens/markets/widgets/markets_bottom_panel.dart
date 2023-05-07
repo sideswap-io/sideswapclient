@@ -1,14 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/desktop/markets/d_markets_root.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/swap_market_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/swap_market_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 
 class MarketsBottomPanel extends ConsumerWidget {
   const MarketsBottomPanel({
@@ -23,14 +25,14 @@ class MarketsBottomPanel extends ConsumerWidget {
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-        color: Color(0xFF0F4766),
+        color: SideSwapColors.chathamsBlueDark,
       ),
       child: Center(
         child: CustomBigButton(
           width: 343,
           height: 54,
           text: 'CREATE ORDER'.tr(),
-          backgroundColor: const Color(0xFF00C5FF),
+          backgroundColor: SideSwapColors.brightTurquoise,
           onPressed: () {
             ref.read(walletProvider).setCreateOrderEntry();
           },
@@ -48,9 +50,9 @@ class MarketsBottomBuySellPanel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final swapMarket = ref.watch(swapMarketProvider);
-    final wallet = ref.watch(walletProvider);
-    final asset = wallet.assets[swapMarket.currentProduct.assetId]!;
-    final isToken = !asset.swapMarket && !asset.ampMarket;
+    final asset = ref.watch(assetsStateProvider
+        .select((value) => value[swapMarket.currentProduct.assetId]));
+    final isToken = !(asset?.swapMarket == true) && !(asset?.ampMarket == true);
 
     return Container(
       width: double.maxFinite,
@@ -58,7 +60,7 @@ class MarketsBottomBuySellPanel extends ConsumerWidget {
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-        color: Color(0xFF0F4766),
+        color: SideSwapColors.chathamsBlueDark,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -91,17 +93,20 @@ class BuySellButton extends ConsumerWidget {
     final requestOrder = ref.watch(requestOrderProvider);
     final swapMarket = ref.watch(swapMarketProvider);
     final wallet = ref.watch(walletProvider);
-    final bitcoinAccount =
-        AccountAsset(AccountType.reg, wallet.liquidAssetId());
-    final asset = wallet.assets[swapMarket.currentProduct.assetId]!;
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final bitcoinAccount = AccountAsset(AccountType.reg, liquidAssetId);
+    final asset = ref.watch(assetsStateProvider
+        .select((value) => value[swapMarket.currentProduct.assetId]));
     final assetAccount = AccountAsset(
-        asset.ampMarket ? AccountType.amp : AccountType.reg, asset.assetId);
-    final sendBitcoin = isSell == asset.swapMarket;
+        asset?.ampMarket == true ? AccountType.amp : AccountType.reg,
+        asset?.assetId ?? '');
+    final sendBitcoin = isSell == asset?.swapMarket;
     final deliverAsset = sendBitcoin ? bitcoinAccount : assetAccount;
     final receiveAsset = sendBitcoin ? assetAccount : bitcoinAccount;
     final deliverBalance =
         ref.watch(balancesProvider).balances[deliverAsset] ?? 0;
-    final isTokenMarket = !asset.ampMarket && !asset.swapMarket;
+    final isTokenMarket =
+        !(asset?.ampMarket == true) && !(asset?.swapMarket == true);
     final enabled = deliverBalance > 0 && (!isTokenMarket || isSell);
     return Expanded(
       child: CustomBigButton(

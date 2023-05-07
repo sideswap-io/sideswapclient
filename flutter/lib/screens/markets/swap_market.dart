@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/widgets/colored_container.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/swap_market_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/swap_market_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/market_charts_popup.dart';
 import 'package:sideswap/screens/markets/market_select_popup.dart';
 import 'package:sideswap/screens/markets/token_market_order_details.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class SwapMarket extends ConsumerStatefulWidget {
   const SwapMarket({super.key});
@@ -25,7 +29,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
   final headerStyle = const TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF00C5FF),
+    color: SideSwapColors.brightTurquoise,
   );
 
   final indexPriceStyleDescription = const TextStyle(
@@ -80,10 +84,10 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
     Navigator.of(context, rootNavigator: true).push<void>(
       MaterialPageRoute(builder: (context) {
         return MarketSelectPopup(
-          selectedAssetId: ref.read(swapMarketProvider).currentProduct.assetId,
-          onAssetSelected: (assetId) {
+          onAssetSelected: () {
+            final selectedAssetId = ref.read(marketSelectedAssetIdProvider);
             final swapMarket = ref.read(swapMarketProvider);
-            final product = swapMarket.getProductFromAssetId(assetId);
+            final product = swapMarket.getProductFromAssetId(selectedAssetId);
             swapMarket.currentProduct = product;
             subscribeToMarket();
           },
@@ -105,17 +109,22 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
   @override
   Widget build(BuildContext context) {
     return Consumer(builder: (context, ref, child) {
-      final swapMarket = ref.watch(swapMarketProvider);
-      final wallet = ref.read(walletProvider);
-      final markets = ref.watch(marketsProvider);
+      final currentProduct = ref.watch(swapMarketProvider).currentProduct;
+      final asset = ref.watch(
+          assetsStateProvider.select((value) => value[currentProduct.assetId]));
+      final assetPrecision = ref
+          .watch(assetUtilsProvider)
+          .getPrecisionForAssetId(assetId: asset?.assetId);
+      final length = ref.watch(maxSwapOrderLengthProvider);
+      final bidOffers = ref.watch(swapMarketBidOffersProvider);
+      final askOffers = ref.watch(swapMarketAskOffersProvider);
 
-      final currentProduct = swapMarket.currentProduct;
-      final asset = wallet.assets[currentProduct.assetId]!;
-      final indexPrice = markets.getIndexPriceStr(currentProduct.assetId);
-      final lastPrice = markets.getLastPriceStr(currentProduct.assetId);
-      final length = swapMarket.getMaxSwapOrderLength();
-      final bidOffers = swapMarket.bidOffers;
-      final askOffers = swapMarket.askOffers;
+      final indexPrice = ref
+          .watch(indexPriceForAssetProvider(currentProduct.assetId))
+          .getIndexPriceStr();
+      final lastPrice = ref
+          .watch(lastIndexPriceForAssetProvider(currentProduct.assetId))
+          .getLastPriceStr();
 
       return Column(
         children: [
@@ -129,7 +138,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                     onTap: showProductsPopup,
                     child: ColoredContainer(
                       height: 50.0,
-                      backgroundColor: const Color(0xFF135579),
+                      backgroundColor: SideSwapColors.chathamsBlue,
                       borderColor: Colors.transparent,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -164,7 +173,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                 Expanded(
                   flex: 10,
                   child: ColoredContainer(
-                    backgroundColor: const Color(0xFF135579),
+                    backgroundColor: SideSwapColors.chathamsBlue,
                     borderColor: Colors.transparent,
                     height: 50.0,
                     child: Column(
@@ -172,13 +181,13 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          asset.swapMarket
+                          asset?.swapMarket == true
                               ? 'Index price'.tr()
                               : 'Last price'.tr(),
                           style: headerStyle,
                         ),
                         Text(
-                          asset.swapMarket ? indexPrice : lastPrice,
+                          asset?.swapMarket == true ? indexPrice : lastPrice,
                           style: indexPriceStyleDescription,
                         ),
                       ],
@@ -192,7 +201,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                     onTap: showChartsPopup,
                     child: ColoredContainer(
                       height: 50.0,
-                      backgroundColor: const Color(0xFF135579),
+                      backgroundColor: SideSwapColors.chathamsBlue,
                       borderColor: Colors.transparent,
                       child: Center(
                         child: Row(
@@ -200,6 +209,8 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                           children: [
                             SvgPicture.asset(
                               'assets/chart.svg',
+                              width: 15,
+                              height: 15,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -224,7 +235,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
             child: Divider(
               thickness: 1,
               height: 1,
-              color: Color(0xFF2B6F95),
+              color: SideSwapColors.jellyBean,
             ),
           ),
           Padding(
@@ -271,11 +282,10 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
               thickness: 3,
               radius: const Radius.circular(2),
               controller: scrollController,
-              thumbColor: const Color(0xFF78AECC),
+              thumbColor: SideSwapColors.ceruleanFrost,
               child: ListView.builder(
                 controller: scrollController,
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
                 itemCount: length,
                 itemBuilder: (context, index) {
                   return Row(
@@ -286,7 +296,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 6, right: 3),
                             child: SwapAmountRow(
-                              assetPrecision: asset.precision,
+                              assetPrecision: assetPrecision,
                               requestOrder: bidOffers[index],
                               onTap: openOrder,
                             ),
@@ -300,7 +310,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                           child: Padding(
                             padding: const EdgeInsets.only(left: 3, right: 6),
                             child: SwapAmountRow(
-                              assetPrecision: asset.precision,
+                              assetPrecision: assetPrecision,
                               requestOrder: askOffers[index],
                               type: SwapAmountRowType.ask,
                               onTap: openOrder,
@@ -327,7 +337,7 @@ enum SwapAmountRowType {
   ask,
 }
 
-class SwapAmountRow extends StatelessWidget {
+class SwapAmountRow extends HookConsumerWidget {
   const SwapAmountRow({
     super.key,
     required this.requestOrder,
@@ -348,10 +358,17 @@ class SwapAmountRow extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final amountProvider = ref.watch(amountToStringProvider);
+    final bitcoinAmountStr = amountProvider.amountToString(
+        AmountToStringParameters(amount: requestOrder.bitcoinAmount));
+    final assetAmountStr = amountProvider.amountToString(
+        AmountToStringParameters(
+            amount: requestOrder.assetAmount, precision: assetPrecision));
     final amountString = requestOrder.marketType == MarketType.stablecoin
-        ? amountStr(requestOrder.bitcoinAmount)
-        : amountStr(requestOrder.assetAmount, precision: assetPrecision);
+        ? bitcoinAmountStr
+        : assetAmountStr;
+
     final price =
         priceStrForMarket(requestOrder.price, requestOrder.marketType);
     return Padding(
@@ -382,7 +399,7 @@ class SwapAmountRow extends StatelessWidget {
                       height: 4,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color(0xFF2CCCBF),
+                        color: SideSwapColors.turquoise,
                       ),
                     ),
                   ),
@@ -400,8 +417,8 @@ class SwapAmountRow extends StatelessWidget {
                         price,
                         style: amountStyle.copyWith(
                           color: type == SwapAmountRowType.bid
-                              ? const Color(0xFF2CCCBF)
-                              : const Color(0xFFFF7878),
+                              ? SideSwapColors.turquoise
+                              : SideSwapColors.bitterSweet,
                         ),
                       ),
                     ];
@@ -432,9 +449,9 @@ class SwapAmountRowBackground extends CustomPainter {
   });
 
   late Color expireColor = type == SwapAmountRowType.bid
-      ? const Color(0xFF2CCCBF)
-      : const Color(0xFFFF7878);
-  Color backgroundColor = const Color(0xFF135579);
+      ? SideSwapColors.turquoise
+      : SideSwapColors.bitterSweet;
+  Color backgroundColor = SideSwapColors.chathamsBlue;
 
   @override
   void paint(Canvas canvas, Size size) {

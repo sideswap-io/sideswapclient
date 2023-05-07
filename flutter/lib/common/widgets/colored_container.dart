@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class ColoredContainer extends StatelessWidget {
   const ColoredContainer({
     super.key,
     this.child,
-    this.backgroundColor = const Color(0xFF1B8BC8),
-    this.borderColor = const Color(0xFF1B8BC8),
+    this.backgroundColor = SideSwapColors.navyBlue,
+    this.borderColor = SideSwapColors.navyBlue,
     this.horizontalPadding = 12,
     this.width,
     this.height,

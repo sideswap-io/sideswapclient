@@ -7,8 +7,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_table.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/mnemonic_table_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/mnemonic_table_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DSettingsViewBackup extends HookConsumerWidget {
   const DSettingsViewBackup({super.key});

@@ -41,7 +41,7 @@ class AccountAsset implements Comparable<AccountAsset> {
   static late String liquidAssetId;
 
   final AccountType account;
-  final String asset;
+  final String? asset;
 
   AccountAsset(this.account, this.asset);
 
@@ -69,6 +69,6 @@ class AccountAsset implements Comparable<AccountAsset> {
     if (result != 0) {
       return -result;
     }
-    return asset.compareTo(other.asset);
+    return asset?.compareTo(other.asset ?? '') ?? -1;
   }
 }

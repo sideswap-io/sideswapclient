@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
 
 class FeeRates extends StatelessWidget {
   const FeeRates({
@@ -41,7 +42,7 @@ class FeeRates extends StatelessWidget {
                         borderRadius: BorderRadius.all(
                           Radius.circular(8),
                         ),
-                        color: Color(0xFF135579),
+                        color: SideSwapColors.chathamsBlue,
                       ),
                       child: Material(
                         color: Colors.transparent,

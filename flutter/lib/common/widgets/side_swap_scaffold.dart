@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/background/background_painter.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 

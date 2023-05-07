@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class SideSwapTextField extends StatefulWidget {
   const SideSwapTextField({
@@ -39,7 +40,7 @@ class SideSwapTextFieldState extends State<SideSwapTextField> {
         const TextStyle(
           fontSize: 17,
           fontWeight: FontWeight.normal,
-          color: Color(0xFF84ADC6),
+          color: SideSwapColors.glacier,
         );
   }
 

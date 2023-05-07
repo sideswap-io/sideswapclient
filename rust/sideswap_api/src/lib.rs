@@ -750,6 +750,19 @@ pub struct ResolveGaidResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct GaidStatusRequest {
+    pub gaid: String,
+    pub asset_id: AssetId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GaidStatusResponse {
+    pub gaid: String,
+    pub asset_id: AssetId,
+    pub error: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct AssetDetailsRequest {
     pub asset_id: AssetId,
 }
@@ -1041,6 +1054,7 @@ pub enum Request {
     Sign(SignRequest),
     GetSign(GetSignRequest),
     ResolveGaid(ResolveGaidRequest),
+    GaidStatus(GaidStatusRequest),
     AssetDetails(AssetDetailsRequest),
 
     BroadcastPriceStream(BroadcastPriceStreamRequest),
@@ -1106,6 +1120,7 @@ pub enum Response {
     Sign(SignResponse),
     GetSign(GetSignResponse),
     ResolveGaid(ResolveGaidResponse),
+    GaidStatus(GaidStatusResponse),
     AssetDetails(AssetDetailsResponse),
 
     BroadcastPriceStream(BroadcastPriceStreamResponse),

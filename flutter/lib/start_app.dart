@@ -10,10 +10,11 @@ import 'package:sideswap/app_main.dart';
 import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/common_platform.dart';
 import 'package:sideswap/desktop/desktop_app_main.dart';
-import 'package:sideswap/models/config_provider.dart';
+import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:args/args.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:window_size/window_size.dart' as window_size;
 
 bool _isDesktop() {
   return Platform.isLinux || Platform.isMacOS || Platform.isWindows;
@@ -51,11 +52,22 @@ Future<void> startApp(List<String> args) async {
       });
     }
   } else {
+    var appScreenSize = const Size(1072, 880);
+
+    // workaround for potato laptop resolution 1366x768
+    final currentScreen = await window_size.getCurrentScreen();
+    if (currentScreen != null) {
+      if (currentScreen.frame.size.height < 880) {
+        // a bit lower app height - we don't want to reduce it more
+        appScreenSize = const Size(1072, 768);
+      }
+    }
+
     windowManager.waitUntilReadyToShow().then((_) async {
       // Hide window title bar
       // await windowManager.setTitleBarStyle('hidden');
-      await windowManager.setMinimumSize(const Size(1072, 880));
-      await windowManager.setSize(const Size(1072, 880));
+      await windowManager.setMinimumSize(appScreenSize);
+      await windowManager.setSize(appScreenSize);
       await windowManager.center();
       await windowManager.show();
       await windowManager.setSkipTaskbar(false);

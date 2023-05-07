@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/models/payment_requests_provider.dart';
+import 'package:sideswap/providers/payment_requests_provider.dart';
 
 class RequestsNavigationItemBadge extends StatelessWidget {
   const RequestsNavigationItemBadge({

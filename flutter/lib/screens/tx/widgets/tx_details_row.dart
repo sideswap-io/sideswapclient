@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class TxDetailsRow extends StatelessWidget {
   const TxDetailsRow({
@@ -22,7 +23,7 @@ class TxDetailsRow extends StatelessWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF00C5FF),
+            color: SideSwapColors.brightTurquoise,
           ),
         ),
         Text(

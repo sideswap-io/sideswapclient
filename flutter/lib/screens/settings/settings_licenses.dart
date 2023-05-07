@@ -6,6 +6,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sideswap/app_version.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 
@@ -99,7 +100,7 @@ class SettingsLicensesState extends State<SettingsLicenses> {
         data: theme.copyWith(
           dividerColor: Colors.transparent,
           colorScheme: ColorScheme.fromSwatch()
-              .copyWith(secondary: const Color(0xFF00C5FF)),
+              .copyWith(secondary: SideSwapColors.brightTurquoise),
         ),
         child: ExpansionTile(
           title: Text(
@@ -213,7 +214,7 @@ class SettingsLicensesState extends State<SettingsLicenses> {
                               itemCount: _licenses.length,
                               separatorBuilder: (context, index) =>
                                   const Divider(
-                                color: Color(0xFF135579),
+                                color: SideSwapColors.chathamsBlue,
                               ),
                               itemBuilder: (context, index) {
                                 return _licenses.elementAt(index);

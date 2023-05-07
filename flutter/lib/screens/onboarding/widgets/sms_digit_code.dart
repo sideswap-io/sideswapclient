@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:pinput/pin_put/pin_put.dart';
-
-import 'package:sideswap/models/phone_provider.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/phone_provider.dart';
 
 class SmsDigitCode extends ConsumerStatefulWidget {
   const SmsDigitCode({
@@ -39,7 +39,7 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
             ),
           ),
           const Spacer(),
@@ -56,7 +56,7 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
                   color: Colors.white,
                   border: Border.all(
                     color: step == SmsCodeStep.wrongCode
-                        ? const Color(0xFFFF7878)
+                        ? SideSwapColors.bitterSweet
                         : Colors.white,
                   ),
                 ),
@@ -83,7 +83,7 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
                   eachFieldPadding: EdgeInsets.zero,
                   textStyle: step == SmsCodeStep.wrongCode
                       ? _defaultPinStyle.copyWith(
-                          color: const Color(0xFFFF7878))
+                          color: SideSwapColors.bitterSweet)
                       : _defaultPinStyle,
                   pinAnimationType: PinAnimationType.scale,
                   withCursor: true,
@@ -116,7 +116,7 @@ class SmsDigitCodeState extends ConsumerState<SmsDigitCode> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFFFF7878),
+                        color: SideSwapColors.bitterSweet,
                       ),
                     ),
                   ),

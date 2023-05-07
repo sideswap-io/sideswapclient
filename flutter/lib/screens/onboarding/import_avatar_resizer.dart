@@ -5,13 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image/image.dart' as image;
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
-
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/avatar_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/avatar_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 typedef ImageFakeCanvas = Future<void> Function();
 typedef OnBack = Future<void> Function(BuildContext context);
@@ -88,7 +88,7 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
     }
 
     final bytes = pngBytes.buffer.asUint8List();
-    final outputImage = image.decodeImage(bytes.toList());
+    final outputImage = image.decodeImage(bytes);
     if (outputImage == null) {
       return;
     }
@@ -132,7 +132,7 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
                 width: double.maxFinite,
                 height: 54,
                 text: 'SAVE'.tr(),
-                backgroundColor: const Color(0xFF00C5FF),
+                backgroundColor: SideSwapColors.brightTurquoise,
                 onPressed: () async {
                   await generateThumbnail(ref);
                   final thumbnail =

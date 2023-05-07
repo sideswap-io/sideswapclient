@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 
@@ -19,9 +20,9 @@ class SettingsNetworkCheckbox extends StatelessWidget {
     return CustomCheckBox(
       size: 24,
       radius: const Radius.circular(12),
-      frameChecked: const Color(0xFF00C5FF),
+      frameChecked: SideSwapColors.brightTurquoise,
       frameUnchecked: const Color(0xFF046C93),
-      backgroundChecked: const Color(0xFF00C5FF),
+      backgroundChecked: SideSwapColors.brightTurquoise,
       backgroundUnchecked: Colors.transparent,
       icon: const Icon(
         Icons.check,

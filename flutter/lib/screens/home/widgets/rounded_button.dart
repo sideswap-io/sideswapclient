@@ -16,7 +16,7 @@ class RoundedButton extends StatefulWidget {
   final Widget? child;
   final double? width;
   final double? heigh;
-  final BorderRadiusGeometry? borderRadius;
+  final BorderRadius? borderRadius;
 
   @override
   RoundedButtonState createState() => RoundedButtonState();
@@ -25,7 +25,7 @@ class RoundedButton extends StatefulWidget {
 class RoundedButtonState extends State<RoundedButton> {
   late double _width;
   late double _height;
-  late BorderRadiusGeometry _borderRadius;
+  late BorderRadius _borderRadius;
 
   @override
   void initState() {
@@ -42,6 +42,7 @@ class RoundedButtonState extends State<RoundedButton> {
       borderRadius: _borderRadius,
       child: InkWell(
         onTap: widget.onTap,
+        borderRadius: widget.borderRadius,
         customBorder: widget.borderRadius == null ? const CircleBorder() : null,
         child: SizedBox(
           width: _width,

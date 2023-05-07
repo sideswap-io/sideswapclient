@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 enum DColoredCircularIconType {
   delete,
@@ -16,13 +17,13 @@ class DColoredCircularIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var color = const Color(0xFFFF7878);
+    var color = SideSwapColors.bitterSweet;
     var icon = 'assets/delete.svg';
     switch (type) {
       case DColoredCircularIconType.delete:
         break;
       case DColoredCircularIconType.success:
-        color = const Color(0xFF00C5FF);
+        color = SideSwapColors.brightTurquoise;
         icon = 'assets/success.svg';
         break;
     }
@@ -39,7 +40,7 @@ class DColoredCircularIcon extends StatelessWidget {
           icon,
           width: 27,
           height: 27,
-          color: Colors.white,
+          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
         ),
       ),
     );

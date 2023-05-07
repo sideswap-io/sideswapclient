@@ -4,18 +4,18 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
-import 'package:sideswap/desktop/widgets/d_side_swap_input_decoration.dart';
-import 'package:sideswap/models/universal_link_provider.dart';
-import 'package:sideswap/models/utils_provider.dart';
+import 'package:sideswap/desktop/common/decorations/d_side_swap_paste_icon_input_decoration.dart';
+import 'package:sideswap/providers/universal_link_provider.dart';
+import 'package:sideswap/providers/utils_provider.dart';
 
 class DOpenUrl extends ConsumerStatefulWidget {
   const DOpenUrl({super.key});
 
   @override
-  ConsumerState<DOpenUrl> createState() => _DOpenUrlState();
+  ConsumerState<DOpenUrl> createState() => DOpenUrlState();
 }
 
-class _DOpenUrlState extends ConsumerState<DOpenUrl> {
+class DOpenUrlState extends ConsumerState<DOpenUrl> {
   final TextEditingController controller = TextEditingController();
 
   @override
@@ -55,12 +55,12 @@ class _DOpenUrlState extends ConsumerState<DOpenUrl> {
           children: [
             Text(
               'Paste private swap URL'.tr(),
-              style: Theme.of(context).textTheme.headline3,
+              style: Theme.of(context).textTheme.displaySmall,
             ),
             const SizedBox(height: 40),
             TextField(
               controller: controller,
-              decoration: DSideSwapInputDecoration(
+              decoration: DSideSwapPasteIconInputDecoration(
                 hintText: 'URL',
                 errorText: null,
                 onPastePressed: () async {

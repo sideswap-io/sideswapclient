@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/d_pin_welcome.dart';
 
-import 'package:sideswap/models/pin_setup_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/pin_welcome.dart';
 

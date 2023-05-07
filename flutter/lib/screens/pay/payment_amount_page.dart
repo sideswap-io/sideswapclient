@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/friends_provider.dart';
-import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/payment_provider.dart';
-import 'package:sideswap/models/qrcode_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/friends_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/payment_amount_receiver_field.dart';
 import 'package:sideswap/screens/pay/widgets/payment_send_amount.dart';
@@ -46,7 +50,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
   final _labelStyle = const TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF00C5FF),
+    color: SideSwapColors.brightTurquoise,
   );
 
   final _approximateStyle = const TextStyle(
@@ -66,12 +70,11 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
       }
       return AccountAsset(AccountType.reg, payAssetId);
     }
-    final account = ref.read(walletProvider).selectedWalletAsset;
-    if (account != null) {
-      return account;
+    final selectedWalletAsset = ref.read(selectedWalletAssetProvider);
+    if (selectedWalletAsset != null) {
+      return selectedWalletAsset;
     }
-    return AccountAsset(
-        AccountType.reg, ref.read(walletProvider).liquidAssetId());
+    return AccountAsset(AccountType.reg, ref.read(liquidAssetIdProvider));
   }
 
   @override
@@ -89,11 +92,12 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
         ref.read(paymentProvider).paymentAmountPageArguments.result?.amount ??
             0.0;
     final amountInSat = toIntAmount(amountAsBtc);
-    final assetPrecison =
-        ref.read(walletProvider).assets[accountAsset.asset]?.precision ?? 8;
-    final amountAsAsset = toFloat(amountInSat, precision: assetPrecison);
+    final assetPrecision = ref
+        .read(assetUtilsProvider)
+        .getPrecisionForAssetId(assetId: accountAsset.asset);
+    final amountAsAsset = toFloat(amountInSat, precision: assetPrecision);
     amount =
-        amountAsAsset == 0 ? "" : amountAsAsset.toStringAsFixed(assetPrecison);
+        amountAsAsset == 0 ? "" : amountAsAsset.toStringAsFixed(assetPrecision);
 
     availableAssets = ref.read(walletProvider).sendAssetsWithBalance();
     if (!availableAssets.contains(accountAsset)) {
@@ -138,14 +142,15 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
     }
 
     final precision = ref
-        .read(walletProvider)
+        .read(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: accountAsset.asset);
     final balance = ref.read(balancesProvider).balances[accountAsset];
     final newValue = value.replaceAll(' ', '');
     final newAmount = double.tryParse(newValue)?.toDouble();
-    final realBalance = double.tryParse(
-      amountStr(balance ?? 0, precision: precision),
-    );
+    final amountStr = ref.read(amountToStringProvider).amountToString(
+        AmountToStringParameters(amount: balance ?? 0, precision: precision));
+    final realBalance = double.tryParse(amountStr);
+
     if (newAmount == null || realBalance == null) {
       setState(() {
         enabled = false;
@@ -208,6 +213,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                       minHeight: constraints.maxHeight,
                     ),
                     child: IntrinsicHeight(
+                      // TODO: need fix - set as new widget
                       child: buildBody(),
                     ),
                   ),
@@ -221,6 +227,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
   }
 
   Widget buildBody() {
+    final amountProvider = ref.watch(amountToStringProvider);
     return Column(
       children: [
         Padding(
@@ -248,17 +255,13 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                     final showError = ref.watch(
                         paymentProvider.select((p) => p.insufficientFunds));
                     final newAmount = double.tryParse(amount) ?? 0;
-                    final newAssetId = ref
-                        .watch(walletProvider)
-                        .getAssetById(accountAsset.asset)
-                        ?.assetId;
                     final usdAmount = ref
                         .watch(walletProvider)
-                        .getAmountUsd(newAssetId, newAmount);
+                        .getAmountUsd(accountAsset.asset, newAmount);
                     dollarConversion = usdAmount.toStringAsFixed(2);
                     final visibleConversion = ref
                         .watch(walletProvider)
-                        .isAmountUsdAvailable(newAssetId);
+                        .isAmountUsdAvailable(accountAsset.asset);
                     dollarConversion = replaceCharacterOnPosition(
                         input: dollarConversion, currencyChar: '\$');
                     final isAmp = accountAsset.account.isAmp();
@@ -297,7 +300,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.normal,
-                                  color: Color(0xFFFF7878),
+                                  color: SideSwapColors.bitterSweet,
                                 ),
                               ),
                             ] else ...[
@@ -342,14 +345,16 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                         final balance = ref.watch(balancesProvider
                             .select((p) => p.balances[accountAsset] ?? 0));
                         final precision = ref
-                            .watch(walletProvider)
+                            .watch(assetUtilsProvider)
                             .getPrecisionForAssetId(
                                 assetId: accountAsset.asset);
+                        final balanceStr = amountProvider.amountToString(
+                            AmountToStringParameters(
+                                amount: balance, precision: precision));
                         return Text(
                           'Balance: {}',
                           style: _approximateStyle,
-                        ).tr(
-                            args: [(amountStr(balance, precision: precision))]);
+                        ).tr(args: [balanceStr]);
                       },
                     ),
                     Container(
@@ -358,7 +363,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: const Color(0xFF00C5FF),
+                          color: SideSwapColors.brightTurquoise,
                           width: 1,
                           style: BorderStyle.solid,
                         ),
@@ -367,15 +372,17 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                         onPressed: () {
                           setState(() {
                             final precision = ref
-                                .read(walletProvider)
+                                .read(assetUtilsProvider)
                                 .getPrecisionForAssetId(
                                     assetId: accountAsset.asset);
-                            final text = amountStr(
-                                ref
-                                        .read(balancesProvider)
-                                        .balances[accountAsset] ??
-                                    0,
-                                precision: precision);
+                            final balance = ref
+                                    .read(balancesProvider)
+                                    .balances[accountAsset] ??
+                                0;
+                            final text = amountProvider.amountToString(
+                                AmountToStringParameters(
+                                    amount: balance, precision: precision));
+
                             if (tickerAmountController?.value != null) {
                               tickerAmountController!.value =
                                   tickerAmountController!.value.copyWith(
@@ -401,7 +408,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.normal,
-                            color: Color(0xFF00C5FF),
+                            color: SideSwapColors.brightTurquoise,
                           ),
                         ),
                       ),
@@ -422,7 +429,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
             return CustomBigButton(
               width: double.infinity,
               height: 54,
-              backgroundColor: const Color(0xFF00C5FF),
+              backgroundColor: SideSwapColors.brightTurquoise,
               text: 'CONTINUE'.tr(),
               enabled: buttonEnabled,
               onPressed: buttonEnabled

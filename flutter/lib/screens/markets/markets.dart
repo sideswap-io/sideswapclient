@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/markets_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/screens/markets/swap_market.dart';
 import 'package:sideswap/screens/markets/widgets/empty_requests_page.dart';
 import 'package:sideswap/screens/markets/widgets/filled_requests_page.dart';
@@ -42,15 +42,15 @@ class MarketsState extends ConsumerState<Markets> {
             if (widget.selectedMarketType == MarketSelectedType.orders) ...[
               Consumer(
                 builder: (context, ref, child) {
-                  final requestOrders =
-                      ref.watch(marketsProvider).getOwnOrders();
+                  final ownRequestOrders =
+                      ref.watch(marketOwnRequestOrdersProvider);
 
-                  if (requestOrders.isEmpty) {
+                  if (ownRequestOrders.isEmpty) {
                     return const Flexible(child: EmptyRequestsPage());
                   }
 
                   return Flexible(
-                      child: FilledRequestsPage(requests: requestOrders));
+                      child: FilledRequestsPage(requests: ownRequestOrders));
                 },
               ),
               const MarketsBottomPanel(),

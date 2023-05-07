@@ -1,12 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
-import 'package:sideswap/models/phone_provider.dart';
+import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/country_phone_number.dart';
 import 'package:sideswap/screens/onboarding/widgets/sms_digit_code.dart';
 
@@ -117,7 +117,7 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
                     height: 54,
                     width: double.maxFinite,
                     enabled: phoneStep == PhoneRegisterStep.numberEntered,
-                    backgroundColor: const Color(0xFF00C5FF),
+                    backgroundColor: SideSwapColors.brightTurquoise,
                     textColor: Colors.white,
                     text: 'SEND SMS WITH CODE'.tr(),
                     onPressed: () {
@@ -132,7 +132,7 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
                     height: 54,
                     width: double.maxFinite,
                     enabled: enabledSmsButton,
-                    backgroundColor: const Color(0xFF00C5FF),
+                    backgroundColor: SideSwapColors.brightTurquoise,
                     textColor: Colors.white,
                     text: 'CONFIRM'.tr(),
                     onPressed: () {

@@ -5,7 +5,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/select_env_provider.dart';
+import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
 class DSettingsEnv extends ConsumerWidget {

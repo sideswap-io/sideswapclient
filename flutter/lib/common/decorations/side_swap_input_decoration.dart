@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class SideSwapInputDecoration extends InputDecoration {
   const SideSwapInputDecoration({
@@ -57,7 +58,7 @@ class SideSwapInputDecoration extends InputDecoration {
       const TextStyle(
         fontSize: 17,
         fontWeight: FontWeight.normal,
-        color: Color(0xFF84ADC6),
+        color: SideSwapColors.glacier,
       );
 
   @override
@@ -75,6 +76,30 @@ class SideSwapInputDecoration extends InputDecoration {
   @override
   EdgeInsetsGeometry get contentPadding =>
       const EdgeInsets.only(left: 16, top: 18, bottom: 18);
+
+  @override
+  InputBorder get errorBorder =>
+      super.border ??
+      const OutlineInputBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(8),
+        ),
+        borderSide: BorderSide(
+          color: SideSwapColors.bitterSweet,
+        ),
+      );
+
+  @override
+  InputBorder get focusedErrorBorder =>
+      super.border ??
+      const OutlineInputBorder(
+        borderRadius: BorderRadius.all(
+          Radius.circular(8),
+        ),
+        borderSide: BorderSide(
+          color: SideSwapColors.bitterSweet,
+        ),
+      );
 
   @override
   InputBorder get border =>

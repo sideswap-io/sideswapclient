@@ -2,9 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/payment_requests_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/payment_requests_provider.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/markets/confirm_request_payment.dart';
 
@@ -25,6 +26,11 @@ class RequestPaymentItem extends ConsumerWidget {
       height = 214;
       header = 'Received'.tr();
     }
+
+    final requestAsset = ref
+        .watch(assetsStateProvider.select((value) => value[request.assetId]));
+    final requestAssetIcon =
+        ref.watch(assetImageProvider).getSmallImage(request.assetId);
 
     return Container(
       width: double.maxFinite,
@@ -63,19 +69,12 @@ class RequestPaymentItem extends ConsumerWidget {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 8),
-                    child: ref
-                            .read(walletProvider)
-                            .assetImagesSmall[request.assetId] ??
-                        Container(),
+                    child: requestAssetIcon,
                   ),
                   Padding(
                     padding: const EdgeInsets.only(left: 4),
                     child: Text(
-                      ref
-                              .read(walletProvider)
-                              .assets[request.assetId]
-                              ?.ticker ??
-                          '',
+                      requestAsset?.ticker ?? '',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.normal,
@@ -111,8 +110,8 @@ class RequestPaymentItem extends ConsumerWidget {
                       text: 'CANCEL'.tr(),
                       onPressed: onCancelPressed,
                       backgroundColor: Colors.transparent,
-                      side:
-                          const BorderSide(color: Color(0xFF00C5FF), width: 2),
+                      side: const BorderSide(
+                          color: SideSwapColors.brightTurquoise, width: 2),
                     ),
                     CustomBigButton(
                       width: 151,
@@ -127,7 +126,7 @@ class RequestPaymentItem extends ConsumerWidget {
                           ),
                         );
                       },
-                      backgroundColor: const Color(0xFF00C5FF),
+                      backgroundColor: SideSwapColors.brightTurquoise,
                     ),
                   ],
                 ),

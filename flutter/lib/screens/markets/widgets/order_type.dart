@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
 class OrderType extends StatelessWidget {
   const OrderType({
     super.key,
-    this.backgroundColor = const Color(0xFF014767),
+    this.backgroundColor = SideSwapColors.chathamsBlue,
     required this.value,
     this.onToggle,
   });

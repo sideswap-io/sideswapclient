@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 
 enum ContactMockupIcon {
@@ -51,7 +51,7 @@ class ContactMockupContainer extends StatelessWidget {
   List<EmptyLineData> getLineData() {
     final lineData = <EmptyLineData>[];
     const lineHeight = 4.0;
-    const color = Color(0xFF00C5FF);
+    const color = SideSwapColors.brightTurquoise;
     switch (icon) {
       case ContactMockupIcon.male1:
         lineData
@@ -98,11 +98,11 @@ class ContactMockupContainer extends StatelessWidget {
               width: internalWidth * 0.2758,
               height: internalWidth * 0.2758,
               decoration: BoxDecoration(
-                color: const Color(0xFF00C5FF),
+                color: SideSwapColors.brightTurquoise,
                 shape: BoxShape.circle,
                 border: Border.all(
                   width: 2,
-                  color: const Color(0xFF00C5FF),
+                  color: SideSwapColors.brightTurquoise,
                 ),
               ),
               child: getIcon(),

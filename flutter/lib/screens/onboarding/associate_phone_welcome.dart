@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
 class AvatarClipper extends CustomClipper<Rect> {
@@ -93,7 +93,7 @@ class AssociatePhoneWelcome extends ConsumerWidget {
                           child: CustomBigButton(
                             width: double.maxFinite,
                             height: 54,
-                            backgroundColor: const Color(0xFF00C5FF),
+                            backgroundColor: SideSwapColors.brightTurquoise,
                             text: 'YES'.tr(),
                             onPressed: () {
                               ref.read(walletProvider).setConfirmPhone();
@@ -109,7 +109,7 @@ class AssociatePhoneWelcome extends ConsumerWidget {
                               height: 54,
                               backgroundColor: Colors.transparent,
                               text: 'NOT NOW'.tr(),
-                              textColor: const Color(0xFF00C5FF),
+                              textColor: SideSwapColors.brightTurquoise,
                               onPressed: () {
                                 ref.read(walletProvider).setImportContacts();
                               },

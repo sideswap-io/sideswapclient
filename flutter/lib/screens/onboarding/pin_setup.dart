@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/pin_available_provider.dart';
-import 'package:sideswap/models/pin_keyboard_provider.dart';
-import 'package:sideswap/models/pin_protection_provider.dart';
-import 'package:sideswap/models/pin_setup_provider.dart';
+import 'package:sideswap/providers/pin_available_provider.dart';
+import 'package:sideswap/providers/pin_keyboard_provider.dart';
+import 'package:sideswap/providers/pin_protection_provider.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_keyboard.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_text_field.dart';
 
@@ -48,7 +48,7 @@ class PinSetupState extends ConsumerState<PinSetup> {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      backgroundColor: const Color(0xFF135579),
+      backgroundColor: SideSwapColors.chathamsBlue,
       sideSwapBackground: false,
       appBar: CustomAppBar(
         title: 'Protect your wallet'.tr(),
@@ -87,7 +87,7 @@ class PinSetupState extends ConsumerState<PinSetup> {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF00C5FF),
+                            color: SideSwapColors.brightTurquoise,
                           ),
                         ),
                       ),
@@ -121,7 +121,7 @@ class PinSetupState extends ConsumerState<PinSetup> {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
-                            color: Color(0xFF00C5FF),
+                            color: SideSwapColors.brightTurquoise,
                           ),
                         ),
                       ),

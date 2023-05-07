@@ -5,16 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/prompt_allow_tx_chaining.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/main/d_ttl_popup.dart';
-import 'package:sideswap/desktop/markets/d_markets_root.dart';
+import 'package:sideswap/desktop/markets/d_enter_tracking_price.dart';
+import 'package:sideswap/desktop/markets/d_order_amount_enter.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/desktop/widgets/d_toggle_button.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 
 const signTotalTime = 60;
 
@@ -91,10 +96,10 @@ class DOrderReview extends ConsumerStatefulWidget {
   final ReviewScreen screen;
 
   @override
-  ConsumerState<DOrderReview> createState() => _DOrderReviewState();
+  ConsumerState<DOrderReview> createState() => DOrderReviewState();
 }
 
-class _DOrderReviewState extends ConsumerState<DOrderReview> {
+class DOrderReviewState extends ConsumerState<DOrderReview> {
   ReviewState state = ReviewState.idle;
 
   bool autoSign = true;
@@ -116,8 +121,9 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
     final wallet = ref.read(walletProvider);
     if (widget.screen == ReviewScreen.edit) {
       final order = wallet.orderDetailsData;
-      final asset = wallet.assets[order.assetId]!;
-      final pricedInLiquid = isPricedInLiquid(asset);
+      final asset = ref.read(assetsStateProvider)[order.assetId];
+      final pricedInLiquid =
+          ref.read(assetUtilsProvider).isPricedInLiquid(asset: asset);
 
       isTracking = order.isTracking;
       autoSign = order.autoSign;
@@ -211,20 +217,24 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
     final sendAmount = order.sellBitcoin
         ? (order.bitcoinAmount + order.fee)
         : order.assetAmount;
-    final sendAssetId =
-        order.sellBitcoin ? wallet.liquidAssetId() : order.assetId;
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final sendAssetId = order.sellBitcoin ? liquidAssetId : order.assetId;
     final recvAmount = order.sellBitcoin
         ? order.assetAmount
         : (order.bitcoinAmount - order.fee);
-    final recvAssetId =
-        order.sellBitcoin ? order.assetId : wallet.liquidAssetId();
+    final recvAssetId = order.sellBitcoin ? order.assetId : liquidAssetId;
     // FIXME: This might crash sometimes when dialog is closed (order.assetId become empty)
-    final asset = wallet.assets[order.assetId]!;
-    final priceInLiquid = isPricedInLiquid(asset);
+    final asset =
+        ref.watch(assetsStateProvider.select((value) => value[order.assetId]));
+    final priceInLiquid =
+        ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
     final price = priceStr(order.priceAmount, priceInLiquid);
-    final priceTicker = priceInLiquid ? kLiquidBitcoinTicker : asset.ticker;
+    final priceTicker = priceInLiquid ? kLiquidBitcoinTicker : asset?.ticker;
     final priceValue = '$price $priceTicker';
-    final feeValue = amountStrNamed(order.fee, kLiquidBitcoinTicker);
+    final amountProvider = ref.watch(amountToStringProvider);
+    final feeValue = amountProvider.amountToStringNamed(
+        AmountToStringNamedParameters(
+            amount: order.fee, ticker: kLiquidBitcoinTicker));
     final autoSignValue = order.autoSign ? 'On'.tr() : 'Off'.tr();
     final orderTypeValue = order.private ? 'Private'.tr() : 'Public'.tr();
     final ttlSeconds = order.expiresAt != null
@@ -232,11 +242,11 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
         : null;
     final ttlValue = getTtlDescription(ttlSeconds);
     final shareUrl = ref.read(requestOrderProvider).getAddressToShare(order);
-    final isSell = order.sellBitcoin == asset.swapMarket;
+    final isSell = order.sellBitcoin == asset?.swapMarket;
     final dollarConversionPrice = priceInLiquid
         ? ref
             .read(requestOrderProvider)
-            .dollarConversion(wallet.liquidAssetId(), order.priceAmount)
+            .dollarConversion(liquidAssetId, order.priceAmount)
         : '';
     final orderType = order.twoStep ? 'Offline'.tr() : 'Online'.tr();
 
@@ -260,7 +270,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                         ),
                       Text(
                         getTitle(widget.screen, state),
-                        style: Theme.of(context).textTheme.headline3,
+                        style: Theme.of(context).textTheme.displaySmall,
                       ),
                     ],
                   ),
@@ -269,9 +279,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
                       child: DOrderAmountEnter(
-                        assetId: priceInLiquid
-                            ? wallet.liquidAssetId()
-                            : asset.assetId,
+                        assetId: priceInLiquid ? liquidAssetId : asset?.assetId,
                         isPriceField: true,
                         caption: isSell ? 'Bid price'.tr() : 'Offer price'.tr(),
                         controller: controllerPrice,
@@ -298,23 +306,23 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                   Container(
                     decoration: const BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(8)),
-                      color: Color(0xFF135579),
+                      color: SideSwapColors.chathamsBlue,
                     ),
                     child: Column(
                       children: [
                         const SizedBox(height: 12),
-                        _Balance(
+                        DOrderReviewBalance(
                           amount: sendAmount,
                           assetId: sendAssetId,
                           hint: 'Deliver'.tr(),
                         ),
                         const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 14),
-                          child: _Separator(),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 14),
+                          child: DOrderReviewSeparator(),
                         ),
                         const SizedBox(height: 8),
-                        _Balance(
+                        DOrderReviewBalance(
                           amount: recvAmount,
                           assetId: recvAssetId,
                           hint: 'Receive'.tr(),
@@ -329,7 +337,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                           widget.screen == ReviewScreen.sign)
                       ? [
                           const SizedBox(height: 10),
-                          _Field(
+                          DOrderReviewField(
                               name: 'Price'.tr(),
                               value: Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -348,14 +356,16 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                                     ),
                                 ],
                               )),
-                          _Field(name: 'Fee'.tr(), value: Text(feeValue)),
+                          DOrderReviewField(
+                              name: 'Fee'.tr(), value: Text(feeValue)),
                         ]
                       : [],
                   if (widget.screen == ReviewScreen.quote)
-                    _Field(name: 'Order Type'.tr(), value: Text(orderType)),
+                    DOrderReviewField(
+                        name: 'Order Type'.tr(), value: Text(orderType)),
                   if ((widget.screen == ReviewScreen.submitStart ||
                       widget.screen == ReviewScreen.edit))
-                    _SignTypeControls(
+                    DOrderReviewSignTypeControls(
                       twoStep: twoStep,
                       onTwoStepChanged: (widget.screen == ReviewScreen.edit)
                           ? null
@@ -372,7 +382,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                     ),
                   if (widget.screen == ReviewScreen.submitStart ||
                       widget.screen == ReviewScreen.edit)
-                    _AutoSignOrderControls(
+                    DOrderReviewAutoSignOrderControls(
                       autoSign: autoSign,
                       onAutoSignChanged: twoStep
                           ? null
@@ -383,7 +393,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                             },
                     ),
                   if (widget.screen == ReviewScreen.submitStart)
-                    _CreateOrderControls(
+                    DOrderReviewCreateOrderControls(
                       public: public,
                       ttl: ttl,
                       twoStep: twoStep,
@@ -405,13 +415,14 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                     ),
                   ...(widget.screen == ReviewScreen.submitSucceed)
                       ? [
-                          _Field(
+                          DOrderReviewField(
                               name: 'Auto-sign'.tr(),
                               value: Text(autoSignValue)),
-                          _Field(
+                          DOrderReviewField(
                               name: 'Order type'.tr(),
                               value: Text(orderTypeValue)),
-                          _Field(name: 'TTL'.tr(), value: Text(ttlValue)),
+                          DOrderReviewField(
+                              name: 'TTL'.tr(), value: Text(ttlValue)),
                         ]
                       : [],
                   const Spacer(),
@@ -420,12 +431,12 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
             ),
           ),
           if (widget.screen == ReviewScreen.sign)
-            _Timer(
+            DOrderReviewTimer(
               stopped: state == ReviewState.disabled,
             ),
           if (widget.screen == ReviewScreen.quote &&
               state == ReviewState.disabled)
-            const _Timer(
+            const DOrderReviewTimer(
               stopped: false,
             ),
           if (widget.screen == ReviewScreen.submitStart ||
@@ -446,7 +457,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
           if (widget.screen == ReviewScreen.submitSucceed && !order.private)
             Container(
               padding: const EdgeInsets.only(top: 40, bottom: 40),
-              color: const Color(0xFF135579),
+              color: SideSwapColors.chathamsBlue,
               child: Center(
                 child: DCustomTextBigButton(
                   width: 260,
@@ -459,7 +470,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
           if (widget.screen == ReviewScreen.submitSucceed && order.private)
             Container(
               padding: const EdgeInsets.only(top: 32, bottom: 32),
-              color: const Color(0xFF135579),
+              color: SideSwapColors.chathamsBlue,
               child: Center(
                 child: Column(
                   children: [
@@ -479,7 +490,7 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                         overflow: TextOverflow.fade,
                         softWrap: false,
                         style: const TextStyle(
-                          color: Color(0xFF00C5FF),
+                          color: SideSwapColors.brightTurquoise,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -493,7 +504,8 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
                         children: [
                           SvgPicture.asset(
                             'assets/copy2.svg',
-                            color: Colors.white,
+                            colorFilter: const ColorFilter.mode(
+                                Colors.white, BlendMode.srcIn),
                           ),
                           const SizedBox(width: 15),
                           Text('Copy'.tr()),
@@ -519,8 +531,9 @@ class _DOrderReviewState extends ConsumerState<DOrderReview> {
   }
 }
 
-class _Balance extends ConsumerWidget {
-  const _Balance({
+class DOrderReviewBalance extends ConsumerWidget {
+  const DOrderReviewBalance({
+    super.key,
     required this.assetId,
     required this.amount,
     required this.hint,
@@ -532,14 +545,19 @@ class _Balance extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wallet = ref.read(walletProvider);
-    final asset = wallet.assets[assetId]!;
-    final icon = wallet.assetImagesVerySmall[assetId]!;
-    final amountSt = amountStr(amount, precision: asset.precision);
-    final dollarConversion = assetId == wallet.liquidAssetId()
+    final asset =
+        ref.watch(assetsStateProvider.select((value) => value[assetId]));
+    final icon = ref.watch(assetImageProvider).getVerySmallImage(assetId);
+    final assetPrecision =
+        ref.watch(assetUtilsProvider).getPrecisionForAssetId(assetId: assetId);
+    final amountProvider = ref.watch(amountToStringProvider);
+    final amountSt = amountProvider.amountToString(
+        AmountToStringParameters(amount: amount, precision: assetPrecision));
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final dollarConversion = assetId == liquidAssetId
         ? ref
             .read(requestOrderProvider)
-            .dollarConversionFromString(asset.assetId, amountSt)
+            .dollarConversionFromString(assetId, amountSt)
         : '';
 
     return Padding(
@@ -553,7 +571,7 @@ class _Balance extends ConsumerWidget {
             Text(
               hint,
               style: const TextStyle(
-                color: Color(0xFF569BBA),
+                color: SideSwapColors.hippieBlue,
               ),
             ),
             const Spacer(),
@@ -564,7 +582,7 @@ class _Balance extends ConsumerWidget {
                   children: [
                     Text(amountSt),
                     const SizedBox(width: 4),
-                    Text(asset.ticker),
+                    Text(asset?.ticker ?? ''),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -586,7 +604,9 @@ class _Balance extends ConsumerWidget {
   }
 }
 
-class _Separator extends StatelessWidget {
+class DOrderReviewSeparator extends StatelessWidget {
+  const DOrderReviewSeparator({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -596,8 +616,9 @@ class _Separator extends StatelessWidget {
   }
 }
 
-class _Field extends StatelessWidget {
-  const _Field({
+class DOrderReviewField extends StatelessWidget {
+  const DOrderReviewField({
+    super.key,
     required this.name,
     required this.value,
   });
@@ -619,7 +640,7 @@ class _Field extends StatelessWidget {
                   name,
                   style: const TextStyle(
                     fontSize: 14,
-                    color: Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -628,7 +649,7 @@ class _Field extends StatelessWidget {
               ],
             ),
           ),
-          _Separator(),
+          const DOrderReviewSeparator(),
         ],
       ),
     );
@@ -679,7 +700,7 @@ class _WaitSignState extends State<_WaitSign> {
                   const SizedBox(height: 40),
                   Text(
                     'Waiting for counterparty to sign'.tr(),
-                    style: Theme.of(context).textTheme.headline3,
+                    style: Theme.of(context).textTheme.displaySmall,
                   ),
                 ],
               ),
@@ -690,8 +711,8 @@ class _WaitSignState extends State<_WaitSign> {
               child: CustomPaint(
                 painter: ArcProgressPainter(
                   progress: remainingTime.toDouble() / signTotalTime.toDouble(),
-                  backgroundColor: const Color(0xFF135579),
-                  progressColor: const Color(0xFF00C5FF),
+                  backgroundColor: SideSwapColors.chathamsBlue,
+                  progressColor: SideSwapColors.brightTurquoise,
                 ),
                 child: Center(
                   child: Text(
@@ -699,7 +720,7 @@ class _WaitSignState extends State<_WaitSign> {
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF00C5FF),
+                      color: SideSwapColors.brightTurquoise,
                     ),
                   ),
                 ),
@@ -749,8 +770,9 @@ class ArcProgressPainter extends CustomPainter {
   }
 }
 
-class _CreateOrderControls extends StatelessWidget {
-  const _CreateOrderControls({
+class DOrderReviewCreateOrderControls extends StatelessWidget {
+  const DOrderReviewCreateOrderControls({
+    super.key,
     required this.public,
     required this.twoStep,
     required this.ttl,
@@ -775,7 +797,7 @@ class _CreateOrderControls extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -799,7 +821,7 @@ class _CreateOrderControls extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 15, 12, 15),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
           ),
           child: Row(
             children: [
@@ -838,8 +860,9 @@ class _CreateOrderControls extends StatelessWidget {
   }
 }
 
-class _SignTypeControls extends StatelessWidget {
-  const _SignTypeControls({
+class DOrderReviewSignTypeControls extends StatelessWidget {
+  const DOrderReviewSignTypeControls({
+    super.key,
     required this.twoStep,
     required this.onTwoStepChanged,
   });
@@ -856,7 +879,7 @@ class _SignTypeControls extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -884,8 +907,9 @@ class _SignTypeControls extends StatelessWidget {
   }
 }
 
-class _AutoSignOrderControls extends StatelessWidget {
-  const _AutoSignOrderControls({
+class DOrderReviewAutoSignOrderControls extends StatelessWidget {
+  const DOrderReviewAutoSignOrderControls({
+    super.key,
     required this.autoSign,
     required this.onAutoSignChanged,
   });
@@ -906,7 +930,7 @@ class _AutoSignOrderControls extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,7 +945,7 @@ class _AutoSignOrderControls extends StatelessWidget {
                     Text(autoSignHelp,
                         style: const TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF569BBA),
+                          color: SideSwapColors.hippieBlue,
                         )),
                   ],
                 ),
@@ -944,18 +968,19 @@ class _AutoSignOrderControls extends StatelessWidget {
   }
 }
 
-class _Timer extends StatefulWidget {
-  const _Timer({
+class DOrderReviewTimer extends StatefulWidget {
+  const DOrderReviewTimer({
+    super.key,
     required this.stopped,
   });
 
   final bool stopped;
 
   @override
-  State<_Timer> createState() => _TimerState();
+  State<DOrderReviewTimer> createState() => DOrderReviewTimerState();
 }
 
-class _TimerState extends State<_Timer> {
+class DOrderReviewTimerState extends State<DOrderReviewTimer> {
   late Timer timer;
 
   int remainingTime = signTotalTime;
@@ -987,8 +1012,8 @@ class _TimerState extends State<_Timer> {
       padding: const EdgeInsets.all(40.0),
       child: LinearProgressIndicator(
         value: remainingTime / signTotalTime,
-        backgroundColor: const Color(0xFF135579),
-        color: const Color(0xFF00C5FF),
+        backgroundColor: SideSwapColors.chathamsBlue,
+        color: SideSwapColors.brightTurquoise,
       ),
     );
   }

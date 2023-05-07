@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 enum CustomBackButtonType {
   backArrow,
@@ -16,7 +16,7 @@ class CustomBackButton extends ConsumerStatefulWidget {
     this.buttonType = CustomBackButtonType.backArrow,
     this.width,
     this.height,
-    this.color = const Color(0xFFAED7FF),
+    this.color = SideSwapColors.freshAir,
   });
 
   final void Function()? onPressed;
@@ -71,7 +71,8 @@ class CustomBackButtonState extends ConsumerState<CustomBackButton> {
                       'assets/back_arrow.svg',
                       width: (_width * 42.85) / 100,
                       height: (_height * 71.42) / 100,
-                      color: widget.color,
+                      colorFilter:
+                          ColorFilter.mode(widget.color, BlendMode.srcIn),
                     ),
                   ],
                   if (widget.buttonType == CustomBackButtonType.close) ...[
@@ -79,7 +80,8 @@ class CustomBackButtonState extends ConsumerState<CustomBackButton> {
                       'assets/close.svg',
                       width: _width,
                       height: _height,
-                      color: widget.color,
+                      colorFilter:
+                          ColorFilter.mode(widget.color, BlendMode.srcIn),
                     ),
                   ],
                 ],

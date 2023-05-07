@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/swap_models.dart';
-import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/fee_suggestions.dart';
 

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/friends_provider.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 
 class TxDetailsColumn extends StatelessWidget {
@@ -18,7 +19,7 @@ class TxDetailsColumn extends StatelessWidget {
             const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
             ),
         _detailsStyle = detailsStyle ??
             const TextStyle(
@@ -46,7 +47,7 @@ class TxDetailsColumn extends StatelessWidget {
         if (friend != null) ...[
           FriendWidget(
             friend: friend!,
-            backgroundColor: const Color(0xFF135579),
+            backgroundColor: SideSwapColors.chathamsBlue,
             showTrailingIcon: false,
             contentPadding: const EdgeInsets.only(right: 12),
           ),
@@ -78,7 +79,8 @@ class TxDetailsColumn extends StatelessWidget {
                           'assets/copy.svg',
                           width: 26,
                           height: 26,
-                          color: const Color(0xFF00C5FF),
+                          colorFilter: const ColorFilter.mode(
+                              SideSwapColors.brightTurquoise, BlendMode.srcIn),
                         ),
                       ),
                     ),

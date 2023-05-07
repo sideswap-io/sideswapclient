@@ -3,10 +3,12 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/balances_provider.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -21,12 +23,14 @@ class SwapReceiveAmount extends HookConsumerWidget {
     final swapRecvWallet =
         ref.watch(swapProvider.select((p) => p.swapRecvWallet));
     final precision = ref
-        .watch(walletProvider)
+        .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: swapRecvAsset.asset);
     final swapRecvAccount = AccountAsset(AccountType.reg, swapRecvAsset.asset);
     final balance =
         ref.watch(balancesProvider.select((p) => p.balances[swapRecvAccount]));
-    final balanceStr = amountStr(balance ?? 0, precision: precision);
+    final amountProvider = ref.watch(amountToStringProvider);
+    final balanceStr = amountProvider.amountToString(
+        AmountToStringParameters(amount: balance ?? 0, precision: precision));
     final swapType = ref.watch(swapProvider).swapType();
     final swapState = ref.watch(swapStateProvider);
 

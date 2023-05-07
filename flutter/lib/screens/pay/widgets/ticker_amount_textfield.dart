@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/pay/payment_select_account.dart';
 
@@ -103,7 +104,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                     Icons.keyboard_arrow_down,
                     color: Colors.white,
                   ),
-            dropdownColor: const Color(0xFF2B6F95),
+            dropdownColor: SideSwapColors.jellyBean,
             style: _dropdownTextStyle,
             onChanged: widget.dropdownReadOnly
                 ? null
@@ -119,11 +120,9 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       Expanded(
                         child: Consumer(
                           builder: (context, ref, _) {
-                            final text = ref
-                                    .watch(walletProvider)
-                                    .getAssetById(widget.dropdownValue.asset)
-                                    ?.ticker ??
-                                '';
+                            final asset = ref.watch(assetsStateProvider.select(
+                                (value) => value[widget.dropdownValue.asset]));
+                            final text = asset?.ticker ?? '';
                             return Text(
                               text,
                               textAlign: TextAlign.left,
@@ -146,21 +145,18 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                   children: [
                     Consumer(
                       builder: (context, ref, _) {
-                        final asset = ref.watch(walletProvider
-                            .select((p) => p.assets[value.asset]));
-                        final image = ref.watch(walletProvider
-                            .select((p) => p.assetImagesSmall[asset?.assetId]));
-                        if (image != null) {
-                          return image;
-                        }
-
-                        return Container();
+                        final asset = ref.watch(
+                            assetsStateProvider.select((p) => p[value.asset]));
+                        final image = ref
+                            .watch(assetImageProvider)
+                            .getSmallImage(asset?.assetId);
+                        return image;
                       },
                     ),
                     Container(width: 8),
                     Consumer(builder: (context, ref, _) {
                       final asset = ref.watch(
-                          walletProvider.select((p) => p.assets[value.asset]));
+                          assetsStateProvider.select((p) => p[value.asset]));
 
                       if (asset?.ticker != null) {
                         return Expanded(
@@ -186,7 +182,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                 return Consumer(
                   builder: (context, ref, _) {
                     final asset = ref.watch(
-                        walletProvider.select((p) => p.assets[value.asset]));
+                        assetsStateProvider.select((p) => p[value.asset]));
 
                     if (asset?.ticker != null) {
                       return Row(
@@ -241,10 +237,10 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
       border: Border(
         bottom: BorderSide(
           color: (widget.showError && !widget.readOnly)
-              ? const Color(0xFFFF7878)
+              ? SideSwapColors.bitterSweet
               : (_textfieldFocusNode.hasFocus && !widget.readOnly)
-                  ? const Color(0xFF00C5FF)
-                  : const Color(0xFF2B6F95),
+                  ? SideSwapColors.brightTurquoise
+                  : SideSwapColors.jellyBean,
           style: BorderStyle.solid,
           width: 1,
         ),
@@ -265,8 +261,9 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                   children: [
                     Consumer(
                       builder: (context, ref, _) {
-                        final icon = ref.watch(walletProvider.select((p) =>
-                            p.assetImagesSmall[widget.dropdownValue.asset]));
+                        final icon = ref
+                            .watch(assetImageProvider)
+                            .getSmallImage(widget.dropdownValue.asset);
 
                         return SizedBox(
                           width: 32,
@@ -295,9 +292,10 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                         _visibleHintText = false;
                       }
 
-                      final assetPrecision = ref.watch(walletProvider.select(
-                          (p) =>
-                              p.assets[widget.dropdownValue.asset]!.precision));
+                      final assetPrecision = ref
+                          .watch(assetUtilsProvider)
+                          .getPrecisionForAssetId(
+                              assetId: widget.dropdownValue.asset);
 
                       return SizedBox(
                         height: 42,

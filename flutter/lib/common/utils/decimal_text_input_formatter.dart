@@ -11,9 +11,19 @@ class CommaTextInputFormatter extends TextInputFormatter {
     var truncated = newValue.text;
     var newSelection = newValue.selection;
 
+    // replace comma to period
     if (newValue.text.contains(',')) {
       truncated = newValue.text.replaceFirst(RegExp(','), '.');
     }
+
+    // replace two zeroes to zero period zero
+    if (newValue.text.startsWith(RegExp('0([0-9])'))) {
+      truncated = newValue.text.replaceRange(0, 1, '0.');
+      // set selection to the end
+      newSelection =
+          TextSelection.fromPosition(TextPosition(offset: truncated.length));
+    }
+
     return TextEditingValue(
       text: truncated,
       selection: newSelection,
@@ -65,10 +75,9 @@ class DecimalTextInputFormatter extends TextInputFormatter {
     if (newValue.text.startsWith(RegExp(r'^(0[1-9])'))) {
       return newValue.copyWith(
         text: newValue.text.replaceFirst('0', ''),
-        selection: newValue.selection.copyWith(
-          baseOffset: 3,
-          extentOffset: 3,
-        ),
+        // set selection to the end
+        selection: TextSelection.fromPosition(
+            TextPosition(offset: newValue.text.length - 1)),
       );
     }
 
@@ -114,60 +123,6 @@ class DecimalTextInputFormatter extends TextInputFormatter {
     );
   }
 }
-
-// // From https://stackoverflow.com/a/54456978
-// class DecimalTextInputFormatter extends TextInputFormatter {
-//   DecimalTextInputFormatter({required this.decimalRange});
-
-//   final int decimalRange;
-
-//   @override
-//   TextEditingValue formatEditUpdate(
-//     TextEditingValue oldValue,
-//     TextEditingValue newValue,
-//   ) {
-//     if (decimalRange == 0) {
-//       return TextEditingValue(
-//         text: newValue.text,
-//         selection: newValue.selection,
-//         composing: TextRange.empty,
-//       );
-//     }
-
-//     if (newValue.text.isEmpty) {
-//       return newValue;
-//     }
-
-//     final decimalValue = Decimal.tryParse(newValue.text);
-//     if (decimalValue == null) {
-//       return oldValue;
-//     }
-
-//     var newSelection = newValue.selection;
-//     var truncated = newValue.text;
-
-//     var value = newValue.text;
-
-//     if (value.contains('.') &&
-//         value.substring(value.indexOf('.') + 1).length > decimalRange) {
-//       truncated = oldValue.text;
-//       newSelection = oldValue.selection;
-//     } else if (value == '.') {
-//       truncated = '0.';
-
-//       newSelection = newValue.selection.copyWith(
-//         baseOffset: min(truncated.length, truncated.length + 1),
-//         extentOffset: min(truncated.length, truncated.length + 1),
-//       );
-//     }
-
-//     return TextEditingValue(
-//       text: truncated,
-//       selection: newSelection,
-//       composing: TextRange.empty,
-//     );
-//   }
-// }
 
 class DecimalCutterTextInputFormatter extends TextInputFormatter {
   DecimalCutterTextInputFormatter(

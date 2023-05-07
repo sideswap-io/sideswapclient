@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import 'package:sideswap/models/friends_provider.dart';
+import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 
 class PaymentAmountReceiverField extends StatelessWidget {

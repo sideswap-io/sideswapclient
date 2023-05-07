@@ -9,10 +9,11 @@ import 'package:sideswap/desktop/d_tx_history.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/markets/d_markets_root.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/locales_provider.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/ui_state_args_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
 import 'package:sideswap/screens/accounts/assets_list.dart';
 import 'package:sideswap/screens/swap/swap.dart';
@@ -39,7 +40,7 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
       case WalletMainNavigationItem.assetDetails:
         return const AssetDetails();
       case WalletMainNavigationItem.transactions:
-        return const DesktopTxHistory();
+        return const DTxHistory();
       case WalletMainNavigationItem.markets:
         return const DMarkets();
       case WalletMainNavigationItem.swap:
@@ -109,7 +110,10 @@ class DSwapMain extends StatelessWidget {
             Container(
               width: 570,
               height: 551,
-              color: const Color(0xFF043857),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: const Color(0xFF043857),
+              ),
               child: const SwapMain(),
             ),
           ],
@@ -139,7 +143,8 @@ class TopToolbar extends ConsumerWidget {
             name: 'Send'.tr(),
             icon: 'assets/toolbar/send.svg',
             onPressed: () {
-              desktopShowSendTx(context, ref);
+              ref.read(paymentProvider).createdTx = null;
+              desktopShowSendTx(context);
             },
           ),
           DTopToolbarButton(

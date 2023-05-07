@@ -7,13 +7,15 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/prompt_allow_tx_chaining.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/sign_type.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/autosign.dart';
@@ -54,7 +56,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
 
     if (widget.requestOrder != null) {
       final assetPrecision = ref
-          .read(walletProvider)
+          .read(assetUtilsProvider)
           .getPrecisionForAssetId(assetId: widget.requestOrder!.assetId);
       orderDetailsData = OrderDetailsData.fromRequestOrder(
           widget.requestOrder!, assetPrecision);
@@ -165,16 +167,14 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
                   builder: (context, ref, child) {
                     if (widget.requestOrder != null) {
                       // update data if swapRequest has changed
-                      final index = ref
-                          .read(marketsProvider)
-                          .marketOrders
-                          .indexWhere(
-                              (e) => e.orderId == orderDetailsData.orderId);
+                      final marketOrderList =
+                          ref.watch(marketRequestOrderListProvider);
+                      final index = marketOrderList.indexWhere(
+                          (e) => e.orderId == orderDetailsData.orderId);
                       if (index >= 0) {
-                        final requestOrder =
-                            ref.watch(marketsProvider).marketOrders[index];
+                        final requestOrder = marketOrderList[index];
                         final assetPrecision = ref
-                            .read(walletProvider)
+                            .watch(assetUtilsProvider)
                             .getPrecisionForAssetId(
                                 assetId: requestOrder.assetId);
                         orderDetailsData = OrderDetailsData.fromRequestOrder(
@@ -404,7 +404,8 @@ class CreateOrderViewBody extends ConsumerWidget {
                     text: 'MODIFY PRICE'.tr(),
                     textColor: Colors.white,
                     backgroundColor: Colors.transparent,
-                    side: const BorderSide(color: Color(0xFF00C5FF), width: 2),
+                    side: const BorderSide(
+                        color: SideSwapColors.brightTurquoise, width: 2),
                     onPressed: onModifyPrice,
                   ),
                 ),
@@ -417,7 +418,7 @@ class CreateOrderViewBody extends ConsumerWidget {
                   height: 54,
                   text: 'CREATE ORDER'.tr(),
                   textColor: Colors.white,
-                  backgroundColor: const Color(0xFF00C5FF),
+                  backgroundColor: SideSwapColors.brightTurquoise,
                   onPressed: onPressed,
                 ),
               ),

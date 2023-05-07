@@ -3,14 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_price_text_field.dart';
 import 'package:sideswap/screens/markets/widgets/order_tracking_slider.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class OrderPriceField extends ConsumerWidget {
   const OrderPriceField({
@@ -32,9 +33,9 @@ class OrderPriceField extends ConsumerWidget {
   });
 
   final TextEditingController controller;
-  final Asset asset;
-  final Asset productAsset;
-  final Image? icon;
+  final Asset? asset;
+  final Asset? productAsset;
+  final Widget? icon;
   final FocusNode? focusNode;
   final String dollarConversion;
   final void Function()? onEditingComplete;
@@ -48,21 +49,24 @@ class OrderPriceField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isToken = ref.read(requestOrderProvider).isAssetToken(asset.assetId);
+    final isToken =
+        ref.watch(assetUtilsProvider).isAssetToken(assetId: asset?.assetId);
     final marketType = getMarketType(productAsset);
-    final indexPrice =
-        ref.read(marketsProvider).getIndexPriceStr(asset.assetId);
-    final lastPrice =
-        ref.read(marketsProvider).getLastPriceStr(productAsset.assetId);
+    final indexPriceStr = ref
+        .watch(indexPriceForAssetProvider(asset?.assetId))
+        .getIndexPriceStr();
+    final lastPriceStr = ref
+        .watch(lastIndexPriceForAssetProvider(productAsset?.assetId))
+        .getLastPriceStr();
     var minPercent = -kEditPriceMaxTrackingPercent;
     var maxPercent = kEditPriceMaxTrackingPercent;
-    if (!tracking && (!isToken && indexPrice.isNotEmpty)) {
+    if (!tracking && (!isToken && indexPriceStr.isNotEmpty)) {
       minPercent = -kEditPriceMaxPercent;
       maxPercent = kEditPriceMaxPercent;
     }
 
     return SizedBox(
-      height: isToken ? 129 : 188,
+      height: isToken ? 130 : 188,
       child: Column(
         children: [
           SizedBox(
@@ -74,27 +78,24 @@ class OrderPriceField extends ConsumerWidget {
               children: [
                 Builder(
                   builder: (context) {
-                    var indexPrice = ref
-                        .watch(marketsProvider)
-                        .getIndexPriceStr(asset.assetId);
                     if (displaySlider && onSliderChanged != null) {
                       Future.microtask(() => onSliderChanged!(sliderValue));
                     }
 
                     if (marketType == MarketType.stablecoin &&
-                            indexPrice.isEmpty ||
+                            indexPriceStr.isEmpty ||
                         marketType != MarketType.stablecoin &&
-                            lastPrice.isEmpty) {
+                            lastPriceStr.isEmpty) {
                       return Container();
                     }
 
                     return GestureDetector(
                       onTap: () {
-                        setValue(
+                        setControllerValue(
                             controller,
                             marketType == MarketType.stablecoin
-                                ? indexPrice
-                                : lastPrice);
+                                ? indexPriceStr
+                                : lastPriceStr);
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,13 +107,13 @@ class OrderPriceField extends ConsumerWidget {
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF00C5FF),
+                              color: SideSwapColors.brightTurquoise,
                             ),
                           ),
                           Text(
                             marketType == MarketType.stablecoin
-                                ? '${replaceCharacterOnPosition(input: indexPrice)} ${asset.ticker}'
-                                : '$lastPrice L-BTC',
+                                ? '${replaceCharacterOnPosition(input: indexPriceStr)} ${asset?.ticker ?? ''}'
+                                : '$lastPriceStr L-BTC',
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -124,7 +125,7 @@ class OrderPriceField extends ConsumerWidget {
                     );
                   },
                 ),
-                if (asset.swapMarket)
+                if (asset?.swapMarket == true)
                   SwitchButton(
                     width: 142,
                     height: 35,

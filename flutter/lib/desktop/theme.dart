@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_radio_button.dart';
@@ -121,7 +122,8 @@ class DesktopAppTheme extends ChangeNotifier {
   DFocusThemeData _focusThemeData = DFocusThemeData(
     glowColor: Colors.transparent,
     glowFactor: is10footScreen() ? 2.0 : 0.0,
-    primaryBorder: const BorderSide(width: 1, color: Color(0xFF00C5FF)),
+    primaryBorder:
+        const BorderSide(width: 1, color: SideSwapColors.brightTurquoise),
     secondaryBorder: BorderSide.none,
     renderOutside: false,
   );
@@ -131,7 +133,7 @@ class DesktopAppTheme extends ChangeNotifier {
     notifyListeners();
   }
 
-  Color? _menuColor = const Color(0xFF135579);
+  Color? _menuColor = SideSwapColors.chathamsBlue;
   Color? get menuColor => _menuColor;
   set menuColor(Color? value) {
     _menuColor = value;
@@ -190,7 +192,7 @@ class DesktopAppTheme extends ChangeNotifier {
       borderRadius: BorderRadius.all(
         Radius.circular(8),
       ),
-      color: Color(0xFF1C6086),
+      color: SideSwapColors.blumine,
     ),
   );
   DContentDialogThemeData get settingsDialogTheme => _settingsDialogTheme;
@@ -231,8 +233,8 @@ class DesktopAppTheme extends ChangeNotifier {
         shape: BoxShape.circle,
         border: Border.all(
           color: !states.isDisabled
-              ? const Color(0xFF00C5FF)
-              : const Color(0xFF00C5FF).lerpWith(Colors.black, 0.3),
+              ? SideSwapColors.brightTurquoise
+              : SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.3),
           width: !states.isDisabled
               ? states.isHovering && !states.isPressing
                   ? 3.4
@@ -288,20 +290,22 @@ class DesktopAppTheme extends ChangeNotifier {
       border: ButtonState.resolveWith((states) {
         if (states.isDisabled) {
           return BorderSide(
-              color: const Color(0xFF00C5FF).lerpWith(Colors.black, 0.1),
+              color: SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1),
               width: 1);
         }
         if (states.isPressing) {
           return BorderSide(
-              color: const Color(0xFF00C5FF).lerpWith(Colors.black, 0.15),
+              color:
+                  SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.15),
               width: 1);
         }
         if (states.isHovering) {
           return BorderSide(
-              color: const Color(0xFF00C5FF).lerpWith(Colors.black, 0.1),
+              color: SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1),
               width: 1);
         }
-        return const BorderSide(color: Color(0xFF00C5FF), width: 1);
+        return const BorderSide(
+            color: SideSwapColors.brightTurquoise, width: 1);
       }),
       backgroundColor: ButtonState.resolveWith((states) {
         if (states.isDisabled) {
@@ -320,7 +324,7 @@ class DesktopAppTheme extends ChangeNotifier {
           if (states.isDisabled) {
             return Colors.white.lerpWith(Colors.black, 0.3);
           }
-          return const Color(0xFF00C5FF);
+          return SideSwapColors.brightTurquoise;
         },
       ),
       shadowColor: ButtonState.all(Colors.transparent),
@@ -352,15 +356,15 @@ class DesktopAppTheme extends ChangeNotifier {
       ),
       backgroundColor: ButtonState.resolveWith((states) {
         if (states.isDisabled) {
-          return const Color(0xFF00C5FF).lerpWith(Colors.black, 0.3);
+          return SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.3);
         }
         if (states.isPressing) {
-          return const Color(0xFF00C5FF).lerpWith(Colors.black, 0.2);
+          return SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.2);
         }
         if (states.isHovering) {
-          return const Color(0xFF00C5FF).lerpWith(Colors.black, 0.1);
+          return SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1);
         }
-        return const Color(0xFF00C5FF);
+        return SideSwapColors.brightTurquoise;
       }),
       foregroundColor: ButtonState.resolveWith(
         (states) {
@@ -388,11 +392,53 @@ class DesktopAppTheme extends ChangeNotifier {
     _buttonThemeData = value;
     notifyListeners();
   }
+
+  TextTheme get textTheme => darkTextTheme;
+}
+
+TextTheme get darkTextTheme {
+  return const TextTheme(
+    displaySmall: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w500,
+      color: Colors.white,
+    ),
+    titleLarge: TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.bold,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    titleSmall: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    labelLarge: TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.bold,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    labelMedium: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.normal,
+      fontFamily: 'Roboto',
+      color: Colors.white,
+    ),
+  );
 }
 
 ColorScheme get darkColorScheme {
   return ColorScheme.fromSwatch(
-      accentColor: const Color(0xFF00C5FF), brightness: Brightness.dark);
+      accentColor: SideSwapColors.brightTurquoise, brightness: Brightness.dark);
 }
 
 AccentColor get systemAccentColor {

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 enum ShareIconType {
   share,
@@ -49,7 +50,7 @@ class ShareExternalExplorerDialog extends StatelessWidget {
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                 ),
-                color: Color(0xFF1C6086),
+                color: SideSwapColors.blumine,
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -67,7 +68,7 @@ class ShareExternalExplorerDialog extends StatelessWidget {
                           child: Divider(
                             thickness: 1,
                             height: 1,
-                            color: Color(0xFF78AECC),
+                            color: SideSwapColors.ceruleanFrost,
                           ),
                         ),
                       ],

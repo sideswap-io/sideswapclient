@@ -13,7 +13,7 @@ analyzer:
     - "ffi/*"
     - "lib/screens/qr_scanner/address_qr_scanner.dart"
     - "lib/common_platform_mobile.dart"
-    - "lib/models/notifications_service.dart"
+    - "lib/providers/notifications_service_provider.dart"
     - "lib/common/permission_handler.dart"
   errors:
     implicit_dynamic_parameter: warning

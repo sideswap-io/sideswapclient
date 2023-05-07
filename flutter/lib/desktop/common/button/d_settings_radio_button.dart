@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/common/d_focus.dart';
@@ -143,7 +144,7 @@ class DSettingsRadioButtonThemeData with Diagnosticable {
         checkedDecoration: ButtonState.resolveWith((states) {
       return const BoxDecoration(
         shape: BoxShape.circle,
-        color: Color(0xFF00C5FF),
+        color: SideSwapColors.brightTurquoise,
       );
     }), uncheckedDecoration: ButtonState.resolveWith((states) {
       return BoxDecoration(
@@ -158,14 +159,14 @@ class DSettingsRadioButtonThemeData with Diagnosticable {
       );
     }), checkedBackground: ButtonState.resolveWith((states) {
       if (states.isPressing) {
-        return const Color(0xFF135579).lerpWith(Colors.black, 0.2);
+        return SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.2);
       }
 
       if (states.isHovering) {
-        return const Color(0xFF135579).lerpWith(Colors.black, 0.1);
+        return SideSwapColors.chathamsBlue.lerpWith(Colors.black, 0.1);
       }
 
-      return const Color(0xFF135579);
+      return SideSwapColors.chathamsBlue;
     }), uncheckedBackground: ButtonState.resolveWith((states) {
       if (states.isPressing) {
         return Colors.transparent.lerpWith(Colors.black, 0.2);

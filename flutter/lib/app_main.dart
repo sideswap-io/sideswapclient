@@ -3,28 +3,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
-
 import 'package:sideswap/common/theme.dart';
 import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common_platform.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
-import 'package:sideswap/models/config_provider.dart';
-import 'package:sideswap/models/init_provider.dart';
-import 'package:sideswap/models/local_notifications_service.dart';
-import 'package:sideswap/models/locales_provider.dart';
-import 'package:sideswap/models/pin_protection_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/universal_link_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/init_provider.dart';
+import 'package:sideswap/providers/local_notifications_service.dart';
+import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/pin_protection_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/universal_link_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/prelaunch_page.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/background/preload_background_painter.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/home/wallet_locked.dart';
 import 'package:sideswap/screens/markets/create_order_success.dart';
 import 'package:sideswap/screens/markets/create_order_view.dart';
 import 'package:sideswap/screens/markets/order_entry.dart';
+import 'package:sideswap/screens/onboarding/amp_register.dart';
 import 'package:sideswap/screens/onboarding/associate_phone_welcome.dart';
 import 'package:sideswap/screens/onboarding/confirm_phone.dart';
 import 'package:sideswap/screens/onboarding/confirm_phone_success.dart';
@@ -36,8 +37,11 @@ import 'package:sideswap/screens/onboarding/import_contacts_success.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_error.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_success.dart';
 import 'package:sideswap/screens/onboarding/license.dart';
+import 'package:sideswap/screens/onboarding/pegx_register.dart';
+import 'package:sideswap/screens/onboarding/pegx_submit_amp.dart';
 import 'package:sideswap/screens/onboarding/pin_setup.dart';
 import 'package:sideswap/screens/onboarding/pin_welcome.dart';
+import 'package:sideswap/screens/onboarding/stokr_login.dart';
 import 'package:sideswap/screens/onboarding/wallet_backup.dart';
 import 'package:sideswap/screens/onboarding/wallet_backup_check.dart';
 import 'package:sideswap/screens/onboarding/wallet_backup_check_failed.dart';
@@ -120,10 +124,13 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final themeData = ref.watch(mobileAppThemeProvider).themeData();
+
     return MaterialApp(
       title: 'SideSwap',
       debugShowCheckedModeBanner: false,
-      theme: appTheme,
+      theme: themeData,
+      themeMode: ThemeMode.dark,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
@@ -142,7 +149,7 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
             secureApplicationController?.unlock();
             return SecureApplicationAuthenticationStatus.NONE;
           },
-          child: _RootWidget(),
+          child: const RootWidget(),
         );
       }),
     );
@@ -154,13 +161,13 @@ class MyPopupPage<T> extends Page<T> {
   final Widget child;
   @override
   Route<T> createRoute(BuildContext context) {
-    return _MyPopupPageRoute<T>(page: this);
+    return MyPopupPageRoute<T>(page: this);
   }
 }
 
-class _MyPopupPageRoute<T> extends PageRoute<T>
+class MyPopupPageRoute<T> extends PageRoute<T>
     with MaterialRouteTransitionMixin<T> {
-  _MyPopupPageRoute({
+  MyPopupPageRoute({
     required MyPopupPage<T> page,
   }) : super(settings: page);
 
@@ -181,12 +188,14 @@ class _MyPopupPageRoute<T> extends PageRoute<T>
   bool get fullscreenDialog => false;
 }
 
-class _RootWidget extends ConsumerStatefulWidget {
+class RootWidget extends ConsumerStatefulWidget {
+  const RootWidget({super.key});
+
   @override
-  __RootWidgetState createState() => __RootWidgetState();
+  RootWidgetState createState() => RootWidgetState();
 }
 
-class __RootWidgetState extends ConsumerState<_RootWidget> {
+class RootWidgetState extends ConsumerState<RootWidget> {
   List<Page<dynamic>> pages(
       WidgetRef ref, BuildContext context, Status status) {
     switch (status) {
@@ -425,8 +434,7 @@ class __RootWidgetState extends ConsumerState<_RootWidget> {
           const MaterialPage<Widget>(child: WalletMain()),
           MaterialPage<Widget>(
               child: CreateOrderView(
-            requestOrder:
-                ref.read(requestOrderProvider).currentRequestOrderView,
+            requestOrder: ref.read(currentRequestOrderViewProvider),
           )),
         ];
       case Status.swapPrompt:
@@ -434,6 +442,26 @@ class __RootWidgetState extends ConsumerState<_RootWidget> {
         return [
           const MaterialPage<Widget>(child: WalletMain()),
           MaterialPage<Widget>(child: SwapPrompt(key: Key(orderId))),
+        ];
+      case Status.stokrLogin:
+        return [
+          const MaterialPage<Widget>(child: AmpRegister()),
+          const MyPopupPage<Widget>(child: StokrLogin()),
+        ];
+      case Status.pegxRegister:
+        return [
+          const MaterialPage<Widget>(child: AmpRegister()),
+          const MyPopupPage<Widget>(child: PegxRegister()),
+        ];
+      case Status.pegxSubmitAmp:
+        return [
+          const MaterialPage<Widget>(child: AmpRegister()),
+          const MyPopupPage<Widget>(child: PegxSubmitAmp()),
+        ];
+      case Status.ampRegister:
+      case Status.pegxSubmitFinish:
+        return [
+          const MaterialPage<Widget>(child: AmpRegister()),
         ];
     }
   }
@@ -482,7 +510,7 @@ class __RootWidgetState extends ConsumerState<_RootWidget> {
           },
           child: Consumer(
             builder: (context, ref, child) {
-              final status = ref.watch(walletProvider).status;
+              final status = ref.watch(pageStatusStateProvider);
               return Navigator(
                 key: _navigatorKey,
                 pages: pages(ref, context, status),

@@ -8,7 +8,7 @@ rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
 rustflags = []
 
 [target.aarch64-apple-ios]
-rustflags = ["-Clink-arg=-Wl,--allow-multiple-definition"]
+rustflags = ["-Clink-arg=-Wl"]
 
 [target.aarch64-linux-android]
 ar = "arch64-linux-android-ar"

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/home/widgets/home_bottom_panel.dart';
 import 'package:sideswap/screens/home/widgets/rounded_button.dart';
 

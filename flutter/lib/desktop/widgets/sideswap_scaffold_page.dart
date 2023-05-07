@@ -33,7 +33,7 @@ class SideSwapScaffoldPage extends StatefulWidget {
     required List<Widget> children,
     this.onEscapeKey,
     this.onEnterKey,
-  })  : content = Builder(builder: (context) {
+  }) : content = Builder(builder: (context) {
           return ListView(
             controller: scrollController,
             padding: EdgeInsets.only(
@@ -53,7 +53,7 @@ class SideSwapScaffoldPage extends StatefulWidget {
     required Widget content,
     this.onEscapeKey,
     this.onEnterKey,
-  })  : content = Builder(builder: (context) {
+  }) : content = Builder(builder: (context) {
           return Padding(
             padding: EdgeInsets.only(
               bottom: kPageDefaultVerticalPadding,
@@ -65,10 +65,10 @@ class SideSwapScaffoldPage extends StatefulWidget {
         });
 
   @override
-  State<SideSwapScaffoldPage> createState() => _SideSwapScaffoldPageState();
+  State<SideSwapScaffoldPage> createState() => SideSwapScaffoldPageState();
 }
 
-class _SideSwapScaffoldPageState extends State<SideSwapScaffoldPage> {
+class SideSwapScaffoldPageState extends State<SideSwapScaffoldPage> {
   @override
   void initState() {
     super.initState();
@@ -116,7 +116,9 @@ class _SideSwapScaffoldPageState extends State<SideSwapScaffoldPage> {
               ),
             ),
           ),
-          if (widget.bottomBar != null) widget.bottomBar!,
+          if (widget.bottomBar != null) ...[
+            widget.bottomBar!,
+          ],
         ],
       ),
     );

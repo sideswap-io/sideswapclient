@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_radio_button.dart';
 import 'package:sideswap/desktop/common/d_focus.dart';
@@ -9,7 +10,7 @@ import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DNewWalletBackupCheck extends ConsumerWidget {
   const DNewWalletBackupCheck({super.key});
@@ -152,7 +153,7 @@ class DWordLine extends ConsumerWidget {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF00C5FF),
+                  color: SideSwapColors.brightTurquoise,
                   letterSpacing: 0.5,
                 ),
               ),

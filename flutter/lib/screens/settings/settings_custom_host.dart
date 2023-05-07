@@ -2,15 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
-import 'package:sideswap/models/config_provider.dart';
-import 'package:sideswap/models/network_access_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/network_access_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class SettingsCustomHost extends ConsumerStatefulWidget {
   const SettingsCustomHost({super.key});
@@ -170,7 +171,7 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
                           text: 'SAVE AND APPLY'.tr(),
                           onPressed: () {
                             ref.read(networkAccessProvider).networkType =
-                                SettingsNetworkType.custom;
+                                SettingsNetworkType.personal;
                             ref
                                 .read(configProvider)
                                 .setSettingsHost(hostController.text);
@@ -180,7 +181,7 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
                             Navigator.of(context).pop();
                             ref.read(walletProvider).applyNetworkChange();
                           },
-                          backgroundColor: const Color(0xFF00C5FF),
+                          backgroundColor: SideSwapColors.brightTurquoise,
                           textColor: Colors.white,
                         ),
                       ),

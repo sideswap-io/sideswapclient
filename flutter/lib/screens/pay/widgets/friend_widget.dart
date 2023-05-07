@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/regexp_text_highlight.dart';
-import 'package:sideswap/models/friends_provider.dart';
+import 'package:sideswap/providers/friends_provider.dart';
 
 class FriendWidget extends StatelessWidget {
   const FriendWidget({
@@ -129,7 +130,7 @@ class FriendWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: showTrailingIcon
-                        ? const Color(0xFF135579)
+                        ? SideSwapColors.chathamsBlue
                         : Colors.transparent,
                   ),
                   child: Center(

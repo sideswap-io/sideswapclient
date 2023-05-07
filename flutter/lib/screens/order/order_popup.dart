@@ -6,14 +6,17 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/token_market_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/token_market_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/token_market_order_details.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 import 'package:sideswap/screens/markets/widgets/time_to_live.dart';
@@ -90,11 +93,10 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
 
   Widget buildStatsRow(
       WidgetRef ref, BuildContext context, String title, double value) {
-    final wallet = ref.read(walletProvider);
     final price = value.toStringAsFixed(8);
-    final dollarConversion = ref
-        .read(requestOrderProvider)
-        .dollarConversion(wallet.liquidAssetId(), value);
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final dollarConversion =
+        ref.read(requestOrderProvider).dollarConversion(liquidAssetId, value);
 
     return Column(
       children: [
@@ -139,9 +141,8 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
             OrderDetailsDataType? orderType =
                 orderDetailsData.orderType ?? OrderDetailsDataType.submit;
             final dataAvailable = orderDetailsData.isDataAvailable();
-            final assetDetails = ref
-                .watch(tokenMarketProvider)
-                .assetDetails[orderDetailsData.assetId];
+            final assetDetails = ref.watch(
+                tokenMarketAssetDetailsProvider)[orderDetailsData.assetId];
             final chartUrl = assetDetails?.chartUrl;
             final chartStats = assetDetails?.chartStats;
 
@@ -170,7 +171,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                         height: 109,
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
-                          color: Color(0xFF014767),
+                          color: SideSwapColors.chathamsBlue,
                         ),
                         child: Center(
                           child: Column(
@@ -182,7 +183,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                                   height: 26,
                                   decoration: const BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Color(0xFF00C5FF),
+                                    color: SideSwapColors.brightTurquoise,
                                   ),
                                   child: Center(
                                     child: SvgPicture.asset(
@@ -328,7 +329,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                     width: double.maxFinite,
                     height: 54,
                     enabled: dataAvailable && enabled,
-                    backgroundColor: const Color(0xFF00C5FF),
+                    backgroundColor: SideSwapColors.brightTurquoise,
                     onPressed: () async {
                       final auth =
                           await ref.read(walletProvider).isAuthenticated();
@@ -387,7 +388,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                     width: double.maxFinite,
                     height: 54,
                     text: 'Cancel'.tr(),
-                    textColor: const Color(0xFF00C5FF),
+                    textColor: SideSwapColors.brightTurquoise,
                     backgroundColor: Colors.transparent,
                     enabled: enabled,
                     onPressed: onClose,
@@ -415,7 +416,7 @@ class OrderTypeTracking extends StatelessWidget {
         height: 51,
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          color: Color(0xFF014767),
+          color: SideSwapColors.chathamsBlue,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),

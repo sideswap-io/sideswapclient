@@ -5,8 +5,8 @@ import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dar
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/pin_setup_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
 class DNewWalletBackupPrompt extends ConsumerWidget {

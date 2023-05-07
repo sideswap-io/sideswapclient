@@ -6,7 +6,8 @@ import 'package:easy_localization/easy_localization.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 typedef ShareTapCallback = void Function(BuildContext context);
@@ -66,7 +67,7 @@ class ShareCopyScanTextFormFieldState
   final TextStyle _defaultStyle = const TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.normal,
-    color: Color(0xFF84ADC6),
+    color: SideSwapColors.glacier,
   );
 
   @override
@@ -164,7 +165,7 @@ class ShareCopyScanTextFormFieldState
                       errorStyle: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,
-                        color: Color(0xFFFF7878),
+                        color: SideSwapColors.bitterSweet,
                       ),
                       suffixIcon: _emptySuffix
                           ? null
@@ -191,7 +192,10 @@ class ShareCopyScanTextFormFieldState
                                               'assets/copy.svg',
                                               width: _iconWidth,
                                               height: _iconWidth,
-                                              color: const Color(0xFF00B4E9),
+                                              colorFilter:
+                                                  const ColorFilter.mode(
+                                                      Color(0xFF00B4E9),
+                                                      BlendMode.srcIn),
                                             ),
                                           ),
                                         ),
@@ -234,7 +238,10 @@ class ShareCopyScanTextFormFieldState
                                                 'assets/qr_icon.svg',
                                                 width: _iconWidth,
                                                 height: _iconWidth,
-                                                color: const Color(0xFF00B4E9),
+                                                colorFilter:
+                                                    const ColorFilter.mode(
+                                                        Color(0xFF00B4E9),
+                                                        BlendMode.srcIn),
                                               ),
                                             ),
                                           ),
@@ -290,12 +297,12 @@ class ShareCopyScanTextFormFieldState
                     const SizedBox(height: 10),
                     Container(
                       decoration: const BoxDecoration(
-                        color: Color(0xFF135579),
+                        color: SideSwapColors.chathamsBlue,
                         borderRadius: BorderRadius.all(Radius.circular(20)),
                       ),
                       child: TextButton(
                         onPressed: () {
-                          setValue(widget.controller!, clipboardText);
+                          setControllerValue(widget.controller!, clipboardText);
                           if (widget.onChanged != null) {
                             widget.onChanged!(clipboardText);
                           }

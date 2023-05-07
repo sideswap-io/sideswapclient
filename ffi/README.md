@@ -8,3 +8,6 @@ flutter pub run ffigen:setup -I/opt/local/libexec/llvm-10/include -L/opt/local/l
 
 # Protoc-dart plugin
 # https://github.com/dart-lang/protobuf/tree/master/protoc_plugin
+
+protoc --dart_out=. pegx_api.proto
+protoc --dart_out=. sideswap.proto

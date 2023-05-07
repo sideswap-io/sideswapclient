@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sideswap/models/qrcode_provider.dart';
+import 'package:sideswap/providers/qrcode_provider.dart';
 
 part 'qrcode_models.freezed.dart';
 

@@ -6,20 +6,21 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
-class _JadeRescanTimer extends ConsumerStatefulWidget {
-  const _JadeRescanTimer();
+class JadeRescanTimer extends ConsumerStatefulWidget {
+  const JadeRescanTimer({super.key});
 
   @override
-  ConsumerState<_JadeRescanTimer> createState() => _JadeRescanTimerState();
+  ConsumerState<JadeRescanTimer> createState() => JadeRescanTimerState();
 }
 
-class _JadeRescanTimerState extends ConsumerState<_JadeRescanTimer> {
+class JadeRescanTimerState extends ConsumerState<JadeRescanTimer> {
   late Timer timer;
 
   @override
@@ -54,10 +55,10 @@ class DJadeImport extends ConsumerWidget {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const _JadeRescanTimer(),
+            const JadeRescanTimer(),
             Row(
               children: [
-                _TopButton(
+                DJadeImportTopButton(
                   text: 'Back'.tr(),
                   icon: 'assets/arrow_back3.svg',
                   onPressed: () {
@@ -65,12 +66,12 @@ class DJadeImport extends ConsumerWidget {
                   },
                 ),
                 const Spacer(),
-                _TopButton(
+                DJadeImportTopButton(
                   text: 'Quick start guide'.tr(),
                   icon: 'assets/question_mark.svg',
                 ),
                 const SizedBox(width: 12),
-                _TopButton(
+                DJadeImportTopButton(
                   text: 'Get Jade'.tr(),
                   icon: 'assets/jade.svg',
                   onPressed: () {
@@ -98,7 +99,7 @@ class DJadeImport extends ConsumerWidget {
                 child: Column(
                   children: wallet.jades
                       .map(
-                        (port) => _JadeDevice(
+                        (port) => JadeDevice(
                           key: ValueKey(port.port),
                           port: port,
                         ),
@@ -110,7 +111,7 @@ class DJadeImport extends ConsumerWidget {
               const Padding(
                 padding: EdgeInsets.only(top: 200),
                 child: SpinKitFadingCircle(
-                  color: Color(0xFF00C5FF),
+                  color: SideSwapColors.brightTurquoise,
                 ),
               ),
           ],
@@ -120,8 +121,8 @@ class DJadeImport extends ConsumerWidget {
   }
 }
 
-class _JadeDevice extends ConsumerWidget {
-  const _JadeDevice({
+class JadeDevice extends ConsumerWidget {
+  const JadeDevice({
     super.key,
     required this.port,
   });
@@ -151,18 +152,18 @@ class _JadeDevice extends ConsumerWidget {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF00C5FF),
+                      color: SideSwapColors.brightTurquoise,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 6),
-              _DetailsLine(
+              JadeDeviceDetailsLine(
                 title: 'Port',
                 value: port.port,
               ),
               if (port.hasSerial())
-                _DetailsLine(
+                JadeDeviceDetailsLine(
                   title: 'Serial',
                   value: port.serial,
                 ),
@@ -183,8 +184,9 @@ class _JadeDevice extends ConsumerWidget {
   }
 }
 
-class _DetailsLine extends StatelessWidget {
-  const _DetailsLine({
+class JadeDeviceDetailsLine extends StatelessWidget {
+  const JadeDeviceDetailsLine({
+    super.key,
     required this.title,
     required this.value,
   });
@@ -207,8 +209,9 @@ class _DetailsLine extends StatelessWidget {
   }
 }
 
-class _TopButton extends StatelessWidget {
-  const _TopButton({
+class DJadeImportTopButton extends StatelessWidget {
+  const DJadeImportTopButton({
+    super.key,
     required this.text,
     required this.icon,
     this.onPressed,
@@ -228,7 +231,7 @@ class _TopButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(8)),
             border: Border.all(
-              color: const Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
             ),
           ),
           child: Row(

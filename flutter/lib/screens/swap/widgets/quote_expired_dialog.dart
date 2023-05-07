@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 
@@ -20,7 +21,7 @@ void showQuoteExpiredDialog(BuildContext context) {
             borderRadius: BorderRadius.all(
               Radius.circular(8),
             ),
-            color: Color(0xFF1C6086),
+            color: SideSwapColors.blumine,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -28,12 +29,13 @@ void showQuoteExpiredDialog(BuildContext context) {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  height: 56,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF135579),
+                    color: SideSwapColors.chathamsBlue,
                     border: Border.all(
-                      color: const Color(0xFFFF7878),
+                      color: SideSwapColors.bitterSweet,
                       style: BorderStyle.solid,
                       width: 3,
                     ),
@@ -41,9 +43,10 @@ void showQuoteExpiredDialog(BuildContext context) {
                   child: Center(
                     child: SvgPicture.asset(
                       'assets/error.svg',
-                      width: 20,
-                      height: 22,
-                      color: const Color(0xFFFF7878),
+                      width: 23,
+                      height: 23,
+                      colorFilter: const ColorFilter.mode(
+                          SideSwapColors.bitterSweet, BlendMode.srcIn),
                     ),
                   ),
                 ),
@@ -82,7 +85,7 @@ void showQuoteExpiredDialog(BuildContext context) {
                   width: 279,
                   height: 54,
                   text: 'Continue'.tr(),
-                  backgroundColor: const Color(0xFF00C5FF),
+                  backgroundColor: SideSwapColors.brightTurquoise,
                   onPressed: () async {
                     Navigator.of(context, rootNavigator: true).pop();
                   },

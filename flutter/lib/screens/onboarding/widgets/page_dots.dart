@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class PageDots extends StatelessWidget {
   const PageDots({
@@ -25,11 +26,11 @@ class PageDots extends StatelessWidget {
                 color: i < maxSelectedDots
                     ? i < maxSelectedDots - 1
                         ? const Color(0xFF167399)
-                        : const Color(0xFF00C5FF)
+                        : SideSwapColors.brightTurquoise
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
-                  color: const Color(0xFF00C5FF),
+                  color: SideSwapColors.brightTurquoise,
                   width: 1,
                   style: BorderStyle.solid,
                 ),

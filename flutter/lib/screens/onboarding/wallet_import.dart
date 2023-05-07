@@ -8,9 +8,11 @@ import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/mnemonic_table.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
@@ -322,7 +324,7 @@ class WalletImportInputsState extends ConsumerState<WalletImportInputs> {
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF00C5FF),
+                                color: SideSwapColors.brightTurquoise,
                               ),
                             ),
                           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class FriendsPanelImportButtonPainter extends CustomPainter {
   FriendsPanelImportButtonPainter({required this.percent});
@@ -9,7 +10,7 @@ class FriendsPanelImportButtonPainter extends CustomPainter {
     // gradient
     // final xOffset = ((size.width + 10) / 100) * percent;
     final xOffset = (size.width / 100) * percent;
-    final paint = Paint()..color = const Color(0xFF00C5FF);
+    final paint = Paint()..color = SideSwapColors.brightTurquoise;
     final rect = Offset.zero & size;
     canvas.drawRect(rect, paint);
 

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
+import 'package:sideswap/desktop/desktop_wallet_main.dart';
+import 'package:sideswap/desktop/onboarding/d_amp_login.dart';
+import 'package:sideswap/desktop/onboarding/d_amp_register.dart';
 import 'package:sideswap/desktop/onboarding/d_first_launch.dart';
 import 'package:sideswap/desktop/onboarding/d_import_wallet_error.dart';
 import 'package:sideswap/desktop/onboarding/d_license.dart';
@@ -10,6 +13,8 @@ import 'package:sideswap/desktop/onboarding/d_new_wallet_backup_check_succeed.da
 import 'package:sideswap/desktop/onboarding/d_new_wallet_backup_prompt.dart';
 import 'package:sideswap/desktop/onboarding/d_new_wallet_backup_skip_prompt.dart';
 import 'package:sideswap/desktop/onboarding/d_new_wallet_backup.dart';
+import 'package:sideswap/desktop/onboarding/d_pegx_submit_amp.dart';
+import 'package:sideswap/desktop/onboarding/d_pegx_submit_finish_dialog.dart';
 import 'package:sideswap/desktop/onboarding/d_pin_setup.dart';
 import 'package:sideswap/desktop/onboarding/d_wallet_import.dart';
 import 'package:sideswap/desktop/pageRoute/desktop_page_route.dart';
@@ -19,13 +24,12 @@ import 'package:sideswap/desktop/settings/d_settings_network_access.dart';
 import 'package:sideswap/desktop/settings/d_settings_pin_success.dart';
 import 'package:sideswap/desktop/settings/d_settings_view_backup.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/pin_setup_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/prelaunch_page.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/onboarding/license.dart';
 import 'package:sideswap/screens/onboarding/widgets/new_wallet_pin_welcome.dart';
-
-import 'desktop_wallet_main.dart';
 
 class RouteName {
   static const String first = '/';
@@ -51,6 +55,11 @@ class RouteName {
   static const String settingsAboutUs = '/settingsAboutUs';
   static const String pinSuccess = '/pinSuccess';
   static const String settingsNetwork = '/settingsNetwork';
+  static const String ampRegister = '/ampRegister';
+  static const String stokrLogin = '/stokrLogin';
+  static const String pegxRegister = '/pegxRegister';
+  static const String pegxSubmitAmp = '/pegxSubmitAmp';
+  static const String pegxSubmitFinish = '/pegxSubmitFinish';
 }
 
 class RouteGenerator {
@@ -116,8 +125,9 @@ class RouteGenerator {
               settings: settings);
         }
       case RouteName.registered:
-        return DesktopPageRoute<Widget>(
-            builder: (_) => const DesktopWalletMain(), settings: settings);
+        return RawDialogRoute<Widget>(
+            pageBuilder: (_, __, ___) => const DesktopWalletMain(),
+            settings: settings);
       case RouteName.settingsPage:
         return RawDialogRoute<Widget>(
             pageBuilder: (_, __, ___) => const DSettings(), settings: settings);
@@ -136,6 +146,28 @@ class RouteGenerator {
       case RouteName.settingsNetwork:
         return RawDialogRoute<Widget>(
             pageBuilder: (_, __, ___) => const DSettingsNetworkAccess(),
+            settings: settings);
+      case RouteName.stokrLogin:
+        return RawDialogRoute<Widget>(
+            pageBuilder: (_, __, ___) =>
+                const DAmpLogin(ampLoginEnum: AmpLoginEnum.stokr),
+            settings: settings);
+      case RouteName.ampRegister:
+        return RawDialogRoute<Widget>(
+            pageBuilder: (_, __, ___) => const DAmpRegister(),
+            settings: settings);
+      case RouteName.pegxRegister:
+        return RawDialogRoute<Widget>(
+            pageBuilder: (_, __, ___) =>
+                const DAmpLogin(ampLoginEnum: AmpLoginEnum.pegx),
+            settings: settings);
+      case RouteName.pegxSubmitAmp:
+        return RawDialogRoute(
+            pageBuilder: (_, __, ___) => const DPegxSubmitAmp(),
+            settings: settings);
+      case RouteName.pegxSubmitFinish:
+        return RawDialogRoute(
+            pageBuilder: (_, __, ___) => const DPegxSubmitFinishDialog(),
             settings: settings);
 
       default:
@@ -161,10 +193,10 @@ class RouteContainer extends ConsumerStatefulWidget {
   const RouteContainer({super.key});
 
   @override
-  ConsumerState<RouteContainer> createState() => _RouteContainerState();
+  ConsumerState<RouteContainer> createState() => RouteContainerState();
 }
 
-class _RouteContainerState extends ConsumerState<RouteContainer> {
+class RouteContainerState extends ConsumerState<RouteContainer> {
   Future<void> onStatus(Status status) async {
     final context = ref.read(walletProvider).navigatorKey.currentContext!;
     final navigator = Navigator.of(context);
@@ -253,6 +285,7 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
 
         if (Navigator.canPop(context)) {
           navigator.popUntil((route) => route.isFirst);
+          navigator.pushReplacementNamed(routeName);
         } else {
           navigator.pushReplacementNamed(routeName);
         }
@@ -301,6 +334,26 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
       case Status.orderRequestView:
         // Not used on desktop
         break;
+      case Status.ampRegister:
+        routeName = RouteName.ampRegister;
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
+        return;
+      case Status.stokrLogin:
+        routeName = RouteName.stokrLogin;
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
+        return;
+      case Status.pegxRegister:
+        routeName = RouteName.pegxRegister;
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
+        return;
+      case Status.pegxSubmitAmp:
+        routeName = RouteName.pegxSubmitAmp;
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
+        return;
+      case Status.pegxSubmitFinish:
+        routeName = RouteName.pegxSubmitFinish;
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
+        return;
     }
 
     await navigator.pushNamedAndRemoveUntil(routeName, (route) => false);
@@ -308,7 +361,7 @@ class _RouteContainerState extends ConsumerState<RouteContainer> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<Status>(walletProvider.select((p) => p.status), (_, next) async {
+    ref.listen(pageStatusStateProvider, (_, next) async {
       await onStatus(next);
     });
     return Container();

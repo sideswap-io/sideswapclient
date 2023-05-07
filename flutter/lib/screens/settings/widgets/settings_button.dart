@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 enum SettingsButtonType {
   recovery,
@@ -98,15 +99,16 @@ class SettingsButtonState extends State<SettingsButton> {
         onPressed: widget.onPressed,
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor:
-              widget.transparent ? Colors.transparent : const Color(0xFF135579),
+          backgroundColor: widget.transparent
+              ? Colors.transparent
+              : SideSwapColors.chathamsBlue,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
               Radius.circular(8),
             ),
           ),
           side: const BorderSide(
-            color: Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
             width: 1,
             style: BorderStyle.solid,
           ),

@@ -2,9 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
-import 'package:sideswap/models/request_order_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class OrderPriceTextField extends ConsumerWidget {
@@ -18,7 +19,7 @@ class OrderPriceTextField extends ConsumerWidget {
     this.precision = 8,
   });
 
-  final Image? icon;
+  final Widget? icon;
   final Asset? asset;
   final TextEditingController controller;
   final FocusNode? focusNode;
@@ -56,7 +57,7 @@ class OrderPriceTextField extends ConsumerWidget {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF00C5FF),
+                        color: SideSwapColors.brightTurquoise,
                       ),
                     ),
                     Text(
@@ -91,7 +92,7 @@ class OrderPriceTextField extends ConsumerWidget {
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF84ADC6),
+                                color: SideSwapColors.glacier,
                               ),
                             ),
                           ),
@@ -141,7 +142,7 @@ class OrderPriceTextField extends ConsumerWidget {
                               hintStyle: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF84ADC6),
+                                color: SideSwapColors.glacier,
                               ),
                             ),
                           ),

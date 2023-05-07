@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class OrderTrackingSliderThumbShape extends SliderComponentShape {
   OrderTrackingSliderThumbShape({
     this.minValue = 0,
     this.maxValue = 0,
-    this.negativeColor = const Color(0xFFFF7878),
-    this.positiveColor = const Color(0xFF2CCCBF),
+    this.negativeColor = SideSwapColors.bitterSweet,
+    this.positiveColor = SideSwapColors.turquoise,
     this.circleNegativeColor = const Color(0xFF3E475F),
     this.circlePositiveColor = const Color(0xFF147385),
     this.customRadius,
@@ -15,12 +16,12 @@ class OrderTrackingSliderThumbShape extends SliderComponentShape {
 
   final double minValue;
   final double maxValue;
-  final Color negativeColor;
-  final Color positiveColor;
+  final MaterialColor negativeColor;
+  final MaterialColor positiveColor;
   final Color circleNegativeColor;
   final Color circlePositiveColor;
 
-  var borderColor = const Color(0xFF1B8BC8);
+  var borderColor = SideSwapColors.navyBlue;
   var circleColor = const Color(0xFF043857);
   final double? customRadius;
   final double defaultRadius = 14.0;

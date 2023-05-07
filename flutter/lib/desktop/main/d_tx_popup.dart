@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
 
@@ -28,8 +32,8 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
   final scrollController = ScrollController();
 
   void openTx(WidgetRef ref, bool unblinded) {
-    final wallet = ref.read(walletProvider);
-    final txid = wallet.allTxs[widget.id]!.tx.txid;
+    final allTxs = ref.read(allTxsNotifierProvider);
+    final txid = allTxs[widget.id]!.tx.txid;
     openTxidUrl(ref, txid, true, unblinded);
   }
 
@@ -41,13 +45,18 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
 
   @override
   Widget build(BuildContext context) {
-    final wallet = ref.watch(walletProvider);
-    final tx = wallet.allTxs[widget.id]!;
+    final allTxs = ref.watch(allTxsNotifierProvider);
+    final amountProvider = ref.watch(amountToStringProvider);
+
+    final tx = allTxs[widget.id]!;
     final type = txType(tx.tx);
     final typeName = txTypeName(type);
     final timestampStr = txDateStrLong(
         DateTime.fromMillisecondsSinceEpoch(tx.createdAt.toInt()));
-    final feeStr = amountStrNamed(tx.tx.networkFee.toInt(), 'L-BTC');
+    final feeStr = amountProvider.amountToStringNamed(
+        AmountToStringNamedParameters(
+            amount: tx.tx.networkFee.toInt(), ticker: 'L-BTC'));
+
     // vsize is wrong on GDK for single-sig, do not show it here
     final sizeStr = '${tx.tx.size} Bytes';
     final count = tx.hasConfs() ? tx.confs.count : 2;
@@ -55,7 +64,7 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
     final confsStr = '$count/$total';
 
     final allBalances = tx.tx.balancesAll
-        .map((e) => _Balance(
+        .map((e) => DPopupBalance(
               assetId: e.assetId,
               amount: e.amount.toInt(),
             ))
@@ -75,7 +84,7 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
               const SizedBox(width: 8),
               Text(
                 typeName,
-                style: Theme.of(context).textTheme.headline3,
+                style: Theme.of(context).textTheme.displaySmall,
               ),
             ],
           ),
@@ -84,7 +93,7 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
             child: Text(
               timestampStr,
               style: const TextStyle(
-                color: Color(0xFF83B4D2),
+                color: SideSwapColors.halfBaked,
               ),
             ),
           ),
@@ -101,14 +110,14 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
                       Text(
                         'Asset'.tr(),
                         style: const TextStyle(
-                          color: Color(0xFF00C5FF),
+                          color: SideSwapColors.brightTurquoise,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
                         'Amount'.tr(),
                         style: const TextStyle(
-                          color: Color(0xFF00C5FF),
+                          color: SideSwapColors.brightTurquoise,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -132,15 +141,16 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Column(
                     children: [
-                      _Field(name: 'Fee'.tr(), value: feeStr),
-                      _Separator(),
-                      _Field(name: 'Size of transaction'.tr(), value: sizeStr),
-                      _Separator(),
-                      _Field(
+                      DPopupField(name: 'Fee'.tr(), value: feeStr),
+                      const DPopupSeparator(),
+                      DPopupField(
+                          name: 'Size of transaction'.tr(), value: sizeStr),
+                      const DPopupSeparator(),
+                      DPopupField(
                           name: 'Number of confirmations'.tr(),
                           value: confsStr),
-                      _Separator(),
-                      _Field(name: 'Transaction ID'.tr(), value: ''),
+                      const DPopupSeparator(),
+                      DPopupField(name: 'Transaction ID'.tr(), value: ''),
                       Row(
                         children: [
                           Expanded(
@@ -165,17 +175,17 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
           ),
           const Spacer(),
           Container(
-            color: const Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
             height: 138,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _LinkButton(
+                DPopupLinkButton(
                   text: 'Link to explorer\n(blinded data)'.tr(),
                   onPressed: () => openTx(ref, false),
                 ),
                 const SizedBox(width: 10),
-                _LinkButton(
+                DPopupLinkButton(
                   text: 'Link to explorer\n(unblinded data)'.tr(),
                   onPressed: () => openTx(ref, true),
                 ),
@@ -198,18 +208,19 @@ class DPegPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wallet = ref.watch(walletProvider);
-    final txItem = wallet.allPegsById[id]!;
+    final allPegsById = ref.watch(allPegsByIdProvider);
+    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+
+    final txItem = allPegsById[id]!;
     final typeName = txItem.peg.isPegIn ? 'Peg-in'.tr() : 'Peg-out'.tr();
     final timestampStr = txDateStrLong(
         DateTime.fromMillisecondsSinceEpoch(txItem.createdAt.toInt()));
     final count = txItem.confs.count;
     final total = txItem.confs.total;
     final isPegIn = txItem.peg.isPegIn;
-    final sendAsset =
-        isPegIn ? wallet.bitcoinAssetId() : wallet.liquidAssetId();
-    final recvAsset =
-        isPegIn ? wallet.liquidAssetId() : wallet.bitcoinAssetId();
+    final sendAsset = isPegIn ? bitcoinAssetId : liquidAssetId;
+    final recvAsset = isPegIn ? liquidAssetId : bitcoinAssetId;
     final confsStr = txItem.hasConfs() ? '$count/$total' : 'Complete'.tr();
     final amountSend = txItem.peg.amountSend.toInt();
     final amountRecv = txItem.peg.amountRecv.toInt();
@@ -232,7 +243,7 @@ class DPegPopup extends ConsumerWidget {
               const SizedBox(width: 8),
               Text(
                 typeName,
-                style: Theme.of(context).textTheme.headline3,
+                style: Theme.of(context).textTheme.displaySmall,
               ),
             ],
           ),
@@ -241,7 +252,7 @@ class DPegPopup extends ConsumerWidget {
             child: Text(
               timestampStr,
               style: const TextStyle(
-                color: Color(0xFF83B4D2),
+                color: SideSwapColors.halfBaked,
               ),
             ),
           ),
@@ -256,34 +267,36 @@ class DPegPopup extends ConsumerWidget {
                     Text(
                       'Asset'.tr(),
                       style: const TextStyle(
-                        color: Color(0xFF00C5FF),
+                        color: SideSwapColors.brightTurquoise,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                     Text(
                       'Amount'.tr(),
                       style: const TextStyle(
-                        color: Color(0xFF00C5FF),
+                        color: SideSwapColors.brightTurquoise,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                _Balance(
+                DPopupBalance(
                   assetId: sendAsset,
                   amount: -txItem.peg.amountSend.toInt(),
                 ),
-                _Balance(
+                DPopupBalance(
                   assetId: recvAsset,
                   amount: txItem.peg.amountRecv.toInt(),
                 ),
                 const SizedBox(height: 10),
-                _Field(name: 'Conversion rate'.tr(), value: conversionRateStr),
-                _Separator(),
-                _Field(name: 'Number of confirmations'.tr(), value: confsStr),
-                _Separator(),
-                _Field(name: 'Transaction ID'.tr(), value: ''),
+                DPopupField(
+                    name: 'Conversion rate'.tr(), value: conversionRateStr),
+                const DPopupSeparator(),
+                DPopupField(
+                    name: 'Number of confirmations'.tr(), value: confsStr),
+                const DPopupSeparator(),
+                DPopupField(name: 'Transaction ID'.tr(), value: ''),
                 Row(
                   children: [
                     Expanded(
@@ -305,18 +318,18 @@ class DPegPopup extends ConsumerWidget {
           ),
           const Spacer(),
           Container(
-            color: const Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
             height: 138,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _LinkButton(
+                DPopupLinkButton(
                   text: 'Link to explorer\n(pay-in)'.tr(),
                   onPressed: () => openTxidUrl(
                       ref, txItem.peg.txidSend, !txItem.peg.isPegIn, false),
                 ),
                 const SizedBox(width: 10),
-                _LinkButton(
+                DPopupLinkButton(
                   text: 'Link to explorer\n(pay-out)'.tr(),
                   onPressed: txItem.peg.hasTxidRecv()
                       ? () => openTxidUrl(
@@ -332,8 +345,9 @@ class DPegPopup extends ConsumerWidget {
   }
 }
 
-class _Balance extends ConsumerWidget {
-  const _Balance({
+class DPopupBalance extends ConsumerWidget {
+  const DPopupBalance({
+    super.key,
     required this.assetId,
     required this.amount,
   });
@@ -343,25 +357,32 @@ class _Balance extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wallet = ref.read(walletProvider);
-    final asset = wallet.assets[assetId]!;
-    final icon = wallet.assetImagesVerySmall[assetId]!;
-    final amountNamed = amountStrNamed(amount, asset.ticker,
-        forceSign: true, precision: asset.precision);
+    final asset =
+        ref.watch(assetsStateProvider.select((value) => value[assetId]));
+    final icon = ref.watch(assetImageProvider).getVerySmallImage(assetId);
+    final assetPrecision =
+        ref.watch(assetUtilsProvider).getPrecisionForAssetId(assetId: assetId);
+    final amountProvider = ref.watch(amountToStringProvider);
+    final amountNamed = amountProvider.amountToStringNamed(
+        AmountToStringNamedParameters(
+            amount: amount,
+            ticker: asset?.ticker ?? '',
+            precision: assetPrecision,
+            forceSign: true));
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 12),
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          color: Color(0xFF135579),
+          color: SideSwapColors.chathamsBlue,
         ),
         child: Center(
           child: Row(
             children: [
               icon,
               const SizedBox(width: 6),
-              Text(asset.ticker),
+              Text(asset?.ticker ?? ''),
               const Spacer(),
               Text(amountNamed),
             ],
@@ -372,8 +393,9 @@ class _Balance extends ConsumerWidget {
   }
 }
 
-class _Field extends StatelessWidget {
-  const _Field({
+class DPopupField extends StatelessWidget {
+  const DPopupField({
+    super.key,
     required this.name,
     required this.value,
   });
@@ -391,7 +413,7 @@ class _Field extends StatelessWidget {
             name,
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -409,7 +431,9 @@ class _Field extends StatelessWidget {
   }
 }
 
-class _Separator extends StatelessWidget {
+class DPopupSeparator extends StatelessWidget {
+  const DPopupSeparator({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -419,8 +443,9 @@ class _Separator extends StatelessWidget {
   }
 }
 
-class _LinkButton extends StatelessWidget {
-  const _LinkButton({
+class DPopupLinkButton extends StatelessWidget {
+  const DPopupLinkButton({
+    super.key,
     required this.text,
     required this.onPressed,
   });

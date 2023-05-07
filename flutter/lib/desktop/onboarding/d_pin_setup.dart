@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
@@ -12,11 +13,11 @@ import 'package:sideswap/desktop/pin/d_pin_keyboard.dart';
 import 'package:sideswap/desktop/pin/widgets/d_pin_text_field.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/pin_available_provider.dart';
-import 'package:sideswap/models/pin_keyboard_provider.dart';
-import 'package:sideswap/models/pin_protection_provider.dart';
-import 'package:sideswap/models/pin_setup_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/pin_available_provider.dart';
+import 'package:sideswap/providers/pin_keyboard_provider.dart';
+import 'package:sideswap/providers/pin_protection_provider.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DPinSetup extends ConsumerWidget {
   const DPinSetup({super.key, this.onEscapeKey});
@@ -154,7 +155,7 @@ class DPinSetupContent extends HookConsumerWidget {
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                   ),
                 ),
               ),
@@ -207,7 +208,7 @@ class DPinSetupContent extends HookConsumerWidget {
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                   ),
                 ),
               ),

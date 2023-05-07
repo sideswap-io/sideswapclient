@@ -1,10 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/payment_provider.dart';
-import 'package:sideswap/models/qrcode_provider.dart';
+import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 
 class PaymentContinueButton extends ConsumerWidget {
@@ -24,7 +25,7 @@ class PaymentContinueButton extends ConsumerWidget {
     return CustomBigButton(
       width: double.infinity,
       height: 54,
-      backgroundColor: const Color(0xFF00C5FF),
+      backgroundColor: SideSwapColors.brightTurquoise,
       text: 'CONTINUE'.tr(),
       enabled: enabled,
       onPressed: ((errorText != null) && (!enabled))

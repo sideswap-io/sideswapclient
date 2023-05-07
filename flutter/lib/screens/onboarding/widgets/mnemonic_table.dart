@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class MnemonicTable extends StatelessWidget {
   const MnemonicTable({
@@ -53,7 +54,7 @@ class MnemonicTable extends StatelessWidget {
                       color: onCheckError(index)
                           ? Colors.red
                           : currentSelectedItem == index
-                              ? const Color(0xFF00C5FF)
+                              ? SideSwapColors.brightTurquoise
                               : const Color(0xFF23729D),
                       width: 1,
                       style: BorderStyle.solid,
@@ -71,7 +72,7 @@ class MnemonicTable extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.normal,
-                              color: Color(0xFF00C5FF),
+                              color: SideSwapColors.brightTurquoise,
                             ),
                           ),
                         ),

@@ -7,8 +7,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/pin_setup_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DPinWelcome extends HookConsumerWidget {
   const DPinWelcome({
@@ -32,7 +33,7 @@ class DPinWelcome extends HookConsumerWidget {
     return SideSwapScaffoldPage(
       onEscapeKey: () {
         ref.read(pinSetupProvider).isNewWallet = false;
-        ref.read(walletProvider).status = Status.noWallet;
+        ref.read(pageStatusStateProvider.notifier).setStatus(Status.noWallet);
       },
       content: Center(
         child: SizedBox(

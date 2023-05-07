@@ -2,16 +2,22 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/custom_scrollable_container.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/biometric_available_provider.dart';
-import 'package:sideswap/models/pin_available_provider.dart';
-import 'package:sideswap/models/pin_setup_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/desktop/widgets/amp_id_panel.dart';
+import 'package:sideswap/providers/amp_id_provider.dart';
+import 'package:sideswap/providers/biometric_available_provider.dart';
+import 'package:sideswap/providers/pin_available_provider.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap/screens/settings/settings_about_us.dart';
 import 'package:sideswap/screens/settings/settings_languages.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/widgets/settings_button.dart';
@@ -51,69 +57,32 @@ class SettingsState extends ConsumerState<Settings> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Padding(
-                  padding: EdgeInsets.only(top: 40),
-                  child: Text(
-                    'AMP ID:',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white,
-                    ),
-                  ),
+                  padding: EdgeInsets.only(bottom: 24),
+                  child: SettingsLogoWithAppVersion(),
                 ),
-                const SizedBox(
-                  height: 8,
-                ),
-                Consumer(builder: (context, ref, _) {
-                  final ampId =
-                      ref.watch(walletProvider.select((p) => p.ampId));
+                Consumer(
+                  builder: (context, ref, child) {
+                    final ampId = ref.watch(ampIdProvider);
+                    final textTheme = Theme.of(context).textTheme;
 
-                  return Container(
-                    height: 60,
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      border:
-                          Border.all(color: const Color(0xFF19668F), width: 1),
-                      borderRadius: const BorderRadius.all(Radius.circular(8)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              ampId ?? '',
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.normal,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 4),
-                            child: InkWell(
-                              onTap: () async {
-                                await copyToClipboard(context, ampId ?? '',
-                                    displaySnackbar: true);
-                              },
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  'assets/copy.svg',
-                                  width: 24,
-                                  height: 24,
-                                  color: const Color(0xFF00B4E9),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
+                    return AmpIdPanel(
+                      width: double.infinity,
+                      height: 60,
+                      ampId: ampId,
+                      backgroundColor: SideSwapColors.chathamsBlue,
+                      prefixTextStyle: textTheme.titleSmall?.merge(
+                        const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: SideSwapColors.brightTurquoise),
                       ),
-                    ),
-                  );
-                }),
+                      onTap: () {
+                        ref
+                            .read(pageStatusStateProvider.notifier)
+                            .setStatus(Status.ampRegister);
+                      },
+                    );
+                  },
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 24),
                   child: SettingsButton(
@@ -248,6 +217,66 @@ class SettingsState extends ConsumerState<Settings> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsLogoWithAppVersion extends StatelessWidget {
+  const SettingsLogoWithAppVersion({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: SideSwapColors.blumine,
+          width: 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 16),
+        child: Stack(
+          children: [
+            SvgPicture.asset(
+              'assets/logo.svg',
+              width: 32,
+              height: 32,
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  Text(
+                    'VERSION'.tr(args: [appVersion]),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: SideSwapColors.brightTurquoise,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () async {
+                      await openUrl(SettingsAboutUsData.urlWeb);
+                    },
+                    child: const Text(
+                      SettingsAboutUsData.urlWebText,
+                      style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          color: SideSwapColors.brightTurquoise,
+                          decoration: TextDecoration.underline),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

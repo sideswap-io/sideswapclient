@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_price_field.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 
@@ -23,9 +25,9 @@ class ModifyPriceDialog extends ConsumerStatefulWidget {
   });
 
   final TextEditingController controller;
-  final Asset asset;
-  final Asset productAsset;
-  final Image? icon;
+  final Asset? asset;
+  final Asset? productAsset;
+  final Widget? icon;
   final OrderDetailsData orderDetailsData;
 
   @override
@@ -51,28 +53,28 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
     markets = ref.read(marketsProvider);
 
     widget.controller.addListener(() {
-      updateDollarConversion(ref);
+      updateDollarConversion();
     });
 
     inversePrice = !widget.orderDetailsData.sellBitcoin;
 
     if (widget.orderDetailsData.isTracking) {
       final indexPrice = ref
-              .read(marketsProvider)
-              .getRequestOrderById(widget.orderDetailsData.orderId)
+              .read(marketRequestOrderByIdProvider(
+                  widget.orderDetailsData.orderId))
               ?.indexPrice ??
           0;
       sliderValue =
           double.tryParse(((indexPrice - 1) * 100).toStringAsFixed(2)) ?? 0;
     } else {
-      final indexPrice =
-          ref.read(marketsProvider).getIndexPriceForAsset(widget.asset.assetId);
+      final indexPrice = ref
+          .read(indexPriceForAssetProvider(widget.asset?.assetId))
+          .indexPrice;
       final orderPrice = ref
-              .read(marketsProvider)
-              .getRequestOrderById(widget.orderDetailsData.orderId)
+              .read(marketRequestOrderByIdProvider(
+                  widget.orderDetailsData.orderId))
               ?.price ??
           0;
-      0;
       if (indexPrice != 0 && orderPrice != 0) {
         sliderValue = double.tryParse(
                 ((orderPrice - indexPrice) / indexPrice * 100)
@@ -107,8 +109,8 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
 
   void onSubmit() {
     final isToken = ref
-        .read(requestOrderProvider)
-        .isAssetToken(widget.orderDetailsData.assetId);
+        .read(assetUtilsProvider)
+        .isAssetToken(assetId: widget.orderDetailsData.assetId);
 
     if (widget.orderDetailsData.isTracking) {
       final indexPrice = 1 + sliderValue / 100;
@@ -130,10 +132,10 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
     Navigator.of(context).pop();
   }
 
-  void updateDollarConversion(WidgetRef ref) {
-    final priceAssetId = widget.asset.assetId;
+  void updateDollarConversion() {
+    final priceAssetId = widget.asset?.assetId;
     setState(() {
-      if (priceAssetId == ref.read(walletProvider).tetherAssetId()) {
+      if (priceAssetId == ref.read(tetherAssetIdProvider)) {
         priceConversion = '';
       } else {
         priceConversion = ref
@@ -146,27 +148,28 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
   @override
   Widget build(BuildContext context) {
     final ticker =
-        ref.read(requestOrderProvider).tickerForAssetId(widget.asset.assetId);
+        ref.watch(assetUtilsProvider).tickerForAssetId(widget.asset?.assetId);
     final trackingPriceFixed = ref
-        .read(marketsProvider)
-        .calculateTrackingPrice(sliderValue, widget.asset.assetId);
+        .watch(indexPriceForAssetProvider(widget.asset?.assetId))
+        .calculateTrackingPrice(sliderValue);
     final trackingPrice =
         '${replaceCharacterOnPosition(input: trackingPriceFixed)} $ticker';
     final tracking = widget.orderDetailsData.isTracking;
     var displaySlider = tracking;
     final isToken = ref
-        .read(requestOrderProvider)
-        .isAssetToken(widget.orderDetailsData.assetId);
-    final indexPrice =
-        ref.read(marketsProvider).getIndexPriceStr(widget.asset.assetId);
-    if (!tracking && (!isToken && indexPrice.isNotEmpty)) {
+        .watch(assetUtilsProvider)
+        .isAssetToken(assetId: widget.orderDetailsData.assetId);
+    final indexPriceStr = ref
+        .watch(indexPriceForAssetProvider(widget.asset?.assetId))
+        .getIndexPriceStr();
+    if (!tracking && (!isToken && indexPriceStr.isNotEmpty)) {
       displaySlider = true;
     }
 
     if (displaySlider) {
       widget.controller.text = trackingPriceFixed;
     }
-    updateDollarConversion(ref);
+    updateDollarConversion();
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -191,7 +194,7 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
                         height: 410,
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
-                          color: Color(0xFF1C6086),
+                          color: SideSwapColors.blumine,
                         ),
                         child: Stack(
                           children: [
@@ -267,7 +270,8 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
                                       width: double.maxFinite,
                                       height: 54,
                                       text: 'SUBMIT'.tr(),
-                                      backgroundColor: const Color(0xFF00C5FF),
+                                      backgroundColor:
+                                          SideSwapColors.brightTurquoise,
                                       onPressed: onSubmit,
                                     ),
                                   ),

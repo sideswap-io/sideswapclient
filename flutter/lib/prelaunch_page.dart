@@ -4,10 +4,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/initialize_app_provider.dart';
+import 'package:sideswap/providers/initialize_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 class PreLaunchPage extends ConsumerStatefulWidget {
@@ -48,13 +49,13 @@ class PreLaunchPageBody extends StatefulWidget {
   const PreLaunchPageBody({super.key});
 
   @override
-  State<PreLaunchPageBody> createState() => _PreLaunchPageBodyState();
+  State<PreLaunchPageBody> createState() => PreLaunchPageBodyState();
 }
 
-class _PreLaunchPageBodyState extends State<PreLaunchPageBody>
+class PreLaunchPageBodyState extends State<PreLaunchPageBody>
     with SingleTickerProviderStateMixin {
   final _counter = 5;
-  final _color = const Color(0xFF00C5FF);
+  final _color = SideSwapColors.brightTurquoise;
   final List<double> delays = [.0, .25, .5, .75, 1.0];
   late AnimationController _controller;
 

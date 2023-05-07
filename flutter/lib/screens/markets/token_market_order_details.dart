@@ -5,11 +5,15 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/token_market_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/token_market_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
@@ -108,7 +112,7 @@ class TokenMarketOrderDetailsState
                           child: Consumer(
                             builder: (context, ref, _) {
                               final assetPrecision = ref
-                                  .watch(walletProvider)
+                                  .watch(assetUtilsProvider)
                                   .getPrecisionForAssetId(
                                       assetId: widget.requestOrder.assetId);
                               return OrderTable(
@@ -127,7 +131,7 @@ class TokenMarketOrderDetailsState
                     Consumer(
                       builder: (context, ref, child) {
                         final assetDetails =
-                            ref.watch(tokenMarketProvider).assetDetails;
+                            ref.watch(tokenMarketAssetDetailsProvider);
                         final assetId = widget.requestOrder.assetId;
                         if (!assetDetails.containsKey(assetId)) {
                           return Container();
@@ -137,16 +141,22 @@ class TokenMarketOrderDetailsState
                         final stats = assetDetailsData?.stats;
                         final chartsUrl = assetDetailsData?.chartUrl;
 
-                        final asset = ref
-                            .read(walletProvider)
-                            .assets[widget.requestOrder.assetId];
+                        final asset = ref.watch(assetsStateProvider.select(
+                            (value) => value[widget.requestOrder.assetId]));
                         final ticker = asset?.ticker ?? '';
                         final domain = asset?.domain ?? '';
-                        final circulatingAmount = (stats == null ||
-                                stats.hasBlindedIssuances)
-                            ? '-'
-                            : amountStr(stats.issuedAmount - stats.burnedAmount,
-                                precision: asset!.precision);
+                        final statsAmount = (stats?.issuedAmount ?? 0) -
+                            (stats?.burnedAmount ?? 0);
+                        final amountProvider =
+                            ref.watch(amountToStringProvider);
+                        final amountStr = amountProvider.amountToString(
+                            AmountToStringParameters(
+                                amount: statsAmount,
+                                precision: asset?.precision ?? 0));
+                        final circulatingAmount =
+                            (stats == null || stats.hasBlindedIssuances)
+                                ? '-'
+                                : amountStr;
 
                         return Padding(
                           padding: const EdgeInsets.only(
@@ -234,7 +244,7 @@ class TokenMarketOrderDetailsState
                       child: CustomBigButton(
                         width: double.maxFinite,
                         height: 54,
-                        backgroundColor: const Color(0xFF00C5FF),
+                        backgroundColor: SideSwapColors.brightTurquoise,
                         text: widget.requestOrder.isSell()
                             ? 'SELL'.tr()
                             : 'BUY'.tr(),

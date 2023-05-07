@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -28,7 +30,7 @@ class OrderTableRow extends StatefulWidget {
 
   final String description;
   final String? value;
-  final Image? icon;
+  final Widget? icon;
   final bool displayDivider;
   final double? topPadding;
   final String? dollarConversion;
@@ -43,7 +45,7 @@ class OrderTableRow extends StatefulWidget {
 
   static Widget assetAmount({
     required String description,
-    required String assetId,
+    required String? assetId,
     required int amount,
     required OrderTableRowType orderTableRowType,
     bool enabled = true,
@@ -53,15 +55,19 @@ class OrderTableRow extends StatefulWidget {
     return Builder(builder: (context) {
       return Consumer(
         builder: ((context, ref, _) {
-          final icon = ref
-              .watch(walletProvider.select((p) => p.assetImagesSmall[assetId]));
+          final icon = ref.watch(assetImageProvider).getSmallImage(assetId);
           final asset =
-              ref.watch(walletProvider.select((p) => p.assets[assetId]));
+              ref.watch(assetsStateProvider.select((value) => value[assetId]));
 
           final ticker = asset?.ticker;
-          final amount_ = amountStr(amount, precision: asset?.precision ?? 8);
-          final dollarConversion = ref.watch(walletProvider).liquidAssetId() ==
-                      assetId &&
+          final amountProvider = ref.watch(amountToStringProvider);
+          final liquidAssetId = ref.watch(liquidAssetIdProvider);
+          final amountStr = amountProvider.amountToStringNamed(
+              AmountToStringNamedParameters(
+                  amount: amount,
+                  ticker: ticker ?? '',
+                  precision: asset?.precision ?? 8));
+          final dollarConversion = liquidAssetId == assetId &&
                   showDollarConversion
               ? ref.watch(requestOrderProvider).dollarConversion(
                   assetId, toFloat(amount, precision: asset?.precision ?? 8))
@@ -69,7 +75,7 @@ class OrderTableRow extends StatefulWidget {
 
           return OrderTableRow(
             description: description,
-            value: '$amount_ $ticker',
+            value: amountStr,
             dollarConversion: dollarConversion,
             icon: icon,
             orderTableRowType: orderTableRowType,

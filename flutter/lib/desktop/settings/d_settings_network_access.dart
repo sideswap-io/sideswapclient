@@ -6,9 +6,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/settings/d_settings_custom_host.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/network_access_provider.dart';
-import 'package:sideswap/models/network_type_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/network_access_provider.dart';
+import 'package:sideswap/providers/network_type_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DSettingsNetworkAccess extends ConsumerWidget {
   const DSettingsNetworkAccess({super.key});
@@ -66,7 +66,7 @@ class DSettingsNetworkAccess extends ConsumerWidget {
                   padding: const EdgeInsets.only(top: 10),
                   child: DSettingsRadioButton(
                     trailingIcon: true,
-                    checked: selectedNetwork == SettingsNetworkType.custom,
+                    checked: selectedNetwork == SettingsNetworkType.personal,
                     onChanged: (value) {
                       ref.read(walletProvider).setRegistered();
                       Navigator.pushAndRemoveUntil(

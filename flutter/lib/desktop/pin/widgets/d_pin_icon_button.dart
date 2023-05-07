@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 
 class DPinIconButton extends HookWidget {
-  const DPinIconButton(
-      {super.key, this.onPressed, this.enabled = true, this.obscureText = false});
+  const DPinIconButton({
+    super.key,
+    this.onPressed,
+    this.enabled = true,
+    this.obscureText = false,
+  });
 
   final VoidCallback? onPressed;
   final bool enabled;
@@ -16,7 +21,7 @@ class DPinIconButton extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final Color iconColor =
-        obscureText ? const Color(0xFF84ADC6) : const Color(0xFF00C5FF);
+        obscureText ? SideSwapColors.glacier : SideSwapColors.brightTurquoise;
 
     final hoover = useState(false);
 

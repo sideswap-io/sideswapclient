@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/app_version.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
@@ -8,7 +9,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/settings/d_settings_licenses.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 
 class DSettingsAboutUs extends HookConsumerWidget {
@@ -50,7 +51,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF00C5FF),
+                          color: SideSwapColors.brightTurquoise,
                         ),
                       ),
                     ),

@@ -7,8 +7,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 
 class TxDetailsBottomButtons extends ConsumerStatefulWidget {
@@ -110,7 +111,8 @@ class TxDetailsBottomButtonsState
                     'assets/back_arrow.svg',
                     width: 8.16,
                     height: 14.73,
-                    color: const Color(0xFF00C5FF),
+                    colorFilter: const ColorFilter.mode(
+                        SideSwapColors.brightTurquoise, BlendMode.srcIn),
                   ),
                 ),
               ],
@@ -143,7 +145,8 @@ class TxDetailsBottomButtonsState
             'assets/share2.svg',
             width: 22,
             height: 26,
-            color: const Color(0xFF00C5FF),
+            colorFilter: const ColorFilter.mode(
+                SideSwapColors.brightTurquoise, BlendMode.srcIn),
           ),
         ),
       ],

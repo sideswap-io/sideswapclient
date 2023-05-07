@@ -7,8 +7,8 @@ import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_table.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_text_box.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
-import 'package:sideswap/models/mnemonic_table_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/mnemonic_table_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DWalletImport extends HookConsumerWidget {
   const DWalletImport({Key? key}) : super(key: key);

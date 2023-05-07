@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 
 class WaitSmsConfirmation extends ImplicitlyAnimatedWidget {
@@ -15,10 +15,10 @@ class WaitSmsConfirmation extends ImplicitlyAnimatedWidget {
 
   @override
   ImplicitlyAnimatedWidgetState<ImplicitlyAnimatedWidget> createState() =>
-      _WaitSmsConfirmationState();
+      WaitSmsConfirmationState();
 }
 
-class _WaitSmsConfirmationState
+class WaitSmsConfirmationState
     extends AnimatedWidgetBaseState<WaitSmsConfirmation> {
   IntTween? _intTween;
 
@@ -57,7 +57,7 @@ class _WaitSmsConfirmationState
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.normal,
-                  color: Color(0xFF00C5FF),
+                  color: SideSwapColors.brightTurquoise,
                 ),
               ),
             ),

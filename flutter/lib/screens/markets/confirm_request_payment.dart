@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
-import 'package:sideswap/models/payment_requests_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/payment_requests_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/markets/confirm_request_payment_success.dart';
 
@@ -17,8 +19,9 @@ class ConfirmRequestPayment extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final amount = request.amount;
-    final ticker =
-        ref.read(walletProvider).assets[request.assetId]?.ticker ?? '';
+    final requestAsset = ref
+        .watch(assetsStateProvider.select((value) => value[request.assetId]));
+    final ticker = requestAsset?.ticker ?? '';
 
     return SideSwapPopup(
       onWillPop: () async {
@@ -28,7 +31,7 @@ class ConfirmRequestPayment extends ConsumerWidget {
       onClose: () {
         Navigator.of(context).pop();
       },
-      backgroundColor: const Color(0xFF1C6086),
+      backgroundColor: SideSwapColors.blumine,
       enableInsideTopPadding: false,
       child: SafeArea(
         child: Center(
@@ -48,7 +51,7 @@ class ConfirmRequestPayment extends ConsumerWidget {
                   padding: const EdgeInsets.only(top: 24),
                   child: FriendWidget(
                     friend: request.friend,
-                    backgroundColor: const Color(0xFF135579),
+                    backgroundColor: SideSwapColors.chathamsBlue,
                   ),
                 ),
                 Padding(
@@ -67,7 +70,7 @@ class ConfirmRequestPayment extends ConsumerWidget {
                   width: double.maxFinite,
                   height: 54,
                   text: 'CONFIRM'.tr(),
-                  backgroundColor: const Color(0xFF00C5FF),
+                  backgroundColor: SideSwapColors.brightTurquoise,
                   textColor: Colors.white,
                   onPressed: () async {
                     final navigator =

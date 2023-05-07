@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/screens/settings/widgets/settings_network_checkbox.dart';
 
@@ -32,7 +33,7 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
         },
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
-          backgroundColor: const Color(0xFF135579),
+          backgroundColor: SideSwapColors.chathamsBlue,
           padding: EdgeInsets.zero,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(
@@ -40,7 +41,7 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
             ),
           ),
           side: const BorderSide(
-            color: Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
             width: 1,
             style: BorderStyle.solid,
           ),

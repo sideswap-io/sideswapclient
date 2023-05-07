@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
-import 'package:sideswap/desktop/markets/d_markets_root.dart';
 import 'package:sideswap/desktop/widgets/d_back_button.dart';
-import 'package:sideswap/models/market_data_provider.dart';
-import 'package:sideswap/models/token_market_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/market_data_provider.dart';
+import 'package:sideswap/providers/token_market_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 
 class DCharts extends ConsumerStatefulWidget {
   const DCharts({
@@ -23,10 +26,10 @@ class DCharts extends ConsumerStatefulWidget {
   final VoidCallback onBackPressed;
 
   @override
-  ConsumerState<DCharts> createState() => _DChartsState();
+  ConsumerState<DCharts> createState() => DChartsState();
 }
 
-class _DChartsState extends ConsumerState<DCharts> {
+class DChartsState extends ConsumerState<DCharts> {
   late MarketDataNotifier marketData;
 
   bool detailsExpanded = false;
@@ -84,7 +87,7 @@ class _DChartsState extends ConsumerState<DCharts> {
                 ),
               ),
               const SizedBox(height: 30),
-              _AssetDetails(
+              DChartsAssetDetails(
                 assetId: widget.assetId,
                 expanded: false,
                 onToggled: handleDetailsToggled,
@@ -95,7 +98,7 @@ class _DChartsState extends ConsumerState<DCharts> {
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                _AssetDetails(
+                DChartsAssetDetails(
                   assetId: widget.assetId,
                   expanded: true,
                   onToggled: handleDetailsToggled,
@@ -108,8 +111,9 @@ class _DChartsState extends ConsumerState<DCharts> {
   }
 }
 
-class _AssetDetails extends ConsumerWidget {
-  const _AssetDetails({
+class DChartsAssetDetails extends ConsumerWidget {
+  const DChartsAssetDetails({
+    super.key,
     required this.assetId,
     required this.expanded,
     required this.onToggled,
@@ -122,9 +126,12 @@ class _AssetDetails extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wallet = ref.read(walletProvider);
-    final asset = wallet.assets[assetId]!;
-    final icon = wallet.assetImagesSmall[assetId]!;
-    final issuerDetails = ref.watch(tokenMarketProvider).assetDetails[assetId];
+    final asset =
+        ref.watch(assetsStateProvider.select((value) => value[assetId]));
+    final icon = ref.watch(assetImageProvider).getSmallImage(assetId);
+    final assetPrecision =
+        ref.watch(assetUtilsProvider).getPrecisionForAssetId(assetId: assetId);
+    final issuerDetails = ref.watch(tokenMarketAssetDetailsProvider)[assetId];
     final isTestnet = wallet.isTestnet();
     final assetUrl = generateAssetUrl(assetId: assetId, testnet: isTestnet);
     final stats = ref.watch(marketDataProvider).getStats();
@@ -135,13 +142,16 @@ class _AssetDetails extends ConsumerWidget {
 
     final totalAmount = floatAmount + offlineAmount;
     final marketCap =
-        toFloat(totalAmount, precision: asset.precision) * stats.last;
-    final pricedInLiquid = isPricedInLiquid(asset);
-    final priceAssetId = pricedInLiquid ? wallet.liquidAssetId() : assetId;
+        toFloat(totalAmount, precision: assetPrecision) * stats.last;
+    final pricedInLiquid =
+        ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final priceAssetId = pricedInLiquid ? liquidAssetId : assetId;
+    final amountProvider = ref.watch(amountToStringProvider);
 
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF1C6086),
+        color: SideSwapColors.blumine,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(8),
           topRight: Radius.circular(8),
@@ -156,7 +166,7 @@ class _AssetDetails extends ConsumerWidget {
               icon,
               const SizedBox(width: 8),
               Text(
-                asset.name,
+                asset?.name ?? '',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
@@ -164,7 +174,7 @@ class _AssetDetails extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                asset.ticker,
+                asset?.ticker ?? '',
                 style: const TextStyle(
                   fontSize: 22,
                 ),
@@ -176,7 +186,11 @@ class _AssetDetails extends ConsumerWidget {
                     expanded
                         ? 'assets/arrow_down2.svg'
                         : 'assets/arrow_up2.svg',
-                    color: states.isHovering ? Colors.white : null,
+                    colorFilter: ColorFilter.mode(
+                        states.isHovering
+                            ? Colors.white
+                            : SideSwapColors.brightTurquoise,
+                        BlendMode.srcIn),
                   );
                 },
                 onPressed: onToggled,
@@ -187,53 +201,79 @@ class _AssetDetails extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _DetailsField(
+              DChartsAssetDetailsField(
                 name: '30d Low'.tr(),
                 value: priceStr(stats.low, pricedInLiquid),
                 assetAmount: stats.low,
                 assetId: priceAssetId,
               ),
-              _DetailsField(
+              DChartsAssetDetailsField(
                 name: '30d High'.tr(),
                 value: priceStr(stats.high, pricedInLiquid),
                 assetAmount: stats.high,
                 assetId: priceAssetId,
               ),
-              _DetailsField(
+              DChartsAssetDetailsField(
                 name: 'Last'.tr(),
                 value: priceStr(stats.last, pricedInLiquid),
                 assetAmount: stats.last,
                 assetId: priceAssetId,
               ),
-              _DetailsField(
+              DChartsAssetDetailsField(
                 name: '30d Change'.tr(),
                 value: '${stats.changePercent.toStringAsFixed(2)}%',
                 color: stats.changePercent == 0
                     ? null
                     : (stats.changePercent > 0
-                        ? const Color(0xFF2CCCBF)
-                        : const Color(0xFFFF7878)),
+                        ? SideSwapColors.turquoise
+                        : SideSwapColors.bitterSweet),
               ),
-              _DetailsField(
-                name: '30d Vol'.tr(),
-                value: amountStr(
-                    toIntAmount(stats.volume, precision: asset.precision),
-                    precision: asset.precision),
+              Consumer(
+                builder: (context, ref, child) {
+                  final amount =
+                      toIntAmount(stats.volume, precision: assetPrecision);
+                  final value = amountProvider.amountToString(
+                      AmountToStringParameters(
+                          amount: amount, precision: assetPrecision));
+                  return DChartsAssetDetailsField(
+                    name: '30d Vol'.tr(),
+                    value: value,
+                  );
+                },
               ),
-              _DetailsField(
-                name: 'Free float'.tr(),
-                value: amountStr(floatAmount, precision: asset.precision),
+              Consumer(
+                builder: (context, ref, child) {
+                  final value = amountProvider.amountToString(
+                      AmountToStringParameters(
+                          amount: floatAmount, precision: assetPrecision));
+                  return DChartsAssetDetailsField(
+                    name: 'Free float'.tr(),
+                    value: value,
+                  );
+                },
               ),
-              _DetailsField(
-                name: 'Total float'.tr(),
-                value: amountStr(totalAmount, precision: asset.precision),
+              Consumer(
+                builder: (context, ref, child) {
+                  final value = amountProvider.amountToString(
+                      AmountToStringParameters(
+                          amount: totalAmount, precision: assetPrecision));
+                  return DChartsAssetDetailsField(
+                    name: 'Total float'.tr(),
+                    value: value,
+                  );
+                },
               ),
               if (pricedInLiquid)
-                _DetailsField(
-                  name: 'Market cap (L-BTC)'.tr(),
-                  value: marketCap.toStringAsFixed(2),
-                  assetAmount: marketCap,
-                  assetId: wallet.liquidAssetId(),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+                    return DChartsAssetDetailsField(
+                      name: 'Market cap (L-BTC)'.tr(),
+                      value: marketCap.toStringAsFixed(2),
+                      assetAmount: marketCap,
+                      assetId: liquidAssetId,
+                    );
+                  },
                 ),
             ],
           ),
@@ -260,16 +300,16 @@ class _AssetDetails extends ConsumerWidget {
                   children: [
                     assetDetailsUrl(
                       'Issuer'.tr(),
-                      'https://${asset.domain}',
+                      'https://${asset?.domain ?? ''}',
                     ),
                     assetDetailsUrl(
                       'Asset'.tr(),
                       assetUrl,
                     ),
-                    if (asset.hasDomainAgent())
+                    if (asset?.hasDomainAgent() == true)
                       assetDetailsUrl(
                         'Registration Agent'.tr(),
-                        'https://${asset.domainAgent}',
+                        'https://${asset?.domainAgent ?? ''}',
                       ),
                   ],
                 ),
@@ -300,8 +340,9 @@ class _AssetDetails extends ConsumerWidget {
   }
 }
 
-class _DetailsField extends ConsumerWidget {
-  const _DetailsField({
+class DChartsAssetDetailsField extends ConsumerWidget {
+  const DChartsAssetDetailsField({
+    super.key,
     required this.name,
     required this.value,
     this.color,

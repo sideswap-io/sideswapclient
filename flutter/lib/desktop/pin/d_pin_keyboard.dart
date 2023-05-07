@@ -2,12 +2,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
-import 'package:sideswap/models/pin_keyboard_provider.dart';
-import 'package:sideswap/models/pin_protection_provider.dart';
+import 'package:sideswap/providers/pin_keyboard_provider.dart';
+import 'package:sideswap/providers/pin_protection_provider.dart';
 
 final pinKeyboardIndexProvider =
     ChangeNotifierProvider.autoDispose<PinKeyboardIndexProvider>(
@@ -66,7 +67,7 @@ class DPinKeyboard extends HookConsumerWidget {
               const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF00C5FF),
+                color: SideSwapColors.brightTurquoise,
                 letterSpacing: 0.5,
               ),
             ),
@@ -105,7 +106,7 @@ class DPinKeyboard extends HookConsumerWidget {
             case 9:
               child = const Icon(
                 Icons.backspace_outlined,
-                color: Color(0xFF00C5FF),
+                color: SideSwapColors.brightTurquoise,
                 size: 24,
               );
               break;

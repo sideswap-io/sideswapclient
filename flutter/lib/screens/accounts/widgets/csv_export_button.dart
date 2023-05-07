@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/models/csv_provider.dart';
+import 'package:sideswap/providers/csv_provider.dart';
 
 class CsvExportButton extends HookConsumerWidget {
   const CsvExportButton({
@@ -35,6 +35,8 @@ class CsvExportButton extends HookConsumerWidget {
                   'assets/export.svg',
                   width: 22,
                   height: 21,
+                  colorFilter:
+                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 ),
               ),
             ],

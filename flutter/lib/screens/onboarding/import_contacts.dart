@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/contact_provider.dart';
-import 'package:sideswap/models/phone_provider.dart';
+import 'package:sideswap/providers/contact_provider.dart';
+import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/import_contacts_image.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
@@ -100,7 +100,7 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
                   child: CustomBigButton(
                     width: double.maxFinite,
                     height: 54,
-                    backgroundColor: const Color(0xFF00C5FF),
+                    backgroundColor: SideSwapColors.brightTurquoise,
                     text: 'YES'.tr(),
                     enabled:
                         contactsLoadingState != ContactsLoadingState.running,
@@ -118,7 +118,7 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
                       height: 54,
                       backgroundColor: Colors.transparent,
                       text: 'NOT NOW'.tr(),
-                      textColor: const Color(0xFF00C5FF),
+                      textColor: SideSwapColors.brightTurquoise,
                       enabled:
                           contactsLoadingState != ContactsLoadingState.running,
                       onPressed: () async {

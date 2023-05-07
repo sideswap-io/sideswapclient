@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/custom_scrollable_container.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -76,7 +77,7 @@ class SettingsAboutUs extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF00C5FF),
+                        color: SideSwapColors.brightTurquoise,
                       ),
                     ),
                   ),

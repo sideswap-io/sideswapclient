@@ -1,11 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
-import 'package:sideswap/models/locales_provider.dart';
+import 'package:sideswap/providers/locales_provider.dart';
 
 class Languages extends ConsumerWidget {
   const Languages({
@@ -51,7 +52,8 @@ class Languages extends ConsumerWidget {
                           borderRadius: const BorderRadius.all(
                             Radius.circular(8),
                           ),
-                          color: isSelected ? const Color(0xFF135579) : null,
+                          color:
+                              isSelected ? SideSwapColors.chathamsBlue : null,
                           border: isSelected
                               ? null
                               : Border.all(
@@ -100,7 +102,7 @@ class Languages extends ConsumerWidget {
               ),
             ),
             Container(
-              color: const Color(0xFF135579),
+              color: SideSwapColors.chathamsBlue,
               padding:
                   const EdgeInsets.symmetric(vertical: 20, horizontal: 118),
               child: DCustomTextBigButton(

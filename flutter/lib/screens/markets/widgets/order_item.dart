@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/widgets/colored_container.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
 
 class OrderItem extends ConsumerStatefulWidget {
   const OrderItem({
@@ -36,7 +40,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
   final descriptionStyle = const TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF00C5FF),
+    color: SideSwapColors.brightTurquoise,
   );
 
   final amountStyle = const TextStyle(
@@ -76,50 +80,64 @@ class OrderItemState extends ConsumerState<OrderItem> {
   @override
   Widget build(BuildContext context) {
     final wallet = ref.read(walletProvider);
-    final assets = wallet.assets;
-    final bitcoinAsset = assets[wallet.liquidAssetId()]!;
-    final asset = assets[widget.requestOrder.assetId]!;
-    final isStablecoin = asset.swapMarket;
-    final bitcoinIcon = wallet.assetImagesSmall[wallet.liquidAssetId()]!;
-    final assetIcon = wallet.assetImagesSmall[asset.assetId];
-    final assetTicker = asset.ticker;
+    final liquidAssetId = ref.watch(liquidAssetIdProvider);
+    final bitcoinAsset =
+        ref.watch(assetsStateProvider.select((value) => value[liquidAssetId]));
+    final asset = ref.watch(assetsStateProvider
+        .select((value) => value[widget.requestOrder.assetId]));
+    final isStablecoin = asset?.swapMarket == true;
+    final bitcoinIcon =
+        ref.watch(assetImageProvider).getSmallImage(liquidAssetId);
+    final assetIcon =
+        ref.watch(assetImageProvider).getSmallImage(asset?.assetId);
+    final assetTicker = asset?.ticker;
     final isToken = widget.requestOrder.marketType == MarketType.token;
     final isAmp = widget.requestOrder.marketType == MarketType.amp;
-    final bitcoinTicker = bitcoinAsset.ticker;
+    final bitcoinTicker = bitcoinAsset?.ticker;
 
     final sendBitcoins = widget.requestOrder.sendBitcoins;
     final sendAsset = sendBitcoins ? bitcoinAsset : asset;
     final recvAsset = sendBitcoins ? asset : bitcoinAsset;
 
-    final deliverTicker = sendAsset.ticker;
-    final bitcoinAmountStr = amountStr(widget.requestOrder.bitcoinAmount);
-    final assetAmountStr =
-        amountStr(widget.requestOrder.assetAmount, precision: asset.precision);
+    final deliverTicker = sendAsset?.ticker ?? '';
+    final amountProvider = ref.watch(amountToStringProvider);
+    final bitcoinAmountStr = amountProvider.amountToString(
+        AmountToStringParameters(amount: widget.requestOrder.bitcoinAmount));
+    final assetPrecision = ref
+        .watch(assetUtilsProvider)
+        .getPrecisionForAssetId(assetId: asset?.assetId);
+    final assetAmountStr = amountProvider.amountToString(
+        AmountToStringParameters(
+            amount: widget.requestOrder.assetAmount,
+            precision: assetPrecision));
     final deliverIcon = sendBitcoins ? bitcoinIcon : assetIcon;
     final buyAmount = sendBitcoins
         ? widget.requestOrder.assetAmount
         : widget.requestOrder.bitcoinAmount;
     final receiveTicker = sendBitcoins ? assetTicker : bitcoinTicker;
-    final receivePrecision = recvAsset.precision;
-    final buyAmountStr = amountStr(buyAmount, precision: receivePrecision);
+    final receivePrecision = recvAsset?.precision;
+    final buyAmountStr = amountProvider.amountToString(AmountToStringParameters(
+        amount: buyAmount, precision: receivePrecision ?? 8));
     final receiveIcon = sendBitcoins ? assetIcon : bitcoinIcon;
     final totalPrice = sendBitcoins
         ? widget.requestOrder.assetAmount
         : widget.requestOrder.bitcoinAmount;
-    final totalPriceStr = amountStr(totalPrice, precision: receivePrecision);
+    final totalPriceStr = amountProvider.amountToString(
+        AmountToStringParameters(
+            amount: totalPrice, precision: receivePrecision ?? 8));
     final priceTicker = isStablecoin ? assetTicker : bitcoinTicker;
     final priceIcon = isStablecoin ? assetIcon : bitcoinIcon;
     final priceAmount = priceStrForMarket(
         widget.requestOrder.price, widget.requestOrder.marketType);
     final dollarConversionRecv = ref
         .read(requestOrderProvider)
-        .dollarConversionFromString(wallet.liquidAssetId(), buyAmountStr);
+        .dollarConversionFromString(liquidAssetId, buyAmountStr);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Material(
         borderRadius: const BorderRadius.all(Radius.circular(10)),
-        color: const Color(0xFF135579),
+        color: SideSwapColors.chathamsBlue,
         child: InkWell(
           onTap: widget.onTap ??
               () {
@@ -174,7 +192,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                                 child: Icon(
                                   Icons.watch_later,
                                   size: 14,
-                                  color: Color(0xFF00C5FF),
+                                  color: SideSwapColors.brightTurquoise,
                                 ),
                               ),
                               Text(
@@ -199,7 +217,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                     child: Divider(
                       thickness: 1,
                       height: 1,
-                      color: Color(0xFF2B6F95),
+                      color: SideSwapColors.jellyBean,
                     ),
                   ),
                   Row(
@@ -326,7 +344,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                       child: Divider(
                         thickness: 1,
                         height: 1,
-                        color: Color(0xFF2B6F95),
+                        color: SideSwapColors.jellyBean,
                       ),
                     ),
                     Row(
@@ -377,18 +395,20 @@ class OrderItemState extends ConsumerState<OrderItem> {
                                 padding: const EdgeInsets.only(right: 8),
                                 child: sendBitcoins != isAmp
                                     ? ColoredContainer(
-                                        backgroundColor: const Color(0xFFFF7878)
+                                        backgroundColor: SideSwapColors
+                                            .bitterSweet
                                             .withOpacity(0.14),
-                                        borderColor: const Color(0xFFFF7878),
+                                        borderColor: SideSwapColors.bitterSweet,
                                         child: Text(
                                           'Sell'.tr(),
                                           style: coloredContainerStyle,
                                         ),
                                       )
                                     : ColoredContainer(
-                                        backgroundColor: const Color(0xFF2CCCBF)
+                                        backgroundColor: SideSwapColors
+                                            .turquoise
                                             .withOpacity(0.14),
-                                        borderColor: const Color(0xFF2CCCBF),
+                                        borderColor: SideSwapColors.turquoise,
                                         child: Text(
                                           'Buy'.tr(),
                                           style: coloredContainerStyle,
@@ -405,7 +425,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                                     child: Icon(
                                       Icons.watch_later,
                                       size: 14,
-                                      color: Color(0xFF00C5FF),
+                                      color: SideSwapColors.brightTurquoise,
                                     ),
                                   ),
                                   Text(

@@ -5,12 +5,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/config_provider.dart';
-import 'package:sideswap/models/friends_provider.dart';
-import 'package:sideswap/models/payment_provider.dart';
+import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/friends_provider.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/models/qrcode_models.dart';
-import 'package:sideswap/models/qrcode_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/widgets/confirm_phone_bottom_panel.dart';

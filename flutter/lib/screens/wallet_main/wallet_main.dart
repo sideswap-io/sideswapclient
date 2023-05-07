@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/ui_state_args_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/screens/accounts/accounts.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
 import 'package:sideswap/screens/accounts/assets_list.dart';

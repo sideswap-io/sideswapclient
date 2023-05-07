@@ -11,16 +11,27 @@
             "program": "lib/main_desktop.dart",
         },
         {
+            "name": "desktop (mobile)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main_desktop.dart",
+            "args":[
+				"--dart-entrypoint-args","--mode=mobile",
+			]
+        },
+        {
             "name": "desktop (profile mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "profile",
+            "program": "lib/main_desktop.dart",
         },
         {
             "name": "desktop (release mode)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "release",
+            "program": "lib/main_desktop.dart",
         }
     ]
 }

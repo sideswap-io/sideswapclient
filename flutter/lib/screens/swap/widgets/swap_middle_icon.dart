@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/screens/swap/widgets/rounded_text_label.dart';
 import 'package:sideswap/screens/swap/widgets/swap_arrows_button.dart';
 

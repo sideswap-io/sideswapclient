@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
@@ -82,7 +83,7 @@ class EmptyTxListItem extends StatelessWidget {
 class EmptyTextContainer extends StatefulWidget {
   const EmptyTextContainer({
     super.key,
-    this.color = const Color(0xFF135579),
+    this.color = SideSwapColors.chathamsBlue,
     this.width = 26.0,
     this.height,
     this.radius,

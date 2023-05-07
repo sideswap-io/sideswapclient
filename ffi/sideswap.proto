@@ -342,6 +342,11 @@ message To {
     required string jade_id = 1;
   }
 
+  message GaidStatus {
+    required string gaid = 1;
+    required string asset_id = 2;
+  }
+
   oneof msg {
     Login login = 1;
     Empty logout = 2;
@@ -388,6 +393,8 @@ message To {
     JadeRegister jade_register = 69;
     JadeLogin jade_login = 70;
     Empty jade_rescan = 71;
+
+    GaidStatus gaid_status = 81;
   }
 }
 
@@ -674,6 +681,12 @@ message From {
     required Status status = 1;
   }
 
+  message GaidStatus {
+    required string gaid = 1;
+    required string asset_id = 2;
+    optional string error = 3;
+  }
+
   oneof msg {
     EnvSettings env_settings = 13;
     RegisterAmp register_amp = 8;
@@ -737,6 +750,8 @@ message From {
     JadeRegister jade_register = 81;
     JadeLogin jade_login = 82;
     JadeStatus jade_status = 83;
+
+    GaidStatus gaid_status = 91;
   }
 }
 

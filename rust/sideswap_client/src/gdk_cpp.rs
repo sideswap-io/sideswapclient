@@ -194,7 +194,7 @@ impl GdkJson {
         }
     }
 
-    unsafe fn as_ptr(&self) -> *const gdk::GA_json {
+    unsafe fn as_ptr(&self) -> *mut gdk::GA_json {
         self.json
     }
 

@@ -2,8 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:sideswap/common/widgets/custom_big_button.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/allow_tx_chaining_button.dart';
 
 Future<bool> allowTxChaining(BuildContext context) async {
   const hideTxChainingPromptField = 'hide_tx_chaining_prompt';
@@ -53,7 +53,7 @@ class AllowTxChainingWidget extends StatelessWidget {
         borderRadius: BorderRadius.all(
           Radius.circular(8),
         ),
-        color: Color(0xFF1C6086),
+        color: SideSwapColors.blumine,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -88,47 +88,23 @@ class AllowTxChainingWidget extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            _Button(
+            AllowTxChainingButton(
               text: 'Yes, only once'.tr(),
               value: AllowTxChaining.once,
             ),
             const SizedBox(height: 12),
-            _Button(
+            AllowTxChainingButton(
               text: 'Yes, do not ask me again'.tr(),
               value: AllowTxChaining.always,
             ),
             const SizedBox(height: 12),
-            _Button(
+            AllowTxChainingButton(
               text: 'Cancel'.tr(),
               value: AllowTxChaining.no,
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _Button extends StatelessWidget {
-  const _Button({
-    Key? key,
-    required this.text,
-    required this.value,
-  }) : super(key: key);
-
-  final String text;
-  final AllowTxChaining value;
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomBigButton(
-      width: 295,
-      height: 54,
-      text: text,
-      backgroundColor: const Color(0xFF00C5FF),
-      onPressed: () {
-        Navigator.of(context, rootNavigator: true).pop(value);
-      },
     );
   }
 }

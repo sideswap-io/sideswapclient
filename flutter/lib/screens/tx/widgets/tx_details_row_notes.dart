@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -25,7 +26,7 @@ class TxDetailsRowNotes extends ConsumerWidget {
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF00C5FF),
+            color: SideSwapColors.brightTurquoise,
           ),
         ),
         const Spacer(),
@@ -62,7 +63,8 @@ class TxDetailsRowNotes extends ConsumerWidget {
                 'assets/copy.svg',
                 width: 18,
                 height: 18,
-                color: const Color(0xFF00C5FF),
+                colorFilter: const ColorFilter.mode(
+                    SideSwapColors.brightTurquoise, BlendMode.srcIn),
               ),
             ),
           ),

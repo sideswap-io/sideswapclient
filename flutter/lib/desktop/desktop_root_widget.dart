@@ -2,25 +2,26 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/desktop/pin/d_pin_protection.dart';
 import 'package:sideswap/desktop/route_generator.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
-import 'package:sideswap/models/init_provider.dart';
-import 'package:sideswap/models/local_notifications_service.dart';
-import 'package:sideswap/models/pin_protection_provider.dart';
-import 'package:sideswap/models/select_env_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/init_provider.dart';
+import 'package:sideswap/providers/local_notifications_service.dart';
+import 'package:sideswap/providers/pin_protection_provider.dart';
+import 'package:sideswap/providers/select_env_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 class DesktopRootWidget extends ConsumerStatefulWidget {
   const DesktopRootWidget({super.key});
 
   @override
-  ConsumerState<DesktopRootWidget> createState() => _DesktopRootWidgetState();
+  ConsumerState<DesktopRootWidget> createState() => DesktopRootWidgetState();
 }
 
-class _DesktopRootWidgetState extends ConsumerState<DesktopRootWidget> {
+class DesktopRootWidgetState extends ConsumerState<DesktopRootWidget> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
@@ -136,8 +137,8 @@ class _DesktopRootWidgetState extends ConsumerState<DesktopRootWidget> {
                       Radius.circular(8),
                     ),
                     color: const Color(0xFF144866),
-                    border:
-                        Border.all(color: const Color(0xFF00C5FF), width: 1.0),
+                    border: Border.all(
+                        color: SideSwapColors.brightTurquoise, width: 1.0),
                   ),
                   child: Center(
                     child: Row(

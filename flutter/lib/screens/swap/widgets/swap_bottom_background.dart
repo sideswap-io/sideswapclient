@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class SwapBottomBackground extends StatelessWidget {
   const SwapBottomBackground({
@@ -12,7 +13,10 @@ class SwapBottomBackground extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(top: middle),
       child: Container(
-        color: const Color(0xFF1C6086),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: SideSwapColors.blumine,
+        ),
       ),
     );
   }

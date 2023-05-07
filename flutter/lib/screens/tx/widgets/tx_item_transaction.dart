@@ -3,8 +3,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
@@ -57,17 +59,23 @@ class TxItemTransaction extends StatelessWidget {
                           ),
                           Consumer(
                             builder: ((context, ref, _) {
-                              final asset = ref
-                                  .watch(walletProvider)
-                                  .getAssetById(assetId);
+                              final asset = ref.watch(assetsStateProvider
+                                  .select((value) => value[assetId]));
                               final amount =
                                   txAssetAmount(transItem.tx, assetId);
                               final ticker = asset?.ticker;
                               final precision = ref
-                                  .watch(walletProvider)
+                                  .watch(assetUtilsProvider)
                                   .getPrecisionForAssetId(assetId: assetId);
+                              final amountProvider =
+                                  ref.watch(amountToStringProvider);
                               final balanceStr =
-                                  '${amountStr(amount, forceSign: true, precision: precision)} $ticker';
+                                  amountProvider.amountToStringNamed(
+                                      AmountToStringNamedParameters(
+                                          amount: amount,
+                                          forceSign: true,
+                                          precision: precision,
+                                          ticker: ticker ?? ''));
                               final balanceColor = balanceStr.contains('+')
                                   ? const Color(0xFFB3FF85)
                                   : Colors.white;

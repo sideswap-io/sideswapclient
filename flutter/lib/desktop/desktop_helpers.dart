@@ -12,8 +12,7 @@ import 'package:sideswap/desktop/main/d_send_popup.dart';
 import 'package:sideswap/desktop/main/d_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_wait_pegin.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/payment_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 const _popupRouteName = '/desktopPopup';
 
@@ -28,8 +27,7 @@ void desktopShowRecvAddress(BuildContext context, WidgetRef ref) {
   );
 }
 
-void desktopShowSendTx(BuildContext context, WidgetRef ref) {
-  ref.read(paymentProvider).createdTx = null;
+void desktopShowSendTx(BuildContext context) {
   showDialog<void>(
     context: context,
     builder: (context) {

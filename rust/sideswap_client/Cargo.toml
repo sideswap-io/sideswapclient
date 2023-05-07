@@ -27,7 +27,7 @@ gdk-common = { path = "../gdk_rust/gdk_common" }
 gdk-registry = { path = "../gdk_rust/gdk_registry" }
 gdk-rust = { path = "../gdk_rust/gdk_rust" }
 libc = "*"
-prost = "0.10.4"
+prost = "0.11.9"
 bytes = "*"
 allo-isolate = "*"
 chrono = "*"

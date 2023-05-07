@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class OrderTrackingSliderTrackShape extends RoundedRectSliderTrackShape {
   OrderTrackingSliderTrackShape({
     required this.minValue,
     required this.maxValue,
     this.inverse = false,
-    this.negativeColor = const Color(0xFFFF7878),
-    this.positiveColor = const Color(0xFF2CCCBF),
-    this.trackColor = const Color(0xFF135579),
+    this.negativeColor = SideSwapColors.bitterSweet,
+    this.positiveColor = SideSwapColors.turquoise,
+    this.trackColor = SideSwapColors.chathamsBlue,
   });
 
   final double minValue;
@@ -26,6 +27,7 @@ class OrderTrackingSliderTrackShape extends RoundedRectSliderTrackShape {
     required Animation<double> enableAnimation,
     required TextDirection textDirection,
     required Offset thumbCenter,
+    Offset? secondaryOffset,
     bool isDiscrete = false,
     bool isEnabled = false,
     double additionalActiveTrackHeight = 2,

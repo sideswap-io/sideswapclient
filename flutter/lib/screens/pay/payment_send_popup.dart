@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
-import 'package:sideswap/models/payment_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 
 class PaymentSendPopup extends StatelessWidget {
@@ -27,24 +31,27 @@ class PaymentSendPopup extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
             ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 10),
             child: Consumer(
               builder: (context, ref, _) {
-                final selectedAsset = ref.watch(
-                    walletProvider.select((p) => p.selectedWalletAsset!.asset));
-                final asset = ref.watch(
-                    walletProvider.select((p) => p.assets[selectedAsset]));
+                final selectedWalletAsset =
+                    ref.watch(selectedWalletAssetProvider);
+                final asset = ref.watch(assetsStateProvider
+                    .select((value) => value[selectedWalletAsset]));
                 final precision = ref
-                    .watch(walletProvider)
+                    .watch(assetUtilsProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
                 final sendAmountParsed = ref
                     .watch(paymentProvider.select((p) => p.sendAmountParsed));
-                final sendAmountStr =
-                    amountStr(sendAmountParsed, precision: precision);
+                final amountProvider = ref.watch(amountToStringProvider);
+                final sendAmountStr = amountProvider.amountToString(
+                    AmountToStringParameters(
+                        amount: sendAmountParsed, precision: precision));
+
                 final amount = '$sendAmountStr ${asset?.ticker}';
                 return Text(
                   amount,
@@ -61,18 +68,20 @@ class PaymentSendPopup extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8),
             child: Consumer(
               builder: (context, ref, _) {
-                final selectedAsset = ref.watch(
-                    walletProvider.select((p) => p.selectedWalletAsset!.asset));
-                final asset = ref.watch(
-                    walletProvider.select((p) => p.assets[selectedAsset]));
+                final selectedWalletAsset =
+                    ref.watch(selectedWalletAssetProvider);
+                final asset = ref.watch(assetsStateProvider
+                    .select((value) => value[selectedWalletAsset]));
                 final precision = ref
-                    .watch(walletProvider)
+                    .watch(assetUtilsProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
                 final sendAmountParsed = ref
                     .watch(paymentProvider.select((p) => p.sendAmountParsed));
-                final amount = double.tryParse(
-                        amountStr(sendAmountParsed, precision: precision)) ??
-                    0;
+                final amountProvider = ref.watch(amountToStringProvider);
+                final amountStr = amountProvider.amountToString(
+                    AmountToStringParameters(
+                        amount: sendAmountParsed, precision: precision));
+                final amount = double.tryParse(amountStr) ?? 0;
                 dollarConversion = ref
                     .watch(walletProvider)
                     .getAmountUsd(asset?.assetId ?? '', amount)
@@ -101,7 +110,7 @@ class PaymentSendPopup extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(top: 8),
             child: DottedLine(
-              dashColor: Color(0xFF2B6F95),
+              dashColor: SideSwapColors.jellyBean,
               dashGapColor: Colors.transparent,
               dashLength: 1.0,
               dashGapLength: 0.0,
@@ -126,7 +135,7 @@ class PaymentSendPopup extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(top: 16),
             child: DottedLine(
-              dashColor: Color(0xFF2B6F95),
+              dashColor: SideSwapColors.jellyBean,
               dashGapColor: Colors.transparent,
               dashLength: 1.0,
               dashGapLength: 0.0,
@@ -137,9 +146,13 @@ class PaymentSendPopup extends StatelessWidget {
             child: Consumer(builder: (context, ref, _) {
               final sendNetworkFee =
                   ref.watch(paymentProvider.select((p) => p.sendNetworkFee));
+              final amountProvider = ref.watch(amountToStringProvider);
+              final networkFeeAmount = amountProvider.amountToStringNamed(
+                  AmountToStringNamedParameters(
+                      amount: sendNetworkFee, ticker: kLiquidBitcoinTicker));
               return TxDetailsColumn(
                 description: 'Network Fee'.tr(),
-                details: '${amountStr(sendNetworkFee)} $kLiquidBitcoinTicker',
+                details: networkFeeAmount,
                 detailsStyle: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.normal,
@@ -151,7 +164,7 @@ class PaymentSendPopup extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(top: 16),
             child: DottedLine(
-              dashColor: Color(0xFF2B6F95),
+              dashColor: SideSwapColors.jellyBean,
               dashGapColor: Colors.transparent,
               dashLength: 1.0,
               dashGapLength: 0.0,
@@ -168,7 +181,7 @@ class PaymentSendPopup extends StatelessWidget {
               return CustomBigButton(
                 width: MediaQuery.of(context).size.width,
                 height: 54,
-                backgroundColor: const Color(0xFF00C5FF),
+                backgroundColor: SideSwapColors.brightTurquoise,
                 text: 'SEND'.tr(),
                 enabled: buttonEnabled,
                 onPressed: buttonEnabled

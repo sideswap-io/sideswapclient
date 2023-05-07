@@ -2,11 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/pin_setup_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/pin_setup_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class PinWelcome extends StatelessWidget {
   const PinWelcome({
@@ -98,7 +98,7 @@ class PinWelcomeBody extends ConsumerWidget {
             CustomBigButton(
               width: double.maxFinite,
               height: 54,
-              backgroundColor: const Color(0xFF00C5FF),
+              backgroundColor: SideSwapColors.brightTurquoise,
               text: 'YES'.tr(),
               onPressed: onYesPressed ??
                   () {
@@ -112,7 +112,7 @@ class PinWelcomeBody extends ConsumerWidget {
                 height: 54,
                 backgroundColor: Colors.transparent,
                 text: 'NOT NOW'.tr(),
-                textColor: const Color(0xFF00C5FF),
+                textColor: SideSwapColors.brightTurquoise,
                 onPressed: onNoPressed ??
                     () async {
                       await ref

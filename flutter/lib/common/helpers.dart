@@ -1,17 +1,12 @@
 import 'dart:math';
-import 'dart:io';
-import 'dart:collection';
-import 'package:csv/csv.dart';
 
 import 'package:another_flushbar/flushbar.dart';
-import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/screens/balances.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -80,35 +75,6 @@ double toFloat(int amount, {int precision = 8}) {
 
 int toIntAmount(double amount, {int precision = 8}) {
   return (amount * pow(10, precision)).round();
-}
-
-String amountStr(int amount, {bool forceSign = false, int precision = 8}) {
-  var sign = '';
-  if (amount < 0) {
-    sign = '-';
-    amount = -amount;
-  } else if (forceSign && amount > 0) {
-    sign = '+';
-  }
-  final bitAmount = amount ~/ kCoin;
-  final satAmount = amount % kCoin;
-  final satAmountStr = satAmount.toString().padLeft(8, '0');
-  final newAmount = Decimal.tryParse('$bitAmount$satAmountStr') ?? Decimal.zero;
-  final power =
-      Decimal.tryParse(pow(10, precision).toStringAsFixed(precision)) ??
-          Decimal.zero;
-  final amountWithPrecision = newAmount / power;
-  if (precision == 0) {
-    return sign + amountWithPrecision.toInt().toString();
-  }
-  return sign + (newAmount / power).toStringAsFixed(precision);
-}
-
-String amountStrNamed(int amount, String ticker,
-    {bool forceSign = false, int precision = 8}) {
-  final valueStr =
-      amountStr(amount, forceSign: forceSign, precision: precision);
-  return '$valueStr $ticker';
 }
 
 String priceStr(double price, bool priceInLiquid) {
@@ -201,21 +167,27 @@ class CustomTitle extends StatelessWidget {
   }
 }
 
-Future<void> copyToClipboard(BuildContext context, String addr,
-    {bool displaySnackbar = true}) async {
-  if (displaySnackbar) {
-    final flushbar = Flushbar<void>(
-      messageText: Text('Copied'.tr()),
-      duration: const Duration(seconds: 3),
-      backgroundColor: const Color(0xFF135579),
-    );
-    await flushbar.show(context);
-  }
-
-  await Clipboard.setData(ClipboardData(text: addr));
+Future<void> copyToClipboard(
+  BuildContext context,
+  String? addr, {
+  bool displaySnackbar = true,
+  String? suffix,
+}) async {
+  await Clipboard.setData(ClipboardData(text: addr)).then((value) {
+    if (displaySnackbar) {
+      final displayString =
+          suffix != null ? '${'Copied'.tr()}: $suffix' : 'Copied'.tr();
+      final flushbar = Flushbar<void>(
+        messageText: Text(displayString),
+        duration: const Duration(seconds: 3),
+        backgroundColor: SideSwapColors.chathamsBlue,
+      );
+      flushbar.show(context);
+    }
+  });
 }
 
-void setValue(TextEditingController controller, String value) {
+void setControllerValue(TextEditingController controller, String value) {
   controller.text = value;
   controller.selection =
       TextSelection.fromPosition(TextPosition(offset: value.length));
@@ -226,17 +198,20 @@ Future<void> handlePasteSingleLine(TextEditingController controller) async {
   final text = data?.text;
   if (text != null) {
     final textUpdated = text.replaceAll('\n', '').trim();
-    setValue(controller, textUpdated);
+    setControllerValue(controller, textUpdated);
   }
 }
 
-Future<void> openUrl(String url) async {
+Future<void> openUrl(
+  String url, {
+  LaunchMode mode = LaunchMode.platformDefault,
+}) async {
   // Skip canLaunch(url) check because it fails to open twitter link if twitter client is installed
   // More details here - https://github.com/flutter/flutter/issues/63727
   logger.d('Opening url: $url');
   final uri = Uri.tryParse(url);
   if (uri != null) {
-    await launchUrl(uri);
+    await launchUrl(uri, mode: mode);
   }
 }
 
@@ -265,11 +240,11 @@ String generateTxidUrl(
   return url;
 }
 
-String generateAssetUrl({required String assetId, required bool testnet}) {
+String generateAssetUrl({required String? assetId, required bool testnet}) {
   final baseUrl = testnet
       ? 'https://blockstream.info/liquidtestnet'
       : 'https://blockstream.info/liquid';
-  return '$baseUrl/asset/$assetId';
+  return '$baseUrl/asset/${assetId ?? ''}';
 }
 
 Future<void> shareTxid(String txid) async {
@@ -417,18 +392,6 @@ int boolToInt(bool a) {
 
 int compareBool(bool a, bool b) {
   return boolToInt(a).compareTo(boolToInt(b));
-}
-
-List<Widget> withDivider(List<Widget> list, Widget divider) {
-  if (list.isEmpty) {
-    return [];
-  }
-  return List.generate(list.length * 2 - 1, (index) {
-    if (index % 2 == 1) {
-      return divider;
-    }
-    return list[index ~/ 2];
-  });
 }
 
 double indexPriceToTrackerValue(double value) {

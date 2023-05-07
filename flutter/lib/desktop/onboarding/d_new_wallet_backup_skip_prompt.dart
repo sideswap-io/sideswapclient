@@ -2,11 +2,12 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DNewWalletBackupSkipPrompt extends ConsumerWidget {
   const DNewWalletBackupSkipPrompt({super.key});
@@ -40,9 +41,9 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
                 height: 66,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: const Color(0xFF135579),
+                  color: SideSwapColors.chathamsBlue,
                   border: Border.all(
-                    color: const Color(0xFFFF7878),
+                    color: SideSwapColors.bitterSweet,
                     style: BorderStyle.solid,
                     width: 3,
                   ),
@@ -52,7 +53,8 @@ class DNewWalletBackupSkipPrompt extends ConsumerWidget {
                     'assets/exclamationMark.svg',
                     width: 24,
                     height: 24,
-                    color: const Color(0xFFFF7878),
+                    colorFilter: const ColorFilter.mode(
+                        SideSwapColors.bitterSweet, BlendMode.srcIn),
                   ),
                 ),
               ),

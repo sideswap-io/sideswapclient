@@ -3,8 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/payment_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 
 class PaymentSendAmount extends StatefulWidget {

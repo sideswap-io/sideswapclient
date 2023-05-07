@@ -16,6 +16,7 @@ class DButton extends DBaseButton {
     super.focusNode,
     super.autofocus = false,
     super.style,
+    super.cursor,
   });
 
   @override

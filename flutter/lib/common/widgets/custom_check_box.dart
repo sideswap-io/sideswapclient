@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class CustomCheckBox extends StatefulWidget {
   const CustomCheckBox({
@@ -6,8 +7,8 @@ class CustomCheckBox extends StatefulWidget {
     required this.onChanged,
     required this.child,
     this.frameChecked = const Color(0xFFB1EDFF),
-    this.frameUnchecked = const Color(0xFF00C5FF),
-    this.backgroundChecked = const Color(0xFF00C5FF),
+    this.frameUnchecked = SideSwapColors.brightTurquoise,
+    this.backgroundChecked = SideSwapColors.brightTurquoise,
     this.backgroundUnchecked = const Color(0xFF357CA4),
     this.radius,
     this.size,

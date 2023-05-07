@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/balances_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 
 class PaymentSelectAccount extends StatelessWidget {

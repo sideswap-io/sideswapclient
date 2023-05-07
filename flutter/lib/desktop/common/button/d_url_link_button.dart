@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
@@ -26,7 +27,7 @@ class DUrlLinkButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsButtonStyle = DButtonStyle(
       backgroundColor: ButtonState.resolveWith((states) {
-        const background = Color(0xFF135579);
+        const background = SideSwapColors.chathamsBlue;
         if (states.isPressing) {
           return background.lerpWith(Colors.black, 0.2);
         }
@@ -80,7 +81,7 @@ class DUrlLinkButton extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.normal,
-                    color: const Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                     decoration: url.isNotEmpty
                         ? TextDecoration.underline
                         : TextDecoration.none,

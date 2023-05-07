@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_bottom_buttons.dart';
@@ -47,6 +49,8 @@ class SwapSummary extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final amountProvider = ref.watch(amountToStringProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -107,10 +111,14 @@ class SwapSummary extends ConsumerWidget {
         ] else ...[
           ...List<Widget>.generate(balances.length, (index) {
             final balance = balances[index];
-            final asset = ref.read(walletProvider).assets[balance.assetId];
+            final asset = ref.watch(
+                assetsStateProvider.select((value) => value[balance.assetId]));
             final ticker = asset != null ? asset.ticker : kUnknownTicker;
-            final balanceStr = amountStr(balance.amount.toInt(),
-                precision: asset?.precision ?? 8);
+            final balanceStr = amountProvider.amountToString(
+                AmountToStringParameters(
+                    amount: balance.amount.toInt(),
+                    precision: asset?.precision ?? 8));
+
             return TxDetailsRow(
               description: 'Amount'.tr(),
               details: '$balanceStr $ticker',
@@ -119,13 +127,20 @@ class SwapSummary extends ConsumerWidget {
           if (type == TxType.sent) ...[
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: TxDetailsRow(
-                description: 'Network Fee'.tr(),
-                details: amountStrNamed(
-                  networkFee == 0 ? networkFee : -networkFee,
-                  kLiquidBitcoinTicker,
-                  forceSign: networkFee == 0 ? false : true,
-                ),
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final amountProvider = ref.watch(amountToStringProvider);
+                  final details = amountProvider.amountToStringNamed(
+                      AmountToStringNamedParameters(
+                          amount: networkFee == 0 ? networkFee : -networkFee,
+                          ticker: kLiquidBitcoinTicker,
+                          forceSign: networkFee == 0 ? false : true));
+
+                  return TxDetailsRow(
+                    description: 'Network Fee'.tr(),
+                    details: details,
+                  );
+                },
               ),
             ),
           ],

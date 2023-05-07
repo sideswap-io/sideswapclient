@@ -7,13 +7,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:marquee/marquee.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common_platform.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/qrcode_provider.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
@@ -110,7 +111,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
   final _labelStyle = const TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w500,
-    color: Color(0xFF00C5FF),
+    color: SideSwapColors.brightTurquoise,
   );
 
   final _balanceStyle = const TextStyle(
@@ -167,7 +168,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
-                      color: Color(0xFFFF7878),
+                      color: SideSwapColors.bitterSweet,
                     ),
                   ),
                 ] else ...[
@@ -180,7 +181,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.normal,
-                      color: Color(0xFF83B4D2),
+                      color: SideSwapColors.halfBaked,
                     ),
                   ),
                 if (widget.errorDescription.isNotEmpty && !widget.readOnly) ...[
@@ -190,7 +191,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                         const textStyle = TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFFFF7878),
+                          color: SideSwapColors.bitterSweet,
                         );
                         final renderParagraph = RenderParagraph(
                           TextSpan(
@@ -453,7 +454,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: const Color(0xFF00C5FF),
+                            color: SideSwapColors.brightTurquoise,
                             width: 2,
                             style: BorderStyle.solid,
                           ),
@@ -473,7 +474,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.normal,
-                              color: Color(0xFF00C5FF),
+                              color: SideSwapColors.brightTurquoise,
                             ),
                           ),
                         ),

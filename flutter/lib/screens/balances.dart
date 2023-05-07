@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 
 enum TxType {
@@ -146,7 +147,7 @@ class WalletTxMemoState extends State<WalletTxMemo> {
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.normal,
-                              color: Color(0xFF00C5FF),
+                              color: SideSwapColors.brightTurquoise,
                             ),
                           ),
                           const Spacer(),

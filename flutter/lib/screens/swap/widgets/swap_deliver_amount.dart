@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/request_order_provider.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
-import 'package:sideswap/models/swap_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -20,9 +22,11 @@ class SwapDeliverAmount extends HookConsumerWidget {
     final balance = ref
         .watch(balancesProvider.select((p) => p.balances[swapSendAsset] ?? 0));
     final precision = ref
-        .watch(walletProvider)
+        .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: swapSendAsset.asset);
-    final balanceStr = amountStr(balance, precision: precision);
+    final amountProvider = ref.watch(amountToStringProvider);
+    final balanceStr = amountProvider.amountToString(
+        AmountToStringParameters(amount: balance, precision: precision));
     final swapSendAssets = ref.watch(swapProvider).swapSendAssets().toList();
     final swapSendWallet =
         ref.watch(swapProvider.select((p) => p.swapSendWallet));

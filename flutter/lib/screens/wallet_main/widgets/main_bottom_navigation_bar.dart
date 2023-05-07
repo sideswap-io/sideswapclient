@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/screens/wallet_main/widgets/requests_navigation_item_badge.dart';
 import 'package:sideswap/screens/wallet_main/widgets/sideswap_navigation_item.dart';
@@ -20,7 +21,7 @@ class MainBottomNavigationBar extends StatefulWidget {
 
 class MainBottomNavigationBarState extends State<MainBottomNavigationBar> {
   Color backgroundColor = const Color(0xFF021C36);
-  Color selectedItemColor = const Color(0xFF00C5FF);
+  Color selectedItemColor = SideSwapColors.brightTurquoise;
   Color unselectedItemColor = const Color(0xFF68839E);
 
   @override

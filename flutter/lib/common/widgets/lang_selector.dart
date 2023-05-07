@@ -1,6 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter/material.dart';
-import 'package:sideswap/models/locales_provider.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/locales_provider.dart';
 
 class LangSelector extends ConsumerWidget {
   const LangSelector({
@@ -19,7 +20,7 @@ class LangSelector extends ConsumerWidget {
             side: BorderSide(
               width: 1.0,
               style: BorderStyle.solid,
-              color: Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
             ),
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),

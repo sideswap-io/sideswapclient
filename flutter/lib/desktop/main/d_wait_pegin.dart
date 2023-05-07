@@ -17,7 +17,7 @@ class DWaitPegin extends ConsumerWidget {
           const SizedBox(height: 32),
           Text(
             'Peg-In'.tr(),
-            style: Theme.of(context).textTheme.headline3,
+            style: Theme.of(context).textTheme.displaySmall,
           ),
           const SizedBox(height: 24),
           Text(

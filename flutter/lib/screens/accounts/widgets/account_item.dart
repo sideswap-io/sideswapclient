@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/balances_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
 class AccountItem extends ConsumerWidget {
@@ -23,14 +27,16 @@ class AccountItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wallet = ref.watch(walletProvider);
-    final asset = wallet.assets[accountAsset.asset]!;
-    final assetImage = wallet.assetImagesBig[accountAsset.asset];
-    final precision =
-        wallet.getPrecisionForAssetId(assetId: accountAsset.asset);
-    final amountString = amountStr(
-      ref.read(balancesProvider).balances[accountAsset] ?? 0,
-      precision: precision,
-    );
+    final asset = ref.watch(
+        assetsStateProvider.select((value) => value[accountAsset.asset]));
+    final icon = ref.watch(assetImageProvider).getBigImage(accountAsset.asset);
+    final precision = ref
+        .watch(assetUtilsProvider)
+        .getPrecisionForAssetId(assetId: accountAsset.asset);
+    final balance = ref.watch(balancesProvider).balances[accountAsset] ?? 0;
+    final amountProvider = ref.watch(amountToStringProvider);
+    final amountString = amountProvider.amountToString(
+        AmountToStringParameters(amount: balance, precision: precision));
     final isAmp = accountAsset.account.isAmp();
     final amount = precision == 0
         ? int.tryParse(amountString) ?? 0
@@ -42,7 +48,7 @@ class AccountItem extends ConsumerWidget {
         replaceCharacterOnPosition(input: dollarConversion, currencyChar: '\$');
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
     final backgrounColor =
-        disabled ? const Color(0xFF034569) : const Color(0xFF135579);
+        disabled ? const Color(0xFF034569) : SideSwapColors.chathamsBlue;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -68,7 +74,7 @@ class AccountItem extends ConsumerWidget {
                 SizedBox(
                   width: 48,
                   height: 48,
-                  child: assetImage,
+                  child: icon,
                 ),
                 Expanded(
                   child: Padding(
@@ -83,7 +89,7 @@ class AccountItem extends ConsumerWidget {
                             children: [
                               Expanded(
                                 child: Text(
-                                  asset.name,
+                                  asset?.name ?? '',
                                   overflow: TextOverflow.clip,
                                   maxLines: 1,
                                   textAlign: TextAlign.left,
@@ -94,21 +100,26 @@ class AccountItem extends ConsumerWidget {
                                   ),
                                 ),
                               ),
-                              Visibility(
-                                visible:
-                                    asset.assetId != wallet.bitcoinAssetId(),
-                                child: Padding(
-                                  padding: const EdgeInsets.only(left: 8),
-                                  child: Text(
-                                    amountString,
-                                    textAlign: TextAlign.right,
-                                    style: TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.normal,
-                                      color: textColor,
+                              Consumer(
+                                builder: (context, ref, child) {
+                                  final bitcoinAssetId =
+                                      ref.watch(bitcoinAssetIdProvider);
+                                  return Visibility(
+                                    visible: asset?.assetId != bitcoinAssetId,
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(left: 8),
+                                      child: Text(
+                                        amountString,
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.normal,
+                                          color: textColor,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -119,7 +130,7 @@ class AccountItem extends ConsumerWidget {
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    asset.ticker,
+                                    asset?.ticker ?? '',
                                     style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.normal,

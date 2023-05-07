@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/providers/wallet_assets_provider.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 
 class TxItemPeg extends StatelessWidget {
@@ -54,10 +56,13 @@ class TxItemPeg extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Consumer(builder: (context, ref, _) {
-                    final asset =
-                        ref.watch(walletProvider).getAssetById(assetId);
-                    final payout = amountStrNamed(
-                        transItem.peg.amountRecv.toInt(), asset?.ticker ?? '');
+                    final asset = ref.watch(
+                        assetsStateProvider.select((value) => value[assetId]));
+                    final amountProvider = ref.watch(amountToStringProvider);
+                    final payout = amountProvider.amountToStringNamed(
+                        AmountToStringNamedParameters(
+                            amount: transItem.peg.amountRecv.toInt(),
+                            ticker: asset?.ticker ?? ''));
 
                     return Text(
                       payout,

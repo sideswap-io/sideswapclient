@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/avatar_provider.dart';
-import 'package:sideswap/models/utils_provider.dart';
+import 'package:sideswap/providers/avatar_provider.dart';
+import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/screens/onboarding/import_avatar_resizer.dart';
 
 class ImageSourceChooser extends ConsumerWidget {

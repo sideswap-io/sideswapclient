@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo_background.dart';
-import 'package:sideswap/desktop/onboarding/widgets/d_success_icon.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/screens/onboarding/widgets/success_icon.dart';
 
 class DNewWalletBackupCheckSucceed extends ConsumerWidget {
   const DNewWalletBackupCheckSucceed({super.key});
@@ -24,7 +24,7 @@ class DNewWalletBackupCheckSucceed extends ConsumerWidget {
       content: Center(
         child: Column(
           children: [
-            const DSuccessIcon(),
+            const SuccessIcon(),
             Padding(
               padding: const EdgeInsets.only(top: 32),
               child: Text(

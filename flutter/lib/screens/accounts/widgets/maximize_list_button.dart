@@ -38,7 +38,8 @@ class MaximizeListButtonState extends State<MaximizeListButton> {
                   'assets/mini_button.svg',
                   width: 22,
                   height: 13,
-                  color: Colors.white,
+                  colorFilter:
+                      const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                 ),
               ),
             ),

@@ -5,17 +5,17 @@ import 'package:sideswap/desktop/onboarding/widgets/d_mnemonic_table.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo_background.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
-import 'package:sideswap/models/mnemonic_table_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/mnemonic_table_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DNewWalletBackup extends ConsumerStatefulWidget {
   const DNewWalletBackup({super.key});
 
   @override
-  ConsumerState<DNewWalletBackup> createState() => _DWalletBackupState();
+  ConsumerState<DNewWalletBackup> createState() => DWalletBackupState();
 }
 
-class _DWalletBackupState extends ConsumerState<DNewWalletBackup> {
+class DWalletBackupState extends ConsumerState<DNewWalletBackup> {
   @override
   void initState() {
     super.initState();

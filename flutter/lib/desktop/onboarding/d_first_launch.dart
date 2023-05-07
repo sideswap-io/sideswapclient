@@ -10,11 +10,11 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/models/config_provider.dart';
-import 'package:sideswap/models/locales_provider.dart';
-import 'package:sideswap/models/mnemonic_table_provider.dart';
-import 'package:sideswap/models/select_env_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/mnemonic_table_provider.dart';
+import 'package:sideswap/providers/select_env_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 class DFirstLaunch extends ConsumerWidget {

@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 
-class PegInAddress extends StatelessWidget {
+class PegInAddress extends HookConsumerWidget {
   const PegInAddress({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
-      appBar: const CustomAppBar(),
+      appBar: CustomAppBar(
+        onPressed: () {
+          ref
+              .read(pageStatusStateProvider.notifier)
+              .setStatus(Status.registered);
+        },
+      ),
       body: Stack(
         children: [
           Padding(
@@ -27,7 +36,7 @@ class PegInAddress extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                   ),
                 ),
               ),

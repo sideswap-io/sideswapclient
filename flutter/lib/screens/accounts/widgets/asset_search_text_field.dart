@@ -2,8 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class AssetSearchTextField extends ConsumerWidget {
   const AssetSearchTextField({
@@ -33,7 +34,8 @@ class AssetSearchTextField extends ConsumerWidget {
                 'assets/search.svg',
                 width: 19,
                 height: 19,
-                color: const Color(0xFF055271),
+                colorFilter:
+                    const ColorFilter.mode(Color(0xFF055271), BlendMode.srcIn),
               ),
             ),
           ),
@@ -49,7 +51,7 @@ class AssetSearchTextField extends ConsumerWidget {
           hintStyle: const TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.normal,
-            color: Color(0xFF84ADC6),
+            color: SideSwapColors.glacier,
           ),
         ),
       ),

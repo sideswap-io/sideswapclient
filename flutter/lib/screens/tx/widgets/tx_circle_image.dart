@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/screens/balances.dart';
 
@@ -64,7 +65,7 @@ class TxCircleImageState extends State<TxCircleImage> {
   double _largeWidth = 0;
   double _smallWidth = 0;
   double _swapWidth = 0;
-  final Color _fakeFrameColor = const Color(0xFF00C5FF);
+  final Color _fakeFrameColor = SideSwapColors.brightTurquoise;
   final Color _fakeIconColor = const Color(0xFFFF996E);
 
   @override
@@ -88,18 +89,20 @@ class TxCircleImageState extends State<TxCircleImage> {
         image = SvgPicture.asset(
           'assets/tx_peg_in.svg',
           width: _largeWidth,
-          color: widget.fake ? _fakeIconColor : frameColor,
+          colorFilter: ColorFilter.mode(
+              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
         );
         break;
       case TxCircleImageType.pegOut:
-        frameColor = const Color(0xFFFF7878);
+        frameColor = SideSwapColors.bitterSweet;
         image = Transform(
           transform: Matrix4.rotationX(-2 * pi / 2),
           alignment: Alignment.center,
           child: SvgPicture.asset(
             'assets/tx_peg_in.svg',
             width: _largeWidth,
-            color: widget.fake ? _fakeIconColor : frameColor,
+            colorFilter: ColorFilter.mode(
+                widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
           ),
         );
         break;
@@ -108,15 +111,17 @@ class TxCircleImageState extends State<TxCircleImage> {
         image = SvgPicture.asset(
           'assets/tx_swap.svg',
           width: _swapWidth,
-          color: widget.fake ? _fakeIconColor : frameColor,
+          colorFilter: ColorFilter.mode(
+              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
         );
         break;
       case TxCircleImageType.sent:
-        frameColor = const Color(0xFFFF7878);
+        frameColor = SideSwapColors.bitterSweet;
         image = SvgPicture.asset(
           'assets/top_right_arrow.svg',
           width: _smallWidth,
-          color: widget.fake ? _fakeIconColor : frameColor,
+          colorFilter: ColorFilter.mode(
+              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
         );
         break;
       case TxCircleImageType.received:
@@ -124,11 +129,12 @@ class TxCircleImageState extends State<TxCircleImage> {
         image = SvgPicture.asset(
           'assets/bottom_left_arrow.svg',
           width: _smallWidth,
-          color: widget.fake ? _fakeIconColor : frameColor,
+          colorFilter: ColorFilter.mode(
+              widget.fake ? _fakeIconColor : frameColor, BlendMode.srcIn),
         );
         break;
       case TxCircleImageType.sentAvatar:
-        frameColor = const Color(0xFFFF7878);
+        frameColor = SideSwapColors.bitterSweet;
         break;
       case TxCircleImageType.receivedAvatar:
         frameColor = const Color(0xFFB3FF85);

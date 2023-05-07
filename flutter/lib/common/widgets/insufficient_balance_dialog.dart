@@ -2,10 +2,11 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/models/swap_provider.dart';
+import 'package:sideswap/providers/swap_provider.dart';
 
 void showInsufficientBalanceDialog(
     WidgetRef ref, BuildContext? context, String ticker) {
@@ -29,7 +30,7 @@ void showInsufficientBalanceDialog(
             borderRadius: BorderRadius.all(
               Radius.circular(8),
             ),
-            color: Color(0xFF1C6086),
+            color: SideSwapColors.blumine,
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -37,12 +38,13 @@ void showInsufficientBalanceDialog(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  height: 56,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFF135579),
+                    color: SideSwapColors.chathamsBlue,
                     border: Border.all(
-                      color: const Color(0xFFFF7878),
+                      color: SideSwapColors.bitterSweet,
                       style: BorderStyle.solid,
                       width: 3,
                     ),
@@ -50,9 +52,10 @@ void showInsufficientBalanceDialog(
                   child: Center(
                     child: SvgPicture.asset(
                       'assets/error.svg',
-                      width: 20,
-                      height: 22,
-                      color: const Color(0xFFFF7878),
+                      width: 23,
+                      height: 23,
+                      colorFilter: const ColorFilter.mode(
+                          SideSwapColors.bitterSweet, BlendMode.srcIn),
                     ),
                   ),
                 ),
@@ -86,7 +89,7 @@ void showInsufficientBalanceDialog(
                   width: double.maxFinite,
                   height: 54,
                   text: 'SWAP NOW'.tr(),
-                  backgroundColor: const Color(0xFF00C5FF),
+                  backgroundColor: SideSwapColors.brightTurquoise,
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).pop();
 

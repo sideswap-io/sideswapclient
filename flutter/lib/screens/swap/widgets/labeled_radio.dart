@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class LabeledRadio<T> extends StatelessWidget {
   const LabeledRadio({
@@ -33,7 +34,7 @@ class LabeledRadio<T> extends StatelessWidget {
                   unselectedWidgetColor: const Color(0xFF709EBA),
                 ),
                 child: Radio<T>(
-                  activeColor: const Color(0xFF00C5FF),
+                  activeColor: SideSwapColors.brightTurquoise,
                   groupValue: groupValue,
                   value: value,
                   onChanged: onChanged == null

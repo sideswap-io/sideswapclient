@@ -4,13 +4,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
-import 'package:sideswap/models/contact_provider.dart';
-import 'package:sideswap/models/phone_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/contact_provider.dart';
+import 'package:sideswap/providers/phone_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class PaymentConfirmPhoneSuccess extends ConsumerStatefulWidget {
   const PaymentConfirmPhoneSuccess({super.key});
@@ -70,7 +71,7 @@ class PaymentConfirmPhoneSuccessState
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: const Color(0xFF00C5FF),
+                    color: SideSwapColors.brightTurquoise,
                     style: BorderStyle.solid,
                     width: 4,
                   ),
@@ -80,7 +81,8 @@ class PaymentConfirmPhoneSuccessState
                     'assets/success.svg',
                     width: 33,
                     height: 33,
-                    color: const Color(0xFFCAF3FF),
+                    colorFilter: const ColorFilter.mode(
+                        Color(0xFFCAF3FF), BlendMode.srcIn),
                   ),
                 ),
               ),
@@ -175,7 +177,7 @@ class PaymentConfirmPhoneSuccessState
                             width: double.maxFinite,
                             height: 54,
                             text: 'IMPORT CONTACTS'.tr(),
-                            backgroundColor: const Color(0xFF00C5FF),
+                            backgroundColor: SideSwapColors.brightTurquoise,
                             enabled: contactsLoadingState !=
                                 ContactsLoadingState.running,
                             onPressed: () {

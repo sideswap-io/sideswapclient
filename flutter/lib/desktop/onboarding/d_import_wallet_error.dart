@@ -5,7 +5,7 @@ import 'package:sideswap/common/utils/custom_logger.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_error_icon.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DImportWalletError extends ConsumerWidget {
   const DImportWalletError({super.key});

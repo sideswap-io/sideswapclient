@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class SwitchButton extends StatefulWidget {
   const SwitchButton({
@@ -13,7 +14,7 @@ class SwitchButton extends StatefulWidget {
     this.borderWidth = 2,
     this.activeToggle,
     this.inactiveToggle,
-    this.activeToggleBackground = const Color(0xFF1B8BC8),
+    this.activeToggleBackground = SideSwapColors.navyBlue,
     this.inactiveToggleBackground = const Color(0xFF043857),
     this.activeText = '',
     this.inactiveText = '',
@@ -74,7 +75,7 @@ class SwitchButtonState extends State<SwitchButton> {
     final defaultInactiveTextStyle = TextStyle(
       fontSize: widget.fontSize ?? 14,
       fontWeight: FontWeight.w500,
-      color: const Color(0xFF78AECC),
+      color: SideSwapColors.ceruleanFrost,
     );
 
     var activeTextStyle = (disabled
@@ -82,7 +83,8 @@ class SwitchButtonState extends State<SwitchButton> {
                 color: widget.activeTextStyle?.color?.withOpacity(0.2))
             : widget.activeTextStyle) ??
         (disabled
-            ? defaultActiveTextStyle.copyWith(color: const Color(0xFF78AECC))
+            ? defaultActiveTextStyle.copyWith(
+                color: SideSwapColors.ceruleanFrost)
             : defaultActiveTextStyle);
     Widget defaultActiveToggle = Container(
       width: switchWidth,
@@ -91,7 +93,7 @@ class SwitchButtonState extends State<SwitchButton> {
         borderRadius: BorderRadius.all(
             Radius.circular(widget.borderRadius - widget.borderWidth)),
         color: disabled
-            ? const Color(0xFF1B8BC8).withOpacity(0.2)
+            ? SideSwapColors.navyBlue.withOpacity(0.2)
             : widget.activeToggleBackground,
       ),
       child: Center(

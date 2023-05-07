@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 
 enum ResultPageType {
@@ -21,7 +21,7 @@ class ResultPage extends StatelessWidget {
     this.secondButtonText = '',
     this.onSecondButtonPressed,
     this.topPadding,
-    this.buttonBackgroundColor = const Color(0xFF00C5FF),
+    this.buttonBackgroundColor = SideSwapColors.brightTurquoise,
     this.buttonSide,
   });
 
@@ -52,8 +52,8 @@ class ResultPage extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: resultType == ResultPageType.success
-                      ? const Color(0xFF00C5FF)
-                      : const Color(0xFFFF7878),
+                      ? SideSwapColors.brightTurquoise
+                      : SideSwapColors.bitterSweet,
                   style: BorderStyle.solid,
                   width: 6,
                 ),
@@ -64,13 +64,15 @@ class ResultPage extends StatelessWidget {
                         'assets/success.svg',
                         width: 51,
                         height: 51,
-                        color: const Color(0xFFCAF3FF),
+                        colorFilter: const ColorFilter.mode(
+                            Color(0xFFCAF3FF), BlendMode.srcIn),
                       )
                     : SvgPicture.asset(
                         'assets/error.svg',
                         width: 51,
                         height: 51,
-                        color: const Color(0xFFFF7878),
+                        colorFilter: const ColorFilter.mode(
+                            SideSwapColors.bitterSweet, BlendMode.srcIn),
                       ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 
 class DBackButton extends StatelessWidget {
@@ -23,7 +24,7 @@ class DBackButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(8)),
             border: Border.all(
-              color: const Color(0xFF00C5FF),
+              color: SideSwapColors.brightTurquoise,
             ),
           ),
           child: Row(

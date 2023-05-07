@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class BiometricShapeBorder extends ShapeBorder {
   const BiometricShapeBorder({
     this.borderWidth = 6.0,
     this.borderLength = 41,
     this.borderRadius = 8,
-    this.borderColor = const Color(0xFF00C5FF),
-    this.backgroundColor = const Color(0xFF135579),
+    this.borderColor = SideSwapColors.brightTurquoise,
+    this.backgroundColor = SideSwapColors.chathamsBlue,
   });
 
   final double borderWidth;
@@ -60,7 +61,7 @@ class BiometricShapeBorder extends ShapeBorder {
       ..strokeCap = StrokeCap.round;
 
     final backgroundPaint = Paint()
-      ..color = const Color(0xFF135579)
+      ..color = SideSwapColors.chathamsBlue
       ..style = PaintingStyle.fill;
 
     final topLeftX = rect.topLeft.dx + halfBorderWidth;

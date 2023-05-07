@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/models/friends_provider.dart';
-import 'package:sideswap/models/payment_provider.dart';
+import 'package:sideswap/providers/friends_provider.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_header.dart';

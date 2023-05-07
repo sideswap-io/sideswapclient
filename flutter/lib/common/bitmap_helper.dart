@@ -35,48 +35,42 @@ class BitmapHelper {
 
   static Future<Uint8List> getPngBufferFromSvgString(
       String svgString, double width, double height) async {
-    final svgImage = await getSvgImageFromString(svgString, width, height);
-    final sizedSvgImage = await getSizedSvgImage(svgImage, width, height);
+    final pictureInfo =
+        await getPictureInfoFromString(svgString, width, height);
+    final bytes = await getSizedSvgImageBytes(pictureInfo, width, height);
+    pictureInfo.picture.dispose();
 
-    final pngSizedBytes =
-        await sizedSvgImage.toByteData(format: ui.ImageByteFormat.png);
-    if (pngSizedBytes == null) {
-      return Uint8List(0);
-    }
-    return pngSizedBytes.buffer.asUint8List();
+    return bytes;
   }
 
   static Future<ui.Image> getSvgImageFromAssets(String svgAssertLink) async {
     final svgString = await rootBundle.loadString(svgAssertLink);
-    final drawableRoot = await svg.fromSvgString(svgString, '');
-    final picture = drawableRoot.toPicture();
-    final image = await picture.toImage(drawableRoot.viewport.width.toInt(),
-        drawableRoot.viewport.height.toInt());
+
+    final PictureInfo pictureInfo =
+        await vg.loadPicture(SvgStringLoader(svgString), null);
+    final image = await pictureInfo.picture.toImage(
+        pictureInfo.size.width.toInt(), pictureInfo.size.height.toInt());
+    pictureInfo.picture.dispose();
     return image;
   }
 
-  static Future<ui.Image> getSvgImageFromString(
+  static Future<PictureInfo> getPictureInfoFromString(
       String svgString, double width, double height) async {
-    final drawableRoot = await svg.fromSvgString(svgString, '');
-    final picture = drawableRoot.toPicture(size: Size(width, height));
-    final image = await picture.toImage(width.toInt(), height.toInt());
-    return image;
+    return vg.loadPicture(SvgStringLoader(svgString), null);
   }
 
-  static Future<ui.Image> getSizedSvgImage(
-      ui.Image svgImage, double width, double height) async {
-    final svgWidth = width * ui.window.devicePixelRatio;
-    final svgHeight = height * ui.window.devicePixelRatio;
+  static Future<Uint8List> getSizedSvgImageBytes(
+      PictureInfo pictureInfo, double width, double height) async {
+    final ui.PictureRecorder recorder = ui.PictureRecorder();
+    final ui.Canvas canvas = ui.Canvas(recorder);
 
-    final pictureRecorder = ui.PictureRecorder();
-    final canvas = Canvas(pictureRecorder);
-    final svgRect = Rect.fromLTRB(
-        0.0, 0.0, svgImage.width.toDouble(), svgImage.height.toDouble());
-    final sizedRect =
-        Rect.fromLTRB(0.0, 0.0, svgWidth, svgHeight); // our size here
-    canvas.drawImageRect(svgImage, svgRect, sizedRect, Paint());
-    return await pictureRecorder
-        .endRecording()
-        .toImage(svgWidth.toInt(), svgHeight.toInt());
+    canvas.scale(width / pictureInfo.size.width);
+    canvas.drawPicture(pictureInfo.picture);
+    final ui.Picture rasterPicture = recorder.endRecording();
+    final ui.Image pending =
+        rasterPicture.toImageSync(width.round(), height.round());
+
+    final imageBytes = await pending.toByteData(format: ui.ImageByteFormat.png);
+    return imageBytes?.buffer.asUint8List() ?? Uint8List(0);
   }
 }

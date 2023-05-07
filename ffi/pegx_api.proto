@@ -1,0 +1,405 @@
+syntax = "proto2";
+
+package api.proto;
+
+enum AccountState {
+  DISABLED = 1;
+  VERIFICATION = 2;
+  ACTIVE = 3;
+}
+
+message AccountKey {
+  required string account_key = 1;
+  required string name = 2;
+}
+
+message AccountDetails {
+  message OrgDetails {
+    required string name = 1;
+    required string address = 2;
+    required string city = 3;
+    required string postcode = 4;
+    required string country = 5;
+    required string website = 6;
+    required string reg_number = 7;
+    required string owner_email = 8;
+  }
+
+  message IndividualDetails {
+    required string first_name = 1;
+    required string last_name = 2;
+    required string email = 3;
+    required string phone_number = 4;
+    required string gender = 5;
+    required string date_of_birth = 6;
+    required string nationality = 7;
+    required string personal_number = 8;
+    required string residency_country = 9;
+    required string residency_area = 10;
+    required string residency_city = 11;
+    required string residency_postcode = 12;
+    required string residency_address = 13;
+    required string residency_address2 = 14;
+  }
+
+  oneof details {
+    OrgDetails org = 1;
+    IndividualDetails individual = 2;
+  }
+
+  required AccountState account_state = 3;
+}
+
+message Account {
+  required string account_key = 1;
+  required AccountDetails details = 2;
+  repeated string gaids = 3;
+}
+
+message Asset {
+  required string asset_id = 1;
+  required string name = 2;
+  required string ticker = 3;
+  required int32 precision = 4;
+  required string domain = 5;
+}
+
+message Balance {
+  required string asset_id = 1;
+  required double balance = 2;
+}
+
+message Shares {
+  required double count = 1;
+  required double total = 2;
+}
+
+message InOut {
+  required double amount = 1;
+  optional string gaid = 2;
+}
+
+message FullTransaction {
+  repeated InOut inputs = 1;
+  repeated InOut outputs = 2;
+  required string txid = 3;
+  required int64 timestamp = 4;
+  required string unblinded = 5;
+  optional double price = 6;
+}
+
+message OwnTransaction {
+  required string txid = 1;
+  required int64 timestamp = 2;
+  required double amount = 3;
+  optional double price = 4;
+}
+
+message BalanceOwner {
+  required string account_key = 1;
+  required double amount = 2;
+}
+
+message Serie {
+  required int64 start = 2;
+  required int64 count = 3;
+}
+
+message SerieOwner {
+  required string account_key = 1;
+  repeated Serie series = 2;
+}
+
+message Req {
+  message Login {
+  }
+
+  message Register {
+    message Org {
+      required string name = 1;
+      required string address = 2;
+      required string city = 3;
+      required string postcode = 4;
+      required string country = 5;
+      required string website = 6;
+      required string reg_number = 7;
+      required bytes reg_proof = 8;
+    }
+
+    optional Org org = 1;
+  }
+
+  message RegisterIssuer {
+    required string email = 1;
+    required string name = 2;
+    required string website = 3;
+    required string message = 4;
+  }
+
+  message Resume {
+    required string token = 1;
+    required string account_key = 2;
+  }
+
+  message Logout {
+  }
+
+  message AddGaid {
+    required string gaid = 1;
+    required bool accept_free_shares = 2;
+    required bool use_local_account = 3;
+  }
+
+  message LoadAssets {
+  }
+
+  message BuyShares {
+    required double amount = 1;
+  }
+
+  message LoadCountries {
+  }
+
+  message LoadRegs {
+  }
+
+  message LoadFile {
+    required string account_key = 1;
+  }
+
+  message UpdateReg {
+    required string account_key = 1;
+    required bool valid = 2;
+  }
+
+  message ListAllTransactions {
+    required string asset_id = 1;
+  }
+
+  message ListOwnTransactions {
+    required string asset_id = 1;
+  }
+
+  message ListAllBalances {
+    required string asset_id = 1;
+  }
+
+  message ListAllSeries {
+    required string asset_id = 1;
+  }
+
+  required int64 id = 1;
+
+  oneof body {
+    Login login = 10;
+    Register register = 11;
+    RegisterIssuer register_issuer = 14;
+    Resume resume = 12;
+    Logout logout = 13;
+    AddGaid add_gaid = 20;
+    LoadAssets load_assets = 21;
+    BuyShares buy_shares = 24;
+    LoadCountries load_countries = 25;
+    LoadRegs load_regs = 26;
+    LoadFile load_file = 28;
+    UpdateReg update_reg = 27;
+    ListAllTransactions list_all_transactions = 29;
+    ListOwnTransactions list_own_transactions = 30;
+    ListAllBalances list_all_balances = 31;
+    ListAllSeries list_all_series = 32;
+  }
+}
+
+message Resp {
+  message Login {
+    required string request_id = 1;
+  }
+
+  message Register {
+    required string request_id = 1;
+  }
+
+  message RegisterIssuer {
+  }
+
+  message Resume {
+    required Account account = 1;
+    repeated AccountKey account_keys = 2;
+  }
+
+  message Logout {
+  }
+
+  message AddGaid {
+    required Account account = 1;
+  }
+
+  message LoadAssets {
+    repeated Asset assets = 1;
+  }
+
+  message BuyShares {
+    required string order_id = 1;
+    required double amount = 2;
+    required double price = 3;
+    required double bitcoin_amount = 4;
+  }
+
+  message LoadCountries {
+    repeated string list = 1;
+  }
+
+  message LoadRegs {
+    repeated Account list = 1;
+  }
+
+  message LoadFile {
+    required string mime_type = 1;
+    required bytes data = 2;
+  }
+
+  message UpdateReg {
+  }
+
+  message ListAllTransactions {
+    repeated FullTransaction list = 1;
+  }
+
+  message ListOwnTransactions {
+    repeated OwnTransaction list = 1;
+  }
+
+  message ListAllBalances {
+    repeated BalanceOwner list = 1;
+  }
+
+  message ListAllSeries {
+    repeated SerieOwner list = 1;
+    required string csv = 2;
+  }
+
+  required int64 id = 1;
+
+  oneof body {
+    Login login = 10;
+    Register register = 11;
+    RegisterIssuer register_issuer = 14;
+    Resume resume = 12;
+    Logout logout = 13;
+    AddGaid add_gaid = 20;
+    LoadAssets load_assets = 21;
+    BuyShares buy_shares = 24;
+    LoadCountries load_countries = 25;
+    LoadRegs load_regs = 26;
+    LoadFile load_file = 28;
+    UpdateReg update_reg = 27;
+    ListAllTransactions list_all_transactions = 29;
+    ListOwnTransactions list_own_transactions = 30;
+    ListAllBalances list_all_balances = 31;
+    ListAllSeries list_all_series = 32;
+  }
+}
+
+message Notif {
+  message LoginFailed {
+    required string text = 1;
+  }
+
+  message LoginSucceed {
+    required string token = 1;
+    required string account_key = 2;
+  }
+
+  message EidResponse {
+    required string request_id = 1;
+  }
+
+  message RegisterFailed {
+    required string text = 1;
+  }
+
+  message RegisterSucceed {
+    required string token = 1;
+    required string account_key = 2;
+  }
+
+  message FreeShares {
+    required Shares free_shares = 1;
+    required string name = 2;
+    required int64 amount = 3;
+  }
+
+  message SoldShares {
+    required Shares sold_shares = 1;
+  }
+
+  message UserShares {
+    required Shares bought_shares = 1;
+  }
+
+  message BuyShares {
+    required string order_id = 1;
+    required double amount = 2;
+    required double price = 3;
+    required double bitcoin_amount = 4;
+    optional string txid = 5;
+  }
+
+  message UpdatePrices {
+    optional double bitcoin_usd_price = 1;
+  }
+
+  message UpdateMarketData {
+    message Data {
+      required string asset_id = 1;
+      optional double last_price = 2;
+      optional double volume_30d = 3;
+    }
+
+    repeated Data data = 1;
+  }
+
+  message IssuedAmounts {
+    message Asset {
+      required string asset_id = 1;
+      required double online = 2;
+      required double offline = 3;
+    }
+
+    repeated Asset assets = 1;
+  }
+
+  message UpdateBalances {
+    required string account_key = 1;
+    repeated Balance balances = 2;
+  }
+
+  oneof body {
+    LoginFailed login_failed = 1;
+    LoginSucceed login_succeed = 2;
+    RegisterFailed register_failed = 3;
+    RegisterSucceed register_succeed = 4;
+    FreeShares free_shares = 5;
+    SoldShares sold_shares = 7;
+    UserShares user_shares = 8;
+    BuyShares buy_shares = 6;
+    UpdatePrices update_prices = 9;
+    UpdateMarketData update_market_data = 10;
+    IssuedAmounts issued_amounts = 11;
+    UpdateBalances update_balances = 12;
+    EidResponse eid_response = 13;
+  }
+}
+
+message Err {
+  optional int64 id = 1;
+  required string text = 2;
+}
+
+message Res {
+  oneof body {
+    Resp resp = 1;
+    Notif notif = 2;
+    Err error = 3;
+  }
+}

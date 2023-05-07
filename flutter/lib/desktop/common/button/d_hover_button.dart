@@ -49,10 +49,10 @@ class DHoverButton extends StatefulWidget {
   final ValueChanged<bool>? onFocusChange;
 
   @override
-  State<DHoverButton> createState() => _DHoverButtonState();
+  State<DHoverButton> createState() => DHoverButtonState();
 }
 
-class _DHoverButtonState extends State<DHoverButton> {
+class DHoverButtonState extends State<DHoverButton> {
   late FocusNode node;
 
   late Map<Type, Action<Intent>> _actionMap;

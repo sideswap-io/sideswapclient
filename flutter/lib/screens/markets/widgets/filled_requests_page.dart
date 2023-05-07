@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
-import 'package:sideswap/models/markets_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_item.dart';
 
 class FilledRequestsPage extends StatefulWidget {
@@ -90,7 +91,7 @@ class FilledRequestsPageState extends State<FilledRequestsPage> {
                           thickness: 3,
                           radius: const Radius.circular(2),
                           controller: scrollController,
-                          thumbColor: const Color(0xFF78AECC),
+                          thumbColor: SideSwapColors.ceruleanFrost,
                           child: ListView.builder(
                             key: listViewKey,
                             controller: scrollController,

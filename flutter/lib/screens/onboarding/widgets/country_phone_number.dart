@@ -2,10 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/country_code.dart';
-import 'package:sideswap/models/countries_provider.dart';
-import 'package:sideswap/models/phone_provider.dart';
+import 'package:sideswap/providers/countries_provider.dart';
+import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/wait_sms_confirmation.dart';
 
 typedef PhoneNumberCallback = void Function(CountryCode, String);
@@ -233,7 +233,7 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                     return Visibility(
                       visible: barier,
                       child: Container(
-                        color: const Color(0xFF135579).withOpacity(.5),
+                        color: SideSwapColors.chathamsBlue.withOpacity(.5),
                       ),
                     );
                   },

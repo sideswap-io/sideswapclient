@@ -6,7 +6,7 @@ import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo_bac
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DNewWalletBackupCheckFailed extends ConsumerWidget {
   const DNewWalletBackupCheckFailed({super.key});

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 class DErrorIcon extends StatelessWidget {
   const DErrorIcon({
     super.key,
-    this.width = 66,
-    this.height = 66,
+    this.width = 60,
+    this.height = 60,
   });
 
   final double width;
@@ -19,18 +20,19 @@ class DErrorIcon extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: const Color(0xFFFF7878),
+          color: SideSwapColors.bitterSweet,
           style: BorderStyle.solid,
           width: 3,
         ),
-        color: const Color(0xFF135579),
+        color: SideSwapColors.chathamsBlue,
       ),
       child: Center(
         child: SvgPicture.asset(
           'assets/error.svg',
-          width: 20,
-          height: 20,
-          color: const Color(0xFFFF7878),
+          width: 23,
+          height: 23,
+          colorFilter: const ColorFilter.mode(
+              SideSwapColors.bitterSweet, BlendMode.srcIn),
         ),
       ),
     );

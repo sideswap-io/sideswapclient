@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
@@ -124,7 +125,7 @@ class DContentDialogTitle extends StatelessWidget {
                   : DIconButton(
                       icon: const Icon(
                         Icons.close,
-                        color: Color(0xFFAED7FF),
+                        color: SideSwapColors.freshAir,
                         size: 18,
                       ),
                       onPressed: onClose,

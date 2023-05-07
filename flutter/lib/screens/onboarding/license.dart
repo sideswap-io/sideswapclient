@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 enum LicenseNextStep {
   createWallet,
@@ -95,7 +95,7 @@ class LicenseTerms extends ConsumerWidget {
                   width: double.infinity,
                   height: 54,
                   text: 'I AGREE'.tr(),
-                  backgroundColor: const Color(0xFF00C5FF),
+                  backgroundColor: SideSwapColors.brightTurquoise,
                   onPressed: () async {
                     await ref.read(walletProvider).setLicenseAccepted();
                     if (nextStep == LicenseNextStep.createWallet) {

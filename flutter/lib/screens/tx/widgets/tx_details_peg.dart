@@ -1,16 +1,19 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
+import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_bottom_buttons.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 
-class TxDetailsPeg extends StatefulWidget {
+class TxDetailsPeg extends ConsumerStatefulWidget {
   const TxDetailsPeg({
     super.key,
     required this.transItem,
@@ -22,7 +25,7 @@ class TxDetailsPeg extends StatefulWidget {
   TxDetailsPegState createState() => TxDetailsPegState();
 }
 
-class TxDetailsPegState extends State<TxDetailsPeg> {
+class TxDetailsPegState extends ConsumerState<TxDetailsPeg> {
   late String _timestampStr;
   late String _status;
 
@@ -36,13 +39,16 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
 
   @override
   Widget build(BuildContext context) {
+    final amountProvider = ref.watch(amountToStringProvider);
     _status = txItemToStatus(widget.transItem, isPeg: true);
-    final amountSend =
-        double.tryParse(amountStr(widget.transItem.peg.amountSend.toInt())) ??
-            0;
-    final amountRecv =
-        double.tryParse(amountStr(widget.transItem.peg.amountRecv.toInt())) ??
-            0;
+    final amountSendStr = amountProvider.amountToString(
+        AmountToStringParameters(
+            amount: widget.transItem.peg.amountSend.toInt()));
+    final amountSend = double.tryParse(amountSendStr) ?? 0;
+    final amountRecvStr = amountProvider.amountToString(
+        AmountToStringParameters(
+            amount: widget.transItem.peg.amountRecv.toInt()));
+    final amountRecv = double.tryParse(amountRecvStr) ?? 0;
     var conversionReceived = .0;
     if (amountSend != 0 && amountRecv != 0) {
       conversionReceived = amountRecv * 100 / amountSend;
@@ -92,23 +98,32 @@ class TxDetailsPegState extends State<TxDetailsPeg> {
           padding: EdgeInsets.only(top: 18),
           child: SizedBox(),
         ),
-        TxDetailsRow(
-          description:
-              isPegIn ? 'BTC Peg-in amount'.tr() : 'L-BTC Peg-out amount'.tr(),
-          details: amountStrNamed(
-            widget.transItem.peg.amountSend.toInt(),
-            sendTicker,
-          ),
-        ),
+        Consumer(builder: (context, ref, child) {
+          final details = amountProvider.amountToStringNamed(
+              AmountToStringNamedParameters(
+                  amount: widget.transItem.peg.amountSend.toInt(),
+                  ticker: sendTicker));
+          return TxDetailsRow(
+            description: isPegIn
+                ? 'BTC Peg-in amount'.tr()
+                : 'L-BTC Peg-out amount'.tr(),
+            details: details,
+          );
+        }),
         Padding(
           padding: const EdgeInsets.only(top: 12),
-          child: TxDetailsRow(
-            description: isPegIn ? 'L-BTC received'.tr() : 'BTC received'.tr(),
-            details: amountStrNamed(
-                  widget.transItem.peg.amountRecv.toInt(),
-                  recvTicker,
-                ) +
-                (isPegIn ? '' : ' - txFee'),
+          child: Consumer(
+            builder: (context, ref, child) {
+              final details = amountProvider.amountToStringNamed(
+                  AmountToStringNamedParameters(
+                      amount: widget.transItem.peg.amountRecv.toInt(),
+                      ticker: recvTicker));
+              return TxDetailsRow(
+                description:
+                    isPegIn ? 'L-BTC received'.tr() : 'BTC received'.tr(),
+                details: isPegIn ? details : '$details - txFee',
+              );
+            },
           ),
         ),
         Padding(

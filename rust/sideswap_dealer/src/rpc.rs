@@ -263,6 +263,7 @@ pub fn sendtoaddress_generic(
     replaceable: Option<bool>,
     conf_target: Option<i32>,
     estimate_mode: Option<&str>,
+    avoid_reuse: Option<bool>,
     assetlabel: Option<&str>,
 ) -> RpcRequest {
     RpcRequest {
@@ -276,6 +277,7 @@ pub fn sendtoaddress_generic(
             serde_json::json!(replaceable),
             serde_json::json!(conf_target),
             serde_json::json!(estimate_mode),
+            serde_json::json!(avoid_reuse),
             serde_json::json!(assetlabel),
         ],
     }
@@ -291,12 +293,13 @@ pub fn sendtoaddress_asset(addr: &str, amount: f64, assetlabel: &str) -> RpcRequ
         None,
         None,
         None,
+        None,
         Some(assetlabel),
     )
 }
 
 pub fn sendtoaddress_bitcoin(addr: &str, amount: f64) -> RpcRequest {
-    sendtoaddress_generic(addr, amount, None, None, None, None, None, None, None)
+    sendtoaddress_generic(addr, amount, None, None, None, None, None, None, None, None)
 }
 pub type SendToAddressResult = String;
 

@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
@@ -29,13 +30,13 @@ class DTtlPopup extends ConsumerWidget {
           Center(
             child: Text(
               'Choose the Time-to-live'.tr(),
-              style: Theme.of(context).textTheme.headline3,
+              style: Theme.of(context).textTheme.displaySmall,
             ),
           ),
           const SizedBox(height: 23),
           Column(
             children: availableTtlValues(offline)
-                .map((e) => _TtlValue(
+                .map((e) => DTtlPopupTtlValue(
                       ttl: e,
                       selected: selected == e,
                     ))
@@ -43,7 +44,7 @@ class DTtlPopup extends ConsumerWidget {
           ),
           const Spacer(),
           Container(
-            color: const Color(0xFF135579),
+            color: SideSwapColors.chathamsBlue,
             padding: const EdgeInsets.symmetric(vertical: 40),
             child: Center(
               child: DCustomTextBigButton(
@@ -64,8 +65,9 @@ class DTtlPopup extends ConsumerWidget {
   }
 }
 
-class _TtlValue extends StatelessWidget {
-  const _TtlValue({
+class DTtlPopupTtlValue extends StatelessWidget {
+  const DTtlPopupTtlValue({
+    super.key,
     required this.ttl,
     required this.selected,
   });
@@ -86,7 +88,7 @@ class _TtlValue extends StatelessWidget {
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               color: states.isHovering
                   ? const Color(0xFF26739E)
-                  : const Color(0xFF135579),
+                  : SideSwapColors.chathamsBlue,
             ),
             padding: const EdgeInsets.only(left: 16),
             child: Align(

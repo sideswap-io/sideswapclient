@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/models/markets_provider.dart';
-import 'package:sideswap/models/ui_state_args_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class UiStatesListener extends ConsumerWidget {
   const UiStatesListener({super.key});

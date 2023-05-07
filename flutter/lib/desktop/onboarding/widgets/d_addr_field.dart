@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
-import 'package:sideswap/desktop/widgets/d_side_swap_input_decoration.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/desktop/common/decorations/d_side_swap_paste_icon_input_decoration.dart';
+import 'package:sideswap/providers/wallet.dart';
 
 class DAddrTextField extends ConsumerStatefulWidget {
   const DAddrTextField({
@@ -46,7 +47,7 @@ class DAddrTextFieldState extends ConsumerState<DAddrTextField> {
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(8),
-          color: const Color(0xFF135579),
+          color: SideSwapColors.chathamsBlue,
         ),
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 14),
         child: Row(
@@ -60,7 +61,7 @@ class DAddrTextFieldState extends ConsumerState<DAddrTextField> {
                 height: 14,
               ),
               onPressed: () {
-                setValue(widget.controller, '');
+                setControllerValue(widget.controller, '');
                 widget.onChanged(widget.controller.text);
               },
             ),
@@ -72,7 +73,7 @@ class DAddrTextFieldState extends ConsumerState<DAddrTextField> {
     return TextField(
       focusNode: widget.focusNode,
       controller: widget.controller,
-      decoration: DSideSwapInputDecoration(
+      decoration: DSideSwapPasteIconInputDecoration(
         hintText: 'Address'.tr(),
         errorText: errorText.isEmpty ? null : errorText,
         onPastePressed: () async {

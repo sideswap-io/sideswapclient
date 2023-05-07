@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 
 class DPopupWithClose extends StatelessWidget {
@@ -23,7 +24,7 @@ class DPopupWithClose extends StatelessWidget {
         width: width,
         height: height,
         child: Material(
-          color: const Color(0xFF1C6086),
+          color: SideSwapColors.blumine,
           borderRadius: BorderRadius.circular(8),
           child: Stack(
             children: [

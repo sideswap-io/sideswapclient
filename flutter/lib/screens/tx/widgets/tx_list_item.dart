@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/tx_item.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/protobuf/sideswap.pb.dart';
 import 'package:sideswap/screens/tx/widgets/tx_item_date.dart';
 import 'package:sideswap/screens/tx/widgets/tx_item_peg.dart';

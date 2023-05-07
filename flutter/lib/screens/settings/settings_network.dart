@@ -4,10 +4,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/models/network_access_provider.dart';
-import 'package:sideswap/models/network_type_provider.dart';
-import 'package:sideswap/models/utils_provider.dart';
-import 'package:sideswap/models/wallet.dart';
+import 'package:sideswap/providers/network_access_provider.dart';
+import 'package:sideswap/providers/network_type_provider.dart';
+import 'package:sideswap/providers/utils_provider.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/settings/settings_custom_host.dart';
 import 'package:sideswap/screens/settings/widgets/settings_network_button.dart';
 
@@ -29,36 +29,6 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
             Navigator.of(context).pop();
           },
         );
-  }
-
-  Widget buildButton(
-    String name,
-    SettingsNetworkType selectedNetwork,
-    SettingsNetworkType buttonNetwork,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: SettingsNetworkButton(
-        value: selectedNetwork == buttonNetwork,
-        onChanged: (value) {
-          setState(() {
-            ref.read(networkAccessProvider).networkType = buttonNetwork;
-            ref.read(walletProvider).applyNetworkChange();
-          });
-        },
-        title: Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: Text(
-            name,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.normal,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -83,16 +53,22 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
                       final selectedNetwork = ref.watch(networkTypeProvider);
                       return Column(
                         children: [
-                          buildButton('Blockstream'.tr(), selectedNetwork,
-                              SettingsNetworkType.blockstream),
-                          buildButton('SideSwap'.tr(), selectedNetwork,
-                              SettingsNetworkType.sideswap),
+                          SettingsNetworkServerButton(
+                            name: 'BlockStream (Mainnet)',
+                            selectedNetwork: selectedNetwork,
+                            buttonNetwork: SettingsNetworkType.blockstream,
+                          ),
+                          SettingsNetworkServerButton(
+                            name: 'SideSwap (Mainnet)',
+                            selectedNetwork: selectedNetwork,
+                            buttonNetwork: SettingsNetworkType.sideswap,
+                          ),
                           Padding(
                             padding: const EdgeInsets.only(top: 8),
                             child: SettingsNetworkButton(
                               trailingIconVisible: true,
-                              value:
-                                  selectedNetwork == SettingsNetworkType.custom,
+                              value: selectedNetwork ==
+                                  SettingsNetworkType.personal,
                               onChanged: (value) {
                                 Navigator.of(context, rootNavigator: true)
                                     .push<void>(
@@ -105,7 +81,7 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
                               title: Padding(
                                 padding: const EdgeInsets.only(left: 10),
                                 child: Text(
-                                  'Custom'.tr(),
+                                  'Personal Electrum Server'.tr(),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.normal,
@@ -121,6 +97,44 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
                   ),
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingsNetworkServerButton extends HookConsumerWidget {
+  const SettingsNetworkServerButton(
+      {Key? key,
+      required this.name,
+      required this.selectedNetwork,
+      required this.buttonNetwork})
+      : super(key: key);
+
+  final String name;
+  final SettingsNetworkType selectedNetwork;
+  final SettingsNetworkType buttonNetwork;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: SettingsNetworkButton(
+        value: selectedNetwork == buttonNetwork,
+        onChanged: (value) {
+          ref.read(networkAccessProvider).networkType = buttonNetwork;
+          ref.read(walletProvider).applyNetworkChange();
+        },
+        title: Padding(
+          padding: const EdgeInsets.only(left: 10),
+          child: Text(
+            name,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+              color: Colors.white,
             ),
           ),
         ),

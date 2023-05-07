@@ -1,6 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 5.821 3.572" height="13.5" width="22">
-  <g transform="matrix(.26458 0 0 .26458 0 -.926)" fill="#8f8f8f">
-    <rect y="16" width="22" height="1" rx=".5"/>
-    <path d="M1.666 3.628a.5.5 0 01.706.038L11 13.253l8.628-9.587a.5.5 0 11.744.668l-9 10a.5.5 0 01-.744 0l-9-10a.5.5 0 01.038-.706z" clip-rule="evenodd" fill-rule="evenodd"/>
-  </g>
-</svg>
+<svg width="21.999" height="13.505" version="1.1" viewBox="0 0 5.8206 3.5732" xml:space="preserve" xmlns="http://www.w3.org/2000/svg"><g transform="translate(-68.144 -147.83)"><g transform="matrix(.26457 0 0 .26457 68.144 146.91)" fill="#8f8f8f"><rect y="16" width="22" height="1" rx=".5"/><path d="m1.666 3.628a0.5 0.5 0 0 1 0.706 0.038l8.628 9.587 8.628-9.587a0.5 0.5 0 1 1 0.744 0.668l-9 10a0.5 0.5 0 0 1-0.744 0l-9-10a0.5 0.5 0 0 1 0.038-0.706z" clip-rule="evenodd" fill-rule="evenodd"/></g></g></svg>
