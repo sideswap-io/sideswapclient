@@ -1,6 +1,6 @@
+use bitcoin::bip32::ExtendedPubKey;
 use serde::{Deserialize, Serialize};
 use sideswap_api::{OrderId, SessionId};
-use std::collections::BTreeSet;
 
 #[derive(Eq, PartialEq, Serialize, Deserialize, Copy, Clone)]
 pub enum PegDir {
@@ -15,43 +15,51 @@ pub struct Peg {
 }
 
 #[derive(Serialize, Deserialize, Default)]
-pub struct SettingsPersistent {
-    pub unregister_phone_requests: Option<BTreeSet<sideswap_api::PhoneKey>>,
-}
+pub struct SettingsPersistent {}
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct AmpPrevAddrs {
     pub last_pointer: u32,
-    pub list: Vec<String>,
+    pub list: Vec<crate::gdk_json::AddressInfo>,
 }
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct WatchOnly {
+    pub master_blinding_key: String,
+
+    pub root_xpub: ExtendedPubKey,
+    pub password_xpub: ExtendedPubKey,
+    pub single_sig_account_xpub: ExtendedPubKey,
+    pub multi_sig_user_xpub: ExtendedPubKey,
+
     pub username: String,
     pub password: String,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct RegInfo {
+    pub jade_watch_only: Option<WatchOnly>,
+    pub multi_sig_service_xpub: String,
+    pub multi_sig_user_path: Vec<u32>,
 }
 
 // All will be cleared after new wallet import!
 #[derive(Serialize, Deserialize, Default)]
 pub struct Settings {
-    pub persistent: Option<SettingsPersistent>,
-
     pub pegs: Option<Vec<Peg>>,
     pub device_key: Option<String>,
-    pub last_external_new: Option<u32>,
-    pub last_internal_new: Option<u32>,
-    pub last_external_amp_new: Option<u32>,
-    pub session_id: Option<SessionId>,
-    pub amp_prev_addrs: Option<AmpPrevAddrs>,
-    pub master_pub_key: Option<bitcoin::util::bip32::ExtendedPubKey>,
-    pub watch_only: Option<WatchOnly>,
-}
 
-impl Settings {
-    pub fn get_persistent(&mut self) -> &mut SettingsPersistent {
-        self.persistent
-            .get_or_insert_with(|| SettingsPersistent::default())
-    }
+    #[serde(default)]
+    pub single_sig_registered: [u32; 2],
+
+    #[serde(default)]
+    pub multi_sig_registered: u32,
+
+    pub session_id: Option<SessionId>,
+    pub amp_prev_addrs_v2: Option<AmpPrevAddrs>,
+    pub master_pub_key: Option<bitcoin::bip32::ExtendedPubKey>,
+
+    pub reg_info_v3: Option<RegInfo>,
 }
 
 const SETTINGS_NAME: &str = "settings.json";
@@ -64,8 +72,8 @@ pub fn save_settings(
     let data = serde_json::to_string(&settings)?;
     let file_path = data_dir.join(SETTINGS_NAME);
     let file_path_tmp = std::path::Path::new(&data_dir).join(SETTINGS_NAME_TMP);
-    std::fs::write(&file_path_tmp, &data)?;
-    std::fs::rename(&file_path_tmp, &file_path)?;
+    std::fs::write(&file_path_tmp, data)?;
+    std::fs::rename(&file_path_tmp, file_path)?;
     Ok(())
 }
 

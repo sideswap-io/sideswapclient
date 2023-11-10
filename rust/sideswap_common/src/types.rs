@@ -29,7 +29,7 @@ impl Amount {
         let amount =
             bitcoin::SignedAmount::from_str_in(&value.to_string(), bitcoin::Denomination::Bitcoin)
                 .expect("invalid bitcoin value");
-        Amount::from_sat(amount.as_sat())
+        Amount::from_sat(amount.to_sat())
     }
 
     pub fn from_bitcoin(value: f64) -> Self {
@@ -55,12 +55,12 @@ impl Amount {
     Hash, Eq, PartialEq, Clone, Ord, PartialOrd, Debug, serde::Serialize, serde::Deserialize,
 )]
 pub struct TxOut {
-    pub txid: sideswap_api::Txid,
+    pub txid: elements::Txid,
     pub vout: u32,
 }
 
 impl TxOut {
-    pub fn new(txid: sideswap_api::Txid, vout: u32) -> TxOut {
+    pub fn new(txid: elements::Txid, vout: u32) -> TxOut {
         TxOut { txid, vout }
     }
 }
@@ -98,16 +98,6 @@ pub fn select_utxo_values<T>(mut inputs: Vec<(i64, T)>, amount: i64) -> Vec<T> {
         result.push(value);
     }
     result
-}
-
-const VSIZE_FIXED: i64 = 23;
-const VSIZE_VIN: i64 = 108;
-const VSIZE_VOUT: i64 = 1192;
-
-pub fn expected_network_fee(vin_count: i32, vout_count: i32, fee_rate: f64) -> Amount {
-    let expected_vsize =
-        VSIZE_FIXED + vin_count as i64 * VSIZE_VIN + vout_count as i64 * VSIZE_VOUT;
-    Amount::from_bitcoin(expected_vsize as f64 * fee_rate / 1000.0 * 1.075)
 }
 
 pub fn timestamp_now() -> i64 {
@@ -251,8 +241,8 @@ mod tests {
         let test_count = 10000000;
         for _ in 0..test_count {
             let balance: i64 = rng.gen_range(
-                MIN_BITCOIN_AMOUNT.to_sat() + MIN_SERVER_FEE.to_sat(),
-                Amount::from_bitcoin(100.0).to_sat(),
+                MIN_BITCOIN_AMOUNT.to_sat() + MIN_SERVER_FEE.to_sat()
+                    ..Amount::from_bitcoin(100.0).to_sat(),
             );
             let balance = Amount::from_sat(balance);
             let amount = get_max_bitcoin_amount(balance).unwrap();

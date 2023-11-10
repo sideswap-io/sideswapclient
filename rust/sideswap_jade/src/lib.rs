@@ -5,8 +5,9 @@ extern crate anyhow;
 
 pub mod models;
 pub mod reader;
-mod serial;
+pub mod serial;
 
+use base64::Engine;
 pub use serial::FromPort;
 pub use serial::Handle;
 pub use serial::Port;
@@ -18,14 +19,15 @@ pub enum Req {
     ReadStatus,
     AuthUser(JadeNetwork),
     ResolveXpub(ResolveXpubReq),
+    GetMasterBlindingKey,
     SignMessage(SignMessageReq),
-    GetSignature(Vec<u8>),
+    GetSignature(Option<serde_bytes::ByteBuf>),
     GetSharedNonce(GetSharedNonceReq),
     GetBlindingKey(Vec<u8>),
     GetBlindingFactor(GetBlindingFactorReq),
     GetCommitments(GetCommitmentsReq),
     SignTx(models::ReqSignTx),
-    TxInput(models::ReqTxInput),
+    TxInput(Option<models::ReqTxInput>),
 }
 
 #[derive(Debug)]
@@ -33,8 +35,9 @@ pub enum Resp {
     ReadStatus(models::RespVersionInfo),
     AuthUser(bool),
     ResolveXpub(String),
+    GetMasterBlindingKey(Vec<u8>),
     SignMessage(Vec<u8>),
-    GetSignature(Vec<u8>),
+    GetSignature(Option<Vec<u8>>),
     GetSharedNonce(Vec<u8>),
     GetBlindingKey(Vec<u8>),
     GetBlindingFactor(Vec<u8>),
@@ -64,7 +67,7 @@ impl Jade {
     // Provided callback must not block when invoked
     pub fn new<F>(port: Port, callback: F) -> Result<Self, anyhow::Error>
     where
-        F: 'static + Send + FnMut(WorkerResp) -> (),
+        F: 'static + Send + FnMut(WorkerResp),
     {
         let (sender, receiver) = std::sync::mpsc::channel();
 
@@ -103,6 +106,7 @@ enum PendingRequest {
     HttpRequest,
     AuthComplete,
     GetXPub,
+    GetMasterBlindingKey,
     SignMessage,
     GetSignature,
     GetSharedNonce,
@@ -190,7 +194,7 @@ fn handle_http_request(
 
     let response = state
         .agent
-        .post(&url)
+        .post(url)
         .set("Content-Type", "application/json")
         .set("Accept", "application/json")
         .send_string(&data)?;
@@ -202,7 +206,7 @@ fn handle_http_request(
 
 fn handle_port_msg<F>(state: &mut State, callback: &mut F, handle: &mut Handle, data: Vec<u8>)
 where
-    F: FnMut(WorkerResp) -> (),
+    F: FnMut(WorkerResp),
 {
     let jade_resp =
         ciborium::de::from_reader::<models::Resp<ciborium::value::Value>, _>(data.as_slice());
@@ -363,6 +367,31 @@ where
             }
         }
 
+        PendingRequest::GetMasterBlindingKey => {
+            let resp = ciborium::de::from_reader::<models::Resp<models::RespGetMasterBlindingKey>, _>(
+                data.as_slice(),
+            );
+            match resp {
+                Ok(v) => match (v.error, v.result) {
+                    (Some(e), _) => {
+                        callback(WorkerResp::Resp(Err(anyhow!(
+                            "request failed: {}",
+                            e.message
+                        ))));
+                    }
+                    (None, Some(v)) => {
+                        callback(WorkerResp::Resp(Ok(Resp::GetMasterBlindingKey(v))));
+                    }
+                    _ => {
+                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
+                    }
+                },
+                Err(e) => callback(WorkerResp::FatalError(anyhow!(
+                    "parsing ReadStatus response failed: {e}",
+                ))),
+            }
+        }
+
         PendingRequest::SignMessage => {
             let resp = ciborium::de::from_reader::<models::Resp<models::RespSignMessage>, _>(
                 data.as_slice(),
@@ -402,14 +431,21 @@ where
                         ))));
                     }
                     (None, Some(ciborium::value::Value::Text(v))) => {
-                        let v = base64::decode(&v).unwrap();
-                        callback(WorkerResp::Resp(Ok(Resp::GetSignature(v))));
+                        let v = base64::engine::general_purpose::STANDARD
+                            .decode(v)
+                            .unwrap();
+                        callback(WorkerResp::Resp(Ok(Resp::GetSignature(Some(v)))));
                     }
                     (None, Some(ciborium::value::Value::Bytes(v))) => {
-                        callback(WorkerResp::Resp(Ok(Resp::GetSignature(v))));
+                        callback(WorkerResp::Resp(Ok(Resp::GetSignature(Some(v)))));
                     }
-                    _ => {
-                        callback(WorkerResp::Resp(Err(anyhow!("unexpected response"))));
+                    (None, Some(ciborium::value::Value::Null)) => {
+                        callback(WorkerResp::Resp(Ok(Resp::GetSignature(None))));
+                    }
+                    resp => {
+                        callback(WorkerResp::Resp(Err(anyhow!(
+                            "unexpected response: {resp:?}"
+                        ))));
                     }
                 },
                 Err(e) => callback(WorkerResp::FatalError(anyhow!(
@@ -580,7 +616,7 @@ fn worker<F>(
     mut handle: serial::Handle,
     mut callback: F,
 ) where
-    F: FnMut(WorkerResp) -> (),
+    F: FnMut(WorkerResp),
 {
     let mut state = State {
         pending_requests: std::collections::BTreeMap::new(),
@@ -667,6 +703,23 @@ fn worker<F>(
                 }
             }
 
+            WorkerReq::Req(Req::GetMasterBlindingKey) => {
+                state.last_request_id += 1;
+                let req = models::Req::<models::ReqGetMasterBlindingKey> {
+                    id: state.last_request_id.to_string(),
+                    method: "get_master_blinding_key".to_owned(),
+                    params: None,
+                };
+                let result = handle.send(&req);
+                if let Err(e) = result {
+                    callback(WorkerResp::FatalError(e));
+                } else {
+                    state
+                        .pending_requests
+                        .insert(state.last_request_id, PendingRequest::GetMasterBlindingKey);
+                }
+            }
+
             WorkerReq::Req(Req::SignMessage(req)) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqSignMessage> {
@@ -693,9 +746,7 @@ fn worker<F>(
                 let req = models::Req::<models::ReqGetSignature> {
                     id: state.last_request_id.to_string(),
                     method: "get_signature".to_owned(),
-                    params: Some(models::ReqGetSignature {
-                        ae_host_entropy: serde_bytes::ByteBuf::from(ae_host_entropy),
-                    }),
+                    params: Some(models::ReqGetSignature { ae_host_entropy }),
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {
@@ -777,11 +828,11 @@ fn worker<F>(
                     id: state.last_request_id.to_string(),
                     method: "get_commitments".to_owned(),
                     params: Some(models::ReqGetCommitments {
-                        asset_id: serde_bytes::ByteBuf::from(req.asset_id),
+                        asset_id: req.asset_id,
                         value: req.value,
                         hash_prevouts: serde_bytes::ByteBuf::from(req.hash_prevouts),
                         output_index: req.output_index,
-                        vbf: req.vbf.map(|vbf| serde_bytes::ByteBuf::from(vbf)),
+                        vbf: req.vbf.map(serde_bytes::ByteBuf::from),
                     }),
                 };
                 let result = handle.send(&req);
@@ -811,12 +862,29 @@ fn worker<F>(
                 }
             }
 
-            WorkerReq::Req(Req::TxInput(msg)) => {
+            WorkerReq::Req(Req::TxInput(Some(msg))) => {
                 state.last_request_id += 1;
                 let req = models::Req::<models::ReqTxInput> {
                     id: state.last_request_id.to_string(),
                     method: "tx_input".to_owned(),
                     params: Some(msg),
+                };
+                let result = handle.send(&req);
+                if let Err(e) = result {
+                    callback(WorkerResp::FatalError(e));
+                } else {
+                    state
+                        .pending_requests
+                        .insert(state.last_request_id, PendingRequest::TxInput);
+                }
+            }
+
+            WorkerReq::Req(Req::TxInput(None)) => {
+                state.last_request_id += 1;
+                let req = models::Req::<models::ReqTxInputEmpty> {
+                    id: state.last_request_id.to_string(),
+                    method: "tx_input".to_owned(),
+                    params: Some(models::ReqTxInputEmpty {}),
                 };
                 let result = handle.send(&req);
                 if let Err(e) = result {

@@ -8,7 +8,7 @@
 .buildlog/
 .history
 .svn/
-
+android/app/src/main/jniLibs/
 # IntelliJ related
 *.iml
 *.ipr
@@ -19,7 +19,7 @@
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
 #.vscode/
-.vscode/launch.json
+#.vscode/launch.json
 
 # Flutter/Dart/Pub related
 **/doc/api/

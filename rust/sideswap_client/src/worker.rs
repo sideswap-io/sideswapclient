@@ -1,12 +1,22 @@
-use crate::gdk_ses::NotifCallback;
+mod assets_registry;
+
+use crate::gdk_json::AddressInfo;
+use crate::gdk_ses::{NotifCallback, WalletInfo};
+use crate::jade_mng::JadeState;
+use crate::settings::{RegInfo, WatchOnly};
 
 use super::*;
+use base64::Engine;
+use bitcoin::secp256k1::global::SECP256K1;
+use elements::bitcoin::bip32::{ChildNumber, ExtendedPrivKey, ExtendedPubKey};
 use rand::Rng;
+use secp256k1::hashes::Hash;
 use settings::{Peg, PegDir};
 use sideswap_api::*;
 use sideswap_common::env::Env;
 use sideswap_common::types::*;
 use sideswap_common::*;
+use sideswap_jade::serial::JadeId;
 use std::collections::{HashMap, HashSet};
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
@@ -16,7 +26,7 @@ use types::Amount;
 
 const CLIENT_API_KEY: &str = "f8b7a12ee96aa68ee2b12ebfc51d804a4a404c9732652c298d24099a3d922a84";
 
-const USER_AGENT: &str = "SideSwapApp";
+pub const USER_AGENT: &str = "SideSwapApp";
 
 const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
 const SERVER_REQUEST_POLL_PERIOD: std::time::Duration = std::time::Duration::from_secs(1);
@@ -28,8 +38,6 @@ const AMP_CONNECTION_CHECK_PERIOD: std::time::Duration =
     std::time::Duration::from_secs(2400 - IDLE_TIMER.as_secs());
 
 pub const TX_CONF_COUNT_LIQUID: u32 = 2;
-
-const MAX_REGISTER_ADDRESS_COUNT: u32 = 100;
 
 const DEFAULT_ICON: &[u8] = include_bytes!("../images/icon_blank.png");
 
@@ -46,7 +54,7 @@ struct ActivePeg {
 
 pub struct PegPayment {
     pub sent_amount: i64,
-    pub sent_txid: sideswap_api::Txid,
+    pub sent_txid: elements::Txid,
     pub signed_tx: String,
 }
 
@@ -66,7 +74,7 @@ struct SubmitData {
     txouts: BTreeSet<TxOut>,
     auto_sign: bool,
     two_step: bool,
-    txid: Option<Txid>,
+    txid: Option<elements::Txid>,
     index_price: bool,
     market: MarketType,
     signed: bool,
@@ -78,11 +86,30 @@ struct UiData {
     ui_stopped: std::sync::Arc<std::sync::atomic::AtomicBool>,
 }
 
-// FIXME: Add serial based on MAC-address
 struct JadeData {
-    jade_id: jade_mng::JadeId,
+    jade_id: JadeId,
     port_name: String,
     serial: String,
+    version: String,
+    state: JadeState,
+}
+
+#[derive(Default)]
+struct UsedAddresses {
+    single_sig: [u32; 2],
+    multi_sig: u32,
+}
+
+#[derive(Clone)]
+pub struct XPubInfo {
+    single_sig_account: ExtendedPubKey,
+    multi_sig_service_xpub: ExtendedPubKey,
+    multi_sig_user_xpub: ExtendedPubKey,
+}
+
+pub struct Wallet {
+    ses: Box<dyn gdk_ses::GdkSes>,
+    xpubs: XPubInfo,
 }
 
 pub struct Data {
@@ -106,19 +133,19 @@ pub struct Data {
     agent: ureq::Agent,
     sync_complete: bool,
     wallet_loaded_sent: bool,
-    confirmed_txids: BTreeMap<AccountId, HashSet<Txid>>,
-    unconfirmed_txids: BTreeMap<AccountId, HashSet<Txid>>,
+    confirmed_txids: BTreeMap<AccountId, HashSet<elements::Txid>>,
+    unconfirmed_txids: BTreeMap<AccountId, HashSet<elements::Txid>>,
     orders_last: BTreeMap<OrderId, ffi::proto::Order>,
     orders_sent: BTreeMap<OrderId, ffi::proto::Order>,
     send_utxo_updates: bool,
-    wallets: BTreeMap<AccountId, Box<dyn gdk_ses::GdkSes>>,
-    phone_key: Option<PhoneKey>,
+    force_auto_sign_maker: bool,
+    wallets: BTreeMap<AccountId, Wallet>,
     subscribes: BTreeSet<Option<AssetId>>,
 
     active_swap: Option<ActiveSwap>,
-    succeed_swap: Option<Txid>,
+    succeed_swap: Option<elements::Txid>,
     active_extern_peg: Option<ActivePeg>,
-    sent_txhash: Option<Txid>,
+    sent_txhash: Option<elements::Txid>,
     peg_out_server_amounts: Option<PegOutAmounts>,
     active_submits: BTreeMap<OrderId, LinkResponse>,
     active_sign: Option<SignNotification>,
@@ -142,11 +169,14 @@ pub struct Data {
     subscribed_market_data: Option<AssetId>,
     last_connection_check: std::time::Instant,
     last_blocks: BTreeMap<AccountId, gdk_json::NotificationBlock>,
+    used_addresses: UsedAddresses,
 
     jade_mng: jade_mng::JadeMng,
     jades: Vec<JadeData>,
     jades_scan_result: Option<String>,
     jade_status_callback: gdk_ses::JadeStatusCallback,
+
+    async_requests: BTreeMap<RequestId, Box<dyn FnOnce(&mut Data, Result<Response, Error>)>>,
 }
 
 pub struct ActiveSwap {
@@ -163,6 +193,7 @@ pub enum Message {
     ServerConnected,
     ServerDisconnected,
     ServerNotification(Notification),
+    AsyncResp(RequestId, Result<Response, Error>),
     Notif(AccountId, gdk_json::Notification),
     PegStatus(PegStatus),
     Subscribe(SubscribeResponse),
@@ -170,9 +201,11 @@ pub enum Message {
     MarketDataResponse(MarketDataSubscribeResponse),
     AssetDetails(AssetDetailsResponse),
     BackgroundMessage(String, crossbeam_channel::Sender<()>),
-    GaidStatus(GaidStatusResponse),
     IdleTimer,
 }
+
+const XPUB_PATH_ROOT: [u32; 0] = [];
+const XPUB_PATH_PASS: [u32; 1] = [0xF0617373];
 
 macro_rules! send_request {
     ($sender:expr, $t:ident, $value:expr) => {
@@ -186,7 +219,7 @@ macro_rules! send_request {
 
 fn redact_to_msg(mut msg: ffi::proto::to::Msg) -> ffi::proto::to::Msg {
     match &mut msg {
-        ffi::proto::to::Msg::Login(v) => v.mnemonic = "<redacted>".to_owned(),
+        ffi::proto::to::Msg::Login(v) => v.wallet = None,
         ffi::proto::to::Msg::EncryptPin(v) => v.mnemonic = "<redacted>".to_owned(),
         ffi::proto::to::Msg::DecryptPin(v) => {
             v.pin = "<redacted>".to_owned();
@@ -221,12 +254,14 @@ pub fn get_created_tx(
 ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
     let unsigned_tx =
         serde_json::from_value::<gdk_json::CreateTransactionResult>(unsigned_tx.clone())?;
-    let tx: elements::Transaction =
-        elements::encode::deserialize(&hex::decode(&unsigned_tx.transaction)?)?;
+    let tx = unsigned_tx
+        .transaction
+        .ok_or_else(|| anyhow!("no transaction"))?
+        .into_inner();
 
-    let network_fee = tx.all_fees().values().cloned().sum::<u64>() as i64;
-    let vsize = (tx.get_weight() + 3) / 4;
-    let fee_per_byte = network_fee as f64 / vsize as f64;
+    let network_fee = unsigned_tx.fee.unwrap_or_default();
+    let vsize = unsigned_tx.transaction_vsize.unwrap_or_default();
+    let fee_per_byte = unsigned_tx.fee_rate.unwrap_or_default() as f64 / 1000.0;
 
     let addressees = unsigned_tx
         .addressees
@@ -259,9 +294,9 @@ pub fn get_created_tx(
         req: req.clone(),
         input_count: tx.input.len() as i32,
         output_count: tx.output.len() as i32,
-        size: tx.get_size() as i64,
+        size: tx.size() as i64,
         vsize: vsize as i64,
-        network_fee,
+        network_fee: network_fee as i64,
         fee_per_byte,
         addressees,
     })
@@ -303,7 +338,7 @@ fn get_tx_item_confs(tx_block: u32, top_block: u32) -> Option<ffi::proto::Confs>
     }
 }
 
-fn tx_txitem_id(account_id: AccountId, txid: &Txid) -> String {
+fn tx_txitem_id(account_id: AccountId, txid: &elements::Txid) -> String {
     format!("{}/{}", account_id, txid)
 }
 
@@ -328,28 +363,13 @@ fn get_peg_item(peg: &PegStatus, tx: &TxStatus) -> ffi::proto::TransItem {
         })
     });
     let id = peg_txitem_id(&tx.tx_hash, tx.vout);
-    let tx_item = ffi::proto::TransItem {
+
+    ffi::proto::TransItem {
         id,
         created_at: tx.created_at,
         confs,
         account: get_account(ACCOUNT_ID_REG), // FIXME: Use correct account_id here (for peg-outs from AMP wallet)
         item: Some(ffi::proto::trans_item::Item::Peg(peg_details)),
-    };
-    tx_item
-}
-
-fn get_registry_config(env: Env) -> gdk_registry::param::Config {
-    let network = match env.data().network {
-        env::Network::Mainnet => gdk_registry::param::ElementsNetwork::Liquid,
-        env::Network::Testnet => gdk_registry::param::ElementsNetwork::LiquidTestnet,
-        env::Network::Regtest | env::Network::Local => {
-            gdk_registry::param::ElementsNetwork::ElementsRegtest
-        }
-    };
-    gdk_registry::param::Config {
-        proxy: None,
-        url: env.data().asset_registry_url.to_owned(),
-        network,
     }
 }
 
@@ -367,11 +387,73 @@ fn select_swap_inputs(
     Ok(inputs)
 }
 
+fn derive_single_sig_address(
+    account_xpub: &ExtendedPubKey,
+    network: env::Network,
+    is_internal: bool,
+    pointer: u32,
+) -> elements::Address {
+    let pub_key = account_xpub
+        .derive_pub(
+            &SECP256K1,
+            &[
+                ChildNumber::from_normal_idx(is_internal as u32).unwrap(),
+                ChildNumber::from_normal_idx(pointer).unwrap(),
+            ],
+        )
+        .unwrap()
+        .to_pub();
+    elements::Address::p2shwpkh(&pub_key, None, network.elements_params())
+}
+
+fn derive_multi_sig_address(
+    multi_sig_service_xpub: &ExtendedPubKey,
+    multi_sig_user_xpub: &ExtendedPubKey,
+    network: env::Network,
+    pointer: u32,
+) -> elements::Address {
+    let pub_key_green = multi_sig_service_xpub
+        .derive_pub(
+            &SECP256K1,
+            &[ChildNumber::from_normal_idx(pointer).unwrap()],
+        )
+        .unwrap()
+        .to_pub();
+    let pub_key_user = multi_sig_user_xpub
+        .derive_pub(
+            &SECP256K1,
+            &[ChildNumber::from_normal_idx(pointer).unwrap()],
+        )
+        .unwrap()
+        .to_pub();
+
+    let script = elements::script::Builder::new()
+        .push_opcode(elements::opcodes::all::OP_PUSHNUM_2)
+        .push_slice(&pub_key_green.to_bytes())
+        .push_slice(&pub_key_user.to_bytes())
+        .push_opcode(elements::opcodes::all::OP_PUSHNUM_2)
+        .push_opcode(elements::opcodes::all::OP_CHECKMULTISIG)
+        .into_script();
+
+    let script = elements::script::Builder::new()
+        .push_int(0)
+        .push_slice(&elements::WScriptHash::hash(script.as_bytes())[..])
+        .into_script();
+
+    let script_hash = elements::ScriptHash::hash(script.as_bytes());
+
+    elements::Address {
+        params: network.elements_params(),
+        payload: elements::address::Payload::ScriptHash(script_hash),
+        blinding_pubkey: None,
+    }
+}
+
 fn load_all_addresses(
     wallet: &mut dyn gdk_ses::GdkSes,
     is_internal: bool,
     last_known_pointer: Option<u32>,
-) -> Result<(u32, Vec<String>), anyhow::Error> {
+) -> Result<(u32, Vec<AddressInfo>), anyhow::Error> {
     let mut result = Vec::new();
     let mut result_pointer = 0;
     let mut last_pointer = None;
@@ -406,7 +488,6 @@ fn load_all_addresses(
             .filter(|addr| {
                 last_known_pointer.is_none() || addr.pointer > last_known_pointer.unwrap()
             })
-            .map(|addr| addr.address)
             .collect::<Vec<_>>();
         let no_new_addresses = new_list.is_empty();
         result.append(&mut new_list);
@@ -439,77 +520,44 @@ impl UiData {
 }
 
 impl Data {
-    fn master_xpub(&mut self) -> bitcoin::util::bip32::ExtendedPubKey {
+    fn logged_in(&self) -> bool {
+        !self.wallets.is_empty()
+    }
+
+    fn master_xpub(&mut self) -> bitcoin::bip32::ExtendedPubKey {
         if self.settings.master_pub_key.is_none() {
             let seed = rand::Rng::gen::<[u8; 32]>(&mut rand::thread_rng());
             let master_priv_key =
-                bitcoin::util::bip32::ExtendedPrivKey::new_master(bitcoin::Network::Bitcoin, &seed)
+                bitcoin::bip32::ExtendedPrivKey::new_master(bitcoin::Network::Bitcoin, &seed)
                     .unwrap();
             let master_pub_key =
-                bitcoin::util::bip32::ExtendedPubKey::from_private(swaps::secp(), &master_priv_key);
+                bitcoin::bip32::ExtendedPubKey::from_priv(swaps::secp(), &master_priv_key);
             self.settings.master_pub_key = Some(master_pub_key);
             self.save_settings();
         }
-        self.settings.master_pub_key.clone().unwrap()
+        self.settings.master_pub_key.unwrap()
     }
 
     fn load_gdk_asset(&mut self, asset_ids: &[AssetId]) -> Result<Vec<Asset>, anyhow::Error> {
-        let asset_ids_copy = asset_ids
-            .iter()
-            .map(|asset_id| elements::AssetId::from_slice(&asset_id.0).unwrap())
-            .collect::<Vec<_>>();
-        let loaded_assets = gdk_registry::get_assets(gdk_registry::GetAssetsParams {
-            assets_id: asset_ids_copy.clone(),
-            xpub: self.master_xpub(),
-            config: get_registry_config(self.env),
-        })?;
-        let result = asset_ids
-            .iter()
-            .zip(asset_ids_copy.iter())
-            .filter_map(|(asset_id, asset_id_copy)| {
-                loaded_assets.assets.get(asset_id_copy).map(|v| {
-                    let icon = loaded_assets
-                        .icons
-                        .get(asset_id_copy)
-                        .cloned()
-                        .unwrap_or_else(|| base64::encode(DEFAULT_ICON));
-                    let default_ticker = || format!("{:0.4}", &asset_id.to_string());
-                    Asset {
-                        asset_id: asset_id.clone(),
-                        name: v.name.clone(),
-                        ticker: Ticker(v.ticker.clone().unwrap_or_else(default_ticker)),
-                        icon: Some(icon),
-                        precision: v.precision,
-                        icon_url: None,
-                        instant_swaps: Some(false),
-                        domain: v.entity["domain"].as_str().map(|s| s.to_owned()),
-                        domain_agent: None,
-                    }
-                })
-            })
-            .collect();
-        Ok(result)
+        assets_registry::get_assets(self.env, self.master_xpub(), asset_ids)
     }
 
-    fn get_and_register_address(
+    fn get_uniq_address(
         &self,
         wallet: &dyn gdk_ses::GdkSes,
-    ) -> Result<String, anyhow::Error> {
-        let addr = wallet.get_recv_address()?;
-        self.register_addresses(&[addr.clone()]);
-        Ok(addr)
-    }
-
-    fn get_and_register_uniq_address(
-        &self,
-        wallet: &dyn gdk_ses::GdkSes,
-        old_addr: &str,
-    ) -> Result<String, anyhow::Error> {
+        old_addr: Option<&elements::Address>,
+        is_internal: bool,
+    ) -> Result<AddressInfo, anyhow::Error> {
         // GDK rust sometimes return same address, that is workaround for this
         for _ in 0..10 {
-            let addr = self.get_and_register_address(wallet)?;
-            if addr != old_addr {
-                return Ok(addr);
+            let addr_info = wallet.get_recv_address(is_internal)?;
+            match old_addr {
+                Some(old_addr) => {
+                    if addr_info.address != *old_addr {
+                        return Ok(addr_info);
+                    }
+                }
+                None => return Ok(addr_info),
             }
         }
         bail!("can't receive new address");
@@ -585,7 +633,7 @@ impl Data {
 
         let removed = unconfirmed_txids
             .iter()
-            .filter(|txid| !updated.contains_key(txid))
+            .filter(|txid| !updated.contains_key(*txid))
             .cloned()
             .collect::<Vec<_>>();
 
@@ -593,13 +641,12 @@ impl Data {
             let submit_data = self
                 .submit_data
                 .values()
-                .find(|submit_data| submit_data.txid.as_ref() == Some(&txid));
-            // FIXME: Show transaction popup from correct account
+                .find(|submit_data| submit_data.txid.as_ref() == Some(txid));
             if let Some(submit_data) = submit_data {
                 let shown = self.shown_succeed.contains(&submit_data.order_id);
                 if !shown {
                     self.pending_succeed.push_back(item.clone());
-                    self.shown_succeed.insert(submit_data.order_id.clone());
+                    self.shown_succeed.insert(submit_data.order_id);
                 }
             }
         }
@@ -641,7 +688,7 @@ impl Data {
 
         let new_asset_ids = assets
             .iter()
-            .filter(|asset| self.assets.get(&asset).is_none())
+            .filter(|asset| self.assets.get(asset).is_none())
             .cloned()
             .collect::<Vec<_>>();
         if !new_asset_ids.is_empty() {
@@ -655,15 +702,21 @@ impl Data {
                             warn!("can't find GDK asset {}", asset_id);
                             (
                                 Asset {
-                                    asset_id: asset_id.clone(),
+                                    asset_id: *asset_id,
                                     name: format!("{:0.8}...", &asset_id.to_string()),
                                     ticker: Ticker(format!("{:0.4}", &asset_id.to_string())),
-                                    icon: Some(base64::encode(DEFAULT_ICON)),
+                                    icon: Some(
+                                        base64::engine::general_purpose::STANDARD
+                                            .encode(DEFAULT_ICON),
+                                    ),
                                     precision: 8,
                                     icon_url: None,
                                     instant_swaps: Some(false),
                                     domain: None,
                                     domain_agent: None,
+                                    always_show: None,
+                                    issuance_prevout: None,
+                                    issuer_pubkey: None,
                                 },
                                 true,
                             )
@@ -706,8 +759,7 @@ impl Data {
     }
 
     fn send_gaid(&mut self) {
-        match self
-            .get_wallet_mut(ACCOUNT_ID_AMP)
+        match Self::get_wallet_mut(&mut self.wallets, ACCOUNT_ID_AMP)
             .and_then(|wallet| wallet.get_gaid())
         {
             Ok(gaid) => {
@@ -724,8 +776,7 @@ impl Data {
     fn resync_wallet(&mut self, account_id: AccountId) {
         debug!("resync wallet {}", account_id);
 
-        match self
-            .get_wallet_mut(account_id)
+        match Self::get_wallet_mut(&mut self.wallets, account_id)
             .and_then(|wallet| wallet.get_balances())
         {
             Ok(balances) => {
@@ -750,8 +801,7 @@ impl Data {
         }
 
         if self.send_utxo_updates {
-            match self
-                .get_wallet_mut(account_id)
+            match Self::get_wallet_mut(&mut self.wallets, account_id)
                 .and_then(|wallet| wallet.get_utxos())
             {
                 Ok(utxos) => {
@@ -766,11 +816,11 @@ impl Data {
         // TODO: Load transactions lazily to speedup wallet startup
         if let Some(last_block) = self.last_blocks.get(&account_id) {
             let top_block = last_block.block_height;
-            match self
-                .get_wallet_mut(account_id)
+            match Self::get_wallet_mut(&mut self.wallets, account_id)
                 .and_then(|wallet| wallet.get_transactions())
             {
                 Ok(items) => {
+                    self.update_used_addresses(account_id, &items);
                     self.send_new_transactions(items, account_id, top_block);
                 }
                 Err(e) => {
@@ -789,15 +839,16 @@ impl Data {
     }
 
     fn sync_complete(&mut self, account_id: AccountId) {
+        // Single-sig account takes 50..90 seconds to sync even if it's cached
+        debug!("sync_complete, account_id: {account_id}");
         if !self.sync_complete {
             self.sync_complete = true;
             self.send_wallet_loaded();
             self.process_pending_requests();
-            self.resync_wallet(account_id);
             self.ui
                 .send(ffi::proto::from::Msg::SyncComplete(ffi::proto::Empty {}));
-            self.update_address_registrations();
         }
+        self.resync_wallet(account_id);
     }
 
     fn sync_failed(&mut self) {
@@ -837,17 +888,10 @@ impl Data {
         self.get_data_path().join("registry")
     }
 
-    fn subscribe_price_update(&self, asset_id: &AssetId) {
-        let result = send_request!(
-            self,
-            PriceUpdateSubscribe,
-            PriceUpdateSubscribe {
-                asset: asset_id.clone(),
-            }
-        );
-        if let Err(e) = result {
-            error!("price subscribe failed: {}", e);
-        }
+    fn subscribe_price_update(&mut self, asset_id: &AssetId) {
+        self.send_request_msg(Request::PriceUpdateSubscribe(PriceUpdateSubscribe {
+            asset: *asset_id,
+        }));
     }
 
     fn try_process_ws_connected(&mut self) -> Result<(), anyhow::Error> {
@@ -869,9 +913,10 @@ impl Data {
         };
 
         let assets = send_request!(self, Assets, None)?.assets;
+        let liquid_asset_id = self.liquid_asset_id;
         for asset in assets
             .iter()
-            .filter(|asset| asset.asset_id != self.liquid_asset_id)
+            .filter(|asset| asset.asset_id != liquid_asset_id)
         {
             self.subscribe_price_update(&asset.asset_id);
         }
@@ -915,21 +960,19 @@ impl Data {
         }
 
         // register device key if does not exist
-        if self.settings.device_key == None {
+        if self.settings.device_key.is_none() {
             let register_req = RegisterDeviceRequest {
                 os_type: get_os_type(),
             };
             let register_resp = send_request!(self, RegisterDevice, register_req)?;
             self.settings.device_key = Some(register_resp.device_key);
-            self.settings.last_external_new = None;
-            self.settings.last_internal_new = None;
-            self.settings.last_external_amp_new = None;
+            self.settings.single_sig_registered = Default::default();
+            self.settings.multi_sig_registered = Default::default();
             self.save_settings();
-            self.update_address_registrations();
         }
 
         let login_req = LoginRequest {
-            session_id: self.settings.session_id.clone(),
+            session_id: self.settings.session_id,
         };
         let login_resp = send_request!(self, Login, login_req)?;
         for order in login_resp.orders {
@@ -965,10 +1008,8 @@ impl Data {
         self.process_pending_requests();
         self.resume_peg_monitoring();
         self.update_push_token();
-        self.update_address_registrations();
-        self.download_contacts();
-        self.process_unregister_phone_requests();
         self.send_subscribe_request();
+        self.update_address_registrations();
 
         self.ui
             .send(ffi::proto::from::Msg::ServerConnected(ffi::proto::Empty {}));
@@ -985,7 +1026,20 @@ impl Data {
             ffi::proto::Empty {},
         ));
 
-        self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+        let async_requests = std::mem::take(&mut self.async_requests);
+        for request in async_requests.into_values() {
+            request(
+                self,
+                Err(Error {
+                    code: ErrorCode::ServerError,
+                    message: "Server disconnected".to_owned(),
+                }),
+            );
+        }
+
+        if self.logged_in() {
+            self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+        }
     }
 
     fn process_server_status(&mut self, resp: ServerStatus) {
@@ -1048,8 +1102,14 @@ impl Data {
                     self.resync_wallet(account_id)
                 }
             }
-            "sync_complete" => self.sync_complete(account_id),
-            "sync_failed" => self.sync_failed(),
+            "subaccount" => {
+                if let Some(subaccount) = notification.subaccount {
+                    if subaccount.event_type == "synced" {
+                        self.sync_complete(account_id);
+                    }
+                }
+            }
+            "sync_failed" => self.sync_failed(), // FIXME: Not available from GDK
             _ => {}
         }
 
@@ -1060,8 +1120,10 @@ impl Data {
                 wait_ms: _,
             }),
             Ok(wallet),
-        ) = (&notification.network, self.get_wallet_mut(account_id))
-        {
+        ) = (
+            &notification.network,
+            Self::get_wallet_mut(&mut self.wallets, account_id),
+        ) {
             debug!("request wallet {} login", account_id);
             let connect_result = wallet.login();
             match connect_result {
@@ -1099,7 +1161,7 @@ impl Data {
     ) -> Result<ffi::proto::from::peg_out_amount::Amounts, anyhow::Error> {
         ensure!(self.connected, "not connected");
 
-        let wallet = self.get_wallet_mut(req.account.id)?;
+        let wallet = Self::get_wallet_mut(&mut self.wallets, req.account.id)?;
         let utxos = wallet
             .get_utxos()?
             .utxos
@@ -1111,9 +1173,11 @@ impl Data {
         let amount = if req.is_send_entered && balance == req.amount {
             let fake_addr = swaps::generate_fake_p2sh_address(self.env).to_string();
             let liquid_asset_id = self.liquid_asset_id;
-            let wallet = self.get_wallet_mut(req.account.id)?;
-            let network_fee = wallet.get_tx_fee(liquid_asset_id, req.amount, &fake_addr)?;
-            req.amount - network_fee
+            let wallet = Self::get_wallet_mut(&mut self.wallets, req.account.id)?;
+            let network_fee = wallet
+                .get_tx_fee(liquid_asset_id, req.amount, &fake_addr)?
+                .fee;
+            req.amount - network_fee as i64
         } else {
             req.amount
         };
@@ -1191,26 +1255,24 @@ impl Data {
             .as_ref()
             .expect("device_key must exists")
             .clone();
-        // First output is the target output
-        let request = Request::Peg(PegRequest {
-            recv_addr: req.recv_addr.clone(),
-            send_amount: None,
-            peg_in: false,
-            device_key: Some(device_key),
-            blocks: Some(req.blocks),
-            peg_out_amounts: Some(peg_out_server_amounts),
-        });
 
-        let resp = self.send_request(request);
-        let resp = match resp {
-            Ok(Response::Peg(resp)) => resp,
-            Ok(_) => bail!("unexpected server response"),
-            Err(e) => bail!("server error: {}", e.to_string()),
-        };
+        // First output is the target output
+        let resp = send_request!(
+            self,
+            Peg,
+            PegRequest {
+                recv_addr: req.recv_addr.clone(),
+                send_amount: None,
+                peg_in: false,
+                device_key: Some(device_key),
+                blocks: Some(req.blocks),
+                peg_out_amounts: Some(peg_out_server_amounts),
+            }
+        )?;
 
         self.add_peg_monitoring(resp.order_id, PegDir::Out);
 
-        let wallet = self.get_wallet_mut(req.account.id)?;
+        let wallet = Self::get_wallet_mut(&mut self.wallets, req.account.id)?;
         wallet.make_pegout_payment(
             req.send_amount,
             &resp.peg_addr,
@@ -1232,7 +1294,6 @@ impl Data {
                     .send(ffi::proto::from::Msg::SwapFailed(e.to_string()));
             }
         }
-        self.update_address_registrations();
     }
 
     fn try_process_pegin_request(
@@ -1245,28 +1306,30 @@ impl Data {
             .as_ref()
             .expect("device_key must exists")
             .clone();
-        let recv_addr =
-            self.get_and_register_address(self.get_wallet_ref(ACCOUNT_ID_REG)?.as_ref())?;
-        let request = Request::Peg(PegRequest {
-            recv_addr: recv_addr.clone(),
-            send_amount: None,
-            peg_in: true,
-            device_key: Some(device_key),
-            blocks: None,
-            peg_out_amounts: None,
-        });
-        let resp = self.send_request(request);
-        let resp = match resp {
-            Ok(Response::Peg(resp)) => resp,
-            Ok(_) => bail!("unexpected server response"),
-            Err(e) => bail!("server error: {}", e.to_string()),
-        };
+        let recv_addr = self
+            .get_wallet_ref(ACCOUNT_ID_REG)?
+            .get_recv_address(false)?
+            .address
+            .to_string();
 
-        self.add_peg_monitoring(resp.order_id.clone(), PegDir::In);
+        let resp = send_request!(
+            self,
+            Peg,
+            PegRequest {
+                recv_addr: recv_addr.clone(),
+                send_amount: None,
+                peg_in: true,
+                device_key: Some(device_key),
+                blocks: None,
+                peg_out_amounts: None,
+            }
+        )?;
+
+        self.add_peg_monitoring(resp.order_id, PegDir::In);
 
         let msg = ffi::proto::from::PeginWaitTx {
             peg_addr: resp.peg_addr,
-            recv_addr: recv_addr.clone(),
+            recv_addr,
         };
 
         self.active_extern_peg = Some(ActivePeg {
@@ -1308,14 +1371,16 @@ impl Data {
         let send_amount = req.send_amount;
         let recv_amount = req.recv_amount;
 
-        let inputs = self
-            .get_wallet_mut(ACCOUNT_ID_REG)?
-            .get_swap_inputs(&send_asset)?;
+        let account_id = ACCOUNT_ID_REG;
+        let inputs =
+            Self::get_wallet_mut(&mut self.wallets, account_id)?.get_swap_inputs(&send_asset)?;
         let inputs = select_swap_inputs(inputs, send_amount)?;
 
-        let wallet = self.get_wallet_ref(ACCOUNT_ID_REG)?;
-        let change_addr = self.get_and_register_address(wallet.as_ref())?;
-        let recv_addr = self.get_and_register_uniq_address(wallet.as_ref(), &change_addr)?;
+        let wallet = self.get_wallet_ref(account_id)?;
+        let change_addr = wallet.get_recv_address(true)?.address;
+        let recv_addr = self
+            .get_uniq_address(wallet.as_ref(), Some(&change_addr), false)?
+            .address;
 
         let swap_resp = send_request!(
             self,
@@ -1326,7 +1391,7 @@ impl Data {
                 send_bitcoins: req.send_bitcoins,
                 send_amount,
                 recv_amount,
-                inputs: inputs,
+                inputs,
                 recv_addr,
                 change_addr,
             }
@@ -1359,7 +1424,7 @@ impl Data {
     ) -> Result<http_rpc::ResponseMsg, anyhow::Error> {
         info!("send swap request to {}", &url);
         let request = serde_json::to_value(&request).unwrap();
-        let response = self.agent.post(&url).send_json(request)?;
+        let response = self.agent.post(url).send_json(request)?;
         if response.status() >= 400 && response.status() < 500 {
             let msg = serde_json::from_str::<http_rpc::ErrorMsg>(&response.into_string()?)?;
             bail!("{}", msg.error.message);
@@ -1386,19 +1451,24 @@ impl Data {
         let recv_amount = req.recv_amount;
         let upload_url = req.upload_url;
 
-        let inputs = self
-            .get_wallet_mut(ACCOUNT_ID_REG)?
-            .get_swap_inputs(&send_asset)?;
+        let account_id = ACCOUNT_ID_REG;
+        let wallet = Self::get_wallet_mut(&mut self.wallets, account_id)?;
+
+        wallet.unlock_hww()?;
+
+        let inputs = wallet.get_swap_inputs(&send_asset)?;
         let inputs = select_swap_inputs(inputs, send_amount)?;
 
-        let wallet = self.get_wallet_ref(ACCOUNT_ID_REG)?;
-        let change_addr = self.get_and_register_address(wallet.as_ref())?;
-        let recv_addr = self.get_and_register_uniq_address(wallet.as_ref(), &change_addr)?;
+        let wallet = self.get_wallet_ref(account_id)?;
+        let change_addr = wallet.get_recv_address(true)?.address;
+        let recv_addr = self
+            .get_uniq_address(wallet.as_ref(), Some(&change_addr), false)?
+            .address;
 
         let request = http_rpc::RequestMsg {
             id: None,
             request: http_rpc::Request::SwapStart(http_rpc::SwapStartRequest {
-                order_id: order_id.clone(),
+                order_id,
                 inputs,
                 recv_addr,
                 change_addr,
@@ -1425,14 +1495,16 @@ impl Data {
         let recv_amp = self.amp_assets.contains(&recv_asset);
         ensure!(!send_amp && !recv_amp, "AMP assets are not allowed");
 
-        let wallet = self.get_wallet_mut(ACCOUNT_ID_REG)?;
+        let account_id = ACCOUNT_ID_REG;
+        let wallet = Self::get_wallet_mut(&mut self.wallets, account_id)?;
 
-        let signed_pset = wallet.verify_and_sign_pset(&amounts, &response.pset, &[])?;
+        let signed_pset =
+            wallet.verify_and_sign_pset(&amounts, &response.pset, &[], &self.assets)?;
 
         let request = http_rpc::RequestMsg {
             id: None,
             request: http_rpc::Request::SwapSign(http_rpc::SwapSignRequest {
-                order_id: order_id.clone(),
+                order_id,
                 submit_id: response.submit_id,
                 pset: signed_pset,
             }),
@@ -1461,16 +1533,17 @@ impl Data {
     fn process_get_recv_address(&mut self, account: ffi::proto::Account) {
         let result = self
             .get_wallet_ref(account.id)
-            .and_then(|wallet| self.get_and_register_address(wallet.as_ref()));
+            .and_then(|wallet| wallet.get_recv_address(true));
         match result {
-            Ok(addr) => {
+            Ok(addr_info) => {
                 self.ui.send(ffi::proto::from::Msg::RecvAddress(
                     ffi::proto::from::RecvAddress {
-                        addr: ffi::proto::Address { addr },
+                        addr: ffi::proto::Address {
+                            addr: addr_info.address.to_string(),
+                        },
                         account,
                     },
                 ));
-                self.update_address_registrations();
             }
             Err(e) => {
                 self.show_message(&e.to_string());
@@ -1482,9 +1555,8 @@ impl Data {
         &mut self,
         req: ffi::proto::CreateTx,
     ) -> Result<(serde_json::Value, ffi::proto::CreatedTx), anyhow::Error> {
-        let unsigned_tx = self
-            .get_wallet_mut(req.account.id)?
-            .create_tx(req.clone())?;
+        let unsigned_tx =
+            Self::get_wallet_mut(&mut self.wallets, req.account.id)?.create_tx(req.clone())?;
         let info = get_created_tx(&req, &unsigned_tx)?;
         Ok((unsigned_tx, info))
     }
@@ -1503,19 +1575,19 @@ impl Data {
                 result: Some(result),
             },
         ));
-        self.update_address_registrations();
     }
 
     fn try_process_send_tx(
         &mut self,
         req: ffi::proto::to::SendTx,
-    ) -> Result<sideswap_api::Txid, anyhow::Error> {
+    ) -> Result<elements::Txid, anyhow::Error> {
         let unsigned_tx = self
             .unsigned_tx
             .take()
             .ok_or_else(|| anyhow!("transaction not found"))?;
 
-        let result = self.get_wallet_mut(req.account.id)?.send_tx(&unsigned_tx);
+        let result = Self::get_wallet_mut(&mut self.wallets, req.account.id)?
+            .send_tx(&unsigned_tx, &self.assets);
 
         if result.is_err() {
             // Allow retry (if Jade is offline for example)
@@ -1543,12 +1615,57 @@ impl Data {
         }
     }
 
+    fn try_process_create_payjoin(
+        &mut self,
+        req: ffi::proto::CreatePayjoin,
+    ) -> Result<ffi::proto::CreatedPayjoin, anyhow::Error> {
+        Self::get_wallet_mut(&mut self.wallets, req.account.id)?.create_payjoin(req)
+    }
+
+    fn process_create_payjoin(&mut self, req: ffi::proto::CreatePayjoin) {
+        let result = self.try_process_create_payjoin(req);
+        let result = match result {
+            Ok(created) => ffi::proto::from::create_payjoin_result::Result::CreatedPayjoin(created),
+            Err(err) => ffi::proto::from::create_payjoin_result::Result::ErrorMsg(err.to_string()),
+        };
+        self.ui.send(ffi::proto::from::Msg::CreatePayjoinResult(
+            ffi::proto::from::CreatePayjoinResult {
+                result: Some(result),
+            },
+        ));
+    }
+
+    fn try_process_send_payjoin(
+        &mut self,
+        req: ffi::proto::CreatedPayjoin,
+    ) -> Result<elements::Txid, anyhow::Error> {
+        Self::get_wallet_mut(&mut self.wallets, req.req.account.id)?
+            .send_payjoin(&req, &self.assets)
+    }
+
+    fn process_send_payjoin(&mut self, req: ffi::proto::CreatedPayjoin) {
+        let result = self.try_process_send_payjoin(req);
+
+        match result {
+            Ok(txid) => {
+                self.sent_txhash = Some(txid);
+                self.update_sync_interval();
+            }
+            Err(e) => self.ui.send(ffi::proto::from::Msg::SendResult(
+                ffi::proto::from::SendResult {
+                    result: Some(ffi::proto::from::send_result::Result::ErrorMsg(
+                        e.to_string(),
+                    )),
+                },
+            )),
+        }
+    }
+
     fn process_blinded_values(&self, req: ffi::proto::to::BlindedValues) {
         let blinded_values = self
             .wallets
             .values()
-            .map(|wallet| wallet.get_blinded_values(&req.txid).ok().into_iter())
-            .flatten()
+            .flat_map(|wallet| wallet.ses.get_blinded_values(&req.txid).ok().into_iter())
             .flatten()
             .collect::<Vec<_>>();
         let result =
@@ -1574,78 +1691,287 @@ impl Data {
         })
     }
 
-    fn process_login_request(
+    fn proxy() -> Option<String> {
+        std::env::var("SOCKS_SERVER").ok()
+    }
+
+    fn try_register(
         &mut self,
-        mnemonic: Option<&String>,
-        send_utxo_updates: Option<bool>,
-        network: &Option<ffi::proto::network_settings::Selected>,
-        jade: Option<(gdk_ses::HwData, settings::WatchOnly)>,
-    ) {
-        debug!("process login request...");
-
-        self.send_utxo_updates = send_utxo_updates.unwrap_or(false);
-
-        let network = network.clone();
-
-        if mnemonic.is_some() {
-            let info_reg = gdk_ses::LoginInfo {
-                account_id: ACCOUNT_ID_REG,
-                env: self.env,
-                mnemonic: mnemonic.cloned(),
-                network: network.clone(),
-                cache_dir: self.cache_path().to_str().unwrap().to_owned(),
-                hw_data: None,
-                watch_only: None,
-            };
-
-            self.wallets.insert(
-                ACCOUNT_ID_REG,
-                gdk_rust::start_processing(info_reg, self.get_notif_callback()),
-            );
-        }
-
-        let wallet_amp = match jade {
-            Some(jade) => {
-                let watch_only = gdk_ses::WatchOnly {
-                    username: jade.1.username,
-                    password: jade.1.password,
-                };
-                let info_amp = gdk_ses::LoginInfo {
-                    account_id: ACCOUNT_ID_AMP,
-                    env: self.env,
-                    mnemonic: mnemonic.cloned(),
-                    network: network.clone(),
-                    cache_dir: self.cache_path().to_str().unwrap().to_owned(),
-                    hw_data: Some(jade.0),
-                    watch_only: Some(watch_only),
-                };
-                gdk_jade::start_processing(info_amp, self.get_notif_callback())
+        req: &ffi::proto::to::Login,
+        cache_dir: &str,
+    ) -> Result<RegInfo, anyhow::Error> {
+        let wallet_info = match req.wallet.as_ref().unwrap() {
+            ffi::proto::to::login::Wallet::Mnemonic(mnemonic) => {
+                WalletInfo::Mnemonic(mnemonic.clone())
             }
-            None => {
-                let info_amp = gdk_ses::LoginInfo {
-                    account_id: ACCOUNT_ID_AMP,
-                    env: self.env,
-                    mnemonic: mnemonic.cloned(),
-                    network: network.clone(),
-                    cache_dir: self.cache_path().to_str().unwrap().to_owned(),
-                    hw_data: None,
-                    watch_only: None,
+            ffi::proto::to::login::Wallet::JadeId(jade_id) => {
+                let name = format!("Jade {}", jade_id);
+                let jade = self.jade_mng.open(&jade_id);
+
+                gdk_ses_impl::unlock_hw(self.env, &jade, &self.jade_status_callback)?;
+
+                (self.jade_status_callback)(gdk_ses::JadeStatus::MasterBlindingKey);
+                jade.send(sideswap_jade::Req::GetMasterBlindingKey);
+                let resp = jade.recv(std::time::Duration::from_secs(120));
+                (self.jade_status_callback)(gdk_ses::JadeStatus::Idle);
+                let resp = match resp {
+                    Ok(sideswap_jade::Resp::GetMasterBlindingKey(v)) => v,
+                    resp => bail!(
+                        "unexpected Jade response: {:?}, expected GetMasterBlindingKey",
+                        resp
+                    ),
                 };
-                gdk_cpp::start_processing(info_amp, self.get_notif_callback())
+                let master_blinding_key = hex::encode(resp);
+
+                WalletInfo::HwData(gdk_ses::HwData {
+                    env: self.env,
+                    name,
+                    jade: std::sync::Arc::new(jade),
+                    status_callback: self.jade_status_callback.clone(),
+                    master_blinding_key,
+                    xpubs: BTreeMap::new(),
+                })
             }
         };
 
-        self.wallets.insert(ACCOUNT_ID_AMP, wallet_amp);
+        let info_amp = gdk_ses::LoginInfo {
+            account_id: worker::ACCOUNT_ID_AMP,
+            env: self.env,
+            cache_dir: cache_dir.to_owned(),
+            wallet_info: wallet_info.clone(),
+            single_sig: false,
+            network: None,
+            proxy: Self::proxy(),
+        };
+
+        let mut wallet_amp = gdk_ses_impl::start_processing(info_amp, None)?;
+
+        wallet_amp.register()?;
+
+        wallet_amp.login()?;
+
+        let new_address = wallet_amp.get_recv_address(false)?;
+        let multi_sig_service_xpub = new_address.service_xpub.expect("must be set");
+        let multi_sig_user_path = new_address.user_path[0..3].to_vec();
+
+        let jade_watch_only = if let Some(hw_data) = wallet_info.hw_data() {
+            let username = format!("sswp_{}", hex::encode(rand::thread_rng().gen::<[u8; 10]>()));
+            let password = hex::encode(rand::thread_rng().gen::<[u8; 16]>());
+
+            wallet_amp.set_watch_only(&username, &password)?;
+
+            let single_sig_account_path =
+                self.env.data().network.single_sig_account_path().to_vec();
+
+            let network = if self.env.data().mainnet {
+                sideswap_jade::models::JadeNetwork::Liquid
+            } else {
+                sideswap_jade::models::JadeNetwork::TestnetLiquid
+            };
+
+            let root_xpub = hw_data.resolve_xpub(network, &XPUB_PATH_ROOT)?;
+            let password_xpub = hw_data.resolve_xpub(network, &XPUB_PATH_PASS)?;
+            let single_sig_account_xpub =
+                hw_data.resolve_xpub(network, &single_sig_account_path)?;
+            let multi_sig_user_xpub = hw_data.resolve_xpub(network, &multi_sig_user_path)?;
+
+            Some(WatchOnly {
+                master_blinding_key: hw_data.master_blinding_key.clone(),
+
+                root_xpub,
+                single_sig_account_xpub,
+                multi_sig_user_xpub,
+                password_xpub,
+
+                username,
+                password,
+            })
+        } else {
+            None
+        };
+
+        Ok(RegInfo {
+            jade_watch_only,
+            multi_sig_service_xpub,
+            multi_sig_user_path,
+        })
+    }
+
+    fn try_process_login_request(
+        &mut self,
+        req: ffi::proto::to::Login,
+    ) -> Result<(), anyhow::Error> {
+        debug!("process login request...");
+
+        self.send_utxo_updates = req.send_utxo_updates.unwrap_or_default();
+        self.force_auto_sign_maker = req.force_auto_sign_maker.unwrap_or_default();
+
+        let network = req.network.clone().selected;
+        let cache_dir = self.cache_path().to_str().unwrap().to_owned();
+
+        let reg_info = match self.settings.reg_info_v3.clone() {
+            Some(reg_info) => reg_info,
+            None => {
+                let reg_info = self.try_register(&req, &cache_dir)?;
+                self.settings.reg_info_v3 = Some(reg_info.clone());
+                self.save_settings();
+                reg_info
+            }
+        };
+
+        let wallet_info = match req.wallet.unwrap() {
+            ffi::proto::to::login::Wallet::Mnemonic(mnemonic) => WalletInfo::Mnemonic(mnemonic),
+            ffi::proto::to::login::Wallet::JadeId(jade_id) => {
+                let name = format!("Jade {}", jade_id);
+                let jade_port = self.jade_mng.open(&jade_id);
+                let jade_watch_only = reg_info
+                    .jade_watch_only
+                    .as_ref()
+                    .ok_or_else(|| anyhow!("jade_watch_only is not set"))?;
+
+                let xpubs = BTreeMap::from([
+                    (XPUB_PATH_ROOT.to_vec(), jade_watch_only.root_xpub.clone()),
+                    (
+                        XPUB_PATH_PASS.to_vec(),
+                        jade_watch_only.password_xpub.clone(),
+                    ),
+                    (
+                        self.env.data().network.single_sig_account_path().to_vec(),
+                        jade_watch_only.single_sig_account_xpub.clone(),
+                    ),
+                    (
+                        reg_info.multi_sig_user_path.clone(),
+                        jade_watch_only.multi_sig_user_xpub.clone(),
+                    ),
+                ]);
+
+                WalletInfo::HwData(gdk_ses::HwData {
+                    env: self.env,
+                    name,
+                    jade: std::sync::Arc::new(jade_port),
+                    status_callback: self.jade_status_callback.clone(),
+                    master_blinding_key: jade_watch_only.master_blinding_key.clone(),
+                    xpubs,
+                })
+            }
+        };
+
+        let wallet_reg = {
+            let info_reg = gdk_ses::LoginInfo {
+                account_id: ACCOUNT_ID_REG,
+                env: self.env,
+                cache_dir: cache_dir.clone(),
+                wallet_info: wallet_info.clone(),
+                single_sig: true,
+                network: network.clone(),
+                proxy: Self::proxy(),
+            };
+
+            gdk_ses_impl::start_processing(info_reg, Some(self.get_notif_callback()))?
+        };
+
+        let wallet_amp = {
+            let info_amp = gdk_ses::LoginInfo {
+                account_id: ACCOUNT_ID_AMP,
+                env: self.env,
+                cache_dir,
+                wallet_info: wallet_info.clone(),
+                single_sig: false,
+                network,
+                proxy: Self::proxy(),
+            };
+
+            if let Some(watch_only) = reg_info.clone().jade_watch_only {
+                gdk_ses_jade::start_processing(info_amp, self.get_notif_callback(), watch_only)?
+            } else {
+                gdk_ses_impl::start_processing(info_amp, Some(self.get_notif_callback()))?
+            }
+        };
+
+        let single_sig_account_path = self.env.data().network.single_sig_account_path();
+        let multi_sig_service_xpub =
+            ExtendedPubKey::from_str(&reg_info.multi_sig_service_xpub.clone())
+                .expect("must be valid");
+        let multi_sig_user_path = reg_info.multi_sig_user_path.clone();
+
+        let (single_sig_account, multi_sig_user_xpub) =
+            if let Some(watch_only) = reg_info.jade_watch_only.as_ref() {
+                (
+                    watch_only.single_sig_account_xpub.clone(),
+                    watch_only.multi_sig_user_xpub.clone(),
+                )
+            } else {
+                let mnemonic = wallet_info.mnemonic().expect("mnemonic must be set");
+                let mnemonic = bip39::Mnemonic::parse(mnemonic)?;
+                let seed = mnemonic.to_seed("");
+                let bitcoin_network = self.env.data().network.bitcoin_network();
+                let master_key = ExtendedPrivKey::new_master(bitcoin_network, &seed).unwrap();
+                let single_sig_xpriv = master_key
+                    .derive_priv(
+                        &SECP256K1,
+                        &single_sig_account_path
+                            .iter()
+                            .map(|num| ChildNumber::from(*num))
+                            .collect::<Vec<_>>(),
+                    )
+                    .unwrap();
+                let multi_sig_xpriv = master_key
+                    .derive_priv(
+                        &SECP256K1,
+                        &multi_sig_user_path
+                            .iter()
+                            .map(|num| ChildNumber::from(*num))
+                            .collect::<Vec<_>>(),
+                    )
+                    .unwrap();
+                (
+                    ExtendedPubKey::from_priv(&SECP256K1, &single_sig_xpriv),
+                    ExtendedPubKey::from_priv(&SECP256K1, &multi_sig_xpriv),
+                )
+            };
+
+        let xpubs = XPubInfo {
+            single_sig_account,
+            multi_sig_service_xpub,
+            multi_sig_user_xpub,
+        };
+
+        self.wallets.insert(
+            wallet_reg.login_info().account_id,
+            Wallet {
+                ses: wallet_reg,
+                xpubs: xpubs.clone(),
+            },
+        );
+        self.wallets.insert(
+            wallet_amp.login_info().account_id,
+            Wallet {
+                ses: wallet_amp,
+                xpubs,
+            },
+        );
 
         if self.skip_wallet_sync() {
             info!("skip wallet sync delay");
             self.send_wallet_loaded();
         }
 
-        self.process_pending_requests();
-        self.resume_peg_monitoring();
-        self.update_address_registrations();
-        self.download_contacts();
+        self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+
+        Ok(())
+    }
+
+    fn process_login_request(&mut self, req: ffi::proto::to::Login) {
+        debug!("process login request...");
+        let res = self.try_process_login_request(req);
+        let res = match res {
+            Ok(()) => ffi::proto::from::login::Result::Success(ffi::proto::Empty {}),
+            Err(err) => ffi::proto::from::login::Result::ErrorMsg(err.to_string()),
+        };
+        self.ui
+            .send(ffi::proto::from::Msg::Login(ffi::proto::from::Login {
+                result: Some(res),
+            }));
     }
 
     fn restart_websocket(&mut self) {
@@ -1671,10 +1997,9 @@ impl Data {
         self.peg_out_server_amounts = None;
         self.active_submits = BTreeMap::new();
         self.active_sign = None;
+        self.used_addresses = Default::default();
 
-        let persistent = self.settings.persistent.take();
         self.settings = settings::Settings::default();
-        self.settings.persistent = persistent;
         self.save_settings();
 
         self.ui
@@ -1691,7 +2016,10 @@ impl Data {
     ) -> Result<(), anyhow::Error> {
         debug!("process change network request...");
         let network = req.network.selected;
-        let wallet_old = self
+        let Wallet {
+            ses: wallet_old,
+            xpubs,
+        } = self
             .wallets
             .remove(&ACCOUNT_ID_REG)
             .ok_or_else(|| anyhow!("no wallet"))?;
@@ -1699,8 +2027,11 @@ impl Data {
         login_info.network = network;
 
         drop(wallet_old);
-        let wallet = gdk_rust::start_processing(login_info, self.get_notif_callback());
-        self.wallets.insert(wallet.login_info().account_id, wallet);
+        let wallet = gdk_ses_impl::start_processing(login_info, Some(self.get_notif_callback()))?;
+        self.wallets.insert(
+            wallet.login_info().account_id,
+            Wallet { ses: wallet, xpubs },
+        );
 
         Ok(())
     }
@@ -1708,17 +2039,12 @@ impl Data {
     fn process_change_network(&mut self, req: ffi::proto::to::ChangeNetwork) {
         let result = self.try_change_network(req);
         if let Err(e) = result {
-            self.show_message(&format!("changing network failed: {}", e.to_string()));
+            self.show_message(&format!("changing network failed: {}", e));
         }
     }
 
     fn process_encrypt_pin(&self, req: ffi::proto::to::EncryptPin) {
-        let details = crate::pin::PinSetDetails {
-            pin: req.pin,
-            mnemonic: req.mnemonic,
-            device_id: String::new(),
-        };
-        let result = match crate::pin::encrypt_pin(&details) {
+        let result = match crate::pin::encrypt_pin(req.mnemonic, req.pin, Data::proxy().as_ref()) {
             Ok(v) => {
                 ffi::proto::from::encrypt_pin::Result::Data(ffi::proto::from::encrypt_pin::Data {
                     salt: v.salt,
@@ -1736,12 +2062,12 @@ impl Data {
     }
 
     fn process_decrypt_pin(&self, req: ffi::proto::to::DecryptPin) {
-        let details = crate::pin::PinGetDetails {
+        let details = crate::pin::PinData {
             salt: req.salt,
             encrypted_data: req.encrypted_data,
             pin_identifier: req.pin_identifier,
         };
-        let result = match crate::pin::decrypt_pin(req.pin, &details) {
+        let result = match crate::pin::decrypt_pin(&details, req.pin, Data::proxy().as_ref()) {
             Ok(v) => ffi::proto::from::decrypt_pin::Result::Mnemonic(v),
             Err(e) => ffi::proto::from::decrypt_pin::Result::Error(e.to_string()),
         };
@@ -1764,7 +2090,7 @@ impl Data {
         let pegs = status
             .list
             .iter()
-            .map(|tx| get_peg_item(&status, &tx))
+            .map(|tx| get_peg_item(&status, tx))
             .collect::<Vec<_>>();
 
         let mut queue_msgs = Vec::new();
@@ -1846,8 +2172,7 @@ impl Data {
     }
 
     fn process_set_memo(&mut self, req: ffi::proto::to::SetMemo) {
-        let result = self
-            .get_wallet_mut(req.account.id)
+        let result = Self::get_wallet_mut(&mut self.wallets, req.account.id)
             .and_then(|wallet| wallet.set_memo(&req.txid, &req.memo));
         match result {
             Ok(_) => {}
@@ -1864,71 +2189,20 @@ impl Data {
         // Not implemented
     }
 
-    fn process_verify_phone(&mut self, req: ffi::proto::to::VerifyPhone) {
-        let phone_key = PhoneKey(req.phone_key);
-        let verify_req = VerifyPhoneRequest {
-            phone_key: phone_key.clone(),
-            code: req.code,
-        };
-        let resp = send_request!(self, VerifyPhone, verify_req);
-        let verify_succeed = resp.is_ok();
-        let result = match resp {
-            Ok(_) => ffi::proto::from::verify_phone::Result::Success(ffi::proto::Empty {}),
-            Err(e) => ffi::proto::from::verify_phone::Result::ErrorMsg(e.to_string()),
-        };
-        let from = ffi::proto::from::VerifyPhone {
-            result: Some(result),
-        };
-        self.ui.send(ffi::proto::from::Msg::VerifyPhone(from));
-        if verify_succeed {
-            self.phone_key = Some(phone_key);
-            self.download_contacts();
-        }
+    fn process_verify_phone(&mut self, _req: ffi::proto::to::VerifyPhone) {
+        // Not implemented
     }
 
-    fn process_unregister_phone(&mut self, req: ffi::proto::to::UnregisterPhone) {
-        self.settings
-            .get_persistent()
-            .unregister_phone_requests
-            .get_or_insert_with(|| BTreeSet::new())
-            .insert(PhoneKey(req.phone_key));
-        self.save_settings();
-        self.process_unregister_phone_requests();
+    fn process_unregister_phone(&mut self, _req: ffi::proto::to::UnregisterPhone) {
+        // Not implemented
     }
 
-    fn process_upload_avatar(&mut self, req: ffi::proto::to::UploadAvatar) {
-        let upload_req = UploadAvatarRequest {
-            phone_key: PhoneKey(req.phone_key),
-            image: req.image,
-        };
-        let resp = send_request!(self, UploadAvatar, upload_req);
-        let result = ffi::proto::GenericResponse {
-            success: resp.is_ok(),
-            error_msg: resp.err().map(|e| e.to_string()),
-        };
-        self.ui.send(ffi::proto::from::Msg::UploadAvatar(result));
+    fn process_upload_avatar(&mut self, _req: ffi::proto::to::UploadAvatar) {
+        // Not implemented
     }
 
-    fn process_upload_contacts(&mut self, req: ffi::proto::to::UploadContacts) {
-        let contacts = req
-            .contacts
-            .into_iter()
-            .map(|item| UploadContact {
-                identifier: item.identifier,
-                name: item.name,
-                phones: item.phones,
-            })
-            .collect();
-        let upload_req = UploadContactsRequest {
-            phone_key: PhoneKey(req.phone_key),
-            contacts,
-        };
-        let resp = send_request!(self, UploadContacts, upload_req);
-        let result = ffi::proto::GenericResponse {
-            success: resp.is_ok(),
-            error_msg: resp.err().map(|e| e.to_string()),
-        };
-        self.ui.send(ffi::proto::from::Msg::UploadContacts(result));
+    fn process_upload_contacts(&mut self, _req: ffi::proto::to::UploadContacts) {
+        // Not implemented
     }
 
     fn try_process_submit_order(
@@ -1953,11 +2227,12 @@ impl Data {
                 "Non AMP asset order is expected to be from non-AMP account"
             );
         }
+        let account_id = req.account.id;
         let bitcoin_amount = match req.bitcoin_amount {
             Some(v) => {
                 let liquid_asset_id = self.liquid_asset_id;
                 let bitcoin_balance = Amount::from_sat(
-                    self.get_wallet_mut(ACCOUNT_ID_REG)?
+                    Self::get_wallet_mut(&mut self.wallets, account_id)?
                         .get_balance(&liquid_asset_id),
                 );
                 if bitcoin_balance.to_bitcoin() == -v {
@@ -1990,9 +2265,7 @@ impl Data {
     }
 
     fn try_process_link_order(&mut self, order_id: OrderId) -> Result<(), anyhow::Error> {
-        let link_req = LinkRequest {
-            order_id: order_id.clone(),
-        };
+        let link_req = LinkRequest { order_id };
         let resp = send_request!(self, Link, link_req)?;
         self.downloaded_links.push(resp);
         Ok(())
@@ -2015,15 +2288,15 @@ impl Data {
         } else {
             (details.asset_amount, details.asset)
         };
-        let send_amp = self.amp_assets.contains(&send_asset);
-        let send_account_id = if send_amp {
+        let is_amp = self.amp_assets.contains(&resp.details.asset);
+        let account_id = if is_amp {
             ACCOUNT_ID_AMP
         } else {
             ACCOUNT_ID_REG
         };
 
-        let send_wallet = self.get_wallet_mut(send_account_id)?;
-        let available_balance = send_wallet.get_balance(&send_asset);
+        let wallet = Self::get_wallet_mut(&mut self.wallets, account_id)?;
+        let available_balance = wallet.get_balance(&send_asset);
         debug!(
             "available_balance: {}, send_amount: {}",
             available_balance, send_amount
@@ -2040,13 +2313,12 @@ impl Data {
         }
 
         let tx_chaining_required = if details.side == OrderSide::Maker {
-            let inputs = send_wallet.get_utxos()?;
+            let inputs = wallet.get_utxos()?;
             let send_asset = send_asset.to_string();
-            let tx_chaining_required = inputs
+            let tx_chaining_required = !inputs
                 .utxos
                 .iter()
-                .find(|utxo| utxo.asset_id == send_asset && utxo.amount as i64 == send_amount)
-                .is_none();
+                .any(|utxo| utxo.asset_id == send_asset && utxo.amount as i64 == send_amount);
             Some(tx_chaining_required)
         } else {
             None
@@ -2079,7 +2351,7 @@ impl Data {
         debug!("send for review quote prompt, order_id: {}", order_id);
         self.ui
             .send(ffi::proto::from::Msg::SubmitReview(submit_review));
-        self.visible_submit = Some(order_id.clone());
+        self.visible_submit = Some(order_id);
         self.active_submits.insert(order_id, resp);
         Ok(None)
     }
@@ -2149,34 +2421,45 @@ impl Data {
         Ok(())
     }
 
-    fn is_own_amp_address(&mut self, addr: &str) -> Result<bool, anyhow::Error> {
-        // FIXME: Make sure that the cache is cleared after mnemonic is removed
-        if let Some(amp_prev_addrs) = self.settings.amp_prev_addrs.as_ref() {
-            if amp_prev_addrs.list.iter().find(|a| *a == addr).is_some() {
-                return Ok(true);
-            }
+    fn find_own_address_info(
+        &mut self,
+        addr: &elements::Address,
+    ) -> Result<AddressInfo, anyhow::Error> {
+        let addr_info = self
+            .settings
+            .amp_prev_addrs_v2
+            .as_ref()
+            .and_then(|data| data.list.iter().find(|info| info.address == *addr))
+            .cloned();
+        if let Some(addr_info) = addr_info {
+            return Ok(addr_info);
         }
 
         let last_old_pointer = self
             .settings
-            .amp_prev_addrs
+            .amp_prev_addrs_v2
             .as_ref()
             .map(|v| v.last_pointer);
-        let wallet = self.get_wallet_mut(ACCOUNT_ID_AMP)?;
+        let wallet = Self::get_wallet_mut(&mut self.wallets, ACCOUNT_ID_AMP)?;
         let (last_new_pointer, new_list) =
             load_all_addresses(wallet.as_mut(), false, last_old_pointer)?;
 
-        let mut amp_prev_addrs = self
+        let amp_prev_addrs = self
             .settings
-            .amp_prev_addrs
+            .amp_prev_addrs_v2
             .get_or_insert_with(Default::default);
         amp_prev_addrs.last_pointer = last_new_pointer;
         amp_prev_addrs.list.extend(new_list);
         self.save_settings();
 
-        let amp_prev_addrs = self.settings.amp_prev_addrs.as_ref().unwrap();
-        let found = amp_prev_addrs.list.iter().find(|a| *a == addr).is_some();
-        Ok(found)
+        let addr_info = self
+            .settings
+            .amp_prev_addrs_v2
+            .as_ref()
+            .and_then(|data| data.list.iter().find(|info| info.address == *addr))
+            .cloned();
+
+        addr_info.ok_or_else(|| anyhow!("Not found"))
     }
 
     fn try_process_submit_decision(
@@ -2202,6 +2485,7 @@ impl Data {
             .ok_or(anyhow!("data not found"))?;
         let index_price = resp.index_price;
         let details = resp.details;
+        let is_amp = self.amp_assets.contains(&details.asset);
         let side = details.side;
         let auto_sign = req.auto_sign.unwrap_or(false) && side == OrderSide::Maker;
         let two_step = req.two_step.unwrap_or(false) && side == OrderSide::Maker;
@@ -2211,7 +2495,7 @@ impl Data {
         self.verify_amounts(&details)?;
 
         let asset_amount = Amount::from_sat(details.asset_amount);
-        let bitcoin_asset = self.liquid_asset_id.clone();
+        let bitcoin_asset = self.liquid_asset_id;
         let (send_asset, send_amount, recv_asset, recv_amount) = if details.send_bitcoins {
             (
                 bitcoin_asset,
@@ -2221,48 +2505,30 @@ impl Data {
             )
         } else {
             (
-                details.asset.clone(),
+                details.asset,
                 asset_amount.to_sat(),
                 bitcoin_asset,
                 details.bitcoin_amount - details.server_fee,
             )
         };
-        let is_send_amp = self.amp_assets.contains(&send_asset);
-        let is_recv_amp = self.amp_assets.contains(&recv_asset);
 
-        let account_id = if is_send_amp {
+        let account_id = if is_amp {
             ACCOUNT_ID_AMP
         } else {
             ACCOUNT_ID_REG
         };
+
         let wallet = self.get_wallet_ref(account_id)?;
-        let change_addr = self.get_and_register_address(wallet.as_ref())?;
+        let change_addr = wallet.get_recv_address(true)?.address;
         let inputs = wallet.get_swap_inputs(&send_asset)?;
 
-        let (recv_addr, recv_gaid) = if is_recv_amp && two_step {
-            let gaid = self.get_wallet_mut(ACCOUNT_ID_AMP)?.get_gaid()?;
-            let device_key = self.settings.device_key.clone();
-            let resolved_addr = send_request!(
-                self,
-                ResolveGaid,
-                ResolveGaidRequest {
-                    order_id,
-                    gaid,
-                    device_key
-                }
-            )?
-            .address;
-            let is_own_amp_address = self.is_own_amp_address(&resolved_addr)?;
-            ensure!(is_own_amp_address);
-            (Some(resolved_addr), None)
-        } else if is_recv_amp {
-            (None, Some(self.get_wallet_mut(ACCOUNT_ID_AMP)?.get_gaid()?))
+        let recv_addr_info = if details.send_bitcoins && is_amp {
+            let gaid = wallet.get_gaid()?;
+            let resolved_addr =
+                send_request!(self, ResolveGaid, ResolveGaidRequest { order_id, gaid })?.address;
+            self.find_own_address_info(&resolved_addr)?
         } else {
-            let recv_addr = self.get_and_register_uniq_address(
-                self.get_wallet_ref(ACCOUNT_ID_REG)?.as_ref(),
-                &change_addr,
-            )?;
-            (Some(recv_addr), None)
+            self.get_uniq_address(wallet.as_ref(), Some(&change_addr), false)?
         };
 
         self.assets
@@ -2299,6 +2565,7 @@ impl Data {
 
         let utxo_amounts: Vec<_> = asset_utxos.iter().map(|v| v.value as i64).collect();
         let total: i64 = utxo_amounts.iter().sum();
+        debug!("total: {total}, send_amount: {send_amount}");
         ensure!(total >= send_amount, "Insufficient funds");
 
         let selected = types::select_utxo(utxo_amounts, send_amount);
@@ -2320,7 +2587,7 @@ impl Data {
         let txouts = inputs
             .iter()
             .map(|input| TxOut {
-                txid: input.txid.clone(),
+                txid: input.txid,
                 vout: input.vout,
             })
             .collect::<BTreeSet<_>>();
@@ -2329,80 +2596,54 @@ impl Data {
             let signed_half = if two_step {
                 ensure!(auto_sign, "Auto-sign must be enabled for two-step swap");
                 let maker_input = swaps::SigSingleInput {
-                    asset: elements::AssetId::from_slice(&send_asset.0).unwrap(),
+                    asset: send_asset,
                     value: send_amount as u64,
                 };
                 let maker_output = swaps::SigSingleOutput {
-                    asset: elements::AssetId::from_slice(&recv_asset.0).unwrap(),
+                    asset: recv_asset,
                     value: recv_amount as u64,
-                    address: elements::Address::parse_with_params(
-                        &recv_addr.clone().unwrap(),
-                        self.env.elements_params_pset(),
-                    )?,
+                    address_info: recv_addr_info.clone(),
                 };
 
-                let maker_tx = if is_send_amp {
-                    self.get_wallet_mut(ACCOUNT_ID_AMP)?
-                        .sig_single_maker_tx(&maker_input, &maker_output)?
-                } else {
-                    self.get_wallet_mut(ACCOUNT_ID_REG)?
-                        .sig_single_maker_tx(&maker_input, &maker_output)?
-                };
+                let maker_tx = Self::get_wallet_mut(&mut self.wallets, account_id)?
+                    .sig_single_maker_tx(&maker_input, &maker_output, &self.assets)?;
 
-                if let Some(chaining_tx) = &maker_tx.chaining_tx {
+                let chaining_tx = if let Some(chaining_tx) = &maker_tx.chaining_tx {
                     let allowed = req.tx_chaining_allowed.unwrap_or(false);
                     ensure!(allowed, "Please allow tx chaining and try again");
                     inputs = vec![chaining_tx.input.clone()];
-                    self.update_address_registrations();
-                }
+                    Some(chaining_tx.tx.clone().into())
+                } else {
+                    None
+                };
 
                 Some(MakerSignedHalf {
-                    chaining_tx: maker_tx
-                        .chaining_tx
-                        .map(|chaining_tx| elements::encode::serialize_hex(&chaining_tx.tx)),
-                    tx: elements::encode::serialize_hex(&maker_tx.tx),
-                    input: MakerInput {
-                        prevout_script: maker_tx.input_prevout_script,
-                    },
-                    output: MakerOutput {
-                        asset: recv_asset,
-                        asset_bf: BlindingFactor::from_slice(
-                            maker_tx.output_asset_bf.into_inner().as_ref(),
-                        )
-                        .unwrap(),
-                        value: recv_amount as u64,
-                        value_bf: BlindingFactor::from_slice(
-                            maker_tx.output_value_bf.into_inner().as_ref(),
-                        )
-                        .unwrap(),
-                        sender_sk: maker_tx.output_sender_sk.to_string(),
-                    },
+                    chaining_tx,
+                    proposal: maker_tx.proposal,
                 })
             } else {
                 None
             };
 
             let addr_req = PsetMakerRequest {
-                order_id: order_id.clone(),
+                order_id,
                 price: details.price,
                 private: req.private.unwrap_or(false),
                 ttl_seconds: req.ttl_seconds,
                 inputs,
-                recv_addr,
-                recv_gaid,
-                recv_device_key: self.settings.device_key.clone(),
+                recv_addr: recv_addr_info.address,
                 change_addr,
                 signed_half,
             };
             send_request!(self, PsetMaker, addr_req)?;
         } else {
+            self.get_wallet_ref(account_id)?.unlock_hww()?;
+
             let addr_req = PsetTakerRequest {
-                order_id: order_id.clone(),
+                order_id,
                 price: details.price,
                 inputs,
-                recv_addr,
-                recv_gaid,
-                recv_device_key: self.settings.device_key.clone(),
+                recv_addr: recv_addr_info.address,
                 change_addr,
             };
             send_request!(self, PsetTaker, addr_req)?;
@@ -2419,7 +2660,7 @@ impl Data {
             .ok_or(anyhow!("unknown asset"))?;
 
         let submit_data = SubmitData {
-            order_id: order_id.clone(),
+            order_id,
             side,
             asset: details.asset,
             asset_precision: asset.precision,
@@ -2437,8 +2678,7 @@ impl Data {
             market: details.market,
             signed: false,
         };
-        self.submit_data
-            .insert(submit_data.order_id.clone(), submit_data);
+        self.submit_data.insert(submit_data.order_id, submit_data);
         let done = side == OrderSide::Maker;
 
         Ok(done)
@@ -2513,24 +2753,15 @@ impl Data {
             }
         };
 
-        let send_amp = self.amp_assets.contains(&amounts.send_asset);
-        let recv_amp = self.amp_assets.contains(&amounts.recv_asset);
+        let is_amp = self.amp_assets.contains(&submit_data.asset);
 
-        let send_amounts = swaps::Amounts {
-            send_asset: amounts.send_asset,
-            send_amount: amounts.send_amount,
-            recv_asset: amounts.recv_asset,
-            recv_amount: 0,
+        let account_id = if is_amp {
+            ACCOUNT_ID_AMP
+        } else {
+            ACCOUNT_ID_REG
         };
 
-        let recv_amounts = swaps::Amounts {
-            send_asset: amounts.send_asset,
-            send_amount: 0,
-            recv_asset: amounts.recv_asset,
-            recv_amount: amounts.recv_amount,
-        };
-
-        let nonces = if send_amp {
+        let nonces = if is_amp {
             msg.nonces
                 .as_ref()
                 .ok_or_else(|| anyhow!("blinding keys should be known"))?
@@ -2539,29 +2770,14 @@ impl Data {
             &[]
         };
 
-        let recv_account_id = if recv_amp {
-            ACCOUNT_ID_AMP
-        } else {
-            ACCOUNT_ID_REG
-        };
-
-        let send_account_id = if send_amp {
-            ACCOUNT_ID_AMP
-        } else {
-            ACCOUNT_ID_REG
-        };
-
-        let recv_wallet = self.get_wallet_mut(recv_account_id)?;
-        recv_wallet.verify_and_sign_pset(&recv_amounts, &msg.pset, nonces)?;
-
-        let send_wallet = self.get_wallet_mut(send_account_id)?;
-        let signed_pset = send_wallet.verify_and_sign_pset(&send_amounts, &msg.pset, nonces)?;
+        let wallet = Self::get_wallet_mut(&mut self.wallets, account_id)?;
+        let signed_pset = wallet.verify_and_sign_pset(&amounts, &msg.pset, nonces, &self.assets)?;
 
         send_request!(
             self,
             Sign,
             SignRequest {
-                order_id: msg.order_id.clone(),
+                order_id: msg.order_id,
                 signed_pset,
                 side,
             }
@@ -2569,6 +2785,14 @@ impl Data {
 
         let submit_data = self.submit_data.get_mut(&msg.order_id).unwrap();
         submit_data.signed = true;
+
+        if submit_data.side == OrderSide::Taker && !msg.details.two_step.unwrap_or_default() {
+            self.ui.send(ffi::proto::from::Msg::StartTimer(
+                ffi::proto::from::StartTimer {
+                    order_id: submit_data.order_id.to_string(),
+                },
+            ));
+        }
 
         Ok(false)
     }
@@ -2582,10 +2806,10 @@ impl Data {
         if existing {
             return Ok(());
         }
-        self.processed_signs.insert(msg.order_id.clone());
+        self.processed_signs.insert(msg.order_id);
 
         self.verify_amounts(&msg.details)?;
-        let order_id = msg.order_id.clone();
+        let order_id = msg.order_id;
         let submit_data = self
             .submit_data
             .get_mut(&msg.order_id)
@@ -2614,10 +2838,13 @@ impl Data {
         } else {
             0.0
         };
-        let auto_sign_allowed = submit_data.side == OrderSide::Taker
-            || (submit_data.side == OrderSide::Maker
-                && submit_data.auto_sign
-                && price_change <= allowed_price_change);
+        let auto_sign_allowed = match submit_data.side {
+            OrderSide::Maker => {
+                (submit_data.auto_sign && price_change <= allowed_price_change)
+                    || self.force_auto_sign_maker
+            }
+            OrderSide::Taker => true,
+        };
         debug!(
             "auto sign allowed: {}, current price: {}, selected price: {}",
             auto_sign_allowed, submit_data.price, msg.details.price,
@@ -2648,7 +2875,7 @@ impl Data {
         if msg.details.side == OrderSide::Taker {
             let result = self.try_process_sign(msg);
             if let Err(e) = result {
-                self.show_message(&format!("sign failed: {}", e.to_string()));
+                self.show_message(&format!("sign failed: {}", e));
             }
             return;
         }
@@ -2694,7 +2921,7 @@ impl Data {
             debug!("send for review sign prompt for {}", msg.order_id);
             self.ui
                 .send(ffi::proto::from::Msg::SubmitReview(submit_review));
-            self.visible_submit = Some(msg.order_id.clone());
+            self.visible_submit = Some(msg.order_id);
             self.active_sign = Some(msg);
         }
     }
@@ -2730,11 +2957,12 @@ impl Data {
             self,
             Edit,
             EditRequest {
-                order_id: order_id.clone(),
-                price: price,
-                index_price: index_price,
+                order_id,
+                price,
+                index_price,
             }
         )?;
+
         if let Some(price) = price {
             // Update order to allow auto-sign to proceed
             if let Some(submit_data) = self.submit_data.get_mut(&order_id) {
@@ -2806,18 +3034,18 @@ impl Data {
     }
 
     fn process_cancel_order(&mut self, req: ffi::proto::to::CancelOrder) {
-        let cancel_result = send_request!(
-            self,
-            Cancel,
-            CancelRequest {
+        self.make_async_request(
+            Request::Cancel(CancelRequest {
                 order_id: OrderId::from_str(&req.order_id).unwrap(),
-            }
+            }),
+            move |data, res| {
+                let result = ffi::proto::GenericResponse {
+                    success: res.is_ok(),
+                    error_msg: res.err().map(|e| e.to_string()),
+                };
+                data.ui.send(ffi::proto::from::Msg::CancelOrder(result));
+            },
         );
-        let result = ffi::proto::GenericResponse {
-            success: cancel_result.is_ok(),
-            error_msg: cancel_result.err().map(|e| e.to_string()),
-        };
-        self.ui.send(ffi::proto::from::Msg::CancelOrder(result));
     }
 
     fn process_subscribe(&mut self, req: ffi::proto::to::Subscribe) {
@@ -2834,13 +3062,11 @@ impl Data {
 
         for unsubscribe in self.subscribes.difference(&new_subscribes) {
             self.send_request_msg(Request::Unsubscribe(UnsubscribeRequest {
-                asset: unsubscribe.clone(),
+                asset: *unsubscribe,
             }));
         }
         for subscribe in new_subscribes.difference(&self.subscribes) {
-            self.send_request_msg(Request::Subscribe(SubscribeRequest {
-                asset: subscribe.clone(),
-            }));
+            self.send_request_msg(Request::Subscribe(SubscribeRequest { asset: *subscribe }));
         }
 
         self.subscribes = new_subscribes;
@@ -2907,9 +3133,7 @@ impl Data {
 
     fn send_subscribe_request(&self) {
         for subscribe in self.subscribes.iter() {
-            self.send_request_msg(Request::Subscribe(SubscribeRequest {
-                asset: subscribe.clone(),
-            }));
+            self.send_request_msg(Request::Subscribe(SubscribeRequest { asset: *subscribe }));
         }
     }
 
@@ -3029,38 +3253,13 @@ impl Data {
         self.ui.send(ffi::proto::from::Msg::IndexPrice(index_price));
     }
 
-    fn process_contact_created(&mut self, contact: Contact) {
-        let contact = ffi::proto::Contact {
-            contact_key: contact.contact_key.0,
-            name: contact.name,
-            phone: contact.phone,
-        };
-        self.ui.send(ffi::proto::from::Msg::ContactCreated(contact));
-    }
+    fn process_contact_created(&mut self, _contact: Contact) {}
 
-    fn process_contact_removed(&mut self, contact_key: ContactKey) {
-        let contact_removed = ffi::proto::from::ContactRemoved {
-            contact_key: contact_key.0,
-        };
-        self.ui
-            .send(ffi::proto::from::Msg::ContactRemoved(contact_removed));
-    }
+    fn process_contact_removed(&mut self, _contact_key: ContactKey) {}
 
-    fn process_contact_tx(&mut self, tx: ContactTransaction) {
-        let contact_transaction = ffi::proto::ContactTransaction {
-            contact_key: tx.contact_key.0,
-            txid: tx.txid,
-        };
-        self.ui.send(ffi::proto::from::Msg::ContactTransaction(
-            contact_transaction,
-        ));
-    }
+    fn process_contact_tx(&mut self, _tx: ContactTransaction) {}
 
-    fn process_account_status(&mut self, registered: bool) {
-        let account_status = ffi::proto::from::AccountStatus { registered };
-        self.ui
-            .send(ffi::proto::from::Msg::AccountStatus(account_status));
-    }
+    fn process_account_status(&mut self, _registered: bool) {}
 
     fn process_update_price_stream(&self, msg: SubscribePriceStreamResponse) {
         let msg = ffi::proto::from::UpdatePriceStream {
@@ -3095,9 +3294,9 @@ impl Data {
         let recv_amp = self.amp_assets.contains(&amounts.recv_asset);
         ensure!(!send_amp && !recv_amp, "AMP assets are not allowed");
 
-        let wallet = self.get_wallet_mut(ACCOUNT_ID_REG)?;
+        let wallet = Self::get_wallet_mut(&mut self.wallets, ACCOUNT_ID_REG)?;
 
-        let signed_pset = wallet.verify_and_sign_pset(&amounts, &msg.pset, &[])?;
+        let signed_pset = wallet.verify_and_sign_pset(&amounts, &msg.pset, &[], &self.assets)?;
 
         send_request!(
             self,
@@ -3129,9 +3328,9 @@ impl Data {
 
         let error = match msg.status {
             SwapDoneStatus::Success => None,
-            SwapDoneStatus::ClientError => Some("client error"),
-            SwapDoneStatus::DealerError => Some("dealer error"),
-            SwapDoneStatus::ServerError => Some("server error"),
+            SwapDoneStatus::ClientError => Some("Transaction not signed in time"),
+            SwapDoneStatus::DealerError => Some("Unexpected dealer error"),
+            SwapDoneStatus::ServerError => Some("Unexpected server error"),
         };
         match (error, msg.txid) {
             (None, Some(txid)) => {
@@ -3211,6 +3410,31 @@ impl Data {
         }
     }
 
+    fn make_async_request(
+        &mut self,
+        req: Request,
+        resp: impl FnOnce(&mut Data, Result<Response, Error>) + 'static,
+    ) {
+        if !self.connected {
+            resp(
+                self,
+                Err(Error {
+                    code: ErrorCode::ServerError,
+                    message: "Not connected".to_owned(),
+                }),
+            );
+            return;
+        }
+        let request_id = ws::next_request_id_str();
+        self.ws_sender
+            .send(ws::WrappedRequest::Request(RequestMessage::Request(
+                request_id.clone(),
+                req,
+            )))
+            .unwrap();
+        self.async_requests.insert(request_id, Box::new(resp));
+    }
+
     fn show_message(&self, text: &str) {
         info!("show message: {}", text);
         let msg = ffi::proto::from::ShowMessage {
@@ -3239,7 +3463,7 @@ impl Data {
             return;
         }
         self.amp_active = amp_active;
-        let wallet = match self.get_wallet_mut(ACCOUNT_ID_AMP) {
+        let wallet = match Self::get_wallet_mut(&mut self.wallets, ACCOUNT_ID_AMP) {
             Ok(v) => v,
             Err(_) => return,
         };
@@ -3256,7 +3480,7 @@ impl Data {
         if !self.amp_connected {
             return;
         }
-        let wallet = match self.get_wallet_mut(ACCOUNT_ID_AMP) {
+        let wallet = match Self::get_wallet_mut(&mut self.wallets, ACCOUNT_ID_AMP) {
             Ok(v) => v,
             Err(_) => return,
         };
@@ -3309,12 +3533,12 @@ impl Data {
         details: &Details,
         two_step: bool,
     ) -> Result<(), anyhow::Error> {
-        if self.submit_data.get(&order_id).is_none() {
+        if self.submit_data.get(order_id).is_none() {
             let asset = self
                 .assets
                 .get(&details.asset)
                 .ok_or(anyhow!("unknown asset"))?;
-            self.verify_amounts(&details)?;
+            self.verify_amounts(details)?;
             let asset_amount = Amount::from_sat(details.asset_amount);
             let bitcoin_amount = Amount::from_sat(details.bitcoin_amount);
             let sell_bitcoin = details.send_bitcoins == (details.side == OrderSide::Maker);
@@ -3323,9 +3547,9 @@ impl Data {
 
             // Auto sign is disabled after app restart (unless two-step swap is used)
             let submit_data = SubmitData {
-                order_id: order_id.clone(),
+                order_id: *order_id,
                 side: OrderSide::Maker,
-                asset: details.asset.clone(),
+                asset: details.asset,
                 asset_precision: asset.precision,
                 order_type: details.order_type,
                 bitcoin_amount,
@@ -3341,21 +3565,14 @@ impl Data {
                 market: details.market,
                 signed: false,
             };
-            self.submit_data
-                .insert(submit_data.order_id.clone(), submit_data);
+            self.submit_data.insert(submit_data.order_id, submit_data);
         }
         Ok(())
     }
 
     fn download_sign_request(&mut self, order_id: OrderId) -> Result<(), anyhow::Error> {
         debug!("download_sign_request, order_id: {}", order_id);
-        let sign = send_request!(
-            self,
-            GetSign,
-            GetSignRequest {
-                order_id: order_id.clone()
-            }
-        )?;
+        let sign = send_request!(self, GetSign, GetSignRequest { order_id })?;
         // Make sure that asset is known if app is restarted
         self.try_add_asset(&sign.data.details.asset)?;
         self.add_missing_submit_data(&order_id, &sign.data.details, false)?;
@@ -3401,12 +3618,13 @@ impl Data {
             self.update_amp_connection();
             return;
         }
-        if self.wallets.contains_key(&ACCOUNT_ID_REG) && !self.sync_complete {
-            debug!("wait until sync is complete");
-            return;
-        }
+        // FIXME: Revert?
+        // if self.wallets.contains_key(&ACCOUNT_ID_REG) && !self.sync_complete {
+        //     debug!("wait until sync is complete");
+        //     return;
+        // }
 
-        let pending_signs = std::mem::replace(&mut self.pending_signs, BTreeMap::new());
+        let pending_signs = std::mem::take(&mut self.pending_signs);
         let mut background_requests = Vec::new();
         for (order_id, pending_sign) in pending_signs.into_iter() {
             if self.processed_signs.get(&order_id).is_none() {
@@ -3420,7 +3638,7 @@ impl Data {
             }
         }
 
-        let pending_submits = std::mem::replace(&mut self.pending_submits, Vec::new());
+        let pending_submits = std::mem::take(&mut self.pending_submits);
         for req in pending_submits.into_iter() {
             let result = self.try_process_submit_order(req);
             if let Err(e) = result {
@@ -3434,7 +3652,7 @@ impl Data {
             }
         }
 
-        let pending_links = std::mem::replace(&mut self.pending_links, Vec::new());
+        let pending_links = std::mem::take(&mut self.pending_links);
         for req in pending_links.into_iter() {
             let result = self.try_process_link_order(OrderId::from_str(&req.order_id).unwrap());
             if let Err(e) = result {
@@ -3442,7 +3660,7 @@ impl Data {
             }
         }
 
-        let downloaded_links = std::mem::replace(&mut self.downloaded_links, Vec::new());
+        let downloaded_links = std::mem::take(&mut self.downloaded_links);
         for resp in downloaded_links.into_iter() {
             let result = self.try_process_downloaded_link(resp);
             match result {
@@ -3460,7 +3678,7 @@ impl Data {
             }
             let result = self.try_process_sign(msg);
             if let Err(e) = result {
-                self.show_message(&format!("sign failed: {}", e.to_string()));
+                self.show_message(&format!("sign failed: {}", e));
             }
         }
 
@@ -3477,12 +3695,7 @@ impl Data {
             serde_json::to_string(&redact_to_msg(msg.clone())).unwrap()
         );
         match msg {
-            ffi::proto::to::Msg::Login(req) => self.process_login_request(
-                Some(&req.mnemonic),
-                req.send_utxo_updates,
-                &req.network.selected,
-                None,
-            ),
+            ffi::proto::to::Msg::Login(req) => self.process_login_request(req),
             ffi::proto::to::Msg::Logout(_) => self.process_logout_request(),
             ffi::proto::to::Msg::ChangeNetwork(req) => self.process_change_network(req),
             ffi::proto::to::Msg::EncryptPin(req) => self.process_encrypt_pin(req),
@@ -3497,6 +3710,8 @@ impl Data {
             ffi::proto::to::Msg::GetRecvAddress(req) => self.process_get_recv_address(req),
             ffi::proto::to::Msg::CreateTx(req) => self.process_create_tx(req),
             ffi::proto::to::Msg::SendTx(req) => self.process_send_tx(req),
+            ffi::proto::to::Msg::CreatePayjoin(req) => self.process_create_payjoin(req),
+            ffi::proto::to::Msg::SendPayjoin(req) => self.process_send_payjoin(req),
             ffi::proto::to::Msg::BlindedValues(req) => self.process_blinded_values(req),
             ffi::proto::to::Msg::SetMemo(req) => self.process_set_memo(req),
             ffi::proto::to::Msg::UpdatePushToken(req) => self.process_update_push_token(req),
@@ -3524,9 +3739,7 @@ impl Data {
                 self.process_market_data_subscribe(req)
             }
             ffi::proto::to::Msg::MarketDataUnsubscribe(_) => self.process_market_data_unsubscribe(),
-            ffi::proto::to::Msg::JadeLogin(msg) => self.process_jade_login_request(msg),
             ffi::proto::to::Msg::JadeRescan(_) => self.process_jade_rescan_request(),
-            ffi::proto::to::Msg::JadeRegister(msg) => self.process_jade_register_request(msg),
             ffi::proto::to::Msg::GaidStatus(msg) => self.process_gaid_status_req(msg),
         }
     }
@@ -3554,6 +3767,12 @@ impl Data {
         }
     }
 
+    fn process_async_resp(&mut self, request_id: RequestId, res: Result<Response, Error>) {
+        if let Some(callback) = self.async_requests.remove(&request_id) {
+            callback(self, res);
+        }
+    }
+
     pub fn register_asset(
         &mut self,
         asset: Asset,
@@ -3561,7 +3780,7 @@ impl Data {
         amp_market: bool,
         unregistered: bool,
     ) {
-        let asset_id = asset.asset_id.clone();
+        let asset_id = asset.asset_id;
         let asset_copy = ffi::proto::Asset {
             asset_id: asset.asset_id.to_string(),
             name: asset.name.clone(),
@@ -3578,9 +3797,10 @@ impl Data {
             domain_agent: asset.domain_agent.clone(),
             unregistered,
             instant_swaps: asset.instant_swaps.unwrap_or(false),
+            always_show: asset.always_show,
         };
 
-        self.assets.insert(asset_id.clone(), asset.clone());
+        self.assets.insert(asset_id, asset);
 
         self.ui.send(ffi::proto::from::Msg::NewAsset(asset_copy));
     }
@@ -3613,7 +3833,7 @@ impl Data {
 
     pub fn save_assets(&self, assets: &Assets) -> Result<(), anyhow::Error> {
         let str = serde_json::to_string(&assets)?;
-        std::fs::write(self.assets_path(), &str)?;
+        std::fs::write(self.assets_path(), str)?;
         Ok(())
     }
 
@@ -3622,11 +3842,11 @@ impl Data {
     fn start_peg_monitoring(&self, peg: &Peg) {
         let request = match peg.dir {
             PegDir::In => Request::PegStatus(PegStatusRequest {
-                order_id: peg.order_id.clone(),
+                order_id: peg.order_id,
                 peg_in: None,
             }),
             PegDir::Out => Request::PegStatus(PegStatusRequest {
-                order_id: peg.order_id.clone(),
+                order_id: peg.order_id,
                 peg_in: None,
             }),
         };
@@ -3638,139 +3858,130 @@ impl Data {
         if self.connected {
             self.start_peg_monitoring(&peg);
         }
-        self.settings
-            .pegs
-            .get_or_insert_with(|| Vec::new())
-            .push(peg);
+        self.settings.pegs.get_or_insert_with(Vec::new).push(peg);
         self.save_settings();
     }
 
     fn update_push_token(&mut self) {
         match (&self.push_token, self.connected, &self.settings.device_key) {
             (Some(push_token), true, Some(device_key)) => {
-                let update_req = UpdatePushTokenRequest {
-                    device_key: device_key.clone(),
-                    push_token: push_token.clone(),
-                };
-                let update_resp = send_request!(self, UpdatePushToken, update_req);
-                if let Err(e) = update_resp {
-                    error!("updating push token failed: {}", e.to_string());
-                }
+                self.make_async_request(
+                    Request::UpdatePushToken(UpdatePushTokenRequest {
+                        device_key: device_key.clone(),
+                        push_token: push_token.clone(),
+                    }),
+                    move |_data, res| {
+                        if let Err(e) = res {
+                            error!("updating push token failed: {}", e.to_string());
+                        }
+                    },
+                );
             }
             _ => {}
         };
     }
 
-    fn register_addresses(&self, list: &[String]) {
-        let list = list
+    fn update_used_addresses(
+        &mut self,
+        account_id: AccountId,
+        transactions: &[models::Transaction],
+    ) {
+        let pointer_external = transactions
             .iter()
-            .map(|addr| {
-                elements::Address::parse_with_params(addr, self.env.elements_params())
-                    .unwrap()
-                    .to_unconfidential()
-                    .to_string()
-            })
-            .collect::<Vec<_>>();
-        if let (Some(device_key), true) = (self.settings.device_key.as_ref(), self.connected) {
-            for chunk in list.chunks(MAX_REGISTER_ADDRESS_COUNT as usize) {
-                self.send_request_msg(Request::RegisterAddresses(RegisterAddressesRequest {
-                    device_key: device_key.clone(),
-                    addresses: chunk.to_vec(),
-                }));
-            }
+            .map(|tx| tx.max_pointer_external)
+            .max()
+            .unwrap_or_default();
+        let pointer_internal = transactions
+            .iter()
+            .map(|tx| tx.max_pointer_internal)
+            .max()
+            .unwrap_or_default();
+        if account_id == ACCOUNT_ID_REG {
+            self.used_addresses.single_sig = [pointer_external, pointer_internal];
+        } else if account_id == ACCOUNT_ID_AMP {
+            self.used_addresses.multi_sig = pointer_external;
         }
+        self.update_address_registrations();
     }
 
     fn update_address_registrations(&mut self) {
-        if let (true, Some(_device_key)) = (self.connected, &self.settings.device_key) {
-            let last_pointer = self.settings.last_external_new;
-            if let Ok((last_pointer, list)) = self
-                .get_wallet_mut(ACCOUNT_ID_REG)
-                .and_then(|wallet| load_all_addresses(wallet.as_mut(), false, last_pointer))
-            {
-                self.register_addresses(&list);
-                self.settings.last_external_new = Some(last_pointer);
-                self.save_settings();
-            }
+        let count = 100;
 
-            let last_pointer = self.settings.last_internal_new;
-            if let Ok((last_pointer, list)) = self
-                .get_wallet_mut(ACCOUNT_ID_REG)
-                .and_then(|wallet| load_all_addresses(wallet.as_mut(), true, last_pointer))
-            {
-                self.register_addresses(&list);
-                self.settings.last_internal_new = Some(last_pointer);
-                self.save_settings();
-            }
+        for is_internal in [false, true] {
+            if let (true, Some(device_key), Some(wallet)) = (
+                self.connected,
+                &self.settings.device_key,
+                self.wallets.get(&ACCOUNT_ID_REG),
+            ) {
+                let first = self.settings.single_sig_registered[is_internal as usize];
+                let last = self.used_addresses.single_sig[is_internal as usize] + count;
 
-            let last_pointer = self.settings.last_external_amp_new;
-            if let Ok((last_pointer, list)) = self
-                .get_wallet_mut(ACCOUNT_ID_AMP)
-                .and_then(|wallet| load_all_addresses(wallet.as_mut(), false, last_pointer))
-            {
-                self.register_addresses(&list);
-                self.settings.last_external_amp_new = Some(last_pointer);
-                self.save_settings();
-            }
-        }
-    }
+                let addresses = (first..last)
+                    .map(|pointer| {
+                        derive_single_sig_address(
+                            &wallet.xpubs.single_sig_account,
+                            self.env.data().network,
+                            is_internal,
+                            pointer,
+                        )
+                        .to_string()
+                    })
+                    .collect::<Vec<_>>();
 
-    fn download_contacts(&mut self) {
-        let phone_key = self.phone_key.clone();
-        match (self.connected, phone_key) {
-            (true, Some(phone_key)) => {
-                let download_contacts_req = DownloadContactsRequest { phone_key };
-                let download_contacts_result =
-                    send_request!(self, DownloadContacts, download_contacts_req);
-                match download_contacts_result {
-                    Ok(data) => {
-                        self.process_account_status(data.registered);
-                        for contact in data.contacts {
-                            self.process_contact_created(contact);
+                self.make_async_request(
+                    Request::RegisterAddresses(RegisterAddressesRequest {
+                        device_key: device_key.clone(),
+                        addresses,
+                    }),
+                    move |data, res| match res {
+                        Ok(_) => {
+                            data.settings.single_sig_registered.as_mut()[is_internal as usize] =
+                                last;
+                            data.save_settings();
                         }
-                        for tx in data.transactions {
-                            self.process_contact_tx(tx);
+                        Err(err) => {
+                            error!("addresses registration failed: {}", err.message);
                         }
-                    }
-                    Err(e) => {
-                        error!("address update failed: {}", e);
-                    }
-                }
+                    },
+                );
             }
-            _ => {}
         }
-    }
 
-    fn process_unregister_phone_requests(&mut self) {
-        if !self.connected {
-            return;
-        }
-        let phone_keys = self
-            .settings
-            .get_persistent()
-            .unregister_phone_requests
-            .iter()
-            .flatten()
-            .cloned()
-            .collect::<Vec<_>>();
-        for phone_key in phone_keys {
-            let result = send_request!(
-                self,
-                UnregisterPhone,
-                UnregisterPhoneRequest {
-                    phone_key: phone_key.clone()
-                }
+        if let (true, Some(device_key), Some(wallet)) = (
+            self.connected,
+            &self.settings.device_key,
+            self.wallets.get(&ACCOUNT_ID_AMP),
+        ) {
+            let first = self.settings.multi_sig_registered;
+            let last = self.used_addresses.multi_sig + count;
+
+            let addresses = (first..last)
+                .map(|pointer| {
+                    derive_multi_sig_address(
+                        &wallet.xpubs.multi_sig_service_xpub,
+                        &wallet.xpubs.multi_sig_user_xpub,
+                        self.env.data().network,
+                        pointer,
+                    )
+                    .to_string()
+                })
+                .collect::<Vec<_>>();
+
+            self.make_async_request(
+                Request::RegisterAddresses(RegisterAddressesRequest {
+                    device_key: device_key.clone(),
+                    addresses,
+                }),
+                move |data, res| match res {
+                    Ok(_) => {
+                        data.settings.multi_sig_registered = last;
+                        data.save_settings();
+                    }
+                    Err(err) => {
+                        error!("addresses registration failed: {}", err.message);
+                    }
+                },
             );
-            if result.is_ok() {
-                info!("unregister phone request succeed");
-                self.settings
-                    .get_persistent()
-                    .unregister_phone_requests
-                    .as_mut()
-                    .unwrap()
-                    .remove(&phone_key);
-                self.save_settings();
-            }
         }
     }
 
@@ -3785,7 +3996,8 @@ impl Data {
         let pending_tx = self.sent_txhash.is_some() || self.succeed_swap.is_some();
         let interval = if pending_tx { 1 } else { 7 };
         for wallet in self.wallets.values() {
-            wallet.update_sync_interval(interval);
+            // FIXME: Has no effect
+            wallet.ses.update_sync_interval(interval);
         }
     }
 
@@ -3813,7 +4025,7 @@ impl Data {
             let order_sent = self.orders_sent.get(order_id);
             if order_sent != Some(order) {
                 let new = order_sent.is_none() && order.from_notification;
-                self.orders_sent.insert(order_id.clone(), order.clone());
+                self.orders_sent.insert(*order_id, order.clone());
                 self.ui.send(ffi::proto::from::Msg::OrderCreated(
                     ffi::proto::from::OrderCreated {
                         order: order.clone(),
@@ -3847,61 +4059,17 @@ impl Data {
         self.wallets
             .get(&account_id)
             .ok_or_else(|| anyhow!("wallet not found"))
+            .map(|wallet| &wallet.ses)
     }
 
     fn get_wallet_mut(
-        &mut self,
+        wallets: &mut BTreeMap<AccountId, Wallet>,
         account_id: AccountId,
     ) -> Result<&mut Box<dyn gdk_ses::GdkSes>, anyhow::Error> {
-        self.wallets
+        wallets
             .get_mut(&account_id)
             .ok_or_else(|| anyhow!("wallet not found"))
-    }
-
-    fn try_process_jade_login_request(
-        &mut self,
-        msg: ffi::proto::to::JadeLogin,
-    ) -> Result<(), anyhow::Error> {
-        let watch_only = self
-            .settings
-            .watch_only
-            .clone()
-            .ok_or_else(|| anyhow!("w/o login and password not found"))?;
-
-        let jade_port = self.jade_mng.open(&msg.jade_id);
-
-        // FIXME: Use name based on MAC address
-        let name = format!("Jade {}", msg.jade_id);
-        let hw_data = gdk_ses::HwData {
-            env: self.env,
-            name,
-            jade: std::sync::Arc::new(jade_port),
-            status_callback: self.jade_status_callback.clone(),
-        };
-
-        self.sync_jade();
-
-        self.process_login_request(None, None, &None, Some((hw_data, watch_only)));
-
-        Ok(())
-    }
-
-    fn process_jade_login_request(&mut self, msg: ffi::proto::to::JadeLogin) {
-        let result = self.try_process_jade_login_request(msg.clone());
-        let result = match result {
-            Ok(_) => {
-                info!("jade login succeed");
-                ffi::proto::from::jade_login::Result::Succeed(ffi::proto::Empty {})
-            }
-            Err(e) => {
-                error!("jade login failed: {}", e);
-                ffi::proto::from::jade_login::Result::Failed(e.to_string())
-            }
-        };
-        let from = ffi::proto::from::JadeLogin {
-            result: Some(result),
-        };
-        self.ui.send(ffi::proto::from::Msg::JadeLogin(from));
+            .map(|wallet| &mut wallet.ses)
     }
 
     fn process_jade_rescan_request(&mut self) {
@@ -3917,93 +4085,29 @@ impl Data {
         self.process_scan_jade(ports_result.unwrap_or_default());
     }
 
-    fn try_process_jade_register_request(
-        &mut self,
-        msg: ffi::proto::to::JadeRegister,
-    ) -> Result<(), anyhow::Error> {
-        let jade_port = self.jade_mng.open(&msg.jade_id);
-        let hw_data = gdk_ses::HwData {
-            env: self.env,
-            name: "Jade".to_owned(),
-            jade: std::sync::Arc::new(jade_port),
-            status_callback: self.jade_status_callback.clone(),
-        };
-
-        let login_info = gdk_ses::LoginInfo {
-            account_id: ACCOUNT_ID_AMP,
-            env: self.env,
-            mnemonic: None,
-            network: None,
-            cache_dir: self.cache_path().to_str().unwrap().to_owned(),
-            hw_data: Some(hw_data),
-            watch_only: None,
-        };
-
-        let notif_ballback = Box::new(move |_account_id, _details| {});
-        let mut wallet = gdk_cpp::start_processing(login_info, notif_ballback);
-
-        wallet.login()?;
-
-        let username = format!(
-            "sswp_{}",
-            hex::encode(&rand::thread_rng().gen::<[u8; 10]>())
-        );
-        let password = hex::encode(&rand::thread_rng().gen::<[u8; 16]>());
-        wallet.set_watch_only(&username, &password)?;
-
-        self.settings.watch_only = Some(settings::WatchOnly { username, password });
-        self.save_settings();
-
-        Ok(())
-    }
-
-    fn process_jade_register_request(&mut self, msg: ffi::proto::to::JadeRegister) {
-        let jade_id = msg.jade_id.clone();
-        let result = self.try_process_jade_register_request(msg);
-        let result = match result {
-            Ok(_) => {
-                info!("jade registration succeed");
-                ffi::proto::from::jade_register::Result::Succeed(ffi::proto::Empty {})
-            }
-            Err(e) => {
-                error!("jade registration failed: {}", e);
-                ffi::proto::from::jade_register::Result::Failed(e.to_string())
-            }
-        };
-        let from = ffi::proto::from::JadeRegister {
-            jade_id,
-            result: Some(result),
-        };
-        self.ui.send(ffi::proto::from::Msg::JadeRegister(from));
-    }
-
     fn process_scan_jade(&mut self, ports: Vec<crate::jade_mng::ManagedPort>) {
         let mut sync_required = false;
 
         for port in ports.iter() {
-            if self
-                .jades
-                .iter()
-                .find(|data| data.jade_id == port.jade_id)
-                .is_none()
-            {
+            if !self.jades.iter().any(|data| data.jade_id == port.jade_id) {
                 debug!("new jade device detected: {}", port.jade_id);
                 self.jades.push(JadeData {
                     jade_id: port.jade_id.clone(),
                     port_name: port.port_name.clone(),
                     serial: port.serial.clone(),
+                    version: port.version.clone(),
+                    state: port.state,
                 });
                 sync_required = true;
             }
         }
 
         loop {
-            let removed = self.jades.iter().enumerate().find(|(_, data)| {
-                ports
-                    .iter()
-                    .find(|port| data.jade_id == port.jade_id)
-                    .is_none()
-            });
+            let removed = self
+                .jades
+                .iter()
+                .enumerate()
+                .find(|(_, data)| !ports.iter().any(|port| data.jade_id == port.jade_id));
             match removed {
                 Some((index, _)) => {
                     let data = self.jades.remove(index);
@@ -4027,6 +4131,12 @@ impl Data {
                 jade_id: data.jade_id.clone(),
                 port: data.port_name.clone(),
                 serial: data.serial.clone(),
+                version: data.version.clone(),
+                state: match data.state {
+                    JadeState::Uninit => ffi::proto::from::jade_ports::State::Uninit,
+                    JadeState::Main => ffi::proto::from::jade_ports::State::Main,
+                    JadeState::Test => ffi::proto::from::jade_ports::State::Test,
+                } as i32,
             })
             .collect();
         self.ui.send(ffi::proto::from::Msg::JadePorts(
@@ -4035,32 +4145,26 @@ impl Data {
     }
 
     fn process_gaid_status_req(&mut self, msg: ffi::proto::to::GaidStatus) {
-        if !self.connected {
-            self.ui.send(ffi::proto::from::Msg::GaidStatus(
-                ffi::proto::from::GaidStatus {
-                    gaid: msg.gaid,
-                    asset_id: msg.asset_id,
-                    error: Some("Not connected".to_owned()),
-                },
-            ));
-            return;
-        }
-
-        let asset_id = AssetId::from_str(&msg.asset_id).unwrap();
-        let _request_id = self.send_request_msg(Request::GaidStatus(GaidStatusRequest {
-            gaid: msg.gaid,
-            asset_id,
-        }));
-    }
-
-    fn process_gaid_status_resp(&mut self, resp: GaidStatusResponse) {
-        self.ui.send(ffi::proto::from::Msg::GaidStatus(
-            ffi::proto::from::GaidStatus {
-                gaid: resp.gaid,
-                asset_id: resp.asset_id.to_string(),
-                error: resp.error,
+        self.make_async_request(
+            Request::GaidStatus(GaidStatusRequest {
+                gaid: msg.gaid.clone(),
+                asset_id: AssetId::from_str(&msg.asset_id).unwrap(),
+            }),
+            move |data, res| {
+                let error_opt = match res {
+                    Ok(Response::GaidStatus(resp)) => resp.error,
+                    Ok(_) => Some("Unexpected response".to_string()),
+                    Err(err) => Some(err.to_string()),
+                };
+                data.ui.send(ffi::proto::from::Msg::GaidStatus(
+                    ffi::proto::from::GaidStatus {
+                        gaid: msg.gaid,
+                        asset_id: msg.asset_id,
+                        error: error_opt,
+                    },
+                ));
             },
-        ));
+        );
     }
 }
 
@@ -4089,13 +4193,13 @@ pub fn start_processing(
         env_data.port,
         env_data.use_tls,
         true,
+        Data::proxy(),
     );
 
-    ws_sender.send(ws::WrappedRequest::Connect).unwrap();
-
     let ui_copy = ui.clone();
-    let last_jade_status =
-        std::sync::Arc::new(std::sync::Mutex::new(gdk_ses::JadeStatus::Idle as i32));
+    let last_jade_status = std::sync::Arc::new(std::sync::Mutex::new(
+        ffi::proto::from::jade_status::Status::Idle as i32,
+    ));
     let jade_status_callback: gdk_ses::JadeStatusCallback =
         std::sync::Arc::new(Box::new(move |status: gdk_ses::JadeStatus| {
             let status: i32 = match status {
@@ -4104,7 +4208,19 @@ pub fn start_processing(
                     ffi::proto::from::jade_status::Status::ReadStatus
                 }
                 gdk_ses::JadeStatus::AuthUser => ffi::proto::from::jade_status::Status::AuthUser,
-                gdk_ses::JadeStatus::SignTx => ffi::proto::from::jade_status::Status::SignTx,
+                gdk_ses::JadeStatus::MasterBlindingKey => {
+                    ffi::proto::from::jade_status::Status::MasterBlindingKey
+                }
+                gdk_ses::JadeStatus::SignTx(tx_type) => match tx_type {
+                    gdk_ses::TxType::Normal => ffi::proto::from::jade_status::Status::SignTx,
+                    gdk_ses::TxType::Swap => ffi::proto::from::jade_status::Status::SignSwap,
+                    gdk_ses::TxType::OfflineSwapOutput => {
+                        ffi::proto::from::jade_status::Status::SignSwapOutput
+                    }
+                    gdk_ses::TxType::OfflineSwap => {
+                        ffi::proto::from::jade_status::Status::SignOfflineSwap
+                    }
+                },
             }
             .into();
             let mut last_status = last_jade_status.lock().unwrap();
@@ -4129,6 +4245,16 @@ pub fn start_processing(
                 ws::WrappedResponse::Response(ResponseMessage::Notification(notif)) => {
                     msg_sender_copy
                         .send(Message::ServerNotification(notif))
+                        .unwrap();
+                }
+
+                // Async requests use String for RequestId
+                ws::WrappedResponse::Response(ResponseMessage::Response(
+                    Some(RequestId::String(request_id)),
+                    res,
+                )) => {
+                    msg_sender_copy
+                        .send(Message::AsyncResp(RequestId::String(request_id), res))
                         .unwrap();
                 }
 
@@ -4180,10 +4306,6 @@ pub fn start_processing(
                         Notification::UpdatePriceStream(msg),
                     ))
                     .unwrap(),
-                ws::WrappedResponse::Response(ResponseMessage::Response(
-                    _,
-                    Ok(Response::GaidStatus(resp)),
-                )) => msg_sender_copy.send(Message::GaidStatus(resp)).unwrap(),
                 ws::WrappedResponse::Response(ResponseMessage::Response(req_id, result)) => {
                     resp_sender.send(ServerResp(req_id, result)).unwrap();
                 }
@@ -4218,7 +4340,7 @@ pub fn start_processing(
         assets: BTreeMap::new(),
         amp_assets: BTreeSet::new(),
         assets_old: Vec::new(),
-        msg_sender: msg_sender.clone(),
+        msg_sender,
         ws_sender,
         ws_hint,
         resp_receiver,
@@ -4232,8 +4354,8 @@ pub fn start_processing(
         orders_last: BTreeMap::new(),
         orders_sent: BTreeMap::new(),
         send_utxo_updates: false,
+        force_auto_sign_maker: false,
         wallets: BTreeMap::new(),
-        phone_key: None,
         subscribes: BTreeSet::new(),
         active_swap: None,
         succeed_swap: None,
@@ -4261,41 +4383,32 @@ pub fn start_processing(
         subscribed_market_data: None,
         last_connection_check: std::time::Instant::now(),
         last_blocks: BTreeMap::new(),
+        used_addresses: Default::default(),
         jade_mng: jade_mng::JadeMng::new(),
         jades: Vec::new(),
         jades_scan_result: None,
         jade_status_callback,
+        async_requests: BTreeMap::new(),
     };
 
-    if let Err(error) = gdk_registry::init(&state.registry_path()) {
-        match error {
-            gdk_registry::Error::AlreadyInitialized => {}
-            _ => panic!("gdk_registry init failed: {}", error),
-        }
-    }
-
-    std::thread::spawn(move || {
-        gdk_registry::refresh_assets(gdk_registry::RefreshAssetsParam {
-            assets: true,
-            icons: true,
-            refresh: true,
-            config: get_registry_config(env),
-        })
-    });
+    let registry_path = state.registry_path();
+    let master_xpub = state.master_xpub();
+    assets_registry::init(env, &registry_path, master_xpub);
 
     if let Err(e) = state.load_assets() {
         error!("can't load assets: {}", &e);
     }
 
-    while let Ok(a) = msg_receiver.recv() {
+    while let Ok(msg) = msg_receiver.recv() {
         let started = std::time::Instant::now();
 
-        match a {
-            Message::Notif(account_id, msg) => state.process_wallet_notif(account_id, msg),
+        match msg {
             Message::Ui(msg) => state.process_ui(msg),
             Message::ServerConnected => state.process_ws_connected(),
             Message::ServerDisconnected => state.process_ws_disconnected(),
             Message::ServerNotification(msg) => state.process_ws_notification(msg),
+            Message::AsyncResp(request_id, res) => state.process_async_resp(request_id, res),
+            Message::Notif(account_id, msg) => state.process_wallet_notif(account_id, msg),
             Message::PegStatus(msg) => state.process_peg_status(msg),
             Message::Subscribe(msg) => state.process_subscribe_response(msg),
             Message::Unsubscribe(msg) => state.process_unsubscribe_response(msg),
@@ -4304,14 +4417,13 @@ pub fn start_processing(
             Message::BackgroundMessage(data, sender) => {
                 state.process_background_message(data, sender)
             }
-            Message::GaidStatus(resp) => state.process_gaid_status_resp(resp),
             Message::IdleTimer => state.process_idle_timer(),
         }
 
         let stopped = std::time::Instant::now();
         let processing_time = stopped.duration_since(started);
         if processing_time > std::time::Duration::from_millis(100) {
-            debug!("processing time: {} seconds", processing_time.as_secs_f64());
+            warn!("processing time: {} seconds", processing_time.as_secs_f64());
         }
 
         if state

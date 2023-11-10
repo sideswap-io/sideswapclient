@@ -1,21 +1,27 @@
 use std::str::FromStr;
+use std::time::Duration;
 
 use crate::error::Error;
-use bitcoin::util::bip32::{ChildNumber, ExtendedPubKey, Fingerprint};
-use bitcoin::{hashes::hex::ToHex, PublicKey};
+use bitcoin::bip32::{ChildNumber, ExtendedPubKey, Fingerprint};
+use bitcoin::PublicKey;
+use elements::hex::ToHex;
 use serde::{Deserialize, Serialize};
+
+/// The default time duration that a network request is allowed to take before
+/// timing out. Used in [`build_request_agent`].
+pub const NETWORK_REQUEST_TIMEOUT: Duration = Duration::from_secs(90);
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct NetworkParameters {
     pub name: String,
-    pub network: String,
+    network: String,
 
     pub development: bool,
     pub liquid: bool,
     pub mainnet: bool,
 
-    pub tx_explorer_url: String,
-    pub address_explorer_url: String,
+    tx_explorer_url: String,
+    address_explorer_url: String,
 
     pub electrum_tls: Option<bool>,
     pub electrum_url: Option<String>,
@@ -23,16 +29,13 @@ pub struct NetworkParameters {
     pub validate_domain: Option<bool>,
     pub policy_asset: Option<String>,
     pub sync_interval: Option<u32>,
-    pub ct_bits: Option<i32>,
-    pub ct_exponent: Option<i32>,
-    pub ct_min_value: Option<u64>,
     pub spv_enabled: Option<bool>,
-    pub asset_registry_url: Option<String>,
-    pub asset_registry_onion_url: Option<String>,
+    asset_registry_url: Option<String>,
+    asset_registry_onion_url: Option<String>,
 
-    pub pin_server_url: String,
-    pub pin_server_onion_url: String,
-    pub pin_server_public_key: String,
+    pin_server_url: String,
+    pin_server_onion_url: String,
+    pin_server_public_key: String,
 
     pub spv_multi: Option<bool>,
     pub spv_servers: Option<Vec<String>>,
@@ -51,6 +54,8 @@ pub struct NetworkParameters {
     /// if on the same network, share the same headers chain file but it's
     /// required to use a single process.
     pub state_dir: String,
+
+    pub gap_limit: Option<u32>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -73,10 +78,11 @@ impl NetworkId {
             _ => None,
         }
     }
-    pub fn get_elements_network(self: NetworkId) -> Option<ElementsNetwork> {
+
+    pub fn default_min_fee_rate(&self) -> u64 {
         match self {
-            NetworkId::Elements(net) => Some(net),
-            _ => None,
+            NetworkId::Elements(_) => 100,
+            NetworkId::Bitcoin(_) => 1000,
         }
     }
 }
@@ -116,7 +122,7 @@ impl NetworkParameters {
         if let Some(a) = self.policy_asset.as_ref() {
             Ok(a.parse()?)
         } else {
-            Err("no policy asset".into())
+            Err("no policy asset".to_string().into())
         }
     }
 
@@ -146,16 +152,17 @@ impl NetworkParameters {
         self.asset_registry_onion_url = Some(url);
     }
 
-    pub fn pin_server_url(&self) -> &str {
-        if self.use_tor() {
-            if !self.pin_server_onion_url.is_empty() {
-                return &self.pin_server_onion_url;
-            }
-        }
-        &self.pin_server_url
+    pub fn pin_server_url(&self) -> Result<url::Url, Error> {
+        let url = if self.use_tor() && !self.pin_server_onion_url.is_empty() {
+            &self.pin_server_onion_url
+        } else {
+            &self.pin_server_url
+        };
+
+        url::Url::parse(url).map_err(|_| Error::InvalidUrl(url.clone()))
     }
 
-    pub fn pin_manager_public_key(&self) -> Result<PublicKey, Error> {
+    pub fn pin_server_public_key(&self) -> Result<PublicKey, Error> {
         Ok(PublicKey::from_str(&self.pin_server_public_key)?)
     }
 
@@ -174,6 +181,20 @@ impl NetworkParameters {
         crate::wally::pbkdf2_hmac_sha512_256(password, salt, cost).to_hex()
     }
 
+    pub fn xpub_hash_id(&self, master_xpub: &ExtendedPubKey) -> String {
+        assert_eq!(self.bip32_network(), master_xpub.network);
+        // Only public_key and chain_code contribute to the xpub hash
+        let mut xpub = master_xpub.clone();
+        xpub.network = bitcoin::network::constants::Network::Testnet;
+        xpub.depth = 0;
+        xpub.parent_fingerprint = Fingerprint::default();
+        xpub.child_number = ChildNumber::from_normal_idx(0).unwrap();
+        let password = xpub.encode().to_vec();
+        let salt = "GREEN_XPUB_HASH_NETWORK".as_bytes().to_vec();
+        let cost = 2048;
+        crate::wally::pbkdf2_hmac_sha512_256(password, salt, cost).to_hex()
+    }
+
     pub fn bip32_network(&self) -> bitcoin::network::constants::Network {
         if self.mainnet {
             bitcoin::network::constants::Network::Bitcoin
@@ -183,27 +204,47 @@ impl NetworkParameters {
     }
 }
 
+/// Creates a new [`ureq::Agent`] from an optional proxy string, using
+/// [`NETWORK_REQUEST_TIMEOUT`] as timeout.
+pub fn build_request_agent(maybe_proxy: Option<&str>) -> Result<ureq::Agent, ureq::Error> {
+    let mut builder = ureq::AgentBuilder::new().timeout(NETWORK_REQUEST_TIMEOUT);
+
+    if let Some(proxy) = maybe_proxy {
+        if !proxy.is_empty() {
+            let proxy = ureq::Proxy::new(proxy)?;
+            builder = builder.proxy(proxy);
+        }
+    }
+
+    Ok(builder.build())
+}
+
 #[cfg(test)]
 mod tests {
-    use bitcoin::util::bip32::{ExtendedPrivKey, ExtendedPubKey};
+    use crate::EC;
+    use bitcoin::bip32::{ExtendedPrivKey, ExtendedPubKey};
 
     #[test]
     fn test_wallet_hash_id() {
-        let secp = bitcoin::secp256k1::Secp256k1::new();
         let seed = crate::wally::bip39_mnemonic_to_seed(
             "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
             "",
         ).unwrap();
         let master_xprv = ExtendedPrivKey::new_master(bitcoin::Network::Bitcoin, &seed).unwrap();
-        let master_xpub = ExtendedPubKey::from_private(&secp, &master_xprv);
+        let master_xpub = ExtendedPubKey::from_priv(&EC, &master_xprv);
         let mut network = crate::NetworkParameters::default();
         network.network = "mainnet".to_string();
         network.mainnet = true;
         let wallet_hash_id = network.wallet_hash_id(&master_xpub);
-        // Value got logging in with the above mnemonic with network name "mainnet" (ga_session)
+        let xpub_hash_id = network.xpub_hash_id(&master_xpub);
+        // Values got logging in with the above mnemonic with network name "mainnet" (ga_session)
         assert_eq!(
             wallet_hash_id,
             "ca8f6b74e485133f441e01313682e6d5613cedbe479b2c472e017e21cc42a052"
+        );
+        assert_eq!(
+            xpub_hash_id,
+            "cf3bc52a701f6111fe8be5451fc61bec5dad8c30216910ec8673d815e5936799"
         );
     }
 }

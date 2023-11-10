@@ -11,8 +11,8 @@ pub struct SubmitId(pub String);
 pub struct SwapStartRequest {
     pub order_id: OrderId,
     pub inputs: Vec<PsetInput>,
-    pub recv_addr: String,
-    pub change_addr: String,
+    pub recv_addr: elements::Address,
+    pub change_addr: elements::Address,
     pub send_asset: AssetId,
     pub send_amount: i64,
     pub recv_asset: AssetId,
@@ -34,7 +34,7 @@ pub struct SwapSignRequest {
 
 #[derive(Serialize, Deserialize)]
 pub struct SwapSignResponse {
-    pub txid: Txid,
+    pub txid: elements::Txid,
 }
 
 #[derive(Serialize, Deserialize)]

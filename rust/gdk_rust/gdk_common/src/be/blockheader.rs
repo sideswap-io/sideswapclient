@@ -6,18 +6,11 @@ use super::BEBlockHash;
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum BEBlockHeader {
-    Bitcoin(bitcoin::BlockHeader),
+    Bitcoin(bitcoin::block::Header),
     Elements(elements::BlockHeader),
 }
 
 impl BEBlockHeader {
-    pub fn serialize(&self) -> Vec<u8> {
-        match self {
-            Self::Bitcoin(header) => bitcoin::consensus::encode::serialize(header),
-            Self::Elements(header) => elements::encode::serialize(header),
-        }
-    }
-
     pub fn deserialize(bytes: &[u8], id: NetworkId) -> Result<Self, crate::error::Error> {
         Ok(match id {
             NetworkId::Bitcoin(_) => Self::Bitcoin(bitcoin::consensus::encode::deserialize(bytes)?),
@@ -63,11 +56,10 @@ mod test {
 
     #[test]
     fn test_cbor_header() {
-        let _header = block_header_dynafed();
-        // TODO restore after sorting out https://github.com/ElementsProject/rust-elements/pull/61
-        // let vec = serde_cbor::to_vec(&header).unwrap();
-        // let back: BlockHeader = serde_cbor::from_slice(&vec).unwrap();
-        // assert_eq!(header, back);
+        let header = block_header_dynafed();
+        let vec = crate::util::ciborium_to_vec(&header).unwrap();
+        let back: BlockHeader = ciborium::from_reader(&vec[..]).unwrap();
+        assert_eq!(header, back);
     }
 
     fn block_header_dynafed() -> BlockHeader {

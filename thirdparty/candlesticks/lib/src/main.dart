@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:candlesticks/src/models/candle.dart';
-import 'package:candlesticks/src/theme/theme_data.dart';
 import 'package:candlesticks/src/widgets/toolbar_action.dart';
 import 'package:candlesticks/src/widgets/mobile_chart.dart';
 import 'package:candlesticks/src/widgets/desktop_chart.dart';
@@ -65,13 +64,10 @@ class _CandlesticksState extends State<Candlesticks> {
         //   },
         //   children: widget.actions,
         // ),
-        if (widget.candles.length == 0)
+        if (widget.candles.isEmpty)
           Expanded(
-            child: Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).gold,
-              ),
-            ),
+            // Show empty window if there are no trades
+            child: Container(),
           )
         else
           Expanded(

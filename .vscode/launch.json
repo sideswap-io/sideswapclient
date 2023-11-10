@@ -1,0 +1,120 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "desktop (debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": [
+                "--dart-entrypoint-args", "--localEndpoint",
+                "--dart-entrypoint-args", "--no-mobileMode",
+                "--dart-entrypoint-args", "--no-onboardingUserFeatures",
+                "--dart-entrypoint-args", "--networkSettings",
+                "--dart-entrypoint-args", "--enableJade",
+            ],
+        },
+        {
+            "name": "desktop (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main.dart",
+        },
+        {
+            "name": "desktop (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main.dart",
+        },
+        {
+            "name": "desktop (as mobile full debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args":[
+				"--dart-entrypoint-args","--mobileMode",
+			]
+        },
+        {
+            "name": "desktop (as mobile full profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main.dart",
+            "args":[
+				"--dart-entrypoint-args","--mobileMode",
+			]
+        },
+        {
+            "name": "mobile full android (debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "args": ["--flavor", "full"]
+        },
+        {
+            "name": "mobile full android (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main.dart",
+            "args": ["--flavor", "full"]
+        },
+        {
+            "name": "mobile full android (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main.dart",
+            "args": ["--flavor", "full"]
+        },
+        {
+            "name": "mobile fdroid (debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main_fdroid.dart",
+            "args": ["--flavor", "fdroid"]
+        },
+        {
+            "name": "mobile fdroid (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main_fdroid.dart",
+            "args": ["--flavor", "fdroid"]
+        },
+        {
+            "name": "mobile fdroid (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main_fdroid.dart",
+            "args": ["--flavor", "fdroid"]
+        },
+        {
+            "name": "mobile ios (debug mode)",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "mobile ios (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "mobile ios (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release",
+            "program": "lib/main.dart"
+        },
+    ]
+}

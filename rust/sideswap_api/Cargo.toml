@@ -1,9 +1,12 @@
 [package]
 name = "sideswap_api"
 version = "0.1.2"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-serde = { version = "1.0", features = ["derive"] }
-hex = "*"
-serde_with = { version = "1.10.0", features = [] }
+sideswap_types = { path = "../sideswap_types" }
+
+elements = { workspace = true, features = ["serde"] }
+hex.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_with = { workspace = true, features = [] }

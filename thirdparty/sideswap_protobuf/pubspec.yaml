@@ -1,0 +1,18 @@
+name: sideswap_protobuf
+description: Sideswap protobuf classes
+version: 0.0.2
+
+environment:
+  sdk: ">=3.1.0 <4.0.0"
+  flutter: ">=3.3.0"
+
+dependencies:
+  fixnum: ^1.1.0
+  flutter:
+    sdk: flutter
+  protobuf: ^3.1.0
+
+dev_dependencies:
+  flutter_lints: ^3.0.1
+  flutter_test:
+    sdk: flutter

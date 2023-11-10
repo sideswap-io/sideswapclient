@@ -1,4 +1,3 @@
-use async_tungstenite::tokio::connect_async;
 use futures::prelude::*;
 use sideswap_api::*;
 use std::time::{Duration, Instant};
@@ -23,6 +22,14 @@ pub fn next_request_id() -> RequestId {
     RequestId::Int(GLOBAL_REQUEST_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed))
 }
 
+pub fn next_request_id_str() -> RequestId {
+    RequestId::String(
+        GLOBAL_REQUEST_ID
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+            .to_string(),
+    )
+}
+
 const RECONNECT_WAIT_PERIODS: [Duration; 5] = [
     Duration::from_secs(0),
     Duration::from_secs(1),
@@ -35,6 +42,37 @@ const RECONNECT_WAIT_MAX_PERIOD: Duration = Duration::from_secs(12);
 const PING_PERIOD: Duration = Duration::from_secs(30);
 const PONG_TIMEOUT: Duration = Duration::from_secs(90);
 
+async fn connect_async(
+    url: &str,
+    proxy: Option<&String>,
+    host: &str,
+    port: u16,
+) -> Result<
+    (
+        tokio_tungstenite::WebSocketStream<
+            tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>,
+        >,
+        tokio_tungstenite::tungstenite::handshake::client::Response,
+    ),
+    anyhow::Error,
+> {
+    let stream = if let Some(proxy) = proxy {
+        let stream = tokio::net::TcpStream::connect(proxy).await?;
+        let stream = tokio_socks::tcp::Socks5Stream::connect_with_socket(
+            stream,
+            format!("{}:{}", host, port),
+        )
+        .await?;
+        stream.into_inner()
+    } else {
+        tokio::net::TcpStream::connect(format!("{}:{}", host, port)).await?
+    };
+
+    let ws = tokio_tungstenite::client_async_tls(url, stream).await?;
+
+    Ok(ws)
+}
+
 async fn run(
     host: String,
     port: u16,
@@ -43,6 +81,7 @@ async fn run(
     req_rx: crossbeam_channel::Receiver<WrappedRequest>,
     resp_tx: crossbeam_channel::Sender<WrappedResponse>,
     mut hint_rx: tokio::sync::mpsc::UnboundedReceiver<()>,
+    proxy: Option<String>,
 ) {
     let (req_tx_async, mut req_rx_async) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
     std::thread::spawn(move || {
@@ -86,7 +125,7 @@ async fn run(
                 .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
             tokio::select! {
                 connect_result = async {
-                    let connect_result = connect_async(&url).await;
+                    let connect_result = connect_async(&url, proxy.as_ref(), &host, port).await;
                     if connect_result.is_err() {
                         tokio::time::sleep(*delay).await
                     }
@@ -100,7 +139,10 @@ async fn run(
                         }
                     };
                 }
-                _ = hint_rx.recv() => {
+                reconnect = hint_rx.recv() => {
+                    if reconnect.is_none() {
+                        return;
+                    }
                     debug!("reconnect hint received");
                     reconnect_count = 0;
                 }
@@ -128,7 +170,7 @@ async fn run(
                     };
                     last_recv_timestamp = Instant::now();
                     match server_msg {
-                        async_tungstenite::tungstenite::Message::Text(text) => {
+                        tokio_tungstenite::tungstenite::Message::Text(text) => {
                             let server_msg = serde_json::from_str::<ResponseMessage>(&text);
                             match server_msg {
                                 Ok(v) => {
@@ -139,8 +181,8 @@ async fn run(
                                 }
                             }
                         }
-                        async_tungstenite::tungstenite::Message::Ping(data) => {
-                            let _ = ws_stream.send(async_tungstenite::tungstenite::Message::Pong(data)).await;
+                        tokio_tungstenite::tungstenite::Message::Ping(data) => {
+                            let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::Pong(data)).await;
                         }
                         _ => {}
                     }
@@ -157,7 +199,7 @@ async fn run(
                     match client_result {
                         WrappedRequest::Request(req) => {
                             let text = serde_json::to_string(&req).unwrap();
-                            let _ = ws_stream.send(async_tungstenite::tungstenite::Message::text(&text)).await;
+                            let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::text(&text)).await;
                         }
                         WrappedRequest::Connect => {
                             warn!("ignore unexpected ws connect request");
@@ -176,7 +218,7 @@ async fn run(
                         break;
                     }
                     if last_recv_duration > PING_PERIOD {
-                        let _ = ws_stream.send(async_tungstenite::tungstenite::Message::Ping(Vec::new())).await;
+                        let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::Ping(Vec::new())).await;
                     }
                 }
             }
@@ -192,6 +234,7 @@ pub fn start(
     port: u16,
     use_tls: bool,
     sync: bool,
+    proxy: Option<String>,
 ) -> (
     crossbeam_channel::Sender<WrappedRequest>,
     crossbeam_channel::Receiver<WrappedResponse>,
@@ -205,7 +248,9 @@ pub fn start(
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(run(host, port, use_tls, sync, req_rx, resp_tx, hint_rx));
+        rt.block_on(run(
+            host, port, use_tls, sync, req_rx, resp_tx, hint_rx, proxy,
+        ));
     });
     (req_tx, resp_rx, hint_tx)
 }

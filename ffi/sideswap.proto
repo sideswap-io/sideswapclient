@@ -35,6 +35,7 @@ message Asset {
   required bool unregistered = 8;
   optional string domain = 7;
   optional string domain_agent = 10;
+  optional bool always_show = 12;
 }
 
 message Tx {
@@ -173,6 +174,18 @@ message CreatedTx {
   repeated AddressAmount addressees = 8;
 }
 
+message CreatePayjoin {
+  required Account account = 1;
+  required string addr = 2;
+  required Balance balance = 3;
+}
+
+message CreatedPayjoin {
+  required CreatePayjoin req = 1;
+  required string pset = 2;
+  required int64 asset_fee = 3;
+}
+
 message ChartPoint {
   required string time = 1;
   required double open = 2;
@@ -184,11 +197,14 @@ message ChartPoint {
 
 message To {
   message Login {
-    required string mnemonic = 1;
+    oneof wallet {
+      string mnemonic = 1;
+      string jade_id = 7;
+    }
     optional string phone_key = 2;
     required NetworkSettings network = 4;
-    required bool desktop = 5;
     optional bool send_utxo_updates = 6;
+    optional bool force_auto_sign_maker = 8;
   }
 
   message ChangeNetwork {
@@ -334,14 +350,6 @@ message To {
     required string asset_id = 1;
   }
 
-  message JadeRegister {
-    required string jade_id = 1;
-  }
-
-  message JadeLogin {
-    required string jade_id = 1;
-  }
-
   message GaidStatus {
     required string gaid = 1;
     required string asset_id = 2;
@@ -361,6 +369,8 @@ message To {
     Account get_recv_address = 11;
     CreateTx create_tx = 12;
     SendTx send_tx = 13;
+    CreatePayjoin create_payjoin = 15;
+    CreatedPayjoin send_payjoin = 16;
     BlindedValues blinded_values = 14;
 
     SwapRequest swap_request = 20;
@@ -390,8 +400,6 @@ message To {
     MarketDataSubscribe market_data_subscribe = 60;
     Empty market_data_unsubscribe = 61;
 
-    JadeRegister jade_register = 69;
-    JadeLogin jade_login = 70;
     Empty jade_rescan = 71;
 
     GaidStatus gaid_status = 81;
@@ -399,6 +407,13 @@ message To {
 }
 
 message From {
+  message Login {
+    oneof result {
+      string error_msg = 1;
+      Empty success = 2;
+    }
+  }
+
   message EnvSettings {
     required string policy_asset_id = 1;
     required string usdt_asset_id = 2;
@@ -496,6 +511,13 @@ message From {
     }
   }
 
+  message CreatePayjoinResult {
+    oneof result {
+      string error_msg = 1;
+      CreatedPayjoin created_payjoin = 2;
+    }
+  }
+
   message SendResult {
     oneof result {
       string error_msg = 1;
@@ -575,6 +597,10 @@ message From {
     }
   }
 
+  message StartTimer {
+    required string order_id = 1;
+  }
+
   message OrderCreated {
     required Order order = 1;
     required bool new = 2;
@@ -646,29 +672,21 @@ message From {
   }
 
   message JadePorts {
+    enum State {
+      UNINIT = 0;
+      MAIN = 1;
+      TEST = 2;
+    }
+
     message Port {
       required string jade_id = 1;
       required string port = 2;
       required string serial = 3;
+      required string version = 4;
+      required State state = 5;
     }
 
     repeated Port ports = 1;
-  }
-
-  message JadeRegister {
-    required string jade_id = 1;
-
-    oneof result {
-      Empty succeed = 2;
-      string failed = 3;
-    }
-  }
-
-  message JadeLogin {
-    oneof result {
-      Empty succeed = 1;
-      string failed = 2;
-    }
   }
 
   message JadeStatus {
@@ -676,7 +694,12 @@ message From {
       IDLE = 1;
       READ_STATUS = 2;
       AUTH_USER = 3;
+      MASTER_BLINDING_KEY = 5;
+
       SIGN_TX = 4;
+      SIGN_SWAP = 8;
+      SIGN_SWAP_OUTPUT = 6;
+      SIGN_OFFLINE_SWAP = 7;
     }
     required Status status = 1;
   }
@@ -688,6 +711,8 @@ message From {
   }
 
   oneof msg {
+    Login login = 17;
+    Empty logout = 16;
     EnvSettings env_settings = 13;
     RegisterAmp register_amp = 8;
     UpdatedTxs updated_txs = 1;
@@ -701,7 +726,6 @@ message From {
     PriceUpdate price_update = 6;
     Empty wallet_loaded = 7;
     Empty sync_complete = 14;
-    Empty logout = 16;
 
     EncryptPin encrypt_pin = 10;
     DecryptPin decrypt_pin = 11;
@@ -713,6 +737,7 @@ message From {
 
     RecvAddress recv_address = 30;
     CreateTxResult create_tx_result = 31;
+    CreatePayjoinResult create_payjoin_result = 34;
     SendResult send_result = 32;
     BlindedValues blinded_values = 33;
 
@@ -731,6 +756,7 @@ message From {
     SubmitResult submit_result = 52;
     GenericResponse edit_order = 53;
     GenericResponse cancel_order = 54;
+    StartTimer start_timer = 56;
 
     Empty server_connected = 60;
     Empty server_disconnected = 61;
@@ -747,8 +773,6 @@ message From {
     MarketDataUpdate market_data_update = 71;
 
     JadePorts jade_ports = 80;
-    JadeRegister jade_register = 81;
-    JadeLogin jade_login = 82;
     JadeStatus jade_status = 83;
 
     GaidStatus gaid_status = 91;

@@ -1,24 +1,26 @@
 [package]
 name = "sideswap_common"
 version = "0.1.2"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-sideswap_api = { version = "*", path = "../sideswap_api" }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = { version = "1.0", features = ["arbitrary_precision"] }
-anyhow = "*"
-log = "*"
-async-tungstenite = { version = "0.17.2", features = ["tokio-runtime", "tokio-rustls-webpki-roots"] }
-futures = "*"
-futures-util = "*"
-tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
-tungstenite = { version = "0.17.2", default-features = false, features = [] }
-derive_more = "*"
-bitcoin = { version = "0.27" }
-elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "0edddf730ff8fd441d3af28bc600b8bc8a8df5a9", features = ["serde-feature"] }
-rand = "0.7.3"
-crossbeam-channel = "0.5.1"
+sideswap_api = { path = "../sideswap_api" }
+
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true, features = ["arbitrary_precision"] }
+anyhow.workspace = true
+log.workspace = true
+tokio-tungstenite = { workspace = true, features = [ "stream", "rustls-tls-webpki-roots" ] }
+futures.workspace = true
+futures-util.workspace = true
+tokio = { workspace = true, features = ["macros", "net", "rt", "sync", "time"] }
+tungstenite = { workspace = true, default-features = false, features = [] }
+derive_more.workspace = true
+bitcoin = { workspace = true }
+elements = { workspace = true, features = ["serde"] }
+rand.workspace = true
+crossbeam-channel.workspace = true
+tokio-socks.workspace = true
 
 [dev-dependencies]
-hex = "*"
+hex.workspace = true

@@ -1,0 +1,8 @@
+[package]
+name = "sideswap_types"
+version = "0.1.2"
+edition = "2021"
+
+[dependencies]
+elements = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }

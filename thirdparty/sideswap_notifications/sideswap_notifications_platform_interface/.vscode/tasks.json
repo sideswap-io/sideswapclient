@@ -1,0 +1,44 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "flutter",
+            "command": "flutter",
+            "args": [
+                "pub",
+                "get"
+            ],
+            "problemMatcher": [],
+            "label": "Sideswap: flutter pub get",
+            "dependsOrder": "sequence",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "type": "flutter",
+            "command": "dart",
+            "args": [
+                "run",
+                "build_runner",
+                "build",
+                "--delete-conflicting-outputs"
+            ],
+            "problemMatcher": [
+                "$dart-build_runner"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "label": "Sideswap: flutter pub run build_runner build",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Sideswap: flutter pub get"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+    ]
+}

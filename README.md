@@ -1,5 +1,4 @@
-SideSwap client
-===============
+# SideSwap client
 
 SideSwap is released under the terms of the GNU General Public License. See [LICENSE](LICENSE) for more information.
 
@@ -11,19 +10,31 @@ Dealer example: [doc/dealer.md](doc/dealer.md).
 
 API reference: [https://sideswap.io/docs/](https://sideswap.io/docs/).
 
-SideSwap client uses [GDK library](https://github.com/Blockstream/gdk) and [libwally-core](https://github.com/ElementsProject/libwally-core) from Blockstream.
+SideSwap client uses [GDK library](https://github.com/Blockstream/gdk) from Blockstream.
 
-Build instruction
-=================
+# Android build instructions
 
-To build our flutter client on Windows please make sure symlinks are enabled:
+Run app with gcm enabled:
+flutter run -t .\lib\main.dart --flavor full
+without:
+flutter run -t .\lib\main_fdroid.dart --flavor fdroid
 
-- Enable "Developer Mode" (this will also allow make symlinks on Windows)
+Build app with gcm:
+flutter build apk --split-per-abi run -t .\lib\main.dart --flavor full
+without:
+flutter build apk --split-per-abi run -t .\lib\main_fdroid.dart --flavor fdroid
 
-- Enable symlinks in Git
+apk output directory
+full: sideswap\build\app\outputs\apk\full\release
+fdroid: sideswap\build\app\outputs\apk\fdroid\release
 
-```
-$ git config --global core.symlinks true
-```
+# Sideswap client and gdk library paths
 
-The repo should be cloned anew.
+Android:
+sideswap/android/app/src/main/jniLibs
+
+iOS/macos:
+Open runner and add (if missing) lgreenaddress_full.a
+
+Windows/linux
+add dynamic library to executable folder

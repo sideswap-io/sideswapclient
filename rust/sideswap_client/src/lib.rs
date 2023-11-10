@@ -3,12 +3,10 @@ extern crate log;
 #[macro_use]
 extern crate anyhow;
 
-mod envs;
 pub mod ffi;
-mod gdk_cpp;
-mod gdk_jade;
-mod gdk_rust;
 mod gdk_ses;
+mod gdk_ses_impl;
+mod gdk_ses_jade;
 mod jade_mng;
 mod models;
 mod pin;

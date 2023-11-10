@@ -56,18 +56,18 @@ fn main() {
     send_msg(
         client,
         to::Msg::Login(to::Login {
-            mnemonic: args.mnemonic.clone(),
-            phone_key: None,
+            wallet: Some(to::login::Wallet::Mnemonic(args.mnemonic.clone())),
             network: NetworkSettings {
                 selected: Some(network_settings::Selected::Sideswap(Empty {})),
             },
-            desktop: false,
+            phone_key: None,
             send_utxo_updates: None,
+            force_auto_sign_maker: None,
         }),
     );
 
     let usdt_asset_id =
-        sideswap_api::AssetId::from_str(&args.env.data().network.usdt_asset_id()).unwrap();
+        sideswap_api::AssetId::from_str(args.env.data().network.usdt_asset_id()).unwrap();
     let mut usdt_index_price = None;
 
     let mut asset_data = args

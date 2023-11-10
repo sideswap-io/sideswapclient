@@ -1,5 +1,6 @@
-use elements as elements_pset;
 use std::str::FromStr;
+
+use bitcoin::hashes::Hash;
 
 pub const SERVER_FEE_SHARE: f64 = 0.002;
 pub const SERVER_FEE_MIN: i64 = 200;
@@ -58,50 +59,47 @@ pub fn get_output(
     asset: &sideswap_api::AssetId,
     amount: i64,
     blinder_index: u32,
-) -> Result<elements_pset::pset::Output, anyhow::Error> {
-    let addr = elements_pset::Address::parse_with_params(addr, env.elements_params_pset())?;
+) -> Result<elements::pset::Output, anyhow::Error> {
+    let addr = elements::Address::parse_with_params(addr, env.elements_params())?;
     let blinding_pubkey = addr
         .blinding_pubkey
         .ok_or_else(|| anyhow!("only blinded addresses allowed"))?;
     ensure!(amount > 0);
 
-    let txout = elements_pset::TxOut {
-        asset: elements_pset::confidential::Asset::Explicit(
-            elements_pset::AssetId::from_slice(&asset.0).unwrap(),
-        ),
-        value: elements_pset::confidential::Value::Explicit(amount as u64),
-        nonce: elements_pset::confidential::Nonce::Confidential(blinding_pubkey),
+    let txout = elements::TxOut {
+        asset: elements::confidential::Asset::Explicit(*asset),
+        value: elements::confidential::Value::Explicit(amount as u64),
+        nonce: elements::confidential::Nonce::Confidential(blinding_pubkey),
         script_pubkey: addr.script_pubkey(),
-        witness: elements_pset::TxOutWitness::default(),
+        witness: elements::TxOutWitness::default(),
     };
-    let mut output = elements_pset::pset::Output::from_txout(txout);
+    let mut output = elements::pset::Output::from_txout(txout);
     output.blinding_key =
-        Some(elements_pset::bitcoin::PublicKey::from_str(&blinding_pubkey.to_string()).unwrap());
+        Some(elements::bitcoin::PublicKey::from_str(&blinding_pubkey.to_string()).unwrap());
     output.blinder_index = Some(blinder_index);
     Ok(output)
 }
 
 // Copied from GDK
 pub fn internal_sign_elements(
-    secp: &elements_pset::secp256k1_zkp::Secp256k1<elements_pset::secp256k1_zkp::All>,
-    tx: &elements_pset::Transaction,
+    secp: &elements::secp256k1_zkp::Secp256k1<elements::secp256k1_zkp::All>,
+    tx: &elements::Transaction,
     input_index: usize,
-    private_key: &elements_pset::bitcoin::util::key::PrivateKey,
-    value: elements_pset::confidential::Value,
-    sighash_type: elements_pset::SigHashType,
+    private_key: &elements::bitcoin::PrivateKey,
+    value: elements::confidential::Value,
+    sighash_type: elements::EcdsaSigHashType,
 ) -> Vec<u8> {
-    let public_key =
-        &elements_pset::bitcoin::util::key::PublicKey::from_private_key(&secp, private_key);
+    let public_key = &elements::bitcoin::PublicKey::from_private_key(secp, private_key);
     let script_code = p2pkh_script(public_key);
-    let sighash = elements_pset::sighash::SigHashCache::new(tx).segwitv0_sighash(
+    let sighash = elements::sighash::SigHashCache::new(tx).segwitv0_sighash(
         input_index,
         &script_code,
         value,
         sighash_type,
     );
 
-    let message = elements_pset::secp256k1_zkp::Message::from_slice(&sighash[..]).unwrap();
-    let signature = secp.sign(&message, &private_key.key);
+    let message = elements::secp256k1_zkp::Message::from_slice(&sighash[..]).unwrap();
+    let signature = secp.sign_ecdsa(&message, &private_key.inner);
     let mut signature = signature.serialize_der().to_vec();
     signature.push(sighash_type.as_u32() as u8);
 
@@ -109,29 +107,24 @@ pub fn internal_sign_elements(
 }
 
 // Copied from GDK
-pub fn p2pkh_script(pk: &elements_pset::bitcoin::PublicKey) -> elements_pset::Script {
-    elements_pset::Address::p2pkh(pk, None, &elements_pset::address::AddressParams::ELEMENTS)
-        .script_pubkey()
+pub fn p2pkh_script(pk: &elements::bitcoin::PublicKey) -> elements::Script {
+    elements::Address::p2pkh(pk, None, &elements::address::AddressParams::ELEMENTS).script_pubkey()
 }
 
 // Copied from GDK
-pub fn p2shwpkh_redeem_script(
-    public_key: &elements_pset::bitcoin::util::key::PublicKey,
-) -> elements_pset::bitcoin::Script {
-    use elements_pset::bitcoin::hashes::Hash;
-    elements_pset::bitcoin::blockdata::script::Builder::new()
+pub fn p2shwpkh_redeem_script(public_key: &elements::bitcoin::PublicKey) -> elements::Script {
+    elements::script::Builder::new()
         .push_int(0)
         .push_slice(
-            &elements_pset::bitcoin::hash_types::PubkeyHash::hash(&public_key.to_bytes())[..],
+            &elements::bitcoin::hash_types::PubkeyHash::hash(&public_key.to_bytes())
+                .to_byte_array(),
         )
         .into_script()
 }
 
 // Copied from GDK
-pub fn p2shwpkh_script_sig(
-    public_key: &elements_pset::bitcoin::util::key::PublicKey,
-) -> elements_pset::Script {
-    elements_pset::script::Builder::new()
+pub fn p2shwpkh_script_sig(public_key: &elements::bitcoin::PublicKey) -> elements::Script {
+    elements::script::Builder::new()
         .push_slice(p2shwpkh_redeem_script(public_key).as_bytes())
         .into_script()
 }

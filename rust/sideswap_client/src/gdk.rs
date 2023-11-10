@@ -106,10 +106,10 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Validate a gdk format JSON document.\n\n :param session: The session to use.\n :param details: The :ref:`validate-details` to validate.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`validate-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
+    #[doc = " Validate a gdk format JSON document.\n\n :param session: The session to use.\n :param details: The :ref:`validate-details` to validate.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`validate-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call\ncompletes."]
     pub fn GA_validate(
         session: *mut GA_session,
-        details: *const GA_json,
+        details: *mut GA_json,
         call: *mut *mut GA_auth_handler,
     ) -> ::std::os::raw::c_int;
 }
@@ -202,7 +202,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Get a new address to receive coins to.\n\n :param session: The session to use.\n :param details: :ref:`receive-address-details`.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
+    #[doc = " Get a new address to receive coins to.\n\n :param session: The session to use.\n :param details: :ref:`receive-address-request`.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`receive-address-details`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
     pub fn GA_get_receive_address(
         session: *mut GA_session,
         details: *mut GA_json,
@@ -226,13 +226,11 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Get the unspent transaction outputs associated with a non-wallet private key.\n\n :param session: The session to use.\n :param key: The private key in WIF or BIP 38 format.\n :param password: The password the key is encrypted with, if any.\n :param unused: unused, must be 0\n :param utxos: Destination for the returned utxos (same format as :ref:`tx-list`).\n|     Returned GA_json should be freed using `GA_destroy_json`.\n\n .. note:: Neither the private key or its derived public key are transmitted."]
+    #[doc = " Get the unspent transaction outputs associated with a non-wallet private key.\n\n :param session: The session to use.\n :param details: :ref:`unspent-outputs-private-request` detailing the private key to check.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`unspent-outputs`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: Neither the private key or its derived public key are sent to any third party for this call."]
     pub fn GA_get_unspent_outputs_for_private_key(
         session: *mut GA_session,
-        private_key: *const ::std::os::raw::c_char,
-        password: *const ::std::os::raw::c_char,
-        unused: u32,
-        utxos: *mut *mut GA_json,
+        details: *mut GA_json,
+        call: *mut *mut GA_auth_handler,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
@@ -275,7 +273,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Encrypt json with server provided key protected by a PIN.\n\n :param session: The session to use.\n :param details: The :ref:`encrypt-with-pin-details` to encrypt.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`encrypt-with-pin-result` which the caller should persist.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
+    #[doc = " Encrypt JSON with a server provided key protected by a PIN.\n\n :param session: The session to use.\n :param details: The :ref:`encrypt-with-pin-details` to encrypt.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`encrypt-with-pin-result` which the caller should persist.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
     pub fn GA_encrypt_with_pin(
         session: *mut GA_session,
         details: *mut GA_json,
@@ -283,7 +281,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Decrypt json **with server provided key protected by a PIN.\n\n :param session: The session to use.\n :param details: The :ref:`decrypt-with-pin-details` to decrypt.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is the decrypted json.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
+    #[doc = " Decrypt JSON with a server provided key protected by a PIN.\n\n :param session: The session to use.\n :param details: The :ref:`decrypt-with-pin-details` to decrypt.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is the decrypted JSON.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
     pub fn GA_decrypt_with_pin(
         session: *mut GA_session,
         details: *mut GA_json,
@@ -303,7 +301,15 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Sign the user's inputs to a transaction.\n\n :param session: The session to use.\n :param transaction_details: The :ref:`sign-tx-details` for signing, previously returned from GA_create_transaction.\n :param call: Destination for the resulting GA_auth_handler to perform the signing.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``transaction_details`` will be emptied when the call completes."]
+    #[doc = " Blind a transaction.\n\n :param session: The session to use.\n :param transaction_details: The :ref:`create-tx-details` for blinding.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``transaction_details`` will be emptied when the call completes."]
+    pub fn GA_blind_transaction(
+        session: *mut GA_session,
+        transaction_details: *mut GA_json,
+        call: *mut *mut GA_auth_handler,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Sign the user's inputs to a transaction.\n\n :param session: The session to use.\n :param transaction_details: The :ref:`sign-tx-details` for signing, as previously\n|     returned from `GA_create_transaction` or (for Liquid) `GA_blind_transaction`.\n :param call: Destination for the resulting GA_auth_handler to perform the signing.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``transaction_details`` will be emptied when the call completes."]
     pub fn GA_sign_transaction(
         session: *mut GA_session,
         transaction_details: *mut GA_json,
@@ -565,6 +571,22 @@ extern "C" {
     pub fn GA_twofactor_change_limits(
         session: *mut GA_session,
         limit_details: *mut GA_json,
+        call: *mut *mut GA_auth_handler,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Encode CBOR into (potentially multi-part) UR-encoding.\n\n :param session: The session to use.\n :param details: :ref:`bcur-encode` containing the CBOR data to encode.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`bcur-encoded`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
+    pub fn GA_bcur_encode(
+        session: *mut GA_session,
+        details: *mut GA_json,
+        call: *mut *mut GA_auth_handler,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
+    #[doc = " Decode (potentially multi-part) UR-encoded data to CBOR.\n\n :param session: The session to use.\n :param details: :ref:`bcur-decode` containing the the first URI to decode.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`bcur-decoded`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n For multi-part data, the call hander will request further parts using\n ``\"request_code\"`` with a method of ``\"data\"``. see: `auth-handler-status`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
+    pub fn GA_bcur_decode(
+        session: *mut GA_session,
+        details: *mut GA_json,
         call: *mut *mut GA_auth_handler,
     ) -> ::std::os::raw::c_int;
 }

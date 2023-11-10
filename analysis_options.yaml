@@ -1,0 +1,16 @@
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  plugins:
+    - custom_lint
+  language:
+    strict-casts: true
+    strict-raw-types: true
+  exclude:
+    - "lib/side_swap_client_ffi.dart"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    invalid_use_of_visible_for_testing_member: error
+    implicit_dynamic_parameter: warning
+    invalid_annotation_target: ignore

@@ -1,39 +1,36 @@
 [package]
 name = "sideswap_dealer_bitfinex"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-sideswap_api = { version = "*", path = "../sideswap_api" }
-sideswap_common = { version = "*", path = "../sideswap_common" }
-sideswap_dealer = { version = "*", path = "../sideswap_dealer" }
-clap = "*"
-log = "*"
-log4rs = { version = "*", features = ["gzip"] }
-serde_json = "*"
-reqwest = { version = "*", default-features = false, features = ["blocking", "json", "rustls-tls"] }
-anyhow = "*"
-serde = { version = "1.0", features = ["derive"] }
-config = "0.11.0"
-tungstenite = { version = "0.17.2", default-features = false, features = [] }
-url = "*"
-async-tungstenite = { version = "0.17.2", features = ["async-std-runtime", "async-tls"] }
-async-std = "*"
-async-tls = "*"
-rustls = { version = "*", features = ["dangerous_configuration"] }
-futures = "*"
-futures-util = "*"
-webpki = "*"
-tokio = { version = "1.15.0", default-features = false, features = ["macros", "net", "rt", "sync", "time"] }
-prost = "0.10.4"
-libc = "*"
-signal-hook = "*"
-hyper = { version = "*", features = ["server"] }
-elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "0edddf730ff8fd441d3af28bc600b8bc8a8df5a9", features = ["serde-feature"] }
-base64 = "*"
-hex = "*"
-rand = "0.7.3"
-crossbeam-channel = "0.5.1"
+sideswap_api = { path = "../sideswap_api" }
+sideswap_common = { path = "../sideswap_common" }
+sideswap_dealer = { path = "../sideswap_dealer" }
+
+anyhow.workspace = true
+tokio-tungstenite = { workspace = true, features = [ "stream" ] }
+base64.workspace = true
+clap.workspace = true
+config.workspace = true
+crossbeam-channel.workspace = true
+elements = { workspace = true, features = ["serde"] }
+futures-util.workspace = true
+futures.workspace = true
+hex.workspace = true
+hyper = { workspace = true, features = ["server"] }
+libc.workspace = true
+log.workspace = true
+log4rs = { workspace = true, features = ["gzip"] }
+prost.workspace = true
+rand.workspace = true
+reqwest = { workspace = true, default-features = false, features = ["blocking", "json", "rustls-tls"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+signal-hook.workspace = true
+tokio = { workspace = true, features = ["macros", "net", "rt", "sync", "time"] }
+tungstenite = { workspace = true, default-features = false, features = [] }
+url.workspace = true
 
 [build-dependencies]
-prost-build = "0.10.4"
+prost-build.workspace = true

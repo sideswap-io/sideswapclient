@@ -34,7 +34,7 @@ fn make_rpc_impl(
 ) -> Result<(String, reqwest::StatusCode), anyhow::Error> {
     let endpoint = format!("http://{}:{}", &rpc_server.host, rpc_server.port);
     let res = http_client
-        .post(&endpoint)
+        .post(endpoint)
         .basic_auth(&rpc_server.login, Some(&rpc_server.password))
         .json(&req)
         .send()?;
@@ -48,7 +48,7 @@ pub fn make_rpc(
     rpc_server: &RpcServer,
     req: &RpcRequest,
 ) -> Result<(String, reqwest::StatusCode), anyhow::Error> {
-    make_rpc_impl(http_client, &rpc_server, &req)
+    make_rpc_impl(http_client, rpc_server, req)
 }
 
 pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
@@ -56,7 +56,7 @@ pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
     rpc_server: &RpcServer,
     req: &RpcRequest,
 ) -> Result<T, anyhow::Error> {
-    let response = make_rpc(&http_client, &rpc_server, &req)?;
+    let response = make_rpc(http_client, rpc_server, req)?;
     let response = serde_json::from_str::<RpcResult<T>>(&response.0)?;
     if let Some(error) = response.error {
         error!("rpc failed: {}", error.message);
@@ -223,18 +223,18 @@ pub fn listunspent(minconf: i32) -> RpcRequest {
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UnspentItem {
-    pub txid: sideswap_api::Txid,
+    pub txid: elements::Txid,
     pub vout: u32,
     pub address: String,
     pub amount: serde_json::Number,
     pub confirmations: i32,
     pub asset: sideswap_api::AssetId,
     #[serde(rename = "scriptPubKey")]
-    pub script_pub_key: String,
+    pub script_pub_key: elements::Script,
     #[serde(rename = "redeemScript")]
-    pub redeem_script: Option<String>,
-    pub assetblinder: Option<sideswap_api::BlindingFactor>,
-    pub amountblinder: Option<sideswap_api::BlindingFactor>,
+    pub redeem_script: Option<elements::Script>, // Not present for native segwit
+    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
+    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
     pub assetcommitment: Option<String>,
     pub amountcommitment: Option<String>,
 }
@@ -243,7 +243,7 @@ pub type ListUnspent = Vec<UnspentItem>;
 impl UnspentItem {
     pub fn tx_out(&self) -> sideswap_common::types::TxOut {
         sideswap_common::types::TxOut {
-            txid: self.txid.clone(),
+            txid: self.txid,
             vout: self.vout,
         }
     }
@@ -316,7 +316,7 @@ pub struct GetAddressInfo {
     pub solvable: bool,
 }
 
-pub fn get_raw_transaction(txid: &sideswap_api::Txid) -> RpcRequest {
+pub fn get_raw_transaction(txid: &elements::Txid) -> RpcRequest {
     RpcRequest {
         method: "getrawtransaction".to_owned(),
         params: vec![serde_json::json!(txid)],

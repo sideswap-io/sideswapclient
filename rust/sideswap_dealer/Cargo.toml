@@ -1,18 +1,19 @@
 [package]
 name = "sideswap_dealer"
 version = "0.1.2"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-sideswap_api = { version = "*", path = "../sideswap_api" }
-sideswap_common = { version = "*", path = "../sideswap_common" }
-log = "*"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-reqwest = { version = "*", default-features = false, features = ["blocking", "json", "rustls-tls"] }
-anyhow = "*"
-elements = { git = "https://github.com/ElementsProject/rust-elements", rev = "0edddf730ff8fd441d3af28bc600b8bc8a8df5a9", features = ["serde-feature"] }
-base64 = "*"
-hex = "*"
-rand = "0.7.3"
-crossbeam-channel = "0.5.1"
+sideswap_api = { path = "../sideswap_api" }
+sideswap_common = { path = "../sideswap_common" }
+
+anyhow.workspace = true
+base64.workspace = true
+crossbeam-channel.workspace = true
+elements = { workspace = true, features = ["serde"] }
+hex.workspace = true
+log.workspace = true
+rand.workspace = true
+reqwest = { workspace = true, default-features = false, features = ["blocking", "json", "rustls-tls"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true

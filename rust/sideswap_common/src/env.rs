@@ -1,5 +1,3 @@
-use elements as elements_pset;
-
 #[derive(Debug, Eq, PartialEq, Copy, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Env {
     Prod,
@@ -41,19 +39,24 @@ impl Env {
             Env::Regtest | Env::Local => &elements::address::AddressParams::ELEMENTS,
         }
     }
+}
 
-    pub fn elements_params_pset(&self) -> &'static elements_pset::AddressParams {
-        match *self {
-            Env::Prod | Env::Staging | Env::LocalLiquid => {
-                &elements_pset::address::AddressParams::LIQUID
-            }
-            Env::Testnet | Env::LocalTestnet => &LIQUID_TESTNET_PSET,
-            Env::Regtest | Env::Local => &elements_pset::address::AddressParams::ELEMENTS,
-        }
+impl EnvData {
+    pub fn base_server_url(&self) -> String {
+        let protocol = if self.use_tls { "https" } else { "http" };
+        format!("{}://{}:{}", protocol, self.host, self.port)
     }
 }
 
 impl Network {
+    pub fn elements_params(&self) -> &'static elements::AddressParams {
+        match *self {
+            Network::Mainnet => &elements::address::AddressParams::LIQUID,
+            Network::Testnet => &elements::address::AddressParams::LIQUID_TESTNET,
+            Network::Regtest | Network::Local => &elements::address::AddressParams::ELEMENTS,
+        }
+    }
+
     pub fn usdt_asset_id(&self) -> &'static str {
         match self {
             Network::Mainnet => "ce091c998b83c78bb71a632313ba3760f1763d9cfcffae02258ffa9865a37bd2",
@@ -71,6 +74,23 @@ impl Network {
             Network::Local => "92e71c513e2d1b2e421200beb1dabb231c12b5d2c53438648e09859909c0f9b7",
         }
     }
+
+    pub fn bitcoin_network(&self) -> bitcoin::Network {
+        match self {
+            Network::Mainnet => bitcoin::Network::Bitcoin,
+            Network::Testnet => bitcoin::Network::Testnet,
+            Network::Regtest | Network::Local => bitcoin::Network::Regtest,
+        }
+    }
+
+    pub fn single_sig_account_path(&self) -> [u32; 3] {
+        match self {
+            Network::Mainnet => [0x80000031, 0x800006F0, 0x80000000],
+            Network::Testnet | Network::Regtest | Network::Local => {
+                [0x80000031, 0x80000001, 0x80000000]
+            }
+        }
+    }
 }
 
 pub const LIQUID_TESTNET: elements::AddressParams = elements::AddressParams {
@@ -81,7 +101,7 @@ pub const LIQUID_TESTNET: elements::AddressParams = elements::AddressParams {
     blech_hrp: "tlq",
 };
 
-pub const LIQUID_TESTNET_PSET: elements_pset::AddressParams = elements_pset::AddressParams {
+pub const LIQUID_TESTNET_PSET: elements::AddressParams = elements::AddressParams {
     p2pkh_prefix: 36,
     p2sh_prefix: 19,
     blinded_prefix: 23,

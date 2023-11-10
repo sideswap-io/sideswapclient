@@ -3,13 +3,14 @@
 mod module;
 
 pub mod proto {
+    #![allow(non_snake_case)]
     include!(concat!(
         env!("OUT_DIR"),
         "/sideswap.proxy.bitfinex.proto.rs"
     ));
 }
 
-use elements as elements_pset;
+use base64::Engine;
 
 #[allow(non_snake_case)]
 extern "C" {
@@ -64,7 +65,7 @@ extern crate futures;
 
 const MAX_RATIO_UPDATE_NOTIFICATION: f64 = 0.05;
 
-const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
+const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
 const PRICE_EXPIRED: std::time::Duration = std::time::Duration::from_secs(300);
 
@@ -327,7 +328,7 @@ fn process_cli_client(
 ) -> Result<(), anyhow::Error> {
     let mut websocket = tungstenite::accept(stream)?;
     loop {
-        let msg = match websocket.read_message() {
+        let msg = match websocket.read() {
             Ok(v) => v,
             Err(_) => return Ok(()),
         };
@@ -346,7 +347,7 @@ fn process_cli_client(
             };
             let resp = resp_rx.recv().unwrap();
             let resp = serde_json::to_string(&resp).unwrap();
-            websocket.write_message(tungstenite::protocol::Message::Text(resp))?;
+            websocket.write(tungstenite::protocol::Message::Text(resp))?;
         }
     }
 }
@@ -435,7 +436,7 @@ fn get_exchange_ticker(ticker: &ExchangeTicker, args: &Args) -> Option<DealerTic
 
 fn hedge_order(
     args: &Args,
-    txid: &Txid,
+    txid: &elements::Txid,
     dealer_ticker: DealerTicker,
     bitcoin_amount: Amount,
     send_bitcoins: bool,
@@ -480,7 +481,7 @@ fn hedge_order(
             txid, signed_bitcoin_amount, bookname, cid
         );
         send_msg(
-            &mod_tx,
+            mod_tx,
             proto::to::Msg::OrderSubmit(proto::to::OrderSubmit {
                 cid,
                 amount: signed_bitcoin_amount,
@@ -560,6 +561,7 @@ fn main() {
         args.server_port,
         args.server_use_tls,
         false,
+        None,
     );
     let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<Result<Response, Error>>();
 
@@ -645,7 +647,7 @@ fn main() {
         }
     });
 
-    let secp = elements_pset::secp256k1_zkp::Secp256k1::new();
+    let secp = elements::secp256k1_zkp::Secp256k1::new();
     let mut assets = Vec::new();
     let mut utxos = Utxos::new();
     let mut server_status = None;
@@ -673,7 +675,7 @@ fn main() {
     .collect::<BTreeMap<_, _>>();
     let book_tickers = book_names
         .iter()
-        .map(|(ticker, book)| (book.clone(), ticker.clone()))
+        .map(|(ticker, book)| (book.clone(), *ticker))
         .collect::<BTreeMap<_, _>>();
 
     let rpc_http_client = reqwest::blocking::Client::builder()
@@ -745,7 +747,7 @@ fn main() {
                         send_request,
                         PriceUpdateBroadcast,
                         PriceUpdateBroadcast {
-                            asset: asset.asset_id.clone(),
+                            asset: asset.asset_id,
                             price: price_new,
                         }
                     );
@@ -774,7 +776,7 @@ fn main() {
                         error!("broadcast price failed: {}", e);
                     }
                 }
-                broadcast_timestamps.insert(ticker.clone(), now);
+                broadcast_timestamps.insert(*ticker, now);
             }
         }
 
@@ -808,7 +810,7 @@ fn main() {
                     send_request!(send_request, Login, LoginRequest { session_id: None })
                         .expect("subscribing to order list failed");
                 for order in subscribe_resp.orders {
-                    orders.insert(order.order_id.clone(), order);
+                    orders.insert(order.order_id, order);
                 }
 
                 server_status = Some(
@@ -831,7 +833,7 @@ fn main() {
                 Notification::ServerStatus(status) => server_status = Some(status),
 
                 Notification::OrderCreated(order) if order.own.is_none() => {
-                    orders.insert(order.order_id.clone(), order);
+                    orders.insert(order.order_id, order);
                     msg_tx.send(Msg::Timer).unwrap();
                 }
                 Notification::OrderRemoved(order) => {
@@ -858,13 +860,13 @@ fn main() {
                         })
                         .collect();
 
-                    let recv_addr = make_rpc_call::<String>(
+                    let recv_addr = make_rpc_call::<elements::Address>(
                         &rpc_http_client,
                         &args.rpc,
                         &rpc::get_new_address(),
                     )
                     .expect("getting new address failed");
-                    let change_addr = make_rpc_call::<String>(
+                    let change_addr = make_rpc_call::<elements::Address>(
                         &rpc_http_client,
                         &args.rpc,
                         &rpc::get_new_address(),
@@ -875,7 +877,7 @@ fn main() {
                         send_request,
                         StartSwapDealer,
                         StartSwapDealerRequest {
-                            order_id: data.order_id.clone(),
+                            order_id: data.order_id,
                             inputs,
                             recv_addr,
                             change_addr,
@@ -895,9 +897,13 @@ fn main() {
 
                 Notification::BlindedSwapDealer(data) => {
                     info!("got blinded pset, order_id: {}", data.order_id);
-                    let mut pset = elements_pset::encode::deserialize::<
-                        elements_pset::pset::PartiallySignedTransaction,
-                    >(&base64::decode(&data.pset).unwrap())
+                    let mut pset = elements::encode::deserialize::<
+                        elements::pset::PartiallySignedTransaction,
+                    >(
+                        &base64::engine::general_purpose::STANDARD
+                            .decode(&data.pset)
+                            .unwrap(),
+                    )
                     .expect("parsing pset failed");
                     let swap = instant_swaps.get(&data.order_id).expect("order not found");
 
@@ -936,7 +942,7 @@ fn main() {
                     //         );
                     //         output.value == swap.recv_amount as u64
                     //             && output.asset
-                    //                 == elements_pset::AssetId::from_slice(&swap.recv_asset.0)
+                    //                 == elements::AssetId::from_slice(&swap.recv_asset.0)
                     //                     .unwrap()
                     //     });
                     // if recv_output.is_none() {
@@ -947,7 +953,7 @@ fn main() {
 
                     for (index, input) in tx.input.iter().enumerate() {
                         let tx_out = TxOut {
-                            txid: Txid::from_str(&input.previous_output.txid.to_string()).unwrap(),
+                            txid: input.previous_output.txid,
                             vout: input.previous_output.vout,
                         };
                         if let Some(utxo) = own_inputs.get(&tx_out) {
@@ -958,12 +964,12 @@ fn main() {
                             )
                             .expect("loading priv key failed");
                             let private_key =
-                                elements_pset::bitcoin::PrivateKey::from_str(&priv_key).unwrap();
+                                elements::bitcoin::PrivateKey::from_str(&priv_key).unwrap();
 
                             let value_commitment =
-                                hex::decode(&utxo.item.amountcommitment.as_ref().unwrap()).unwrap();
-                            let value_commitment = elements_pset::encode::deserialize::<
-                                elements_pset::confidential::Value,
+                                hex::decode(utxo.item.amountcommitment.as_ref().unwrap()).unwrap();
+                            let value_commitment = elements::encode::deserialize::<
+                                elements::confidential::Value,
                             >(&value_commitment)
                             .unwrap();
                             let input_sign = sideswap_common::pset::internal_sign_elements(
@@ -972,14 +978,14 @@ fn main() {
                                 index,
                                 &private_key,
                                 value_commitment,
-                                elements_pset::SigHashType::All,
+                                elements::EcdsaSigHashType::All,
                             );
                             let public_key = private_key.public_key(&secp);
                             let pset_input = pset.inputs_mut().get_mut(index).unwrap();
                             pset_input.final_script_sig =
-                                utxo.item.redeem_script.as_ref().map(|s| {
-                                    elements_pset::script::Builder::new()
-                                        .push_slice(&hex::decode(s).unwrap())
+                                utxo.item.redeem_script.as_ref().map(|script| {
+                                    elements::script::Builder::new()
+                                        .push_slice(script.as_bytes())
                                         .into_script()
                                 });
                             pset_input.final_script_witness =
@@ -987,13 +993,13 @@ fn main() {
                         }
                     }
 
-                    let pset = elements_pset::encode::serialize(&pset);
+                    let pset = elements::encode::serialize(&pset);
                     let signed_swap_resp = send_request!(
                         send_request,
                         SignedSwapDealer,
                         SignedSwapDealerRequest {
-                            order_id: data.order_id.clone(),
-                            pset: base64::encode(&pset),
+                            order_id: data.order_id,
+                            pset: base64::engine::general_purpose::STANDARD.encode(&pset),
                         }
                     );
                     if let Err(e) = signed_swap_resp {
@@ -1129,7 +1135,7 @@ fn main() {
                 }
                 for key in old_keys.difference(&new_keys) {
                     debug!("remove consumed utxo: {}/{}", &key.txid, key.vout);
-                    utxos.remove(&key);
+                    utxos.remove(key);
                 }
             }
 
@@ -1180,10 +1186,9 @@ fn main() {
                             timestamp: now,
                         };
                         //debug!("updated price, bid: {}, ask: {}", price.bid, price.ask);
-                        let ticker = book_tickers
+                        let ticker = *book_tickers
                             .get(&book_update.book_name)
-                            .expect("book ticker must be known")
-                            .clone();
+                            .expect("book ticker must be known");
                         let old_module_price = module_prices.insert(ticker, price);
                         dealer_tx
                             .send(To::Price(ToPrice {
@@ -1296,14 +1301,15 @@ fn main() {
                     })
                     .unwrap_or_default();
                 let status = [
-                    (!module_connected).then(|| "ServerOffline"),
-                    (!server_connected).then(|| "ModuleOffline"),
-                    (module_prices.len() != DEALER_TICKERS.len()).then(|| "PriceExpired"),
-                    (balance_wallet_bitcoin < MIN_BALANCE_BITCOIN).then(|| "WalletBitcoinLow"),
-                    (balance_exchange_bitcoin < MIN_BALANCE_BITCOIN).then(|| "ExchangeBitcoinLow"),
-                    (balance_wallet_usdt < MIN_BALANCE_TETHER).then(|| "WalletTetherLow"),
-                    (balance_exchange_usdt < MIN_BALANCE_TETHER).then(|| "ExchangeTetherLow"),
-                    balancing_expired.then(|| "BalancingStuck"),
+                    (!module_connected).then_some("ServerOffline"),
+                    (!server_connected).then_some("ModuleOffline"),
+                    (module_prices.len() != DEALER_TICKERS.len()).then_some("PriceExpired"),
+                    (balance_wallet_bitcoin < MIN_BALANCE_BITCOIN).then_some("WalletBitcoinLow"),
+                    (balance_exchange_bitcoin < MIN_BALANCE_BITCOIN)
+                        .then_some("ExchangeBitcoinLow"),
+                    (balance_wallet_usdt < MIN_BALANCE_TETHER).then_some("WalletTetherLow"),
+                    (balance_exchange_usdt < MIN_BALANCE_TETHER).then_some("ExchangeTetherLow"),
+                    balancing_expired.then_some("BalancingStuck"),
                 ]
                 .iter()
                 .flatten()
@@ -1550,7 +1556,7 @@ fn main() {
                         swap.ticker,
                         swap.bitcoin_amount,
                         swap.send_bitcoins,
-                        &mut &mut balancing_blocked,
+                        &mut balancing_blocked,
                         &mut profit_reports,
                         &wallet_balances,
                         &exchange_balances,

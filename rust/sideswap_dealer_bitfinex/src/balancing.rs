@@ -208,7 +208,7 @@ pub fn process_balancing(
                         .find(|asset| asset.ticker.0 == TICKER_USDT)
                         .expect("must be known");
                     let result = rpc::make_rpc_call::<rpc::SendToAddressResult>(
-                        &rpc_http_client,
+                        rpc_http_client,
                         &args.rpc,
                         &rpc::sendtoaddress_asset(
                             &args.bitfinex_fund_address,
@@ -248,7 +248,7 @@ pub fn process_balancing(
                     && module_connected
                 {
                     send_msg(
-                        &mod_tx,
+                        mod_tx,
                         proto::to::Msg::Withdraw(proto::to::Withdraw {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
@@ -274,7 +274,7 @@ pub fn process_balancing(
                     .unwrap_or_default();
                 if bitcoin_balance >= balancing.amount.to_bitcoin() && module_connected {
                     let result = rpc::make_rpc_call::<rpc::SendToAddressResult>(
-                        &rpc_http_client,
+                        rpc_http_client,
                         &args.rpc,
                         &rpc::sendtoaddress_bitcoin(
                             &args.bitfinex_fund_address,
@@ -312,7 +312,7 @@ pub fn process_balancing(
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {
                     send_msg(
-                        &mod_tx,
+                        mod_tx,
                         proto::to::Msg::Transfer(proto::to::Transfer {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
@@ -354,7 +354,7 @@ pub fn process_balancing(
                     && module_connected
                 {
                     send_msg(
-                        &mod_tx,
+                        mod_tx,
                         proto::to::Msg::Transfer(proto::to::Transfer {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
@@ -380,7 +380,7 @@ pub fn process_balancing(
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {
                     send_msg(
-                        &mod_tx,
+                        mod_tx,
                         proto::to::Msg::Withdraw(proto::to::Withdraw {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
@@ -401,7 +401,7 @@ pub fn process_balancing(
             TransferState::Complete => {
                 info!("balancing complete");
                 storage.balancing = None;
-                save_storage(&storage, &args.storage_path);
+                save_storage(storage, &args.storage_path);
             }
             _ => {}
         }

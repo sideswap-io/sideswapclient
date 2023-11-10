@@ -22,25 +22,6 @@ Make sure `cargo` is available in PATH
 cargo --version
 ```
 
-#### Build libwally-core
-
-Checkout libwally-core from https://github.com/sideswap-io/libwally-core (fix_pset_load branch)
-
-make sure that this installed:
-
-```
-sudo apt-get install build-essential autoconf automake libtool
-```
-
-```bash
-git clone https://github.com/sideswap-io/libwally-core
-cd libwally-core
-git checkout fix_pset_load
-./tools/autogen.sh
-export ANDROID_NDK_ROOT=$HOME/android-sdk/ndk-bundle
-/path/to/sideswapclient/deploy/libwally.sh
-```
-
 #### Clone repository
 
 ```bash

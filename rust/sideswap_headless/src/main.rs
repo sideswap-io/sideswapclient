@@ -38,11 +38,17 @@ async fn main() {
     let matches = clap::App::new("sideswap_headless")
         .arg(clap::Arg::with_name("env_name").required(true))
         .arg(clap::Arg::with_name("work_dir").required(true))
-        .arg(clap::Arg::with_name("listen_address").required(true))
+        .arg(clap::Arg::with_name("tcp_address").required(true))
+        .arg(
+            clap::Arg::with_name("connect")
+                .long("connect")
+                .help("Connect to the specifed TCP address"),
+        )
         .get_matches();
     let env_name = matches.value_of("env_name").unwrap();
     let work_dir = matches.value_of("work_dir").unwrap();
-    let listen_address = matches.value_of("listen_address").unwrap();
+    let tcp_address = matches.value_of("tcp_address").unwrap();
+    let connect = matches.is_present("connect");
 
     let env = match env_name {
         "prod" => sideswap_client::ffi::SIDESWAP_ENV_PROD,
@@ -62,15 +68,23 @@ async fn main() {
     );
     assert!(client_ptr != 0);
 
-    let listener = tokio::net::TcpListener::bind(listen_address)
-        .await
-        .expect("bind failed");
+    let stream = if connect {
+        let stream = tokio::net::TcpStream::connect(tcp_address).await.unwrap();
+        info!("successfully connected to  {}", tcp_address);
+        stream
+    } else {
+        let listener = tokio::net::TcpListener::bind(tcp_address)
+            .await
+            .expect("bind failed");
 
-    info!("waiting incoming connection on {}", listen_address);
-    let (stream, socket) = listener.accept().await.unwrap();
-    drop(listener);
+        info!("waiting incoming connection on {}", tcp_address);
+        let (stream, socket) = listener.accept().await.unwrap();
+        drop(listener);
+        info!("received a new connection from {}", socket);
 
-    info!("received new conneciton from {}", socket);
+        stream
+    };
+
     let callback = WsCallback::default();
     let ws_stream = accept_hdr_async(stream, callback.clone()).await.unwrap();
     let (sink, mut stream) = ws_stream.split();

@@ -1,7 +1,10 @@
 pub use crate::reader::BufReader;
 
+pub type JadeId = String; // vid+pid+serial
+
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Port {
+    pub jade_id: JadeId,
     pub port_name: String,
     pub serial_number: String,
 }
@@ -18,24 +21,35 @@ pub enum FromPort {
 }
 
 #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
+pub fn get_jade_id(usb_port: &serialport::UsbPortInfo) -> JadeId {
+    let serial_number: &str = match &usb_port.serial_number {
+        Some(serial_number) => serial_number,
+        None => "unknown",
+    };
+    format!(
+        "{:#06x}-{:#06x}-{}",
+        usb_port.vid, usb_port.pid, serial_number
+    )
+}
+
+#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
 impl Handle {
     pub fn ports() -> Result<Vec<Port>, anyhow::Error> {
         Ok(serialport::available_ports()?
             .into_iter()
             .filter_map(|port| match port.port_type {
                 serialport::SerialPortType::UsbPort(usb_port)
+                    // From https://github.com/Blockstream/Jade/tree/master/diy
                     if (usb_port.vid == 0x10C4 && usb_port.pid == 0xEA60)
-                        || (usb_port.vid == 0x1A86 && usb_port.pid == 0x55D4) =>
+                        || (usb_port.vid == 0x1A86 && usb_port.pid == 0x55D4)
+                        || (usb_port.vid == 0x0403 && usb_port.pid == 0x6001)
+                        || (usb_port.vid == 0x1A86 && usb_port.pid == 0x7523) =>
                 {
-                    if let Some(serial_number) = usb_port.serial_number {
-                        Some(Port {
-                            port_name: port.port_name,
-                            serial_number: serial_number,
-                        })
-                    } else {
-                        warn!("no serial number found for usb port {:?}", &usb_port);
-                        None
-                    }
+                    Some(Port {
+                        jade_id: get_jade_id(&usb_port),
+                        port_name: port.port_name,
+                        serial_number: usb_port.serial_number.clone().unwrap_or_default(),
+                    })
                 }
                 _ => None,
             })
@@ -44,9 +58,9 @@ impl Handle {
 
     pub fn new<F>(port: Port, mut callback: F) -> Result<Self, anyhow::Error>
     where
-        F: 'static + Send + FnMut(FromPort) -> (),
+        F: 'static + Send + FnMut(FromPort),
     {
-        debug!("open Jade port {}", port.port_name);
+        debug!("open Jade port {}", port.jade_id);
         let mut port = serialport::new(&port.port_name, 115200)
             .timeout(std::time::Duration::from_millis(50))
             .open()?;
@@ -59,11 +73,29 @@ impl Handle {
 
             debug!("start jade read thread");
 
+            // Drop old data if any
+            loop {
+                match port.read(&mut buffer) {
+                    Ok(bytes) => {
+                        debug!("discard {} bytes: {}", bytes, hex::encode(&buffer[..bytes]));
+                    }
+                    Err(e) if e.kind() == std::io::ErrorKind::TimedOut => {
+                        break;
+                    }
+                    Err(e) => {
+                        error!("fatal reading error: {}", e);
+                        callback(FromPort::FatalError(e.into()));
+                        return;
+                    }
+                }
+            }
+
             loop {
                 loop {
                     let recv_result = receiver.try_recv();
                     match recv_result {
                         Ok(v) => {
+                            debug!("send {} bytes: {}", v.len(), hex::encode(&v));
                             let result = port.write_all(&v);
                             if let Err(e) = result {
                                 callback(FromPort::FatalError(e.into()));
@@ -87,7 +119,11 @@ impl Handle {
 
                 match port.read(&mut buffer) {
                     Ok(bytes) => {
-                        debug!("received {} bytes", bytes);
+                        debug!(
+                            "received {} bytes: {}",
+                            bytes,
+                            hex::encode(&buffer[..bytes])
+                        );
                         reader.append_data(&buffer[..bytes]);
 
                         loop {
@@ -98,7 +134,19 @@ impl Handle {
                                 Ok(v) => {
                                     debug!("recv: {:?}", &v);
                                     let data = reader.remove_read();
-                                    callback(FromPort::Data(data));
+
+                                    let log_message = v
+                                        .as_map()
+                                        .map(|map| {
+                                            map.iter()
+                                                .any(|(key, _value)| key.as_text() == Some("log"))
+                                        })
+                                        .unwrap_or_default();
+                                    if !log_message {
+                                        callback(FromPort::Data(data));
+                                    } else {
+                                        debug!("drop log message");
+                                    }
                                     if reader.size() == 0 {
                                         break;
                                     }

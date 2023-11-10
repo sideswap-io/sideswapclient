@@ -1,4 +1,5 @@
-use sideswap_api::{AssetId, BlindingFactor, Txid};
+use bitcoin::bip32::ExtendedPubKey;
+use sideswap_api::AssetId;
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -7,6 +8,8 @@ pub struct InitConfig {
     pub datadir: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub log_level: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enable_ss_liquid_hww: Option<bool>,
 }
 
 #[derive(Serialize)]
@@ -17,6 +20,12 @@ pub struct GetSubaccountsOpts {
 #[derive(Serialize)]
 pub struct ConnectConfig {
     pub name: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub proxy: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub use_tor: Option<bool>,
 }
 
 #[derive(Serialize)]
@@ -36,7 +45,7 @@ pub struct LoginUserResult {
     pub wallet_hash_id: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Deserialize, Clone, Debug)]
 pub struct Subaccount {
     pub hidden: bool,
     pub name: String,
@@ -46,7 +55,7 @@ pub struct Subaccount {
     pub type_: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct GetSubaccountsResult {
     pub subaccounts: Vec<Subaccount>,
 }
@@ -97,36 +106,59 @@ pub struct UnspentOutputsArgs {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UnspentOutput {
-    pub address_type: String,
-    // pub block_height: u32,
-    pub txhash: Txid,
-    pub pointer: u32,
-    pub pt_idx: u32,
-    pub asset_id: AssetId,
-    pub satoshi: u64,
-    pub amountblinder: Option<BlindingFactor>,
-    pub assetblinder: Option<BlindingFactor>,
     pub subaccount: u32,
-    pub is_internal: bool,
-    pub nonce_commitment: Option<String>,
-    pub confidential: bool,
-    #[serde(rename = "asset_tag")]
-    pub asset_commitment: Option<String>,
-    #[serde(rename = "commitment")]
-    pub value_commitment: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub user_sighash: Option<u8>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub delayed_signature: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub prevout_script: Option<String>,
-}
+    pub address_type: AddressType,
+    pub block_height: Option<u32>,
+    pub txhash: elements::Txid,
+    #[serde(rename = "pt_idx")]
+    pub vout: u32,
+    pub pointer: u32,
 
-pub type UnspentOutputs = std::collections::BTreeMap<AssetId, Vec<UnspentOutput>>;
+    /// Example:
+    /// Single-sig: a9146e9cd3e71b8f0af32068e2fd33c433ac4da5ebaa87
+    /// AMP: 522103cab1a2a707d13ff3fcc9d08f888724e01c37d54ad8e8d9b274cb33eaebe3461321037888f798b59ff4e1122bdf52ad4c541be32ca755311746b67af2bc5e58df188b52ae
+    pub prevout_script: elements::Script,
+
+    pub asset_id: elements::AssetId,
+    pub satoshi: u64,
+    pub is_internal: bool,
+    pub is_blinded: bool,
+    pub is_confidential: Option<bool>, // Not set for unblinded multi-sig outputs
+
+    pub asset_tag: sideswap_types::AssetCommitment,
+    pub commitment: sideswap_types::ValueCommitment,
+    pub amountblinder: elements::confidential::ValueBlindingFactor,
+    pub assetblinder: elements::confidential::AssetBlindingFactor,
+    // Use string because for unblinded single-sig output it's "00"
+    // while for multi-sig it's "000000000000000000000000000000000000000000000000000000000000000000".
+    pub nonce_commitment: String,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub script: Option<elements::Script>, // Present in multi-sig only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub script_type: Option<u32>, // Present in multi-sig only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subtype: Option<u32>, // Present in multi-sig only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_status: Option<u32>, // Present in multi-sig only
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub public_key: Option<elements::bitcoin::PublicKey>, // Present in single-sig only
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_path: Option<Vec<u32>>, // Present in single-sig only
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_sighash: Option<u8>, // Not present normally
+}
 
 #[derive(Deserialize)]
 pub struct UnspentOutputsResult {
-    pub unspent_outputs: UnspentOutputs,
+    pub unspent_outputs: std::collections::BTreeMap<AssetId, Vec<UnspentOutput>>,
+}
+
+#[derive(Deserialize)]
+pub struct UnspentOutputsResultJson {
+    pub unspent_outputs: std::collections::BTreeMap<AssetId, Vec<serde_json::Value>>,
 }
 
 #[derive(Deserialize, Debug, PartialEq, Eq)]
@@ -179,49 +211,75 @@ pub struct RequiredData {
     pub public_keys: Option<Vec<String>>,
 
     // SignTx
-    pub signing_inputs: Option<Vec<SignTxSigningInput>>,
-    pub transaction: Option<SignTxTransaction>,
+    pub is_partial: Option<bool>,
+    pub transaction: Option<String>,
+    pub transaction_inputs: Option<Vec<SignTxSigningInput>>,
     pub transaction_outputs: Option<Vec<SignTxOutput>>,
     // use_ae_protocol is already declared
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SignTxSigningInput {
-    pub ae_host_commitment: String,
-    pub ae_host_entropy: String,
-    pub asset_id: AssetId,
-    pub satoshi: u64,
+    // Set for all
     pub txhash: String,
     pub pt_idx: u32,
-    pub assetblinder: Option<BlindingFactor>,
-    pub amountblinder: Option<BlindingFactor>,
-    pub user_path: Vec<u32>,
-    pub prevout_script: String,
-    pub commitment: String,
+    pub asset_id: AssetId,
+    pub satoshi: u64,
+
+    pub redeem_script: Option<elements::Script>, // Set for all except Jade
+
+    // Set for own inputs only
+    pub address_type: Option<AddressType>,
+    pub ae_host_commitment: Option<String>,
+    pub ae_host_entropy: Option<String>,
+    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
+    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
+    pub asset_tag: Option<String>,
+    pub user_path: Option<Vec<u32>>,
+    pub public_key: Option<elements::bitcoin::PublicKey>,
+    pub prevout_script: Option<String>,
+    pub commitment: Option<String>,
+    pub user_sighash: Option<u8>,
+
+    // Set for non-own inputs only
+    pub skip_signing: Option<bool>,
+    pub value_blind_proof: Option<String>,
+    pub asset_blind_proof: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+pub enum AddressType {
+    /// Single-sig
+    #[serde(rename = "p2sh-p2wpkh")]
+    P2shP2wpkh, // Single-sig
+
+    /// AMP
+    #[serde(rename = "p2wsh")]
+    P2wsh,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SignTxOutput {
+    pub scriptpubkey: String,
+    pub address: Option<String>,
+    pub address_type: Option<AddressType>,
+    pub is_change: Option<bool>,
+    pub is_internal: Option<bool>,
     pub asset_id: AssetId,
     pub satoshi: u64,
-    pub is_fee: bool,
-    pub is_change: bool,
-    pub blinding_key: Option<String>,
-    pub user_path: Option<Vec<u32>>,
-}
 
-#[derive(Deserialize, Debug)]
-pub struct SignTxTransaction {
-    pub transaction: String,
-    pub fee: u64,
+    pub blinding_key: Option<String>,
+    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
+    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
+    pub user_path: Option<Vec<u32>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct TransactionInput {
     pub asset_id: Option<AssetId>,
     pub satoshi: Option<u64>,
-    pub assetblinder: Option<BlindingFactor>,
-    pub amountblinder: Option<BlindingFactor>,
+    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
+    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
     pub is_relevant: bool,
 }
 
@@ -229,19 +287,21 @@ pub struct TransactionInput {
 pub struct TransactionOutput {
     pub asset_id: Option<AssetId>,
     pub satoshi: Option<u64>,
-    pub assetblinder: Option<BlindingFactor>,
-    pub amountblinder: Option<BlindingFactor>,
+    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
+    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
     pub is_relevant: bool,
+    pub is_internal: bool,
+    pub pointer: Option<u32>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Transaction {
-    pub txhash: sideswap_api::Txid,
+    pub txhash: elements::Txid,
     pub block_height: u32,
     pub created_at_ts: i64,
     pub fee: u32,
-    pub transaction_size: u32,
     pub transaction_vsize: u32,
+    pub transaction_weight: u32,
     pub memo: String,
     pub inputs: Vec<TransactionInput>,
     pub outputs: Vec<TransactionOutput>,
@@ -257,15 +317,34 @@ pub type BalanceList = BTreeMap<sideswap_api::AssetId, i64>;
 #[derive(Serialize, Debug)]
 pub struct RecvAddrOpt {
     pub subaccount: i32,
+    pub is_internal: Option<bool>,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct RecvAddrResult {
-    pub address_type: String,
-    pub address: String,
-    pub pointer: u32,
-    pub script: String,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AddressInfo {
+    pub address: elements::Address,
     pub subaccount: u32,
+    pub address_type: AddressType,
+    pub pointer: u32,
+    pub user_path: Vec<u32>,
+    pub unconfidential_address: String,
+    pub blinding_key: String,
+    pub is_confidential: bool,
+    pub scriptpubkey: String, // Same format for all nested segwit addresses, for example: a9145c35160c7cbe5a5a7daec0b2e4dff056991ce4d087
+
+    // Single-sig only:
+    pub is_internal: Option<bool>,
+    pub public_key: Option<elements::bitcoin::PublicKey>,
+
+    // Normally AMP only, example: 52210305b9d4acd4c6cd5a5a9eb5e9a4dcd74a7b962eb0109cab264ea7412d6901bfa42102945512944638fe25e24962866d19ec858fdc70dd5a68ae801d54b5c36231f2e652ae
+    pub script: Option<elements::Script>,
+    pub branch: Option<u32>,
+    pub script_type: Option<u32>,
+    pub service_xpub: Option<String>,
+    pub subtype: Option<u32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tx_count: Option<u32>, // Set only from GA_get_previous_addresses
 }
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -273,6 +352,19 @@ pub struct TxAddressee {
     pub address: String,
     pub satoshi: u64,
     pub asset_id: AssetId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_greedy: Option<bool>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct TxInternalAddressee {
+    #[serde(flatten)]
+    pub address_info: AddressInfo,
+
+    pub satoshi: u64,
+    pub asset_id: AssetId,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_greedy: Option<bool>,
 }
 
 #[derive(Serialize, Debug)]
@@ -280,40 +372,49 @@ pub struct CreateTransactionOpt {
     pub subaccount: i32,
     pub addressees: Vec<TxAddressee>,
     pub utxos: BTreeMap<AssetId, Vec<UnspentOutput>>,
-    pub send_all: bool,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub utxo_strategy: Option<gdk_common::model::UtxoStrategy>,
-    pub is_partial: Option<bool>,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub utxo_strategy: Option<gdk_common::model::UtxoStrategy>,
+    pub is_partial: bool,
     pub used_utxos: Option<Vec<UnspentOutput>>,
+}
+
+#[derive(Serialize, Debug)]
+pub struct CreateInternalTransactionOpt {
+    pub subaccount: i32,
+    pub addressees: Vec<TxInternalAddressee>,
+    pub utxos: BTreeMap<AssetId, Vec<UnspentOutput>>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct CreateTransactionResult {
     pub addressees: Vec<TxAddressee>,
     pub transaction_outputs: Vec<CreatedTransactionOutput>,
-    pub transaction: String,
+    pub transaction: Option<sideswap_types::Transaction>,
     pub fee: Option<u64>,
+    pub fee_rate: Option<u64>,
+    pub transaction_vsize: Option<u64>,
+    pub transaction_weight: Option<u64>,
     pub error: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct CreatedTransactionOutput {
     pub address: Option<String>,
-    pub asset_id: Option<AssetId>, // Mandatory in GDK c++, missing in GDK rust
+    pub asset_id: Option<elements::AssetId>, // Mandatory in GDK c++, missing in GDK rust
     pub satoshi: u64,
-    pub is_change: bool,
-    pub is_fee: Option<bool>, // Mandatory in GDK c++, missing in GDK rust
-    pub amountblinder: Option<BlindingFactor>,
-    pub assetblinder: Option<BlindingFactor>,
+    pub is_change: Option<bool>,
+    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
+    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
     pub eph_private_key: Option<secp256k1::SecretKey>,
+    pub scriptpubkey: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SignTransactionResult {
+    pub transaction_inputs: Vec<UnspentOutput>,
     pub transaction_outputs: Vec<CreatedTransactionOutput>,
-    pub transaction: String,
+    pub transaction: Option<sideswap_types::Transaction>,
     pub fee: Option<u64>,
-    pub used_utxos: Vec<UnspentOutput>,
     pub error: String,
 }
 
@@ -327,13 +428,15 @@ pub struct PsetDetailsOpt {
 pub struct PsetInputOutput {
     pub asset_id: AssetId,
     pub satoshi: u64,
-    pub subaccount: i32,
+    pub subaccount: Option<i32>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct PsetDetailsResult {
-    pub inputs: Vec<PsetInputOutput>,
-    pub outputs: Vec<PsetInputOutput>,
+    pub satoshi: BTreeMap<AssetId, i64>,
+    pub transaction_inputs: Vec<PsetInputOutput>,
+    pub transaction_outputs: Vec<PsetInputOutput>,
+    pub fee: Option<i64>,
 }
 
 #[derive(Serialize, Debug)]
@@ -350,7 +453,49 @@ pub struct SignPsetResult {
 
 #[derive(Deserialize, Debug)]
 pub struct SendTransactionResult {
-    pub txhash: sideswap_api::Txid,
+    pub txhash: elements::Txid,
+}
+
+#[derive(Serialize, Debug)]
+pub enum SwapType {
+    #[serde(rename = "liquidex")]
+    LiquiDex,
+}
+
+#[derive(Serialize, Debug)]
+pub enum SwapInputOutputType {
+    #[serde(rename = "liquidex_v1")]
+    LiquiDexV1,
+}
+
+#[derive(Serialize, Debug)]
+pub struct SwapLiquiDexV1Receive {
+    pub asset_id: AssetId,
+    pub satoshi: u64,
+}
+
+#[derive(Serialize, Debug)]
+pub struct SwapLiquiDexV1 {
+    pub receive: Vec<SwapLiquiDexV1Receive>,
+    pub send: Vec<serde_json::Value>,
+}
+
+#[derive(Serialize, Debug)]
+pub struct CreateSwapTransactionOpt {
+    pub swap_type: SwapType,
+    pub input_type: SwapInputOutputType,
+    pub output_type: SwapInputOutputType,
+    pub liquidex_v1: SwapLiquiDexV1,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct LiquiDexV1Result {
+    pub proposal: serde_json::Value,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct CreateSwapTransactionResult {
+    pub liquidex_v1: LiquiDexV1Result,
 }
 
 #[derive(Serialize, Debug)]
@@ -379,9 +524,6 @@ pub struct NotificationTransaction {
     pub txhash: String,
 }
 
-// {"event":"network","network":{"connected":false,"elapsed":2,"limit":false,"waiting":4}}
-// {"event":"network","network":{"connected":true,"heartbeat_timeout":false,"login_required":true}}
-
 #[derive(Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ConnectionState {
@@ -398,11 +540,18 @@ pub struct NotificationNetwork {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct NotificationSubaccount {
+    pub event_type: String,
+    pub pointer: u32,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Notification {
     pub event: String,
     pub block: Option<NotificationBlock>,
     pub transaction: Option<NotificationTransaction>,
     pub network: Option<NotificationNetwork>,
+    pub subaccount: Option<NotificationSubaccount>,
 }
 
 #[derive(Deserialize)]
@@ -414,7 +563,12 @@ pub struct ErrorDetailsResult {
 
 #[derive(Serialize)]
 pub struct GetXPubsRes {
-    pub xpubs: Vec<String>,
+    pub xpubs: Vec<ExtendedPubKey>,
+}
+
+#[derive(Serialize)]
+pub struct MasterBlindingKeyRes {
+    pub master_blinding_key: String,
 }
 
 #[derive(Serialize)]
@@ -437,14 +591,14 @@ pub struct GetBlindingPublicKeys {
 #[derive(Serialize)]
 pub struct SignTx {
     // Inputs
-    pub signatures: Vec<String>,
+    pub signatures: Vec<Option<String>>,
     pub signer_commitments: Vec<String>,
 
     // Outputs
     pub asset_commitments: Vec<Option<String>>,
     pub value_commitments: Vec<Option<String>>,
-    pub assetblinders: Vec<Option<BlindingFactor>>,
-    pub amountblinders: Vec<Option<BlindingFactor>>,
+    pub assetblinders: Vec<Option<elements::confidential::AssetBlindingFactor>>,
+    pub amountblinders: Vec<Option<elements::confidential::ValueBlindingFactor>>,
 }
 
 #[derive(Serialize)]
@@ -455,21 +609,50 @@ pub struct PreviousAddressesOpts {
 }
 
 #[derive(Deserialize)]
-pub struct PreviousAddress {
-    pub address: String,
-    pub pointer: u32,
-    // pub branch: u32,
-    // pub unblinded_address: String,
-    // pub address_type: String,
-    // pub script: String,
-    // pub script_type: u32,
-    // pub subaccount: i32,
-    // pub subtype: i32,
-    // pub tx_count: u32,
+pub struct PreviousAddresses {
+    pub last_pointer: Option<u32>,
+    pub list: Vec<AddressInfo>,
+}
+
+#[derive(Serialize)]
+pub enum CreateSwapType {
+    #[serde(rename = "liquidex")]
+    Liquidex,
+}
+
+#[derive(Serialize)]
+pub enum CreateSwapInputType {
+    #[serde(rename = "liquidex_v1")]
+    LiquidexV1,
+}
+
+#[derive(Serialize)]
+pub struct LiquidexReceive {
+    pub asset_id: AssetId,
+    pub satoshi: u64,
+}
+
+#[derive(Serialize)]
+pub struct LiquidexOpts {
+    pub receive: Vec<LiquidexReceive>,
+    pub send: Vec<UnspentOutput>,
+}
+
+#[derive(Serialize)]
+pub struct CreateSwapOpts {
+    pub swap_type: CreateSwapType,
+    pub input_type: CreateSwapInputType,
+    pub output_type: CreateSwapInputType,
+    pub liquidex_v1: LiquidexOpts,
+    pub receive_address: Option<AddressInfo>,
 }
 
 #[derive(Deserialize)]
-pub struct PreviousAddresses {
-    pub last_pointer: Option<u32>,
-    pub list: Vec<PreviousAddress>,
+pub struct LiquidexSwap {
+    pub proposal: sideswap_api::LiquidexProposal,
+}
+
+#[derive(Deserialize)]
+pub struct CreateSwap {
+    pub liquidex_v1: LiquidexSwap,
 }

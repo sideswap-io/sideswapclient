@@ -1,9 +1,9 @@
 RUST_FILE = ../rust/sideswap_client/src/ffi.rs
 C_FILE = gen/side_swap_client_ffi.h
-DART_FILE = ../flutter/lib/side_swap_client_ffi.dart
+DART_FILE = ../lib/side_swap_client_ffi.dart
 
 PROTO_FILE = sideswap.proto
-DART_PROTO_DIR = ../flutter/lib/protobuf
+DART_PROTO_DIR = ../thirdparty/sideswap_protobuf/lib/src
 DART_PROTO_FILE = $(DART_PROTO_DIR)/sideswap.pb.dart
 
 ALL: $(DART_FILE) $(DART_PROTO_FILE) # RUST_BUILD

@@ -1,0 +1,6 @@
+{
+    "cmake.configureOnOpen": false,
+    "todo-tree.tree.disableCompactFolders": false,
+    "todo-tree.tree.showCountsInTree": false,
+    "todo-tree.tree.showBadges": true,
+}

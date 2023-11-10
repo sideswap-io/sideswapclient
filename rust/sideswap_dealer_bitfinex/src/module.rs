@@ -1,6 +1,6 @@
-use async_tungstenite::async_std::connect_async;
 use futures::prelude::*;
 use serde::Deserialize;
+use tokio_tungstenite::connect_async;
 
 #[derive(Debug)]
 pub enum WrappedRequest {
@@ -67,11 +67,11 @@ async fn run(
                         },
                     };
                     match server_msg {
-                        async_tungstenite::tungstenite::Message::Binary(data) => {
+                        tokio_tungstenite::tungstenite::Message::Binary(data) => {
                             resp_tx.send(WrappedResponse::Data(data)).unwrap();
                         },
-                        async_tungstenite::tungstenite::Message::Ping(data) => {
-                            let _ = ws_stream.send(async_tungstenite::tungstenite::Message::Pong(data)).await;
+                        tokio_tungstenite::tungstenite::Message::Ping(data) => {
+                            let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::Pong(data)).await;
                         },
                         _ => {
                             error!("unexpected WS message: {:?}", &server_msg);
@@ -87,7 +87,7 @@ async fn run(
                     };
                     match client_result {
                         WrappedRequest::Data(data) => {
-                            let _ = ws_stream.send(async_tungstenite::tungstenite::Message::Binary(data)).await;
+                            let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::Binary(data)).await;
                         }
                     }
                 }
@@ -103,7 +103,8 @@ pub fn start(server: Server) -> (Sender, Receiver) {
     let (req_tx, req_rx) = crossbeam_channel::unbounded::<WrappedRequest>();
     let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<WrappedResponse>();
     std::thread::spawn(move || {
-        async_std::task::block_on(run(server, req_rx, resp_tx));
+        let rt = tokio::runtime::Runtime::new().unwrap();
+        rt.block_on(run(server, req_rx, resp_tx));
     });
     (req_tx, resp_rx)
 }

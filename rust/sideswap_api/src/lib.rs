@@ -2,8 +2,12 @@ pub mod fcm_models;
 pub mod gdk;
 pub mod http_rpc;
 
+use elements::{
+    confidential::{AssetBlindingFactor, ValueBlindingFactor},
+    Txid,
+};
 use serde::{Deserialize, Serialize};
-use std::{convert::TryInto, vec::Vec};
+use std::vec::Vec;
 
 pub const TICKER_BTC: &str = "BTC";
 pub const TICKER_LBTC: &str = "L-BTC";
@@ -68,19 +72,8 @@ impl std::fmt::Display for Hash32 {
     }
 }
 
-impl Hash32 {
-    pub fn from_slice(slice: &[u8]) -> Result<Self, &'static str> {
-        if slice.len() != 32 {
-            Err("Invalid format")
-        } else {
-            Ok(Self(slice.try_into().unwrap()))
-        }
-    }
-}
+pub type AssetId = elements::AssetId;
 
-pub type AssetId = Hash32;
-pub type BlindingFactor = Hash32;
-pub type Txid = Hash32;
 pub type SessionId = Hash32;
 pub type OrderId = Hash32;
 
@@ -107,6 +100,12 @@ impl MarketType {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+pub struct IssuancePrevout {
+    pub txid: Txid,
+    pub vout: u32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct Asset {
     pub asset_id: AssetId,
     pub name: String,
@@ -117,6 +116,9 @@ pub struct Asset {
     pub instant_swaps: Option<bool>,
     pub domain: Option<String>,
     pub domain_agent: Option<String>,
+    pub always_show: Option<bool>,
+    pub issuance_prevout: Option<IssuancePrevout>,
+    pub issuer_pubkey: Option<String>,
 }
 
 pub type Assets = Vec<Asset>;
@@ -307,7 +309,7 @@ pub struct PegStatus {
 pub type RequestIdInt = i64;
 pub type RequestIdString = String;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq, PartialOrd, Ord)]
 pub enum RequestId {
     String(RequestIdString),
     Int(RequestIdInt),
@@ -391,23 +393,25 @@ pub struct UpdatePushTokenRequest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RegisterPhoneRequest {
-    pub number: String,
-    pub wallet_hash_id: String,
-    pub addresses: Vec<String>,
+    pub country_code: String,
+    pub phone_number: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RegisterPhoneResponse {
-    pub phone_key: PhoneKey,
+    pub register_id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct VerifyPhoneRequest {
-    pub phone_key: PhoneKey,
+    pub register_id: String,
     pub code: String,
 }
 
-pub type VerifyPhoneResponse = Empty;
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VerifyPhoneResponse {
+    pub phone_key: String,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UnregisterPhoneRequest {
@@ -652,36 +656,20 @@ pub struct LinkResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct MakerInput {
-    pub prevout_script: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct MakerOutput {
-    pub asset: AssetId,
-    pub asset_bf: BlindingFactor,
-    pub value: u64,
-    pub value_bf: BlindingFactor,
-    pub sender_sk: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PsetInput {
-    pub txid: Txid,
+    pub txid: elements::Txid,
     pub vout: u32,
     pub asset: AssetId,
-    pub asset_bf: BlindingFactor,
+    pub asset_bf: AssetBlindingFactor,
     pub value: u64,
-    pub value_bf: BlindingFactor,
-    pub redeem_script: Option<String>,
+    pub value_bf: ValueBlindingFactor,
+    pub redeem_script: Option<elements::Script>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MakerSignedHalf {
-    pub chaining_tx: Option<String>,
-    pub tx: String,
-    pub input: MakerInput,
-    pub output: MakerOutput,
+    pub chaining_tx: Option<sideswap_types::Transaction>,
+    pub proposal: LiquidexProposal,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -691,10 +679,8 @@ pub struct PsetMakerRequest {
     pub private: bool,
     pub ttl_seconds: Option<u64>,
     pub inputs: Vec<PsetInput>,
-    pub recv_addr: Option<String>,
-    pub recv_gaid: Option<String>,
-    pub recv_device_key: Option<String>,
-    pub change_addr: String,
+    pub recv_addr: elements::Address,
+    pub change_addr: elements::Address,
     pub signed_half: Option<MakerSignedHalf>,
 }
 pub type PsetMakerResponse = Empty;
@@ -704,10 +690,8 @@ pub struct PsetTakerRequest {
     pub order_id: OrderId,
     pub price: f64,
     pub inputs: Vec<PsetInput>,
-    pub recv_addr: Option<String>,
-    pub recv_gaid: Option<String>,
-    pub recv_device_key: Option<String>,
-    pub change_addr: String,
+    pub recv_addr: elements::Address,
+    pub change_addr: elements::Address,
 }
 pub type PsetTakerResponse = Empty;
 
@@ -741,12 +725,11 @@ pub struct GetSignResponse {
 pub struct ResolveGaidRequest {
     pub order_id: OrderId,
     pub gaid: String,
-    pub device_key: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ResolveGaidResponse {
-    pub address: String,
+    pub address: elements::Address,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -799,7 +782,7 @@ pub struct AssetDetailsResponse {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CompleteNotification {
     pub order_id: OrderId,
-    pub txid: Option<Txid>,
+    pub txid: Option<elements::Txid>,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialOrd, PartialEq, Copy, Clone)]
@@ -877,8 +860,8 @@ pub struct StartSwapClientRequest {
     pub send_amount: i64,
     pub recv_amount: i64,
     pub inputs: Vec<PsetInput>,
-    pub recv_addr: String,
-    pub change_addr: String,
+    pub recv_addr: elements::Address,
+    pub change_addr: elements::Address,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -896,8 +879,8 @@ pub struct StartSwapDealerNotification {
 pub struct StartSwapDealerRequest {
     pub order_id: OrderId,
     pub inputs: Vec<PsetInput>,
-    pub recv_addr: String,
-    pub change_addr: String,
+    pub recv_addr: elements::Address,
+    pub change_addr: elements::Address,
 }
 
 pub type StartSwapDealerResponse = Empty;
@@ -942,7 +925,7 @@ pub enum SwapDoneStatus {
 pub struct SwapDoneNotification {
     pub order_id: OrderId,
     pub status: SwapDoneStatus,
-    pub txid: Option<Txid>,
+    pub txid: Option<elements::Txid>,
     pub send_asset: AssetId,
     pub send_amount: i64,
     pub recv_asset: AssetId,
@@ -988,7 +971,7 @@ pub struct MarketDataUpdateNotification {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SwapPrice {
     pub asset_id: AssetId,
-    pub txid: Txid,
+    pub txid: elements::Txid,
     pub price: f64,
 }
 
@@ -1005,6 +988,35 @@ pub struct SwapPricesResponse {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NewSwapPriceNotification {
     pub swap_price: SwapPrice,
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LiquidexInput {
+    pub asset: AssetId,
+    pub satoshi: u64,
+    pub asset_blinder: AssetBlindingFactor,
+    pub value_blind_proof: elements::secp256k1_zkp::RangeProof,
+    pub script: Option<elements::Script>, // AMP only
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LiquidexOutput {
+    pub asset: AssetId,
+    pub satoshi: u64,
+    pub asset_blinder: AssetBlindingFactor,
+    pub value_blind_proof: elements::secp256k1_zkp::RangeProof,
+    pub blinding_nonce: Option<String>, // AMP only
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LiquidexProposal {
+    pub inputs: [LiquidexInput; 1],
+    pub outputs: [LiquidexOutput; 1],
+    pub scalars: [elements::secp256k1_zkp::Tweak; 1],
+    pub transaction: sideswap_types::Transaction,
+    pub version: u32,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1033,7 +1045,6 @@ pub enum Request {
     RegisterPhone(RegisterPhoneRequest),
     VerifyPhone(VerifyPhoneRequest),
     UnregisterPhone(UnregisterPhoneRequest),
-
     UploadAvatar(UploadAvatarRequest),
     UploadContacts(UploadContactsRequest),
     DownloadContacts(DownloadContactsRequest),
@@ -1099,7 +1110,6 @@ pub enum Response {
     RegisterPhone(RegisterPhoneResponse),
     VerifyPhone(VerifyPhoneResponse),
     UnregisterPhone(UnregisterPhoneResponse),
-
     UploadAvatar(UploadAvatarResponse),
     UploadContacts(UploadContactsResponse),
     DownloadContacts(DownloadContactsResponse),

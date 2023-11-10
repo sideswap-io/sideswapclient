@@ -2,11 +2,14 @@ use prost::Message;
 use sideswap_common::env::Env;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
+use std::str::FromStr;
 use std::sync::Once;
 
 use crate::worker;
 
 pub mod proto {
+    #![allow(non_snake_case)]
+
     include!(concat!(env!("OUT_DIR"), "/sideswap.proto.rs"));
 }
 
@@ -47,8 +50,8 @@ fn convert_from_msg(msg: FromMsg) -> u64 {
     let mut buf = Vec::new();
     from.encode(&mut buf).expect("encoding message failed");
     let msg = std::boxed::Box::new(RecvMessage(buf));
-    let msg_ptr = Box::into_raw(msg) as IntPtr;
-    msg_ptr
+    
+    Box::into_raw(msg) as IntPtr
 }
 
 pub fn get_env_from_ffi(env: Env) -> i32 {
@@ -284,7 +287,7 @@ fn generate_mnemonic12_from_rng<R: rand::RngCore + rand::CryptoRng>(rng: &mut R)
 
 #[no_mangle]
 pub extern "C" fn sideswap_generate_mnemonic12() -> *mut c_char {
-    let mut rng = rand::rngs::OsRng::new().expect("creating OsRng failed");
+    let mut rng = rand::rngs::OsRng::default();
     let str = generate_mnemonic12_from_rng(&mut rng);
     let value = CString::new(str).unwrap();
     value.into_raw()
@@ -306,13 +309,9 @@ pub extern "C" fn sideswap_string_free(str: *mut c_char) {
     }
 }
 
-const LOG_FILTER: &str =
-    "debug,hyper=info,rustls=info,ureq=warn,electrum_client=warn,gdk_electrum=warn";
+const LOG_FILTER: &str = "debug,hyper=info,rustls=info,ureq=warn";
 
-use time::{format_description::FormatItem, macros::format_description};
-
-pub const TIMESTAMP_FORMAT: &[FormatItem<'static>] =
-    format_description!("[year]-[month]-[day] [hour]:[minute]:[second].[subsecond digits:6]");
+pub const TIMESTAMP_FORMAT: &str = "%Y-%m-%d %H:%M:%S.%3f";
 
 pub fn log_format(
     w: &mut dyn std::io::Write,
@@ -321,13 +320,13 @@ pub fn log_format(
 ) -> Result<(), std::io::Error> {
     let text = format!(
         "[{}] {} {} {}",
-        now.format(&TIMESTAMP_FORMAT),
+        now.format(TIMESTAMP_FORMAT),
         record.level(),
         record.module_path().unwrap_or("<unnamed>"),
         &record.args()
     );
     let line_limit = if cfg!(debug_assertions) {
-        1 * 1024 * 1024
+        1024 * 1024
     } else {
         2 * 1024
     };
@@ -338,7 +337,7 @@ pub fn log_format(
 fn init_log(work_dir: &str) {
     let path = format!("{}/{}", work_dir, "sideswap.log");
     let path_old = format!("{}/{}", work_dir, "sideswap_prev.log");
-    let _ = std::fs::rename(&path, &path_old);
+    let _ = std::fs::rename(&path, path_old);
     let _ = flexi_logger::Logger::try_with_str(LOG_FILTER)
         .unwrap()
         .format(log_format)
@@ -349,7 +348,7 @@ fn init_log(work_dir: &str) {
 }
 
 fn check_bitcoin_address(env: Env, addr: &str) -> bool {
-    let addr = match addr.parse::<bitcoin::Address>() {
+    let addr = match bitcoin::Address::from_str(addr) {
         Ok(a) => a,
         Err(_) => return false,
     };
@@ -357,7 +356,7 @@ fn check_bitcoin_address(env: Env, addr: &str) -> bool {
         Env::Prod | Env::Staging | Env::LocalLiquid => addr.network == bitcoin::Network::Bitcoin,
         Env::Local | Env::Regtest | Env::Testnet | Env::LocalTestnet => {
             let script_hash = match addr.payload {
-                bitcoin::util::address::Payload::ScriptHash(_) => true,
+                bitcoin::address::Payload::ScriptHash(_) => true,
                 _ => false,
             };
             addr.network == bitcoin::Network::Regtest

@@ -1,21 +1,21 @@
 name: side_swap_ffi
 
 environment:
-  sdk: '>=2.13.0 <3.0.0'
+  sdk: ">=3.1.0 <4.0.0"
 
 dev_dependencies:
-  ffigen: ^3.0.0
-  flutter_lints: ^1.0.4
+  ffigen: ^9.0.1
+  flutter_lints: ^3.0.1
 
 ffigen:
   name: NativeLibrary
-  output: '../flutter/lib/side_swap_client_ffi.dart'
-  description: 'SideSwap FFI'
+  output: "../lib/side_swap_client_ffi.dart"
+  description: "SideSwap FFI"
   headers:
     entry-points:
-      - 'gen/side_swap_client_ffi.h'
+      - "gen/side_swap_client_ffi.h"
   functions:
     include:
-      - 'sideswap_.*'
+      - "sideswap_.*"
   llvm-path:
-    - 'usr/lib/llvm-11'
+    - "usr/lib/llvm-11"

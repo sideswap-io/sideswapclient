@@ -1,4 +1,4 @@
-use sideswap_api::{AssetId, Txid};
+use sideswap_api::AssetId;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Balance {
@@ -8,7 +8,7 @@ pub struct Balance {
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Transaction {
-    pub txid: Txid,
+    pub txid: elements::Txid,
     pub network_fee: u32,
     pub size: u32,
     pub vsize: u32,
@@ -17,4 +17,6 @@ pub struct Transaction {
     pub created_at: i64,
     pub block_height: u32,
     pub balances_all: Vec<Balance>,
+    pub max_pointer_external: u32,
+    pub max_pointer_internal: u32,
 }

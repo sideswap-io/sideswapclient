@@ -1,5 +1,5 @@
 use super::rpc;
-use elements as elements_pset;
+use base64::Engine;
 use serde::{Deserialize, Serialize};
 use sideswap_api::*;
 use sideswap_common::types;
@@ -72,7 +72,7 @@ pub enum From {
 }
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SwapSucceed {
-    pub txid: Txid,
+    pub txid: elements::Txid,
     pub ticker: DealerTicker,
     pub bitcoin_amount: sideswap_common::types::Amount,
     pub send_bitcoins: bool,
@@ -122,7 +122,7 @@ struct OwnOrderKey {
     send_bitcoins: bool,
 }
 
-const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
+const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 pub struct DealerTicker(pub &'static str);
@@ -165,13 +165,13 @@ impl<'de> Deserialize<'de> for DealerTicker {
         D: serde::Deserializer<'de>,
     {
         let name = String::deserialize(deserializer)?;
-        ticker_from_string(&name).map_err(|e| serde::de::Error::custom(e))
+        ticker_from_string(&name).map_err(serde::de::Error::custom)
     }
 }
 
 pub fn apply_interest(price: PricePair, interest: f64) -> PricePair {
     // Limit to 10% as sanity check
-    assert!(interest >= 1.0 && interest <= 1.1);
+    assert!((1.0..=1.1).contains(&interest));
     PricePair {
         bid: price.bid / interest,
         ask: price.ask * interest,
@@ -247,7 +247,7 @@ fn get_pset(
     let (send_asset, send_amount) = if details.send_bitcoins {
         (bitcoin_asset, details.bitcoin_amount + details.server_fee)
     } else {
-        (details.asset.clone(), details.asset_amount)
+        (details.asset, details.asset_amount)
     };
 
     let mut asset_utxos: Vec<_> = utxos
@@ -294,21 +294,19 @@ fn get_pset(
     }
 
     let recv_addr =
-        rpc::make_rpc_call::<String>(&http_client, &params.rpc, &rpc::get_new_address())
+        rpc::make_rpc_call::<elements::Address>(http_client, &params.rpc, &rpc::get_new_address())
             .expect("getting new address failed");
     let change_addr =
-        rpc::make_rpc_call::<String>(&http_client, &params.rpc, &rpc::get_new_address())
+        rpc::make_rpc_call::<elements::Address>(http_client, &params.rpc, &rpc::get_new_address())
             .expect("getting new address failed");
 
     let addr_request = PsetMakerRequest {
-        order_id: order_id.clone(),
+        order_id: *order_id,
         price: details.price,
         private: false,
         ttl_seconds: None,
         inputs,
-        recv_addr: Some(recv_addr),
-        recv_gaid: None,
-        recv_device_key: None,
+        recv_addr,
         change_addr,
         signed_half: None,
     };
@@ -316,60 +314,59 @@ fn get_pset(
 }
 
 fn sign_pset(
-    secp: &elements_pset::secp256k1_zkp::Secp256k1<elements_pset::secp256k1_zkp::All>,
+    secp: &elements::secp256k1_zkp::Secp256k1<elements::secp256k1_zkp::All>,
     data: &SignNotification,
     params: &Params,
     utxos: &Utxos,
     http_client: &reqwest::blocking::Client,
 ) -> Result<SignRequest, anyhow::Error> {
-    let mut pset = elements_pset::encode::deserialize::<
-        elements_pset::pset::PartiallySignedTransaction,
-    >(&base64::decode(&data.pset)?)?;
+    let mut pset = elements::encode::deserialize::<elements::pset::PartiallySignedTransaction>(
+        &base64::engine::general_purpose::STANDARD.decode(&data.pset)?,
+    )?;
     let tx = pset.extract_tx()?;
 
     for (index, input) in tx.input.iter().enumerate() {
         let tx_out = TxOut {
-            txid: Txid::from_str(&input.previous_output.txid.to_string()).unwrap(),
+            txid: elements::Txid::from_str(&input.previous_output.txid.to_string()).unwrap(),
             vout: input.previous_output.vout,
         };
         if let Some(utxo) = utxos.get(&tx_out) {
             let priv_key = rpc::make_rpc_call::<rpc::DumpPrivKey>(
-                &http_client,
+                http_client,
                 &params.rpc,
                 &rpc::dumpprivkey(&utxo.item.address),
             )?;
-            let private_key = elements_pset::bitcoin::PrivateKey::from_str(&priv_key)?;
+            let private_key = elements::bitcoin::PrivateKey::from_str(&priv_key)?;
 
             let value_commitment =
-                hex::decode(&utxo.item.amountcommitment.as_ref().unwrap()).unwrap();
-            let value_commitment = elements_pset::encode::deserialize::<
-                elements_pset::confidential::Value,
-            >(&value_commitment)
-            .unwrap();
+                hex::decode(utxo.item.amountcommitment.as_ref().unwrap()).unwrap();
+            let value_commitment =
+                elements::encode::deserialize::<elements::confidential::Value>(&value_commitment)
+                    .unwrap();
 
             let input_sign = sideswap_common::pset::internal_sign_elements(
-                &secp,
+                secp,
                 &tx,
                 index,
                 &private_key,
                 value_commitment,
-                elements_pset::SigHashType::All,
+                elements::EcdsaSigHashType::All,
             );
-            let public_key = private_key.public_key(&secp);
+            let public_key = private_key.public_key(secp);
             let pset_input = pset.inputs_mut().get_mut(index).unwrap();
-            pset_input.final_script_sig = utxo.item.redeem_script.as_ref().map(|s| {
-                elements_pset::script::Builder::new()
-                    .push_slice(&hex::decode(s).unwrap())
+            pset_input.final_script_sig = utxo.item.redeem_script.as_ref().map(|script| {
+                elements::script::Builder::new()
+                    .push_slice(script.as_bytes())
                     .into_script()
             });
             pset_input.final_script_witness = Some(vec![input_sign, public_key.to_bytes()]);
         }
     }
 
-    let pset = elements_pset::encode::serialize(&pset);
+    let pset = elements::encode::serialize(&pset);
     let sign_request = SignRequest {
-        order_id: data.order_id.clone(),
-        signed_pset: base64::encode(&pset),
+        order_id: data.order_id,
+        signed_pset: base64::engine::general_purpose::STANDARD.encode(pset),
         side: data.details.side,
     };
     Ok(sign_request)
@@ -430,7 +427,7 @@ fn cancel_order<T: Fn(Request) -> Result<Response, Error>>(data: &mut OwnOrder, 
         send_request,
         Cancel,
         CancelRequest {
-            order_id: data.order_id.clone(),
+            order_id: data.order_id,
         }
     );
     if let Err(e) = cancel_result {
@@ -485,7 +482,7 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                 Submit,
                 SubmitRequest {
                     order: PriceOrder {
-                        asset: asset.asset_id.clone(),
+                        asset: asset.asset_id,
                         bitcoin_amount: Some(if send_bitcoins {
                             -new_bitcoin_amount_normal.to_bitcoin()
                         } else {
@@ -501,9 +498,9 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                 let pset = get_pset(
                     &submit_resp.order_id,
                     &submit_resp.details,
-                    &utxos,
-                    &params,
-                    &http_client,
+                    utxos,
+                    params,
+                    http_client,
                     true,
                 );
                 match pset {
@@ -512,7 +509,7 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                         match addr_result {
                             Ok(_) => {
                                 *own = Some(OwnOrder {
-                                    order_id: submit_resp.order_id.clone(),
+                                    order_id: submit_resp.order_id,
                                     bitcoin_amount: new_bitcoin_amount_normal,
                                     price,
                                 });
@@ -549,7 +546,7 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                     send_request,
                     Edit,
                     EditRequest {
-                        order_id: data.order_id.clone(),
+                        order_id: data.order_id,
                         price: Some(price),
                         index_price: None,
                     }
@@ -564,7 +561,7 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                             send_request,
                             Cancel,
                             CancelRequest {
-                                order_id: data.order_id.clone(),
+                                order_id: data.order_id,
                             }
                         );
                         if let Err(e) = cancel_result {
@@ -611,6 +608,7 @@ fn worker(
         params.server_port,
         params.server_use_tls,
         false,
+        None,
     );
 
     let (msg_tx, msg_rx) = crossbeam_channel::unbounded::<Msg>();
@@ -667,7 +665,7 @@ fn worker(
         .build()
         .expect("http client construction failed");
 
-    let secp = elements_pset::secp256k1_zkp::Secp256k1::new();
+    let secp = elements::secp256k1_zkp::Secp256k1::new();
     let mut assets = Vec::new();
     let mut server_connected = false;
     let mut utxos = Utxos::new();
@@ -712,19 +710,18 @@ fn worker(
                     params
                         .tickers
                         .iter()
-                        .find(|ticker| ticker.0 == asset.ticker.0)
-                        .is_some()
+                        .any(|ticker| ticker.0 == asset.ticker.0)
                 }) {
                     let subscribe_resp = send_request!(
                         send_request,
                         Subscribe,
                         SubscribeRequest {
-                            asset: Some(asset.asset_id.clone()),
+                            asset: Some(asset.asset_id),
                         }
                     )
                     .expect("subscribing to order list failed");
                     for order in subscribe_resp.orders {
-                        orders.insert(order.order_id.clone(), order);
+                        orders.insert(order.order_id, order);
                     }
                 }
 
@@ -744,7 +741,7 @@ fn worker(
 
             Msg::Notification(msg) => match msg {
                 Notification::OrderCreated(order) if order.own.is_none() => {
-                    orders.insert(order.order_id.clone(), order);
+                    orders.insert(order.order_id, order);
                     msg_tx.send(Msg::Timer).unwrap();
                 }
 
@@ -872,7 +869,7 @@ fn worker(
                 }
                 for key in old_keys.difference(&new_keys) {
                     debug!("remove consumed utxo: {}/{}", &key.txid, key.vout);
-                    utxos.remove(&key);
+                    utxos.remove(key);
                 }
             }
 
@@ -961,8 +958,6 @@ fn worker(
                                     price: pset_req.price,
                                     inputs: pset_req.inputs,
                                     recv_addr: pset_req.recv_addr,
-                                    recv_gaid: None,
-                                    recv_device_key: None,
                                     change_addr: pset_req.change_addr,
                                 };
                                 let addr_result =
@@ -970,7 +965,7 @@ fn worker(
                                 if let Err(e) = addr_result {
                                     error!("sending addr details failed: {}", e);
                                 } else {
-                                    taken_orders.insert(order.order_id.clone());
+                                    taken_orders.insert(order.order_id);
                                 }
                             }
                             Err(e) => error!("sending quote failed: {}", e),
