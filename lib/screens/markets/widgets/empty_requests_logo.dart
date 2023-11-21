@@ -6,33 +6,21 @@ class EmptyRequestsLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 238,
-      height: 180,
-      child: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              EmptyRequestsLogoContainer(
-                opacity: 0.2,
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 12),
-                child: EmptyRequestsLogoContainer(
-                  opacity: 0.2,
-                ),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 40, top: 48),
-            child: EmptyRequestsLogoContainer(
-              icon: EmptyRequestLogoIcon.ok,
-            ),
-          ),
-        ],
-      ),
+    return const Stack(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            EmptyRequestsLogoContainer(opacity: 0.2),
+            SizedBox(height: 12),
+            EmptyRequestsLogoContainer(opacity: 0.2),
+          ],
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 40, top: 48),
+          child: EmptyRequestsLogoContainer(),
+        ),
+      ],
     );
   }
 }

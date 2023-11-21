@@ -2191,6 +2191,7 @@ dependencies = [
  "elements",
  "hex",
  "serde 1.0.189",
+ "serde_json",
  "serde_with",
  "sideswap_types",
 ]
@@ -2207,6 +2208,7 @@ dependencies = [
  "block-modes",
  "bytes",
  "chrono",
+ "ciborium",
  "crossbeam-channel",
  "derive_more",
  "elements",

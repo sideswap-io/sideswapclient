@@ -6,6 +6,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/order_price_text_field.dart';
@@ -16,7 +17,7 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 class OrderPriceField extends ConsumerWidget {
   const OrderPriceField({
     super.key,
-    required this.controller,
+    this.controller,
     required this.asset,
     required this.productAsset,
     this.icon,
@@ -25,14 +26,12 @@ class OrderPriceField extends ConsumerWidget {
     this.onEditingComplete,
     this.tracking = false,
     this.onToggleTracking,
-    required this.sliderValue,
-    required this.onSliderChanged,
-    this.trackingPrice = '',
+    this.onSliderChanged,
     this.displaySlider = false,
-    required this.invertColors,
+    this.invertColors,
   });
 
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final Asset? asset;
   final Asset? productAsset;
   final Widget? icon;
@@ -41,11 +40,9 @@ class OrderPriceField extends ConsumerWidget {
   final void Function()? onEditingComplete;
   final bool tracking;
   final void Function(bool)? onToggleTracking;
-  final double sliderValue;
   final void Function(double)? onSliderChanged;
-  final String trackingPrice;
   final bool displaySlider;
-  final bool invertColors;
+  final bool? invertColors;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -69,7 +66,7 @@ class OrderPriceField extends ConsumerWidget {
       child: Column(
         children: [
           SizedBox(
-            height: 34,
+            height: 37,
             child: Row(
               mainAxisAlignment: marketType == MarketType.stablecoin
                   ? MainAxisAlignment.spaceBetween
@@ -77,10 +74,6 @@ class OrderPriceField extends ConsumerWidget {
               children: [
                 Builder(
                   builder: (context) {
-                    if (displaySlider && onSliderChanged != null) {
-                      Future.microtask(() => onSliderChanged!(sliderValue));
-                    }
-
                     if (marketType == MarketType.stablecoin &&
                             indexPriceStr.isEmpty ||
                         marketType != MarketType.stablecoin &&
@@ -141,16 +134,22 @@ class OrderPriceField extends ConsumerWidget {
           if (displaySlider) ...[
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: OrderTrackingSlider(
-                value: sliderValue,
-                onChanged: onSliderChanged,
-                minPercent: minPercent,
-                maxPercent: maxPercent,
-                icon: icon,
-                asset: asset,
-                price: controller.text,
-                dollarConversion: dollarConversion,
-                invertColors: invertColors,
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final sliderValue =
+                      ref.watch(orderPriceFieldSliderValueProvider);
+                  return OrderTrackingSlider(
+                    value: sliderValue,
+                    onChanged: onSliderChanged,
+                    minPercent: minPercent,
+                    maxPercent: maxPercent,
+                    icon: icon,
+                    asset: asset,
+                    price: controller?.text ?? '',
+                    dollarConversion: dollarConversion,
+                    invertColors: invertColors,
+                  );
+                },
               ),
             ),
           ] else ...[

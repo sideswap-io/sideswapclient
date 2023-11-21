@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
 import 'package:sideswap/common/theme.dart';
@@ -137,7 +138,8 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       locale: context.locale,
       builder: (context, widget) {
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(1.0)),
           child: Builder(builder: (context) {
             return widget!;
           }),
@@ -191,7 +193,7 @@ class MyPopupPageRoute<T> extends PageRoute<T>
   bool get fullscreenDialog => false;
 }
 
-class RootWidget extends ConsumerStatefulWidget {
+class RootWidget extends StatefulHookConsumerWidget {
   const RootWidget({super.key});
 
   @override
@@ -473,8 +475,6 @@ class RootWidgetState extends ConsumerState<RootWidget> {
     }
   }
 
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
-
   @override
   void initState() {
     super.initState();
@@ -483,7 +483,6 @@ class RootWidgetState extends ConsumerState<RootWidget> {
       statusBarColor: Colors.transparent,
     ));
 
-    ref.read(walletProvider).navigatorKey = _navigatorKey;
     ref.read(pinProtectionProvider).onPinBlockadeCallback = onPinBlockade;
   }
 
@@ -505,23 +504,32 @@ class RootWidgetState extends ConsumerState<RootWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final navigatorKey = useMemoized(() => GlobalKey<NavigatorState>());
+
+    useEffect(() {
+      ref.read(walletProvider).navigatorKey = navigatorKey;
+
+      return;
+    }, [navigatorKey]);
+
     return Stack(
       children: [
         const PinListener(),
         const UiStatesListener(),
         const SideswapNotificationListener(),
         const WarmupAppListener(),
+        // TODO (malcolmpl): fix WillPopScope https://docs.flutter.dev/release/breaking-changes/android-predictive-back#migration-guide
         WillPopScope(
           onWillPop: () async {
             // https://github.com/flutter/flutter/issues/66349
-            final ret = await _navigatorKey.currentState?.maybePop() ?? false;
+            final ret = await navigatorKey.currentState?.maybePop() ?? false;
             return !ret;
           },
           child: Consumer(
             builder: (context, ref, child) {
               final status = ref.watch(pageStatusStateProvider);
               return Navigator(
-                key: _navigatorKey,
+                key: navigatorKey,
                 pages: pages(ref, context, status),
                 onPopPage: (route, dynamic result) {
                   logger.d('on pop page');

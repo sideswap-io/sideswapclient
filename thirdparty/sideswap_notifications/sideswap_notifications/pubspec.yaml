@@ -4,8 +4,8 @@ publish_to: "none"
 version: 0.1.1
 
 environment:
-  sdk: ">=3.1.0 <4.0.0"
-  flutter: ">=3.3.0"
+  sdk: ">=3.2.0 <4.0.0"
+  flutter: ">=3.16.0"
 
 dependencies:
   flutter:
@@ -14,8 +14,8 @@ dependencies:
   json_annotation: ^4.8.1
   sideswap_notifications_platform_interface:
     path: ../sideswap_notifications_platform_interface
-  firebase_core: ^2.16.0
-  firebase_messaging: ^14.6.8
+  firebase_core: ^2.22.0
+  firebase_messaging: ^14.7.4
   sideswap_logger:
     git:
       url: https://github.com/sideswap-io/sideswap_logger.git
@@ -44,8 +44,8 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^3.0.1
   plugin_platform_interface: ^2.1.6
-  freezed: ^2.4.3
+  freezed: ^2.4.5
   json_serializable: ^6.7.1
   build_runner: ^2.4.6

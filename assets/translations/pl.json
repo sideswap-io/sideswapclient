@@ -519,5 +519,6 @@
   "Select address type": "Wybierz typ adresu",
   "Sign swap transaction": "Podpisz transakcję wymiany",
   "Create swap output": "Utwórz dane wyjściowe wymiany",
-  "Sign offline swap transaction": "Podpisz transakcję wymiany dla trybu offline"
+  "Sign offline swap transaction": "Podpisz transakcję wymiany dla trybu offline",
+  "No pending orders": "Brak oczekujących zamówień"
 }

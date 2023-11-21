@@ -287,9 +287,12 @@ pub fn unlock_hw(
     }
 
     jade.send(sideswap_jade::Req::ReadStatus);
-    (status_callback)(gdk_ses::JadeStatus::ReadStatus);
-    let resp = jade.recv(Duration::from_secs(10));
-    (status_callback)(gdk_ses::JadeStatus::Idle);
+    let resp = jade.recv(Duration::from_secs(1)).or_else(|_err| {
+        (status_callback)(gdk_ses::JadeStatus::ReadStatus);
+        let resp = jade.recv(Duration::from_secs(10));
+        (status_callback)(gdk_ses::JadeStatus::Idle);
+        resp
+    });
     let status = match resp {
         Ok(sideswap_jade::Resp::ReadStatus(v)) => v,
         resp => bail!("unexpected Jade response: {:?}", resp),
@@ -364,26 +367,44 @@ unsafe fn run_auth_handler<T: serde::de::DeserializeOwned>(
     result
 }
 
+// Do it manually, because otherwise numbers will be converted as Map([(Text("$serde_json::private::Number"), Text("8"))]))
+fn convert_value(value: &serde_json::Value) -> ciborium::Value {
+    match value {
+        serde_json::Value::Null => ciborium::Value::Null,
+        serde_json::Value::Bool(val) => ciborium::Value::Bool(*val),
+        serde_json::Value::Number(val) if val.is_i64() => {
+            ciborium::Value::Integer(val.as_i64().expect("must be set").into())
+        }
+        serde_json::Value::Number(val) if val.is_f64() => {
+            ciborium::Value::Float(val.as_f64().expect("must be set"))
+        }
+        serde_json::Value::Number(val) => ciborium::Value::Text(val.to_string()),
+        serde_json::Value::String(val) => ciborium::Value::Text(val.clone()),
+        serde_json::Value::Array(arr) => {
+            ciborium::Value::Array(arr.iter().map(convert_value).collect())
+        }
+        serde_json::Value::Object(map) => ciborium::Value::Map(
+            map.iter()
+                .map(|(key, value)| (ciborium::Value::Text(key.clone()), convert_value(value)))
+                .collect(),
+        ),
+    }
+}
+
 fn get_jade_asset_info(
     asset_id: &AssetId,
     assets: &BTreeMap<AssetId, Asset>,
 ) -> Option<sideswap_jade::models::AssetInfo> {
     let asset = assets.get(asset_id)?;
-    let domain = asset.domain.as_ref()?;
-    let issuer_pubkey = asset.issuer_pubkey.as_ref()?;
     let issuance_prevout = asset.issuance_prevout.as_ref()?;
+    let contract = asset.contract.as_ref()?;
+    let contract = convert_value(contract);
+    if contract.is_null() {
+        return None;
+    }
     Some(sideswap_jade::models::AssetInfo {
         asset_id: asset_id.to_string(),
-        contract: sideswap_jade::models::AssetContract {
-            version: 0,
-            name: asset.name.clone(),
-            ticker: asset.ticker.clone().0,
-            precision: asset.precision,
-            entity: sideswap_jade::models::AssetEntity {
-                domain: domain.clone(),
-            },
-            issuer_pubkey: issuer_pubkey.clone(),
-        },
+        contract,
         issuance_prevout: sideswap_jade::models::Prevout {
             txid: issuance_prevout.txid.to_string(),
             vout: issuance_prevout.vout,
@@ -2287,7 +2308,6 @@ pub unsafe fn start_processing_impl(
         let config = gdk_json::InitConfig {
             datadir,
             log_level: None,
-            enable_ss_liquid_hww: Some(true),
         };
         let rc = gdk::GA_init(GdkJson::new(&config).as_ptr());
         assert!(rc == 0);

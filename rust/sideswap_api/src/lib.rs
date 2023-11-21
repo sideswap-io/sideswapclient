@@ -119,6 +119,7 @@ pub struct Asset {
     pub always_show: Option<bool>,
     pub issuance_prevout: Option<IssuancePrevout>,
     pub issuer_pubkey: Option<String>,
+    pub contract: Option<serde_json::Value>,
 }
 
 pub type Assets = Vec<Asset>;

@@ -22,7 +22,7 @@ class DCharts extends ConsumerStatefulWidget {
     required this.onBackPressed,
   });
 
-  final String assetId;
+  final String? assetId;
   final VoidCallback onBackPressed;
 
   @override
@@ -119,7 +119,7 @@ class DChartsAssetDetails extends ConsumerWidget {
     required this.onToggled,
   });
 
-  final String assetId;
+  final String? assetId;
   final bool expanded;
   final VoidCallback onToggled;
 

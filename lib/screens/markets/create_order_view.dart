@@ -109,8 +109,9 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
     ref.read(marketsProvider).unsubscribeIndexPrice();
 
     return switch (widget.requestOrder) {
-      RequestOrder(own: true, twoStep: true) =>
-        Navigator.of(context, rootNavigator: true).pop(),
+      RequestOrder(own: true, twoStep: true) => () {
+          ref.read(walletProvider).goBack();
+        }(),
       RequestOrder()? => ref.read(walletProvider).setRegistered(),
       _ => () {
           ref.read(walletProvider).setSubmitDecision(
@@ -394,16 +395,15 @@ class CreateOrderViewBody extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: 40),
                   child: ShareAndCopyButtonsRow(
                     onShare: () async {
-                      await Share.share(ref
-                          .read(requestOrderProvider)
-                          .getAddressToShare(orderDetailsData));
+                      await Share.share(ref.read(
+                          addressToShareByOrderIdProvider(
+                              orderDetailsData.orderId)));
                     },
                     onCopy: () async {
                       await copyToClipboard(
                           context,
-                          ref
-                              .read(requestOrderProvider)
-                              .getAddressToShare(orderDetailsData));
+                          ref.read(addressToShareByOrderIdProvider(
+                              orderDetailsData.orderId)));
                     },
                   ),
                 ),

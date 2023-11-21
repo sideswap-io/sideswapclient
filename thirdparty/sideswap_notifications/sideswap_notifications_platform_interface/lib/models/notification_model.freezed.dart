@@ -68,22 +68,22 @@ class _$FCMPayloadCopyWithImpl<$Res, $Val extends FCMPayload>
 }
 
 /// @nodoc
-abstract class _$$_FCMPayloadCopyWith<$Res>
+abstract class _$$FCMPayloadImplCopyWith<$Res>
     implements $FCMPayloadCopyWith<$Res> {
-  factory _$$_FCMPayloadCopyWith(
-          _$_FCMPayload value, $Res Function(_$_FCMPayload) then) =
-      __$$_FCMPayloadCopyWithImpl<$Res>;
+  factory _$$FCMPayloadImplCopyWith(
+          _$FCMPayloadImpl value, $Res Function(_$FCMPayloadImpl) then) =
+      __$$FCMPayloadImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({FCMPayloadType? type, String? txid});
 }
 
 /// @nodoc
-class __$$_FCMPayloadCopyWithImpl<$Res>
-    extends _$FCMPayloadCopyWithImpl<$Res, _$_FCMPayload>
-    implements _$$_FCMPayloadCopyWith<$Res> {
-  __$$_FCMPayloadCopyWithImpl(
-      _$_FCMPayload _value, $Res Function(_$_FCMPayload) _then)
+class __$$FCMPayloadImplCopyWithImpl<$Res>
+    extends _$FCMPayloadCopyWithImpl<$Res, _$FCMPayloadImpl>
+    implements _$$FCMPayloadImplCopyWith<$Res> {
+  __$$FCMPayloadImplCopyWithImpl(
+      _$FCMPayloadImpl _value, $Res Function(_$FCMPayloadImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -92,7 +92,7 @@ class __$$_FCMPayloadCopyWithImpl<$Res>
     Object? type = freezed,
     Object? txid = freezed,
   }) {
-    return _then(_$_FCMPayload(
+    return _then(_$FCMPayloadImpl(
       type: freezed == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
@@ -107,11 +107,11 @@ class __$$_FCMPayloadCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMPayload extends _FCMPayload {
-  const _$_FCMPayload({this.type, this.txid}) : super._();
+class _$FCMPayloadImpl extends _FCMPayload {
+  const _$FCMPayloadImpl({this.type, this.txid}) : super._();
 
-  factory _$_FCMPayload.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMPayloadFromJson(json);
+  factory _$FCMPayloadImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMPayloadImplFromJson(json);
 
   @override
   final FCMPayloadType? type;
@@ -127,7 +127,7 @@ class _$_FCMPayload extends _FCMPayload {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMPayload &&
+            other is _$FCMPayloadImpl &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.txid, txid) || other.txid == txid));
   }
@@ -139,12 +139,12 @@ class _$_FCMPayload extends _FCMPayload {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMPayloadCopyWith<_$_FCMPayload> get copyWith =>
-      __$$_FCMPayloadCopyWithImpl<_$_FCMPayload>(this, _$identity);
+  _$$FCMPayloadImplCopyWith<_$FCMPayloadImpl> get copyWith =>
+      __$$FCMPayloadImplCopyWithImpl<_$FCMPayloadImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMPayloadToJson(
+    return _$$FCMPayloadImplToJson(
       this,
     );
   }
@@ -152,11 +152,11 @@ class _$_FCMPayload extends _FCMPayload {
 
 abstract class _FCMPayload extends FCMPayload {
   const factory _FCMPayload({final FCMPayloadType? type, final String? txid}) =
-      _$_FCMPayload;
+      _$FCMPayloadImpl;
   const _FCMPayload._() : super._();
 
   factory _FCMPayload.fromJson(Map<String, dynamic> json) =
-      _$_FCMPayload.fromJson;
+      _$FCMPayloadImpl.fromJson;
 
   @override
   FCMPayloadType? get type;
@@ -164,7 +164,7 @@ abstract class _FCMPayload extends FCMPayload {
   String? get txid;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMPayloadCopyWith<_$_FCMPayload> get copyWith =>
+  _$$FCMPayloadImplCopyWith<_$FCMPayloadImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -222,22 +222,22 @@ class _$FCMNotificationCopyWithImpl<$Res, $Val extends FCMNotification>
 }
 
 /// @nodoc
-abstract class _$$_FCMNotificationCopyWith<$Res>
+abstract class _$$FCMNotificationImplCopyWith<$Res>
     implements $FCMNotificationCopyWith<$Res> {
-  factory _$$_FCMNotificationCopyWith(
-          _$_FCMNotification value, $Res Function(_$_FCMNotification) then) =
-      __$$_FCMNotificationCopyWithImpl<$Res>;
+  factory _$$FCMNotificationImplCopyWith(_$FCMNotificationImpl value,
+          $Res Function(_$FCMNotificationImpl) then) =
+      __$$FCMNotificationImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String? title, String? body});
 }
 
 /// @nodoc
-class __$$_FCMNotificationCopyWithImpl<$Res>
-    extends _$FCMNotificationCopyWithImpl<$Res, _$_FCMNotification>
-    implements _$$_FCMNotificationCopyWith<$Res> {
-  __$$_FCMNotificationCopyWithImpl(
-      _$_FCMNotification _value, $Res Function(_$_FCMNotification) _then)
+class __$$FCMNotificationImplCopyWithImpl<$Res>
+    extends _$FCMNotificationCopyWithImpl<$Res, _$FCMNotificationImpl>
+    implements _$$FCMNotificationImplCopyWith<$Res> {
+  __$$FCMNotificationImplCopyWithImpl(
+      _$FCMNotificationImpl _value, $Res Function(_$FCMNotificationImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -246,7 +246,7 @@ class __$$_FCMNotificationCopyWithImpl<$Res>
     Object? title = freezed,
     Object? body = freezed,
   }) {
-    return _then(_$_FCMNotification(
+    return _then(_$FCMNotificationImpl(
       title: freezed == title
           ? _value.title
           : title // ignore: cast_nullable_to_non_nullable
@@ -261,11 +261,11 @@ class __$$_FCMNotificationCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMNotification implements _FCMNotification {
-  const _$_FCMNotification({this.title, this.body});
+class _$FCMNotificationImpl implements _FCMNotification {
+  const _$FCMNotificationImpl({this.title, this.body});
 
-  factory _$_FCMNotification.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMNotificationFromJson(json);
+  factory _$FCMNotificationImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMNotificationImplFromJson(json);
 
   @override
   final String? title;
@@ -281,7 +281,7 @@ class _$_FCMNotification implements _FCMNotification {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMNotification &&
+            other is _$FCMNotificationImpl &&
             (identical(other.title, title) || other.title == title) &&
             (identical(other.body, body) || other.body == body));
   }
@@ -293,12 +293,13 @@ class _$_FCMNotification implements _FCMNotification {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMNotificationCopyWith<_$_FCMNotification> get copyWith =>
-      __$$_FCMNotificationCopyWithImpl<_$_FCMNotification>(this, _$identity);
+  _$$FCMNotificationImplCopyWith<_$FCMNotificationImpl> get copyWith =>
+      __$$FCMNotificationImplCopyWithImpl<_$FCMNotificationImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMNotificationToJson(
+    return _$$FCMNotificationImplToJson(
       this,
     );
   }
@@ -306,10 +307,10 @@ class _$_FCMNotification implements _FCMNotification {
 
 abstract class _FCMNotification implements FCMNotification {
   const factory _FCMNotification({final String? title, final String? body}) =
-      _$_FCMNotification;
+      _$FCMNotificationImpl;
 
   factory _FCMNotification.fromJson(Map<String, dynamic> json) =
-      _$_FCMNotification.fromJson;
+      _$FCMNotificationImpl.fromJson;
 
   @override
   String? get title;
@@ -317,7 +318,7 @@ abstract class _FCMNotification implements FCMNotification {
   String? get body;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMNotificationCopyWith<_$_FCMNotification> get copyWith =>
+  _$$FCMNotificationImplCopyWith<_$FCMNotificationImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -381,10 +382,10 @@ class _$FCMDataCopyWithImpl<$Res, $Val extends FCMData>
 }
 
 /// @nodoc
-abstract class _$$_FCMDataCopyWith<$Res> implements $FCMDataCopyWith<$Res> {
-  factory _$$_FCMDataCopyWith(
-          _$_FCMData value, $Res Function(_$_FCMData) then) =
-      __$$_FCMDataCopyWithImpl<$Res>;
+abstract class _$$FCMDataImplCopyWith<$Res> implements $FCMDataCopyWith<$Res> {
+  factory _$$FCMDataImplCopyWith(
+          _$FCMDataImpl value, $Res Function(_$FCMDataImpl) then) =
+      __$$FCMDataImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({FCMDetails? details});
@@ -394,10 +395,11 @@ abstract class _$$_FCMDataCopyWith<$Res> implements $FCMDataCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$_FCMDataCopyWithImpl<$Res>
-    extends _$FCMDataCopyWithImpl<$Res, _$_FCMData>
-    implements _$$_FCMDataCopyWith<$Res> {
-  __$$_FCMDataCopyWithImpl(_$_FCMData _value, $Res Function(_$_FCMData) _then)
+class __$$FCMDataImplCopyWithImpl<$Res>
+    extends _$FCMDataCopyWithImpl<$Res, _$FCMDataImpl>
+    implements _$$FCMDataImplCopyWith<$Res> {
+  __$$FCMDataImplCopyWithImpl(
+      _$FCMDataImpl _value, $Res Function(_$FCMDataImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -405,7 +407,7 @@ class __$$_FCMDataCopyWithImpl<$Res>
   $Res call({
     Object? details = freezed,
   }) {
-    return _then(_$_FCMData(
+    return _then(_$FCMDataImpl(
       details: freezed == details
           ? _value.details
           : details // ignore: cast_nullable_to_non_nullable
@@ -416,11 +418,11 @@ class __$$_FCMDataCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMData implements _FCMData {
-  const _$_FCMData({this.details});
+class _$FCMDataImpl implements _FCMData {
+  const _$FCMDataImpl({this.details});
 
-  factory _$_FCMData.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMDataFromJson(json);
+  factory _$FCMDataImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMDataImplFromJson(json);
 
   @override
   final FCMDetails? details;
@@ -434,7 +436,7 @@ class _$_FCMData implements _FCMData {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMData &&
+            other is _$FCMDataImpl &&
             (identical(other.details, details) || other.details == details));
   }
 
@@ -445,27 +447,27 @@ class _$_FCMData implements _FCMData {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMDataCopyWith<_$_FCMData> get copyWith =>
-      __$$_FCMDataCopyWithImpl<_$_FCMData>(this, _$identity);
+  _$$FCMDataImplCopyWith<_$FCMDataImpl> get copyWith =>
+      __$$FCMDataImplCopyWithImpl<_$FCMDataImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMDataToJson(
+    return _$$FCMDataImplToJson(
       this,
     );
   }
 }
 
 abstract class _FCMData implements FCMData {
-  const factory _FCMData({final FCMDetails? details}) = _$_FCMData;
+  const factory _FCMData({final FCMDetails? details}) = _$FCMDataImpl;
 
-  factory _FCMData.fromJson(Map<String, dynamic> json) = _$_FCMData.fromJson;
+  factory _FCMData.fromJson(Map<String, dynamic> json) = _$FCMDataImpl.fromJson;
 
   @override
   FCMDetails? get details;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMDataCopyWith<_$_FCMData> get copyWith =>
+  _$$FCMDataImplCopyWith<_$FCMDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -595,11 +597,11 @@ class _$FCMDetailsCopyWithImpl<$Res, $Val extends FCMDetails>
 }
 
 /// @nodoc
-abstract class _$$_FCMDetailsCopyWith<$Res>
+abstract class _$$FCMDetailsImplCopyWith<$Res>
     implements $FCMDetailsCopyWith<$Res> {
-  factory _$$_FCMDetailsCopyWith(
-          _$_FCMDetails value, $Res Function(_$_FCMDetails) then) =
-      __$$_FCMDetailsCopyWithImpl<$Res>;
+  factory _$$FCMDetailsImplCopyWith(
+          _$FCMDetailsImpl value, $Res Function(_$FCMDetailsImpl) then) =
+      __$$FCMDetailsImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -619,11 +621,11 @@ abstract class _$$_FCMDetailsCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_FCMDetailsCopyWithImpl<$Res>
-    extends _$FCMDetailsCopyWithImpl<$Res, _$_FCMDetails>
-    implements _$$_FCMDetailsCopyWith<$Res> {
-  __$$_FCMDetailsCopyWithImpl(
-      _$_FCMDetails _value, $Res Function(_$_FCMDetails) _then)
+class __$$FCMDetailsImplCopyWithImpl<$Res>
+    extends _$FCMDetailsCopyWithImpl<$Res, _$FCMDetailsImpl>
+    implements _$$FCMDetailsImplCopyWith<$Res> {
+  __$$FCMDetailsImplCopyWithImpl(
+      _$FCMDetailsImpl _value, $Res Function(_$FCMDetailsImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -634,7 +636,7 @@ class __$$_FCMDetailsCopyWithImpl<$Res>
     Object? pegDetected = freezed,
     Object? orderCancelled = freezed,
   }) {
-    return _then(_$_FCMDetails(
+    return _then(_$FCMDetailsImpl(
       tx: freezed == tx
           ? _value.tx
           : tx // ignore: cast_nullable_to_non_nullable
@@ -657,15 +659,15 @@ class __$$_FCMDetailsCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMDetails implements _FCMDetails {
-  const _$_FCMDetails(
+class _$FCMDetailsImpl implements _FCMDetails {
+  const _$FCMDetailsImpl(
       {this.tx,
       @JsonKey(name: 'peg_payout') this.pegPayout,
       @JsonKey(name: 'peg_detected') this.pegDetected,
       @JsonKey(name: 'order_cancelled') this.orderCancelled});
 
-  factory _$_FCMDetails.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMDetailsFromJson(json);
+  factory _$FCMDetailsImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMDetailsImplFromJson(json);
 
   @override
   final FCMTx? tx;
@@ -688,7 +690,7 @@ class _$_FCMDetails implements _FCMDetails {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMDetails &&
+            other is _$FCMDetailsImpl &&
             (identical(other.tx, tx) || other.tx == tx) &&
             (identical(other.pegPayout, pegPayout) ||
                 other.pegPayout == pegPayout) &&
@@ -706,12 +708,12 @@ class _$_FCMDetails implements _FCMDetails {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMDetailsCopyWith<_$_FCMDetails> get copyWith =>
-      __$$_FCMDetailsCopyWithImpl<_$_FCMDetails>(this, _$identity);
+  _$$FCMDetailsImplCopyWith<_$FCMDetailsImpl> get copyWith =>
+      __$$FCMDetailsImplCopyWithImpl<_$FCMDetailsImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMDetailsToJson(
+    return _$$FCMDetailsImplToJson(
       this,
     );
   }
@@ -720,15 +722,13 @@ class _$_FCMDetails implements _FCMDetails {
 abstract class _FCMDetails implements FCMDetails {
   const factory _FCMDetails(
       {final FCMTx? tx,
-      @JsonKey(name: 'peg_payout')
-          final FCMPeg? pegPayout,
-      @JsonKey(name: 'peg_detected')
-          final FCMPeg? pegDetected,
+      @JsonKey(name: 'peg_payout') final FCMPeg? pegPayout,
+      @JsonKey(name: 'peg_detected') final FCMPeg? pegDetected,
       @JsonKey(name: 'order_cancelled')
-          final FCMOrderCancelled? orderCancelled}) = _$_FCMDetails;
+      final FCMOrderCancelled? orderCancelled}) = _$FCMDetailsImpl;
 
   factory _FCMDetails.fromJson(Map<String, dynamic> json) =
-      _$_FCMDetails.fromJson;
+      _$FCMDetailsImpl.fromJson;
 
   @override
   FCMTx? get tx;
@@ -743,7 +743,7 @@ abstract class _FCMDetails implements FCMDetails {
   FCMOrderCancelled? get orderCancelled;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMDetailsCopyWith<_$_FCMDetails> get copyWith =>
+  _$$FCMDetailsImplCopyWith<_$FCMDetailsImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -803,9 +803,10 @@ class _$FCMTxCopyWithImpl<$Res, $Val extends FCMTx>
 }
 
 /// @nodoc
-abstract class _$$_FCMTxCopyWith<$Res> implements $FCMTxCopyWith<$Res> {
-  factory _$$_FCMTxCopyWith(_$_FCMTx value, $Res Function(_$_FCMTx) then) =
-      __$$_FCMTxCopyWithImpl<$Res>;
+abstract class _$$FCMTxImplCopyWith<$Res> implements $FCMTxCopyWith<$Res> {
+  factory _$$FCMTxImplCopyWith(
+          _$FCMTxImpl value, $Res Function(_$FCMTxImpl) then) =
+      __$$FCMTxImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -814,9 +815,11 @@ abstract class _$$_FCMTxCopyWith<$Res> implements $FCMTxCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$_FCMTxCopyWithImpl<$Res> extends _$FCMTxCopyWithImpl<$Res, _$_FCMTx>
-    implements _$$_FCMTxCopyWith<$Res> {
-  __$$_FCMTxCopyWithImpl(_$_FCMTx _value, $Res Function(_$_FCMTx) _then)
+class __$$FCMTxImplCopyWithImpl<$Res>
+    extends _$FCMTxCopyWithImpl<$Res, _$FCMTxImpl>
+    implements _$$FCMTxImplCopyWith<$Res> {
+  __$$FCMTxImplCopyWithImpl(
+      _$FCMTxImpl _value, $Res Function(_$FCMTxImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -825,7 +828,7 @@ class __$$_FCMTxCopyWithImpl<$Res> extends _$FCMTxCopyWithImpl<$Res, _$_FCMTx>
     Object? txType = freezed,
     Object? txId = freezed,
   }) {
-    return _then(_$_FCMTx(
+    return _then(_$FCMTxImpl(
       txType: freezed == txType
           ? _value.txType
           : txType // ignore: cast_nullable_to_non_nullable
@@ -840,13 +843,13 @@ class __$$_FCMTxCopyWithImpl<$Res> extends _$FCMTxCopyWithImpl<$Res, _$_FCMTx>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMTx implements _FCMTx {
-  const _$_FCMTx(
+class _$FCMTxImpl implements _FCMTx {
+  const _$FCMTxImpl(
       {@JsonKey(name: 'tx_type') this.txType,
       @JsonKey(name: 'txid') this.txId});
 
-  factory _$_FCMTx.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMTxFromJson(json);
+  factory _$FCMTxImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMTxImplFromJson(json);
 
   @override
   @JsonKey(name: 'tx_type')
@@ -864,7 +867,7 @@ class _$_FCMTx implements _FCMTx {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMTx &&
+            other is _$FCMTxImpl &&
             (identical(other.txType, txType) || other.txType == txType) &&
             (identical(other.txId, txId) || other.txId == txId));
   }
@@ -876,12 +879,12 @@ class _$_FCMTx implements _FCMTx {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMTxCopyWith<_$_FCMTx> get copyWith =>
-      __$$_FCMTxCopyWithImpl<_$_FCMTx>(this, _$identity);
+  _$$FCMTxImplCopyWith<_$FCMTxImpl> get copyWith =>
+      __$$FCMTxImplCopyWithImpl<_$FCMTxImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMTxToJson(
+    return _$$FCMTxImplToJson(
       this,
     );
   }
@@ -890,9 +893,9 @@ class _$_FCMTx implements _FCMTx {
 abstract class _FCMTx implements FCMTx {
   const factory _FCMTx(
       {@JsonKey(name: 'tx_type') final FCMTxType? txType,
-      @JsonKey(name: 'txid') final String? txId}) = _$_FCMTx;
+      @JsonKey(name: 'txid') final String? txId}) = _$FCMTxImpl;
 
-  factory _FCMTx.fromJson(Map<String, dynamic> json) = _$_FCMTx.fromJson;
+  factory _FCMTx.fromJson(Map<String, dynamic> json) = _$FCMTxImpl.fromJson;
 
   @override
   @JsonKey(name: 'tx_type')
@@ -902,7 +905,7 @@ abstract class _FCMTx implements FCMTx {
   String? get txId;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMTxCopyWith<_$_FCMTx> get copyWith =>
+  _$$FCMTxImplCopyWith<_$FCMTxImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1000,9 +1003,10 @@ class _$FCMPegCopyWithImpl<$Res, $Val extends FCMPeg>
 }
 
 /// @nodoc
-abstract class _$$_FCMPegCopyWith<$Res> implements $FCMPegCopyWith<$Res> {
-  factory _$$_FCMPegCopyWith(_$_FCMPeg value, $Res Function(_$_FCMPeg) then) =
-      __$$_FCMPegCopyWithImpl<$Res>;
+abstract class _$$FCMPegImplCopyWith<$Res> implements $FCMPegCopyWith<$Res> {
+  factory _$$FCMPegImplCopyWith(
+          _$FCMPegImpl value, $Res Function(_$FCMPegImpl) then) =
+      __$$FCMPegImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -1016,10 +1020,11 @@ abstract class _$$_FCMPegCopyWith<$Res> implements $FCMPegCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$_FCMPegCopyWithImpl<$Res>
-    extends _$FCMPegCopyWithImpl<$Res, _$_FCMPeg>
-    implements _$$_FCMPegCopyWith<$Res> {
-  __$$_FCMPegCopyWithImpl(_$_FCMPeg _value, $Res Function(_$_FCMPeg) _then)
+class __$$FCMPegImplCopyWithImpl<$Res>
+    extends _$FCMPegCopyWithImpl<$Res, _$FCMPegImpl>
+    implements _$$FCMPegImplCopyWith<$Res> {
+  __$$FCMPegImplCopyWithImpl(
+      _$FCMPegImpl _value, $Res Function(_$FCMPegImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -1033,7 +1038,7 @@ class __$$_FCMPegCopyWithImpl<$Res>
     Object? payoutTxId = freezed,
     Object? payout = freezed,
   }) {
-    return _then(_$_FCMPeg(
+    return _then(_$FCMPegImpl(
       orderId: freezed == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
@@ -1068,8 +1073,8 @@ class __$$_FCMPegCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMPeg implements _FCMPeg {
-  const _$_FCMPeg(
+class _$FCMPegImpl implements _FCMPeg {
+  const _$FCMPegImpl(
       {@JsonKey(name: 'order_id') this.orderId,
       @JsonKey(name: 'peg_in') this.pegIn,
       @JsonKey(name: 'tx_hash') this.txHash,
@@ -1078,8 +1083,8 @@ class _$_FCMPeg implements _FCMPeg {
       @JsonKey(name: 'payout_txid') this.payoutTxId,
       this.payout});
 
-  factory _$_FCMPeg.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMPegFromJson(json);
+  factory _$FCMPegImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMPegImplFromJson(json);
 
   @override
   @JsonKey(name: 'order_id')
@@ -1110,7 +1115,7 @@ class _$_FCMPeg implements _FCMPeg {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMPeg &&
+            other is _$FCMPegImpl &&
             (identical(other.orderId, orderId) || other.orderId == orderId) &&
             (identical(other.pegIn, pegIn) || other.pegIn == pegIn) &&
             (identical(other.txHash, txHash) || other.txHash == txHash) &&
@@ -1130,12 +1135,12 @@ class _$_FCMPeg implements _FCMPeg {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMPegCopyWith<_$_FCMPeg> get copyWith =>
-      __$$_FCMPegCopyWithImpl<_$_FCMPeg>(this, _$identity);
+  _$$FCMPegImplCopyWith<_$FCMPegImpl> get copyWith =>
+      __$$FCMPegImplCopyWithImpl<_$FCMPegImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMPegToJson(
+    return _$$FCMPegImplToJson(
       this,
     );
   }
@@ -1149,9 +1154,9 @@ abstract class _FCMPeg implements FCMPeg {
       final int? vout,
       @JsonKey(name: 'created_at') final int? createdAt,
       @JsonKey(name: 'payout_txid') final String? payoutTxId,
-      final int? payout}) = _$_FCMPeg;
+      final int? payout}) = _$FCMPegImpl;
 
-  factory _FCMPeg.fromJson(Map<String, dynamic> json) = _$_FCMPeg.fromJson;
+  factory _FCMPeg.fromJson(Map<String, dynamic> json) = _$FCMPegImpl.fromJson;
 
   @override
   @JsonKey(name: 'order_id')
@@ -1174,7 +1179,7 @@ abstract class _FCMPeg implements FCMPeg {
   int? get payout;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMPegCopyWith<_$_FCMPeg> get copyWith =>
+  _$$FCMPegImplCopyWith<_$FCMPegImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1227,22 +1232,22 @@ class _$FCMOrderCancelledCopyWithImpl<$Res, $Val extends FCMOrderCancelled>
 }
 
 /// @nodoc
-abstract class _$$_FCMOrderCancelledCopyWith<$Res>
+abstract class _$$FCMOrderCancelledImplCopyWith<$Res>
     implements $FCMOrderCancelledCopyWith<$Res> {
-  factory _$$_FCMOrderCancelledCopyWith(_$_FCMOrderCancelled value,
-          $Res Function(_$_FCMOrderCancelled) then) =
-      __$$_FCMOrderCancelledCopyWithImpl<$Res>;
+  factory _$$FCMOrderCancelledImplCopyWith(_$FCMOrderCancelledImpl value,
+          $Res Function(_$FCMOrderCancelledImpl) then) =
+      __$$FCMOrderCancelledImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({@JsonKey(name: 'order_id') String? orderId});
 }
 
 /// @nodoc
-class __$$_FCMOrderCancelledCopyWithImpl<$Res>
-    extends _$FCMOrderCancelledCopyWithImpl<$Res, _$_FCMOrderCancelled>
-    implements _$$_FCMOrderCancelledCopyWith<$Res> {
-  __$$_FCMOrderCancelledCopyWithImpl(
-      _$_FCMOrderCancelled _value, $Res Function(_$_FCMOrderCancelled) _then)
+class __$$FCMOrderCancelledImplCopyWithImpl<$Res>
+    extends _$FCMOrderCancelledCopyWithImpl<$Res, _$FCMOrderCancelledImpl>
+    implements _$$FCMOrderCancelledImplCopyWith<$Res> {
+  __$$FCMOrderCancelledImplCopyWithImpl(_$FCMOrderCancelledImpl _value,
+      $Res Function(_$FCMOrderCancelledImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -1250,7 +1255,7 @@ class __$$_FCMOrderCancelledCopyWithImpl<$Res>
   $Res call({
     Object? orderId = freezed,
   }) {
-    return _then(_$_FCMOrderCancelled(
+    return _then(_$FCMOrderCancelledImpl(
       orderId: freezed == orderId
           ? _value.orderId
           : orderId // ignore: cast_nullable_to_non_nullable
@@ -1261,11 +1266,11 @@ class __$$_FCMOrderCancelledCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMOrderCancelled implements _FCMOrderCancelled {
-  const _$_FCMOrderCancelled({@JsonKey(name: 'order_id') this.orderId});
+class _$FCMOrderCancelledImpl implements _FCMOrderCancelled {
+  const _$FCMOrderCancelledImpl({@JsonKey(name: 'order_id') this.orderId});
 
-  factory _$_FCMOrderCancelled.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMOrderCancelledFromJson(json);
+  factory _$FCMOrderCancelledImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMOrderCancelledImplFromJson(json);
 
   @override
   @JsonKey(name: 'order_id')
@@ -1280,7 +1285,7 @@ class _$_FCMOrderCancelled implements _FCMOrderCancelled {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMOrderCancelled &&
+            other is _$FCMOrderCancelledImpl &&
             (identical(other.orderId, orderId) || other.orderId == orderId));
   }
 
@@ -1291,13 +1296,13 @@ class _$_FCMOrderCancelled implements _FCMOrderCancelled {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMOrderCancelledCopyWith<_$_FCMOrderCancelled> get copyWith =>
-      __$$_FCMOrderCancelledCopyWithImpl<_$_FCMOrderCancelled>(
+  _$$FCMOrderCancelledImplCopyWith<_$FCMOrderCancelledImpl> get copyWith =>
+      __$$FCMOrderCancelledImplCopyWithImpl<_$FCMOrderCancelledImpl>(
           this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMOrderCancelledToJson(
+    return _$$FCMOrderCancelledImplToJson(
       this,
     );
   }
@@ -1306,17 +1311,17 @@ class _$_FCMOrderCancelled implements _FCMOrderCancelled {
 abstract class _FCMOrderCancelled implements FCMOrderCancelled {
   const factory _FCMOrderCancelled(
           {@JsonKey(name: 'order_id') final String? orderId}) =
-      _$_FCMOrderCancelled;
+      _$FCMOrderCancelledImpl;
 
   factory _FCMOrderCancelled.fromJson(Map<String, dynamic> json) =
-      _$_FCMOrderCancelled.fromJson;
+      _$FCMOrderCancelledImpl.fromJson;
 
   @override
   @JsonKey(name: 'order_id')
   String? get orderId;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMOrderCancelledCopyWith<_$_FCMOrderCancelled> get copyWith =>
+  _$$FCMOrderCancelledImplCopyWith<_$FCMOrderCancelledImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -1401,11 +1406,11 @@ class _$FCMMessageCopyWithImpl<$Res, $Val extends FCMMessage>
 }
 
 /// @nodoc
-abstract class _$$_FCMMessageCopyWith<$Res>
+abstract class _$$FCMMessageImplCopyWith<$Res>
     implements $FCMMessageCopyWith<$Res> {
-  factory _$$_FCMMessageCopyWith(
-          _$_FCMMessage value, $Res Function(_$_FCMMessage) then) =
-      __$$_FCMMessageCopyWithImpl<$Res>;
+  factory _$$FCMMessageImplCopyWith(
+          _$FCMMessageImpl value, $Res Function(_$FCMMessageImpl) then) =
+      __$$FCMMessageImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({FCMNotification? notification, FCMData? data});
@@ -1417,11 +1422,11 @@ abstract class _$$_FCMMessageCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$_FCMMessageCopyWithImpl<$Res>
-    extends _$FCMMessageCopyWithImpl<$Res, _$_FCMMessage>
-    implements _$$_FCMMessageCopyWith<$Res> {
-  __$$_FCMMessageCopyWithImpl(
-      _$_FCMMessage _value, $Res Function(_$_FCMMessage) _then)
+class __$$FCMMessageImplCopyWithImpl<$Res>
+    extends _$FCMMessageCopyWithImpl<$Res, _$FCMMessageImpl>
+    implements _$$FCMMessageImplCopyWith<$Res> {
+  __$$FCMMessageImplCopyWithImpl(
+      _$FCMMessageImpl _value, $Res Function(_$FCMMessageImpl) _then)
       : super(_value, _then);
 
   @pragma('vm:prefer-inline')
@@ -1430,7 +1435,7 @@ class __$$_FCMMessageCopyWithImpl<$Res>
     Object? notification = freezed,
     Object? data = freezed,
   }) {
-    return _then(_$_FCMMessage(
+    return _then(_$FCMMessageImpl(
       notification: freezed == notification
           ? _value.notification
           : notification // ignore: cast_nullable_to_non_nullable
@@ -1445,11 +1450,11 @@ class __$$_FCMMessageCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$_FCMMessage implements _FCMMessage {
-  const _$_FCMMessage({this.notification, this.data});
+class _$FCMMessageImpl implements _FCMMessage {
+  const _$FCMMessageImpl({this.notification, this.data});
 
-  factory _$_FCMMessage.fromJson(Map<String, dynamic> json) =>
-      _$$_FCMMessageFromJson(json);
+  factory _$FCMMessageImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMMessageImplFromJson(json);
 
   @override
   final FCMNotification? notification;
@@ -1465,7 +1470,7 @@ class _$_FCMMessage implements _FCMMessage {
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$_FCMMessage &&
+            other is _$FCMMessageImpl &&
             (identical(other.notification, notification) ||
                 other.notification == notification) &&
             (identical(other.data, data) || other.data == data));
@@ -1478,12 +1483,12 @@ class _$_FCMMessage implements _FCMMessage {
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
-  _$$_FCMMessageCopyWith<_$_FCMMessage> get copyWith =>
-      __$$_FCMMessageCopyWithImpl<_$_FCMMessage>(this, _$identity);
+  _$$FCMMessageImplCopyWith<_$FCMMessageImpl> get copyWith =>
+      __$$FCMMessageImplCopyWithImpl<_$FCMMessageImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_FCMMessageToJson(
+    return _$$FCMMessageImplToJson(
       this,
     );
   }
@@ -1492,10 +1497,10 @@ class _$_FCMMessage implements _FCMMessage {
 abstract class _FCMMessage implements FCMMessage {
   const factory _FCMMessage(
       {final FCMNotification? notification,
-      final FCMData? data}) = _$_FCMMessage;
+      final FCMData? data}) = _$FCMMessageImpl;
 
   factory _FCMMessage.fromJson(Map<String, dynamic> json) =
-      _$_FCMMessage.fromJson;
+      _$FCMMessageImpl.fromJson;
 
   @override
   FCMNotification? get notification;
@@ -1503,6 +1508,6 @@ abstract class _FCMMessage implements FCMMessage {
   FCMData? get data;
   @override
   @JsonKey(ignore: true)
-  _$$_FCMMessageCopyWith<_$_FCMMessage> get copyWith =>
+  _$$FCMMessageImplCopyWith<_$FCMMessageImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class BalanceLine extends ConsumerWidget {
   const BalanceLine({
@@ -20,7 +21,7 @@ class BalanceLine extends ConsumerWidget {
     final makeOrderSide = ref.watch(makeOrderSideStateProvider);
 
     return SizedBox(
-      height: 52,
+      height: 56,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -44,7 +45,7 @@ class BalanceLine extends ConsumerWidget {
           ),
           switch (onMaxPressed) {
             final onMaxPressed? => SizedBox(
-                width: 54,
+                width: 56,
                 height: 24,
                 child: DHoverButton(
                   builder: (context, states) {
@@ -62,10 +63,10 @@ class BalanceLine extends ConsumerWidget {
                       ),
                       child: Text(
                         'Max'.tr().toUpperCase(),
-                        style: const TextStyle(
-                          color: SideSwapColors.brightTurquoise,
-                          fontSize: 12,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: SideSwapColors.brightTurquoise,
+                                ),
                       ),
                     );
                   },
@@ -90,9 +91,10 @@ class BalanceLineBuySide extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final aggregateVolumeWithTicker =
-        ref.watch(marketOrderAggregateVolumeWithTickerProvider);
+    final aggregateVolume = ref.watch(marketOrderAggregateVolumeProvider);
+    final aggregateTicker = ref.watch(marketOrderAggregateVolumeTickerProvider);
     final aggregateTooHigh = ref.watch(makeOrderAggregateVolumeTooHighProvider);
+
     final balance = ref.watch(makeOrderBalanceProvider);
     final makeOrderSide = ref.watch(makeOrderSideStateProvider);
     final isSell = makeOrderSide == MakeOrderSide.sell;
@@ -106,22 +108,40 @@ class BalanceLineBuySide extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Aggregate bid amount:'.tr(),
-                style: TextStyle(
+                '$balanceHint:',
+                style: const TextStyle(
                   fontSize: 13,
-                  color: aggregateTooHigh
-                      ? SideSwapColors.bitterSweet
-                      : const Color(0xFF96C6E4),
+                  color: SideSwapColors.airSuperiorityBlue,
                 ),
               ),
-              Text(
-                aggregateVolumeWithTicker,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: aggregateTooHigh
-                      ? SideSwapColors.bitterSweet
-                      : const Color(0xFF96C6E4),
-                ),
+              Row(
+                children: [
+                  Text(
+                    balance.balanceString,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF96C6E4),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final icon = ref
+                          .watch(assetImageProvider)
+                          .getSmallImage(balance.assetId);
+
+                      return SizedBox(width: 16, height: 16, child: icon);
+                    },
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    balance.ticker,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF96C6E4),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -129,18 +149,46 @@ class BalanceLineBuySide extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '$balanceHint:',
-                style: const TextStyle(
+                'Aggregate bid amount:'.tr(),
+                style: TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF96C6E4),
+                  color: aggregateTooHigh
+                      ? SideSwapColors.bitterSweet
+                      : SideSwapColors.airSuperiorityBlue,
                 ),
               ),
-              Text(
-                '${balance.balanceString} ${balance.ticker}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF96C6E4),
-                ),
+              Row(
+                children: [
+                  Text(
+                    aggregateVolume.asString(),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: aggregateTooHigh
+                          ? SideSwapColors.bitterSweet
+                          : const Color(0xFF96C6E4),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final icon = ref
+                          .watch(assetImageProvider)
+                          .getSmallImage(aggregateVolume.accountAsset?.assetId);
+
+                      return SizedBox(width: 16, height: 16, child: icon);
+                    },
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    aggregateTicker,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: aggregateTooHigh
+                          ? SideSwapColors.bitterSweet
+                          : const Color(0xFF96C6E4),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -160,8 +208,8 @@ class BalanceLineSellSide extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final aggregateVolumeWithTicker =
-        ref.watch(marketOrderAggregateVolumeWithTickerProvider);
+    final aggregateVolume = ref.watch(marketOrderAggregateVolumeProvider);
+    final aggregateTicker = ref.watch(marketOrderAggregateVolumeTickerProvider);
     final balance = ref.watch(makeOrderBalanceProvider);
     final makeOrderSide = ref.watch(makeOrderSideStateProvider);
     final isSell = makeOrderSide == MakeOrderSide.sell;
@@ -178,15 +226,37 @@ class BalanceLineSellSide extends ConsumerWidget {
                 '$balanceHint:',
                 style: const TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF96C6E4),
+                  color: SideSwapColors.airSuperiorityBlue,
                 ),
               ),
-              Text(
-                '${balance.balanceString} ${balance.ticker}',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF96C6E4),
-                ),
+              Row(
+                children: [
+                  Text(
+                    balance.balanceString,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF96C6E4),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final icon = ref
+                          .watch(assetImageProvider)
+                          .getSmallImage(balance.assetId);
+
+                      return SizedBox(width: 16, height: 16, child: icon);
+                    },
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    balance.ticker,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF96C6E4),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -198,15 +268,37 @@ class BalanceLineSellSide extends ConsumerWidget {
                 'Aggregate offer value:'.tr(),
                 style: const TextStyle(
                   fontSize: 13,
-                  color: Color(0xFF96C6E4),
+                  color: SideSwapColors.airSuperiorityBlue,
                 ),
               ),
-              Text(
-                aggregateVolumeWithTicker.toString(),
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF96C6E4),
-                ),
+              Row(
+                children: [
+                  Text(
+                    aggregateVolume.asString(),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF96C6E4),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final icon = ref
+                          .watch(assetImageProvider)
+                          .getSmallImage(aggregateVolume.accountAsset?.assetId);
+
+                      return SizedBox(width: 16, height: 16, child: icon);
+                    },
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    aggregateTicker,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF96C6E4),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

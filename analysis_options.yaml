@@ -12,5 +12,4 @@ analyzer:
     - "**/*.freezed.dart"
   errors:
     invalid_use_of_visible_for_testing_member: error
-    implicit_dynamic_parameter: warning
-    invalid_annotation_target: ignore
+    collection_methods_unrelated_type: error

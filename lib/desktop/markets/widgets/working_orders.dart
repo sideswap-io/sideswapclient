@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/markets/widgets/orders_header.dart';
 import 'package:sideswap/desktop/markets/widgets/orders_row.dart';
 import 'package:sideswap/desktop/markets/widgets/working_order.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
 
@@ -124,8 +126,15 @@ class WorkingOrdersList extends HookConsumerWidget {
                   },
                   onPressed: () {
                     ref
-                        .read(marketSelectedAssetIdStateProvider.notifier)
-                        .setSelectedAssetId(order.assetId);
+                        .read(marketSelectedAccountAssetStateProvider.notifier)
+                        .setSelectedAccountAsset(
+                          AccountAsset(
+                            order.marketType == MarketType.amp
+                                ? AccountType.amp
+                                : AccountType.reg,
+                            order.assetId,
+                          ),
+                        );
                   },
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/asset_selector_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -51,8 +52,8 @@ class AssetSelector extends ConsumerWidget {
                         builder: (context, states) {
                           return Consumer(
                             builder: (context, ref, child) {
-                              final selectedAssetId =
-                                  ref.watch(marketSelectedAssetIdStateProvider);
+                              final selectedAccountAsset = ref.watch(
+                                  marketSelectedAccountAssetStateProvider);
                               return Container(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 7,
@@ -61,12 +62,12 @@ class AssetSelector extends ConsumerWidget {
                                 decoration: BoxDecoration(
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(8)),
-                                  color:
-                                      assets[index].assetId == selectedAssetId
-                                          ? Colors.grey
-                                          : (states.isHovering
-                                              ? const Color(0xFF12577A)
-                                              : null),
+                                  color: assets[index].assetId ==
+                                          selectedAccountAsset.assetId
+                                      ? Colors.grey
+                                      : (states.isHovering
+                                          ? const Color(0xFF12577A)
+                                          : null),
                                 ),
                                 child: Row(
                                   children: [
@@ -99,8 +100,15 @@ class AssetSelector extends ConsumerWidget {
                         },
                         onPressed: () {
                           ref
-                              .read(marketSelectedAssetIdStateProvider.notifier)
-                              .setSelectedAssetId(assets[index].assetId);
+                              .read(marketSelectedAccountAssetStateProvider
+                                  .notifier)
+                              .setSelectedAccountAsset(
+                                AccountAsset(
+                                    marketType == MarketType.amp
+                                        ? AccountType.amp
+                                        : AccountType.reg,
+                                    assets[index].assetId),
+                              );
                           if (onAssetSelected != null) {
                             onAssetSelected!.call();
                           }

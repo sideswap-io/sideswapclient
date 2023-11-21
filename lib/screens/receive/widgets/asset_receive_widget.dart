@@ -75,7 +75,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
             .select((p) => p.serverStatus?.minPegInAmount.toInt() ?? 0));
 
         final assetSend =
-            ref.watch(swapProvider.select((p) => p.swapSendAsset ?? ''));
+            ref.watch(swapProvider.select((p) => p.swapSendAsset));
         final serverFeePercentPegIn = ref.watch(walletProvider
             .select((p) => p.serverStatus?.serverFeePercentPegIn));
         final serverFeePercentPegOut = ref.watch(walletProvider
@@ -84,7 +84,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
         var percentConversion =
             (serverFeePercentPegIn == null || serverFeePercentPegOut == null)
                 ? 0
-                : assetSend == liquidAssetId
+                : assetSend?.assetId == liquidAssetId
                     ? 100 - serverFeePercentPegOut
                     : 100 - serverFeePercentPegIn;
 

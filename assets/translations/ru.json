@@ -508,5 +508,6 @@
   "Select address type": "Выберите тип адреса",
   "Sign swap transaction": "Подписать сделку обмена",
   "Create swap output": "Создать выход обмена",
-  "Sign offline swap transaction": "Подписать офлайн сделку обмена"
+  "Sign offline swap transaction": "Подписать офлайн сделку обмена",
+  "No pending orders": "No pending orders"
 }

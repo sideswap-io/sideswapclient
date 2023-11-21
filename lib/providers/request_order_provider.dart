@@ -1,283 +1,587 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-extension DurationExtensions on Duration? {
-  String toStringCustom() {
-    final duration = this;
-    if (duration == null || duration.inSeconds == 0) {
-      return unlimitedTtl;
-    }
+part 'request_order_provider.g.dart';
 
-    if (duration.inDays > 0) {
-      return '${duration.inDays}d ${duration.inHours.remainder(24)}h';
-    }
-    if (duration.inHours > 0) {
-      return '${duration.inHours}h ${duration.inMinutes.remainder(60)}m';
-    }
-    if (duration.inMinutes > 0) {
-      return '${duration.inMinutes}m ${duration.inSeconds.remainder(60)}s';
-    }
-    return '${duration.inSeconds}s';
+class OrderEntryAccountAsset {
+  final AccountAsset accountAsset;
+  final List<AccountAsset> accountAssetList;
+
+  OrderEntryAccountAsset({
+    required this.accountAsset,
+    required this.accountAssetList,
+  });
+
+  @override
+  String toString() =>
+      'OrderEntryAccountAsset(accountAsset: $accountAsset, accountAssetList: $accountAssetList)';
+
+  (AccountAsset, List<AccountAsset>) _equality() =>
+      (accountAsset, accountAssetList);
+
+  @override
+  bool operator ==(covariant OrderEntryAccountAsset other) {
+    if (identical(this, other)) return true;
+
+    return other._equality() == _equality();
   }
 
-  String toStringCustomShort() {
-    final duration = this;
-    if (duration == null || duration.inSeconds == 0) {
-      return unlimitedTtl;
-    }
+  @override
+  int get hashCode => _equality().hashCode;
+}
 
-    if (duration.inDays > 0) {
-      return '${duration.inDays}d';
-    }
-    if (duration.inHours > 0) {
-      return '${duration.inHours}h';
-    }
-    if (duration.inMinutes > 0) {
-      return '${duration.inMinutes}m';
-    }
-    return '${duration.inSeconds}s';
+class OrderEntryProductPair {
+  final OrderEntryAccountAsset deliver;
+  final OrderEntryAccountAsset receive;
+  OrderEntryProductPair({
+    required this.deliver,
+    required this.receive,
+  });
+
+  @override
+  String toString() =>
+      'OrderEntryProduct(deliver: $deliver, receive: $receive)';
+
+  (OrderEntryAccountAsset, OrderEntryAccountAsset) _equality() =>
+      (deliver, receive);
+
+  @override
+  bool operator ==(covariant OrderEntryProductPair other) {
+    if (identical(this, other)) return true;
+
+    return other._equality() == _equality();
+  }
+
+  @override
+  int get hashCode => _equality().hashCode;
+}
+
+@riverpod
+OrderEntryProductPair defaultOrderEntryProduct(
+    DefaultOrderEntryProductRef ref) {
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
+  final defaultDeliverAccountAsset =
+      AccountAsset(AccountType.reg, liquidAssetId);
+  final defaultReceiveAccountAsset =
+      AccountAsset(AccountType.reg, tetherAssetId);
+
+  return OrderEntryProductPair(
+    deliver: OrderEntryAccountAsset(
+      accountAsset: defaultDeliverAccountAsset,
+      accountAssetList: [defaultDeliverAccountAsset],
+    ),
+    receive: OrderEntryAccountAsset(
+      accountAsset: defaultReceiveAccountAsset,
+      accountAssetList: [defaultReceiveAccountAsset],
+    ),
+  );
+}
+
+@riverpod
+OrderEntryProductPair orderEntryProduct(OrderEntryProductRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final selectedAsset =
+      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+  final pricedInLiquid =
+      ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
+
+  final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
+  final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
+
+  final makeOrderSide = ref.watch(makeOrderSideStateProvider);
+  final liquidAccountAsset = ref.watch(makeOrderLiquidAccountAssetProvider);
+
+  if (liquidAccountAsset == null) {
+    logger.w('Unable to build AccountAsset for liquid account asset');
+    final defaultValue = ref.watch(defaultOrderEntryProductProvider);
+    return defaultValue;
+  }
+
+  final accountAssetPair = switch (makeOrderSide) {
+    MakeOrderSide.sell => (
+        deliver: pricedInLiquid ? selectedAccountAsset : liquidAccountAsset,
+        receive: pricedInLiquid ? liquidAccountAsset : selectedAccountAsset
+      ),
+    MakeOrderSide.buy => (
+        deliver: pricedInLiquid ? liquidAccountAsset : selectedAccountAsset,
+        receive: pricedInLiquid ? selectedAccountAsset : liquidAccountAsset
+      ),
+  };
+
+  final availableAssetList = switch (selectedAccountAsset.account) {
+    AccountType(isAmp: true) => [...ampAccountAssets],
+    AccountType(isAmp: false) => [...regularAccountAssets],
+  };
+
+  // don't allow for user to choose liquid asset from dropdown, everything will blow up
+  availableAssetList.remove(liquidAccountAsset);
+
+  final availableDeliverAssetList =
+      accountAssetPair.deliver == liquidAccountAsset
+          ? [liquidAccountAsset]
+          : availableAssetList;
+  final availableReceiveAssetList =
+      accountAssetPair.receive == liquidAccountAsset
+          ? [liquidAccountAsset]
+          : availableAssetList;
+
+  return OrderEntryProductPair(
+    deliver: OrderEntryAccountAsset(
+      accountAsset: accountAssetPair.deliver,
+      accountAssetList: availableDeliverAssetList,
+    ),
+    receive: OrderEntryAccountAsset(
+      accountAsset: accountAssetPair.receive,
+      accountAssetList: availableReceiveAssetList,
+    ),
+  );
+}
+
+// @riverpod
+// AccountAsset? accountAssetForMarketSelected(
+//     AccountAssetForMarketRef ref, String assetId) {
+//   return AccountAsset(AccountType(1), assetId);
+// }
+
+// TODO (malcolmpl): remove
+@riverpod
+OrderEntryAccountAsset deliverOrderEntryAccountAsset(
+    DeliverOrderEntryAccountAssetRef ref) {
+  final deliverAccountAsset =
+      ref.watch(requestOrderDeliverAccountAssetProvider);
+  final deliverAccountType = deliverAccountAsset.account;
+
+  final accountAssetsWithBalances = ref
+      .watch(balancesProvider)
+      .balances
+      .entries
+      .where((element) => element.value > 0)
+      .map((e) => e.key)
+      .toList();
+
+  final accountAssetList = <AccountAsset>[];
+  if (deliverAccountType == AccountType.reg) {
+    final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
+    accountAssetList.addAll(regularAccountAssets);
+  } else {
+    final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
+    accountAssetList.addAll(ampAccountAssets);
+  }
+
+  if (accountAssetList.isEmpty) {
+    return OrderEntryAccountAsset(
+      accountAsset: deliverAccountAsset,
+      accountAssetList: [deliverAccountAsset],
+    );
+  }
+
+  final deliverAccountAssetList = [accountAssetList, accountAssetsWithBalances]
+      .map((e) => e.toSet())
+      .reduce((value, element) => value.intersection(element))
+      .toList();
+
+  return OrderEntryAccountAsset(
+    accountAsset: deliverAccountAsset,
+    accountAssetList: deliverAccountAssetList,
+  );
+}
+
+// TODO (malcolmpl): remove
+@riverpod
+OrderEntryAccountAsset receiveOrderEntryAccountAsset(
+    ReceiveOrderEntryAccountAssetRef ref) {
+  final receiveAccountAsset =
+      ref.watch(requestOrderReceiveAccountAssetProvider);
+  final receiveAccountType = receiveAccountAsset.account;
+
+  final accountAssetsWithBalances = ref
+      .watch(balancesProvider)
+      .balances
+      .entries
+      .where((element) => element.value > 0)
+      .map((e) => e.key)
+      .toList();
+
+  final accountAssetList = <AccountAsset>[];
+  if (receiveAccountType == AccountType.reg) {
+    final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
+    accountAssetList.addAll(regularAccountAssets);
+  } else {
+    final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
+    accountAssetList.addAll(ampAccountAssets);
+  }
+
+  if (accountAssetList.isEmpty) {
+    return OrderEntryAccountAsset(
+      accountAsset: receiveAccountAsset,
+      accountAssetList: [receiveAccountAsset],
+    );
+  }
+
+  final receiveAccountAssetList = [accountAssetList, accountAssetsWithBalances]
+      .map((e) => e.toSet())
+      .reduce((value, element) => value.intersection(element))
+      .toList();
+
+  if (!receiveAccountAssetList
+      .any((element) => element.assetId == receiveAccountAsset.assetId)) {
+    receiveAccountAssetList.add(receiveAccountAsset);
+  }
+
+  if (!receiveAccountAssetList
+      .any((element) => element == receiveAccountAsset)) {
+    logger.d('error');
+  }
+  // assert(!receiveAccountAssetList
+  //     .any((element) => element == receiveAccountAsset));
+
+  return OrderEntryAccountAsset(
+    accountAsset: receiveAccountAsset,
+    accountAssetList: receiveAccountAssetList,
+  );
+}
+
+@Riverpod(keepAlive: true)
+class RequestOrderDeliverAccountAsset
+    extends _$RequestOrderDeliverAccountAsset {
+  @override
+  AccountAsset build() {
+    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    final defaultDeliverAccountAsset =
+        AccountAsset(AccountType.reg, liquidAssetId);
+    return defaultDeliverAccountAsset;
+  }
+
+  void setDeliverAccountAsset(AccountAsset value) {
+    logger.d('Set Deliver to: $value');
+    state = value;
   }
 }
 
-final requestOrderProvider = ChangeNotifierProvider<RequestOrderProvider>(
-    (ref) => RequestOrderProvider(ref));
-
-class RequestOrderProvider extends ChangeNotifier {
-  final Ref ref;
-
-  RequestOrderProvider(this.ref) {
-    _deliverAssetId =
-        AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider));
+@Riverpod(keepAlive: true)
+class RequestOrderReceiveAccountAsset
+    extends _$RequestOrderReceiveAccountAsset {
+  @override
+  AccountAsset build() {
+    final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
+    final defaultReceiveAccountAsset =
+        AccountAsset(AccountType.reg, tetherAssetId);
+    return defaultReceiveAccountAsset;
   }
 
-  bool isSellOrder() {
-    // Receive AMP order is always a buy, all else is always a sell
-    return receiveAssetId.account != AccountType.amp;
+  void setReceiveAccountAsset(AccountAsset value) {
+    logger.d('Set Receive to: $value');
+    state = value;
   }
+}
 
-  bool isDeliverToken() {
-    final assetId = isDeliverLiquid() ? receiveAssetId : deliverAssetId;
-    return ref.read(assetUtilsProvider).isAssetToken(assetId: assetId.assetId);
-  }
+// TODO (malcolmpl): remove or use functions as providers
+final requestOrderProvider =
+    AutoDisposeChangeNotifierProvider<RequestOrderProvider>((ref) {
+  ref.keepAlive();
+  final deliverOrderEntry = ref.watch(deliverOrderEntryAccountAssetProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-  bool isDeliverLiquid() {
-    return deliverAssetId.assetId == ref.read(liquidAssetIdStateProvider);
-  }
+  return RequestOrderProvider(
+    ref,
+    deliverOrderEntry,
+    liquidAssetId,
+  );
+});
 
-  AccountAsset tokenAccountAsset() {
-    return isDeliverLiquid() ? receiveAssetId : deliverAssetId;
-  }
+@riverpod
+String deliverHintText(DeliverHintTextRef ref) {
+  final precision = ref.watch(deliverAssetPrecisionProvider);
+  final hint = DecimalCutterTextInputFormatter(
+    decimalRange: precision,
+  )
+      .formatEditUpdate(const TextEditingValue(text: '0.00000000'),
+          const TextEditingValue(text: '0.00000000'))
+      .text;
 
-  late AccountAsset _deliverAssetId;
-  AccountAsset get deliverAssetId {
-    return _deliverAssetId;
-  }
+  return hint;
+}
 
-  set deliverAssetId(AccountAsset value) {
-    _deliverAssetId = value;
-    _receiveAssetId = receiveAssets().first;
-    notifyListeners();
-    // updateIndexPrice();
-  }
+@riverpod
+String receiveHintText(ReceiveHintTextRef ref) {
+  final precision = ref.watch(receiveAssetPrecisionProvider);
+  final hint = DecimalCutterTextInputFormatter(
+    decimalRange: precision,
+  )
+      .formatEditUpdate(const TextEditingValue(text: '0.00000000'),
+          const TextEditingValue(text: '0.00000000'))
+      .text;
 
-  void validateDeliverAsset() {
-    final allDeliverAccounts = deliverAssets();
-    // This would deselect currently selected asset if it goes to 0
-    final validDeliver = allDeliverAccounts.contains(deliverAssetId);
-    if (!validDeliver) {
-      deliverAssetId = allDeliverAccounts.first;
+  return hint;
+}
+
+// TODO (malcolmpl): remove?
+@riverpod
+bool isDeliverLiquid(IsDeliverLiquidRef ref) {
+  final deliverAccountAsset = ref.watch(deliverOrderEntryAccountAssetProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  return deliverAccountAsset.accountAsset.assetId == liquidAssetId;
+}
+
+@riverpod
+AccountAsset tokenAccountAsset(TokenAccountAssetRef ref) {
+  final isDeliverLiquid = ref.watch(isDeliverLiquidProvider);
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final receiveAccountAsset = orderEntryProductPair.receive.accountAsset;
+  final deliverAccountAsset = orderEntryProductPair.deliver.accountAsset;
+  return isDeliverLiquid ? receiveAccountAsset : deliverAccountAsset;
+}
+
+// TODO (malcolmpl): remove?
+@riverpod
+bool isDeliverToken(IsDeliverTokenRef ref) {
+  final tokenAccountAsset = ref.watch(tokenAccountAssetProvider);
+  return ref
+      .watch(assetUtilsProvider)
+      .isAssetToken(assetId: tokenAccountAsset.assetId);
+}
+
+@riverpod
+bool selectedAssetIsToken(SelectedAssetIsTokenRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  return ref
+      .watch(assetUtilsProvider)
+      .isAssetToken(assetId: selectedAccountAsset.assetId);
+}
+
+@riverpod
+Asset? deliverAsset(DeliverAssetRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final assetMap = ref.watch(assetsStateProvider);
+  return assetMap[orderEntryProductPair.deliver.accountAsset.assetId];
+}
+
+@riverpod
+int deliverAssetPrecision(DeliverAssetPrecisionRef ref) {
+  final deliverAsset = ref.watch(deliverAssetProvider);
+  return deliverAsset?.precision ?? 0;
+}
+
+@riverpod
+String deliverAssetTicker(DeliverAssetTickerRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+
+  return ref
+      .watch(assetUtilsProvider)
+      .tickerForAssetId(orderEntryProductPair.deliver.accountAsset.assetId);
+}
+
+@riverpod
+List<AccountAsset> deliverAccountAssetList(DeliverAccountAssetListRef ref) {
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final balances = ref.watch(balancesProvider).balances;
+
+  final assets = balances.entries
+      .where((item) =>
+          item.value > 0 ||
+          (item.key.assetId == liquidAssetId &&
+              item.key.account == AccountType.reg))
+      .map((item) => item.key)
+      .toList();
+  assets.sort();
+
+  return assets;
+}
+
+@riverpod
+List<AccountAsset> disableAccountAssetList(DisableAccountAssetListRef ref) {
+  final ampAssets = ref.watch(ampAssetsNotifierProvider);
+  final allAssets = ref.watch(assetsStateProvider);
+  final deliverAccountAssetList = ref.watch(deliverAccountAssetListProvider);
+
+  final assetList = deliverAccountAssetList.where((item) {
+    final asset = allAssets[item.assetId];
+    if (asset == null) {
+      return true;
     }
+
+    if (asset.unregistered) {
+      return true;
+    }
+    final isAmpAsset = ampAssets.contains(asset.assetId);
+    final isAmpAccount = item.account == AccountType.amp;
+    if (isAmpAsset != isAmpAccount) {
+      return true;
+    }
+    return false;
+  }).toList();
+
+  return assetList;
+}
+
+@riverpod
+String deliverBalance(DeliverBalanceRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final balances = ref.watch(balancesProvider).balances;
+
+  final balance = balances[orderEntryProductPair.deliver.accountAsset] ?? 0;
+  final precision = ref.watch(deliverAssetPrecisionProvider);
+
+  return ref.watch(amountToStringProvider).amountToString(
+      AmountToStringParameters(amount: balance, precision: precision));
+}
+
+@riverpod
+Asset? receiveAsset(ReceiveAssetRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final assetsMap = ref.watch(assetsStateProvider);
+  return assetsMap[orderEntryProductPair.receive.accountAsset.assetId];
+}
+
+@riverpod
+int receiveAssetPrecision(ReceiveAssetPrecisionRef ref) {
+  final receiveAsset = ref.watch(receiveAssetProvider);
+  return receiveAsset?.precision ?? 0;
+}
+
+@riverpod
+String dollarConversion(DollarConversionRef ref, String? assetId, num amount) {
+  ref.watch(requestOrderIndexPriceProvider);
+  final amountUsd = ref.watch(walletProvider).getAmountUsd(assetId, amount);
+
+  if (amountUsd == 0) {
+    return '';
   }
 
-  Asset? deliverAsset() {
-    return ref.read(assetsStateProvider)[_deliverAssetId.assetId];
+  if (assetId == null || assetId.isEmpty) {
+    return '';
   }
 
-  int deliverPrecision() {
-    return deliverAsset()?.precision ?? 0;
+  final amountDecimal = Decimal.tryParse(amountUsd.toString()) ?? Decimal.zero;
+  if (amountDecimal == Decimal.zero) {
+    return '0.0';
   }
 
-  String deliverTicker() {
-    return ref
-        .read(assetUtilsProvider)
-        .tickerForAssetId(_deliverAssetId.assetId);
+  var dollarConversion = amountDecimal
+      .toRational()
+      .toDecimal(scaleOnInfinitePrecision: 2)
+      .toStringAsFixed(2);
+
+  dollarConversion = replaceCharacterOnPosition(
+      input: dollarConversion,
+      currencyChar: 'USD',
+      currencyCharAlignment: CurrencyCharAlignment.end);
+
+  return dollarConversion;
+}
+
+@riverpod
+String dollarConversionFromString(
+    DollarConversionFromStringRef ref, String? assetId, String amount) {
+  if (amount.isEmpty) {
+    return '';
   }
 
-  List<AccountAsset> deliverAssets() {
-    final liquid = ref.read(liquidAssetIdStateProvider);
-    final assets = ref
-        .read(balancesProvider)
-        .balances
-        .entries
-        .where((item) =>
-            item.value > 0 ||
-            (item.key.assetId == liquid && item.key.account == AccountType.reg))
-        .map((item) => item.key)
-        .toList();
-    assets.sort();
-    return assets;
+  final amountParsed = double.tryParse(amount) ?? 0;
+  if (amountParsed == 0) {
+    return '';
   }
 
-  List<AccountAsset> disabledAssets() {
-    final ampAssets = ref.read(ampAssetsNotifierProvider);
-    final allAssets = ref.read(assetsStateProvider);
-    final asset = deliverAssets().where((item) {
-      final asset = allAssets[item.assetId]!;
-      if (asset.unregistered) {
-        return true;
-      }
-      final isAmpAsset = ampAssets.contains(asset.assetId);
-      final isAmpAccount = item.account == AccountType.amp;
-      if (isAmpAsset != isAmpAccount) {
-        return true;
-      }
-      return false;
-    }).toList();
+  return ref.watch(dollarConversionProvider(assetId, amountParsed));
+}
+
+@riverpod
+String receiveBalance(ReceiveBalanceRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final balances = ref.watch(balancesProvider).balances;
+
+  final balance = balances[orderEntryProductPair.receive.accountAsset];
+  final precision = ref.watch(receiveAssetPrecisionProvider);
+  return ref.watch(amountToStringProvider).amountToString(
+      AmountToStringParameters(amount: balance ?? 0, precision: precision));
+}
+
+@riverpod
+MarketType marketType(MarketTypeRef ref) {
+  final tokenAssetId = ref.watch(tokenAccountAssetProvider).assetId;
+  final tokenAsset = ref.watch(assetsStateProvider)[tokenAssetId];
+  if (tokenAsset?.swapMarket == true) {
+    return MarketType.stablecoin;
+  }
+  if (tokenAsset?.ampMarket == true) {
+    return MarketType.amp;
+  }
+  return MarketType.token;
+}
+
+@riverpod
+bool isStablecoinMarket(IsStablecoinMarketRef ref) {
+  final marketType = ref.watch(marketTypeProvider);
+  return marketType == MarketType.stablecoin;
+}
+
+// TODO (malcolmpl): remove after cleanup
+@riverpod
+Asset? priceAsset(PriceAssetRef ref) {
+  final assetId = ref.watch(tokenAccountAssetProvider).assetId;
+  final asset = ref.watch(assetsStateProvider)[assetId];
+  if (asset?.swapMarket == true) {
     return asset;
   }
 
-  String deliverBalance() {
-    final balance = realDeliverBalance();
-    final precision = deliverPrecision();
+  return ref.watch(assetUtilsProvider).liquidAsset();
+}
 
-    return ref.read(amountToStringProvider).amountToString(
-        AmountToStringParameters(amount: balance, precision: precision));
+// TODO (malcolmpl): remove after cleanup
+@riverpod
+Asset? productAsset(ProductAssetRef ref) {
+  final productAssetId = ref.watch(tokenAccountAssetProvider).assetId;
+  final productAsset =
+      ref.watch(assetsStateProvider.select((value) => value[productAssetId]));
+
+  return productAsset;
+}
+
+// TODO (malcolmpl): remove or move to providers
+class RequestOrderProvider extends ChangeNotifier {
+  final Ref ref;
+
+  RequestOrderProvider(
+    this.ref,
+    OrderEntryAccountAsset deliverOrderEntry,
+    this.liquidAssetId,
+  ) {
+    _deliverOrderEntry = deliverOrderEntry;
   }
 
-  int realDeliverBalance() {
-    return ref.read(balancesProvider).balances[_deliverAssetId] ?? 0;
-  }
+  late final OrderEntryAccountAsset _deliverOrderEntry;
+  final String liquidAssetId;
 
-  AccountAsset? _receiveAssetId;
-  AccountAsset get receiveAssetId {
-    return _receiveAssetId ??= receiveAssets().first;
-  }
-
-  set receiveAssetId(AccountAsset value) {
-    _receiveAssetId = value;
-    notifyListeners();
-  }
-
-  Asset? receiveAsset() {
-    return ref.read(assetsStateProvider)[receiveAssetId.assetId];
-  }
-
-  int receivePrecision() {
-    return receiveAsset()?.precision ?? 0;
-  }
-
-  String receiveTicker() {
-    return ref
-        .read(assetUtilsProvider)
-        .tickerForAssetId(receiveAssetId.assetId);
-  }
-
-  List<AccountAsset> receiveAssets() {
-    if (deliverTicker() == kLiquidBitcoinTicker) {
-      final assets = ref.read(assetsStateProvider);
-      return assets.values
-          .where((e) =>
-              (e.swapMarket || e.ampMarket) && e.ticker != kLiquidBitcoinTicker)
-          .map((e) => AccountAsset(
-              e.ampMarket ? AccountType.amp : AccountType.reg, e.assetId))
-          .toList();
+  void validateDeliverAsset() {
+    final allDeliverAccounts = ref.read(deliverAccountAssetListProvider);
+    // This would deselect currently selected asset if it goes to 0
+    final validDeliver =
+        allDeliverAccounts.contains(_deliverOrderEntry.accountAsset);
+    if (!validDeliver) {
+      // TODO (malcolmpl): change this to marketSelectedAssetIdStateProvider
+      ref
+          .read(requestOrderDeliverAccountAssetProvider.notifier)
+          .setDeliverAccountAsset(allDeliverAccounts.first);
     }
-
-    final liquid = ref.read(liquidAssetIdStateProvider);
-    return [AccountAsset(AccountType.reg, liquid)];
-  }
-
-  String dollarConversion(String? assetId, num amount) {
-    final amountUsd = ref.read(walletProvider).getAmountUsd(assetId, amount);
-
-    if (amountUsd == 0) {
-      return '';
-    }
-
-    var dollarConversion = '0.0';
-    dollarConversion = amountUsd.toStringAsFixed(2);
-    dollarConversion = replaceCharacterOnPosition(
-        input: dollarConversion,
-        currencyChar: 'USD',
-        currencyCharAlignment: CurrencyCharAlignment.end);
-
-    return dollarConversion;
-  }
-
-  String dollarConversionFromString(String? assetId, String amount) {
-    if (amount.isEmpty) {
-      return '';
-    }
-
-    final amountParsed = double.tryParse(amount) ?? 0;
-    if (amountParsed == 0) {
-      return '';
-    }
-
-    return dollarConversion(assetId, amountParsed);
-  }
-
-  String receiveBalance() {
-    final balance = ref.read(balancesProvider).balances[receiveAssetId];
-    final precision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: receiveAssetId.assetId);
-    return ref.read(amountToStringProvider).amountToString(
-        AmountToStringParameters(amount: balance ?? 0, precision: precision));
-  }
-
-  Asset? _priceAsset;
-
-  bool isStablecoinMarket() {
-    return marketType() == MarketType.stablecoin;
-  }
-
-  MarketType marketType() {
-    final tokenAssetId = tokenAccountAsset().assetId;
-    final tokenAsset = ref.read(assetsStateProvider)[tokenAssetId];
-    if (tokenAsset?.swapMarket == true) {
-      return MarketType.stablecoin;
-    }
-    if (tokenAsset?.ampMarket == true) {
-      return MarketType.amp;
-    }
-    return MarketType.token;
-  }
-
-  Asset? get priceAsset {
-    final newPriceAsset = getPriceAsset();
-    if (_priceAsset == newPriceAsset) {
-      return newPriceAsset;
-    }
-
-    _priceAsset = newPriceAsset;
-
-    ref.read(marketsProvider).subscribeIndexPrice(tokenAccountAsset().assetId);
-
-    return newPriceAsset;
-  }
-
-  Asset? getPriceAsset() {
-    final assetId = tokenAccountAsset().assetId;
-    final asset = ref.read(assetsStateProvider)[assetId];
-    if (asset?.swapMarket == true) {
-      return asset!;
-    }
-
-    return ref.read(assetUtilsProvider).liquidAsset();
   }
 
   String calculateReceiveAmount(String deliverAmount, String priceAmount) {
@@ -288,10 +592,12 @@ class RequestOrderProvider extends ChangeNotifier {
     final deliverAmountParsed =
         Decimal.tryParse(deliverAmountStr) ?? Decimal.zero;
     final priceAmountParsed = Decimal.tryParse(priceAmountStr) ?? Decimal.zero;
-    final receiveAssetPrecision = receiveAsset()!.precision;
+    final receiveAssetPrecision = ref.read(receiveAssetPrecisionProvider);
 
     // TODO (malcolmpl): Include server fee here
-    if (isStablecoinMarket() == isDeliverLiquid()) {
+    final isDeliverLiquid = ref.read(isDeliverLiquidProvider);
+    final isStablecoinMarket = ref.read(isStablecoinMarketProvider);
+    if (isStablecoinMarket == isDeliverLiquid) {
       amountParsed = deliverAmountParsed * priceAmountParsed;
     } else {
       if (priceAmountParsed != Decimal.zero) {
@@ -316,7 +622,9 @@ class RequestOrderProvider extends ChangeNotifier {
         Decimal.tryParse(receiveAmountStr) ?? Decimal.zero;
     final priceAmountParsed = Decimal.tryParse(priceAmountStr) ?? Decimal.zero;
 
-    if (isStablecoinMarket() == isDeliverLiquid()) {
+    final isDeliverLiquid = ref.read(isDeliverLiquidProvider);
+    final isStablecoinMarket = ref.read(isStablecoinMarketProvider);
+    if (isStablecoinMarket == isDeliverLiquid) {
       if (priceAmountParsed != Decimal.zero) {
         amountParsed = (receiveAmountParsed / priceAmountParsed).toDecimal();
       }
@@ -328,7 +636,7 @@ class RequestOrderProvider extends ChangeNotifier {
       return '';
     }
 
-    final precision = deliverAsset()?.precision ?? 0;
+    final precision = ref.read(deliverAssetPrecisionProvider);
 
     return amountParsed.toStringAsFixed(precision);
   }
@@ -357,29 +665,31 @@ class RequestOrderProvider extends ChangeNotifier {
 
     ref.read(walletProvider).modifyOrderPrice(orderId, price: newPrice);
   }
+}
 
-  String getAddressToShare(OrderDetailsData orderDetailsData) {
-    return getAddressToShareById(orderDetailsData.orderId);
+@riverpod
+String addressToShareByOrderId(AddressToShareByOrderIdRef ref, String orderId) {
+  return 'https://app.sideswap.io/submit/?order_id=$orderId';
+}
+
+@Riverpod(keepAlive: true)
+class CurrentRequestOrderView extends _$CurrentRequestOrderView {
+  @override
+  RequestOrder? build() {
+    return null;
   }
 
-  String getAddressToShareById(String orderId) {
-    final shareAddress = 'https://app.sideswap.io/submit/?order_id=$orderId';
-
-    return shareAddress;
+  void setCurrentRequestOrderView(RequestOrder? requestOrder) {
+    state = requestOrder;
   }
 }
 
-final currentRequestOrderViewProvider =
-    AutoDisposeStateProvider<RequestOrder?>((ref) {
-  ref.keepAlive();
-  return null;
-});
-
-final requestOrderIndexPriceProvider = AutoDisposeProvider<String>((ref) {
+@riverpod
+String requestOrderIndexPrice(RequestOrderIndexPriceRef ref) {
   final deliverAccountAsset =
-      ref.watch(requestOrderProvider.select((value) => value.deliverAssetId));
+      ref.watch(deliverOrderEntryAccountAssetProvider).accountAsset;
   final receiveAccountAsset =
-      ref.watch(requestOrderProvider.select((value) => value.receiveAssetId));
+      ref.watch(receiveOrderEntryAccountAssetProvider).accountAsset;
 
   final sendLiquid =
       deliverAccountAsset.assetId == ref.watch(liquidAssetIdStateProvider);
@@ -402,4 +712,268 @@ final requestOrderIndexPriceProvider = AutoDisposeProvider<String>((ref) {
   }
 
   return priceBroadcast.toStringAsFixed(2);
-});
+}
+
+@riverpod
+class OrderPriceFieldSliderValue extends _$OrderPriceFieldSliderValue {
+  @override
+  double build() {
+    // cleanup slider value when tracking is selected or deselected
+    ref.listen(trackingSelectedProvider, (_, __) {
+      state = 0;
+    });
+    return 0;
+  }
+
+  void setValue(double value) {
+    state = value;
+  }
+}
+
+@riverpod
+String deliverDollarConversion(DeliverDollarConversionRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
+  if (orderEntryProductPair.deliver.accountAsset.assetId == tetherAssetId) {
+    return '';
+  }
+
+  final deliverAmount = ref.watch(orderEntryDeliverAmountProvider);
+  final deliverConversion = ref.watch(dollarConversionFromStringProvider(
+      orderEntryProductPair.deliver.accountAsset.assetId,
+      deliverAmount.toDisplay()));
+
+  return deliverConversion;
+}
+
+@riverpod
+String receiveDollarConversion(ReceiveDollarConversionRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
+  if (orderEntryProductPair.receive.accountAsset.assetId == tetherAssetId) {
+    return '';
+  }
+
+  final receiveAmount = ref.watch(orderEntryReceiveAmountProvider);
+  final receiveConversion = ref.watch(dollarConversionFromStringProvider(
+      orderEntryProductPair.receive.accountAsset.assetId,
+      receiveAmount.toDisplay()));
+
+  return receiveConversion;
+}
+
+@riverpod
+String priceDollarConversion(PriceDollarConversionRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final selectedAsset =
+      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+  final indexPrice = ref
+      .read(indexPriceForAssetProvider(selectedAccountAsset.assetId))
+      .indexPrice;
+  final lastPrice =
+      ref.read(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
+  final isPricedInLiquid =
+      ref.read(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
+  final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
+  final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
+  final targetIndexPriceStr = indexPrice != 0 ? indexPriceStr : lastPriceStr;
+  final indexPriceDollarConversion = ref.watch(
+      dollarConversionFromStringProvider(
+          selectedAccountAsset.assetId, targetIndexPriceStr));
+
+  if (selectedAccountAsset.assetId == ref.watch(tetherAssetIdStateProvider)) {
+    return '';
+  }
+
+  return indexPriceDollarConversion;
+}
+
+class OrderEntryAmount {
+  final String _amount;
+  final int precision;
+
+  OrderEntryAmount({
+    String amount = '',
+    required this.precision,
+  }) : _amount = amount;
+
+  double toDouble() {
+    return double.tryParse(toDecimal().toStringAsFixed(precision)) ?? 0;
+  }
+
+  Decimal toDecimal() {
+    final amountDecimal = Decimal.tryParse(_amount) ?? Decimal.zero;
+    return amountDecimal
+        .toRational()
+        .toDecimal(scaleOnInfinitePrecision: precision);
+  }
+
+  String toDisplay() {
+    return _amount;
+  }
+
+  (String, int) _equality() => (_amount, precision);
+
+  @override
+  bool operator ==(covariant OrderEntryAmount other) {
+    if (identical(this, other)) return true;
+
+    return other._equality() == _equality();
+  }
+
+  @override
+  int get hashCode => _equality().hashCode;
+}
+
+@riverpod
+class OrderEntryDeliverAmount extends _$OrderEntryDeliverAmount {
+  @override
+  OrderEntryAmount build() {
+    final deliverPrecision = ref.watch(deliverAssetPrecisionProvider);
+    return OrderEntryAmount(precision: deliverPrecision);
+  }
+
+  void setDeliverAmount(String amount) {
+    final deliverPrecision = ref.read(deliverAssetPrecisionProvider);
+    state = OrderEntryAmount(amount: amount, precision: deliverPrecision);
+  }
+}
+
+@riverpod
+class OrderEntryReceiveAmount extends _$OrderEntryReceiveAmount {
+  @override
+  OrderEntryAmount build() {
+    final priceAmount = ref.watch(priceAmountProvider);
+    final deliverAmount = ref.watch(orderEntryDeliverAmountProvider);
+    final receivePrecision = ref.watch(receiveAssetPrecisionProvider);
+
+    final isSellOrder = ref.watch(isSellOrderProvider);
+    final selectedAssetIsToken = ref.watch(selectedAssetIsTokenProvider);
+
+    if (isSellOrder || selectedAssetIsToken) {
+      final newAmount = (deliverAmount.toDecimal() * priceAmount.toDecimal())
+          .toStringAsFixed(receivePrecision);
+      return OrderEntryAmount(amount: newAmount, precision: receivePrecision);
+    }
+
+    if (priceAmount.toDecimal() != Decimal.zero) {
+      final newAmount = (deliverAmount.toDecimal() / priceAmount.toDecimal())
+          .toDecimal(scaleOnInfinitePrecision: receivePrecision)
+          .toStringAsFixed(receivePrecision);
+      return OrderEntryAmount(amount: newAmount, precision: receivePrecision);
+    }
+
+    return OrderEntryAmount(precision: receivePrecision);
+  }
+
+  void setReceiveAmount(String amount) {
+    final receivePrecision = ref.read(receiveAssetPrecisionProvider);
+    state = OrderEntryAmount(amount: amount, precision: receivePrecision);
+  }
+}
+
+@riverpod
+bool isSellOrder(IsSellOrderRef ref) {
+  final orderEntryProductPair = ref.watch(orderEntryProductProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  return orderEntryProductPair.deliver.accountAsset.assetId == liquidAssetId;
+}
+
+@riverpod
+bool isTracking(IsTrackingRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final indexPrice =
+      ref.watch(indexPriceForAssetProvider(selectedAccountAsset.assetId));
+  final selectedAssetIsToken = ref.watch(selectedAssetIsTokenProvider);
+  final trackingSelected = ref.watch(trackingSelectedProvider);
+  return trackingSelected &&
+      !selectedAssetIsToken &&
+      indexPrice.getIndexPriceStr().isNotEmpty;
+}
+
+@riverpod
+bool canToggleTracking(CanToggleTrackingRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final indexPrice =
+      ref.watch(indexPriceForAssetProvider(selectedAccountAsset.assetId));
+  final selectedAssetIsToken = ref.watch(selectedAssetIsTokenProvider);
+  if (selectedAssetIsToken || indexPrice.getIndexPriceStr().isEmpty) {
+    return false;
+  }
+
+  return true;
+}
+
+@riverpod
+class TrackingSelected extends _$TrackingSelected {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setValue(bool value) {
+    state = value;
+  }
+}
+
+@riverpod
+class PriceAmount extends _$PriceAmount {
+  @override
+  OrderEntryAmount build() {
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final selectedAsset =
+        ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+    final precision = selectedAsset?.precision ?? 0;
+
+    ref.listen(trackingPriceFixedProvider, (_, next) {
+      calculateTracking();
+    });
+
+    ref.listen(trackingSelectedProvider, (_, __) {
+      calculateTracking();
+    });
+
+    return OrderEntryAmount(precision: precision);
+  }
+
+  void setPrice(String value) {
+    final selectedAccountAsset =
+        ref.read(marketSelectedAccountAssetStateProvider);
+    final selectedAsset =
+        ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
+    final precision = selectedAsset?.precision ?? 0;
+    state = OrderEntryAmount(amount: value, precision: precision);
+  }
+
+  void calculateTracking() {
+    final selectedAccountAsset =
+        ref.read(marketSelectedAccountAssetStateProvider);
+    final selectedAsset =
+        ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
+    final precision = selectedAsset?.precision ?? 0;
+    final trackingSelected = ref.read(trackingSelectedProvider);
+    final trackingPriceFixed = ref.read(trackingPriceFixedProvider);
+    if (!trackingSelected) {
+      return;
+    }
+
+    if ((double.tryParse(trackingPriceFixed) ?? 0) != 0) {
+      state =
+          OrderEntryAmount(amount: trackingPriceFixed, precision: precision);
+    }
+  }
+}
+
+@riverpod
+String trackingPriceFixed(TrackingPriceFixedRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final indexPrice =
+      ref.watch(indexPriceForAssetProvider(selectedAccountAsset.assetId));
+  final sliderValue = ref.watch(orderPriceFieldSliderValueProvider);
+  return indexPrice.calculateTrackingPrice(sliderValue);
+}

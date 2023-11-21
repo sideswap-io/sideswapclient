@@ -12,8 +12,10 @@ class MobileThemeData {
 
   ThemeData themeData() {
     return ThemeData(
-      brightness: Brightness.dark,
-      primarySwatch: SideSwapColors.chathamsBlue,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: SideSwapColors.chathamsBlue,
+        brightness: Brightness.dark,
+      ),
       scaffoldBackgroundColor: SideSwapColors.chathamsBlue,
       textSelectionTheme: textSelectionTheme(),
       textTheme: textTheme(),

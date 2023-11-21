@@ -140,7 +140,7 @@ class PhoneNumberButton extends StatelessWidget {
 
   final VoidCallback? onTap;
 
-  final iconRadius = 40.0;
+  static const _iconRadius = 40.0;
   final String phoneNumber;
 
   @override
@@ -163,12 +163,12 @@ class PhoneNumberButton extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
-                  width: iconRadius,
-                  height: iconRadius,
-                  decoration: BoxDecoration(
+                  width: _iconRadius,
+                  height: _iconRadius,
+                  decoration: const BoxDecoration(
                     color: SideSwapColors.brightTurquoise,
                     borderRadius: BorderRadius.all(
-                      Radius.circular(iconRadius),
+                      Radius.circular(_iconRadius),
                     ),
                   ),
                   child: Center(
@@ -230,23 +230,23 @@ class AvatarEditButton extends StatelessWidget {
   final VoidCallback? onTap;
   final Image? avatar;
 
-  final double avatarRadius = 114.0;
-  final double editRadius = 34.0;
+  static const _avatarRadius = 114.0;
+  static const _editRadius = 34.0;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: avatarRadius,
-      height: avatarRadius,
+      width: _avatarRadius,
+      height: _avatarRadius,
       child: Stack(
         children: [
           Container(
-            width: avatarRadius,
-            height: avatarRadius,
+            width: _avatarRadius,
+            height: _avatarRadius,
             decoration: BoxDecoration(
               color: SideSwapColors.brightTurquoise,
-              borderRadius: BorderRadius.all(
-                Radius.circular(avatarRadius),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(_avatarRadius),
               ),
               border: Border.all(
                 color: SideSwapColors.brightTurquoise,
@@ -267,12 +267,12 @@ class AvatarEditButton extends StatelessWidget {
           Align(
             alignment: Alignment.bottomRight,
             child: Container(
-              width: editRadius,
-              height: editRadius,
+              width: _editRadius,
+              height: _editRadius,
               decoration: BoxDecoration(
                 color: SideSwapColors.brightTurquoise,
-                borderRadius: BorderRadius.all(
-                  Radius.circular(editRadius),
+                borderRadius: const BorderRadius.all(
+                  Radius.circular(_editRadius),
                 ),
                 border: Border.all(
                   color: const Color(0xFF054160),
@@ -291,7 +291,7 @@ class AvatarEditButton extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(avatarRadius),
+              borderRadius: BorderRadius.circular(_avatarRadius),
               onTap: onTap,
             ),
           )

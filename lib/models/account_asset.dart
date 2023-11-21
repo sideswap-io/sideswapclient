@@ -3,7 +3,9 @@ import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class AccountType {
   final int id;
-  const AccountType(this.id);
+  const AccountType(
+    this.id,
+  );
 
   static AccountType get reg => const AccountType(0);
   static AccountType get amp => const AccountType(1);
@@ -16,16 +18,16 @@ class AccountType {
 
   @override
   bool operator ==(covariant AccountType other) {
-    if (identical(this, other)) {
-      return true;
-    }
+    if (identical(this, other)) return true;
+
     return other._equality() == _equality();
   }
 
   @override
-  int get hashCode {
-    return _equality().hashCode;
-  }
+  int get hashCode => _equality().hashCode;
+
+  @override
+  String toString() => 'AccountType(id: $id)';
 }
 
 class AccountAsset implements Comparable<AccountAsset> {
@@ -35,21 +37,22 @@ class AccountAsset implements Comparable<AccountAsset> {
   final AccountType account;
   final String? assetId;
 
-  AccountAsset(this.account, this.assetId);
+  AccountAsset(
+    this.account,
+    this.assetId,
+  );
+
+  (AccountType, String?) _equality() => (account, assetId);
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(covariant AccountAsset other) {
     if (identical(this, other)) return true;
 
-    return other is AccountAsset &&
-        other.account == account &&
-        other.assetId == assetId;
+    return other._equality() == _equality();
   }
 
   @override
-  int get hashCode {
-    return assetId.hashCode ^ account.hashCode;
-  }
+  int get hashCode => _equality().hashCode;
 
   @override
   int compareTo(AccountAsset other) {
@@ -64,4 +67,7 @@ class AccountAsset implements Comparable<AccountAsset> {
     }
     return assetId?.compareTo(other.assetId ?? '') ?? -1;
   }
+
+  @override
+  String toString() => 'AccountAsset(account: $account, assetId: $assetId)';
 }

@@ -48,7 +48,7 @@ class AllowTxChainingWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 343,
-      height: 450,
+      height: 460,
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(
           Radius.circular(8),
@@ -72,7 +72,7 @@ class AllowTxChainingWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 24),
               child: SizedBox(
-                height: 100,
+                height: 110,
                 child: SingleChildScrollView(
                   child: Text(
                     'Offline swaps may not have a return balance. Do you wish to auto-create the correct input amount when submitting your order?'

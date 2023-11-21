@@ -295,6 +295,24 @@ class SideSwapColors {
   );
   static const int _cornFlower = 0xFF87C1E1;
 
+  // #1F7EB1
+  static const MaterialColor cyanCornflowerBlue = MaterialColor(
+    _cyanCornflowerBlue,
+    <int, Color>{
+      50: Color.fromRGBO(27, 139, 200, .1),
+      100: Color.fromRGBO(27, 139, 200, .2),
+      200: Color.fromRGBO(27, 139, 200, .3),
+      300: Color.fromRGBO(27, 139, 200, .4),
+      400: Color.fromRGBO(27, 139, 200, .5),
+      500: Color.fromRGBO(27, 139, 200, .6),
+      600: Color.fromRGBO(27, 139, 200, .7),
+      700: Color.fromRGBO(27, 139, 200, .8),
+      800: Color.fromRGBO(27, 139, 200, .9),
+      900: Color.fromRGBO(27, 139, 200, 1),
+    },
+  );
+  static const int _cyanCornflowerBlue = 0xFF1F7EB1;
+
   // #0d3d57
   static const MaterialColor tarawera = MaterialColor(
     _tarawera,
@@ -312,6 +330,42 @@ class SideSwapColors {
     },
   );
   static const int _tarawera = 0xFF0d3d57;
+
+  // #043857
+  static const MaterialColor prussianBlue = MaterialColor(
+    _prussianBlue,
+    <int, Color>{
+      50: Color.fromRGBO(4, 56, 87, .1),
+      100: Color.fromRGBO(4, 56, 87, .2),
+      200: Color.fromRGBO(4, 56, 87, .3),
+      300: Color.fromRGBO(4, 56, 87, .4),
+      400: Color.fromRGBO(4, 56, 87, .5),
+      500: Color.fromRGBO(4, 56, 87, .6),
+      600: Color.fromRGBO(4, 56, 87, .7),
+      700: Color.fromRGBO(4, 56, 87, .8),
+      800: Color.fromRGBO(4, 56, 87, .9),
+      900: Color.fromRGBO(4, 56, 87, 1),
+    },
+  );
+  static const int _prussianBlue = 0xFF043857;
+
+  // #064263
+  static const MaterialColor ataneoBlue = MaterialColor(
+    _ataneoBlue,
+    <int, Color>{
+      50: Color.fromRGBO(6, 66, 99, .1),
+      100: Color.fromRGBO(6, 66, 99, .2),
+      200: Color.fromRGBO(6, 66, 99, .3),
+      300: Color.fromRGBO(6, 66, 99, .4),
+      400: Color.fromRGBO(6, 66, 99, .5),
+      500: Color.fromRGBO(6, 66, 99, .6),
+      600: Color.fromRGBO(6, 66, 99, .7),
+      700: Color.fromRGBO(6, 66, 99, .8),
+      800: Color.fromRGBO(6, 66, 99, .9),
+      900: Color.fromRGBO(6, 66, 99, 1),
+    },
+  );
+  static const int _ataneoBlue = 0xFF064263;
 
   // #00B4E9
   static const MaterialColor cerulean = MaterialColor(
@@ -366,4 +420,58 @@ class SideSwapColors {
     },
   );
   static const int _ceruleanFrost = 0xFF78AECC;
+
+  // #86A2BE
+  static const MaterialColor pewterBlue = MaterialColor(
+    _pewterBlue,
+    <int, Color>{
+      50: Color.fromRGBO(134, 162, 190, .1),
+      100: Color.fromRGBO(134, 162, 190, .2),
+      200: Color.fromRGBO(134, 162, 190, .3),
+      300: Color.fromRGBO(134, 162, 190, .4),
+      400: Color.fromRGBO(134, 162, 190, .5),
+      500: Color.fromRGBO(134, 162, 190, .6),
+      600: Color.fromRGBO(134, 162, 190, .7),
+      700: Color.fromRGBO(134, 162, 190, .8),
+      800: Color.fromRGBO(134, 162, 190, .9),
+      900: Color.fromRGBO(134, 162, 190, 1),
+    },
+  );
+  static const int _pewterBlue = 0xFF86A2BE;
+
+  // #156591
+  static const MaterialColor blueSapphire = MaterialColor(
+    _blueSapphire,
+    <int, Color>{
+      50: Color.fromRGBO(21, 101, 145, .1),
+      100: Color.fromRGBO(21, 101, 145, .2),
+      200: Color.fromRGBO(21, 101, 145, .3),
+      300: Color.fromRGBO(21, 101, 145, .4),
+      400: Color.fromRGBO(21, 101, 145, .5),
+      500: Color.fromRGBO(21, 101, 145, .6),
+      600: Color.fromRGBO(21, 101, 145, .7),
+      700: Color.fromRGBO(21, 101, 145, .8),
+      800: Color.fromRGBO(21, 101, 145, .9),
+      900: Color.fromRGBO(21, 101, 145, 1),
+    },
+  );
+  static const int _blueSapphire = 0xFF156591;
+
+  // #709EB9
+  static const MaterialColor airSuperiorityBlue = MaterialColor(
+    _airSuperiorityBlue,
+    <int, Color>{
+      50: Color.fromRGBO(112, 158, 185, .1),
+      100: Color.fromRGBO(112, 158, 185, .2),
+      200: Color.fromRGBO(112, 158, 185, .3),
+      300: Color.fromRGBO(112, 158, 185, .4),
+      400: Color.fromRGBO(112, 158, 185, .5),
+      500: Color.fromRGBO(112, 158, 185, .6),
+      600: Color.fromRGBO(112, 158, 185, .7),
+      700: Color.fromRGBO(112, 158, 185, .8),
+      800: Color.fromRGBO(112, 158, 185, .9),
+      900: Color.fromRGBO(112, 158, 185, 1),
+    },
+  );
+  static const int _airSuperiorityBlue = 0xFF709EB9;
 }

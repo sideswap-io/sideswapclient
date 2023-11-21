@@ -5,5 +5,5 @@ analyzer:
     strict-casts: true
     strict-raw-types: true
   errors:
-    implicit_dynamic_parameter: warning
     invalid_annotation_target: ignore
+    collection_methods_unrelated_type: error

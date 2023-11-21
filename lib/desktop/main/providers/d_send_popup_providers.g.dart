@@ -125,7 +125,7 @@ final sendPopupSelectedAccountAssetNotifierProvider =
 typedef _$SendPopupSelectedAccountAssetNotifier
     = AutoDisposeNotifier<AccountAsset>;
 String _$sendPopupReceiveConversionNotifierHash() =>
-    r'a4f182026701c6ae211ad4e24d14ce98b91b2519';
+    r'29c0b8fb371b33d63f748e0817b92292b0108b93';
 
 /// See also [SendPopupReceiveConversionNotifier].
 @ProviderFor(SendPopupReceiveConversionNotifier)

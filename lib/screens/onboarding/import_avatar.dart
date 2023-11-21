@@ -12,7 +12,7 @@ import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 class ImportAvatar extends ConsumerWidget {
   const ImportAvatar({super.key});
 
-  final double avatarRadius = 200.0;
+  static const avatarRadius = 200.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,7 +28,7 @@ class ImportAvatar extends ConsumerWidget {
                   height: avatarRadius,
                   decoration: BoxDecoration(
                     color: SideSwapColors.chathamsBlue,
-                    borderRadius: BorderRadius.all(
+                    borderRadius: const BorderRadius.all(
                       Radius.circular(avatarRadius),
                     ),
                     border: Border.all(

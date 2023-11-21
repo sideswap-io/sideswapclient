@@ -7,19 +7,20 @@ class SwapButton extends StatelessWidget {
     required this.text,
     this.textColor,
     this.onPressed,
+    this.textStyle,
   });
 
   final Color? color;
   final Color? textColor;
   final String text;
   final VoidCallback? onPressed;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(2.0),
       child: Container(
-        //width: 139.w,
         height: 36,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(
@@ -42,11 +43,12 @@ class SwapButton extends StatelessWidget {
               maxLines: 1,
               softWrap: false,
               overflow: TextOverflow.fade,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: textColor,
-              ),
+              style: textStyle ??
+                  TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: textColor,
+                  ),
             ),
           ),
         ),

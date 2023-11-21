@@ -69,8 +69,8 @@ class OrderTableRow extends StatefulWidget {
                   precision: asset?.precision ?? 8));
           final dollarConversion = liquidAssetId == assetId &&
                   showDollarConversion
-              ? ref.watch(requestOrderProvider).dollarConversion(
-                  assetId, toFloat(amount, precision: asset?.precision ?? 8))
+              ? ref.watch(dollarConversionProvider(
+                  assetId, toFloat(amount, precision: asset?.precision ?? 8)))
               : null;
 
           return OrderTableRow(

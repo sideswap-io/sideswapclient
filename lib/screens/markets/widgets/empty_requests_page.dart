@@ -29,7 +29,7 @@ class EmptyRequestsPage extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.only(top: 43),
                       child: Text(
-                        'No working orders'.tr(),
+                        'No pending orders'.tr(),
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,

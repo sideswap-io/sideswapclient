@@ -1,22 +1,19 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
-final defaultAccountsNotifierProvider =
-    AutoDisposeNotifierProvider<DefaultAccountsNotifier, Set<AccountAsset>>(
-        DefaultAccountsNotifier.new);
+part 'wallet_account_providers.g.dart';
 
-class DefaultAccountsNotifier extends AutoDisposeNotifier<Set<AccountAsset>> {
+@Riverpod(keepAlive: true)
+class DefaultAccountsState extends _$DefaultAccountsState {
   @override
   Set<AccountAsset> build() {
-    ref.keepAlive();
     return <AccountAsset>{};
   }
 
-  void add({required AccountAsset accountAsset}) {
-    state.add(accountAsset);
-    ref.notifyListeners();
+  void insertAccountAsset({required AccountAsset accountAsset}) {
+    state = {...state, accountAsset};
   }
 }
 
@@ -26,13 +23,15 @@ class DefaultAccountsNotifier extends AutoDisposeNotifier<Set<AccountAsset>> {
 // instead of searching assetId in assetsStateProvider map
 // we should to know which account type is used and
 // then we should search assetId for specified account type
-final allAccountAssetsProvider = AutoDisposeProvider<List<AccountAsset>>((ref) {
+@riverpod
+List<AccountAsset> allAccountAssets(AllAccountAssetsRef ref) {
   final allAssets = ref.watch(accountAssetTransactionsProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final assets = ref.watch(assetsStateProvider);
   // Use array to show registered on the server assets first
   final allAccountAssets = <AccountAsset>[];
   allAccountAssets.add(AccountAsset(AccountType.reg, liquidAssetId));
+  allAccountAssets.add(AccountAsset(AccountType.amp, liquidAssetId));
 
   for (final asset in assets.values) {
     if (asset.swapMarket && asset.alwaysShow) {
@@ -49,12 +48,12 @@ final allAccountAssetsProvider = AutoDisposeProvider<List<AccountAsset>>((ref) {
   }
 
   return allAccountAssets;
-});
+}
 
-final allVisibleAccountAssetsProvider =
-    AutoDisposeProvider<List<AccountAsset>>((ref) {
+@riverpod
+List<AccountAsset> allVisibleAccountAssets(AllVisibleAccountAssetsRef ref) {
   final allAccounts = ref.watch(allAccountAssetsProvider);
-  final defaultAccounts = ref.watch(defaultAccountsNotifierProvider);
+  final defaultAccounts = ref.watch(defaultAccountsStateProvider);
   final balances = ref.watch(balancesProvider);
 
   final allVisibleAccounts = allAccounts
@@ -63,21 +62,19 @@ final allVisibleAccountAssetsProvider =
       .toList();
 
   return allVisibleAccounts;
-});
+}
 
-final regularAccountAssetsProvider =
-    AutoDisposeProvider<List<AccountAsset>>((ref) {
+@riverpod
+List<AccountAsset> regularAccountAssets(RegularAccountAssetsRef ref) {
   final allVisibleAccounts = ref.watch(allVisibleAccountAssetsProvider);
-
   final regularAccounts =
       allVisibleAccounts.where((e) => e.account.isRegular).toList();
   return regularAccounts;
-});
+}
 
-final ampAccountAssetsProvider = AutoDisposeProvider<List<AccountAsset>>((ref) {
+@riverpod
+List<AccountAsset> ampAccountAssets(AmpAccountAssetsRef ref) {
   final allVisibleAccounts = ref.watch(allVisibleAccountAssetsProvider);
-
   final ampAccounts = allVisibleAccounts.where((e) => e.account.isAmp).toList();
-
   return ampAccounts;
-});
+}

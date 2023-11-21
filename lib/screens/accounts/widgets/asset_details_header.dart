@@ -9,7 +9,7 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -209,17 +209,22 @@ class AssetDetailsHeader extends ConsumerWidget {
                               .setSelectedLeftAsset(selectedWalletAsset);
                           ref.read(swapProvider).selectSwap();
                         } else {
-                          if (balance > 0 ||
-                              !selectedWalletAsset.account.isAmp) {
-                            ref.read(requestOrderProvider).receiveAssetId =
-                                AccountAsset(AccountType.reg, liquidAssetId);
-                            ref.read(requestOrderProvider).deliverAssetId =
-                                selectedWalletAsset;
+                          if (selectedWalletAsset.account.isAmp) {
+                            ref
+                                .read(makeOrderSideStateProvider.notifier)
+                                .setSide(MakeOrderSide.sell);
+                            ref
+                                .read(marketSelectedAccountAssetStateProvider
+                                    .notifier)
+                                .setSelectedAccountAsset(selectedWalletAsset);
                           } else {
-                            ref.read(requestOrderProvider).deliverAssetId =
-                                AccountAsset(AccountType.reg, liquidAssetId);
-                            ref.read(requestOrderProvider).receiveAssetId =
-                                selectedWalletAsset;
+                            ref
+                                .read(makeOrderSideStateProvider.notifier)
+                                .setSide(MakeOrderSide.buy);
+                            ref
+                                .read(marketSelectedAccountAssetStateProvider
+                                    .notifier)
+                                .setSelectedAccountAsset(selectedWalletAsset);
                           }
                           ref.read(walletProvider).setCreateOrderEntry();
                         }

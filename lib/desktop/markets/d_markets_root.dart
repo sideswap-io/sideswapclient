@@ -5,7 +5,7 @@ import 'package:sideswap/desktop/main/d_charts.dart';
 import 'package:sideswap/desktop/markets/widgets/make_order_panel.dart';
 import 'package:sideswap/desktop/markets/widgets/orders_panel.dart';
 import 'package:sideswap/desktop/markets/widgets/working_orders.dart';
-import 'package:sideswap/providers/markets_page_provider.dart';
+import 'package:sideswap/listeners/markets_page_listener.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 
 class DMarkets extends HookConsumerWidget {
@@ -14,10 +14,10 @@ class DMarkets extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showCharts = useState(false);
-    ref.listen(marketsPageListenerProvider, (_, __) {});
 
     return Stack(
       children: [
+        const MarketsPageListener(),
         Offstage(
           offstage: showCharts.value,
           child: Padding(
@@ -51,10 +51,10 @@ class DMarkets extends HookConsumerWidget {
         if (showCharts.value)
           Consumer(
             builder: (context, ref, child) {
-              final selectedAssetId =
-                  ref.watch(marketSelectedAssetIdStateProvider);
+              final selectedAccountAsset =
+                  ref.watch(marketSelectedAccountAssetStateProvider);
               return DCharts(
-                assetId: selectedAssetId,
+                assetId: selectedAccountAsset.assetId,
                 onBackPressed: () {
                   showCharts.value = false;
                 },

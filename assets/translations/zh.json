@@ -508,5 +508,6 @@
   "Select address type": "选择地址类型",
   "Sign swap transaction": "签署交易",
   "Create swap output": "创建交易输出",
-  "Sign offline swap transaction": "签署离线交易"
+  "Sign offline swap transaction": "签署离线交易",
+  "No pending orders": "No pending orders"
 }

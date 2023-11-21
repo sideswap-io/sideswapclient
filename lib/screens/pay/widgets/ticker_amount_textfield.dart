@@ -219,7 +219,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
         availableAssets: widget.availableAssets,
         disabledAssets: widget.disabledAssets,
         onSelected: (AccountAsset value) {
-          widget.onDropdownChanged!(value);
+          widget.onDropdownChanged?.call(value);
         },
       );
     }

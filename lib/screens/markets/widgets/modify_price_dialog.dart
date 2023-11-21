@@ -14,6 +14,7 @@ import 'package:sideswap/screens/markets/widgets/order_price_field.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+// TODO (malcolmpl): change slider value to provider
 class ModifyPriceDialog extends ConsumerStatefulWidget {
   const ModifyPriceDialog({
     super.key,
@@ -138,22 +139,17 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
       if (priceAssetId == ref.read(tetherAssetIdStateProvider)) {
         priceConversion = '';
       } else {
-        priceConversion = ref
-            .read(requestOrderProvider)
-            .dollarConversionFromString(priceAssetId, widget.controller.text);
+        priceConversion = ref.read(dollarConversionFromStringProvider(
+            priceAssetId, widget.controller.text));
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final ticker =
-        ref.watch(assetUtilsProvider).tickerForAssetId(widget.asset?.assetId);
     final trackingPriceFixed = ref
         .watch(indexPriceForAssetProvider(widget.asset?.assetId))
         .calculateTrackingPrice(sliderValue);
-    final trackingPrice =
-        '${replaceCharacterOnPosition(input: trackingPriceFixed)} $ticker';
     final tracking = widget.orderDetailsData.isTracking;
     var displaySlider = tracking;
     final isToken = ref
@@ -191,7 +187,7 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
                   child: Column(
                     children: [
                       Container(
-                        height: 410,
+                        height: 430,
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(8)),
                           color: SideSwapColors.blumine,
@@ -250,17 +246,10 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
                                       productAsset: widget.productAsset,
                                       icon: widget.icon,
                                       onEditingComplete: onSubmit,
-                                      sliderValue: sliderValue,
                                       tracking:
                                           widget.orderDetailsData.isTracking,
-                                      trackingPrice: trackingPrice,
                                       dollarConversion: priceConversion,
                                       displaySlider: displaySlider,
-                                      onSliderChanged: (value) {
-                                        setState(() {
-                                          sliderValue = value;
-                                        });
-                                      },
                                       invertColors: inversePrice,
                                     ),
                                   ),
@@ -276,7 +265,8 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
                                     ),
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(top: 16),
+                                    padding: const EdgeInsets.only(
+                                        top: 16, bottom: 16),
                                     child: CustomBigButton(
                                       width: double.maxFinite,
                                       height: 54,

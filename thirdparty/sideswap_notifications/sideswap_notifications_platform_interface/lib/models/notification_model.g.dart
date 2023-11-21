@@ -6,12 +6,12 @@ part of 'notification_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$_FCMPayload _$$_FCMPayloadFromJson(Map json) => _$_FCMPayload(
+_$FCMPayloadImpl _$$FCMPayloadImplFromJson(Map json) => _$FCMPayloadImpl(
       type: $enumDecodeNullable(_$FCMPayloadTypeEnumMap, json['type']),
       txid: json['txid'] as String?,
     );
 
-Map<String, dynamic> _$$_FCMPayloadToJson(_$_FCMPayload instance) =>
+Map<String, dynamic> _$$FCMPayloadImplToJson(_$FCMPayloadImpl instance) =>
     <String, dynamic>{
       'type': _$FCMPayloadTypeEnumMap[instance.type],
       'txid': instance.txid,
@@ -27,30 +27,32 @@ const _$FCMPayloadTypeEnumMap = {
   FCMPayloadType.pegout: 'Peg-out',
 };
 
-_$_FCMNotification _$$_FCMNotificationFromJson(Map json) => _$_FCMNotification(
+_$FCMNotificationImpl _$$FCMNotificationImplFromJson(Map json) =>
+    _$FCMNotificationImpl(
       title: json['title'] as String?,
       body: json['body'] as String?,
     );
 
-Map<String, dynamic> _$$_FCMNotificationToJson(_$_FCMNotification instance) =>
+Map<String, dynamic> _$$FCMNotificationImplToJson(
+        _$FCMNotificationImpl instance) =>
     <String, dynamic>{
       'title': instance.title,
       'body': instance.body,
     };
 
-_$_FCMData _$$_FCMDataFromJson(Map json) => _$_FCMData(
+_$FCMDataImpl _$$FCMDataImplFromJson(Map json) => _$FCMDataImpl(
       details: json['details'] == null
           ? null
           : FCMDetails.fromJson(
               Map<String, dynamic>.from(json['details'] as Map)),
     );
 
-Map<String, dynamic> _$$_FCMDataToJson(_$_FCMData instance) =>
+Map<String, dynamic> _$$FCMDataImplToJson(_$FCMDataImpl instance) =>
     <String, dynamic>{
       'details': instance.details,
     };
 
-_$_FCMDetails _$$_FCMDetailsFromJson(Map json) => _$_FCMDetails(
+_$FCMDetailsImpl _$$FCMDetailsImplFromJson(Map json) => _$FCMDetailsImpl(
       tx: json['tx'] == null
           ? null
           : FCMTx.fromJson(Map<String, dynamic>.from(json['tx'] as Map)),
@@ -68,7 +70,7 @@ _$_FCMDetails _$$_FCMDetailsFromJson(Map json) => _$_FCMDetails(
               Map<String, dynamic>.from(json['order_cancelled'] as Map)),
     );
 
-Map<String, dynamic> _$$_FCMDetailsToJson(_$_FCMDetails instance) =>
+Map<String, dynamic> _$$FCMDetailsImplToJson(_$FCMDetailsImpl instance) =>
     <String, dynamic>{
       'tx': instance.tx,
       'peg_payout': instance.pegPayout,
@@ -76,12 +78,13 @@ Map<String, dynamic> _$$_FCMDetailsToJson(_$_FCMDetails instance) =>
       'order_cancelled': instance.orderCancelled,
     };
 
-_$_FCMTx _$$_FCMTxFromJson(Map json) => _$_FCMTx(
+_$FCMTxImpl _$$FCMTxImplFromJson(Map json) => _$FCMTxImpl(
       txType: $enumDecodeNullable(_$FCMTxTypeEnumMap, json['tx_type']),
       txId: json['txid'] as String?,
     );
 
-Map<String, dynamic> _$$_FCMTxToJson(_$_FCMTx instance) => <String, dynamic>{
+Map<String, dynamic> _$$FCMTxImplToJson(_$FCMTxImpl instance) =>
+    <String, dynamic>{
       'tx_type': _$FCMTxTypeEnumMap[instance.txType],
       'txid': instance.txId,
     };
@@ -94,7 +97,7 @@ const _$FCMTxTypeEnumMap = {
   FCMTxType.unknown: 'Unknown',
 };
 
-_$_FCMPeg _$$_FCMPegFromJson(Map json) => _$_FCMPeg(
+_$FCMPegImpl _$$FCMPegImplFromJson(Map json) => _$FCMPegImpl(
       orderId: json['order_id'] as String?,
       pegIn: json['peg_in'] as bool?,
       txHash: json['tx_hash'] as String?,
@@ -104,7 +107,8 @@ _$_FCMPeg _$$_FCMPegFromJson(Map json) => _$_FCMPeg(
       payout: json['payout'] as int?,
     );
 
-Map<String, dynamic> _$$_FCMPegToJson(_$_FCMPeg instance) => <String, dynamic>{
+Map<String, dynamic> _$$FCMPegImplToJson(_$FCMPegImpl instance) =>
+    <String, dynamic>{
       'order_id': instance.orderId,
       'peg_in': instance.pegIn,
       'tx_hash': instance.txHash,
@@ -114,18 +118,18 @@ Map<String, dynamic> _$$_FCMPegToJson(_$_FCMPeg instance) => <String, dynamic>{
       'payout': instance.payout,
     };
 
-_$_FCMOrderCancelled _$$_FCMOrderCancelledFromJson(Map json) =>
-    _$_FCMOrderCancelled(
+_$FCMOrderCancelledImpl _$$FCMOrderCancelledImplFromJson(Map json) =>
+    _$FCMOrderCancelledImpl(
       orderId: json['order_id'] as String?,
     );
 
-Map<String, dynamic> _$$_FCMOrderCancelledToJson(
-        _$_FCMOrderCancelled instance) =>
+Map<String, dynamic> _$$FCMOrderCancelledImplToJson(
+        _$FCMOrderCancelledImpl instance) =>
     <String, dynamic>{
       'order_id': instance.orderId,
     };
 
-_$_FCMMessage _$$_FCMMessageFromJson(Map json) => _$_FCMMessage(
+_$FCMMessageImpl _$$FCMMessageImplFromJson(Map json) => _$FCMMessageImpl(
       notification: json['notification'] == null
           ? null
           : FCMNotification.fromJson(
@@ -135,7 +139,7 @@ _$_FCMMessage _$$_FCMMessageFromJson(Map json) => _$_FCMMessage(
           : FCMData.fromJson(Map<String, dynamic>.from(json['data'] as Map)),
     );
 
-Map<String, dynamic> _$$_FCMMessageToJson(_$_FCMMessage instance) =>
+Map<String, dynamic> _$$FCMMessageImplToJson(_$FCMMessageImpl instance) =>
     <String, dynamic>{
       'notification': instance.notification,
       'data': instance.data,

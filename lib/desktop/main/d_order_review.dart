@@ -240,12 +240,10 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
         ? ((order.expiresAt! - order.createdAt) / 1000).round()
         : null;
     final ttlValue = getTtlDescription(ttlSeconds);
-    final shareUrl = ref.watch(requestOrderProvider).getAddressToShare(order);
+    final shareUrl = ref.watch(addressToShareByOrderIdProvider(order.orderId));
     final isSell = order.sellBitcoin == asset?.swapMarket;
     final dollarConversionPrice = priceInLiquid
-        ? ref
-            .watch(requestOrderProvider)
-            .dollarConversion(liquidAssetId, order.priceAmount)
+        ? ref.watch(dollarConversionProvider(liquidAssetId, order.priceAmount))
         : '';
     final orderType = order.twoStep ? 'Offline'.tr() : 'Online'.tr();
 
@@ -601,9 +599,7 @@ class DOrderReviewBalance extends ConsumerWidget {
         AmountToStringParameters(amount: amount, precision: assetPrecision));
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final dollarConversion = assetId == liquidAssetId
-        ? ref
-            .read(requestOrderProvider)
-            .dollarConversionFromString(assetId, amountSt)
+        ? ref.watch(dollarConversionFromStringProvider(assetId, amountSt))
         : '';
 
     return Padding(

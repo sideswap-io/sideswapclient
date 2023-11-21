@@ -1303,40 +1303,8 @@ class SerieOwner extends $pb.GeneratedMessage {
   $core.List<Serie> get series => $_getList(1);
 }
 
-class Req_Login extends $pb.GeneratedMessage {
-  factory Req_Login() => create();
-  Req_Login._() : super();
-  factory Req_Login.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Req_Login.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.Login', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..hasRequiredFields = false
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Req_Login clone() => Req_Login()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Req_Login copyWith(void Function(Req_Login) updates) => super.copyWith((message) => updates(message as Req_Login)) as Req_Login;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Req_Login create() => Req_Login._();
-  Req_Login createEmptyInstance() => create();
-  static $pb.PbList<Req_Login> createRepeated() => $pb.PbList<Req_Login>();
-  @$core.pragma('dart2js:noInline')
-  static Req_Login getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Req_Login>(create);
-  static Req_Login? _defaultInstance;
-}
-
-class Req_Register_Org extends $pb.GeneratedMessage {
-  factory Req_Register_Org({
+class Req_LoginOrRegister_Org extends $pb.GeneratedMessage {
+  factory Req_LoginOrRegister_Org({
     $core.String? name,
     $core.String? address,
     $core.String? city,
@@ -1373,11 +1341,11 @@ class Req_Register_Org extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Req_Register_Org._() : super();
-  factory Req_Register_Org.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Req_Register_Org.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  Req_LoginOrRegister_Org._() : super();
+  factory Req_LoginOrRegister_Org.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Req_LoginOrRegister_Org.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.Register.Org', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.LoginOrRegister.Org', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'name')
     ..aQS(2, _omitFieldNames ? '' : 'address')
     ..aQS(3, _omitFieldNames ? '' : 'city')
@@ -1392,22 +1360,22 @@ class Req_Register_Org extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Req_Register_Org clone() => Req_Register_Org()..mergeFromMessage(this);
+  Req_LoginOrRegister_Org clone() => Req_LoginOrRegister_Org()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Req_Register_Org copyWith(void Function(Req_Register_Org) updates) => super.copyWith((message) => updates(message as Req_Register_Org)) as Req_Register_Org;
+  Req_LoginOrRegister_Org copyWith(void Function(Req_LoginOrRegister_Org) updates) => super.copyWith((message) => updates(message as Req_LoginOrRegister_Org)) as Req_LoginOrRegister_Org;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Req_Register_Org create() => Req_Register_Org._();
-  Req_Register_Org createEmptyInstance() => create();
-  static $pb.PbList<Req_Register_Org> createRepeated() => $pb.PbList<Req_Register_Org>();
+  static Req_LoginOrRegister_Org create() => Req_LoginOrRegister_Org._();
+  Req_LoginOrRegister_Org createEmptyInstance() => create();
+  static $pb.PbList<Req_LoginOrRegister_Org> createRepeated() => $pb.PbList<Req_LoginOrRegister_Org>();
   @$core.pragma('dart2js:noInline')
-  static Req_Register_Org getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Req_Register_Org>(create);
-  static Req_Register_Org? _defaultInstance;
+  static Req_LoginOrRegister_Org getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Req_LoginOrRegister_Org>(create);
+  static Req_LoginOrRegister_Org? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get name => $_getSZ(0);
@@ -1482,9 +1450,9 @@ class Req_Register_Org extends $pb.GeneratedMessage {
   void clearRegProof() => clearField(8);
 }
 
-class Req_Register extends $pb.GeneratedMessage {
-  factory Req_Register({
-    Req_Register_Org? org,
+class Req_LoginOrRegister extends $pb.GeneratedMessage {
+  factory Req_LoginOrRegister({
+    Req_LoginOrRegister_Org? org,
   }) {
     final $result = create();
     if (org != null) {
@@ -1492,45 +1460,45 @@ class Req_Register extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Req_Register._() : super();
-  factory Req_Register.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Req_Register.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  Req_LoginOrRegister._() : super();
+  factory Req_LoginOrRegister.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Req_LoginOrRegister.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.Register', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aOM<Req_Register_Org>(1, _omitFieldNames ? '' : 'org', subBuilder: Req_Register_Org.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.LoginOrRegister', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
+    ..aOM<Req_LoginOrRegister_Org>(1, _omitFieldNames ? '' : 'org', subBuilder: Req_LoginOrRegister_Org.create)
   ;
 
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Req_Register clone() => Req_Register()..mergeFromMessage(this);
+  Req_LoginOrRegister clone() => Req_LoginOrRegister()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Req_Register copyWith(void Function(Req_Register) updates) => super.copyWith((message) => updates(message as Req_Register)) as Req_Register;
+  Req_LoginOrRegister copyWith(void Function(Req_LoginOrRegister) updates) => super.copyWith((message) => updates(message as Req_LoginOrRegister)) as Req_LoginOrRegister;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Req_Register create() => Req_Register._();
-  Req_Register createEmptyInstance() => create();
-  static $pb.PbList<Req_Register> createRepeated() => $pb.PbList<Req_Register>();
+  static Req_LoginOrRegister create() => Req_LoginOrRegister._();
+  Req_LoginOrRegister createEmptyInstance() => create();
+  static $pb.PbList<Req_LoginOrRegister> createRepeated() => $pb.PbList<Req_LoginOrRegister>();
   @$core.pragma('dart2js:noInline')
-  static Req_Register getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Req_Register>(create);
-  static Req_Register? _defaultInstance;
+  static Req_LoginOrRegister getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Req_LoginOrRegister>(create);
+  static Req_LoginOrRegister? _defaultInstance;
 
   @$pb.TagNumber(1)
-  Req_Register_Org get org => $_getN(0);
+  Req_LoginOrRegister_Org get org => $_getN(0);
   @$pb.TagNumber(1)
-  set org(Req_Register_Org v) { setField(1, v); }
+  set org(Req_LoginOrRegister_Org v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasOrg() => $_has(0);
   @$pb.TagNumber(1)
   void clearOrg() => clearField(1);
   @$pb.TagNumber(1)
-  Req_Register_Org ensureOrg() => $_ensure(0);
+  Req_LoginOrRegister_Org ensureOrg() => $_ensure(0);
 }
 
 class Req_RegisterIssuer extends $pb.GeneratedMessage {
@@ -1722,18 +1690,10 @@ class Req_Logout extends $pb.GeneratedMessage {
 class Req_AddGaid extends $pb.GeneratedMessage {
   factory Req_AddGaid({
     $core.String? gaid,
-    $core.bool? acceptFreeShares,
-    $core.bool? useLocalAccount,
   }) {
     final $result = create();
     if (gaid != null) {
       $result.gaid = gaid;
-    }
-    if (acceptFreeShares != null) {
-      $result.acceptFreeShares = acceptFreeShares;
-    }
-    if (useLocalAccount != null) {
-      $result.useLocalAccount = useLocalAccount;
     }
     return $result;
   }
@@ -1743,8 +1703,6 @@ class Req_AddGaid extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.AddGaid', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'gaid')
-    ..a<$core.bool>(2, _omitFieldNames ? '' : 'acceptFreeShares', $pb.PbFieldType.QB)
-    ..a<$core.bool>(3, _omitFieldNames ? '' : 'useLocalAccount', $pb.PbFieldType.QB)
   ;
 
   @$core.Deprecated(
@@ -1776,24 +1734,6 @@ class Req_AddGaid extends $pb.GeneratedMessage {
   $core.bool hasGaid() => $_has(0);
   @$pb.TagNumber(1)
   void clearGaid() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.bool get acceptFreeShares => $_getBF(1);
-  @$pb.TagNumber(2)
-  set acceptFreeShares($core.bool v) { $_setBool(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasAcceptFreeShares() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearAcceptFreeShares() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.bool get useLocalAccount => $_getBF(2);
-  @$pb.TagNumber(3)
-  set useLocalAccount($core.bool v) { $_setBool(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasUseLocalAccount() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearUseLocalAccount() => clearField(3);
 }
 
 class Req_LoadAssets extends $pb.GeneratedMessage {
@@ -2250,8 +2190,7 @@ class Req_ListAllSeries extends $pb.GeneratedMessage {
 }
 
 enum Req_Body {
-  login, 
-  register, 
+  loginOrRegister, 
   resume, 
   logout, 
   registerIssuer, 
@@ -2272,8 +2211,7 @@ enum Req_Body {
 class Req extends $pb.GeneratedMessage {
   factory Req({
     $fixnum.Int64? id,
-    Req_Login? login,
-    Req_Register? register,
+    Req_LoginOrRegister? loginOrRegister,
     Req_Resume? resume,
     Req_Logout? logout,
     Req_RegisterIssuer? registerIssuer,
@@ -2293,11 +2231,8 @@ class Req extends $pb.GeneratedMessage {
     if (id != null) {
       $result.id = id;
     }
-    if (login != null) {
-      $result.login = login;
-    }
-    if (register != null) {
-      $result.register = register;
+    if (loginOrRegister != null) {
+      $result.loginOrRegister = loginOrRegister;
     }
     if (resume != null) {
       $result.resume = resume;
@@ -2348,8 +2283,7 @@ class Req extends $pb.GeneratedMessage {
   factory Req.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static const $core.Map<$core.int, Req_Body> _Req_BodyByTag = {
-    10 : Req_Body.login,
-    11 : Req_Body.register,
+    11 : Req_Body.loginOrRegister,
     12 : Req_Body.resume,
     13 : Req_Body.logout,
     14 : Req_Body.registerIssuer,
@@ -2367,10 +2301,9 @@ class Req extends $pb.GeneratedMessage {
     0 : Req_Body.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..oo(0, [10, 11, 12, 13, 14, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32])
+    ..oo(0, [11, 12, 13, 14, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32])
     ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<Req_Login>(10, _omitFieldNames ? '' : 'login', subBuilder: Req_Login.create)
-    ..aOM<Req_Register>(11, _omitFieldNames ? '' : 'register', subBuilder: Req_Register.create)
+    ..aOM<Req_LoginOrRegister>(11, _omitFieldNames ? '' : 'loginOrRegister', subBuilder: Req_LoginOrRegister.create)
     ..aOM<Req_Resume>(12, _omitFieldNames ? '' : 'resume', subBuilder: Req_Resume.create)
     ..aOM<Req_Logout>(13, _omitFieldNames ? '' : 'logout', subBuilder: Req_Logout.create)
     ..aOM<Req_RegisterIssuer>(14, _omitFieldNames ? '' : 'registerIssuer', subBuilder: Req_RegisterIssuer.create)
@@ -2420,185 +2353,174 @@ class Req extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearId() => clearField(1);
 
-  @$pb.TagNumber(10)
-  Req_Login get login => $_getN(1);
-  @$pb.TagNumber(10)
-  set login(Req_Login v) { setField(10, v); }
-  @$pb.TagNumber(10)
-  $core.bool hasLogin() => $_has(1);
-  @$pb.TagNumber(10)
-  void clearLogin() => clearField(10);
-  @$pb.TagNumber(10)
-  Req_Login ensureLogin() => $_ensure(1);
-
   @$pb.TagNumber(11)
-  Req_Register get register => $_getN(2);
+  Req_LoginOrRegister get loginOrRegister => $_getN(1);
   @$pb.TagNumber(11)
-  set register(Req_Register v) { setField(11, v); }
+  set loginOrRegister(Req_LoginOrRegister v) { setField(11, v); }
   @$pb.TagNumber(11)
-  $core.bool hasRegister() => $_has(2);
+  $core.bool hasLoginOrRegister() => $_has(1);
   @$pb.TagNumber(11)
-  void clearRegister() => clearField(11);
+  void clearLoginOrRegister() => clearField(11);
   @$pb.TagNumber(11)
-  Req_Register ensureRegister() => $_ensure(2);
+  Req_LoginOrRegister ensureLoginOrRegister() => $_ensure(1);
 
   @$pb.TagNumber(12)
-  Req_Resume get resume => $_getN(3);
+  Req_Resume get resume => $_getN(2);
   @$pb.TagNumber(12)
   set resume(Req_Resume v) { setField(12, v); }
   @$pb.TagNumber(12)
-  $core.bool hasResume() => $_has(3);
+  $core.bool hasResume() => $_has(2);
   @$pb.TagNumber(12)
   void clearResume() => clearField(12);
   @$pb.TagNumber(12)
-  Req_Resume ensureResume() => $_ensure(3);
+  Req_Resume ensureResume() => $_ensure(2);
 
   @$pb.TagNumber(13)
-  Req_Logout get logout => $_getN(4);
+  Req_Logout get logout => $_getN(3);
   @$pb.TagNumber(13)
   set logout(Req_Logout v) { setField(13, v); }
   @$pb.TagNumber(13)
-  $core.bool hasLogout() => $_has(4);
+  $core.bool hasLogout() => $_has(3);
   @$pb.TagNumber(13)
   void clearLogout() => clearField(13);
   @$pb.TagNumber(13)
-  Req_Logout ensureLogout() => $_ensure(4);
+  Req_Logout ensureLogout() => $_ensure(3);
 
   @$pb.TagNumber(14)
-  Req_RegisterIssuer get registerIssuer => $_getN(5);
+  Req_RegisterIssuer get registerIssuer => $_getN(4);
   @$pb.TagNumber(14)
   set registerIssuer(Req_RegisterIssuer v) { setField(14, v); }
   @$pb.TagNumber(14)
-  $core.bool hasRegisterIssuer() => $_has(5);
+  $core.bool hasRegisterIssuer() => $_has(4);
   @$pb.TagNumber(14)
   void clearRegisterIssuer() => clearField(14);
   @$pb.TagNumber(14)
-  Req_RegisterIssuer ensureRegisterIssuer() => $_ensure(5);
+  Req_RegisterIssuer ensureRegisterIssuer() => $_ensure(4);
 
   @$pb.TagNumber(20)
-  Req_AddGaid get addGaid => $_getN(6);
+  Req_AddGaid get addGaid => $_getN(5);
   @$pb.TagNumber(20)
   set addGaid(Req_AddGaid v) { setField(20, v); }
   @$pb.TagNumber(20)
-  $core.bool hasAddGaid() => $_has(6);
+  $core.bool hasAddGaid() => $_has(5);
   @$pb.TagNumber(20)
   void clearAddGaid() => clearField(20);
   @$pb.TagNumber(20)
-  Req_AddGaid ensureAddGaid() => $_ensure(6);
+  Req_AddGaid ensureAddGaid() => $_ensure(5);
 
   @$pb.TagNumber(21)
-  Req_LoadAssets get loadAssets => $_getN(7);
+  Req_LoadAssets get loadAssets => $_getN(6);
   @$pb.TagNumber(21)
   set loadAssets(Req_LoadAssets v) { setField(21, v); }
   @$pb.TagNumber(21)
-  $core.bool hasLoadAssets() => $_has(7);
+  $core.bool hasLoadAssets() => $_has(6);
   @$pb.TagNumber(21)
   void clearLoadAssets() => clearField(21);
   @$pb.TagNumber(21)
-  Req_LoadAssets ensureLoadAssets() => $_ensure(7);
+  Req_LoadAssets ensureLoadAssets() => $_ensure(6);
 
   @$pb.TagNumber(24)
-  Req_BuyShares get buyShares => $_getN(8);
+  Req_BuyShares get buyShares => $_getN(7);
   @$pb.TagNumber(24)
   set buyShares(Req_BuyShares v) { setField(24, v); }
   @$pb.TagNumber(24)
-  $core.bool hasBuyShares() => $_has(8);
+  $core.bool hasBuyShares() => $_has(7);
   @$pb.TagNumber(24)
   void clearBuyShares() => clearField(24);
   @$pb.TagNumber(24)
-  Req_BuyShares ensureBuyShares() => $_ensure(8);
+  Req_BuyShares ensureBuyShares() => $_ensure(7);
 
   @$pb.TagNumber(25)
-  Req_LoadCountries get loadCountries => $_getN(9);
+  Req_LoadCountries get loadCountries => $_getN(8);
   @$pb.TagNumber(25)
   set loadCountries(Req_LoadCountries v) { setField(25, v); }
   @$pb.TagNumber(25)
-  $core.bool hasLoadCountries() => $_has(9);
+  $core.bool hasLoadCountries() => $_has(8);
   @$pb.TagNumber(25)
   void clearLoadCountries() => clearField(25);
   @$pb.TagNumber(25)
-  Req_LoadCountries ensureLoadCountries() => $_ensure(9);
+  Req_LoadCountries ensureLoadCountries() => $_ensure(8);
 
   @$pb.TagNumber(26)
-  Req_LoadRegs get loadRegs => $_getN(10);
+  Req_LoadRegs get loadRegs => $_getN(9);
   @$pb.TagNumber(26)
   set loadRegs(Req_LoadRegs v) { setField(26, v); }
   @$pb.TagNumber(26)
-  $core.bool hasLoadRegs() => $_has(10);
+  $core.bool hasLoadRegs() => $_has(9);
   @$pb.TagNumber(26)
   void clearLoadRegs() => clearField(26);
   @$pb.TagNumber(26)
-  Req_LoadRegs ensureLoadRegs() => $_ensure(10);
+  Req_LoadRegs ensureLoadRegs() => $_ensure(9);
 
   @$pb.TagNumber(27)
-  Req_UpdateReg get updateReg => $_getN(11);
+  Req_UpdateReg get updateReg => $_getN(10);
   @$pb.TagNumber(27)
   set updateReg(Req_UpdateReg v) { setField(27, v); }
   @$pb.TagNumber(27)
-  $core.bool hasUpdateReg() => $_has(11);
+  $core.bool hasUpdateReg() => $_has(10);
   @$pb.TagNumber(27)
   void clearUpdateReg() => clearField(27);
   @$pb.TagNumber(27)
-  Req_UpdateReg ensureUpdateReg() => $_ensure(11);
+  Req_UpdateReg ensureUpdateReg() => $_ensure(10);
 
   @$pb.TagNumber(28)
-  Req_LoadFile get loadFile => $_getN(12);
+  Req_LoadFile get loadFile => $_getN(11);
   @$pb.TagNumber(28)
   set loadFile(Req_LoadFile v) { setField(28, v); }
   @$pb.TagNumber(28)
-  $core.bool hasLoadFile() => $_has(12);
+  $core.bool hasLoadFile() => $_has(11);
   @$pb.TagNumber(28)
   void clearLoadFile() => clearField(28);
   @$pb.TagNumber(28)
-  Req_LoadFile ensureLoadFile() => $_ensure(12);
+  Req_LoadFile ensureLoadFile() => $_ensure(11);
 
   @$pb.TagNumber(29)
-  Req_ListAllTransactions get listAllTransactions => $_getN(13);
+  Req_ListAllTransactions get listAllTransactions => $_getN(12);
   @$pb.TagNumber(29)
   set listAllTransactions(Req_ListAllTransactions v) { setField(29, v); }
   @$pb.TagNumber(29)
-  $core.bool hasListAllTransactions() => $_has(13);
+  $core.bool hasListAllTransactions() => $_has(12);
   @$pb.TagNumber(29)
   void clearListAllTransactions() => clearField(29);
   @$pb.TagNumber(29)
-  Req_ListAllTransactions ensureListAllTransactions() => $_ensure(13);
+  Req_ListAllTransactions ensureListAllTransactions() => $_ensure(12);
 
   @$pb.TagNumber(30)
-  Req_ListOwnTransactions get listOwnTransactions => $_getN(14);
+  Req_ListOwnTransactions get listOwnTransactions => $_getN(13);
   @$pb.TagNumber(30)
   set listOwnTransactions(Req_ListOwnTransactions v) { setField(30, v); }
   @$pb.TagNumber(30)
-  $core.bool hasListOwnTransactions() => $_has(14);
+  $core.bool hasListOwnTransactions() => $_has(13);
   @$pb.TagNumber(30)
   void clearListOwnTransactions() => clearField(30);
   @$pb.TagNumber(30)
-  Req_ListOwnTransactions ensureListOwnTransactions() => $_ensure(14);
+  Req_ListOwnTransactions ensureListOwnTransactions() => $_ensure(13);
 
   @$pb.TagNumber(31)
-  Req_ListAllBalances get listAllBalances => $_getN(15);
+  Req_ListAllBalances get listAllBalances => $_getN(14);
   @$pb.TagNumber(31)
   set listAllBalances(Req_ListAllBalances v) { setField(31, v); }
   @$pb.TagNumber(31)
-  $core.bool hasListAllBalances() => $_has(15);
+  $core.bool hasListAllBalances() => $_has(14);
   @$pb.TagNumber(31)
   void clearListAllBalances() => clearField(31);
   @$pb.TagNumber(31)
-  Req_ListAllBalances ensureListAllBalances() => $_ensure(15);
+  Req_ListAllBalances ensureListAllBalances() => $_ensure(14);
 
   @$pb.TagNumber(32)
-  Req_ListAllSeries get listAllSeries => $_getN(16);
+  Req_ListAllSeries get listAllSeries => $_getN(15);
   @$pb.TagNumber(32)
   set listAllSeries(Req_ListAllSeries v) { setField(32, v); }
   @$pb.TagNumber(32)
-  $core.bool hasListAllSeries() => $_has(16);
+  $core.bool hasListAllSeries() => $_has(15);
   @$pb.TagNumber(32)
   void clearListAllSeries() => clearField(32);
   @$pb.TagNumber(32)
-  Req_ListAllSeries ensureListAllSeries() => $_ensure(16);
+  Req_ListAllSeries ensureListAllSeries() => $_ensure(15);
 }
 
-class Resp_Login extends $pb.GeneratedMessage {
-  factory Resp_Login({
+class Resp_LoginOrRegister extends $pb.GeneratedMessage {
+  factory Resp_LoginOrRegister({
     $core.String? requestId,
   }) {
     final $result = create();
@@ -2607,11 +2529,11 @@ class Resp_Login extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Resp_Login._() : super();
-  factory Resp_Login.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Resp_Login.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  Resp_LoginOrRegister._() : super();
+  factory Resp_LoginOrRegister.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Resp_LoginOrRegister.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Resp.Login', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Resp.LoginOrRegister', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'requestId')
   ;
 
@@ -2619,71 +2541,22 @@ class Resp_Login extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Resp_Login clone() => Resp_Login()..mergeFromMessage(this);
+  Resp_LoginOrRegister clone() => Resp_LoginOrRegister()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Resp_Login copyWith(void Function(Resp_Login) updates) => super.copyWith((message) => updates(message as Resp_Login)) as Resp_Login;
+  Resp_LoginOrRegister copyWith(void Function(Resp_LoginOrRegister) updates) => super.copyWith((message) => updates(message as Resp_LoginOrRegister)) as Resp_LoginOrRegister;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Resp_Login create() => Resp_Login._();
-  Resp_Login createEmptyInstance() => create();
-  static $pb.PbList<Resp_Login> createRepeated() => $pb.PbList<Resp_Login>();
+  static Resp_LoginOrRegister create() => Resp_LoginOrRegister._();
+  Resp_LoginOrRegister createEmptyInstance() => create();
+  static $pb.PbList<Resp_LoginOrRegister> createRepeated() => $pb.PbList<Resp_LoginOrRegister>();
   @$core.pragma('dart2js:noInline')
-  static Resp_Login getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Resp_Login>(create);
-  static Resp_Login? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get requestId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set requestId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasRequestId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearRequestId() => clearField(1);
-}
-
-class Resp_Register extends $pb.GeneratedMessage {
-  factory Resp_Register({
-    $core.String? requestId,
-  }) {
-    final $result = create();
-    if (requestId != null) {
-      $result.requestId = requestId;
-    }
-    return $result;
-  }
-  Resp_Register._() : super();
-  factory Resp_Register.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Resp_Register.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Resp.Register', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'requestId')
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Resp_Register clone() => Resp_Register()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Resp_Register copyWith(void Function(Resp_Register) updates) => super.copyWith((message) => updates(message as Resp_Register)) as Resp_Register;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Resp_Register create() => Resp_Register._();
-  Resp_Register createEmptyInstance() => create();
-  static $pb.PbList<Resp_Register> createRepeated() => $pb.PbList<Resp_Register>();
-  @$core.pragma('dart2js:noInline')
-  static Resp_Register getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Resp_Register>(create);
-  static Resp_Register? _defaultInstance;
+  static Resp_LoginOrRegister getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Resp_LoginOrRegister>(create);
+  static Resp_LoginOrRegister? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get requestId => $_getSZ(0);
@@ -3372,8 +3245,7 @@ class Resp_ListAllSeries extends $pb.GeneratedMessage {
 }
 
 enum Resp_Body {
-  login, 
-  register, 
+  loginOrRegister, 
   resume, 
   logout, 
   registerIssuer, 
@@ -3394,8 +3266,7 @@ enum Resp_Body {
 class Resp extends $pb.GeneratedMessage {
   factory Resp({
     $fixnum.Int64? id,
-    Resp_Login? login,
-    Resp_Register? register,
+    Resp_LoginOrRegister? loginOrRegister,
     Resp_Resume? resume,
     Resp_Logout? logout,
     Resp_RegisterIssuer? registerIssuer,
@@ -3415,11 +3286,8 @@ class Resp extends $pb.GeneratedMessage {
     if (id != null) {
       $result.id = id;
     }
-    if (login != null) {
-      $result.login = login;
-    }
-    if (register != null) {
-      $result.register = register;
+    if (loginOrRegister != null) {
+      $result.loginOrRegister = loginOrRegister;
     }
     if (resume != null) {
       $result.resume = resume;
@@ -3470,8 +3338,7 @@ class Resp extends $pb.GeneratedMessage {
   factory Resp.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static const $core.Map<$core.int, Resp_Body> _Resp_BodyByTag = {
-    10 : Resp_Body.login,
-    11 : Resp_Body.register,
+    11 : Resp_Body.loginOrRegister,
     12 : Resp_Body.resume,
     13 : Resp_Body.logout,
     14 : Resp_Body.registerIssuer,
@@ -3489,10 +3356,9 @@ class Resp extends $pb.GeneratedMessage {
     0 : Resp_Body.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Resp', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..oo(0, [10, 11, 12, 13, 14, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32])
+    ..oo(0, [11, 12, 13, 14, 20, 21, 24, 25, 26, 27, 28, 29, 30, 31, 32])
     ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aOM<Resp_Login>(10, _omitFieldNames ? '' : 'login', subBuilder: Resp_Login.create)
-    ..aOM<Resp_Register>(11, _omitFieldNames ? '' : 'register', subBuilder: Resp_Register.create)
+    ..aOM<Resp_LoginOrRegister>(11, _omitFieldNames ? '' : 'loginOrRegister', subBuilder: Resp_LoginOrRegister.create)
     ..aOM<Resp_Resume>(12, _omitFieldNames ? '' : 'resume', subBuilder: Resp_Resume.create)
     ..aOM<Resp_Logout>(13, _omitFieldNames ? '' : 'logout', subBuilder: Resp_Logout.create)
     ..aOM<Resp_RegisterIssuer>(14, _omitFieldNames ? '' : 'registerIssuer', subBuilder: Resp_RegisterIssuer.create)
@@ -3542,185 +3408,174 @@ class Resp extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   void clearId() => clearField(1);
 
-  @$pb.TagNumber(10)
-  Resp_Login get login => $_getN(1);
-  @$pb.TagNumber(10)
-  set login(Resp_Login v) { setField(10, v); }
-  @$pb.TagNumber(10)
-  $core.bool hasLogin() => $_has(1);
-  @$pb.TagNumber(10)
-  void clearLogin() => clearField(10);
-  @$pb.TagNumber(10)
-  Resp_Login ensureLogin() => $_ensure(1);
-
   @$pb.TagNumber(11)
-  Resp_Register get register => $_getN(2);
+  Resp_LoginOrRegister get loginOrRegister => $_getN(1);
   @$pb.TagNumber(11)
-  set register(Resp_Register v) { setField(11, v); }
+  set loginOrRegister(Resp_LoginOrRegister v) { setField(11, v); }
   @$pb.TagNumber(11)
-  $core.bool hasRegister() => $_has(2);
+  $core.bool hasLoginOrRegister() => $_has(1);
   @$pb.TagNumber(11)
-  void clearRegister() => clearField(11);
+  void clearLoginOrRegister() => clearField(11);
   @$pb.TagNumber(11)
-  Resp_Register ensureRegister() => $_ensure(2);
+  Resp_LoginOrRegister ensureLoginOrRegister() => $_ensure(1);
 
   @$pb.TagNumber(12)
-  Resp_Resume get resume => $_getN(3);
+  Resp_Resume get resume => $_getN(2);
   @$pb.TagNumber(12)
   set resume(Resp_Resume v) { setField(12, v); }
   @$pb.TagNumber(12)
-  $core.bool hasResume() => $_has(3);
+  $core.bool hasResume() => $_has(2);
   @$pb.TagNumber(12)
   void clearResume() => clearField(12);
   @$pb.TagNumber(12)
-  Resp_Resume ensureResume() => $_ensure(3);
+  Resp_Resume ensureResume() => $_ensure(2);
 
   @$pb.TagNumber(13)
-  Resp_Logout get logout => $_getN(4);
+  Resp_Logout get logout => $_getN(3);
   @$pb.TagNumber(13)
   set logout(Resp_Logout v) { setField(13, v); }
   @$pb.TagNumber(13)
-  $core.bool hasLogout() => $_has(4);
+  $core.bool hasLogout() => $_has(3);
   @$pb.TagNumber(13)
   void clearLogout() => clearField(13);
   @$pb.TagNumber(13)
-  Resp_Logout ensureLogout() => $_ensure(4);
+  Resp_Logout ensureLogout() => $_ensure(3);
 
   @$pb.TagNumber(14)
-  Resp_RegisterIssuer get registerIssuer => $_getN(5);
+  Resp_RegisterIssuer get registerIssuer => $_getN(4);
   @$pb.TagNumber(14)
   set registerIssuer(Resp_RegisterIssuer v) { setField(14, v); }
   @$pb.TagNumber(14)
-  $core.bool hasRegisterIssuer() => $_has(5);
+  $core.bool hasRegisterIssuer() => $_has(4);
   @$pb.TagNumber(14)
   void clearRegisterIssuer() => clearField(14);
   @$pb.TagNumber(14)
-  Resp_RegisterIssuer ensureRegisterIssuer() => $_ensure(5);
+  Resp_RegisterIssuer ensureRegisterIssuer() => $_ensure(4);
 
   @$pb.TagNumber(20)
-  Resp_AddGaid get addGaid => $_getN(6);
+  Resp_AddGaid get addGaid => $_getN(5);
   @$pb.TagNumber(20)
   set addGaid(Resp_AddGaid v) { setField(20, v); }
   @$pb.TagNumber(20)
-  $core.bool hasAddGaid() => $_has(6);
+  $core.bool hasAddGaid() => $_has(5);
   @$pb.TagNumber(20)
   void clearAddGaid() => clearField(20);
   @$pb.TagNumber(20)
-  Resp_AddGaid ensureAddGaid() => $_ensure(6);
+  Resp_AddGaid ensureAddGaid() => $_ensure(5);
 
   @$pb.TagNumber(21)
-  Resp_LoadAssets get loadAssets => $_getN(7);
+  Resp_LoadAssets get loadAssets => $_getN(6);
   @$pb.TagNumber(21)
   set loadAssets(Resp_LoadAssets v) { setField(21, v); }
   @$pb.TagNumber(21)
-  $core.bool hasLoadAssets() => $_has(7);
+  $core.bool hasLoadAssets() => $_has(6);
   @$pb.TagNumber(21)
   void clearLoadAssets() => clearField(21);
   @$pb.TagNumber(21)
-  Resp_LoadAssets ensureLoadAssets() => $_ensure(7);
+  Resp_LoadAssets ensureLoadAssets() => $_ensure(6);
 
   @$pb.TagNumber(24)
-  Resp_BuyShares get buyShares => $_getN(8);
+  Resp_BuyShares get buyShares => $_getN(7);
   @$pb.TagNumber(24)
   set buyShares(Resp_BuyShares v) { setField(24, v); }
   @$pb.TagNumber(24)
-  $core.bool hasBuyShares() => $_has(8);
+  $core.bool hasBuyShares() => $_has(7);
   @$pb.TagNumber(24)
   void clearBuyShares() => clearField(24);
   @$pb.TagNumber(24)
-  Resp_BuyShares ensureBuyShares() => $_ensure(8);
+  Resp_BuyShares ensureBuyShares() => $_ensure(7);
 
   @$pb.TagNumber(25)
-  Resp_LoadCountries get loadCountries => $_getN(9);
+  Resp_LoadCountries get loadCountries => $_getN(8);
   @$pb.TagNumber(25)
   set loadCountries(Resp_LoadCountries v) { setField(25, v); }
   @$pb.TagNumber(25)
-  $core.bool hasLoadCountries() => $_has(9);
+  $core.bool hasLoadCountries() => $_has(8);
   @$pb.TagNumber(25)
   void clearLoadCountries() => clearField(25);
   @$pb.TagNumber(25)
-  Resp_LoadCountries ensureLoadCountries() => $_ensure(9);
+  Resp_LoadCountries ensureLoadCountries() => $_ensure(8);
 
   @$pb.TagNumber(26)
-  Resp_LoadRegs get loadRegs => $_getN(10);
+  Resp_LoadRegs get loadRegs => $_getN(9);
   @$pb.TagNumber(26)
   set loadRegs(Resp_LoadRegs v) { setField(26, v); }
   @$pb.TagNumber(26)
-  $core.bool hasLoadRegs() => $_has(10);
+  $core.bool hasLoadRegs() => $_has(9);
   @$pb.TagNumber(26)
   void clearLoadRegs() => clearField(26);
   @$pb.TagNumber(26)
-  Resp_LoadRegs ensureLoadRegs() => $_ensure(10);
+  Resp_LoadRegs ensureLoadRegs() => $_ensure(9);
 
   @$pb.TagNumber(27)
-  Resp_UpdateReg get updateReg => $_getN(11);
+  Resp_UpdateReg get updateReg => $_getN(10);
   @$pb.TagNumber(27)
   set updateReg(Resp_UpdateReg v) { setField(27, v); }
   @$pb.TagNumber(27)
-  $core.bool hasUpdateReg() => $_has(11);
+  $core.bool hasUpdateReg() => $_has(10);
   @$pb.TagNumber(27)
   void clearUpdateReg() => clearField(27);
   @$pb.TagNumber(27)
-  Resp_UpdateReg ensureUpdateReg() => $_ensure(11);
+  Resp_UpdateReg ensureUpdateReg() => $_ensure(10);
 
   @$pb.TagNumber(28)
-  Resp_LoadFile get loadFile => $_getN(12);
+  Resp_LoadFile get loadFile => $_getN(11);
   @$pb.TagNumber(28)
   set loadFile(Resp_LoadFile v) { setField(28, v); }
   @$pb.TagNumber(28)
-  $core.bool hasLoadFile() => $_has(12);
+  $core.bool hasLoadFile() => $_has(11);
   @$pb.TagNumber(28)
   void clearLoadFile() => clearField(28);
   @$pb.TagNumber(28)
-  Resp_LoadFile ensureLoadFile() => $_ensure(12);
+  Resp_LoadFile ensureLoadFile() => $_ensure(11);
 
   @$pb.TagNumber(29)
-  Resp_ListAllTransactions get listAllTransactions => $_getN(13);
+  Resp_ListAllTransactions get listAllTransactions => $_getN(12);
   @$pb.TagNumber(29)
   set listAllTransactions(Resp_ListAllTransactions v) { setField(29, v); }
   @$pb.TagNumber(29)
-  $core.bool hasListAllTransactions() => $_has(13);
+  $core.bool hasListAllTransactions() => $_has(12);
   @$pb.TagNumber(29)
   void clearListAllTransactions() => clearField(29);
   @$pb.TagNumber(29)
-  Resp_ListAllTransactions ensureListAllTransactions() => $_ensure(13);
+  Resp_ListAllTransactions ensureListAllTransactions() => $_ensure(12);
 
   @$pb.TagNumber(30)
-  Resp_ListOwnTransactions get listOwnTransactions => $_getN(14);
+  Resp_ListOwnTransactions get listOwnTransactions => $_getN(13);
   @$pb.TagNumber(30)
   set listOwnTransactions(Resp_ListOwnTransactions v) { setField(30, v); }
   @$pb.TagNumber(30)
-  $core.bool hasListOwnTransactions() => $_has(14);
+  $core.bool hasListOwnTransactions() => $_has(13);
   @$pb.TagNumber(30)
   void clearListOwnTransactions() => clearField(30);
   @$pb.TagNumber(30)
-  Resp_ListOwnTransactions ensureListOwnTransactions() => $_ensure(14);
+  Resp_ListOwnTransactions ensureListOwnTransactions() => $_ensure(13);
 
   @$pb.TagNumber(31)
-  Resp_ListAllBalances get listAllBalances => $_getN(15);
+  Resp_ListAllBalances get listAllBalances => $_getN(14);
   @$pb.TagNumber(31)
   set listAllBalances(Resp_ListAllBalances v) { setField(31, v); }
   @$pb.TagNumber(31)
-  $core.bool hasListAllBalances() => $_has(15);
+  $core.bool hasListAllBalances() => $_has(14);
   @$pb.TagNumber(31)
   void clearListAllBalances() => clearField(31);
   @$pb.TagNumber(31)
-  Resp_ListAllBalances ensureListAllBalances() => $_ensure(15);
+  Resp_ListAllBalances ensureListAllBalances() => $_ensure(14);
 
   @$pb.TagNumber(32)
-  Resp_ListAllSeries get listAllSeries => $_getN(16);
+  Resp_ListAllSeries get listAllSeries => $_getN(15);
   @$pb.TagNumber(32)
   set listAllSeries(Resp_ListAllSeries v) { setField(32, v); }
   @$pb.TagNumber(32)
-  $core.bool hasListAllSeries() => $_has(16);
+  $core.bool hasListAllSeries() => $_has(15);
   @$pb.TagNumber(32)
   void clearListAllSeries() => clearField(32);
   @$pb.TagNumber(32)
-  Resp_ListAllSeries ensureListAllSeries() => $_ensure(16);
+  Resp_ListAllSeries ensureListAllSeries() => $_ensure(15);
 }
 
-class Notif_LoginFailed extends $pb.GeneratedMessage {
-  factory Notif_LoginFailed({
+class Notif_LoginOrRegisterFailed extends $pb.GeneratedMessage {
+  factory Notif_LoginOrRegisterFailed({
     $core.String? text,
   }) {
     final $result = create();
@@ -3729,11 +3584,11 @@ class Notif_LoginFailed extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Notif_LoginFailed._() : super();
-  factory Notif_LoginFailed.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Notif_LoginFailed.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  Notif_LoginOrRegisterFailed._() : super();
+  factory Notif_LoginOrRegisterFailed.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Notif_LoginOrRegisterFailed.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.LoginFailed', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.LoginOrRegisterFailed', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'text')
   ;
 
@@ -3741,22 +3596,22 @@ class Notif_LoginFailed extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Notif_LoginFailed clone() => Notif_LoginFailed()..mergeFromMessage(this);
+  Notif_LoginOrRegisterFailed clone() => Notif_LoginOrRegisterFailed()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Notif_LoginFailed copyWith(void Function(Notif_LoginFailed) updates) => super.copyWith((message) => updates(message as Notif_LoginFailed)) as Notif_LoginFailed;
+  Notif_LoginOrRegisterFailed copyWith(void Function(Notif_LoginOrRegisterFailed) updates) => super.copyWith((message) => updates(message as Notif_LoginOrRegisterFailed)) as Notif_LoginOrRegisterFailed;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Notif_LoginFailed create() => Notif_LoginFailed._();
-  Notif_LoginFailed createEmptyInstance() => create();
-  static $pb.PbList<Notif_LoginFailed> createRepeated() => $pb.PbList<Notif_LoginFailed>();
+  static Notif_LoginOrRegisterFailed create() => Notif_LoginOrRegisterFailed._();
+  Notif_LoginOrRegisterFailed createEmptyInstance() => create();
+  static $pb.PbList<Notif_LoginOrRegisterFailed> createRepeated() => $pb.PbList<Notif_LoginOrRegisterFailed>();
   @$core.pragma('dart2js:noInline')
-  static Notif_LoginFailed getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_LoginFailed>(create);
-  static Notif_LoginFailed? _defaultInstance;
+  static Notif_LoginOrRegisterFailed getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_LoginOrRegisterFailed>(create);
+  static Notif_LoginOrRegisterFailed? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get text => $_getSZ(0);
@@ -3768,8 +3623,8 @@ class Notif_LoginFailed extends $pb.GeneratedMessage {
   void clearText() => clearField(1);
 }
 
-class Notif_LoginSucceed extends $pb.GeneratedMessage {
-  factory Notif_LoginSucceed({
+class Notif_LoginOrRegisterSucceed extends $pb.GeneratedMessage {
+  factory Notif_LoginOrRegisterSucceed({
     $core.String? token,
     $core.String? accountKey,
   }) {
@@ -3782,11 +3637,11 @@ class Notif_LoginSucceed extends $pb.GeneratedMessage {
     }
     return $result;
   }
-  Notif_LoginSucceed._() : super();
-  factory Notif_LoginSucceed.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Notif_LoginSucceed.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  Notif_LoginOrRegisterSucceed._() : super();
+  factory Notif_LoginOrRegisterSucceed.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Notif_LoginOrRegisterSucceed.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.LoginSucceed', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.LoginOrRegisterSucceed', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'token')
     ..aQS(2, _omitFieldNames ? '' : 'accountKey')
   ;
@@ -3795,22 +3650,22 @@ class Notif_LoginSucceed extends $pb.GeneratedMessage {
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  Notif_LoginSucceed clone() => Notif_LoginSucceed()..mergeFromMessage(this);
+  Notif_LoginOrRegisterSucceed clone() => Notif_LoginOrRegisterSucceed()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  Notif_LoginSucceed copyWith(void Function(Notif_LoginSucceed) updates) => super.copyWith((message) => updates(message as Notif_LoginSucceed)) as Notif_LoginSucceed;
+  Notif_LoginOrRegisterSucceed copyWith(void Function(Notif_LoginOrRegisterSucceed) updates) => super.copyWith((message) => updates(message as Notif_LoginOrRegisterSucceed)) as Notif_LoginOrRegisterSucceed;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static Notif_LoginSucceed create() => Notif_LoginSucceed._();
-  Notif_LoginSucceed createEmptyInstance() => create();
-  static $pb.PbList<Notif_LoginSucceed> createRepeated() => $pb.PbList<Notif_LoginSucceed>();
+  static Notif_LoginOrRegisterSucceed create() => Notif_LoginOrRegisterSucceed._();
+  Notif_LoginOrRegisterSucceed createEmptyInstance() => create();
+  static $pb.PbList<Notif_LoginOrRegisterSucceed> createRepeated() => $pb.PbList<Notif_LoginOrRegisterSucceed>();
   @$core.pragma('dart2js:noInline')
-  static Notif_LoginSucceed getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_LoginSucceed>(create);
-  static Notif_LoginSucceed? _defaultInstance;
+  static Notif_LoginOrRegisterSucceed getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_LoginOrRegisterSucceed>(create);
+  static Notif_LoginOrRegisterSucceed? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get token => $_getSZ(0);
@@ -3829,55 +3684,6 @@ class Notif_LoginSucceed extends $pb.GeneratedMessage {
   $core.bool hasAccountKey() => $_has(1);
   @$pb.TagNumber(2)
   void clearAccountKey() => clearField(2);
-}
-
-class Notif_EidResponse extends $pb.GeneratedMessage {
-  factory Notif_EidResponse({
-    $core.String? requestId,
-  }) {
-    final $result = create();
-    if (requestId != null) {
-      $result.requestId = requestId;
-    }
-    return $result;
-  }
-  Notif_EidResponse._() : super();
-  factory Notif_EidResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Notif_EidResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.EidResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'requestId')
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Notif_EidResponse clone() => Notif_EidResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Notif_EidResponse copyWith(void Function(Notif_EidResponse) updates) => super.copyWith((message) => updates(message as Notif_EidResponse)) as Notif_EidResponse;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Notif_EidResponse create() => Notif_EidResponse._();
-  Notif_EidResponse createEmptyInstance() => create();
-  static $pb.PbList<Notif_EidResponse> createRepeated() => $pb.PbList<Notif_EidResponse>();
-  @$core.pragma('dart2js:noInline')
-  static Notif_EidResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_EidResponse>(create);
-  static Notif_EidResponse? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get requestId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set requestId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasRequestId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearRequestId() => clearField(1);
 }
 
 class Notif_RegisterFailed extends $pb.GeneratedMessage {
@@ -4626,10 +4432,8 @@ class Notif_UpdateBalances extends $pb.GeneratedMessage {
 }
 
 enum Notif_Body {
-  loginFailed, 
-  loginSucceed, 
-  registerFailed, 
-  registerSucceed, 
+  loginOrRegisterFailed, 
+  loginOrRegisterSucceed, 
   freeShares, 
   buyShares, 
   soldShares, 
@@ -4638,16 +4442,13 @@ enum Notif_Body {
   updateMarketData, 
   issuedAmounts, 
   updateBalances, 
-  eidResponse, 
   notSet
 }
 
 class Notif extends $pb.GeneratedMessage {
   factory Notif({
-    Notif_LoginFailed? loginFailed,
-    Notif_LoginSucceed? loginSucceed,
-    Notif_RegisterFailed? registerFailed,
-    Notif_RegisterSucceed? registerSucceed,
+    Notif_LoginOrRegisterFailed? loginOrRegisterFailed,
+    Notif_LoginOrRegisterSucceed? loginOrRegisterSucceed,
     Notif_FreeShares? freeShares,
     Notif_BuyShares? buyShares,
     Notif_SoldShares? soldShares,
@@ -4656,20 +4457,13 @@ class Notif extends $pb.GeneratedMessage {
     Notif_UpdateMarketData? updateMarketData,
     Notif_IssuedAmounts? issuedAmounts,
     Notif_UpdateBalances? updateBalances,
-    Notif_EidResponse? eidResponse,
   }) {
     final $result = create();
-    if (loginFailed != null) {
-      $result.loginFailed = loginFailed;
+    if (loginOrRegisterFailed != null) {
+      $result.loginOrRegisterFailed = loginOrRegisterFailed;
     }
-    if (loginSucceed != null) {
-      $result.loginSucceed = loginSucceed;
-    }
-    if (registerFailed != null) {
-      $result.registerFailed = registerFailed;
-    }
-    if (registerSucceed != null) {
-      $result.registerSucceed = registerSucceed;
+    if (loginOrRegisterSucceed != null) {
+      $result.loginOrRegisterSucceed = loginOrRegisterSucceed;
     }
     if (freeShares != null) {
       $result.freeShares = freeShares;
@@ -4695,9 +4489,6 @@ class Notif extends $pb.GeneratedMessage {
     if (updateBalances != null) {
       $result.updateBalances = updateBalances;
     }
-    if (eidResponse != null) {
-      $result.eidResponse = eidResponse;
-    }
     return $result;
   }
   Notif._() : super();
@@ -4705,10 +4496,8 @@ class Notif extends $pb.GeneratedMessage {
   factory Notif.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static const $core.Map<$core.int, Notif_Body> _Notif_BodyByTag = {
-    1 : Notif_Body.loginFailed,
-    2 : Notif_Body.loginSucceed,
-    3 : Notif_Body.registerFailed,
-    4 : Notif_Body.registerSucceed,
+    3 : Notif_Body.loginOrRegisterFailed,
+    4 : Notif_Body.loginOrRegisterSucceed,
     5 : Notif_Body.freeShares,
     6 : Notif_Body.buyShares,
     7 : Notif_Body.soldShares,
@@ -4717,15 +4506,12 @@ class Notif extends $pb.GeneratedMessage {
     10 : Notif_Body.updateMarketData,
     11 : Notif_Body.issuedAmounts,
     12 : Notif_Body.updateBalances,
-    13 : Notif_Body.eidResponse,
     0 : Notif_Body.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-    ..aOM<Notif_LoginFailed>(1, _omitFieldNames ? '' : 'loginFailed', subBuilder: Notif_LoginFailed.create)
-    ..aOM<Notif_LoginSucceed>(2, _omitFieldNames ? '' : 'loginSucceed', subBuilder: Notif_LoginSucceed.create)
-    ..aOM<Notif_RegisterFailed>(3, _omitFieldNames ? '' : 'registerFailed', subBuilder: Notif_RegisterFailed.create)
-    ..aOM<Notif_RegisterSucceed>(4, _omitFieldNames ? '' : 'registerSucceed', subBuilder: Notif_RegisterSucceed.create)
+    ..oo(0, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    ..aOM<Notif_LoginOrRegisterFailed>(3, _omitFieldNames ? '' : 'loginOrRegisterFailed', subBuilder: Notif_LoginOrRegisterFailed.create)
+    ..aOM<Notif_LoginOrRegisterSucceed>(4, _omitFieldNames ? '' : 'loginOrRegisterSucceed', subBuilder: Notif_LoginOrRegisterSucceed.create)
     ..aOM<Notif_FreeShares>(5, _omitFieldNames ? '' : 'freeShares', subBuilder: Notif_FreeShares.create)
     ..aOM<Notif_BuyShares>(6, _omitFieldNames ? '' : 'buyShares', subBuilder: Notif_BuyShares.create)
     ..aOM<Notif_SoldShares>(7, _omitFieldNames ? '' : 'soldShares', subBuilder: Notif_SoldShares.create)
@@ -4734,7 +4520,6 @@ class Notif extends $pb.GeneratedMessage {
     ..aOM<Notif_UpdateMarketData>(10, _omitFieldNames ? '' : 'updateMarketData', subBuilder: Notif_UpdateMarketData.create)
     ..aOM<Notif_IssuedAmounts>(11, _omitFieldNames ? '' : 'issuedAmounts', subBuilder: Notif_IssuedAmounts.create)
     ..aOM<Notif_UpdateBalances>(12, _omitFieldNames ? '' : 'updateBalances', subBuilder: Notif_UpdateBalances.create)
-    ..aOM<Notif_EidResponse>(13, _omitFieldNames ? '' : 'eidResponse', subBuilder: Notif_EidResponse.create)
   ;
 
   @$core.Deprecated(
@@ -4761,148 +4546,115 @@ class Notif extends $pb.GeneratedMessage {
   Notif_Body whichBody() => _Notif_BodyByTag[$_whichOneof(0)]!;
   void clearBody() => clearField($_whichOneof(0));
 
-  @$pb.TagNumber(1)
-  Notif_LoginFailed get loginFailed => $_getN(0);
-  @$pb.TagNumber(1)
-  set loginFailed(Notif_LoginFailed v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasLoginFailed() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearLoginFailed() => clearField(1);
-  @$pb.TagNumber(1)
-  Notif_LoginFailed ensureLoginFailed() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  Notif_LoginSucceed get loginSucceed => $_getN(1);
-  @$pb.TagNumber(2)
-  set loginSucceed(Notif_LoginSucceed v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasLoginSucceed() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearLoginSucceed() => clearField(2);
-  @$pb.TagNumber(2)
-  Notif_LoginSucceed ensureLoginSucceed() => $_ensure(1);
-
   @$pb.TagNumber(3)
-  Notif_RegisterFailed get registerFailed => $_getN(2);
+  Notif_LoginOrRegisterFailed get loginOrRegisterFailed => $_getN(0);
   @$pb.TagNumber(3)
-  set registerFailed(Notif_RegisterFailed v) { setField(3, v); }
+  set loginOrRegisterFailed(Notif_LoginOrRegisterFailed v) { setField(3, v); }
   @$pb.TagNumber(3)
-  $core.bool hasRegisterFailed() => $_has(2);
+  $core.bool hasLoginOrRegisterFailed() => $_has(0);
   @$pb.TagNumber(3)
-  void clearRegisterFailed() => clearField(3);
+  void clearLoginOrRegisterFailed() => clearField(3);
   @$pb.TagNumber(3)
-  Notif_RegisterFailed ensureRegisterFailed() => $_ensure(2);
+  Notif_LoginOrRegisterFailed ensureLoginOrRegisterFailed() => $_ensure(0);
 
   @$pb.TagNumber(4)
-  Notif_RegisterSucceed get registerSucceed => $_getN(3);
+  Notif_LoginOrRegisterSucceed get loginOrRegisterSucceed => $_getN(1);
   @$pb.TagNumber(4)
-  set registerSucceed(Notif_RegisterSucceed v) { setField(4, v); }
+  set loginOrRegisterSucceed(Notif_LoginOrRegisterSucceed v) { setField(4, v); }
   @$pb.TagNumber(4)
-  $core.bool hasRegisterSucceed() => $_has(3);
+  $core.bool hasLoginOrRegisterSucceed() => $_has(1);
   @$pb.TagNumber(4)
-  void clearRegisterSucceed() => clearField(4);
+  void clearLoginOrRegisterSucceed() => clearField(4);
   @$pb.TagNumber(4)
-  Notif_RegisterSucceed ensureRegisterSucceed() => $_ensure(3);
+  Notif_LoginOrRegisterSucceed ensureLoginOrRegisterSucceed() => $_ensure(1);
 
   @$pb.TagNumber(5)
-  Notif_FreeShares get freeShares => $_getN(4);
+  Notif_FreeShares get freeShares => $_getN(2);
   @$pb.TagNumber(5)
   set freeShares(Notif_FreeShares v) { setField(5, v); }
   @$pb.TagNumber(5)
-  $core.bool hasFreeShares() => $_has(4);
+  $core.bool hasFreeShares() => $_has(2);
   @$pb.TagNumber(5)
   void clearFreeShares() => clearField(5);
   @$pb.TagNumber(5)
-  Notif_FreeShares ensureFreeShares() => $_ensure(4);
+  Notif_FreeShares ensureFreeShares() => $_ensure(2);
 
   @$pb.TagNumber(6)
-  Notif_BuyShares get buyShares => $_getN(5);
+  Notif_BuyShares get buyShares => $_getN(3);
   @$pb.TagNumber(6)
   set buyShares(Notif_BuyShares v) { setField(6, v); }
   @$pb.TagNumber(6)
-  $core.bool hasBuyShares() => $_has(5);
+  $core.bool hasBuyShares() => $_has(3);
   @$pb.TagNumber(6)
   void clearBuyShares() => clearField(6);
   @$pb.TagNumber(6)
-  Notif_BuyShares ensureBuyShares() => $_ensure(5);
+  Notif_BuyShares ensureBuyShares() => $_ensure(3);
 
   @$pb.TagNumber(7)
-  Notif_SoldShares get soldShares => $_getN(6);
+  Notif_SoldShares get soldShares => $_getN(4);
   @$pb.TagNumber(7)
   set soldShares(Notif_SoldShares v) { setField(7, v); }
   @$pb.TagNumber(7)
-  $core.bool hasSoldShares() => $_has(6);
+  $core.bool hasSoldShares() => $_has(4);
   @$pb.TagNumber(7)
   void clearSoldShares() => clearField(7);
   @$pb.TagNumber(7)
-  Notif_SoldShares ensureSoldShares() => $_ensure(6);
+  Notif_SoldShares ensureSoldShares() => $_ensure(4);
 
   @$pb.TagNumber(8)
-  Notif_UserShares get userShares => $_getN(7);
+  Notif_UserShares get userShares => $_getN(5);
   @$pb.TagNumber(8)
   set userShares(Notif_UserShares v) { setField(8, v); }
   @$pb.TagNumber(8)
-  $core.bool hasUserShares() => $_has(7);
+  $core.bool hasUserShares() => $_has(5);
   @$pb.TagNumber(8)
   void clearUserShares() => clearField(8);
   @$pb.TagNumber(8)
-  Notif_UserShares ensureUserShares() => $_ensure(7);
+  Notif_UserShares ensureUserShares() => $_ensure(5);
 
   @$pb.TagNumber(9)
-  Notif_UpdatePrices get updatePrices => $_getN(8);
+  Notif_UpdatePrices get updatePrices => $_getN(6);
   @$pb.TagNumber(9)
   set updatePrices(Notif_UpdatePrices v) { setField(9, v); }
   @$pb.TagNumber(9)
-  $core.bool hasUpdatePrices() => $_has(8);
+  $core.bool hasUpdatePrices() => $_has(6);
   @$pb.TagNumber(9)
   void clearUpdatePrices() => clearField(9);
   @$pb.TagNumber(9)
-  Notif_UpdatePrices ensureUpdatePrices() => $_ensure(8);
+  Notif_UpdatePrices ensureUpdatePrices() => $_ensure(6);
 
   @$pb.TagNumber(10)
-  Notif_UpdateMarketData get updateMarketData => $_getN(9);
+  Notif_UpdateMarketData get updateMarketData => $_getN(7);
   @$pb.TagNumber(10)
   set updateMarketData(Notif_UpdateMarketData v) { setField(10, v); }
   @$pb.TagNumber(10)
-  $core.bool hasUpdateMarketData() => $_has(9);
+  $core.bool hasUpdateMarketData() => $_has(7);
   @$pb.TagNumber(10)
   void clearUpdateMarketData() => clearField(10);
   @$pb.TagNumber(10)
-  Notif_UpdateMarketData ensureUpdateMarketData() => $_ensure(9);
+  Notif_UpdateMarketData ensureUpdateMarketData() => $_ensure(7);
 
   @$pb.TagNumber(11)
-  Notif_IssuedAmounts get issuedAmounts => $_getN(10);
+  Notif_IssuedAmounts get issuedAmounts => $_getN(8);
   @$pb.TagNumber(11)
   set issuedAmounts(Notif_IssuedAmounts v) { setField(11, v); }
   @$pb.TagNumber(11)
-  $core.bool hasIssuedAmounts() => $_has(10);
+  $core.bool hasIssuedAmounts() => $_has(8);
   @$pb.TagNumber(11)
   void clearIssuedAmounts() => clearField(11);
   @$pb.TagNumber(11)
-  Notif_IssuedAmounts ensureIssuedAmounts() => $_ensure(10);
+  Notif_IssuedAmounts ensureIssuedAmounts() => $_ensure(8);
 
   @$pb.TagNumber(12)
-  Notif_UpdateBalances get updateBalances => $_getN(11);
+  Notif_UpdateBalances get updateBalances => $_getN(9);
   @$pb.TagNumber(12)
   set updateBalances(Notif_UpdateBalances v) { setField(12, v); }
   @$pb.TagNumber(12)
-  $core.bool hasUpdateBalances() => $_has(11);
+  $core.bool hasUpdateBalances() => $_has(9);
   @$pb.TagNumber(12)
   void clearUpdateBalances() => clearField(12);
   @$pb.TagNumber(12)
-  Notif_UpdateBalances ensureUpdateBalances() => $_ensure(11);
-
-  @$pb.TagNumber(13)
-  Notif_EidResponse get eidResponse => $_getN(12);
-  @$pb.TagNumber(13)
-  set eidResponse(Notif_EidResponse v) { setField(13, v); }
-  @$pb.TagNumber(13)
-  $core.bool hasEidResponse() => $_has(12);
-  @$pb.TagNumber(13)
-  void clearEidResponse() => clearField(13);
-  @$pb.TagNumber(13)
-  Notif_EidResponse ensureEidResponse() => $_ensure(12);
+  Notif_UpdateBalances ensureUpdateBalances() => $_ensure(9);
 }
 
 class Err extends $pb.GeneratedMessage {

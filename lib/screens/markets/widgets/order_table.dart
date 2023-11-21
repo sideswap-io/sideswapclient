@@ -47,8 +47,8 @@ class OrderTable extends ConsumerWidget {
         ref.watch(assetImageProvider).getSmallImage(priceAsset?.assetId);
     final priceAmount = orderDetailsData.priceAmountStr;
     final priceDollarConversion = !isStablecoin
-        ? ref.read(requestOrderProvider).dollarConversion(
-            bitcoinAsset?.assetId, double.tryParse(priceAmount) ?? 0)
+        ? ref.watch(dollarConversionProvider(
+            bitcoinAsset?.assetId, double.tryParse(priceAmount) ?? 0))
         : null;
     final isAmp =
         ref.watch(assetUtilsProvider).isAmpMarket(assetId: asset?.assetId);

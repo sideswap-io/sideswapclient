@@ -54,9 +54,8 @@ class DOrderAmountEnterState extends ConsumerState<DOrderAmountEnter> {
     final showDollarConversion =
         widget.isPriceField && widget.assetId == liquidAccountAsset?.assetId;
     final dollarConversion = showDollarConversion
-        ? ref
-            .read(requestOrderProvider)
-            .dollarConversionFromString(widget.assetId, widget.controller.text)
+        ? ref.watch(dollarConversionFromStringProvider(
+            widget.assetId, widget.controller.text))
         : null;
 
     return Column(

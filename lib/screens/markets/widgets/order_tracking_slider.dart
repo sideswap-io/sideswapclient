@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 import 'package:xrange/xrange.dart';
 
@@ -19,7 +21,7 @@ class OrderTrackingSlider extends StatelessWidget {
     this.icon,
     this.price = '',
     this.dollarConversion = '',
-    required this.invertColors,
+    this.invertColors,
   });
 
   final double value;
@@ -30,7 +32,7 @@ class OrderTrackingSlider extends StatelessWidget {
   final Widget? icon;
   final String price;
   final String dollarConversion;
-  final bool invertColors;
+  final bool? invertColors;
 
   final trackingValueStyle = const TextStyle(
     fontSize: 14,
@@ -47,15 +49,15 @@ class OrderTrackingSlider extends StatelessWidget {
   Widget build(BuildContext context) {
     final ticker = asset!.ticker;
 
-    final startColor = invertColors ? positiveColor : negativeColor;
-    final endColor = invertColors ? negativeColor : positiveColor;
+    final startColor = invertColors == true ? positiveColor : negativeColor;
+    final endColor = invertColors == true ? negativeColor : positiveColor;
     final circleStartColor =
-        invertColors ? circlePositiveColor : circleNegativeColor;
+        invertColors == true ? circlePositiveColor : circleNegativeColor;
     final circleEndColor =
-        invertColors ? circleNegativeColor : circlePositiveColor;
+        invertColors == true ? circleNegativeColor : circlePositiveColor;
 
     return Container(
-      height: 112,
+      height: 115,
       decoration: BoxDecoration(
         shape: BoxShape.rectangle,
         borderRadius: BorderRadius.circular(8),
@@ -149,31 +151,35 @@ class OrderTrackingSlider extends StatelessWidget {
                 ),
                 trackHeight: 10,
               ),
-              child: Slider(
-                min: minPercent.toDouble(),
-                max: maxPercent.toDouble(),
-                value: value,
-                onChanged: (value) {
-                  if (onChanged == null) {
-                    return;
-                  }
-
-                  final newMin = maxPercent.abs() - minPercent.abs();
-                  final newMax = ((maxPercent.abs() + minPercent.abs()) * 100);
-                  final index = convertToNewRange(
+              child: Consumer(
+                builder: (context, ref, child) {
+                  return Slider(
+                    min: minPercent.toDouble(),
+                    max: maxPercent.toDouble(),
                     value: value,
-                    minValue: minPercent.toDouble(),
-                    maxValue: maxPercent.toDouble(),
-                    newMin: newMin.toDouble(),
-                    newMax: newMax.toDouble(),
-                  ).toInt();
+                    onChanged: (value) {
+                      final newMin = maxPercent.abs() - minPercent.abs();
+                      final newMax =
+                          ((maxPercent.abs() + minPercent.abs()) * 100);
+                      final index = convertToNewRange(
+                        value: value,
+                        minValue: minPercent.toDouble(),
+                        maxValue: maxPercent.toDouble(),
+                        newMin: newMin.toDouble(),
+                        newMax: newMax.toDouble(),
+                      ).toInt();
 
-                  final range =
-                      NumRange.closed(minPercent * 100, maxPercent * 100);
-                  final rangeValue = range.values(step: 1).toList()[index];
-                  final newValue = rangeValue / 100.0;
+                      final range =
+                          NumRange.closed(minPercent * 100, maxPercent * 100);
+                      final rangeValue = range.values(step: 1).toList()[index];
+                      final newValue = rangeValue / 100.0;
 
-                  onChanged!(newValue);
+                      ref
+                          .read(orderPriceFieldSliderValueProvider.notifier)
+                          .setValue(newValue);
+                      onChanged?.call(newValue);
+                    },
+                  );
                 },
               ),
             ),

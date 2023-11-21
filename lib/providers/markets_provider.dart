@@ -19,6 +19,7 @@ import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/modify_price_dialog.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/utils/duration_extension.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'markets_provider.g.dart';
@@ -69,6 +70,7 @@ extension RequestOrderEx on RequestOrder {
   }
 }
 
+// TODO (malcolmpl): fix this - AccountAsset instead of assetId (and maybe marketType, as accountasset is include type?)
 class RequestOrder {
   final String orderId;
   final String assetId;
@@ -185,8 +187,8 @@ class MarketsProvider extends ChangeNotifier {
     ref.read(walletProvider).sendMsg(msg);
   }
 
-  void subscribeSwapMarket(String assetId) {
-    if (assetId.isEmpty) {
+  void subscribeSwapMarket(String? assetId) {
+    if (assetId == null || assetId.isEmpty) {
       return;
     }
     final asset = ref.read(assetsStateProvider)[assetId];
@@ -214,7 +216,12 @@ class MarketsProvider extends ChangeNotifier {
       logger.w("Asset id is null!");
       return;
     }
-    assert(assetId != ref.read(liquidAssetIdStateProvider));
+
+    // don't subscribe liquid
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+    if (assetId == liquidAssetId) {
+      return;
+    }
 
     // don't subscribe if already subscribed
     if (assetId == _subscribedIndexPriceAssetId) {
@@ -326,19 +333,20 @@ class MarketsIndexPriceProvider
   }
 }
 
-final indexPriceForAssetProvider =
-    AutoDisposeProviderFamily<IndexPriceForAssetProvider, String?>((ref, arg) {
+@riverpod
+IndexPriceForAsset indexPriceForAsset(
+    IndexPriceForAssetRef ref, String? assetId) {
   final indexPrice = ref.watch(marketsIndexPriceProvider);
-  final isAmp = ref.watch(assetUtilsProvider).isAmpMarket(assetId: arg);
-  return IndexPriceForAssetProvider(indexPrice[arg] ?? 0, arg, isAmp);
-});
+  final isAmp = ref.watch(assetUtilsProvider).isAmpMarket(assetId: assetId);
+  return IndexPriceForAsset(indexPrice[assetId] ?? 0, assetId, isAmp);
+}
 
-class IndexPriceForAssetProvider {
+class IndexPriceForAsset {
   final double indexPrice;
   final String? assetId;
   final bool isAmp;
 
-  IndexPriceForAssetProvider(this.indexPrice, this.assetId, this.isAmp);
+  IndexPriceForAsset(this.indexPrice, this.assetId, this.isAmp);
 
   String getIndexPriceStr() {
     if (indexPrice == 0) {
@@ -485,22 +493,25 @@ final marketOwnRequestOrdersProvider =
 });
 
 @Riverpod(keepAlive: true)
-class MarketSelectedAssetIdState extends _$MarketSelectedAssetIdState {
+class MarketSelectedAccountAssetState
+    extends _$MarketSelectedAccountAssetState {
   @override
-  String build() {
+  AccountAsset build() {
     final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
-    return tetherAssetId;
+    return AccountAsset(AccountType.reg, tetherAssetId);
   }
 
-  void setSelectedAssetId(String value) {
-    state = value;
+  void setSelectedAccountAsset(AccountAsset accountAsset) {
+    state = accountAsset;
   }
 }
 
 final makeOrderBalanceAccountAssetProvider =
     AutoDisposeProvider<AccountAsset?>((ref) {
-  final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
-  final selectedAsset = ref.watch(assetsStateProvider)[selectedAssetId];
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final selectedAsset =
+      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final pricedInLiquid =
       ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
@@ -508,7 +519,7 @@ final makeOrderBalanceAccountAssetProvider =
   final makeOrderSide = ref.watch(makeOrderSideStateProvider);
   final isSell = makeOrderSide == MakeOrderSide.sell;
   final balanceAssetId =
-      pricedInLiquid == isSell ? selectedAssetId : liquidAssetId;
+      pricedInLiquid == isSell ? selectedAccountAsset.assetId : liquidAssetId;
 
   final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
   final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
@@ -528,11 +539,13 @@ class MakeOrderBalance {
   late final String balanceString;
   late final int balanceSatoshi;
   late final String ticker;
+  late final String assetId;
 
   MakeOrderBalance({
     required this.balanceString,
     required this.balanceSatoshi,
     required this.ticker,
+    required this.assetId,
   });
 
   double asDouble() {
@@ -577,9 +590,18 @@ MakeOrderBalance makeOrderBalance(MakeOrderBalanceRef ref) {
                 amount: balance, precision: assetPrecision));
 
         return MakeOrderBalance(
-            balanceString: balanceStr, balanceSatoshi: balance, ticker: ticker);
+          balanceString: balanceStr,
+          balanceSatoshi: balance,
+          ticker: ticker,
+          assetId: accountAsset.assetId ?? '',
+        );
       }(),
-    _ => MakeOrderBalance(balanceString: '0', balanceSatoshi: 0, ticker: ''),
+    _ => MakeOrderBalance(
+        balanceString: '0',
+        balanceSatoshi: 0,
+        ticker: '',
+        assetId: '',
+      ),
   };
 }
 
@@ -588,20 +610,31 @@ enum MakeOrderSide {
   buy,
 }
 
-final makeOrderSideStateProvider =
-    AutoDisposeStateProvider<MakeOrderSide>((ref) => MakeOrderSide.sell);
+@Riverpod(keepAlive: true)
+class MakeOrderSideState extends _$MakeOrderSideState {
+  @override
+  MakeOrderSide build() {
+    return MakeOrderSide.sell;
+  }
+
+  void setSide(MakeOrderSide side) {
+    state = side;
+  }
+}
 
 @riverpod
 AccountAsset? marketOrderAggregateVolumeAccountAsset(
     MarketOrderAggregateVolumeAccountAssetRef ref) {
-  final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
-  final selectedAsset = ref.watch(assetsStateProvider)[selectedAssetId];
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final selectedAsset =
+      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
   final pricedInLiquid =
       ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
   final selectedMarket = assetMarketType(selectedAsset);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-  final assetId = pricedInLiquid ? liquidAssetId : selectedAssetId;
+  final assetId = pricedInLiquid ? liquidAssetId : selectedAccountAsset.assetId;
 
   final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
   final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
@@ -788,8 +821,10 @@ bool makeOrderAggregateVolumeTooHigh(MakeOrderAggregateVolumeTooHighRef ref) {
 
 @riverpod
 AccountAsset? makeOrderLiquidAccountAsset(MakeOrderLiquidAccountAssetRef ref) {
-  final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
-  final selectedAsset = ref.watch(assetsStateProvider)[selectedAssetId];
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final selectedAsset =
+      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
   final selectedMarket = assetMarketType(selectedAsset);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
@@ -802,4 +837,167 @@ AccountAsset? makeOrderLiquidAccountAsset(MakeOrderLiquidAccountAssetRef ref) {
     _ =>
       regularAccountAssets.where((e) => e.assetId == liquidAssetId).firstOrNull,
   };
+}
+
+@riverpod
+bool selectedAssetIsToken(SelectedAssetIsTokenRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final asset = ref.watch(assetsStateProvider
+      .select((value) => value[selectedAccountAsset.assetId]));
+  return asset?.ampMarket == false && asset?.swapMarket == false;
+}
+
+@riverpod
+String targetIndexPrice(TargetIndexPriceRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+  final isPricedInLiquid =
+      ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
+
+  final indexPrice = ref
+      .watch(indexPriceForAssetProvider(selectedAccountAsset.assetId))
+      .indexPrice;
+  final lastPrice =
+      ref.watch(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
+  final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
+  final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
+  final targetIndexPriceStr = indexPrice != 0 ? indexPriceStr : lastPriceStr;
+  return targetIndexPriceStr;
+}
+
+@riverpod
+String selectedAssetTicker(SelectedAssetTickerRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final ticker = ref.watch(assetsStateProvider
+      .select((value) => value[selectedAccountAsset.assetId]?.ticker ?? ''));
+  return ticker;
+}
+
+@riverpod
+OrderEntryCallbackHandlers orderEntryCallbackHandlers(
+    OrderEntryCallbackHandlersRef ref) {
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final makeOrderSide = ref.watch(makeOrderSideStateProvider);
+  final isSell = makeOrderSide == MakeOrderSide.sell;
+  final asset = ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
+
+  return OrderEntryCallbackHandlers(
+    ref: ref,
+    selectedAccountAsset: selectedAccountAsset,
+    isSell: isSell,
+    asset: asset,
+  );
+}
+
+class OrderEntryCallbackHandlers {
+  final Ref ref;
+  final AccountAsset selectedAccountAsset;
+  final bool isSell;
+  final Asset? asset;
+
+  OrderEntryCallbackHandlers({
+    required this.ref,
+    required this.selectedAccountAsset,
+    required this.isSell,
+    required this.asset,
+  });
+
+  void reset(
+    TextEditingController controllerAmount,
+    TextEditingController controllerPrice,
+    ValueNotifier<double> trackingValue,
+    ValueNotifier<bool> trackingToggled,
+  ) {
+    controllerAmount.clear();
+    controllerPrice.clear();
+    trackingValue.value = 0.0;
+    trackingToggled.value = false;
+  }
+
+  void submit(
+    TextEditingController controllerAmount,
+    TextEditingController controllerPrice,
+    ValueNotifier<bool> trackingToggled,
+    ValueNotifier<double> trackingValue,
+  ) {
+    final amount = double.tryParse(controllerAmount.text) ?? 0.0;
+    final price = double.tryParse(controllerPrice.text) ?? 0.0;
+    final isAssetAmount = !(asset?.swapMarket == true);
+    final indexPrice = trackingToggled.value
+        ? trackerValueToIndexPrice(trackingValue.value)
+        : null;
+    final account = ref.read(getBalanceAccountProvider(asset));
+    if (account == null) {
+      logger.w('AccountAsset is null!');
+      return;
+    }
+    final sign = isSell ? -1 : 1;
+    final amountWithSign = amount * sign;
+
+    ref.read(walletProvider).submitOrder(
+          selectedAccountAsset.assetId,
+          amountWithSign,
+          price,
+          isAssetAmount: isAssetAmount,
+          indexPrice: indexPrice,
+          account: account.account,
+        );
+    ref.read(indexPriceButtonProvider.notifier).setIndexPrice('0');
+    reset(controllerAmount, controllerPrice, trackingValue, trackingToggled);
+  }
+
+  void handleMax(
+      TextEditingController controllerAmount, FocusNode focusNodePrice) {
+    final assetPrecision = ref
+        .read(assetUtilsProvider)
+        .getPrecisionForAssetId(assetId: selectedAccountAsset.assetId);
+    final isPricedInLiquid =
+        ref.read(assetUtilsProvider).isPricedInLiquid(asset: asset);
+
+    final marketSide = ref.read(makeOrderSideStateProvider);
+    // on buy side calculate max amount based on index price and buying power
+    if (marketSide == MakeOrderSide.buy) {
+      final indexPrice = ref
+          .read(indexPriceForAssetProvider(selectedAccountAsset.assetId))
+          .indexPrice;
+      final lastPrice = ref
+          .read(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
+      final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
+      final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
+      final targetIndexPriceStr =
+          indexPrice != 0 ? indexPriceStr : lastPriceStr;
+      ref
+          .read(indexPriceButtonProvider.notifier)
+          .setIndexPrice(targetIndexPriceStr);
+
+      final orderBalance = ref.read(makeOrderBalanceProvider);
+
+      final targetIndexPrice =
+          Decimal.tryParse(targetIndexPriceStr) ?? Decimal.zero;
+      final balance = orderBalance.asDecimal();
+      if (targetIndexPrice != Decimal.zero) {
+        final targetAmount = (balance / targetIndexPrice)
+            .toDecimal(scaleOnInfinitePrecision: assetPrecision)
+            .toStringAsFixed(assetPrecision);
+        setControllerValue(controllerAmount, targetAmount);
+        return;
+      }
+    }
+
+    // for sell side insert max balance only
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+    final account = isPricedInLiquid
+        ? ref.read(getBalanceAccountProvider(asset))
+        : AccountAsset(AccountType.reg, liquidAssetId);
+    final balance = ref.read(balancesProvider).balances[account] ?? 0;
+    final amountProvider = ref.read(amountToStringProvider);
+    final balanceStr = amountProvider.amountToString(
+        AmountToStringParameters(amount: balance, precision: assetPrecision));
+    setControllerValue(controllerAmount, balanceStr);
+    focusNodePrice.requestFocus();
+  }
 }

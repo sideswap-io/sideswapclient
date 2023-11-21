@@ -122,8 +122,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
           .add(AccountAsset(AccountType.reg, ref.read(bitcoinAssetIdProvider)));
       swapPegList.add(
           AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider)));
-      swapPegList.add(
-          AccountAsset(AccountType.amp, ref.read(liquidAssetIdStateProvider)));
 
       return swapPegList;
     }

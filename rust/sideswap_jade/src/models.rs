@@ -261,21 +261,10 @@ pub struct Prevout {
     pub vout: u32,
 }
 
-// Order of fields is important for Jade!
-#[derive(Debug, Serialize)]
-pub struct AssetContract {
-    pub entity: AssetEntity,
-    pub issuer_pubkey: String,
-    pub name: String,
-    pub precision: u8,
-    pub ticker: String,
-    pub version: u32,
-}
-
 #[derive(Debug, Serialize)]
 pub struct AssetInfo {
     pub asset_id: String, // Jade expects string here!
-    pub contract: AssetContract,
+    pub contract: ciborium::Value,
     pub issuance_prevout: Prevout,
 }
 

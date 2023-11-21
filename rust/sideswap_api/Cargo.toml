@@ -10,3 +10,4 @@ elements = { workspace = true, features = ["serde"] }
 hex.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_with = { workspace = true, features = [] }
+serde_json = { workspace = true }

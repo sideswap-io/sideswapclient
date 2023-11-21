@@ -478,5 +478,6 @@
   "Select address type": "پتہ کی قسم منتخب کریں",
   "Sign swap transaction": "تبادلہ کاری کارروائی کی امضا دیں",
   "Create swap output": "تبادلہ کاری کارروائی کا اخراج تخلیق کریں",
-  "Sign offline swap transaction": "بغیر آن لائن تبادلہ کاری کارروائی کی امضا دیں"
+  "Sign offline swap transaction": "بغیر آن لائن تبادلہ کاری کارروائی کی امضا دیں",
+  "No pending orders": "No pending orders"
 }

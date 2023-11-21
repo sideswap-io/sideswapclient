@@ -1,11 +1,5 @@
 targets:
   $default:
-    sources:
-      - lib/models/**.dart
-      - lib/providers/**.dart
-      - lib/**/providers/**.dart
-      - $package$
-      - lib/$lib$
     builders:
       json_serializable:
         options:

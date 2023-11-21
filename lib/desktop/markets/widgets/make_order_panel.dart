@@ -91,8 +91,10 @@ class MakeOrderPanel extends HookConsumerWidget {
       return;
     }, [expanded.value]);
 
-    final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
-    final selectedAsset = ref.watch(assetsStateProvider)[selectedAssetId];
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final selectedAsset =
+        ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
     final buttonIndexPrice = ref.watch(indexPriceButtonProvider);
 
     final selectedMarket = assetMarketType(selectedAsset);
@@ -112,7 +114,7 @@ class MakeOrderPanel extends HookConsumerWidget {
     }, []);
 
     final submitCallback = useCallback(() {
-      final asset = ref.read(assetsStateProvider)[selectedAssetId];
+      final asset = ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
       final amount = double.tryParse(controllerAmount.text) ?? 0.0;
       final price = double.tryParse(controllerPrice.text) ?? 0.0;
       final isAssetAmount = !(asset?.swapMarket == true);
@@ -128,7 +130,7 @@ class MakeOrderPanel extends HookConsumerWidget {
       final amountWithSign = amount * sign;
 
       ref.read(walletProvider).submitOrder(
-            selectedAssetId,
+            selectedAccountAsset.assetId,
             amountWithSign,
             price,
             isAssetAmount: isAssetAmount,
@@ -137,26 +139,27 @@ class MakeOrderPanel extends HookConsumerWidget {
           );
       ref.read(indexPriceButtonProvider.notifier).setIndexPrice('0');
       resetCallback();
-    }, [selectedAssetId, trackingValue.value, isSell]);
+    }, [selectedAccountAsset, trackingValue.value, isSell]);
 
     final pricePerUnit = ref.watch(marketOrderPriceNotifierProvider);
 
     // called when max button is clicked
     final handleMaxCallback = useCallback(() {
-      final asset = ref.read(assetsStateProvider)[selectedAssetId];
+      final asset = ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
       final assetPrecision = ref
           .read(assetUtilsProvider)
-          .getPrecisionForAssetId(assetId: selectedAssetId);
+          .getPrecisionForAssetId(assetId: selectedAccountAsset.assetId);
       final isPricedInLiquid =
           ref.read(assetUtilsProvider).isPricedInLiquid(asset: asset);
 
       final marketSide = ref.read(makeOrderSideStateProvider);
       // on buy side calculate max amount based on index price and buying power
       if (marketSide == MakeOrderSide.buy) {
-        final indexPrice =
-            ref.read(indexPriceForAssetProvider(selectedAssetId)).indexPrice;
-        final lastPrice =
-            ref.read(lastIndexPriceForAssetProvider(selectedAssetId));
+        final indexPrice = ref
+            .read(indexPriceForAssetProvider(selectedAccountAsset.assetId))
+            .indexPrice;
+        final lastPrice = ref
+            .read(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
         final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
         final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
         final targetIndexPriceStr =
@@ -190,20 +193,21 @@ class MakeOrderPanel extends HookConsumerWidget {
           AmountToStringParameters(amount: balance, precision: assetPrecision));
       setControllerValue(controllerAmount, balanceStr);
       focusNodePrice.requestFocus();
-    }, [selectedAssetId, pricePerUnit]);
+    }, [selectedAccountAsset, pricePerUnit]);
 
     useEffect(() {
-      final selectedAsset = ref.read(assetsStateProvider)[selectedAssetId];
+      final selectedAsset =
+          ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
       if (assetMarketType(selectedAsset) == MarketType.token) {
         Future.microtask(() => ref
             .read(makeOrderSideStateProvider.notifier)
-            .state = MakeOrderSide.sell);
+            .setSide(MakeOrderSide.sell));
       }
 
       resetCallback();
 
       return;
-    }, [selectedAssetId]);
+    }, [selectedAccountAsset]);
 
     return Container(
       width: 377,
@@ -275,12 +279,12 @@ class MakeOrderPanel extends HookConsumerWidget {
                                     ref
                                         .read(
                                             makeOrderSideStateProvider.notifier)
-                                        .state = MakeOrderSide.sell;
+                                        .setSide(MakeOrderSide.sell);
                                   } else {
                                     ref
                                         .read(
                                             makeOrderSideStateProvider.notifier)
-                                        .state = MakeOrderSide.buy;
+                                        .setSide(MakeOrderSide.buy);
                                   }
                                   ref
                                       .read(indexPriceButtonProvider.notifier)
@@ -402,8 +406,10 @@ class MakeOrderPanelAmountSide extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
-    final selectedAsset = ref.watch(assetsStateProvider)[selectedAssetId];
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final selectedAsset =
+        ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
     final pricedInLiquid =
         ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
@@ -412,7 +418,8 @@ class MakeOrderPanelAmountSide extends ConsumerWidget {
       children: [
         DOrderAmountEnter(
           caption: 'Amount'.tr(),
-          assetId: pricedInLiquid ? selectedAssetId : liquidAssetId,
+          assetId:
+              pricedInLiquid ? selectedAccountAsset.assetId : liquidAssetId,
           controller: controller,
           autofocus: true,
           focusNode: focusNode,
@@ -448,17 +455,20 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
 
-    final indexPrice =
-        ref.watch(indexPriceForAssetProvider(selectedAssetId)).indexPrice;
+    final indexPrice = ref
+        .watch(indexPriceForAssetProvider(selectedAccountAsset.assetId))
+        .indexPrice;
     final priceHint = trackingToggled.value
         ? priceStr(
             indexPrice * trackerValueToIndexPrice(trackingValue.value), false)
         : '0';
     final makeOrderSide = ref.watch(makeOrderSideStateProvider);
     final isSell = makeOrderSide == MakeOrderSide.sell;
-    final selectedAsset = ref.watch(assetsStateProvider)[selectedAssetId];
+    final selectedAsset =
+        ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
     final pricedInLiquid =
         ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
@@ -468,7 +478,8 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
         DOrderAmountEnter(
           caption:
               isSell ? 'Offer price per unit'.tr() : 'Bid price per unit'.tr(),
-          assetId: pricedInLiquid ? liquidAssetId : selectedAssetId,
+          assetId:
+              pricedInLiquid ? liquidAssetId : selectedAccountAsset.assetId,
           controller: controller,
           isPriceField: true,
           focusNode: focusNode,

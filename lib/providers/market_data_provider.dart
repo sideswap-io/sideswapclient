@@ -39,8 +39,12 @@ class MarketDataNotifier with ChangeNotifier {
   String? marketDataAssetId;
   var marketData = <Candle>[];
 
-  void marketDataSubscribe(String assetId) {
+  void marketDataSubscribe(String? assetId) {
     marketDataUnsubscribe();
+
+    if (assetId == null) {
+      return;
+    }
 
     final msg = To();
     msg.marketDataSubscribe = To_MarketDataSubscribe();

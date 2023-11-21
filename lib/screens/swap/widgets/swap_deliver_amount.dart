@@ -52,10 +52,10 @@ class SwapDeliverAmount extends HookConsumerWidget {
     });
 
     final showDeliverDollarConversion = swapType == SwapType.pegOut;
+
     final dollarConversion2 = showDeliverDollarConversion
-        ? ref.read(requestOrderProvider).dollarConversionFromString(
-            ref.read(swapProvider).swapSendAsset!.assetId,
-            swapSendAmountController.text)
+        ? ref.watch(dollarConversionFromStringProvider(
+            swapSendAsset.assetId, swapSendAmountController.text))
         : null;
 
     return SwapSideAmount(

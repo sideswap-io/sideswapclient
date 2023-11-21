@@ -53,9 +53,8 @@ class SendPopupReceiveConversionNotifier
     final selectedAccountAsset =
         ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
     final amount = ref.watch(sendPopupAmountNotifierProvider);
-    final conversion = ref
-        .watch(requestOrderProvider)
-        .dollarConversionFromString(selectedAccountAsset.assetId, amount);
+    final conversion = ref.watch(dollarConversionFromStringProvider(
+        selectedAccountAsset.assetId, amount));
     return conversion;
   }
 

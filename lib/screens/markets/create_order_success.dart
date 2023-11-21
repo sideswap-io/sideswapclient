@@ -45,16 +45,14 @@ class CreateOrderSuccess extends ConsumerWidget {
                 child: ShareAndCopyButtonsRow(
                   buttonWidth: 166,
                   onShare: () async {
-                    await Share.share(ref
-                        .read(requestOrderProvider)
-                        .getAddressToShare(orderDetailsData));
+                    await Share.share(ref.read(addressToShareByOrderIdProvider(
+                        orderDetailsData.orderId)));
                   },
                   onCopy: () async {
                     await copyToClipboard(
                         context,
-                        ref
-                            .read(requestOrderProvider)
-                            .getAddressToShare(orderDetailsData));
+                        ref.read(addressToShareByOrderIdProvider(
+                            orderDetailsData.orderId)));
                   },
                 ),
               )

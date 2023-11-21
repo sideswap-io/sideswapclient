@@ -717,6 +717,7 @@ impl Data {
                                     always_show: None,
                                     issuance_prevout: None,
                                     issuer_pubkey: None,
+                                    contract: None,
                                 },
                                 true,
                             )

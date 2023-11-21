@@ -70,6 +70,7 @@ pub fn get_assets(
                         vout: v.issuance_prevout.vout,
                     }),
                     issuer_pubkey: Some(v.issuer_pubkey.clone()),
+                    contract: Some(v.contract.clone()),
                 }
             })
         })

@@ -380,8 +380,9 @@ class WalletChangeNotifier with ChangeNotifier {
             .read(eurxAssetIdStateProvider.notifier)
             .setState(from.envSettings.eurxAssetId);
         AccountAsset.liquidAssetId = ref.read(liquidAssetIdStateProvider);
-        ref.read(defaultAccountsNotifierProvider).add(AccountAsset(
-            AccountType.reg, ref.read(liquidAssetIdStateProvider)));
+        ref.read(defaultAccountsStateProvider.notifier).insertAccountAsset(
+            accountAsset: AccountAsset(
+                AccountType.reg, ref.read(liquidAssetIdStateProvider)));
         break;
       case From_Msg.updatedTxs:
         updateTxs(from.updatedTxs);
@@ -1047,14 +1048,12 @@ class WalletChangeNotifier with ChangeNotifier {
   void _addAsset(Asset asset, Uint8List assetIcon) {
     logger.d('ASSET: ${asset.ticker} id: ${asset.assetId}');
     if (asset.swapMarket) {
-      ref
-          .read(defaultAccountsNotifierProvider)
-          .add(AccountAsset(AccountType.reg, asset.assetId));
+      ref.read(defaultAccountsStateProvider.notifier).insertAccountAsset(
+          accountAsset: AccountAsset(AccountType.reg, asset.assetId));
     }
     if (asset.ampMarket) {
-      ref
-          .read(defaultAccountsNotifierProvider)
-          .add(AccountAsset(AccountType.amp, asset.assetId));
+      ref.read(defaultAccountsStateProvider.notifier).insertAccountAsset(
+          accountAsset: AccountAsset(AccountType.amp, asset.assetId));
     }
 
     // Always update asset here as they might change
@@ -2472,7 +2471,9 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setOrderRequestView(RequestOrder requestOrder) {
-    ref.read(currentRequestOrderViewProvider.notifier).state = requestOrder;
+    ref
+        .read(currentRequestOrderViewProvider.notifier)
+        .setCurrentRequestOrderView(requestOrder);
 
     if (FlavorConfig.isDesktop) {
       final orderAsset = ref.read(assetsStateProvider)[requestOrder.assetId]!;

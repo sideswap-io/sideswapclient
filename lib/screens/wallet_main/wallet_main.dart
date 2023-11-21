@@ -27,39 +27,30 @@ final selectedMarketTypeProvider =
 class WalletMain extends HookConsumerWidget {
   const WalletMain({super.key});
 
-  Widget getChild(WalletMainNavigationItem navigationItem,
-      MarketSelectedType selectedMarketType, WidgetRef ref) {
-    switch (navigationItem) {
-      case WalletMainNavigationItem.home:
-        return const Home();
-      case WalletMainNavigationItem.accounts:
-        return const Accounts();
-      case WalletMainNavigationItem.assetSelect:
-        return const AssetSelectList();
-      case WalletMainNavigationItem.assetDetails:
-        return const AssetDetails();
-      case WalletMainNavigationItem.transactions:
-        return Container();
-      case WalletMainNavigationItem.markets:
-        return Markets(
-          selectedMarketType: selectedMarketType,
-          onOrdersPressed: () {
-            ref.read(selectedMarketTypeProvider.notifier).state =
-                MarketSelectedType.orders;
-            ref.read(marketsProvider).unsubscribeMarket();
-            ref.read(marketsProvider).unsubscribeIndexPrice();
-          },
-          onSwapPressed: () {
-            ref.read(selectedMarketTypeProvider.notifier).state =
-                MarketSelectedType.swap;
-          },
-        );
-      case WalletMainNavigationItem.swap:
-        return const SwapMain(key: ValueKey(false));
-      case WalletMainNavigationItem.pegs:
-        return const SwapMain(key: ValueKey(true));
-    }
-  }
+  // Widget getChild(WalletMainNavigationItem navigationItem) {
+  //   return switch (navigationItem) {
+  //     WalletMainNavigationItem.home => const Home(),
+  //     WalletMainNavigationItem.accounts => const Accounts(),
+  //     WalletMainNavigationItem.assetSelect => const AssetSelectList(),
+  //     WalletMainNavigationItem.assetDetails => const AssetDetails(),
+  //     WalletMainNavigationItem.markets => Markets(
+  //         selectedMarketType: selectedMarketType,
+  //         onOrdersPressed: () {
+  //           ref.read(selectedMarketTypeProvider.notifier).state =
+  //               MarketSelectedType.orders;
+  //           ref.read(marketsProvider).unsubscribeMarket();
+  //           ref.read(marketsProvider).unsubscribeIndexPrice();
+  //         },
+  //         onSwapPressed: () {
+  //           ref.read(selectedMarketTypeProvider.notifier).state =
+  //               MarketSelectedType.swap;
+  //         },
+  //       ),
+  //     WalletMainNavigationItem.swap => const SwapMain(key: ValueKey(false)),
+  //     WalletMainNavigationItem.pegs => const SwapMain(key: ValueKey(true)),
+  //     _ => Container(),
+  //   };
+  // }
 
   Future<bool> closeApp() async {
     await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
@@ -121,14 +112,8 @@ class WalletMain extends HookConsumerWidget {
                 walletMainArguments.fromIndex(0);
             return false;
           },
-          body: SafeArea(
-            child: Consumer(
-              builder: (context, ref, child) {
-                final selectedMarketType =
-                    ref.watch(selectedMarketTypeProvider);
-                return getChild(navigationItem, selectedMarketType, ref);
-              },
-            ),
+          body: const SafeArea(
+            child: WalletMainChildPage(),
           ),
           bottomNavigationBar: MainBottomNavigationBar(
             currentIndex: currentPageIndex,
@@ -160,5 +145,41 @@ class WalletMain extends HookConsumerWidget {
         );
       },
     );
+  }
+}
+
+class WalletMainChildPage extends ConsumerWidget {
+  const WalletMainChildPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletMainArguments =
+        ref.watch(uiStateArgsProvider.select((p) => p.walletMainArguments));
+    final navigationItem = walletMainArguments.navigationItem;
+
+    final selectedMarketType = ref.watch(selectedMarketTypeProvider);
+
+    return switch (navigationItem) {
+      WalletMainNavigationItem.home => const Home(),
+      WalletMainNavigationItem.accounts => const Accounts(),
+      WalletMainNavigationItem.assetSelect => const AssetSelectList(),
+      WalletMainNavigationItem.assetDetails => const AssetDetails(),
+      WalletMainNavigationItem.markets => Markets(
+          selectedMarketType: selectedMarketType,
+          onOrdersPressed: () {
+            ref.read(selectedMarketTypeProvider.notifier).state =
+                MarketSelectedType.orders;
+            ref.read(marketsProvider).unsubscribeMarket();
+            ref.read(marketsProvider).unsubscribeIndexPrice();
+          },
+          onSwapPressed: () {
+            ref.read(selectedMarketTypeProvider.notifier).state =
+                MarketSelectedType.swap;
+          },
+        ),
+      WalletMainNavigationItem.swap => const SwapMain(key: ValueKey(false)),
+      WalletMainNavigationItem.pegs => const SwapMain(key: ValueKey(true)),
+      _ => Container(),
+    };
   }
 }

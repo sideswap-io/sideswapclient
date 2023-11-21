@@ -66,7 +66,7 @@ class MnemonicTable extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 6),
                         child: SizedBox(
-                          width: 16,
+                          width: 17,
                           child: Text(
                             '${index + 1}',
                             style: const TextStyle(

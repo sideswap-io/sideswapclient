@@ -7,7 +7,7 @@ part of 'swap_market_provider.dart';
 // **************************************************************************
 
 String _$swapMarketCurrentProductHash() =>
-    r'30463083559ec9c990e677ce897a71673e89bb1a';
+    r'90ec8ccabb8dcc1e14d9ef4940e549558c0d404f';
 
 /// See also [swapMarketCurrentProduct].
 @ProviderFor(swapMarketCurrentProduct)

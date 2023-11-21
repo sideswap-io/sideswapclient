@@ -15,6 +15,7 @@ import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/timer_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/common/utils/duration_extension.dart';
 
 class WorkingOrder extends ConsumerWidget {
   const WorkingOrder({
@@ -93,8 +94,7 @@ class WorkingOrder extends ConsumerWidget {
                   icon: 'assets/copy3.svg',
                   onPressed: () {
                     final shareUrl = ref
-                        .read(requestOrderProvider)
-                        .getAddressToShareById(order.orderId);
+                        .read(addressToShareByOrderIdProvider(order.orderId));
                     copyToClipboard(context, shareUrl);
                   },
                 ),

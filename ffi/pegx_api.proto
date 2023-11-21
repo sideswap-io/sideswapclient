@@ -111,10 +111,7 @@ message SerieOwner {
 }
 
 message Req {
-  message Login {
-  }
-
-  message Register {
+  message LoginOrRegister {
     message Org {
       required string name = 1;
       required string address = 2;
@@ -146,8 +143,6 @@ message Req {
 
   message AddGaid {
     required string gaid = 1;
-    required bool accept_free_shares = 2;
-    required bool use_local_account = 3;
   }
 
   message LoadAssets {
@@ -191,8 +186,7 @@ message Req {
   required int64 id = 1;
 
   oneof body {
-    Login login = 10;
-    Register register = 11;
+    LoginOrRegister login_or_register = 11;
     RegisterIssuer register_issuer = 14;
     Resume resume = 12;
     Logout logout = 13;
@@ -211,11 +205,7 @@ message Req {
 }
 
 message Resp {
-  message Login {
-    required string request_id = 1;
-  }
-
-  message Register {
+  message LoginOrRegister {
     required string request_id = 1;
   }
 
@@ -281,8 +271,7 @@ message Resp {
   required int64 id = 1;
 
   oneof body {
-    Login login = 10;
-    Register register = 11;
+    LoginOrRegister login_or_register = 11;
     RegisterIssuer register_issuer = 14;
     Resume resume = 12;
     Logout logout = 13;
@@ -301,17 +290,13 @@ message Resp {
 }
 
 message Notif {
-  message LoginFailed {
+  message LoginOrRegisterFailed {
     required string text = 1;
   }
 
-  message LoginSucceed {
+  message LoginOrRegisterSucceed {
     required string token = 1;
     required string account_key = 2;
-  }
-
-  message EidResponse {
-    required string request_id = 1;
   }
 
   message RegisterFailed {
@@ -375,10 +360,8 @@ message Notif {
   }
 
   oneof body {
-    LoginFailed login_failed = 1;
-    LoginSucceed login_succeed = 2;
-    RegisterFailed register_failed = 3;
-    RegisterSucceed register_succeed = 4;
+    LoginOrRegisterFailed login_or_register_failed = 3;
+    LoginOrRegisterSucceed login_or_register_succeed = 4;
     FreeShares free_shares = 5;
     SoldShares sold_shares = 7;
     UserShares user_shares = 8;
@@ -387,7 +370,6 @@ message Notif {
     UpdateMarketData update_market_data = 10;
     IssuedAmounts issued_amounts = 11;
     UpdateBalances update_balances = 12;
-    EidResponse eid_response = 13;
   }
 }
 

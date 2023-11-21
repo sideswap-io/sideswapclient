@@ -12,7 +12,6 @@ import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/swap_market_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/screens/markets/create_order_view.dart';
 import 'package:sideswap/screens/markets/market_charts_popup.dart';
 import 'package:sideswap/screens/markets/market_select_popup.dart';
 import 'package:sideswap/screens/markets/token_market_order_details.dart';
@@ -54,21 +53,15 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
 
     ref
         .read(marketsProvider)
-        .subscribeIndexPrice(swapMarketCurrentProduct.assetId);
+        .subscribeIndexPrice(swapMarketCurrentProduct.accountAsset.assetId);
     ref
         .read(marketsProvider)
-        .subscribeSwapMarket(swapMarketCurrentProduct.assetId);
+        .subscribeSwapMarket(swapMarketCurrentProduct.accountAsset.assetId);
   }
 
   void openOrder(RequestOrder order) async {
     if (order.own && order.twoStep) {
-      Navigator.of(context, rootNavigator: true).push<void>(
-        MaterialPageRoute(
-          builder: (context) => CreateOrderView(
-            requestOrder: order,
-          ),
-        ),
-      );
+      ref.read(walletProvider).setOrderRequestView(order);
       return;
     }
 
@@ -116,7 +109,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
             final swapMarketCurrentProduct =
                 ref.watch(swapMarketCurrentProductProvider);
             return MarketChartsPopup(
-              assetId: swapMarketCurrentProduct.assetId,
+              assetId: swapMarketCurrentProduct.accountAsset.assetId,
             );
           },
         );
@@ -130,8 +123,8 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
       final swapMarketCurrentProduct =
           ref.watch(swapMarketCurrentProductProvider);
 
-      final asset = ref.watch(assetsStateProvider
-          .select((value) => value[swapMarketCurrentProduct.assetId]));
+      final asset = ref.watch(assetsStateProvider.select(
+          (value) => value[swapMarketCurrentProduct.accountAsset.assetId]));
       final assetPrecision = ref
           .watch(assetUtilsProvider)
           .getPrecisionForAssetId(assetId: asset?.assetId);
@@ -140,10 +133,11 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
       final askOffers = ref.watch(swapMarketAskOffersProvider);
 
       final indexPrice = ref
-          .watch(indexPriceForAssetProvider(swapMarketCurrentProduct.assetId))
+          .watch(indexPriceForAssetProvider(
+              swapMarketCurrentProduct.accountAsset.assetId))
           .getIndexPriceStr();
       final lastPrice = ref.watch(lastStringIndexPriceForAssetProvider(
-          swapMarketCurrentProduct.assetId));
+          swapMarketCurrentProduct.accountAsset.assetId));
 
       return Column(
         children: [
@@ -156,7 +150,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                   child: GestureDetector(
                     onTap: showProductsPopup,
                     child: ColoredContainer(
-                      height: 50.0,
+                      height: 54.0,
                       backgroundColor: SideSwapColors.chathamsBlue,
                       borderColor: Colors.transparent,
                       child: Column(
@@ -194,7 +188,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                   child: ColoredContainer(
                     backgroundColor: SideSwapColors.chathamsBlue,
                     borderColor: Colors.transparent,
-                    height: 50.0,
+                    height: 54.0,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -219,7 +213,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
                   child: GestureDetector(
                     onTap: showChartsPopup,
                     child: ColoredContainer(
-                      height: 50.0,
+                      height: 54.0,
                       backgroundColor: SideSwapColors.chathamsBlue,
                       borderColor: Colors.transparent,
                       child: Center(

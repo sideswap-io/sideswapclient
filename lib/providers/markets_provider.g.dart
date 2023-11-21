@@ -6,8 +6,8 @@ part of 'markets_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$lastIndexPriceForAssetHash() =>
-    r'6e077fa9d81f4a45a742e1e0aec0d2ace8c4f1b3';
+String _$indexPriceForAssetHash() =>
+    r'23be9f78a907bae2f72a95b08eaaf371698670d6';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,6 +29,137 @@ class _SystemHash {
     return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
   }
 }
+
+/// See also [indexPriceForAsset].
+@ProviderFor(indexPriceForAsset)
+const indexPriceForAssetProvider = IndexPriceForAssetFamily();
+
+/// See also [indexPriceForAsset].
+class IndexPriceForAssetFamily extends Family<IndexPriceForAsset> {
+  /// See also [indexPriceForAsset].
+  const IndexPriceForAssetFamily();
+
+  /// See also [indexPriceForAsset].
+  IndexPriceForAssetProvider call(
+    String? assetId,
+  ) {
+    return IndexPriceForAssetProvider(
+      assetId,
+    );
+  }
+
+  @override
+  IndexPriceForAssetProvider getProviderOverride(
+    covariant IndexPriceForAssetProvider provider,
+  ) {
+    return call(
+      provider.assetId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'indexPriceForAssetProvider';
+}
+
+/// See also [indexPriceForAsset].
+class IndexPriceForAssetProvider
+    extends AutoDisposeProvider<IndexPriceForAsset> {
+  /// See also [indexPriceForAsset].
+  IndexPriceForAssetProvider(
+    String? assetId,
+  ) : this._internal(
+          (ref) => indexPriceForAsset(
+            ref as IndexPriceForAssetRef,
+            assetId,
+          ),
+          from: indexPriceForAssetProvider,
+          name: r'indexPriceForAssetProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$indexPriceForAssetHash,
+          dependencies: IndexPriceForAssetFamily._dependencies,
+          allTransitiveDependencies:
+              IndexPriceForAssetFamily._allTransitiveDependencies,
+          assetId: assetId,
+        );
+
+  IndexPriceForAssetProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.assetId,
+  }) : super.internal();
+
+  final String? assetId;
+
+  @override
+  Override overrideWith(
+    IndexPriceForAsset Function(IndexPriceForAssetRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: IndexPriceForAssetProvider._internal(
+        (ref) => create(ref as IndexPriceForAssetRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        assetId: assetId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<IndexPriceForAsset> createElement() {
+    return _IndexPriceForAssetProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is IndexPriceForAssetProvider && other.assetId == assetId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, assetId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin IndexPriceForAssetRef on AutoDisposeProviderRef<IndexPriceForAsset> {
+  /// The parameter `assetId` of this provider.
+  String? get assetId;
+}
+
+class _IndexPriceForAssetProviderElement
+    extends AutoDisposeProviderElement<IndexPriceForAsset>
+    with IndexPriceForAssetRef {
+  _IndexPriceForAssetProviderElement(super.provider);
+
+  @override
+  String? get assetId => (origin as IndexPriceForAssetProvider).assetId;
+}
+
+String _$lastIndexPriceForAssetHash() =>
+    r'6e077fa9d81f4a45a742e1e0aec0d2ace8c4f1b3';
 
 /// See also [lastIndexPriceForAsset].
 @ProviderFor(lastIndexPriceForAsset)
@@ -289,7 +420,7 @@ class _LastStringIndexPriceForAssetProviderElement
       (origin as LastStringIndexPriceForAssetProvider).assetId;
 }
 
-String _$makeOrderBalanceHash() => r'c4e24cde081dc54370cd4eab1ec5bd46672870ad';
+String _$makeOrderBalanceHash() => r'd977a5d7ae6f8c07d618721aa216a758875568cf';
 
 /// See also [makeOrderBalance].
 @ProviderFor(makeOrderBalance)
@@ -305,7 +436,7 @@ final makeOrderBalanceProvider = AutoDisposeProvider<MakeOrderBalance>.internal(
 
 typedef MakeOrderBalanceRef = AutoDisposeProviderRef<MakeOrderBalance>;
 String _$marketOrderAggregateVolumeAccountAssetHash() =>
-    r'15b5c1a105e4d3d8c422919f898d7d6cb4302f5a';
+    r'9ba42e6d12dc367459d00256f28aff7d71370049';
 
 /// See also [marketOrderAggregateVolumeAccountAsset].
 @ProviderFor(marketOrderAggregateVolumeAccountAsset)
@@ -393,7 +524,7 @@ final makeOrderAggregateVolumeTooHighProvider =
 
 typedef MakeOrderAggregateVolumeTooHighRef = AutoDisposeProviderRef<bool>;
 String _$makeOrderLiquidAccountAssetHash() =>
-    r'5617e2cb41c3c2328ac34238695fb498992412b3';
+    r'cc9cf7466a75b8f5e0a2202ed8986e38d76d07f3';
 
 /// See also [makeOrderLiquidAccountAsset].
 @ProviderFor(makeOrderLiquidAccountAsset)
@@ -409,23 +540,105 @@ final makeOrderLiquidAccountAssetProvider =
 );
 
 typedef MakeOrderLiquidAccountAssetRef = AutoDisposeProviderRef<AccountAsset?>;
-String _$marketSelectedAssetIdStateHash() =>
-    r'e6aea220a4e40cfa183e33b43a2edcec9b28900c';
+String _$selectedAssetIsTokenHash() =>
+    r'25a6c7bc80b1db58624a8b3c20c27df2153bcb42';
 
-/// See also [MarketSelectedAssetIdState].
-@ProviderFor(MarketSelectedAssetIdState)
-final marketSelectedAssetIdStateProvider =
-    NotifierProvider<MarketSelectedAssetIdState, String>.internal(
-  MarketSelectedAssetIdState.new,
-  name: r'marketSelectedAssetIdStateProvider',
+/// See also [selectedAssetIsToken].
+@ProviderFor(selectedAssetIsToken)
+final selectedAssetIsTokenProvider = AutoDisposeProvider<bool>.internal(
+  selectedAssetIsToken,
+  name: r'selectedAssetIsTokenProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$marketSelectedAssetIdStateHash,
+      : _$selectedAssetIsTokenHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$MarketSelectedAssetIdState = Notifier<String>;
+typedef SelectedAssetIsTokenRef = AutoDisposeProviderRef<bool>;
+String _$targetIndexPriceHash() => r'd25dcd84774683567ec1688b781f41f69ff2dfa4';
+
+/// See also [targetIndexPrice].
+@ProviderFor(targetIndexPrice)
+final targetIndexPriceProvider = AutoDisposeProvider<String>.internal(
+  targetIndexPrice,
+  name: r'targetIndexPriceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$targetIndexPriceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef TargetIndexPriceRef = AutoDisposeProviderRef<String>;
+String _$selectedAssetTickerHash() =>
+    r'8505ca9b33eb56d542a4b62bb0992201e737fe05';
+
+/// See also [selectedAssetTicker].
+@ProviderFor(selectedAssetTicker)
+final selectedAssetTickerProvider = AutoDisposeProvider<String>.internal(
+  selectedAssetTicker,
+  name: r'selectedAssetTickerProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$selectedAssetTickerHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef SelectedAssetTickerRef = AutoDisposeProviderRef<String>;
+String _$orderEntryCallbackHandlersHash() =>
+    r'017802e56b1e85eb855dd591f1511149f6002e98';
+
+/// See also [orderEntryCallbackHandlers].
+@ProviderFor(orderEntryCallbackHandlers)
+final orderEntryCallbackHandlersProvider =
+    AutoDisposeProvider<OrderEntryCallbackHandlers>.internal(
+  orderEntryCallbackHandlers,
+  name: r'orderEntryCallbackHandlersProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$orderEntryCallbackHandlersHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef OrderEntryCallbackHandlersRef
+    = AutoDisposeProviderRef<OrderEntryCallbackHandlers>;
+String _$marketSelectedAccountAssetStateHash() =>
+    r'2d7562ababf278bb0e58f1c8b565f8d46efe5631';
+
+/// See also [MarketSelectedAccountAssetState].
+@ProviderFor(MarketSelectedAccountAssetState)
+final marketSelectedAccountAssetStateProvider =
+    NotifierProvider<MarketSelectedAccountAssetState, AccountAsset>.internal(
+  MarketSelectedAccountAssetState.new,
+  name: r'marketSelectedAccountAssetStateProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketSelectedAccountAssetStateHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$MarketSelectedAccountAssetState = Notifier<AccountAsset>;
+String _$makeOrderSideStateHash() =>
+    r'38303a2aa1063f1e21bb64deba9be09379eea89f';
+
+/// See also [MakeOrderSideState].
+@ProviderFor(MakeOrderSideState)
+final makeOrderSideStateProvider =
+    NotifierProvider<MakeOrderSideState, MakeOrderSide>.internal(
+  MakeOrderSideState.new,
+  name: r'makeOrderSideStateProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$makeOrderSideStateHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$MakeOrderSideState = Notifier<MakeOrderSide>;
 String _$marketOrderAmountNotifierHash() =>
     r'bd65a8e5adf4cdc72398cd7c196a5c448238ee57';
 

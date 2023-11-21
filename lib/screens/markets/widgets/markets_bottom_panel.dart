@@ -5,8 +5,7 @@ import 'package:sideswap/common/utils/market_helpers.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/providers/balances_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/swap_market_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -51,8 +50,8 @@ class MarketsBottomBuySellPanel extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final swapMarketCurrentProduct =
         ref.watch(swapMarketCurrentProductProvider);
-    final asset = ref.watch(assetsStateProvider
-        .select((value) => value[swapMarketCurrentProduct.assetId]));
+    final asset = ref.watch(assetsStateProvider.select(
+        (value) => value[swapMarketCurrentProduct.accountAsset.assetId]));
     final isToken = !(asset?.swapMarket == true) && !(asset?.ampMarket == true);
 
     return Container(
@@ -91,25 +90,17 @@ class BuySellButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final requestOrder = ref.watch(requestOrderProvider);
     final swapMarketCurrentProduct =
         ref.watch(swapMarketCurrentProductProvider);
-    final wallet = ref.watch(walletProvider);
-    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final bitcoinAccount = AccountAsset(AccountType.reg, liquidAssetId);
-    final asset = ref.watch(assetsStateProvider
-        .select((value) => value[swapMarketCurrentProduct.assetId]));
-    final assetAccount = AccountAsset(
+    final asset = ref.watch(assetsStateProvider.select(
+        (value) => value[swapMarketCurrentProduct.accountAsset.assetId]));
+    final accountAsset = AccountAsset(
         asset?.ampMarket == true ? AccountType.amp : AccountType.reg,
         asset?.assetId ?? '');
-    final sendBitcoin = isSell == asset?.swapMarket;
-    final deliverAsset = sendBitcoin ? bitcoinAccount : assetAccount;
-    final receiveAsset = sendBitcoin ? assetAccount : bitcoinAccount;
-    final deliverBalance =
-        ref.watch(balancesProvider).balances[deliverAsset] ?? 0;
     final isTokenMarket =
         !(asset?.ampMarket == true) && !(asset?.swapMarket == true);
-    final enabled = deliverBalance > 0 && (!isTokenMarket || isSell);
+    final enabled = (!isTokenMarket || isSell);
+
     return Expanded(
       child: CustomBigButton(
         height: 40,
@@ -118,12 +109,63 @@ class BuySellButton extends ConsumerWidget {
             enabled ? (isSell ? sellColor : buyColor) : const Color(0xFF0E4D72),
         onPressed: enabled
             ? () {
-                requestOrder.deliverAssetId = deliverAsset;
-                requestOrder.receiveAssetId = receiveAsset;
-                wallet.setCreateOrderEntry();
+                ref
+                    .read(makeOrderSideStateProvider.notifier)
+                    .setSide(isSell ? MakeOrderSide.sell : MakeOrderSide.buy);
+                ref
+                    .read(marketSelectedAccountAssetStateProvider.notifier)
+                    .setSelectedAccountAsset(accountAsset);
+                ref.read(walletProvider).setCreateOrderEntry();
               }
             : null,
       ),
     );
+
+    // final swapMarketCurrentProduct =
+    //     ref.watch(swapMarketCurrentProductProvider);
+    // final wallet = ref.watch(walletProvider);
+    // final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    // final bitcoinAccount = AccountAsset(AccountType.reg, liquidAssetId);
+    // final asset = ref.watch(assetsStateProvider
+    //     .select((value) => value[swapMarketCurrentProduct.assetId]));
+    // final assetAccount = AccountAsset(
+    //     asset?.ampMarket == true ? AccountType.amp : AccountType.reg,
+    //     asset?.assetId ?? '');
+    // final sendBitcoin = isSell == asset?.swapMarket;
+    // final deliverAsset = sendBitcoin ? bitcoinAccount : assetAccount;
+    // final receiveAsset = sendBitcoin ? assetAccount : bitcoinAccount;
+    // final deliverBalance =
+    //     ref.watch(balancesProvider).balances[deliverAsset] ?? 0;
+    // final isTokenMarket =
+    //     !(asset?.ampMarket == true) && !(asset?.swapMarket == true);
+    // final enabled = deliverBalance > 0 && (!isTokenMarket || isSell);
+    // return Expanded(
+    //   child: CustomBigButton(
+    //     height: 40,
+    //     text: isSell ? 'SELL'.tr() : 'BUY'.tr(),
+    //     backgroundColor:
+    //         enabled ? (isSell ? sellColor : buyColor) : const Color(0xFF0E4D72),
+    //     onPressed: enabled
+    //         ? () {
+    //             // TODO (malcolmpl): check if sides are properly set
+    //             ref
+    //                 .read(makeOrderSideStateProvider.notifier)
+    //                 .setSide(isSell ? MakeOrderSide.sell : MakeOrderSide.buy);
+    //             ref
+    //                 .read(marketSelectedAssetIdStateProvider.notifier)
+    //                 .setSelectedAssetId(isSell
+    //                     ? deliverAsset.assetId ?? ''
+    //                     : receiveAsset.assetId ?? '');
+    //             // ref
+    //             //     .read(requestOrderDeliverAccountAssetProvider.notifier)
+    //             //     .setDeliverAccountAsset(deliverAsset);
+    //             // ref
+    //             //     .read(requestOrderReceiveAccountAssetProvider.notifier)
+    //             //     .setReceiveAccountAsset(receiveAsset);
+    //             wallet.setCreateOrderEntry();
+    //           }
+    //         : null,
+    //   ),
+    // );
   }
 }

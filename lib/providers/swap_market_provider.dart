@@ -4,29 +4,30 @@ import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
+import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'swap_market_provider.g.dart';
 
 class Product {
-  String assetId;
-  String ticker;
-  String displayName;
+  final AccountAsset accountAsset;
+  final String ticker;
+  final String displayName;
 
   Product({
-    required this.assetId,
+    required this.accountAsset,
     required this.ticker,
     required this.displayName,
   });
 
   Product copyWith({
-    String? assetId,
+    AccountAsset? accountAsset,
     String? ticker,
     String? displayName,
   }) {
     return Product(
-      assetId: assetId ?? this.assetId,
+      accountAsset: accountAsset ?? this.accountAsset,
       ticker: ticker ?? this.ticker,
       displayName: displayName ?? this.displayName,
     );
@@ -34,9 +35,10 @@ class Product {
 
   @override
   String toString() =>
-      'Product(assetId: $assetId, ticker: $ticker, displayName: $displayName)';
+      'Product(accountAsset: $accountAsset, ticker: $ticker, displayName: $displayName)';
 
-  (String, String, String) _equality() => (assetId, ticker, displayName);
+  (AccountAsset, String, String) _equality() =>
+      (accountAsset, ticker, displayName);
 
   @override
   bool operator ==(covariant Product other) {
@@ -53,13 +55,14 @@ class Product {
 
 @riverpod
 Product swapMarketCurrentProduct(SwapMarketCurrentProductRef ref) {
-  final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
-  final asset = ref.watch(assetsStateProvider)[selectedAssetId];
+  final selectedAccountAsset =
+      ref.watch(marketSelectedAccountAssetStateProvider);
+  final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
   final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
 
   if (asset == null) {
     return Product(
-      assetId: tetherAssetId,
+      accountAsset: AccountAsset(AccountType.reg, tetherAssetId),
       displayName: '$kLiquidBitcoinTicker / $kTetherTicker',
       ticker: kTetherTicker,
     );
@@ -70,7 +73,9 @@ Product swapMarketCurrentProduct(SwapMarketCurrentProductRef ref) {
       : '${asset.ticker} / $kLiquidBitcoinTicker';
 
   return Product(
-      assetId: selectedAssetId, ticker: asset.ticker, displayName: displayName);
+      accountAsset: selectedAccountAsset,
+      ticker: asset.ticker,
+      displayName: displayName);
 }
 
 final swapMarketOrdersProvider = AutoDisposeProvider<List<RequestOrder>>((ref) {
@@ -87,7 +92,7 @@ final swapMarketBidOffersProvider =
   return swapMarketOrders
       .where((e) =>
           (e.sendBitcoins != (e.marketType == MarketType.stablecoin)) &&
-          e.assetId == currentProduct.assetId)
+          e.assetId == currentProduct.accountAsset.assetId)
       .sorted((a, b) => b.price.compareTo(a.price));
 });
 
@@ -99,7 +104,7 @@ final swapMarketAskOffersProvider =
   return swapMarketOrders
       .where((e) =>
           !(e.sendBitcoins != (e.marketType == MarketType.stablecoin)) &&
-          e.assetId == currentProduct.assetId)
+          e.assetId == currentProduct.accountAsset.assetId)
       .sorted((a, b) => a.price.compareTo(b.price));
 });
 

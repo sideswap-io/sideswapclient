@@ -16,19 +16,22 @@ class IndexPrice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedAssetId = ref.watch(marketSelectedAssetIdStateProvider);
-    final asset = ref
-        .watch(assetsStateProvider.select((value) => value[selectedAssetId]));
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final asset = ref.watch(assetsStateProvider
+        .select((value) => value[selectedAccountAsset.assetId]));
     final pricedInLiquid =
         ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
-    final indexPrice =
-        ref.watch(indexPriceForAssetProvider(selectedAssetId)).indexPrice;
+    final indexPrice = ref
+        .watch(indexPriceForAssetProvider(selectedAccountAsset.assetId))
+        .indexPrice;
     final lastPrice =
-        ref.watch(lastIndexPriceForAssetProvider(selectedAssetId));
+        ref.watch(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
     final indexPriceStr = priceStr(indexPrice, pricedInLiquid);
     final lastPriceStr = priceStr(lastPrice, pricedInLiquid);
-    final icon =
-        ref.watch(assetImageProvider).getVerySmallImage(selectedAssetId);
+    final icon = ref
+        .watch(assetImageProvider)
+        .getVerySmallImage(selectedAccountAsset.assetId);
     final buttonStyle =
         ref.watch(desktopAppThemeProvider).buttonThemeData.defaultButtonStyle;
 

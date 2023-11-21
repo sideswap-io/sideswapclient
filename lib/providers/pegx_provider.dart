@@ -8,17 +8,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
-import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 import 'package:sideswap_protobuf/pegx_api.dart';
 
@@ -165,29 +162,20 @@ class PegxWebsocketClient {
 
   void handleNotif(Notif notif) async {
     switch (notif.whichBody()) {
-      case Notif_Body.loginFailed:
-        // logger.d('Pegx <= $notif');
-        // logger.w('Notify login failed');
-        break;
-      case Notif_Body.loginSucceed:
-        // logger.d('Pegx <= $notif');
-        // logger.w('Notify login succeed');
-
-        _token = notif.loginSucceed.token;
-        _accountKey = notif.loginSucceed.accountKey;
-        resume(token: _token, accountKey: _accountKey);
-
-        break;
-      case Notif_Body.registerFailed:
+      case Notif_Body.loginOrRegisterFailed:
         // logger.d('Pegx <= $notif');
         // logger.w("Notify register failed: ${notif.registerFailed.text}");
         ref
             .read(pegxRegisterFailedNotifierProvider.notifier)
-            .setState(notif.registerFailed.text);
+            .setState(notif.loginOrRegisterFailed.text);
         break;
-      case Notif_Body.registerSucceed:
+      case Notif_Body.loginOrRegisterSucceed:
         // logger.d('Pegx <= $notif');
         // logger.w('Notify register succeed');
+        _token = notif.loginOrRegisterSucceed.token;
+        _accountKey = notif.loginOrRegisterSucceed.accountKey;
+        resume(token: _token, accountKey: _accountKey);
+
         break;
       case Notif_Body.freeShares:
         break;
@@ -207,40 +195,17 @@ class PegxWebsocketClient {
         break;
       case Notif_Body.notSet:
         break;
-      case Notif_Body.eidResponse:
-        if (FlavorConfig.isDesktop) {
-          return;
-        }
-
-        // handle only mobile version
-        final requestId = notif.eidResponse.requestId;
-        if (requestId.isNotEmpty && _lastAddGaidId != 0) {
-          await openUrl('$pegxIntraAutheIdUrl$requestId',
-              mode: LaunchMode.externalNonBrowserApplication);
-          return;
-        }
-
-        logger.w(
-            'eidResponse failed. RequestId: $requestId lastGaidId: $_lastAddGaidId');
-        break;
     }
   }
 
   void handleResp(Resp resp) {
     switch (resp.whichBody()) {
-      case Resp_Body.login:
+      case Resp_Body.loginOrRegister:
         // logger.d('Pegx <= $resp');
         // logger.w('Resp login');
-        ref
-            .read(pegxLoginStateNotifierProvider.notifier)
-            .setState(PegxLoginStateLogin(requestId: resp.login.requestId));
-        break;
-      case Resp_Body.register:
-        // logger.d('Pegx <= $resp');
-        // logger.w('Resp register');
-        // not used
-        // ref.read(pegxRequestIdStateProvider.notifier).state =
-        //     PegxRequestIdStateDone(requestId: resp.register.requestId);
+        ref.read(pegxLoginStateNotifierProvider.notifier).setState(
+            PegxLoginStateLogin(requestId: resp.loginOrRegister.requestId));
+
         break;
       case Resp_Body.resume:
         // logger.d('Pegx <= $resp');
@@ -368,7 +333,7 @@ class PegxWebsocketClient {
 
   void login() {
     final reqLogin = Req(
-      login: Req_Login(),
+      loginOrRegister: Req_LoginOrRegister(),
       id: _randomId(),
     );
     _send(reqLogin);
@@ -400,7 +365,6 @@ class PegxWebsocketClient {
     final reqAddGaid = Req(
       addGaid: Req_AddGaid(
         gaid: ampId,
-        useLocalAccount: FlavorConfig.isDesktop ? false : true,
       ),
       id: _lastAddGaidId,
     );

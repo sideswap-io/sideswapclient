@@ -86,7 +86,7 @@ class _CandlesticksState extends State<Candlesticks> {
                       setState(() {
                         candleWidth *= scale;
                         candleWidth = min(candleWidth, 16);
-                        candleWidth = max(candleWidth, 4);
+                        candleWidth = max(candleWidth, 1);
                       });
                     },
                     onPanEnd: () {

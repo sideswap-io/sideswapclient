@@ -270,8 +270,7 @@ const Req$json = {
   '1': 'Req',
   '2': [
     {'1': 'id', '3': 1, '4': 2, '5': 3, '10': 'id'},
-    {'1': 'login', '3': 10, '4': 1, '5': 11, '6': '.api.proto.Req.Login', '9': 0, '10': 'login'},
-    {'1': 'register', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Req.Register', '9': 0, '10': 'register'},
+    {'1': 'login_or_register', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Req.LoginOrRegister', '9': 0, '10': 'loginOrRegister'},
     {'1': 'register_issuer', '3': 14, '4': 1, '5': 11, '6': '.api.proto.Req.RegisterIssuer', '9': 0, '10': 'registerIssuer'},
     {'1': 'resume', '3': 12, '4': 1, '5': 11, '6': '.api.proto.Req.Resume', '9': 0, '10': 'resume'},
     {'1': 'logout', '3': 13, '4': 1, '5': 11, '6': '.api.proto.Req.Logout', '9': 0, '10': 'logout'},
@@ -287,28 +286,23 @@ const Req$json = {
     {'1': 'list_all_balances', '3': 31, '4': 1, '5': 11, '6': '.api.proto.Req.ListAllBalances', '9': 0, '10': 'listAllBalances'},
     {'1': 'list_all_series', '3': 32, '4': 1, '5': 11, '6': '.api.proto.Req.ListAllSeries', '9': 0, '10': 'listAllSeries'},
   ],
-  '3': [Req_Login$json, Req_Register$json, Req_RegisterIssuer$json, Req_Resume$json, Req_Logout$json, Req_AddGaid$json, Req_LoadAssets$json, Req_BuyShares$json, Req_LoadCountries$json, Req_LoadRegs$json, Req_LoadFile$json, Req_UpdateReg$json, Req_ListAllTransactions$json, Req_ListOwnTransactions$json, Req_ListAllBalances$json, Req_ListAllSeries$json],
+  '3': [Req_LoginOrRegister$json, Req_RegisterIssuer$json, Req_Resume$json, Req_Logout$json, Req_AddGaid$json, Req_LoadAssets$json, Req_BuyShares$json, Req_LoadCountries$json, Req_LoadRegs$json, Req_LoadFile$json, Req_UpdateReg$json, Req_ListAllTransactions$json, Req_ListOwnTransactions$json, Req_ListAllBalances$json, Req_ListAllSeries$json],
   '8': [
     {'1': 'body'},
   ],
 };
 
 @$core.Deprecated('Use reqDescriptor instead')
-const Req_Login$json = {
-  '1': 'Login',
-};
-
-@$core.Deprecated('Use reqDescriptor instead')
-const Req_Register$json = {
-  '1': 'Register',
+const Req_LoginOrRegister$json = {
+  '1': 'LoginOrRegister',
   '2': [
-    {'1': 'org', '3': 1, '4': 1, '5': 11, '6': '.api.proto.Req.Register.Org', '10': 'org'},
+    {'1': 'org', '3': 1, '4': 1, '5': 11, '6': '.api.proto.Req.LoginOrRegister.Org', '10': 'org'},
   ],
-  '3': [Req_Register_Org$json],
+  '3': [Req_LoginOrRegister_Org$json],
 };
 
 @$core.Deprecated('Use reqDescriptor instead')
-const Req_Register_Org$json = {
+const Req_LoginOrRegister_Org$json = {
   '1': 'Org',
   '2': [
     {'1': 'name', '3': 1, '4': 2, '5': 9, '10': 'name'},
@@ -352,8 +346,6 @@ const Req_AddGaid$json = {
   '1': 'AddGaid',
   '2': [
     {'1': 'gaid', '3': 1, '4': 2, '5': 9, '10': 'gaid'},
-    {'1': 'accept_free_shares', '3': 2, '4': 2, '5': 8, '10': 'acceptFreeShares'},
-    {'1': 'use_local_account', '3': 3, '4': 2, '5': 8, '10': 'useLocalAccount'},
   ],
 };
 
@@ -431,51 +423,48 @@ const Req_ListAllSeries$json = {
 
 /// Descriptor for `Req`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List reqDescriptor = $convert.base64Decode(
-    'CgNSZXESDgoCaWQYASACKANSAmlkEiwKBWxvZ2luGAogASgLMhQuYXBpLnByb3RvLlJlcS5Mb2'
-    'dpbkgAUgVsb2dpbhI1CghyZWdpc3RlchgLIAEoCzIXLmFwaS5wcm90by5SZXEuUmVnaXN0ZXJI'
-    'AFIIcmVnaXN0ZXISSAoPcmVnaXN0ZXJfaXNzdWVyGA4gASgLMh0uYXBpLnByb3RvLlJlcS5SZW'
-    'dpc3Rlcklzc3VlckgAUg5yZWdpc3Rlcklzc3VlchIvCgZyZXN1bWUYDCABKAsyFS5hcGkucHJv'
-    'dG8uUmVxLlJlc3VtZUgAUgZyZXN1bWUSLwoGbG9nb3V0GA0gASgLMhUuYXBpLnByb3RvLlJlcS'
-    '5Mb2dvdXRIAFIGbG9nb3V0EjMKCGFkZF9nYWlkGBQgASgLMhYuYXBpLnByb3RvLlJlcS5BZGRH'
-    'YWlkSABSB2FkZEdhaWQSPAoLbG9hZF9hc3NldHMYFSABKAsyGS5hcGkucHJvdG8uUmVxLkxvYW'
-    'RBc3NldHNIAFIKbG9hZEFzc2V0cxI5CgpidXlfc2hhcmVzGBggASgLMhguYXBpLnByb3RvLlJl'
-    'cS5CdXlTaGFyZXNIAFIJYnV5U2hhcmVzEkUKDmxvYWRfY291bnRyaWVzGBkgASgLMhwuYXBpLn'
-    'Byb3RvLlJlcS5Mb2FkQ291bnRyaWVzSABSDWxvYWRDb3VudHJpZXMSNgoJbG9hZF9yZWdzGBog'
-    'ASgLMhcuYXBpLnByb3RvLlJlcS5Mb2FkUmVnc0gAUghsb2FkUmVncxI2Cglsb2FkX2ZpbGUYHC'
-    'ABKAsyFy5hcGkucHJvdG8uUmVxLkxvYWRGaWxlSABSCGxvYWRGaWxlEjkKCnVwZGF0ZV9yZWcY'
-    'GyABKAsyGC5hcGkucHJvdG8uUmVxLlVwZGF0ZVJlZ0gAUgl1cGRhdGVSZWcSWAoVbGlzdF9hbG'
-    'xfdHJhbnNhY3Rpb25zGB0gASgLMiIuYXBpLnByb3RvLlJlcS5MaXN0QWxsVHJhbnNhY3Rpb25z'
-    'SABSE2xpc3RBbGxUcmFuc2FjdGlvbnMSWAoVbGlzdF9vd25fdHJhbnNhY3Rpb25zGB4gASgLMi'
-    'IuYXBpLnByb3RvLlJlcS5MaXN0T3duVHJhbnNhY3Rpb25zSABSE2xpc3RPd25UcmFuc2FjdGlv'
-    'bnMSTAoRbGlzdF9hbGxfYmFsYW5jZXMYHyABKAsyHi5hcGkucHJvdG8uUmVxLkxpc3RBbGxCYW'
-    'xhbmNlc0gAUg9saXN0QWxsQmFsYW5jZXMSRgoPbGlzdF9hbGxfc2VyaWVzGCAgASgLMhwuYXBp'
-    'LnByb3RvLlJlcS5MaXN0QWxsU2VyaWVzSABSDWxpc3RBbGxTZXJpZXMaBwoFTG9naW4ajwIKCF'
-    'JlZ2lzdGVyEi0KA29yZxgBIAEoCzIbLmFwaS5wcm90by5SZXEuUmVnaXN0ZXIuT3JnUgNvcmca'
-    '0wEKA09yZxISCgRuYW1lGAEgAigJUgRuYW1lEhgKB2FkZHJlc3MYAiACKAlSB2FkZHJlc3MSEg'
-    'oEY2l0eRgDIAIoCVIEY2l0eRIaCghwb3N0Y29kZRgEIAIoCVIIcG9zdGNvZGUSGAoHY291bnRy'
-    'eRgFIAIoCVIHY291bnRyeRIYCgd3ZWJzaXRlGAYgAigJUgd3ZWJzaXRlEh0KCnJlZ19udW1iZX'
-    'IYByACKAlSCXJlZ051bWJlchIbCglyZWdfcHJvb2YYCCACKAxSCHJlZ1Byb29mGm4KDlJlZ2lz'
-    'dGVySXNzdWVyEhQKBWVtYWlsGAEgAigJUgVlbWFpbBISCgRuYW1lGAIgAigJUgRuYW1lEhgKB3'
-    'dlYnNpdGUYAyACKAlSB3dlYnNpdGUSGAoHbWVzc2FnZRgEIAIoCVIHbWVzc2FnZRo/CgZSZXN1'
-    'bWUSFAoFdG9rZW4YASACKAlSBXRva2VuEh8KC2FjY291bnRfa2V5GAIgAigJUgphY2NvdW50S2'
-    'V5GggKBkxvZ291dBp3CgdBZGRHYWlkEhIKBGdhaWQYASACKAlSBGdhaWQSLAoSYWNjZXB0X2Zy'
-    'ZWVfc2hhcmVzGAIgAigIUhBhY2NlcHRGcmVlU2hhcmVzEioKEXVzZV9sb2NhbF9hY2NvdW50GA'
-    'MgAigIUg91c2VMb2NhbEFjY291bnQaDAoKTG9hZEFzc2V0cxojCglCdXlTaGFyZXMSFgoGYW1v'
-    'dW50GAEgAigBUgZhbW91bnQaDwoNTG9hZENvdW50cmllcxoKCghMb2FkUmVncxorCghMb2FkRm'
-    'lsZRIfCgthY2NvdW50X2tleRgBIAIoCVIKYWNjb3VudEtleRpCCglVcGRhdGVSZWcSHwoLYWNj'
-    'b3VudF9rZXkYASACKAlSCmFjY291bnRLZXkSFAoFdmFsaWQYAiACKAhSBXZhbGlkGjAKE0xpc3'
-    'RBbGxUcmFuc2FjdGlvbnMSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaMAoTTGlzdE93blRy'
-    'YW5zYWN0aW9ucxIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBosCg9MaXN0QWxsQmFsYW5jZX'
-    'MSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaKgoNTGlzdEFsbFNlcmllcxIZCghhc3NldF9p'
-    'ZBgBIAIoCVIHYXNzZXRJZEIGCgRib2R5');
+    'CgNSZXESDgoCaWQYASACKANSAmlkEkwKEWxvZ2luX29yX3JlZ2lzdGVyGAsgASgLMh4uYXBpLn'
+    'Byb3RvLlJlcS5Mb2dpbk9yUmVnaXN0ZXJIAFIPbG9naW5PclJlZ2lzdGVyEkgKD3JlZ2lzdGVy'
+    'X2lzc3VlchgOIAEoCzIdLmFwaS5wcm90by5SZXEuUmVnaXN0ZXJJc3N1ZXJIAFIOcmVnaXN0ZX'
+    'JJc3N1ZXISLwoGcmVzdW1lGAwgASgLMhUuYXBpLnByb3RvLlJlcS5SZXN1bWVIAFIGcmVzdW1l'
+    'Ei8KBmxvZ291dBgNIAEoCzIVLmFwaS5wcm90by5SZXEuTG9nb3V0SABSBmxvZ291dBIzCghhZG'
+    'RfZ2FpZBgUIAEoCzIWLmFwaS5wcm90by5SZXEuQWRkR2FpZEgAUgdhZGRHYWlkEjwKC2xvYWRf'
+    'YXNzZXRzGBUgASgLMhkuYXBpLnByb3RvLlJlcS5Mb2FkQXNzZXRzSABSCmxvYWRBc3NldHMSOQ'
+    'oKYnV5X3NoYXJlcxgYIAEoCzIYLmFwaS5wcm90by5SZXEuQnV5U2hhcmVzSABSCWJ1eVNoYXJl'
+    'cxJFCg5sb2FkX2NvdW50cmllcxgZIAEoCzIcLmFwaS5wcm90by5SZXEuTG9hZENvdW50cmllc0'
+    'gAUg1sb2FkQ291bnRyaWVzEjYKCWxvYWRfcmVncxgaIAEoCzIXLmFwaS5wcm90by5SZXEuTG9h'
+    'ZFJlZ3NIAFIIbG9hZFJlZ3MSNgoJbG9hZF9maWxlGBwgASgLMhcuYXBpLnByb3RvLlJlcS5Mb2'
+    'FkRmlsZUgAUghsb2FkRmlsZRI5Cgp1cGRhdGVfcmVnGBsgASgLMhguYXBpLnByb3RvLlJlcS5V'
+    'cGRhdGVSZWdIAFIJdXBkYXRlUmVnElgKFWxpc3RfYWxsX3RyYW5zYWN0aW9ucxgdIAEoCzIiLm'
+    'FwaS5wcm90by5SZXEuTGlzdEFsbFRyYW5zYWN0aW9uc0gAUhNsaXN0QWxsVHJhbnNhY3Rpb25z'
+    'ElgKFWxpc3Rfb3duX3RyYW5zYWN0aW9ucxgeIAEoCzIiLmFwaS5wcm90by5SZXEuTGlzdE93bl'
+    'RyYW5zYWN0aW9uc0gAUhNsaXN0T3duVHJhbnNhY3Rpb25zEkwKEWxpc3RfYWxsX2JhbGFuY2Vz'
+    'GB8gASgLMh4uYXBpLnByb3RvLlJlcS5MaXN0QWxsQmFsYW5jZXNIAFIPbGlzdEFsbEJhbGFuY2'
+    'VzEkYKD2xpc3RfYWxsX3NlcmllcxggIAEoCzIcLmFwaS5wcm90by5SZXEuTGlzdEFsbFNlcmll'
+    'c0gAUg1saXN0QWxsU2VyaWVzGp0CCg9Mb2dpbk9yUmVnaXN0ZXISNAoDb3JnGAEgASgLMiIuYX'
+    'BpLnByb3RvLlJlcS5Mb2dpbk9yUmVnaXN0ZXIuT3JnUgNvcmca0wEKA09yZxISCgRuYW1lGAEg'
+    'AigJUgRuYW1lEhgKB2FkZHJlc3MYAiACKAlSB2FkZHJlc3MSEgoEY2l0eRgDIAIoCVIEY2l0eR'
+    'IaCghwb3N0Y29kZRgEIAIoCVIIcG9zdGNvZGUSGAoHY291bnRyeRgFIAIoCVIHY291bnRyeRIY'
+    'Cgd3ZWJzaXRlGAYgAigJUgd3ZWJzaXRlEh0KCnJlZ19udW1iZXIYByACKAlSCXJlZ051bWJlch'
+    'IbCglyZWdfcHJvb2YYCCACKAxSCHJlZ1Byb29mGm4KDlJlZ2lzdGVySXNzdWVyEhQKBWVtYWls'
+    'GAEgAigJUgVlbWFpbBISCgRuYW1lGAIgAigJUgRuYW1lEhgKB3dlYnNpdGUYAyACKAlSB3dlYn'
+    'NpdGUSGAoHbWVzc2FnZRgEIAIoCVIHbWVzc2FnZRo/CgZSZXN1bWUSFAoFdG9rZW4YASACKAlS'
+    'BXRva2VuEh8KC2FjY291bnRfa2V5GAIgAigJUgphY2NvdW50S2V5GggKBkxvZ291dBodCgdBZG'
+    'RHYWlkEhIKBGdhaWQYASACKAlSBGdhaWQaDAoKTG9hZEFzc2V0cxojCglCdXlTaGFyZXMSFgoG'
+    'YW1vdW50GAEgAigBUgZhbW91bnQaDwoNTG9hZENvdW50cmllcxoKCghMb2FkUmVncxorCghMb2'
+    'FkRmlsZRIfCgthY2NvdW50X2tleRgBIAIoCVIKYWNjb3VudEtleRpCCglVcGRhdGVSZWcSHwoL'
+    'YWNjb3VudF9rZXkYASACKAlSCmFjY291bnRLZXkSFAoFdmFsaWQYAiACKAhSBXZhbGlkGjAKE0'
+    'xpc3RBbGxUcmFuc2FjdGlvbnMSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaMAoTTGlzdE93'
+    'blRyYW5zYWN0aW9ucxIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBosCg9MaXN0QWxsQmFsYW'
+    '5jZXMSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaKgoNTGlzdEFsbFNlcmllcxIZCghhc3Nl'
+    'dF9pZBgBIAIoCVIHYXNzZXRJZEIGCgRib2R5');
 
 @$core.Deprecated('Use respDescriptor instead')
 const Resp$json = {
   '1': 'Resp',
   '2': [
     {'1': 'id', '3': 1, '4': 2, '5': 3, '10': 'id'},
-    {'1': 'login', '3': 10, '4': 1, '5': 11, '6': '.api.proto.Resp.Login', '9': 0, '10': 'login'},
-    {'1': 'register', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Resp.Register', '9': 0, '10': 'register'},
+    {'1': 'login_or_register', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Resp.LoginOrRegister', '9': 0, '10': 'loginOrRegister'},
     {'1': 'register_issuer', '3': 14, '4': 1, '5': 11, '6': '.api.proto.Resp.RegisterIssuer', '9': 0, '10': 'registerIssuer'},
     {'1': 'resume', '3': 12, '4': 1, '5': 11, '6': '.api.proto.Resp.Resume', '9': 0, '10': 'resume'},
     {'1': 'logout', '3': 13, '4': 1, '5': 11, '6': '.api.proto.Resp.Logout', '9': 0, '10': 'logout'},
@@ -491,23 +480,15 @@ const Resp$json = {
     {'1': 'list_all_balances', '3': 31, '4': 1, '5': 11, '6': '.api.proto.Resp.ListAllBalances', '9': 0, '10': 'listAllBalances'},
     {'1': 'list_all_series', '3': 32, '4': 1, '5': 11, '6': '.api.proto.Resp.ListAllSeries', '9': 0, '10': 'listAllSeries'},
   ],
-  '3': [Resp_Login$json, Resp_Register$json, Resp_RegisterIssuer$json, Resp_Resume$json, Resp_Logout$json, Resp_AddGaid$json, Resp_LoadAssets$json, Resp_BuyShares$json, Resp_LoadCountries$json, Resp_LoadRegs$json, Resp_LoadFile$json, Resp_UpdateReg$json, Resp_ListAllTransactions$json, Resp_ListOwnTransactions$json, Resp_ListAllBalances$json, Resp_ListAllSeries$json],
+  '3': [Resp_LoginOrRegister$json, Resp_RegisterIssuer$json, Resp_Resume$json, Resp_Logout$json, Resp_AddGaid$json, Resp_LoadAssets$json, Resp_BuyShares$json, Resp_LoadCountries$json, Resp_LoadRegs$json, Resp_LoadFile$json, Resp_UpdateReg$json, Resp_ListAllTransactions$json, Resp_ListOwnTransactions$json, Resp_ListAllBalances$json, Resp_ListAllSeries$json],
   '8': [
     {'1': 'body'},
   ],
 };
 
 @$core.Deprecated('Use respDescriptor instead')
-const Resp_Login$json = {
-  '1': 'Login',
-  '2': [
-    {'1': 'request_id', '3': 1, '4': 2, '5': 9, '10': 'requestId'},
-  ],
-};
-
-@$core.Deprecated('Use respDescriptor instead')
-const Resp_Register$json = {
-  '1': 'Register',
+const Resp_LoginOrRegister$json = {
+  '1': 'LoginOrRegister',
   '2': [
     {'1': 'request_id', '3': 1, '4': 2, '5': 9, '10': 'requestId'},
   ],
@@ -624,51 +605,48 @@ const Resp_ListAllSeries$json = {
 
 /// Descriptor for `Resp`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List respDescriptor = $convert.base64Decode(
-    'CgRSZXNwEg4KAmlkGAEgAigDUgJpZBItCgVsb2dpbhgKIAEoCzIVLmFwaS5wcm90by5SZXNwLk'
-    'xvZ2luSABSBWxvZ2luEjYKCHJlZ2lzdGVyGAsgASgLMhguYXBpLnByb3RvLlJlc3AuUmVnaXN0'
-    'ZXJIAFIIcmVnaXN0ZXISSQoPcmVnaXN0ZXJfaXNzdWVyGA4gASgLMh4uYXBpLnByb3RvLlJlc3'
-    'AuUmVnaXN0ZXJJc3N1ZXJIAFIOcmVnaXN0ZXJJc3N1ZXISMAoGcmVzdW1lGAwgASgLMhYuYXBp'
-    'LnByb3RvLlJlc3AuUmVzdW1lSABSBnJlc3VtZRIwCgZsb2dvdXQYDSABKAsyFi5hcGkucHJvdG'
-    '8uUmVzcC5Mb2dvdXRIAFIGbG9nb3V0EjQKCGFkZF9nYWlkGBQgASgLMhcuYXBpLnByb3RvLlJl'
-    'c3AuQWRkR2FpZEgAUgdhZGRHYWlkEj0KC2xvYWRfYXNzZXRzGBUgASgLMhouYXBpLnByb3RvLl'
-    'Jlc3AuTG9hZEFzc2V0c0gAUgpsb2FkQXNzZXRzEjoKCmJ1eV9zaGFyZXMYGCABKAsyGS5hcGku'
-    'cHJvdG8uUmVzcC5CdXlTaGFyZXNIAFIJYnV5U2hhcmVzEkYKDmxvYWRfY291bnRyaWVzGBkgAS'
-    'gLMh0uYXBpLnByb3RvLlJlc3AuTG9hZENvdW50cmllc0gAUg1sb2FkQ291bnRyaWVzEjcKCWxv'
-    'YWRfcmVncxgaIAEoCzIYLmFwaS5wcm90by5SZXNwLkxvYWRSZWdzSABSCGxvYWRSZWdzEjcKCW'
-    'xvYWRfZmlsZRgcIAEoCzIYLmFwaS5wcm90by5SZXNwLkxvYWRGaWxlSABSCGxvYWRGaWxlEjoK'
-    'CnVwZGF0ZV9yZWcYGyABKAsyGS5hcGkucHJvdG8uUmVzcC5VcGRhdGVSZWdIAFIJdXBkYXRlUm'
-    'VnElkKFWxpc3RfYWxsX3RyYW5zYWN0aW9ucxgdIAEoCzIjLmFwaS5wcm90by5SZXNwLkxpc3RB'
-    'bGxUcmFuc2FjdGlvbnNIAFITbGlzdEFsbFRyYW5zYWN0aW9ucxJZChVsaXN0X293bl90cmFuc2'
-    'FjdGlvbnMYHiABKAsyIy5hcGkucHJvdG8uUmVzcC5MaXN0T3duVHJhbnNhY3Rpb25zSABSE2xp'
-    'c3RPd25UcmFuc2FjdGlvbnMSTQoRbGlzdF9hbGxfYmFsYW5jZXMYHyABKAsyHy5hcGkucHJvdG'
-    '8uUmVzcC5MaXN0QWxsQmFsYW5jZXNIAFIPbGlzdEFsbEJhbGFuY2VzEkcKD2xpc3RfYWxsX3Nl'
-    'cmllcxggIAEoCzIdLmFwaS5wcm90by5SZXNwLkxpc3RBbGxTZXJpZXNIAFINbGlzdEFsbFNlcm'
-    'llcxomCgVMb2dpbhIdCgpyZXF1ZXN0X2lkGAEgAigJUglyZXF1ZXN0SWQaKQoIUmVnaXN0ZXIS'
-    'HQoKcmVxdWVzdF9pZBgBIAIoCVIJcmVxdWVzdElkGhAKDlJlZ2lzdGVySXNzdWVyGnAKBlJlc3'
-    'VtZRIsCgdhY2NvdW50GAEgAigLMhIuYXBpLnByb3RvLkFjY291bnRSB2FjY291bnQSOAoMYWNj'
-    'b3VudF9rZXlzGAIgAygLMhUuYXBpLnByb3RvLkFjY291bnRLZXlSC2FjY291bnRLZXlzGggKBk'
-    'xvZ291dBo3CgdBZGRHYWlkEiwKB2FjY291bnQYASACKAsyEi5hcGkucHJvdG8uQWNjb3VudFIH'
-    'YWNjb3VudBo2CgpMb2FkQXNzZXRzEigKBmFzc2V0cxgBIAMoCzIQLmFwaS5wcm90by5Bc3NldF'
-    'IGYXNzZXRzGnsKCUJ1eVNoYXJlcxIZCghvcmRlcl9pZBgBIAIoCVIHb3JkZXJJZBIWCgZhbW91'
-    'bnQYAiACKAFSBmFtb3VudBIUCgVwcmljZRgDIAIoAVIFcHJpY2USJQoOYml0Y29pbl9hbW91bn'
-    'QYBCACKAFSDWJpdGNvaW5BbW91bnQaIwoNTG9hZENvdW50cmllcxISCgRsaXN0GAEgAygJUgRs'
-    'aXN0GjIKCExvYWRSZWdzEiYKBGxpc3QYASADKAsyEi5hcGkucHJvdG8uQWNjb3VudFIEbGlzdB'
-    'o7CghMb2FkRmlsZRIbCgltaW1lX3R5cGUYASACKAlSCG1pbWVUeXBlEhIKBGRhdGEYAiACKAxS'
-    'BGRhdGEaCwoJVXBkYXRlUmVnGkUKE0xpc3RBbGxUcmFuc2FjdGlvbnMSLgoEbGlzdBgBIAMoCz'
-    'IaLmFwaS5wcm90by5GdWxsVHJhbnNhY3Rpb25SBGxpc3QaRAoTTGlzdE93blRyYW5zYWN0aW9u'
-    'cxItCgRsaXN0GAEgAygLMhkuYXBpLnByb3RvLk93blRyYW5zYWN0aW9uUgRsaXN0Gj4KD0xpc3'
-    'RBbGxCYWxhbmNlcxIrCgRsaXN0GAEgAygLMhcuYXBpLnByb3RvLkJhbGFuY2VPd25lclIEbGlz'
-    'dBpMCg1MaXN0QWxsU2VyaWVzEikKBGxpc3QYASADKAsyFS5hcGkucHJvdG8uU2VyaWVPd25lcl'
-    'IEbGlzdBIQCgNjc3YYAiACKAlSA2NzdkIGCgRib2R5');
+    'CgRSZXNwEg4KAmlkGAEgAigDUgJpZBJNChFsb2dpbl9vcl9yZWdpc3RlchgLIAEoCzIfLmFwaS'
+    '5wcm90by5SZXNwLkxvZ2luT3JSZWdpc3RlckgAUg9sb2dpbk9yUmVnaXN0ZXISSQoPcmVnaXN0'
+    'ZXJfaXNzdWVyGA4gASgLMh4uYXBpLnByb3RvLlJlc3AuUmVnaXN0ZXJJc3N1ZXJIAFIOcmVnaX'
+    'N0ZXJJc3N1ZXISMAoGcmVzdW1lGAwgASgLMhYuYXBpLnByb3RvLlJlc3AuUmVzdW1lSABSBnJl'
+    'c3VtZRIwCgZsb2dvdXQYDSABKAsyFi5hcGkucHJvdG8uUmVzcC5Mb2dvdXRIAFIGbG9nb3V0Ej'
+    'QKCGFkZF9nYWlkGBQgASgLMhcuYXBpLnByb3RvLlJlc3AuQWRkR2FpZEgAUgdhZGRHYWlkEj0K'
+    'C2xvYWRfYXNzZXRzGBUgASgLMhouYXBpLnByb3RvLlJlc3AuTG9hZEFzc2V0c0gAUgpsb2FkQX'
+    'NzZXRzEjoKCmJ1eV9zaGFyZXMYGCABKAsyGS5hcGkucHJvdG8uUmVzcC5CdXlTaGFyZXNIAFIJ'
+    'YnV5U2hhcmVzEkYKDmxvYWRfY291bnRyaWVzGBkgASgLMh0uYXBpLnByb3RvLlJlc3AuTG9hZE'
+    'NvdW50cmllc0gAUg1sb2FkQ291bnRyaWVzEjcKCWxvYWRfcmVncxgaIAEoCzIYLmFwaS5wcm90'
+    'by5SZXNwLkxvYWRSZWdzSABSCGxvYWRSZWdzEjcKCWxvYWRfZmlsZRgcIAEoCzIYLmFwaS5wcm'
+    '90by5SZXNwLkxvYWRGaWxlSABSCGxvYWRGaWxlEjoKCnVwZGF0ZV9yZWcYGyABKAsyGS5hcGku'
+    'cHJvdG8uUmVzcC5VcGRhdGVSZWdIAFIJdXBkYXRlUmVnElkKFWxpc3RfYWxsX3RyYW5zYWN0aW'
+    '9ucxgdIAEoCzIjLmFwaS5wcm90by5SZXNwLkxpc3RBbGxUcmFuc2FjdGlvbnNIAFITbGlzdEFs'
+    'bFRyYW5zYWN0aW9ucxJZChVsaXN0X293bl90cmFuc2FjdGlvbnMYHiABKAsyIy5hcGkucHJvdG'
+    '8uUmVzcC5MaXN0T3duVHJhbnNhY3Rpb25zSABSE2xpc3RPd25UcmFuc2FjdGlvbnMSTQoRbGlz'
+    'dF9hbGxfYmFsYW5jZXMYHyABKAsyHy5hcGkucHJvdG8uUmVzcC5MaXN0QWxsQmFsYW5jZXNIAF'
+    'IPbGlzdEFsbEJhbGFuY2VzEkcKD2xpc3RfYWxsX3NlcmllcxggIAEoCzIdLmFwaS5wcm90by5S'
+    'ZXNwLkxpc3RBbGxTZXJpZXNIAFINbGlzdEFsbFNlcmllcxowCg9Mb2dpbk9yUmVnaXN0ZXISHQ'
+    'oKcmVxdWVzdF9pZBgBIAIoCVIJcmVxdWVzdElkGhAKDlJlZ2lzdGVySXNzdWVyGnAKBlJlc3Vt'
+    'ZRIsCgdhY2NvdW50GAEgAigLMhIuYXBpLnByb3RvLkFjY291bnRSB2FjY291bnQSOAoMYWNjb3'
+    'VudF9rZXlzGAIgAygLMhUuYXBpLnByb3RvLkFjY291bnRLZXlSC2FjY291bnRLZXlzGggKBkxv'
+    'Z291dBo3CgdBZGRHYWlkEiwKB2FjY291bnQYASACKAsyEi5hcGkucHJvdG8uQWNjb3VudFIHYW'
+    'Njb3VudBo2CgpMb2FkQXNzZXRzEigKBmFzc2V0cxgBIAMoCzIQLmFwaS5wcm90by5Bc3NldFIG'
+    'YXNzZXRzGnsKCUJ1eVNoYXJlcxIZCghvcmRlcl9pZBgBIAIoCVIHb3JkZXJJZBIWCgZhbW91bn'
+    'QYAiACKAFSBmFtb3VudBIUCgVwcmljZRgDIAIoAVIFcHJpY2USJQoOYml0Y29pbl9hbW91bnQY'
+    'BCACKAFSDWJpdGNvaW5BbW91bnQaIwoNTG9hZENvdW50cmllcxISCgRsaXN0GAEgAygJUgRsaX'
+    'N0GjIKCExvYWRSZWdzEiYKBGxpc3QYASADKAsyEi5hcGkucHJvdG8uQWNjb3VudFIEbGlzdBo7'
+    'CghMb2FkRmlsZRIbCgltaW1lX3R5cGUYASACKAlSCG1pbWVUeXBlEhIKBGRhdGEYAiACKAxSBG'
+    'RhdGEaCwoJVXBkYXRlUmVnGkUKE0xpc3RBbGxUcmFuc2FjdGlvbnMSLgoEbGlzdBgBIAMoCzIa'
+    'LmFwaS5wcm90by5GdWxsVHJhbnNhY3Rpb25SBGxpc3QaRAoTTGlzdE93blRyYW5zYWN0aW9ucx'
+    'ItCgRsaXN0GAEgAygLMhkuYXBpLnByb3RvLk93blRyYW5zYWN0aW9uUgRsaXN0Gj4KD0xpc3RB'
+    'bGxCYWxhbmNlcxIrCgRsaXN0GAEgAygLMhcuYXBpLnByb3RvLkJhbGFuY2VPd25lclIEbGlzdB'
+    'pMCg1MaXN0QWxsU2VyaWVzEikKBGxpc3QYASADKAsyFS5hcGkucHJvdG8uU2VyaWVPd25lclIE'
+    'bGlzdBIQCgNjc3YYAiACKAlSA2NzdkIGCgRib2R5');
 
 @$core.Deprecated('Use notifDescriptor instead')
 const Notif$json = {
   '1': 'Notif',
   '2': [
-    {'1': 'login_failed', '3': 1, '4': 1, '5': 11, '6': '.api.proto.Notif.LoginFailed', '9': 0, '10': 'loginFailed'},
-    {'1': 'login_succeed', '3': 2, '4': 1, '5': 11, '6': '.api.proto.Notif.LoginSucceed', '9': 0, '10': 'loginSucceed'},
-    {'1': 'register_failed', '3': 3, '4': 1, '5': 11, '6': '.api.proto.Notif.RegisterFailed', '9': 0, '10': 'registerFailed'},
-    {'1': 'register_succeed', '3': 4, '4': 1, '5': 11, '6': '.api.proto.Notif.RegisterSucceed', '9': 0, '10': 'registerSucceed'},
+    {'1': 'login_or_register_failed', '3': 3, '4': 1, '5': 11, '6': '.api.proto.Notif.LoginOrRegisterFailed', '9': 0, '10': 'loginOrRegisterFailed'},
+    {'1': 'login_or_register_succeed', '3': 4, '4': 1, '5': 11, '6': '.api.proto.Notif.LoginOrRegisterSucceed', '9': 0, '10': 'loginOrRegisterSucceed'},
     {'1': 'free_shares', '3': 5, '4': 1, '5': 11, '6': '.api.proto.Notif.FreeShares', '9': 0, '10': 'freeShares'},
     {'1': 'sold_shares', '3': 7, '4': 1, '5': 11, '6': '.api.proto.Notif.SoldShares', '9': 0, '10': 'soldShares'},
     {'1': 'user_shares', '3': 8, '4': 1, '5': 11, '6': '.api.proto.Notif.UserShares', '9': 0, '10': 'userShares'},
@@ -677,36 +655,27 @@ const Notif$json = {
     {'1': 'update_market_data', '3': 10, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdateMarketData', '9': 0, '10': 'updateMarketData'},
     {'1': 'issued_amounts', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Notif.IssuedAmounts', '9': 0, '10': 'issuedAmounts'},
     {'1': 'update_balances', '3': 12, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdateBalances', '9': 0, '10': 'updateBalances'},
-    {'1': 'eid_response', '3': 13, '4': 1, '5': 11, '6': '.api.proto.Notif.EidResponse', '9': 0, '10': 'eidResponse'},
   ],
-  '3': [Notif_LoginFailed$json, Notif_LoginSucceed$json, Notif_EidResponse$json, Notif_RegisterFailed$json, Notif_RegisterSucceed$json, Notif_FreeShares$json, Notif_SoldShares$json, Notif_UserShares$json, Notif_BuyShares$json, Notif_UpdatePrices$json, Notif_UpdateMarketData$json, Notif_IssuedAmounts$json, Notif_UpdateBalances$json],
+  '3': [Notif_LoginOrRegisterFailed$json, Notif_LoginOrRegisterSucceed$json, Notif_RegisterFailed$json, Notif_RegisterSucceed$json, Notif_FreeShares$json, Notif_SoldShares$json, Notif_UserShares$json, Notif_BuyShares$json, Notif_UpdatePrices$json, Notif_UpdateMarketData$json, Notif_IssuedAmounts$json, Notif_UpdateBalances$json],
   '8': [
     {'1': 'body'},
   ],
 };
 
 @$core.Deprecated('Use notifDescriptor instead')
-const Notif_LoginFailed$json = {
-  '1': 'LoginFailed',
+const Notif_LoginOrRegisterFailed$json = {
+  '1': 'LoginOrRegisterFailed',
   '2': [
     {'1': 'text', '3': 1, '4': 2, '5': 9, '10': 'text'},
   ],
 };
 
 @$core.Deprecated('Use notifDescriptor instead')
-const Notif_LoginSucceed$json = {
-  '1': 'LoginSucceed',
+const Notif_LoginOrRegisterSucceed$json = {
+  '1': 'LoginOrRegisterSucceed',
   '2': [
     {'1': 'token', '3': 1, '4': 2, '5': 9, '10': 'token'},
     {'1': 'account_key', '3': 2, '4': 2, '5': 9, '10': 'accountKey'},
-  ],
-};
-
-@$core.Deprecated('Use notifDescriptor instead')
-const Notif_EidResponse$json = {
-  '1': 'EidResponse',
-  '2': [
-    {'1': 'request_id', '3': 1, '4': 2, '5': 9, '10': 'requestId'},
   ],
 };
 
@@ -822,44 +791,41 @@ const Notif_UpdateBalances$json = {
 
 /// Descriptor for `Notif`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List notifDescriptor = $convert.base64Decode(
-    'CgVOb3RpZhJBCgxsb2dpbl9mYWlsZWQYASABKAsyHC5hcGkucHJvdG8uTm90aWYuTG9naW5GYW'
-    'lsZWRIAFILbG9naW5GYWlsZWQSRAoNbG9naW5fc3VjY2VlZBgCIAEoCzIdLmFwaS5wcm90by5O'
-    'b3RpZi5Mb2dpblN1Y2NlZWRIAFIMbG9naW5TdWNjZWVkEkoKD3JlZ2lzdGVyX2ZhaWxlZBgDIA'
-    'EoCzIfLmFwaS5wcm90by5Ob3RpZi5SZWdpc3RlckZhaWxlZEgAUg5yZWdpc3RlckZhaWxlZBJN'
-    'ChByZWdpc3Rlcl9zdWNjZWVkGAQgASgLMiAuYXBpLnByb3RvLk5vdGlmLlJlZ2lzdGVyU3VjY2'
-    'VlZEgAUg9yZWdpc3RlclN1Y2NlZWQSPgoLZnJlZV9zaGFyZXMYBSABKAsyGy5hcGkucHJvdG8u'
-    'Tm90aWYuRnJlZVNoYXJlc0gAUgpmcmVlU2hhcmVzEj4KC3NvbGRfc2hhcmVzGAcgASgLMhsuYX'
-    'BpLnByb3RvLk5vdGlmLlNvbGRTaGFyZXNIAFIKc29sZFNoYXJlcxI+Cgt1c2VyX3NoYXJlcxgI'
-    'IAEoCzIbLmFwaS5wcm90by5Ob3RpZi5Vc2VyU2hhcmVzSABSCnVzZXJTaGFyZXMSOwoKYnV5X3'
-    'NoYXJlcxgGIAEoCzIaLmFwaS5wcm90by5Ob3RpZi5CdXlTaGFyZXNIAFIJYnV5U2hhcmVzEkQK'
-    'DXVwZGF0ZV9wcmljZXMYCSABKAsyHS5hcGkucHJvdG8uTm90aWYuVXBkYXRlUHJpY2VzSABSDH'
-    'VwZGF0ZVByaWNlcxJRChJ1cGRhdGVfbWFya2V0X2RhdGEYCiABKAsyIS5hcGkucHJvdG8uTm90'
-    'aWYuVXBkYXRlTWFya2V0RGF0YUgAUhB1cGRhdGVNYXJrZXREYXRhEkcKDmlzc3VlZF9hbW91bn'
-    'RzGAsgASgLMh4uYXBpLnByb3RvLk5vdGlmLklzc3VlZEFtb3VudHNIAFINaXNzdWVkQW1vdW50'
-    'cxJKCg91cGRhdGVfYmFsYW5jZXMYDCABKAsyHy5hcGkucHJvdG8uTm90aWYuVXBkYXRlQmFsYW'
-    '5jZXNIAFIOdXBkYXRlQmFsYW5jZXMSQQoMZWlkX3Jlc3BvbnNlGA0gASgLMhwuYXBpLnByb3Rv'
-    'Lk5vdGlmLkVpZFJlc3BvbnNlSABSC2VpZFJlc3BvbnNlGiEKC0xvZ2luRmFpbGVkEhIKBHRleH'
-    'QYASACKAlSBHRleHQaRQoMTG9naW5TdWNjZWVkEhQKBXRva2VuGAEgAigJUgV0b2tlbhIfCgth'
-    'Y2NvdW50X2tleRgCIAIoCVIKYWNjb3VudEtleRosCgtFaWRSZXNwb25zZRIdCgpyZXF1ZXN0X2'
-    'lkGAEgAigJUglyZXF1ZXN0SWQaJAoOUmVnaXN0ZXJGYWlsZWQSEgoEdGV4dBgBIAIoCVIEdGV4'
-    'dBpICg9SZWdpc3RlclN1Y2NlZWQSFAoFdG9rZW4YASACKAlSBXRva2VuEh8KC2FjY291bnRfa2'
-    'V5GAIgAigJUgphY2NvdW50S2V5GmwKCkZyZWVTaGFyZXMSMgoLZnJlZV9zaGFyZXMYASACKAsy'
-    'ES5hcGkucHJvdG8uU2hhcmVzUgpmcmVlU2hhcmVzEhIKBG5hbWUYAiACKAlSBG5hbWUSFgoGYW'
-    '1vdW50GAMgAigDUgZhbW91bnQaQAoKU29sZFNoYXJlcxIyCgtzb2xkX3NoYXJlcxgBIAIoCzIR'
-    'LmFwaS5wcm90by5TaGFyZXNSCnNvbGRTaGFyZXMaRAoKVXNlclNoYXJlcxI2Cg1ib3VnaHRfc2'
-    'hhcmVzGAEgAigLMhEuYXBpLnByb3RvLlNoYXJlc1IMYm91Z2h0U2hhcmVzGo8BCglCdXlTaGFy'
-    'ZXMSGQoIb3JkZXJfaWQYASACKAlSB29yZGVySWQSFgoGYW1vdW50GAIgAigBUgZhbW91bnQSFA'
-    'oFcHJpY2UYAyACKAFSBXByaWNlEiUKDmJpdGNvaW5fYW1vdW50GAQgAigBUg1iaXRjb2luQW1v'
-    'dW50EhIKBHR4aWQYBSABKAlSBHR4aWQaOgoMVXBkYXRlUHJpY2VzEioKEWJpdGNvaW5fdXNkX3'
-    'ByaWNlGAEgASgBUg9iaXRjb2luVXNkUHJpY2UarwEKEFVwZGF0ZU1hcmtldERhdGESOgoEZGF0'
-    'YRgBIAMoCzImLmFwaS5wcm90by5Ob3RpZi5VcGRhdGVNYXJrZXREYXRhLkRhdGFSBGRhdGEaXw'
-    'oERGF0YRIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBIdCgpsYXN0X3ByaWNlGAIgASgBUgls'
-    'YXN0UHJpY2USHQoKdm9sdW1lXzMwZBgDIAEoAVIJdm9sdW1lMzBkGqMBCg1Jc3N1ZWRBbW91bn'
-    'RzEjwKBmFzc2V0cxgBIAMoCzIkLmFwaS5wcm90by5Ob3RpZi5Jc3N1ZWRBbW91bnRzLkFzc2V0'
-    'UgZhc3NldHMaVAoFQXNzZXQSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQSFgoGb25saW5lGA'
-    'IgAigBUgZvbmxpbmUSGAoHb2ZmbGluZRgDIAIoAVIHb2ZmbGluZRphCg5VcGRhdGVCYWxhbmNl'
-    'cxIfCgthY2NvdW50X2tleRgBIAIoCVIKYWNjb3VudEtleRIuCghiYWxhbmNlcxgCIAMoCzISLm'
-    'FwaS5wcm90by5CYWxhbmNlUghiYWxhbmNlc0IGCgRib2R5');
+    'CgVOb3RpZhJhChhsb2dpbl9vcl9yZWdpc3Rlcl9mYWlsZWQYAyABKAsyJi5hcGkucHJvdG8uTm'
+    '90aWYuTG9naW5PclJlZ2lzdGVyRmFpbGVkSABSFWxvZ2luT3JSZWdpc3RlckZhaWxlZBJkChls'
+    'b2dpbl9vcl9yZWdpc3Rlcl9zdWNjZWVkGAQgASgLMicuYXBpLnByb3RvLk5vdGlmLkxvZ2luT3'
+    'JSZWdpc3RlclN1Y2NlZWRIAFIWbG9naW5PclJlZ2lzdGVyU3VjY2VlZBI+CgtmcmVlX3NoYXJl'
+    'cxgFIAEoCzIbLmFwaS5wcm90by5Ob3RpZi5GcmVlU2hhcmVzSABSCmZyZWVTaGFyZXMSPgoLc2'
+    '9sZF9zaGFyZXMYByABKAsyGy5hcGkucHJvdG8uTm90aWYuU29sZFNoYXJlc0gAUgpzb2xkU2hh'
+    'cmVzEj4KC3VzZXJfc2hhcmVzGAggASgLMhsuYXBpLnByb3RvLk5vdGlmLlVzZXJTaGFyZXNIAF'
+    'IKdXNlclNoYXJlcxI7CgpidXlfc2hhcmVzGAYgASgLMhouYXBpLnByb3RvLk5vdGlmLkJ1eVNo'
+    'YXJlc0gAUglidXlTaGFyZXMSRAoNdXBkYXRlX3ByaWNlcxgJIAEoCzIdLmFwaS5wcm90by5Ob3'
+    'RpZi5VcGRhdGVQcmljZXNIAFIMdXBkYXRlUHJpY2VzElEKEnVwZGF0ZV9tYXJrZXRfZGF0YRgK'
+    'IAEoCzIhLmFwaS5wcm90by5Ob3RpZi5VcGRhdGVNYXJrZXREYXRhSABSEHVwZGF0ZU1hcmtldE'
+    'RhdGESRwoOaXNzdWVkX2Ftb3VudHMYCyABKAsyHi5hcGkucHJvdG8uTm90aWYuSXNzdWVkQW1v'
+    'dW50c0gAUg1pc3N1ZWRBbW91bnRzEkoKD3VwZGF0ZV9iYWxhbmNlcxgMIAEoCzIfLmFwaS5wcm'
+    '90by5Ob3RpZi5VcGRhdGVCYWxhbmNlc0gAUg51cGRhdGVCYWxhbmNlcxorChVMb2dpbk9yUmVn'
+    'aXN0ZXJGYWlsZWQSEgoEdGV4dBgBIAIoCVIEdGV4dBpPChZMb2dpbk9yUmVnaXN0ZXJTdWNjZW'
+    'VkEhQKBXRva2VuGAEgAigJUgV0b2tlbhIfCgthY2NvdW50X2tleRgCIAIoCVIKYWNjb3VudEtl'
+    'eRokCg5SZWdpc3RlckZhaWxlZBISCgR0ZXh0GAEgAigJUgR0ZXh0GkgKD1JlZ2lzdGVyU3VjY2'
+    'VlZBIUCgV0b2tlbhgBIAIoCVIFdG9rZW4SHwoLYWNjb3VudF9rZXkYAiACKAlSCmFjY291bnRL'
+    'ZXkabAoKRnJlZVNoYXJlcxIyCgtmcmVlX3NoYXJlcxgBIAIoCzIRLmFwaS5wcm90by5TaGFyZX'
+    'NSCmZyZWVTaGFyZXMSEgoEbmFtZRgCIAIoCVIEbmFtZRIWCgZhbW91bnQYAyACKANSBmFtb3Vu'
+    'dBpACgpTb2xkU2hhcmVzEjIKC3NvbGRfc2hhcmVzGAEgAigLMhEuYXBpLnByb3RvLlNoYXJlc1'
+    'IKc29sZFNoYXJlcxpECgpVc2VyU2hhcmVzEjYKDWJvdWdodF9zaGFyZXMYASACKAsyES5hcGku'
+    'cHJvdG8uU2hhcmVzUgxib3VnaHRTaGFyZXMajwEKCUJ1eVNoYXJlcxIZCghvcmRlcl9pZBgBIA'
+    'IoCVIHb3JkZXJJZBIWCgZhbW91bnQYAiACKAFSBmFtb3VudBIUCgVwcmljZRgDIAIoAVIFcHJp'
+    'Y2USJQoOYml0Y29pbl9hbW91bnQYBCACKAFSDWJpdGNvaW5BbW91bnQSEgoEdHhpZBgFIAEoCV'
+    'IEdHhpZBo6CgxVcGRhdGVQcmljZXMSKgoRYml0Y29pbl91c2RfcHJpY2UYASABKAFSD2JpdGNv'
+    'aW5Vc2RQcmljZRqvAQoQVXBkYXRlTWFya2V0RGF0YRI6CgRkYXRhGAEgAygLMiYuYXBpLnByb3'
+    'RvLk5vdGlmLlVwZGF0ZU1hcmtldERhdGEuRGF0YVIEZGF0YRpfCgREYXRhEhkKCGFzc2V0X2lk'
+    'GAEgAigJUgdhc3NldElkEh0KCmxhc3RfcHJpY2UYAiABKAFSCWxhc3RQcmljZRIdCgp2b2x1bW'
+    'VfMzBkGAMgASgBUgl2b2x1bWUzMGQaowEKDUlzc3VlZEFtb3VudHMSPAoGYXNzZXRzGAEgAygL'
+    'MiQuYXBpLnByb3RvLk5vdGlmLklzc3VlZEFtb3VudHMuQXNzZXRSBmFzc2V0cxpUCgVBc3NldB'
+    'IZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBIWCgZvbmxpbmUYAiACKAFSBm9ubGluZRIYCgdv'
+    'ZmZsaW5lGAMgAigBUgdvZmZsaW5lGmEKDlVwZGF0ZUJhbGFuY2VzEh8KC2FjY291bnRfa2V5GA'
+    'EgAigJUgphY2NvdW50S2V5Ei4KCGJhbGFuY2VzGAIgAygLMhIuYXBpLnByb3RvLkJhbGFuY2VS'
+    'CGJhbGFuY2VzQgYKBGJvZHk=');
 
 @$core.Deprecated('Use errDescriptor instead')
 const Err$json = {

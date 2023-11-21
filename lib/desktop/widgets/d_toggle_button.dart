@@ -16,18 +16,17 @@ class DToggleButton extends StatelessWidget {
   final String offText;
   final String onText;
 
-  final _colorToggleBackground = const Color(0xFF043857);
-
   @override
   Widget build(BuildContext context) {
     final handleClick = onChanged != null ? () => onChanged!(!value) : null;
     final enabled = onChanged != null;
+    const colorToggleBackground = Color(0xFF043857);
 
     Color buttonColor(bool value) {
       if (enabled) {
-        return value ? const Color(0xFF1F7EB1) : _colorToggleBackground;
+        return value ? const Color(0xFF1F7EB1) : colorToggleBackground;
       }
-      return value ? const Color(0x5F1F7EB1) : _colorToggleBackground;
+      return value ? const Color(0x5F1F7EB1) : colorToggleBackground;
     }
 
     Color textColor(bool value) {
@@ -38,9 +37,9 @@ class DToggleButton extends StatelessWidget {
     }
 
     return Container(
-      decoration: BoxDecoration(
-        color: _colorToggleBackground,
-        borderRadius: const BorderRadius.all(Radius.circular(8)),
+      decoration: const BoxDecoration(
+        color: colorToggleBackground,
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       child: Consumer(
         builder: (context, ref, _) {

@@ -21,8 +21,8 @@ class MarketCharts extends ConsumerStatefulWidget {
     required this.onBackPressed,
   });
 
-  final String assetId;
-  final VoidCallback onBackPressed;
+  final String? assetId;
+  final VoidCallback? onBackPressed;
 
   @override
   ConsumerState<MarketCharts> createState() => DChartsState();
@@ -109,9 +109,9 @@ class AssetDetails extends ConsumerWidget {
     required this.onToggled,
   });
 
-  final String assetId;
+  final String? assetId;
   final bool expanded;
-  final VoidCallback onToggled;
+  final VoidCallback? onToggled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

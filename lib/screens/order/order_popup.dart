@@ -91,38 +91,6 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
     ref.read(walletProvider).goBack();
   }
 
-  Widget buildStatsRow(
-      WidgetRef ref, BuildContext context, String title, double value) {
-    final price = value.toStringAsFixed(8);
-    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final dollarConversion =
-        ref.read(requestOrderProvider).dollarConversion(liquidAssetId, value);
-
-    return Column(
-      children: [
-        Text('$title ($kLiquidBitcoinTicker)',
-            style: defaultInfoStyle.copyWith(
-              fontWeight: FontWeight.bold,
-              decoration: TextDecoration.underline,
-            )),
-        const SizedBox(height: 4),
-        Text(price,
-            style: defaultInfoStyle.copyWith(
-              color: Colors.white,
-            )),
-        const SizedBox(height: 4),
-        Text(
-          dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.normal,
-            color: Color(0xFF709EBA),
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
@@ -283,12 +251,14 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                buildStatsRow(ref, context, '30d Low'.tr(),
-                                    chartStats.low),
-                                buildStatsRow(ref, context, '30d High'.tr(),
-                                    chartStats.high),
-                                buildStatsRow(
-                                    ref, context, 'Last'.tr(), chartStats.last),
+                                OrderPopupStatsRow(
+                                    title: '30d Low'.tr(),
+                                    value: chartStats.low),
+                                OrderPopupStatsRow(
+                                    title: '30d High'.tr(),
+                                    value: chartStats.high),
+                                OrderPopupStatsRow(
+                                    title: 'Last'.tr(), value: chartStats.last),
                               ],
                             ),
                           if (chartUrl != null)
@@ -452,6 +422,45 @@ class OrderTypeTracking extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class OrderPopupStatsRow extends ConsumerWidget {
+  const OrderPopupStatsRow({this.title = '', this.value = 0, super.key});
+
+  final String title;
+  final double value;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final price = value.toStringAsFixed(8);
+    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    final dollarConversion =
+        ref.watch(dollarConversionProvider(liquidAssetId, value));
+
+    return Column(
+      children: [
+        Text('$title ($kLiquidBitcoinTicker)',
+            style: defaultInfoStyle.copyWith(
+              fontWeight: FontWeight.bold,
+              decoration: TextDecoration.underline,
+            )),
+        const SizedBox(height: 4),
+        Text(price,
+            style: defaultInfoStyle.copyWith(
+              color: Colors.white,
+            )),
+        const SizedBox(height: 4),
+        Text(
+          dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+            color: Color(0xFF709EBA),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -482,5 +482,6 @@
   "Select address type": "Välj adress typ",
   "Sign swap transaction": "Signera swap transaction",
   "Create swap output": "Skapa swap output",
-  "Sign offline swap transaction": "Signera offline swap transaction"
+  "Sign offline swap transaction": "Signera offline swap transaction",
+  "No pending orders": "No pending orders"
 }

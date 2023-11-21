@@ -10,7 +10,7 @@ class MarketChartsPopup extends StatelessWidget {
     required this.assetId,
   });
 
-  final String assetId;
+  final String? assetId;
 
   Future<bool> popup(BuildContext context) async {
     Navigator.of(context).pop();

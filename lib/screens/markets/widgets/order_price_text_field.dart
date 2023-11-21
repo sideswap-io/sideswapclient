@@ -13,7 +13,7 @@ class OrderPriceTextField extends ConsumerWidget {
     super.key,
     this.icon,
     this.asset,
-    required this.controller,
+    this.controller,
     this.focusNode,
     this.onEditingComplete,
     this.precision = 8,
@@ -21,15 +21,16 @@ class OrderPriceTextField extends ConsumerWidget {
 
   final Widget? icon;
   final Asset? asset;
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final FocusNode? focusNode;
   final void Function()? onEditingComplete;
   final int precision;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dollarConversion = ref.read(requestOrderProvider).dollarConversion(
-        asset?.assetId ?? '', double.tryParse(controller.text) ?? 0);
+    final dollarConversion = ref.watch(dollarConversionProvider(
+        asset?.assetId ?? '', double.tryParse(controller?.text ?? '0') ?? 0));
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {

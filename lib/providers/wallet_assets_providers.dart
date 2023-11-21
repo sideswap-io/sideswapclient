@@ -158,7 +158,7 @@ class AssetUtils {
       return true;
     }
 
-    return !assets[assetId]!.swapMarket;
+    return !(assets[assetId]?.swapMarket ?? false);
   }
 
   Asset? liquidAsset() {
@@ -411,6 +411,7 @@ class AssetImage {
   }
 }
 
+// TODO (malcolmpl): fix this - Map<AccountAsset, Asset>
 final builtinAssetsProvider =
     AutoDisposeStateProvider<Map<String, Asset>>((ref) {
   ref.keepAlive();

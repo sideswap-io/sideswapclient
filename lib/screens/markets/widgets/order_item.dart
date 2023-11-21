@@ -79,7 +79,6 @@ class OrderItemState extends ConsumerState<OrderItem> {
 
   @override
   Widget build(BuildContext context) {
-    final wallet = ref.read(walletProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final bitcoinAsset =
         ref.watch(assetsStateProvider.select((value) => value[liquidAssetId]));
@@ -130,8 +129,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
     final priceAmount = priceStrForMarket(
         widget.requestOrder.price, widget.requestOrder.marketType);
     final dollarConversionRecv = ref
-        .read(requestOrderProvider)
-        .dollarConversionFromString(liquidAssetId, buyAmountStr);
+        .watch(dollarConversionFromStringProvider(liquidAssetId, buyAmountStr));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -141,7 +139,9 @@ class OrderItemState extends ConsumerState<OrderItem> {
         child: InkWell(
           onTap: widget.onTap ??
               () {
-                wallet.setOrderRequestView(widget.requestOrder);
+                ref
+                    .read(walletProvider)
+                    .setOrderRequestView(widget.requestOrder);
               },
           borderRadius: const BorderRadius.all(Radius.circular(10)),
           child: Container(

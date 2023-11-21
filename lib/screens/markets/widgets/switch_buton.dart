@@ -48,82 +48,55 @@ class SwitchButton extends StatefulWidget {
 class SwitchButtonState extends State<SwitchButton> {
   late double switchWidth = (widget.width - 3 * widget.borderWidth) / 2;
   late double switchHeight = widget.height - 2 * widget.borderWidth;
-  bool disabled = false;
+  bool enabled = true;
 
   @override
   void initState() {
     super.initState();
-    disabled = widget.onToggle == null;
+    enabled = widget.onToggle != null;
   }
 
   @override
   void didUpdateWidget(SwitchButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.onToggle != widget.onToggle) {
-      disabled = widget.onToggle == null;
+      enabled = widget.onToggle != null;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final defaultActiveTextStyle = TextStyle(
+      fontFamily: 'Roboto',
       fontSize: widget.fontSize ?? 14,
       fontWeight: FontWeight.w500,
       color: Colors.white,
     );
 
     final defaultInactiveTextStyle = TextStyle(
+      fontFamily: 'Roboto',
       fontSize: widget.fontSize ?? 14,
       fontWeight: FontWeight.w500,
       color: SideSwapColors.ceruleanFrost,
     );
 
-    var activeTextStyle = (disabled
-            ? widget.activeTextStyle?.copyWith(
-                color: widget.activeTextStyle?.color?.withOpacity(0.2))
-            : widget.activeTextStyle) ??
-        (disabled
-            ? defaultActiveTextStyle.copyWith(
-                color: SideSwapColors.ceruleanFrost)
-            : defaultActiveTextStyle);
-    Widget defaultActiveToggle = Container(
-      width: switchWidth,
-      height: switchHeight,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(
-            Radius.circular(widget.borderRadius - widget.borderWidth)),
-        color: disabled
-            ? SideSwapColors.navyBlue.withOpacity(0.2)
-            : widget.activeToggleBackground,
-      ),
-      child: Center(
-        child: Text(
-          widget.value ? widget.activeText : widget.inactiveText,
-          style: activeTextStyle,
-        ),
-      ),
-    );
-
-    Widget defaultInactiveToggle = Container(
-      width: switchWidth,
-      height: switchHeight,
-      color: widget.inactiveToggleBackground,
-      child: Center(
-        child: Text(
-          widget.value ? widget.inactiveText : widget.activeText,
-          style: widget.inactiveTextStyle ?? defaultInactiveTextStyle,
-        ),
-      ),
-    );
+    var activeTextStyle = (enabled
+            ? widget.activeTextStyle
+            : widget.activeTextStyle?.copyWith(
+                color: widget.activeTextStyle?.color?.withOpacity(0.2))) ??
+        (enabled
+            ? defaultActiveTextStyle
+            : defaultActiveTextStyle.copyWith(
+                color: SideSwapColors.ceruleanFrost));
 
     return GestureDetector(
       onTap: () {
-        if (!disabled && widget.onToggle != null) {
+        if (enabled && widget.onToggle != null) {
           widget.onToggle!(!widget.value);
         }
       },
       child: Opacity(
-        opacity: disabled ? 1 : 1,
+        opacity: enabled ? 1 : 1,
         child: Container(
           width: widget.width,
           height: widget.height,
@@ -140,16 +113,144 @@ class SwitchButtonState extends State<SwitchButton> {
           child: Row(
             children: [
               if (widget.value) ...[
-                widget.inactiveToggle ?? defaultInactiveToggle,
+                widget.inactiveToggle ??
+                    SwithButtonInactiveToggle(
+                      switchWidth: switchWidth,
+                      switchHeight: switchHeight,
+                      inactiveToggleBackground: widget.inactiveToggleBackground,
+                      activeText: widget.activeText,
+                      inactiveText: widget.inactiveText,
+                      value: widget.value,
+                      inactiveTextStyle:
+                          widget.inactiveTextStyle ?? defaultInactiveTextStyle,
+                    ),
                 const Spacer(),
-                widget.activeToggle ?? defaultActiveToggle,
+                widget.activeToggle ??
+                    SwitchButtonActiveToggle(
+                      switchWidth: switchWidth,
+                      switchHeight: switchHeight,
+                      borderRadius: widget.borderRadius,
+                      borderWidth: widget.borderWidth,
+                      enabled: enabled,
+                      activeText: widget.activeText,
+                      inactiveText: widget.inactiveText,
+                      value: widget.value,
+                      activeToggleBackground: widget.activeToggleBackground,
+                      activeTextStyle: activeTextStyle,
+                    ),
               ] else ...[
-                widget.activeToggle ?? defaultActiveToggle,
+                widget.activeToggle ??
+                    SwitchButtonActiveToggle(
+                      switchWidth: switchWidth,
+                      switchHeight: switchHeight,
+                      borderRadius: widget.borderRadius,
+                      borderWidth: widget.borderWidth,
+                      enabled: enabled,
+                      activeText: widget.activeText,
+                      inactiveText: widget.inactiveText,
+                      value: widget.value,
+                      activeToggleBackground: widget.activeToggleBackground,
+                      activeTextStyle: activeTextStyle,
+                    ),
                 const Spacer(),
-                widget.inactiveToggle ?? defaultInactiveToggle,
+                widget.inactiveToggle ??
+                    SwithButtonInactiveToggle(
+                      switchWidth: switchWidth,
+                      switchHeight: switchHeight,
+                      inactiveToggleBackground: widget.inactiveToggleBackground,
+                      activeText: widget.activeText,
+                      inactiveText: widget.inactiveText,
+                      value: widget.value,
+                      inactiveTextStyle:
+                          widget.inactiveTextStyle ?? defaultInactiveTextStyle,
+                    ),
               ]
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class SwitchButtonActiveToggle extends StatelessWidget {
+  const SwitchButtonActiveToggle({
+    super.key,
+    required this.switchWidth,
+    required this.switchHeight,
+    required this.borderRadius,
+    required this.borderWidth,
+    required this.enabled,
+    required this.activeText,
+    required this.inactiveText,
+    required this.value,
+    required this.activeToggleBackground,
+    this.activeTextStyle,
+  });
+
+  final double switchWidth;
+  final double switchHeight;
+  final double borderRadius;
+  final double borderWidth;
+  final bool enabled;
+  final String activeText;
+  final String inactiveText;
+  final bool value;
+  final Color activeToggleBackground;
+  final TextStyle? activeTextStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: switchWidth,
+      height: switchHeight,
+      decoration: BoxDecoration(
+        borderRadius:
+            BorderRadius.all(Radius.circular(borderRadius - borderWidth)),
+        color: enabled
+            ? activeToggleBackground
+            : SideSwapColors.navyBlue.withOpacity(0.2),
+      ),
+      child: Center(
+        child: Text(
+          value ? activeText : inactiveText,
+          style: activeTextStyle,
+        ),
+      ),
+    );
+  }
+}
+
+class SwithButtonInactiveToggle extends StatelessWidget {
+  const SwithButtonInactiveToggle({
+    super.key,
+    required this.switchWidth,
+    required this.switchHeight,
+    required this.inactiveToggleBackground,
+    required this.activeText,
+    required this.inactiveText,
+    required this.value,
+    this.inactiveTextStyle,
+  });
+
+  final double switchWidth;
+  final double switchHeight;
+  final Color inactiveToggleBackground;
+  final String activeText;
+  final String inactiveText;
+  final bool value;
+  final TextStyle? inactiveTextStyle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: switchWidth,
+      height: switchHeight,
+      color: inactiveToggleBackground,
+      child: Center(
+        child: Text(
+          value ? inactiveText : activeText,
+          style: inactiveTextStyle,
         ),
       ),
     );
