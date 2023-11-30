@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/assets_precache_provider.dart';
 import 'package:sideswap/providers/licenses_provider.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'warmup_app_provider.g.dart';
@@ -25,9 +27,32 @@ class WarmupApp extends _$WarmupApp {
       return;
     }
 
-    await ref.read(clearImageCacheFutureProvider.future);
-    await ref.read(licensesLoaderFutureProvider.future);
-    await ref.read(assetsPrecacheFutureProvider.future);
+    try {
+      final (v1, v2, v3) = await (
+        ref.read(clearImageCacheFutureProvider.future),
+        ref.read(licensesLoaderFutureProvider.future),
+        ref.read(assetsPrecacheFutureProvider.future)
+      ).wait;
+
+      if (!v1 || !v2 || !v3) {
+        Error.throwWithStackTrace('WarmupApp failed', StackTrace.current);
+      }
+    } on ParallelWaitError<(bool, bool, bool),
+        (Object, Object, Object)> catch (e, st) {
+      Error.throwWithStackTrace(e.errors.$1, st);
+    }
+
+    await ref.read(networkSettingsProvider.notifier).applySettings();
+
     state = const AsyncValue.data(WarmupAppState.initialized());
   }
+
+  void reinitialize() {
+    state = const AsyncValue.data(WarmupAppState.uninitialized());
+  }
+}
+
+@Riverpod(keepAlive: true)
+GlobalKey<NavigatorState> navigatorKey(NavigatorKeyRef ref) {
+  return GlobalKey<NavigatorState>();
 }

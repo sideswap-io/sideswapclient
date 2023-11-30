@@ -436,7 +436,7 @@ final makeOrderBalanceProvider = AutoDisposeProvider<MakeOrderBalance>.internal(
 
 typedef MakeOrderBalanceRef = AutoDisposeProviderRef<MakeOrderBalance>;
 String _$marketOrderAggregateVolumeAccountAssetHash() =>
-    r'9ba42e6d12dc367459d00256f28aff7d71370049';
+    r'65518176f48768955b98761f535b9e28716fe594';
 
 /// See also [marketOrderAggregateVolumeAccountAsset].
 @ProviderFor(marketOrderAggregateVolumeAccountAsset)
@@ -524,7 +524,7 @@ final makeOrderAggregateVolumeTooHighProvider =
 
 typedef MakeOrderAggregateVolumeTooHighRef = AutoDisposeProviderRef<bool>;
 String _$makeOrderLiquidAccountAssetHash() =>
-    r'cc9cf7466a75b8f5e0a2202ed8986e38d76d07f3';
+    r'b1b990c314a443645ba5e4b77712124f99aadd96';
 
 /// See also [makeOrderLiquidAccountAsset].
 @ProviderFor(makeOrderLiquidAccountAsset)

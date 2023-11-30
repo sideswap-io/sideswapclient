@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
@@ -9,81 +10,63 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
-import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/network_access_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
+import 'package:sideswap/side_swap_client_ffi.dart';
 
-class SettingsCustomHost extends ConsumerStatefulWidget {
+class SettingsCustomHost extends HookConsumerWidget {
   const SettingsCustomHost({super.key});
 
   @override
-  SettingsCustomHostState createState() => SettingsCustomHostState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final defaultTextStyle = useMemoized(() => const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: Color(0xFF00B4E9),
+        ));
 
-class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
-  late TextStyle defaultTextStyle;
+    final hostController = useTextEditingController();
+    final portController = useTextEditingController();
+    final useTls = useState(false);
+    final applyEnabled = useState(false);
+    final networkSettingsModel = ref.watch(networkSettingsProvider);
 
-  late TextEditingController hostController;
-  late TextEditingController portController;
-  late bool useTls;
+    final validateCallback = useCallback(() {
+      final host = hostController.text;
+      final port = portController.text;
 
-  bool saveEnabled = false;
+      if (host.isNotEmpty && port.isNotEmpty) {
+        applyEnabled.value = true;
+      } else {
+        applyEnabled.value = false;
+      }
+    }, const []);
 
-  @override
-  void initState() {
-    super.initState();
-    defaultTextStyle = const TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w500,
-      color: Color(0xFF00B4E9),
-    );
+    useEffect(() {
+      hostController.text = networkSettingsModel.host ?? '';
+      portController.text = '${networkSettingsModel.port ?? ''}';
+      useTls.value = networkSettingsModel.useTls ?? false;
 
-    hostController = TextEditingController()
-      ..text = ref.read(configProvider).settingsHost
-      ..addListener(() {
-        validate();
+      hostController.addListener(() {
+        validateCallback();
       });
 
-    portController = TextEditingController()
-      ..text = ref.read(configProvider).settingsPort.toString()
-      ..addListener(() {
-        validate();
+      portController.addListener(() {
+        validateCallback();
       });
 
-    useTls = ref.read(configProvider).settingsUseTLS;
+      return;
+    }, [hostController, portController]);
 
-    validate();
-  }
-
-  @override
-  void dispose() {
-    hostController.dispose();
-    portController.dispose();
-    super.dispose();
-  }
-
-  void validate() {
-    final host = hostController.text;
-    final port = portController.text;
-
-    if (host.isNotEmpty && port.isNotEmpty) {
-      saveEnabled = true;
-    } else {
-      saveEnabled = false;
-    }
-
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return SideSwapScaffold(
-      onWillPop: () async {
-        Navigator.of(context).pop();
-        return false;
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          Navigator.of(context).pop();
+        }
       },
       appBar: CustomAppBar(
-        title: 'Custom'.tr(),
+        title: 'Personal Electrum Server'.tr(),
         onPressed: () {
           Navigator.of(context).pop();
         },
@@ -140,11 +123,9 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
                         child: Consumer(
                           builder: (context, watch, child) {
                             return CustomCheckBox(
-                              value: useTls,
+                              value: useTls.value,
                               onChanged: (value) {
-                                setState(() {
-                                  useTls = value;
-                                });
+                                useTls.value = value;
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only(left: 10),
@@ -165,21 +146,23 @@ class SettingsCustomHostState extends ConsumerState<SettingsCustomHost> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 40),
                         child: CustomBigButton(
-                          enabled: saveEnabled,
+                          enabled: applyEnabled.value,
                           width: double.maxFinite,
                           height: 54,
-                          text: 'SAVE AND APPLY'.tr(),
+                          text: 'APPLY'.tr(),
                           onPressed: () {
-                            ref.read(networkAccessProvider).networkType =
-                                SettingsNetworkType.personal;
                             ref
-                                .read(configProvider)
-                                .setSettingsHost(hostController.text);
-                            ref.read(configProvider).setSettingsPort(
-                                int.parse(portController.text));
-                            ref.read(configProvider).setSettingsUseTLS(useTls);
+                                .read(networkSettingsProvider.notifier)
+                                .setModel(NetworkSettingsModelApply(
+                                  settingsNetworkType:
+                                      SettingsNetworkType.personal,
+                                  env: SIDESWAP_ENV_PROD,
+                                  host: hostController.text,
+                                  port: int.parse(portController.text),
+                                  useTls: useTls.value,
+                                ));
+
                             Navigator.of(context).pop();
-                            ref.read(walletProvider).applyNetworkChange();
                           },
                           backgroundColor: SideSwapColors.brightTurquoise,
                           textColor: Colors.white,

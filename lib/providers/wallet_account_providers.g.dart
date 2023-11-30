@@ -6,24 +6,46 @@ part of 'wallet_account_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$allAccountAssetsHash() => r'7dd189c33f5037e5d1b4d230ff3680dc0db24e32';
+String _$predefinedAccountAssetsHash() =>
+    r'abca1708ec6e08ed4f1ba2c21dfd975de8f2fd4f';
 
-/// See also [allAccountAssets].
-@ProviderFor(allAccountAssets)
-final allAccountAssetsProvider =
+/// See also [predefinedAccountAssets].
+@ProviderFor(predefinedAccountAssets)
+final predefinedAccountAssetsProvider =
     AutoDisposeProvider<List<AccountAsset>>.internal(
-  allAccountAssets,
-  name: r'allAccountAssetsProvider',
+  predefinedAccountAssets,
+  name: r'predefinedAccountAssetsProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$allAccountAssetsHash,
+      : _$predefinedAccountAssetsHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef AllAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
+typedef PredefinedAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
+String _$allAlwaysShowAccountAssetsHash() =>
+    r'ee4ba83fc5316634c4a6cc28385c49bf57f498e8';
+
+/// Needed by ui which want to display limited list of assets - ex. home page wallet
+///
+///
+/// Copied from [allAlwaysShowAccountAssets].
+@ProviderFor(allAlwaysShowAccountAssets)
+final allAlwaysShowAccountAssetsProvider =
+    AutoDisposeProvider<List<AccountAsset>>.internal(
+  allAlwaysShowAccountAssets,
+  name: r'allAlwaysShowAccountAssetsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$allAlwaysShowAccountAssetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AllAlwaysShowAccountAssetsRef
+    = AutoDisposeProviderRef<List<AccountAsset>>;
 String _$allVisibleAccountAssetsHash() =>
-    r'064bfee021e7a57ce754508ebb91a12333986fa3';
+    r'8ee88e438e95193fb7b2f719ec28c645ee8bba59';
 
 /// See also [allVisibleAccountAssets].
 @ProviderFor(allVisibleAccountAssets)
@@ -39,8 +61,62 @@ final allVisibleAccountAssetsProvider =
 );
 
 typedef AllVisibleAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
+String _$regularVisibleAccountAssetsHash() =>
+    r'bac960fc5ade1ab3bd428fb241c591ceceeef0ab';
+
+/// See also [regularVisibleAccountAssets].
+@ProviderFor(regularVisibleAccountAssets)
+final regularVisibleAccountAssetsProvider =
+    AutoDisposeProvider<List<AccountAsset>>.internal(
+  regularVisibleAccountAssets,
+  name: r'regularVisibleAccountAssetsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$regularVisibleAccountAssetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef RegularVisibleAccountAssetsRef
+    = AutoDisposeProviderRef<List<AccountAsset>>;
+String _$ampVisibleAccountAssetsHash() =>
+    r'3589e30b440b49fb2f394553d80476abb438a8d6';
+
+/// See also [ampVisibleAccountAssets].
+@ProviderFor(ampVisibleAccountAssets)
+final ampVisibleAccountAssetsProvider =
+    AutoDisposeProvider<List<AccountAsset>>.internal(
+  ampVisibleAccountAssets,
+  name: r'ampVisibleAccountAssetsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$ampVisibleAccountAssetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AmpVisibleAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
+String _$allAccountAssetsHash() => r'5cd184c82061dbf59d79167a4746fcdb47ec1c53';
+
+/// Needed by ui parts which want to search assetid over all assets - ex. market
+///
+///
+/// Copied from [allAccountAssets].
+@ProviderFor(allAccountAssets)
+final allAccountAssetsProvider =
+    AutoDisposeProvider<List<AccountAsset>>.internal(
+  allAccountAssets,
+  name: r'allAccountAssetsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$allAccountAssetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AllAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
 String _$regularAccountAssetsHash() =>
-    r'5f55247493042eeef0c091e3fe5b0893e1346a53';
+    r'85dfb1d6ba77da48af44f01727b143fd67482d8d';
 
 /// See also [regularAccountAssets].
 @ProviderFor(regularAccountAssets)
@@ -56,7 +132,7 @@ final regularAccountAssetsProvider =
 );
 
 typedef RegularAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
-String _$ampAccountAssetsHash() => r'c44660f694f98b0b99780822421919b2e6f7b830';
+String _$ampAccountAssetsHash() => r'a09cc1c6e7f263dae6e124bdea1b4cb27b9f6e55';
 
 /// See also [ampAccountAssets].
 @ProviderFor(ampAccountAssets)
@@ -72,6 +148,160 @@ final ampAccountAssetsProvider =
 );
 
 typedef AmpAccountAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
+String _$marketTypeForAccountAssetHash() =>
+    r'8626f6ea676e820fcef7b1944dacebb24e66de50';
+
+/// Copied from Dart SDK
+class _SystemHash {
+  _SystemHash._();
+
+  static int combine(int hash, int value) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + value);
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
+    return hash ^ (hash >> 6);
+  }
+
+  static int finish(int hash) {
+    // ignore: parameter_assignments
+    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
+    // ignore: parameter_assignments
+    hash = hash ^ (hash >> 11);
+    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+  }
+}
+
+/// See also [marketTypeForAccountAsset].
+@ProviderFor(marketTypeForAccountAsset)
+const marketTypeForAccountAssetProvider = MarketTypeForAccountAssetFamily();
+
+/// See also [marketTypeForAccountAsset].
+class MarketTypeForAccountAssetFamily extends Family<MarketType> {
+  /// See also [marketTypeForAccountAsset].
+  const MarketTypeForAccountAssetFamily();
+
+  /// See also [marketTypeForAccountAsset].
+  MarketTypeForAccountAssetProvider call(
+    AccountAsset? accountAsset,
+  ) {
+    return MarketTypeForAccountAssetProvider(
+      accountAsset,
+    );
+  }
+
+  @override
+  MarketTypeForAccountAssetProvider getProviderOverride(
+    covariant MarketTypeForAccountAssetProvider provider,
+  ) {
+    return call(
+      provider.accountAsset,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'marketTypeForAccountAssetProvider';
+}
+
+/// See also [marketTypeForAccountAsset].
+class MarketTypeForAccountAssetProvider
+    extends AutoDisposeProvider<MarketType> {
+  /// See also [marketTypeForAccountAsset].
+  MarketTypeForAccountAssetProvider(
+    AccountAsset? accountAsset,
+  ) : this._internal(
+          (ref) => marketTypeForAccountAsset(
+            ref as MarketTypeForAccountAssetRef,
+            accountAsset,
+          ),
+          from: marketTypeForAccountAssetProvider,
+          name: r'marketTypeForAccountAssetProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$marketTypeForAccountAssetHash,
+          dependencies: MarketTypeForAccountAssetFamily._dependencies,
+          allTransitiveDependencies:
+              MarketTypeForAccountAssetFamily._allTransitiveDependencies,
+          accountAsset: accountAsset,
+        );
+
+  MarketTypeForAccountAssetProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.accountAsset,
+  }) : super.internal();
+
+  final AccountAsset? accountAsset;
+
+  @override
+  Override overrideWith(
+    MarketType Function(MarketTypeForAccountAssetRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MarketTypeForAccountAssetProvider._internal(
+        (ref) => create(ref as MarketTypeForAccountAssetRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        accountAsset: accountAsset,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<MarketType> createElement() {
+    return _MarketTypeForAccountAssetProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MarketTypeForAccountAssetProvider &&
+        other.accountAsset == accountAsset;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, accountAsset.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin MarketTypeForAccountAssetRef on AutoDisposeProviderRef<MarketType> {
+  /// The parameter `accountAsset` of this provider.
+  AccountAsset? get accountAsset;
+}
+
+class _MarketTypeForAccountAssetProviderElement
+    extends AutoDisposeProviderElement<MarketType>
+    with MarketTypeForAccountAssetRef {
+  _MarketTypeForAccountAssetProviderElement(super.provider);
+
+  @override
+  AccountAsset? get accountAsset =>
+      (origin as MarketTypeForAccountAssetProvider).accountAsset;
+}
+
 String _$defaultAccountsStateHash() =>
     r'0a26ce887126dd07a2a2525def2d0665757d8c95';
 

@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/background/background_painter.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 class SideSwapScaffold extends ConsumerStatefulWidget {
   const SideSwapScaffold({
     super.key,
-    this.onWillPop,
+    this.canPop,
+    this.onPopInvoked,
     this.extendBody = false,
     this.extendBodyBehindAppBar = false,
     this.appBar,
@@ -35,7 +35,8 @@ class SideSwapScaffold extends ConsumerStatefulWidget {
   });
 
   final bool sideSwapBackground;
-  final WillPopCallback? onWillPop;
+  final bool? canPop;
+  final void Function(bool)? onPopInvoked;
   final bool extendBody;
   final bool extendBodyBehindAppBar;
   final PreferredSizeWidget? appBar;
@@ -106,11 +107,9 @@ class SideSwapScaffoldState extends ConsumerState<SideSwapScaffold> {
         drawerEnableOpenDragGesture: widget.drawerEnableOpenDragGesture,
         endDrawerEnableOpenDragGesture: widget.endDrawerEnableOpenDragGesture);
 
-    return WillPopScope(
-      onWillPop: widget.onWillPop ??
-          () async {
-            return ref.read(walletProvider).goBack();
-          },
+    return PopScope(
+      canPop: widget.canPop ?? false,
+      onPopInvoked: widget.onPopInvoked,
       child: scaffold,
     );
   }

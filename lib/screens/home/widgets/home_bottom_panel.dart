@@ -51,8 +51,10 @@ class HomeBottomPanel extends ConsumerWidget {
             children: [
               RoundedButtonWithLabel(
                 onTap: () {
-                  ref.read(walletProvider).selectAssetReceiveFromWalletMain();
-                  ref.read(pageStatusStateProvider.notifier).setStatus(Status.generateWalletAddress);
+                  // ref.read(walletProvider).selectAssetReceiveFromWalletMain();
+                  ref
+                      .read(pageStatusStateProvider.notifier)
+                      .setStatus(Status.generateWalletAddress);
                 },
                 label: 'Receive'.tr(),
                 buttonBackground: Colors.white,

@@ -69,7 +69,6 @@ class TimeToLiveState extends State<TimeToLive> {
       onTap: openDropdown,
       child: Container(
         height: 51,
-        width: double.maxFinite,
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
           borderRadius: const BorderRadius.all(Radius.circular(8)),

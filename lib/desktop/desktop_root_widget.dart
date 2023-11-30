@@ -12,19 +12,20 @@ import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/listeners/warmup_app_listener.dart';
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
-import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 
 class DesktopRootWidget extends HookConsumerWidget {
   const DesktopRootWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final navigatorKey = useMemoized(() => GlobalKey<NavigatorState>());
+    final navigatorKey = ref.watch(navigatorKeyProvider);
 
     useEffect(() {
       Future<bool> onPinBlockade(String? title, bool showBackButton,
@@ -46,7 +47,6 @@ class DesktopRootWidget extends HookConsumerWidget {
         return ret ?? false;
       }
 
-      ref.read(walletProvider).navigatorKey = navigatorKey;
       ref.read(pinProtectionProvider).onPinBlockadeCallback = onPinBlockade;
       ref.read(localNotificationsProvider).init();
 
@@ -95,9 +95,9 @@ class DesktopRootWidget extends HookConsumerWidget {
         ),
         Consumer(
           builder: (context, ref, child) {
-            final env = ref.watch(selectEnvProvider).startupEnv;
+            final env = ref.watch(envProvider);
             return switch (env) {
-              0 => Container(),
+              0 => const SizedBox(),
               _ => Align(
                   alignment: Alignment.topCenter,
                   child: Container(

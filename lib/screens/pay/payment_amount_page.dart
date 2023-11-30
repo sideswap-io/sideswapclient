@@ -60,18 +60,24 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
   );
 
   AccountAsset getSelectedAssetId() {
-    final payAssetId =
-        ref.read(paymentProvider).paymentAmountPageArguments.result?.assetId;
-    if (payAssetId != null) {
-      for (var account in ref.read(balancesProvider).balances.keys) {
-        if (account.assetId == payAssetId) {
-          return account;
-        }
-      }
-      return AccountAsset(AccountType.reg, payAssetId);
+    final result = ref.read(paymentProvider).paymentAmountPageArguments.result;
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+
+    // use regular wallet lbtc if assetid is lbtc or is empty
+    if (result?.assetId == null || result?.assetId == liquidAssetId) {
+      return AccountAsset(AccountType.reg, liquidAssetId);
     }
 
-    return AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider));
+    // let's check other assets and return it if found and balance is > 0
+    final balances = ref.read(balancesProvider).balances;
+    for (var account in balances.keys) {
+      if (account.assetId == result?.assetId && balances[account] != 0) {
+        return account;
+      }
+    }
+
+    // otherwise use regular wallet with given assetId
+    return AccountAsset(AccountType.reg, result?.assetId);
   }
 
   @override
@@ -130,7 +136,9 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
 
   void validate(String value) {
     if (value.isEmpty) {
-      ref.read(paymentProvider).insufficientFunds = false;
+      Future.microtask(() {
+        ref.read(paymentProvider).insufficientFunds = false;
+      });
       setState(() {
         enabled = false;
         amount = '0';
@@ -171,14 +179,18 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
       setState(() {
         enabled = true;
       });
-      ref.read(paymentProvider).insufficientFunds = false;
+      Future.microtask(() {
+        ref.read(paymentProvider).insufficientFunds = false;
+      });
       return;
     }
 
     setState(() {
       enabled = false;
     });
-    ref.read(paymentProvider).insufficientFunds = true;
+    Future.microtask(() {
+      ref.read(paymentProvider).insufficientFunds = true;
+    });
   }
 
   @override
@@ -198,6 +210,12 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
           ref.read(walletProvider).setRegistered();
         },
       ),
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).goBack();
+        }
+      },
       body: Stack(
         children: [
           SafeArea(

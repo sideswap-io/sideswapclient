@@ -413,13 +413,15 @@ class MakeOrderPanelAmountSide extends ConsumerWidget {
     final pricedInLiquid =
         ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    final liquidAccountAsset =
+        AccountAsset(selectedAccountAsset.account, liquidAssetId);
 
     return Column(
       children: [
         DOrderAmountEnter(
           caption: 'Amount'.tr(),
-          assetId:
-              pricedInLiquid ? selectedAccountAsset.assetId : liquidAssetId,
+          accountAsset:
+              pricedInLiquid ? selectedAccountAsset : liquidAccountAsset,
           controller: controller,
           autofocus: true,
           focusNode: focusNode,
@@ -472,14 +474,16 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
     final pricedInLiquid =
         ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    final liquidAccountAsset =
+        AccountAsset(selectedAccountAsset.account, liquidAssetId);
 
     return Column(
       children: [
         DOrderAmountEnter(
           caption:
               isSell ? 'Offer price per unit'.tr() : 'Bid price per unit'.tr(),
-          assetId:
-              pricedInLiquid ? liquidAssetId : selectedAccountAsset.assetId,
+          accountAsset:
+              pricedInLiquid ? liquidAccountAsset : selectedAccountAsset,
           controller: controller,
           isPriceField: true,
           focusNode: focusNode,

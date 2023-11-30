@@ -11,7 +11,7 @@ class EndpointListener extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (!FlavorConfig.enableLocalEndpoint) {
-      return Container();
+      return const SizedBox();
     }
 
     final endpointServer = ref.watch(endpointServerProvider);
@@ -27,6 +27,6 @@ class EndpointListener extends HookConsumerWidget {
       return;
     }, [endpointServer, enableEndpoint]);
 
-    return Container();
+    return const SizedBox();
   }
 }

@@ -28,20 +28,6 @@ final $typed_data.Uint8List accountStateDescriptor = $convert.base64Decode(
     'CgxBY2NvdW50U3RhdGUSDAoIRElTQUJMRUQQARIQCgxWRVJJRklDQVRJT04QAhIKCgZBQ1RJVk'
     'UQAw==');
 
-@$core.Deprecated('Use accountKeyDescriptor instead')
-const AccountKey$json = {
-  '1': 'AccountKey',
-  '2': [
-    {'1': 'account_key', '3': 1, '4': 2, '5': 9, '10': 'accountKey'},
-    {'1': 'name', '3': 2, '4': 2, '5': 9, '10': 'name'},
-  ],
-};
-
-/// Descriptor for `AccountKey`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List accountKeyDescriptor = $convert.base64Decode(
-    'CgpBY2NvdW50S2V5Eh8KC2FjY291bnRfa2V5GAEgAigJUgphY2NvdW50S2V5EhIKBG5hbWUYAi'
-    'ACKAlSBG5hbWU=');
-
 @$core.Deprecated('Use accountDetailsDescriptor instead')
 const AccountDetails$json = {
   '1': 'AccountDetails',
@@ -113,10 +99,33 @@ final $typed_data.Uint8List accountDetailsDescriptor = $convert.base64Decode(
     'cmVzaWRlbmN5X2FkZHJlc3MYDSACKAlSEHJlc2lkZW5jeUFkZHJlc3MSLQoScmVzaWRlbmN5X2'
     'FkZHJlc3MyGA4gAigJUhFyZXNpZGVuY3lBZGRyZXNzMkIJCgdkZXRhaWxz');
 
+@$core.Deprecated('Use assetDescriptor instead')
+const Asset$json = {
+  '1': 'Asset',
+  '2': [
+    {'1': 'asset_id', '3': 1, '4': 1, '5': 9, '10': 'assetId'},
+    {'1': 'name', '3': 2, '4': 2, '5': 9, '10': 'name'},
+    {'1': 'ticker', '3': 3, '4': 2, '5': 9, '10': 'ticker'},
+    {'1': 'precision', '3': 4, '4': 2, '5': 5, '10': 'precision'},
+    {'1': 'domain', '3': 5, '4': 2, '5': 9, '10': 'domain'},
+    {'1': 'icon_url', '3': 6, '4': 2, '5': 9, '10': 'iconUrl'},
+    {'1': 'online', '3': 7, '4': 2, '5': 1, '10': 'online'},
+    {'1': 'offline', '3': 8, '4': 2, '5': 1, '10': 'offline'},
+  ],
+};
+
+/// Descriptor for `Asset`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List assetDescriptor = $convert.base64Decode(
+    'CgVBc3NldBIZCghhc3NldF9pZBgBIAEoCVIHYXNzZXRJZBISCgRuYW1lGAIgAigJUgRuYW1lEh'
+    'YKBnRpY2tlchgDIAIoCVIGdGlja2VyEhwKCXByZWNpc2lvbhgEIAIoBVIJcHJlY2lzaW9uEhYK'
+    'BmRvbWFpbhgFIAIoCVIGZG9tYWluEhkKCGljb25fdXJsGAYgAigJUgdpY29uVXJsEhYKBm9ubG'
+    'luZRgHIAIoAVIGb25saW5lEhgKB29mZmxpbmUYCCACKAFSB29mZmxpbmU=');
+
 @$core.Deprecated('Use accountDescriptor instead')
 const Account$json = {
   '1': 'Account',
   '2': [
+    {'1': 'name', '3': 4, '4': 2, '5': 9, '10': 'name'},
     {'1': 'account_key', '3': 1, '4': 2, '5': 9, '10': 'accountKey'},
     {'1': 'details', '3': 2, '4': 2, '5': 11, '6': '.api.proto.AccountDetails', '10': 'details'},
     {'1': 'gaids', '3': 3, '4': 3, '5': 9, '10': 'gaids'},
@@ -125,27 +134,9 @@ const Account$json = {
 
 /// Descriptor for `Account`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List accountDescriptor = $convert.base64Decode(
-    'CgdBY2NvdW50Eh8KC2FjY291bnRfa2V5GAEgAigJUgphY2NvdW50S2V5EjMKB2RldGFpbHMYAi'
-    'ACKAsyGS5hcGkucHJvdG8uQWNjb3VudERldGFpbHNSB2RldGFpbHMSFAoFZ2FpZHMYAyADKAlS'
-    'BWdhaWRz');
-
-@$core.Deprecated('Use assetDescriptor instead')
-const Asset$json = {
-  '1': 'Asset',
-  '2': [
-    {'1': 'asset_id', '3': 1, '4': 2, '5': 9, '10': 'assetId'},
-    {'1': 'name', '3': 2, '4': 2, '5': 9, '10': 'name'},
-    {'1': 'ticker', '3': 3, '4': 2, '5': 9, '10': 'ticker'},
-    {'1': 'precision', '3': 4, '4': 2, '5': 5, '10': 'precision'},
-    {'1': 'domain', '3': 5, '4': 2, '5': 9, '10': 'domain'},
-  ],
-};
-
-/// Descriptor for `Asset`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List assetDescriptor = $convert.base64Decode(
-    'CgVBc3NldBIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBISCgRuYW1lGAIgAigJUgRuYW1lEh'
-    'YKBnRpY2tlchgDIAIoCVIGdGlja2VyEhwKCXByZWNpc2lvbhgEIAIoBVIJcHJlY2lzaW9uEhYK'
-    'BmRvbWFpbhgFIAIoCVIGZG9tYWlu');
+    'CgdBY2NvdW50EhIKBG5hbWUYBCACKAlSBG5hbWUSHwoLYWNjb3VudF9rZXkYASACKAlSCmFjY2'
+    '91bnRLZXkSMwoHZGV0YWlscxgCIAIoCzIZLmFwaS5wcm90by5BY2NvdW50RGV0YWlsc1IHZGV0'
+    'YWlscxIUCgVnYWlkcxgDIAMoCVIFZ2FpZHM=');
 
 @$core.Deprecated('Use balanceDescriptor instead')
 const Balance$json = {
@@ -228,15 +219,15 @@ final $typed_data.Uint8List ownTransactionDescriptor = $convert.base64Decode(
 const BalanceOwner$json = {
   '1': 'BalanceOwner',
   '2': [
-    {'1': 'account_key', '3': 1, '4': 2, '5': 9, '10': 'accountKey'},
+    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.api.proto.Account', '10': 'account'},
     {'1': 'amount', '3': 2, '4': 2, '5': 1, '10': 'amount'},
   ],
 };
 
 /// Descriptor for `BalanceOwner`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List balanceOwnerDescriptor = $convert.base64Decode(
-    'CgxCYWxhbmNlT3duZXISHwoLYWNjb3VudF9rZXkYASACKAlSCmFjY291bnRLZXkSFgoGYW1vdW'
-    '50GAIgAigBUgZhbW91bnQ=');
+    'CgxCYWxhbmNlT3duZXISLAoHYWNjb3VudBgBIAIoCzISLmFwaS5wcm90by5BY2NvdW50UgdhY2'
+    'NvdW50EhYKBmFtb3VudBgCIAIoAVIGYW1vdW50');
 
 @$core.Deprecated('Use serieDescriptor instead')
 const Serie$json = {
@@ -332,7 +323,6 @@ const Req_Resume$json = {
   '1': 'Resume',
   '2': [
     {'1': 'token', '3': 1, '4': 2, '5': 9, '10': 'token'},
-    {'1': 'account_key', '3': 2, '4': 2, '5': 9, '10': 'accountKey'},
   ],
 };
 
@@ -346,6 +336,7 @@ const Req_AddGaid$json = {
   '1': 'AddGaid',
   '2': [
     {'1': 'gaid', '3': 1, '4': 2, '5': 9, '10': 'gaid'},
+    {'1': 'account_key', '3': 2, '4': 2, '5': 9, '10': 'accountKey'},
   ],
 };
 
@@ -402,6 +393,7 @@ const Req_ListOwnTransactions$json = {
   '1': 'ListOwnTransactions',
   '2': [
     {'1': 'asset_id', '3': 1, '4': 2, '5': 9, '10': 'assetId'},
+    {'1': 'account_key', '3': 2, '4': 2, '5': 9, '10': 'accountKey'},
   ],
 };
 
@@ -448,16 +440,17 @@ final $typed_data.Uint8List reqDescriptor = $convert.base64Decode(
     'Cgd3ZWJzaXRlGAYgAigJUgd3ZWJzaXRlEh0KCnJlZ19udW1iZXIYByACKAlSCXJlZ051bWJlch'
     'IbCglyZWdfcHJvb2YYCCACKAxSCHJlZ1Byb29mGm4KDlJlZ2lzdGVySXNzdWVyEhQKBWVtYWls'
     'GAEgAigJUgVlbWFpbBISCgRuYW1lGAIgAigJUgRuYW1lEhgKB3dlYnNpdGUYAyACKAlSB3dlYn'
-    'NpdGUSGAoHbWVzc2FnZRgEIAIoCVIHbWVzc2FnZRo/CgZSZXN1bWUSFAoFdG9rZW4YASACKAlS'
-    'BXRva2VuEh8KC2FjY291bnRfa2V5GAIgAigJUgphY2NvdW50S2V5GggKBkxvZ291dBodCgdBZG'
-    'RHYWlkEhIKBGdhaWQYASACKAlSBGdhaWQaDAoKTG9hZEFzc2V0cxojCglCdXlTaGFyZXMSFgoG'
+    'NpdGUSGAoHbWVzc2FnZRgEIAIoCVIHbWVzc2FnZRoeCgZSZXN1bWUSFAoFdG9rZW4YASACKAlS'
+    'BXRva2VuGggKBkxvZ291dBo+CgdBZGRHYWlkEhIKBGdhaWQYASACKAlSBGdhaWQSHwoLYWNjb3'
+    'VudF9rZXkYAiACKAlSCmFjY291bnRLZXkaDAoKTG9hZEFzc2V0cxojCglCdXlTaGFyZXMSFgoG'
     'YW1vdW50GAEgAigBUgZhbW91bnQaDwoNTG9hZENvdW50cmllcxoKCghMb2FkUmVncxorCghMb2'
     'FkRmlsZRIfCgthY2NvdW50X2tleRgBIAIoCVIKYWNjb3VudEtleRpCCglVcGRhdGVSZWcSHwoL'
     'YWNjb3VudF9rZXkYASACKAlSCmFjY291bnRLZXkSFAoFdmFsaWQYAiACKAhSBXZhbGlkGjAKE0'
-    'xpc3RBbGxUcmFuc2FjdGlvbnMSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaMAoTTGlzdE93'
-    'blRyYW5zYWN0aW9ucxIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBosCg9MaXN0QWxsQmFsYW'
-    '5jZXMSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaKgoNTGlzdEFsbFNlcmllcxIZCghhc3Nl'
-    'dF9pZBgBIAIoCVIHYXNzZXRJZEIGCgRib2R5');
+    'xpc3RBbGxUcmFuc2FjdGlvbnMSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaUQoTTGlzdE93'
+    'blRyYW5zYWN0aW9ucxIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBIfCgthY2NvdW50X2tleR'
+    'gCIAIoCVIKYWNjb3VudEtleRosCg9MaXN0QWxsQmFsYW5jZXMSGQoIYXNzZXRfaWQYASACKAlS'
+    'B2Fzc2V0SWQaKgoNTGlzdEFsbFNlcmllcxIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZEIGCg'
+    'Rib2R5');
 
 @$core.Deprecated('Use respDescriptor instead')
 const Resp$json = {
@@ -503,8 +496,9 @@ const Resp_RegisterIssuer$json = {
 const Resp_Resume$json = {
   '1': 'Resume',
   '2': [
-    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.api.proto.Account', '10': 'account'},
-    {'1': 'account_keys', '3': 2, '4': 3, '5': 11, '6': '.api.proto.AccountKey', '10': 'accountKeys'},
+    {'1': 'accounts', '3': 1, '4': 3, '5': 11, '6': '.api.proto.Account', '10': 'accounts'},
+    {'1': 'managed_assets', '3': 2, '4': 3, '5': 11, '6': '.api.proto.Asset', '10': 'managedAssets'},
+    {'1': 'issuer', '3': 3, '4': 2, '5': 8, '10': 'issuer'},
   ],
 };
 
@@ -516,9 +510,6 @@ const Resp_Logout$json = {
 @$core.Deprecated('Use respDescriptor instead')
 const Resp_AddGaid$json = {
   '1': 'AddGaid',
-  '2': [
-    {'1': 'account', '3': 1, '4': 2, '5': 11, '6': '.api.proto.Account', '10': 'account'},
-  ],
 };
 
 @$core.Deprecated('Use respDescriptor instead')
@@ -575,6 +566,7 @@ const Resp_ListAllTransactions$json = {
   '1': 'ListAllTransactions',
   '2': [
     {'1': 'list', '3': 1, '4': 3, '5': 11, '6': '.api.proto.FullTransaction', '10': 'list'},
+    {'1': 'accounts', '3': 2, '4': 3, '5': 11, '6': '.api.proto.Account', '10': 'accounts'},
   ],
 };
 
@@ -624,22 +616,23 @@ final $typed_data.Uint8List respDescriptor = $convert.base64Decode(
     'dF9hbGxfYmFsYW5jZXMYHyABKAsyHy5hcGkucHJvdG8uUmVzcC5MaXN0QWxsQmFsYW5jZXNIAF'
     'IPbGlzdEFsbEJhbGFuY2VzEkcKD2xpc3RfYWxsX3NlcmllcxggIAEoCzIdLmFwaS5wcm90by5S'
     'ZXNwLkxpc3RBbGxTZXJpZXNIAFINbGlzdEFsbFNlcmllcxowCg9Mb2dpbk9yUmVnaXN0ZXISHQ'
-    'oKcmVxdWVzdF9pZBgBIAIoCVIJcmVxdWVzdElkGhAKDlJlZ2lzdGVySXNzdWVyGnAKBlJlc3Vt'
-    'ZRIsCgdhY2NvdW50GAEgAigLMhIuYXBpLnByb3RvLkFjY291bnRSB2FjY291bnQSOAoMYWNjb3'
-    'VudF9rZXlzGAIgAygLMhUuYXBpLnByb3RvLkFjY291bnRLZXlSC2FjY291bnRLZXlzGggKBkxv'
-    'Z291dBo3CgdBZGRHYWlkEiwKB2FjY291bnQYASACKAsyEi5hcGkucHJvdG8uQWNjb3VudFIHYW'
-    'Njb3VudBo2CgpMb2FkQXNzZXRzEigKBmFzc2V0cxgBIAMoCzIQLmFwaS5wcm90by5Bc3NldFIG'
-    'YXNzZXRzGnsKCUJ1eVNoYXJlcxIZCghvcmRlcl9pZBgBIAIoCVIHb3JkZXJJZBIWCgZhbW91bn'
-    'QYAiACKAFSBmFtb3VudBIUCgVwcmljZRgDIAIoAVIFcHJpY2USJQoOYml0Y29pbl9hbW91bnQY'
-    'BCACKAFSDWJpdGNvaW5BbW91bnQaIwoNTG9hZENvdW50cmllcxISCgRsaXN0GAEgAygJUgRsaX'
-    'N0GjIKCExvYWRSZWdzEiYKBGxpc3QYASADKAsyEi5hcGkucHJvdG8uQWNjb3VudFIEbGlzdBo7'
-    'CghMb2FkRmlsZRIbCgltaW1lX3R5cGUYASACKAlSCG1pbWVUeXBlEhIKBGRhdGEYAiACKAxSBG'
-    'RhdGEaCwoJVXBkYXRlUmVnGkUKE0xpc3RBbGxUcmFuc2FjdGlvbnMSLgoEbGlzdBgBIAMoCzIa'
-    'LmFwaS5wcm90by5GdWxsVHJhbnNhY3Rpb25SBGxpc3QaRAoTTGlzdE93blRyYW5zYWN0aW9ucx'
-    'ItCgRsaXN0GAEgAygLMhkuYXBpLnByb3RvLk93blRyYW5zYWN0aW9uUgRsaXN0Gj4KD0xpc3RB'
-    'bGxCYWxhbmNlcxIrCgRsaXN0GAEgAygLMhcuYXBpLnByb3RvLkJhbGFuY2VPd25lclIEbGlzdB'
-    'pMCg1MaXN0QWxsU2VyaWVzEikKBGxpc3QYASADKAsyFS5hcGkucHJvdG8uU2VyaWVPd25lclIE'
-    'bGlzdBIQCgNjc3YYAiACKAlSA2NzdkIGCgRib2R5');
+    'oKcmVxdWVzdF9pZBgBIAIoCVIJcmVxdWVzdElkGhAKDlJlZ2lzdGVySXNzdWVyGokBCgZSZXN1'
+    'bWUSLgoIYWNjb3VudHMYASADKAsyEi5hcGkucHJvdG8uQWNjb3VudFIIYWNjb3VudHMSNwoObW'
+    'FuYWdlZF9hc3NldHMYAiADKAsyEC5hcGkucHJvdG8uQXNzZXRSDW1hbmFnZWRBc3NldHMSFgoG'
+    'aXNzdWVyGAMgAigIUgZpc3N1ZXIaCAoGTG9nb3V0GgkKB0FkZEdhaWQaNgoKTG9hZEFzc2V0cx'
+    'IoCgZhc3NldHMYASADKAsyEC5hcGkucHJvdG8uQXNzZXRSBmFzc2V0cxp7CglCdXlTaGFyZXMS'
+    'GQoIb3JkZXJfaWQYASACKAlSB29yZGVySWQSFgoGYW1vdW50GAIgAigBUgZhbW91bnQSFAoFcH'
+    'JpY2UYAyACKAFSBXByaWNlEiUKDmJpdGNvaW5fYW1vdW50GAQgAigBUg1iaXRjb2luQW1vdW50'
+    'GiMKDUxvYWRDb3VudHJpZXMSEgoEbGlzdBgBIAMoCVIEbGlzdBoyCghMb2FkUmVncxImCgRsaX'
+    'N0GAEgAygLMhIuYXBpLnByb3RvLkFjY291bnRSBGxpc3QaOwoITG9hZEZpbGUSGwoJbWltZV90'
+    'eXBlGAEgAigJUghtaW1lVHlwZRISCgRkYXRhGAIgAigMUgRkYXRhGgsKCVVwZGF0ZVJlZxp1Ch'
+    'NMaXN0QWxsVHJhbnNhY3Rpb25zEi4KBGxpc3QYASADKAsyGi5hcGkucHJvdG8uRnVsbFRyYW5z'
+    'YWN0aW9uUgRsaXN0Ei4KCGFjY291bnRzGAIgAygLMhIuYXBpLnByb3RvLkFjY291bnRSCGFjY2'
+    '91bnRzGkQKE0xpc3RPd25UcmFuc2FjdGlvbnMSLQoEbGlzdBgBIAMoCzIZLmFwaS5wcm90by5P'
+    'd25UcmFuc2FjdGlvblIEbGlzdBo+Cg9MaXN0QWxsQmFsYW5jZXMSKwoEbGlzdBgBIAMoCzIXLm'
+    'FwaS5wcm90by5CYWxhbmNlT3duZXJSBGxpc3QaTAoNTGlzdEFsbFNlcmllcxIpCgRsaXN0GAEg'
+    'AygLMhUuYXBpLnByb3RvLlNlcmllT3duZXJSBGxpc3QSEAoDY3N2GAIgAigJUgNjc3ZCBgoEYm'
+    '9keQ==');
 
 @$core.Deprecated('Use notifDescriptor instead')
 const Notif$json = {
@@ -653,10 +646,9 @@ const Notif$json = {
     {'1': 'buy_shares', '3': 6, '4': 1, '5': 11, '6': '.api.proto.Notif.BuyShares', '9': 0, '10': 'buyShares'},
     {'1': 'update_prices', '3': 9, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdatePrices', '9': 0, '10': 'updatePrices'},
     {'1': 'update_market_data', '3': 10, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdateMarketData', '9': 0, '10': 'updateMarketData'},
-    {'1': 'issued_amounts', '3': 11, '4': 1, '5': 11, '6': '.api.proto.Notif.IssuedAmounts', '9': 0, '10': 'issuedAmounts'},
     {'1': 'update_balances', '3': 12, '4': 1, '5': 11, '6': '.api.proto.Notif.UpdateBalances', '9': 0, '10': 'updateBalances'},
   ],
-  '3': [Notif_LoginOrRegisterFailed$json, Notif_LoginOrRegisterSucceed$json, Notif_RegisterFailed$json, Notif_RegisterSucceed$json, Notif_FreeShares$json, Notif_SoldShares$json, Notif_UserShares$json, Notif_BuyShares$json, Notif_UpdatePrices$json, Notif_UpdateMarketData$json, Notif_IssuedAmounts$json, Notif_UpdateBalances$json],
+  '3': [Notif_LoginOrRegisterFailed$json, Notif_LoginOrRegisterSucceed$json, Notif_FreeShares$json, Notif_SoldShares$json, Notif_UserShares$json, Notif_BuyShares$json, Notif_UpdatePrices$json, Notif_UpdateMarketData$json, Notif_UpdateBalances$json],
   '8': [
     {'1': 'body'},
   ],
@@ -675,24 +667,6 @@ const Notif_LoginOrRegisterSucceed$json = {
   '1': 'LoginOrRegisterSucceed',
   '2': [
     {'1': 'token', '3': 1, '4': 2, '5': 9, '10': 'token'},
-    {'1': 'account_key', '3': 2, '4': 2, '5': 9, '10': 'accountKey'},
-  ],
-};
-
-@$core.Deprecated('Use notifDescriptor instead')
-const Notif_RegisterFailed$json = {
-  '1': 'RegisterFailed',
-  '2': [
-    {'1': 'text', '3': 1, '4': 2, '5': 9, '10': 'text'},
-  ],
-};
-
-@$core.Deprecated('Use notifDescriptor instead')
-const Notif_RegisterSucceed$json = {
-  '1': 'RegisterSucceed',
-  '2': [
-    {'1': 'token', '3': 1, '4': 2, '5': 9, '10': 'token'},
-    {'1': 'account_key', '3': 2, '4': 2, '5': 9, '10': 'accountKey'},
   ],
 };
 
@@ -762,25 +736,6 @@ const Notif_UpdateMarketData_Data$json = {
 };
 
 @$core.Deprecated('Use notifDescriptor instead')
-const Notif_IssuedAmounts$json = {
-  '1': 'IssuedAmounts',
-  '2': [
-    {'1': 'assets', '3': 1, '4': 3, '5': 11, '6': '.api.proto.Notif.IssuedAmounts.Asset', '10': 'assets'},
-  ],
-  '3': [Notif_IssuedAmounts_Asset$json],
-};
-
-@$core.Deprecated('Use notifDescriptor instead')
-const Notif_IssuedAmounts_Asset$json = {
-  '1': 'Asset',
-  '2': [
-    {'1': 'asset_id', '3': 1, '4': 2, '5': 9, '10': 'assetId'},
-    {'1': 'online', '3': 2, '4': 2, '5': 1, '10': 'online'},
-    {'1': 'offline', '3': 3, '4': 2, '5': 1, '10': 'offline'},
-  ],
-};
-
-@$core.Deprecated('Use notifDescriptor instead')
 const Notif_UpdateBalances$json = {
   '1': 'UpdateBalances',
   '2': [
@@ -802,30 +757,23 @@ final $typed_data.Uint8List notifDescriptor = $convert.base64Decode(
     'YXJlc0gAUglidXlTaGFyZXMSRAoNdXBkYXRlX3ByaWNlcxgJIAEoCzIdLmFwaS5wcm90by5Ob3'
     'RpZi5VcGRhdGVQcmljZXNIAFIMdXBkYXRlUHJpY2VzElEKEnVwZGF0ZV9tYXJrZXRfZGF0YRgK'
     'IAEoCzIhLmFwaS5wcm90by5Ob3RpZi5VcGRhdGVNYXJrZXREYXRhSABSEHVwZGF0ZU1hcmtldE'
-    'RhdGESRwoOaXNzdWVkX2Ftb3VudHMYCyABKAsyHi5hcGkucHJvdG8uTm90aWYuSXNzdWVkQW1v'
-    'dW50c0gAUg1pc3N1ZWRBbW91bnRzEkoKD3VwZGF0ZV9iYWxhbmNlcxgMIAEoCzIfLmFwaS5wcm'
-    '90by5Ob3RpZi5VcGRhdGVCYWxhbmNlc0gAUg51cGRhdGVCYWxhbmNlcxorChVMb2dpbk9yUmVn'
-    'aXN0ZXJGYWlsZWQSEgoEdGV4dBgBIAIoCVIEdGV4dBpPChZMb2dpbk9yUmVnaXN0ZXJTdWNjZW'
-    'VkEhQKBXRva2VuGAEgAigJUgV0b2tlbhIfCgthY2NvdW50X2tleRgCIAIoCVIKYWNjb3VudEtl'
-    'eRokCg5SZWdpc3RlckZhaWxlZBISCgR0ZXh0GAEgAigJUgR0ZXh0GkgKD1JlZ2lzdGVyU3VjY2'
-    'VlZBIUCgV0b2tlbhgBIAIoCVIFdG9rZW4SHwoLYWNjb3VudF9rZXkYAiACKAlSCmFjY291bnRL'
-    'ZXkabAoKRnJlZVNoYXJlcxIyCgtmcmVlX3NoYXJlcxgBIAIoCzIRLmFwaS5wcm90by5TaGFyZX'
-    'NSCmZyZWVTaGFyZXMSEgoEbmFtZRgCIAIoCVIEbmFtZRIWCgZhbW91bnQYAyACKANSBmFtb3Vu'
-    'dBpACgpTb2xkU2hhcmVzEjIKC3NvbGRfc2hhcmVzGAEgAigLMhEuYXBpLnByb3RvLlNoYXJlc1'
-    'IKc29sZFNoYXJlcxpECgpVc2VyU2hhcmVzEjYKDWJvdWdodF9zaGFyZXMYASACKAsyES5hcGku'
-    'cHJvdG8uU2hhcmVzUgxib3VnaHRTaGFyZXMajwEKCUJ1eVNoYXJlcxIZCghvcmRlcl9pZBgBIA'
-    'IoCVIHb3JkZXJJZBIWCgZhbW91bnQYAiACKAFSBmFtb3VudBIUCgVwcmljZRgDIAIoAVIFcHJp'
-    'Y2USJQoOYml0Y29pbl9hbW91bnQYBCACKAFSDWJpdGNvaW5BbW91bnQSEgoEdHhpZBgFIAEoCV'
-    'IEdHhpZBo6CgxVcGRhdGVQcmljZXMSKgoRYml0Y29pbl91c2RfcHJpY2UYASABKAFSD2JpdGNv'
-    'aW5Vc2RQcmljZRqvAQoQVXBkYXRlTWFya2V0RGF0YRI6CgRkYXRhGAEgAygLMiYuYXBpLnByb3'
-    'RvLk5vdGlmLlVwZGF0ZU1hcmtldERhdGEuRGF0YVIEZGF0YRpfCgREYXRhEhkKCGFzc2V0X2lk'
-    'GAEgAigJUgdhc3NldElkEh0KCmxhc3RfcHJpY2UYAiABKAFSCWxhc3RQcmljZRIdCgp2b2x1bW'
-    'VfMzBkGAMgASgBUgl2b2x1bWUzMGQaowEKDUlzc3VlZEFtb3VudHMSPAoGYXNzZXRzGAEgAygL'
-    'MiQuYXBpLnByb3RvLk5vdGlmLklzc3VlZEFtb3VudHMuQXNzZXRSBmFzc2V0cxpUCgVBc3NldB'
-    'IZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBIWCgZvbmxpbmUYAiACKAFSBm9ubGluZRIYCgdv'
-    'ZmZsaW5lGAMgAigBUgdvZmZsaW5lGmEKDlVwZGF0ZUJhbGFuY2VzEh8KC2FjY291bnRfa2V5GA'
-    'EgAigJUgphY2NvdW50S2V5Ei4KCGJhbGFuY2VzGAIgAygLMhIuYXBpLnByb3RvLkJhbGFuY2VS'
-    'CGJhbGFuY2VzQgYKBGJvZHk=');
+    'RhdGESSgoPdXBkYXRlX2JhbGFuY2VzGAwgASgLMh8uYXBpLnByb3RvLk5vdGlmLlVwZGF0ZUJh'
+    'bGFuY2VzSABSDnVwZGF0ZUJhbGFuY2VzGisKFUxvZ2luT3JSZWdpc3RlckZhaWxlZBISCgR0ZX'
+    'h0GAEgAigJUgR0ZXh0Gi4KFkxvZ2luT3JSZWdpc3RlclN1Y2NlZWQSFAoFdG9rZW4YASACKAlS'
+    'BXRva2VuGmwKCkZyZWVTaGFyZXMSMgoLZnJlZV9zaGFyZXMYASACKAsyES5hcGkucHJvdG8uU2'
+    'hhcmVzUgpmcmVlU2hhcmVzEhIKBG5hbWUYAiACKAlSBG5hbWUSFgoGYW1vdW50GAMgAigDUgZh'
+    'bW91bnQaQAoKU29sZFNoYXJlcxIyCgtzb2xkX3NoYXJlcxgBIAIoCzIRLmFwaS5wcm90by5TaG'
+    'FyZXNSCnNvbGRTaGFyZXMaRAoKVXNlclNoYXJlcxI2Cg1ib3VnaHRfc2hhcmVzGAEgAigLMhEu'
+    'YXBpLnByb3RvLlNoYXJlc1IMYm91Z2h0U2hhcmVzGo8BCglCdXlTaGFyZXMSGQoIb3JkZXJfaW'
+    'QYASACKAlSB29yZGVySWQSFgoGYW1vdW50GAIgAigBUgZhbW91bnQSFAoFcHJpY2UYAyACKAFS'
+    'BXByaWNlEiUKDmJpdGNvaW5fYW1vdW50GAQgAigBUg1iaXRjb2luQW1vdW50EhIKBHR4aWQYBS'
+    'ABKAlSBHR4aWQaOgoMVXBkYXRlUHJpY2VzEioKEWJpdGNvaW5fdXNkX3ByaWNlGAEgASgBUg9i'
+    'aXRjb2luVXNkUHJpY2UarwEKEFVwZGF0ZU1hcmtldERhdGESOgoEZGF0YRgBIAMoCzImLmFwaS'
+    '5wcm90by5Ob3RpZi5VcGRhdGVNYXJrZXREYXRhLkRhdGFSBGRhdGEaXwoERGF0YRIZCghhc3Nl'
+    'dF9pZBgBIAIoCVIHYXNzZXRJZBIdCgpsYXN0X3ByaWNlGAIgASgBUglsYXN0UHJpY2USHQoKdm'
+    '9sdW1lXzMwZBgDIAEoAVIJdm9sdW1lMzBkGmEKDlVwZGF0ZUJhbGFuY2VzEh8KC2FjY291bnRf'
+    'a2V5GAEgAigJUgphY2NvdW50S2V5Ei4KCGJhbGFuY2VzGAIgAygLMhIuYXBpLnByb3RvLkJhbG'
+    'FuY2VSCGJhbGFuY2VzQgYKBGJvZHk=');
 
 @$core.Deprecated('Use errDescriptor instead')
 const Err$json = {

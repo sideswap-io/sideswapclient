@@ -172,7 +172,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                         );
                       }
 
-                      return Container();
+                      return const SizedBox();
                     }),
                   ],
                 ),
@@ -202,7 +202,7 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       );
                     }
 
-                    return Container();
+                    return const SizedBox();
                   },
                 );
               }).toList();

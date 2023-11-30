@@ -120,52 +120,5 @@ class BuySellButton extends ConsumerWidget {
             : null,
       ),
     );
-
-    // final swapMarketCurrentProduct =
-    //     ref.watch(swapMarketCurrentProductProvider);
-    // final wallet = ref.watch(walletProvider);
-    // final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    // final bitcoinAccount = AccountAsset(AccountType.reg, liquidAssetId);
-    // final asset = ref.watch(assetsStateProvider
-    //     .select((value) => value[swapMarketCurrentProduct.assetId]));
-    // final assetAccount = AccountAsset(
-    //     asset?.ampMarket == true ? AccountType.amp : AccountType.reg,
-    //     asset?.assetId ?? '');
-    // final sendBitcoin = isSell == asset?.swapMarket;
-    // final deliverAsset = sendBitcoin ? bitcoinAccount : assetAccount;
-    // final receiveAsset = sendBitcoin ? assetAccount : bitcoinAccount;
-    // final deliverBalance =
-    //     ref.watch(balancesProvider).balances[deliverAsset] ?? 0;
-    // final isTokenMarket =
-    //     !(asset?.ampMarket == true) && !(asset?.swapMarket == true);
-    // final enabled = deliverBalance > 0 && (!isTokenMarket || isSell);
-    // return Expanded(
-    //   child: CustomBigButton(
-    //     height: 40,
-    //     text: isSell ? 'SELL'.tr() : 'BUY'.tr(),
-    //     backgroundColor:
-    //         enabled ? (isSell ? sellColor : buyColor) : const Color(0xFF0E4D72),
-    //     onPressed: enabled
-    //         ? () {
-    //             // TODO (malcolmpl): check if sides are properly set
-    //             ref
-    //                 .read(makeOrderSideStateProvider.notifier)
-    //                 .setSide(isSell ? MakeOrderSide.sell : MakeOrderSide.buy);
-    //             ref
-    //                 .read(marketSelectedAssetIdStateProvider.notifier)
-    //                 .setSelectedAssetId(isSell
-    //                     ? deliverAsset.assetId ?? ''
-    //                     : receiveAsset.assetId ?? '');
-    //             // ref
-    //             //     .read(requestOrderDeliverAccountAssetProvider.notifier)
-    //             //     .setDeliverAccountAsset(deliverAsset);
-    //             // ref
-    //             //     .read(requestOrderReceiveAccountAssetProvider.notifier)
-    //             //     .setReceiveAccountAsset(receiveAsset);
-    //             wallet.setCreateOrderEntry();
-    //           }
-    //         : null,
-    //   ),
-    // );
   }
 }

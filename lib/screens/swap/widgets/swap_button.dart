@@ -42,7 +42,6 @@ class SwapButton extends StatelessWidget {
               text,
               maxLines: 1,
               softWrap: false,
-              overflow: TextOverflow.fade,
               style: textStyle ??
                   TextStyle(
                     fontSize: 13,

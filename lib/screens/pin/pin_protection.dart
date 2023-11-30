@@ -34,9 +34,11 @@ class PinProtection extends StatelessWidget {
           Navigator.of(context).pop(false);
         },
       ),
-      onWillPop: () async {
-        Navigator.of(context).pop(false);
-        return false;
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          Navigator.of(context).pop(false);
+        }
       },
       body: SafeArea(
         child: LayoutBuilder(

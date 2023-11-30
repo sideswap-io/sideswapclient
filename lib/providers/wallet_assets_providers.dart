@@ -71,7 +71,7 @@ class AmpAssetsNotifier extends AutoDisposeNotifier<List<String>> {
   List<String> build() {
     ref.keepAlive();
 
-    final ampAccounts = ref.watch(ampAccountAssetsProvider);
+    final ampAccounts = ref.watch(ampVisibleAccountAssetsProvider);
     return ampAccounts
         .where((e) => e.account.isAmp && e.assetId != null)
         .map((e) => e.assetId!)
@@ -161,7 +161,7 @@ class AssetUtils {
     return !(assets[assetId]?.swapMarket ?? false);
   }
 
-  Asset? liquidAsset() {
+  Asset? regularLiquidAsset() {
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
 
     return assets[liquidAssetId];
@@ -210,7 +210,8 @@ CachedImageBase64Manager cachedImageManager(CachedImageManagerRef ref) {
 @Riverpod(keepAlive: true)
 FutureOr<bool> clearImageCacheFuture(ClearImageCacheFutureRef ref) async {
   final cacheManager = CachedImageBase64Manager.instance();
-  logger.d('Clear image cache');
+  logger.d('Clearing image cache...');
+
   await cacheManager.clearCache();
 
   return true;
@@ -266,9 +267,11 @@ class AssetImage {
   }) {
     if (assetId == null || assetId.isEmpty) {
       logger.w('Asset icon data is empty! Using default icon');
-      return Icon(
-        Icons.help,
-        size: width,
+      return FittedBox(
+        child: Icon(
+          Icons.help,
+          size: width,
+        ),
       );
     }
 
@@ -276,9 +279,11 @@ class AssetImage {
 
     if (data.isEmpty) {
       logger.w('Asset icon data is empty! Using default icon');
-      return Icon(
-        Icons.help,
-        size: width,
+      return FittedBox(
+        child: Icon(
+          Icons.help,
+          size: width,
+        ),
       );
     }
 
@@ -310,9 +315,11 @@ class AssetImage {
     return CachedMemoryImage(
       uniqueKey: generateImageHash(assetId),
       base64: assetIcon,
-      errorWidget: Icon(
-        Icons.help,
-        size: width,
+      errorWidget: FittedBox(
+        child: Icon(
+          Icons.help,
+          size: width,
+        ),
       ),
       width: width,
       height: height,
@@ -329,9 +336,11 @@ class AssetImage {
   }) {
     if (assetSvg.isEmpty) {
       logger.w('Asset is empty! Using default icon');
-      return Icon(
-        Icons.help,
-        size: width,
+      return FittedBox(
+        child: Icon(
+          Icons.help,
+          size: width,
+        ),
       );
     }
 
@@ -351,18 +360,22 @@ class AssetImage {
   }) {
     if (assetId == null || assetId.isEmpty) {
       logger.w('Asset icon data is empty! Using default icon');
-      return Icon(
-        Icons.help,
-        size: width,
+      return FittedBox(
+        child: Icon(
+          Icons.help_outline,
+          size: width,
+        ),
       );
     }
 
     final assetIcon = assets[assetId]?.icon;
 
     if (assetIcon == null) {
-      return Icon(
-        Icons.help,
-        size: width,
+      return FittedBox(
+        child: Icon(
+          Icons.help,
+          size: width,
+        ),
       );
     }
 
@@ -515,7 +528,7 @@ class SideswapCachedMemoryImage extends ConsumerWidget {
           width: width,
           height: height,
         ),
-      _ => Icon(Icons.help, size: width),
+      _ => FittedBox(child: Icon(Icons.help, size: width)),
     };
   }
 }

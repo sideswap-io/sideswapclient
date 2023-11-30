@@ -7,7 +7,7 @@ part of 'licenses_provider.dart';
 // **************************************************************************
 
 String _$licensesLoaderFutureHash() =>
-    r'06e3a013ebbde6363674f498cedac88e12c6aca7';
+    r'4c18868b2cee38ac984faefacfb0f63c48b2c59a';
 
 /// See also [licensesLoaderFuture].
 @ProviderFor(licensesLoaderFuture)

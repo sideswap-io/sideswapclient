@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/widgets/d_transparent_button.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_amount.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_confs.dart';
@@ -13,6 +12,7 @@ import 'package:sideswap/desktop/widgets/d_tx_history_link.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_wallet.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -195,8 +195,9 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                 ),
                 onPressed: () {
                   final allPegsById = ref.read(allPegsByIdProvider);
-                  desktopShowTx(context, tx.id,
-                      isPeg: allPegsById.containsKey(tx.id));
+                  ref
+                      .read(desktopDialogProvider)
+                      .showTx(tx.id, isPeg: allPegsById.containsKey(tx.id));
                 },
               ),
             ),

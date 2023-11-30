@@ -58,7 +58,7 @@ class FeeRatesDropdown extends StatelessWidget {
                       ),
                     );
                   }
-                  return Container();
+                  return const SizedBox();
                 }),
               ),
               const Icon(

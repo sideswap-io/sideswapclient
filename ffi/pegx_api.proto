@@ -8,11 +8,6 @@ enum AccountState {
   ACTIVE = 3;
 }
 
-message AccountKey {
-  required string account_key = 1;
-  required string name = 2;
-}
-
 message AccountDetails {
   message OrgDetails {
     required string name = 1;
@@ -50,18 +45,22 @@ message AccountDetails {
   required AccountState account_state = 3;
 }
 
-message Account {
-  required string account_key = 1;
-  required AccountDetails details = 2;
-  repeated string gaids = 3;
-}
-
 message Asset {
-  required string asset_id = 1;
+  optional string asset_id = 1;
   required string name = 2;
   required string ticker = 3;
   required int32 precision = 4;
   required string domain = 5;
+  required string icon_url = 6;
+  required double online = 7;
+  required double offline = 8;
+}
+
+message Account {
+  required string name = 4;
+  required string account_key = 1;
+  required AccountDetails details = 2;
+  repeated string gaids = 3;
 }
 
 message Balance {
@@ -96,7 +95,7 @@ message OwnTransaction {
 }
 
 message BalanceOwner {
-  required string account_key = 1;
+  required Account account = 1;
   required double amount = 2;
 }
 
@@ -135,7 +134,6 @@ message Req {
 
   message Resume {
     required string token = 1;
-    required string account_key = 2;
   }
 
   message Logout {
@@ -143,6 +141,7 @@ message Req {
 
   message AddGaid {
     required string gaid = 1;
+    required string account_key = 2;
   }
 
   message LoadAssets {
@@ -173,6 +172,7 @@ message Req {
 
   message ListOwnTransactions {
     required string asset_id = 1;
+    required string account_key = 2;
   }
 
   message ListAllBalances {
@@ -213,15 +213,15 @@ message Resp {
   }
 
   message Resume {
-    required Account account = 1;
-    repeated AccountKey account_keys = 2;
+    repeated Account accounts = 1;
+    repeated Asset managed_assets = 2;
+    required bool issuer = 3;
   }
 
   message Logout {
   }
 
   message AddGaid {
-    required Account account = 1;
   }
 
   message LoadAssets {
@@ -253,6 +253,7 @@ message Resp {
 
   message ListAllTransactions {
     repeated FullTransaction list = 1;
+    repeated Account accounts = 2;
   }
 
   message ListOwnTransactions {
@@ -296,16 +297,6 @@ message Notif {
 
   message LoginOrRegisterSucceed {
     required string token = 1;
-    required string account_key = 2;
-  }
-
-  message RegisterFailed {
-    required string text = 1;
-  }
-
-  message RegisterSucceed {
-    required string token = 1;
-    required string account_key = 2;
   }
 
   message FreeShares {
@@ -344,16 +335,6 @@ message Notif {
     repeated Data data = 1;
   }
 
-  message IssuedAmounts {
-    message Asset {
-      required string asset_id = 1;
-      required double online = 2;
-      required double offline = 3;
-    }
-
-    repeated Asset assets = 1;
-  }
-
   message UpdateBalances {
     required string account_key = 1;
     repeated Balance balances = 2;
@@ -368,7 +349,6 @@ message Notif {
     BuyShares buy_shares = 6;
     UpdatePrices update_prices = 9;
     UpdateMarketData update_market_data = 10;
-    IssuedAmounts issued_amounts = 11;
     UpdateBalances update_balances = 12;
   }
 }

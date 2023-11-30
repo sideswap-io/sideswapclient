@@ -11,6 +11,7 @@ import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
@@ -152,7 +153,7 @@ class AmpRegister extends HookConsumerWidget {
                                   builder: (context, ref, child) {
                                     final pegxGaidState =
                                         ref.watch(pegxGaidNotifierProvider);
-                                    final env = ref.watch(configProvider).env;
+                                    final env = ref.watch(envProvider);
 
                                     return AmpServiceRegisterBox(
                                       width: 170,

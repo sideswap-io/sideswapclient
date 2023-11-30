@@ -306,6 +306,17 @@ class ShareCopyScanTextFormFieldState
                             widget.onChanged!(clipboardText);
                           }
                         },
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: const BorderSide(
+                              width: 1.0,
+                              style: BorderStyle.solid,
+                              color: SideSwapColors.chathamsBlue,
+                            ),
+                          ),
+                        ),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Row(

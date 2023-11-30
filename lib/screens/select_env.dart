@@ -1,10 +1,14 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/custom_scrollable_container.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/providers/env_provider.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
+import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class SelectEnv extends HookConsumerWidget {
@@ -12,8 +16,6 @@ class SelectEnv extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedEnv = useState(0);
-
     return SideSwapScaffold(
       body: SafeArea(
         child: CustomScrollableContainer(
@@ -39,35 +41,64 @@ class SelectEnv extends HookConsumerWidget {
                   const SizedBox(height: 20),
                   Column(
                     children: envValues()
-                        .map((e) => RadioListTile<int>(
-                              title: Text(envName(e)),
-                              value: e,
-                              groupValue: selectedEnv.value,
-                              onChanged: (e) {
-                                if (e == null) {
-                                  return;
-                                }
+                        .map((e) => Consumer(builder: (context, ref, _) {
+                              final selectedEnv =
+                                  ref.watch(selectedEnvProvider);
 
-                                selectedEnv.value = e;
-                              },
-                            ))
+                              return RadioListTile<int>(
+                                title: Text(envName(e)),
+                                value: e,
+                                groupValue: selectedEnv,
+                                onChanged: (e) async {
+                                  if (e == null) {
+                                    return;
+                                  }
+                                  await ref
+                                      .read(selectedEnvProvider.notifier)
+                                      .setSelectedEnv(e);
+                                },
+                              );
+                            }))
                         .toList(),
                   ),
-                  OutlinedButton(
-                    onPressed: () async => await ref
-                        .read(walletProvider)
-                        .setEnv(selectedEnv.value),
-                    child: SizedBox(
-                      width: 100,
-                      height: 40,
-                      child: Center(
-                          child: const Text(
-                        'Switch',
-                        style: TextStyle(
-                          color: Colors.white,
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final env = ref.watch(envProvider);
+                      final selectedEnv = ref.watch(selectedEnvProvider);
+                      final buttonText = env == selectedEnv
+                          ? 'CLOSE'.tr()
+                          : 'SWITCH AND EXIT'.tr();
+
+                      return OutlinedButton(
+                        onPressed: () async {
+                          final selectedEnv = ref.read(selectedEnvProvider);
+                          await ref
+                              .read(envProvider.notifier)
+                              .setEnv(selectedEnv);
+                          // and also reset network settings model
+                          ref
+                              .read(networkSettingsProvider.notifier)
+                              .setModel(const NetworkSettingsModelEmpty());
+                          await ref
+                              .read(networkSettingsProvider.notifier)
+                              .save();
+
+                          exit(0);
+                        },
+                        child: SizedBox(
+                          width: 140,
+                          height: 40,
+                          child: Center(
+                            child: Text(
+                              buttonText,
+                              style: const TextStyle(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
                         ),
-                      ).tr()),
-                    ),
+                      );
+                    },
                   ),
                 ],
               ),

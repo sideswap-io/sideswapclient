@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
-import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
 
@@ -18,7 +17,6 @@ import 'package:rxdart/subjects.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/connection_models.dart';
@@ -28,6 +26,8 @@ import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/market_data_provider.dart';
@@ -35,6 +35,7 @@ import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_access_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
+import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
@@ -42,6 +43,7 @@ import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_notifications/sideswap_notifications.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -187,12 +189,8 @@ class WalletChangeNotifier with ChangeNotifier {
 
   final disabledAccounts = <AccountAsset>{};
 
-  late GlobalKey<NavigatorState> navigatorKey;
-
   ServerStatus? _serverStatus;
   ServerStatus? get serverStatus => _serverStatus;
-
-  final recvAddresses = <AccountType, String>{};
 
   Map<int, List<String>> backupCheckAllWords = {};
   Map<int, int> backupCheckSelectedWords = {};
@@ -271,7 +269,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
     _receivePort = ReceivePort();
 
-    final env = ref.read(configProvider).env;
+    final env = ref.read(envProvider);
 
     final workDir = await getApplicationSupportDirectory();
     final workPath = workDir.absolute.path.toNativeUtf8();
@@ -442,14 +440,17 @@ class WalletChangeNotifier with ChangeNotifier {
               .read(pageStatusStateProvider.notifier)
               .setStatus(Status.swapWaitPegTx);
         } else {
-          desktopWaitPegin(navigatorKey.currentContext!);
+          ref.read(desktopDialogProvider).waitPegin();
         }
         break;
 
       case From_Msg.recvAddress:
         final accountType = getAccountType(from.recvAddress.account);
-        recvAddresses[accountType] = from.recvAddress.addr.addr;
-        notifyListeners();
+        final receiveAddress = ReceiveAddress(
+            accountType: accountType, recvAddress: from.recvAddress.addr.addr);
+        ref
+            .read(currentReceiveAddressProvider.notifier)
+            .setRecvAddress(receiveAddress);
         break;
 
       case From_Msg.createTxResult:
@@ -494,8 +495,9 @@ class WalletChangeNotifier with ChangeNotifier {
               showTxDetails(item);
             } else {
               final allPegsById = ref.read(allPegsByIdProvider);
-              desktopShowTx(navigatorKey.currentContext!, item.id,
-                  isPeg: allPegsById.containsKey(item.id));
+              ref
+                  .read(desktopDialogProvider)
+                  .showTx(item.id, isPeg: allPegsById.containsKey(item.id));
             }
             break;
           case From_SendResult_Result.notSet:
@@ -516,7 +518,7 @@ class WalletChangeNotifier with ChangeNotifier {
               from.blindedValues.txid,
               true,
               blindedValues: from.blindedValues.blindedValues,
-              testnet: isTestnet(),
+              testnet: ref.read(envProvider.notifier).isTestnet(),
             );
             explorerUrlSubject.add(url);
             break;
@@ -724,7 +726,7 @@ class WalletChangeNotifier with ChangeNotifier {
           case From_SubmitResult_Result.error:
           case From_SubmitResult_Result.unregisteredGaid:
             if (FlavorConfig.isDesktop) {
-              desktopClosePopups(navigatorKey.currentContext!);
+              ref.read(desktopDialogProvider).closePopups();
             }
             if (from.submitResult.whichResult() ==
                 From_SubmitResult_Result.error) {
@@ -1021,7 +1023,7 @@ class WalletChangeNotifier with ChangeNotifier {
       final url = generateTxidUrl(
         txid,
         isLiquid,
-        testnet: isTestnet(),
+        testnet: ref.read(envProvider.notifier).isTestnet(),
       );
       explorerUrlSubject.add(url);
       return;
@@ -1435,10 +1437,11 @@ class WalletChangeNotifier with ChangeNotifier {
         final uiStateArgs = ref.read(uiStateArgsProvider);
         uiStateArgs.walletMainArguments =
             uiStateArgs.walletMainArguments.copyWith(
-          currentIndex: 0,
-          navigationItem: WalletMainNavigationItem.home,
+          currentIndex: 4,
+          navigationItem: WalletMainNavigationItem.pegs,
         );
         ref.read(swapProvider).pegStop();
+        status = Status.registered;
         break;
       case Status.settingsBackup:
       case Status.settingsSecurity:
@@ -1551,8 +1554,6 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void selectAssetReceive(AccountType accountType) {
-    recvAddresses.clear();
-    ref.read(walletRecvAddressAccount.notifier).state = accountType;
     toggleRecvAddrType(accountType);
 
     ref.read(pageStatusStateProvider.notifier).setStatus(Status.assetReceive);
@@ -1560,25 +1561,13 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void startAssetReceiveAddr() {
-    recvAddresses.clear();
-    ref.read(walletRecvAddressAccount.notifier).state = AccountType.reg;
     toggleRecvAddrType(AccountType.reg);
-  }
-
-  void selectAssetReceiveFromWalletMain() {
-    startAssetReceiveAddr();
-
-    ref
-        .read(pageStatusStateProvider.notifier)
-        .setStatus(Status.assetReceiveFromWalletMain);
-    notifyListeners();
   }
 
   void toggleRecvAddrType(AccountType accountType) {
     final msg = To();
     msg.getRecvAddress = getAccount(accountType);
     sendMsg(msg);
-    ref.read(walletRecvAddressAccount.notifier).state = accountType;
   }
 
   void selectPaymentPage() {
@@ -1606,8 +1595,9 @@ class WalletChangeNotifier with ChangeNotifier {
       notifyListeners();
     } else {
       final allPegsById = ref.read(allPegsByIdProvider);
-      desktopShowTx(navigatorKey.currentContext!, tx.id,
-          isPeg: allPegsById.containsKey(tx.id));
+      ref
+          .read(desktopDialogProvider)
+          .showTx(tx.id, isPeg: allPegsById.containsKey(tx.id));
     }
   }
 
@@ -1704,7 +1694,7 @@ class WalletChangeNotifier with ChangeNotifier {
     final filterLowerCase = filter.toLowerCase();
     final filteredToggleAccountsNew = <AccountAsset>[];
     final assets = ref.read(assetsStateProvider);
-    final allAccounts = ref.read(allAccountAssetsProvider);
+    final allAccounts = ref.read(allAlwaysShowAccountAssetsProvider);
 
     for (final account in allAccounts) {
       final asset = assets[account.assetId]!;
@@ -1854,6 +1844,8 @@ class WalletChangeNotifier with ChangeNotifier {
     ref.read(pageStatusStateProvider.notifier).setStatus(Status.walletLoading);
 
     if (FlavorConfig.isDesktop) {
+      final navigatorKey = ref.read(navigatorKeyProvider);
+
       Navigator.of(navigatorKey.currentContext!, rootNavigator: true)
           .popUntil((route) => route.isFirst);
       Navigator.of(navigatorKey.currentContext!)
@@ -1968,24 +1960,6 @@ class WalletChangeNotifier with ChangeNotifier {
     _mnemonic = mnemonic;
     await ref.read(configProvider).setUseBiometricProtection(false);
     notifyListeners();
-  }
-
-  int env() {
-    return ref.read(configProvider).env;
-  }
-
-  Future<void> setEnv(int e, {bool restart = true}) async {
-    await ref.read(configProvider).setEnv(e);
-
-    if (restart) {
-      exit(0);
-    }
-  }
-
-  void selectEnv() {
-    final status = ref.read(pageStatusStateProvider);
-    assert(status == Status.noWallet);
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.selectEnv);
   }
 
   Future<bool> isAuthenticated() async {
@@ -2142,12 +2116,11 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<void> setOrder() async {
     if (FlavorConfig.isDesktop) {
-      desktopOrderReview(
-        navigatorKey.currentContext!,
-        orderDetailsData.orderType == OrderDetailsDataType.sign
-            ? ReviewScreen.sign
-            : ReviewScreen.quote,
-      );
+      ref.read(desktopDialogProvider).orderReview(
+            orderDetailsData.orderType == OrderDetailsDataType.sign
+                ? ReviewScreen.sign
+                : ReviewScreen.quote,
+          );
       return;
     }
 
@@ -2159,7 +2132,7 @@ class WalletChangeNotifier with ChangeNotifier {
       final instance = WidgetsBinding.instance;
       if (orderDetailsData.orderType == OrderDetailsDataType.sign &&
           instance.lifecycleState == AppLifecycleState.resumed) {
-        unawaited(FlutterRingtonePlayer.playNotification());
+        unawaited(FlutterRingtonePlayer().playNotification());
         unawaited(Vibration.vibrate());
       }
     });
@@ -2369,8 +2342,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void setCreateOrder() {
     if (FlavorConfig.isDesktop) {
-      desktopOrderReview(
-          navigatorKey.currentContext!, ReviewScreen.submitStart);
+      ref.read(desktopDialogProvider).orderReview(ReviewScreen.submitStart);
       return;
     }
 
@@ -2380,10 +2352,9 @@ class WalletChangeNotifier with ChangeNotifier {
   void setCreateOrderSuccess() {
     if (FlavorConfig.isDesktop) {
       if (orderDetailsData.private) {
-        desktopOrderReview(
-            navigatorKey.currentContext!, ReviewScreen.submitSucceed);
+        ref.read(desktopDialogProvider).orderReview(ReviewScreen.submitSucceed);
       } else {
-        desktopClosePopups(navigatorKey.currentContext!);
+        ref.read(desktopDialogProvider).closePopups();
       }
       return;
     }
@@ -2480,7 +2451,7 @@ class WalletChangeNotifier with ChangeNotifier {
       orderDetailsData =
           OrderDetailsData.fromRequestOrder(requestOrder, orderAsset.precision);
       notifyListeners();
-      desktopOrderReview(navigatorKey.currentContext!, ReviewScreen.edit);
+      ref.read(desktopDialogProvider).orderReview(ReviewScreen.edit);
       return;
     }
 
@@ -2670,15 +2641,12 @@ class WalletChangeNotifier with ChangeNotifier {
     return network;
   }
 
+  // TODO (malcolmpl): remove after apply network settings?
   void applyNetworkChange() {
     final msg = To();
     msg.changeNetwork = To_ChangeNetwork();
     msg.changeNetwork.network = getNetworkSettings();
     sendMsg(msg);
-  }
-
-  bool isTestnet() {
-    return env() == SIDESWAP_ENV_TESTNET || env() == SIDESWAP_ENV_LOCAL_TESTNET;
   }
 
   void jadeLogin(String jadeId) {
@@ -2704,8 +2672,4 @@ class WalletChangeNotifier with ChangeNotifier {
 final syncCompleteStateProvider = AutoDisposeStateProvider<bool>((ref) {
   ref.keepAlive();
   return false;
-});
-
-final walletRecvAddressAccount = AutoDisposeStateProvider<AccountType>((ref) {
-  return AccountType.reg;
 });

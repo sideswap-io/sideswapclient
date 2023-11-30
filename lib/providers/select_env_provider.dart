@@ -1,49 +1,45 @@
-import 'package:flutter/cupertino.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/providers/wallet.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sideswap/providers/env_provider.dart';
 
-final selectEnvProvider =
-    ChangeNotifierProvider.autoDispose<SelectEnvProvider>((ref) {
-  return SelectEnvProvider(ref);
-});
+part 'select_env_provider.g.dart';
 
-class SelectEnvProvider extends ChangeNotifier {
-  final Ref ref;
-
-  SelectEnvProvider(this.ref) {
-    _startupEnv = ref.read(walletProvider).env();
-    _currentEnv = _startupEnv;
+@riverpod
+class SelectEnvDialog extends _$SelectEnvDialog {
+  @override
+  bool build() {
+    return false;
   }
 
-  int _startupEnv = 0;
-  int tapCounter = 0;
-  int _currentEnv = 0;
-  bool _showSelectEnvDialog = false;
+  void setSelectEnvDialog(bool value) {
+    state = value;
+  }
+}
 
-  bool get showSelectEnvDialog => _showSelectEnvDialog;
-  set showSelectEnvDialog(bool value) {
-    _currentEnv = ref.read(walletProvider).env();
-    _showSelectEnvDialog = value;
-    notifyListeners();
+@riverpod
+class SelectedEnv extends _$SelectedEnv {
+  @override
+  int build() {
+    final env = ref.watch(envProvider);
+    return env;
   }
 
-  int get currentEnv => _currentEnv;
-  Future<void> setCurrentEnv(int value) async {
-    _currentEnv = value;
-    notifyListeners();
+  Future<void> setSelectedEnv(int selectedEnv) async {
+    state = selectedEnv;
+  }
+}
+
+@riverpod
+class SelectEnvTap extends _$SelectEnvTap {
+  @override
+  int build() {
+    return 0;
   }
 
-  int get startupEnv => _startupEnv;
-
-  void handleTap() {
-    tapCounter += 1;
-    if (tapCounter >= 7) {
-      tapCounter = 0;
-      showSelectEnvDialog = true;
+  void setTap() {
+    state += 1;
+    if (state > 7) {
+      state = 0;
+      ref.read(selectEnvDialogProvider.notifier).setSelectEnvDialog(true);
     }
-  }
-
-  Future<void> saveEnv({bool restart = true}) async {
-    await ref.read(walletProvider).setEnv(_currentEnv, restart: restart);
   }
 }

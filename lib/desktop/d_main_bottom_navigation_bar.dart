@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/desktop/common/button/d_button.dart';
+import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
 class DesktopMainBottomNavigationBar extends ConsumerStatefulWidget {
@@ -85,7 +87,7 @@ class DesktopMainBottomNavigationBarState
   }
 }
 
-class ToolbarButton extends StatelessWidget {
+class ToolbarButton extends ConsumerWidget {
   const ToolbarButton({
     super.key,
     required this.name,
@@ -104,38 +106,45 @@ class ToolbarButton extends StatelessWidget {
   final ValueChanged<int> onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isSelected = selectedIndex == index;
-    return TextButton(
-      style: Theme.of(context).textButtonTheme.style?.copyWith(
-          padding: MaterialStateProperty.all<EdgeInsets>(EdgeInsets.zero)),
+    final buttonStyle =
+        ref.watch(desktopAppThemeProvider).mainBottomNavigationBarButtonStyle;
+
+    return DButton(
+      style: buttonStyle,
       onPressed: () => onSelected(index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            width: 32,
-            height: 32,
-            child: Center(
-              child: SvgPicture.asset(
-                isSelected ? selectedIcon : unselectedIcon,
-                width: 24,
+      child: SizedBox(
+        width: 94,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 8),
+            SizedBox(
+              width: 29,
+              height: 27,
+              child: Center(
+                child: SvgPicture.asset(
+                  isSelected ? selectedIcon : unselectedIcon,
+                  width: 24,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            name,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            style: TextStyle(
-              color: isSelected
-                  ? SideSwapColors.brightTurquoise
-                  : const Color(0xFF68839E),
-              fontSize: 10,
+            const Spacer(),
+            Text(
+              name,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: TextStyle(
+                color: isSelected
+                    ? SideSwapColors.brightTurquoise
+                    : const Color(0xFF68839E),
+                fontSize: 10,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 5),
+          ],
+        ),
       ),
     );
   }

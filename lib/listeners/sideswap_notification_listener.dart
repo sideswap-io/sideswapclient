@@ -8,6 +8,7 @@ import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_notifications/sideswap_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -322,7 +323,7 @@ class SideswapNotificationProvider {
     );
 
     await showDialog<void>(
-      context: ref.read(walletProvider).navigatorKey.currentContext!,
+      context: ref.read(navigatorKeyProvider).currentContext!,
       builder: (BuildContext context) => CupertinoAlertDialog(
         title: receivedNotification.title != null
             ? Text(receivedNotification.title ?? '')
@@ -379,6 +380,6 @@ class SideswapNotificationListener extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(sideswapNotificationProvider, (_, __) {});
-    return Container();
+    return const SizedBox();
   }
 }

@@ -22,7 +22,7 @@ class DTxHistoryAmount extends HookConsumerWidget {
       return Text('Multiple outputs'.tr());
     }
     if (balance.amount == 0) {
-      return Container();
+      return const SizedBox();
     }
     final asset = ref
         .watch(assetsStateProvider.select((value) => value[balance.assetId]));

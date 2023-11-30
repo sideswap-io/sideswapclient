@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -15,11 +16,14 @@ import 'package:sideswap/desktop/markets/d_enter_tracking_price.dart';
 import 'package:sideswap/desktop/markets/d_order_amount_enter.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/desktop/widgets/d_toggle_button.dart';
+import 'package:sideswap/listeners/order_review_listeners.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 const signTotalTime = 60;
@@ -79,7 +83,7 @@ String getTtlDescription(int? seconds) {
   return 'MINUTES'.plural(sec.inMinutes, args: ['${sec.inMinutes}']);
 }
 
-class DOrderReview extends ConsumerStatefulWidget {
+class DOrderReview extends StatefulHookConsumerWidget {
   const DOrderReview({
     super.key,
     required this.screen,
@@ -92,13 +96,10 @@ class DOrderReview extends ConsumerStatefulWidget {
 }
 
 class DOrderReviewState extends ConsumerState<DOrderReview> {
-  ReviewState state = ReviewState.idle;
+  ReviewState reviewState = ReviewState.idle;
 
   bool autoSign = true;
   bool autoSignOld = true;
-  bool public = true;
-  int ttl = kInfTtl;
-  bool twoStep = true;
 
   // Edit order values
   bool isTracking = false;
@@ -120,13 +121,10 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
       isTracking = order.isTracking;
       autoSign = order.autoSign;
       autoSignOld = order.autoSign;
-      twoStep = order.twoStep;
       price = order.priceAmount;
       priceTrackerValue =
           indexPriceToTrackerValue(wallet.orderDetailsData.indexPrice);
       controllerPrice.text = priceStr(order.priceAmount, pricedInLiquid);
-    } else {
-      twoStep = !wallet.orderDetailsData.isTracking;
     }
   }
 
@@ -138,6 +136,7 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
 
   Future<void> handleSubmit() async {
     final wallet = ref.read(walletProvider);
+    final twoStep = ref.read(orderReviewTwoStepProvider);
 
     // old modify price for offline orders
     if (widget.screen == ReviewScreen.edit && twoStep && !isTracking) {
@@ -178,6 +177,9 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
       return;
     }
 
+    final public = ref.read(orderReviewPublicProvider);
+    final ttl = ref.read(orderReviewTtlProvider);
+
     ref.read(walletProvider).setSubmitDecision(
           autosign: autoSign,
           twoStep: twoStep,
@@ -192,12 +194,12 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
       case ReviewScreen.submitSucceed:
       case ReviewScreen.sign:
         setState(() {
-          state = ReviewState.disabled;
+          reviewState = ReviewState.disabled;
         });
         break;
       case ReviewScreen.quote:
         setState(() {
-          state = ReviewState.disabled;
+          reviewState = ReviewState.disabled;
         });
         break;
       case ReviewScreen.edit:
@@ -247,11 +249,26 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
         : '';
     final orderType = order.twoStep ? 'Offline'.tr() : 'Online'.tr();
 
+    useEffect(() {
+      if (widget.screen == ReviewScreen.edit) {
+        ref.read(orderReviewTwoStepProvider.notifier).setTwoStep(order.twoStep);
+        return;
+      }
+
+      final twoStep = !ref.read(walletProvider).orderDetailsData.isTracking;
+      Future.microtask(() =>
+          ref.read(orderReviewTwoStepProvider.notifier).setTwoStep(twoStep));
+
+      return;
+    }, const []);
+
     return DPopupWithClose(
       width: 580,
-      height: 692,
+      height: 733,
       child: Column(
         children: [
+          const OrderReviewTtlChangedFlagListener(),
+          const OrderReviewTwoStepListener(),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(40, 40, 40, 0),
@@ -269,9 +286,16 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                             height: 24,
                           ),
                         ),
-                      Text(
-                        getTitle(widget.screen, state, twoStep, isTracking),
-                        style: Theme.of(context).textTheme.displaySmall,
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final twoStep = ref.watch(orderReviewTwoStepProvider);
+
+                          return Text(
+                            getTitle(widget.screen, reviewState, twoStep,
+                                isTracking),
+                            style: Theme.of(context).textTheme.displaySmall,
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -279,16 +303,32 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                   if (widget.screen == ReviewScreen.edit && !isTracking)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
-                      child: DOrderAmountEnter(
-                        assetId: priceInLiquid ? liquidAssetId : asset?.assetId,
-                        isPriceField: true,
-                        caption: isSell ? 'Bid price'.tr() : 'Offer price'.tr(),
-                        controller: controllerPrice,
-                        autofocus: widget.screen == ReviewScreen.edit,
-                        onEditingComplete: handleSubmit,
-                        readonly: widget.screen == ReviewScreen.edit &&
-                            twoStep &&
-                            !isTracking,
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final twoStep = ref.watch(orderReviewTwoStepProvider);
+                          final liquidAccountAsset =
+                              ref.watch(makeOrderLiquidAccountAssetProvider);
+                          final allAccountAssets =
+                              ref.watch(allAccountAssetsProvider);
+                          final accountAsset = allAccountAssets
+                              .where((e) => e.assetId == asset?.assetId)
+                              .firstOrNull;
+
+                          return DOrderAmountEnter(
+                            accountAsset: priceInLiquid
+                                ? liquidAccountAsset
+                                : accountAsset,
+                            isPriceField: true,
+                            caption:
+                                isSell ? 'Bid price'.tr() : 'Offer price'.tr(),
+                            controller: controllerPrice,
+                            autofocus: widget.screen == ReviewScreen.edit,
+                            onEditingComplete: handleSubmit,
+                            readonly: widget.screen == ReviewScreen.edit &&
+                                twoStep &&
+                                !isTracking,
+                          );
+                        },
                       ),
                     ),
                   if (widget.screen == ReviewScreen.edit && isTracking)
@@ -372,8 +412,7 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                       final isJadeWallet = ref.watch(isJadeWalletProvider);
 
                       if (widget.screen == ReviewScreen.edit) {
-                        return DOrderReviewSignTypeControls(
-                          twoStep: twoStep,
+                        return const DOrderReviewSignTypeControls(
                           onTwoStepChanged: null,
                         );
                       }
@@ -382,63 +421,67 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                       if (isJadeWallet &&
                           widget.screen == ReviewScreen.submitStart) {
                         return const DOrderReviewSignTypeControls(
-                          twoStep: true,
                           onTwoStepChanged: null,
                         );
                       }
 
                       if (widget.screen == ReviewScreen.submitStart) {
                         return DOrderReviewSignTypeControls(
-                          twoStep: twoStep,
                           onTwoStepChanged: (bool value) {
+                            ref
+                                .read(orderReviewTwoStepProvider.notifier)
+                                .setTwoStep(value);
+
                             setState(() {
-                              twoStep = value;
-                              if (twoStep) {
+                              if (value) {
                                 autoSign = true;
-                              } else if (ttl == kInfTtl) {
-                                ttl = kOneWeek;
                               }
                             });
                           },
                         );
                       }
 
-                      return Container();
+                      return const SizedBox();
                     },
                   ),
                   if (widget.screen == ReviewScreen.submitStart ||
                       widget.screen == ReviewScreen.edit)
-                    DOrderReviewAutoSignOrderControls(
-                      autoSign: autoSign,
-                      onAutoSignChanged: twoStep
-                          ? null
-                          : (bool value) {
-                              setState(() {
-                                autoSign = value;
-                              });
-                            },
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final twoStep = ref.watch(orderReviewTwoStepProvider);
+
+                        return DOrderReviewAutoSignOrderControls(
+                          autoSign: autoSign,
+                          onAutoSignChanged: twoStep
+                              ? null
+                              : (bool value) {
+                                  setState(() {
+                                    autoSign = value;
+                                  });
+                                },
+                        );
+                      },
                     ),
                   if (widget.screen == ReviewScreen.submitStart)
-                    DOrderReviewCreateOrderControls(
-                      public: public,
-                      ttl: ttl,
-                      twoStep: twoStep,
-                      onPublicChanged: (bool value) {
-                        setState(() {
-                          public = value;
-                        });
-                      },
-                      onTwoStepChanged: (bool value) {
-                        setState(() {
-                          public = value;
-                        });
-                      },
-                      onTtlChanged: (int value) {
-                        setState(() {
-                          ttl = value;
-                        });
-                      },
-                    ),
+                    Consumer(builder: (context, ref, _) {
+                      return DOrderReviewCreateOrderControls(
+                        onPublicChanged: (bool value) {
+                          ref
+                              .read(orderReviewPublicProvider.notifier)
+                              .setPublic(value);
+                        },
+                        onTwoStepChanged: (bool value) {
+                          ref
+                              .read(orderReviewPublicProvider.notifier)
+                              .setPublic(value);
+                        },
+                        onTtlChanged: (int value) {
+                          ref
+                              .read(orderReviewTtlProvider.notifier)
+                              .setTtl(value);
+                        },
+                      );
+                    }),
                   ...(widget.screen == ReviewScreen.submitSucceed)
                       ? [
                           DOrderReviewField(
@@ -458,10 +501,10 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
           ),
           if (widget.screen == ReviewScreen.sign)
             DOrderReviewTimer(
-              stopped: state == ReviewState.disabled,
+              stopped: reviewState == ReviewState.disabled,
             ),
           if (widget.screen == ReviewScreen.quote &&
-              state == ReviewState.disabled)
+              reviewState == ReviewState.disabled)
             Consumer(
               builder: (context, ref, child) {
                 final isJadeWallet = ref.watch(isJadeWalletProvider);
@@ -491,10 +534,11 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
               child: DCustomFilledBigButton(
                 width: 500,
                 height: 44,
-                onPressed: (state == ReviewState.idle) ? handleSubmit : null,
+                onPressed:
+                    (reviewState == ReviewState.idle) ? handleSubmit : null,
                 autofocus: widget.screen != ReviewScreen.edit,
                 child: Text(getButtonTitle(
-                        widget.screen, state, order.twoStep, isTracking)
+                        widget.screen, reviewState, order.twoStep, isTracking)
                     .toUpperCase()),
               ),
             ),
@@ -815,17 +859,11 @@ class ArcProgressPainter extends CustomPainter {
 class DOrderReviewCreateOrderControls extends StatelessWidget {
   const DOrderReviewCreateOrderControls({
     super.key,
-    required this.public,
-    required this.twoStep,
-    required this.ttl,
     required this.onPublicChanged,
     required this.onTwoStepChanged,
     required this.onTtlChanged,
   });
 
-  final bool public;
-  final bool twoStep;
-  final int ttl;
   final ValueChanged<bool> onPublicChanged;
   final ValueChanged<bool> onTwoStepChanged;
   final ValueChanged<int> onTtlChanged;
@@ -848,11 +886,17 @@ class DOrderReviewCreateOrderControls extends StatelessWidget {
               SizedBox(
                 width: 142,
                 height: 32,
-                child: DToggleButton(
-                  offText: 'Private'.tr(),
-                  onText: 'Public'.tr(),
-                  value: public,
-                  onChanged: onPublicChanged,
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final public = ref.watch(orderReviewPublicProvider);
+
+                    return DToggleButton(
+                      offText: 'Private'.tr(),
+                      onText: 'Public'.tr(),
+                      value: public,
+                      onChanged: onPublicChanged,
+                    );
+                  },
                 ),
               ),
             ],
@@ -873,7 +917,13 @@ class DOrderReviewCreateOrderControls extends StatelessWidget {
                 builder: (context, states) {
                   return Row(
                     children: [
-                      Text(getTtlDescription(ttl)),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final ttl = ref.watch(orderReviewTtlProvider);
+
+                          return Text(getTtlDescription(ttl));
+                        },
+                      ),
                       const SizedBox(width: 7),
                       SvgPicture.asset('assets/arrow_down.svg'),
                     ],
@@ -883,9 +933,11 @@ class DOrderReviewCreateOrderControls extends StatelessWidget {
                   final result = await showDialog<int>(
                     context: context,
                     builder: (context) {
-                      return DTtlPopup(
-                        selected: ttl,
-                        offline: twoStep,
+                      return Consumer(
+                        builder: (context, ref, _) {
+                          final ttl = ref.watch(orderReviewTtlProvider);
+                          return DTtlPopup(selected: ttl);
+                        },
                       );
                     },
                   );
@@ -905,11 +957,9 @@ class DOrderReviewCreateOrderControls extends StatelessWidget {
 class DOrderReviewSignTypeControls extends StatelessWidget {
   const DOrderReviewSignTypeControls({
     super.key,
-    required this.twoStep,
     required this.onTwoStepChanged,
   });
 
-  final bool twoStep;
   final ValueChanged<bool>? onTwoStepChanged;
 
   @override
@@ -930,15 +980,21 @@ class DOrderReviewSignTypeControls extends StatelessWidget {
               SizedBox(
                 width: 142,
                 height: 32,
-                child: DToggleButton(
-                  offText: 'Offline'.tr(),
-                  onText: 'Online'.tr(),
-                  value: !twoStep,
-                  onChanged: onTwoStepChanged != null
-                      ? (value) {
-                          onTwoStepChanged!(!value);
-                        }
-                      : null,
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final twoStep = ref.watch(orderReviewTwoStepProvider);
+
+                    return DToggleButton(
+                      offText: 'Offline'.tr(),
+                      onText: 'Online'.tr(),
+                      value: !twoStep,
+                      onChanged: onTwoStepChanged != null
+                          ? (value) {
+                              onTwoStepChanged!(!value);
+                            }
+                          : null,
+                    );
+                  },
                 ),
               ),
             ],

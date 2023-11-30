@@ -231,7 +231,9 @@ final class timeval extends ffi.Struct {
 }
 
 typedef __time_t = ffi.Long;
+typedef Dart__time_t = int;
 typedef __suseconds_t = ffi.Long;
+typedef Dart__suseconds_t = int;
 
 final class timespec extends ffi.Struct {
   @__time_t()
@@ -242,6 +244,7 @@ final class timespec extends ffi.Struct {
 }
 
 typedef __syscall_slong_t = ffi.Long;
+typedef Dart__syscall_slong_t = int;
 
 final class fd_set extends ffi.Struct {
   @ffi.Array.multi([16])
@@ -249,6 +252,7 @@ final class fd_set extends ffi.Struct {
 }
 
 typedef __fd_mask = ffi.Long;
+typedef Dart__fd_mask = int;
 
 final class __atomic_wide_counter extends ffi.Union {
   @ffi.UnsignedLongLong()
@@ -481,6 +485,7 @@ final class drand48_data extends ffi.Struct {
 }
 
 typedef IntPtr = ffi.Uint64;
+typedef DartIntPtr = int;
 
 const int __GNUC_VA_LIST = 1;
 

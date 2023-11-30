@@ -35,6 +35,6 @@ class UiStatesListener extends ConsumerWidget {
       }
     })));
 
-    return Container();
+    return const SizedBox();
   }
 }

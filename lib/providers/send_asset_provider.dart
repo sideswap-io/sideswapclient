@@ -12,6 +12,7 @@ final sendAssetProvider =
 class SendAssetNotifier extends AutoDisposeNotifier<AccountAsset> {
   @override
   AccountAsset build() {
+    ref.keepAlive();
     final eiCreateTransaction = ref.watch(eiCreateTransactionNotifierProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
@@ -23,11 +24,11 @@ class SendAssetNotifier extends AutoDisposeNotifier<AccountAsset> {
 
   void setSendAsset(AccountAsset value) {
     final balances = ref.read(balancesProvider);
-    if ((balances.balances[value] ?? 0) != 0) {
-      state = value;
-    } else {
-      final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-      state = AccountAsset(AccountType.reg, liquidAssetId);
-    }
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+
+    (switch (balances.balances[value]) {
+      final assetBalance? when assetBalance != 0 => state = value,
+      _ => state = AccountAsset(AccountType.reg, liquidAssetId),
+    });
   }
 }

@@ -172,10 +172,12 @@ class SwapMain extends HookConsumerWidget {
                             height: 6,
                           ),
                           const SwapReceiveAmount(),
+                          const Spacer(),
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16),
                             child: SwapBottomButton(),
                           ),
+                          const SizedBox(height: 24),
                         ],
                       ),
                     ),

@@ -6,6 +6,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class OrderPriceTextField extends ConsumerWidget {
@@ -17,10 +18,12 @@ class OrderPriceTextField extends ConsumerWidget {
     this.focusNode,
     this.onEditingComplete,
     this.precision = 8,
+    this.productAsset,
   });
 
   final Widget? icon;
   final Asset? asset;
+  final Asset? productAsset;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final void Function()? onEditingComplete;
@@ -79,16 +82,16 @@ class OrderPriceTextField extends ConsumerWidget {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: icon,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 5),
-                            child: Text(
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: icon,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Row(
+                          children: [
+                            Text(
                               asset?.ticker ?? '',
                               style: const TextStyle(
                                 fontSize: 17,
@@ -96,12 +99,16 @@ class OrderPriceTextField extends ConsumerWidget {
                                 color: SideSwapColors.glacier,
                               ),
                             ),
-                          ),
-                        ],
+                            switch (productAsset) {
+                              Asset(:final ampMarket) when ampMarket =>
+                                const AmpFlag(),
+                              _ => const SizedBox(),
+                            }
+                          ],
+                        ),
                       ),
-                      const Spacer(),
                       SizedBox(
-                        width: 190,
+                        width: 160,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 14),
                           child: TextField(

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,12 +11,14 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/mnemonic_table_provider.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 class DFirstLaunch extends ConsumerWidget {
@@ -22,88 +26,96 @@ class DFirstLaunch extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<SelectEnvProvider>(selectEnvProvider, (_, next) async {
-      if (next.showSelectEnvDialog) {
-        ref.read(selectEnvProvider).showSelectEnvDialog = false;
+    ref.listen(selectEnvDialogProvider, (_, next) async {
+      if (next) {
+        ref.read(selectEnvDialogProvider.notifier).setSelectEnvDialog(false);
 
         await showDialog<void>(
           useRootNavigator: false,
           barrierDismissible: false,
-          context: ref.read(walletProvider).navigatorKey.currentContext!,
-          builder: (_) => Consumer(
-            builder: (context, ref, _) {
-              final currentEnv = ref.watch(selectEnvProvider).currentEnv;
-              return DContentDialog(
-                constraints: const BoxConstraints(maxWidth: 628),
-                title: Center(child: Text('Select env'.tr())),
-                content: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Changes will take effect after application restart.'
-                                .tr(),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
+          context: ref.read(navigatorKeyProvider).currentContext!,
+          builder: (_) => DContentDialog(
+            constraints: const BoxConstraints(maxWidth: 628),
+            title: Center(child: Text('Select env'.tr())),
+            content: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Changes will take effect after application restart.'
+                            .tr(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    ...envValues().map(
-                      (e) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: DRadioButton(
-                          checked: e == currentEnv,
+                    ],
+                  ),
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                ...envValues().map(
+                  (e) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final selectedEnv = ref.watch(selectedEnvProvider);
+
+                        return DRadioButton(
+                          checked: e == selectedEnv,
                           semanticLabel: envName(e),
                           content: Text(envName(e)),
                           onChanged: (value) async {
-                            await ref.read(selectEnvProvider).setCurrentEnv(e);
+                            await ref
+                                .read(selectedEnvProvider.notifier)
+                                .setSelectedEnv(e);
                           },
-                        ),
-                      ),
+                        );
+                      },
                     ),
-                  ],
+                  ),
                 ),
-                actions: [
-                  DCustomTextBigButton(
-                    width: 266,
-                    child: Consumer(
-                      builder: ((context, ref, _) {
-                        final env =
-                            ref.watch(configProvider.select((p) => p.env));
-                        final currentEnv = ref.watch(
-                            selectEnvProvider.select((p) => p.currentEnv));
-                        return env == currentEnv
-                            ? Text('CLOSE'.tr())
-                            : Text('SWITCH AND EXIT'.tr());
-                      }),
-                    ),
-                    onPressed: () async {
-                      ref.read(selectEnvProvider).saveEnv();
-                      Navigator.pop(context);
-                      ref.read(walletProvider).goBack();
-                    },
-                  ),
-                  DCustomFilledBigButton(
-                    child: Text('CANCEL'.tr()),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ref.read(walletProvider).goBack();
-                    },
-                  ),
-                ],
-              );
-            },
+              ],
+            ),
+            actions: [
+              DCustomTextBigButton(
+                width: 266,
+                child: Consumer(
+                  builder: ((context, ref, _) {
+                    final env = ref.watch(envProvider);
+                    final selectedEnv = ref.watch(selectedEnvProvider);
+                    return env == selectedEnv
+                        ? Text('CLOSE'.tr())
+                        : Text('SWITCH AND EXIT'.tr());
+                  }),
+                ),
+                onPressed: () async {
+                  final selectedEnv = ref.read(selectedEnvProvider);
+                  await ref.read(envProvider.notifier).setEnv(selectedEnv);
+
+                  // and also reset network settings model
+                  ref
+                      .read(networkSettingsProvider.notifier)
+                      .setModel(const NetworkSettingsModelEmpty());
+                  await ref.read(networkSettingsProvider.notifier).save();
+
+                  exit(0);
+                },
+              ),
+              DCustomFilledBigButton(
+                child: Text('CANCEL'.tr()),
+                onPressed: () {
+                  Navigator.pop(context);
+                  ref.read(walletProvider).goBack();
+                },
+              ),
+            ],
           ),
         );
       }
@@ -121,7 +133,7 @@ class DFirstLaunch extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 0),
                 child: FirstLaunchClickableLogo(
-                  onPressed: ref.read(selectEnvProvider).handleTap,
+                  onPressed: ref.read(selectEnvTapProvider.notifier).setTap,
                 ),
               ),
               Padding(

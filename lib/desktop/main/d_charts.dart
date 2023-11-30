@@ -10,6 +10,7 @@ import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/desktop/widgets/d_back_button.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/market_data_provider.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -125,14 +126,13 @@ class DChartsAssetDetails extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wallet = ref.read(walletProvider);
     final asset =
         ref.watch(assetsStateProvider.select((value) => value[assetId]));
     final icon = ref.watch(assetImageProvider).getSmallImage(assetId);
     final assetPrecision =
         ref.watch(assetUtilsProvider).getPrecisionForAssetId(assetId: assetId);
     final issuerDetails = ref.watch(tokenMarketAssetDetailsProvider)[assetId];
-    final isTestnet = wallet.isTestnet();
+    final isTestnet = ref.watch(envProvider.notifier).isTestnet();
     final assetUrl = generateAssetUrl(assetId: assetId, testnet: isTestnet);
     final stats = ref.watch(marketDataProvider).getStats();
 

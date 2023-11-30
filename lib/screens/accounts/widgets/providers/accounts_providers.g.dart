@@ -7,7 +7,7 @@ part of 'accounts_providers.dart';
 // **************************************************************************
 
 String _$mobileAvailableAssetsHash() =>
-    r'682e932266d072891995d1d35bf3037bdfbb3881';
+    r'a721cd4a258088d5d9cdd6b0cf92c97035e051af';
 
 /// See also [mobileAvailableAssets].
 @ProviderFor(mobileAvailableAssets)

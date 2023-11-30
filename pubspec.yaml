@@ -3,7 +3,7 @@ description: Sideswap Client.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.4.1+68
+version: 1.4.2+70
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -41,7 +41,7 @@ dependencies:
   flutter_typeahead: ^4.8.0
   # notification payload parsing
   freezed_annotation: ^2.4.1
-  hooks_riverpod: ^2.4.6
+  hooks_riverpod: ^2.4.9
   flutter_hooks: ^0.20.3
   image: ^4.1.3
   # avatar
@@ -66,15 +66,15 @@ dependencies:
   uni_links: ^0.5.1 # replace by app_links
   url_launcher: ^6.2.1
   # sound notification
-  flutter_ringtone_player: ^3.2.0
+  flutter_ringtone_player: ^4.0.0+2
   vibration: ^1.8.3
   decimal: ^2.3.3
   move_to_background: ^1.0.2
   xrange: ^2.0.0
   csv: ^5.1.1
   tuple: ^2.0.2
-  http: ^1.1.0
-  cached_memory_image: ^1.3.1
+  http: ^1.1.2
+  cached_memory_image: ^1.5.0
   equatable: ^2.0.5
 
   #internal packages
@@ -109,7 +109,7 @@ dependencies:
   file_selector: ^1.0.1
   ffi: ^2.1.0
   web_socket_channel: ^2.4.0
-  flutter_animate: ^4.2.0+1
+  flutter_animate: ^4.3.0
   window_size:
     git:
       url: https://github.com/google/flutter-desktop-embedding.git
@@ -124,7 +124,7 @@ dependencies:
   collection: ^1.18.0
   vector_math: ^2.1.4
   fpdart: ^1.1.0
-  riverpod_annotation: ^2.3.1
+  riverpod_annotation: ^2.3.3
 
 dependency_overrides:
   # temporary, because of https://github.com/firebase/flutterfire/issues/10931
@@ -150,9 +150,9 @@ dev_dependencies:
   json_serializable: ^6.7.1
   # icon generator
   icons_launcher: ^2.1.5
-  riverpod_generator: ^2.3.6
-  custom_lint: ^0.5.6
-  riverpod_lint: ^2.3.4
+  riverpod_generator: ^2.3.9
+  custom_lint: ^0.5.7
+  riverpod_lint: ^2.3.7
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

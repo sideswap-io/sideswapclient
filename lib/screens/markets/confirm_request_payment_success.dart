@@ -24,9 +24,7 @@ class ConfirmRequestPaymentSuccess extends ConsumerWidget {
     final ticker = requestAsset?.ticker ?? '';
 
     return SideSwapPopup(
-      onWillPop: () async {
-        return false;
-      },
+      canPop: false,
       hideCloseButton: true,
       child: ResultPage(
         resultType: ResultPageType.success,

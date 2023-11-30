@@ -12,9 +12,7 @@ class PinSuccess extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapPopup(
-      onWillPop: () async {
-        return false;
-      },
+      canPop: false,
       hideCloseButton: true,
       child: ResultPage(
         resultType: ResultPageType.success,

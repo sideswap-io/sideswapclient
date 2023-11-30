@@ -13,7 +13,9 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/network_access_provider.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/side_swap_client_ffi.dart';
 
 class DSettingsCustomHost extends HookConsumerWidget {
   const DSettingsCustomHost({super.key});
@@ -40,38 +42,36 @@ class DSettingsCustomHost extends HookConsumerWidget {
     final portController = useTextEditingController(
         text: ref.read(configProvider).settingsPort.toString());
     final applyEnabled = useState(false);
+    final networkSettingsModel = ref.watch(networkSettingsProvider);
 
-    void validate() {
-      if (hostController.text.isNotEmpty && portController.text.isNotEmpty) {
+    final validateCallback = useCallback(() {
+      final host = hostController.text;
+      final port = portController.text;
+
+      if (host.isNotEmpty && port.isNotEmpty) {
         applyEnabled.value = true;
       } else {
         applyEnabled.value = false;
       }
-    }
+    }, const []);
 
     useEffect(() {
+      hostController.text = networkSettingsModel.host ?? '';
+      portController.text = '${networkSettingsModel.port ?? ''}';
+      useTls.value = networkSettingsModel.useTls ?? false;
+
       hostController.addListener(() {
-        validate();
+        validateCallback();
       });
       portController.addListener(() {
-        validate();
+        validateCallback();
       });
 
-      useTls.value = ref.read(configProvider).settingsUseTLS;
+      return;
+    }, [hostController, portController]);
 
-      validate();
-
-      return () {
-        hostController.removeListener(validate);
-        portController.removeListener(validate);
-      };
-    }, [hostController, portController, useTls]);
-
-    return WillPopScope(
-      onWillPop: () async {
-        goBack(context, ref);
-        return false;
-      },
+    return PopScope(
+      canPop: true,
       child: DContentDialog(
         title: DContentDialogTitle(
           onClose: () {
@@ -138,28 +138,21 @@ class DSettingsCustomHost extends HookConsumerWidget {
                     width: 343,
                     height: 44,
                     onPressed: applyEnabled.value
-                        ? () async {
-                            if (await ref
-                                .read(walletProvider)
-                                .isAuthenticated()) {
-                              ref.read(networkAccessProvider).networkType =
-                                  SettingsNetworkType.personal;
-                              ref
-                                  .read(configProvider)
-                                  .setSettingsHost(hostController.text);
-                              ref.read(configProvider).setSettingsPort(
-                                  int.tryParse(portController.text) ?? 0);
-                              ref
-                                  .read(configProvider)
-                                  .setSettingsUseTLS(useTls.value);
-
-                              goBack(context, ref);
-
-                              ref.read(walletProvider).applyNetworkChange();
-                            }
+                        ? () {
+                            ref
+                                .read(networkSettingsProvider.notifier)
+                                .setModel(NetworkSettingsModelApply(
+                                  settingsNetworkType:
+                                      SettingsNetworkType.personal,
+                                  env: SIDESWAP_ENV_PROD,
+                                  host: hostController.text,
+                                  port: int.parse(portController.text),
+                                  useTls: useTls.value,
+                                ));
+                            goBack(context, ref);
                           }
                         : null,
-                    child: Text('SAVE AND APPLY'.tr()),
+                    child: Text('APPLY'.tr()),
                   ),
                 ),
                 const SizedBox(

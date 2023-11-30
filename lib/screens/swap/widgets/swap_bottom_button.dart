@@ -56,7 +56,7 @@ class SwapBottomButton extends HookConsumerWidget {
                   );
                 }
 
-                return Container();
+                return const SizedBox();
               },
             ),
           ],

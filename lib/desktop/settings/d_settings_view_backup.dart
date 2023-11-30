@@ -30,10 +30,12 @@ class DSettingsViewBackup extends HookConsumerWidget {
     });
 
     final wordCount = ref.read(mnemonicWordItemsProvider.notifier).state.length;
-    return WillPopScope(
-      onWillPop: () async {
-        ref.read(walletProvider).goBack();
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).goBack();
+        }
       },
       child: DContentDialog(
         title: DContentDialogTitle(

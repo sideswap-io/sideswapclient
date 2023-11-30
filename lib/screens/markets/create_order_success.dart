@@ -24,9 +24,7 @@ class CreateOrderSuccess extends ConsumerWidget {
         ref.read(walletProvider).orderDetailsData;
 
     return SideSwapPopup(
-      onWillPop: () async {
-        return false;
-      },
+      canPop: false,
       hideCloseButton: true,
       enableInsideTopPadding: false,
       child: ResultPage(

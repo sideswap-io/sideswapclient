@@ -16,6 +16,7 @@ import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/markets/widgets/modify_price_dialog.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/common/helpers.dart';
@@ -267,7 +268,7 @@ class MarketsProvider extends ChangeNotifier {
     final TextEditingController controller = TextEditingController()
       ..text = priceStr;
 
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(navigatorKeyProvider).currentContext;
     if (context == null) {
       return;
     }
@@ -281,7 +282,8 @@ class MarketsProvider extends ChangeNotifier {
             final assetId = requestOrder.assetId;
             final asset = ref
                 .watch(assetsStateProvider.select((value) => value[assetId]));
-            final liquidAsset = ref.watch(assetUtilsProvider).liquidAsset();
+            final liquidAsset =
+                ref.watch(assetUtilsProvider).regularLiquidAsset();
             final priceAsset = asset?.swapMarket == true ? asset : liquidAsset;
             final icon = ref
                 .watch(assetImageProvider)
@@ -515,24 +517,14 @@ final makeOrderBalanceAccountAssetProvider =
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final pricedInLiquid =
       ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
-  final selectedMarket = assetMarketType(selectedAsset);
   final makeOrderSide = ref.watch(makeOrderSideStateProvider);
   final isSell = makeOrderSide == MakeOrderSide.sell;
-  final balanceAssetId =
-      pricedInLiquid == isSell ? selectedAccountAsset.assetId : liquidAssetId;
+  final balanceAssetAccount = pricedInLiquid == isSell
+      ? selectedAccountAsset
+      : AccountAsset(selectedAccountAsset.account, liquidAssetId);
+  final allAccountAssets = ref.watch(allAccountAssetsProvider);
 
-  final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
-  final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
-
-  if (selectedMarket == MarketType.amp) {
-    return ampAccountAssets
-        .where((e) => e.assetId == balanceAssetId)
-        .firstOrNull;
-  }
-
-  return regularAccountAssets
-      .where((e) => e.assetId == balanceAssetId)
-      .firstOrNull;
+  return allAccountAssets.where((e) => e == balanceAssetAccount).firstOrNull;
 });
 
 class MakeOrderBalance {
@@ -631,19 +623,12 @@ AccountAsset? marketOrderAggregateVolumeAccountAsset(
       ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
   final pricedInLiquid =
       ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
-  final selectedMarket = assetMarketType(selectedAsset);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final allAccountAssets = ref.watch(allAccountAssetsProvider);
 
   final assetId = pricedInLiquid ? liquidAssetId : selectedAccountAsset.assetId;
 
-  final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
-  final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
-
-  return switch (selectedMarket) {
-    MarketType.amp =>
-      ampAccountAssets.where((e) => e.assetId == assetId).firstOrNull,
-    _ => regularAccountAssets.where((e) => e.assetId == assetId).firstOrNull,
-  };
+  return allAccountAssets.where((e) => e.assetId == assetId).firstOrNull;
 }
 
 @riverpod
@@ -821,22 +806,10 @@ bool makeOrderAggregateVolumeTooHigh(MakeOrderAggregateVolumeTooHighRef ref) {
 
 @riverpod
 AccountAsset? makeOrderLiquidAccountAsset(MakeOrderLiquidAccountAssetRef ref) {
-  final selectedAccountAsset =
-      ref.watch(marketSelectedAccountAssetStateProvider);
-  final selectedAsset =
-      ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
-  final selectedMarket = assetMarketType(selectedAsset);
+  final allAccountAssets = ref.watch(allAccountAssetsProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-  final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
-  final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
-
-  return switch (selectedMarket) {
-    MarketType.amp =>
-      ampAccountAssets.where((e) => e.assetId == liquidAssetId).firstOrNull,
-    _ =>
-      regularAccountAssets.where((e) => e.assetId == liquidAssetId).firstOrNull,
-  };
+  return allAccountAssets.where((e) => e.assetId == liquidAssetId).firstOrNull;
 }
 
 @riverpod

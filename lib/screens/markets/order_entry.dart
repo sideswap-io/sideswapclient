@@ -19,12 +19,18 @@ import 'package:easy_localization/easy_localization.dart';
 
 part 'order_entry.g.dart';
 
-class OrderEntry extends StatelessWidget {
+class OrderEntry extends ConsumerWidget {
   const OrderEntry({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).goBack();
+        }
+      },
       body: SafeArea(
         child: LayoutBuilder(builder: (context, constraints) {
           return SingleChildScrollView(
@@ -85,17 +91,15 @@ class OrderEntryHeader extends StatelessWidget {
           topRight: Radius.circular(12),
         ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            const OrderEntryHeaderTickerDropdown(),
-            const Spacer(),
-            const OrderEntryHeaderBuySellButtons(),
-            const SizedBox(width: 8),
-            OrderEntryCloseButton(
-              onPressed: () {},
-            ),
+            OrderEntryHeaderTickerDropdown(),
+            Spacer(),
+            OrderEntryHeaderBuySellButtons(),
+            SizedBox(width: 8),
+            OrderEntryCloseButton(),
           ],
         ),
       ),
@@ -219,10 +223,7 @@ class OrderEntryHeaderBuySellButtons extends HookConsumerWidget {
 class OrderEntryCloseButton extends ConsumerWidget {
   const OrderEntryCloseButton({
     super.key,
-    required this.onPressed,
   });
-
-  final void Function()? onPressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

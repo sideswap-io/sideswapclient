@@ -21,7 +21,7 @@ class WarmupAppListener extends ConsumerWidget {
                   await ref.read(walletProvider).startClient();
                 },
               );
-              return Container();
+              return const SizedBox();
             }(),
           _ => () {
               logger.d('Warming up the app.');
@@ -30,10 +30,10 @@ class WarmupAppListener extends ConsumerWidget {
                   await ref.read(warmupAppProvider.notifier).initializeApp();
                 },
               );
-              return Container();
+              return const SizedBox();
             }(),
         },
-      AsyncValue(isLoading: true) => Container(),
+      AsyncValue(isLoading: true) => const SizedBox(),
       _ => () {
           logger.d('Warmup error');
           throw Exception('Warmup error');

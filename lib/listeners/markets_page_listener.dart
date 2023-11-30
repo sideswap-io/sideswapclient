@@ -10,7 +10,7 @@ class MarketsPageListener extends ConsumerWidget {
     return Consumer(
       builder: (context, ref, child) {
         ref.watch(marketsPageListenerProvider);
-        return Container();
+        return const SizedBox();
       },
     );
   }

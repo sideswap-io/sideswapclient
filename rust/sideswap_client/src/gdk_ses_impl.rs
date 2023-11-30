@@ -2228,11 +2228,12 @@ unsafe fn reconnect_hint(data: &mut GdkSesImpl, hint: gdk_json::ReconnectHint) {
 
     let hint = gdk_json::ReconnectHintOpt { hint };
     let rc = gdk::GA_reconnect_hint(session, GdkJson::new(&hint).as_ptr());
-    assert!(
-        rc == 0,
-        "GA_reconnect_hint failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
+    if rc != 0 {
+        warn!(
+            "GA_reconnect_hint failed: {}",
+            last_gdk_error_details().unwrap_or_default()
+        );
+    }
 }
 
 pub unsafe fn select_network(info: &gdk_ses::LoginInfo) -> String {

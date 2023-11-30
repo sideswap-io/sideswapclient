@@ -62,7 +62,7 @@ class OrderPriceField extends ConsumerWidget {
     }
 
     return SizedBox(
-      height: isToken ? 130 : 188,
+      height: isToken ? 135 : 188,
       child: Column(
         children: [
           SizedBox(
@@ -78,7 +78,7 @@ class OrderPriceField extends ConsumerWidget {
                             indexPriceStr.isEmpty ||
                         marketType != MarketType.stablecoin &&
                             lastPriceStr.isEmpty) {
-                      return Container();
+                      return const SizedBox();
                     }
 
                     return GestureDetector(
@@ -161,6 +161,7 @@ class OrderPriceField extends ConsumerWidget {
                 controller: controller,
                 focusNode: focusNode,
                 onEditingComplete: onEditingComplete,
+                productAsset: productAsset,
               ),
             ),
           ],

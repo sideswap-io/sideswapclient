@@ -5,11 +5,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/animated_dropdown_arrow.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
-import 'package:sideswap/desktop/desktop_helpers.dart';
+import 'package:sideswap/desktop/common/button/d_icon_button.dart';
+import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class SubAccountAssetList extends HookConsumerWidget {
@@ -24,6 +26,8 @@ class SubAccountAssetList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final iconButtonStyle =
+        ref.watch(desktopAppThemeProvider).buttonThemeData.iconButtonStyle;
     final expanded = useState(true);
     final controller = useAnimationController(
       duration: const Duration(milliseconds: 200),
@@ -51,12 +55,11 @@ class SubAccountAssetList extends HookConsumerWidget {
           decoration: BoxDecoration(
             color:
                 expanded.value ? const Color(0xB50F577A) : Colors.transparent,
-            border: Border.all(
-              color: const Color(0xFF2E7CA7),
-            ),
+            border: Border.all(color: const Color(0xFF2E7CA7)),
             borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
-          child: IconButton(
+          child: DIconButton(
+            style: iconButtonStyle,
             icon: Padding(
               padding: const EdgeInsets.only(left: 16),
               child: Row(
@@ -111,7 +114,7 @@ class SubAccountAssetList extends HookConsumerWidget {
   }
 }
 
-class SubAccountAssetTile extends StatelessWidget {
+class SubAccountAssetTile extends ConsumerWidget {
   const SubAccountAssetTile(
       {super.key, required this.account, this.showDivider = false});
 
@@ -119,7 +122,7 @@ class SubAccountAssetTile extends StatelessWidget {
   final bool showDivider;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
         DHoverButton(
@@ -172,7 +175,7 @@ class SubAccountAssetTile extends StatelessWidget {
             );
           },
           onPressed: () {
-            desktopOpenAccount(context, account);
+            ref.read(desktopDialogProvider).openAccount(account);
           },
         ),
         if (showDivider) ...[

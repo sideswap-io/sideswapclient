@@ -117,7 +117,7 @@ class Accounts extends HookConsumerWidget {
                           child: CircularProgressIndicator(color: Colors.white),
                         ),
                       ),
-                    _ => Container(),
+                    _ => const SizedBox(),
                   };
                 },
               ),

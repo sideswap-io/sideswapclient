@@ -56,9 +56,11 @@ class PinSetupState extends ConsumerState<PinSetup> {
           ref.read(pinSetupProvider).onBack();
         },
       ),
-      onWillPop: () async {
-        ref.read(pinSetupProvider).onBack();
-        return false;
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(pinSetupProvider).onBack();
+        }
       },
       body: SafeArea(
         child: LayoutBuilder(builder: (context, constraints) {

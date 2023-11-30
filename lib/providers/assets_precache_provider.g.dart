@@ -7,7 +7,7 @@ part of 'assets_precache_provider.dart';
 // **************************************************************************
 
 String _$assetsPrecacheFutureHash() =>
-    r'adb7f3b5750de37d8a9b0649ae02efd0406c6bf0';
+    r'663e00d6e5ffa83fccae9997f7032606f0848bb0';
 
 /// See also [assetsPrecacheFuture].
 @ProviderFor(assetsPrecacheFuture)

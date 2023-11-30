@@ -24,9 +24,7 @@ class Languages extends ConsumerWidget {
     final languages = supportedLanguages();
     final selectedLang = ref.watch(localesProvider).selectedLang(context);
     return SideSwapScaffold(
-      onWillPop: () async {
-        return true;
-      },
+      canPop: true,
       appBar: CustomAppBar(
         title: 'Languages'.tr(),
         onPressed: close(context),

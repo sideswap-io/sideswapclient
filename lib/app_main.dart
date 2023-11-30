@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
 import 'package:sideswap/common/theme.dart';
@@ -11,7 +10,7 @@ import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/listeners/warmup_app_listener.dart';
 import 'package:sideswap/prelaunch_page.dart';
-import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
@@ -19,6 +18,7 @@ import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/background/preload_background_painter.dart';
 import 'package:sideswap/screens/balances.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -469,9 +469,13 @@ class RootWidgetState extends ConsumerState<RootWidget> {
           const MaterialPage<Widget>(child: AmpRegister()),
         ];
       case Status.generateWalletAddress:
-        return [const MaterialPage<Widget>(child: GenerateAddressScreen())];
+        return [
+          const MaterialPage<Widget>(child: GenerateAddressScreen()),
+        ];
       case Status.walletAddressDetail:
-        return [const MaterialPage<Widget>(child: AssetReceiveScreen())];
+        return [
+          const MaterialPage<Widget>(child: AssetReceiveScreen()),
+        ];
     }
   }
 
@@ -504,13 +508,7 @@ class RootWidgetState extends ConsumerState<RootWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final navigatorKey = useMemoized(() => GlobalKey<NavigatorState>());
-
-    useEffect(() {
-      ref.read(walletProvider).navigatorKey = navigatorKey;
-
-      return;
-    }, [navigatorKey]);
+    final navigatorKey = ref.watch(navigatorKeyProvider);
 
     return Stack(
       children: [
@@ -544,9 +542,9 @@ class RootWidgetState extends ConsumerState<RootWidget> {
         ),
         Consumer(
           builder: (context, ref, child) {
-            final env = ref.watch(configProvider).env;
+            final env = ref.watch(envProvider);
             return switch (env) {
-              0 => Container(),
+              0 => const SizedBox(),
               _ => Align(
                   alignment: Alignment.topCenter,
                   child: Material(

@@ -10,6 +10,7 @@ import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/markets/widgets/order_price_field.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -49,7 +50,7 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) => afterBuild(context));
 
-    currentContext = ref.read(walletProvider).navigatorKey.currentContext;
+    currentContext = ref.read(navigatorKeyProvider).currentContext;
 
     markets = ref.read(marketsProvider);
 

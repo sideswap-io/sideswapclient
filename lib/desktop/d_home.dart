@@ -57,7 +57,7 @@ class DesktopHome extends HookConsumerWidget {
                             );
                           }
 
-                          return Container();
+                          return const SizedBox();
                         },
                       ),
                       const SizedBox(width: 16),
@@ -137,7 +137,8 @@ class DesktopHomeAssets extends HookConsumerWidget {
       children: [
         Consumer(
           builder: (context, ref, child) {
-            final regularAccounts = ref.watch(regularAccountAssetsProvider);
+            final regularAccounts =
+                ref.watch(regularVisibleAccountAssetsProvider);
 
             return SubAccountAssetList(
               name: 'Regular assets'.tr(),
@@ -147,7 +148,7 @@ class DesktopHomeAssets extends HookConsumerWidget {
         ),
         Consumer(
           builder: (context, ref, child) {
-            final ampAccounts = ref.watch(ampAccountAssetsProvider);
+            final ampAccounts = ref.watch(ampVisibleAccountAssetsProvider);
 
             return SubAccountAssetList(
               name: 'AMP assets'.tr(),
@@ -247,6 +248,6 @@ class DesktopHomeBottomPanel extends HookConsumerWidget {
       );
     }
 
-    return Container();
+    return const SizedBox();
   }
 }

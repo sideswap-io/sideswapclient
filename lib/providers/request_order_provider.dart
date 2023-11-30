@@ -103,8 +103,8 @@ OrderEntryProductPair orderEntryProduct(OrderEntryProductRef ref) {
   final pricedInLiquid =
       ref.watch(assetUtilsProvider).isPricedInLiquid(asset: selectedAsset);
 
-  final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
-  final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
+  final regularAccountAssets = ref.watch(regularVisibleAccountAssetsProvider);
+  final ampAccountAssets = ref.watch(ampVisibleAccountAssetsProvider);
 
   final makeOrderSide = ref.watch(makeOrderSideStateProvider);
   final liquidAccountAsset = ref.watch(makeOrderLiquidAccountAssetProvider);
@@ -179,10 +179,10 @@ OrderEntryAccountAsset deliverOrderEntryAccountAsset(
 
   final accountAssetList = <AccountAsset>[];
   if (deliverAccountType == AccountType.reg) {
-    final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
+    final regularAccountAssets = ref.watch(regularVisibleAccountAssetsProvider);
     accountAssetList.addAll(regularAccountAssets);
   } else {
-    final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
+    final ampAccountAssets = ref.watch(ampVisibleAccountAssetsProvider);
     accountAssetList.addAll(ampAccountAssets);
   }
 
@@ -222,10 +222,10 @@ OrderEntryAccountAsset receiveOrderEntryAccountAsset(
 
   final accountAssetList = <AccountAsset>[];
   if (receiveAccountType == AccountType.reg) {
-    final regularAccountAssets = ref.watch(regularAccountAssetsProvider);
+    final regularAccountAssets = ref.watch(regularVisibleAccountAssetsProvider);
     accountAssetList.addAll(regularAccountAssets);
   } else {
-    final ampAccountAssets = ref.watch(ampAccountAssetsProvider);
+    final ampAccountAssets = ref.watch(ampVisibleAccountAssetsProvider);
     accountAssetList.addAll(ampAccountAssets);
   }
 
@@ -543,7 +543,7 @@ Asset? priceAsset(PriceAssetRef ref) {
     return asset;
   }
 
-  return ref.watch(assetUtilsProvider).liquidAsset();
+  return ref.watch(assetUtilsProvider).regularLiquidAsset();
 }
 
 // TODO (malcolmpl): remove after cleanup
@@ -976,4 +976,53 @@ String trackingPriceFixed(TrackingPriceFixedRef ref) {
       ref.watch(indexPriceForAssetProvider(selectedAccountAsset.assetId));
   final sliderValue = ref.watch(orderPriceFieldSliderValueProvider);
   return indexPrice.calculateTrackingPrice(sliderValue);
+}
+
+@riverpod
+class OrderReviewTtlChangedFlag extends _$OrderReviewTtlChangedFlag {
+  @override
+  bool build() {
+    return false;
+  }
+
+  // one time change
+  void setTtlChanged() {
+    state = true;
+  }
+}
+
+@riverpod
+class OrderReviewTtl extends _$OrderReviewTtl {
+  @override
+  int build() {
+    return kInfTtl;
+  }
+
+  void setTtl(int ttl) {
+    state = ttl;
+  }
+}
+
+@riverpod
+class OrderReviewPublic extends _$OrderReviewPublic {
+  @override
+  bool build() {
+    return true;
+  }
+
+  void setPublic(bool value) {
+    state = value;
+  }
+}
+
+@riverpod
+class OrderReviewTwoStep extends _$OrderReviewTwoStep {
+  @override
+  bool build() {
+    return true;
+  }
+
+  void setTwoStep(bool value) {
+    state = value;
+  }
 }

@@ -8,7 +8,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_amp_login_dialog_bottom_panel.dart';
 import 'package:sideswap/desktop/theme.dart';
-import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
@@ -19,7 +19,7 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textTheme = ref.watch(desktopAppThemeProvider).textTheme;
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
-    final env = ref.watch(configProvider).env;
+    final env = ref.watch(envProvider);
 
     return SizedBox(
       width: 628,
@@ -64,7 +64,7 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
                   );
                 },
                 orElse: () {
-                  return Container();
+                  return const SizedBox();
                 },
               ),
               const Spacer(),

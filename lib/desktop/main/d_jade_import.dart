@@ -203,7 +203,7 @@ class JadeDevice extends StatelessWidget {
               jadePort.serial.match(
                 (l) {
                   logger.e(l);
-                  return Container();
+                  return const SizedBox();
                 },
                 (r) => JadeDeviceDetailsLine(
                   title: 'Serial',
@@ -217,7 +217,7 @@ class JadeDevice extends StatelessWidget {
               jadePort.state.match(
                 (l) {
                   logger.e(l);
-                  return Container();
+                  return const SizedBox();
                 },
                 (r) => JadeDeviceDetailsLine(
                   title: 'Network'.tr(),

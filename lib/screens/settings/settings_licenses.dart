@@ -140,9 +140,9 @@ class SettingsLicensesState extends State<SettingsLicenses> {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      onWillPop: () async {
+      canPop: false,
+      onPopInvoked: (bool didPop) {
         Navigator.of(context).pop();
-        return false;
       },
       appBar: CustomAppBar(
         onPressed: () {

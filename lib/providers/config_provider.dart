@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/network_access_provider.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
 
 import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -40,6 +41,7 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const knownNewReleaseField = 'known_new_release';
   static const showAmpOnboardingField = 'show_amp_onboarding';
   static const enableEndpointField = 'enable_endpoint';
+  static const networkSettingsModelField = 'network_settings_model';
 
   ConfigChangeNotifierProvider(this.ref, this.prefs);
 
@@ -238,5 +240,37 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
 
   bool get showAmpOnboarding {
     return prefs.getBool(showAmpOnboardingField) ?? true;
+  }
+
+  Future<void> setNetworkSettingsModel(NetworkSettingsModel model) async {
+    final encoded = jsonEncode(model.toJson());
+    await prefs.setString(networkSettingsModelField, encoded);
+    notifyListeners();
+  }
+
+  NetworkSettingsModel get networkSettingsModel {
+    final encoded = prefs.getString(networkSettingsModelField);
+
+    try {
+      return switch (encoded) {
+        final encodedJson? => () {
+            final json = jsonDecode(encodedJson) as Map<String, dynamic>;
+            return NetworkSettingsModel.fromJson(json);
+          }(),
+        _ => () {
+            return NetworkSettingsModelEmpty(
+              settingsNetworkType: settingsNetworkType,
+              env: env,
+            );
+          }(),
+      };
+    } catch (e) {
+      logger.w(e);
+    }
+
+    return NetworkSettingsModelEmpty(
+      settingsNetworkType: settingsNetworkType,
+      env: env,
+    );
   }
 }

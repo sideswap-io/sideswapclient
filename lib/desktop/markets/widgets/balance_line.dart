@@ -73,7 +73,7 @@ class BalanceLine extends ConsumerWidget {
                   onPressed: onMaxPressed,
                 ),
               ),
-            _ => Container(),
+            _ => const SizedBox(),
           },
         ],
       ),

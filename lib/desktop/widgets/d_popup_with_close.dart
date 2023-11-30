@@ -19,36 +19,41 @@ class DPopupWithClose extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: Material(
-          color: SideSwapColors.blumine,
-          borderRadius: BorderRadius.circular(8),
-          child: Stack(
-            children: [
-              child,
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: DIconButton(
-                    icon: SvgPicture.asset(
-                      'assets/close2.svg',
-                      width: 18,
-                      height: 18,
+    return Scaffold(
+      body: Center(
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: SideSwapColors.blumine,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(
+              children: [
+                child,
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: DIconButton(
+                      icon: SvgPicture.asset(
+                        'assets/close2.svg',
+                        width: 18,
+                        height: 18,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                        if (onClose != null) {
+                          onClose!();
+                        }
+                      },
                     ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      if (onClose != null) {
-                        onClose!();
-                      }
-                    },
                   ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
         ),
       ),

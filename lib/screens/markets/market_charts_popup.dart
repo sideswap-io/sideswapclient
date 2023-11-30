@@ -12,15 +12,19 @@ class MarketChartsPopup extends StatelessWidget {
 
   final String? assetId;
 
-  Future<bool> popup(BuildContext context) async {
+  Future<void> popup(BuildContext context) async {
     Navigator.of(context).pop();
-    return true;
   }
 
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      onWillPop: () => popup(context),
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          popup(context);
+        }
+      },
       appBar: CustomAppBar(
         title: 'Chart'.tr(),
         onPressed: () {

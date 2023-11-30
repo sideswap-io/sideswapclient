@@ -9,6 +9,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class FirstLaunch extends ConsumerStatefulWidget {
   const FirstLaunch({super.key});
@@ -22,10 +23,10 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<SelectEnvProvider>(selectEnvProvider, (_, next) async {
-      if (next.showSelectEnvDialog) {
-        ref.read(selectEnvProvider).showSelectEnvDialog = false;
-        ref.read(walletProvider).selectEnv();
+    ref.listen(selectEnvDialogProvider, (_, next) async {
+      if (next) {
+        ref.read(selectEnvDialogProvider.notifier).setSelectEnvDialog(false);
+        ref.read(pageStatusStateProvider.notifier).setStatus(Status.selectEnv);
       }
     });
 
@@ -49,7 +50,8 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: ref.read(selectEnvProvider).handleTap,
+                            onTap:
+                                ref.read(selectEnvTapProvider.notifier).setTap,
                             child: Column(
                               children: [
                                 const Align(

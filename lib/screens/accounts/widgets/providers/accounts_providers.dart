@@ -15,7 +15,7 @@ List<AccountAsset> mobileAvailableAssets(MobileAvailableAssetsRef ref) {
   final balances = ref.watch(balancesProvider);
   final disabledAccounts = ref.watch(walletProvider).disabledAccounts;
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-  final allAccounts = ref.watch(allAccountAssetsProvider);
+  final allAccounts = ref.watch(allAlwaysShowAccountAssetsProvider);
 
   // Always show accounts with positive balance
   final alwaysEnabledAccounts = balances.balances.entries

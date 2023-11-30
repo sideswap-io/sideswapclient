@@ -126,10 +126,9 @@ class AddressQrScanner extends HookConsumerWidget {
     });
 
     return SideSwapScaffold(
-      onWillPop: () async {
+      canPop: true,
+      onPopInvoked: (bool didPop) {
         cameraController?.dispose();
-        Navigator.of(context).pop();
-        return true;
       },
       extendBodyBehindAppBar: true,
       sideSwapBackground: false,

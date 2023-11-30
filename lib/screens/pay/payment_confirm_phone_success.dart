@@ -57,9 +57,7 @@ class PaymentConfirmPhoneSuccessState
     return SideSwapPopup(
       hideCloseButton: true,
       enableInsideHorizontalPadding: false,
-      onWillPop: () async {
-        return false;
-      },
+      canPop: false,
       child: Center(
         child: Column(
           children: [

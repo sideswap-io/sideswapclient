@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/app_version.dart';
@@ -17,38 +18,28 @@ import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 import 'package:sideswap/screens/settings/settings_languages.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/widgets/settings_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_delete_wallet_dialog.dart';
 
-class Settings extends ConsumerStatefulWidget {
+class Settings extends ConsumerWidget {
   const Settings({super.key});
 
   @override
-  SettingsState createState() => SettingsState();
-}
-
-class SettingsState extends ConsumerState<Settings> {
-  bool isBiometricAvailable = false;
-
-  @override
-  void initState() {
-    Future.microtask(() async {
-      isBiometricAvailable =
-          await ref.read(walletProvider).isBiometricAvailable();
-      setState(() {});
-    });
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Settings'.tr(),
       ),
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).goBack();
+        }
+      },
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -79,11 +70,15 @@ class SettingsState extends ConsumerState<Settings> {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 24),
-                  child: SettingsButton(
-                    type: SettingsButtonType.recovery,
-                    text: 'View my recovery phrase'.tr(),
-                    onPressed: () {
-                      ref.read(walletProvider).settingsViewBackup();
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      return SettingsButton(
+                        type: SettingsButtonType.recovery,
+                        text: 'View my recovery phrase'.tr(),
+                        onPressed: () {
+                          ref.read(walletProvider).settingsViewBackup();
+                        },
+                      );
                     },
                   ),
                 ),
@@ -91,95 +86,110 @@ class SettingsState extends ConsumerState<Settings> {
                     FlavorConfig.enableOnboardingUserFeatures) ...[
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: SettingsButton(
-                      type: SettingsButtonType.userDetails,
-                      text: 'User details'.tr(),
-                      onPressed: () {
-                        ref.read(walletProvider).settingsUserDetails();
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        return SettingsButton(
+                          type: SettingsButtonType.userDetails,
+                          text: 'User details'.tr(),
+                          onPressed: () {
+                            ref.read(walletProvider).settingsUserDetails();
+                          },
+                        );
                       },
                     ),
                   ),
                 ],
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: SettingsButton(
-                    type: SettingsButtonType.about,
-                    text: 'About us'.tr(),
-                    onPressed: () {
-                      ref.read(walletProvider).settingsViewAboutUs();
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      return SettingsButton(
+                        type: SettingsButtonType.about,
+                        text: 'About us'.tr(),
+                        onPressed: () {
+                          ref.read(walletProvider).settingsViewAboutUs();
+                        },
+                      );
                     },
                   ),
                 ),
-                Consumer(
-                  builder: (context, ref, _) {
-                    ref
-                        .watch(walletProvider)
-                        .isBiometricAvailable()
-                        .then((value) {
-                      setState(() {
-                        isBiometricAvailable = value;
-                      });
-                    });
+                Column(
+                  children: [
+                    HookConsumer(
+                      builder: (context, ref, _) {
+                        final isBiometricAvailable = useState(false);
+                        final isBiometricEnabled =
+                            ref.watch(biometricAvailableProvider);
 
-                    final isBiometricEnabled =
-                        ref.watch(biometricAvailableProvider);
-                    final isPinEnabled = ref.watch(pinAvailableProvider);
+                        useAsyncEffect(() async {
+                          isBiometricAvailable.value = await ref
+                              .watch(walletProvider)
+                              .isBiometricAvailable();
 
-                    return Column(
-                      children: [
-                        Visibility(
-                          visible: isBiometricAvailable,
-                          child: SettingsSecurity(
-                            icon: Icons.fingerprint,
-                            description: 'Biometric protection'.tr(),
-                            value: isBiometricEnabled,
-                            onTap: () async {
-                              if (isBiometricEnabled) {
-                                await ref
-                                    .read(walletProvider)
-                                    .settingsDisableBiometric();
-                              } else {
-                                // disable pin to be sure!
-                                // pin could be enabled when biometric is unavailable
-                                // but in the mean time biometric could be enabled in device settings
-                                // then we need to display in settings both options
-                                if (await ref
-                                    .read(walletProvider)
-                                    .disablePinProtection()) {
+                          return;
+                        }, []);
+
+                        return switch (isBiometricAvailable.value) {
+                          true => SettingsSecurity(
+                              icon: Icons.fingerprint,
+                              description: 'Biometric protection'.tr(),
+                              value: isBiometricEnabled,
+                              onTap: () async {
+                                if (isBiometricEnabled) {
                                   await ref
                                       .read(walletProvider)
-                                      .settingsEnableBiometric();
+                                      .settingsDisableBiometric();
+                                } else {
+                                  // disable pin to be sure!
+                                  // pin could be enabled when biometric is unavailable
+                                  // but in the mean time biometric could be enabled in device settings
+                                  // then we need to display in settings both options
+                                  if (await ref
+                                      .read(walletProvider)
+                                      .disablePinProtection()) {
+                                    await ref
+                                        .read(walletProvider)
+                                        .settingsEnableBiometric();
+                                  }
                                 }
-                              }
-                            },
-                          ),
-                        ),
-                        SettingsSecurity(
-                          icon: Icons.fiber_pin_outlined,
-                          description: 'PIN protection'.tr(),
-                          value: isPinEnabled,
-                          onTap: () async {
-                            if (isPinEnabled) {
-                              await ref
-                                  .read(walletProvider)
-                                  .disablePinProtection();
-                            } else {
-                              ref.read(pinSetupProvider).initPinSetupSettings();
-                            }
-                          },
-                        ),
-                      ],
-                    );
-                  },
+                              },
+                            ),
+                          false => const SizedBox(),
+                        };
+                      },
+                    ),
+                    Consumer(builder: (context, ref, _) {
+                      final isPinEnabled = ref.watch(pinAvailableProvider);
+
+                      return SettingsSecurity(
+                        icon: Icons.fiber_pin_outlined,
+                        description: 'PIN protection'.tr(),
+                        value: isPinEnabled,
+                        onTap: () async {
+                          if (isPinEnabled) {
+                            await ref
+                                .read(walletProvider)
+                                .disablePinProtection();
+                          } else {
+                            ref.read(pinSetupProvider).initPinSetupSettings();
+                          }
+                        },
+                      );
+                    }),
+                  ],
                 ),
                 if (FlavorConfig.enableNetworkSettings) ...[
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: SettingsButton(
-                      type: SettingsButtonType.network,
-                      text: 'Network access'.tr(),
-                      onPressed: () {
-                        ref.read(walletProvider).settingsNetwork();
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        return SettingsButton(
+                          type: SettingsButtonType.network,
+                          text: 'Network access'.tr(),
+                          onPressed: () {
+                            ref.read(walletProvider).settingsNetwork();
+                          },
+                        );
                       },
                     ),
                   ),

@@ -146,7 +146,7 @@ class SwapMarketState extends ConsumerState<SwapMarket> {
             child: Row(
               children: [
                 Expanded(
-                  flex: 11,
+                  flex: 12,
                   child: GestureDetector(
                     onTap: showProductsPopup,
                     child: ColoredContainer(

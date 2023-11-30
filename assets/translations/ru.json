@@ -509,5 +509,6 @@
   "Sign swap transaction": "Подписать сделку обмена",
   "Create swap output": "Создать выход обмена",
   "Sign offline swap transaction": "Подписать офлайн сделку обмена",
-  "No pending orders": "No pending orders"
+  "No pending orders": "No pending orders",
+  "APPLY": "APPLY"
 }

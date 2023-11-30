@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/common/widgets/show_peg_info_widget.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
@@ -17,6 +16,7 @@ import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 final swapProvider = ChangeNotifierProvider<SwapChangeNotifierProvider>(
@@ -122,6 +122,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
           .add(AccountAsset(AccountType.reg, ref.read(bitcoinAssetIdProvider)));
       swapPegList.add(
           AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider)));
+      swapPegList.add(
+          AccountAsset(AccountType.amp, ref.read(liquidAssetIdStateProvider)));
 
       return swapPegList;
     }
@@ -228,6 +230,9 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       ref.read(swapSendAmountChangeNotifierProvider).setAmount('');
       ref.read(swapRecvAmountChangeNotifierProvider).setAmount('');
       ref.read(swapPriceSubscribeStateNotifierProvider.notifier).setEmpty();
+      ref
+          .read(priceStreamSubscribeChangeNotifierProvider)
+          .subscribeToPriceStream();
     });
   }
 
@@ -376,20 +381,15 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   }
 
   void showPegInInformation() async {
+    final navigatorKey = ref.read(navigatorKeyProvider);
     final prefs = await SharedPreferences.getInstance();
     final internalHidePegInInfo = prefs.getBool(hidePegInInfo) ?? false;
     if (internalHidePegInInfo) {
       return;
     }
 
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
-    if (context == null) {
-      logger.w('Context cannot be null');
-      return;
-    }
-
     await showDialog<void>(
-      context: context,
+      context: navigatorKey.currentContext!,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -415,14 +415,10 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       return;
     }
 
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
-    if (context == null) {
-      logger.w('Context cannot be null');
-      return;
-    }
+    final navigatorKey = ref.read(navigatorKeyProvider);
 
     await showDialog<void>(
-      context: context,
+      context: navigatorKey.currentContext!,
       builder: (BuildContext context) {
         return Dialog(
           shape: RoundedRectangleBorder(

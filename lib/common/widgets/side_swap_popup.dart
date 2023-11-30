@@ -15,7 +15,8 @@ class SideSwapPopup extends ConsumerWidget {
     this.enableInsideTopPadding = true,
     this.enableInsideHorizontalPadding = true,
     this.onClose,
-    this.onWillPop,
+    this.canPop,
+    this.onPopInvoked,
     this.hideCloseButton = false,
     this.padding = EdgeInsets.zero,
     this.sideSwapBackground = true,
@@ -33,7 +34,8 @@ class SideSwapPopup extends ConsumerWidget {
   final bool enableInsideHorizontalPadding;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onClose;
-  final WillPopCallback? onWillPop;
+  final bool? canPop;
+  final void Function(bool)? onPopInvoked;
   final bool hideCloseButton;
   final bool sideSwapBackground;
   final Color? backgroundCoverColor;
@@ -50,7 +52,8 @@ class SideSwapPopup extends ConsumerWidget {
       extendBodyBehindAppBar: extendBodyBehindAppBar,
       sideSwapBackground: sideSwapBackground,
       backgroundColor: backgroundCoverColor,
-      onWillPop: onWillPop,
+      canPop: canPop,
+      onPopInvoked: onPopInvoked,
       appBar: appBar,
       persistentFooterButtons: persistentFooterButtons,
       bottomNavigationBar: bottomNavigationBar,

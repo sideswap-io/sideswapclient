@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/desktop/desktop_helpers.dart';
-import 'package:sideswap/desktop/main/widgets/option_generate_widget.dart';
-import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/desktop/common/button/d_custom_button.dart';
+import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
+import 'package:sideswap/desktop/main/widgets/d_option_generate_widget.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class DGenerateAddressPopup extends HookConsumerWidget {
@@ -14,104 +16,104 @@ class DGenerateAddressPopup extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final accountType = ref.watch(walletRecvAddressAccount);
+    final receiveAddress = ref.watch(currentReceiveAddressProvider);
+
     useEffect(() {
-      ref.read(walletProvider).toggleRecvAddrType(accountType);
+      ref.read(walletProvider).toggleRecvAddrType(AccountType.reg);
       return;
     }, const []);
 
-    return DPopupWithClose(
-      width: 580,
-      height: 473,
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          children: [
-            Text("Generate address".tr(),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                )),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text('Select address type'.tr(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  )),
-            ),
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: SideSwapColors.tarawera),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Consumer(builder: (context, ref, child) {
-                      return OptionGenerateWidget(
-                          isSelected:
-                              ref.watch(walletRecvAddressAccount).isRegular,
-                          assetIcon: 'assets/regular_wallet.svg',
-                          title: 'Regular wallet'.tr(),
-                          subTitle: 'Single-signature wallet'.tr(),
-                          message:
-                              'Your default wallet which contains asset are secured by a single key under your control'
-                                  .tr(),
-                          onPressed: () => ref
-                              .read(walletProvider)
-                              .toggleRecvAddrType(AccountType.reg));
-                    }),
-                    Consumer(builder: (context, ref, child) {
-                      return OptionGenerateWidget(
-                          isSelected: ref.watch(walletRecvAddressAccount).isAmp,
-                          assetIcon: 'assets/amp_wallet.svg',
-                          title: 'AMP Securities wallet'.tr(),
-                          subTitle: '2-of-2 multi-signature wallet'.tr(),
-                          message:
-                              'Your securities wallet which may hold Transfer Restricted assets, such as BMN or SSWP, which require the issuer to co-sign and approve transactions.'
-                                  .tr(),
-                          onPressed: () => ref
-                              .read(walletProvider)
-                              .toggleRecvAddrType(AccountType.amp));
-                    })
-                  ],
-                ),
+    return DContentDialog(
+      constraints: const BoxConstraints(maxWidth: 580, maxHeight: 473),
+      title: DContentDialogTitle(
+        content: Text('Generate address'.tr()),
+        onClose: () {
+          Navigator.of(context).pop();
+        },
+      ),
+      content: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 0),
+            child: Text(
+              'Select address type'.tr(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
               ),
             ),
-            const SizedBox(
-              height: 40,
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.all(2),
+            width: 500,
+            height: 231,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: SideSwapColors.tarawera,
             ),
-            Consumer(builder: (context, ref, child) {
-              return InkWell(
-                child: Container(
-                  width: double.infinity,
-                  height: 44,
-                  alignment: Alignment.center,
-                  decoration: ShapeDecoration(
-                    color: SideSwapColors.brightTurquoise,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8)),
-                  ),
-                  child: Text(
-                    'GENERATE'.tr(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DOptionGenerateWidget(
+                  isSelected: receiveAddress.accountType.isRegular,
+                  assetIcon: 'assets/regular_wallet.svg',
+                  title: 'Regular wallet'.tr(),
+                  subTitle: 'Single-signature wallet'.tr(),
+                  message:
+                      'Your default wallet which contains asset are secured by a single key under your control'
+                          .tr(),
+                  onPressed: () {
+                    if (receiveAddress.accountType.isRegular &&
+                        receiveAddress.recvAddress.isNotEmpty) {
+                      Navigator.pop(context);
+                      ref.read(desktopDialogProvider).showRecvAddress();
+                      return;
+                    }
+
+                    ref
+                        .read(walletProvider)
+                        .toggleRecvAddrType(AccountType.reg);
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  desktopShowRecvAddress(context, ref);
-                },
-              );
-            })
-          ],
-        ),
+                const SizedBox(width: 2),
+                DOptionGenerateWidget(
+                  isSelected: receiveAddress.accountType.isAmp,
+                  assetIcon: 'assets/amp_wallet.svg',
+                  title: 'AMP Securities wallet'.tr(),
+                  subTitle: '2-of-2 multi-signature wallet'.tr(),
+                  message:
+                      'Your securities wallet which may hold Transfer Restricted assets, such as BMN or SSWP, which require the issuer to co-sign and approve transactions.'
+                          .tr(),
+                  onPressed: () {
+                    if (receiveAddress.accountType.isAmp &&
+                        receiveAddress.recvAddress.isNotEmpty) {
+                      Navigator.pop(context);
+                      ref.read(desktopDialogProvider).showRecvAddress();
+                      return;
+                    }
+
+                    ref
+                        .read(walletProvider)
+                        .toggleRecvAddrType(AccountType.amp);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 40,
+          ),
+          DCustomButton(
+            height: 44,
+            isFilled: true,
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(desktopDialogProvider).showRecvAddress();
+            },
+            child: Text('GENERATE'.tr()),
+          ),
+        ],
       ),
     );
   }

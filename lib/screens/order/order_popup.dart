@@ -102,274 +102,279 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
           onClose();
         },
       ),
-      body: Center(
-        child: Consumer(
-          builder: (context, ref, child) {
-            final orderDetailsData = ref.watch(walletProvider).orderDetailsData;
-            OrderDetailsDataType? orderType =
-                orderDetailsData.orderType ?? OrderDetailsDataType.submit;
-            final dataAvailable = orderDetailsData.isDataAvailable();
-            final assetDetails = ref.watch(
-                tokenMarketAssetDetailsProvider)[orderDetailsData.assetId];
-            final chartUrl = assetDetails?.chartUrl;
-            final chartStats = assetDetails?.chartStats;
+      body: SafeArea(
+        child: Center(
+          child: Consumer(
+            builder: (context, ref, child) {
+              final orderDetailsData =
+                  ref.watch(walletProvider).orderDetailsData;
+              OrderDetailsDataType? orderType =
+                  orderDetailsData.orderType ?? OrderDetailsDataType.submit;
+              final dataAvailable = orderDetailsData.isDataAvailable();
+              final assetDetails = ref.watch(
+                  tokenMarketAssetDetailsProvider)[orderDetailsData.assetId];
+              final chartUrl = assetDetails?.chartUrl;
+              final chartStats = assetDetails?.chartStats;
 
-            var orderDescription = '';
-            switch (orderType) {
-              case OrderDetailsDataType.submit:
-                orderDescription = 'Submit an order'.tr();
-                break;
-              case OrderDetailsDataType.quote:
-                orderDescription = 'Submit response'.tr();
-                break;
-              case OrderDetailsDataType.sign:
-                orderDescription = 'Accept swap'.tr();
-                break;
-            }
+              var orderDescription = '';
+              switch (orderType) {
+                case OrderDetailsDataType.submit:
+                  orderDescription = 'Submit an order'.tr();
+                  break;
+                case OrderDetailsDataType.quote:
+                  orderDescription = 'Submit response'.tr();
+                  break;
+                case OrderDetailsDataType.sign:
+                  orderDescription = 'Accept swap'.tr();
+                  break;
+              }
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  if (orderType == OrderDetailsDataType.sign) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 67),
-                      child: Container(
-                        height: 109,
-                        decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(8)),
-                          color: SideSwapColors.chathamsBlue,
-                        ),
-                        child: Center(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 24),
-                                child: Container(
-                                  width: 26,
-                                  height: 26,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: SideSwapColors.brightTurquoise,
-                                  ),
-                                  child: Center(
-                                    child: SvgPicture.asset(
-                                      'assets/success.svg',
-                                      width: 11,
-                                      height: 11,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 16),
-                                child: Text(
-                                  'Your order has been matched'.tr(),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    if (orderType == OrderDetailsDataType.sign) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 67),
+                        child: Container(
+                          height: 109,
+                          decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                            color: SideSwapColors.chathamsBlue,
                           ),
-                        ),
-                      ),
-                    ),
-                  ],
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: Text(
-                      orderDescription,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        color: Color(0xFF043857),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: OrderTable(
-                          orderDetailsData: orderDetailsData,
-                          enabled: dataAvailable,
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (orderType == OrderDetailsDataType.quote &&
-                      percentEnabled) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: SideSwapProgressBar(
-                        percent: percent,
-                        text: '${seconds}s left',
-                      ),
-                    ),
-                  ],
-                  if (orderType == OrderDetailsDataType.submit) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: AutoSign(
-                        value: autoSign,
-                        onToggle: (value) {
-                          setState(() {
-                            autoSign = value;
-                          });
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: TimeToLive(
-                          dropdownValue: ttlSeconds,
-                          dropdownItems: availableTtlValues(false),
-                          onChanged: (value) {
-                            setState(() {
-                              ttlSeconds = value!;
-                            });
-                          }),
-                    ),
-                    const OrderTypeTracking(),
-                  ],
-                  const Spacer(),
-                  if (showAssetDetails && assetDetails != null) ...[
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Column(
-                        children: [
-                          if (chartStats != null)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Center(
+                            child: Column(
                               children: [
-                                OrderPopupStatsRow(
-                                    title: '30d Low'.tr(),
-                                    value: chartStats.low),
-                                OrderPopupStatsRow(
-                                    title: '30d High'.tr(),
-                                    value: chartStats.high),
-                                OrderPopupStatsRow(
-                                    title: 'Last'.tr(), value: chartStats.last),
-                              ],
-                            ),
-                          if (chartUrl != null)
-                            OrderTableRow(
-                              description: 'Chart:'.tr(),
-                              topPadding: 14,
-                              displayDivider: false,
-                              style: defaultInfoStyle,
-                              customValue: GestureDetector(
-                                onTap: () async {
-                                  await openUrl(chartUrl);
-                                },
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SvgPicture.asset(
-                                      'assets/web_icon.svg',
-                                      width: 18,
-                                      height: 18,
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 24),
+                                  child: Container(
+                                    width: 26,
+                                    height: 26,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: SideSwapColors.brightTurquoise,
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(
-                                      'sideswap.io',
-                                      style: defaultInfoStyle.copyWith(
-                                        decoration: TextDecoration.underline,
+                                    child: Center(
+                                      child: SvgPicture.asset(
+                                        'assets/success.svg',
+                                        width: 11,
+                                        height: 11,
                                       ),
                                     ),
-                                  ],
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: Text(
+                                    'Your order has been matched'.tr(),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.normal,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    Padding(
+                      padding: const EdgeInsets.only(top: 32),
+                      child: Text(
+                        orderDescription,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                          color: Color(0xFF043857),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: OrderTable(
+                            orderDetailsData: orderDetailsData,
+                            enabled: dataAvailable,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (orderType == OrderDetailsDataType.quote &&
+                        percentEnabled) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: SideSwapProgressBar(
+                          percent: percent,
+                          text: '${seconds}s left',
+                        ),
+                      ),
+                    ],
+                    if (orderType == OrderDetailsDataType.submit) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: AutoSign(
+                          value: autoSign,
+                          onToggle: (value) {
+                            setState(() {
+                              autoSign = value;
+                            });
+                          },
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: TimeToLive(
+                            dropdownValue: ttlSeconds,
+                            dropdownItems: availableTtlValues(false),
+                            onChanged: (value) {
+                              setState(() {
+                                ttlSeconds = value!;
+                              });
+                            }),
+                      ),
+                      const OrderTypeTracking(),
+                    ],
+                    const Spacer(),
+                    if (showAssetDetails && assetDetails != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Column(
+                          children: [
+                            if (chartStats != null)
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  OrderPopupStatsRow(
+                                      title: '30d Low'.tr(),
+                                      value: chartStats.low),
+                                  OrderPopupStatsRow(
+                                      title: '30d High'.tr(),
+                                      value: chartStats.high),
+                                  OrderPopupStatsRow(
+                                      title: 'Last'.tr(),
+                                      value: chartStats.last),
+                                ],
+                              ),
+                            if (chartUrl != null)
+                              OrderTableRow(
+                                description: 'Chart:'.tr(),
+                                topPadding: 14,
+                                displayDivider: false,
+                                style: defaultInfoStyle,
+                                customValue: GestureDetector(
+                                  onTap: () async {
+                                    await openUrl(chartUrl);
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/web_icon.svg',
+                                        width: 18,
+                                        height: 18,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'sideswap.io',
+                                        style: defaultInfoStyle.copyWith(
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    CustomBigButton(
+                      width: double.maxFinite,
+                      height: 54,
+                      enabled: dataAvailable && enabled,
+                      backgroundColor: SideSwapColors.brightTurquoise,
+                      onPressed: () async {
+                        final auth =
+                            await ref.read(walletProvider).isAuthenticated();
+                        if (auth) {
+                          setState(() {
+                            enabled = false;
+                          });
+                          switch (orderType) {
+                            case OrderDetailsDataType.submit:
+                            case OrderDetailsDataType.quote:
+                            case OrderDetailsDataType.sign:
+                              ref.read(walletProvider).setSubmitDecision(
+                                    autosign: autoSign,
+                                    accept: true,
+                                    private: false,
+                                    ttlSeconds: ttlSeconds,
+                                  );
+                              break;
+                          }
+                        }
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          if (!enabled) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(right: 200),
+                              child: SpinKitCircle(
+                                size: 32,
+                                color: Colors.white.withOpacity(0.5),
+                              ),
                             ),
+                          ],
+                          Text(
+                            enabled
+                                ? (orderType == OrderDetailsDataType.submit ||
+                                        orderType == OrderDetailsDataType.sign
+                                    ? 'SUBMIT'.tr()
+                                    : 'SIGN SWAP'.tr())
+                                : (orderType == OrderDetailsDataType.sign ||
+                                        (orderType ==
+                                                OrderDetailsDataType.quote &&
+                                            orderDetailsData.twoStep)
+                                    ? 'Broadcasting'.tr()
+                                    : 'Awaiting acceptance'.tr()),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.white,
+                            ),
+                          ),
                         ],
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: CustomBigButton(
+                        width: double.maxFinite,
+                        height: 54,
+                        text: 'Cancel'.tr(),
+                        textColor: SideSwapColors.brightTurquoise,
+                        backgroundColor: Colors.transparent,
+                        enabled: enabled,
+                        onPressed: onClose,
+                      ),
+                    )
                   ],
-                  const Spacer(),
-                  CustomBigButton(
-                    width: double.maxFinite,
-                    height: 54,
-                    enabled: dataAvailable && enabled,
-                    backgroundColor: SideSwapColors.brightTurquoise,
-                    onPressed: () async {
-                      final auth =
-                          await ref.read(walletProvider).isAuthenticated();
-                      if (auth) {
-                        setState(() {
-                          enabled = false;
-                        });
-                        switch (orderType) {
-                          case OrderDetailsDataType.submit:
-                          case OrderDetailsDataType.quote:
-                          case OrderDetailsDataType.sign:
-                            ref.read(walletProvider).setSubmitDecision(
-                                  autosign: autoSign,
-                                  accept: true,
-                                  private: false,
-                                  ttlSeconds: ttlSeconds,
-                                );
-                            break;
-                        }
-                      }
-                    },
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        if (!enabled) ...[
-                          Padding(
-                            padding: const EdgeInsets.only(right: 200),
-                            child: SpinKitCircle(
-                              size: 32,
-                              color: Colors.white.withOpacity(0.5),
-                            ),
-                          ),
-                        ],
-                        Text(
-                          enabled
-                              ? (orderType == OrderDetailsDataType.submit ||
-                                      orderType == OrderDetailsDataType.sign
-                                  ? 'SUBMIT'.tr()
-                                  : 'SIGN SWAP'.tr())
-                              : (orderType == OrderDetailsDataType.sign ||
-                                      (orderType ==
-                                              OrderDetailsDataType.quote &&
-                                          orderDetailsData.twoStep)
-                                  ? 'Broadcasting'.tr()
-                                  : 'Awaiting acceptance'.tr()),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: CustomBigButton(
-                      width: double.maxFinite,
-                      height: 54,
-                      text: 'Cancel'.tr(),
-                      textColor: SideSwapColors.brightTurquoise,
-                      backgroundColor: Colors.transparent,
-                      enabled: enabled,
-                      onPressed: onClose,
-                    ),
-                  )
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

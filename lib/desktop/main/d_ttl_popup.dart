@@ -7,16 +7,15 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/providers/request_order_provider.dart';
 
 class DTtlPopup extends ConsumerWidget {
   const DTtlPopup({
     super.key,
     this.selected,
-    required this.offline,
   });
 
   final int? selected;
-  final bool offline;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,14 +33,18 @@ class DTtlPopup extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 23),
-          Column(
-            children: availableTtlValues(offline)
-                .map((e) => DTtlPopupTtlValue(
-                      ttl: e,
-                      selected: selected == e,
-                    ))
-                .toList(),
-          ),
+          Consumer(builder: (context, ref, _) {
+            final twoStep = ref.watch(orderReviewTwoStepProvider);
+
+            return Column(
+              children: availableTtlValues(twoStep)
+                  .map((e) => DTtlPopupTtlValue(
+                        ttl: e,
+                        selected: selected == e,
+                      ))
+                  .toList(),
+            );
+          }),
           const Spacer(),
           Container(
             color: SideSwapColors.chathamsBlue,
@@ -65,7 +68,7 @@ class DTtlPopup extends ConsumerWidget {
   }
 }
 
-class DTtlPopupTtlValue extends StatelessWidget {
+class DTtlPopupTtlValue extends ConsumerWidget {
   const DTtlPopupTtlValue({
     super.key,
     required this.ttl,
@@ -76,7 +79,7 @@ class DTtlPopupTtlValue extends StatelessWidget {
   final bool selected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: DHoverButton(
@@ -102,6 +105,8 @@ class DTtlPopupTtlValue extends StatelessWidget {
           );
         },
         onPressed: () {
+          ref.read(orderReviewTtlChangedFlagProvider.notifier).setTtlChanged();
+
           Navigator.of(context, rootNavigator: true).pop(ttl);
         },
       ),

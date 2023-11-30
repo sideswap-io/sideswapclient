@@ -6,7 +6,21 @@ part of 'warmup_app_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$warmupAppHash() => r'0400b37020545890e55df436747945c51bce3f9b';
+String _$navigatorKeyHash() => r'617ac70ebc4c30db56eb48981eab39d3987bb6b3';
+
+/// See also [navigatorKey].
+@ProviderFor(navigatorKey)
+final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>.internal(
+  navigatorKey,
+  name: r'navigatorKeyProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$navigatorKeyHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef NavigatorKeyRef = ProviderRef<GlobalKey<NavigatorState>>;
+String _$warmupAppHash() => r'a32bed3bfe321e319b28b8ebdd4c6a24ccfda8a8';
 
 /// See also [WarmupApp].
 @ProviderFor(WarmupApp)

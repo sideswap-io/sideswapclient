@@ -30,6 +30,7 @@ import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/prelaunch_page.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/onboarding/license.dart';
 import 'package:sideswap/screens/onboarding/widgets/new_wallet_pin_welcome.dart';
 
@@ -211,7 +212,7 @@ class RouteContainer extends ConsumerStatefulWidget {
 
 class RouteContainerState extends ConsumerState<RouteContainer> {
   Future<void> onStatus(Status status) async {
-    final context = ref.read(walletProvider).navigatorKey.currentContext!;
+    final context = ref.read(navigatorKeyProvider).currentContext!;
     final navigator = Navigator.of(context);
 
     var routeName = RouteName.errorRoute;
@@ -382,6 +383,6 @@ class RouteContainerState extends ConsumerState<RouteContainer> {
     ref.listen(pageStatusStateProvider, (_, next) async {
       await onStatus(next);
     });
-    return Container();
+    return const SizedBox();
   }
 }

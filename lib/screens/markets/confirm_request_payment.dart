@@ -24,9 +24,11 @@ class ConfirmRequestPayment extends ConsumerWidget {
     final ticker = requestAsset?.ticker ?? '';
 
     return SideSwapPopup(
-      onWillPop: () async {
-        Navigator.of(context).pop();
-        return false;
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          Navigator.of(context).pop();
+        }
       },
       onClose: () {
         Navigator.of(context).pop();

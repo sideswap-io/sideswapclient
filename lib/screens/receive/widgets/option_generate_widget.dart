@@ -3,48 +3,51 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 class OptionGenerateWidget extends StatelessWidget {
-  const OptionGenerateWidget(
-      {super.key,
-      required bool isSelected,
-      required String assetIcon,
-      required String title,
-      required String subTitle,
-      required String message,
-      required VoidCallback onPressed})
-      : _isSelected = isSelected,
-        _assetIcon = assetIcon,
-        _title = title,
-        _subTitle = subTitle,
-        _message = message,
-        _onPressed = onPressed;
+  const OptionGenerateWidget({
+    super.key,
+    required this.isSelected,
+    required this.assetIcon,
+    required this.title,
+    required this.subTitle,
+    required this.message,
+    this.onPressed,
+  });
 
-  final bool _isSelected;
-  final String _assetIcon;
-  final String _title;
-  final String _subTitle;
-  final String _message;
-  final VoidCallback _onPressed;
+  final bool isSelected;
+  final String assetIcon;
+  final String title;
+  final String subTitle;
+  final String message;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = _isSelected ? SideSwapColors.navyBlue : Colors.transparent;
+    final bgColor = isSelected ? SideSwapColors.navyBlue : Colors.transparent;
     final accentColor =
-        _isSelected ? Colors.white : SideSwapColors.ceruleanFrost;
-    return InkWell(
+        isSelected ? Colors.white : SideSwapColors.ceruleanFrost;
+    return TextButton(
+      style: TextButton.styleFrom(
+        backgroundColor: bgColor,
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(
+            width: 1.0,
+            style: BorderStyle.solid,
+            color: SideSwapColors.navyBlue,
+          ),
+        ),
+      ),
+      onPressed: onPressed,
       child: Container(
-        margin: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: SideSwapColors.navyBlue)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Row(
               children: [
                 SvgPicture.asset(
-                  _assetIcon,
+                  assetIcon,
                   colorFilter: ColorFilter.mode(accentColor, BlendMode.srcIn),
                   width: 44,
                   height: 44,
@@ -57,7 +60,7 @@ class OptionGenerateWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _title,
+                      title,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: accentColor,
@@ -66,7 +69,7 @@ class OptionGenerateWidget extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      _subTitle,
+                      subTitle,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: accentColor,
@@ -79,7 +82,7 @@ class OptionGenerateWidget extends StatelessWidget {
               ],
             ),
             Text(
-              _message,
+              message,
               textAlign: TextAlign.start,
               style: TextStyle(
                 color: accentColor,
@@ -90,9 +93,6 @@ class OptionGenerateWidget extends StatelessWidget {
           ],
         ),
       ),
-      onTap: () {
-        _onPressed.call();
-      },
     );
   }
 }

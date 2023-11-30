@@ -4,6 +4,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 
@@ -20,6 +21,12 @@ class PegInAddress extends HookConsumerWidget {
               .setStatus(Status.registered);
         },
       ),
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).goBack();
+        }
+      },
       body: Stack(
         children: [
           Padding(
@@ -29,7 +36,7 @@ class PegInAddress extends HookConsumerWidget {
               alignment: Alignment.topCenter,
               child: SizedBox(
                 width: 215,
-                height: 36,
+                height: 40,
                 child: Text(
                   'Please send BTC to the following address:',
                   textAlign: TextAlign.center,

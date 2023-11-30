@@ -58,7 +58,7 @@ class DSendPopupCreate extends HookConsumerWidget {
     final eiCreateTransaction = ref.watch(eiCreateTransactionNotifierProvider);
     final balances = ref.watch(balancesProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final allAccounts = ref.watch(allAccountAssetsProvider);
+    final allAccounts = ref.watch(allAlwaysShowAccountAssetsProvider);
     final regularLiquidAccount = AccountAsset(AccountType.reg, liquidAssetId);
     final accounts = allAccounts
         .where((account) =>

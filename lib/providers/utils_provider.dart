@@ -10,8 +10,8 @@ import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/swap/widgets/quote_expired_dialog.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -39,10 +39,7 @@ class UtilsProvider {
     void Function(BuildContext context)? onSecondPressed,
     SettingsDialogIcon icon = SettingsDialogIcon.error,
   }) async {
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
-    if (context == null) {
-      return;
-    }
+    final context = ref.read(navigatorKeyProvider).currentContext;
 
     final Widget? iconWidget;
     final Color? borderColor;
@@ -70,7 +67,7 @@ class UtilsProvider {
         break;
     }
     await showDialog<void>(
-      context: context,
+      context: context!,
       barrierDismissible: false,
       builder: (context) {
         return Dialog(
@@ -171,7 +168,8 @@ class UtilsProvider {
 
   Future<void> showErrorDialog(String errorDescription,
       {String? buttonText}) async {
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(navigatorKeyProvider).currentContext;
+
     if (context == null) {
       return;
     }
@@ -294,7 +292,8 @@ class UtilsProvider {
   }
 
   Future<void> showInsufficienFunds(From_ShowInsufficientFunds msg) async {
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(navigatorKeyProvider).currentContext;
+
     if (context == null) {
       return;
     }
@@ -321,7 +320,8 @@ class UtilsProvider {
 
   Future<void> showUnregisteredGaid(
       From_SubmitResult_UnregisteredGaid msg) async {
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(navigatorKeyProvider).currentContext;
+
     if (context == null) {
       return;
     }

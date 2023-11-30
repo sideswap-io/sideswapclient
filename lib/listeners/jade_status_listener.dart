@@ -72,6 +72,6 @@ class JadeStatusListener extends HookConsumerWidget {
       return;
     }, [jadeOnboardingRegistration, showAmpOnboarding]);
 
-    return Container();
+    return const SizedBox();
   }
 }

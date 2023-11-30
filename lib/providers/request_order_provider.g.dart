@@ -24,7 +24,7 @@ final defaultOrderEntryProductProvider =
 
 typedef DefaultOrderEntryProductRef
     = AutoDisposeProviderRef<OrderEntryProductPair>;
-String _$orderEntryProductHash() => r'066ba97e2f4a6e0bd55a8f9fd484989eecb528d3';
+String _$orderEntryProductHash() => r'248284ca85fce36521400b9c68d09091dc0e3fcc';
 
 /// See also [orderEntryProduct].
 @ProviderFor(orderEntryProduct)
@@ -41,7 +41,7 @@ final orderEntryProductProvider =
 
 typedef OrderEntryProductRef = AutoDisposeProviderRef<OrderEntryProductPair>;
 String _$deliverOrderEntryAccountAssetHash() =>
-    r'3809d72d667ef74afd517aa3f717c374dfcec0eb';
+    r'6ab40e9fd1bcf427caf71e929e1d9235fe736d6a';
 
 /// See also [deliverOrderEntryAccountAsset].
 @ProviderFor(deliverOrderEntryAccountAsset)
@@ -59,7 +59,7 @@ final deliverOrderEntryAccountAssetProvider =
 typedef DeliverOrderEntryAccountAssetRef
     = AutoDisposeProviderRef<OrderEntryAccountAsset>;
 String _$receiveOrderEntryAccountAssetHash() =>
-    r'818efa0cfff00693f895d3cb88b1d37f24cd47c0';
+    r'27d7cb5a2c80d8260d73e38b59b9062439e1d975';
 
 /// See also [receiveOrderEntryAccountAsset].
 @ProviderFor(receiveOrderEntryAccountAsset)
@@ -650,7 +650,7 @@ final isStablecoinMarketProvider = AutoDisposeProvider<bool>.internal(
 );
 
 typedef IsStablecoinMarketRef = AutoDisposeProviderRef<bool>;
-String _$priceAssetHash() => r'cda00f8b7939e1a6e4f2b8941b14466bf76ffc56';
+String _$priceAssetHash() => r'5ba9fd7938db1ec38fd1b0277aba068333e1c835';
 
 /// See also [priceAsset].
 @ProviderFor(priceAsset)
@@ -1063,5 +1063,71 @@ final priceAmountProvider =
 );
 
 typedef _$PriceAmount = AutoDisposeNotifier<OrderEntryAmount>;
+String _$orderReviewTtlChangedFlagHash() =>
+    r'23d595bbbacc2b057590bfb078c89a3ccc44d040';
+
+/// See also [OrderReviewTtlChangedFlag].
+@ProviderFor(OrderReviewTtlChangedFlag)
+final orderReviewTtlChangedFlagProvider =
+    AutoDisposeNotifierProvider<OrderReviewTtlChangedFlag, bool>.internal(
+  OrderReviewTtlChangedFlag.new,
+  name: r'orderReviewTtlChangedFlagProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$orderReviewTtlChangedFlagHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$OrderReviewTtlChangedFlag = AutoDisposeNotifier<bool>;
+String _$orderReviewTtlHash() => r'9f64030478fc0b47e53d6dc382e47b3fe0ebe799';
+
+/// See also [OrderReviewTtl].
+@ProviderFor(OrderReviewTtl)
+final orderReviewTtlProvider =
+    AutoDisposeNotifierProvider<OrderReviewTtl, int>.internal(
+  OrderReviewTtl.new,
+  name: r'orderReviewTtlProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$orderReviewTtlHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$OrderReviewTtl = AutoDisposeNotifier<int>;
+String _$orderReviewPublicHash() => r'8ae021d427526003c340844dd581fef305b1c071';
+
+/// See also [OrderReviewPublic].
+@ProviderFor(OrderReviewPublic)
+final orderReviewPublicProvider =
+    AutoDisposeNotifierProvider<OrderReviewPublic, bool>.internal(
+  OrderReviewPublic.new,
+  name: r'orderReviewPublicProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$orderReviewPublicHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$OrderReviewPublic = AutoDisposeNotifier<bool>;
+String _$orderReviewTwoStepHash() =>
+    r'fc18f13feff54d1b49927b219920d94cdaacd4b7';
+
+/// See also [OrderReviewTwoStep].
+@ProviderFor(OrderReviewTwoStep)
+final orderReviewTwoStepProvider =
+    AutoDisposeNotifierProvider<OrderReviewTwoStep, bool>.internal(
+  OrderReviewTwoStep.new,
+  name: r'orderReviewTwoStepProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$orderReviewTwoStepHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$OrderReviewTwoStep = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -270,6 +270,22 @@ class DesktopAppTheme extends ChangeNotifier {
     notifyListeners();
   }
 
+  DButtonStyle? get mainBottomNavigationBarButtonStyle =>
+      _buttonThemeData.defaultButtonStyle?.merge(
+        DButtonStyle(
+          border: ButtonState.all(BorderSide.none),
+          textStyle: ButtonState.all(
+            const TextStyle(
+              fontSize: 10,
+              fontFamily: 'Roboto',
+              fontWeight: FontWeight.w500,
+              height: 0.12,
+              letterSpacing: 0.16,
+            ),
+          ),
+        ),
+      );
+
   DButtonThemeData _buttonThemeData = DButtonThemeData(
     iconButtonStyle: DButtonStyle(
       backgroundColor: ButtonState.resolveWith((states) {

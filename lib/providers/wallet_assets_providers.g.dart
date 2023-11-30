@@ -38,7 +38,7 @@ final cachedImageManagerProvider = Provider<CachedImageBase64Manager>.internal(
 
 typedef CachedImageManagerRef = ProviderRef<CachedImageBase64Manager>;
 String _$clearImageCacheFutureHash() =>
-    r'3619e682389d279c3d87b480a67cc0c469db43ae';
+    r'5f1854054609f505f58f97f3db2c9a636d72e8e6';
 
 /// See also [clearImageCacheFuture].
 @ProviderFor(clearImageCacheFuture)

@@ -46,9 +46,7 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      onWillPop: () async {
-        return false;
-      },
+      canPop: false,
       body: Center(
         child: Consumer(
           builder: (context, ref, child) {

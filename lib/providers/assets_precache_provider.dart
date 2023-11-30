@@ -10,6 +10,7 @@ part 'assets_precache_provider.g.dart';
 
 @riverpod
 FutureOr<bool> assetsPrecacheFuture(AssetsPrecacheFutureRef ref) async {
+  logger.d('Precaching assets...');
   if (kDebugMode) {
     // flutter.svg >= 2.0.0 svg parsing has moved to isolates and it causing
     // extreme lag in debug mode during precaching multiple images

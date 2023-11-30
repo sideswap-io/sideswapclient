@@ -510,5 +510,6 @@
   "Sign swap transaction": "Sign swap transaction",
   "Create swap output": "Create swap output",
   "Sign offline swap transaction": "Sign offline swap transaction",
-  "No pending orders": "No pending orders"
+  "No pending orders": "No pending orders",
+  "APPLY": "APPLY"
 }

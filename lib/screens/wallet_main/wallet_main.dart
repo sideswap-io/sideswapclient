@@ -27,31 +27,6 @@ final selectedMarketTypeProvider =
 class WalletMain extends HookConsumerWidget {
   const WalletMain({super.key});
 
-  // Widget getChild(WalletMainNavigationItem navigationItem) {
-  //   return switch (navigationItem) {
-  //     WalletMainNavigationItem.home => const Home(),
-  //     WalletMainNavigationItem.accounts => const Accounts(),
-  //     WalletMainNavigationItem.assetSelect => const AssetSelectList(),
-  //     WalletMainNavigationItem.assetDetails => const AssetDetails(),
-  //     WalletMainNavigationItem.markets => Markets(
-  //         selectedMarketType: selectedMarketType,
-  //         onOrdersPressed: () {
-  //           ref.read(selectedMarketTypeProvider.notifier).state =
-  //               MarketSelectedType.orders;
-  //           ref.read(marketsProvider).unsubscribeMarket();
-  //           ref.read(marketsProvider).unsubscribeIndexPrice();
-  //         },
-  //         onSwapPressed: () {
-  //           ref.read(selectedMarketTypeProvider.notifier).state =
-  //               MarketSelectedType.swap;
-  //         },
-  //       ),
-  //     WalletMainNavigationItem.swap => const SwapMain(key: ValueKey(false)),
-  //     WalletMainNavigationItem.pegs => const SwapMain(key: ValueKey(true)),
-  //     _ => Container(),
-  //   };
-  // }
-
   Future<bool> closeApp() async {
     await SystemChannels.platform.invokeMethod<void>('SystemNavigator.pop');
     return true;
@@ -69,14 +44,18 @@ class WalletMain extends HookConsumerWidget {
         final navigationItem = walletMainArguments.navigationItem;
 
         return SideSwapScaffold(
-          onWillPop: () async {
+          canPop: false,
+          onPopInvoked: (bool didPop) async {
+            if (didPop) {
+              return;
+            }
             if (currentPageIndex == 0 &&
                 navigationItem == WalletMainNavigationItem.home) {
               final now = DateTime.now();
               if (now.difference(currentBackPressTime.value) >
                   const Duration(seconds: 2, milliseconds: 700)) {
                 currentBackPressTime.value = now;
-                final flushbar = Flushbar<Widget>(
+                Flushbar(
                   messageText: Text(
                     'Press back again to exit'.tr(),
                     style: const TextStyle(
@@ -88,8 +67,8 @@ class WalletMain extends HookConsumerWidget {
                   duration: const Duration(seconds: 3),
                   animationDuration: const Duration(milliseconds: 150),
                   backgroundColor: const Color(0xFF0F4766),
-                  onTap: (flushbar) {
-                    flushbar.dismiss();
+                  onTap: (flushbar) async {
+                    await flushbar.dismiss();
                   },
                   onStatusChanged: (status) async {
                     if (status == FlushbarStatus.DISMISSED) {
@@ -100,17 +79,11 @@ class WalletMain extends HookConsumerWidget {
                       }
                     }
                   },
-                );
-                await flushbar.show(context);
+                ).show(context);
               } else {
-                return closeApp();
+                await closeApp();
               }
-
-              return false;
             }
-            ref.read(uiStateArgsProvider).walletMainArguments =
-                walletMainArguments.fromIndex(0);
-            return false;
           },
           body: const SafeArea(
             child: WalletMainChildPage(),
@@ -179,7 +152,7 @@ class WalletMainChildPage extends ConsumerWidget {
         ),
       WalletMainNavigationItem.swap => const SwapMain(key: ValueKey(false)),
       WalletMainNavigationItem.pegs => const SwapMain(key: ValueKey(true)),
-      _ => Container(),
+      _ => const SizedBox(),
     };
   }
 }

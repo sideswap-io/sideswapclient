@@ -483,5 +483,6 @@
   "Sign swap transaction": "توقيع صفقة الاستبدال",
   "Create swap output": "إنشاء إخراج الاستبدال",
   "Sign offline swap transaction": "توقيع صفقة الاستبدال دون اتصال",
-  "No pending orders": "No pending orders"
+  "No pending orders": "No pending orders",
+  "APPLY": "APPLY"
 }

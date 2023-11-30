@@ -152,7 +152,7 @@ class AccountItemConversion extends StatelessWidget {
                 ref.watch(accountItemDollarConversionProvider(accountAsset));
 
             return switch (result.amountUsd) {
-              0 => Container(),
+              0 => const SizedBox(),
               _ => Text(
                   '≈ ${result.dollarConversion}',
                   style: const TextStyle(
@@ -197,7 +197,7 @@ class AccountItemAmount extends ConsumerWidget {
             ),
           ),
         ),
-      _ => Container(),
+      _ => const SizedBox(),
     };
   }
 }

@@ -10,6 +10,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -63,12 +64,10 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        final recvAddressAccount = ref.watch(walletRecvAddressAccount);
-        final recvAddresses = ref.watch(
-            walletProvider.select((p) => p.recvAddresses[recvAddressAccount]));
+        final receiveAddress = ref.watch(currentReceiveAddressProvider);
         final recvAddress = widget.isPegIn
             ? ref.watch(swapProvider.select((p) => p.swapPegAddressServer))
-            : recvAddresses;
+            : receiveAddress.recvAddress;
         final swapRecvAddr =
             ref.watch(swapProvider.select((p) => p.swapRecvAddressExternal));
         final minPegIn = ref.watch(walletProvider
@@ -166,7 +165,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                           },
                           child: SizedBox(
                             width: FlavorConfig.isDesktop ? 400 : 311,
-                            height: 60,
+                            height: 70,
                             child: Text(
                               recvAddress,
                               textAlign: TextAlign.center,
@@ -301,7 +300,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                               alignment: Alignment.topCenter,
                               child: SizedBox(
                                 width: FlavorConfig.isDesktop ? 400 : 311,
-                                height: 60,
+                                height: 65,
                                 child: Text(
                                   swapRecvAddr,
                                   textAlign: TextAlign.center,
@@ -333,10 +332,10 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                             borderRadius: BorderRadius.circular(8),
                             child: Consumer(
                               builder: (context, ref, child) {
-                                final isAmp =
-                                    ref.watch(walletRecvAddressAccount).isAmp;
+                                final receiveAddress =
+                                    ref.watch(currentReceiveAddressProvider);
                                 return Text(
-                                  isAmp
+                                  receiveAddress.accountType.isAmp
                                       ? 'AMP address copied'.tr()
                                       : 'Liquid address copied'.tr(),
                                   style: const TextStyle(

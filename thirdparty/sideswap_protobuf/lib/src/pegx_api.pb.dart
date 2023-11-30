@@ -18,69 +18,6 @@ import 'pegx_api.pbenum.dart';
 
 export 'pegx_api.pbenum.dart';
 
-class AccountKey extends $pb.GeneratedMessage {
-  factory AccountKey({
-    $core.String? accountKey,
-    $core.String? name,
-  }) {
-    final $result = create();
-    if (accountKey != null) {
-      $result.accountKey = accountKey;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    return $result;
-  }
-  AccountKey._() : super();
-  factory AccountKey.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AccountKey.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AccountKey', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'accountKey')
-    ..aQS(2, _omitFieldNames ? '' : 'name')
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  AccountKey clone() => AccountKey()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AccountKey copyWith(void Function(AccountKey) updates) => super.copyWith((message) => updates(message as AccountKey)) as AccountKey;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static AccountKey create() => AccountKey._();
-  AccountKey createEmptyInstance() => create();
-  static $pb.PbList<AccountKey> createRepeated() => $pb.PbList<AccountKey>();
-  @$core.pragma('dart2js:noInline')
-  static AccountKey getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AccountKey>(create);
-  static AccountKey? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get accountKey => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set accountKey($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasAccountKey() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAccountKey() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get name => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set name($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasName() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearName() => clearField(2);
-}
-
 class AccountDetails_OrgDetails extends $pb.GeneratedMessage {
   factory AccountDetails_OrgDetails({
     $core.String? name,
@@ -555,79 +492,6 @@ class AccountDetails extends $pb.GeneratedMessage {
   void clearAccountState() => clearField(3);
 }
 
-class Account extends $pb.GeneratedMessage {
-  factory Account({
-    $core.String? accountKey,
-    AccountDetails? details,
-    $core.Iterable<$core.String>? gaids,
-  }) {
-    final $result = create();
-    if (accountKey != null) {
-      $result.accountKey = accountKey;
-    }
-    if (details != null) {
-      $result.details = details;
-    }
-    if (gaids != null) {
-      $result.gaids.addAll(gaids);
-    }
-    return $result;
-  }
-  Account._() : super();
-  factory Account.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Account.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Account', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'accountKey')
-    ..aQM<AccountDetails>(2, _omitFieldNames ? '' : 'details', subBuilder: AccountDetails.create)
-    ..pPS(3, _omitFieldNames ? '' : 'gaids')
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Account clone() => Account()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Account copyWith(void Function(Account) updates) => super.copyWith((message) => updates(message as Account)) as Account;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Account create() => Account._();
-  Account createEmptyInstance() => create();
-  static $pb.PbList<Account> createRepeated() => $pb.PbList<Account>();
-  @$core.pragma('dart2js:noInline')
-  static Account getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Account>(create);
-  static Account? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get accountKey => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set accountKey($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasAccountKey() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAccountKey() => clearField(1);
-
-  @$pb.TagNumber(2)
-  AccountDetails get details => $_getN(1);
-  @$pb.TagNumber(2)
-  set details(AccountDetails v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasDetails() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearDetails() => clearField(2);
-  @$pb.TagNumber(2)
-  AccountDetails ensureDetails() => $_ensure(1);
-
-  @$pb.TagNumber(3)
-  $core.List<$core.String> get gaids => $_getList(2);
-}
-
 class Asset extends $pb.GeneratedMessage {
   factory Asset({
     $core.String? assetId,
@@ -635,6 +499,9 @@ class Asset extends $pb.GeneratedMessage {
     $core.String? ticker,
     $core.int? precision,
     $core.String? domain,
+    $core.String? iconUrl,
+    $core.double? online,
+    $core.double? offline,
   }) {
     final $result = create();
     if (assetId != null) {
@@ -652,6 +519,15 @@ class Asset extends $pb.GeneratedMessage {
     if (domain != null) {
       $result.domain = domain;
     }
+    if (iconUrl != null) {
+      $result.iconUrl = iconUrl;
+    }
+    if (online != null) {
+      $result.online = online;
+    }
+    if (offline != null) {
+      $result.offline = offline;
+    }
     return $result;
   }
   Asset._() : super();
@@ -659,11 +535,14 @@ class Asset extends $pb.GeneratedMessage {
   factory Asset.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Asset', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'assetId')
+    ..aOS(1, _omitFieldNames ? '' : 'assetId')
     ..aQS(2, _omitFieldNames ? '' : 'name')
     ..aQS(3, _omitFieldNames ? '' : 'ticker')
     ..a<$core.int>(4, _omitFieldNames ? '' : 'precision', $pb.PbFieldType.Q3)
     ..aQS(5, _omitFieldNames ? '' : 'domain')
+    ..aQS(6, _omitFieldNames ? '' : 'iconUrl')
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'online', $pb.PbFieldType.QD)
+    ..a<$core.double>(8, _omitFieldNames ? '' : 'offline', $pb.PbFieldType.QD)
   ;
 
   @$core.Deprecated(
@@ -731,6 +610,120 @@ class Asset extends $pb.GeneratedMessage {
   $core.bool hasDomain() => $_has(4);
   @$pb.TagNumber(5)
   void clearDomain() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.String get iconUrl => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set iconUrl($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasIconUrl() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIconUrl() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get online => $_getN(6);
+  @$pb.TagNumber(7)
+  set online($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasOnline() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearOnline() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get offline => $_getN(7);
+  @$pb.TagNumber(8)
+  set offline($core.double v) { $_setDouble(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasOffline() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearOffline() => clearField(8);
+}
+
+class Account extends $pb.GeneratedMessage {
+  factory Account({
+    $core.String? accountKey,
+    AccountDetails? details,
+    $core.Iterable<$core.String>? gaids,
+    $core.String? name,
+  }) {
+    final $result = create();
+    if (accountKey != null) {
+      $result.accountKey = accountKey;
+    }
+    if (details != null) {
+      $result.details = details;
+    }
+    if (gaids != null) {
+      $result.gaids.addAll(gaids);
+    }
+    if (name != null) {
+      $result.name = name;
+    }
+    return $result;
+  }
+  Account._() : super();
+  factory Account.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory Account.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Account', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'accountKey')
+    ..aQM<AccountDetails>(2, _omitFieldNames ? '' : 'details', subBuilder: AccountDetails.create)
+    ..pPS(3, _omitFieldNames ? '' : 'gaids')
+    ..aQS(4, _omitFieldNames ? '' : 'name')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  Account clone() => Account()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  Account copyWith(void Function(Account) updates) => super.copyWith((message) => updates(message as Account)) as Account;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static Account create() => Account._();
+  Account createEmptyInstance() => create();
+  static $pb.PbList<Account> createRepeated() => $pb.PbList<Account>();
+  @$core.pragma('dart2js:noInline')
+  static Account getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Account>(create);
+  static Account? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get accountKey => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set accountKey($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccountKey() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccountKey() => clearField(1);
+
+  @$pb.TagNumber(2)
+  AccountDetails get details => $_getN(1);
+  @$pb.TagNumber(2)
+  set details(AccountDetails v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasDetails() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDetails() => clearField(2);
+  @$pb.TagNumber(2)
+  AccountDetails ensureDetails() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.List<$core.String> get gaids => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $core.String get name => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set name($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasName() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearName() => clearField(4);
 }
 
 class Balance extends $pb.GeneratedMessage {
@@ -1122,12 +1115,12 @@ class OwnTransaction extends $pb.GeneratedMessage {
 
 class BalanceOwner extends $pb.GeneratedMessage {
   factory BalanceOwner({
-    $core.String? accountKey,
+    Account? account,
     $core.double? amount,
   }) {
     final $result = create();
-    if (accountKey != null) {
-      $result.accountKey = accountKey;
+    if (account != null) {
+      $result.account = account;
     }
     if (amount != null) {
       $result.amount = amount;
@@ -1139,7 +1132,7 @@ class BalanceOwner extends $pb.GeneratedMessage {
   factory BalanceOwner.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'BalanceOwner', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'accountKey')
+    ..aQM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
     ..a<$core.double>(2, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.QD)
   ;
 
@@ -1165,13 +1158,15 @@ class BalanceOwner extends $pb.GeneratedMessage {
   static BalanceOwner? _defaultInstance;
 
   @$pb.TagNumber(1)
-  $core.String get accountKey => $_getSZ(0);
+  Account get account => $_getN(0);
   @$pb.TagNumber(1)
-  set accountKey($core.String v) { $_setString(0, v); }
+  set account(Account v) { setField(1, v); }
   @$pb.TagNumber(1)
-  $core.bool hasAccountKey() => $_has(0);
+  $core.bool hasAccount() => $_has(0);
   @$pb.TagNumber(1)
-  void clearAccountKey() => clearField(1);
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.double get amount => $_getN(1);
@@ -1595,14 +1590,10 @@ class Req_RegisterIssuer extends $pb.GeneratedMessage {
 class Req_Resume extends $pb.GeneratedMessage {
   factory Req_Resume({
     $core.String? token,
-    $core.String? accountKey,
   }) {
     final $result = create();
     if (token != null) {
       $result.token = token;
-    }
-    if (accountKey != null) {
-      $result.accountKey = accountKey;
     }
     return $result;
   }
@@ -1612,7 +1603,6 @@ class Req_Resume extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.Resume', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'token')
-    ..aQS(2, _omitFieldNames ? '' : 'accountKey')
   ;
 
   @$core.Deprecated(
@@ -1644,15 +1634,6 @@ class Req_Resume extends $pb.GeneratedMessage {
   $core.bool hasToken() => $_has(0);
   @$pb.TagNumber(1)
   void clearToken() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get accountKey => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set accountKey($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasAccountKey() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearAccountKey() => clearField(2);
 }
 
 class Req_Logout extends $pb.GeneratedMessage {
@@ -1690,10 +1671,14 @@ class Req_Logout extends $pb.GeneratedMessage {
 class Req_AddGaid extends $pb.GeneratedMessage {
   factory Req_AddGaid({
     $core.String? gaid,
+    $core.String? accountKey,
   }) {
     final $result = create();
     if (gaid != null) {
       $result.gaid = gaid;
+    }
+    if (accountKey != null) {
+      $result.accountKey = accountKey;
     }
     return $result;
   }
@@ -1703,6 +1688,7 @@ class Req_AddGaid extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.AddGaid', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'gaid')
+    ..aQS(2, _omitFieldNames ? '' : 'accountKey')
   ;
 
   @$core.Deprecated(
@@ -1734,6 +1720,15 @@ class Req_AddGaid extends $pb.GeneratedMessage {
   $core.bool hasGaid() => $_has(0);
   @$pb.TagNumber(1)
   void clearGaid() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accountKey => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accountKey($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountKey() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountKey() => clearField(2);
 }
 
 class Req_LoadAssets extends $pb.GeneratedMessage {
@@ -2045,10 +2040,14 @@ class Req_ListAllTransactions extends $pb.GeneratedMessage {
 class Req_ListOwnTransactions extends $pb.GeneratedMessage {
   factory Req_ListOwnTransactions({
     $core.String? assetId,
+    $core.String? accountKey,
   }) {
     final $result = create();
     if (assetId != null) {
       $result.assetId = assetId;
+    }
+    if (accountKey != null) {
+      $result.accountKey = accountKey;
     }
     return $result;
   }
@@ -2058,6 +2057,7 @@ class Req_ListOwnTransactions extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Req.ListOwnTransactions', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'assetId')
+    ..aQS(2, _omitFieldNames ? '' : 'accountKey')
   ;
 
   @$core.Deprecated(
@@ -2089,6 +2089,15 @@ class Req_ListOwnTransactions extends $pb.GeneratedMessage {
   $core.bool hasAssetId() => $_has(0);
   @$pb.TagNumber(1)
   void clearAssetId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get accountKey => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set accountKey($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAccountKey() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAccountKey() => clearField(2);
 }
 
 class Req_ListAllBalances extends $pb.GeneratedMessage {
@@ -2602,15 +2611,19 @@ class Resp_RegisterIssuer extends $pb.GeneratedMessage {
 
 class Resp_Resume extends $pb.GeneratedMessage {
   factory Resp_Resume({
-    Account? account,
-    $core.Iterable<AccountKey>? accountKeys,
+    $core.Iterable<Account>? accounts,
+    $core.Iterable<Asset>? managedAssets,
+    $core.bool? issuer,
   }) {
     final $result = create();
-    if (account != null) {
-      $result.account = account;
+    if (accounts != null) {
+      $result.accounts.addAll(accounts);
     }
-    if (accountKeys != null) {
-      $result.accountKeys.addAll(accountKeys);
+    if (managedAssets != null) {
+      $result.managedAssets.addAll(managedAssets);
+    }
+    if (issuer != null) {
+      $result.issuer = issuer;
     }
     return $result;
   }
@@ -2619,8 +2632,9 @@ class Resp_Resume extends $pb.GeneratedMessage {
   factory Resp_Resume.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Resp.Resume', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
-    ..pc<AccountKey>(2, _omitFieldNames ? '' : 'accountKeys', $pb.PbFieldType.PM, subBuilder: AccountKey.create)
+    ..pc<Account>(1, _omitFieldNames ? '' : 'accounts', $pb.PbFieldType.PM, subBuilder: Account.create)
+    ..pc<Asset>(2, _omitFieldNames ? '' : 'managedAssets', $pb.PbFieldType.PM, subBuilder: Asset.create)
+    ..a<$core.bool>(3, _omitFieldNames ? '' : 'issuer', $pb.PbFieldType.QB)
   ;
 
   @$core.Deprecated(
@@ -2645,18 +2659,19 @@ class Resp_Resume extends $pb.GeneratedMessage {
   static Resp_Resume? _defaultInstance;
 
   @$pb.TagNumber(1)
-  Account get account => $_getN(0);
-  @$pb.TagNumber(1)
-  set account(Account v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasAccount() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAccount() => clearField(1);
-  @$pb.TagNumber(1)
-  Account ensureAccount() => $_ensure(0);
+  $core.List<Account> get accounts => $_getList(0);
 
   @$pb.TagNumber(2)
-  $core.List<AccountKey> get accountKeys => $_getList(1);
+  $core.List<Asset> get managedAssets => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.bool get issuer => $_getBF(2);
+  @$pb.TagNumber(3)
+  set issuer($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIssuer() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIssuer() => clearField(3);
 }
 
 class Resp_Logout extends $pb.GeneratedMessage {
@@ -2692,21 +2707,13 @@ class Resp_Logout extends $pb.GeneratedMessage {
 }
 
 class Resp_AddGaid extends $pb.GeneratedMessage {
-  factory Resp_AddGaid({
-    Account? account,
-  }) {
-    final $result = create();
-    if (account != null) {
-      $result.account = account;
-    }
-    return $result;
-  }
+  factory Resp_AddGaid() => create();
   Resp_AddGaid._() : super();
   factory Resp_AddGaid.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory Resp_AddGaid.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Resp.AddGaid', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
+    ..hasRequiredFields = false
   ;
 
   @$core.Deprecated(
@@ -2729,17 +2736,6 @@ class Resp_AddGaid extends $pb.GeneratedMessage {
   @$core.pragma('dart2js:noInline')
   static Resp_AddGaid getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Resp_AddGaid>(create);
   static Resp_AddGaid? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  Account get account => $_getN(0);
-  @$pb.TagNumber(1)
-  set account(Account v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasAccount() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAccount() => clearField(1);
-  @$pb.TagNumber(1)
-  Account ensureAccount() => $_ensure(0);
 }
 
 class Resp_LoadAssets extends $pb.GeneratedMessage {
@@ -3061,10 +3057,14 @@ class Resp_UpdateReg extends $pb.GeneratedMessage {
 class Resp_ListAllTransactions extends $pb.GeneratedMessage {
   factory Resp_ListAllTransactions({
     $core.Iterable<FullTransaction>? list,
+    $core.Iterable<Account>? accounts,
   }) {
     final $result = create();
     if (list != null) {
       $result.list.addAll(list);
+    }
+    if (accounts != null) {
+      $result.accounts.addAll(accounts);
     }
     return $result;
   }
@@ -3074,6 +3074,7 @@ class Resp_ListAllTransactions extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Resp.ListAllTransactions', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..pc<FullTransaction>(1, _omitFieldNames ? '' : 'list', $pb.PbFieldType.PM, subBuilder: FullTransaction.create)
+    ..pc<Account>(2, _omitFieldNames ? '' : 'accounts', $pb.PbFieldType.PM, subBuilder: Account.create)
   ;
 
   @$core.Deprecated(
@@ -3099,6 +3100,9 @@ class Resp_ListAllTransactions extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(1)
   $core.List<FullTransaction> get list => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.List<Account> get accounts => $_getList(1);
 }
 
 class Resp_ListOwnTransactions extends $pb.GeneratedMessage {
@@ -3626,14 +3630,10 @@ class Notif_LoginOrRegisterFailed extends $pb.GeneratedMessage {
 class Notif_LoginOrRegisterSucceed extends $pb.GeneratedMessage {
   factory Notif_LoginOrRegisterSucceed({
     $core.String? token,
-    $core.String? accountKey,
   }) {
     final $result = create();
     if (token != null) {
       $result.token = token;
-    }
-    if (accountKey != null) {
-      $result.accountKey = accountKey;
     }
     return $result;
   }
@@ -3643,7 +3643,6 @@ class Notif_LoginOrRegisterSucceed extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.LoginOrRegisterSucceed', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'token')
-    ..aQS(2, _omitFieldNames ? '' : 'accountKey')
   ;
 
   @$core.Deprecated(
@@ -3675,127 +3674,6 @@ class Notif_LoginOrRegisterSucceed extends $pb.GeneratedMessage {
   $core.bool hasToken() => $_has(0);
   @$pb.TagNumber(1)
   void clearToken() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get accountKey => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set accountKey($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasAccountKey() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearAccountKey() => clearField(2);
-}
-
-class Notif_RegisterFailed extends $pb.GeneratedMessage {
-  factory Notif_RegisterFailed({
-    $core.String? text,
-  }) {
-    final $result = create();
-    if (text != null) {
-      $result.text = text;
-    }
-    return $result;
-  }
-  Notif_RegisterFailed._() : super();
-  factory Notif_RegisterFailed.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Notif_RegisterFailed.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.RegisterFailed', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'text')
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Notif_RegisterFailed clone() => Notif_RegisterFailed()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Notif_RegisterFailed copyWith(void Function(Notif_RegisterFailed) updates) => super.copyWith((message) => updates(message as Notif_RegisterFailed)) as Notif_RegisterFailed;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Notif_RegisterFailed create() => Notif_RegisterFailed._();
-  Notif_RegisterFailed createEmptyInstance() => create();
-  static $pb.PbList<Notif_RegisterFailed> createRepeated() => $pb.PbList<Notif_RegisterFailed>();
-  @$core.pragma('dart2js:noInline')
-  static Notif_RegisterFailed getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_RegisterFailed>(create);
-  static Notif_RegisterFailed? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get text => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set text($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasText() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearText() => clearField(1);
-}
-
-class Notif_RegisterSucceed extends $pb.GeneratedMessage {
-  factory Notif_RegisterSucceed({
-    $core.String? token,
-    $core.String? accountKey,
-  }) {
-    final $result = create();
-    if (token != null) {
-      $result.token = token;
-    }
-    if (accountKey != null) {
-      $result.accountKey = accountKey;
-    }
-    return $result;
-  }
-  Notif_RegisterSucceed._() : super();
-  factory Notif_RegisterSucceed.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Notif_RegisterSucceed.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.RegisterSucceed', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'token')
-    ..aQS(2, _omitFieldNames ? '' : 'accountKey')
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Notif_RegisterSucceed clone() => Notif_RegisterSucceed()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Notif_RegisterSucceed copyWith(void Function(Notif_RegisterSucceed) updates) => super.copyWith((message) => updates(message as Notif_RegisterSucceed)) as Notif_RegisterSucceed;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Notif_RegisterSucceed create() => Notif_RegisterSucceed._();
-  Notif_RegisterSucceed createEmptyInstance() => create();
-  static $pb.PbList<Notif_RegisterSucceed> createRepeated() => $pb.PbList<Notif_RegisterSucceed>();
-  @$core.pragma('dart2js:noInline')
-  static Notif_RegisterSucceed getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_RegisterSucceed>(create);
-  static Notif_RegisterSucceed? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get token => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set token($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasToken() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearToken() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.String get accountKey => $_getSZ(1);
-  @$pb.TagNumber(2)
-  set accountKey($core.String v) { $_setString(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasAccountKey() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearAccountKey() => clearField(2);
 }
 
 class Notif_FreeShares extends $pb.GeneratedMessage {
@@ -4254,126 +4132,6 @@ class Notif_UpdateMarketData extends $pb.GeneratedMessage {
   $core.List<Notif_UpdateMarketData_Data> get data => $_getList(0);
 }
 
-class Notif_IssuedAmounts_Asset extends $pb.GeneratedMessage {
-  factory Notif_IssuedAmounts_Asset({
-    $core.String? assetId,
-    $core.double? online,
-    $core.double? offline,
-  }) {
-    final $result = create();
-    if (assetId != null) {
-      $result.assetId = assetId;
-    }
-    if (online != null) {
-      $result.online = online;
-    }
-    if (offline != null) {
-      $result.offline = offline;
-    }
-    return $result;
-  }
-  Notif_IssuedAmounts_Asset._() : super();
-  factory Notif_IssuedAmounts_Asset.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Notif_IssuedAmounts_Asset.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.IssuedAmounts.Asset', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'assetId')
-    ..a<$core.double>(2, _omitFieldNames ? '' : 'online', $pb.PbFieldType.QD)
-    ..a<$core.double>(3, _omitFieldNames ? '' : 'offline', $pb.PbFieldType.QD)
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Notif_IssuedAmounts_Asset clone() => Notif_IssuedAmounts_Asset()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Notif_IssuedAmounts_Asset copyWith(void Function(Notif_IssuedAmounts_Asset) updates) => super.copyWith((message) => updates(message as Notif_IssuedAmounts_Asset)) as Notif_IssuedAmounts_Asset;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Notif_IssuedAmounts_Asset create() => Notif_IssuedAmounts_Asset._();
-  Notif_IssuedAmounts_Asset createEmptyInstance() => create();
-  static $pb.PbList<Notif_IssuedAmounts_Asset> createRepeated() => $pb.PbList<Notif_IssuedAmounts_Asset>();
-  @$core.pragma('dart2js:noInline')
-  static Notif_IssuedAmounts_Asset getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_IssuedAmounts_Asset>(create);
-  static Notif_IssuedAmounts_Asset? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get assetId => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set assetId($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasAssetId() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAssetId() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.double get online => $_getN(1);
-  @$pb.TagNumber(2)
-  set online($core.double v) { $_setDouble(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasOnline() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearOnline() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.double get offline => $_getN(2);
-  @$pb.TagNumber(3)
-  set offline($core.double v) { $_setDouble(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasOffline() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearOffline() => clearField(3);
-}
-
-class Notif_IssuedAmounts extends $pb.GeneratedMessage {
-  factory Notif_IssuedAmounts({
-    $core.Iterable<Notif_IssuedAmounts_Asset>? assets,
-  }) {
-    final $result = create();
-    if (assets != null) {
-      $result.assets.addAll(assets);
-    }
-    return $result;
-  }
-  Notif_IssuedAmounts._() : super();
-  factory Notif_IssuedAmounts.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Notif_IssuedAmounts.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif.IssuedAmounts', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..pc<Notif_IssuedAmounts_Asset>(1, _omitFieldNames ? '' : 'assets', $pb.PbFieldType.PM, subBuilder: Notif_IssuedAmounts_Asset.create)
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  Notif_IssuedAmounts clone() => Notif_IssuedAmounts()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Notif_IssuedAmounts copyWith(void Function(Notif_IssuedAmounts) updates) => super.copyWith((message) => updates(message as Notif_IssuedAmounts)) as Notif_IssuedAmounts;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static Notif_IssuedAmounts create() => Notif_IssuedAmounts._();
-  Notif_IssuedAmounts createEmptyInstance() => create();
-  static $pb.PbList<Notif_IssuedAmounts> createRepeated() => $pb.PbList<Notif_IssuedAmounts>();
-  @$core.pragma('dart2js:noInline')
-  static Notif_IssuedAmounts getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Notif_IssuedAmounts>(create);
-  static Notif_IssuedAmounts? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.List<Notif_IssuedAmounts_Asset> get assets => $_getList(0);
-}
-
 class Notif_UpdateBalances extends $pb.GeneratedMessage {
   factory Notif_UpdateBalances({
     $core.String? accountKey,
@@ -4440,7 +4198,6 @@ enum Notif_Body {
   userShares, 
   updatePrices, 
   updateMarketData, 
-  issuedAmounts, 
   updateBalances, 
   notSet
 }
@@ -4455,7 +4212,6 @@ class Notif extends $pb.GeneratedMessage {
     Notif_UserShares? userShares,
     Notif_UpdatePrices? updatePrices,
     Notif_UpdateMarketData? updateMarketData,
-    Notif_IssuedAmounts? issuedAmounts,
     Notif_UpdateBalances? updateBalances,
   }) {
     final $result = create();
@@ -4483,9 +4239,6 @@ class Notif extends $pb.GeneratedMessage {
     if (updateMarketData != null) {
       $result.updateMarketData = updateMarketData;
     }
-    if (issuedAmounts != null) {
-      $result.issuedAmounts = issuedAmounts;
-    }
     if (updateBalances != null) {
       $result.updateBalances = updateBalances;
     }
@@ -4504,12 +4257,11 @@ class Notif extends $pb.GeneratedMessage {
     8 : Notif_Body.userShares,
     9 : Notif_Body.updatePrices,
     10 : Notif_Body.updateMarketData,
-    11 : Notif_Body.issuedAmounts,
     12 : Notif_Body.updateBalances,
     0 : Notif_Body.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Notif', package: const $pb.PackageName(_omitMessageNames ? '' : 'api.proto'), createEmptyInstance: create)
-    ..oo(0, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+    ..oo(0, [3, 4, 5, 6, 7, 8, 9, 10, 12])
     ..aOM<Notif_LoginOrRegisterFailed>(3, _omitFieldNames ? '' : 'loginOrRegisterFailed', subBuilder: Notif_LoginOrRegisterFailed.create)
     ..aOM<Notif_LoginOrRegisterSucceed>(4, _omitFieldNames ? '' : 'loginOrRegisterSucceed', subBuilder: Notif_LoginOrRegisterSucceed.create)
     ..aOM<Notif_FreeShares>(5, _omitFieldNames ? '' : 'freeShares', subBuilder: Notif_FreeShares.create)
@@ -4518,7 +4270,6 @@ class Notif extends $pb.GeneratedMessage {
     ..aOM<Notif_UserShares>(8, _omitFieldNames ? '' : 'userShares', subBuilder: Notif_UserShares.create)
     ..aOM<Notif_UpdatePrices>(9, _omitFieldNames ? '' : 'updatePrices', subBuilder: Notif_UpdatePrices.create)
     ..aOM<Notif_UpdateMarketData>(10, _omitFieldNames ? '' : 'updateMarketData', subBuilder: Notif_UpdateMarketData.create)
-    ..aOM<Notif_IssuedAmounts>(11, _omitFieldNames ? '' : 'issuedAmounts', subBuilder: Notif_IssuedAmounts.create)
     ..aOM<Notif_UpdateBalances>(12, _omitFieldNames ? '' : 'updateBalances', subBuilder: Notif_UpdateBalances.create)
   ;
 
@@ -4634,27 +4385,16 @@ class Notif extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   Notif_UpdateMarketData ensureUpdateMarketData() => $_ensure(7);
 
-  @$pb.TagNumber(11)
-  Notif_IssuedAmounts get issuedAmounts => $_getN(8);
-  @$pb.TagNumber(11)
-  set issuedAmounts(Notif_IssuedAmounts v) { setField(11, v); }
-  @$pb.TagNumber(11)
-  $core.bool hasIssuedAmounts() => $_has(8);
-  @$pb.TagNumber(11)
-  void clearIssuedAmounts() => clearField(11);
-  @$pb.TagNumber(11)
-  Notif_IssuedAmounts ensureIssuedAmounts() => $_ensure(8);
-
   @$pb.TagNumber(12)
-  Notif_UpdateBalances get updateBalances => $_getN(9);
+  Notif_UpdateBalances get updateBalances => $_getN(8);
   @$pb.TagNumber(12)
   set updateBalances(Notif_UpdateBalances v) { setField(12, v); }
   @$pb.TagNumber(12)
-  $core.bool hasUpdateBalances() => $_has(9);
+  $core.bool hasUpdateBalances() => $_has(8);
   @$pb.TagNumber(12)
   void clearUpdateBalances() => clearField(12);
   @$pb.TagNumber(12)
-  Notif_UpdateBalances ensureUpdateBalances() => $_ensure(9);
+  Notif_UpdateBalances ensureUpdateBalances() => $_ensure(8);
 }
 
 class Err extends $pb.GeneratedMessage {

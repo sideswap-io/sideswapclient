@@ -429,6 +429,6 @@ Widget getAddressQrScanner({required bool bitcoinAddress}) {
     return AddressQrScanner(
         expectedAddress: bitcoinAddress ? QrCodeAddressType.bitcoin : null);
   } else {
-    return Container();
+    return const SizedBox();
   }
 }

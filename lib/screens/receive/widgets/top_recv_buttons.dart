@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/providers/receive_address_providers.dart';
 
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class TopRecvButtons extends StatelessWidget {
@@ -30,7 +30,8 @@ class TopRecvButtons extends StatelessWidget {
       ),
       child: Consumer(
         builder: (context, ref, _) {
-          final isAmp = ref.watch(walletRecvAddressAccount).isAmp;
+          final receiveAddress = ref.watch(currentReceiveAddressProvider);
+          final isAmp = receiveAddress.accountType.isAmp;
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

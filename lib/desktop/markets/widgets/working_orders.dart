@@ -21,7 +21,7 @@ class WorkingOrders extends StatelessWidget {
     const visibleCount = 3;
 
     if (visibleCount == 0) {
-      return Container();
+      return const SizedBox();
     }
 
     return Container(

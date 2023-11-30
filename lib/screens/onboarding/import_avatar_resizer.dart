@@ -103,11 +103,13 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
       value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.black),
       sized: false,
       child: SideSwapScaffold(
-        onWillPop: () async {
-          if (resizerData.onBack != null) {
-            await resizerData.onBack!(context);
+        canPop: false,
+        onPopInvoked: (bool didPop) async {
+          if (!didPop) {
+            if (resizerData.onBack != null) {
+              await resizerData.onBack!(context);
+            }
           }
-          return false;
         },
         sideSwapBackground: false,
         backgroundColor: Colors.black,
@@ -200,7 +202,7 @@ class DragImageState extends ConsumerState<DragImage> {
       builder: (context, ref, child) {
         _data = ref.watch(avatarProvider).userAvatarData;
         if (_data.uiImage == null) {
-          return Container();
+          return const SizedBox();
         }
 
         return GestureDetector(

@@ -5,16 +5,15 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
 import 'package:sideswap/desktop/markets/widgets/enter_amount_separator.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
-class DOrderAmountEnter extends ConsumerStatefulWidget {
+class DOrderAmountEnter extends ConsumerWidget {
   const DOrderAmountEnter({
     super.key,
     required this.caption,
-    required this.assetId,
+    required this.accountAsset,
     required this.controller,
     this.isPriceField = false,
     this.autofocus = false,
@@ -26,7 +25,7 @@ class DOrderAmountEnter extends ConsumerStatefulWidget {
   });
 
   final String caption;
-  final String? assetId;
+  final AccountAsset? accountAsset;
   final TextEditingController controller;
   final bool isPriceField;
   final bool autofocus;
@@ -37,25 +36,21 @@ class DOrderAmountEnter extends ConsumerStatefulWidget {
   final ValueChanged<String>? onChanged;
 
   @override
-  ConsumerState<DOrderAmountEnter> createState() => DOrderAmountEnterState();
-}
-
-class DOrderAmountEnterState extends ConsumerState<DOrderAmountEnter> {
-  @override
-  Widget build(BuildContext context) {
-    final asset = ref.watch(assetsStateProvider)[widget.assetId];
-    final icon = ref.watch(assetImageProvider).getSmallImage(widget.assetId);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asset = ref.watch(assetsStateProvider)[accountAsset?.assetId];
+    final icon =
+        ref.watch(assetImageProvider).getSmallImage(accountAsset?.assetId);
     final assetPrecision = ref
         .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: widget.assetId);
+        .getPrecisionForAssetId(assetId: accountAsset?.assetId);
     final precision =
-        (widget.isPriceField && asset?.swapMarket == true) ? 2 : assetPrecision;
-    final liquidAccountAsset = ref.watch(makeOrderLiquidAccountAssetProvider);
+        (isPriceField && asset?.swapMarket == true) ? 2 : assetPrecision;
+    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final showDollarConversion =
-        widget.isPriceField && widget.assetId == liquidAccountAsset?.assetId;
+        isPriceField && accountAsset?.assetId == liquidAssetId;
     final dollarConversion = showDollarConversion
         ? ref.watch(dollarConversionFromStringProvider(
-            widget.assetId, widget.controller.text))
+            accountAsset?.assetId, controller.text))
         : null;
 
     return Column(
@@ -64,13 +59,17 @@ class DOrderAmountEnterState extends ConsumerState<DOrderAmountEnter> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              widget.caption,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: SideSwapColors.brightTurquoise,
-              ),
+            Row(
+              children: [
+                Text(
+                  caption,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: SideSwapColors.brightTurquoise,
+                  ),
+                ),
+              ],
             ),
             if (showDollarConversion && dollarConversion!.isNotEmpty)
               Text(
@@ -93,22 +92,19 @@ class DOrderAmountEnterState extends ConsumerState<DOrderAmountEnter> {
                 fontSize: 18,
               ),
             ),
-            switch (liquidAccountAsset) {
-              AccountAsset(:final account)
-                  when account.isAmp &&
-                      widget.assetId == liquidAccountAsset.assetId =>
+            switch (accountAsset) {
+              AccountAsset(:final account) when account.isAmp =>
                 const AmpFlag(),
-              _ => Container(),
+              _ => const SizedBox(),
             },
             const SizedBox(width: 8),
             Expanded(
               child: TextField(
                 textAlign: TextAlign.end,
-                controller: widget.controller,
+                controller: controller,
                 style: TextStyle(
                   fontSize: 22,
-                  color:
-                      widget.readonly ? const Color(0x7FFFFFFF) : Colors.white,
+                  color: readonly ? const Color(0x7FFFFFFF) : Colors.white,
                 ),
                 cursorColor: Colors.white,
                 decoration: InputDecoration(
@@ -118,13 +114,13 @@ class DOrderAmountEnterState extends ConsumerState<DOrderAmountEnter> {
                   border: const OutlineInputBorder(
                     borderSide: BorderSide.none,
                   ),
-                  hintText: widget.hintText,
+                  hintText: hintText,
                   hintStyle: MaterialStateTextStyle.resolveWith((states) {
                     return TextStyle(
-                        color: states.contains(MaterialState.focused) &&
-                                !widget.readonly
-                            ? Colors.transparent
-                            : const Color(0x7FFFFFFF));
+                        color:
+                            states.contains(MaterialState.focused) && !readonly
+                                ? Colors.transparent
+                                : const Color(0x7FFFFFFF));
                   }),
                 ),
                 keyboardType:
@@ -138,14 +134,11 @@ class DOrderAmountEnterState extends ConsumerState<DOrderAmountEnter> {
                   ],
                   DecimalTextInputFormatter(decimalRange: precision),
                 ],
-                autofocus: widget.autofocus,
-                onEditingComplete: widget.onEditingComplete,
-                onChanged: (value) {
-                  setState(() {});
-                  widget.onChanged?.call(value);
-                },
-                focusNode: widget.focusNode,
-                readOnly: widget.readonly,
+                autofocus: autofocus,
+                onEditingComplete: onEditingComplete,
+                onChanged: onChanged,
+                focusNode: focusNode,
+                readOnly: readonly,
               ),
             ),
           ],

@@ -25,7 +25,7 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 80,
+      height: 54,
       width: double.infinity,
       child: TextButton(
         onPressed: () {

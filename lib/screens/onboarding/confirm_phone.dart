@@ -59,11 +59,13 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
           await confirmPhoneData!.onConfirmPhoneBack!(context);
         }
       },
-      onWillPop: () async {
-        if (confirmPhoneData != null) {
-          await confirmPhoneData!.onConfirmPhoneBack!(context);
+      canPop: false,
+      onPopInvoked: (bool didPop) async {
+        if (!didPop) {
+          if (confirmPhoneData != null) {
+            await confirmPhoneData!.onConfirmPhoneBack!(context);
+          }
         }
-        return false;
       },
       enableInsideTopPadding: false,
       child: Column(
@@ -96,7 +98,7 @@ class ConfirmPhoneState extends ConsumerState<ConfirmPhone> {
                   child: SmsDigitCode(),
                 );
               } else {
-                return Container();
+                return const SizedBox();
               }
             },
           ),

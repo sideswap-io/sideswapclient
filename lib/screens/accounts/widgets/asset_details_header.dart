@@ -76,7 +76,7 @@ class AssetDetailsHeader extends ConsumerWidget {
                 );
               }
 
-              return Container();
+              return const SizedBox();
             },
           ),
           Padding(

@@ -6,12 +6,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
-import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
@@ -78,7 +79,7 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
 
     return DPopupWithClose(
       width: 580,
-      height: 606,
+      height: 632,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -225,7 +226,8 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                       );
                     },
                     onPressed: () {
-                      final isTestnet = wallet.isTestnet();
+                      final isTestnet =
+                          ref.read(envProvider.notifier).isTestnet();
                       final assetUrl = generateAssetUrl(
                           assetId: widget.account.assetId, testnet: isTestnet);
                       openUrl(assetUrl);
@@ -282,9 +284,11 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                       onTap: () {
                         ref.read(paymentProvider).createdTx = null;
                         Navigator.pop(context);
-                        ref.read(sendAssetProvider.notifier).setSendAsset(
-                            AccountAsset(AccountType.reg, asset?.assetId));
-                        desktopShowSendTx(context);
+                        ref
+                            .read(sendAssetProvider.notifier)
+                            .setSendAsset(widget.account);
+
+                        ref.read(desktopDialogProvider).showSendTx();
                       },
                       icon: 'assets/top_right_arrow.svg',
                     ),

@@ -8,13 +8,13 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sideswap/providers/env_provider.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
-import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 import 'package:sideswap_protobuf/pegx_api.dart';
@@ -72,7 +72,7 @@ class PegxRegisterFailedNotifier extends _$PegxRegisterFailedNotifier {
 }
 
 final pegxWebsocketClientProvider = AutoDisposeProvider((ref) {
-  final env = ref.watch(configProvider).env;
+  final env = ref.watch(envProvider);
   final client = PegxWebsocketClient(ref, env);
 
   ref.keepAlive();
@@ -173,8 +173,7 @@ class PegxWebsocketClient {
         // logger.d('Pegx <= $notif');
         // logger.w('Notify register succeed');
         _token = notif.loginOrRegisterSucceed.token;
-        _accountKey = notif.loginOrRegisterSucceed.accountKey;
-        resume(token: _token, accountKey: _accountKey);
+        resume(token: _token);
 
         break;
       case Notif_Body.freeShares:
@@ -188,8 +187,6 @@ class PegxWebsocketClient {
       case Notif_Body.updatePrices:
         break;
       case Notif_Body.updateMarketData:
-        break;
-      case Notif_Body.issuedAmounts:
         break;
       case Notif_Body.updateBalances:
         break;
@@ -210,13 +207,8 @@ class PegxWebsocketClient {
       case Resp_Body.resume:
         // logger.d('Pegx <= $resp');
         // logger.w("Resp resume");
-        final accountState = resp.resume.account.details.accountState;
-        if (accountState != AccountState.ACTIVE) {
-          errorAndGoBack('Auth eID account isn\'t activated'.tr());
-          return;
-        }
 
-        final gaids = resp.resume.account.gaids;
+        final gaids = resp.resume.accounts[0].gaids;
         final ampId = ref.read(ampIdProvider);
         if (gaids.contains(ampId)) {
           ref
@@ -228,6 +220,8 @@ class PegxWebsocketClient {
         ref
             .read(pegxLoginStateNotifierProvider.notifier)
             .setState(const PegxLoginStateLogged());
+        _accountKey = resp.resume.accounts[0].accountKey;
+
         break;
       case Resp_Body.logout:
         break;
@@ -236,16 +230,9 @@ class PegxWebsocketClient {
       case Resp_Body.addGaid:
         _lastAddGaidId = Int64();
         // logger.d('Pegx <= $resp');
-        final ampId = ref.read(ampIdProvider);
-        if (resp.addGaid.account.gaids.contains(ampId)) {
-          ref
-              .read(pegxLoginStateNotifierProvider.notifier)
-              .setState(const PegxLoginStateGaidAdded());
-        } else {
-          ref
-              .read(pegxLoginStateNotifierProvider.notifier)
-              .setState(const PegxLoginStateGaidError());
-        }
+        ref
+            .read(pegxLoginStateNotifierProvider.notifier)
+            .setState(const PegxLoginStateGaidAdded());
         break;
       case Resp_Body.loadAssets:
         break;
@@ -339,9 +326,8 @@ class PegxWebsocketClient {
     _send(reqLogin);
   }
 
-  void resume({String? token, String? accountKey}) {
-    final reqResume =
-        Req(resume: Req_Resume(token: token, accountKey: accountKey));
+  void resume({String? token}) {
+    final reqResume = Req(resume: Req_Resume(token: token));
     _send(reqResume);
   }
 
@@ -365,6 +351,7 @@ class PegxWebsocketClient {
     final reqAddGaid = Req(
       addGaid: Req_AddGaid(
         gaid: ampId,
+        accountKey: _accountKey,
       ),
       id: _lastAddGaidId,
     );

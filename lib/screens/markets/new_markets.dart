@@ -30,7 +30,7 @@ class Markets extends StatelessWidget {
                     child: FilledRequestsPage(requests: ownRequestOrders),
                   );
                 }(),
-              _ => Container(),
+              _ => const SizedBox(),
             };
           },
         ),

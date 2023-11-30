@@ -97,10 +97,31 @@ class PaymentPage extends HookConsumerWidget {
           });
     });
 
+    // go to the next page as soon as the address is correct
+    useEffect(() {
+      if (continueEnabled.value) {
+        Future.microtask(() {
+          ref.read(paymentProvider).selectPaymentAmountPage(
+                PaymentAmountPageArguments(
+                  result: QrCodeResult(address: addressController.text),
+                ),
+              );
+        });
+      }
+
+      return;
+    }, [continueEnabled.value]);
+
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Whom to pay'.tr(),
       ),
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).goBack();
+        }
+      },
       body: SafeArea(
         child: HookBuilder(
           builder: (_) {

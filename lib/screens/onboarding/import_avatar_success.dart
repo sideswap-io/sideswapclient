@@ -30,9 +30,11 @@ class ImportAvatarSuccessState extends ConsumerState<ImportAvatarSuccess> {
   Widget build(BuildContext context) {
     return SideSwapPopup(
       hideCloseButton: true,
-      onWillPop: () async {
-        ref.read(walletProvider).setImportAvatar();
-        return false;
+      canPop: false,
+      onPopInvoked: (bool didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).setImportAvatar();
+        }
       },
       child: Center(
         child: Column(

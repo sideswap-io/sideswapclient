@@ -6,9 +6,9 @@ import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
 import 'package:sideswap/desktop/d_home.dart';
 import 'package:sideswap/desktop/d_main_bottom_navigation_bar.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
-import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/markets/d_markets_root.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/markets_page_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
@@ -32,7 +32,7 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
       case WalletMainNavigationItem.home:
         return const DesktopHome();
       case WalletMainNavigationItem.accounts:
-        return Container();
+        return const SizedBox();
       case WalletMainNavigationItem.assetSelect:
         return const AssetSelectList();
       case WalletMainNavigationItem.assetDetails:
@@ -144,21 +144,21 @@ class TopToolbar extends ConsumerWidget {
             icon: 'assets/toolbar/send.svg',
             onPressed: () {
               ref.read(paymentProvider).createdTx = null;
-              desktopShowSendTx(context);
+              ref.read(desktopDialogProvider).showSendTx();
             },
           ),
           DTopToolbarButton(
             name: 'Receive'.tr(),
             icon: 'assets/toolbar/recv.svg',
             onPressed: () {
-              desktopShowGenerateAddress(context);
+              ref.read(desktopDialogProvider).showGenerateAddress();
             },
           ),
           DTopToolbarButton(
             name: 'URL'.tr(),
             icon: 'assets/toolbar/open_url.svg',
             onPressed: () {
-              desktopOpenUrl(context);
+              ref.read(desktopDialogProvider).openUrl();
             },
           ),
           DTopToolbarButton(

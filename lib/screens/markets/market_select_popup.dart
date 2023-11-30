@@ -12,15 +12,14 @@ class MarketSelectPopup extends StatelessWidget {
 
   final VoidCallback? onAssetSelected;
 
-  Future<bool> popup(BuildContext context) async {
+  Future<void> popup(BuildContext context) async {
     Navigator.of(context).pop();
-    return true;
   }
 
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      onWillPop: () => popup(context),
+      canPop: true,
       appBar: CustomAppBar(
         title: 'Product'.tr(),
         onPressed: () {

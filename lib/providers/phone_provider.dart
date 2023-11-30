@@ -10,6 +10,7 @@ import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/countries_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
 
 // TODO: fix this provider
 
@@ -235,7 +236,7 @@ class PhoneProvider with ChangeNotifier {
     _smsCodeStep = SmsCodeStep.hidden;
     barier = false;
     notifyListeners();
-    final context = ref.read(walletProvider).navigatorKey.currentContext;
+    final context = ref.read(navigatorKeyProvider).currentContext;
     if (context == null) {
       return;
     }

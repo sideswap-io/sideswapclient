@@ -50,6 +50,6 @@ class PinListener extends ConsumerWidget {
       ref.read(pinSetupCallerStateProvider.notifier).state =
           const PinSetupCallerState.empty();
     });
-    return Container();
+    return const SizedBox();
   }
 }

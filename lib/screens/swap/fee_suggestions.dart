@@ -15,9 +15,7 @@ class FeeRates extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
-      onWillPop: () async {
-        return true;
-      },
+      canPop: true,
       appBar: CustomAppBar(
         title: 'Fee Suggestions'.tr(),
         onPressed: () {
@@ -80,7 +78,7 @@ class FeeRates extends StatelessWidget {
                     ),
                   );
                 } else {
-                  return Container();
+                  return const SizedBox();
                 }
               },
             );
