@@ -4187,6 +4187,8 @@ pub fn start_processing(
     };
     ui.send(ffi::proto::from::Msg::EnvSettings(env_settings));
 
+    debug!("proxy env: {:?}", Data::proxy());
+
     let env_data = env.data();
     let (resp_sender, resp_receiver) = crossbeam_channel::unbounded::<ServerResp>();
     let (ws_sender, ws_receiver, ws_hint) = ws::start(

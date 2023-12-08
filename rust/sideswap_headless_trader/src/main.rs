@@ -4,6 +4,8 @@ use log::*;
 use sideswap_client::ffi::proto::*;
 use sideswap_client::ffi::{blocking_recv_msg, send_msg};
 
+mod api_server;
+
 #[derive(Debug, serde::Deserialize, Clone)]
 pub struct SellAsset {
     asset_id: sideswap_api::AssetId,
@@ -11,6 +13,7 @@ pub struct SellAsset {
     amp_asset: Option<bool>,
     asset_precision: u8,
     offer_amount: Option<f64>,
+    private: Option<bool>,
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -19,6 +22,7 @@ pub struct Args {
     work_dir: String,
     mnemonic: String,
     sell_assets: Vec<SellAsset>,
+    api_server: Option<api_server::Settings>,
 }
 
 pub struct SellAssetData {
@@ -99,6 +103,8 @@ fn main() {
         uniq_assets.len() == asset_data.len(),
         "Duplicated asset_id are not allowed"
     );
+
+    let api_server = args.api_server.clone().map(api_server::Server::new);
 
     loop {
         let msg = blocking_recv_msg(client);
@@ -217,13 +223,18 @@ fn main() {
 
             from::Msg::SubmitReview(msg) => {
                 info!("accept swap, order_id: {}", msg.order_id);
+                let asset_id = sideswap_api::AssetId::from_str(&msg.asset).unwrap();
+                let asset = asset_data
+                    .iter()
+                    .find(|asset| asset.sell_asset.asset_id == asset_id)
+                    .expect("must be known");
                 send_msg(
                     client,
                     to::Msg::SubmitDecision(to::SubmitDecision {
                         order_id: msg.order_id,
                         accept: true,
                         auto_sign: Some(true),
-                        private: Some(false),
+                        private: asset.sell_asset.private,
                         ttl_seconds: None,
                         two_step: Some(false),
                         tx_chaining_allowed: Some(false),
@@ -232,6 +243,10 @@ fn main() {
             }
 
             from::Msg::OrderCreated(msg) => {
+                if let Some(api_server) = &api_server {
+                    api_server.order_created(msg.clone());
+                }
+
                 if !msg.order.auto_sign {
                     // The order from the previous app start
                     warn!("cancel old order, order_id: {}", msg.order.order_id);
@@ -257,6 +272,10 @@ fn main() {
                 }
             }
             from::Msg::OrderRemoved(msg) => {
+                if let Some(api_server) = &api_server {
+                    api_server.order_removed(msg.clone());
+                }
+
                 for asset_data in asset_data.iter_mut() {
                     if asset_data
                         .order

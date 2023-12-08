@@ -68,10 +68,12 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     let StartResponse {
         order_id,
         expires_at: _,
-        fee: asset_fee,
+        fee: _,
         fee_address,
         change_address: server_change_address,
         utxos: server_utxos,
+        price,
+        fixed_fee,
     } = match resp {
         server_api::Response::Start(resp) => resp,
         _ => bail!("unexpected response {resp:?}"),
@@ -83,18 +85,21 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     ensure!(server_change_address.is_blinded());
     ensure!(!server_utxos.is_empty());
 
-    let send_amount = if subtract_fee_from_amount {
-        ensure!(send_amount > asset_fee);
-        send_amount - asset_fee
-    } else {
-        send_amount
-    };
-
     let max_input_count = client_utxos.len() + server_utxos.len();
     let max_output_count = 4; // asset output, asset change, asset fee output, server change
 
     // FIXME: Separate between single-sig and multi-sig inputs
     let max_network_fee = expected_network_fee(max_input_count, 0, max_output_count);
+    println!("max_network_fee: {max_network_fee}");
+
+    let max_asset_fee = fixed_fee + (price * max_network_fee as f64).round() as u64;
+
+    let send_amount = if subtract_fee_from_amount {
+        ensure!(send_amount > max_asset_fee);
+        send_amount - max_asset_fee
+    } else {
+        send_amount
+    };
 
     let lbtc_asset_id = server_utxos.first().unwrap().asset_id;
 
@@ -104,7 +109,7 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     for utxo in client_utxos.into_iter() {
         utxo_asset_amount += utxo.value;
         selected_utxos.push(utxo);
-        if utxo_asset_amount >= send_amount + asset_fee {
+        if utxo_asset_amount >= send_amount + max_asset_fee {
             break;
         }
     }
@@ -118,7 +123,7 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
         }
     }
 
-    ensure!(utxo_asset_amount >= send_amount + asset_fee);
+    ensure!(utxo_asset_amount >= send_amount + max_asset_fee);
     ensure!(utxo_lbtc_amount >= max_network_fee);
 
     let ConstructedPset { blinded_pset } = construct_pset(ConstructPsetArgs {
@@ -127,7 +132,8 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
         send_asset_id,
         send_amount,
         fee_address,
-        asset_fee,
+        fixed_fee,
+        price,
         client_change_address,
         utxo_asset_amount,
         utxo_lbtc_amount,
@@ -155,7 +161,10 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
 
     let pset = pset::copy_signatures(blinded_pset, server_signed_pset)?;
 
-    Ok(CreatedPayjoin { pset, asset_fee })
+    Ok(CreatedPayjoin {
+        pset,
+        asset_fee: max_asset_fee,
+    })
 }
 
 pub fn final_tx(
@@ -199,7 +208,8 @@ struct ConstructPsetArgs {
     send_asset_id: elements::AssetId,
     send_amount: u64,
     fee_address: elements::Address,
-    asset_fee: u64,
+    fixed_fee: u64,
+    price: f64,
     client_change_address: elements::Address,
     utxo_asset_amount: u64,
     utxo_lbtc_amount: u64,
@@ -218,7 +228,8 @@ fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Er
         send_asset_id,
         send_amount,
         fee_address,
-        asset_fee,
+        fixed_fee,
+        price,
         client_change_address,
         utxo_asset_amount,
         utxo_lbtc_amount,
@@ -254,6 +265,11 @@ fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Er
         amount: send_amount,
     })?);
 
+    // FIXME: Separate between single-sig and multi-sig inputs
+    let network_fee = expected_network_fee(pset.inputs().len(), 0, 4);
+
+    let asset_fee = fixed_fee + (price * network_fee as f64).round() as u64;
+
     pset.add_output(crate::pset::pset_output(PsetOutput {
         address: fee_address,
         asset: send_asset_id,
@@ -269,8 +285,6 @@ fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Er
         })?);
     }
 
-    // FIXME: Separate between single-sig and multi-sig inputs
-    let network_fee = expected_network_fee(pset.inputs().len(), 0, pset.outputs().len() + 1);
     let lbtc_change_amount = utxo_lbtc_amount - network_fee;
     if lbtc_change_amount > 0 {
         pset.add_output(crate::pset::pset_output(PsetOutput {

@@ -9,10 +9,10 @@ pub struct AcceptedAssetsResponse {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct AcceptedAsset {
     pub asset_id: elements::AssetId,
-    pub fee: u64,
+    pub fee: u64, // FIXME: Remove
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Utxo {
     pub txid: elements::Txid,
     pub vout: u32,
@@ -25,17 +25,19 @@ pub struct Utxo {
     pub value_commitment: elements::secp256k1_zkp::PedersenCommitment,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct StartRequest {
     pub asset_id: elements::AssetId,
     pub user_agent: String,
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
 pub struct StartResponse {
     pub order_id: String,
     pub expires_at: u64,
-    pub fee: u64,
+    pub fee: u64, // FIXME: Remove
+    pub price: f64,
+    pub fixed_fee: u64,
     pub fee_address: elements::Address,
     pub change_address: elements::Address,
     pub utxos: Vec<Utxo>,
