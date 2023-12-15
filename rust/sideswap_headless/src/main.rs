@@ -1,6 +1,7 @@
 use futures_util::{SinkExt, StreamExt};
 use log::*;
 use prost::Message;
+use sideswap_common::env::Env;
 use tokio_tungstenite::accept_hdr_async;
 
 #[derive(Default, Clone)]
@@ -51,19 +52,21 @@ async fn main() {
     let connect = matches.is_present("connect");
 
     let env = match env_name {
-        "prod" => sideswap_client::ffi::SIDESWAP_ENV_PROD,
-        "testnet" => sideswap_client::ffi::SIDESWAP_ENV_TESTNET,
-        "local" => sideswap_client::ffi::SIDESWAP_ENV_LOCAL_TESTNET,
+        "prod" => Env::Prod,
+        "testnet" => Env::Testnet,
+        "local" => Env::LocalTestnet,
         _ => unimplemented!("unknown env: {}", env_name),
     };
 
-    let client_ptr = sideswap_client::ffi::sideswap_client_start(
+    let start_params = sideswap_client::ffi::StartParams {
+        work_dir: work_dir.to_owned(),
+        version: "1.0.0".to_owned(),
+        disable_device_key: None,
+    };
+
+    let client_ptr = sideswap_client::ffi::sideswap_client_start_impl(
         env,
-        std::ffi::CString::new(work_dir)
-            .unwrap()
-            .as_c_str()
-            .as_ptr(),
-        std::ffi::CString::new("1.0.0").unwrap().as_c_str().as_ptr(),
+        start_params,
         sideswap_client::ffi::SIDESWAP_DART_PORT_DISABLED,
     );
     assert!(client_ptr != 0);

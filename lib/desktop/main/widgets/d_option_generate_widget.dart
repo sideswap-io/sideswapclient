@@ -33,7 +33,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
         isSelected ? Colors.white : SideSwapColors.ceruleanFrost;
     return DCustomTextBigButton(
       width: 247,
-      height: 229,
+      height: 270,
       onPressed: onPressed,
       style: ref
           .watch(desktopAppThemeProvider)
@@ -87,7 +87,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
               ),
             ),
             const SizedBox(
-              height: 8,
+              height: 2,
             ),
             Text(
               subTitle,
@@ -101,6 +101,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
             const SizedBox(
               height: 8,
             ),
+            const Spacer(),
             Text(
               message,
               textAlign: TextAlign.center,
@@ -109,7 +110,8 @@ class DOptionGenerateWidget extends ConsumerWidget {
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
               ),
-            )
+            ),
+            const Spacer(),
           ],
         ),
       ),

@@ -95,7 +95,7 @@ class EndpointServerProvider {
                 () {
                   final accountAsset = AccountAsset(AccountType.reg, assetId);
                   final balance =
-                      ref.read(balancesProvider).balances[accountAsset] ?? 0;
+                      ref.read(balancesNotifierProvider)[accountAsset] ?? 0;
                   if (balance == 0) {
                     logger.w(
                         'Unable to execute endpoint request. Balance for $assetId is zero');
@@ -130,7 +130,7 @@ class EndpointServerProvider {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class EiCreateTransactionNotifier extends _$EiCreateTransactionNotifier {
   @override
   EICreateTransaction build() {

@@ -50,38 +50,45 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
   final networkSettings = results['networkSettings'] as bool;
   final enableJade = results['enableJade'] as bool;
 
+  var appScreenSize = const Size(0, 0);
+
   if (runMobile && _isDesktop() || _isMobile()) {
     if (_isDesktop()) {
-      windowManager.waitUntilReadyToShow().then((_) async {
-        // Hide window title bar
-        // await windowManager.setTitleBarStyle('hidden');
-        await windowManager.setMinimumSize(const Size(400, 800));
-        await windowManager.setSize(const Size(400, 800));
-        await windowManager.center();
+      appScreenSize = const Size(400, 800);
+
+      final windowOptions = WindowOptions(
+        size: appScreenSize,
+        minimumSize: appScreenSize,
+        skipTaskbar: false,
+        center: true,
+      );
+
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
         await windowManager.show();
-        await windowManager.setSkipTaskbar(false);
       });
     }
   } else {
-    var appScreenSize = const Size(1072, 880);
+    // min app width is 1072 (for some reason 16px is cutted o_O)
+    appScreenSize = const Size(1088, 880);
 
     // workaround for potato laptop resolution 1366x768
     final currentScreen = await window_size.getCurrentScreen();
     if (currentScreen != null) {
       if (currentScreen.frame.size.height < 880) {
         // a bit lower app height - we don't want to reduce it more
-        appScreenSize = const Size(1072, 768);
+        appScreenSize = const Size(1088, 768);
       }
     }
 
-    windowManager.waitUntilReadyToShow().then((_) async {
-      // Hide window title bar
-      // await windowManager.setTitleBarStyle('hidden');
-      await windowManager.setMinimumSize(appScreenSize);
-      await windowManager.setSize(appScreenSize);
-      await windowManager.center();
+    final windowOptions = WindowOptions(
+      size: appScreenSize,
+      minimumSize: appScreenSize,
+      skipTaskbar: false,
+      center: true,
+    );
+
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.show();
-      await windowManager.setSkipTaskbar(false);
     });
   }
 
@@ -151,7 +158,12 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
     ),
   );
 
-  runApp(ProviderScope(overrides: [
-    sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-  ], child: const DesktopAppMain()));
+  runApp(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+      ],
+      child: const DesktopAppMain(),
+    ),
+  );
 }

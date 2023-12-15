@@ -23,12 +23,12 @@ final endpointServerProvider =
 
 typedef EndpointServerRef = AutoDisposeProviderRef<EndpointServerProvider>;
 String _$eiCreateTransactionNotifierHash() =>
-    r'a13c5b766bad18fe26479166577e3ae46d047e07';
+    r'b48125d27f82de20cb6ed0d0906bf04e55331ab8';
 
 /// See also [EiCreateTransactionNotifier].
 @ProviderFor(EiCreateTransactionNotifier)
-final eiCreateTransactionNotifierProvider = AutoDisposeNotifierProvider<
-    EiCreateTransactionNotifier, EICreateTransaction>.internal(
+final eiCreateTransactionNotifierProvider =
+    NotifierProvider<EiCreateTransactionNotifier, EICreateTransaction>.internal(
   EiCreateTransactionNotifier.new,
   name: r'eiCreateTransactionNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -38,7 +38,6 @@ final eiCreateTransactionNotifierProvider = AutoDisposeNotifierProvider<
   allTransitiveDependencies: null,
 );
 
-typedef _$EiCreateTransactionNotifier
-    = AutoDisposeNotifier<EICreateTransaction>;
+typedef _$EiCreateTransactionNotifier = Notifier<EICreateTransaction>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

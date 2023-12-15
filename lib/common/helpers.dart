@@ -7,10 +7,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -427,7 +427,7 @@ Widget getAddressQrScanner({required bool bitcoinAddress}) {
   if (defaultTargetPlatform == TargetPlatform.android ||
       defaultTargetPlatform == TargetPlatform.iOS) {
     return AddressQrScanner(
-        expectedAddress: bitcoinAddress ? QrCodeAddressType.bitcoin : null);
+        expectedAddress: bitcoinAddress ? BIP21AddressTypeEnum.bitcoin : null);
   } else {
     return const SizedBox();
   }

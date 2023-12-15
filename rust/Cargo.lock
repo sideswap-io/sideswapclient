@@ -2564,10 +2564,27 @@ dependencies = [
 ]
 
 [[package]]
-name = "sideswap_headless_trader"
+name = "sideswap_headless_server"
 version = "0.1.2"
 dependencies = [
  "axum",
+ "clap",
+ "config",
+ "crossbeam-channel",
+ "log",
+ "prost 0.11.9",
+ "serde 1.0.189",
+ "sideswap_api",
+ "sideswap_client",
+ "sideswap_common",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "sideswap_headless_trader"
+version = "0.1.2"
+dependencies = [
  "clap",
  "config",
  "log",
@@ -2576,7 +2593,6 @@ dependencies = [
  "sideswap_api",
  "sideswap_client",
  "sideswap_common",
- "tokio",
 ]
 
 [[package]]

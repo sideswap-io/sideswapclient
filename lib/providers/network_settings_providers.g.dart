@@ -34,6 +34,7 @@ const _$SettingsNetworkTypeEnumMap = {
   SettingsNetworkType.blockstream: 'blockstream',
   SettingsNetworkType.sideswap: 'sideswap',
   SettingsNetworkType.personal: 'personal',
+  SettingsNetworkType.sideswapChina: 'sideswapChina',
 };
 
 _$NetworkSettingsModelApplyImpl _$$NetworkSettingsModelApplyImplFromJson(
@@ -65,7 +66,7 @@ Map<String, dynamic> _$$NetworkSettingsModelApplyImplToJson(
 // **************************************************************************
 
 String _$networkSettingsNeedSaveHash() =>
-    r'15f4ef5ba9aec8e71636d4d6c702539ca6b7e816';
+    r'a960366514ce7b9981b9b8f78d57561059816e03';
 
 /// See also [networkSettingsNeedSave].
 @ProviderFor(networkSettingsNeedSave)
@@ -80,21 +81,22 @@ final networkSettingsNeedSaveProvider = AutoDisposeProvider<bool>.internal(
 );
 
 typedef NetworkSettingsNeedSaveRef = AutoDisposeProviderRef<bool>;
-String _$networkSettingsHash() => r'0c2b149b408cdf5c8e49dc9ac57ebbd626a5bde0';
+String _$networkSettingsNotifierHash() =>
+    r'56bbcf6e053b9f33b529653d67ee6e29d3052b72';
 
-/// See also [NetworkSettings].
-@ProviderFor(NetworkSettings)
-final networkSettingsProvider =
-    AutoDisposeNotifierProvider<NetworkSettings, NetworkSettingsModel>.internal(
-  NetworkSettings.new,
-  name: r'networkSettingsProvider',
+/// See also [NetworkSettingsNotifier].
+@ProviderFor(NetworkSettingsNotifier)
+final networkSettingsNotifierProvider = AutoDisposeNotifierProvider<
+    NetworkSettingsNotifier, NetworkSettingsModel>.internal(
+  NetworkSettingsNotifier.new,
+  name: r'networkSettingsNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$networkSettingsHash,
+      : _$networkSettingsNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$NetworkSettings = AutoDisposeNotifier<NetworkSettingsModel>;
+typedef _$NetworkSettingsNotifier = AutoDisposeNotifier<NetworkSettingsModel>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

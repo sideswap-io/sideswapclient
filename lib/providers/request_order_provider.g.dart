@@ -41,7 +41,7 @@ final orderEntryProductProvider =
 
 typedef OrderEntryProductRef = AutoDisposeProviderRef<OrderEntryProductPair>;
 String _$deliverOrderEntryAccountAssetHash() =>
-    r'6ab40e9fd1bcf427caf71e929e1d9235fe736d6a';
+    r'e3878fbf78ddef54c4e5c4915a71f990f202d5c3';
 
 /// See also [deliverOrderEntryAccountAsset].
 @ProviderFor(deliverOrderEntryAccountAsset)
@@ -59,7 +59,7 @@ final deliverOrderEntryAccountAssetProvider =
 typedef DeliverOrderEntryAccountAssetRef
     = AutoDisposeProviderRef<OrderEntryAccountAsset>;
 String _$receiveOrderEntryAccountAssetHash() =>
-    r'27d7cb5a2c80d8260d73e38b59b9062439e1d975';
+    r'e0061fb27a11f5e6db17d7594d9599beed9c701d';
 
 /// See also [receiveOrderEntryAccountAsset].
 @ProviderFor(receiveOrderEntryAccountAsset)
@@ -214,7 +214,7 @@ final deliverAssetTickerProvider = AutoDisposeProvider<String>.internal(
 
 typedef DeliverAssetTickerRef = AutoDisposeProviderRef<String>;
 String _$deliverAccountAssetListHash() =>
-    r'df96c22c99d9f87db69f91b6066149c429331359';
+    r'1507aa69bd9c5b3f084d68183f02307b977816a8';
 
 /// See also [deliverAccountAssetList].
 @ProviderFor(deliverAccountAssetList)
@@ -247,7 +247,7 @@ final disableAccountAssetListProvider =
 );
 
 typedef DisableAccountAssetListRef = AutoDisposeProviderRef<List<AccountAsset>>;
-String _$deliverBalanceHash() => r'9a9cc51fe66cef1ebc34c04bba936dafdc1d8dc2';
+String _$deliverBalanceHash() => r'08e77a09fdaf32fa62b146dac66cd014f719a614';
 
 /// See also [deliverBalance].
 @ProviderFor(deliverBalance)
@@ -292,7 +292,7 @@ final receiveAssetPrecisionProvider = AutoDisposeProvider<int>.internal(
 );
 
 typedef ReceiveAssetPrecisionRef = AutoDisposeProviderRef<int>;
-String _$dollarConversionHash() => r'0d11f0f58c30c18c8c89d8cce55e844659df0cc1';
+String _$dollarConversionHash() => r'0f8ca3775408a3ab448fad79f741dc361fb63c30';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -605,7 +605,7 @@ class _DollarConversionFromStringProviderElement
   String get amount => (origin as DollarConversionFromStringProvider).amount;
 }
 
-String _$receiveBalanceHash() => r'77610a5fe45d6bebee45ab0a6a9eee0e3386a5c8';
+String _$receiveBalanceHash() => r'180f8b3430cc44608d5094c15f7a41e621f46df0';
 
 /// See also [receiveBalance].
 @ProviderFor(receiveBalance)

@@ -21,8 +21,7 @@ class SwapDeliverAmount extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final swapSendAsset =
         ref.watch(swapProvider.select((p) => p.swapSendAsset!));
-    final balance = ref
-        .watch(balancesProvider.select((p) => p.balances[swapSendAsset] ?? 0));
+    final balance = ref.watch(balancesNotifierProvider)[swapSendAsset] ?? 0;
     final precision = ref
         .watch(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: swapSendAsset.assetId);

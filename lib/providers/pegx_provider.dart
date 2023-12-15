@@ -209,7 +209,7 @@ class PegxWebsocketClient {
         // logger.w("Resp resume");
 
         final gaids = resp.resume.accounts[0].gaids;
-        final ampId = ref.read(ampIdProvider);
+        final ampId = ref.read(ampIdNotifierProvider);
         if (gaids.contains(ampId)) {
           ref
               .read(pegxLoginStateNotifierProvider.notifier)
@@ -340,7 +340,7 @@ class PegxWebsocketClient {
         .read(pegxLoginStateNotifierProvider.notifier)
         .setState(const PegxLoginStateGaidWaiting());
 
-    final ampId = ref.read(ampIdProvider);
+    final ampId = ref.read(ampIdNotifierProvider);
     // handle amp error
     if (ampId.isEmpty) {
       errorAndGoBack('Adding AMP ID failed. Try again.'.tr());

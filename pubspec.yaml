@@ -3,7 +3,7 @@ description: Sideswap Client.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.4.2+70
+version: 1.4.3+75
 
 environment:
   sdk: ">=3.2.0 <4.0.0"
@@ -15,7 +15,7 @@ dependencies:
   flutter_lints: ^3.0.1
   # secure recovery page
   secure_application: ^3.8.0
-  animations: ^2.0.8
+  animations: ^2.0.10
   another_flushbar: ^1.12.30
 
   # The following adds the Cupertino Icons font to your application.
@@ -26,8 +26,8 @@ dependencies:
   easy_localization: ^3.0.3
   enum_to_string: ^2.0.1
   faker: ^2.1.0
-  firebase_core: ^2.22.0
-  firebase_messaging: ^14.7.4
+  firebase_core: ^2.24.2
+  firebase_messaging: ^14.7.8
   fixnum: ^1.1.0
   # contacts
   flutter_contacts: ^1.1.7+1
@@ -64,10 +64,10 @@ dependencies:
   sliding_up_panel: ^2.0.0+1
   # deep/app links
   uni_links: ^0.5.1 # replace by app_links
-  url_launcher: ^6.2.1
+  url_launcher: ^6.2.2
   # sound notification
   flutter_ringtone_player: ^4.0.0+2
-  vibration: ^1.8.3
+  vibration: ^1.8.4
   decimal: ^2.3.3
   move_to_background: ^1.0.2
   xrange: ^2.0.0
@@ -145,11 +145,11 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.4.6
+  build_runner: ^2.4.7
   freezed: ^2.4.5
   json_serializable: ^6.7.1
   # icon generator
-  icons_launcher: ^2.1.5
+  icons_launcher: ^2.1.6
   riverpod_generator: ^2.3.9
   custom_lint: ^0.5.7
   riverpod_lint: ^2.3.7
@@ -249,6 +249,7 @@ flutter:
     - assets/toolbar/recv.svg
     - assets/toolbar/send.svg
     - assets/toolbar/settings.svg
+    - assets/toolbar/import.svg
     - assets/toolbar/open_url.svg
     - assets/close2.svg
     - assets/close3.svg
@@ -280,6 +281,9 @@ flutter:
     - assets/autheid_logo.svg
     - assets/amp_wallet.svg
     - assets/regular_wallet.svg
+    - assets/liquid_logo.svg
+    - assets/logs.svg
+    - assets/settings_export.svg
 
   fonts:
     - family: Roboto

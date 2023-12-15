@@ -27,8 +27,7 @@ class SwapReceiveAmount extends HookConsumerWidget {
         .getPrecisionForAssetId(assetId: swapRecvAsset.assetId);
     final swapRecvAccount =
         AccountAsset(AccountType.reg, swapRecvAsset.assetId);
-    final balance =
-        ref.watch(balancesProvider.select((p) => p.balances[swapRecvAccount]));
+    final balance = ref.watch(balancesNotifierProvider)[swapRecvAccount];
     final amountProvider = ref.watch(amountToStringProvider);
     final balanceStr = amountProvider.amountToString(
         AmountToStringParameters(amount: balance ?? 0, precision: precision));

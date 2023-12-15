@@ -24,8 +24,7 @@ final assetSelectorProvider =
         (ref, marketType) {
   // Only show token assets that we could sell or buy
   final tokenAssetsToSell = ref
-      .watch(balancesProvider)
-      .balances
+      .watch(balancesNotifierProvider)
       .entries
       .where((e) => e.key.account == AccountType.reg && e.value > 0)
       .map((e) => e.key.assetId);

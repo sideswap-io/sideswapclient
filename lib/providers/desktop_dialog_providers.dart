@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/desktop/main/d_asset_info.dart';
 import 'package:sideswap/desktop/main/d_generate_address_popup.dart';
+import 'package:sideswap/desktop/main/d_open_tx_import.dart';
 import 'package:sideswap/desktop/main/d_open_url.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/desktop/main/d_recv_popup.dart';
 import 'package:sideswap/desktop/main/d_send_popup.dart';
 import 'package:sideswap/desktop/main/d_tx_popup.dart';
+import 'package:sideswap/desktop/main/d_view_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_wait_pegin.dart';
 import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
 import 'package:sideswap/models/account_asset.dart';
@@ -105,11 +107,32 @@ class DesktopDialog {
     );
   }
 
+  @Deprecated("Will be replaced by openImport")
   void openUrl() {
     showDialog<void>(
       context: _context,
       builder: (context) {
         return const DOpenUrl();
+      },
+      routeSettings: const RouteSettings(name: _popupRouteName),
+    );
+  }
+
+  void openTxImport() {
+    showDialog<void>(
+      context: _context,
+      builder: (context) {
+        return const DOpenTxImport();
+      },
+      routeSettings: const RouteSettings(name: _popupRouteName),
+    );
+  }
+
+  void openViewTx() {
+    showDialog<void>(
+      context: _context,
+      builder: (context) {
+        return const DViewTxPopup();
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
     );

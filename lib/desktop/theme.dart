@@ -201,20 +201,17 @@ class DesktopAppTheme extends ChangeNotifier {
     notifyListeners();
   }
 
-  // TODO: fix
-  // ScrollbarThemeData? _scrollbarTheme =
-  //     const ScrollbarThemeData().merge(const ScrollbarThemeData(
-  //   scrollbarColor: Color(0xFF2F8FC5),
-  //   scrollbarPressingColor: Color(0xFF2F8FC5),
-  //   thickness: 4,
-  //   hoveringThickness: 4,
-  //   minThumbLength: 83,
-  // ));
-  // ScrollbarThemeData? get scrollbarTheme => _scrollbarTheme;
-  // set scrollbarTheme(ScrollbarThemeData? value) {
-  //   _scrollbarTheme = value;
-  //   notifyListeners();
-  // }
+  ScrollbarThemeData? _scrollbarTheme = const ScrollbarThemeData(
+    thickness: MaterialStatePropertyAll(4),
+    thumbColor: MaterialStatePropertyAll(SideSwapColors.ceruleanFrost),
+    trackColor: MaterialStatePropertyAll(SideSwapColors.jellyBean),
+  );
+
+  ScrollbarThemeData? get scrollbarTheme => _scrollbarTheme;
+  set scrollbarTheme(ScrollbarThemeData? value) {
+    _scrollbarTheme = value;
+    notifyListeners();
+  }
 
   DToggleSwitchThemeData _toggleSwitchTheme = DToggleSwitchThemeData();
   DToggleSwitchThemeData get toggleSwitchTheme => _toggleSwitchTheme;
@@ -282,6 +279,16 @@ class DesktopAppTheme extends ChangeNotifier {
               height: 0.12,
               letterSpacing: 0.16,
             ),
+          ),
+        ),
+      );
+
+  DButtonStyle? get buttonWithoutBorderStyle =>
+      _buttonThemeData.defaultButtonStyle?.merge(
+        DButtonStyle(
+          border: ButtonState.all(BorderSide.none),
+          textStyle: ButtonState.all(
+            const TextStyle(),
           ),
         ),
       );
@@ -454,7 +461,13 @@ TextTheme get darkTextTheme {
 
 ColorScheme get darkColorScheme {
   return ColorScheme.fromSwatch(
-      accentColor: SideSwapColors.brightTurquoise, brightness: Brightness.dark);
+    primarySwatch: SideSwapColors.blumine,
+    accentColor: SideSwapColors.brightTurquoise,
+    cardColor: SideSwapColors.blumine,
+    backgroundColor: SideSwapColors.prussianBlue,
+    errorColor: SideSwapColors.bitterSweet,
+    brightness: Brightness.dark,
+  );
 }
 
 AccentColor get systemAccentColor {

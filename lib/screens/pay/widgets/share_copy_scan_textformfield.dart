@@ -5,9 +5,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
+import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
 typedef ShareTapCallback = void Function(BuildContext context);
@@ -134,9 +135,8 @@ class ShareCopyScanTextFormFieldState
           return Consumer(
             builder: (context, ref, _) {
               final showPasteFromClipboard = !FlavorConfig.isDesktop &&
-                  ref
-                      .watch(walletProvider)
-                      .isAddrValid(clipboardText, widget.addrType) &&
+                  ref.read(isAddrTypeValidProvider(
+                      clipboardText, widget.addrType)) &&
                   widget.controller != null;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

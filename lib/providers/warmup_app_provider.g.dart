@@ -20,7 +20,7 @@ final navigatorKeyProvider = Provider<GlobalKey<NavigatorState>>.internal(
 );
 
 typedef NavigatorKeyRef = ProviderRef<GlobalKey<NavigatorState>>;
-String _$warmupAppHash() => r'a32bed3bfe321e319b28b8ebdd4c6a24ccfda8a8';
+String _$warmupAppHash() => r'cdf15481e0f3882e322b194acc5cde8974013659';
 
 /// See also [WarmupApp].
 @ProviderFor(WarmupApp)

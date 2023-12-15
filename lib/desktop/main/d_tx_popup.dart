@@ -73,7 +73,7 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
 
     return DPopupWithClose(
       width: 580,
-      height: 606,
+      height: 660,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -334,7 +334,7 @@ class DPegPopup extends ConsumerWidget {
                   text: 'Link to explorer\n(pay-out)'.tr(),
                   onPressed: txItem.peg.hasTxidRecv()
                       ? () => openTxidUrl(
-                          ref, txItem.peg.txidRecv, txItem.peg.isPegIn, false)
+                          ref, txItem.peg.txidRecv, txItem.peg.isPegIn, true)
                       : null,
                 ),
               ],

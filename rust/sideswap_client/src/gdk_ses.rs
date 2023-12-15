@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::str::FromStr;
 
-use crate::gdk_json::AddressInfo;
+use crate::gdk_json::{self, AddressInfo};
 use crate::settings::WatchOnly;
 use crate::worker;
 use crate::{ffi, models};
@@ -172,7 +172,9 @@ pub trait GdkSes {
 
     fn get_transactions(&self) -> Result<Vec<models::Transaction>, anyhow::Error>;
 
-    fn get_recv_address(&self, is_internal: bool) -> Result<AddressInfo, anyhow::Error>;
+    fn get_receive_address(&self) -> Result<AddressInfo, anyhow::Error>;
+
+    fn get_change_address(&self) -> Result<AddressInfo, anyhow::Error>;
 
     fn create_tx(&mut self, tx: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error>;
 
@@ -193,7 +195,7 @@ pub trait GdkSes {
         assets: &BTreeMap<AssetId, Asset>,
     ) -> Result<elements::Txid, anyhow::Error>;
 
-    fn get_utxos(&self) -> Result<ffi::proto::from::UtxoUpdate, anyhow::Error>;
+    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error>;
 
     fn get_tx_fee(
         &mut self,
@@ -216,11 +218,6 @@ pub trait GdkSes {
         last_pointer: Option<u32>,
         is_internal: bool,
     ) -> Result<crate::gdk_json::PreviousAddresses, anyhow::Error>;
-
-    fn get_swap_inputs(
-        &self,
-        send_asset: &AssetId,
-    ) -> Result<Vec<sideswap_api::PsetInput>, anyhow::Error>;
 
     fn sig_single_maker_tx(
         &mut self,

@@ -2,8 +2,9 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
-
 import 'package:sideswap/desktop/d_home.dart';
+
+import 'package:sideswap/desktop/home/d_home_new.dart';
 import 'package:sideswap/desktop/d_main_bottom_navigation_bar.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
 import 'package:sideswap/desktop/markets/d_markets_root.dart';
@@ -27,23 +28,23 @@ class DesktopWalletMain extends ConsumerStatefulWidget {
 }
 
 class WalletMainState extends ConsumerState<DesktopWalletMain> {
-  Widget getChild(WalletMainNavigationItem navigationItem) {
-    switch (navigationItem) {
-      case WalletMainNavigationItem.home:
+  Widget getChild(WalletMainArguments walletMainArguments) {
+    switch (walletMainArguments.navigationItemEnum) {
+      case WalletMainNavigationItemEnum.home:
         return const DesktopHome();
-      case WalletMainNavigationItem.accounts:
+      case WalletMainNavigationItemEnum.accounts:
         return const SizedBox();
-      case WalletMainNavigationItem.assetSelect:
+      case WalletMainNavigationItemEnum.assetSelect:
         return const AssetSelectList();
-      case WalletMainNavigationItem.assetDetails:
+      case WalletMainNavigationItemEnum.assetDetails:
         return const AssetDetails();
-      case WalletMainNavigationItem.transactions:
+      case WalletMainNavigationItemEnum.transactions:
         return const DTxHistory();
-      case WalletMainNavigationItem.markets:
+      case WalletMainNavigationItemEnum.markets:
         return const DMarkets();
-      case WalletMainNavigationItem.swap:
+      case WalletMainNavigationItemEnum.swap:
         return const DSwapMain(key: ValueKey(false));
-      case WalletMainNavigationItem.pegs:
+      case WalletMainNavigationItemEnum.pegs:
         return const DSwapMain(key: ValueKey(true));
     }
   }
@@ -52,36 +53,31 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        final walletMainArguments =
-            ref.watch(uiStateArgsProvider.select((p) => p.walletMainArguments));
-        final currentPageIndex = walletMainArguments.currentIndex;
-        final navigationItem = walletMainArguments.navigationItem;
+        final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
 
         return SideSwapScaffoldPage(
           header: const TopToolbar(),
           content: Column(
             children: [
-              Expanded(child: getChild(navigationItem)),
+              Expanded(child: getChild(walletMainArguments)),
             ],
           ),
           bottomBar: DesktopMainBottomNavigationBar(
-            currentIndex: currentPageIndex,
+            currentIndex: walletMainArguments.currentIndex,
             onTap: (index) {
               ref.read(swapProvider).swapReset();
-              ref.read(uiStateArgsProvider).walletMainArguments =
+              final newWalletMainArguments =
                   walletMainArguments.fromIndexDesktop(index);
-              if (ref
-                      .read(uiStateArgsProvider)
-                      .walletMainArguments
-                      .navigationItem ==
-                  WalletMainNavigationItem.pegs) {
+              ref
+                  .read(uiStateArgsNotifierProvider.notifier)
+                  .setWalletMainArguments(newWalletMainArguments);
+              if (newWalletMainArguments.navigationItemEnum ==
+                  WalletMainNavigationItemEnum.pegs) {
                 ref.read(swapProvider).switchToPegs();
               }
-              if (ref
-                      .read(uiStateArgsProvider)
-                      .walletMainArguments
-                      .navigationItem ==
-                  WalletMainNavigationItem.swap) {
+
+              if (newWalletMainArguments.navigationItemEnum ==
+                  WalletMainNavigationItemEnum.swap) {
                 ref.read(swapProvider).switchToSwaps();
               }
 
@@ -154,13 +150,21 @@ class TopToolbar extends ConsumerWidget {
               ref.read(desktopDialogProvider).showGenerateAddress();
             },
           ),
-          DTopToolbarButton(
+          DTopToolbarButtonOld(
             name: 'URL'.tr(),
             icon: 'assets/toolbar/open_url.svg',
             onPressed: () {
               ref.read(desktopDialogProvider).openUrl();
             },
           ),
+          // TODO (malcolmpl): replace when new import will be ready
+          // DTopToolbarButton(
+          //   name: 'Import'.tr(),
+          //   icon: 'assets/toolbar/import.svg',
+          //   onPressed: () {
+          //     ref.read(desktopDialogProvider).openTxImport();
+          //   },
+          // ),
           DTopToolbarButton(
             name: '',
             icon: 'assets/toolbar/settings.svg',

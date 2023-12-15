@@ -15,7 +15,7 @@ class DPegxSubmitFinishDialogBody extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdProvider);
+    final ampId = ref.watch(ampIdNotifierProvider);
     final textTheme = ref.watch(desktopAppThemeProvider).textTheme;
 
     return SizedBox(

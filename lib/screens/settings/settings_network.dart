@@ -6,7 +6,6 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/providers/network_access_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -67,10 +66,15 @@ class SettingsNetworkState extends ConsumerState<SettingsNetwork> {
                         buttonNetwork: SettingsNetworkType.sideswap,
                         buttonEnv: SIDESWAP_ENV_TESTNET,
                       ),
+                      const SettingsNetworkServerButton(
+                        name: 'SideSwap China (Mainnet)',
+                        buttonNetwork: SettingsNetworkType.sideswapChina,
+                        buttonEnv: SIDESWAP_ENV_PROD,
+                      ),
                       Consumer(
                         builder: (context, ref, _) {
                           final networkSettingsModel =
-                              ref.watch(networkSettingsProvider);
+                              ref.watch(networkSettingsNotifierProvider);
 
                           return Padding(
                             padding: const EdgeInsets.only(top: 8),
@@ -136,7 +140,9 @@ class SettingsNetworkSaveButton extends ConsumerWidget {
                   buttonText: 'OK'.tr(),
                   onPressed: (context) async {
                     Navigator.of(context).pop();
-                    await ref.read(networkSettingsProvider.notifier).save();
+                    await ref
+                        .read(networkSettingsNotifierProvider.notifier)
+                        .save();
                   },
                 );
           },
@@ -165,7 +171,7 @@ class SettingsNetworkServerButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettingsModel = ref.watch(networkSettingsProvider);
+    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -173,7 +179,7 @@ class SettingsNetworkServerButton extends HookConsumerWidget {
         value: (networkSettingsModel.settingsNetworkType == buttonNetwork &&
             networkSettingsModel.env == buttonEnv),
         onChanged: (value) {
-          ref.read(networkSettingsProvider.notifier).setModel(
+          ref.read(networkSettingsNotifierProvider.notifier).setModel(
               NetworkSettingsModelApply(
                   settingsNetworkType: buttonNetwork, env: buttonEnv));
         },

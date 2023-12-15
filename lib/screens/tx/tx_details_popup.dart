@@ -20,8 +20,9 @@ class TxDetailsPopup extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transItem = ref.watch(walletProvider.select((p) => p.txDetails));
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final selectedWalletAsset = ref.watch(selectedWalletAssetProvider);
-    final assetId = selectedWalletAsset?.assetId ?? liquidAssetId;
+    final selectedWalletAccountAsset =
+        ref.watch(selectedWalletAccountAssetNotifierProvider);
+    final assetId = selectedWalletAccountAsset?.assetId ?? liquidAssetId;
     final asset =
         ref.watch(assetsStateProvider.select((value) => value[assetId]));
     final ticker = asset?.ticker ?? kLiquidBitcoinTicker;

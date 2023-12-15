@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::gdk_json::AddressInfo;
+use crate::gdk_json::{self, AddressInfo};
 
 static SECP: once_cell::sync::OnceCell<secp256k1::Secp256k1<secp256k1::All>> =
     once_cell::sync::OnceCell::new();
@@ -35,6 +35,7 @@ pub struct SigSingleOutput {
 pub struct SigSingleMaker {
     pub proposal: sideswap_api::LiquidexProposal,
     pub chaining_tx: Option<MakerChainingTx>,
+    pub unspent_output: gdk_json::UnspentOutput,
 }
 
 pub struct MakerChainingTx {

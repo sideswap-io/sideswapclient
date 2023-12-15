@@ -1,0 +1,19 @@
+[package]
+name = "sideswap_headless_server"
+version = "0.1.2"
+edition = "2021"
+
+[dependencies]
+sideswap_api = { path = "../sideswap_api" }
+sideswap_client = { path = "../sideswap_client" }
+sideswap_common = { path = "../sideswap_common" }
+
+clap.workspace = true
+config.workspace = true
+log.workspace = true
+prost.workspace = true
+serde = { workspace = true, features = ["derive"] }
+axum = "0.7.2"
+tokio = { workspace = true, features = ["full"] }
+thiserror.workspace = true
+crossbeam-channel.workspace = true

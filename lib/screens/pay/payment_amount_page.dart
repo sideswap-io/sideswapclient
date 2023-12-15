@@ -69,7 +69,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
     }
 
     // let's check other assets and return it if found and balance is > 0
-    final balances = ref.read(balancesProvider).balances;
+    final balances = ref.read(balancesNotifierProvider);
     for (var account in balances.keys) {
       if (account.assetId == result?.assetId && balances[account] != 0) {
         return account;
@@ -149,7 +149,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
     final precision = ref
         .read(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: accountAsset.assetId);
-    final balance = ref.read(balancesProvider).balances[accountAsset];
+    final balance = ref.read(balancesNotifierProvider)[accountAsset];
     final newValue = value.replaceAll(' ', '');
     final newAmount = double.tryParse(newValue)?.toDouble();
     final amountStr = ref.read(amountToStringProvider).amountToString(
@@ -195,7 +195,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<BalancesNotifier>(balancesProvider, ((previous, next) {
+    ref.listen(balancesNotifierProvider, ((previous, next) {
       // validate every time when balancesProvider will change
       if (tickerAmountController != null &&
           tickerAmountController!.text.isNotEmpty) {
@@ -270,9 +270,8 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                     final showError = ref.watch(
                         paymentProvider.select((p) => p.insufficientFunds));
                     final newAmount = double.tryParse(amount) ?? 0;
-                    final usdAmount = ref
-                        .watch(walletProvider)
-                        .getAmountUsd(accountAsset.assetId, newAmount);
+                    final usdAmount = ref.watch(
+                        amountUsdProvider(accountAsset.assetId, newAmount));
                     dollarConversion = usdAmount.toStringAsFixed(2);
                     final visibleConversion = ref
                         .watch(walletProvider)
@@ -357,8 +356,9 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                   children: [
                     Consumer(
                       builder: (context, ref, _) {
-                        final balance = ref.watch(balancesProvider
-                            .select((p) => p.balances[accountAsset] ?? 0));
+                        final balance =
+                            ref.watch(balancesNotifierProvider)[accountAsset] ??
+                                0;
                         final precision = ref
                             .watch(assetUtilsProvider)
                             .getPrecisionForAssetId(
@@ -390,9 +390,8 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                                 .read(assetUtilsProvider)
                                 .getPrecisionForAssetId(
                                     assetId: accountAsset.assetId);
-                            final balance = ref
-                                    .read(balancesProvider)
-                                    .balances[accountAsset] ??
+                            final balance = ref.read(
+                                    balancesNotifierProvider)[accountAsset] ??
                                 0;
                             final text = amountProvider.amountToString(
                                 AmountToStringParameters(

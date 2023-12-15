@@ -78,11 +78,16 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                   padding: const EdgeInsets.only(top: 16),
                   child: CustomBackButton(
                     onPressed: () {
-                      final uiStateArgs = ref.read(uiStateArgsProvider);
-                      uiStateArgs.walletMainArguments =
-                          uiStateArgs.walletMainArguments.copyWith(
-                              navigationItem:
-                                  WalletMainNavigationItem.accounts);
+                      final walletMainArguments =
+                          ref.read(uiStateArgsNotifierProvider);
+                      ref
+                          .read(uiStateArgsNotifierProvider.notifier)
+                          .setWalletMainArguments(
+                            walletMainArguments.copyWith(
+                              navigationItemEnum:
+                                  WalletMainNavigationItemEnum.accounts,
+                            ),
+                          );
                     },
                   ),
                 ),
@@ -92,9 +97,9 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                     padding: EdgeInsets.only(top: logoPadding),
                     child: Consumer(
                       builder: (context, ref, child) {
-                        final selectedWalletAsset =
-                            ref.watch(selectedWalletAssetProvider);
-                        final assetId = selectedWalletAsset?.assetId;
+                        final selectedWalletAccountAsset = ref
+                            .watch(selectedWalletAccountAssetNotifierProvider);
+                        final assetId = selectedWalletAccountAsset?.assetId;
                         final icon =
                             ref.watch(assetImageProvider).getBigImage(assetId);
                         return SizedBox(
@@ -121,9 +126,11 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
         ),
         Consumer(
           builder: (context, ref, child) {
-            final selectedWalletAsset = ref.watch(selectedWalletAssetProvider);
+            final selectedWalletAccountAsset =
+                ref.watch(selectedWalletAccountAssetNotifierProvider);
             final allAssets = ref.watch(accountAssetTransactionsProvider);
-            final assetList = allAssets[selectedWalletAsset] ?? <TxItem>[];
+            final assetList =
+                allAssets[selectedWalletAccountAsset] ?? <TxItem>[];
 
             final minimizedPadding = MediaQuery.of(context).padding.top + 40;
             final maximizedPadding = MediaQuery.of(context).padding.top + 70;
@@ -228,9 +235,11 @@ class AssetDetailsState extends ConsumerState<AssetDetails>
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 16),
                               child: TxListItem(
-                                assetId: selectedWalletAsset?.assetId ?? '',
-                                accountType: selectedWalletAsset?.account ??
-                                    AccountType.reg,
+                                assetId:
+                                    selectedWalletAccountAsset?.assetId ?? '',
+                                accountType:
+                                    selectedWalletAccountAsset?.account ??
+                                        AccountType.reg,
                                 txItem: assetList[index],
                               ),
                             )

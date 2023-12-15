@@ -23,7 +23,81 @@ class DTopToolbarButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return DHoverButton(
       builder: ((context, states) {
-        final child = Padding(
+        final buttonChild = Padding(
+          padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+          child: SizedBox(
+            height: 34,
+            child: Center(
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    icon,
+                    width: 18,
+                    height: 18,
+                  ),
+                  if (name.isNotEmpty) const SizedBox(width: 6),
+                  if (name.isNotEmpty)
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: states.isHovering
+                            ? SideSwapColors.brightTurquoise
+                            : Colors.white,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+
+        final background = Container(
+          color: states.isHovering
+              ? states.isPressing
+                  ? Colors.transparent.toAccentColor().darker
+                  : Colors.transparent.toAccentColor().dark
+              : Colors.transparent,
+          child: buttonChild,
+        );
+
+        final focusBorder = DFocusBorder(
+          focused: states.isFocused,
+          child: background,
+        );
+
+        return Semantics(
+          container: true,
+          button: true,
+          enabled: enabled,
+          child: focusBorder,
+        );
+      }),
+      onPressed: onPressed,
+    );
+  }
+}
+
+@Deprecated("Replace and remove this")
+class DTopToolbarButtonOld extends StatelessWidget {
+  const DTopToolbarButtonOld({
+    super.key,
+    this.name = '',
+    required this.icon,
+    this.onPressed,
+  });
+
+  final String name;
+  final String icon;
+  final VoidCallback? onPressed;
+
+  bool get enabled => onPressed != null;
+
+  @override
+  Widget build(BuildContext context) {
+    return DHoverButton(
+      builder: ((context, states) {
+        final buttonChild = Padding(
           padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
           child: SizedBox(
             height: 34,
@@ -79,7 +153,7 @@ class DTopToolbarButton extends StatelessWidget {
                   ? Colors.transparent.toAccentColor().darker
                   : Colors.transparent.toAccentColor().dark
               : Colors.transparent,
-          child: child,
+          child: buttonChild,
         );
 
         final focusBorder = DFocusBorder(

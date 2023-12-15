@@ -47,7 +47,6 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
 
   @override
   Widget build(BuildContext context) {
-    final wallet = ref.watch(walletProvider);
     final asset = ref.watch(
         assetsStateProvider.select((value) => value[widget.account.assetId]));
     final assetPrecision = ref
@@ -65,11 +64,11 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
     final assetImagesBig =
         ref.watch(assetImageProvider).getBigImage(asset?.assetId);
     final accountBalance =
-        ref.watch(balancesProvider).balances[widget.account] ?? 0;
+        ref.watch(balancesNotifierProvider)[widget.account] ?? 0;
     final balanceStr = amountProvider.amountToString(AmountToStringParameters(
         amount: accountBalance, precision: assetPrecision));
     final balance = double.tryParse(balanceStr) ?? .0;
-    final amountUsd = wallet.getAmountUsd(asset?.assetId, balance);
+    final amountUsd = ref.watch(amountUsdProvider(asset?.assetId, balance));
     var dollarConversion = '0.0';
     dollarConversion = amountUsd.toStringAsFixed(2);
     dollarConversion =
@@ -269,11 +268,12 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                       onTap: () {
                         Navigator.pop(context);
                         ref.read(swapProvider).swapReset();
-                        final walletMainArguments = ref.watch(
-                            uiStateArgsProvider
-                                .select((p) => p.walletMainArguments));
-                        ref.read(uiStateArgsProvider).walletMainArguments =
-                            walletMainArguments.fromIndexDesktop(1);
+                        final walletMainArguments =
+                            ref.watch(uiStateArgsNotifierProvider);
+                        ref
+                            .read(uiStateArgsNotifierProvider.notifier)
+                            .setWalletMainArguments(
+                                walletMainArguments.fromIndexDesktop(1));
                         ref.read(swapProvider).switchToSwaps();
                       },
                       icon: 'assets/asset_swap_arrows.svg',
@@ -285,7 +285,7 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                         ref.read(paymentProvider).createdTx = null;
                         Navigator.pop(context);
                         ref
-                            .read(sendAssetProvider.notifier)
+                            .read(sendAssetNotifierProvider.notifier)
                             .setSendAsset(widget.account);
 
                         ref.read(desktopDialogProvider).showSendTx();

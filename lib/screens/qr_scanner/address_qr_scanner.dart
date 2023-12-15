@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:sideswap/common/enums.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -26,7 +27,7 @@ void useAsyncEffect(Future<Dispose?> Function() effect, [List<Object?>? keys]) {
 }
 
 class AddressQrScanner extends HookConsumerWidget {
-  final QrCodeAddressType? expectedAddress;
+  final BIP21AddressTypeEnum? expectedAddress;
 
   const AddressQrScanner({
     super.key,
@@ -37,42 +38,52 @@ class AddressQrScanner extends HookConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String code,
-    QrCodeAddressType? expectedAddress,
+    BIP21AddressTypeEnum? expectedAddress,
     Null Function(String) errorCallback,
   ) {
     logger.d('Scanned data: $code');
 
     final handleResult = ref.read(universalLinkProvider).handleAppUrlStr(code);
-    if (handleResult == HandleResult.success) {
-      Navigator.of(context).pop();
-      return;
-    }
-    if (handleResult == HandleResult.failed) {
-      errorCallback('Invalid QR code'.tr());
-      return;
-    }
 
-    final result = ref.read(qrcodeProvider).parseDynamicQrCode(code);
-    if (result.error != null) {
-      errorCallback(result.errorMessage ?? 'Invalid QR code'.tr());
-      return;
-    }
+    return switch (handleResult) {
+      HandleResult.success => () {
+          Navigator.of(context).pop();
+          return;
+        }(),
+      HandleResult.failed || HandleResult.failedUriPath => () {
+          errorCallback('Invalid QR code'.tr());
+          return;
+        }(),
+      _ => () {
+          final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+          logger.d(liquidAssetId);
 
-    if (result.assetId != null &&
-        ref.read(assetsStateProvider)[result.assetId] == null) {
-      errorCallback('Unknown asset'.tr());
-      return;
-    }
+          final result = ref.read(qrcodeProvider).parseDynamicQrCode(code);
 
-    if (expectedAddress != null && result.addressType != expectedAddress) {
-      errorCallback('Invalid QR code'.tr());
-      return;
-    }
+          result.match((l) => errorCallback('Invalid QR code'), (r) {
+            if (r.error != null) {
+              errorCallback(r.errorMessage ?? 'Invalid QR code'.tr());
+              return;
+            }
 
-    ref.read(qrcodeResultModelProvider.notifier).state =
-        QrCodeResultModelData(result: result);
+            if (r.assetId != null &&
+                ref.read(assetsStateProvider)[r.assetId] == null) {
+              errorCallback('Unknown asset'.tr());
+              return;
+            }
 
-    Navigator.of(context).pop();
+            if (expectedAddress != null && r.addressType != expectedAddress) {
+              errorCallback('Invalid QR code'.tr());
+              return;
+            }
+
+            ref.read(qrcodeResultModelProvider.notifier).state =
+                QrCodeResultModelData(result: r);
+          });
+
+          Navigator.of(context).pop();
+        }(),
+    };
   }
 
   @override

@@ -1,5 +1,6 @@
 mod assets_registry;
 
+use crate::ffi::proto;
 use crate::gdk_json::AddressInfo;
 use crate::gdk_ses::{NotifCallback, WalletInfo};
 use crate::jade_mng::JadeState;
@@ -15,6 +16,7 @@ use settings::{Peg, PegDir};
 use sideswap_api::*;
 use sideswap_common::env::Env;
 use sideswap_common::types::*;
+use sideswap_common::ws::{next_request_id, next_request_id_str};
 use sideswap_common::*;
 use sideswap_jade::serial::JadeId;
 use std::collections::{HashMap, HashSet};
@@ -23,6 +25,8 @@ use std::{
     str::FromStr,
 };
 use types::Amount;
+
+use ws::manual as ws;
 
 const CLIENT_API_KEY: &str = "f8b7a12ee96aa68ee2b12ebfc51d804a4a404c9732652c298d24099a3d922a84";
 
@@ -177,6 +181,8 @@ pub struct Data {
     jade_status_callback: gdk_ses::JadeStatusCallback,
 
     async_requests: BTreeMap<RequestId, Box<dyn FnOnce(&mut Data, Result<Response, Error>)>>,
+
+    network_settings: Option<proto::network_settings::Selected>,
 }
 
 pub struct ActiveSwap {
@@ -374,14 +380,14 @@ fn get_peg_item(peg: &PegStatus, tx: &TxStatus) -> ffi::proto::TransItem {
 }
 
 fn select_swap_inputs(
-    inputs: Vec<sideswap_api::PsetInput>,
+    inputs: Vec<gdk_json::UnspentOutput>,
     amount: i64,
-) -> Result<Vec<sideswap_api::PsetInput>, anyhow::Error> {
-    let total = inputs.iter().map(|input| input.value).sum::<u64>() as i64;
+) -> Result<Vec<gdk_json::UnspentOutput>, anyhow::Error> {
+    let total = inputs.iter().map(|input| input.satoshi).sum::<u64>() as i64;
     ensure!(total >= amount, "not enough UTXOs total amount");
     let inputs = inputs
         .into_iter()
-        .map(|input| (input.value as i64, input))
+        .map(|input| (input.satoshi as i64, input))
         .collect::<Vec<_>>();
     let inputs = select_utxo_values(inputs, amount);
     Ok(inputs)
@@ -504,6 +510,27 @@ fn load_all_addresses(
     }
 }
 
+fn convert_to_proto_utxo(utxo: gdk_json::UnspentOutput) -> ffi::proto::from::utxo_update::Utxo {
+    ffi::proto::from::utxo_update::Utxo {
+        txid: utxo.txhash.to_string(),
+        vout: utxo.vout,
+        asset_id: utxo.asset_id.to_string(),
+        amount: utxo.satoshi,
+    }
+}
+
+fn convert_to_swap_utxo(utxo: gdk_json::UnspentOutput) -> sideswap_api::PsetInput {
+    PsetInput {
+        txid: utxo.txhash,
+        vout: utxo.vout,
+        asset: utxo.asset_id,
+        asset_bf: utxo.assetblinder,
+        value: utxo.satoshi,
+        value_bf: utxo.amountblinder,
+        redeem_script: Some(gdk_ses_impl::get_redeem_script(&utxo)),
+    }
+}
+
 impl UiData {
     fn send(&self, msg: ffi::proto::from::Msg) {
         debug!(
@@ -540,27 +567,6 @@ impl Data {
 
     fn load_gdk_asset(&mut self, asset_ids: &[AssetId]) -> Result<Vec<Asset>, anyhow::Error> {
         assets_registry::get_assets(self.env, self.master_xpub(), asset_ids)
-    }
-
-    fn get_uniq_address(
-        &self,
-        wallet: &dyn gdk_ses::GdkSes,
-        old_addr: Option<&elements::Address>,
-        is_internal: bool,
-    ) -> Result<AddressInfo, anyhow::Error> {
-        // GDK rust sometimes return same address, that is workaround for this
-        for _ in 0..10 {
-            let addr_info = wallet.get_recv_address(is_internal)?;
-            match old_addr {
-                Some(old_addr) => {
-                    if addr_info.address != *old_addr {
-                        return Ok(addr_info);
-                    }
-                }
-                None => return Ok(addr_info),
-            }
-        }
-        bail!("can't receive new address");
     }
 
     fn try_add_asset(&mut self, asset_id: &AssetId) -> Result<(), anyhow::Error> {
@@ -806,7 +812,18 @@ impl Data {
                 .and_then(|wallet| wallet.get_utxos())
             {
                 Ok(utxos) => {
-                    self.ui.send(ffi::proto::from::Msg::UtxoUpdate(utxos));
+                    let utxos = utxos
+                        .unspent_outputs
+                        .into_values()
+                        .flatten()
+                        .map(convert_to_proto_utxo)
+                        .collect::<Vec<_>>();
+                    self.ui.send(ffi::proto::from::Msg::UtxoUpdate(
+                        ffi::proto::from::UtxoUpdate {
+                            account: get_account(account_id),
+                            utxos,
+                        },
+                    ));
                 }
                 Err(e) => {
                     error!("utxo refresh failed: {}", e);
@@ -943,32 +960,38 @@ impl Data {
         self.process_server_status(server_status);
 
         // verify device key if exists
-        if let Some(device_key) = &self.settings.device_key {
-            let verify_request = VerifyDeviceRequest {
-                device_key: device_key.clone(),
-            };
-            let verify_resp = send_request!(self, VerifyDevice, verify_request)?;
-            match verify_resp.device_state {
-                DeviceState::Unregistered => {
-                    warn!("device_key is not registered");
-                    self.settings.device_key = None;
-                    self.save_settings();
-                }
-                DeviceState::Registered => {
-                    info!("device_key is registered");
-                }
-            };
-        }
+        let disable_device_key = self.params.disable_device_key.unwrap_or_default();
+        if !disable_device_key {
+            if let Some(device_key) = &self.settings.device_key {
+                let verify_request = VerifyDeviceRequest {
+                    device_key: device_key.clone(),
+                };
+                let verify_resp = send_request!(self, VerifyDevice, verify_request)?;
+                match verify_resp.device_state {
+                    DeviceState::Unregistered => {
+                        warn!("device_key is not registered");
+                        self.settings.device_key = None;
+                        self.save_settings();
+                    }
+                    DeviceState::Registered => {
+                        info!("device_key is registered");
+                    }
+                };
+            }
 
-        // register device key if does not exist
-        if self.settings.device_key.is_none() {
-            let register_req = RegisterDeviceRequest {
-                os_type: get_os_type(),
-            };
-            let register_resp = send_request!(self, RegisterDevice, register_req)?;
-            self.settings.device_key = Some(register_resp.device_key);
-            self.settings.single_sig_registered = Default::default();
-            self.settings.multi_sig_registered = Default::default();
+            // register device key if does not exist
+            if self.settings.device_key.is_none() {
+                let register_req = RegisterDeviceRequest {
+                    os_type: get_os_type(),
+                };
+                let register_resp = send_request!(self, RegisterDevice, register_req)?;
+                self.settings.device_key = Some(register_resp.device_key);
+                self.settings.single_sig_registered = Default::default();
+                self.settings.multi_sig_registered = Default::default();
+                self.save_settings();
+            }
+        } else {
+            self.settings.device_key = None;
             self.save_settings();
         }
 
@@ -1039,7 +1062,7 @@ impl Data {
         }
 
         if self.logged_in() {
-            self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+            self.send_ws_connect();
         }
     }
 
@@ -1165,11 +1188,13 @@ impl Data {
         let wallet = Self::get_wallet_mut(&mut self.wallets, req.account.id)?;
         let utxos = wallet
             .get_utxos()?
-            .utxos
+            .unspent_outputs
+            .remove(&self.liquid_asset_id)
+            .unwrap_or_default()
             .into_iter()
-            .filter(|utxo| utxo.asset_id == self.env.data().policy_asset)
+            .filter(|utxo| utxo.asset_id == self.liquid_asset_id)
             .collect::<Vec<_>>();
-        let balance = utxos.iter().map(|utxo| utxo.amount).sum::<u64>() as i64;
+        let balance = utxos.iter().map(|utxo| utxo.satoshi).sum::<u64>() as i64;
 
         let amount = if req.is_send_entered && balance == req.amount {
             let fake_addr = swaps::generate_fake_p2sh_address(self.env).to_string();
@@ -1309,7 +1334,7 @@ impl Data {
             .clone();
         let recv_addr = self
             .get_wallet_ref(ACCOUNT_ID_REG)?
-            .get_recv_address(false)?
+            .get_receive_address()?
             .address
             .to_string();
 
@@ -1373,15 +1398,19 @@ impl Data {
         let recv_amount = req.recv_amount;
 
         let account_id = ACCOUNT_ID_REG;
-        let inputs =
-            Self::get_wallet_mut(&mut self.wallets, account_id)?.get_swap_inputs(&send_asset)?;
-        let inputs = select_swap_inputs(inputs, send_amount)?;
+        let inputs = Self::get_wallet_mut(&mut self.wallets, account_id)?
+            .get_utxos()?
+            .unspent_outputs
+            .remove(&send_asset)
+            .unwrap_or_default();
+        let inputs = select_swap_inputs(inputs, send_amount)?
+            .into_iter()
+            .map(convert_to_swap_utxo)
+            .collect();
 
         let wallet = self.get_wallet_ref(account_id)?;
-        let change_addr = wallet.get_recv_address(true)?.address;
-        let recv_addr = self
-            .get_uniq_address(wallet.as_ref(), Some(&change_addr), false)?
-            .address;
+        let change_addr = wallet.get_change_address()?.address;
+        let recv_addr = wallet.get_receive_address()?.address;
 
         let swap_resp = send_request!(
             self,
@@ -1457,14 +1486,19 @@ impl Data {
 
         wallet.unlock_hww()?;
 
-        let inputs = wallet.get_swap_inputs(&send_asset)?;
-        let inputs = select_swap_inputs(inputs, send_amount)?;
+        let inputs = wallet
+            .get_utxos()?
+            .unspent_outputs
+            .remove(&send_asset)
+            .unwrap_or_default();
+        let inputs = select_swap_inputs(inputs, send_amount)?
+            .into_iter()
+            .map(convert_to_swap_utxo)
+            .collect();
 
         let wallet = self.get_wallet_ref(account_id)?;
-        let change_addr = wallet.get_recv_address(true)?.address;
-        let recv_addr = self
-            .get_uniq_address(wallet.as_ref(), Some(&change_addr), false)?
-            .address;
+        let change_addr = wallet.get_change_address()?.address;
+        let recv_addr = wallet.get_receive_address()?.address;
 
         let request = http_rpc::RequestMsg {
             id: None,
@@ -1534,7 +1568,7 @@ impl Data {
     fn process_get_recv_address(&mut self, account: ffi::proto::Account) {
         let result = self
             .get_wallet_ref(account.id)
-            .and_then(|wallet| wallet.get_recv_address(true));
+            .and_then(|wallet| wallet.get_receive_address());
         match result {
             Ok(addr_info) => {
                 self.ui.send(ffi::proto::from::Msg::RecvAddress(
@@ -1751,7 +1785,7 @@ impl Data {
 
         wallet_amp.login()?;
 
-        let new_address = wallet_amp.get_recv_address(false)?;
+        let new_address = wallet_amp.get_receive_address()?;
         let multi_sig_service_xpub = new_address.service_xpub.expect("must be set");
         let multi_sig_user_path = new_address.user_path[0..3].to_vec();
 
@@ -1808,6 +1842,7 @@ impl Data {
         self.force_auto_sign_maker = req.force_auto_sign_maker.unwrap_or_default();
 
         let network = req.network.clone().selected;
+        self.network_settings = network.clone();
         let cache_dir = self.cache_path().to_str().unwrap().to_owned();
 
         let reg_info = match self.settings.reg_info_v3.clone() {
@@ -1871,7 +1906,7 @@ impl Data {
             gdk_ses_impl::start_processing(info_reg, Some(self.get_notif_callback()))?
         };
 
-        let wallet_amp = {
+        let wallet_amp_res = {
             let info_amp = gdk_ses::LoginInfo {
                 account_id: ACCOUNT_ID_AMP,
                 env: self.env,
@@ -1883,9 +1918,9 @@ impl Data {
             };
 
             if let Some(watch_only) = reg_info.clone().jade_watch_only {
-                gdk_ses_jade::start_processing(info_amp, self.get_notif_callback(), watch_only)?
+                gdk_ses_jade::start_processing(info_amp, self.get_notif_callback(), watch_only)
             } else {
-                gdk_ses_impl::start_processing(info_amp, Some(self.get_notif_callback()))?
+                gdk_ses_impl::start_processing(info_amp, Some(self.get_notif_callback()))
             }
         };
 
@@ -1944,20 +1979,27 @@ impl Data {
                 xpubs: xpubs.clone(),
             },
         );
-        self.wallets.insert(
-            wallet_amp.login_info().account_id,
-            Wallet {
-                ses: wallet_amp,
-                xpubs,
-            },
-        );
+        match wallet_amp_res {
+            Ok(wallet_amp) => {
+                self.wallets.insert(
+                    wallet_amp.login_info().account_id,
+                    Wallet {
+                        ses: wallet_amp,
+                        xpubs,
+                    },
+                );
+            }
+            Err(err) => {
+                self.show_message(&format!("AMP connection failed: {err}"));
+            }
+        }
 
         if self.skip_wallet_sync() {
             info!("skip wallet sync delay");
             self.send_wallet_loaded();
         }
 
-        self.ws_sender.send(ws::WrappedRequest::Connect).unwrap();
+        self.send_ws_connect();
 
         Ok(())
     }
@@ -2314,12 +2356,14 @@ impl Data {
         }
 
         let tx_chaining_required = if details.side == OrderSide::Maker {
-            let inputs = wallet.get_utxos()?;
-            let send_asset = send_asset.to_string();
+            let inputs = wallet
+                .get_utxos()?
+                .unspent_outputs
+                .remove(&send_asset)
+                .unwrap_or_default();
             let tx_chaining_required = !inputs
-                .utxos
                 .iter()
-                .any(|utxo| utxo.asset_id == send_asset && utxo.amount as i64 == send_amount);
+                .any(|utxo| utxo.asset_id == send_asset && utxo.satoshi as i64 == send_amount);
             Some(tx_chaining_required)
         } else {
             None
@@ -2520,8 +2564,12 @@ impl Data {
         };
 
         let wallet = self.get_wallet_ref(account_id)?;
-        let change_addr = wallet.get_recv_address(true)?.address;
-        let inputs = wallet.get_swap_inputs(&send_asset)?;
+        let change_addr = wallet.get_change_address()?.address;
+        let inputs = wallet
+            .get_utxos()?
+            .unspent_outputs
+            .remove(&send_asset)
+            .unwrap_or_default();
 
         let recv_addr_info = if details.send_bitcoins && is_amp {
             let gaid = wallet.get_gaid()?;
@@ -2529,7 +2577,7 @@ impl Data {
                 send_request!(self, ResolveGaid, ResolveGaidRequest { order_id, gaid })?.address;
             self.find_own_address_info(&resolved_addr)?
         } else {
-            self.get_uniq_address(wallet.as_ref(), Some(&change_addr), false)?
+            wallet.get_receive_address()?
         };
 
         self.assets
@@ -2546,16 +2594,17 @@ impl Data {
             .iter()
             .filter(|utxo| {
                 reserved_txouts
-                    .get(&TxOut::new(utxo.txid, utxo.vout))
+                    .get(&TxOut::new(utxo.txhash, utxo.vout))
                     .is_none()
-                    // In two step swaps we only interested in UTXOs with exact amount
-                    && (!two_step || utxo.value == send_amount as u64)
             })
             .cloned()
             .collect::<Vec<_>>();
-        let filtered_amount = filtered_utxos.iter().map(|utxo| utxo.value).sum::<u64>() as i64;
+        let filtered_amount = filtered_utxos.iter().map(|utxo| utxo.satoshi).sum::<u64>() as i64;
+        let only_unused_utxos = req.only_unused_utxos.unwrap_or_default();
         let mut asset_utxos = if filtered_amount >= send_amount {
             filtered_utxos
+        } else if only_unused_utxos {
+            bail!("not enough free UTXOs")
         } else {
             warn!(
                 "can't find unused UTXO(s), required amount: {}, free amount: {}",
@@ -2564,7 +2613,7 @@ impl Data {
             inputs
         };
 
-        let utxo_amounts: Vec<_> = asset_utxos.iter().map(|v| v.value as i64).collect();
+        let utxo_amounts: Vec<_> = asset_utxos.iter().map(|v| v.satoshi as i64).collect();
         let total: i64 = utxo_amounts.iter().sum();
         debug!("total: {total}, send_amount: {send_amount}");
         ensure!(total >= send_amount, "Insufficient funds");
@@ -2573,16 +2622,16 @@ impl Data {
         let selected_amount: i64 = selected.iter().cloned().sum();
         assert!(selected_amount >= send_amount);
 
-        let mut inputs = Vec::<PsetInput>::new();
+        let mut inputs = Vec::new();
 
         for amount in selected {
             let index = asset_utxos
                 .iter()
-                .position(|v| v.value as i64 == amount)
+                .position(|v| v.satoshi as i64 == amount)
                 .expect("utxo must exists");
             let utxo = asset_utxos.swap_remove(index);
 
-            inputs.push(utxo);
+            inputs.push(convert_to_swap_utxo(utxo));
         }
 
         let txouts = inputs
@@ -2612,11 +2661,12 @@ impl Data {
                 let chaining_tx = if let Some(chaining_tx) = &maker_tx.chaining_tx {
                     let allowed = req.tx_chaining_allowed.unwrap_or(false);
                     ensure!(allowed, "Please allow tx chaining and try again");
-                    inputs = vec![chaining_tx.input.clone()];
                     Some(chaining_tx.tx.clone().into())
                 } else {
                     None
                 };
+
+                inputs = vec![convert_to_swap_utxo(maker_tx.unspent_output)];
 
                 Some(MakerSignedHalf {
                     chaining_tx,
@@ -3371,7 +3421,7 @@ impl Data {
     // message processing
 
     fn send_request_msg(&self, request: Request) -> RequestId {
-        let request_id = ws::next_request_id();
+        let request_id = next_request_id();
         self.ws_sender
             .send(ws::WrappedRequest::Request(RequestMessage::Request(
                 request_id.clone(),
@@ -3426,7 +3476,7 @@ impl Data {
             );
             return;
         }
-        let request_id = ws::next_request_id_str();
+        let request_id = next_request_id_str();
         self.ws_sender
             .send(ws::WrappedRequest::Request(RequestMessage::Request(
                 request_id.clone(),
@@ -3456,6 +3506,27 @@ impl Data {
             debug!("WS connection check failed, reconnecting...");
             self.restart_websocket();
         }
+    }
+
+    fn send_ws_connect(&self) {
+        // TODO: Add a new env type
+        let (host, port, use_tls) = if self.network_settings
+            == Some(proto::network_settings::Selected::SideswapCn(
+                proto::Empty {},
+            )) {
+            ("cn.sideswap.io".to_owned(), 443, true)
+        } else {
+            let env_data = self.env.data();
+            (env_data.host.to_owned(), env_data.port, env_data.use_tls)
+        };
+
+        self.ws_sender
+            .send(ws::WrappedRequest::Connect {
+                host,
+                port,
+                use_tls,
+            })
+            .unwrap();
     }
 
     fn update_amp_connection(&mut self) {
@@ -3614,7 +3685,10 @@ impl Data {
             debug!("wait until WS is connected");
             return;
         }
-        if !self.amp_connected && pending_amp_sign_requests {
+        if !self.amp_connected
+            && pending_amp_sign_requests
+            && self.wallets.contains_key(&ACCOUNT_ID_AMP)
+        {
             debug!("wait until AMP is connected");
             self.update_amp_connection();
             return;
@@ -4189,15 +4263,8 @@ pub fn start_processing(
 
     debug!("proxy env: {:?}", Data::proxy());
 
-    let env_data = env.data();
     let (resp_sender, resp_receiver) = crossbeam_channel::unbounded::<ServerResp>();
-    let (ws_sender, ws_receiver, ws_hint) = ws::start(
-        env_data.host.to_owned(),
-        env_data.port,
-        env_data.use_tls,
-        true,
-        Data::proxy(),
-    );
+    let (ws_sender, ws_receiver, ws_hint) = ws::start(Data::proxy());
 
     let ui_copy = ui.clone();
     let last_jade_status = std::sync::Arc::new(std::sync::Mutex::new(
@@ -4392,6 +4459,7 @@ pub fn start_processing(
         jades_scan_result: None,
         jade_status_callback,
         async_requests: BTreeMap::new(),
+        network_settings: None,
     };
 
     let registry_path = state.registry_path();

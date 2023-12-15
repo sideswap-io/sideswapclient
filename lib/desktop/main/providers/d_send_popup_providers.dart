@@ -1,9 +1,16 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sideswap/common/enums.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
+
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/bip32_providers.dart';
+import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'd_send_popup_providers.g.dart';
 
@@ -36,7 +43,7 @@ class SendPopupSelectedAccountAssetNotifier
     extends _$SendPopupSelectedAccountAssetNotifier {
   @override
   AccountAsset build() {
-    final accountAsset = ref.watch(sendAssetProvider);
+    final accountAsset = ref.watch(sendAssetNotifierProvider);
     return accountAsset;
   }
 
@@ -92,11 +99,8 @@ bool sendPopupShowInsufficientFunds(SendPopupShowInsufficientFundsRef ref) {
 
 @riverpod
 bool sendPopupIsAddressValid(SendPopupIsAddressValidRef ref) {
-  final address = ref.watch(sendPopupAddressNotifierProvider);
-  final isAddressValid =
-      ref.watch(walletProvider).isAddrValid(address, AddrType.elements);
-
-  return isAddressValid;
+  final result = ref.watch(sendPopupParseAddressProvider);
+  return result.match((l) => false, (r) => true);
 }
 
 @riverpod
@@ -107,4 +111,121 @@ String? sendPopupDollarConversion(SendPopupDollarConversionRef ref) {
       ref.watch(sendPopupShowInsufficientFundsProvider);
 
   return showInsufficientFunds ? null : receiveConversion;
+}
+
+class SendPopupAddressResult {
+  final String address;
+  final BIP21AddressTypeEnum addressType;
+  final double amount;
+  final String assetId;
+
+  SendPopupAddressResult({
+    required this.address,
+    required this.addressType,
+    required this.amount,
+    required this.assetId,
+  });
+
+  SendPopupAddressResult copyWith({
+    String? address,
+    BIP21AddressTypeEnum? addressType,
+    double? amount,
+    String? assetId,
+  }) {
+    return SendPopupAddressResult(
+      address: address ?? this.address,
+      addressType: addressType ?? this.addressType,
+      amount: amount ?? this.amount,
+      assetId: assetId ?? this.assetId,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'SendPopupAddressResult(address: $address, addressType: $addressType, amount: $amount, assetId: $assetId)';
+  }
+
+  (String, BIP21AddressTypeEnum, double, String) _equality() =>
+      (address, addressType, amount, assetId);
+
+  @override
+  bool operator ==(covariant SendPopupAddressResult other) {
+    if (identical(this, other)) return true;
+
+    return other._equality() == _equality();
+  }
+
+  @override
+  int get hashCode => _equality().hashCode;
+}
+
+@riverpod
+Either<Exception, SendPopupAddressResult> sendPopupParseAddress(
+    SendPopupParseAddressRef ref) {
+  final address = ref.watch(sendPopupAddressNotifierProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+
+  if (ref.watch(isAddrTypeValidProvider(address, AddrType.bitcoin))) {
+    return Right(
+      SendPopupAddressResult(
+        address: address,
+        addressType: BIP21AddressTypeEnum.bitcoin,
+        amount: 0,
+        assetId: liquidAssetId,
+      ),
+    );
+  }
+
+  if (ref.watch(isAddrTypeValidProvider(address, AddrType.elements))) {
+    return Right(
+      SendPopupAddressResult(
+        address: address,
+        addressType: BIP21AddressTypeEnum.elements,
+        amount: 0,
+        assetId: liquidAssetId,
+      ),
+    );
+  }
+
+  try {
+    final url = Uri.parse(address);
+
+    if (url.scheme == 'bitcoin') {
+      final result =
+          ref.watch(parseBIP21Provider(address, BIP21AddressTypeEnum.bitcoin));
+
+      return result.match(
+        (l) => Left(l),
+        (r) => Right(
+          SendPopupAddressResult(
+            address: r.address,
+            addressType: r.addressType,
+            amount: r.amount,
+            assetId: r.assetId.isEmpty ? liquidAssetId : r.assetId,
+          ),
+        ),
+      );
+    }
+
+    if (url.scheme == 'liquidnetwork') {
+      final result = ref.watch(
+          parseBIP21Provider(address, BIP21AddressTypeEnum.liquidnetwork));
+
+      return result.match(
+        (l) => Left(l),
+        (r) => Right(
+          SendPopupAddressResult(
+            address: r.address,
+            addressType: r.addressType,
+            amount: r.amount,
+            assetId: r.assetId.isEmpty ? liquidAssetId : r.assetId,
+          ),
+        ),
+      );
+    }
+  } catch (e) {
+    logger.e(e);
+  }
+
+  return Left(Exception('Invalid address'));
 }

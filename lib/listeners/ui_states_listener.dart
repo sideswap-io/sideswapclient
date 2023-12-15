@@ -9,19 +9,18 @@ class UiStatesListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<UiStateArgsChangeNotifierProvider>(uiStateArgsProvider,
-        (((_, next) {
-      final navigationItem = next.walletMainArguments.navigationItem;
+    ref.listen(uiStateArgsNotifierProvider, (((_, next) {
+      final navigationItemEnum = next.navigationItemEnum;
 
-      if (navigationItem != WalletMainNavigationItem.markets) {
+      if (navigationItemEnum != WalletMainNavigationItemEnum.markets) {
         if (ref.read(marketsProvider).subscribedMarket !=
             SubscribedMarket.none) {
           ref.read(marketsProvider).unsubscribeMarket();
         }
       }
 
-      if (navigationItem != WalletMainNavigationItem.markets &&
-          navigationItem != WalletMainNavigationItem.swap) {
+      if (navigationItemEnum != WalletMainNavigationItemEnum.markets &&
+          navigationItemEnum != WalletMainNavigationItemEnum.swap) {
         if (ref
             .read(marketsProvider)
             .subscribedIndexPriceAssetId()
@@ -30,7 +29,7 @@ class UiStatesListener extends ConsumerWidget {
         }
       }
 
-      if (navigationItem != WalletMainNavigationItem.swap) {
+      if (navigationItemEnum != WalletMainNavigationItemEnum.swap) {
         ref.read(walletProvider).unsubscribeFromPriceStream();
       }
     })));

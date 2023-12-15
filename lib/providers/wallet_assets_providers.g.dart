@@ -21,6 +21,20 @@ final bitcoinAssetIdProvider = Provider<String>.internal(
 );
 
 typedef BitcoinAssetIdRef = ProviderRef<String>;
+String _$assetUtilsHash() => r'06e684a8420c7d12ef7da59b0dd95277aefd84c1';
+
+/// See also [assetUtils].
+@ProviderFor(assetUtils)
+final assetUtilsProvider = AutoDisposeProvider<AssetUtils>.internal(
+  assetUtils,
+  name: r'assetUtilsProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$assetUtilsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AssetUtilsRef = AutoDisposeProviderRef<AssetUtils>;
 String _$cachedImageManagerHash() =>
     r'0c98bb88fd963ab145033445a67e8c9542986492';
 
@@ -53,6 +67,35 @@ final clearImageCacheFutureProvider = FutureProvider<bool>.internal(
 );
 
 typedef ClearImageCacheFutureRef = FutureProviderRef<bool>;
+String _$assetImageHash() => r'0fa26ea63b9ed192a6b81dd018ab1605d5f63c39';
+
+/// See also [assetImage].
+@ProviderFor(assetImage)
+final assetImageProvider = AutoDisposeProvider<AssetImage>.internal(
+  assetImage,
+  name: r'assetImageProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$assetImageHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AssetImageRef = AutoDisposeProviderRef<AssetImage>;
+String _$builtinAssetsHash() => r'8fde451fff74bc2f3064435f93c52eb4aaec7af1';
+
+/// See also [builtinAssets].
+@ProviderFor(builtinAssets)
+final builtinAssetsProvider = AutoDisposeProvider<Map<String, Asset>>.internal(
+  builtinAssets,
+  name: r'builtinAssetsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$builtinAssetsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef BuiltinAssetsRef = AutoDisposeProviderRef<Map<String, Asset>>;
 String _$imageBytesResizedFutureHash() =>
     r'c92706c9157a5b27f651c4ba3606d022f0564535';
 
@@ -270,6 +313,24 @@ class _ImageBytesResizedFutureProviderElement
   double get height => (origin as ImageBytesResizedFutureProvider).height;
 }
 
+String _$accountAssetTransactionsHash() =>
+    r'4fddee80ebc39599499d5077dfa1c113c606f50d';
+
+/// See also [accountAssetTransactions].
+@ProviderFor(accountAssetTransactions)
+final accountAssetTransactionsProvider =
+    AutoDisposeProvider<Map<AccountAsset, List<TxItem>>>.internal(
+  accountAssetTransactions,
+  name: r'accountAssetTransactionsProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$accountAssetTransactionsHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AccountAssetTransactionsRef
+    = AutoDisposeProviderRef<Map<AccountAsset, List<TxItem>>>;
 String _$liquidAssetIdStateHash() =>
     r'0993e2408473de0a738dd0d0b42e264cac3165df';
 
@@ -320,6 +381,22 @@ final eurxAssetIdStateProvider =
 );
 
 typedef _$EurxAssetIdState = Notifier<String>;
+String _$ampAssetsNotifierHash() => r'b57fe93761c6c6a232e44b0ac80398a7c9718604';
+
+/// See also [AmpAssetsNotifier].
+@ProviderFor(AmpAssetsNotifier)
+final ampAssetsNotifierProvider =
+    AutoDisposeNotifierProvider<AmpAssetsNotifier, List<String>>.internal(
+  AmpAssetsNotifier.new,
+  name: r'ampAssetsNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$ampAssetsNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$AmpAssetsNotifier = AutoDisposeNotifier<List<String>>;
 String _$assetsStateHash() => r'48729271cca082e7ff42dae31652319333075665';
 
 /// See also [AssetsState].
@@ -335,5 +412,39 @@ final assetsStateProvider =
 );
 
 typedef _$AssetsState = Notifier<Map<String, Asset>>;
+String _$selectedWalletAccountAssetNotifierHash() =>
+    r'1594d900e68cd31a76770d8cfdd0899ea406b9b1';
+
+/// See also [SelectedWalletAccountAssetNotifier].
+@ProviderFor(SelectedWalletAccountAssetNotifier)
+final selectedWalletAccountAssetNotifierProvider = NotifierProvider<
+    SelectedWalletAccountAssetNotifier, AccountAsset?>.internal(
+  SelectedWalletAccountAssetNotifier.new,
+  name: r'selectedWalletAccountAssetNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$selectedWalletAccountAssetNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$SelectedWalletAccountAssetNotifier = Notifier<AccountAsset?>;
+String _$walletAssetPricesNotifierHash() =>
+    r'9be676bb1301c4fa4c977588b85caa7e1c699551';
+
+/// See also [WalletAssetPricesNotifier].
+@ProviderFor(WalletAssetPricesNotifier)
+final walletAssetPricesNotifierProvider = NotifierProvider<
+    WalletAssetPricesNotifier, Map<String, From_PriceUpdate>>.internal(
+  WalletAssetPricesNotifier.new,
+  name: r'walletAssetPricesNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$walletAssetPricesNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$WalletAssetPricesNotifier = Notifier<Map<String, From_PriceUpdate>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

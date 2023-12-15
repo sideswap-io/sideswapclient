@@ -14,10 +14,12 @@ import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/app_releases_provider.dart';
 import 'package:sideswap/providers/csv_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
+@Deprecated('Remove and replace by DesktopHomeNew')
 class DesktopHome extends HookConsumerWidget {
   const DesktopHome({super.key});
 
@@ -36,15 +38,35 @@ class DesktopHome extends HookConsumerWidget {
                       const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
                   child: Row(
                     children: [
-                      Text('Wallet view'.tr(),
+                      TextButton(
+                        onPressed: () {
+                          final walletMainArguments =
+                              ref.read(uiStateArgsNotifierProvider);
+                          ref
+                              .read(uiStateArgsNotifierProvider.notifier)
+                              .setWalletMainArguments(
+                                WalletMainArguments(
+                                  currentIndex:
+                                      walletMainArguments.currentIndex,
+                                  navigationItemEnum:
+                                      walletMainArguments.navigationItemEnum,
+                                  arguments: '',
+                                ),
+                              );
+                        },
+                        child: Text(
+                          'Wallet view'.tr(),
                           style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
-                          )),
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                       const Spacer(),
                       Consumer(
                         builder: (context, ref, child) {
-                          final ampId = ref.watch(ampIdProvider);
+                          final ampId = ref.watch(ampIdNotifierProvider);
 
                           if (ampId.isNotEmpty) {
                             return AmpIdPanel(

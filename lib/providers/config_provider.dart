@@ -4,16 +4,20 @@ import 'dart:typed_data';
 import 'package:enum_to_string/enum_to_string.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
-import 'package:sideswap/providers/network_access_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 
 import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
-final sharedPreferencesProvider =
-    Provider<SharedPreferences>((_) => throw UnimplementedError());
+part 'config_provider.g.dart';
+
+@Riverpod(keepAlive: true)
+SharedPreferences sharedPreferences(SharedPreferencesRef ref) {
+  throw UnimplementedError();
+}
 
 final configProvider =
     ChangeNotifierProvider<ConfigChangeNotifierProvider>((ref) {

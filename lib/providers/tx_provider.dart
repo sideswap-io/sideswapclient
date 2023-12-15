@@ -1,41 +1,43 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-final allTxsNotifierProvider =
-    AutoDisposeNotifierProvider<AllTxsNotifier, Map<String, TransItem>>(
-        AllTxsNotifier.new);
+part 'tx_provider.g.dart';
 
-class AllTxsNotifier extends AutoDisposeNotifier<Map<String, TransItem>> {
+@Riverpod(keepAlive: true)
+class AllTxsNotifier extends _$AllTxsNotifier {
   @override
   Map<String, TransItem> build() {
-    ref.keepAlive();
     return {};
   }
 
   void update({required From_UpdatedTxs txs}) {
+    final allTxs = {...state};
+
     for (var item in txs.items) {
-      state[item.id] = item;
+      allTxs[item.id] = item;
     }
 
-    ref.notifyListeners();
+    state = allTxs;
   }
 
   void remove({required From_RemovedTxs txs}) {
+    final allTxs = {...state};
+
     for (var txid in txs.txids) {
-      state.remove(txid);
+      allTxs.remove(txid);
     }
 
-    ref.notifyListeners();
+    state = allTxs;
   }
 
   void clear() {
-    state.clear();
-    ref.notifyListeners();
+    state = {};
   }
 }
 
-final allTxsSortedProvider = AutoDisposeProvider<List<TransItem>>((ref) {
+@riverpod
+List<TransItem> allTxsSorted(AllTxsSortedRef ref) {
   final allTxs = ref.watch(allTxsNotifierProvider);
   final allPegsById = ref.watch(allPegsByIdProvider);
 
@@ -43,13 +45,14 @@ final allTxsSortedProvider = AutoDisposeProvider<List<TransItem>>((ref) {
   allTxsSorted.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
   return allTxsSorted;
-});
+}
 
-final allNewTxsSortedProvider = AutoDisposeProvider<List<TransItem>>((ref) {
+@riverpod
+List<TransItem> allNewTxsSorted(AllNewTxsSortedRef ref) {
   final allTxsSorted = ref.watch(allTxsSortedProvider);
 
   final allNewTxsSorted = <TransItem>[];
   allNewTxsSorted.addAll(allTxsSorted);
   allNewTxsSorted.removeWhere((e) => !e.hasConfs());
   return allNewTxsSorted;
-});
+}

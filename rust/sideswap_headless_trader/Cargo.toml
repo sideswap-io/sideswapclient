@@ -13,5 +13,3 @@ config.workspace = true
 log.workspace = true
 prost.workspace = true
 serde = { workspace = true, features = ["derive"] }
-axum = "0.7.2"
-tokio = { workspace = true, features = ["full"] }

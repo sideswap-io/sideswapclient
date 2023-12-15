@@ -420,7 +420,7 @@ class _LastStringIndexPriceForAssetProviderElement
       (origin as LastStringIndexPriceForAssetProvider).assetId;
 }
 
-String _$makeOrderBalanceHash() => r'd977a5d7ae6f8c07d618721aa216a758875568cf';
+String _$makeOrderBalanceHash() => r'44037793a2734d9eab8fd41148e978b9205f33e6';
 
 /// See also [makeOrderBalance].
 @ProviderFor(makeOrderBalance)

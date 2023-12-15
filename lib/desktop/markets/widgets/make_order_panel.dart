@@ -20,6 +20,7 @@ import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
@@ -97,7 +98,6 @@ class MakeOrderPanel extends HookConsumerWidget {
         ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
     final buttonIndexPrice = ref.watch(indexPriceButtonProvider);
 
-    final selectedMarket = assetMarketType(selectedAsset);
     final trackingAvailable = selectedAsset?.swapMarket == true;
 
     useEffect(() {
@@ -121,11 +121,7 @@ class MakeOrderPanel extends HookConsumerWidget {
       final indexPrice = trackingToggled.value
           ? trackerValueToIndexPrice(trackingValue.value)
           : null;
-      final account = ref.watch(getBalanceAccountProvider(asset));
-      if (account == null) {
-        logger.w('AccountAsset is null!');
-        return;
-      }
+      final account = ref.watch(accountAssetFromAssetProvider(asset));
       final sign = isSell ? -1 : 1;
       final amountWithSign = amount * sign;
 
@@ -185,9 +181,9 @@ class MakeOrderPanel extends HookConsumerWidget {
       // for sell side insert max balance only
       final liquidAssetId = ref.read(liquidAssetIdStateProvider);
       final account = isPricedInLiquid
-          ? ref.read(getBalanceAccountProvider(asset))
+          ? ref.read(accountAssetFromAssetProvider(asset))
           : AccountAsset(AccountType.reg, liquidAssetId);
-      final balance = ref.read(balancesProvider).balances[account] ?? 0;
+      final balance = ref.read(balancesNotifierProvider)[account] ?? 0;
       final amountProvider = ref.read(amountToStringProvider);
       final balanceStr = amountProvider.amountToString(
           AmountToStringParameters(amount: balance, precision: assetPrecision));
@@ -196,6 +192,9 @@ class MakeOrderPanel extends HookConsumerWidget {
     }, [selectedAccountAsset, pricePerUnit]);
 
     useEffect(() {
+      // TODO (malcolmpl): checking token type should be here or should be removed since token market is enabled?
+      logger.w(
+          'You are making market order for token - if you found a bug please remove this checking');
       final selectedAsset =
           ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
       if (assetMarketType(selectedAsset) == MarketType.token) {
@@ -273,24 +272,20 @@ class MakeOrderPanel extends HookConsumerWidget {
                           inactiveToggleBackground: const Color(0xFF0E4D72),
                           backgroundColor: const Color(0xFF0E4D72),
                           borderColor: const Color(0xFF0E4D72),
-                          onToggle: selectedMarket != MarketType.token
-                              ? (value) {
-                                  if (value) {
-                                    ref
-                                        .read(
-                                            makeOrderSideStateProvider.notifier)
-                                        .setSide(MakeOrderSide.sell);
-                                  } else {
-                                    ref
-                                        .read(
-                                            makeOrderSideStateProvider.notifier)
-                                        .setSide(MakeOrderSide.buy);
-                                  }
-                                  ref
-                                      .read(indexPriceButtonProvider.notifier)
-                                      .setIndexPrice('0');
-                                }
-                              : null,
+                          onToggle: (value) {
+                            if (value) {
+                              ref
+                                  .read(makeOrderSideStateProvider.notifier)
+                                  .setSide(MakeOrderSide.sell);
+                            } else {
+                              ref
+                                  .read(makeOrderSideStateProvider.notifier)
+                                  .setSide(MakeOrderSide.buy);
+                            }
+                            ref
+                                .read(indexPriceButtonProvider.notifier)
+                                .setIndexPrice('0');
+                          },
                         ),
                       ],
                     ),

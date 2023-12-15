@@ -21,6 +21,7 @@ import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 import 'package:sideswap/screens/settings/settings_languages.dart';
+import 'package:sideswap/screens/settings/settings_logs.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/widgets/settings_button.dart';
 import 'package:sideswap/screens/settings/widgets/settings_delete_wallet_dialog.dart';
@@ -53,7 +54,7 @@ class Settings extends ConsumerWidget {
                 ),
                 Consumer(
                   builder: (context, ref, child) {
-                    final ampId = ref.watch(ampIdProvider);
+                    final ampId = ref.watch(ampIdNotifierProvider);
 
                     return AmpIdPanel(
                       width: double.infinity,
@@ -203,6 +204,19 @@ class Settings extends ConsumerWidget {
                       Navigator.of(context, rootNavigator: true).push<void>(
                           DialogRoute(
                               builder: ((context) => const Languages()),
+                              context: context));
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: SettingsButton(
+                    type: SettingsButtonType.logs,
+                    text: 'Logs'.tr(),
+                    onPressed: () {
+                      Navigator.of(context, rootNavigator: true).push<void>(
+                          DialogRoute(
+                              builder: ((context) => const SettingsLogs()),
                               context: context));
                     },
                   ),

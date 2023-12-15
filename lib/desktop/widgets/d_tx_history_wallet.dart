@@ -7,9 +7,11 @@ class DTxHistoryWallet extends StatelessWidget {
   const DTxHistoryWallet({
     super.key,
     required this.tx,
+    this.textStyle,
   });
 
   final TransItem tx;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +24,9 @@ class DTxHistoryWallet extends StatelessWidget {
         : ((isAmp && isRegular)
             ? 'Regular/AMP'.tr()
             : (isAmp ? 'AMP' : 'Regular'.tr()));
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Text(accountName),
+    return Text(
+      accountName,
+      style: textStyle,
     );
   }
 }

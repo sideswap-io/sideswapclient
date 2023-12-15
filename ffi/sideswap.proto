@@ -152,6 +152,7 @@ message NetworkSettings {
   oneof selected {
     Empty blockstream = 1;
     Empty sideswap = 2;
+    Empty sideswap_cn = 4;
     Custom custom = 3;
   }
 }
@@ -317,6 +318,7 @@ message To {
     optional bool two_step = 6;
     optional uint64 ttl_seconds = 5;
     optional bool tx_chaining_allowed = 7;
+    optional bool only_unused_utxos = 8;
   }
 
   message EditOrder {

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
@@ -11,6 +12,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
+import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/mnemonic_table_provider.dart';
@@ -21,7 +23,7 @@ import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
-class DFirstLaunch extends ConsumerWidget {
+class DFirstLaunch extends HookConsumerWidget {
   const DFirstLaunch({super.key});
 
   @override
@@ -101,9 +103,11 @@ class DFirstLaunch extends ConsumerWidget {
 
                   // and also reset network settings model
                   ref
-                      .read(networkSettingsProvider.notifier)
+                      .read(networkSettingsNotifierProvider.notifier)
                       .setModel(const NetworkSettingsModelEmpty());
-                  await ref.read(networkSettingsProvider.notifier).save();
+                  await ref
+                      .read(networkSettingsNotifierProvider.notifier)
+                      .save();
 
                   exit(0);
                 },
@@ -122,6 +126,16 @@ class DFirstLaunch extends ConsumerWidget {
     });
 
     final lang = ref.watch(localesProvider).selectedLang(context);
+
+    useEffect(() {
+      if (lang == 'zh') {
+        ref
+            .read(configProvider.notifier)
+            .setSettingsNetworkType(SettingsNetworkType.sideswapChina);
+      }
+
+      return;
+    }, [lang]);
 
     return Stack(
       key: ValueKey(lang),

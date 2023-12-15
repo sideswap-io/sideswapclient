@@ -7,6 +7,7 @@ import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/generate_address_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
@@ -17,10 +18,14 @@ class GenerateAddressScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final receiveAddress = ref.watch(currentReceiveAddressProvider);
+    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
 
     useEffect(() {
-      ref.read(walletProvider).toggleRecvAddrType(AccountType.reg);
+      Future.microtask(() {
+        ref.invalidate(currentReceiveAddressProvider);
+        ref.invalidate(selectedAccountTypeNotifierProvider);
+      });
+
       return;
     }, const []);
 
@@ -53,16 +58,15 @@ class GenerateAddressScreen extends HookConsumerWidget {
               Consumer(
                 builder: (context, ref, _) {
                   return OptionGenerateWidget(
-                    isSelected: receiveAddress.accountType.isRegular,
+                    isSelected: selectedAccountType.isRegular,
                     assetIcon: 'assets/regular_wallet.svg',
                     title: 'Regular wallet'.tr(),
                     subTitle: 'Single-signature wallet'.tr(),
                     message:
-                        'Your default wallet which contains asset are secured by a single key under your control'
+                        'Your default wallet which contains asset are secured by a single key under your control.'
                             .tr(),
                     onPressed: () {
-                      if (receiveAddress.accountType.isRegular &&
-                          receiveAddress.recvAddress.isNotEmpty) {
+                      if (selectedAccountType.isRegular) {
                         ref
                             .read(pageStatusStateProvider.notifier)
                             .setStatus(Status.walletAddressDetail);
@@ -70,8 +74,8 @@ class GenerateAddressScreen extends HookConsumerWidget {
                       }
 
                       ref
-                          .read(walletProvider)
-                          .toggleRecvAddrType(AccountType.reg);
+                          .read(selectedAccountTypeNotifierProvider.notifier)
+                          .setAccountType(AccountType.reg);
                     },
                   );
                 },
@@ -80,7 +84,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
               Consumer(
                 builder: (context, ref, _) {
                   return OptionGenerateWidget(
-                    isSelected: receiveAddress.accountType.isAmp,
+                    isSelected: selectedAccountType.isAmp,
                     assetIcon: 'assets/amp_wallet.svg',
                     title: 'AMP Securities wallet'.tr(),
                     subTitle: '2-of-2 multi-signature wallet'.tr(),
@@ -88,8 +92,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
                         'Your securities wallet which may hold Transfer Restricted assets, such as BMN or SSWP, which require the issuer to co-sign and approve transactions.'
                             .tr(),
                     onPressed: () {
-                      if (receiveAddress.accountType.isAmp &&
-                          receiveAddress.recvAddress.isNotEmpty) {
+                      if (selectedAccountType.isAmp) {
                         ref
                             .read(pageStatusStateProvider.notifier)
                             .setStatus(Status.walletAddressDetail);
@@ -97,8 +100,8 @@ class GenerateAddressScreen extends HookConsumerWidget {
                       }
 
                       ref
-                          .read(walletProvider)
-                          .toggleRecvAddrType(AccountType.amp);
+                          .read(selectedAccountTypeNotifierProvider.notifier)
+                          .setAccountType(AccountType.amp);
                     },
                   );
                 },

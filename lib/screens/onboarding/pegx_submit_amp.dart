@@ -19,7 +19,7 @@ class PegxSubmitAmp extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdProvider);
+    final ampId = ref.watch(ampIdNotifierProvider);
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
     final gaidWaiting = useState(false);
 

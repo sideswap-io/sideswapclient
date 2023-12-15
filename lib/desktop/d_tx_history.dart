@@ -36,7 +36,7 @@ class DTxHistory extends StatelessWidget {
         Padding(
           padding:
               EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12),
-          child: DTxHistoryRow(list: [
+          child: DTxHistoryRow(children: [
             DTxHistoryHeader(text: 'Date'.tr()),
             DTxHistoryHeader(text: 'Wallet'.tr()),
             DTxHistoryHeader(text: 'Type'.tr()),
@@ -174,7 +174,7 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                   horizontal: horizontalPadding, vertical: 1),
               child: DTransparentButton(
                 child: DTxHistoryRow(
-                  list: [
+                  children: [
                     DTxHistoryDate(
                         dateFormatDate: dateFormatDate,
                         dateFormatTime: dateFormatTime,

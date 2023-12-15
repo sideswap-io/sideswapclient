@@ -1,7 +1,8 @@
-import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-enum WalletMainNavigationItem {
+part 'ui_state_args_provider.g.dart';
+
+enum WalletMainNavigationItemEnum {
   home,
   accounts,
   assetSelect,
@@ -13,71 +14,71 @@ enum WalletMainNavigationItem {
 }
 
 class WalletMainArguments {
-  int currentIndex;
-  WalletMainNavigationItem navigationItem;
+  final int currentIndex;
+  final WalletMainNavigationItemEnum navigationItemEnum;
+  final Object? arguments;
 
   WalletMainArguments({
     required this.currentIndex,
-    required this.navigationItem,
+    required this.navigationItemEnum,
+    this.arguments,
   });
 
   WalletMainArguments fromIndex(int value) {
-    switch (value) {
-      case 0:
-        return copyWith(
-            currentIndex: value, navigationItem: WalletMainNavigationItem.home);
-      case 1:
-        return copyWith(
-            currentIndex: value,
-            navigationItem: WalletMainNavigationItem.accounts);
-      case 2:
-        return copyWith(
-            currentIndex: value,
-            navigationItem: WalletMainNavigationItem.markets);
-      case 3:
-        return copyWith(
-            currentIndex: value, navigationItem: WalletMainNavigationItem.swap);
-      case 4:
-        return copyWith(
-            currentIndex: value, navigationItem: WalletMainNavigationItem.pegs);
-    }
-
-    return copyWith(
-        currentIndex: value, navigationItem: WalletMainNavigationItem.home);
+    return switch (value) {
+      0 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.home),
+      1 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.accounts),
+      2 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.markets),
+      3 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.swap),
+      4 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.pegs),
+      _ => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.home),
+    };
   }
 
   WalletMainArguments fromIndexDesktop(int value) {
-    switch (value) {
-      case 0:
-        return copyWith(
-            currentIndex: value, navigationItem: WalletMainNavigationItem.home);
-      case 1:
-        return copyWith(
-            currentIndex: value,
-            navigationItem: WalletMainNavigationItem.markets);
-      case 2:
-        return copyWith(
-            currentIndex: value, navigationItem: WalletMainNavigationItem.swap);
-      case 3:
-        return copyWith(
-            currentIndex: value,
-            navigationItem: WalletMainNavigationItem.transactions);
-      case 4:
-        return copyWith(
-            currentIndex: value, navigationItem: WalletMainNavigationItem.pegs);
-    }
-
-    return copyWith(
-        currentIndex: value, navigationItem: WalletMainNavigationItem.home);
+    return switch (value) {
+      0 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.home),
+      1 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.markets),
+      2 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.swap),
+      3 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.transactions),
+      4 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.pegs),
+      _ => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.home),
+    };
   }
 
   WalletMainArguments copyWith({
     int? currentIndex,
-    WalletMainNavigationItem? navigationItem,
+    WalletMainNavigationItemEnum? navigationItemEnum,
+    Object? arguments,
   }) {
     return WalletMainArguments(
       currentIndex: currentIndex ?? this.currentIndex,
-      navigationItem: navigationItem ?? this.navigationItem,
+      navigationItemEnum: navigationItemEnum ?? this.navigationItemEnum,
+      arguments: arguments ?? this.arguments,
     );
   }
 
@@ -87,50 +88,81 @@ class WalletMainArguments {
 
     return other is WalletMainArguments &&
         other.currentIndex == currentIndex &&
-        other.navigationItem == navigationItem;
+        other.navigationItemEnum == navigationItemEnum &&
+        other.arguments == arguments;
   }
 
   @override
-  int get hashCode => currentIndex.hashCode ^ navigationItem.hashCode;
+  int get hashCode =>
+      currentIndex.hashCode ^ navigationItemEnum.hashCode ^ arguments.hashCode;
 
   @override
   String toString() =>
-      'WalletMainArguments(currentIndex: $currentIndex, navigationItem: $navigationItem)';
+      'WalletMainArguments(currentIndex: $currentIndex, navigationItemEnum: $navigationItemEnum, arguments: $arguments)';
 }
 
-final uiStateArgsProvider =
-    ChangeNotifierProvider<UiStateArgsChangeNotifierProvider>((ref) {
-  return UiStateArgsChangeNotifierProvider();
-});
+@riverpod
+class UiStateArgsNotifier extends _$UiStateArgsNotifier {
+  @override
+  WalletMainArguments build() {
+    return WalletMainArguments(
+      currentIndex: 0,
+      navigationItemEnum: WalletMainNavigationItemEnum.home,
+    );
+  }
 
-class UiStateArgsChangeNotifierProvider extends ChangeNotifier {
-  WalletMainArguments _walletMainArguments;
-  WalletMainArguments _lastWalletMainArguments = WalletMainArguments(
-      currentIndex: 0, navigationItem: WalletMainNavigationItem.home);
-
-  WalletMainArguments get walletMainArguments => _walletMainArguments;
-  set walletMainArguments(WalletMainArguments value) {
-    _lastWalletMainArguments = _walletMainArguments;
-    _walletMainArguments = value;
-    notifyListeners();
+  void setWalletMainArguments(WalletMainArguments value) {
+    state = value;
   }
 
   void clear() {
-    _walletMainArguments = WalletMainArguments(
-        currentIndex: 0, navigationItem: WalletMainNavigationItem.home);
-    _lastWalletMainArguments = _walletMainArguments;
+    state = WalletMainArguments(
+      currentIndex: 0,
+      navigationItemEnum: WalletMainNavigationItemEnum.home,
+    );
   }
-
-  WalletMainArguments get lastWalletMainArguments => _lastWalletMainArguments;
-
-  factory UiStateArgsChangeNotifierProvider() {
-    return _uiStateArgs;
-  }
-
-  UiStateArgsChangeNotifierProvider._internal()
-      : _walletMainArguments = WalletMainArguments(
-            currentIndex: 0, navigationItem: WalletMainNavigationItem.home);
-
-  static final UiStateArgsChangeNotifierProvider _uiStateArgs =
-      UiStateArgsChangeNotifierProvider._internal();
 }
+
+
+// final uiStateArgsProvider =
+//     ChangeNotifierProvider<UiStateArgsChangeNotifierProvider>((ref) {
+//   return UiStateArgsChangeNotifierProvider();
+// });
+
+// class UiStateArgsChangeNotifierProvider extends ChangeNotifier {
+//   WalletMainArguments _walletMainArguments;
+//   WalletMainArguments _lastWalletMainArguments = WalletMainArguments(
+//       currentIndex: 0,
+//       navigationItem: WalletMainNavigationItem(
+//           navigationItemEnum: WalletMainNavigationItemEnum.home));
+
+//   WalletMainArguments get walletMainArguments => _walletMainArguments;
+//   set walletMainArguments(WalletMainArguments value) {
+//     _lastWalletMainArguments = _walletMainArguments;
+//     _walletMainArguments = value;
+//     notifyListeners();
+//   }
+
+//   void clear() {
+//     _walletMainArguments = WalletMainArguments(
+//         currentIndex: 0,
+//         navigationItem: WalletMainNavigationItem(
+//             navigationItemEnum: WalletMainNavigationItemEnum.home));
+//     _lastWalletMainArguments = _walletMainArguments;
+//   }
+
+//   WalletMainArguments get lastWalletMainArguments => _lastWalletMainArguments;
+
+//   factory UiStateArgsChangeNotifierProvider() {
+//     return _uiStateArgs;
+//   }
+
+//   UiStateArgsChangeNotifierProvider._internal()
+//       : _walletMainArguments = WalletMainArguments(
+//             currentIndex: 0,
+//             navigationItem: WalletMainNavigationItem(
+//                 navigationItemEnum: WalletMainNavigationItemEnum.home));
+
+//   static final UiStateArgsChangeNotifierProvider _uiStateArgs =
+//       UiStateArgsChangeNotifierProvider._internal();
+// }

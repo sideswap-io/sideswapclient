@@ -2,13 +2,14 @@ import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/enums.dart';
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/qrcode_models.dart';
-import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/bip32_providers.dart';
+import 'package:sideswap/providers/common_providers.dart';
 
 final qrcodeResultModelProvider = StateProvider.autoDispose<QrCodeResultModel>(
     (ref) => const QrCodeResultModelEmpty());
@@ -21,16 +22,9 @@ enum QrCodeResultType {
   client,
 }
 
-enum QrCodeAddressType {
-  elements,
-  bitcoin,
-  liquidnetwork,
-  other,
-}
-
 class QrCodeResult {
   String? address;
-  QrCodeAddressType? addressType;
+  BIP21AddressTypeEnum? addressType;
   QrCodeResultType? type;
   double? amount;
   String? ticker;
@@ -56,7 +50,7 @@ class QrCodeResult {
 
   QrCodeResult copyWith({
     String? address,
-    QrCodeAddressType? addressType,
+    BIP21AddressTypeEnum? addressType,
     double? amount,
     String? ticker,
     String? message,
@@ -132,38 +126,66 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
   QrCodeNotifierProvider(this.ref);
 
-  QrCodeResult parseDynamicQrCode(String qrCode) {
+  Either<Exception, QrCodeResult> parseDynamicQrCode(String qrCode) {
     if (qrCode.isEmpty) {
-      return _emitError('Empty qr code'.tr());
+      return Right(_emitError('Empty qr code'.tr()));
     }
 
     _result = QrCodeResult();
 
     // check is it static qr code
-    final wallet = ref.read(walletProvider);
-    if (wallet.isAddrValid(qrCode, AddrType.bitcoin)) {
+    if (ref.read(isAddrTypeValidProvider(qrCode, AddrType.bitcoin))) {
       _result.address = qrCode;
-      _result.addressType = QrCodeAddressType.bitcoin;
+      _result.addressType = BIP21AddressTypeEnum.bitcoin;
       notifyListeners();
-      return _result;
+      return Right(_result);
     }
 
-    if (wallet.isAddrValid(qrCode, AddrType.elements)) {
+    if (ref.read(isAddrTypeValidProvider(qrCode, AddrType.elements))) {
       _result.address = qrCode;
-      _result.addressType = QrCodeAddressType.elements;
+      _result.addressType = BIP21AddressTypeEnum.elements;
       notifyListeners();
-      return _result;
+      return Right(_result);
     }
 
     final url = Uri.parse(qrCode);
 
     if (url.scheme == 'bitcoin') {
-      return parseBIP21(qrCode: qrCode, addressType: QrCodeAddressType.bitcoin);
+      final bip21Result =
+          ref.read(parseBIP21Provider(qrCode, BIP21AddressTypeEnum.bitcoin));
+      return bip21Result.match(
+        (l) => Left(l),
+        (r) => Right(
+          QrCodeResult(
+            address: r.address,
+            addressType: r.addressType,
+            amount: r.amount,
+            ticker: r.ticker,
+            message: r.message,
+            label: r.label,
+            assetId: r.assetId,
+          ),
+        ),
+      );
     }
 
     if (url.scheme == 'liquidnetwork') {
-      return parseBIP21(
-          qrCode: qrCode, addressType: QrCodeAddressType.liquidnetwork);
+      final bip21Result = ref
+          .read(parseBIP21Provider(qrCode, BIP21AddressTypeEnum.liquidnetwork));
+      return bip21Result.match(
+        (l) => Left(l),
+        (r) => Right(
+          QrCodeResult(
+            address: r.address,
+            addressType: r.addressType,
+            amount: r.amount,
+            ticker: r.ticker,
+            message: r.message,
+            label: r.label,
+            assetId: r.assetId,
+          ),
+        ),
+      );
     }
 
     // TODO: do we really need this?
@@ -183,23 +205,23 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     _result.errorMessage = 'Invalid QR code'.tr();
     notifyListeners();
 
-    return _result;
+    return Right(_result);
   }
 
-  QrCodeResult parseSideSwapAddress(String qrCode) {
+  Either<Exception, QrCodeResult> parseSideSwapAddress(String qrCode) {
     final url = Uri.parse(qrCode);
     final queryParams = url.queryParameters;
 
     if (queryParams.isEmpty) {
       logger.w('Invalid qr code');
-      return _emitError('Invalid QR code'.tr());
+      return Right(_emitError('Invalid QR code'.tr()));
     }
 
     _result.address = url.path;
-    _result.addressType = QrCodeAddressType.other;
+    _result.addressType = BIP21AddressTypeEnum.other;
     if (_result.address != null && _result.address!.isEmpty) {
       logger.w('Empty qr code address');
-      return _emitError('Invalid QR code'.tr());
+      return Right(_emitError('Invalid QR code'.tr()));
     }
 
     String? data;
@@ -210,14 +232,14 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     if (data == null) {
       logger.w('Wrong qr code');
-      return _emitError(''.tr());
+      return Right(_emitError(''.tr()));
     }
 
     final dataList = data.split(';');
 
     if (dataList.length < 5) {
       logger.w('Wrong qr code data');
-      return _emitError('Invalid QR code'.tr());
+      return Right(_emitError('Invalid QR code'.tr()));
     }
 
     if (dataList[0] == 'M') {
@@ -230,7 +252,7 @@ class QrCodeNotifierProvider extends ChangeNotifier {
 
     if (_result.type == null) {
       logger.w('Invalid merchant type');
-      return _emitError('Invalid QR code'.tr());
+      return Right(_emitError('Invalid QR code'.tr()));
     }
 
     try {
@@ -242,50 +264,12 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     } catch (e) {
       logger.e(e);
       logger.w('Wrong qr code data elements');
-      return _emitError('Invalid QR code'.tr());
+      return Right(_emitError('Invalid QR code'.tr()));
     }
 
     logger.d(_result);
 
-    return QrCodeResult();
-  }
-
-  QrCodeResult parseBIP21({
-    required String qrCode,
-    required QrCodeAddressType addressType,
-  }) {
-    final url = Uri.parse(qrCode);
-    final params = url.queryParameters;
-
-    if (params.containsKey('amount')) {
-      var amount = double.tryParse(params['amount'] ?? '0') ?? 0;
-      if (amount < 0) {
-        amount = 0;
-      }
-      _result.amount = amount;
-    }
-
-    if (params.containsKey('label')) {
-      _result.label = params['label'];
-    }
-
-    if (params.containsKey('message')) {
-      _result.message = params['message'];
-    }
-
-    if (params.containsKey('assetid')) {
-      _result.assetId = params['assetid'];
-      final asset = ref.read(assetsStateProvider)[_result.assetId];
-      _result.ticker = asset != null ? asset.ticker : kUnknownTicker;
-    }
-
-    _result.address = url.path;
-    _result.addressType = addressType;
-
-    logger.d(_result);
-    notifyListeners();
-
-    return _result;
+    return Right(QrCodeResult());
   }
 
   QrCodeResult _emitError(String errorMessage) {

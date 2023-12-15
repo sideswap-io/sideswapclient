@@ -10,7 +10,6 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
-import 'package:sideswap/providers/network_access_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
@@ -29,7 +28,7 @@ class SettingsCustomHost extends HookConsumerWidget {
     final portController = useTextEditingController();
     final useTls = useState(false);
     final applyEnabled = useState(false);
-    final networkSettingsModel = ref.watch(networkSettingsProvider);
+    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
 
     final validateCallback = useCallback(() {
       final host = hostController.text;
@@ -152,7 +151,7 @@ class SettingsCustomHost extends HookConsumerWidget {
                           text: 'APPLY'.tr(),
                           onPressed: () {
                             ref
-                                .read(networkSettingsProvider.notifier)
+                                .read(networkSettingsNotifierProvider.notifier)
                                 .setModel(NetworkSettingsModelApply(
                                   settingsNetworkType:
                                       SettingsNetworkType.personal,

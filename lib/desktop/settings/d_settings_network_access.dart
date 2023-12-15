@@ -9,7 +9,6 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/settings/d_settings_custom_host.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
-import 'package:sideswap/providers/network_access_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -51,7 +50,7 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettingsModel = ref.watch(networkSettingsProvider);
+    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
 
     return Center(
       child: SizedBox(
@@ -64,7 +63,7 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
                       SettingsNetworkType.blockstream &&
                   networkSettingsModel.env == SIDESWAP_ENV_PROD,
               onChanged: (value) {
-                ref.read(networkSettingsProvider.notifier).setModel(
+                ref.read(networkSettingsNotifierProvider.notifier).setModel(
                       const NetworkSettingsModelApply(
                         settingsNetworkType: SettingsNetworkType.blockstream,
                         env: SIDESWAP_ENV_PROD,
@@ -81,7 +80,7 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
                       SettingsNetworkType.blockstream &&
                   networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
               onChanged: (value) {
-                ref.read(networkSettingsProvider.notifier).setModel(
+                ref.read(networkSettingsNotifierProvider.notifier).setModel(
                       const NetworkSettingsModelApply(
                         settingsNetworkType: SettingsNetworkType.blockstream,
                         env: SIDESWAP_ENV_TESTNET,
@@ -98,7 +97,7 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
                       SettingsNetworkType.sideswap &&
                   networkSettingsModel.env == SIDESWAP_ENV_PROD,
               onChanged: (value) {
-                ref.read(networkSettingsProvider.notifier).setModel(
+                ref.read(networkSettingsNotifierProvider.notifier).setModel(
                       const NetworkSettingsModelApply(
                         settingsNetworkType: SettingsNetworkType.sideswap,
                         env: SIDESWAP_ENV_PROD,
@@ -115,7 +114,7 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
                       SettingsNetworkType.sideswap &&
                   networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
               onChanged: (value) {
-                ref.read(networkSettingsProvider.notifier).setModel(
+                ref.read(networkSettingsNotifierProvider.notifier).setModel(
                       const NetworkSettingsModelApply(
                         settingsNetworkType: SettingsNetworkType.sideswap,
                         env: SIDESWAP_ENV_TESTNET,
@@ -124,6 +123,22 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
               },
               content: const Text(
                 'SideSwap (Testnet)',
+              ),
+            ),
+            const SizedBox(height: 10),
+            DSettingsRadioButton(
+              checked: networkSettingsModel.settingsNetworkType ==
+                  SettingsNetworkType.sideswapChina,
+              onChanged: (value) {
+                ref.read(networkSettingsNotifierProvider.notifier).setModel(
+                      const NetworkSettingsModelApply(
+                        settingsNetworkType: SettingsNetworkType.sideswapChina,
+                        env: SIDESWAP_ENV_PROD,
+                      ),
+                    );
+              },
+              content: const Text(
+                'SideSwap China (Mainnet)',
               ),
             ),
             const SizedBox(height: 10),

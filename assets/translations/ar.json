@@ -473,7 +473,7 @@
   "Address for regular wallet successfully generated": "تم إنشاء عنوان للمحفظة العادية بنجاح",
   "Address for AMP Securities wallet successfully generated": "تم إنشاء عنوان لمحفظة AMP Securities بنجاح",
   "Single-signature wallet": "محفظة بتوقيع واحد",
-  "Your default wallet which contains asset are secured by a single key under your control": "محفظتك الافتراضية التي تحتوي على الأصول مؤمنة بواسطة مفتاح واحد تحت سيطرتك",
+  "Your default wallet which contains asset are secured by a single key under your control.": "محفظتك الافتراضية التي تحتوي على الأصول مؤمنة بواسطة مفتاح واحد تحت سيطرتك",
   "Your securities wallet which may hold Transfer Restricted assets, such as BMN or SSWP, which require the issuer to co-sign and approve transactions.": "محفظتك للأوراق المالية التي قد تحتوي على أصول مقيدة بنقلها، مثل BMN أو SSWP، التي تتطلب من الجهة المصدرة التوقيع المشترك والموافقة على الصفقات.",
   "2-of-2 multi-signature wallet": "محفظة متعددة التوقيع 2 من 2",
   "AMP Securities wallet": "محفظة AMP Securities",
@@ -484,5 +484,18 @@
   "Create swap output": "إنشاء إخراج الاستبدال",
   "Sign offline swap transaction": "توقيع صفقة الاستبدال دون اتصال",
   "No pending orders": "No pending orders",
-  "APPLY": "APPLY"
+  "APPLY": "APPLY",
+  "IMPORT FILE": "IMPORT FILE",
+  "Import transaction or private swap proposal": "Import transaction or private swap proposal",
+  "Paste transaction hash": "Paste transaction hash",
+  "BROADCAST": "BROADCAST",
+  "EXPORT FILE": "EXPORT FILE",
+  "Inf": "Inf",
+  "EXPORT TX": "EXPORT TX",
+  "Total Value": "Total Value",
+  "No unconfirmed transactions": "No unconfirmed transactions",
+  "Logs": "Logs",
+  "Export": "Export",
+  "Export log": "Export log",
+  "Export previous log": "Export previous log"
 }

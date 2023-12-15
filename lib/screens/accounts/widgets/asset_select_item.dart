@@ -83,14 +83,14 @@ class AssetSelectItem extends ConsumerWidget {
                     Consumer(
                       builder: (context, ref, child) {
                         final wallet = ref.read(walletProvider);
-                        final balances = ref.watch(balancesProvider);
+                        final balances = ref.watch(balancesNotifierProvider);
                         final selected = !wallet.disabledAssetAccount(account);
                         final liquidAssetId =
                             ref.watch(liquidAssetIdStateProvider);
                         final forceEnabled =
                             (account.account == AccountType.reg &&
                                     account.assetId == liquidAssetId) ||
-                                (balances.balances[account] ?? 0) > 0;
+                                (balances[account] ?? 0) > 0;
 
                         return FlutterSwitch(
                           value: selected || forceEnabled,

@@ -156,7 +156,7 @@ class SubAccountAssetTile extends ConsumerWidget {
                   Consumer(
                     builder: (context, ref, child) {
                       final balance =
-                          ref.watch(balancesProvider).balances[account] ?? 0;
+                          ref.watch(balancesNotifierProvider)[account] ?? 0;
                       final asset = ref.watch(assetsStateProvider
                           .select((value) => value[account.assetId]));
                       final balanceStr = ref

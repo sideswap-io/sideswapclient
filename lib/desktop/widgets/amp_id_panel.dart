@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/desktop/common/button/d_button.dart';
+import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 
 class AmpIdPanel extends StatelessWidget {
   const AmpIdPanel({
@@ -44,7 +48,7 @@ class AmpIdPanel extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(width: 6),
+          const SizedBox(width: 10),
           MouseRegion(
             cursor:
                 onTap != null ? SystemMouseCursors.click : MouseCursor.defer,
@@ -78,29 +82,54 @@ class AmpIdPanel extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          if (icon == null) ...[
-            const Spacer(),
-            SizedBox(
-              width: 32,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                onPressed: () async {
-                  await copyToClipboard(
-                    context,
-                    ampId,
-                  );
-                },
-                icon: SvgPicture.asset(
-                  'assets/copy2.svg',
-                  width: copyIconWidth,
-                  height: copyIconHeight,
+          ...switch (icon) {
+            final icon? => [icon],
+            _ => [
+                const Spacer(),
+                SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: FlavorConfig.isDesktop
+                      ? Consumer(builder: (context, ref, _) {
+                          final buttonStyle = ref
+                              .watch(desktopAppThemeProvider)
+                              .mainBottomNavigationBarButtonStyle;
+
+                          return DButton(
+                            style: buttonStyle,
+                            child: Center(
+                              child: SvgPicture.asset(
+                                'assets/copy2.svg',
+                                width: copyIconWidth,
+                                height: copyIconHeight,
+                              ),
+                            ),
+                            onPressed: () async {
+                              await copyToClipboard(
+                                context,
+                                ampId,
+                              );
+                            },
+                          );
+                        })
+                      : IconButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () async {
+                            await copyToClipboard(
+                              context,
+                              ampId,
+                            );
+                          },
+                          icon: SvgPicture.asset(
+                            'assets/copy2.svg',
+                            width: copyIconWidth,
+                            height: copyIconHeight,
+                          ),
+                        ),
                 ),
-              ),
-            ),
-            const SizedBox(width: 6),
-          ] else ...[
-            icon!,
-          ]
+                const SizedBox(width: 6),
+              ]
+          },
         ],
       ),
     );

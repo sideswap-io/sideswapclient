@@ -9,6 +9,7 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -38,10 +39,10 @@ class PaymentSendPopup extends StatelessWidget {
             padding: const EdgeInsets.only(top: 10),
             child: Consumer(
               builder: (context, ref, _) {
-                final selectedWalletAsset =
-                    ref.watch(selectedWalletAssetProvider);
-                final asset = ref.watch(assetsStateProvider
-                    .select((value) => value[selectedWalletAsset?.assetId]));
+                final selectedWalletAccountAsset =
+                    ref.watch(selectedWalletAccountAssetNotifierProvider);
+                final asset = ref.watch(assetsStateProvider.select(
+                    (value) => value[selectedWalletAccountAsset?.assetId]));
                 final precision = ref
                     .watch(assetUtilsProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
@@ -68,10 +69,10 @@ class PaymentSendPopup extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8),
             child: Consumer(
               builder: (context, ref, _) {
-                final selectedWalletAsset =
-                    ref.watch(selectedWalletAssetProvider);
-                final asset = ref.watch(assetsStateProvider
-                    .select((value) => value[selectedWalletAsset?.assetId]));
+                final selectedWalletAccountAsset =
+                    ref.watch(selectedWalletAccountAssetNotifierProvider);
+                final asset = ref.watch(assetsStateProvider.select(
+                    (value) => value[selectedWalletAccountAsset?.assetId]));
                 final precision = ref
                     .watch(assetUtilsProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
@@ -83,8 +84,7 @@ class PaymentSendPopup extends StatelessWidget {
                         amount: sendAmountParsed, precision: precision));
                 final amount = double.tryParse(amountStr) ?? 0;
                 dollarConversion = ref
-                    .watch(walletProvider)
-                    .getAmountUsd(asset?.assetId ?? '', amount)
+                    .watch(amountUsdProvider(asset?.assetId ?? '', amount))
                     .toStringAsFixed(2);
 
                 dollarConversion = replaceCharacterOnPosition(

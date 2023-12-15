@@ -170,8 +170,7 @@ OrderEntryAccountAsset deliverOrderEntryAccountAsset(
   final deliverAccountType = deliverAccountAsset.account;
 
   final accountAssetsWithBalances = ref
-      .watch(balancesProvider)
-      .balances
+      .watch(balancesNotifierProvider)
       .entries
       .where((element) => element.value > 0)
       .map((e) => e.key)
@@ -213,8 +212,7 @@ OrderEntryAccountAsset receiveOrderEntryAccountAsset(
   final receiveAccountType = receiveAccountAsset.account;
 
   final accountAssetsWithBalances = ref
-      .watch(balancesProvider)
-      .balances
+      .watch(balancesNotifierProvider)
       .entries
       .where((element) => element.value > 0)
       .map((e) => e.key)
@@ -393,7 +391,7 @@ String deliverAssetTicker(DeliverAssetTickerRef ref) {
 @riverpod
 List<AccountAsset> deliverAccountAssetList(DeliverAccountAssetListRef ref) {
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-  final balances = ref.watch(balancesProvider).balances;
+  final balances = ref.watch(balancesNotifierProvider);
 
   final assets = balances.entries
       .where((item) =>
@@ -436,7 +434,7 @@ List<AccountAsset> disableAccountAssetList(DisableAccountAssetListRef ref) {
 @riverpod
 String deliverBalance(DeliverBalanceRef ref) {
   final orderEntryProductPair = ref.watch(orderEntryProductProvider);
-  final balances = ref.watch(balancesProvider).balances;
+  final balances = ref.watch(balancesNotifierProvider);
 
   final balance = balances[orderEntryProductPair.deliver.accountAsset] ?? 0;
   final precision = ref.watch(deliverAssetPrecisionProvider);
@@ -461,7 +459,7 @@ int receiveAssetPrecision(ReceiveAssetPrecisionRef ref) {
 @riverpod
 String dollarConversion(DollarConversionRef ref, String? assetId, num amount) {
   ref.watch(requestOrderIndexPriceProvider);
-  final amountUsd = ref.watch(walletProvider).getAmountUsd(assetId, amount);
+  final amountUsd = ref.watch(amountUsdProvider(assetId, amount));
 
   if (amountUsd == 0) {
     return '';
@@ -507,7 +505,7 @@ String dollarConversionFromString(
 @riverpod
 String receiveBalance(ReceiveBalanceRef ref) {
   final orderEntryProductPair = ref.watch(orderEntryProductProvider);
-  final balances = ref.watch(balancesProvider).balances;
+  final balances = ref.watch(balancesNotifierProvider);
 
   final balance = balances[orderEntryProductPair.receive.accountAsset];
   final precision = ref.watch(receiveAssetPrecisionProvider);

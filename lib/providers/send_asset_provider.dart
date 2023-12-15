@@ -1,18 +1,16 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/endpoint_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
-final sendAssetProvider =
-    AutoDisposeNotifierProvider<SendAssetNotifier, AccountAsset>(
-        SendAssetNotifier.new);
+part 'send_asset_provider.g.dart';
 
-class SendAssetNotifier extends AutoDisposeNotifier<AccountAsset> {
+@Riverpod(keepAlive: true)
+class SendAssetNotifier extends _$SendAssetNotifier {
   @override
   AccountAsset build() {
-    ref.keepAlive();
     final eiCreateTransaction = ref.watch(eiCreateTransactionNotifierProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
@@ -23,10 +21,10 @@ class SendAssetNotifier extends AutoDisposeNotifier<AccountAsset> {
   }
 
   void setSendAsset(AccountAsset value) {
-    final balances = ref.read(balancesProvider);
+    final balances = ref.read(balancesNotifierProvider);
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
 
-    (switch (balances.balances[value]) {
+    (switch (balances[value]) {
       final assetBalance? when assetBalance != 0 => state = value,
       _ => state = AccountAsset(AccountType.reg, liquidAssetId),
     });

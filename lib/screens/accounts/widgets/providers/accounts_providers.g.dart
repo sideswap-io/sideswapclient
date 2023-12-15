@@ -7,7 +7,7 @@ part of 'accounts_providers.dart';
 // **************************************************************************
 
 String _$mobileAvailableAssetsHash() =>
-    r'a721cd4a258088d5d9cdd6b0cf92c97035e051af';
+    r'9665f8b03c59d450de483a94953aff550f681cee';
 
 /// See also [mobileAvailableAssets].
 @ProviderFor(mobileAvailableAssets)
@@ -24,7 +24,7 @@ final mobileAvailableAssetsProvider =
 
 typedef MobileAvailableAssetsRef = AutoDisposeProviderRef<List<AccountAsset>>;
 String _$accountItemDollarConversionHash() =>
-    r'48cac2ddabb71207d55fdc88dcb48452694a7ba8';
+    r'0610355b2e7c03f31c06231704afbed946a44322';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -183,7 +183,7 @@ class _AccountItemDollarConversionProviderElement
       (origin as AccountItemDollarConversionProvider).accountAsset;
 }
 
-String _$accountItemAmountHash() => r'656b057bbff942d8b1c71f826770ada59edf700c';
+String _$accountItemAmountHash() => r'dfef2e6802483a8119ab20f1899d9c76a71d5f37';
 
 /// See also [accountItemAmount].
 @ProviderFor(accountItemAmount)

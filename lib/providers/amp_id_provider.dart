@@ -1,6 +1,15 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final ampIdProvider = AutoDisposeStateProvider((ref) {
-  ref.keepAlive();
-  return '';
-});
+part 'amp_id_provider.g.dart';
+
+@Riverpod(keepAlive: true)
+class AmpIdNotifier extends _$AmpIdNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setAmpId(String ampId) {
+    state = ampId;
+  }
+}

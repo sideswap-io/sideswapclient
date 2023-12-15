@@ -38,12 +38,16 @@ class Accounts extends HookConsumerWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    final uiStateArgs = ref.read(uiStateArgsProvider);
-                    uiStateArgs.walletMainArguments =
-                        uiStateArgs.walletMainArguments.copyWith(
-                            navigationItem:
-                                WalletMainNavigationItem.assetSelect);
-
+                    final walletMainArguments =
+                        ref.read(uiStateArgsNotifierProvider);
+                    ref
+                        .read(uiStateArgsNotifierProvider.notifier)
+                        .setWalletMainArguments(
+                          walletMainArguments.copyWith(
+                            navigationItemEnum:
+                                WalletMainNavigationItemEnum.assetSelect,
+                          ),
+                        );
                     ref.read(walletProvider).selectAvailableAssets();
                   },
                   borderRadius: BorderRadius.circular(21),
@@ -90,11 +94,17 @@ class Accounts extends HookConsumerWidget {
                           child: AccountItem(
                             accountAsset: availableAssets[index],
                             onSelected: (AccountAsset value) {
-                              final uiStateArgs = ref.read(uiStateArgsProvider);
-                              uiStateArgs.walletMainArguments =
-                                  uiStateArgs.walletMainArguments.copyWith(
-                                      navigationItem: WalletMainNavigationItem
-                                          .assetDetails);
+                              final walletMainArguments =
+                                  ref.read(uiStateArgsNotifierProvider);
+                              ref
+                                  .read(uiStateArgsNotifierProvider.notifier)
+                                  .setWalletMainArguments(
+                                    walletMainArguments.copyWith(
+                                      navigationItemEnum:
+                                          WalletMainNavigationItemEnum
+                                              .assetDetails,
+                                    ),
+                                  );
                               ref
                                   .read(walletProvider)
                                   .selectAssetDetails(availableAssets[index]);

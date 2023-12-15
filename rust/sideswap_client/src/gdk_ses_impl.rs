@@ -20,7 +20,6 @@ use gdk_ses::HwData;
 use serde_bytes::ByteBuf;
 use sideswap_api::Asset;
 use sideswap_api::AssetId;
-use sideswap_api::PsetInput;
 use sideswap_common::env::Env;
 use sideswap_common::env::Network;
 use std::collections::BTreeMap;
@@ -98,8 +97,12 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         result.map(|list| list.iter().map(convert_tx).collect::<Vec<_>>())
     }
 
-    fn get_recv_address(&self, is_internal: bool) -> Result<AddressInfo, anyhow::Error> {
-        unsafe { try_get_recv_addr_info(self, is_internal) }
+    fn get_receive_address(&self) -> Result<AddressInfo, anyhow::Error> {
+        unsafe { try_get_addr_info(self, false) }
+    }
+
+    fn get_change_address(&self) -> Result<AddressInfo, anyhow::Error> {
+        unsafe { try_get_addr_info(self, true) }
     }
 
     fn create_tx(&mut self, tx: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error> {
@@ -129,8 +132,8 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         unsafe { try_send_payjoin(self, req, assets) }
     }
 
-    fn get_utxos(&self) -> Result<ffi::proto::from::UtxoUpdate, anyhow::Error> {
-        unsafe { get_utxos(self) }
+    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {
+        unsafe { try_get_unspent_outputs(self) }
     }
 
     fn get_tx_fee(
@@ -161,13 +164,6 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         internal: bool,
     ) -> Result<gdk_json::PreviousAddresses, anyhow::Error> {
         unsafe { get_previous_addresses(self, last_pointer, internal) }
-    }
-
-    fn get_swap_inputs(
-        &self,
-        send_asset: &AssetId,
-    ) -> Result<Vec<sideswap_api::PsetInput>, anyhow::Error> {
-        unsafe { get_swap_inputs(self, send_asset) }
     }
 
     fn sig_single_maker_tx(
@@ -1038,7 +1034,7 @@ fn convert_tx(tx: &gdk_json::Transaction) -> Transaction {
     }
 }
 
-fn get_redeem_script(utxo: &gdk_json::UnspentOutput) -> elements::Script {
+pub fn get_redeem_script(utxo: &gdk_json::UnspentOutput) -> elements::Script {
     if let Some(public_key) = utxo.public_key.as_ref() {
         sideswap_common::pset::p2shwpkh_redeem_script(public_key)
     } else {
@@ -1093,7 +1089,7 @@ fn try_get_gaid(data: &GdkSesImpl) -> Result<String, anyhow::Error> {
         .ok_or_else(|| anyhow!("not connected, receiving_id is not set"))
 }
 
-unsafe fn try_get_recv_addr_info(
+unsafe fn try_get_addr_info(
     data: &GdkSesImpl,
     is_internal: bool,
 ) -> Result<gdk_json::AddressInfo, anyhow::Error> {
@@ -1301,7 +1297,7 @@ unsafe fn try_create_payjoin(
 
     let subtract_fee_from_amount = balance == send_amount;
 
-    let change_address = try_get_recv_addr_info(data, true)?.address;
+    let change_address = try_get_addr_info(data, true)?.address;
 
     let utxos = unspent_outputs
         .into_iter()
@@ -1418,31 +1414,6 @@ unsafe fn try_send_payjoin(
     Ok(send_result.txhash)
 }
 
-unsafe fn get_swap_inputs(
-    data: &GdkSesImpl,
-    send_asset: &AssetId,
-) -> Result<Vec<sideswap_api::PsetInput>, anyhow::Error> {
-    let unspent_outputs = try_get_unspent_outputs(data)?
-        .unspent_outputs
-        .remove(send_asset)
-        .unwrap_or_default();
-
-    let inputs = unspent_outputs
-        .into_iter()
-        .map(|utxo| PsetInput {
-            txid: utxo.txhash,
-            vout: utxo.vout,
-            asset: utxo.asset_id,
-            asset_bf: utxo.assetblinder,
-            value: utxo.satoshi,
-            value_bf: utxo.amountblinder,
-            redeem_script: Some(get_redeem_script(&utxo)),
-        })
-        .collect();
-
-    Ok(inputs)
-}
-
 unsafe fn verify_and_sign_pset(
     data: &GdkSesImpl,
     amounts: &crate::swaps::Amounts,
@@ -1550,7 +1521,7 @@ unsafe fn sig_single_maker_utxo(
 
     // If set to true, Jade will show all outputs for confirmation (because all outputs are recognized as changes)
     let is_internal = false;
-    let address_info = try_get_recv_addr_info(data, is_internal)?;
+    let address_info = try_get_addr_info(data, is_internal)?;
     let bitcoin_balance = unspent_outputs
         .get(&data.policy_asset)
         .map(|inputs| inputs.iter().map(|input| input.satoshi).sum::<u64>())
@@ -1723,7 +1694,7 @@ unsafe fn sig_single_maker_tx(
                 asset_id: output.asset,
                 satoshi: output.value,
             }],
-            send: vec![unspent_output],
+            send: vec![unspent_output.clone()],
         },
         receive_address: Some(output.address_info.clone()),
     };
@@ -1750,6 +1721,7 @@ unsafe fn sig_single_maker_tx(
     Ok(crate::swaps::SigSingleMaker {
         proposal: created_swap.liquidex_v1.proposal,
         chaining_tx,
+        unspent_output,
     })
 }
 
@@ -1774,26 +1746,6 @@ unsafe fn get_balances(data: &GdkSesImpl) -> Result<gdk_json::BalanceList, anyho
     )
     .map_err(|e| anyhow!("loading balances failed: {}", e))?;
     Ok(balances)
-}
-
-unsafe fn get_utxos(data: &GdkSesImpl) -> Result<ffi::proto::from::UtxoUpdate, anyhow::Error> {
-    let unspent_outputs = try_get_unspent_outputs(data)?;
-
-    let utxos = unspent_outputs
-        .unspent_outputs
-        .values()
-        .flatten()
-        .map(|utxo| ffi::proto::from::utxo_update::Utxo {
-            txid: utxo.txhash.to_string(),
-            vout: utxo.vout,
-            asset_id: utxo.asset_id.to_string(),
-            amount: utxo.satoshi,
-        })
-        .collect();
-    Ok(ffi::proto::from::UtxoUpdate {
-        account: worker::get_account(data.login_info.account_id),
-        utxos,
-    })
 }
 
 fn get_blinded_value(
@@ -2255,6 +2207,12 @@ pub unsafe fn select_network(info: &gdk_ses::LoginInfo) -> String {
                 Some(("electrs.sideswap.io".to_owned(), 12002, true))
             }
             Env::Regtest | Env::Local => panic!("Unsupported network {:?}", info.env),
+        },
+        Some(ffi::proto::network_settings::Selected::SideswapCn(_)) => match info.env {
+            Env::Prod | Env::Staging | Env::LocalLiquid => {
+                Some(("cn.sideswap.io".to_owned(), 12001, true))
+            }
+            Env::Testnet | Env::LocalTestnet | Env::Regtest | Env::Local => None,
         },
         Some(ffi::proto::network_settings::Selected::Custom(
             ffi::proto::network_settings::Custom {

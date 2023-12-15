@@ -121,7 +121,7 @@ class OrderTable extends ConsumerWidget {
         ],
         if (showOrderType)
           OrderTableRow(
-            description: 'Order Type'.tr(),
+            description: 'Order type'.tr(),
             value: orderDetailsData.twoStep ? 'Offline'.tr() : 'Online'.tr(),
             orderTableRowType: orderTableRowType,
             displayDivider: false,

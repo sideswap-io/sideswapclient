@@ -18,9 +18,12 @@ class AssetSelectList extends ConsumerWidget {
       appBar: CustomAppBar(
         title: 'Asset list'.tr(),
         onPressed: () {
-          final uiStateArgs = ref.read(uiStateArgsProvider);
-          uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments
-              .copyWith(navigationItem: WalletMainNavigationItem.accounts);
+          final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
+          ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
+                walletMainArguments.copyWith(
+                  navigationItemEnum: WalletMainNavigationItemEnum.accounts,
+                ),
+              );
         },
       ),
       body: SafeArea(

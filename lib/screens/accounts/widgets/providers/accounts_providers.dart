@@ -12,16 +12,14 @@ part 'accounts_providers.g.dart';
 
 @riverpod
 List<AccountAsset> mobileAvailableAssets(MobileAvailableAssetsRef ref) {
-  final balances = ref.watch(balancesProvider);
+  final balances = ref.watch(balancesNotifierProvider);
   final disabledAccounts = ref.watch(walletProvider).disabledAccounts;
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final allAccounts = ref.watch(allAlwaysShowAccountAssetsProvider);
 
   // Always show accounts with positive balance
-  final alwaysEnabledAccounts = balances.balances.entries
-      .where((e) => e.value > 0)
-      .map((e) => e.key)
-      .toSet();
+  final alwaysEnabledAccounts =
+      balances.entries.where((e) => e.value > 0).map((e) => e.key).toSet();
   // Always show regular L-BTC account
   alwaysEnabledAccounts.add(AccountAsset(AccountType.reg, liquidAssetId));
   final availableAssets = allAccounts
@@ -39,7 +37,7 @@ List<AccountAsset> mobileAvailableAssets(MobileAvailableAssetsRef ref) {
   final precision = ref
       .watch(assetUtilsProvider)
       .getPrecisionForAssetId(assetId: accountAsset.assetId);
-  final balance = ref.watch(balancesProvider).balances[accountAsset] ?? 0;
+  final balance = ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
   final amountString = ref.watch(amountToStringProvider).amountToString(
         AmountToStringParameters(
           amount: balance,
@@ -49,8 +47,7 @@ List<AccountAsset> mobileAvailableAssets(MobileAvailableAssetsRef ref) {
   final amount = precision == 0
       ? int.tryParse(amountString) ?? 0
       : double.tryParse(amountString) ?? .0;
-  final amountUsd =
-      ref.watch(walletProvider).getAmountUsd(accountAsset.assetId, amount);
+  final amountUsd = ref.watch(amountUsdProvider(accountAsset.assetId, amount));
   var dollarConversion = '0.0';
   dollarConversion = amountUsd.toStringAsFixed(2);
   dollarConversion =
@@ -66,7 +63,7 @@ String? accountItemAmount(AccountItemAmountRef ref, AccountAsset accountAsset) {
   final precision = ref
       .watch(assetUtilsProvider)
       .getPrecisionForAssetId(assetId: accountAsset.assetId);
-  final balance = ref.watch(balancesProvider).balances[accountAsset] ?? 0;
+  final balance = ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
   final amountProvider = ref.watch(amountToStringProvider);
   final amountString = amountProvider.amountToString(
     AmountToStringParameters(

@@ -23,7 +23,7 @@ class AmpRegister extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdProvider);
+    final ampId = ref.watch(ampIdNotifierProvider);
     final stokrItems = ref.watch(stokrSecuritiesProvider);
     final pegxItems = ref.watch(pegxSecuritiesProvider);
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);

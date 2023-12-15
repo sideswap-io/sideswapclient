@@ -24,9 +24,9 @@ class TopRecvButtons extends StatelessWidget {
     return Container(
       width: double.maxFinite, //286.w,
       height: 39,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: _colorToggleBackground,
-        borderRadius: BorderRadius.all(Radius.circular(10.0)),
+        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Consumer(
         builder: (context, ref, _) {

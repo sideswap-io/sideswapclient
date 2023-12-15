@@ -143,7 +143,15 @@ class AccountItemConversion extends StatelessWidget {
                 );
               },
             ),
-            if (accountAsset.account.isAmp) const AmpFlag(fontSize: 14),
+            if (accountAsset.account.isAmp)
+              const AmpFlag(
+                textStyle: TextStyle(
+                  color: Color(0xFF73A6C5),
+                  fontSize: 14,
+                  fontFamily: 'Roboto',
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
           ],
         ),
         Consumer(

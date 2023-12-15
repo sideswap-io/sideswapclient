@@ -13,8 +13,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:sideswap/app_version.dart';
+import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
@@ -26,13 +28,14 @@ import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/market_data_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/network_access_provider.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
@@ -66,9 +69,18 @@ import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
-enum AddrType {
-  bitcoin,
-  elements,
+part 'wallet.g.dart';
+
+@Riverpod(keepAlive: true)
+class LibClientId extends _$LibClientId {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setClientId(int clientId) {
+    state = clientId;
+  }
 }
 
 List<int> envValues() {
@@ -175,7 +187,6 @@ final walletProvider = ChangeNotifierProvider<WalletChangeNotifier>((ref) {
 
 class WalletChangeNotifier with ChangeNotifier {
   final Ref ref;
-  int _client = 0;
 
   final _encryption = Encryption();
 
@@ -232,7 +243,9 @@ class WalletChangeNotifier with ChangeNotifier {
     if (kDebugMode) {
       logger.d('send: $to');
     }
-    if (_client == 0) {
+    final clientId = ref.read(libClientIdProvider);
+
+    if (clientId == 0) {
       throw ErrorDescription('client is not initialized');
     }
     final buf = to.writeToBuffer();
@@ -241,7 +254,8 @@ class WalletChangeNotifier with ChangeNotifier {
     for (var i = 0; i < buf.length; i++) {
       pointer[i] = buf[i];
     }
-    Lib.lib.sideswap_send_request(_client, pointer.cast(), buf.length);
+
+    Lib.lib.sideswap_send_request(clientId, pointer.cast(), buf.length);
     calloc.free(pointer);
   }
 
@@ -274,8 +288,9 @@ class WalletChangeNotifier with ChangeNotifier {
     final workDir = await getApplicationSupportDirectory();
     final workPath = workDir.absolute.path.toNativeUtf8();
 
-    _client = Lib.lib.sideswap_client_start(env, workPath.cast(),
+    final clientId = Lib.lib.sideswap_client_start(env, workPath.cast(),
         appVersionFull.toNativeUtf8().cast(), _receivePort.sendPort.nativePort);
+    ref.read(libClientIdProvider.notifier).setClientId(clientId);
 
     await _addBtcAsset();
 
@@ -401,7 +416,9 @@ class WalletChangeNotifier with ChangeNotifier {
             .insertAmpAssets(ampAssetIds: from.ampAssets.assets);
         break;
       case From_Msg.balanceUpdate:
-        ref.read(balancesProvider.notifier).updateBalances(from.balanceUpdate);
+        ref
+            .read(balancesNotifierProvider.notifier)
+            .updateBalances(from.balanceUpdate);
         notifyListeners();
         break;
 
@@ -963,7 +980,7 @@ class WalletChangeNotifier with ChangeNotifier {
           if (stokrDetected) {
             ref
                 .read(stokrGaidNotifierProvider.notifier)
-                .setState(const StokrGaidStateRegistered());
+                .setStokrGaidState(const StokrGaidStateRegistered());
             return;
           }
           if (pegxDetected) {
@@ -977,7 +994,7 @@ class WalletChangeNotifier with ChangeNotifier {
         if (stokrDetected) {
           ref
               .read(stokrGaidNotifierProvider.notifier)
-              .setState(const StokrGaidStateUnregistered());
+              .setStokrGaidState(const StokrGaidStateUnregistered());
           return;
         }
 
@@ -1393,12 +1410,7 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case Status.assetDetails:
         status = Status.registered;
-        final uiStateArgs = ref.read(uiStateArgsProvider);
-        uiStateArgs.walletMainArguments =
-            uiStateArgs.walletMainArguments.copyWith(
-          currentIndex: 0,
-          navigationItem: WalletMainNavigationItem.home,
-        );
+        ref.read(uiStateArgsNotifierProvider.notifier).clear();
         break;
       case Status.txDetails:
         status = Status.assetDetails;
@@ -1409,37 +1421,31 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case Status.assetReceive:
         status = Status.assetDetails;
-        final uiStateArgs = ref.read(uiStateArgsProvider);
-        uiStateArgs.walletMainArguments =
-            uiStateArgs.walletMainArguments.copyWith(
-          currentIndex: 1,
-          navigationItem: WalletMainNavigationItem.assetDetails,
-        );
+        ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
+              WalletMainArguments(
+                currentIndex: 1,
+                navigationItemEnum: WalletMainNavigationItemEnum.assetDetails,
+              ),
+            );
         break;
       case Status.swapTxDetails:
       case Status.assetReceiveFromWalletMain:
       case Status.orderSuccess:
       case Status.orderResponseSuccess:
         status = Status.registered;
-        final uiStateArgs = ref.read(uiStateArgsProvider);
-        uiStateArgs.walletMainArguments =
-            uiStateArgs.walletMainArguments.copyWith(
-          currentIndex: 0,
-          navigationItem: WalletMainNavigationItem.home,
-        );
-
+        ref.read(uiStateArgsNotifierProvider.notifier).clear();
         break;
       case Status.orderPopup:
       case Status.swapPrompt:
         status = Status.registered;
         break;
       case Status.swapWaitPegTx:
-        final uiStateArgs = ref.read(uiStateArgsProvider);
-        uiStateArgs.walletMainArguments =
-            uiStateArgs.walletMainArguments.copyWith(
-          currentIndex: 4,
-          navigationItem: WalletMainNavigationItem.pegs,
-        );
+        ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
+              WalletMainArguments(
+                currentIndex: 4,
+                navigationItemEnum: WalletMainNavigationItemEnum.pegs,
+              ),
+            );
         ref.read(swapProvider).pegStop();
         status = Status.registered;
         break;
@@ -1448,6 +1454,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.settingsAboutUs:
       case Status.settingsUserDetails:
       case Status.settingsNetwork:
+      case Status.settingsLogs:
         status = Status.settingsPage;
         break;
       case Status.settingsPage:
@@ -1550,7 +1557,9 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void selectAssetDetails(AccountAsset value) {
     ref.read(pageStatusStateProvider.notifier).setStatus(Status.assetDetails);
-    ref.read(selectedWalletAssetProvider.notifier).state = value;
+    ref
+        .read(selectedWalletAccountAssetNotifierProvider.notifier)
+        .setAccountAsset(value);
   }
 
   void selectAssetReceive(AccountType accountType) {
@@ -1612,31 +1621,14 @@ class WalletChangeNotifier with ChangeNotifier {
     });
   }
 
-  static int convertAddrType(AddrType type) {
-    switch (type) {
-      case AddrType.bitcoin:
-        return SIDESWAP_BITCOIN;
-      case AddrType.elements:
-        return SIDESWAP_ELEMENTS;
-    }
-  }
-
-  bool isAddrValid(String addr, AddrType addrType) {
-    if (addr.isEmpty || _client == 0) {
-      return false;
-    }
-
-    final addrPtr = addr.toNativeUtf8();
-    return Lib.lib.sideswap_check_addr(
-        _client, addrPtr.cast(), convertAddrType(addrType));
-  }
-
   String commonAddrErrorStr(String addr, AddrType addrType) {
     if (addr.isEmpty) {
       return addr;
     }
 
-    return isAddrValid(addr, addrType) ? '' : 'Invalid address'.tr();
+    return ref.read(isAddrTypeValidProvider(addr, addrType))
+        ? ''
+        : 'Invalid address'.tr();
   }
 
   String elementsAddrErrorStr(String addr) {
@@ -1656,12 +1648,13 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void assetSendConfirmMobile() {
-    final selectedWalletAsset = ref.read(selectedWalletAssetProvider);
-    if (selectedWalletAsset == null) {
+    final selectedWalletAccountAsset =
+        ref.read(selectedWalletAccountAssetNotifierProvider);
+    if (selectedWalletAccountAsset == null) {
       return;
     }
 
-    assetSendConfirmCommon(getAccount(selectedWalletAsset.account));
+    assetSendConfirmCommon(getAccount(selectedWalletAccountAsset.account));
   }
 
   void assetSendConfirmCommon(Account account) {
@@ -1876,13 +1869,13 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void cleanAppStates() {
-    ref.read(balancesProvider.notifier).clear();
-    ref.read(uiStateArgsProvider).clear();
+    ref.read(balancesNotifierProvider.notifier).clear();
+    ref.read(uiStateArgsNotifierProvider.notifier).clear();
     ref.read(phoneProvider).clearData();
     ref.read(pinProtectionProvider).reset();
     ref.read(allTxsNotifierProvider.notifier).clear();
     ref.read(allPegsNotifierProvider.notifier).clear();
-    ref.read(ampIdProvider.notifier).state = '';
+    ref.read(ampIdNotifierProvider.notifier).setAmpId('');
     ref.invalidate(jadeOnboardingRegistrationNotifierProvider);
     notifyListeners();
   }
@@ -2027,38 +2020,6 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.updatePushToken = To_UpdatePushToken();
     msg.updatePushToken.token = token;
     sendMsg(msg);
-  }
-
-  double _getPriceBitcoin(String? assetId) {
-    if (assetId == ref.read(liquidAssetIdStateProvider)) {
-      return 1;
-    }
-    final price = ref.read(walletAssetPricesNotifierProvider)[assetId];
-    if (price == null) {
-      return 0;
-    }
-    return (price.bid + price.ask) / 2;
-  }
-
-  double _getPrice(String? priceNum, String priceDen) {
-    final internalPriceNum = _getPriceBitcoin(priceNum);
-    final internalPriceDen = _getPriceBitcoin(priceDen);
-    if (internalPriceDen == 0 || internalPriceNum == 0) {
-      return 0;
-    }
-    return internalPriceNum / internalPriceDen;
-  }
-
-  double _getPriceUsd(String assetId) {
-    return _getPrice(ref.read(tetherAssetIdStateProvider), assetId);
-  }
-
-  double getAmountUsd(String? assetId, num amount) {
-    if (assetId == null) {
-      return 0;
-    }
-
-    return amount * _getPriceUsd(assetId);
   }
 
   bool isAmountUsdAvailable(String? assetId) {
@@ -2427,8 +2388,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   List<AccountAsset> sendAssetsWithBalance() {
     final allAssets = ref
-        .read(balancesProvider)
-        .balances
+        .read(balancesNotifierProvider)
         .entries
         .where((e) => e.value > 0)
         .map((e) => e.key)
@@ -2599,7 +2559,7 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> _processRegisterAmpResult(From_RegisterAmp msg) async {
     switch (msg.whichResult()) {
       case From_RegisterAmp_Result.ampId:
-        ref.read(ampIdProvider.notifier).state = msg.ampId;
+        ref.read(ampIdNotifierProvider.notifier).setAmpId(msg.ampId);
         break;
       case From_RegisterAmp_Result.errorMsg:
         await ref.read(utilsProvider).showErrorDialog(msg.errorMsg);
@@ -2630,6 +2590,9 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case SettingsNetworkType.sideswap:
         network.sideswap = Empty();
+        break;
+      case SettingsNetworkType.sideswapChina:
+        network.sideswapCn = Empty();
         break;
       case SettingsNetworkType.personal:
         network.custom = NetworkSettings_Custom();

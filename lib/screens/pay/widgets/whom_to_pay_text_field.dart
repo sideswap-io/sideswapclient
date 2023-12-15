@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/helpers.dart';
 
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/share_copy_scan_textformfield.dart';
 
 class WhomToPayTextField extends StatelessWidget {

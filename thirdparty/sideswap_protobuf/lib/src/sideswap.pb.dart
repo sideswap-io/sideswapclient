@@ -1894,6 +1894,7 @@ enum NetworkSettings_Selected {
   blockstream, 
   sideswap, 
   custom, 
+  sideswapCn, 
   notSet
 }
 
@@ -1902,6 +1903,7 @@ class NetworkSettings extends $pb.GeneratedMessage {
     Empty? blockstream,
     Empty? sideswap,
     NetworkSettings_Custom? custom,
+    Empty? sideswapCn,
   }) {
     final $result = create();
     if (blockstream != null) {
@@ -1913,6 +1915,9 @@ class NetworkSettings extends $pb.GeneratedMessage {
     if (custom != null) {
       $result.custom = custom;
     }
+    if (sideswapCn != null) {
+      $result.sideswapCn = sideswapCn;
+    }
     return $result;
   }
   NetworkSettings._() : super();
@@ -1923,13 +1928,15 @@ class NetworkSettings extends $pb.GeneratedMessage {
     1 : NetworkSettings_Selected.blockstream,
     2 : NetworkSettings_Selected.sideswap,
     3 : NetworkSettings_Selected.custom,
+    4 : NetworkSettings_Selected.sideswapCn,
     0 : NetworkSettings_Selected.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NetworkSettings', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3])
+    ..oo(0, [1, 2, 3, 4])
     ..aOM<Empty>(1, _omitFieldNames ? '' : 'blockstream', subBuilder: Empty.create)
     ..aOM<Empty>(2, _omitFieldNames ? '' : 'sideswap', subBuilder: Empty.create)
     ..aOM<NetworkSettings_Custom>(3, _omitFieldNames ? '' : 'custom', subBuilder: NetworkSettings_Custom.create)
+    ..aOM<Empty>(4, _omitFieldNames ? '' : 'sideswapCn', subBuilder: Empty.create)
   ;
 
   @$core.Deprecated(
@@ -1988,6 +1995,17 @@ class NetworkSettings extends $pb.GeneratedMessage {
   void clearCustom() => clearField(3);
   @$pb.TagNumber(3)
   NetworkSettings_Custom ensureCustom() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  Empty get sideswapCn => $_getN(3);
+  @$pb.TagNumber(4)
+  set sideswapCn(Empty v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasSideswapCn() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSideswapCn() => clearField(4);
+  @$pb.TagNumber(4)
+  Empty ensureSideswapCn() => $_ensure(3);
 }
 
 class CreateTx extends $pb.GeneratedMessage {
@@ -3950,6 +3968,7 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     $fixnum.Int64? ttlSeconds,
     $core.bool? twoStep,
     $core.bool? txChainingAllowed,
+    $core.bool? onlyUnusedUtxos,
   }) {
     final $result = create();
     if (orderId != null) {
@@ -3973,6 +3992,9 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     if (txChainingAllowed != null) {
       $result.txChainingAllowed = txChainingAllowed;
     }
+    if (onlyUnusedUtxos != null) {
+      $result.onlyUnusedUtxos = onlyUnusedUtxos;
+    }
     return $result;
   }
   To_SubmitDecision._() : super();
@@ -3987,6 +4009,7 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
     ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'ttlSeconds', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOB(6, _omitFieldNames ? '' : 'twoStep')
     ..aOB(7, _omitFieldNames ? '' : 'txChainingAllowed')
+    ..aOB(8, _omitFieldNames ? '' : 'onlyUnusedUtxos')
   ;
 
   @$core.Deprecated(
@@ -4072,6 +4095,15 @@ class To_SubmitDecision extends $pb.GeneratedMessage {
   $core.bool hasTxChainingAllowed() => $_has(6);
   @$pb.TagNumber(7)
   void clearTxChainingAllowed() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get onlyUnusedUtxos => $_getBF(7);
+  @$pb.TagNumber(8)
+  set onlyUnusedUtxos($core.bool v) { $_setBool(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasOnlyUnusedUtxos() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearOnlyUnusedUtxos() => clearField(8);
 }
 
 enum To_EditOrder_Data {

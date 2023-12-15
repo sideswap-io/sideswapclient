@@ -667,7 +667,7 @@ pub struct PsetInput {
     pub redeem_script: Option<elements::Script>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MakerSignedHalf {
     pub chaining_tx: Option<sideswap_types::Transaction>,
     pub proposal: LiquidexProposal,
@@ -993,7 +993,7 @@ pub struct NewSwapPriceNotification {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LiquidexInput {
     pub asset: AssetId,
     pub satoshi: u64,
@@ -1002,7 +1002,7 @@ pub struct LiquidexInput {
     pub script: Option<elements::Script>, // AMP only
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LiquidexOutput {
     pub asset: AssetId,
     pub satoshi: u64,
@@ -1011,7 +1011,7 @@ pub struct LiquidexOutput {
     pub blinding_nonce: Option<String>, // AMP only
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LiquidexProposal {
     pub inputs: [LiquidexInput; 1],
     pub outputs: [LiquidexOutput; 1],

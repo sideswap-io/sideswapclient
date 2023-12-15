@@ -169,10 +169,8 @@ MarketType selectedMarketType(SelectedMarketTypeRef ref) {
 
 @riverpod
 bool isSellSide(IsSellSideRef ref) {
-  final selectedMarket = ref.watch(selectedMarketTypeProvider);
   final makeOrderSide = ref.watch(makeOrderSideStateProvider);
-  final isSell =
-      makeOrderSide == MakeOrderSide.sell || selectedMarket == MarketType.token;
+  final isSell = makeOrderSide == MakeOrderSide.sell;
 
   return isSell;
 }
@@ -182,8 +180,8 @@ class OrderEntryHeaderBuySellButtons extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedMarket = ref.watch(selectedMarketTypeProvider);
-    final isSell = ref.watch(isSellSideProvider);
+    final marketOrderSide = ref.watch(makeOrderSideStateProvider);
+    final isSell = marketOrderSide == MakeOrderSide.sell;
 
     return Material(
       color: Colors.transparent,
@@ -201,20 +199,18 @@ class OrderEntryHeaderBuySellButtons extends HookConsumerWidget {
         inactiveToggleBackground: const Color(0xFF0E4D72),
         backgroundColor: const Color(0xFF0E4D72),
         borderColor: const Color(0xFF0E4D72),
-        onToggle: selectedMarket != MarketType.token
-            ? (value) {
-                if (value) {
-                  ref
-                      .read(makeOrderSideStateProvider.notifier)
-                      .setSide(MakeOrderSide.sell);
-                } else {
-                  ref
-                      .read(makeOrderSideStateProvider.notifier)
-                      .setSide(MakeOrderSide.buy);
-                }
-                ref.read(indexPriceButtonProvider.notifier).setIndexPrice('0');
-              }
-            : null,
+        onToggle: (value) {
+          if (value) {
+            ref
+                .read(makeOrderSideStateProvider.notifier)
+                .setSide(MakeOrderSide.sell);
+          } else {
+            ref
+                .read(makeOrderSideStateProvider.notifier)
+                .setSide(MakeOrderSide.buy);
+          }
+          ref.read(indexPriceButtonProvider.notifier).setIndexPrice('0');
+        },
       ),
     );
   }
@@ -417,14 +413,6 @@ class OrderEntryAmount extends HookConsumerWidget {
         ref.watch(marketSelectedAccountAssetStateProvider);
 
     useEffect(() {
-      final selectedAsset =
-          ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
-      if (assetMarketType(selectedAsset) == MarketType.token) {
-        Future.microtask(() => ref
-            .read(makeOrderSideStateProvider.notifier)
-            .setSide(MakeOrderSide.sell));
-      }
-
       callbackHandlers.reset(
           controllerAmount, controllerPrice, trackingValue, trackingToggled);
 

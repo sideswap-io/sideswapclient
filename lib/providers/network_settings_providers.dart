@@ -1,10 +1,16 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/config_provider.dart';
-import 'package:sideswap/providers/network_access_provider.dart';
 
 part 'network_settings_providers.freezed.dart';
 part 'network_settings_providers.g.dart';
+
+enum SettingsNetworkType {
+  blockstream,
+  sideswap,
+  personal,
+  sideswapChina,
+}
 
 @freezed
 class NetworkSettingsModel with _$NetworkSettingsModel {
@@ -28,7 +34,7 @@ class NetworkSettingsModel with _$NetworkSettingsModel {
 }
 
 @riverpod
-class NetworkSettings extends _$NetworkSettings {
+class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
   @override
   NetworkSettingsModel build() {
     final networkSettingsModel =
@@ -131,6 +137,6 @@ class NetworkSettings extends _$NetworkSettings {
 bool networkSettingsNeedSave(NetworkSettingsNeedSaveRef ref) {
   final configNetworkSettingsModel =
       ref.watch(configProvider.select((value) => value.networkSettingsModel));
-  final networkSettingsModel = ref.watch(networkSettingsProvider);
+  final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
   return networkSettingsModel != configNetworkSettingsModel;
 }

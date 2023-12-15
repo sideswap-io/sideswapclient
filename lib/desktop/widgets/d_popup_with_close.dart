@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 
@@ -38,10 +37,10 @@ class DPopupWithClose extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: DIconButton(
-                      icon: SvgPicture.asset(
-                        'assets/close2.svg',
-                        width: 18,
-                        height: 18,
+                      icon: const Icon(
+                        Icons.close,
+                        color: SideSwapColors.freshAir,
+                        size: 18,
                       ),
                       onPressed: () {
                         Navigator.pop(context);

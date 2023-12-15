@@ -22,6 +22,7 @@ import 'package:sideswap/desktop/onboarding/d_wallet_import.dart';
 import 'package:sideswap/desktop/pageRoute/desktop_page_route.dart';
 import 'package:sideswap/desktop/settings/d_settings.dart';
 import 'package:sideswap/desktop/settings/d_settings_about_us.dart';
+import 'package:sideswap/desktop/settings/d_settings_logs.dart';
 import 'package:sideswap/desktop/settings/d_settings_network_access.dart';
 import 'package:sideswap/desktop/settings/d_settings_pin_success.dart';
 import 'package:sideswap/desktop/settings/d_settings_view_backup.dart';
@@ -58,6 +59,7 @@ class RouteName {
   static const String settingsAboutUs = '/settingsAboutUs';
   static const String pinSuccess = '/pinSuccess';
   static const String settingsNetwork = '/settingsNetwork';
+  static const String settingsLogs = '/settingsLogs';
   static const String ampRegister = '/ampRegister';
   static const String stokrLogin = '/stokrLogin';
   static const String pegxRegister = '/pegxRegister';
@@ -143,6 +145,10 @@ class RouteGenerator {
       case RouteName.settingsAboutUs:
         return RawDialogRoute<Widget>(
             pageBuilder: (_, __, ___) => const DSettingsAboutUs(),
+            settings: settings);
+      case RouteName.settingsLogs:
+        return RawDialogRoute<Widget>(
+            pageBuilder: (_, __, ___) => const DSettingsLogs(),
             settings: settings);
       case RouteName.pinSuccess:
         return RawDialogRoute<Widget>(
@@ -318,6 +324,10 @@ class RouteContainerState extends ConsumerState<RouteContainer> {
         return;
       case Status.settingsNetwork:
         routeName = RouteName.settingsNetwork;
+        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
+        return;
+      case Status.settingsLogs:
+        routeName = RouteName.settingsLogs;
         navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
         return;
 

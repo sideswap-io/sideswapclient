@@ -11,10 +11,12 @@ class DTxHistoryAmount extends HookConsumerWidget {
     super.key,
     required this.balance,
     required this.multipleOutputs,
+    this.textStyle,
   });
 
   final Balance balance;
   final bool multipleOutputs;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +41,10 @@ class DTxHistoryAmount extends HookConsumerWidget {
       children: [
         icon,
         const SizedBox(width: 8),
-        Text('$amount ${asset?.ticker ?? ''}'),
+        Text(
+          '$amount ${asset?.ticker ?? ''}',
+          style: textStyle,
+        ),
       ],
     );
   }

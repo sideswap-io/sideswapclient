@@ -48,7 +48,9 @@ class DNeedRestartPopupDialog extends StatelessWidget {
                 isFilled: true,
                 onPressed: () async {
                   Navigator.of(context).pop();
-                  await ref.read(networkSettingsProvider.notifier).save();
+                  await ref
+                      .read(networkSettingsNotifierProvider.notifier)
+                      .save();
                 },
                 child: Text('OK'.tr()),
               );

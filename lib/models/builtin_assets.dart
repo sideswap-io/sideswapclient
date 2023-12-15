@@ -2,7 +2,7 @@
 // https://blockstream.info/liquid/asset/
 // https://github.com/Blockstream/asset_registry_db/
 
-final builtinAssets = {
+final builtinAssetsMap = {
   "0db21df3ca7d71f0fb9aafb019e67d0a23c3c79a11eb9e8c4e32e1cb5910e2da": {
     "assetId":
         "0db21df3ca7d71f0fb9aafb019e67d0a23c3c79a11eb9e8c4e32e1cb5910e2da",

@@ -406,7 +406,7 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                       : [],
                   if (widget.screen == ReviewScreen.quote)
                     DOrderReviewField(
-                        name: 'Order Type'.tr(), value: Text(orderType)),
+                        name: 'Order type'.tr(), value: Text(orderType)),
                   Consumer(
                     builder: (context, ref, child) {
                       final isJadeWallet = ref.watch(isJadeWalletProvider);

@@ -4,8 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/enum_as_string.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
@@ -19,7 +21,11 @@ final universalLinkProvider = ChangeNotifierProvider<UniversalLinkProvider>(
 
 enum HandleResult {
   unknown,
+  unknownUri,
+  unknownScheme,
+  unknownHost,
   failed,
+  failedUriPath,
   success,
 }
 
@@ -89,28 +95,28 @@ class UniversalLinkProvider with ChangeNotifier {
   HandleResult handleAppUrlStr(String uri) {
     final parsedUri = Uri.tryParse(uri);
     if (parsedUri == null) {
-      return HandleResult.unknown;
+      return HandleResult.unknownUri;
     }
+
+    if (parsedUri.scheme != 'https') {
+      return HandleResult.unknownScheme;
+    }
+
     return handleAppUri(parsedUri);
   }
 
   HandleResult handleAppUri(Uri uri) {
     if (uri.host != 'app.sideswap.io') {
-      return HandleResult.unknown;
+      return HandleResult.unknownHost;
     }
 
-    switch (uri.path) {
-      case '/submit/':
-        return handleSubmitOrder(uri);
-      case '/app2app/':
-        return handleApp2App(uri);
-      case '/swap/':
-        return handleSwapPrompt(uri);
-      case '/send/':
-        return handleSendLink(uri);
-    }
-
-    return HandleResult.failed;
+    return switch (uri.path) {
+      '/submit/' => handleSubmitOrder(uri),
+      '/app2app/' => handleApp2App(uri),
+      '/swap/' => handleSwapPrompt(uri),
+      '/send/' => handleSendLink(uri),
+      _ => HandleResult.failedUriPath,
+    };
   }
 
   HandleResult handleSubmitOrder(Uri uri) {
@@ -171,7 +177,7 @@ class UniversalLinkProvider with ChangeNotifier {
     }
 
     final addressType =
-        enumValueFromString(addressTypeParameter, QrCodeAddressType.values);
+        enumValueFromString(addressTypeParameter, BIP21AddressTypeEnum.values);
 
     if (addressType == null) {
       logger.w('cannot convert uri address type');
@@ -196,15 +202,23 @@ class UniversalLinkProvider with ChangeNotifier {
       fakeAddress = '$fakeAddress&$key=${query[key]}';
     }
 
-    final result = ref
-        .read(qrcodeProvider)
-        .parseBIP21(qrCode: fakeAddress, addressType: addressType);
+    final result = ref.read(parseBIP21Provider(fakeAddress, addressType));
 
-    ref.read(paymentProvider).selectPaymentAmountPage(
-          PaymentAmountPageArguments(
-            result: result,
-          ),
-        );
-    return HandleResult.success;
+    return result.match((l) => HandleResult.unknownScheme, (r) {
+      ref.read(paymentProvider).selectPaymentAmountPage(
+            PaymentAmountPageArguments(
+              result: QrCodeResult(
+                amount: r.amount,
+                label: r.label,
+                message: r.message,
+                assetId: r.assetId,
+                ticker: r.ticker,
+                address: r.address,
+                addressType: r.addressType,
+              ),
+            ),
+          );
+      return HandleResult.success;
+    });
   }
 }

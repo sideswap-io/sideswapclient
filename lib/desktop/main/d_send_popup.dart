@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
 import 'package:sideswap/desktop/main/widgets/row_tx_detail.dart';
 import 'package:sideswap/desktop/main/widgets/row_tx_receiver.dart';
@@ -15,6 +16,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/endpoint_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
@@ -23,6 +25,7 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DSendPopup extends ConsumerWidget {
   const DSendPopup({super.key});
@@ -30,13 +33,11 @@ class DSendPopup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final payment = ref.watch(paymentProvider);
-    // Use Stack to simplify Back press processing
-    return Stack(
-      children: [
-        const DSendPopupCreate(),
-        if (payment.createdTx != null) const DSendPopupReview(),
-      ],
-    );
+
+    return switch (payment.createdTx) {
+      CreatedTx() => const DSendPopupReview(),
+      _ => const DSendPopupCreate(),
+    };
   }
 }
 
@@ -56,16 +57,15 @@ class DSendPopupCreate extends HookConsumerWidget {
     final selectedAccountAsset =
         ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
     final eiCreateTransaction = ref.watch(eiCreateTransactionNotifierProvider);
-    final balances = ref.watch(balancesProvider);
+    final balances = ref.watch(balancesNotifierProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final allAccounts = ref.watch(allAlwaysShowAccountAssetsProvider);
     final regularLiquidAccount = AccountAsset(AccountType.reg, liquidAssetId);
     final accounts = allAccounts
         .where((account) =>
-            (balances.balances[account] ?? 0) != 0 ||
-            account == regularLiquidAccount)
+            (balances[account] ?? 0) != 0 || account == regularLiquidAccount)
         .toList();
-    final address = ref.watch(sendPopupAddressNotifierProvider);
+    var address = useState('');
     final amount = ref.watch(sendPopupAmountNotifierProvider);
 
     // set text field related providers
@@ -112,9 +112,24 @@ class DSendPopupCreate extends HookConsumerWidget {
 
     final dollarConversion = ref.watch(sendPopupDollarConversionProvider);
 
+    final parsedAddress = ref.watch(sendPopupParseAddressProvider);
+
+    parsedAddress.match((l) {
+      logger.d('Invalid address');
+    }, (r) {
+      amountController.text = r.amount.toString();
+      final asset = ref.watch(assetsStateProvider)[r.assetId];
+      Future.microtask(() {
+        ref.read(sendAssetNotifierProvider.notifier).setSendAsset(AccountAsset(
+            asset?.ampMarket ?? false ? AccountType.amp : AccountType.reg,
+            r.assetId));
+      });
+      address.value = r.address;
+    });
+
     return DPopupWithClose(
       width: 580,
-      height: 606,
+      height: 630,
       onClose: () {
         ref
             .read(eiCreateTransactionNotifierProvider.notifier)
@@ -141,17 +156,14 @@ class DSendPopupCreate extends HookConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 80,
-              child: Column(
-                children: [
-                  DAddrTextField(
-                    focusNode: addressFocusNode,
-                    autofocus: true,
-                    controller: addressController,
-                  ),
-                ],
-              ),
+            Column(
+              children: [
+                DAddrTextField(
+                  focusNode: addressFocusNode,
+                  autofocus: true,
+                  controller: addressController,
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             SwapSideAmount(
@@ -170,13 +182,13 @@ class DSendPopupCreate extends HookConsumerWidget {
                 ref.read(paymentProvider).selectPaymentSend(
                       amount,
                       selectedAccountAsset,
-                      address: address,
+                      address: address.value,
                     );
               },
               onDropdownChanged: (accountAsset) {
                 if (selectedAccountAsset != accountAsset) {
                   ref
-                      .read(sendAssetProvider.notifier)
+                      .read(sendAssetNotifierProvider.notifier)
                       .setSendAsset(accountAsset);
                   amountController.clear();
                 }
@@ -195,7 +207,7 @@ class DSendPopupCreate extends HookConsumerWidget {
                       ref.read(paymentProvider).selectPaymentSend(
                             amount,
                             selectedAccountAsset,
-                            address: address,
+                            address: address.value,
                           );
                     }
                   : null,
@@ -288,20 +300,46 @@ class DSendPopupReview extends ConsumerWidget {
                       value: createdTx.outputCount.toString()),
                   const SizedBox(height: 18),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       DCustomButton(
-                        width: 245,
+                        width: 160,
                         height: 44,
                         onPressed: !wallet.isSendingTx
                             ? () {
                                 ref.read(paymentProvider).createdTx = null;
                               }
                             : null,
-                        child: Text('Back'.tr().toUpperCase()),
+                        child: Text(
+                          'BACK'.tr(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w700,
+                            height: 0,
+                            letterSpacing: 0.28,
+                          ),
+                        ),
                       ),
-                      const Spacer(),
+                      // DCustomButton(
+                      //   width: 160,
+                      //   height: 44,
+                      //   onPressed: () {
+                      //     ref.read(desktopDialogProvider).openViewTx();
+                      //   },
+                      //   child: Text(
+                      //     'EXPORT TX'.tr(),
+                      //     style: const TextStyle(
+                      //       fontSize: 14,
+                      //       fontFamily: 'Roboto',
+                      //       fontWeight: FontWeight.w700,
+                      //       height: 0,
+                      //       letterSpacing: 0.28,
+                      //     ),
+                      //   ),
+                      // ),
                       DCustomButton(
-                        width: 245,
+                        width: 160,
                         height: 44,
                         autofocus: true,
                         isFilled: true,
@@ -320,18 +358,27 @@ class DSendPopupReview extends ConsumerWidget {
                         child: Row(
                           children: [
                             const Spacer(),
-                            Text('SIGN & BROADCAST'.tr()),
+                            Text(
+                              'BROADCAST'.tr(),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'Roboto',
+                                fontWeight: FontWeight.w700,
+                                height: 0,
+                                letterSpacing: 0.28,
+                              ),
+                            ),
                             Expanded(
                               child: Row(
                                 children: [
-                                  const SizedBox(width: 8),
-                                  Visibility(
-                                    visible: wallet.isSendingTx,
-                                    child: const SpinKitCircle(
-                                      color: Colors.white,
-                                      size: 32,
-                                    ),
-                                  ),
+                                  const SizedBox(width: 4),
+                                  switch (wallet.isSendingTx) {
+                                    true => const SpinKitCircle(
+                                        color: Colors.white,
+                                        size: 32,
+                                      ),
+                                    _ => const SizedBox(),
+                                  },
                                 ],
                               ),
                             ),

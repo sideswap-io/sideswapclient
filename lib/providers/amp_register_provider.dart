@@ -1,61 +1,103 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/connection_state_providers.dart';
+
+part 'amp_register_provider.g.dart';
 
 class SecuritiesItem {
-  final String? assetId;
   final String token;
   final String icon;
+  final String? assetId;
+  SecuritiesItem({
+    required this.token,
+    required this.icon,
+    this.assetId,
+  });
 
-  SecuritiesItem(this.token, this.icon, {this.assetId});
+  SecuritiesItem copyWith({
+    String? token,
+    String? icon,
+    String? assetId,
+  }) {
+    return SecuritiesItem(
+      token: token ?? this.token,
+      icon: icon ?? this.icon,
+      assetId: assetId ?? this.assetId,
+    );
+  }
+
+  @override
+  String toString() =>
+      'SecuritiesItem(token: $token, icon: $icon, assetId: $assetId)';
+
+  (String, String, String?) _equality() => (token, icon, assetId);
+
+  @override
+  bool operator ==(covariant SecuritiesItem other) {
+    if (identical(this, other)) return true;
+
+    return other._equality() == _equality();
+  }
+
+  @override
+  int get hashCode => _equality().hashCode;
 }
 
-final stokrSecuritiesProvider = AutoDisposeProvider((ref) {
+@riverpod
+List<SecuritiesItem> stokrSecurities(StokrSecuritiesRef ref) {
   final List<SecuritiesItem> assets = [];
-  assets.add(SecuritiesItem('BMN', 'assets/bmn.svg',
+  assets.add(SecuritiesItem(
+      token: 'BMN',
+      icon: 'assets/bmn.svg',
       assetId:
           '11f91cb5edd5d0822997ad81f068ed35002daec33986da173461a8427ac857e1'));
-  assets.add(SecuritiesItem('EXO', 'assets/tx_icons/unknown.svg',
+  assets.add(SecuritiesItem(
+      token: 'EXO',
+      icon: 'assets/tx_icons/unknown.svg',
       assetId:
           "0db21df3ca7d71f0fb9aafb019e67d0a23c3c79a11eb9e8c4e32e1cb5910e2da"));
-  assets.add(SecuritiesItem('AQF', '',
+  assets.add(SecuritiesItem(
+      token: 'AQF',
+      icon: '',
       assetId:
           '3caca4d1e7c596d4f59db73d62e514963c098cc327cab550bd460a9927f5fdbe'));
   return assets;
-});
+}
 
-final pegxSecuritiesProvider = AutoDisposeProvider((ref) {
+@riverpod
+List<SecuritiesItem> pegxSecurities(PegxSecuritiesRef ref) {
   final List<SecuritiesItem> assets = [];
-  assets.add(SecuritiesItem('SSWP', 'assets/logo.svg',
+  assets.add(SecuritiesItem(
+      token: 'SSWP',
+      icon: 'assets/logo.svg',
       assetId:
           '06d1085d6a3a1328fb8189d106c7a8afbef3d327e34504828c4cac2c74ac0802'));
   return assets;
-});
+}
 
-final stokrGaidNotifierProvider =
-    AutoDisposeNotifierProvider<StokrGaidNotifier, StokrGaidState>(
-        StokrGaidNotifier.new);
-
-class StokrGaidNotifier extends AutoDisposeNotifier<StokrGaidState> {
+@riverpod
+class StokrGaidNotifier extends _$StokrGaidNotifier {
   @override
   StokrGaidState build() {
     return const StokrGaidStateEmpty();
   }
 
-  void setState(StokrGaidState value) {
+  void setStokrGaidState(StokrGaidState value) {
     state = value;
   }
 }
 
-final checkAmpStatusProvider =
-    AutoDisposeProvider<CheckAmpStatusProvider>((ref) {
+@riverpod
+CheckAmpStatusProvider checkAmpStatus(CheckAmpStatusRef ref) {
   final loginState = ref.watch(serverLoginStateProvider);
-  final ampId = ref.watch(ampIdProvider);
+  final ampId = ref.watch(ampIdNotifierProvider);
   final pegxAssetId = ref
       .watch(pegxSecuritiesProvider)
       .where((e) => e.token == 'SSWP')
@@ -75,7 +117,7 @@ final checkAmpStatusProvider =
     pegxAssetId: pegxAssetId,
     stokrAssetId: stokrAssetId,
   );
-});
+}
 
 class CheckAmpStatusProvider {
   final Ref ref;
@@ -100,7 +142,7 @@ class CheckAmpStatusProvider {
           .setState(const PegxGaidStateLoading());
       ref
           .read(stokrGaidNotifierProvider.notifier)
-          .setState(const StokrGaidStateLoading());
+          .setStokrGaidState(const StokrGaidStateLoading());
     }).then((_) {
       if (loginState != const ServerLoginStateLogin()) {
         return;

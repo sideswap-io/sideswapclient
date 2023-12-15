@@ -1,20 +1,16 @@
 import 'dart:math';
-
 import 'package:decimal/decimal.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 
-final amountToStringProvider =
-    AutoDisposeProvider((ref) => AmountToString(ref: ref));
+part 'amount_to_string_provider.g.dart';
+
+@riverpod
+AmountToString amountToString(AmountToStringRef ref) {
+  return AmountToString();
+}
 
 class AmountToString {
-  Ref ref;
-
-  AmountToString({
-    required this.ref,
-  });
-
   String amountToString(AmountToStringParameters arg) {
     const int kCoin = 100000000;
 
@@ -52,17 +48,3 @@ class AmountToString {
     return '$value ${arg.ticker}';
   }
 }
-
-// Can't be used with riverpod 2.2.0 because https://github.com/rrousselGit/riverpod/issues/1733 
-// final amountToStringProviderFamily =
-//     Provider.family.autoDispose<String, AmountToStringParameters>((ref, arg) {
-//   final provider = ref.watch(amountToStringProvider);
-//   return provider.amountToString(arg);
-// });
-
-// final amountToStringNamedProviderFamily =
-//     AutoDisposeProviderFamily<String, AmountToStringNamedParameters>(
-//         (ref, arg) {
-//   final provider = ref.watch(amountToStringProvider);
-//   return provider.amountToStringNamed(arg);
-// });

@@ -1,9 +1,11 @@
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -68,8 +70,10 @@ class PaymentProvider with ChangeNotifier {
       return;
     }
 
-    ref.read(selectedWalletAssetProvider.notifier).state = accountAsset;
-    if (!ref.read(walletProvider).isAddrValid(address, AddrType.elements)) {
+    ref
+        .read(selectedWalletAccountAssetNotifierProvider.notifier)
+        .setAccountAsset(accountAsset);
+    if (!ref.read(isAddrTypeValidProvider(address, AddrType.elements))) {
       logger.e('Invalid address $address');
       return;
     }
@@ -79,7 +83,7 @@ class PaymentProvider with ChangeNotifier {
         .getPrecisionForAssetId(assetId: accountAsset.assetId);
     final internalAmount =
         ref.read(walletProvider).parseAssetAmount(amount, precision: precision);
-    final balance = ref.read(balancesProvider).balances[accountAsset];
+    final balance = ref.read(balancesNotifierProvider)[accountAsset];
     if (balance == null) {
       logger.e('Wrong balance for selected wallet asset');
       return;

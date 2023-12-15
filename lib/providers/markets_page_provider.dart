@@ -14,10 +14,9 @@ void marketsPageListener(MarketsPageListenerRef ref) {
   final isProduct =
       ref.watch(assetUtilsProvider).isProduct(asset: selectedAsset);
 
+  ref.watch(marketsProvider).subscribeIndexPrice(selectedAccountAsset.assetId);
+
   if (isProduct) {
-    ref
-        .watch(marketsProvider)
-        .subscribeIndexPrice(selectedAccountAsset.assetId);
     ref
         .watch(marketsProvider)
         .subscribeSwapMarket(selectedAccountAsset.assetId);

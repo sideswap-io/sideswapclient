@@ -509,6 +509,19 @@
   "Sign swap transaction": "签署交易",
   "Create swap output": "创建交易输出",
   "Sign offline swap transaction": "签署离线交易",
-  "No pending orders": "No pending orders",
-  "APPLY": "APPLY"
+  "No pending orders": "订单不存在",
+  "APPLY": "应用",
+  "IMPORT FILE": "导入文件",
+  "Import transaction or private swap proposal": "导入交易或私人掉期申请",
+  "Paste transaction hash": "粘贴交易哈希",
+  "BROADCAST": "播送",
+  "EXPORT FILE": "导出文件",
+  "Inf": "Inf",
+  "EXPORT TX": "导出tx",
+  "Total Value": "总价值",
+  "No unconfirmed transactions": "未确认的交易",
+  "Logs": "日志",
+  "Export": "导出",
+  "Export log": "导出日志",
+  "Export previous log": "导出上一个日志"
 }

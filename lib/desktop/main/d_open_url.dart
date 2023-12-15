@@ -8,6 +8,7 @@ import 'package:sideswap/desktop/common/decorations/d_side_swap_paste_icon_input
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 
+@Deprecated("Will be replaced by import")
 class DOpenUrl extends ConsumerStatefulWidget {
   const DOpenUrl({super.key});
 

@@ -8,10 +8,12 @@ class DTxHistoryType extends StatelessWidget {
     super.key,
     required this.tx,
     required this.txType,
+    this.textStyle,
   });
 
   final TransItem tx;
   final TxType txType;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +22,16 @@ class DTxHistoryType extends StatelessWidget {
         : TxImageSmall(txType: txType);
     final typeName =
         tx.hasPeg() ? pegTypeName(tx.peg.isPegIn) : txTypeName(txType);
+
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         icon,
         const SizedBox(width: 11),
-        Text(typeName),
+        Text(
+          typeName,
+          style: textStyle,
+        ),
       ],
     );
   }

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:cached_memory_image/cached_image_base64_manager.dart';
 import 'package:cached_memory_image/cached_memory_image.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -61,16 +60,11 @@ class EurxAssetIdState extends _$EurxAssetIdState {
   }
 }
 
-// ampAccountsProvider
-final ampAssetsNotifierProvider =
-    AutoDisposeNotifierProvider<AmpAssetsNotifier, List<String>>(
-        AmpAssetsNotifier.new);
-
-class AmpAssetsNotifier extends AutoDisposeNotifier<List<String>> {
+@riverpod
+class AmpAssetsNotifier extends _$AmpAssetsNotifier {
   @override
   List<String> build() {
     ref.keepAlive();
-
     final ampAccounts = ref.watch(ampVisibleAccountAssetsProvider);
     return ampAccounts
         .where((e) => e.account.isAmp && e.assetId != null)
@@ -118,10 +112,11 @@ class AssetsState extends _$AssetsState {
   }
 }
 
-final assetUtilsProvider = AutoDisposeProvider((ref) {
+@riverpod
+AssetUtils assetUtils(AssetUtilsRef ref) {
   final assets = ref.watch(assetsStateProvider);
   return AssetUtils(ref, assets: assets);
-});
+}
 
 class AssetUtils {
   Ref ref;
@@ -217,7 +212,8 @@ FutureOr<bool> clearImageCacheFuture(ClearImageCacheFutureRef ref) async {
   return true;
 }
 
-final assetImageProvider = AutoDisposeProvider((ref) {
+@riverpod
+AssetImage assetImage(AssetImageRef ref) {
   ref.keepAlive();
 
   final assets = ref.watch(assetsStateProvider);
@@ -227,7 +223,7 @@ final assetImageProvider = AutoDisposeProvider((ref) {
   allAssets.addAll(builtinAssets);
 
   return AssetImage(ref, assets: allAssets);
-});
+}
 
 class AssetImage {
   Ref ref;
@@ -424,14 +420,11 @@ class AssetImage {
   }
 }
 
-// TODO (malcolmpl): fix this - Map<AccountAsset, Asset>
-final builtinAssetsProvider =
-    AutoDisposeStateProvider<Map<String, Asset>>((ref) {
-  ref.keepAlive();
-
+@riverpod
+Map<String, Asset> builtinAssets(BuiltinAssetsRef ref) {
   final newAssets = <String, Asset>{};
-  for (final key in builtinAssets.keys) {
-    final assetMap = builtinAssets[key]!;
+  for (final key in builtinAssetsMap.keys) {
+    final assetMap = builtinAssetsMap[key]!;
     final asset = Asset(
       assetId: assetMap["assetId"] as String,
       name: assetMap["name"] as String,
@@ -449,7 +442,7 @@ final builtinAssetsProvider =
   }
 
   return newAssets;
-});
+}
 
 @riverpod
 FutureOr<Uint8List?> imageBytesResizedFuture(
@@ -533,8 +526,9 @@ class SideswapCachedMemoryImage extends ConsumerWidget {
   }
 }
 
-final accountAssetTransactionsProvider =
-    AutoDisposeProvider<Map<AccountAsset, List<TxItem>>>((ref) {
+@riverpod
+Map<AccountAsset, List<TxItem>> accountAssetTransactions(
+    AccountAssetTransactionsRef ref) {
   final allTxs = ref.watch(allTxsNotifierProvider);
   final allPegs = ref.watch(allPegsNotifierProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
@@ -589,29 +583,31 @@ final accountAssetTransactionsProvider =
   }
 
   return allAssets;
-});
+}
 
-final selectedWalletAssetProvider =
-    AutoDisposeStateProvider<AccountAsset?>((ref) {
-  ref.keepAlive();
+@Riverpod(keepAlive: true)
+class SelectedWalletAccountAssetNotifier
+    extends _$SelectedWalletAccountAssetNotifier {
+  @override
+  AccountAsset? build() {
+    return null;
+  }
 
-  return null;
-});
+  void setAccountAsset(AccountAsset accountAsset) {
+    state = accountAsset;
+  }
+}
 
-final walletAssetPricesNotifierProvider = AutoDisposeNotifierProvider<
-    WalletAssetPricesNotifier,
-    Map<String, From_PriceUpdate>>(WalletAssetPricesNotifier.new);
-
-class WalletAssetPricesNotifier
-    extends AutoDisposeNotifier<Map<String, From_PriceUpdate>> {
+@Riverpod(keepAlive: true)
+class WalletAssetPricesNotifier extends _$WalletAssetPricesNotifier {
   @override
   Map<String, From_PriceUpdate> build() {
-    ref.keepAlive();
     return {};
   }
 
   void updatePrices(From_PriceUpdate priceUpdate) {
-    state[priceUpdate.asset] = priceUpdate;
-    ref.notifyListeners();
+    final newPrice = {...state};
+    newPrice[priceUpdate.asset] = priceUpdate;
+    state = newPrice;
   }
 }

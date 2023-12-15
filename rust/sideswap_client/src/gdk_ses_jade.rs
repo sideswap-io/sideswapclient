@@ -65,8 +65,12 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
         self.watch_only.get_transactions()
     }
 
-    fn get_recv_address(&self, is_internal: bool) -> Result<AddressInfo, anyhow::Error> {
-        self.watch_only.get_recv_address(is_internal)
+    fn get_receive_address(&self) -> Result<AddressInfo, anyhow::Error> {
+        self.watch_only.get_receive_address()
+    }
+
+    fn get_change_address(&self) -> Result<AddressInfo, anyhow::Error> {
+        self.watch_only.get_change_address()
     }
 
     fn create_tx(&mut self, req: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error> {
@@ -98,7 +102,7 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
         self.jade.send_payjoin(req, assets)
     }
 
-    fn get_utxos(&self) -> Result<crate::ffi::proto::from::UtxoUpdate, anyhow::Error> {
+    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {
         self.watch_only.get_utxos()
     }
 
@@ -143,13 +147,6 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
 
         self.watch_only
             .get_previous_addresses(last_pointer, is_internal)
-    }
-
-    fn get_swap_inputs(
-        &self,
-        send_asset: &sideswap_api::AssetId,
-    ) -> Result<Vec<sideswap_api::PsetInput>, anyhow::Error> {
-        self.watch_only.get_swap_inputs(send_asset)
     }
 
     fn sig_single_maker_tx(

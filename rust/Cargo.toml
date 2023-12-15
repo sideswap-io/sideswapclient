@@ -3,15 +3,16 @@ resolver = "2"
 
 members = [
     "sideswap_api",
-    "sideswap_common",
-    "sideswap_headless",
-    "sideswap_headless_trader",
     "sideswap_client",
-    "sideswap_jade",
+    "sideswap_common",
     "sideswap_dealer",
-    "sideswap_dealer_ws",
-    "sideswap_dealer_example",
     "sideswap_dealer_bitfinex",
+    "sideswap_dealer_example",
+    "sideswap_dealer_ws",
+    "sideswap_headless",
+    "sideswap_headless_server",
+    "sideswap_headless_trader",
+    "sideswap_jade",
     "sideswap_payjoin",
     "sideswap_types",
 ]

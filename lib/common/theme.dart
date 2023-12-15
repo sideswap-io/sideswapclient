@@ -15,10 +15,12 @@ class MobileThemeData {
       colorScheme: ColorScheme.fromSeed(
         seedColor: SideSwapColors.chathamsBlue,
         brightness: Brightness.dark,
+        background: SideSwapColors.prussianBlue,
       ),
       scaffoldBackgroundColor: SideSwapColors.chathamsBlue,
       textSelectionTheme: textSelectionTheme(),
       textTheme: textTheme(),
+      cardColor: SideSwapColors.blumine,
     );
   }
 

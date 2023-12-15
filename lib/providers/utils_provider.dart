@@ -548,7 +548,7 @@ class UnregisteredGaid extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final ampId = ref.watch(ampIdProvider);
+    final ampId = ref.watch(ampIdNotifierProvider);
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),

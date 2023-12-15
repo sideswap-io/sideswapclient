@@ -1,0 +1,11 @@
+# SideSwap prod server (and Liquid network)
+env = "Prod"
+
+# Work dir to store temporary files
+work_dir = "/tmp/work_dir"
+
+# Mnemonic that has existing B-JDE balance and will receive L-BTC balance
+mnemonic = "<YOUR_MNEMONIC>"
+
+[api_server]
+listen_on = "127.0.0.1:8080"

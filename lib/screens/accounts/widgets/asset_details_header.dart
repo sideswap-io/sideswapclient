@@ -34,10 +34,10 @@ class AssetDetailsHeader extends ConsumerWidget {
         children: [
           Consumer(
             builder: (context, ref, child) {
-              final selectedWalletAsset =
-                  ref.watch(selectedWalletAssetProvider);
-              final asset = ref.watch(assetsStateProvider
-                  .select((value) => value[selectedWalletAsset?.assetId]));
+              final selectedWalletAccountAsset =
+                  ref.watch(selectedWalletAccountAssetNotifierProvider);
+              final asset = ref.watch(assetsStateProvider.select(
+                  (value) => value[selectedWalletAccountAsset?.assetId]));
               return Text(
                 asset?.name ?? '',
                 style: const TextStyle(
@@ -50,9 +50,11 @@ class AssetDetailsHeader extends ConsumerWidget {
           ),
           Consumer(
             builder: (context, ref, child) {
-              final isAmp =
-                  ref.watch(selectedWalletAssetProvider)?.account.isAmp ??
-                      false;
+              final isAmp = ref
+                      .watch(selectedWalletAccountAssetNotifierProvider)
+                      ?.account
+                      .isAmp ??
+                  false;
 
               if (isAmp) {
                 return Container(
@@ -83,12 +85,12 @@ class AssetDetailsHeader extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 8),
             child: Consumer(
               builder: (context, ref, child) {
-                final selectedWalletAsset =
-                    ref.watch(selectedWalletAssetProvider);
-                final asset = ref.watch(assetsStateProvider
-                    .select((value) => value[selectedWalletAsset?.assetId]));
-                final balance =
-                    ref.watch(balancesProvider).balances[selectedWalletAsset];
+                final selectedWalletAccountAsset =
+                    ref.watch(selectedWalletAccountAssetNotifierProvider);
+                final asset = ref.watch(assetsStateProvider.select(
+                    (value) => value[selectedWalletAccountAsset?.assetId]));
+                final balance = ref.watch(
+                    balancesNotifierProvider)[selectedWalletAccountAsset];
 
                 final ticker = asset!.ticker;
                 final precision = ref
@@ -115,23 +117,23 @@ class AssetDetailsHeader extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 4),
             child: Consumer(
               builder: (context, ref, child) {
-                final wallet = ref.watch(walletProvider);
-                final selectedWalletAsset =
-                    ref.watch(selectedWalletAssetProvider);
-                final asset = ref.watch(assetsStateProvider
-                    .select((value) => value[selectedWalletAsset?.assetId]));
+                final selectedWalletAccountAsset =
+                    ref.watch(selectedWalletAccountAssetNotifierProvider);
+                final asset = ref.watch(assetsStateProvider.select(
+                    (value) => value[selectedWalletAccountAsset?.assetId]));
                 final precision = ref
                     .watch(assetUtilsProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
-                final accountBalance =
-                    ref.watch(balancesProvider).balances[selectedWalletAsset] ??
-                        0;
+                final accountBalance = ref.watch(
+                        balancesNotifierProvider)[selectedWalletAccountAsset] ??
+                    0;
                 final amountProvider = ref.watch(amountToStringProvider);
                 final balanceStr = amountProvider.amountToString(
                     AmountToStringParameters(
                         amount: accountBalance, precision: precision));
                 final balance = double.tryParse(balanceStr) ?? .0;
-                final amountUsd = wallet.getAmountUsd(asset?.assetId, balance);
+                final amountUsd =
+                    ref.watch(amountUsdProvider(asset?.assetId, balance));
                 dollarConversion = amountUsd.toStringAsFixed(2);
                 dollarConversion = replaceCharacterOnPosition(
                     input: dollarConversion, currencyChar: '\$');
@@ -154,22 +156,23 @@ class AssetDetailsHeader extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 22),
             child: Consumer(builder: (context, ref, child) {
               final wallet = ref.read(walletProvider);
-              final selectedWalletAsset =
-                  ref.watch(selectedWalletAssetProvider);
+              final selectedWalletAccountAsset =
+                  ref.watch(selectedWalletAccountAssetNotifierProvider);
 
-              final asset = ref.watch(assetsStateProvider
-                  .select((value) => value[selectedWalletAsset?.assetId]));
+              final asset = ref.watch(assetsStateProvider.select(
+                  (value) => value[selectedWalletAccountAsset?.assetId]));
               final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
               final instantSwapVisible = (asset?.swapMarket == true ||
                       asset?.assetId == liquidAssetId) &&
-                  selectedWalletAsset?.account == AccountType.reg;
+                  selectedWalletAccountAsset?.account == AccountType.reg;
               final isAmpAsset = ref
                   .watch(assetUtilsProvider)
-                  .isAmpMarket(assetId: selectedWalletAsset?.assetId);
+                  .isAmpMarket(assetId: selectedWalletAccountAsset?.assetId);
               final isAmpAccount =
-                  selectedWalletAsset?.account == AccountType.amp;
-              final balance =
-                  ref.read(balancesProvider).balances[selectedWalletAsset] ?? 0;
+                  selectedWalletAccountAsset?.account == AccountType.amp;
+              final balance = ref.read(
+                      balancesNotifierProvider)[selectedWalletAccountAsset] ??
+                  0;
               final p2pSwapVisible = !(asset?.unregistered == true) &&
                   (isAmpAsset == isAmpAccount) &&
                   // Token market swaps only allowed when balance is positive
@@ -179,10 +182,11 @@ class AssetDetailsHeader extends ConsumerWidget {
                 children: [
                   RoundedButtonWithLabel(
                     onTap: () {
-                      if (selectedWalletAsset?.account == null) {
+                      if (selectedWalletAccountAsset?.account == null) {
                         return;
                       }
-                      wallet.selectAssetReceive(selectedWalletAsset!.account);
+                      wallet.selectAssetReceive(
+                          selectedWalletAccountAsset!.account);
                       ref
                           .read(pageStatusStateProvider.notifier)
                           .setStatus(Status.generateWalletAddress);
@@ -199,24 +203,25 @@ class AssetDetailsHeader extends ConsumerWidget {
                     Container(width: 32),
                     RoundedButtonWithLabel(
                       onTap: () {
-                        if (selectedWalletAsset == null) {
+                        if (selectedWalletAccountAsset == null) {
                           return;
                         }
 
                         if (instantSwapVisible) {
                           ref
                               .read(swapProvider)
-                              .setSelectedLeftAsset(selectedWalletAsset);
+                              .setSelectedLeftAsset(selectedWalletAccountAsset);
                           ref.read(swapProvider).selectSwap();
                         } else {
-                          if (selectedWalletAsset.account.isAmp) {
+                          if (selectedWalletAccountAsset.account.isAmp) {
                             ref
                                 .read(makeOrderSideStateProvider.notifier)
                                 .setSide(MakeOrderSide.sell);
                             ref
                                 .read(marketSelectedAccountAssetStateProvider
                                     .notifier)
-                                .setSelectedAccountAsset(selectedWalletAsset);
+                                .setSelectedAccountAsset(
+                                    selectedWalletAccountAsset);
                           } else {
                             ref
                                 .read(makeOrderSideStateProvider.notifier)
@@ -224,7 +229,8 @@ class AssetDetailsHeader extends ConsumerWidget {
                             ref
                                 .read(marketSelectedAccountAssetStateProvider
                                     .notifier)
-                                .setSelectedAccountAsset(selectedWalletAsset);
+                                .setSelectedAccountAsset(
+                                    selectedWalletAccountAsset);
                           }
                           ref.read(walletProvider).setCreateOrderEntry();
                         }

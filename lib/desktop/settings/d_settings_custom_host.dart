@@ -12,7 +12,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/config_provider.dart';
-import 'package:sideswap/providers/network_access_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -42,7 +41,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
     final portController = useTextEditingController(
         text: ref.read(configProvider).settingsPort.toString());
     final applyEnabled = useState(false);
-    final networkSettingsModel = ref.watch(networkSettingsProvider);
+    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
 
     final validateCallback = useCallback(() {
       final host = hostController.text;
@@ -140,7 +139,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
                     onPressed: applyEnabled.value
                         ? () {
                             ref
-                                .read(networkSettingsProvider.notifier)
+                                .read(networkSettingsNotifierProvider.notifier)
                                 .setModel(NetworkSettingsModelApply(
                                   settingsNetworkType:
                                       SettingsNetworkType.personal,

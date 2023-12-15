@@ -117,8 +117,9 @@ class TokenMarketAssetDetailsProvider
   }
 
   void insertAssetDetails(AssetDetailsData assetDetailsData) {
-    state[assetDetailsData.assetId] = assetDetailsData;
-    ref.notifyListeners();
+    final tokenMarketAssetDetails = {...state};
+    tokenMarketAssetDetails[assetDetailsData.assetId] = assetDetailsData;
+    state = tokenMarketAssetDetails;
   }
 }
 

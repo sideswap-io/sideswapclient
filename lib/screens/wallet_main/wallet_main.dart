@@ -38,10 +38,9 @@ class WalletMain extends HookConsumerWidget {
 
     return Consumer(
       builder: (context, ref, _) {
-        final walletMainArguments =
-            ref.watch(uiStateArgsProvider.select((p) => p.walletMainArguments));
+        final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
         final currentPageIndex = walletMainArguments.currentIndex;
-        final navigationItem = walletMainArguments.navigationItem;
+        final navigationItemEnum = walletMainArguments.navigationItemEnum;
 
         return SideSwapScaffold(
           canPop: false,
@@ -50,7 +49,7 @@ class WalletMain extends HookConsumerWidget {
               return;
             }
             if (currentPageIndex == 0 &&
-                navigationItem == WalletMainNavigationItem.home) {
+                navigationItemEnum == WalletMainNavigationItemEnum.home) {
               final now = DateTime.now();
               if (now.difference(currentBackPressTime.value) >
                   const Duration(seconds: 2, milliseconds: 700)) {
@@ -95,18 +94,20 @@ class WalletMain extends HookConsumerWidget {
 
               final newWalletMainArguments =
                   walletMainArguments.fromIndex(index);
-              ref.read(uiStateArgsProvider).walletMainArguments =
-                  newWalletMainArguments;
+              ref
+                  .read(uiStateArgsNotifierProvider.notifier)
+                  .setWalletMainArguments(newWalletMainArguments);
 
-              final navigationItem = newWalletMainArguments.navigationItem;
-              switch (navigationItem) {
-                case WalletMainNavigationItem.pegs:
+              final navigationItemEnum =
+                  newWalletMainArguments.navigationItemEnum;
+              switch (navigationItemEnum) {
+                case WalletMainNavigationItemEnum.pegs:
                   ref.read(swapProvider).switchToPegs();
                   break;
-                case WalletMainNavigationItem.swap:
+                case WalletMainNavigationItemEnum.swap:
                   ref.read(swapProvider).switchToSwaps();
                   break;
-                case WalletMainNavigationItem.markets:
+                case WalletMainNavigationItemEnum.markets:
                   ref.read(selectedMarketTypeProvider.notifier).state =
                       MarketSelectedType.swap;
                   break;
@@ -126,18 +127,17 @@ class WalletMainChildPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final walletMainArguments =
-        ref.watch(uiStateArgsProvider.select((p) => p.walletMainArguments));
-    final navigationItem = walletMainArguments.navigationItem;
+    final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+    final navigationItemEnum = walletMainArguments.navigationItemEnum;
 
     final selectedMarketType = ref.watch(selectedMarketTypeProvider);
 
-    return switch (navigationItem) {
-      WalletMainNavigationItem.home => const Home(),
-      WalletMainNavigationItem.accounts => const Accounts(),
-      WalletMainNavigationItem.assetSelect => const AssetSelectList(),
-      WalletMainNavigationItem.assetDetails => const AssetDetails(),
-      WalletMainNavigationItem.markets => Markets(
+    return switch (navigationItemEnum) {
+      WalletMainNavigationItemEnum.home => const Home(),
+      WalletMainNavigationItemEnum.accounts => const Accounts(),
+      WalletMainNavigationItemEnum.assetSelect => const AssetSelectList(),
+      WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
+      WalletMainNavigationItemEnum.markets => Markets(
           selectedMarketType: selectedMarketType,
           onOrdersPressed: () {
             ref.read(selectedMarketTypeProvider.notifier).state =
@@ -150,8 +150,8 @@ class WalletMainChildPage extends ConsumerWidget {
                 MarketSelectedType.swap;
           },
         ),
-      WalletMainNavigationItem.swap => const SwapMain(key: ValueKey(false)),
-      WalletMainNavigationItem.pegs => const SwapMain(key: ValueKey(true)),
+      WalletMainNavigationItemEnum.swap => const SwapMain(key: ValueKey(false)),
+      WalletMainNavigationItemEnum.pegs => const SwapMain(key: ValueKey(true)),
       _ => const SizedBox(),
     };
   }

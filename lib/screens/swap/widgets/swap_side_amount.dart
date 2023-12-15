@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:marquee/marquee.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -13,7 +14,6 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/fee_rates_dropdown.dart';
@@ -150,14 +150,22 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(
-                  width: 122,
+                  width: 152,
                   child: Row(
                     children: [
                       Text(
                         widget.text,
                         style: _labelStyle,
                       ),
-                      if (isAmp) const AmpFlag(fontSize: 10),
+                      if (isAmp)
+                        const AmpFlag(
+                          textStyle: TextStyle(
+                            color: Color(0xFF73A6C5),
+                            fontSize: 10,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -246,7 +254,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
           child: Padding(
             padding: widget.padding,
             child: SizedBox(
-              height: 43,
+              height: 90,
               child: TickerAmountTextField(
                 readOnly: widget.readOnly,
                 dropdownReadOnly: widget.dropdownReadOnly,

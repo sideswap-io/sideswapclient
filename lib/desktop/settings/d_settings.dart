@@ -16,6 +16,7 @@ import 'package:sideswap/providers/pin_available_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 import 'package:sideswap/screens/settings/settings_languages.dart';
@@ -46,7 +47,7 @@ class DSettings extends ConsumerWidget {
         ),
         content: Center(
           child: SizedBox(
-            height: 509,
+            height: 569,
             child: Column(
               children: [
                 switch (isJade) {
@@ -153,6 +154,18 @@ class DSettings extends ConsumerWidget {
                     ),
                   false => const SizedBox(),
                 },
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: DSettingsButton(
+                    title: 'Logs'.tr(),
+                    onPressed: () {
+                      ref
+                          .read(pageStatusStateProvider.notifier)
+                          .setStatus(Status.settingsLogs);
+                    },
+                    icon: DSettingsButtonIcon.logs,
+                  ),
+                ),
                 switch (FlavorConfig.enableLocalEndpoint) {
                   true => Padding(
                       padding: const EdgeInsets.only(top: 10),
@@ -221,7 +234,7 @@ class DSettings extends ConsumerWidget {
           ),
         ),
         style: const DContentDialogThemeData().merge(settingsDialogTheme),
-        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 665),
       ),
     );
   }

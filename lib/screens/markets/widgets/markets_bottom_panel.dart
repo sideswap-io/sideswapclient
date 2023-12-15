@@ -48,12 +48,6 @@ class MarketsBottomBuySellPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final swapMarketCurrentProduct =
-        ref.watch(swapMarketCurrentProductProvider);
-    final asset = ref.watch(assetsStateProvider.select(
-        (value) => value[swapMarketCurrentProduct.accountAsset.assetId]));
-    final isToken = !(asset?.swapMarket == true) && !(asset?.ampMarket == true);
-
     return Container(
       width: double.maxFinite,
       height: 70,
@@ -62,17 +56,13 @@ class MarketsBottomBuySellPanel extends ConsumerWidget {
             topLeft: Radius.circular(16), topRight: Radius.circular(16)),
         color: SideSwapColors.chathamsBlueDark,
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
-            ...!isToken
-                ? [
-                    const BuySellButton(isSell: false),
-                    const SizedBox(width: 16)
-                  ]
-                : [],
-            const BuySellButton(isSell: true),
+            BuySellButton(isSell: false),
+            SizedBox(width: 16),
+            BuySellButton(isSell: true),
           ],
         ),
       ),
@@ -97,27 +87,21 @@ class BuySellButton extends ConsumerWidget {
     final accountAsset = AccountAsset(
         asset?.ampMarket == true ? AccountType.amp : AccountType.reg,
         asset?.assetId ?? '');
-    final isTokenMarket =
-        !(asset?.ampMarket == true) && !(asset?.swapMarket == true);
-    final enabled = (!isTokenMarket || isSell);
 
     return Expanded(
       child: CustomBigButton(
         height: 40,
         text: isSell ? 'SELL'.tr() : 'BUY'.tr(),
-        backgroundColor:
-            enabled ? (isSell ? sellColor : buyColor) : const Color(0xFF0E4D72),
-        onPressed: enabled
-            ? () {
-                ref
-                    .read(makeOrderSideStateProvider.notifier)
-                    .setSide(isSell ? MakeOrderSide.sell : MakeOrderSide.buy);
-                ref
-                    .read(marketSelectedAccountAssetStateProvider.notifier)
-                    .setSelectedAccountAsset(accountAsset);
-                ref.read(walletProvider).setCreateOrderEntry();
-              }
-            : null,
+        backgroundColor: isSell ? sellColor : buyColor,
+        onPressed: () {
+          ref
+              .read(makeOrderSideStateProvider.notifier)
+              .setSide(isSell ? MakeOrderSide.sell : MakeOrderSide.buy);
+          ref
+              .read(marketSelectedAccountAssetStateProvider.notifier)
+              .setSelectedAccountAsset(accountAsset);
+          ref.read(walletProvider).setCreateOrderEntry();
+        },
       ),
     );
   }

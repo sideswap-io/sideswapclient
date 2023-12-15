@@ -3,6 +3,7 @@ import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sideswap/common/enums.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/widgets/show_peg_info_widget.dart';
@@ -11,6 +12,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
+import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -104,7 +106,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       return;
     }
 
-    if (ref.read(walletProvider).isAddrValid(text, AddrType.bitcoin)) {
+    if (ref.read(isAddrTypeValidProvider(text, AddrType.bitcoin))) {
       ref.read(swapAddressErrorStateProvider.notifier).state = null;
       ref.read(showAddressLabelStateProvider.notifier).state = true;
     } else {
@@ -438,11 +440,13 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   void selectSwap() {
     ref.read(pageStatusStateProvider.notifier).setStatus(Status.registered);
 
-    final uiStateArgs = ref.read(uiStateArgsProvider);
-    uiStateArgs.walletMainArguments = uiStateArgs.walletMainArguments.copyWith(
-      currentIndex: 3,
-      navigationItem: WalletMainNavigationItem.swap,
-    );
+    final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
+    ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
+          walletMainArguments.copyWith(
+            currentIndex: 3,
+            navigationItemEnum: WalletMainNavigationItemEnum.swap,
+          ),
+        );
   }
 
   void onMaxSendPressed() {
@@ -450,7 +454,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     final precision = ref
         .read(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: swapSendAsset?.assetId);
-    final balance = ref.read(balancesProvider).balances[swapSendAccount];
+    final balance = ref.read(balancesNotifierProvider)[swapSendAccount];
     final balanceStr = ref.read(amountToStringProvider).amountToString(
         AmountToStringParameters(amount: balance ?? 0, precision: precision));
 
@@ -524,7 +528,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     final type = swapType();
 
     final maxBalance = swapSendWallet == SwapWallet.local
-        ? ref.read(balancesProvider).balances[swapSendAsset] ?? 0
+        ? ref.read(balancesNotifierProvider)[swapSendAsset] ?? 0
         : kMaxCoins;
     if (type != SwapType.pegIn) {
       if (sendAmount <= 0 || sendAmount > maxBalance) {
@@ -537,7 +541,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
     if (type == SwapType.pegOut) {
       final addrType = swapAddrType(type);
-      if (!wallet.isAddrValid(swapRecvAddressExternal, addrType)) {
+      if (!ref
+          .read(isAddrTypeValidProvider(swapRecvAddressExternal, addrType))) {
         await ref.read(utilsProvider).showErrorDialog(
             'PLEASE_ENTER_CORRECT_ADDRESS'.tr(args: [(addrTypeStr(addrType))]));
         return;
@@ -765,8 +770,7 @@ final showInsufficientFundsProvider = Provider.autoDispose<bool>((ref) {
   }
 
   final swapSendAsset = ref.watch(swapProvider.select((p) => p.swapSendAsset));
-  final balance =
-      ref.watch(balancesProvider.select((p) => p.balances[swapSendAsset] ?? 0));
+  final balance = ref.watch(balancesNotifierProvider)[swapSendAsset] ?? 0;
   final satoshiAmount = ref.watch(
       swapSendAmountChangeNotifierProvider.select((p) => p.satoshiAmount));
   return satoshiAmount > 0 && satoshiAmount > balance;

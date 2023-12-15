@@ -351,6 +351,7 @@ const NetworkSettings$json = {
   '2': [
     {'1': 'blockstream', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'blockstream'},
     {'1': 'sideswap', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'sideswap'},
+    {'1': 'sideswap_cn', '3': 4, '4': 1, '5': 11, '6': '.sideswap.proto.Empty', '9': 0, '10': 'sideswapCn'},
     {'1': 'custom', '3': 3, '4': 1, '5': 11, '6': '.sideswap.proto.NetworkSettings.Custom', '9': 0, '10': 'custom'},
   ],
   '3': [NetworkSettings_Custom$json],
@@ -373,10 +374,11 @@ const NetworkSettings_Custom$json = {
 final $typed_data.Uint8List networkSettingsDescriptor = $convert.base64Decode(
     'Cg9OZXR3b3JrU2V0dGluZ3MSOQoLYmxvY2tzdHJlYW0YASABKAsyFS5zaWRlc3dhcC5wcm90by'
     '5FbXB0eUgAUgtibG9ja3N0cmVhbRIzCghzaWRlc3dhcBgCIAEoCzIVLnNpZGVzd2FwLnByb3Rv'
-    'LkVtcHR5SABSCHNpZGVzd2FwEkAKBmN1c3RvbRgDIAEoCzImLnNpZGVzd2FwLnByb3RvLk5ldH'
-    'dvcmtTZXR0aW5ncy5DdXN0b21IAFIGY3VzdG9tGkkKBkN1c3RvbRISCgRob3N0GAEgAigJUgRo'
-    'b3N0EhIKBHBvcnQYAiACKAVSBHBvcnQSFwoHdXNlX3RscxgDIAIoCFIGdXNlVGxzQgoKCHNlbG'
-    'VjdGVk');
+    'LkVtcHR5SABSCHNpZGVzd2FwEjgKC3NpZGVzd2FwX2NuGAQgASgLMhUuc2lkZXN3YXAucHJvdG'
+    '8uRW1wdHlIAFIKc2lkZXN3YXBDbhJACgZjdXN0b20YAyABKAsyJi5zaWRlc3dhcC5wcm90by5O'
+    'ZXR3b3JrU2V0dGluZ3MuQ3VzdG9tSABSBmN1c3RvbRpJCgZDdXN0b20SEgoEaG9zdBgBIAIoCV'
+    'IEaG9zdBISCgRwb3J0GAIgAigFUgRwb3J0EhcKB3VzZV90bHMYAyACKAhSBnVzZVRsc0IKCghz'
+    'ZWxlY3RlZA==');
 
 @$core.Deprecated('Use createTxDescriptor instead')
 const CreateTx$json = {
@@ -724,6 +726,7 @@ const To_SubmitDecision$json = {
     {'1': 'two_step', '3': 6, '4': 1, '5': 8, '10': 'twoStep'},
     {'1': 'ttl_seconds', '3': 5, '4': 1, '5': 4, '10': 'ttlSeconds'},
     {'1': 'tx_chaining_allowed', '3': 7, '4': 1, '5': 8, '10': 'txChainingAllowed'},
+    {'1': 'only_unused_utxos', '3': 8, '4': 1, '5': 8, '10': 'onlyUnusedUtxos'},
   ],
 };
 
@@ -881,21 +884,22 @@ final $typed_data.Uint8List toDescriptor = $convert.base64Decode(
     'Cghhc3NldF9pZBgCIAIoCVIHYXNzZXRJZBIlCg5iaXRjb2luX2Ftb3VudBgDIAEoAVINYml0Y2'
     '9pbkFtb3VudBIhCgxhc3NldF9hbW91bnQYBCABKAFSC2Fzc2V0QW1vdW50EhQKBXByaWNlGAUg'
     'AigBUgVwcmljZRIfCgtpbmRleF9wcmljZRgGIAEoAVIKaW5kZXhQcmljZRomCglMaW5rT3JkZX'
-    'ISGQoIb3JkZXJfaWQYASACKAlSB29yZGVySWQa5gEKDlN1Ym1pdERlY2lzaW9uEhkKCG9yZGVy'
+    'ISGQoIb3JkZXJfaWQYASACKAlSB29yZGVySWQakgIKDlN1Ym1pdERlY2lzaW9uEhkKCG9yZGVy'
     'X2lkGAEgAigJUgdvcmRlcklkEhYKBmFjY2VwdBgCIAIoCFIGYWNjZXB0EhsKCWF1dG9fc2lnbh'
     'gDIAEoCFIIYXV0b1NpZ24SGAoHcHJpdmF0ZRgEIAEoCFIHcHJpdmF0ZRIZCgh0d29fc3RlcBgG'
     'IAEoCFIHdHdvU3RlcBIfCgt0dGxfc2Vjb25kcxgFIAEoBFIKdHRsU2Vjb25kcxIuChN0eF9jaG'
-    'FpbmluZ19hbGxvd2VkGAcgASgIUhF0eENoYWluaW5nQWxsb3dlZBqIAQoJRWRpdE9yZGVyEhkK'
-    'CG9yZGVyX2lkGAEgAigJUgdvcmRlcklkEhYKBXByaWNlGAIgASgBSABSBXByaWNlEiEKC2luZG'
-    'V4X3ByaWNlGAMgASgBSABSCmluZGV4UHJpY2USHQoJYXV0b19zaWduGAQgASgISABSCGF1dG9T'
-    'aWduQgYKBGRhdGEaKAoLQ2FuY2VsT3JkZXISGQoIb3JkZXJfaWQYASACKAlSB29yZGVySWQabw'
-    'oJU3Vic2NyaWJlEj0KB21hcmtldHMYASADKAsyIy5zaWRlc3dhcC5wcm90by5Uby5TdWJzY3Jp'
-    'YmUuTWFya2V0UgdtYXJrZXRzGiMKBk1hcmtldBIZCghhc3NldF9pZBgBIAEoCVIHYXNzZXRJZB'
-    'qYAQoUU3Vic2NyaWJlUHJpY2VTdHJlYW0SGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQSIwoN'
-    'c2VuZF9iaXRjb2lucxgCIAIoCFIMc2VuZEJpdGNvaW5zEh8KC3NlbmRfYW1vdW50GAMgASgDUg'
-    'pzZW5kQW1vdW50Eh8KC3JlY3ZfYW1vdW50GAQgASgDUgpyZWN2QW1vdW50GjAKE01hcmtldERh'
-    'dGFTdWJzY3JpYmUSGQoIYXNzZXRfaWQYASACKAlSB2Fzc2V0SWQaOwoKR2FpZFN0YXR1cxISCg'
-    'RnYWlkGAEgAigJUgRnYWlkEhkKCGFzc2V0X2lkGAIgAigJUgdhc3NldElkQgUKA21zZw==');
+    'FpbmluZ19hbGxvd2VkGAcgASgIUhF0eENoYWluaW5nQWxsb3dlZBIqChFvbmx5X3VudXNlZF91'
+    'dHhvcxgIIAEoCFIPb25seVVudXNlZFV0eG9zGogBCglFZGl0T3JkZXISGQoIb3JkZXJfaWQYAS'
+    'ACKAlSB29yZGVySWQSFgoFcHJpY2UYAiABKAFIAFIFcHJpY2USIQoLaW5kZXhfcHJpY2UYAyAB'
+    'KAFIAFIKaW5kZXhQcmljZRIdCglhdXRvX3NpZ24YBCABKAhIAFIIYXV0b1NpZ25CBgoEZGF0YR'
+    'ooCgtDYW5jZWxPcmRlchIZCghvcmRlcl9pZBgBIAIoCVIHb3JkZXJJZBpvCglTdWJzY3JpYmUS'
+    'PQoHbWFya2V0cxgBIAMoCzIjLnNpZGVzd2FwLnByb3RvLlRvLlN1YnNjcmliZS5NYXJrZXRSB2'
+    '1hcmtldHMaIwoGTWFya2V0EhkKCGFzc2V0X2lkGAEgASgJUgdhc3NldElkGpgBChRTdWJzY3Jp'
+    'YmVQcmljZVN0cmVhbRIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBIjCg1zZW5kX2JpdGNvaW'
+    '5zGAIgAigIUgxzZW5kQml0Y29pbnMSHwoLc2VuZF9hbW91bnQYAyABKANSCnNlbmRBbW91bnQS'
+    'HwoLcmVjdl9hbW91bnQYBCABKANSCnJlY3ZBbW91bnQaMAoTTWFya2V0RGF0YVN1YnNjcmliZR'
+    'IZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBo7CgpHYWlkU3RhdHVzEhIKBGdhaWQYASACKAlS'
+    'BGdhaWQSGQoIYXNzZXRfaWQYAiACKAlSB2Fzc2V0SWRCBQoDbXNn');
 
 @$core.Deprecated('Use fromDescriptor instead')
 const From$json = {

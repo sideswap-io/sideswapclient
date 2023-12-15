@@ -8,23 +8,32 @@ class DTxHistoryDate extends StatelessWidget {
     required this.dateFormatDate,
     required this.dateFormatTime,
     required this.tx,
+    this.dateTextStyle = const TextStyle(
+      color: Color(0xFF709EBA),
+    ),
+    this.timeTextStyle = const TextStyle(
+      color: Color(0xFF709EBA),
+    ),
   });
 
   final DateFormat dateFormatDate;
   final DateFormat dateFormatTime;
   final TransItem tx;
+  final TextStyle? dateTextStyle;
+  final TextStyle? timeTextStyle;
 
   @override
   Widget build(BuildContext context) {
     final timestampCopy =
         DateTime.fromMillisecondsSinceEpoch(tx.createdAt.toInt());
     return Row(children: [
-      Text(dateFormatDate.format(timestampCopy)),
+      Text(
+        dateFormatDate.format(timestampCopy),
+        style: dateTextStyle,
+      ),
       Text(
         dateFormatTime.format(timestampCopy),
-        style: const TextStyle(
-          color: Color(0xFF709EBA),
-        ),
+        style: timeTextStyle,
       ),
     ]);
   }

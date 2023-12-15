@@ -1,17 +1,20 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
-class FirstLaunch extends ConsumerStatefulWidget {
+class FirstLaunch extends StatefulHookConsumerWidget {
   const FirstLaunch({super.key});
 
   @override
@@ -31,6 +34,16 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
     });
 
     final lang = ref.watch(localesProvider).selectedLang(context);
+
+    useEffect(() {
+      if (lang == 'zh') {
+        ref
+            .read(configProvider.notifier)
+            .setSettingsNetworkType(SettingsNetworkType.sideswapChina);
+      }
+
+      return;
+    }, [lang]);
 
     return SideSwapScaffold(
       key: ValueKey(lang),

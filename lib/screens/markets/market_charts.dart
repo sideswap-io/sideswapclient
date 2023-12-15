@@ -9,10 +9,10 @@ import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_url_link.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/market_data_provider.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class MarketCharts extends ConsumerStatefulWidget {
@@ -347,7 +347,7 @@ class DetailsField extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dollarPrice = (assetAmount != null && assetId != null)
-        ? ref.watch(walletProvider).getAmountUsd(assetId, assetAmount!)
+        ? ref.watch(amountUsdProvider(assetId, assetAmount!))
         : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

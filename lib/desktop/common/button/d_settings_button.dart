@@ -17,6 +17,8 @@ enum DSettingsButtonIcon {
   language,
   delete,
   apiServer,
+  logs,
+  export,
 }
 
 class DSettingsButton extends ConsumerWidget {
@@ -37,32 +39,18 @@ class DSettingsButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var iconValue = '';
-    switch (icon) {
-      case DSettingsButtonIcon.recovery:
-        iconValue = 'assets/recovery.svg';
-        break;
-      case DSettingsButtonIcon.about:
-        iconValue = 'assets/about.svg';
-        break;
-      case DSettingsButtonIcon.password:
-        iconValue = 'assets/locker3.svg';
-        break;
-      case DSettingsButtonIcon.network:
-        iconValue = 'assets/network.svg';
-        break;
-      case DSettingsButtonIcon.faq:
-        iconValue = 'assets/faq.svg';
-        break;
-      case DSettingsButtonIcon.delete:
-        iconValue = 'assets/delete.svg';
-        break;
-      case DSettingsButtonIcon.language:
-        iconValue = 'assets/language.svg';
-        break;
-      case DSettingsButtonIcon.apiServer:
-        iconValue = 'assets/recovery.svg';
-    }
+    final iconValue = switch (icon) {
+      DSettingsButtonIcon.recovery => 'assets/recovery.svg',
+      DSettingsButtonIcon.about => 'assets/about.svg',
+      DSettingsButtonIcon.password => 'assets/locker3.svg',
+      DSettingsButtonIcon.network => 'assets/network.svg',
+      DSettingsButtonIcon.faq => 'assets/faq.svg',
+      DSettingsButtonIcon.delete => 'assets/delete.svg',
+      DSettingsButtonIcon.language => 'assets/language.svg',
+      DSettingsButtonIcon.apiServer => 'assets/recovery.svg',
+      DSettingsButtonIcon.logs => 'assets/logs.svg',
+      DSettingsButtonIcon.export => 'assets/settings_export.svg',
+    };
 
     final settingsButtonStyle = DButtonStyle(
       backgroundColor: ButtonState.resolveWith((states) {

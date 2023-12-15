@@ -65,11 +65,10 @@ List<AccountAsset> allAlwaysShowAccountAssets(
 List<AccountAsset> allVisibleAccountAssets(AllVisibleAccountAssetsRef ref) {
   final allAccounts = ref.watch(allAlwaysShowAccountAssetsProvider);
   final defaultAccounts = ref.watch(defaultAccountsStateProvider);
-  final balances = ref.watch(balancesProvider);
+  final balances = ref.watch(balancesNotifierProvider);
 
   final allVisibleAccounts = allAccounts
-      .where(
-          (e) => defaultAccounts.contains(e) || (balances.balances[e] ?? 0) > 0)
+      .where((e) => defaultAccounts.contains(e) || (balances[e] ?? 0) > 0)
       .toList();
 
   return allVisibleAccounts;
@@ -139,4 +138,12 @@ MarketType marketTypeForAccountAsset(
   final asset = allAssets.values
       .firstWhereOrNull((e) => e.assetId == accountAsset?.assetId);
   return getMarketType(asset);
+}
+
+@riverpod
+AccountAsset accountAssetFromAsset(AccountAssetFromAssetRef ref, Asset? asset) {
+  return AccountAsset(
+    asset?.ampMarket == true ? AccountType.amp : AccountType.reg,
+    asset?.assetId,
+  );
 }

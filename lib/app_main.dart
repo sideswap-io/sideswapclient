@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:secure_application/secure_application.dart';
 import 'package:sideswap/common/theme.dart';
@@ -9,13 +10,16 @@ import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/listeners/warmup_app_listener.dart';
+import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/prelaunch_page.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
+import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
@@ -65,6 +69,7 @@ import 'package:sideswap/screens/receive/generate_address_screen.dart';
 import 'package:sideswap/screens/select_env.dart';
 import 'package:sideswap/screens/settings/settings.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
+import 'package:sideswap/screens/settings/settings_logs.dart';
 import 'package:sideswap/screens/settings/settings_network.dart';
 import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/settings_user_details.dart';
@@ -375,6 +380,11 @@ class RootWidgetState extends ConsumerState<RootWidget> {
           const MaterialPage<Widget>(child: Settings()),
           const MaterialPage<Widget>(child: SettingsSecurity()),
         ];
+      case Status.settingsLogs:
+        return [
+          const MaterialPage<Widget>(child: Settings()),
+          const MaterialPage<Widget>(child: SettingsLogs()),
+        ];
       case Status.paymentPage:
         return [
           const MaterialPage<Widget>(child: PaymentPage()),
@@ -509,6 +519,22 @@ class RootWidgetState extends ConsumerState<RootWidget> {
   @override
   Widget build(BuildContext context) {
     final navigatorKey = ref.watch(navigatorKeyProvider);
+
+    final serverLoginState = ref.watch(serverLoginStateProvider);
+
+    useEffect(() {
+      (switch (serverLoginState) {
+        ServerLoginStateError(message: String msg) =>
+          Future.microtask(() async {
+            await ref.read(utilsProvider).showErrorDialog(msg);
+            ref.read(walletProvider).cleanupConnectionStates();
+            ref.read(warmupAppProvider.notifier).reinitialize();
+          }),
+        _ => () {}(),
+      });
+
+      return;
+    }, [serverLoginState]);
 
     return Stack(
       children: [

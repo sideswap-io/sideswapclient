@@ -22,7 +22,7 @@ final selectEnvDialogProvider =
 );
 
 typedef _$SelectEnvDialog = AutoDisposeNotifier<bool>;
-String _$selectedEnvHash() => r'0e3b4866711b1029d2b8cbcd89f7102a377a8b4f';
+String _$selectedEnvHash() => r'b9853271a4f111da4e98af40ddc4a4185881a752';
 
 /// See also [SelectedEnv].
 @ProviderFor(SelectedEnv)

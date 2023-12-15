@@ -324,14 +324,16 @@ class MarketsIndexPriceProvider
       return;
     }
 
+    final indexPriceMap = {...state};
+
     if (ind != null) {
-      state[assetId] = ind;
-      ref.notifyListeners();
+      indexPriceMap[assetId] = ind;
+      state = indexPriceMap;
       return;
     }
 
-    state.remove(assetId);
-    ref.notifyListeners();
+    indexPriceMap.remove(assetId);
+    state = indexPriceMap;
   }
 }
 
@@ -384,14 +386,16 @@ class MarketsLastIndexPriceProvider
       return;
     }
 
+    final lastIndexPriceMap = {...state};
+
     if (last != null) {
-      state[assetId] = last;
-      ref.notifyListeners();
+      lastIndexPriceMap[assetId] = last;
+      state = lastIndexPriceMap;
       return;
     }
 
-    state.remove(assetId);
-    ref.notifyListeners();
+    lastIndexPriceMap.remove(assetId);
+    state = lastIndexPriceMap;
   }
 }
 
@@ -573,7 +577,7 @@ MakeOrderBalance makeOrderBalance(MakeOrderBalanceRef ref) {
         final assetPrecision = ref
             .watch(assetUtilsProvider)
             .getPrecisionForAssetId(assetId: accountAsset.assetId);
-        final balance = ref.watch(balancesProvider).balances[accountAsset] ?? 0;
+        final balance = ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
         final amountProvider = ref.watch(amountToStringProvider);
         final ticker = ref.watch(assetsStateProvider
             .select((value) => value[accountAsset.assetId]?.ticker ?? ''));
@@ -903,11 +907,7 @@ class OrderEntryCallbackHandlers {
     final indexPrice = trackingToggled.value
         ? trackerValueToIndexPrice(trackingValue.value)
         : null;
-    final account = ref.read(getBalanceAccountProvider(asset));
-    if (account == null) {
-      logger.w('AccountAsset is null!');
-      return;
-    }
+    final account = ref.read(accountAssetFromAssetProvider(asset));
     final sign = isSell ? -1 : 1;
     final amountWithSign = amount * sign;
 
@@ -964,9 +964,9 @@ class OrderEntryCallbackHandlers {
     // for sell side insert max balance only
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
     final account = isPricedInLiquid
-        ? ref.read(getBalanceAccountProvider(asset))
+        ? ref.read(accountAssetFromAssetProvider(asset))
         : AccountAsset(AccountType.reg, liquidAssetId);
-    final balance = ref.read(balancesProvider).balances[account] ?? 0;
+    final balance = ref.read(balancesNotifierProvider)[account] ?? 0;
     final amountProvider = ref.read(amountToStringProvider);
     final balanceStr = amountProvider.amountToString(
         AmountToStringParameters(amount: balance, precision: assetPrecision));

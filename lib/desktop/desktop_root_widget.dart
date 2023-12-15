@@ -17,7 +17,6 @@ import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 
 class DesktopRootWidget extends HookConsumerWidget {
@@ -61,9 +60,7 @@ class DesktopRootWidget extends HookConsumerWidget {
           Future.microtask(() async {
             await ref.read(utilsProvider).showErrorDialog(msg);
             ref.read(walletProvider).cleanupConnectionStates();
-            ref
-                .read(pageStatusStateProvider.notifier)
-                .setStatus(Status.noWallet);
+            ref.read(warmupAppProvider.notifier).reinitialize();
           }),
         _ => () {}(),
       });

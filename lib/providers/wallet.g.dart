@@ -1,24 +1,24 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'network_type_provider.dart';
+part of 'wallet.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$networkTypeHash() => r'5f6d4fcbad454223473c40b2fcea18f58b7cea65';
+String _$libClientIdHash() => r'848a6c2450dd03273452115f644e9b17a604fda8';
 
-/// See also [networkType].
-@ProviderFor(networkType)
-final networkTypeProvider = AutoDisposeProvider<SettingsNetworkType>.internal(
-  networkType,
-  name: r'networkTypeProvider',
+/// See also [LibClientId].
+@ProviderFor(LibClientId)
+final libClientIdProvider = NotifierProvider<LibClientId, int>.internal(
+  LibClientId.new,
+  name: r'libClientIdProvider',
   debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$networkTypeHash,
+      const bool.fromEnvironment('dart.vm.product') ? null : _$libClientIdHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef NetworkTypeRef = AutoDisposeProviderRef<SettingsNetworkType>;
+typedef _$LibClientId = Notifier<int>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/custom_scrollable_container.dart';
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
@@ -28,32 +27,6 @@ class SettingsAboutUsData {
 class SettingsAboutUs extends StatelessWidget {
   const SettingsAboutUs({super.key});
 
-  void showExportLogMenu(BuildContext context) async {
-    final box = context.findRenderObject() as RenderBox?;
-
-    final result = await showMenu(
-      context: context,
-      position: const RelativeRect.fromLTRB(0, 0, 0, 0),
-      items: [
-        const PopupMenuItem<int>(
-          value: 1,
-          child: Text('Export log'),
-        ),
-        const PopupMenuItem<int>(
-          value: 2,
-          child: Text('Export previous log'),
-        ),
-      ],
-    );
-    if (box != null) {
-      if (result == 1) {
-        shareLogFile("sideswap.log", box);
-      } else if (result == 2) {
-        shareLogFile("sideswap_prev.log", box);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return SideSwapScaffold(
@@ -68,17 +41,12 @@ class SettingsAboutUs extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
-                  child: GestureDetector(
-                    onLongPress: () {
-                      showExportLogMenu(context);
-                    },
-                    child: Text(
-                      'VERSION'.tr(args: [appVersion]),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: SideSwapColors.brightTurquoise,
-                      ),
+                  child: Text(
+                    'VERSION'.tr(args: [appVersion]),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: SideSwapColors.brightTurquoise,
                     ),
                   ),
                 ),

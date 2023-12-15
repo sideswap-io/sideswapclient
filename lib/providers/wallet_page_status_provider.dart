@@ -50,6 +50,7 @@ enum Status {
   settingsSecurity,
   settingsUserDetails,
   settingsNetwork,
+  settingsLogs,
 
   paymentPage,
   paymentAmountPage,

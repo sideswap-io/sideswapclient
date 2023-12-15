@@ -45,7 +45,7 @@ final allAlwaysShowAccountAssetsProvider =
 typedef AllAlwaysShowAccountAssetsRef
     = AutoDisposeProviderRef<List<AccountAsset>>;
 String _$allVisibleAccountAssetsHash() =>
-    r'8ee88e438e95193fb7b2f719ec28c645ee8bba59';
+    r'696c25f8710b15231c5e3b79685f8603b151dddc';
 
 /// See also [allVisibleAccountAssets].
 @ProviderFor(allVisibleAccountAssets)
@@ -300,6 +300,136 @@ class _MarketTypeForAccountAssetProviderElement
   @override
   AccountAsset? get accountAsset =>
       (origin as MarketTypeForAccountAssetProvider).accountAsset;
+}
+
+String _$accountAssetFromAssetHash() =>
+    r'087047285382bca97a179e83d08e5d02efdafcfa';
+
+/// See also [accountAssetFromAsset].
+@ProviderFor(accountAssetFromAsset)
+const accountAssetFromAssetProvider = AccountAssetFromAssetFamily();
+
+/// See also [accountAssetFromAsset].
+class AccountAssetFromAssetFamily extends Family<AccountAsset> {
+  /// See also [accountAssetFromAsset].
+  const AccountAssetFromAssetFamily();
+
+  /// See also [accountAssetFromAsset].
+  AccountAssetFromAssetProvider call(
+    Asset? asset,
+  ) {
+    return AccountAssetFromAssetProvider(
+      asset,
+    );
+  }
+
+  @override
+  AccountAssetFromAssetProvider getProviderOverride(
+    covariant AccountAssetFromAssetProvider provider,
+  ) {
+    return call(
+      provider.asset,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'accountAssetFromAssetProvider';
+}
+
+/// See also [accountAssetFromAsset].
+class AccountAssetFromAssetProvider extends AutoDisposeProvider<AccountAsset> {
+  /// See also [accountAssetFromAsset].
+  AccountAssetFromAssetProvider(
+    Asset? asset,
+  ) : this._internal(
+          (ref) => accountAssetFromAsset(
+            ref as AccountAssetFromAssetRef,
+            asset,
+          ),
+          from: accountAssetFromAssetProvider,
+          name: r'accountAssetFromAssetProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$accountAssetFromAssetHash,
+          dependencies: AccountAssetFromAssetFamily._dependencies,
+          allTransitiveDependencies:
+              AccountAssetFromAssetFamily._allTransitiveDependencies,
+          asset: asset,
+        );
+
+  AccountAssetFromAssetProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.asset,
+  }) : super.internal();
+
+  final Asset? asset;
+
+  @override
+  Override overrideWith(
+    AccountAsset Function(AccountAssetFromAssetRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: AccountAssetFromAssetProvider._internal(
+        (ref) => create(ref as AccountAssetFromAssetRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        asset: asset,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<AccountAsset> createElement() {
+    return _AccountAssetFromAssetProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is AccountAssetFromAssetProvider && other.asset == asset;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, asset.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin AccountAssetFromAssetRef on AutoDisposeProviderRef<AccountAsset> {
+  /// The parameter `asset` of this provider.
+  Asset? get asset;
+}
+
+class _AccountAssetFromAssetProviderElement
+    extends AutoDisposeProviderElement<AccountAsset>
+    with AccountAssetFromAssetRef {
+  _AccountAssetFromAssetProviderElement(super.provider);
+
+  @override
+  Asset? get asset => (origin as AccountAssetFromAssetProvider).asset;
 }
 
 String _$defaultAccountsStateHash() =>

@@ -77,10 +77,10 @@ class SelectEnv extends HookConsumerWidget {
                               .setEnv(selectedEnv);
                           // and also reset network settings model
                           ref
-                              .read(networkSettingsProvider.notifier)
+                              .read(networkSettingsNotifierProvider.notifier)
                               .setModel(const NetworkSettingsModelEmpty());
                           await ref
-                              .read(networkSettingsProvider.notifier)
+                              .read(networkSettingsNotifierProvider.notifier)
                               .save();
 
                           exit(0);

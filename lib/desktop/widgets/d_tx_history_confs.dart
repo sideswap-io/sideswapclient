@@ -5,9 +5,11 @@ class DTxHistoryConfs extends StatelessWidget {
   const DTxHistoryConfs({
     super.key,
     required this.tx,
+    this.textStyle,
   });
 
   final TransItem tx;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +18,14 @@ class DTxHistoryConfs extends StatelessWidget {
     final confirmed = count == total;
     return Align(
       alignment: Alignment.centerLeft,
-      child: Text('$count/$total',
-          style: TextStyle(
-            color:
-                confirmed ? const Color(0xFF87C0E0) : const Color(0xFFFFFFFF),
-          )),
+      child: Text(
+        '$count/$total',
+        style: textStyle ??
+            TextStyle(
+              color:
+                  confirmed ? const Color(0xFF87C0E0) : const Color(0xFFFFFFFF),
+            ),
+      ),
     );
   }
 }

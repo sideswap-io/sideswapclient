@@ -8,23 +8,27 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/main/widgets/d_option_generate_widget.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/generate_address_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
-import 'package:sideswap/providers/wallet.dart';
 
 class DGenerateAddressPopup extends HookConsumerWidget {
   const DGenerateAddressPopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final receiveAddress = ref.watch(currentReceiveAddressProvider);
+    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
 
     useEffect(() {
-      ref.read(walletProvider).toggleRecvAddrType(AccountType.reg);
+      Future.microtask(() {
+        ref.invalidate(currentReceiveAddressProvider);
+        ref.invalidate(selectedAccountTypeNotifierProvider);
+      });
+
       return;
     }, const []);
 
     return DContentDialog(
-      constraints: const BoxConstraints(maxWidth: 580, maxHeight: 473),
+      constraints: const BoxConstraints(maxWidth: 580, maxHeight: 505),
       title: DContentDialogTitle(
         content: Text('Generate address'.tr()),
         onClose: () {
@@ -47,7 +51,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
           Container(
             padding: const EdgeInsets.all(2),
             width: 500,
-            height: 231,
+            height: 270,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: SideSwapColors.tarawera,
@@ -56,29 +60,28 @@ class DGenerateAddressPopup extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DOptionGenerateWidget(
-                  isSelected: receiveAddress.accountType.isRegular,
+                  isSelected: selectedAccountType.isRegular,
                   assetIcon: 'assets/regular_wallet.svg',
                   title: 'Regular wallet'.tr(),
                   subTitle: 'Single-signature wallet'.tr(),
                   message:
-                      'Your default wallet which contains asset are secured by a single key under your control'
+                      'Your default wallet which contains asset are secured by a single key under your control.'
                           .tr(),
                   onPressed: () {
-                    if (receiveAddress.accountType.isRegular &&
-                        receiveAddress.recvAddress.isNotEmpty) {
+                    if (selectedAccountType.isRegular) {
                       Navigator.pop(context);
                       ref.read(desktopDialogProvider).showRecvAddress();
                       return;
                     }
 
                     ref
-                        .read(walletProvider)
-                        .toggleRecvAddrType(AccountType.reg);
+                        .read(selectedAccountTypeNotifierProvider.notifier)
+                        .setAccountType(AccountType.reg);
                   },
                 ),
                 const SizedBox(width: 2),
                 DOptionGenerateWidget(
-                  isSelected: receiveAddress.accountType.isAmp,
+                  isSelected: selectedAccountType.isAmp,
                   assetIcon: 'assets/amp_wallet.svg',
                   title: 'AMP Securities wallet'.tr(),
                   subTitle: '2-of-2 multi-signature wallet'.tr(),
@@ -86,16 +89,15 @@ class DGenerateAddressPopup extends HookConsumerWidget {
                       'Your securities wallet which may hold Transfer Restricted assets, such as BMN or SSWP, which require the issuer to co-sign and approve transactions.'
                           .tr(),
                   onPressed: () {
-                    if (receiveAddress.accountType.isAmp &&
-                        receiveAddress.recvAddress.isNotEmpty) {
+                    if (selectedAccountType.isAmp) {
                       Navigator.pop(context);
                       ref.read(desktopDialogProvider).showRecvAddress();
                       return;
                     }
 
                     ref
-                        .read(walletProvider)
-                        .toggleRecvAddrType(AccountType.amp);
+                        .read(selectedAccountTypeNotifierProvider.notifier)
+                        .setAccountType(AccountType.amp);
                   },
                 ),
               ],

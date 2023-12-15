@@ -40,7 +40,7 @@ final sendPopupShowInsufficientFundsProvider =
 
 typedef SendPopupShowInsufficientFundsRef = AutoDisposeProviderRef<bool>;
 String _$sendPopupIsAddressValidHash() =>
-    r'8e2bccad4f071aa78d46f82a677f31356afaa379';
+    r'0c51d1635cbb30963ce3b3856d59388cb410047b';
 
 /// See also [sendPopupIsAddressValid].
 @ProviderFor(sendPopupIsAddressValid)
@@ -71,6 +71,24 @@ final sendPopupDollarConversionProvider = AutoDisposeProvider<String?>.internal(
 );
 
 typedef SendPopupDollarConversionRef = AutoDisposeProviderRef<String?>;
+String _$sendPopupParseAddressHash() =>
+    r'0734a29214e9484aa7737f1b9c4c9b945f14a731';
+
+/// See also [sendPopupParseAddress].
+@ProviderFor(sendPopupParseAddress)
+final sendPopupParseAddressProvider =
+    AutoDisposeProvider<Either<Exception, SendPopupAddressResult>>.internal(
+  sendPopupParseAddress,
+  name: r'sendPopupParseAddressProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sendPopupParseAddressHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef SendPopupParseAddressRef
+    = AutoDisposeProviderRef<Either<Exception, SendPopupAddressResult>>;
 String _$sendPopupAmountNotifierHash() =>
     r'b0fd24fda70410caa76142f354bb72f090e4833b';
 
@@ -106,7 +124,7 @@ final sendPopupAddressNotifierProvider =
 
 typedef _$SendPopupAddressNotifier = AutoDisposeNotifier<String>;
 String _$sendPopupSelectedAccountAssetNotifierHash() =>
-    r'1997fcdbf16ff8a0063c64ab9ef0dfd74a8fff26';
+    r'e12490eee3be88c9b9da172dff960ee936251dea';
 
 /// See also [SendPopupSelectedAccountAssetNotifier].
 @ProviderFor(SendPopupSelectedAccountAssetNotifier)

@@ -27,7 +27,7 @@ class DAmpRegister extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stokrItems = ref.watch(stokrSecuritiesProvider);
     final pegxItems = ref.watch(pegxSecuritiesProvider);
-    final ampId = ref.watch(ampIdProvider);
+    final ampId = ref.watch(ampIdNotifierProvider);
     final textTheme =
         ref.watch(desktopAppThemeProvider.select((value) => value.textTheme));
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);

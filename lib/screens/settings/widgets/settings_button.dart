@@ -10,6 +10,8 @@ enum SettingsButtonType {
   userDetails,
   network,
   language,
+  logs,
+  export,
 }
 
 class SettingsButton extends StatefulWidget {
@@ -31,63 +33,59 @@ class SettingsButton extends StatefulWidget {
 }
 
 class SettingsButtonState extends State<SettingsButton> {
-  late Widget _icon;
+  late Widget icon;
 
   @override
   void initState() {
     super.initState();
 
-    switch (widget.type) {
-      case SettingsButtonType.recovery:
-        _icon = SvgPicture.asset(
+    icon = switch (widget.type) {
+      SettingsButtonType.recovery => SvgPicture.asset(
           'assets/recovery.svg',
           width: 24,
           height: 24,
-        );
-        break;
-      case SettingsButtonType.shield:
-        _icon = SvgPicture.asset(
+        ),
+      SettingsButtonType.shield => SvgPicture.asset(
           'assets/shield.svg',
           width: 24,
           height: 24,
-        );
-        break;
-      case SettingsButtonType.about:
-        _icon = SvgPicture.asset(
+        ),
+      SettingsButtonType.about => SvgPicture.asset(
           'assets/about.svg',
           width: 24,
           height: 24,
-        );
-        break;
-      case SettingsButtonType.delete:
-        _icon = SvgPicture.asset(
+        ),
+      SettingsButtonType.delete => SvgPicture.asset(
           'assets/delete.svg',
           width: 24,
           height: 24,
-        );
-        break;
-      case SettingsButtonType.userDetails:
-        _icon = SvgPicture.asset(
+        ),
+      SettingsButtonType.userDetails => SvgPicture.asset(
           'assets/user_details.svg',
           width: 24,
           height: 24,
-        );
-        break;
-      case SettingsButtonType.network:
-        _icon = SvgPicture.asset(
+        ),
+      SettingsButtonType.network => SvgPicture.asset(
           'assets/network.svg',
           width: 24,
           height: 24,
-        );
-        break;
-      case SettingsButtonType.language:
-        _icon = SvgPicture.asset(
+        ),
+      SettingsButtonType.language => SvgPicture.asset(
           'assets/language.svg',
           width: 24,
           height: 24,
-        );
-        break;
-    }
+        ),
+      SettingsButtonType.logs => SvgPicture.asset(
+          'assets/logs.svg',
+          width: 24,
+          height: 24,
+        ),
+      SettingsButtonType.export => SvgPicture.asset(
+          'assets/settings_export.svg',
+          width: 24,
+          height: 24,
+        ),
+    };
   }
 
   @override
@@ -119,7 +117,7 @@ class SettingsButtonState extends State<SettingsButton> {
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 17),
-              child: _icon,
+              child: icon,
             ),
             Padding(
               padding: const EdgeInsets.only(left: 12),

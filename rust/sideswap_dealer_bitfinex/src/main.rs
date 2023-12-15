@@ -556,12 +556,10 @@ fn main() {
     let mut movements: Option<proto::from::Movements> = None;
 
     let (msg_tx, msg_rx) = crossbeam_channel::unbounded::<Msg>();
-    let (ws_tx, ws_rx, _hint_tx) = ws::start(
+    let (ws_tx, ws_rx) = ws::auto::start(
         args.server_host.clone(),
         args.server_port,
         args.server_use_tls,
-        false,
-        None,
     );
     let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<Result<Response, Error>>();
 
@@ -611,16 +609,18 @@ fn main() {
     std::thread::spawn(move || {
         for msg in ws_rx {
             match msg {
-                ws::WrappedResponse::Connected => {
+                ws::auto::WrappedResponse::Connected => {
                     msg_tx_copy.send(Msg::Connected).unwrap();
                 }
-                ws::WrappedResponse::Disconnected => {
+                ws::auto::WrappedResponse::Disconnected => {
                     msg_tx_copy.send(Msg::Disconnected).unwrap();
                 }
-                ws::WrappedResponse::Response(ResponseMessage::Response(_, response)) => {
+                ws::auto::WrappedResponse::Response(ResponseMessage::Response(_, response)) => {
                     resp_tx.send(response).unwrap()
                 }
-                ws::WrappedResponse::Response(ResponseMessage::Notification(notification)) => {
+                ws::auto::WrappedResponse::Response(ResponseMessage::Notification(
+                    notification,
+                )) => {
                     msg_tx_copy.send(Msg::Notification(notification)).unwrap();
                 }
             }
@@ -630,7 +630,7 @@ fn main() {
     let send_request = |request: Request| -> Result<Response, Error> {
         let request_id = ws::next_request_id();
         ws_tx
-            .send(ws::WrappedRequest::Request(RequestMessage::Request(
+            .send(ws::auto::WrappedRequest::Request(RequestMessage::Request(
                 request_id, request,
             )))
             .unwrap();

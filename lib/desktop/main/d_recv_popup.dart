@@ -1,19 +1,29 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
+import 'package:sideswap/providers/generate_address_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
+import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/receive/widgets/asset_receive_widget.dart';
 
-class DReceivePopup extends ConsumerWidget {
+class DReceivePopup extends HookConsumerWidget {
   const DReceivePopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedAccountType = ref.watch(selectedAccountTypeNotifierProvider);
     final receiveAddress = ref.watch(currentReceiveAddressProvider);
-    final isAmp = receiveAddress.accountType.isAmp;
+
+    final isAmp = selectedAccountType.isAmp;
+
+    useEffect(() {
+      ref.read(walletProvider).toggleRecvAddrType(selectedAccountType);
+
+      return;
+    }, [selectedAccountType]);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -30,35 +40,52 @@ class DReceivePopup extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(
                     left: 40, right: 40, top: 40, bottom: 10),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Generate address'.tr(),
-                      style: Theme.of(context)
-                          .textTheme
-                          .displaySmall
-                          ?.copyWith(fontSize: 20),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      isAmp
-                          ? 'Address for AMP Securities wallet successfully generated'
-                              .tr()
-                          : "Address for regular wallet successfully generated"
-                              .tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Generate address'.tr(),
+                        style: Theme.of(context)
+                            .textTheme
+                            .displaySmall
+                            ?.copyWith(fontSize: 20),
                       ),
-                    ),
-                    Flexible(
-                      child: AssetReceiveWidget(
-                        key: Key(isAmp.toString()),
-                        showShare: false,
-                      ),
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      switch (receiveAddress.recvAddress.isEmpty) {
+                        true => const SizedBox(
+                            width: 32,
+                            height: 100,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        false => Flexible(
+                            child: Column(
+                              children: [
+                                Text(
+                                  isAmp
+                                      ? 'Address for AMP Securities wallet successfully generated'
+                                          .tr()
+                                      : "Address for regular wallet successfully generated"
+                                          .tr(),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                                AssetReceiveWidget(
+                                  key: Key(isAmp.toString()),
+                                  showShare: false,
+                                ),
+                              ],
+                            ),
+                          ),
+                      },
+                    ],
+                  ),
                 ),
               ),
               Align(
@@ -66,10 +93,10 @@ class DReceivePopup extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: DIconButton(
-                    icon: SvgPicture.asset(
-                      'assets/close2.svg',
-                      width: 18,
-                      height: 18,
+                    icon: const Icon(
+                      Icons.close,
+                      color: SideSwapColors.freshAir,
+                      size: 18,
                     ),
                     onPressed: () {
                       Navigator.pop(context);

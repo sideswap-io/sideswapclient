@@ -469,7 +469,7 @@
   "Address for regular wallet successfully generated": "عام والٹ کے لئے پتہ کامیابی سے تخلیق دیا گیا",
   "Address for AMP Securities wallet successfully generated": "AMP سکیورٹیز والٹ کے لئے پتہ کامیابی سے تخلیق دیا گیا",
   "Single-signature wallet": "ایک امضائی والٹ",
-  "Your default wallet which contains asset are secured by a single key under your control": "آپ کی پہلی والٹ جس میں اصول گنوار کراچکے ہیں، آپ کی کنٹرول میں ایک ہی کلید کی حفاظت میں ہیں",
+  "Your default wallet which contains asset are secured by a single key under your control.": "آپ کی پہلی والٹ جس میں اصول گنوار کراچکے ہیں، آپ کی کنٹرول میں ایک ہی کلید کی حفاظت میں ہیں",
   "Your securities wallet which may hold Transfer Restricted assets, such as BMN or SSWP, which require the issuer to co-sign and approve transactions.": "آپ کی سیکیورٹیز والٹ جو کہ منتقلی محدود اصولات مثلاً BMN یا SSWP کو رکھ سکتی ہے، جن کی منظوری کے لئے جاری کرنے والا کو-سائن اور منظوری کی ضرورت ہوتی ہے",
   "2-of-2 multi-signature wallet": "2-کا-2 ملٹی-امضائی والٹ",
   "AMP Securities wallet": "AMP سکیورٹیز والٹ",
@@ -480,5 +480,18 @@
   "Create swap output": "تبادلہ کاری کارروائی کا اخراج تخلیق کریں",
   "Sign offline swap transaction": "بغیر آن لائن تبادلہ کاری کارروائی کی امضا دیں",
   "No pending orders": "No pending orders",
-  "APPLY": "APPLY"
+  "APPLY": "APPLY",
+  "IMPORT FILE": "IMPORT FILE",
+  "Import transaction or private swap proposal": "Import transaction or private swap proposal",
+  "Paste transaction hash": "Paste transaction hash",
+  "BROADCAST": "BROADCAST",
+  "EXPORT FILE": "EXPORT FILE",
+  "Inf": "Inf",
+  "EXPORT TX": "EXPORT TX",
+  "Total Value": "Total Value",
+  "No unconfirmed transactions": "No unconfirmed transactions",
+  "Logs": "Logs",
+  "Export": "Export",
+  "Export log": "Export log",
+  "Export previous log": "Export previous log"
 }

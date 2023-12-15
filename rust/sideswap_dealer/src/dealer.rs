@@ -2,9 +2,8 @@ use super::rpc;
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 use sideswap_api::*;
-use sideswap_common::types;
 use sideswap_common::types::{Amount, TxOut};
-use sideswap_common::ws;
+use sideswap_common::{types, ws};
 use std::collections::{BTreeMap, BTreeSet};
 use std::str::FromStr;
 
@@ -603,12 +602,10 @@ fn worker(
     let asset_usdt = AssetId::from_str(params.env.data().network.usdt_asset_id()).unwrap();
     let asset_eurx = AssetId::from_str(params.env.data().network.eurx_asset_id()).unwrap();
 
-    let (ws_tx, ws_rx, _hint_tx) = ws::start(
+    let (ws_tx, ws_rx) = sideswap_common::ws::auto::start(
         params.server_host.clone(),
         params.server_port,
         params.server_use_tls,
-        false,
-        None,
     );
 
     let (msg_tx, msg_rx) = crossbeam_channel::unbounded::<Msg>();
@@ -626,16 +623,16 @@ fn worker(
     std::thread::spawn(move || {
         for msg in ws_rx {
             match msg {
-                ws::WrappedResponse::Connected => {
+                ws::auto::WrappedResponse::Connected => {
                     msg_tx_copy.send(Msg::Connected).unwrap();
                 }
-                ws::WrappedResponse::Disconnected => {
+                ws::auto::WrappedResponse::Disconnected => {
                     msg_tx_copy.send(Msg::Disconnected).unwrap();
                 }
-                ws::WrappedResponse::Response(ResponseMessage::Response(_, response)) => {
+                ws::auto::WrappedResponse::Response(ResponseMessage::Response(_, response)) => {
                     resp_tx.send(response).unwrap()
                 }
-                ws::WrappedResponse::Response(ResponseMessage::Notification(msg)) => {
+                ws::auto::WrappedResponse::Response(ResponseMessage::Notification(msg)) => {
                     msg_tx_copy.send(Msg::Notification(msg)).unwrap();
                 }
             }
@@ -651,7 +648,7 @@ fn worker(
     let send_request = |request: Request| -> Result<Response, Error> {
         let request_id = sideswap_common::ws::next_request_id();
         ws_tx
-            .send(ws::WrappedRequest::Request(RequestMessage::Request(
+            .send(ws::auto::WrappedRequest::Request(RequestMessage::Request(
                 request_id, request,
             )))
             .unwrap();

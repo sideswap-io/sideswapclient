@@ -21,6 +21,7 @@ static INIT_LOGGER_FLAG: Once = Once::new();
 pub struct StartParams {
     pub work_dir: String,
     pub version: String,
+    pub disable_device_key: Option<bool>,
 }
 
 pub struct Client {
@@ -50,20 +51,8 @@ fn convert_from_msg(msg: FromMsg) -> u64 {
     let mut buf = Vec::new();
     from.encode(&mut buf).expect("encoding message failed");
     let msg = std::boxed::Box::new(RecvMessage(buf));
-    
-    Box::into_raw(msg) as IntPtr
-}
 
-pub fn get_env_from_ffi(env: Env) -> i32 {
-    match env {
-        Env::Prod => SIDESWAP_ENV_PROD,
-        Env::Staging => SIDESWAP_ENV_STAGING,
-        Env::Testnet => SIDESWAP_ENV_TESTNET,
-        Env::Regtest => SIDESWAP_ENV_REGTEST,
-        Env::Local => SIDESWAP_ENV_LOCAL,
-        Env::LocalLiquid => SIDESWAP_ENV_LOCAL_LIQUID,
-        Env::LocalTestnet => SIDESWAP_ENV_LOCAL_TESTNET,
-    }
+    Box::into_raw(msg) as IntPtr
 }
 
 pub fn get_ffi_from_env(env: i32) -> Option<Env> {
@@ -104,13 +93,23 @@ pub extern "C" fn sideswap_client_start(
     dart_port: i64,
 ) -> IntPtr {
     let env = get_ffi_from_env(env).expect("unknown env");
-
-    let enable_dart = dart_port != SIDESWAP_DART_PORT_DISABLED;
-
     let work_dir = get_string(work_dir);
     let version = get_string(version);
+
+    let start_params = StartParams {
+        work_dir: work_dir.to_owned(),
+        version: version.to_owned(),
+        disable_device_key: None,
+    };
+
+    sideswap_client_start_impl(env, start_params, dart_port)
+}
+
+pub fn sideswap_client_start_impl(env: Env, start_params: StartParams, dart_port: i64) -> IntPtr {
+    let enable_dart = dart_port != SIDESWAP_DART_PORT_DISABLED;
+
     INIT_LOGGER_FLAG.call_once(|| {
-        init_log(&work_dir);
+        init_log(&start_params.work_dir);
     });
 
     std::panic::set_hook(Box::new(|i| {
@@ -124,8 +123,6 @@ pub extern "C" fn sideswap_client_start(
         std::env::consts::OS,
         std::env::consts::ARCH,
     );
-
-    let start_params = StartParams { work_dir, version };
 
     let (msg_sender, msg_receiver) = crossbeam_channel::unbounded::<worker::Message>();
     let (from_sender, from_receiver) = crossbeam_channel::unbounded::<FromMsg>();
@@ -336,13 +333,21 @@ pub fn log_format(
 
 fn init_log(work_dir: &str) {
     let path = format!("{}/{}", work_dir, "sideswap.log");
-    let path_old = format!("{}/{}", work_dir, "sideswap_prev.log");
-    let _ = std::fs::rename(&path, path_old);
+
+    let file_size = std::fs::metadata(&path)
+        .map(|metadata| metadata.len())
+        .unwrap_or_default();
+    if file_size > 50 * 1024 * 1024 {
+        let path_old = format!("{}/{}", work_dir, "sideswap_prev.log");
+        let _ = std::fs::rename(&path, path_old);
+    }
+
     let _ = flexi_logger::Logger::try_with_str(LOG_FILTER)
         .unwrap()
         .format(log_format)
         .use_utc()
         .log_to_file(flexi_logger::FileSpec::try_from(path).unwrap())
+        .append()
         .duplicate_to_stderr(flexi_logger::Duplicate::Error)
         .start();
 }

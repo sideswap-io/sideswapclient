@@ -474,4 +474,22 @@ class SideSwapColors {
     },
   );
   static const int _airSuperiorityBlue = 0xFF709EB9;
+
+  // #2E759C
+  static const MaterialColor lapisLazuli = MaterialColor(
+    _lapisLazuli,
+    <int, Color>{
+      50: Color.fromRGBO(46, 117, 156, .1),
+      100: Color.fromRGBO(46, 117, 156, .2),
+      200: Color.fromRGBO(46, 117, 156, .3),
+      300: Color.fromRGBO(46, 117, 156, .4),
+      400: Color.fromRGBO(46, 117, 156, .5),
+      500: Color.fromRGBO(46, 117, 156, .6),
+      600: Color.fromRGBO(46, 117, 156, .7),
+      700: Color.fromRGBO(46, 117, 156, .8),
+      800: Color.fromRGBO(46, 117, 156, .9),
+      900: Color.fromRGBO(46, 117, 156, 1),
+    },
+  );
+  static const int _lapisLazuli = 0xFF2E759C;
 }

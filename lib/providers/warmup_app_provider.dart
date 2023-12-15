@@ -42,7 +42,7 @@ class WarmupApp extends _$WarmupApp {
       Error.throwWithStackTrace(e.errors.$1, st);
     }
 
-    await ref.read(networkSettingsProvider.notifier).applySettings();
+    await ref.read(networkSettingsNotifierProvider.notifier).applySettings();
 
     state = const AsyncValue.data(WarmupAppState.initialized());
   }

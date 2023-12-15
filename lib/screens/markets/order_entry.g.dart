@@ -38,7 +38,7 @@ final selectedMarketTypeProvider = AutoDisposeProvider<MarketType>.internal(
 );
 
 typedef SelectedMarketTypeRef = AutoDisposeProviderRef<MarketType>;
-String _$isSellSideHash() => r'dfe1dd0d7a6e5353a0b16676276af35ffe75a12e';
+String _$isSellSideHash() => r'6a4541743f4c1971228ca3a71485aaa7a9fca308';
 
 /// See also [isSellSide].
 @ProviderFor(isSellSide)
