@@ -113,7 +113,7 @@ class _$StokrGaidStateEmptyImpl implements StokrGaidStateEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$StokrGaidStateEmptyImpl);
@@ -229,7 +229,7 @@ class _$StokrGaidStateLoadingImpl implements StokrGaidStateLoading {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$StokrGaidStateLoadingImpl);
@@ -346,7 +346,7 @@ class _$StokrGaidStateRegisteredImpl implements StokrGaidStateRegistered {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$StokrGaidStateRegisteredImpl);
@@ -463,7 +463,7 @@ class _$StokrGaidStateUnregisteredImpl implements StokrGaidStateUnregistered {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$StokrGaidStateUnregisteredImpl);

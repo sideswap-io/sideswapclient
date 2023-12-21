@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -29,7 +30,7 @@ class MarketTypeButtonsState extends State<MarketTypeButtons> {
   final colorToggleBackground = const Color(0xFF043857);
   final colorToggleOn = const Color(0xFF1F7EB1);
   final colorToggleTextOn = const Color(0xFFFFFFFF);
-  final colorToggleTextOff = const Color(0xFF709EBA);
+  final colorToggleTextOff = SideSwapColors.airSuperiorityBlue;
 
   @override
   Widget build(BuildContext context) {

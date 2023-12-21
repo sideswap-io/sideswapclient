@@ -2,11 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
-import 'package:sideswap/desktop/d_home.dart';
 
-import 'package:sideswap/desktop/home/d_home_new.dart';
 import 'package:sideswap/desktop/d_main_bottom_navigation_bar.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
+import 'package:sideswap/desktop/home/d_home_new.dart';
 import 'package:sideswap/desktop/markets/d_markets_root.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
@@ -31,7 +30,7 @@ class WalletMainState extends ConsumerState<DesktopWalletMain> {
   Widget getChild(WalletMainArguments walletMainArguments) {
     switch (walletMainArguments.navigationItemEnum) {
       case WalletMainNavigationItemEnum.home:
-        return const DesktopHome();
+        return const DesktopHomeNew();
       case WalletMainNavigationItemEnum.accounts:
         return const SizedBox();
       case WalletMainNavigationItemEnum.assetSelect:

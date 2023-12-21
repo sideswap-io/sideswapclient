@@ -16,7 +16,6 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
-import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/endpoint_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
@@ -114,18 +113,25 @@ class DSendPopupCreate extends HookConsumerWidget {
 
     final parsedAddress = ref.watch(sendPopupParseAddressProvider);
 
-    parsedAddress.match((l) {
-      logger.d('Invalid address');
-    }, (r) {
-      amountController.text = r.amount.toString();
-      final asset = ref.watch(assetsStateProvider)[r.assetId];
-      Future.microtask(() {
-        ref.read(sendAssetNotifierProvider.notifier).setSendAsset(AccountAsset(
-            asset?.ampMarket ?? false ? AccountType.amp : AccountType.reg,
-            r.assetId));
+    useEffect(() {
+      parsedAddress.match((l) {
+        logger.d('Invalid address');
+      }, (r) {
+        if (r.amount > 0) {
+          amountController.text = r.amount.toString();
+        }
+        final asset = ref.watch(assetsStateProvider)[r.assetId];
+        Future.microtask(() {
+          ref.read(sendAssetNotifierProvider.notifier).setSendAsset(
+              AccountAsset(
+                  asset?.ampMarket ?? false ? AccountType.amp : AccountType.reg,
+                  r.assetId));
+        });
+        address.value = r.address;
       });
-      address.value = r.address;
-    });
+
+      return;
+    }, [parsedAddress]);
 
     return DPopupWithClose(
       width: 580,
@@ -321,6 +327,7 @@ class DSendPopupReview extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      // TODO (malcolmpl): enable this when export will be ready
                       // DCustomButton(
                       //   width: 160,
                       //   height: 44,

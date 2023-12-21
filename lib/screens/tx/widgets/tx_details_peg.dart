@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
@@ -139,7 +140,7 @@ class TxDetailsPegState extends ConsumerState<TxDetailsPeg> {
             description: 'Status'.tr(),
             details: _status,
             detailsColor: widget.transItem.confs.count != 0
-                ? const Color(0xFF709EBA)
+                ? SideSwapColors.airSuperiorityBlue
                 : Colors.white,
           ),
         ),

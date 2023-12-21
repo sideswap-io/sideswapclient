@@ -112,7 +112,7 @@ class _$SwapPriceSubscribeStateEmptyImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapPriceSubscribeStateEmptyImpl);
@@ -225,7 +225,7 @@ class _$SwapPriceSubscribeStateSendImpl implements SwapPriceSubscribeStateSend {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapPriceSubscribeStateSendImpl);
@@ -338,7 +338,7 @@ class _$SwapPriceSubscribeStateRecvImpl implements SwapPriceSubscribeStateRecv {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapPriceSubscribeStateRecvImpl);
@@ -511,7 +511,7 @@ class _$SwapCurrentFeeRateEmptyImpl implements SwapCurrentFeeRateEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapCurrentFeeRateEmptyImpl);
@@ -634,7 +634,7 @@ class _$SwapCurrentFeeRateDataImpl implements SwapCurrentFeeRateData {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapCurrentFeeRateDataImpl &&
@@ -816,7 +816,7 @@ class _$SwapRecvAmountPriceStreamEmptyImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapRecvAmountPriceStreamEmptyImpl);
@@ -943,7 +943,7 @@ class _$SwapRecvAmountPriceStreamDataImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapRecvAmountPriceStreamDataImpl &&
@@ -1128,7 +1128,7 @@ class _$SwapSendAmountPriceStreamEmptyImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapSendAmountPriceStreamEmptyImpl);
@@ -1255,7 +1255,7 @@ class _$SwapSendAmountPriceStreamDataImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SwapSendAmountPriceStreamDataImpl &&

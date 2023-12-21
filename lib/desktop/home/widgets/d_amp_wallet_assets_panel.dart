@@ -21,10 +21,10 @@ class DAmpWalletAssetsPanel extends StatelessWidget {
               final ampAccountAssets =
                   ref.watch(ampVisibleAccountAssetsProvider);
               final dollarConversion = ref.watch(
-                  accountAssetsUsdBalanceStringProvider(ampAccountAssets));
+                  accountAssetsTotalUsdBalanceStringProvider(ampAccountAssets));
 
-              final lbtcConversion =
-                  ref.watch(accountAssetsLbtcBalanceProvider(ampAccountAssets));
+              final lbtcConversion = ref.watch(
+                  accountAssetsTotalLbtcBalanceProvider(ampAccountAssets));
 
               return DAssetsPanelHeader(
                 title: 'AMP Securities wallet'.tr(),

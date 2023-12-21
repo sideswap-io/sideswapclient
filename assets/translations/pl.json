@@ -145,7 +145,7 @@
   "Import failed": "Import nie powiódł się",
   "IMPORT WALLET": "IMPORTUJ PORTFEL",
   "Import": "Importuj",
-  "Index price": "Cena indeksu",
+  "Index price": "Cena ind.",
   "Index price:": "Cena indeksu:",
   "Initiated": "Zainicjalizowane",
   "Insufficient funds": "Niewystarczające środki",
@@ -437,7 +437,7 @@
   "Swap Markets": "Rynki wymiany",
   "Instant Swap": "Wymiana",
   "Environment": "Środowisko",
-  "Order book": "Książka zamówień",
+  "Order book": "Zamówienia",
   "SELL": "Sprzedaż",
   "Awaiting swap broadcast": "Oczekiwanie na wymianę",
   "Offline": "Offline",
@@ -534,5 +534,6 @@
   "Logs": "Logi",
   "Export": "Eksportuj",
   "Export log": "Eksportuj plik log",
-  "Export previous log": "Eksportuj poprzedni plik log"
+  "Export previous log": "Eksportuj poprzedni plik log",
+  "All orders": "Wszystkie"
 }

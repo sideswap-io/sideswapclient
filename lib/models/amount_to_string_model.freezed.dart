@@ -136,7 +136,7 @@ class _$AmountToStringParametersImpl implements _AmountToStringParameters {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AmountToStringParametersImpl &&
@@ -317,7 +317,7 @@ class _$AmountToStringNamedParametersImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AmountToStringNamedParametersImpl &&

@@ -249,7 +249,7 @@ class _$NetworkSettingsModelEmptyImpl implements NetworkSettingsModelEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$NetworkSettingsModelEmptyImpl &&
@@ -478,7 +478,7 @@ class _$NetworkSettingsModelApplyImpl implements NetworkSettingsModelApply {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$NetworkSettingsModelApplyImpl &&

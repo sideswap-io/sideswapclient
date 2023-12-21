@@ -6,17 +6,21 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
-class DNeedRestartPopupDialog extends StatelessWidget {
+class DNeedRestartPopupDialog extends ConsumerWidget {
   const DNeedRestartPopupDialog({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return DContentDialog(
       constraints: const BoxConstraints(maxWidth: 580, maxHeight: 360),
       title: DContentDialogTitle(
         onClose: () {
           Navigator.of(context).pop();
+          ref
+              .read(pageStatusStateProvider.notifier)
+              .setStatus(Status.registered);
         },
         content: SvgPicture.asset(
           'assets/restart.svg',
@@ -51,6 +55,9 @@ class DNeedRestartPopupDialog extends StatelessWidget {
                   await ref
                       .read(networkSettingsNotifierProvider.notifier)
                       .save();
+                  ref
+                      .read(pageStatusStateProvider.notifier)
+                      .setStatus(Status.registered);
                 },
                 child: Text('OK'.tr()),
               );

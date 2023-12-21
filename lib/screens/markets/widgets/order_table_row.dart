@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
@@ -160,7 +161,7 @@ class OrderTableRowState extends State<OrderTableRow> {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
-                      color: Color(0xFF709EBA),
+                      color: SideSwapColors.airSuperiorityBlue,
                     ),
                   ),
                 ),

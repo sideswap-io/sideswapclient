@@ -2,7 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/desktop/markets/widgets/chart_button.dart';
+import 'package:sideswap/desktop/markets/widgets/d_chart_button.dart';
+import 'package:sideswap/desktop/markets/widgets/d_orders_sort_button.dart';
 import 'package:sideswap/desktop/markets/widgets/index_price.dart';
 import 'package:sideswap/desktop/markets/widgets/orders_list.dart';
 import 'package:sideswap/desktop/markets/widgets/orders_title.dart';
@@ -23,9 +24,9 @@ class OrdersPanel extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              color: SideSwapColors.chathamsBlue,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              border: Border.all(color: SideSwapColors.blumine),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12),
             height: 56,
@@ -42,9 +43,22 @@ class OrdersPanel extends StatelessWidget {
                 const IndexPrice(),
                 const Spacer(),
                 SizedBox(
-                  height: 40,
-                  child: ChartButton(
-                    onPressed: onChartsPressed,
+                  width: 240,
+                  child: Row(
+                    children: [
+                      const Spacer(),
+                      const SizedBox(
+                        height: 32,
+                        child: DOrdersSortButton(),
+                      ),
+                      const SizedBox(width: 7),
+                      SizedBox(
+                        height: 32,
+                        child: DChartButton(
+                          onPressed: onChartsPressed,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

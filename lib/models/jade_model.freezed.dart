@@ -117,7 +117,7 @@ class _$JadeOnboardingRegistrationStateIdleImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeOnboardingRegistrationStateIdleImpl);
@@ -235,7 +235,7 @@ class _$JadeOnboardingRegistrationStateProcessingImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeOnboardingRegistrationStateProcessingImpl);
@@ -353,7 +353,7 @@ class _$JadeOnboardingRegistrationStateDoneImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeOnboardingRegistrationStateDoneImpl);
@@ -564,7 +564,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType && other is _$JadeStatusIdleImpl);
   }
@@ -704,7 +704,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeStatusReadStatusImpl);
@@ -845,7 +845,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType && other is _$JadeStatusAuthUserImpl);
   }
@@ -985,7 +985,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType && other is _$JadeStatusSignTxImpl);
   }
@@ -1127,7 +1127,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeStatusMasterBlindingKeyImpl);
@@ -1271,7 +1271,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeStatusSignOfflineSwapImpl);
@@ -1412,7 +1412,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType && other is _$JadeStatusSignSwapImpl);
   }
@@ -1554,7 +1554,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeStatusSignSwapOutputImpl);
@@ -1758,7 +1758,7 @@ class _$JadeDevicesStateUnavailableImpl implements JadeDevicesStateUnavailable {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeDevicesStateUnavailableImpl);
@@ -1890,7 +1890,7 @@ class _$JadeDevicesStateAvailableImpl implements JadeDevicesStateAvailable {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadeDevicesStateAvailableImpl &&
@@ -2071,7 +2071,7 @@ class _$JadePortImpl extends _JadePort {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$JadePortImpl &&

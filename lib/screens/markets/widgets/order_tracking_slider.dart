@@ -85,7 +85,7 @@ class OrderTrackingSlider extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,
-                      color: Color(0xFF709EBA),
+                      color: SideSwapColors.airSuperiorityBlue,
                     ),
                   ),
                 ],

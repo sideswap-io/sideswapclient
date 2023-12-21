@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class OrdersHeader extends StatelessWidget {
-  const OrdersHeader({
+class DWorkingOrdersHeader extends StatelessWidget {
+  const DWorkingOrdersHeader({
     super.key,
     required this.text,
   });

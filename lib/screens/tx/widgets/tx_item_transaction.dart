@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
@@ -104,7 +105,7 @@ class TxItemTransaction extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF709EBA),
+                                color: SideSwapColors.airSuperiorityBlue,
                               ),
                             ),
                             Spacer(),
@@ -114,7 +115,7 @@ class TxItemTransaction extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF709EBA),
+                                color: SideSwapColors.airSuperiorityBlue,
                               ),
                             ),
                           ],

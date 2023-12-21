@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
@@ -15,7 +16,7 @@ class TopRecvButtons extends StatelessWidget {
   final _colorToggleBackground = const Color(0xFF043857);
   final _colorToggleOn = const Color(0xFF1F7EB1);
   final _colorToggleTextOn = const Color(0xFFFFFFFF);
-  final _colorToggleTextOff = const Color(0xFF709EBA);
+  final _colorToggleTextOff = SideSwapColors.airSuperiorityBlue;
   final VoidCallback onRegularPressed;
   final VoidCallback onAmpPressed;
 

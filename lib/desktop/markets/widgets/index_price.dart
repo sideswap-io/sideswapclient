@@ -35,82 +35,74 @@ class IndexPrice extends ConsumerWidget {
     final buttonStyle =
         ref.watch(desktopAppThemeProvider).buttonThemeData.defaultButtonStyle;
 
-    return Visibility(
-      visible: indexPrice != 0 || lastPrice != 0,
-      child: Row(
-        children: [
-          Container(
-            width: 1,
-            color: const Color(0xFF28749E),
-          ),
-          DButton(
-            cursor: SystemMouseCursors.click,
-            style: buttonStyle?.merge(
-              DButtonStyle(
-                padding: ButtonState.all(EdgeInsets.zero),
-                border: ButtonState.all(BorderSide.none),
-                shape: ButtonState.all(
-                  const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(4),
+    return switch (indexPrice != 0 || lastPrice != 0) {
+      true => Row(
+          children: [
+            DButton(
+              cursor: SystemMouseCursors.click,
+              style: buttonStyle?.merge(
+                DButtonStyle(
+                  padding: ButtonState.all(EdgeInsets.zero),
+                  border: ButtonState.all(BorderSide.none),
+                  shape: ButtonState.all(
+                    const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(4),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            child: SizedBox(
-              height: 30,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Center(
-                  child: Row(
-                    children: [
-                      Text(
-                        indexPrice != 0
-                            ? 'Index price:'.tr()
-                            : 'Last price:'.tr(),
-                        style: const TextStyle(
-                          color: Color(0xFF3983AD),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
+              child: SizedBox(
+                height: 32,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Center(
+                    child: Row(
+                      children: [
+                        Text(
+                          indexPrice != 0
+                              ? 'Index price:'.tr()
+                              : 'Last price:'.tr(),
+                          style: const TextStyle(
+                            color: Color(0xFF3983AD),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        indexPrice != 0 ? indexPriceStr : lastPriceStr,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w400,
+                        const SizedBox(width: 3),
+                        Text(
+                          indexPrice != 0 ? indexPriceStr : lastPriceStr,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 5),
-                      icon,
-                      const SizedBox(width: 3),
-                      Text(
-                        asset?.ticker ?? '',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w400,
+                        const SizedBox(width: 5),
+                        icon,
+                        const SizedBox(width: 3),
+                        Text(
+                          asset?.ticker ?? '',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
+              onPressed: () {
+                ref.read(indexPriceButtonProvider.notifier).setIndexPrice(
+                    indexPrice != 0 ? indexPriceStr : lastPriceStr);
+              },
             ),
-            onPressed: () {
-              ref.read(indexPriceButtonProvider.notifier).setIndexPrice(
-                  indexPrice != 0 ? indexPriceStr : lastPriceStr);
-            },
-          ),
-          Container(
-            width: 1,
-            color: const Color(0xFF28749E),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      false => const SizedBox(),
+    };
   }
 }

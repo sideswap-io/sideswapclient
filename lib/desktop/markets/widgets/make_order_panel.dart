@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
-import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/common/widgets/animated_dropdown_arrow.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/markets/d_enter_tracking_price.dart';
@@ -192,9 +191,6 @@ class MakeOrderPanel extends HookConsumerWidget {
     }, [selectedAccountAsset, pricePerUnit]);
 
     useEffect(() {
-      // TODO (malcolmpl): checking token type should be here or should be removed since token market is enabled?
-      logger.w(
-          'You are making market order for token - if you found a bug please remove this checking');
       final selectedAsset =
           ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
       if (assetMarketType(selectedAsset) == MarketType.token) {

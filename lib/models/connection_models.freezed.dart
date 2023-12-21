@@ -109,7 +109,7 @@ class _$ServerLoginStateLogoutImpl implements ServerLoginStateLogout {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ServerLoginStateLogoutImpl);
@@ -219,7 +219,7 @@ class _$ServerLoginStateLoginImpl implements ServerLoginStateLogin {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ServerLoginStateLoginImpl);
@@ -347,7 +347,7 @@ class _$ServerLoginStateErrorImpl implements ServerLoginStateError {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ServerLoginStateErrorImpl &&

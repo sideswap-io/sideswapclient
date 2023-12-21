@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
-import 'package:sideswap/desktop/markets/widgets/orders_row.dart';
-import 'package:sideswap/desktop/markets/widgets/working_order_amount.dart';
-import 'package:sideswap/desktop/markets/widgets/working_order_button.dart';
+import 'package:sideswap/desktop/markets/widgets/d_working_orders_row.dart';
+import 'package:sideswap/desktop/markets/widgets/d_working_order_amount.dart';
+import 'package:sideswap/desktop/markets/widgets/d_working_order_button.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
@@ -17,8 +16,8 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/common/utils/duration_extension.dart';
 
-class WorkingOrder extends ConsumerWidget {
-  const WorkingOrder({
+class DWorkingOrderItem extends ConsumerWidget {
+  const DWorkingOrderItem({
     super.key,
     required this.order,
   });
@@ -49,18 +48,18 @@ class WorkingOrder extends ConsumerWidget {
         .amountToString(AmountToStringParameters(amount: order.bitcoinAmount));
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-    return OrdersRow(
+    return DWorkingOrdersRow(
       children: [
         Text(productName),
-        WorkingOrderAmount(
+        DWorkingOrderAmount(
           assetId: priceInLiquid ? order.assetId : liquidAssetId,
           text: priceInLiquid ? assetAmountStr : bitcoinAmountStr,
         ),
-        WorkingOrderAmount(
+        DWorkingOrderAmount(
           assetId: priceInLiquid ? liquidAssetId : order.assetId,
           text: priceStr(order.price, priceInLiquid),
         ),
-        WorkingOrderAmount(
+        DWorkingOrderAmount(
           assetId: !priceInLiquid ? order.assetId : liquidAssetId,
           text: !priceInLiquid ? assetAmountStr : bitcoinAmountStr,
         ),
@@ -78,8 +77,6 @@ class WorkingOrder extends ConsumerWidget {
               'assets/clock.svg',
               width: 14,
               height: 14,
-              colorFilter: const ColorFilter.mode(
-                  SideSwapColors.brightTurquoise, BlendMode.srcIn),
             ),
             const SizedBox(width: 6),
             Consumer(builder: (context, ref, _) {
@@ -87,27 +84,23 @@ class WorkingOrder extends ConsumerWidget {
               return Text(order.getExpireDuration().toStringCustomShort());
             }),
             const Spacer(),
-            if (order.private)
-              Padding(
-                padding: const EdgeInsets.only(right: 4),
-                child: WorkingOrderButton(
-                  icon: 'assets/copy3.svg',
-                  onPressed: () {
-                    final shareUrl = ref
-                        .read(addressToShareByOrderIdProvider(order.orderId));
-                    copyToClipboard(context, shareUrl);
-                  },
-                ),
+            if (order.private) ...[
+              DWorkingOrderButton(
+                icon: 'assets/copy3.svg',
+                onPressed: () {
+                  final shareUrl =
+                      ref.read(addressToShareByOrderIdProvider(order.orderId));
+                  copyToClipboard(context, shareUrl);
+                },
               ),
-            const SizedBox(width: 4),
-            WorkingOrderButton(
+            ],
+            DWorkingOrderButton(
               icon: 'assets/edit2.svg',
               onPressed: () {
                 ref.read(walletProvider).setOrderRequestView(order);
               },
             ),
-            const SizedBox(width: 4),
-            WorkingOrderButton(
+            DWorkingOrderButton(
               icon: 'assets/delete2.svg',
               onPressed: () async {
                 ref.read(walletProvider).cancelOrder(order.orderId);

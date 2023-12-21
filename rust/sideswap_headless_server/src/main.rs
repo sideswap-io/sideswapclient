@@ -1,14 +1,7 @@
-use std::collections::BTreeMap;
-use std::sync::{Arc, Mutex};
-
-use sideswap_api::AssetId;
-use sideswap_client::ffi::proto;
-use sideswap_client::ffi::{blocking_recv_msg, send_msg};
-
-use crate::worker::WorkerReq;
+use std::time::Duration;
 
 mod api_server;
-mod error;
+mod wallet;
 mod worker;
 
 #[derive(Debug, serde::Deserialize)]
@@ -17,34 +10,7 @@ pub struct Args {
     work_dir: String,
     mnemonic: String,
     api_server: api_server::Settings,
-}
-
-#[derive(serde::Serialize, Clone, Copy)]
-enum Status {
-    Active,
-    Expired,
-    Succeed,
-}
-
-#[derive(serde::Serialize, Clone)]
-struct OrderStatus {
-    status: Status,
-    txid: Option<String>,
-}
-
-pub struct Context {
-    orders: Mutex<BTreeMap<String, proto::Order>>,
-    statuses: Mutex<BTreeMap<String, OrderStatus>>,
-    req_sender: crossbeam_channel::Sender<crate::WorkerReq>,
-}
-
-#[derive(serde::Deserialize)]
-pub struct NewOrder {
-    asset_id: AssetId,
-    asset_amount: i64,
-    price: f64,
-    private: Option<bool>,
-    ttl_seconds: Option<u64>,
+    session_id: sideswap_api::SessionId,
 }
 
 #[tokio::main]
@@ -59,52 +25,64 @@ async fn main() {
         .expect("can't load config");
     conf.merge(config::Environment::with_prefix("app").separator("_"))
         .expect("reading env failed");
-    let args: Args = conf.try_into().expect("invalid config");
 
-    let start_params = sideswap_client::ffi::StartParams {
-        work_dir: args.work_dir.clone(),
-        version: "1.0.0".to_owned(),
-        disable_device_key: Some(true),
-    };
+    let Args {
+        env,
+        work_dir,
+        mnemonic,
+        api_server,
+        session_id,
+    } = conf.try_into().expect("invalid config");
 
-    let client = sideswap_client::ffi::sideswap_client_start_impl(
-        args.env,
-        start_params,
-        sideswap_client::ffi::SIDESWAP_DART_PORT_DISABLED,
-    );
-    assert!(client != 0);
+    sideswap_client::ffi::init_log(&work_dir);
 
-    send_msg(
-        client,
-        proto::to::Msg::Login(proto::to::Login {
-            wallet: Some(proto::to::login::Wallet::Mnemonic(args.mnemonic.clone())),
-            network: proto::NetworkSettings {
-                selected: Some(proto::network_settings::Selected::Sideswap(proto::Empty {})),
-            },
-            phone_key: None,
-            send_utxo_updates: None,
-            force_auto_sign_maker: None,
+    let (worker_sender, worker_receiver) = crossbeam_channel::unbounded::<worker::Req>();
+
+    let worker_sender_copy = worker_sender.clone();
+    let api_server = api_server::Server::new(
+        api_server,
+        Box::new(move |req| {
+            worker_sender_copy
+                .send(worker::Req::ApiServer(req))
+                .unwrap()
+                .into()
         }),
     );
 
-    let (req_sender, req_receiver) = crossbeam_channel::unbounded::<WorkerReq>();
-
-    let context = Arc::new(Context {
-        orders: Default::default(),
-        statuses: Default::default(),
-        req_sender: req_sender.clone(),
+    let worker_sender_copy = worker_sender.clone();
+    let wallet = wallet::start(wallet::Params {
+        env,
+        mnemonic,
+        work_dir,
+        callback: Box::new(move |req| {
+            worker_sender_copy.send(worker::Req::Wallet(req)).unwrap();
+        }),
     });
 
-    let api_server = api_server::Server::new(Arc::clone(&context));
+    let wallet_copy = wallet.clone();
+    tokio::spawn(async move {
+        loop {
+            wallet_copy.send_req(wallet::Req::Timer);
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    });
 
+    let (ws_sender, ws_receiver, _hint) = sideswap_common::ws::manual::start(None);
+
+    let worker_sender_copy = worker_sender.clone();
     std::thread::spawn(move || loop {
-        let msg = blocking_recv_msg(client);
-        req_sender.send(WorkerReq::FromMsg(msg)).unwrap();
+        let ws_req = ws_receiver.recv().unwrap();
+        worker_sender_copy.send(worker::Req::Ws(ws_req)).unwrap();
     });
 
     std::thread::spawn(move || {
-        worker::run(client, req_receiver, api_server);
+        worker::run(env, worker_receiver, ws_sender, wallet, session_id);
     });
 
-    api_server::run(args.api_server, context).await;
+    std::panic::set_hook(Box::new(|i| {
+        log::error!("sideswap panic detected: {:?}", i);
+        std::process::abort();
+    }));
+
+    api_server::run(api_server).await;
 }

@@ -420,6 +420,171 @@ class _LastStringIndexPriceForAssetProviderElement
       (origin as LastStringIndexPriceForAssetProvider).assetId;
 }
 
+String _$marketRequestOrderListHash() =>
+    r'd30b9ec3e1173089d71a734492dd19a6dd668309';
+
+/// See also [marketRequestOrderList].
+@ProviderFor(marketRequestOrderList)
+final marketRequestOrderListProvider =
+    AutoDisposeProvider<List<RequestOrder>>.internal(
+  marketRequestOrderList,
+  name: r'marketRequestOrderListProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketRequestOrderListHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef MarketRequestOrderListRef = AutoDisposeProviderRef<List<RequestOrder>>;
+String _$marketRequestOrderByIdHash() =>
+    r'63735f34b24a03fe97b68a2fd0f179134d30a8c6';
+
+/// See also [marketRequestOrderById].
+@ProviderFor(marketRequestOrderById)
+const marketRequestOrderByIdProvider = MarketRequestOrderByIdFamily();
+
+/// See also [marketRequestOrderById].
+class MarketRequestOrderByIdFamily extends Family<RequestOrder?> {
+  /// See also [marketRequestOrderById].
+  const MarketRequestOrderByIdFamily();
+
+  /// See also [marketRequestOrderById].
+  MarketRequestOrderByIdProvider call(
+    String orderId,
+  ) {
+    return MarketRequestOrderByIdProvider(
+      orderId,
+    );
+  }
+
+  @override
+  MarketRequestOrderByIdProvider getProviderOverride(
+    covariant MarketRequestOrderByIdProvider provider,
+  ) {
+    return call(
+      provider.orderId,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'marketRequestOrderByIdProvider';
+}
+
+/// See also [marketRequestOrderById].
+class MarketRequestOrderByIdProvider
+    extends AutoDisposeProvider<RequestOrder?> {
+  /// See also [marketRequestOrderById].
+  MarketRequestOrderByIdProvider(
+    String orderId,
+  ) : this._internal(
+          (ref) => marketRequestOrderById(
+            ref as MarketRequestOrderByIdRef,
+            orderId,
+          ),
+          from: marketRequestOrderByIdProvider,
+          name: r'marketRequestOrderByIdProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$marketRequestOrderByIdHash,
+          dependencies: MarketRequestOrderByIdFamily._dependencies,
+          allTransitiveDependencies:
+              MarketRequestOrderByIdFamily._allTransitiveDependencies,
+          orderId: orderId,
+        );
+
+  MarketRequestOrderByIdProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.orderId,
+  }) : super.internal();
+
+  final String orderId;
+
+  @override
+  Override overrideWith(
+    RequestOrder? Function(MarketRequestOrderByIdRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: MarketRequestOrderByIdProvider._internal(
+        (ref) => create(ref as MarketRequestOrderByIdRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        orderId: orderId,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<RequestOrder?> createElement() {
+    return _MarketRequestOrderByIdProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MarketRequestOrderByIdProvider && other.orderId == orderId;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, orderId.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+mixin MarketRequestOrderByIdRef on AutoDisposeProviderRef<RequestOrder?> {
+  /// The parameter `orderId` of this provider.
+  String get orderId;
+}
+
+class _MarketRequestOrderByIdProviderElement
+    extends AutoDisposeProviderElement<RequestOrder?>
+    with MarketRequestOrderByIdRef {
+  _MarketRequestOrderByIdProviderElement(super.provider);
+
+  @override
+  String get orderId => (origin as MarketRequestOrderByIdProvider).orderId;
+}
+
+String _$marketOwnRequestOrdersHash() =>
+    r'78d0b087efe68599ec7a5d2f574422c23f292428';
+
+/// See also [marketOwnRequestOrders].
+@ProviderFor(marketOwnRequestOrders)
+final marketOwnRequestOrdersProvider =
+    AutoDisposeProvider<List<RequestOrder>>.internal(
+  marketOwnRequestOrders,
+  name: r'marketOwnRequestOrdersProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketOwnRequestOrdersHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef MarketOwnRequestOrdersRef = AutoDisposeProviderRef<List<RequestOrder>>;
 String _$makeOrderBalanceHash() => r'44037793a2734d9eab8fd41148e978b9205f33e6';
 
 /// See also [makeOrderBalance].

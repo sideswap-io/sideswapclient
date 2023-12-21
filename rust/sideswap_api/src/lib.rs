@@ -2,12 +2,12 @@ pub mod fcm_models;
 pub mod gdk;
 pub mod http_rpc;
 
-use elements::{
+pub use elements::{
     confidential::{AssetBlindingFactor, ValueBlindingFactor},
-    Txid,
+    Address, Txid,
 };
 use serde::{Deserialize, Serialize};
-use std::vec::Vec;
+use std::{collections::BTreeMap, vec::Vec};
 
 pub const TICKER_BTC: &str = "BTC";
 pub const TICKER_LBTC: &str = "L-BTC";
@@ -550,6 +550,8 @@ pub struct PriceOrder {
     pub asset_amount: Option<f64>,
     pub price: Option<f64>,
     pub index_price: Option<f64>,
+    pub force_private: Option<bool>,
+    pub disable_price_edit: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -561,6 +563,12 @@ pub struct LoadPricesResponse {
     pub asset: AssetId,
     pub ind: Option<f64>,
     pub last: Option<f64>,
+}
+
+pub type PortfolioPricesRequest = Empty;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PortfolioPricesResponse {
+    pub prices_usd: BTreeMap<AssetId, f64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -636,6 +644,7 @@ pub struct OrderCreatedNotification {
     pub details: Details,
     pub created_at: Timestamp,
     pub expires_at: Option<Timestamp>,
+    pub two_step: bool,
     pub own: Option<Own>,
 }
 
@@ -1054,6 +1063,7 @@ pub enum Request {
 
     LoadPrices(LoadPricesRequest),
     CancelPrices(CancelPricesRequest),
+    PortfolioPrices(PortfolioPricesRequest),
     Submit(SubmitRequest),
     Edit(EditRequest),
     Cancel(CancelRequest),
@@ -1119,6 +1129,7 @@ pub enum Response {
 
     LoadPrices(LoadPricesResponse),
     CancelPrices(CancelPricesResponse),
+    PortfolioPrices(PortfolioPricesResponse),
     Submit(SubmitResponse),
     Edit(EditResponse),
     Cancel(CancelResponse),

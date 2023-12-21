@@ -75,6 +75,18 @@ impl Network {
         }
     }
 
+    pub fn mex_asset_id(&self) -> Option<&'static str> {
+        match self {
+            Network::Mainnet => {
+                Some("26ac924263ba547b706251635550a8649545ee5c074fe5db8d7140557baaf32e")
+            }
+            Network::Testnet => {
+                Some("485ff8a902ad063bd8886ef8cfc0d22a068d14dcbe6ae06cf3f904dc581fbd2b")
+            }
+            Network::Regtest | Network::Local => None,
+        }
+    }
+
     pub fn bitcoin_network(&self) -> bitcoin::Network {
         match self {
             Network::Mainnet => bitcoin::Network::Bitcoin,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 
 class DToggleButton extends StatelessWidget {
@@ -31,7 +32,9 @@ class DToggleButton extends StatelessWidget {
 
     Color textColor(bool value) {
       if (enabled) {
-        return value ? const Color(0xFFFFFFFF) : const Color(0xFF709EBA);
+        return value
+            ? const Color(0xFFFFFFFF)
+            : SideSwapColors.airSuperiorityBlue;
       }
       return value ? const Color(0x5FFFFFFF) : const Color(0x5FCCCCCC);
     }

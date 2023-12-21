@@ -331,7 +331,7 @@ pub fn log_format(
     write!(w, "{}", &text.as_str()[..len])
 }
 
-fn init_log(work_dir: &str) {
+pub fn init_log(work_dir: &str) {
     let path = format!("{}/{}", work_dir, "sideswap.log");
 
     let file_size = std::fs::metadata(&path)

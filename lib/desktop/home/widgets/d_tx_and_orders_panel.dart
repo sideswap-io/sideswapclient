@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/home/widgets/d_background_panel.dart';
 import 'package:sideswap/desktop/home/widgets/d_unconfirmed_tx.dart';
+import 'package:sideswap/desktop/home/widgets/d_working_orders.dart';
 
 class DTxAndOrdersPanel extends StatelessWidget {
-  const DTxAndOrdersPanel({super.key});
+  const DTxAndOrdersPanel({super.key, this.onlyWorkingOrders = false});
+
+  final bool onlyWorkingOrders;
 
   @override
   Widget build(BuildContext context) {
     return DBackgroundPanel(
-      constraints: const BoxConstraints(minHeight: 237, minWidth: 512),
+      constraints: const BoxConstraints(minHeight: 227, minWidth: 512),
       decoration: const ShapeDecoration(
         color: SideSwapColors.chathamsBlue,
         shape: RoundedRectangleBorder(
@@ -21,10 +24,10 @@ class DTxAndOrdersPanel extends StatelessWidget {
         ),
       ),
       child: DefaultTabController(
-        length: 1,
+        length: onlyWorkingOrders ? 1 : 2,
         initialIndex: 0,
         child: Padding(
-          padding: const EdgeInsets.only(top: 16),
+          padding: const EdgeInsets.only(top: 6),
           child: Column(
             children: [
               Padding(
@@ -46,13 +49,14 @@ class DTxAndOrdersPanel extends StatelessWidget {
                       .bodyMedium
                       ?.copyWith(fontSize: 18, fontWeight: FontWeight.w500),
                   tabs: [
+                    if (!onlyWorkingOrders) ...[
+                      Text(
+                        'Unconfirmed transactions'.tr(),
+                      ),
+                    ],
                     Text(
-                      'Unconfirmed transactions'.tr(),
+                      'Working orders'.tr(),
                     ),
-                    // TODO (malcolmpl): Enable when ready
-                    // Text(
-                    //   'Working orders'.tr(),
-                    // ),
                   ],
                 ),
               ),
@@ -61,15 +65,16 @@ class DTxAndOrdersPanel extends StatelessWidget {
                 height: 1,
                 thickness: 0,
               ),
-              const Padding(
-                padding: EdgeInsets.only(left: 16),
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
                 child: SizedBox(
                   height: 186,
                   child: TabBarView(
                     children: [
-                      DUnconfirmedTx(),
-                      // TODO (malcolmpl): Enable when ready
-                      // DWorkingOrders(),
+                      if (!onlyWorkingOrders) ...[
+                        const DUnconfirmedTx(),
+                      ],
+                      const DWorkingOrders(),
                     ],
                   ),
                 ),

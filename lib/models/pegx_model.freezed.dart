@@ -132,7 +132,7 @@ class _$PegxLoginStateLoadingImpl implements PegxLoginStateLoading {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxLoginStateLoadingImpl);
@@ -267,7 +267,7 @@ class _$PegxLoginStateLoginDialogImpl implements PegxLoginStateLoginDialog {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxLoginStateLoginDialogImpl);
@@ -418,7 +418,7 @@ class _$PegxLoginStateLoginImpl implements PegxLoginStateLogin {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxLoginStateLoginImpl &&
@@ -566,7 +566,7 @@ class _$PegxLoginStateLoggedImpl implements PegxLoginStateLogged {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxLoginStateLoggedImpl);
@@ -701,7 +701,7 @@ class _$PegxLoginStateGaidWaitingImpl implements PegxLoginStateGaidWaiting {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxLoginStateGaidWaitingImpl);
@@ -836,7 +836,7 @@ class _$PegxLoginStateGaidAddedImpl implements PegxLoginStateGaidAdded {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxLoginStateGaidAddedImpl);
@@ -971,7 +971,7 @@ class _$PegxLoginStateGaidErrorImpl implements PegxLoginStateGaidError {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxLoginStateGaidErrorImpl);
@@ -1176,7 +1176,7 @@ class _$PegxGaidStateEmptyImpl implements PegxGaidStateEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType && other is _$PegxGaidStateEmptyImpl);
   }
@@ -1290,7 +1290,7 @@ class _$PegxGaidStateLoadingImpl implements PegxGaidStateLoading {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxGaidStateLoadingImpl);
@@ -1407,7 +1407,7 @@ class _$PegxGaidStateRegisteredImpl implements PegxGaidStateRegistered {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxGaidStateRegisteredImpl);
@@ -1524,7 +1524,7 @@ class _$PegxGaidStateUnregisteredImpl implements PegxGaidStateUnregistered {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PegxGaidStateUnregisteredImpl);

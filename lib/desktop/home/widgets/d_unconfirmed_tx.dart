@@ -133,77 +133,82 @@ class DUnconfirmedTx extends StatelessWidget {
                   ),
                 ),
               false => Flexible(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverList.builder(
-                        itemBuilder: (context, index) {
-                          final tx = txList[index];
-                          final type =
-                              tx.hasPeg() ? TxType.unknown : txType(tx.tx);
-                          final sentBalance = getSentBalance(
-                              tx, type, liquidAssetId, bitcoinAssetId);
-                          final recvBalance = getRecvBalance(
-                              tx, type, liquidAssetId, bitcoinAssetId);
-                          final recvMultipleOutputs =
-                              getRecvMultipleOutputs(tx);
-                          return DTransparentButton(
-                            onPressed: () {
-                              final allPegsById = ref.read(allPegsByIdProvider);
-                              ref.read(desktopDialogProvider).showTx(tx.id,
-                                  isPeg: allPegsById.containsKey(tx.id));
-                            },
-                            child: DTxHistoryRow(
-                              children: [
-                                DTxHistoryDate(
-                                  dateFormatDate: dateFormatDate,
-                                  dateFormatTime: dateFormatTime,
-                                  tx: tx,
-                                  dateTextStyle:
-                                      Theme.of(context).textTheme.titleSmall,
-                                  timeTextStyle: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        color:
-                                            SideSwapColors.airSuperiorityBlue,
-                                      ),
-                                ),
-                                DTxHistoryWallet(
-                                  tx: tx,
-                                  textStyle:
-                                      Theme.of(context).textTheme.titleSmall,
-                                ),
-                                DTxHistoryType(
-                                  tx: tx,
-                                  txType: type,
-                                  textStyle:
-                                      Theme.of(context).textTheme.titleSmall,
-                                ),
-                                DTxHistoryAmount(
-                                  balance: sentBalance,
-                                  multipleOutputs: false,
-                                  textStyle:
-                                      Theme.of(context).textTheme.titleSmall,
-                                ),
-                                DTxHistoryAmount(
-                                  balance: recvBalance,
-                                  multipleOutputs: recvMultipleOutputs,
-                                  textStyle:
-                                      Theme.of(context).textTheme.titleSmall,
-                                ),
-                                DTxHistoryConfs(
-                                  tx: tx,
-                                  textStyle:
-                                      Theme.of(context).textTheme.titleSmall,
-                                ),
-                                DTxHistoryLink(txid: tx.tx.txid),
-                              ],
-                            ),
-                          );
-                        },
-                        itemCount: txList.length,
-                      ),
-                    ],
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverList.builder(
+                          itemBuilder: (context, index) {
+                            final tx = txList[index];
+                            final type =
+                                tx.hasPeg() ? TxType.unknown : txType(tx.tx);
+                            final sentBalance = getSentBalance(
+                                tx, type, liquidAssetId, bitcoinAssetId);
+                            final recvBalance = getRecvBalance(
+                                tx, type, liquidAssetId, bitcoinAssetId);
+                            final recvMultipleOutputs =
+                                getRecvMultipleOutputs(tx);
+                            return DTransparentButton(
+                              onPressed: () {
+                                final allPegsById =
+                                    ref.read(allPegsByIdProvider);
+                                ref.read(desktopDialogProvider).showTx(tx.id,
+                                    isPeg: allPegsById.containsKey(tx.id));
+                              },
+                              child: DTxHistoryRow(
+                                flexes: const [183, 97, 137, 205, 205, 125, 26],
+                                children: [
+                                  DTxHistoryDate(
+                                    dateFormatDate: dateFormatDate,
+                                    dateFormatTime: dateFormatTime,
+                                    tx: tx,
+                                    dateTextStyle:
+                                        Theme.of(context).textTheme.titleSmall,
+                                    timeTextStyle: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(
+                                          color:
+                                              SideSwapColors.airSuperiorityBlue,
+                                        ),
+                                  ),
+                                  DTxHistoryWallet(
+                                    tx: tx,
+                                    textStyle:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                  DTxHistoryType(
+                                    tx: tx,
+                                    txType: type,
+                                    textStyle:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                  DTxHistoryAmount(
+                                    balance: sentBalance,
+                                    multipleOutputs: false,
+                                    textStyle:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                  DTxHistoryAmount(
+                                    balance: recvBalance,
+                                    multipleOutputs: recvMultipleOutputs,
+                                    textStyle:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                  DTxHistoryConfs(
+                                    tx: tx,
+                                    textStyle:
+                                        Theme.of(context).textTheme.titleSmall,
+                                  ),
+                                  DTxHistoryLink(txid: tx.tx.txid),
+                                ],
+                              ),
+                            );
+                          },
+                          itemCount: txList.length,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             };

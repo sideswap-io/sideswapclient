@@ -4,17 +4,17 @@ extern crate log;
 extern crate anyhow;
 
 pub mod ffi;
-mod gdk_ses;
-mod gdk_ses_impl;
+pub mod gdk_ses;
+pub mod gdk_ses_impl;
 mod gdk_ses_jade;
 mod jade_mng;
 mod models;
 mod pin;
 mod settings;
-mod swaps;
+pub mod swaps;
 pub mod worker;
 
 #[allow(dead_code, non_camel_case_types)]
 mod gdk;
 #[allow(dead_code)]
-mod gdk_json;
+pub mod gdk_json;

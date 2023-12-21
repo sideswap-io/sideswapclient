@@ -114,7 +114,7 @@ class FriendWidget extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.normal,
-                                color: Color(0xFF709EBA),
+                                color: SideSwapColors.airSuperiorityBlue,
                               ),
                             ),
                       ),

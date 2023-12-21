@@ -101,7 +101,7 @@ class _$SkipForNowStateEmptyImpl implements SkipForNowStateEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SkipForNowStateEmptyImpl);
@@ -206,7 +206,7 @@ class _$SkipForNowStateSkippedImpl implements SkipForNowStateSkipped {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SkipForNowStateSkippedImpl);

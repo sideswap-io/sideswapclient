@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -190,7 +191,7 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
                 minHeight: constraints.maxHeight,
               ),
               child: IntrinsicHeight(
-                child: Consumer(
+                child: HookConsumer(
                   builder: (context, ref, child) {
                     if (widget.requestOrder != null) {
                       // update data if swapRequest has changed
@@ -212,6 +213,15 @@ class CreateOrderViewState extends ConsumerState<CreateOrderView> {
                     final ttlSeconds = ref.watch(orderReviewTtlProvider);
                     final twoStep = ref.watch(orderReviewTwoStepProvider);
                     final public = ref.watch(orderReviewPublicProvider);
+
+                    useEffect(() {
+                      // if order is offline turn on autosign too
+                      if (twoStep) {
+                        autoSignValue = true;
+                      }
+
+                      return;
+                    }, [twoStep]);
 
                     return CreateOrderViewBody(
                       autoSignValue: autoSignValue,

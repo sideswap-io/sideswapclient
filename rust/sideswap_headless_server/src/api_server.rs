@@ -2,19 +2,86 @@ use std::{net::SocketAddr, sync::Arc};
 
 use axum::{
     extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
     routing::{get, post},
     Json,
 };
-use sideswap_client::ffi::proto::{
-    self,
-    from::{OrderComplete, OrderCreated},
-};
+use sideswap_api::AssetId;
+use tokio::sync::oneshot;
 
-use crate::{error::Error, worker::WorkerReq, Context, NewOrder, OrderStatus, Status};
+pub enum Req {
+    NewOrder(NewOrder, oneshot::Sender<Result<OrderInfo, Error>>),
+    OrderStatus(
+        sideswap_api::OrderId,
+        oneshot::Sender<Result<OrderStatus, Error>>,
+    ),
+    ListOrders((), oneshot::Sender<Result<Vec<OrderInfo>, Error>>),
+}
+
+pub type Callback = Box<dyn Fn(Req) + Send + Sync>;
+
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("channel closed unexpectedly")]
+    ChannelClosed(#[from] oneshot::error::RecvError),
+    #[error("server error: {0}")]
+    Server(String),
+    #[error("no inputs found")]
+    NotInputs,
+    #[error("duplicated order requested")]
+    DuplicatedOrder,
+    #[error("too many active requests")]
+    TooManyRequest,
+}
+
+#[derive(serde::Serialize, Clone)]
+struct ErrorResponse {
+    error_msg: String,
+}
+
+impl IntoResponse for Error {
+    fn into_response(self) -> axum::response::Response {
+        let error_resp: Json<ErrorResponse> = ErrorResponse {
+            error_msg: self.to_string(),
+        }
+        .into();
+        (StatusCode::BAD_REQUEST, error_resp).into_response()
+    }
+}
 
 #[derive(Clone, Debug, serde::Deserialize)]
 pub struct Settings {
     listen_on: SocketAddr,
+    api_key: Option<String>,
+}
+
+#[derive(serde::Serialize, Clone, Copy)]
+pub enum Status {
+    Active,
+    Expired,
+    Succeed,
+}
+
+struct Context {
+    settings: Settings,
+    callback: Callback,
+}
+
+#[derive(serde::Deserialize)]
+pub struct NewOrder {
+    pub asset_id: AssetId,
+    pub asset_amount: f64,
+    pub price: f64,
+    pub private: Option<bool>,
+    pub ttl_seconds: Option<u64>,
+    pub unique_key: Option<String>,
+}
+
+#[derive(serde::Serialize, Clone)]
+pub struct OrderStatus {
+    pub status: Status,
+    pub txid: Option<sideswap_api::Txid>,
 }
 
 pub struct Server {
@@ -22,111 +89,80 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(context: Arc<Context>) -> Self {
+    pub fn new(settings: Settings, callback: Callback) -> Self {
+        let context = Arc::new(Context { settings, callback });
         Self { context }
     }
+}
 
-    pub fn order_created(&self, msg: OrderCreated) {
-        if msg.order.own {
-            self.context.statuses.lock().unwrap().insert(
-                msg.order.order_id.clone(),
-                OrderStatus {
-                    status: Status::Active,
-                    txid: None,
-                },
-            );
-            self.context
-                .orders
-                .lock()
-                .unwrap()
-                .insert(msg.order.order_id.clone(), msg.order);
+#[derive(serde::Serialize, Clone)]
+pub struct OrderInfo {
+    pub order_id: sideswap_api::OrderId,
+    pub asset_id: sideswap_api::AssetId,
+    pub bitcoin_amount: i64,
+    pub asset_amount: i64,
+    pub price: f64,
+    pub private: bool,
+}
+
+async fn auth(
+    State(context): State<Arc<Context>>,
+    req: axum::http::Request<axum::body::Body>,
+    next: axum::middleware::Next,
+) -> Result<axum::response::Response, axum::http::StatusCode> {
+    if let Some(api_key) = &context.settings.api_key {
+        let auth_header = req
+            .headers()
+            .get(axum::http::header::AUTHORIZATION)
+            .and_then(|header| header.to_str().ok())
+            .ok_or(axum::http::StatusCode::UNAUTHORIZED)?;
+        if auth_header != api_key {
+            return Err(axum::http::StatusCode::UNAUTHORIZED);
         }
     }
 
-    pub fn order_complete(&self, msg: OrderComplete) {
-        if let Some(order) = self.context.statuses.lock().unwrap().get_mut(&msg.order_id) {
-            order.status = if msg.txid.is_some() {
-                Status::Succeed
-            } else {
-                Status::Expired
-            };
-            order.txid = msg.txid;
-        }
-        self.context.orders.lock().unwrap().remove(&msg.order_id);
-    }
+    Ok(next.run(req).await)
 }
 
-fn convert_order(order: &proto::Order) -> OrderInfo {
-    OrderInfo {
-        order_id: order.order_id.clone(),
-        asset_id: order.asset_id.clone(),
-        bitcoin_amount: order.bitcoin_amount,
-        asset_amount: order.asset_amount,
-        price: order.price,
-        private: order.private,
-        created_at: order.created_at,
-        expires_at: order.expires_at,
-    }
-}
-
-#[derive(serde::Serialize)]
-struct OrderInfo {
-    order_id: String,
-    asset_id: String,
-    bitcoin_amount: i64,
-    asset_amount: i64,
-    price: f64,
-    private: bool,
-    created_at: i64,
-    expires_at: Option<i64>,
-}
-
-async fn list_orders(State(context): State<Arc<Context>>) -> Json<Vec<OrderInfo>> {
-    context
-        .orders
-        .lock()
-        .unwrap()
-        .values()
-        .map(convert_order)
-        .collect::<Vec<_>>()
-        .into()
+async fn list_orders(State(context): State<Arc<Context>>) -> Result<Json<Vec<OrderInfo>>, Error> {
+    let (sender, receiver) = oneshot::channel();
+    (context.callback)(Req::ListOrders((), sender));
+    let resp = receiver.await??;
+    Ok(resp.into())
 }
 
 async fn new_order(
     State(context): State<Arc<Context>>,
     Json(req): Json<NewOrder>,
 ) -> Result<Json<OrderInfo>, Error> {
-    let (res_sender, res_receiver) = tokio::sync::oneshot::channel();
-    context
-        .req_sender
-        .send(WorkerReq::NewOrder(req, res_sender))
-        .unwrap();
-    let order = res_receiver.await.unwrap()?;
-    Ok(convert_order(&order).into())
+    let (sender, receiver) = oneshot::channel();
+    (context.callback)(Req::NewOrder(req, sender));
+    let resp = receiver.await??;
+    Ok(resp.into())
 }
 
 async fn order_status(
     State(context): State<Arc<Context>>,
-    order_id: Path<String>,
+    order_id: Path<sideswap_api::OrderId>,
 ) -> Result<Json<OrderStatus>, Error> {
-    let status = context
-        .statuses
-        .lock()
-        .unwrap()
-        .get(&order_id.0)
-        .ok_or_else(|| Error::UnknownOrder)?
-        .clone();
-    Ok(status.into())
+    let (sender, receiver) = oneshot::channel();
+    (context.callback)(Req::OrderStatus(order_id.0, sender));
+    let resp = receiver.await??;
+    Ok(resp.into())
 }
 
-pub async fn run(settings: Settings, context: Arc<Context>) {
+pub async fn run(server: Server) {
     let app = axum::Router::new()
         .route("/orders/new", post(new_order))
         .route("/orders/status/:order_id", get(order_status))
         .route("/orders", get(list_orders))
-        .with_state(Arc::clone(&context));
+        .with_state(Arc::clone(&server.context))
+        .layer(axum::middleware::from_fn_with_state(
+            Arc::clone(&server.context),
+            auth,
+        ));
 
-    let listener = tokio::net::TcpListener::bind(settings.listen_on)
+    let listener = tokio::net::TcpListener::bind(server.context.settings.listen_on)
         .await
         .expect("starting api server socket must not fail");
     axum::serve(listener, app).await.unwrap();

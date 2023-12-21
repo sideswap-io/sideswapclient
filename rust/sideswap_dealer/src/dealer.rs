@@ -490,6 +490,8 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                         asset_amount: None,
                         price: Some(price),
                         index_price: None,
+                        force_private: None,
+                        disable_price_edit: None,
                     },
                 }
             );

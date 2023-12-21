@@ -77,7 +77,6 @@ struct SubmitData {
     sell_bitcoin: bool,
     txouts: BTreeSet<TxOut>,
     auto_sign: bool,
-    two_step: bool,
     txid: Option<elements::Txid>,
     index_price: bool,
     market: MarketType,
@@ -519,7 +518,7 @@ fn convert_to_proto_utxo(utxo: gdk_json::UnspentOutput) -> ffi::proto::from::utx
     }
 }
 
-fn convert_to_swap_utxo(utxo: gdk_json::UnspentOutput) -> sideswap_api::PsetInput {
+pub fn convert_to_swap_utxo(utxo: gdk_json::UnspentOutput) -> sideswap_api::PsetInput {
     PsetInput {
         txid: utxo.txhash,
         vout: utxo.vout,
@@ -974,7 +973,7 @@ impl Data {
                         self.save_settings();
                     }
                     DeviceState::Registered => {
-                        info!("device_key is registered");
+                        info!("device_key is registered: {device_key}");
                     }
                 };
             }
@@ -985,6 +984,7 @@ impl Data {
                     os_type: get_os_type(),
                 };
                 let register_resp = send_request!(self, RegisterDevice, register_req)?;
+                info!("new device_key is registered: {}", register_resp.device_key);
                 self.settings.device_key = Some(register_resp.device_key);
                 self.settings.single_sig_registered = Default::default();
                 self.settings.multi_sig_registered = Default::default();
@@ -2300,6 +2300,8 @@ impl Data {
             asset_amount: req.asset_amount,
             price: Some(req.price),
             index_price: req.index_price,
+            force_private: None,
+            disable_price_edit: None,
         };
         let submit_req = SubmitRequest { order };
         let resp = send_request!(self, Submit, submit_req)?;
@@ -2723,7 +2725,6 @@ impl Data {
             sell_bitcoin,
             txouts,
             auto_sign,
-            two_step,
             txid: None,
             index_price,
             market: details.market,
@@ -3182,6 +3183,21 @@ impl Data {
         self.subscribed_market_data = None;
     }
 
+    fn process_portfolio_prices(&mut self) {
+        self.make_async_request(Request::PortfolioPrices(None), move |data, res| {
+            if let Ok(Response::PortfolioPrices(resp)) = res {
+                let prices_usd = resp
+                    .prices_usd
+                    .into_iter()
+                    .map(|(asset_id, price)| (asset_id.to_string(), price))
+                    .collect();
+                data.ui.send(ffi::proto::from::Msg::PortfolioPrices(
+                    ffi::proto::from::PortfolioPrices { prices_usd },
+                ));
+            }
+        });
+    }
+
     fn send_subscribe_request(&self) {
         for subscribe in self.subscribes.iter() {
             self.send_request_msg(Request::Subscribe(SubscribeRequest { asset: *subscribe }));
@@ -3241,9 +3257,9 @@ impl Data {
         if let Err(e) = add_asset_result {
             error!("adding asset for new order failed: {}", e);
         }
-        if let Some(own) = msg.own.as_ref() {
+        if let Some(_own) = msg.own.as_ref() {
             let adding_result =
-                self.add_missing_submit_data(&msg.order_id, &msg.details, own.two_step);
+                self.add_missing_submit_data(&msg.order_id, &msg.details, msg.two_step);
             if let Err(e) = adding_result {
                 error!("adding missing submit data failed: {}", e);
             }
@@ -3253,11 +3269,11 @@ impl Data {
         let swap_market = self.assets.get(&msg.details.asset).is_some();
         let amp_market = self.amp_assets.get(&msg.details.asset).is_some();
         let token_market = !swap_market && !amp_market;
-        let (auto_sign, two_step) = self
+        let auto_sign = self
             .submit_data
             .get(&msg.order_id)
-            .map(|submit| (submit.auto_sign, submit.two_step))
-            .unwrap_or((false, false));
+            .map(|submit| submit.auto_sign)
+            .unwrap_or(false);
         let own = msg.own.is_some();
         let index_price = msg.own.as_ref().and_then(|v| v.index_price);
         let order = ffi::proto::Order {
@@ -3271,7 +3287,7 @@ impl Data {
             created_at: msg.created_at,
             expires_at: msg.expires_at,
             private,
-            two_step,
+            two_step: msg.two_step,
             auto_sign,
             own,
             token_market,
@@ -3631,7 +3647,6 @@ impl Data {
                 sell_bitcoin,
                 txouts: BTreeSet::new(),
                 auto_sign: two_step,
-                two_step,
                 txid: None,
                 index_price: false,
                 market: details.market,
@@ -3814,6 +3829,7 @@ impl Data {
                 self.process_market_data_subscribe(req)
             }
             ffi::proto::to::Msg::MarketDataUnsubscribe(_) => self.process_market_data_unsubscribe(),
+            ffi::proto::to::Msg::PortfolioPrices(_) => self.process_portfolio_prices(),
             ffi::proto::to::Msg::JadeRescan(_) => self.process_jade_rescan_request(),
             ffi::proto::to::Msg::GaidStatus(msg) => self.process_gaid_status_req(msg),
         }

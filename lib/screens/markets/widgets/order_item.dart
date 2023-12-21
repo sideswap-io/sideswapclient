@@ -324,7 +324,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                               Text(
                                 '≈ $dollarConversionRecv',
                                 style: amountStyle.copyWith(
-                                    color: const Color(0xFF709EBA)),
+                                    color: SideSwapColors.airSuperiorityBlue),
                               ),
                               const Padding(
                                 padding: EdgeInsets.only(left: 8),

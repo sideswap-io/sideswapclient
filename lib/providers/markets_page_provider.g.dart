@@ -7,7 +7,7 @@ part of 'markets_page_provider.dart';
 // **************************************************************************
 
 String _$marketsPageListenerHash() =>
-    r'1619c9f56efa09436cb5fd4bc56bd0f404b3cb2a';
+    r'ed5a38682579e38270ac9ebfc3ba15f41e13250e';
 
 /// See also [marketsPageListener].
 @ProviderFor(marketsPageListener)

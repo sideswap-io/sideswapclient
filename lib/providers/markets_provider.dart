@@ -479,24 +479,25 @@ class MarketOrdersProvider
   }
 }
 
-final marketRequestOrderListProvider =
-    AutoDisposeProvider<List<RequestOrder>>((ref) {
+@riverpod
+List<RequestOrder> marketRequestOrderList(MarketRequestOrderListRef ref) {
   final marketRequestOrders = ref.watch(marketRequestOrdersProvider);
 
   return marketRequestOrders.values.toList();
-});
+}
 
-final marketRequestOrderByIdProvider =
-    AutoDisposeProviderFamily<RequestOrder?, String>((ref, arg) {
+@riverpod
+RequestOrder? marketRequestOrderById(
+    MarketRequestOrderByIdRef ref, String orderId) {
   final marketRequestOrders = ref.watch(marketRequestOrdersProvider);
-  return marketRequestOrders[arg];
-});
+  return marketRequestOrders[orderId];
+}
 
-final marketOwnRequestOrdersProvider =
-    AutoDisposeProvider<List<RequestOrder>>((ref) {
+@riverpod
+List<RequestOrder> marketOwnRequestOrders(MarketOwnRequestOrdersRef ref) {
   final marketRequestOrders = ref.watch(marketRequestOrderListProvider);
   return marketRequestOrders.where((e) => e.own == true).toList();
-});
+}
 
 @Riverpod(keepAlive: true)
 class MarketSelectedAccountAssetState

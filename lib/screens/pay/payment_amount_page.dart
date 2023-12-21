@@ -56,7 +56,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
   final _approximateStyle = const TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: Color(0xFF709EBA),
+    color: SideSwapColors.airSuperiorityBlue,
   );
 
   AccountAsset getSelectedAssetId() {

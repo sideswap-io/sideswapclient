@@ -116,7 +116,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
   final _balanceStyle = const TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: Color(0xFF709EBA),
+    color: SideSwapColors.airSuperiorityBlue,
   );
 
   @override
@@ -150,7 +150,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 SizedBox(
-                  width: 152,
+                  width: 122,
                   child: Row(
                     children: [
                       Text(
@@ -254,7 +254,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
           child: Padding(
             padding: widget.padding,
             child: SizedBox(
-              height: 90,
+              height: 43,
               child: TickerAmountTextField(
                 readOnly: widget.readOnly,
                 dropdownReadOnly: widget.dropdownReadOnly,
@@ -426,7 +426,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFF709EBA),
+                          color: SideSwapColors.airSuperiorityBlue,
                         ),
                       ),
                     ),
@@ -443,7 +443,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.normal,
-                          color: Color(0xFF709EBA),
+                          color: SideSwapColors.airSuperiorityBlue,
                         ),
                       ),
                     ),

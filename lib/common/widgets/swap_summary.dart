@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -150,8 +151,9 @@ class SwapSummary extends ConsumerWidget {
           child: TxDetailsRow(
             description: 'Status'.tr(),
             details: status,
-            detailsColor:
-                (confs.count != 0) ? const Color(0xFF709EBA) : Colors.white,
+            detailsColor: (confs.count != 0)
+                ? SideSwapColors.airSuperiorityBlue
+                : Colors.white,
           ),
         ),
         if (type != TxType.swap) ...[

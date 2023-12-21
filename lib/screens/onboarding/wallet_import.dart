@@ -423,7 +423,7 @@ class WalletImportState extends State<WalletImport> {
   final _colorToggleBackground = const Color(0xFF043857);
   final _colorToggleOn = const Color(0xFF1F7EB1);
   final _colorToggleTextOn = const Color(0xFFFFFFFF);
-  final _colorToggleTextOff = const Color(0xFF709EBA);
+  final _colorToggleTextOff = SideSwapColors.airSuperiorityBlue;
 
   bool shortMnemonic = true;
 

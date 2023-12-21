@@ -119,7 +119,7 @@ class _$PinSetupCallerStateEmptyImpl implements PinSetupCallerStateEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinSetupCallerStateEmptyImpl);
@@ -240,7 +240,7 @@ class _$PinSetupCallerStateSettingsImpl implements PinSetupCallerStateSettings {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinSetupCallerStateSettingsImpl);
@@ -363,7 +363,7 @@ class _$PinSetupCallerStatePinWelcomeImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinSetupCallerStatePinWelcomeImpl);
@@ -486,7 +486,7 @@ class _$PinSetupCallerStateNewWalletPinWelcomeImpl
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinSetupCallerStateNewWalletPinWelcomeImpl);
@@ -674,7 +674,7 @@ class _$PinSetupExitStateEmptyImpl implements PinSetupExitStateEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinSetupExitStateEmptyImpl);
@@ -784,7 +784,7 @@ class _$PinSetupExitStateBackImpl implements PinSetupExitStateBack {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinSetupExitStateBackImpl);
@@ -896,7 +896,7 @@ class _$PinSetupExitStateSuccessImpl implements PinSetupExitStateSuccess {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$PinSetupExitStateSuccessImpl);

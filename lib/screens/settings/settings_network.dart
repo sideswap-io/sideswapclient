@@ -9,6 +9,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/settings/settings_custom_host.dart';
 import 'package:sideswap/screens/settings/widgets/settings_network_button.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -143,6 +144,9 @@ class SettingsNetworkSaveButton extends ConsumerWidget {
                     await ref
                         .read(networkSettingsNotifierProvider.notifier)
                         .save();
+                    ref
+                        .read(pageStatusStateProvider.notifier)
+                        .setStatus(Status.registered);
                   },
                 );
           },

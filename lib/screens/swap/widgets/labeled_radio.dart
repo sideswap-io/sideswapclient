@@ -17,8 +17,9 @@ class LabeledRadio<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor =
-        (groupValue == value) ? Colors.white : const Color(0xFF709EBA);
+    final textColor = (groupValue == value)
+        ? Colors.white
+        : SideSwapColors.airSuperiorityBlue;
 
     return Padding(
       padding: const EdgeInsets.only(left: 12),
@@ -31,7 +32,7 @@ class LabeledRadio<T> extends StatelessWidget {
               height: 22,
               child: Theme(
                 data: Theme.of(context).copyWith(
-                  unselectedWidgetColor: const Color(0xFF709EBA),
+                  unselectedWidgetColor: SideSwapColors.airSuperiorityBlue,
                 ),
                 child: Radio<T>(
                   activeColor: SideSwapColors.brightTurquoise,

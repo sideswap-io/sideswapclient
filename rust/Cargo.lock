@@ -2568,12 +2568,16 @@ name = "sideswap_headless_server"
 version = "0.1.2"
 dependencies = [
  "axum",
+ "base64",
  "clap",
  "config",
  "crossbeam-channel",
+ "elements",
  "log",
  "prost 0.11.9",
+ "rand",
  "serde 1.0.189",
+ "serde_json",
  "sideswap_api",
  "sideswap_client",
  "sideswap_common",

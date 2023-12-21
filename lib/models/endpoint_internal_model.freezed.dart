@@ -108,7 +108,7 @@ class _$EICreateTransactionEmptyImpl implements EICreateTransactionEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EICreateTransactionEmptyImpl);
@@ -253,7 +253,7 @@ class _$EICreateTransactionDataImpl implements EICreateTransactionData {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EICreateTransactionDataImpl &&

@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DTxHistoryDate extends StatelessWidget {
@@ -9,10 +10,10 @@ class DTxHistoryDate extends StatelessWidget {
     required this.dateFormatTime,
     required this.tx,
     this.dateTextStyle = const TextStyle(
-      color: Color(0xFF709EBA),
+      color: SideSwapColors.airSuperiorityBlue,
     ),
     this.timeTextStyle = const TextStyle(
-      color: Color(0xFF709EBA),
+      color: SideSwapColors.airSuperiorityBlue,
     ),
   });
 

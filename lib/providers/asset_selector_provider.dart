@@ -39,13 +39,22 @@ final assetSelectorProvider =
   final validTokenAssets = Set<String>.from(tokenAssetsToSell);
   validTokenAssets.addAll(tokenAssetsToBuy);
 
-  return assetsList
+  final newAssetList = assetsList
       .where((e) =>
           e.assetId != liquidAssetId &&
           e.assetId != bitcoinAssetId &&
           assetMarketType(e) == marketType &&
           (marketType != MarketType.token ||
               validTokenAssets.contains(e.assetId)))
-      .map((e) => AssetSelectorItem(assetId: e.assetId, ticker: e.ticker))
       .toList();
+
+  return switch (marketType) {
+    MarketType.token => newAssetList
+        .where((element) => !element.unregistered)
+        .map((e) => AssetSelectorItem(assetId: e.assetId, ticker: e.ticker))
+        .toList(),
+    _ => newAssetList
+        .map((e) => AssetSelectorItem(assetId: e.assetId, ticker: e.ticker))
+        .toList(),
+  };
 });

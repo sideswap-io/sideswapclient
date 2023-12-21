@@ -103,7 +103,7 @@ class _$QrCodeResultModelEmptyImpl implements QrCodeResultModelEmpty {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$QrCodeResultModelEmptyImpl);
@@ -225,7 +225,7 @@ class _$QrCodeResultModelDataImpl implements QrCodeResultModelData {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$QrCodeResultModelDataImpl &&

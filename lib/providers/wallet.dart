@@ -38,6 +38,7 @@ import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
+import 'package:sideswap/providers/portfolio_prices_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
@@ -1031,6 +1032,11 @@ class WalletChangeNotifier with ChangeNotifier {
               .setOrderId(from.startTimer.orderId);
           return;
         }
+        break;
+      case From_Msg.portfolioPrices:
+        ref
+            .read(portfolioPricesNotifierProvider.notifier)
+            .setPortfolioPrices(from.portfolioPrices.pricesUsd);
         break;
     }
   }

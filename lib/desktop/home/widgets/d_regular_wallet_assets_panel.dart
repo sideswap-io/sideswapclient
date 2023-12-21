@@ -21,10 +21,10 @@ class DRegularWalletAssetsPanel extends StatelessWidget {
               final regularAccounts =
                   ref.watch(regularVisibleAccountAssetsProvider);
               final dollarConversion = ref.watch(
-                  accountAssetsUsdBalanceStringProvider(regularAccounts));
+                  accountAssetsTotalUsdBalanceStringProvider(regularAccounts));
 
-              final lbtcConversion =
-                  ref.watch(accountAssetsLbtcBalanceProvider(regularAccounts));
+              final lbtcConversion = ref.watch(
+                  accountAssetsTotalLbtcBalanceProvider(regularAccounts));
 
               return DAssetsPanelHeader(
                 title: 'Regular wallet'.tr(),

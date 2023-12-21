@@ -4599,6 +4599,7 @@ enum To_Msg {
   unsubscribePriceStream, 
   marketDataSubscribe, 
   marketDataUnsubscribe, 
+  portfolioPrices, 
   jadeRescan, 
   gaidStatus, 
   notSet
@@ -4644,6 +4645,7 @@ class To extends $pb.GeneratedMessage {
     Empty? unsubscribePriceStream,
     To_MarketDataSubscribe? marketDataSubscribe,
     Empty? marketDataUnsubscribe,
+    Empty? portfolioPrices,
     Empty? jadeRescan,
     To_GaidStatus? gaidStatus,
   }) {
@@ -4762,6 +4764,9 @@ class To extends $pb.GeneratedMessage {
     if (marketDataUnsubscribe != null) {
       $result.marketDataUnsubscribe = marketDataUnsubscribe;
     }
+    if (portfolioPrices != null) {
+      $result.portfolioPrices = portfolioPrices;
+    }
     if (jadeRescan != null) {
       $result.jadeRescan = jadeRescan;
     }
@@ -4813,12 +4818,13 @@ class To extends $pb.GeneratedMessage {
     59 : To_Msg.unsubscribePriceStream,
     60 : To_Msg.marketDataSubscribe,
     61 : To_Msg.marketDataUnsubscribe,
+    62 : To_Msg.portfolioPrices,
     71 : To_Msg.jadeRescan,
     81 : To_Msg.gaidStatus,
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 71, 81])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 71, 81])
     ..aOM<To_Login>(1, _omitFieldNames ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, _omitFieldNames ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, _omitFieldNames ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
@@ -4857,6 +4863,7 @@ class To extends $pb.GeneratedMessage {
     ..aOM<Empty>(59, _omitFieldNames ? '' : 'unsubscribePriceStream', subBuilder: Empty.create)
     ..aOM<To_MarketDataSubscribe>(60, _omitFieldNames ? '' : 'marketDataSubscribe', subBuilder: To_MarketDataSubscribe.create)
     ..aOM<Empty>(61, _omitFieldNames ? '' : 'marketDataUnsubscribe', subBuilder: Empty.create)
+    ..aOM<Empty>(62, _omitFieldNames ? '' : 'portfolioPrices', subBuilder: Empty.create)
     ..aOM<Empty>(71, _omitFieldNames ? '' : 'jadeRescan', subBuilder: Empty.create)
     ..aOM<To_GaidStatus>(81, _omitFieldNames ? '' : 'gaidStatus', subBuilder: To_GaidStatus.create)
   ;
@@ -5301,27 +5308,38 @@ class To extends $pb.GeneratedMessage {
   @$pb.TagNumber(61)
   Empty ensureMarketDataUnsubscribe() => $_ensure(37);
 
+  @$pb.TagNumber(62)
+  Empty get portfolioPrices => $_getN(38);
+  @$pb.TagNumber(62)
+  set portfolioPrices(Empty v) { setField(62, v); }
+  @$pb.TagNumber(62)
+  $core.bool hasPortfolioPrices() => $_has(38);
+  @$pb.TagNumber(62)
+  void clearPortfolioPrices() => clearField(62);
+  @$pb.TagNumber(62)
+  Empty ensurePortfolioPrices() => $_ensure(38);
+
   @$pb.TagNumber(71)
-  Empty get jadeRescan => $_getN(38);
+  Empty get jadeRescan => $_getN(39);
   @$pb.TagNumber(71)
   set jadeRescan(Empty v) { setField(71, v); }
   @$pb.TagNumber(71)
-  $core.bool hasJadeRescan() => $_has(38);
+  $core.bool hasJadeRescan() => $_has(39);
   @$pb.TagNumber(71)
   void clearJadeRescan() => clearField(71);
   @$pb.TagNumber(71)
-  Empty ensureJadeRescan() => $_ensure(38);
+  Empty ensureJadeRescan() => $_ensure(39);
 
   @$pb.TagNumber(81)
-  To_GaidStatus get gaidStatus => $_getN(39);
+  To_GaidStatus get gaidStatus => $_getN(40);
   @$pb.TagNumber(81)
   set gaidStatus(To_GaidStatus v) { setField(81, v); }
   @$pb.TagNumber(81)
-  $core.bool hasGaidStatus() => $_has(39);
+  $core.bool hasGaidStatus() => $_has(40);
   @$pb.TagNumber(81)
   void clearGaidStatus() => clearField(81);
   @$pb.TagNumber(81)
-  To_GaidStatus ensureGaidStatus() => $_ensure(39);
+  To_GaidStatus ensureGaidStatus() => $_ensure(40);
 }
 
 enum From_Login_Result {
@@ -8542,6 +8560,50 @@ class From_MarketDataUpdate extends $pb.GeneratedMessage {
   ChartPoint ensureUpdate() => $_ensure(1);
 }
 
+class From_PortfolioPrices extends $pb.GeneratedMessage {
+  factory From_PortfolioPrices({
+    $core.Map<$core.String, $core.double>? pricesUsd,
+  }) {
+    final $result = create();
+    if (pricesUsd != null) {
+      $result.pricesUsd.addAll(pricesUsd);
+    }
+    return $result;
+  }
+  From_PortfolioPrices._() : super();
+  factory From_PortfolioPrices.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_PortfolioPrices.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.PortfolioPrices', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..m<$core.String, $core.double>(1, _omitFieldNames ? '' : 'pricesUsd', entryClassName: 'From.PortfolioPrices.PricesUsdEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('sideswap.proto'))
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_PortfolioPrices clone() => From_PortfolioPrices()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_PortfolioPrices copyWith(void Function(From_PortfolioPrices) updates) => super.copyWith((message) => updates(message as From_PortfolioPrices)) as From_PortfolioPrices;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_PortfolioPrices create() => From_PortfolioPrices._();
+  From_PortfolioPrices createEmptyInstance() => create();
+  static $pb.PbList<From_PortfolioPrices> createRepeated() => $pb.PbList<From_PortfolioPrices>();
+  @$core.pragma('dart2js:noInline')
+  static From_PortfolioPrices getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_PortfolioPrices>(create);
+  static From_PortfolioPrices? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.Map<$core.String, $core.double> get pricesUsd => $_getMap(0);
+}
+
 class From_JadePorts_Port extends $pb.GeneratedMessage {
   factory From_JadePorts_Port({
     $core.String? jadeId,
@@ -8869,6 +8931,7 @@ enum From_Msg {
   localMessage, 
   marketDataSubscribe, 
   marketDataUpdate, 
+  portfolioPrices, 
   jadePorts, 
   jadeStatus, 
   gaidStatus, 
@@ -8929,6 +8992,7 @@ class From extends $pb.GeneratedMessage {
     From_LocalMessage? localMessage,
     From_MarketDataSubscribe? marketDataSubscribe,
     From_MarketDataUpdate? marketDataUpdate,
+    From_PortfolioPrices? portfolioPrices,
     From_JadePorts? jadePorts,
     From_JadeStatus? jadeStatus,
     From_GaidStatus? gaidStatus,
@@ -9090,6 +9154,9 @@ class From extends $pb.GeneratedMessage {
     if (marketDataUpdate != null) {
       $result.marketDataUpdate = marketDataUpdate;
     }
+    if (portfolioPrices != null) {
+      $result.portfolioPrices = portfolioPrices;
+    }
     if (jadePorts != null) {
       $result.jadePorts = jadePorts;
     }
@@ -9158,13 +9225,14 @@ class From extends $pb.GeneratedMessage {
     68 : From_Msg.localMessage,
     70 : From_Msg.marketDataSubscribe,
     71 : From_Msg.marketDataUpdate,
+    72 : From_Msg.portfolioPrices,
     80 : From_Msg.jadePorts,
     83 : From_Msg.jadeStatus,
     91 : From_Msg.gaidStatus,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 30, 31, 32, 33, 34, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 80, 83, 91])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 21, 22, 23, 24, 30, 31, 32, 33, 34, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 80, 83, 91])
     ..aOM<From_UpdatedTxs>(1, _omitFieldNames ? '' : 'updatedTxs', subBuilder: From_UpdatedTxs.create)
     ..aOM<From_UpdatedPegs>(2, _omitFieldNames ? '' : 'updatedPegs', subBuilder: From_UpdatedPegs.create)
     ..aOM<Asset>(3, _omitFieldNames ? '' : 'newAsset', subBuilder: Asset.create)
@@ -9217,6 +9285,7 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_LocalMessage>(68, _omitFieldNames ? '' : 'localMessage', subBuilder: From_LocalMessage.create)
     ..aOM<From_MarketDataSubscribe>(70, _omitFieldNames ? '' : 'marketDataSubscribe', subBuilder: From_MarketDataSubscribe.create)
     ..aOM<From_MarketDataUpdate>(71, _omitFieldNames ? '' : 'marketDataUpdate', subBuilder: From_MarketDataUpdate.create)
+    ..aOM<From_PortfolioPrices>(72, _omitFieldNames ? '' : 'portfolioPrices', subBuilder: From_PortfolioPrices.create)
     ..aOM<From_JadePorts>(80, _omitFieldNames ? '' : 'jadePorts', subBuilder: From_JadePorts.create)
     ..aOM<From_JadeStatus>(83, _omitFieldNames ? '' : 'jadeStatus', subBuilder: From_JadeStatus.create)
     ..aOM<From_GaidStatus>(91, _omitFieldNames ? '' : 'gaidStatus', subBuilder: From_GaidStatus.create)
@@ -9816,38 +9885,49 @@ class From extends $pb.GeneratedMessage {
   @$pb.TagNumber(71)
   From_MarketDataUpdate ensureMarketDataUpdate() => $_ensure(51);
 
+  @$pb.TagNumber(72)
+  From_PortfolioPrices get portfolioPrices => $_getN(52);
+  @$pb.TagNumber(72)
+  set portfolioPrices(From_PortfolioPrices v) { setField(72, v); }
+  @$pb.TagNumber(72)
+  $core.bool hasPortfolioPrices() => $_has(52);
+  @$pb.TagNumber(72)
+  void clearPortfolioPrices() => clearField(72);
+  @$pb.TagNumber(72)
+  From_PortfolioPrices ensurePortfolioPrices() => $_ensure(52);
+
   @$pb.TagNumber(80)
-  From_JadePorts get jadePorts => $_getN(52);
+  From_JadePorts get jadePorts => $_getN(53);
   @$pb.TagNumber(80)
   set jadePorts(From_JadePorts v) { setField(80, v); }
   @$pb.TagNumber(80)
-  $core.bool hasJadePorts() => $_has(52);
+  $core.bool hasJadePorts() => $_has(53);
   @$pb.TagNumber(80)
   void clearJadePorts() => clearField(80);
   @$pb.TagNumber(80)
-  From_JadePorts ensureJadePorts() => $_ensure(52);
+  From_JadePorts ensureJadePorts() => $_ensure(53);
 
   @$pb.TagNumber(83)
-  From_JadeStatus get jadeStatus => $_getN(53);
+  From_JadeStatus get jadeStatus => $_getN(54);
   @$pb.TagNumber(83)
   set jadeStatus(From_JadeStatus v) { setField(83, v); }
   @$pb.TagNumber(83)
-  $core.bool hasJadeStatus() => $_has(53);
+  $core.bool hasJadeStatus() => $_has(54);
   @$pb.TagNumber(83)
   void clearJadeStatus() => clearField(83);
   @$pb.TagNumber(83)
-  From_JadeStatus ensureJadeStatus() => $_ensure(53);
+  From_JadeStatus ensureJadeStatus() => $_ensure(54);
 
   @$pb.TagNumber(91)
-  From_GaidStatus get gaidStatus => $_getN(54);
+  From_GaidStatus get gaidStatus => $_getN(55);
   @$pb.TagNumber(91)
   set gaidStatus(From_GaidStatus v) { setField(91, v); }
   @$pb.TagNumber(91)
-  $core.bool hasGaidStatus() => $_has(54);
+  $core.bool hasGaidStatus() => $_has(55);
   @$pb.TagNumber(91)
   void clearGaidStatus() => clearField(91);
   @$pb.TagNumber(91)
-  From_GaidStatus ensureGaidStatus() => $_ensure(54);
+  From_GaidStatus ensureGaidStatus() => $_ensure(55);
 }
 
 class Settings_AccountAsset extends $pb.GeneratedMessage {

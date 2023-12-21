@@ -251,7 +251,9 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
 
     useEffect(() {
       if (widget.screen == ReviewScreen.edit) {
-        ref.read(orderReviewTwoStepProvider.notifier).setTwoStep(order.twoStep);
+        Future.microtask(() => ref
+            .read(orderReviewTwoStepProvider.notifier)
+            .setTwoStep(order.twoStep));
         return;
       }
 
@@ -394,7 +396,8 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                                         '≈ $dollarConversionPrice',
                                         style: const TextStyle(
                                           fontSize: 13,
-                                          color: Color(0xFF709EBA),
+                                          color:
+                                              SideSwapColors.airSuperiorityBlue,
                                         ),
                                       ),
                                     ),
@@ -677,7 +680,7 @@ class DOrderReviewBalance extends ConsumerWidget {
                     '≈ $dollarConversion',
                     style: const TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF709EBA),
+                      color: SideSwapColors.airSuperiorityBlue,
                     ),
                   ),
               ],
