@@ -29,10 +29,6 @@ pub enum Error {
     Server(String),
     #[error("no inputs found")]
     NotInputs,
-    #[error("duplicated order requested")]
-    DuplicatedOrder,
-    #[error("too many active requests")]
-    TooManyRequest,
 }
 
 #[derive(serde::Serialize, Clone)]
@@ -75,7 +71,6 @@ pub struct NewOrder {
     pub price: f64,
     pub private: Option<bool>,
     pub ttl_seconds: Option<u64>,
-    pub unique_key: Option<String>,
 }
 
 #[derive(serde::Serialize, Clone)]
@@ -95,7 +90,7 @@ impl Server {
     }
 }
 
-#[derive(serde::Serialize, Clone)]
+#[derive(serde::Serialize)]
 pub struct OrderInfo {
     pub order_id: sideswap_api::OrderId,
     pub asset_id: sideswap_api::AssetId,
@@ -103,6 +98,8 @@ pub struct OrderInfo {
     pub asset_amount: i64,
     pub price: f64,
     pub private: bool,
+    pub created_at: i64,
+    pub expires_at: Option<i64>,
 }
 
 async fn auth(

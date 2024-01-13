@@ -120,14 +120,10 @@ pub struct Asset {
     pub issuance_prevout: Option<IssuancePrevout>,
     pub issuer_pubkey: Option<String>,
     pub contract: Option<serde_json::Value>,
+    pub market_type: Option<MarketType>,
 }
 
 pub type Assets = Vec<Asset>;
-
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub struct AmpAsset {
-    pub asset_id: AssetId,
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetsRequestParam {

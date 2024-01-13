@@ -723,6 +723,7 @@ impl Data {
                                     issuance_prevout: None,
                                     issuer_pubkey: None,
                                     contract: None,
+                                    market_type: None,
                                 },
                                 true,
                             )
@@ -3266,9 +3267,11 @@ impl Data {
         }
 
         let private = msg.own.as_ref().map(|v| v.private).unwrap_or(false);
-        let swap_market = self.assets.get(&msg.details.asset).is_some();
-        let amp_market = self.amp_assets.get(&msg.details.asset).is_some();
-        let token_market = !swap_market && !amp_market;
+        let token_market = self
+            .assets
+            .get(&msg.details.asset)
+            .map(|asset| asset.market_type == Some(MarketType::Token))
+            .unwrap_or_default();
         let auto_sign = self
             .submit_data
             .get(&msg.order_id)

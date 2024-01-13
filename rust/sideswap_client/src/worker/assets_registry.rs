@@ -71,6 +71,7 @@ pub fn get_assets(
                     }),
                     issuer_pubkey: Some(v.issuer_pubkey.clone()),
                     contract: Some(v.contract.clone()),
+                    market_type: Some(sideswap_api::MarketType::Token),
                 }
             })
         })

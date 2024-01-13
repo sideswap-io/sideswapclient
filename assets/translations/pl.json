@@ -535,5 +535,8 @@
   "Export": "Eksportuj",
   "Export log": "Eksportuj plik log",
   "Export previous log": "Eksportuj poprzedni plik log",
-  "All orders": "Wszystkie"
+  "All orders": "Wszystkie",
+  "Biometric authentication failed": "Autentykacja biometryczna nie powiodła się",
+  "Error setup new PIN code - mnemonic error": "Błąd podczas ustawiania nowego PIN-u - błąd mnemonica"
+
 }

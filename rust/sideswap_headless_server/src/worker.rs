@@ -37,8 +37,6 @@ struct Data {
     wallet: wallet::Wallet,
     orders: BTreeMap<sideswap_api::OrderId, OrderState>,
     swap_inputs: Option<wallet::SwapInputs>,
-    unique_orders: BTreeMap<String, sideswap_api::OrderId>,
-    sign_request_count: usize,
 }
 
 fn request_ws_connect(data: &mut Data) {
@@ -94,7 +92,6 @@ fn process_wallet(data: &mut Data, resp: wallet::Resp) {
             data.swap_inputs = Some(swap_inputs);
         }
         wallet::Resp::SignedPset(order_id, signed_pset) => {
-            data.sign_request_count -= 1;
             log::debug!("got signed pset...");
             make_async_request(
                 data,
@@ -116,7 +113,6 @@ fn process_wallet(data: &mut Data, resp: wallet::Resp) {
             );
         }
         wallet::Resp::PsetSignFailed(order_id) => {
-            data.sign_request_count -= 1;
             log::debug!("got pset sign failed notification, order_id: {order_id}");
             cancel_order(data, order_id);
         }
@@ -255,25 +251,6 @@ fn process_submit_inputs(
             Ok(sideswap_api::Response::PsetMaker(_)) => {
                 log::debug!("submitting pset details succeed");
 
-                if let Some(unique_key) = new_order.unique_key {
-                    if let Some(existing_order_id) = data.unique_orders.get(&unique_key) {
-                        let is_allowed = match data.orders.get(&existing_order_id) {
-                            Some(OrderState::Active(_)) => false,
-                            Some(OrderState::Succeed(_, _)) => false,
-                            Some(OrderState::Failed) => true,
-                            None => true,
-                        };
-
-                        if !is_allowed {
-                            let _ = res_sender.send(Err(api_server::Error::DuplicatedOrder));
-                            cancel_order(data, order_id);
-                            return;
-                        }
-                    }
-
-                    data.unique_orders.insert(unique_key, order_id);
-                }
-
                 let _ = res_sender.send(Ok(api_server::OrderInfo {
                     order_id: order_id,
                     asset_id: details.asset,
@@ -281,6 +258,8 @@ fn process_submit_inputs(
                     asset_amount: details.asset_amount,
                     price: details.price,
                     private: true,
+                    created_at: 0,
+                    expires_at: None,
                 }));
             }
             Ok(_) => panic!("unexpected response"),
@@ -298,12 +277,6 @@ fn process_new_order(
     new_order: NewOrder,
     res_sender: oneshot::Sender<Result<api_server::OrderInfo, api_server::Error>>,
 ) {
-    if data.sign_request_count > 5 {
-        log::error!("too many active requests");
-        let _ = res_sender.send(Err(api_server::Error::TooManyRequest));
-        return;
-    }
-
     make_async_request(
         data,
         sideswap_api::Request::Submit(sideswap_api::SubmitRequest {
@@ -426,7 +399,6 @@ fn process_ws(data: &mut Data, resp: ws::WrappedResponse) {
                 sideswap_api::Notification::Sign(sign) => {
                     log::debug!("sign swap...");
                     data.wallet.send_req(wallet::Req::SignPset(sign));
-                    data.sign_request_count += 1;
                 }
                 _ => {}
             },
@@ -453,8 +425,6 @@ pub fn run(
         wallet,
         orders: BTreeMap::new(),
         swap_inputs: None,
-        unique_orders: BTreeMap::new(),
-        sign_request_count: 0,
     };
 
     request_ws_connect(&mut data);

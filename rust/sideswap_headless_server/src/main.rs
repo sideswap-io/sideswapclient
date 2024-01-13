@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 mod api_server;
 mod wallet;
 mod worker;
@@ -57,14 +55,6 @@ async fn main() {
         callback: Box::new(move |req| {
             worker_sender_copy.send(worker::Req::Wallet(req)).unwrap();
         }),
-    });
-
-    let wallet_copy = wallet.clone();
-    tokio::spawn(async move {
-        loop {
-            wallet_copy.send_req(wallet::Req::Timer);
-            tokio::time::sleep(Duration::from_secs(1)).await;
-        }
     });
 
     let (ws_sender, ws_receiver, _hint) = sideswap_common::ws::manual::start(None);

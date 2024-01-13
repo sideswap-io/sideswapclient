@@ -524,5 +524,7 @@
   "Export": "导出",
   "Export log": "导出日志",
   "Export previous log": "导出上一个日志",
-  "All orders": "All orders"
+  "All orders": "All orders",
+  "Biometric authentication failed": "Biometric authentication failed",
+  "Error setup new PIN code - mnemonic error": "Error setup new PIN code - mnemonic error"
 }

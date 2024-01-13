@@ -120,7 +120,7 @@ class Settings extends ConsumerWidget {
                       builder: (context, ref, _) {
                         final isBiometricAvailable = useState(false);
                         final isBiometricEnabled =
-                            ref.watch(biometricAvailableProvider);
+                            ref.watch(isBiometricEnabledProvider);
 
                         useAsyncEffect(() async {
                           isBiometricAvailable.value = await ref

@@ -44,7 +44,7 @@ class PinTextFieldState extends State<PinTextField> {
     controller.selection = TextSelection.fromPosition(
         TextPosition(offset: controller.text.length));
     return SizedBox(
-      height: widget.error && widget.errorMessage.isNotEmpty ? 75 : 58,
+      height: widget.error && widget.errorMessage.isNotEmpty ? 83 : 61,
       child: Column(
         children: [
           Opacity(

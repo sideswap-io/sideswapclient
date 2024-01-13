@@ -494,5 +494,7 @@
   "Export": "Export",
   "Export log": "Export log",
   "Export previous log": "Export previous log",
-  "All orders": "All orders"
+  "All orders": "All orders",
+  "Biometric authentication failed": "Biometric authentication failed",
+  "Error setup new PIN code - mnemonic error": "Error setup new PIN code - mnemonic error"
 }

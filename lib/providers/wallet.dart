@@ -2221,12 +2221,18 @@ class WalletChangeNotifier with ChangeNotifier {
     ref.read(pageStatusStateProvider.notifier).setStatus(Status.pinSetup);
   }
 
-  void sendEncryptPin(String pin) async {
+  bool sendEncryptPin(String pin) {
+    if (_mnemonic.isEmpty) {
+      return false;
+    }
+
     final msg = To();
     msg.encryptPin = To_EncryptPin();
     msg.encryptPin.pin = pin;
     msg.encryptPin.mnemonic = _mnemonic;
     sendMsg(msg);
+
+    return true;
   }
 
   void sendDecryptPin(String pin) {

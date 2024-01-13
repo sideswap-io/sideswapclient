@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/providers/biometric_available_provider.dart';
 
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/models/pin_models.dart';
@@ -271,7 +272,7 @@ class PinSetupProvider extends ChangeNotifier {
         notifyListeners();
         return;
       } else {
-        await _sendPin(firstPin);
+        await _prepareToSendPin(firstPin);
         return;
       }
     }
@@ -301,11 +302,36 @@ class PinSetupProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _sendPin(String pin) async {
+  Future<void> _prepareToSendPin(String pin) async {
     await pinEnryptedSubscription?.cancel();
     pinEnryptedSubscription =
         ref.read(walletProvider).pinEncryptDataSubject.listen(_onPinData);
-    ref.read(walletProvider).sendEncryptPin(pin);
+    if (ref.read(isBiometricEnabledProvider)) {
+      if (await ref.read(walletProvider).isAuthenticated()) {
+        _sendPin(pin);
+        return;
+      }
+    } else {
+      _sendPin(pin);
+      return;
+    }
+
+    logger.e('Biometric authentication failed on sending pin');
+    errorMessage = 'Biometric authentication failed'.tr();
+    state = PinSetupStateEnum.error;
+    notifyListeners();
+  }
+
+  void _sendPin(String pin) {
+    final result = ref.read(walletProvider).sendEncryptPin(pin);
+
+    if (!result) {
+      errorMessage = 'Error setup new PIN code - mnemonic error'.tr();
+      state = PinSetupStateEnum.error;
+      notifyListeners();
+      return;
+    }
+
     state = PinSetupStateEnum.done;
     notifyListeners();
   }
