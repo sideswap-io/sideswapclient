@@ -1,0 +1,11 @@
+# SideSwap testnet server (Liquid testnet network)
+env = "Testnet"
+
+# Work dir to store temporary files
+work_dir = "/tmp/work_dir"
+
+# Mnemonic that has existing B-JDE balance and will receive L-BTC balance
+mnemonic = "lonely output youth better spend love dish top struggle rude dune dog"
+
+[api_server]
+listen_on = "127.0.0.1:8080"

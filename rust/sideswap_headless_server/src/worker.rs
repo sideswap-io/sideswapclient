@@ -9,7 +9,8 @@ use sideswap_common::{env::Env, ws::manual as ws};
 use tokio::sync::oneshot;
 
 use crate::{
-    api_server::{self, NewOrder},
+    api_server::{self, NewOrder, SendRequest, SendResponse},
+    db::Db,
     wallet,
 };
 
@@ -22,7 +23,8 @@ pub enum Req {
 type AsyncRequest = Box<dyn FnOnce(&mut Data, Result<sideswap_api::Response, sideswap_api::Error>)>;
 
 enum OrderState {
-    Active(Vec<elements::OutPoint>),
+    Pending(Vec<elements::OutPoint>),
+    Active(Vec<elements::OutPoint>, api_server::OrderInfo),
     Succeed(Vec<elements::OutPoint>, sideswap_api::Txid),
     Failed,
 }
@@ -30,13 +32,16 @@ enum OrderState {
 struct Data {
     env: Env,
     policy_asset: sideswap_api::AssetId,
-    session_id: sideswap_api::SessionId,
     ws_connected: bool,
     async_requests: BTreeMap<RequestId, AsyncRequest>,
     ws_sender: crossbeam_channel::Sender<ws::WrappedRequest>,
     wallet: wallet::Wallet,
     orders: BTreeMap<sideswap_api::OrderId, OrderState>,
     swap_inputs: Option<wallet::SwapInputs>,
+    unique_orders: BTreeMap<String, sideswap_api::OrderId>,
+    unique_orders_inv: BTreeMap<sideswap_api::OrderId, String>,
+    sign_request_count: usize,
+    db: Db,
 }
 
 fn request_ws_connect(data: &mut Data) {
@@ -91,7 +96,9 @@ fn process_wallet(data: &mut Data, resp: wallet::Resp) {
             log::debug!("update swap inputs ...");
             data.swap_inputs = Some(swap_inputs);
         }
+
         wallet::Resp::SignedPset(order_id, signed_pset) => {
+            data.sign_request_count -= 1;
             log::debug!("got signed pset...");
             make_async_request(
                 data,
@@ -107,14 +114,16 @@ fn process_wallet(data: &mut Data, resp: wallet::Resp) {
                     Ok(_) => panic!("unexpected response"),
                     Err(err) => {
                         log::error!("signing order failed: {}", err.message);
-                        cancel_order(data, order_id);
+                        order_failed(data, order_id);
                     }
                 },
             );
         }
+
         wallet::Resp::PsetSignFailed(order_id) => {
+            data.sign_request_count -= 1;
             log::debug!("got pset sign failed notification, order_id: {order_id}");
-            cancel_order(data, order_id);
+            order_failed(data, order_id);
         }
     }
 }
@@ -123,17 +132,20 @@ fn get_order_status(
     data: &mut Data,
     order_id: sideswap_api::OrderId,
 ) -> Result<api_server::OrderStatus, api_server::Error> {
-    let order_state = data.orders.get(&order_id);
-    let status = match order_state {
-        Some(OrderState::Active(_)) => api_server::OrderStatus {
+    let order_state = data
+        .orders
+        .get(&order_id)
+        .ok_or(api_server::Error::UnknownOrder)?;
+    let status = match &order_state {
+        OrderState::Pending(_) | OrderState::Active(_, _) => api_server::OrderStatus {
             status: api_server::Status::Active,
             txid: None,
         },
-        Some(OrderState::Succeed(_, txid)) => api_server::OrderStatus {
+        OrderState::Succeed(_, txid) => api_server::OrderStatus {
             status: api_server::Status::Succeed,
             txid: Some(*txid),
         },
-        Some(OrderState::Failed) | None => api_server::OrderStatus {
+        OrderState::Failed => api_server::OrderStatus {
             status: api_server::Status::Expired,
             txid: None,
         },
@@ -141,12 +153,26 @@ fn get_order_status(
     Ok(status)
 }
 
-fn cancel_order(data: &mut Data, order_id: sideswap_api::OrderId) {
-    data.orders.insert(order_id, OrderState::Failed);
-    send_request(
-        data,
-        sideswap_api::Request::Cancel(sideswap_api::CancelRequest { order_id }),
-    );
+fn list_orders(data: &mut Data) -> Vec<api_server::OrderInfo> {
+    data.orders
+        .values()
+        .filter_map(|order| match order {
+            OrderState::Pending(_) => None,
+            OrderState::Active(_, info) => Some(info.clone()),
+            OrderState::Succeed(_, _) => None,
+            OrderState::Failed => None,
+        })
+        .collect()
+}
+
+fn order_failed(data: &mut Data, order_id: sideswap_api::OrderId) {
+    if let Some(order) = data.orders.get_mut(&order_id) {
+        *order = OrderState::Failed;
+        send_request(
+            data,
+            sideswap_api::Request::Cancel(sideswap_api::CancelRequest { order_id }),
+        );
+    }
 }
 
 fn process_submit_inputs(
@@ -163,7 +189,7 @@ fn process_submit_inputs(
         Some(swap_inputs) => swap_inputs,
         None => {
             log::error!("not swap inputs");
-            cancel_order(data, order_id);
+            order_failed(data, order_id);
             let _ = res_sender.send(Err(api_server::Error::NotInputs));
             return;
         }
@@ -181,8 +207,9 @@ fn process_submit_inputs(
     let reserved = data
         .orders
         .values()
-        .filter_map(|order| match order {
-            OrderState::Active(inputs) => Some(inputs.iter()),
+        .filter_map(|order| match &order {
+            OrderState::Pending(inputs) => Some(inputs.iter()),
+            OrderState::Active(inputs, _) => Some(inputs.iter()),
             OrderState::Succeed(inputs, _) => Some(inputs.iter()),
             OrderState::Failed => None,
         })
@@ -195,6 +222,8 @@ fn process_submit_inputs(
         .get(&send_asset)
         .cloned()
         .unwrap_or_default();
+    let total_inputs_count = inputs.len();
+    let total_inputs_amount = inputs.iter().map(|utxo| utxo.satoshi).sum::<u64>();
 
     inputs.retain(|input| {
         !reserved.contains(&elements::OutPoint {
@@ -218,8 +247,8 @@ fn process_submit_inputs(
         .collect::<Vec<_>>();
 
     if inputs_amount < send_amount {
-        log::error!("not enough UTXOs, send_amount: {send_amount}, inputs_amount: {inputs_amount}");
-        cancel_order(data, order_id);
+        log::error!("not enough UTXOs, send amount: {send_amount}, unused amount: {inputs_amount}, total amount: {total_inputs_amount} ({total_inputs_count} inputs)");
+        order_failed(data, order_id);
         let _ = res_sender.send(Err(api_server::Error::NotInputs));
         return;
     }
@@ -233,7 +262,8 @@ fn process_submit_inputs(
         })
         .collect::<Vec<_>>();
 
-    data.orders.insert(order_id, OrderState::Active(utxos));
+    data.orders
+        .insert(order_id, OrderState::Pending(utxos.clone()));
 
     make_async_request(
         data,
@@ -243,7 +273,7 @@ fn process_submit_inputs(
             inputs,
             recv_addr: swap_inputs.recv_address.clone(),
             change_addr: swap_inputs.change_address.clone(),
-            private: true,
+            private: new_order.private.unwrap_or(true),
             ttl_seconds: new_order.ttl_seconds,
             signed_half: None,
         }),
@@ -251,21 +281,45 @@ fn process_submit_inputs(
             Ok(sideswap_api::Response::PsetMaker(_)) => {
                 log::debug!("submitting pset details succeed");
 
-                let _ = res_sender.send(Ok(api_server::OrderInfo {
+                if let Some(unique_key) = new_order.unique_key {
+                    if let Some(existing_order_id) = data.unique_orders.get(&unique_key) {
+                        let is_allowed = match data.orders.get(&existing_order_id) {
+                            Some(OrderState::Pending(_)) => false,
+                            Some(OrderState::Active(_, _)) => false,
+                            Some(OrderState::Succeed(_, _)) => false,
+                            Some(OrderState::Failed) => true,
+                            None => true,
+                        };
+
+                        if !is_allowed {
+                            let _ = res_sender.send(Err(api_server::Error::DuplicatedOrder));
+                            order_failed(data, order_id);
+                            return;
+                        }
+                    }
+
+                    data.unique_orders.insert(unique_key.clone(), order_id);
+                    data.unique_orders_inv.insert(order_id, unique_key);
+                }
+
+                let new_order = api_server::OrderInfo {
                     order_id: order_id,
                     asset_id: details.asset,
                     bitcoin_amount: details.bitcoin_amount,
                     asset_amount: details.asset_amount,
                     price: details.price,
                     private: true,
-                    created_at: 0,
-                    expires_at: None,
-                }));
+                };
+
+                data.orders
+                    .insert(order_id, OrderState::Active(utxos, new_order.clone()));
+
+                let _ = res_sender.send(Ok(new_order));
             }
             Ok(_) => panic!("unexpected response"),
             Err(err) => {
                 log::error!("submitting order failed: {}", err.message);
-                cancel_order(data, order_id);
+                order_failed(data, order_id);
                 let _ = res_sender.send(Err(api_server::Error::NotInputs));
             }
         },
@@ -277,6 +331,12 @@ fn process_new_order(
     new_order: NewOrder,
     res_sender: oneshot::Sender<Result<api_server::OrderInfo, api_server::Error>>,
 ) {
+    if data.sign_request_count > 5 {
+        log::error!("too many active requests");
+        let _ = res_sender.send(Err(api_server::Error::TooManyRequest));
+        return;
+    }
+
     make_async_request(
         data,
         sideswap_api::Request::Submit(sideswap_api::SubmitRequest {
@@ -286,8 +346,6 @@ fn process_new_order(
                 asset_amount: Some(-new_order.asset_amount),
                 price: Some(new_order.price),
                 index_price: None,
-                force_private: None,
-                disable_price_edit: None,
             },
         }),
         move |data, res| match res {
@@ -303,6 +361,36 @@ fn process_new_order(
     );
 }
 
+fn process_order_cancel(
+    data: &mut Data,
+    order_id: sideswap_api::OrderId,
+    res_sender: oneshot::Sender<Result<api_server::CancelResponse, api_server::Error>>,
+) {
+    make_async_request(
+        data,
+        sideswap_api::Request::Cancel(sideswap_api::CancelRequest { order_id }),
+        move |data, res| match res {
+            Ok(sideswap_api::Response::Cancel(_resp)) => {
+                order_failed(data, order_id);
+                let _ = res_sender.send(Ok(api_server::CancelResponse {}));
+            }
+            Ok(_) => panic!("unexpected response"),
+            Err(err) => {
+                log::error!("order cancel failed: {}", err.message);
+                let _ = res_sender.send(Err(api_server::Error::Server(err.message)));
+            }
+        },
+    );
+}
+
+fn process_send(
+    data: &mut Data,
+    req: SendRequest,
+    res_sender: oneshot::Sender<Result<SendResponse, api_server::Error>>,
+) {
+    data.wallet.send_req(wallet::Req::Send(req, res_sender));
+}
+
 fn process_api(data: &mut Data, req: api_server::Req) {
     match req {
         api_server::Req::NewOrder(new_order, res_sender) => {
@@ -312,7 +400,15 @@ fn process_api(data: &mut Data, req: api_server::Req) {
             let res = get_order_status(data, order_id);
             let _ = res_sender.send(res);
         }
-        api_server::Req::ListOrders(_, _) => {}
+        api_server::Req::OrderCancel(order_id, res_sender) => {
+            process_order_cancel(data, order_id, res_sender);
+        }
+        api_server::Req::ListOrders((), res_sender) => {
+            let _ = res_sender.send(list_orders(data));
+        }
+        api_server::Req::Send(req, res_sender) => {
+            process_send(data, req, res_sender);
+        }
     }
 }
 
@@ -323,9 +419,7 @@ fn process_ws(data: &mut Data, resp: ws::WrappedResponse) {
 
             make_async_request(
                 data,
-                sideswap_api::Request::Login(sideswap_api::LoginRequest {
-                    session_id: Some(data.session_id),
-                }),
+                sideswap_api::Request::Login(sideswap_api::LoginRequest { session_id: None }),
                 |data, res| match res {
                     Ok(sideswap_api::Response::Login(resp)) => {
                         log::debug!(
@@ -333,7 +427,7 @@ fn process_ws(data: &mut Data, resp: ws::WrappedResponse) {
                             serde_json::to_string(&resp.orders).unwrap()
                         );
                         for order in resp.orders.into_iter() {
-                            cancel_order(data, order.order_id);
+                            order_failed(data, order.order_id);
                         }
                     }
                     Ok(_) => panic!("unexpected response"),
@@ -373,7 +467,7 @@ fn process_ws(data: &mut Data, resp: ws::WrappedResponse) {
                 sideswap_api::Notification::OrderRemoved(order) => {
                     log::debug!("order removed: {}", order.order_id);
                     if let Some(order) = data.orders.get_mut(&order.order_id) {
-                        if !matches!(order, OrderState::Active(_)) {
+                        if !matches!(&order, OrderState::Active(_, _)) {
                             *order = OrderState::Failed;
                         }
                     }
@@ -384,21 +478,33 @@ fn process_ws(data: &mut Data, resp: ws::WrappedResponse) {
                         complete.order_id,
                         complete.txid
                     );
-                    if let Some(txid) = complete.txid {
-                        let order = data.orders.remove(&complete.order_id).unwrap();
-                        let inputs = match order {
-                            OrderState::Active(inputs) => inputs,
-                            _ => panic!("unexpected state"),
-                        };
-                        data.orders
-                            .insert(complete.order_id, OrderState::Succeed(inputs, txid));
-                    } else {
-                        data.orders.insert(complete.order_id, OrderState::Failed);
+                    if let Some(order) = data.orders.get_mut(&complete.order_id) {
+                        if let Some(txid) = complete.txid {
+                            let inputs = match order {
+                                OrderState::Active(inputs, _) => inputs.clone(),
+                                _ => panic!("unexpected state"),
+                            };
+                            let unique_key =
+                                data.unique_orders_inv.get(&complete.order_id).cloned();
+
+                            data.db
+                                .add_swap(&crate::db::Swap {
+                                    order_id: complete.order_id.into(),
+                                    txid: txid.into(),
+                                    unique_key,
+                                })
+                                .expect("should not fail");
+
+                            *order = OrderState::Succeed(inputs, txid);
+                        } else {
+                            *order = OrderState::Failed;
+                        }
                     }
                 }
                 sideswap_api::Notification::Sign(sign) => {
                     log::debug!("sign swap...");
                     data.wallet.send_req(wallet::Req::SignPset(sign));
+                    data.sign_request_count += 1;
                 }
                 _ => {}
             },
@@ -411,21 +517,32 @@ pub fn run(
     req_receiver: crossbeam_channel::Receiver<Req>,
     ws_sender: crossbeam_channel::Sender<ws::WrappedRequest>,
     wallet: wallet::Wallet,
-    session_id: sideswap_api::SessionId,
+    db: Db,
 ) {
     let policy_asset = sideswap_api::AssetId::from_str(env.data().policy_asset).unwrap();
 
     let mut data = Data {
         env,
         policy_asset,
-        session_id,
         ws_connected: false,
         async_requests: Default::default(),
         ws_sender,
         wallet,
         orders: BTreeMap::new(),
         swap_inputs: None,
+        unique_orders: BTreeMap::new(),
+        unique_orders_inv: BTreeMap::new(),
+        sign_request_count: 0,
+        db,
     };
+
+    let existing = data.db.load_all().expect("must not fail");
+    for swap in existing {
+        data.orders.insert(
+            swap.order_id.0,
+            OrderState::Succeed(Vec::new(), swap.txid.0),
+        );
+    }
 
     request_ws_connect(&mut data);
 

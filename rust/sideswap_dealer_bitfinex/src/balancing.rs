@@ -210,10 +210,10 @@ pub fn process_balancing(
                     let result = rpc::make_rpc_call::<rpc::SendToAddressResult>(
                         rpc_http_client,
                         &args.rpc,
-                        &rpc::sendtoaddress_asset(
+                        &rpc::sendtoaddress(
                             &args.bitfinex_fund_address,
                             balancing.amount.to_bitcoin(),
-                            &asset.asset_id.to_string(),
+                            &asset.asset_id,
                         ),
                     );
                     match result {
@@ -273,12 +273,14 @@ pub fn process_balancing(
                     .cloned()
                     .unwrap_or_default();
                 if bitcoin_balance >= balancing.amount.to_bitcoin() && module_connected {
+                    let bitcoin_asset = AssetId::from_str(args.env.data().policy_asset).unwrap();
                     let result = rpc::make_rpc_call::<rpc::SendToAddressResult>(
                         rpc_http_client,
                         &args.rpc,
-                        &rpc::sendtoaddress_bitcoin(
+                        &rpc::sendtoaddress(
                             &args.bitfinex_fund_address,
                             balancing.amount.to_bitcoin(),
+                            &bitcoin_asset,
                         ),
                     );
                     match result {

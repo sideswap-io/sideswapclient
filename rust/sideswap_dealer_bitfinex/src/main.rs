@@ -800,7 +800,8 @@ fn main() {
                     send_request,
                     Assets,
                     Some(AssetsRequestParam {
-                        embedded_icons: false,
+                        embedded_icons: Some(false),
+                        all_assets: Some(true),
                     })
                 )
                 .expect("loading assets failed")

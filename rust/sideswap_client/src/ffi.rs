@@ -2,6 +2,7 @@ use prost::Message;
 use sideswap_common::env::Env;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::Once;
 
@@ -331,14 +332,14 @@ pub fn log_format(
     write!(w, "{}", &text.as_str()[..len])
 }
 
-pub fn init_log(work_dir: &str) {
-    let path = format!("{}/{}", work_dir, "sideswap.log");
+pub fn init_log(work_dir: impl AsRef<Path>) {
+    let path = work_dir.as_ref().join("sideswap.log");
 
     let file_size = std::fs::metadata(&path)
         .map(|metadata| metadata.len())
         .unwrap_or_default();
     if file_size > 50 * 1024 * 1024 {
-        let path_old = format!("{}/{}", work_dir, "sideswap_prev.log");
+        let path_old = work_dir.as_ref().join("sideswap_prev.log");
         let _ = std::fs::rename(&path, path_old);
     }
 

@@ -53,6 +53,12 @@ pub struct PhoneKey(pub String);
 )]
 pub struct Hash32(pub [u8; 32]);
 
+impl rand::distributions::Distribution<Hash32> for rand::distributions::Standard {
+    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Hash32 {
+        Hash32(rng.gen())
+    }
+}
+
 impl std::str::FromStr for Hash32 {
     type Err = hex::FromHexError;
 
@@ -127,7 +133,8 @@ pub type Assets = Vec<Asset>;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AssetsRequestParam {
-    pub embedded_icons: bool,
+    pub embedded_icons: Option<bool>,
+    pub all_assets: Option<bool>,
 }
 pub type AssetsRequest = Option<AssetsRequestParam>;
 
@@ -546,8 +553,6 @@ pub struct PriceOrder {
     pub asset_amount: Option<f64>,
     pub price: Option<f64>,
     pub index_price: Option<f64>,
-    pub force_private: Option<bool>,
-    pub disable_price_edit: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -974,6 +979,11 @@ pub struct MarketDataUpdateNotification {
     pub update: ChartPoint,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct NewAssetNotification {
+    pub asset: Asset,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SwapPrice {
     pub asset_id: AssetId,
@@ -1179,6 +1189,7 @@ pub enum Notification {
     BlindedSwapDealer(BlindedSwapDealerNotification),
     SwapDone(SwapDoneNotification),
 
+    NewAsset(NewAssetNotification),
     MarketDataUpdate(MarketDataUpdateNotification),
     NewSwapPrice(NewSwapPriceNotification),
 }

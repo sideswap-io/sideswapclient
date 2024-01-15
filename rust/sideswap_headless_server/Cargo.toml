@@ -21,3 +21,5 @@ crossbeam-channel.workspace = true
 elements.workspace = true
 base64.workspace = true
 rand.workspace = true
+anyhow.workspace = true
+rusqlite = { version = "0.30.0", features = ["bundled"] }

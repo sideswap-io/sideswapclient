@@ -490,8 +490,6 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                         asset_amount: None,
                         price: Some(price),
                         index_price: None,
-                        force_private: None,
-                        disable_price_edit: None,
                     },
                 }
             );
@@ -695,7 +693,8 @@ fn worker(
                     send_request,
                     Assets,
                     Some(AssetsRequestParam {
-                        embedded_icons: false,
+                        embedded_icons: Some(false),
+                        all_assets: Some(true),
                     })
                 )
                 .expect("loading assets failed")

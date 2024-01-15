@@ -1,10 +1,7 @@
 use std::collections::HashMap;
 
-use base64::Engine;
 use sideswap_api::{Asset, AssetId, IssuancePrevout, Ticker};
 use sideswap_common::env::{self, Env};
-
-use super::DEFAULT_ICON;
 
 pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::ExtendedPubKey) {
     if let Err(error) = gdk_registry::init(registry_path) {
@@ -46,19 +43,13 @@ pub fn get_assets(
         .zip(asset_ids_copy.iter())
         .filter_map(|(asset_id, asset_id_copy)| {
             loaded_assets.assets.get(asset_id_copy).map(|v| {
-                let icon = loaded_assets
-                    .icons
-                    .get(asset_id_copy)
-                    .cloned()
-                    .unwrap_or_else(|| {
-                        base64::engine::general_purpose::STANDARD.encode(DEFAULT_ICON)
-                    });
+                let icon = loaded_assets.icons.get(asset_id_copy).cloned();
                 let default_ticker = || format!("{:0.4}", &asset_id.to_string());
                 Asset {
                     asset_id: *asset_id,
                     name: v.name.clone(),
                     ticker: Ticker(v.ticker.clone().unwrap_or_else(default_ticker)),
-                    icon: Some(icon),
+                    icon,
                     precision: v.precision,
                     icon_url: None,
                     instant_swaps: Some(false),

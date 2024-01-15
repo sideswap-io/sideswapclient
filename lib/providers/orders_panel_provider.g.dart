@@ -6,7 +6,7 @@ part of 'orders_panel_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$ordersPanelHash() => r'10dd2edb8dddca430e8b190bceb54160a374a9d8';
+String _$ordersPanelHash() => r'f641b7189e2f33d0a1f4043ba21aec0e525736dd';
 
 /// See also [ordersPanel].
 @ProviderFor(ordersPanel)

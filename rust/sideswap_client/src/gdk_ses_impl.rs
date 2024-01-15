@@ -1150,7 +1150,6 @@ unsafe fn try_create_tx(
 ) -> Result<serde_json::Value, anyhow::Error> {
     let session = data.session;
     let subaccount = data.get_subaccount()?;
-    let send_asset = AssetId::from_str(&tx.balance.asset_id).unwrap();
 
     let unspent_outputs = try_get_unspent_outputs(data)?.unspent_outputs;
 
@@ -1158,25 +1157,25 @@ unsafe fn try_create_tx(
         .get(&data.policy_asset)
         .map(|inputs| inputs.iter().map(|input| input.satoshi).sum::<u64>())
         .unwrap_or_default();
-    let inputs = unspent_outputs.get(&send_asset);
-    let total = inputs
-        .iter()
-        .flat_map(|inputs| inputs.iter())
-        .map(|input| input.satoshi)
-        .sum::<u64>() as i64;
-    ensure!(tx.balance.amount <= total, "Insufficient funds");
     ensure!(bitcoin_balance > 0, "Insufficient L-BTC to pay network fee");
-    let send_all = tx.balance.amount == total && send_asset == data.policy_asset;
 
-    let tx_addressee = gdk_json::TxAddressee {
-        address: tx.addr.clone(),
-        satoshi: tx.balance.amount as u64,
-        asset_id: send_asset,
-        is_greedy: Some(send_all),
-    };
+    let addressees = tx
+        .addressees
+        .iter()
+        .map(|addresse| -> Result<gdk_json::TxAddressee, anyhow::Error> {
+            let asset_id = AssetId::from_str(&addresse.asset_id)?;
+            Ok(gdk_json::TxAddressee {
+                address: addresse.address.clone(),
+                satoshi: addresse.amount as u64,
+                asset_id,
+                is_greedy: addresse.is_greedy,
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
     let create_tx = gdk_json::CreateTransactionOpt {
         subaccount,
-        addressees: vec![tx_addressee],
+        addressees,
         utxos: unspent_outputs,
         // utxo_strategy: None,
         is_partial: false,

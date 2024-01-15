@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 mod api_server;
+mod db;
 mod wallet;
 mod worker;
 
@@ -8,7 +11,6 @@ pub struct Args {
     work_dir: String,
     mnemonic: String,
     api_server: api_server::Settings,
-    session_id: sideswap_api::SessionId,
 }
 
 #[tokio::main]
@@ -29,10 +31,12 @@ async fn main() {
         work_dir,
         mnemonic,
         api_server,
-        session_id,
     } = conf.try_into().expect("invalid config");
 
     sideswap_client::ffi::init_log(&work_dir);
+
+    let db_path = std::path::Path::new(&work_dir).join("data.sqlite");
+    let db = db::Db::open(&db_path).expect("must not fail");
 
     let (worker_sender, worker_receiver) = crossbeam_channel::unbounded::<worker::Req>();
 
@@ -57,6 +61,14 @@ async fn main() {
         }),
     });
 
+    let wallet_copy = wallet.clone();
+    tokio::spawn(async move {
+        loop {
+            wallet_copy.send_req(wallet::Req::Timer);
+            tokio::time::sleep(Duration::from_secs(1)).await;
+        }
+    });
+
     let (ws_sender, ws_receiver, _hint) = sideswap_common::ws::manual::start(None);
 
     let worker_sender_copy = worker_sender.clone();
@@ -66,7 +78,7 @@ async fn main() {
     });
 
     std::thread::spawn(move || {
-        worker::run(env, worker_receiver, ws_sender, wallet, session_id);
+        worker::run(env, worker_receiver, ws_sender, wallet, db);
     });
 
     std::panic::set_hook(Box::new(|i| {

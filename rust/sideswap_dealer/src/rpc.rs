@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::collections::BTreeMap;
 use std::vec::Vec;
 
@@ -13,7 +14,7 @@ pub struct RpcServer {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RpcRequest {
     pub method: String,
-    pub params: Vec<serde_json::value::Value>,
+    pub params: serde_json::value::Value,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -88,12 +89,12 @@ pub struct GetWalletInfo {
 pub fn get_wallet_info() -> RpcRequest {
     RpcRequest {
         method: "getwalletinfo".to_owned(),
-        params: vec![],
+        params: serde_json::Value::Null,
     }
 }
 
 pub fn get_new_address() -> RpcRequest {
-    get_new_address_with_type(Some(AddressType::P2SH))
+    get_new_address_with_type(AddressType::P2SH)
 }
 
 #[derive(Copy, Clone)]
@@ -111,114 +112,22 @@ pub fn address_type_str(addr_type: AddressType) -> &'static str {
     }
 }
 
-pub fn get_new_address_with_type(addr_type: Option<AddressType>) -> RpcRequest {
-    let addr_type = addr_type.map_or(serde_json::Value::Null, |addr_type| {
-        serde_json::json!(address_type_str(addr_type))
-    });
+pub fn get_new_address_with_type(addr_type: AddressType) -> RpcRequest {
     RpcRequest {
         method: "getnewaddress".into(),
-        // label address_type
-        params: vec![serde_json::json!(""), addr_type],
+        params: json!({
+            "address_type": address_type_str(addr_type),
+        }),
     }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RawUtxo {
-    pub txid: String,
-    pub vout: i32,
-    pub asset: String,
-    pub amount: serde_json::Number,
-}
-
-pub type RawTxInputs = sideswap_common::types::TxOut;
-
-pub type RawTxOutputsAmounts = BTreeMap<String, serde_json::Value>;
-pub type RawTxOutputsAssets = BTreeMap<String, String>;
-
-pub fn create_raw_tx(
-    inputs: &Vec<RawTxInputs>,
-    outputs_amounts: &RawTxOutputsAmounts,
-    locktime: i64,
-    replaceable: bool,
-    output_assets: &RawTxOutputsAssets,
-) -> RpcRequest {
-    let mut data = Vec::<serde_json::value::Value>::new();
-
-    data.push(serde_json::json!(inputs));
-    data.push(serde_json::json!(outputs_amounts));
-    data.push(serde_json::json!(locktime));
-    data.push(serde_json::json!(replaceable));
-    data.push(serde_json::json!(output_assets));
-
-    RpcRequest {
-        method: "createrawtransaction".into(),
-        params: data,
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct FundedTx {
-    pub hex: String,
-}
-
-pub fn convert_to_psbt(tx: &str) -> RpcRequest {
-    RpcRequest {
-        method: "converttopsbt".into(),
-        params: vec![serde_json::json!(tx)],
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PsbtTx {
-    pub psbt: String,
-}
-
-pub fn fill_psbt_data(converted_tx: &str) -> RpcRequest {
-    RpcRequest {
-        method: "walletfillpsbtdata".into(),
-        params: vec![serde_json::json!(converted_tx)],
-    }
-}
-#[derive(Deserialize)]
-pub struct FillPsbtData {
-    pub psbt: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct PsbtInputs {
-    pub txid: String,
-    pub vout: i64,
-    pub sequence: i64,
-}
-
-pub fn wallet_sign_psbt(tx: &str) -> RpcRequest {
-    RpcRequest {
-        method: "walletsignpsbt".into(),
-        params: vec![serde_json::json!(tx)],
-    }
-}
-#[derive(Deserialize)]
-pub struct WalletSignPsbt {
-    pub psbt: String,
-    pub complete: bool,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TxInputKey {
-    pub txid: String,
-    pub vout: i64,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DecodedRawTx {
-    pub vin: Vec<TxInputKey>,
 }
 
 pub fn listunspent(minconf: i32) -> RpcRequest {
     // minconf
     RpcRequest {
         method: "listunspent".to_owned(),
-        params: vec![serde_json::json!(minconf)],
+        params: json!({
+            "minconf": minconf,
+        }),
     }
 }
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -249,93 +158,24 @@ impl UnspentItem {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SignedTx {
-    pub hex: String,
-}
-
-pub fn sendtoaddress_generic(
-    addr: &str,
-    amount: f64,
-    comment: Option<&str>,
-    comment_to: Option<&str>,
-    subtractfeefromamount: Option<bool>,
-    replaceable: Option<bool>,
-    conf_target: Option<i32>,
-    estimate_mode: Option<&str>,
-    avoid_reuse: Option<bool>,
-    assetlabel: Option<&str>,
-) -> RpcRequest {
+pub fn sendtoaddress(address: &str, amount: f64, asset_id: &elements::AssetId) -> RpcRequest {
     RpcRequest {
         method: "sendtoaddress".to_owned(),
-        params: vec![
-            serde_json::json!(addr),
-            serde_json::json!(amount),
-            serde_json::json!(comment),
-            serde_json::json!(comment_to),
-            serde_json::json!(subtractfeefromamount),
-            serde_json::json!(replaceable),
-            serde_json::json!(conf_target),
-            serde_json::json!(estimate_mode),
-            serde_json::json!(avoid_reuse),
-            serde_json::json!(assetlabel),
-        ],
+        params: json! ({
+            "address": address,
+            "amount": amount,
+            "assetlabel": asset_id,
+        }),
     }
-}
-
-pub fn sendtoaddress_asset(addr: &str, amount: f64, assetlabel: &str) -> RpcRequest {
-    sendtoaddress_generic(
-        addr,
-        amount,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        Some(assetlabel),
-    )
-}
-
-pub fn sendtoaddress_bitcoin(addr: &str, amount: f64) -> RpcRequest {
-    sendtoaddress_generic(addr, amount, None, None, None, None, None, None, None, None)
 }
 pub type SendToAddressResult = String;
 
-pub fn get_address_info(addr: &str) -> RpcRequest {
-    RpcRequest {
-        method: "getaddressinfo".to_owned(),
-        params: vec![serde_json::json!(addr)],
-    }
-}
-#[derive(Deserialize)]
-pub struct GetAddressInfo {
-    pub confidential: String,
-    pub unconfidential: String,
-    pub solvable: bool,
-}
-
-pub fn get_raw_transaction(txid: &elements::Txid) -> RpcRequest {
-    RpcRequest {
-        method: "getrawtransaction".to_owned(),
-        params: vec![serde_json::json!(txid)],
-    }
-}
-pub type GetRawTransactionResult = String;
-
-pub fn dumpprivkey(addr: &str) -> RpcRequest {
+pub fn dumpprivkey(address: &str) -> RpcRequest {
     RpcRequest {
         method: "dumpprivkey".to_owned(),
-        params: vec![serde_json::json!(addr)],
+        params: json! ({
+            "address": address,
+        }),
     }
 }
 pub type DumpPrivKey = String;
-
-pub fn dumpblindingkey(addr: &str) -> RpcRequest {
-    RpcRequest {
-        method: "dumpblindingkey".to_owned(),
-        params: vec![serde_json::json!(addr)],
-    }
-}
-pub type DumpBlindingKey = String;

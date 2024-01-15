@@ -16,6 +16,7 @@ message AddressAmount {
   required string address = 1;
   required int64 amount = 2;
   required string asset_id = 3;
+  optional bool is_greedy = 4;
 }
 
 message Balance {
@@ -158,10 +159,8 @@ message NetworkSettings {
 }
 
 message CreateTx {
-  required string addr = 1;
-  required Balance balance = 2;
-  required bool is_contact = 3;
-  required Account account = 4;
+  repeated AddressAmount addressees = 1;
+  required Account account = 2;
 }
 
 message CreatedTx {

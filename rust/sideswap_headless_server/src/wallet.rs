@@ -1,12 +1,24 @@
-use std::{collections::BTreeMap, str::FromStr};
+use std::{
+    collections::BTreeMap,
+    str::FromStr,
+    time::{Duration, Instant},
+};
 
 use sideswap_api::AssetId;
 use sideswap_client::{gdk_json, gdk_ses, gdk_ses_impl, worker};
 use sideswap_common::env::Env;
+use tokio::sync::oneshot;
+
+use crate::api_server;
 
 pub enum Req {
     Notif(gdk_json::Notification),
     SignPset(sideswap_api::SignNotification),
+    Send(
+        api_server::SendRequest,
+        oneshot::Sender<Result<api_server::SendResponse, api_server::Error>>,
+    ),
+    Timer,
 }
 
 pub struct SwapInputs {
@@ -30,6 +42,7 @@ pub struct Params {
     pub callback: Callback,
 }
 
+#[derive(Clone)]
 pub struct Wallet {
     req_sender: crossbeam_channel::Sender<Req>,
 }
@@ -83,16 +96,14 @@ fn run(
 
     let policy_asset = AssetId::from_str(env.data().policy_asset).unwrap();
 
+    let mut utxo_update_timestamp = Instant::now();
+    let mut utxo_update_needed = true;
+
     loop {
         let req = req_receiver.recv().unwrap();
         match req {
             Req::Notif(_notif) => {
-                let swap_inputs = SwapInputs {
-                    recv_address: wallet.get_receive_address().unwrap().address,
-                    change_address: wallet.get_change_address().unwrap().address,
-                    utxos: wallet.get_utxos().unwrap().unspent_outputs,
-                };
-                callback(Resp::SwapInputs(swap_inputs));
+                utxo_update_needed = true;
             }
 
             Req::SignPset(sign) => {
@@ -130,6 +141,52 @@ fn run(
                     }
                 }
             }
+
+            Req::Send(req, res_sender) => {
+                let req = sideswap_client::ffi::proto::CreateTx {
+                    addressees: req
+                        .receivers
+                        .into_iter()
+                        .map(|receiver| sideswap_client::ffi::proto::AddressAmount {
+                            address: receiver.address.to_string(),
+                            amount: receiver.amount,
+                            asset_id: receiver.asset_id.to_string(),
+                            is_greedy: None,
+                        })
+                        .collect(),
+                    account: Default::default(),
+                };
+
+                let send_res = wallet
+                    .create_tx(req)
+                    .and_then(|created| wallet.send_tx(&created, &BTreeMap::new()));
+
+                match send_res {
+                    Ok(txid) => {
+                        let _ = res_sender.send(Ok(api_server::SendResponse { txid }));
+                    }
+                    Err(err) => {
+                        log::error!("tx send failed: {err}");
+                        let _ = res_sender.send(Err(api_server::Error::Server(err.to_string())));
+                    }
+                }
+            }
+
+            Req::Timer => {}
+        }
+
+        if utxo_update_needed
+            && Instant::now().duration_since(utxo_update_timestamp) > Duration::from_secs(10)
+        {
+            let swap_inputs = SwapInputs {
+                recv_address: wallet.get_receive_address().unwrap().address,
+                change_address: wallet.get_change_address().unwrap().address,
+                utxos: wallet.get_utxos().unwrap().unspent_outputs,
+            };
+            callback(Resp::SwapInputs(swap_inputs));
+
+            utxo_update_timestamp = Instant::now();
+            utxo_update_needed = false;
         }
     }
 }

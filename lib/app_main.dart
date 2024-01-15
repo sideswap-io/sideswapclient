@@ -131,16 +131,23 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final themeData = ref.watch(mobileAppThemeProvider).themeData();
+    final mobileThemeData = ref.watch(mobileAppThemeNotifierProvider);
 
     return MaterialApp(
       title: 'SideSwap',
       debugShowCheckedModeBanner: false,
-      theme: themeData,
-      themeMode: ThemeMode.dark,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
+      themeMode: mobileThemeData.mode,
+      darkTheme: ThemeData(
+        brightness: mobileThemeData.brightness,
+        textTheme: mobileThemeData.textTheme,
+        colorScheme: mobileThemeData.darkScheme,
+        scaffoldBackgroundColor: mobileThemeData.scaffoldBackgroundColor,
+        textSelectionTheme: mobileThemeData.textSelectionTheme,
+        scrollbarTheme: mobileThemeData.scrollbarTheme,
+      ),
       builder: (context, widget) {
         return MediaQuery(
           data: MediaQuery.of(context)

@@ -125,7 +125,6 @@ pub struct Data {
     ui: UiData,
     assets: BTreeMap<AssetId, Asset>,
     amp_assets: BTreeSet<AssetId>,
-    assets_old: Vec<Asset>,
     msg_sender: crossbeam_channel::Sender<Message>,
     ws_sender: crossbeam_channel::Sender<ws::WrappedRequest>,
     ws_hint: tokio::sync::mpsc::UnboundedSender<()>,
@@ -222,15 +221,25 @@ macro_rules! send_request {
     };
 }
 
+fn redact_str(v: &mut String) {
+    *v = format!("<{} bytes>", v.len());
+}
+
 fn redact_to_msg(mut msg: ffi::proto::to::Msg) -> ffi::proto::to::Msg {
     match &mut msg {
-        ffi::proto::to::Msg::Login(v) => v.wallet = None,
-        ffi::proto::to::Msg::EncryptPin(v) => v.mnemonic = "<redacted>".to_owned(),
+        ffi::proto::to::Msg::Login(v) => match v.wallet.as_mut() {
+            Some(proto::to::login::Wallet::Mnemonic(mnemonic)) => {
+                redact_str(mnemonic);
+            }
+            _ => {}
+        },
+        ffi::proto::to::Msg::EncryptPin(v) => {
+            redact_str(&mut v.pin);
+            redact_str(&mut v.mnemonic);
+        }
         ffi::proto::to::Msg::DecryptPin(v) => {
-            v.pin = "<redacted>".to_owned();
-            v.salt = "<redacted>".to_owned();
-            v.encrypted_data = "<redacted>".to_owned();
-            v.pin_identifier = "<redacted>".to_owned();
+            redact_str(&mut v.pin);
+            redact_str(&mut v.encrypted_data);
         }
         _ => {}
     }
@@ -239,11 +248,21 @@ fn redact_to_msg(mut msg: ffi::proto::to::Msg) -> ffi::proto::to::Msg {
 
 fn redact_from_msg(mut msg: ffi::proto::from::Msg) -> ffi::proto::from::Msg {
     match &mut msg {
-        ffi::proto::from::Msg::DecryptPin(v) => match v.result.as_mut().unwrap() {
-            ffi::proto::from::decrypt_pin::Result::Mnemonic(v) => *v = "<redacted>".to_owned(),
+        ffi::proto::from::Msg::DecryptPin(v) => match v.result.as_mut() {
+            Some(ffi::proto::from::decrypt_pin::Result::Mnemonic(v)) => {
+                redact_str(v);
+            }
             _ => {}
         },
-        ffi::proto::from::Msg::NewAsset(v) => v.icon = "<redacted>".to_owned(),
+        ffi::proto::from::Msg::EncryptPin(v) => match v.result.as_mut() {
+            Some(ffi::proto::from::encrypt_pin::Result::Data(v)) => {
+                redact_str(&mut v.encrypted_data);
+            }
+            _ => {}
+        },
+        ffi::proto::from::Msg::NewAsset(v) => {
+            redact_str(&mut v.icon);
+        }
         _ => {}
     }
     msg
@@ -291,6 +310,7 @@ pub fn get_created_tx(
                 address: addr.address.clone(),
                 amount: amount as i64,
                 asset_id: addr.asset_id.to_string(),
+                is_greedy: None,
             })
         })
         .collect::<Result<Vec<_>, _>>()?;
@@ -568,19 +588,6 @@ impl Data {
         assets_registry::get_assets(self.env, self.master_xpub(), asset_ids)
     }
 
-    fn try_add_asset(&mut self, asset_id: &AssetId) -> Result<(), anyhow::Error> {
-        if self.assets.get(asset_id).is_some() {
-            return Ok(());
-        }
-        let asset = self
-            .load_gdk_asset(&[*asset_id])?
-            .into_iter()
-            .next()
-            .ok_or_else(|| anyhow!("asset not found in gdk registry: {}", asset_id))?;
-        self.register_asset(asset, false, false, false);
-        Ok(())
-    }
-
     fn send_new_transactions(
         &mut self,
         mut items: Vec<models::Transaction>,
@@ -700,36 +707,29 @@ impl Data {
             let new_assets = self.load_gdk_asset(&new_asset_ids).ok().unwrap_or_default();
             for asset_id in new_asset_ids.iter() {
                 info!("try add new asset: {}", asset_id);
-                let (asset, unregistered) =
-                    match new_assets.iter().find(|asset| asset.asset_id == *asset_id) {
-                        Some(asset) => (asset.clone(), false),
-                        None => {
-                            warn!("can't find GDK asset {}", asset_id);
-                            (
-                                Asset {
-                                    asset_id: *asset_id,
-                                    name: format!("{:0.8}...", &asset_id.to_string()),
-                                    ticker: Ticker(format!("{:0.4}", &asset_id.to_string())),
-                                    icon: Some(
-                                        base64::engine::general_purpose::STANDARD
-                                            .encode(DEFAULT_ICON),
-                                    ),
-                                    precision: 8,
-                                    icon_url: None,
-                                    instant_swaps: Some(false),
-                                    domain: None,
-                                    domain_agent: None,
-                                    always_show: None,
-                                    issuance_prevout: None,
-                                    issuer_pubkey: None,
-                                    contract: None,
-                                    market_type: None,
-                                },
-                                true,
-                            )
+                let asset = match new_assets.iter().find(|asset| asset.asset_id == *asset_id) {
+                    Some(asset) => asset.clone(),
+                    None => {
+                        warn!("can't find GDK asset {}", asset_id);
+                        Asset {
+                            asset_id: *asset_id,
+                            name: format!("{:0.8}...", &asset_id.to_string()),
+                            ticker: Ticker(format!("{:0.4}", &asset_id.to_string())),
+                            icon: None,
+                            precision: 8,
+                            icon_url: None,
+                            instant_swaps: Some(false),
+                            domain: None,
+                            domain_agent: None,
+                            always_show: None,
+                            issuance_prevout: None,
+                            issuer_pubkey: None,
+                            contract: None,
+                            market_type: None,
                         }
-                    };
-                self.register_asset(asset, false, false, unregistered);
+                    }
+                };
+                self.register_asset(asset);
             }
         }
 
@@ -896,9 +896,6 @@ impl Data {
     fn cookie_path(&self) -> std::path::PathBuf {
         self.get_data_path().join("sideswap.cookie")
     }
-    fn assets_path(&self) -> std::path::PathBuf {
-        self.get_data_path().join("assets.json")
-    }
     fn cache_path(&self) -> std::path::PathBuf {
         self.get_data_path().join("cache")
     }
@@ -930,31 +927,44 @@ impl Data {
             error!("can't write cookie: {}", &e);
         };
 
-        let assets = send_request!(self, Assets, None)?.assets;
-        let liquid_asset_id = self.liquid_asset_id;
+        let assets = send_request!(
+            self,
+            Assets,
+            Some(AssetsRequestParam {
+                embedded_icons: Some(false),
+                all_assets: Some(true),
+            })
+        )?
+        .assets;
+
         for asset in assets
             .iter()
-            .filter(|asset| asset.asset_id != liquid_asset_id)
+            .filter(|asset| asset.market_type == Some(MarketType::Stablecoin))
         {
             self.subscribe_price_update(&asset.asset_id);
         }
 
-        if assets != self.assets_old {
-            if let Err(e) = self.save_assets(&assets) {
-                error!("can't save assets file: {}", &e);
-            }
-            self.register_assets(assets, false);
-        }
-
-        let amp_assets = send_request!(self, AmpAssets, None)?.assets;
-        let amp_assets_copy = amp_assets.iter().map(|v| v.asset_id.to_string()).collect();
+        self.amp_assets = assets
+            .iter()
+            .filter_map(|v| {
+                if v.market_type == Some(MarketType::Amp) {
+                    Some(v.asset_id)
+                } else {
+                    None
+                }
+            })
+            .collect();
         self.ui.send(ffi::proto::from::Msg::AmpAssets(
             ffi::proto::from::AmpAssets {
-                assets: amp_assets_copy,
+                assets: self
+                    .amp_assets
+                    .iter()
+                    .map(|asset_id| asset_id.to_string())
+                    .collect(),
             },
         ));
-        self.amp_assets = amp_assets.iter().map(|v| v.asset_id).collect();
-        self.register_assets(amp_assets, true);
+
+        self.register_assets_with_gdk_icons(assets);
 
         let server_status = send_request!(self, ServerStatus, None)?;
         self.process_server_status(server_status);
@@ -2301,8 +2311,6 @@ impl Data {
             asset_amount: req.asset_amount,
             price: Some(req.price),
             index_price: req.index_price,
-            force_private: None,
-            disable_price_edit: None,
         };
         let submit_req = SubmitRequest { order };
         let resp = send_request!(self, Submit, submit_req)?;
@@ -2324,7 +2332,7 @@ impl Data {
         let order_id = resp.order_id;
         let details = &resp.details;
 
-        self.try_add_asset(&details.asset)?;
+        self.add_gdk_asset_if_missing(&details.asset)?;
 
         let (send_amount, send_asset) = if details.send_bitcoins {
             (
@@ -3254,7 +3262,7 @@ impl Data {
     }
 
     fn add_order(&mut self, msg: OrderCreatedNotification, from_notification: bool) {
-        let add_asset_result = self.try_add_asset(&msg.details.asset);
+        let add_asset_result = self.add_gdk_asset_if_missing(&msg.details.asset);
         if let Err(e) = add_asset_result {
             error!("adding asset for new order failed: {}", e);
         }
@@ -3426,6 +3434,10 @@ impl Data {
                 body: msg.body,
             },
         ));
+    }
+
+    fn process_new_asset(&mut self, msg: NewAssetNotification) {
+        self.register_assets_with_gdk_icons(vec![msg.asset]);
     }
 
     fn process_market_data_update(&mut self, msg: MarketDataUpdateNotification) {
@@ -3664,7 +3676,7 @@ impl Data {
         debug!("download_sign_request, order_id: {}", order_id);
         let sign = send_request!(self, GetSign, GetSignRequest { order_id })?;
         // Make sure that asset is known if app is restarted
-        self.try_add_asset(&sign.data.details.asset)?;
+        self.add_gdk_asset_if_missing(&sign.data.details.asset)?;
         self.add_missing_submit_data(&order_id, &sign.data.details, false)?;
         self.process_sign(sign.data);
 
@@ -3856,6 +3868,7 @@ impl Data {
             Notification::BlindedSwapClient(msg) => self.process_blinded_swap_client(msg),
             Notification::SwapDone(msg) => self.process_swap_done(msg),
             Notification::LocalMessage(msg) => self.process_local_message(msg),
+            Notification::NewAsset(msg) => self.process_new_asset(msg),
             Notification::MarketDataUpdate(msg) => self.process_market_data_update(msg),
             _ => {}
         }
@@ -3867,26 +3880,34 @@ impl Data {
         }
     }
 
-    pub fn register_asset(
-        &mut self,
-        asset: Asset,
-        swap_market: bool,
-        amp_market: bool,
-        unregistered: bool,
-    ) {
+    fn add_gdk_asset_if_missing(&mut self, asset_id: &AssetId) -> Result<(), anyhow::Error> {
+        // Do not replace existing asset information (like market_type)
+        if self.assets.get(asset_id).is_some() {
+            return Ok(());
+        }
+        let asset = self
+            .load_gdk_asset(&[*asset_id])?
+            .into_iter()
+            .next()
+            .ok_or_else(|| anyhow!("asset not found in gdk registry: {}", asset_id))?;
+        self.register_asset(asset);
+        Ok(())
+    }
+
+    pub fn register_asset(&mut self, asset: Asset) {
         let asset_id = asset.asset_id;
+        let unregistered = asset.asset_id != self.liquid_asset_id && asset.domain.is_none();
         let asset_copy = ffi::proto::Asset {
             asset_id: asset.asset_id.to_string(),
             name: asset.name.clone(),
             ticker: asset.ticker.0.clone(),
             icon: asset
                 .icon
-                .as_ref()
-                .expect("asset icon must be embedded")
-                .clone(),
+                .clone()
+                .unwrap_or_else(|| base64::engine::general_purpose::STANDARD.encode(DEFAULT_ICON)),
             precision: asset.precision as u32,
-            swap_market,
-            amp_market,
+            swap_market: asset.market_type == Some(MarketType::Stablecoin),
+            amp_market: asset.market_type == Some(MarketType::Amp),
             domain: asset.domain.clone(),
             domain_agent: asset.domain_agent.clone(),
             unregistered,
@@ -3899,36 +3920,34 @@ impl Data {
         self.ui.send(ffi::proto::from::Msg::NewAsset(asset_copy));
     }
 
-    pub fn register_assets(&mut self, assets: Assets, amp_market: bool) {
+    pub fn register_assets_with_gdk_icons(&mut self, mut assets: Assets) {
+        let asset_ids = assets
+            .iter()
+            .map(|asset| asset.asset_id)
+            .collect::<Vec<_>>();
+        let gdk_assets = self.load_gdk_asset(&asset_ids).ok().unwrap_or_default();
+        let gdk_icons = gdk_assets
+            .into_iter()
+            .map(|asset| (asset.asset_id, asset.icon))
+            .collect::<BTreeMap<_, _>>();
+
+        for asset in assets.iter_mut() {
+            asset.icon = gdk_icons.get(&asset.asset_id).cloned().flatten();
+        }
+
         for asset in assets {
-            let swap_market = !amp_market && asset.asset_id != self.liquid_asset_id;
-            self.register_asset(asset, swap_market, amp_market, false);
+            self.register_asset(asset);
         }
     }
 
-    pub fn load_assets(&mut self) -> Result<(), anyhow::Error> {
-        let str = match std::fs::read(self.assets_path()) {
-            Ok(v) => v,
-            Err(e) => {
-                if self.env == Env::Prod {
-                    include_bytes!("../data/assets.json").to_vec()
-                } else if self.env == Env::Testnet {
-                    include_bytes!("../data/assets-testnet.json").to_vec()
-                } else {
-                    bail!("can't load assets: {}", e)
-                }
-            }
+    pub fn load_default_assets(&mut self) {
+        let data = match self.env.data().network {
+            env::Network::Mainnet => include_str!("../data/assets.json"),
+            env::Network::Testnet => include_str!("../data/assets-testnet.json"),
+            env::Network::Regtest | env::Network::Local => "[]",
         };
-        let assets = serde_json::from_slice::<Assets>(&str)?;
-        self.assets_old = assets.clone();
-        self.register_assets(assets, false);
-        Ok(())
-    }
-
-    pub fn save_assets(&self, assets: &Assets) -> Result<(), anyhow::Error> {
-        let str = serde_json::to_string(&assets)?;
-        std::fs::write(self.assets_path(), str)?;
-        Ok(())
+        let assets = serde_json::from_str::<Assets>(&data).unwrap();
+        self.register_assets_with_gdk_icons(assets);
     }
 
     // pegs monitoring
@@ -4428,7 +4447,6 @@ pub fn start_processing(
         ui,
         assets: BTreeMap::new(),
         amp_assets: BTreeSet::new(),
-        assets_old: Vec::new(),
         msg_sender,
         ws_sender,
         ws_hint,
@@ -4485,9 +4503,7 @@ pub fn start_processing(
     let master_xpub = state.master_xpub();
     assets_registry::init(env, &registry_path, master_xpub);
 
-    if let Err(e) = state.load_assets() {
-        error!("can't load assets: {}", &e);
-    }
+    state.load_default_assets();
 
     while let Ok(msg) = msg_receiver.recv() {
         let started = std::time::Instant::now();
