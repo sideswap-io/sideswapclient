@@ -9,7 +9,7 @@ use sideswap_common::{env::Env, ws::manual as ws};
 use tokio::sync::oneshot;
 
 use crate::{
-    api_server::{self, NewOrder, SendRequest, SendResponse},
+    api_server::{self, NewOrder, RecvAddressResponse, SendRequest, SendResponse},
     db::Db,
     wallet,
 };
@@ -265,6 +265,8 @@ fn process_submit_inputs(
     data.orders
         .insert(order_id, OrderState::Pending(utxos.clone()));
 
+    let private = new_order.private.unwrap_or(true);
+
     make_async_request(
         data,
         sideswap_api::Request::PsetMaker(sideswap_api::PsetMakerRequest {
@@ -273,7 +275,7 @@ fn process_submit_inputs(
             inputs,
             recv_addr: swap_inputs.recv_address.clone(),
             change_addr: swap_inputs.change_address.clone(),
-            private: new_order.private.unwrap_or(true),
+            private,
             ttl_seconds: new_order.ttl_seconds,
             signed_half: None,
         }),
@@ -281,8 +283,8 @@ fn process_submit_inputs(
             Ok(sideswap_api::Response::PsetMaker(_)) => {
                 log::debug!("submitting pset details succeed");
 
-                if let Some(unique_key) = new_order.unique_key {
-                    if let Some(existing_order_id) = data.unique_orders.get(&unique_key) {
+                if let Some(unique_key) = new_order.unique_key.as_ref() {
+                    if let Some(existing_order_id) = data.unique_orders.get(unique_key) {
                         let is_allowed = match data.orders.get(&existing_order_id) {
                             Some(OrderState::Pending(_)) => false,
                             Some(OrderState::Active(_, _)) => false,
@@ -299,7 +301,7 @@ fn process_submit_inputs(
                     }
 
                     data.unique_orders.insert(unique_key.clone(), order_id);
-                    data.unique_orders_inv.insert(order_id, unique_key);
+                    data.unique_orders_inv.insert(order_id, unique_key.clone());
                 }
 
                 let new_order = api_server::OrderInfo {
@@ -308,7 +310,8 @@ fn process_submit_inputs(
                     bitcoin_amount: details.bitcoin_amount,
                     asset_amount: details.asset_amount,
                     price: details.price,
-                    private: true,
+                    private,
+                    unique_key: new_order.unique_key,
                 };
 
                 data.orders
@@ -391,6 +394,13 @@ fn process_send(
     data.wallet.send_req(wallet::Req::Send(req, res_sender));
 }
 
+fn process_recv_address(
+    data: &mut Data,
+    res_sender: oneshot::Sender<Result<RecvAddressResponse, api_server::Error>>,
+) {
+    data.wallet.send_req(wallet::Req::RecvAddress(res_sender));
+}
+
 fn process_api(data: &mut Data, req: api_server::Req) {
     match req {
         api_server::Req::NewOrder(new_order, res_sender) => {
@@ -408,6 +418,9 @@ fn process_api(data: &mut Data, req: api_server::Req) {
         }
         api_server::Req::Send(req, res_sender) => {
             process_send(data, req, res_sender);
+        }
+        api_server::Req::RecvAddress(res_sender) => {
+            process_recv_address(data, res_sender);
         }
     }
 }

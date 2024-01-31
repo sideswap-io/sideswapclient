@@ -70,9 +70,10 @@ class SendPopupReceiveConversionNotifier
   }
 }
 
+/// Accept only liquidnetwork or elements address type
 @riverpod
 bool sendPopupButtonEnabled(SendPopupButtonEnabledRef ref) {
-  final isAddressValid = ref.watch(sendPopupIsAddressValidProvider);
+  final parseAddressResult = ref.watch(sendPopupParseAddressProvider);
   final amountString = ref.watch(sendPopupAmountNotifierProvider);
   final selectedAccountAsset =
       ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
@@ -81,7 +82,18 @@ bool sendPopupButtonEnabled(SendPopupButtonEnabledRef ref) {
   final amount = double.tryParse(amountString) ?? 0.0;
   final balance = double.tryParse(balanceString) ?? 0.0;
 
-  return isAddressValid && amount > 0 && amount <= balance;
+  return switch (parseAddressResult) {
+    Left(value: final _) => false,
+    Right(value: final r) => () {
+        final properNetwork = switch (r.addressType) {
+          BIP21AddressTypeEnum.elements ||
+          BIP21AddressTypeEnum.liquidnetwork =>
+            true,
+          _ => false,
+        };
+        return properNetwork && amount > 0 && amount <= balance;
+      }(),
+  };
 }
 
 @riverpod
@@ -95,12 +107,6 @@ bool sendPopupShowInsufficientFunds(SendPopupShowInsufficientFundsRef ref) {
   final balance = double.tryParse(balanceString) ?? 0.0;
 
   return amount > balance;
-}
-
-@riverpod
-bool sendPopupIsAddressValid(SendPopupIsAddressValidRef ref) {
-  final result = ref.watch(sendPopupParseAddressProvider);
-  return result.match((l) => false, (r) => true);
 }
 
 @riverpod
@@ -164,6 +170,7 @@ Either<Exception, SendPopupAddressResult> sendPopupParseAddress(
     SendPopupParseAddressRef ref) {
   final address = ref.watch(sendPopupAddressNotifierProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
 
   if (ref.watch(isAddrTypeValidProvider(address, AddrType.bitcoin))) {
     return Right(
@@ -171,7 +178,7 @@ Either<Exception, SendPopupAddressResult> sendPopupParseAddress(
         address: address,
         addressType: BIP21AddressTypeEnum.bitcoin,
         amount: 0,
-        assetId: liquidAssetId,
+        assetId: bitcoinAssetId,
       ),
     );
   }

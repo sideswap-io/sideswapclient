@@ -21,6 +21,7 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
@@ -83,138 +84,14 @@ String getTtlDescription(int? seconds) {
   return 'MINUTES'.plural(sec.inMinutes, args: ['${sec.inMinutes}']);
 }
 
-class DOrderReview extends StatefulHookConsumerWidget {
-  const DOrderReview({
-    super.key,
-    required this.screen,
-  });
+class DOrderReview extends HookConsumerWidget {
+  const DOrderReview({super.key, required this.screen});
 
   final ReviewScreen screen;
 
   @override
-  ConsumerState<DOrderReview> createState() => DOrderReviewState();
-}
-
-class DOrderReviewState extends ConsumerState<DOrderReview> {
-  ReviewState reviewState = ReviewState.idle;
-
-  bool autoSign = true;
-  bool autoSignOld = true;
-
-  // Edit order values
-  bool isTracking = false;
-  double price = 0;
-  double priceTrackerValue = 0;
-  TextEditingController controllerPrice = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    // TODO: Update default ttl depending on order type here
-    final wallet = ref.read(walletProvider);
-    if (widget.screen == ReviewScreen.edit) {
-      final order = wallet.orderDetailsData;
-      final asset = ref.read(assetsStateProvider)[order.assetId];
-      final pricedInLiquid =
-          ref.read(assetUtilsProvider).isPricedInLiquid(asset: asset);
-
-      isTracking = order.isTracking;
-      autoSign = order.autoSign;
-      autoSignOld = order.autoSign;
-      price = order.priceAmount;
-      priceTrackerValue =
-          indexPriceToTrackerValue(wallet.orderDetailsData.indexPrice);
-      controllerPrice.text = priceStr(order.priceAmount, pricedInLiquid);
-    }
-  }
-
-  @override
-  void dispose() {
-    controllerPrice.dispose();
-    super.dispose();
-  }
-
-  Future<void> handleSubmit() async {
-    final wallet = ref.read(walletProvider);
-    final twoStep = ref.read(orderReviewTwoStepProvider);
-
-    // old modify price for offline orders
-    if (widget.screen == ReviewScreen.edit && twoStep && !isTracking) {
-      ref.read(walletProvider).cancelOrder(wallet.orderDetailsData.orderId);
-      handleClose();
-      return;
-    }
-
-    if (widget.screen == ReviewScreen.edit) {
-      if (autoSign &&
-          !autoSignOld &&
-          !await ref.read(walletProvider).isAuthenticated()) {
-        return;
-      }
-
-      final orderId = wallet.orderDetailsData.orderId;
-      final price =
-          isTracking ? null : (double.tryParse(controllerPrice.text) ?? 0.0);
-      final indexPrice =
-          isTracking ? trackerValueToIndexPrice(priceTrackerValue) : null;
-      wallet.modifyOrderAutoSign(orderId, autoSign);
-      wallet.modifyOrderPrice(orderId, price: price, indexPrice: indexPrice);
-      handleClose();
-      return;
-    }
-
-    bool allowChaining = false;
-    if (widget.screen == ReviewScreen.submitStart &&
-        twoStep &&
-        wallet.orderDetailsData.txChainingRequired) {
-      allowChaining = await allowTxChaining(context);
-      if (!allowChaining) {
-        return;
-      }
-    }
-
-    if (!await ref.read(walletProvider).isAuthenticated()) {
-      return;
-    }
-
-    final public = ref.read(orderReviewPublicProvider);
-    final ttl = ref.read(orderReviewTtlProvider);
-
-    ref.read(walletProvider).setSubmitDecision(
-          autosign: autoSign,
-          twoStep: twoStep,
-          accept: true,
-          private: !public,
-          ttlSeconds: ttl,
-          allowTxChaining: allowChaining,
-        );
-
-    switch (widget.screen) {
-      case ReviewScreen.submitStart:
-      case ReviewScreen.submitSucceed:
-      case ReviewScreen.sign:
-        setState(() {
-          reviewState = ReviewState.disabled;
-        });
-        break;
-      case ReviewScreen.quote:
-        setState(() {
-          reviewState = ReviewState.disabled;
-        });
-        break;
-      case ReviewScreen.edit:
-        break;
-    }
-  }
-
-  void handleClose() {
-    Navigator.of(context, rootNavigator: true).pop();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final wallet = ref.watch(walletProvider);
-    final order = wallet.orderDetailsData;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final order = ref.watch(orderDetailsDataNotifierProvider);
     final sendAmount = order.sellBitcoin
         ? (order.bitcoinAmount + order.fee)
         : order.assetAmount;
@@ -249,20 +126,99 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
         : '';
     final orderType = order.twoStep ? 'Offline'.tr() : 'Online'.tr();
 
+    final reviewState = useState(ReviewState.idle);
+    final autoSign = useState(true);
+    final autoSignPrev = useState(true);
+    final isTracking = useState(false);
+    final controllerPrice = useTextEditingController();
+    final priceTrackerValue = useState(.0);
+
     useEffect(() {
-      if (widget.screen == ReviewScreen.edit) {
+      if (screen == ReviewScreen.edit) {
         Future.microtask(() => ref
             .read(orderReviewTwoStepProvider.notifier)
             .setTwoStep(order.twoStep));
         return;
       }
 
-      final twoStep = !ref.read(walletProvider).orderDetailsData.isTracking;
+      final twoStep = !order.isTracking;
       Future.microtask(() =>
           ref.read(orderReviewTwoStepProvider.notifier).setTwoStep(twoStep));
 
       return;
     }, const []);
+
+    final handleCloseCallback = useCallback(() {
+      Navigator.of(context, rootNavigator: true).pop();
+    });
+
+    final handleSubmitCallback = useCallback(() async {
+      final twoStep = ref.read(orderReviewTwoStepProvider);
+
+      // old modify price for offline orders
+      if (screen == ReviewScreen.edit && twoStep && !isTracking.value) {
+        ref.read(walletProvider).cancelOrder(order.orderId);
+        handleCloseCallback();
+        return;
+      }
+
+      if (screen == ReviewScreen.edit) {
+        if (autoSign.value &&
+            !autoSignPrev.value &&
+            !await ref.read(walletProvider).isAuthenticated()) {
+          return;
+        }
+
+        final orderId = order.orderId;
+        final price = isTracking.value
+            ? null
+            : (double.tryParse(controllerPrice.text) ?? 0.0);
+        final indexPrice = isTracking.value
+            ? trackerValueToIndexPrice(priceTrackerValue.value)
+            : null;
+        ref.read(walletProvider).modifyOrderAutoSign(orderId, autoSign.value);
+        ref
+            .read(walletProvider)
+            .modifyOrderPrice(orderId, price: price, indexPrice: indexPrice);
+        handleCloseCallback();
+        return;
+      }
+
+      bool allowChaining = false;
+      if (screen == ReviewScreen.submitStart &&
+          twoStep &&
+          order.txChainingRequired) {
+        allowChaining = await allowTxChaining(context);
+        if (!allowChaining) {
+          return;
+        }
+      }
+
+      if (!await ref.read(walletProvider).isAuthenticated()) {
+        return;
+      }
+
+      final public = ref.read(orderReviewPublicProvider);
+      final ttl = ref.read(orderReviewTtlProvider);
+
+      ref.read(walletProvider).setSubmitDecision(
+            autosign: autoSign.value,
+            twoStep: twoStep,
+            accept: true,
+            private: !public,
+            ttlSeconds: ttl,
+            allowTxChaining: allowChaining,
+          );
+
+      (switch (screen) {
+        ReviewScreen.submitStart ||
+        ReviewScreen.submitSucceed ||
+        ReviewScreen.sign ||
+        ReviewScreen.quote =>
+          reviewState.value = ReviewState.disabled,
+        _ => () {}(),
+      });
+    }, []);
 
     return DPopupWithClose(
       width: 580,
@@ -279,7 +235,7 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      if (widget.screen == ReviewScreen.submitSucceed)
+                      if (screen == ReviewScreen.submitSucceed)
                         Padding(
                           padding: const EdgeInsets.only(right: 11),
                           child: SvgPicture.asset(
@@ -293,8 +249,8 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                           final twoStep = ref.watch(orderReviewTwoStepProvider);
 
                           return Text(
-                            getTitle(widget.screen, reviewState, twoStep,
-                                isTracking),
+                            getTitle(screen, reviewState.value, twoStep,
+                                isTracking.value),
                             style: Theme.of(context).textTheme.displaySmall,
                           );
                         },
@@ -302,7 +258,7 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                     ],
                   ),
                   const SizedBox(height: 28),
-                  if (widget.screen == ReviewScreen.edit && !isTracking)
+                  if (screen == ReviewScreen.edit && !isTracking.value)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
                       child: Consumer(
@@ -324,28 +280,26 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                             caption:
                                 isSell ? 'Bid price'.tr() : 'Offer price'.tr(),
                             controller: controllerPrice,
-                            autofocus: widget.screen == ReviewScreen.edit,
-                            onEditingComplete: handleSubmit,
-                            readonly: widget.screen == ReviewScreen.edit &&
+                            autofocus: screen == ReviewScreen.edit,
+                            onEditingComplete: handleSubmitCallback,
+                            readonly: screen == ReviewScreen.edit &&
                                 twoStep &&
-                                !isTracking,
+                                !isTracking.value,
                           );
                         },
                       ),
                     ),
-                  if (widget.screen == ReviewScreen.edit && isTracking)
+                  if (screen == ReviewScreen.edit && isTracking.value)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 40),
                       child: DEnterTrackingPrice(
                         invertColors: !isSell,
                         onTrackingChanged: (double value) {
-                          setState(() {
-                            priceTrackerValue = value;
-                          });
+                          priceTrackerValue.value = value;
                         },
                         onTrackingToggle: null,
-                        trackingToggled: isTracking,
-                        trackingValue: priceTrackerValue,
+                        trackingToggled: isTracking.value,
+                        trackingValue: priceTrackerValue.value,
                       ),
                     ),
                   const SizedBox(height: 4),
@@ -377,10 +331,10 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                       ],
                     ),
                   ),
-                  ...(widget.screen == ReviewScreen.submitStart ||
-                          widget.screen == ReviewScreen.submitSucceed ||
-                          widget.screen == ReviewScreen.quote ||
-                          widget.screen == ReviewScreen.sign)
+                  ...(screen == ReviewScreen.submitStart ||
+                          screen == ReviewScreen.submitSucceed ||
+                          screen == ReviewScreen.quote ||
+                          screen == ReviewScreen.sign)
                       ? [
                           const SizedBox(height: 10),
                           DOrderReviewField(
@@ -407,39 +361,36 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                               name: 'Fee'.tr(), value: Text(feeValue)),
                         ]
                       : [],
-                  if (widget.screen == ReviewScreen.quote)
+                  if (screen == ReviewScreen.quote)
                     DOrderReviewField(
                         name: 'Order type'.tr(), value: Text(orderType)),
                   Consumer(
                     builder: (context, ref, child) {
                       final isJadeWallet = ref.watch(isJadeWalletProvider);
 
-                      if (widget.screen == ReviewScreen.edit) {
+                      if (screen == ReviewScreen.edit) {
                         return const DOrderReviewSignTypeControls(
                           onTwoStepChanged: null,
                         );
                       }
 
                       // turn off online for jade wallet
-                      if (isJadeWallet &&
-                          widget.screen == ReviewScreen.submitStart) {
+                      if (isJadeWallet && screen == ReviewScreen.submitStart) {
                         return const DOrderReviewSignTypeControls(
                           onTwoStepChanged: null,
                         );
                       }
 
-                      if (widget.screen == ReviewScreen.submitStart) {
+                      if (screen == ReviewScreen.submitStart) {
                         return DOrderReviewSignTypeControls(
                           onTwoStepChanged: (bool value) {
                             ref
                                 .read(orderReviewTwoStepProvider.notifier)
                                 .setTwoStep(value);
 
-                            setState(() {
-                              if (value) {
-                                autoSign = true;
-                              }
-                            });
+                            if (value) {
+                              autoSign.value = true;
+                            }
                           },
                         );
                       }
@@ -447,25 +398,23 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                       return const SizedBox();
                     },
                   ),
-                  if (widget.screen == ReviewScreen.submitStart ||
-                      widget.screen == ReviewScreen.edit)
+                  if (screen == ReviewScreen.submitStart ||
+                      screen == ReviewScreen.edit)
                     Consumer(
                       builder: (context, ref, _) {
                         final twoStep = ref.watch(orderReviewTwoStepProvider);
 
                         return DOrderReviewAutoSignOrderControls(
-                          autoSign: autoSign,
+                          autoSign: autoSign.value,
                           onAutoSignChanged: twoStep
                               ? null
                               : (bool value) {
-                                  setState(() {
-                                    autoSign = value;
-                                  });
+                                  autoSign.value = value;
                                 },
                         );
                       },
                     ),
-                  if (widget.screen == ReviewScreen.submitStart)
+                  if (screen == ReviewScreen.submitStart)
                     Consumer(builder: (context, ref, _) {
                       return DOrderReviewCreateOrderControls(
                         onPublicChanged: (bool value) {
@@ -485,7 +434,7 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                         },
                       );
                     }),
-                  ...(widget.screen == ReviewScreen.submitSucceed)
+                  ...(screen == ReviewScreen.submitSucceed)
                       ? [
                           DOrderReviewField(
                               name: 'Auto-sign'.tr(),
@@ -502,12 +451,12 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
               ),
             ),
           ),
-          if (widget.screen == ReviewScreen.sign)
+          if (screen == ReviewScreen.sign)
             DOrderReviewTimer(
-              stopped: reviewState == ReviewState.disabled,
+              stopped: reviewState.value == ReviewState.disabled,
             ),
-          if (widget.screen == ReviewScreen.quote &&
-              reviewState == ReviewState.disabled)
+          if (screen == ReviewScreen.quote &&
+              reviewState.value == ReviewState.disabled)
             Consumer(
               builder: (context, ref, child) {
                 final isJadeWallet = ref.watch(isJadeWalletProvider);
@@ -516,8 +465,7 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
 
                 if (isJadeWallet) {
                   // run timer when BE approve signing by jade
-                  final stopped =
-                      !(wallet.orderDetailsData.orderId == timerOrderId);
+                  final stopped = !(order.orderId == timerOrderId);
                   return DOrderReviewTimer(
                     stopped: stopped,
                   );
@@ -528,24 +476,25 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                 );
               },
             ),
-          if (widget.screen == ReviewScreen.submitStart ||
-              widget.screen == ReviewScreen.quote ||
-              widget.screen == ReviewScreen.sign ||
-              widget.screen == ReviewScreen.edit)
+          if (screen == ReviewScreen.submitStart ||
+              screen == ReviewScreen.quote ||
+              screen == ReviewScreen.sign ||
+              screen == ReviewScreen.edit)
             Padding(
               padding: const EdgeInsets.only(bottom: 40),
               child: DCustomFilledBigButton(
                 width: 500,
                 height: 44,
-                onPressed:
-                    (reviewState == ReviewState.idle) ? handleSubmit : null,
-                autofocus: widget.screen != ReviewScreen.edit,
-                child: Text(getButtonTitle(
-                        widget.screen, reviewState, order.twoStep, isTracking)
+                onPressed: (reviewState.value == ReviewState.idle)
+                    ? handleSubmitCallback
+                    : null,
+                autofocus: screen != ReviewScreen.edit,
+                child: Text(getButtonTitle(screen, reviewState.value,
+                        order.twoStep, isTracking.value)
                     .toUpperCase()),
               ),
             ),
-          if (widget.screen == ReviewScreen.submitSucceed && !order.private)
+          if (screen == ReviewScreen.submitSucceed && !order.private)
             Container(
               padding: const EdgeInsets.only(top: 40, bottom: 40),
               color: SideSwapColors.chathamsBlue,
@@ -553,12 +502,12 @@ class DOrderReviewState extends ConsumerState<DOrderReview> {
                 child: DCustomTextBigButton(
                   width: 260,
                   height: 44,
-                  onPressed: handleClose,
+                  onPressed: handleCloseCallback,
                   child: Text('OK'.tr()),
                 ),
               ),
             ),
-          if (widget.screen == ReviewScreen.submitSucceed && order.private)
+          if (screen == ReviewScreen.submitSucceed && order.private)
             Container(
               padding: const EdgeInsets.only(top: 32, bottom: 32),
               color: SideSwapColors.chathamsBlue,

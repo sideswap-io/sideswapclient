@@ -42,8 +42,9 @@ class DSettingsRadioButton extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final fastAnimationDuration =
-        ref.watch(desktopAppThemeProvider).fastAnimationDuration;
-    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
+        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
+    final animationCurve =
+        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
 
     return DHoverButton(
       autofocus: autofocus,

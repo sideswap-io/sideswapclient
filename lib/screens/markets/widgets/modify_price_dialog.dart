@@ -52,8 +52,6 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
 
     currentContext = ref.read(navigatorKeyProvider).currentContext;
 
-    markets = ref.read(marketsProvider);
-
     widget.controller.addListener(() {
       updateDollarConversion();
     });
@@ -91,17 +89,14 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
       }
     }
 
-    markets.subscribeIndexPrice(widget.orderDetailsData.assetId);
+    Future.microtask(() => ref
+        .read(indexPriceSubscriberNotifierProvider.notifier)
+        .subscribeOne(widget.orderDetailsData.assetId));
   }
-
-  late MarketsProvider markets;
 
   @override
   void dispose() {
     focusNode.dispose();
-    if (currentContext != null) {
-      markets.unsubscribeIndexPrice();
-    }
     super.dispose();
   }
 
@@ -148,6 +143,7 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
 
   @override
   Widget build(BuildContext context) {
+    sliderValue = ref.watch(orderPriceFieldSliderValueProvider);
     final trackingPriceFixed = ref
         .watch(indexPriceForAssetProvider(widget.asset?.assetId))
         .calculateTrackingPrice(sliderValue);

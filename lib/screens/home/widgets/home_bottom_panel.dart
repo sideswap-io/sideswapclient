@@ -23,11 +23,14 @@ class HomeBottomPanel extends ConsumerWidget {
     result.maybeWhen(
       data: (result) {
         Future.microtask(() {
-          ref.read(paymentProvider).selectPaymentAmountPage(
-                PaymentAmountPageArguments(
-                  result: result,
-                ),
-              );
+          ref
+              .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+              .setPaymentAmountPageArguments(PaymentAmountPageArguments(
+                result: result,
+              ));
+          ref
+              .read(pageStatusStateProvider.notifier)
+              .setStatus(Status.paymentAmountPage);
         });
       },
       orElse: () {},

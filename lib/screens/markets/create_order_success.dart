@@ -7,6 +7,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
@@ -21,7 +22,7 @@ class CreateOrderSuccess extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     OrderDetailsData orderDetailsData =
-        ref.read(walletProvider).orderDetailsData;
+        ref.read(orderDetailsDataNotifierProvider);
 
     return SideSwapPopup(
       canPop: false,
@@ -66,8 +67,12 @@ class CreateOrderSuccess extends ConsumerWidget {
             : null,
         onPressed: () {
           // clear old order data
-          ref.read(walletProvider).orderDetailsData = OrderDetailsData.empty();
-          ref.read(marketsProvider).unsubscribeIndexPrice();
+          ref
+              .read(orderDetailsDataNotifierProvider.notifier)
+              .setOrderDetailsData(OrderDetailsData.empty());
+          ref
+              .read(indexPriceSubscriberNotifierProvider.notifier)
+              .unsubscribeAll();
           ref.read(walletProvider).setRegistered();
         },
       ),

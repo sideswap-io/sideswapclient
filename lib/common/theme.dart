@@ -70,6 +70,8 @@ class MobileThemeData {
 
   TextSelectionThemeData _textSelectionTheme = const TextSelectionThemeData(
     selectionHandleColor: SideSwapColors.regentStBlue,
+    selectionColor: SideSwapColors.regentStBlue,
+    cursorColor: Colors.white,
   );
 
   TextSelectionThemeData get textSelectionTheme => _textSelectionTheme;

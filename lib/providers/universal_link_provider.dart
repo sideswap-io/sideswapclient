@@ -10,6 +10,7 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -157,11 +158,15 @@ class UniversalLinkProvider with ChangeNotifier {
   HandleResult handleSendLink(Uri uri) {
     final address = uri.queryParameters['address'];
     if (address != null) {
-      ref.read(paymentProvider).selectPaymentAmountPage(
-            PaymentAmountPageArguments(
-              result: QrCodeResult(address: address),
-            ),
-          );
+      ref
+          .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+          .setPaymentAmountPageArguments(PaymentAmountPageArguments(
+            result: QrCodeResult(address: address),
+          ));
+      ref
+          .read(pageStatusStateProvider.notifier)
+          .setStatus(Status.paymentAmountPage);
+
       return HandleResult.success;
     }
 
@@ -205,19 +210,23 @@ class UniversalLinkProvider with ChangeNotifier {
     final result = ref.read(parseBIP21Provider(fakeAddress, addressType));
 
     return result.match((l) => HandleResult.unknownScheme, (r) {
-      ref.read(paymentProvider).selectPaymentAmountPage(
-            PaymentAmountPageArguments(
-              result: QrCodeResult(
-                amount: r.amount,
-                label: r.label,
-                message: r.message,
-                assetId: r.assetId,
-                ticker: r.ticker,
-                address: r.address,
-                addressType: r.addressType,
-              ),
+      ref
+          .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+          .setPaymentAmountPageArguments(PaymentAmountPageArguments(
+            result: QrCodeResult(
+              amount: r.amount,
+              label: r.label,
+              message: r.message,
+              assetId: r.assetId,
+              ticker: r.ticker,
+              address: r.address,
+              addressType: r.addressType,
             ),
-          );
+          ));
+      ref
+          .read(pageStatusStateProvider.notifier)
+          .setStatus(Status.paymentAmountPage);
+
       return HandleResult.success;
     });
   }

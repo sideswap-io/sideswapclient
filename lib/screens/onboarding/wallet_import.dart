@@ -420,7 +420,7 @@ class WalletImport extends StatefulWidget {
 class WalletImportState extends State<WalletImport> {
   final _scaffoldKey = GlobalKey();
 
-  final _colorToggleBackground = const Color(0xFF043857);
+  final _colorToggleBackground = SideSwapColors.prussianBlue;
   final _colorToggleOn = const Color(0xFF1F7EB1);
   final _colorToggleTextOn = const Color(0xFFFFFFFF);
   final _colorToggleTextOff = SideSwapColors.airSuperiorityBlue;

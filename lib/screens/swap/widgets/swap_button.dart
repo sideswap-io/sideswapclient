@@ -4,7 +4,8 @@ class SwapButton extends StatelessWidget {
   const SwapButton({
     super.key,
     this.color,
-    required this.text,
+    this.text,
+    this.child,
     this.textColor,
     this.onPressed,
     this.textStyle,
@@ -12,7 +13,8 @@ class SwapButton extends StatelessWidget {
 
   final Color? color;
   final Color? textColor;
-  final String text;
+  final String? text;
+  final Widget? child;
   final VoidCallback? onPressed;
   final TextStyle? textStyle;
 
@@ -29,28 +31,28 @@ class SwapButton extends StatelessWidget {
           color: color,
         ),
         child: TextButton(
-          onPressed: onPressed,
-          style: TextButton.styleFrom(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(8),
+            onPressed: onPressed,
+            style: TextButton.styleFrom(
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(8),
+                ),
               ),
+              padding: EdgeInsets.zero,
             ),
-          ),
-          child: Center(
-            child: Text(
-              text,
-              maxLines: 1,
-              softWrap: false,
-              style: textStyle ??
-                  TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: textColor,
+            child: switch (child) {
+              Widget child => child,
+              _ => Center(
+                  child: Text(
+                    text ?? '',
+                    maxLines: 1,
+                    softWrap: false,
+                    style: textStyle ??
+                        Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w500, color: textColor),
                   ),
-            ),
-          ),
-        ),
+                )
+            }),
       ),
     );
   }

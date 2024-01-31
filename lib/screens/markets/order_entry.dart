@@ -209,7 +209,7 @@ class OrderEntryHeaderBuySellButtons extends HookConsumerWidget {
                 .read(makeOrderSideStateProvider.notifier)
                 .setSide(MakeOrderSide.buy);
           }
-          ref.read(indexPriceButtonProvider.notifier).setIndexPrice('0');
+          ref.invalidate(indexPriceButtonStreamNotifierProvider);
         },
       ),
     );
@@ -292,7 +292,7 @@ class OrderEntryIndexPrice extends ConsumerWidget {
         ),
         onPressed: () {
           ref
-              .read(indexPriceButtonProvider.notifier)
+              .read(indexPriceButtonStreamNotifierProvider.notifier)
               .setIndexPrice(targetIndexPrice);
         },
         child: Row(
@@ -401,13 +401,21 @@ class OrderEntryAmount extends HookConsumerWidget {
       return;
     }, [isSell]);
 
-    final buttonIndexPrice = ref.watch(indexPriceButtonProvider);
+    final buttonIndexPrice = ref.watch(indexPriceButtonStreamNotifierProvider);
 
     useEffect(() {
-      controllerPrice.text = buttonIndexPrice;
+      (switch (buttonIndexPrice) {
+        AsyncValue(hasValue: true, value: String data) when data.isNotEmpty =>
+          () {
+            controllerPrice.text = data;
+          }(),
+        _ => () {
+            controllerPrice.clear();
+          }(),
+      });
 
       return;
-    });
+    }, [buttonIndexPrice]);
 
     final selectedAccountAsset =
         ref.watch(marketSelectedAccountAssetStateProvider);

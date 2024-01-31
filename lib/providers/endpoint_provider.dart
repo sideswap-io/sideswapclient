@@ -110,8 +110,10 @@ class EndpointServerProvider {
                       .read(eiCreateTransactionNotifierProvider.notifier)
                       .setState(createTransactionData);
 
-                  ref.read(paymentProvider).createdTx = null;
-                  ref.read(paymentProvider).selectPaymentSend(
+                  ref
+                      .read(paymentCreatedTxNotifierProvider.notifier)
+                      .setCreatedTx(null);
+                  ref.read(paymentHelperProvider).selectPaymentSend(
                       amount, accountAsset,
                       address: address);
                   ref.read(desktopDialogProvider).closePopups();

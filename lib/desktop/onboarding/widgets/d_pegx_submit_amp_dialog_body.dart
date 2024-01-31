@@ -22,7 +22,7 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ampId = ref.watch(ampIdNotifierProvider);
-    final textTheme = ref.watch(desktopAppThemeProvider).textTheme;
+    final textTheme = ref.watch(desktopAppThemeNotifierProvider).textTheme;
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
     final gaidWaiting = useState(false);
 

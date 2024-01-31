@@ -4,7 +4,6 @@ import 'dart:ffi' as ffi;
 import 'dart:isolate';
 import 'dart:math';
 
-import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:ffi/ffi.dart';
 import 'package:fixnum/fixnum.dart';
@@ -27,6 +26,7 @@ import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
+import 'package:sideswap/providers/asset_selector_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
@@ -36,6 +36,7 @@ import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/market_data_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
+import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
@@ -230,7 +231,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
   bool settingsBiometricAvailable = false;
 
-  OrderDetailsData orderDetailsData = OrderDetailsData.empty();
   PublishSubject<String> explorerUrlSubject = PublishSubject<String>();
 
   SwapDetails? swapDetails;
@@ -480,7 +480,10 @@ class WalletChangeNotifier with ChangeNotifier {
                 .showErrorDialog(from.createTxResult.errorMsg);
             break;
           case From_CreateTxResult_Result.createdTx:
-            ref.read(paymentProvider).createdTx = from.createTxResult.createdTx;
+            ref
+                .read(paymentCreatedTxNotifierProvider.notifier)
+                .setCreatedTx(from.createTxResult.createdTx);
+
             if (!FlavorConfig.isDesktop) {
               ref
                   .read(pageStatusStateProvider.notifier)
@@ -508,14 +511,13 @@ class WalletChangeNotifier with ChangeNotifier {
             notifyListeners();
             break;
           case From_SendResult_Result.txItem:
-            var item = from.sendResult.txItem;
+            var transItem = from.sendResult.txItem;
             if (!FlavorConfig.isDesktop) {
-              showTxDetails(item);
+              showTxDetails(transItem);
             } else {
               final allPegsById = ref.read(allPegsByIdProvider);
-              ref
-                  .read(desktopDialogProvider)
-                  .showTx(item.id, isPeg: allPegsById.containsKey(item.id));
+              ref.read(desktopDialogProvider).showTx(transItem,
+                  isPeg: allPegsById.containsKey(transItem.id));
             }
             break;
           case From_SendResult_Result.notSet:
@@ -557,6 +559,8 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.priceUpdate:
+        logger.d('from.priceupdate: ${from.priceUpdate}');
+
         final oldPrice =
             ref.read(walletAssetPricesNotifierProvider)[from.priceUpdate.asset];
         final newPrice = from.priceUpdate;
@@ -693,7 +697,7 @@ class WalletChangeNotifier with ChangeNotifier {
         const autoSign = true;
         final asset = ref.read(assetsStateProvider)[fromSr.asset]!;
 
-        orderDetailsData = OrderDetailsData(
+        final orderDetailsData = OrderDetailsData(
           bitcoinAmount: bitcoinAmount.toInt(),
           bitcoinPrecision: bitcoinPrecision,
           priceAmount: fromSr.price,
@@ -710,6 +714,10 @@ class WalletChangeNotifier with ChangeNotifier {
           twoStep: fromSr.twoStep,
           txChainingRequired: fromSr.txChainingRequired,
         );
+        ref
+            .read(orderDetailsDataNotifierProvider.notifier)
+            .setOrderDetailsData(orderDetailsData);
+
         if (orderType == OrderDetailsDataType.quote ||
             orderType == OrderDetailsDataType.sign) {
           await setOrder();
@@ -721,6 +729,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.submitResult:
         switch (from.submitResult.whichResult()) {
           case From_SubmitResult_Result.submitSucceed:
+            final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
             if (!orderDetailsData.accept) {
               return;
             }
@@ -825,7 +834,7 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.serverDisconnected:
         ref.read(serverConnectionStateProvider.notifier).state = false;
-        ref.read(marketRequestOrdersProvider.notifier).clearOrders();
+        ref.read(marketsRequestOrdersNotifierProvider.notifier).clearOrders();
         break;
       case From_Msg.orderCreated:
         final oc = from.orderCreated;
@@ -862,17 +871,22 @@ class WalletChangeNotifier with ChangeNotifier {
           final assetPrecision = ref
               .read(assetUtilsProvider)
               .getPrecisionForAssetId(assetId: order.assetId);
-          orderDetailsData =
+          final orderDetailsData =
               OrderDetailsData.fromRequestOrder(order, assetPrecision);
+          ref
+              .read(orderDetailsDataNotifierProvider.notifier)
+              .setOrderDetailsData(orderDetailsData);
           setCreateOrderSuccess();
         }
 
-        ref.read(marketRequestOrdersProvider.notifier).insertOrder(order);
+        ref
+            .read(marketsRequestOrdersNotifierProvider.notifier)
+            .insertOrder(order);
 
         break;
       case From_Msg.orderRemoved:
         ref
-            .read(marketRequestOrdersProvider.notifier)
+            .read(marketsRequestOrdersNotifierProvider.notifier)
             .removeOrder(from.orderRemoved.orderId);
         break;
       case From_Msg.orderComplete:
@@ -887,13 +901,14 @@ class WalletChangeNotifier with ChangeNotifier {
             .read(assetUtilsProvider)
             .tickerForAssetId(from.indexPrice.assetId);
         logger.d(
-            'INDEX PRICE: ${ticker.isEmpty ? from.indexPrice.assetId : ticker} ${from.indexPrice.ind}');
-        ref.read(marketsIndexPriceProvider.notifier).setIndexPrice(
+            'Index price: ${ticker.isEmpty ? from.indexPrice.assetId : ticker} ${from.indexPrice}');
+        ref.read(marketsIndexPriceNotifierProvider.notifier).setIndexPrice(
             from.indexPrice.assetId,
             from.indexPrice.hasInd() ? from.indexPrice.ind : null);
-        ref.read(marketsLastIndexPriceProvider.notifier).setLastIndexPrice(
-            from.indexPrice.assetId,
-            from.indexPrice.hasLast() ? from.indexPrice.last : null);
+        ref
+            .read(marketsLastIndexPriceNotifierProvider.notifier)
+            .setLastIndexPrice(from.indexPrice.assetId,
+                from.indexPrice.hasLast() ? from.indexPrice.last : null);
         break;
       case From_Msg.assetDetails:
         logger.d("Asset details: ${from.assetDetails}");
@@ -1038,6 +1053,10 @@ class WalletChangeNotifier with ChangeNotifier {
             .read(portfolioPricesNotifierProvider.notifier)
             .setPortfolioPrices(from.portfolioPrices.pricesUsd);
         break;
+      case From_Msg.tokenMarketOrder:
+        ref
+            .read(tokenMarketOrderProvider.notifier)
+            .setTokenMarketOrder(from.tokenMarketOrder.assetIds);
     }
   }
 
@@ -1103,36 +1122,6 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  int? parseAssetAmount(String value, {required int precision}) {
-    if (precision < 0 || precision > 8) {
-      return null;
-    }
-
-    final newValue = value.replaceAll(' ', '');
-    final amount = Decimal.tryParse(newValue);
-
-    if (amount == null) {
-      return null;
-    }
-
-    final amountDec = amount * Decimal.fromInt(pow(10, precision).toInt());
-
-    final amountInt = amountDec.toBigInt().toInt();
-
-    if (Decimal.fromInt(amountInt) != amountDec) {
-      return null;
-    }
-
-    return amountInt;
-  }
-
-  int getSatoshiForAmount(String asset, String value) {
-    final precision =
-        ref.read(assetUtilsProvider).getPrecisionForAssetId(assetId: asset);
-    final amount = parseAssetAmount(value, precision: precision) ?? 0;
-    return amount;
-  }
-
   String getNewMnemonic() {
     final mnemonicPtr = Lib.lib.sideswap_generate_mnemonic12();
     final mnemonic = mnemonicPtr.cast<Utf8>().toDartString();
@@ -1149,6 +1138,10 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   List<String> getMnemonicWords() {
+    if (_mnemonic.isEmpty) {
+      return [];
+    }
+
     return _mnemonic.split(' ');
   }
 
@@ -1419,7 +1412,7 @@ class WalletChangeNotifier with ChangeNotifier {
         ref.read(uiStateArgsNotifierProvider.notifier).clear();
         break;
       case Status.txDetails:
-        status = Status.assetDetails;
+        status = Status.transactions;
         break;
       case Status.txEditMemo:
         _applyTxMemoChange();
@@ -1433,6 +1426,10 @@ class WalletChangeNotifier with ChangeNotifier {
                 navigationItemEnum: WalletMainNavigationItemEnum.assetDetails,
               ),
             );
+        break;
+      case Status.transactions:
+      case Status.orderFilers:
+        status = Status.registered;
         break;
       case Status.swapTxDetails:
       case Status.assetReceiveFromWalletMain:
@@ -1598,12 +1595,12 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void showSwapTxDetails(TransItem tx) {
+  void showSwapTxDetails(TransItem transItem) {
     if (!FlavorConfig.isDesktop) {
       ref
           .read(pageStatusStateProvider.notifier)
           .setStatus(Status.swapTxDetails);
-      txDetails = tx;
+      txDetails = transItem;
 
       _listenTxDetailsChanges();
 
@@ -1612,7 +1609,7 @@ class WalletChangeNotifier with ChangeNotifier {
       final allPegsById = ref.read(allPegsByIdProvider);
       ref
           .read(desktopDialogProvider)
-          .showTx(tx.id, isPeg: allPegsById.containsKey(tx.id));
+          .showTx(transItem, isPeg: allPegsById.containsKey(transItem.id));
     }
   }
 
@@ -1883,6 +1880,7 @@ class WalletChangeNotifier with ChangeNotifier {
     ref.read(allPegsNotifierProvider.notifier).clear();
     ref.read(ampIdNotifierProvider.notifier).setAmpId('');
     ref.invalidate(jadeOnboardingRegistrationNotifierProvider);
+    _mnemonic = "";
     notifyListeners();
   }
 
@@ -2082,6 +2080,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> setOrder() async {
+    final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
+
     if (FlavorConfig.isDesktop) {
       ref.read(desktopDialogProvider).orderReview(
             orderDetailsData.orderType == OrderDetailsDataType.sign
@@ -2113,19 +2113,20 @@ class WalletChangeNotifier with ChangeNotifier {
     int ttlSeconds = kOneWeek,
     bool allowTxChaining = false,
   }) {
-    orderDetailsData =
+    final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
+    final newOrderDetailsData =
         orderDetailsData.copyWith(accept: accept, private: private);
-    if (orderDetailsData.orderId.isEmpty) {
+    if (newOrderDetailsData.orderId.isEmpty) {
       return;
     }
 
     final msg = To();
     msg.submitDecision = To_SubmitDecision();
-    msg.submitDecision.orderId = orderDetailsData.orderId;
+    msg.submitDecision.orderId = newOrderDetailsData.orderId;
     msg.submitDecision.accept = accept;
     msg.submitDecision.autoSign = autosign;
     msg.submitDecision.twoStep = twoStep;
-    msg.submitDecision.private = orderDetailsData.private;
+    msg.submitDecision.private = newOrderDetailsData.private;
     msg.submitDecision.ttlSeconds = Int64(ttlSeconds);
     msg.submitDecision.txChainingAllowed = allowTxChaining;
     sendMsg(msg);
@@ -2323,6 +2324,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setCreateOrderSuccess() {
+    final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
+
     if (FlavorConfig.isDesktop) {
       if (orderDetailsData.private) {
         ref.read(desktopDialogProvider).orderReview(ReviewScreen.submitSucceed);
@@ -2373,7 +2376,11 @@ class WalletChangeNotifier with ChangeNotifier {
     double? price,
     double? indexPrice,
   }) {
-    orderDetailsData = OrderDetailsData.empty();
+    final orderDetailsData = OrderDetailsData.empty();
+    Future.microtask(() => ref
+        .read(orderDetailsDataNotifierProvider.notifier)
+        .setOrderDetailsData(orderDetailsData));
+
     final msg = To();
     msg.editOrder = To_EditOrder();
     msg.editOrder.orderId = orderId;
@@ -2390,7 +2397,12 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void modifyOrderAutoSign(String orderId, bool autoSign) {
-    orderDetailsData = OrderDetailsData.empty();
+    final orderDetailsData = OrderDetailsData.empty();
+
+    Future.microtask(() => ref
+        .read(orderDetailsDataNotifierProvider.notifier)
+        .setOrderDetailsData(orderDetailsData));
+
     final msg = To();
     msg.editOrder = To_EditOrder();
     msg.editOrder.orderId = orderId;
@@ -2420,8 +2432,11 @@ class WalletChangeNotifier with ChangeNotifier {
 
     if (FlavorConfig.isDesktop) {
       final orderAsset = ref.read(assetsStateProvider)[requestOrder.assetId]!;
-      orderDetailsData =
+      final orderDetailsData =
           OrderDetailsData.fromRequestOrder(requestOrder, orderAsset.precision);
+      ref
+          .read(orderDetailsDataNotifierProvider.notifier)
+          .setOrderDetailsData(orderDetailsData);
       notifyListeners();
       ref.read(desktopDialogProvider).orderReview(ReviewScreen.edit);
       return;

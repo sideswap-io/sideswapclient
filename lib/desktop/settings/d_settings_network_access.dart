@@ -19,7 +19,7 @@ class DSettingsNetworkAccess extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsDialogTheme =
-        ref.watch(desktopAppThemeProvider).settingsDialogTheme;
+        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
 
     return PopScope(
       canPop: false,

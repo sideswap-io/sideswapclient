@@ -27,7 +27,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsDialogTheme =
-        ref.watch(desktopAppThemeProvider).settingsDialogTheme;
+        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
 
     const textStyle = TextStyle(
       fontSize: 13,

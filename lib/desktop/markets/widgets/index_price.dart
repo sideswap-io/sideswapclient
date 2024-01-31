@@ -32,8 +32,10 @@ class IndexPrice extends ConsumerWidget {
     final icon = ref
         .watch(assetImageProvider)
         .getVerySmallImage(selectedAccountAsset.assetId);
-    final buttonStyle =
-        ref.watch(desktopAppThemeProvider).buttonThemeData.defaultButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .buttonThemeData
+        .defaultButtonStyle;
 
     return switch (indexPrice != 0 || lastPrice != 0) {
       true => Row(
@@ -96,8 +98,10 @@ class IndexPrice extends ConsumerWidget {
                 ),
               ),
               onPressed: () {
-                ref.read(indexPriceButtonProvider.notifier).setIndexPrice(
-                    indexPrice != 0 ? indexPriceStr : lastPriceStr);
+                ref
+                    .read(indexPriceButtonStreamNotifierProvider.notifier)
+                    .setIndexPrice(
+                        indexPrice != 0 ? indexPriceStr : lastPriceStr);
               },
             ),
           ],

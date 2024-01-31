@@ -41,7 +41,8 @@ class DesktopChart extends StatefulWidget {
 
   final Function() onReachEnd;
 
-  DesktopChart({
+  const DesktopChart({
+    super.key,
     required this.onScaleUpdate,
     required this.onHorizontalDragUpdate,
     required this.candleWidth,
@@ -139,11 +140,11 @@ class _DesktopChartState extends State<DesktopChart> {
 
         return TweenAnimationBuilder(
           tween: Tween(begin: candlesHighPrice, end: candlesHighPrice),
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           builder: (context, double high, _) {
             return TweenAnimationBuilder(
               tween: Tween(begin: candlesLowPrice, end: candlesLowPrice),
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               builder: (context, double low, _) {
                 final currentCandle = mouseHoverX == null
                     ? null
@@ -205,7 +206,8 @@ class _DesktopChartState extends State<DesktopChart> {
                                           ),
                                         ),
                                         child: AnimatedPadding(
-                                          duration: Duration(milliseconds: 300),
+                                          duration:
+                                              const Duration(milliseconds: 300),
                                           padding: EdgeInsets.symmetric(
                                               vertical:
                                                   MAIN_CHART_VERTICAL_PADDING +
@@ -226,7 +228,7 @@ class _DesktopChartState extends State<DesktopChart> {
                                         ),
                                       ),
                                     ),
-                                    SizedBox(
+                                    const SizedBox(
                                       width: PRICE_BAR_WIDTH,
                                     ),
                                   ],
@@ -267,6 +269,7 @@ class _DesktopChartState extends State<DesktopChart> {
                                   ),
                                 ),
                                 SizedBox(
+                                  width: PRICE_BAR_WIDTH,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -290,12 +293,11 @@ class _DesktopChartState extends State<DesktopChart> {
                                       ),
                                     ],
                                   ),
-                                  width: PRICE_BAR_WIDTH,
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: DATE_BAR_HEIGHT,
                           ),
                         ],
@@ -314,6 +316,8 @@ class _DesktopChartState extends State<DesktopChart> {
                                   Container(
                                     color: Theme.of(context)
                                         .hoverIndicatorBackgroundColor,
+                                    width: PRICE_BAR_WIDTH,
+                                    height: 20,
                                     child: Center(
                                       child: Text(
                                         mouseHoverY! <
@@ -343,8 +347,6 @@ class _DesktopChartState extends State<DesktopChart> {
                                         ),
                                       ),
                                     ),
-                                    width: PRICE_BAR_WIDTH,
-                                    height: 20,
                                   ),
                                 ],
                               ),
@@ -352,13 +354,13 @@ class _DesktopChartState extends State<DesktopChart> {
                           : Container(),
                       mouseHoverX != null && !isDragging
                           ? Positioned(
+                              left: mouseHoverX,
                               child: DashLine(
                                 length: constraints.maxHeight - 20,
                                 color: Theme.of(context).grayColor,
                                 direction: Axis.vertical,
                                 thickness: 0.5,
                               ),
-                              left: mouseHoverX,
                             )
                           : Container(),
                       Padding(

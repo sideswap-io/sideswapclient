@@ -66,8 +66,9 @@ class DFocusBorder extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final fasterAnimationDuration =
-        ref.watch(desktopAppThemeProvider).fasterAnimationDuration;
-    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
+        ref.watch(desktopAppThemeNotifierProvider).fasterAnimationDuration;
+    final animationCurve =
+        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
 
     final style = DFocusTheme.of(context).merge(this.style);
     final double borderWidth =
@@ -110,7 +111,7 @@ class DFocusTheme extends InheritedWidget {
     final theme = context.dependOnInheritedWidgetOfExactType<DFocusTheme>();
     final container = ProviderContainer();
     final focusThemeData =
-        container.read(desktopAppThemeProvider).focusThemeData;
+        container.read(desktopAppThemeNotifierProvider).focusThemeData;
     return focusThemeData.merge(theme?.data);
   }
 
@@ -140,14 +141,14 @@ class DFocusThemeData with Diagnosticable {
         context.dependOnInheritedWidgetOfExactType<DFocusTheme>();
     final container = ProviderContainer();
     final themeFocusTheme =
-        container.read(desktopAppThemeProvider).focusThemeData;
+        container.read(desktopAppThemeNotifierProvider).focusThemeData;
     return theme?.data ?? themeFocusTheme;
   }
 
   static DFocusThemeData of(BuildContext context) {
     final container = ProviderContainer();
     final accentColor = container
-        .read(desktopAppThemeProvider)
+        .read(desktopAppThemeNotifierProvider)
         .darkScheme
         .primary
         .toAccentColor();

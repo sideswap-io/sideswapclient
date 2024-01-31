@@ -13,6 +13,7 @@ import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/common_providers.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -726,9 +727,8 @@ class SwapSendAmountProvider extends ChangeNotifier {
       satoshiAmount = 0;
     } else {
       final sendAsset = ref.read(swapProvider).swapSendAsset;
-      satoshiAmount = ref
-          .read(walletProvider)
-          .getSatoshiForAmount(sendAsset?.assetId ?? '', amount);
+      satoshiAmount = ref.read(satoshiForAmountProvider(
+          assetId: sendAsset?.assetId ?? '', amount: amount));
     }
 
     notifyListeners();
@@ -754,9 +754,8 @@ class SwapRecvAmountProvider extends ChangeNotifier {
       satoshiAmount = 0;
     } else {
       final recvAsset = ref.read(swapProvider).swapRecvAsset;
-      satoshiAmount = ref
-          .read(walletProvider)
-          .getSatoshiForAmount(recvAsset?.assetId ?? '', amount);
+      satoshiAmount = ref.read(satoshiForAmountProvider(
+          assetId: recvAsset?.assetId ?? '', amount: amount));
     }
 
     notifyListeners();

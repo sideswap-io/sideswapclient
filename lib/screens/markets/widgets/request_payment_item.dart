@@ -37,7 +37,7 @@ class RequestPaymentItem extends ConsumerWidget {
       height: height,
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(Radius.circular(8)),
-        color: Color(0xFF1D6389),
+        color: SideSwapColors.blueSapphire,
       ),
       child: Padding(
         padding:

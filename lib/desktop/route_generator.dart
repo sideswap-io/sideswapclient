@@ -357,6 +357,8 @@ class RouteContainerState extends ConsumerState<RouteContainer> {
       case Status.orderRequestView:
       case Status.generateWalletAddress:
       case Status.walletAddressDetail:
+      case Status.transactions:
+      case Status.orderFilers:
         // Not used on desktop
         break;
       case Status.ampRegister:

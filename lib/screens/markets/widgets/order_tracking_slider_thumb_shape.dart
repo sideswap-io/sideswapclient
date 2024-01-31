@@ -8,8 +8,8 @@ class OrderTrackingSliderThumbShape extends SliderComponentShape {
     this.maxValue = 0,
     this.negativeColor = SideSwapColors.bitterSweet,
     this.positiveColor = SideSwapColors.turquoise,
-    this.circleNegativeColor = const Color(0xFF3E475F),
-    this.circlePositiveColor = const Color(0xFF147385),
+    this.circleNegativeColor = SideSwapColors.policeBlue,
+    this.circlePositiveColor = SideSwapColors.metallicSeaweed,
     this.customRadius,
     this.stokeRatio = 0.214285,
   });
@@ -18,11 +18,11 @@ class OrderTrackingSliderThumbShape extends SliderComponentShape {
   final double maxValue;
   final MaterialColor negativeColor;
   final MaterialColor positiveColor;
-  final Color circleNegativeColor;
-  final Color circlePositiveColor;
+  final MaterialColor circleNegativeColor;
+  final MaterialColor circlePositiveColor;
 
   var borderColor = SideSwapColors.navyBlue;
-  var circleColor = const Color(0xFF043857);
+  var circleColor = SideSwapColors.prussianBlue;
   final double? customRadius;
   final double defaultRadius = 14.0;
   final double stokeRatio;

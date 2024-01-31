@@ -27,7 +27,7 @@ class DPinSetup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsDialogTheme =
-        ref.watch(desktopAppThemeProvider).settingsDialogTheme;
+        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
 
     final isNewWallet = ref.read(pinSetupProvider).isNewWallet;
 

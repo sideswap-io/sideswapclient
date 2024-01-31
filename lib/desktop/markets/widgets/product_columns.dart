@@ -17,25 +17,25 @@ class ProductColumns extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
+          Flexible(
             child: AssetSelector(
               marketType: MarketType.stablecoin,
               onAssetSelected: onAssetSelected,
             ),
           ),
           const SizedBox(
-            width: 16,
+            width: 8,
           ),
-          Expanded(
+          Flexible(
             child: AssetSelector(
               marketType: MarketType.amp,
               onAssetSelected: onAssetSelected,
             ),
           ),
           const SizedBox(
-            width: 16,
+            width: 8,
           ),
-          Expanded(
+          Flexible(
             child: AssetSelector(
               marketType: MarketType.token,
               onAssetSelected: onAssetSelected,

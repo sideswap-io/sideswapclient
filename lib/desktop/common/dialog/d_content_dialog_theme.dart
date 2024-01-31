@@ -40,10 +40,12 @@ class DContentDialogThemeData {
   factory DContentDialogThemeData.standard(
       {Color? menuColor, Color? micaBackgroundColor, DTypography? typography}) {
     final container = ProviderContainer();
-    final themeMenuColor = container.read(desktopAppThemeProvider).menuColor;
+    final themeMenuColor =
+        container.read(desktopAppThemeNotifierProvider).menuColor;
     final themeMicaBackgroundColor =
-        container.read(desktopAppThemeProvider).micaBackgroundColor;
-    final themeTypography = container.read(desktopAppThemeProvider).typography;
+        container.read(desktopAppThemeNotifierProvider).micaBackgroundColor;
+    final themeTypography =
+        container.read(desktopAppThemeNotifierProvider).typography;
 
     return DContentDialogThemeData(
       decoration: BoxDecoration(

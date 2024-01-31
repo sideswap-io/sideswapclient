@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
 import 'package:sideswap/screens/pay/widgets/friends_panel_header.dart';
@@ -41,11 +42,16 @@ class FriendsPanelState extends State<FriendsPanel> {
                     friend: friends[index],
                     highlightName: widget.searchString,
                     onPressed: () {
-                      ref.read(paymentProvider).selectPaymentAmountPage(
-                            PaymentAmountPageArguments(
-                              friend: friends[index],
-                            ),
-                          );
+                      ref
+                          .read(paymentAmountPageArgumentsNotifierProvider
+                              .notifier)
+                          .setPaymentAmountPageArguments(
+                              PaymentAmountPageArguments(
+                            friend: friends[index],
+                          ));
+                      ref
+                          .read(pageStatusStateProvider.notifier)
+                          .setStatus(Status.paymentAmountPage);
                     },
                   ),
                 );

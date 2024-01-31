@@ -22,7 +22,7 @@ class DJadeImport extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(jadeRescanProvider, (_, __) {});
 
-    final desktopAppTheme = ref.watch(desktopAppThemeProvider);
+    final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
 
     return SideSwapScaffoldPage(
       content: Padding(

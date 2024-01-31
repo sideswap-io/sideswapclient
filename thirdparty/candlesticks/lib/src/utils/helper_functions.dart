@@ -43,6 +43,6 @@ class HelperFunctions {
                 ? price.toStringAsFixed(4)
                 : price > 1
                     ? price.toStringAsFixed(5)
-                    : price.toStringAsFixed(7);
+                    : price.toStringAsFixed(8);
   }
 }

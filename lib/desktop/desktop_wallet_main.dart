@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
 
 import 'package:sideswap/desktop/d_main_bottom_navigation_bar.dart';
@@ -10,7 +11,6 @@ import 'package:sideswap/desktop/markets/d_markets_root.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
-import 'package:sideswap/providers/markets_page_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
@@ -19,72 +19,54 @@ import 'package:sideswap/screens/accounts/asset_details.dart';
 import 'package:sideswap/screens/accounts/assets_list.dart';
 import 'package:sideswap/screens/swap/swap.dart';
 
-class DesktopWalletMain extends ConsumerStatefulWidget {
+class DesktopWalletMain extends HookConsumerWidget {
   const DesktopWalletMain({super.key});
 
-  @override
-  WalletMainState createState() => WalletMainState();
-}
-
-class WalletMainState extends ConsumerState<DesktopWalletMain> {
   Widget getChild(WalletMainArguments walletMainArguments) {
-    switch (walletMainArguments.navigationItemEnum) {
-      case WalletMainNavigationItemEnum.home:
-        return const DesktopHomeNew();
-      case WalletMainNavigationItemEnum.accounts:
-        return const SizedBox();
-      case WalletMainNavigationItemEnum.assetSelect:
-        return const AssetSelectList();
-      case WalletMainNavigationItemEnum.assetDetails:
-        return const AssetDetails();
-      case WalletMainNavigationItemEnum.transactions:
-        return const DTxHistory();
-      case WalletMainNavigationItemEnum.markets:
-        return const DMarkets();
-      case WalletMainNavigationItemEnum.swap:
-        return const DSwapMain(key: ValueKey(false));
-      case WalletMainNavigationItemEnum.pegs:
-        return const DSwapMain(key: ValueKey(true));
-    }
+    return switch (walletMainArguments.navigationItemEnum) {
+      WalletMainNavigationItemEnum.home => const DesktopHomeNew(),
+      WalletMainNavigationItemEnum.accounts => const SizedBox(),
+      WalletMainNavigationItemEnum.assetSelect => const AssetSelectList(),
+      WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
+      WalletMainNavigationItemEnum.transactions => const DTxHistory(),
+      WalletMainNavigationItemEnum.markets => const DMarkets(),
+      WalletMainNavigationItemEnum.swap =>
+        const DSwapMain(key: ValueKey(false)),
+      WalletMainNavigationItemEnum.pegs => const DSwapMain(key: ValueKey(true)),
+    };
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
 
-        return SideSwapScaffoldPage(
-          header: const TopToolbar(),
-          content: Column(
-            children: [
-              Expanded(child: getChild(walletMainArguments)),
-            ],
-          ),
-          bottomBar: DesktopMainBottomNavigationBar(
-            currentIndex: walletMainArguments.currentIndex,
-            onTap: (index) {
-              ref.read(swapProvider).swapReset();
-              final newWalletMainArguments =
-                  walletMainArguments.fromIndexDesktop(index);
-              ref
-                  .read(uiStateArgsNotifierProvider.notifier)
-                  .setWalletMainArguments(newWalletMainArguments);
-              if (newWalletMainArguments.navigationItemEnum ==
-                  WalletMainNavigationItemEnum.pegs) {
-                ref.read(swapProvider).switchToPegs();
-              }
+    return SideSwapScaffoldPage(
+      header: const TopToolbar(),
+      content: Column(
+        children: [
+          Expanded(child: getChild(walletMainArguments)),
+        ],
+      ),
+      bottomBar: DesktopMainBottomNavigationBar(
+        currentIndex: walletMainArguments.currentIndex,
+        onTap: (index) {
+          ref.read(swapProvider).swapReset();
+          final newWalletMainArguments =
+              walletMainArguments.fromIndexDesktop(index);
+          ref
+              .read(uiStateArgsNotifierProvider.notifier)
+              .setWalletMainArguments(newWalletMainArguments);
+          if (newWalletMainArguments.navigationItemEnum ==
+              WalletMainNavigationItemEnum.pegs) {
+            ref.read(swapProvider).switchToPegs();
+          }
 
-              if (newWalletMainArguments.navigationItemEnum ==
-                  WalletMainNavigationItemEnum.swap) {
-                ref.read(swapProvider).switchToSwaps();
-              }
-
-              ref.invalidate(marketsPageListenerProvider);
-            },
-          ),
-        );
-      },
+          if (newWalletMainArguments.navigationItemEnum ==
+              WalletMainNavigationItemEnum.swap) {
+            ref.read(swapProvider).switchToSwaps();
+          }
+        },
+      ),
     );
   }
 }
@@ -107,7 +89,7 @@ class DSwapMain extends StatelessWidget {
               height: 551,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                color: const Color(0xFF043857),
+                color: SideSwapColors.prussianBlue,
               ),
               child: const SwapMain(),
             ),
@@ -138,7 +120,9 @@ class TopToolbar extends ConsumerWidget {
             name: 'Send'.tr(),
             icon: 'assets/toolbar/send.svg',
             onPressed: () {
-              ref.read(paymentProvider).createdTx = null;
+              ref
+                  .read(paymentCreatedTxNotifierProvider.notifier)
+                  .setCreatedTx(null);
               ref.read(desktopDialogProvider).showSendTx();
             },
           ),

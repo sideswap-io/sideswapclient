@@ -6,7 +6,7 @@ part of 'csv_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$csvRepositoryHash() => r'82097f5d95fea6a1f635bf1cc6a75295cbadd40d';
+String _$csvRepositoryHash() => r'5bbf15b96637736ba9541789077ee1751bfb0f9f';
 
 /// See also [csvRepository].
 @ProviderFor(csvRepository)

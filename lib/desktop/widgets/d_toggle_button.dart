@@ -21,7 +21,7 @@ class DToggleButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final handleClick = onChanged != null ? () => onChanged!(!value) : null;
     final enabled = onChanged != null;
-    const colorToggleBackground = Color(0xFF043857);
+    const colorToggleBackground = SideSwapColors.prussianBlue;
 
     Color buttonColor(bool value) {
       if (enabled) {
@@ -55,6 +55,10 @@ class DToggleButton extends StatelessWidget {
                   text: offText,
                   textColor: textColor(!value),
                   onPressed: handleClick,
+                  textStyle: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(fontSize: 13),
                 ),
               ),
               Expanded(
@@ -63,6 +67,10 @@ class DToggleButton extends StatelessWidget {
                   text: onText,
                   textColor: textColor(value),
                   onPressed: handleClick,
+                  textStyle: Theme.of(context)
+                      .textTheme
+                      .labelMedium
+                      ?.copyWith(fontSize: 13),
                 ),
               ),
             ],

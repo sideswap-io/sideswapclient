@@ -169,6 +169,60 @@ class SideSwapColors {
   );
   static const int _turquoise = 0xFF2CCCBF;
 
+  // #B3FF85
+  static const MaterialColor menthol = MaterialColor(
+    _menthol,
+    <int, Color>{
+      50: Color.fromRGBO(179, 255, 133, .1),
+      100: Color.fromRGBO(179, 255, 133, .2),
+      200: Color.fromRGBO(179, 255, 133, .3),
+      300: Color.fromRGBO(179, 255, 133, .4),
+      400: Color.fromRGBO(179, 255, 133, .5),
+      500: Color.fromRGBO(179, 255, 133, .6),
+      600: Color.fromRGBO(179, 255, 133, .7),
+      700: Color.fromRGBO(179, 255, 133, .8),
+      800: Color.fromRGBO(179, 255, 133, .9),
+      900: Color.fromRGBO(179, 255, 133, 1),
+    },
+  );
+  static const int _menthol = 0xFFB3FF85;
+
+  // #3E475F
+  static const MaterialColor policeBlue = MaterialColor(
+    _policeBlue,
+    <int, Color>{
+      50: Color.fromRGBO(62, 71, 95, .1),
+      100: Color.fromRGBO(62, 71, 95, .2),
+      200: Color.fromRGBO(62, 71, 95, .3),
+      300: Color.fromRGBO(62, 71, 95, .4),
+      400: Color.fromRGBO(62, 71, 95, .5),
+      500: Color.fromRGBO(62, 71, 95, .6),
+      600: Color.fromRGBO(62, 71, 95, .7),
+      700: Color.fromRGBO(62, 71, 95, .8),
+      800: Color.fromRGBO(62, 71, 95, .9),
+      900: Color.fromRGBO(62, 71, 95, 1),
+    },
+  );
+  static const int _policeBlue = 0xFF3E475F;
+
+  // #147385
+  static const MaterialColor metallicSeaweed = MaterialColor(
+    _metallicSeaweed,
+    <int, Color>{
+      50: Color.fromRGBO(20, 115, 133, .1),
+      100: Color.fromRGBO(20, 115, 133, .2),
+      200: Color.fromRGBO(20, 115, 133, .3),
+      300: Color.fromRGBO(20, 115, 133, .4),
+      400: Color.fromRGBO(20, 115, 133, .5),
+      500: Color.fromRGBO(20, 115, 133, .6),
+      600: Color.fromRGBO(20, 115, 133, .7),
+      700: Color.fromRGBO(20, 115, 133, .8),
+      800: Color.fromRGBO(20, 115, 133, .9),
+      900: Color.fromRGBO(20, 115, 133, 1),
+    },
+  );
+  static const int _metallicSeaweed = 0xFF147385;
+
   // #1B8BC8
   static const MaterialColor navyBlue = MaterialColor(
     _navyBlue,

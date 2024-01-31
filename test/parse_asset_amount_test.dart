@@ -1,28 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 
 void main() {
   final container = ProviderContainer();
   group('parse asset amount precision', () {
     test('precision: -1', () {
       expect(
-          container.read(walletProvider).parseAssetAmount('0', precision: -1),
+          container.read(parseAssetAmountProvider(amount: '0', precision: -1)),
           equals(null));
     });
 
     test('precision: 0', () {
-      expect(container.read(walletProvider).parseAssetAmount('0', precision: 0),
+      expect(
+          container.read(parseAssetAmountProvider(amount: '0', precision: 0)),
           equals(0));
     });
 
     test('precision: 8', () {
-      expect(container.read(walletProvider).parseAssetAmount('0', precision: 8),
+      expect(
+          container.read(parseAssetAmountProvider(amount: '0', precision: 8)),
           equals(0));
     });
 
     test('precision: 9', () {
-      expect(container.read(walletProvider).parseAssetAmount('0', precision: 9),
+      expect(
+          container.read(parseAssetAmountProvider(amount: '0', precision: 9)),
           equals(null));
     });
   });
@@ -34,9 +37,8 @@ void main() {
         const value = '0';
         const precision = 0;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(0));
       });
 
@@ -44,9 +46,8 @@ void main() {
         const value = '1';
         const precision = 0;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(1));
       });
 
@@ -54,9 +55,8 @@ void main() {
         const value = '1.0';
         const precision = 0;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(1));
       });
 
@@ -64,9 +64,8 @@ void main() {
         const value = '1.1';
         const precision = 0;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(null));
       });
 
@@ -74,9 +73,8 @@ void main() {
         const value = '1.00000001';
         const precision = 0;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(null));
       });
 
@@ -84,9 +82,8 @@ void main() {
         const value = '0';
         const precision = 2;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(0));
       });
 
@@ -94,9 +91,8 @@ void main() {
         const value = '1';
         const precision = 2;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(100));
       });
 
@@ -104,9 +100,8 @@ void main() {
         const value = '1.0';
         const precision = 2;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(100));
       });
 
@@ -114,9 +109,8 @@ void main() {
         const value = '1.1';
         const precision = 2;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(110));
       });
 
@@ -124,9 +118,8 @@ void main() {
         const value = '1.01';
         const precision = 2;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(101));
       });
 
@@ -134,9 +127,8 @@ void main() {
         const value = '1.00000001';
         const precision = 2;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(null));
       });
 
@@ -144,9 +136,8 @@ void main() {
         const value = '0';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(0));
       });
 
@@ -154,9 +145,8 @@ void main() {
         const value = '1';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(100000000));
       });
 
@@ -164,9 +154,8 @@ void main() {
         const value = '1.0';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(100000000));
       });
 
@@ -174,9 +163,8 @@ void main() {
         const value = '1.1';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(110000000));
       });
 
@@ -184,9 +172,8 @@ void main() {
         const value = '1.01';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(101000000));
       });
 
@@ -194,9 +181,8 @@ void main() {
         const value = '1.00000001';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(100000001));
       });
 
@@ -204,9 +190,8 @@ void main() {
         const value = '1.001';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(100100000));
       });
 
@@ -214,9 +199,8 @@ void main() {
         const value = '1.0000000001';
         const precision = 8;
         expect(
-            container
-                .read(walletProvider)
-                .parseAssetAmount(value, precision: precision),
+            container.read(
+                parseAssetAmountProvider(amount: value, precision: precision)),
             equals(null));
       });
     },

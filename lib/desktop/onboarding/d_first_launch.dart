@@ -187,7 +187,7 @@ class DFirstLaunch extends HookConsumerWidget {
                 child: DCustomTextBigButton(
                   width: 266,
                   onPressed: () {
-                    ref.invalidate(mnemonicWordItemsProvider);
+                    ref.invalidate(mnemonicWordItemsNotifierProvider);
                     ref.read(walletProvider).setReviewLicenseImportWallet();
                   },
                   child: Text('IMPORT WALLET'.tr()),

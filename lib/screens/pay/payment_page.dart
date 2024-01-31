@@ -12,6 +12,7 @@ import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/screens/pay/widgets/confirm_phone_bottom_panel.dart';
@@ -88,11 +89,15 @@ class PaymentPage extends HookConsumerWidget {
                 .commonAddrErrorStr(addressController.text, addrType);
 
             if (validate(addressController.text, newErrorText, friend.value)) {
-              ref.read(paymentProvider).selectPaymentAmountPage(
-                    PaymentAmountPageArguments(
-                      result: result,
-                    ),
-                  );
+              ref
+                  .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+                  .setPaymentAmountPageArguments(PaymentAmountPageArguments(
+                    result: result,
+                  ));
+              ref
+                  .read(pageStatusStateProvider.notifier)
+                  .setStatus(Status.paymentAmountPage);
+
               return;
             }
           });
@@ -102,11 +107,14 @@ class PaymentPage extends HookConsumerWidget {
     useEffect(() {
       if (continueEnabled.value) {
         Future.microtask(() {
-          ref.read(paymentProvider).selectPaymentAmountPage(
-                PaymentAmountPageArguments(
-                  result: QrCodeResult(address: addressController.text),
-                ),
-              );
+          ref
+              .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+              .setPaymentAmountPageArguments(PaymentAmountPageArguments(
+                result: QrCodeResult(address: addressController.text),
+              ));
+          ref
+              .read(pageStatusStateProvider.notifier)
+              .setStatus(Status.paymentAmountPage);
         });
       }
 

@@ -1,33 +1,31 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/ui_state_args_provider.dart';
 
 import 'package:sideswap/screens/wallet_main/widgets/requests_navigation_item_badge.dart';
 import 'package:sideswap/screens/wallet_main/widgets/sideswap_navigation_item.dart';
 
-class MainBottomNavigationBar extends StatefulWidget {
+class MainBottomNavigationBar extends ConsumerWidget {
   const MainBottomNavigationBar({
     super.key,
-    required this.onTap,
-    required this.currentIndex,
+    this.onTap,
   });
 
-  final ValueChanged<int> onTap;
-  final int currentIndex;
+  final ValueChanged<int>? onTap;
 
   @override
-  MainBottomNavigationBarState createState() => MainBottomNavigationBarState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+    final currentIndex = walletMainArguments.currentIndex;
 
-class MainBottomNavigationBarState extends State<MainBottomNavigationBar> {
-  Color backgroundColor = const Color(0xFF021C36);
-  Color selectedItemColor = SideSwapColors.brightTurquoise;
-  Color unselectedItemColor = const Color(0xFF68839E);
+    Color backgroundColor = const Color(0xFF021C36);
+    Color selectedItemColor = SideSwapColors.brightTurquoise;
+    Color unselectedItemColor = const Color(0xFF68839E);
 
-  @override
-  Widget build(BuildContext context) {
     return BottomNavigationBar(
-      currentIndex: widget.currentIndex,
+      currentIndex: currentIndex,
       type: BottomNavigationBarType.fixed,
       backgroundColor: backgroundColor,
       selectedItemColor: selectedItemColor,
@@ -43,19 +41,19 @@ class MainBottomNavigationBarState extends State<MainBottomNavigationBar> {
       items: [
         BottomNavigationBarItem(
           label: 'Home'.tr(),
-          icon: widget.currentIndex == 0
+          icon: currentIndex == 0
               ? const SideSwapNavigationItemIcon('assets/home_active.svg')
               : const SideSwapNavigationItemIcon('assets/home.svg'),
         ),
         BottomNavigationBarItem(
           label: 'Assets'.tr(),
-          icon: widget.currentIndex == 1
+          icon: currentIndex == 1
               ? const SideSwapNavigationItemIcon('assets/accounts_active.svg')
               : const SideSwapNavigationItemIcon('assets/accounts.svg'),
         ),
         BottomNavigationBarItem(
             label: 'Markets'.tr(),
-            icon: widget.currentIndex == 2
+            icon: currentIndex == 2
                 ? RequestsNavigationItemBadge(
                     assetName: 'assets/requests_active.svg',
                     backgroundColor: backgroundColor,
@@ -68,18 +66,18 @@ class MainBottomNavigationBarState extends State<MainBottomNavigationBar> {
                   )),
         BottomNavigationBarItem(
           label: 'Instant Swap'.tr(),
-          icon: widget.currentIndex == 3
+          icon: currentIndex == 3
               ? const SideSwapNavigationItemIcon('assets/swap_active.svg')
               : const SideSwapNavigationItemIcon('assets/swap.svg'),
         ),
         BottomNavigationBarItem(
           label: 'Peg-In/Out'.tr(),
-          icon: widget.currentIndex == 4
+          icon: currentIndex == 4
               ? const SideSwapNavigationItemIcon('assets/peg-in-out_active.svg')
               : const SideSwapNavigationItemIcon('assets/peg-in-out.svg'),
         ),
       ],
-      onTap: widget.onTap,
+      onTap: onTap,
     );
   }
 }

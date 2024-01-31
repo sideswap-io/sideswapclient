@@ -1,18 +1,20 @@
 import 'package:flutter/widgets.dart';
+import 'package:sideswap/screens/markets/widgets/sideswap_chip.dart';
 
 class AmpFlag extends StatelessWidget {
   const AmpFlag({
     super.key,
-    this.width = 39,
+    this.width = 47,
     this.height = 20,
     this.decoration,
     this.margin = const EdgeInsets.only(left: 8),
-    this.padding = const EdgeInsets.all(0),
+    this.padding = const EdgeInsets.symmetric(horizontal: 6),
     this.textStyle = const TextStyle(
       color: Color(0xFF73A6C5),
       fontSize: 12,
       fontFamily: 'Roboto',
       fontWeight: FontWeight.w500,
+      letterSpacing: 0.12,
     ),
   });
 
@@ -25,7 +27,7 @@ class AmpFlag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SideSwapChip(
       width: width,
       height: height,
       margin: margin,
@@ -37,18 +39,8 @@ class AmpFlag extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Text(
-            'AMP',
-            textAlign: TextAlign.center,
-            style: textStyle,
-          ),
-        ],
-      ),
+      text: 'AMP',
+      textStyle: textStyle,
     );
   }
 }

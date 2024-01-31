@@ -7,9 +7,11 @@ part of 'd_send_popup_providers.dart';
 // **************************************************************************
 
 String _$sendPopupButtonEnabledHash() =>
-    r'9d92bc0051fe7182c637eab6272036a7bc8f6b22';
+    r'a7f34ec9ba4e7ba68fe12f75d2490ea81188aaaa';
 
-/// See also [sendPopupButtonEnabled].
+/// Accept only liquidnetwork or elements address type
+///
+/// Copied from [sendPopupButtonEnabled].
 @ProviderFor(sendPopupButtonEnabled)
 final sendPopupButtonEnabledProvider = AutoDisposeProvider<bool>.internal(
   sendPopupButtonEnabled,
@@ -39,22 +41,6 @@ final sendPopupShowInsufficientFundsProvider =
 );
 
 typedef SendPopupShowInsufficientFundsRef = AutoDisposeProviderRef<bool>;
-String _$sendPopupIsAddressValidHash() =>
-    r'0c51d1635cbb30963ce3b3856d59388cb410047b';
-
-/// See also [sendPopupIsAddressValid].
-@ProviderFor(sendPopupIsAddressValid)
-final sendPopupIsAddressValidProvider = AutoDisposeProvider<bool>.internal(
-  sendPopupIsAddressValid,
-  name: r'sendPopupIsAddressValidProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$sendPopupIsAddressValidHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef SendPopupIsAddressValidRef = AutoDisposeProviderRef<bool>;
 String _$sendPopupDollarConversionHash() =>
     r'ff2faa4f4c6b8e28a03301544e82bfcd3ce2a09f';
 
@@ -72,7 +58,7 @@ final sendPopupDollarConversionProvider = AutoDisposeProvider<String?>.internal(
 
 typedef SendPopupDollarConversionRef = AutoDisposeProviderRef<String?>;
 String _$sendPopupParseAddressHash() =>
-    r'0734a29214e9484aa7737f1b9c4c9b945f14a731';
+    r'0bcd2afad3936618e44c98efbf82525df3c21a0b';
 
 /// See also [sendPopupParseAddress].
 @ProviderFor(sendPopupParseAddress)

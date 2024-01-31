@@ -108,8 +108,9 @@ class ToolbarButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isSelected = selectedIndex == index;
-    final buttonStyle =
-        ref.watch(desktopAppThemeProvider).mainBottomNavigationBarButtonStyle;
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .mainBottomNavigationBarButtonStyle;
 
     return DButton(
       style: buttonStyle,

@@ -20,11 +20,10 @@ class DAddrTextField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final parsedAddress = ref.watch(sendPopupParseAddressProvider);
-    final address = parsedAddress.match((l) => '', (r) => r.address);
-    final isAddressValid = ref.watch(sendPopupIsAddressValidProvider);
+    final parseAddressResult = ref.watch(sendPopupParseAddressProvider);
+    final address = parseAddressResult.match((l) => '', (r) => r.address);
     final errorText = address.isNotEmpty
-        ? isAddressValid
+        ? parseAddressResult.match((l) => false, (r) => true)
             ? ''
             : 'Invalid address'.tr()
         : '';

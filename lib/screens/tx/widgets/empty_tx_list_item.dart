@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/providers/tx_provider.dart';
 
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 

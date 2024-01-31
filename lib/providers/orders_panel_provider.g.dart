@@ -53,6 +53,22 @@ final ordersPanelAsksProvider =
 );
 
 typedef OrdersPanelAsksRef = AutoDisposeProviderRef<List<RequestOrder>>;
+String _$ordersPanelFilterBadgeCounterHash() =>
+    r'6a4a73aef093d383bb9bdbb1e3cccdf03e0be9b4';
+
+/// See also [ordersPanelFilterBadgeCounter].
+@ProviderFor(ordersPanelFilterBadgeCounter)
+final ordersPanelFilterBadgeCounterProvider = AutoDisposeProvider<int>.internal(
+  ordersPanelFilterBadgeCounter,
+  name: r'ordersPanelFilterBadgeCounterProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$ordersPanelFilterBadgeCounterHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef OrdersPanelFilterBadgeCounterRef = AutoDisposeProviderRef<int>;
 String _$requestOrderSortFlagNotifierHash() =>
     r'07fcb7ac5f9c32e2099111be7839e4119795c689';
 

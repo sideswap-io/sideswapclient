@@ -16,7 +16,7 @@ class DSettingsJadeDevice extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final desktopAppTheme = ref.watch(desktopAppThemeProvider);
+    final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
     ref.listen(jadeRescanProvider, (_, __) {});
 
     return WillPopScope(

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
+import 'package:sideswap/listeners/markets_page_listener.dart';
 
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/screens/markets/swap_market.dart';
@@ -8,59 +11,57 @@ import 'package:sideswap/screens/markets/widgets/filled_requests_page.dart';
 import 'package:sideswap/screens/markets/widgets/market_type_buttons.dart';
 import 'package:sideswap/screens/markets/widgets/markets_bottom_panel.dart';
 
-class Markets extends ConsumerStatefulWidget {
-  const Markets({
-    super.key,
-    required this.onOrdersPressed,
-    required this.onSwapPressed,
-    this.selectedMarketType = MarketSelectedType.swap,
-  });
-
-  final VoidCallback onOrdersPressed;
-  final VoidCallback onSwapPressed;
-  final MarketSelectedType selectedMarketType;
+class Markets extends HookConsumerWidget {
+  const Markets({super.key});
 
   @override
-  MarketsState createState() => MarketsState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedMarketTypeButton =
+        ref.watch(selectedMarketTypeButtonNotifierProvider);
 
-class MarketsState extends ConsumerState<Markets> {
-  @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, child) {
-        return Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 18, left: 16, right: 16),
-              child: MarketTypeButtons(
-                selectedType: widget.selectedMarketType,
-                onOrdersPressed: widget.onOrdersPressed,
-                onSwapPressed: widget.onSwapPressed,
-              ),
-            ),
-            if (widget.selectedMarketType == MarketSelectedType.orders) ...[
+    useAsyncEffect(() async {
+      (switch (selectedMarketTypeButton) {
+        SelectedMarketTypeButtonEnum.orders => () {
+            ref
+                .read(indexPriceSubscriberNotifierProvider.notifier)
+                .unsubscribeAll();
+          }(),
+        _ => () {}(),
+      });
+      return;
+    }, [selectedMarketTypeButton]);
+
+    return Column(
+      children: [
+        const MarketsPageListener(),
+        const ColoredBox(
+          color: SideSwapColors.chathamsBlue,
+          child: Padding(
+            padding: EdgeInsets.only(top: 18, left: 16, right: 16),
+            child: MarketTypeButtons(),
+          ),
+        ),
+        ...switch (selectedMarketTypeButton) {
+          SelectedMarketTypeButtonEnum.swap => [
+              const Flexible(child: SwapMarket()),
+              const MarketsBottomBuySellPanel(),
+            ],
+          SelectedMarketTypeButtonEnum.orders => [
               Consumer(
                 builder: (context, ref, child) {
                   final ownRequestOrders =
                       ref.watch(marketOwnRequestOrdersProvider);
 
-                  if (ownRequestOrders.isEmpty) {
-                    return const Flexible(child: EmptyRequestsPage());
-                  }
-
-                  return Flexible(
-                      child: FilledRequestsPage(requests: ownRequestOrders));
+                  return switch (ownRequestOrders.isEmpty) {
+                    true => const Flexible(child: EmptyRequestsPage()),
+                    _ => Flexible(
+                        child: FilledRequestsPage(requests: ownRequestOrders)),
+                  };
                 },
               ),
-              const MarketsBottomPanel(),
-            ] else ...[
-              const Flexible(child: SwapMarket()),
-              const MarketsBottomBuySellPanel(),
             ],
-          ],
-        );
-      },
+        },
+      ],
     );
   }
 }

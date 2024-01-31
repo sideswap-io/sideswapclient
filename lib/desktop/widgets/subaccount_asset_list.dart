@@ -26,8 +26,10 @@ class SubAccountAssetList extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final iconButtonStyle =
-        ref.watch(desktopAppThemeProvider).buttonThemeData.iconButtonStyle;
+    final iconButtonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .buttonThemeData
+        .iconButtonStyle;
     final expanded = useState(true);
     final controller = useAnimationController(
       duration: const Duration(milliseconds: 200),

@@ -31,7 +31,7 @@ class DCustomTextBigButton extends StatelessWidget {
     return Consumer(
       builder: (context, ref, _) {
         final defaultButtonStyle = ref
-            .watch(desktopAppThemeProvider)
+            .watch(desktopAppThemeNotifierProvider)
             .buttonThemeData
             .defaultButtonStyle;
         return DButton(

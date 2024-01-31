@@ -86,7 +86,7 @@ class SwapPrompt extends ConsumerWidget {
                     child: Container(
                       decoration: const BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
-                        color: Color(0xFF043857),
+                        color: SideSwapColors.prussianBlue,
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16),

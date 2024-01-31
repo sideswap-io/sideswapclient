@@ -3,8 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/screens/accounts/widgets/providers/accounts_providers.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
 class AccountItem extends StatelessWidget {
@@ -58,7 +58,7 @@ class AccountItem extends StatelessWidget {
                     },
                   ),
                 ),
-                Expanded(
+                Flexible(
                   child: Padding(
                     padding: const EdgeInsets.only(left: 10),
                     child: SizedBox(
@@ -66,11 +66,11 @@ class AccountItem extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Expanded(
+                          Flexible(
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(
+                                Flexible(
                                   child: Consumer(
                                     builder: (context, ref, child) {
                                       final asset = ref.watch(
@@ -156,20 +156,17 @@ class AccountItemConversion extends StatelessWidget {
         ),
         Consumer(
           builder: (context, ref, child) {
-            final result =
-                ref.watch(accountItemDollarConversionProvider(accountAsset));
+            final usdAssetBalance =
+                ref.watch(accountAssetBalanceInUsdStringProvider(accountAsset));
 
-            return switch (result.amountUsd) {
-              0 => const SizedBox(),
-              _ => Text(
-                  '≈ ${result.dollarConversion}',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.normal,
-                    color: Color(0xFF6B91A8),
-                  ),
-                ),
-            };
+            return Text(
+              '$usdAssetBalance \$',
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.normal,
+                color: Color(0xFF6B91A8),
+              ),
+            );
           },
         ),
       ],
@@ -189,23 +186,22 @@ class AccountItemAmount extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final amountString = ref.watch(accountItemAmountProvider(accountAsset));
+    final assetBalance =
+        ref.watch(accountAssetBalanceStringProvider(accountAsset));
+
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
 
-    return switch (amountString) {
-      final amountString? => Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Text(
-            amountString,
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.normal,
-              color: textColor,
-            ),
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 8),
+      child: Text(
+        assetBalance,
+        textAlign: TextAlign.right,
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.normal,
+          color: textColor,
         ),
-      _ => const SizedBox(),
-    };
+      ),
+    );
   }
 }

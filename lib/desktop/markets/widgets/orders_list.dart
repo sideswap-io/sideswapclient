@@ -16,7 +16,7 @@ class OrdersList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (orders.isEmpty) {
-      return Expanded(
+      return Flexible(
         child: Padding(
           padding: const EdgeInsets.only(left: 12, top: 12),
           child: Align(
@@ -31,7 +31,7 @@ class OrdersList extends StatelessWidget {
         ),
       );
     }
-    return Expanded(
+    return Flexible(
       child: Column(
         children: orders.map((e) => OrderItem(order: e)).toList(),
       ),

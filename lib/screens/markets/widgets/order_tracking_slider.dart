@@ -42,8 +42,8 @@ class OrderTrackingSlider extends StatelessWidget {
 
   final negativeColor = SideSwapColors.bitterSweet;
   final positiveColor = SideSwapColors.turquoise;
-  final circleNegativeColor = const Color(0xFF3E475F);
-  final circlePositiveColor = const Color(0xFF147385);
+  final circleNegativeColor = SideSwapColors.policeBlue;
+  final circlePositiveColor = SideSwapColors.metallicSeaweed;
 
   @override
   Widget build(BuildContext context) {

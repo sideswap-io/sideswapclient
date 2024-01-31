@@ -17,7 +17,7 @@ class DPegxLoginDialogBody extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textTheme = ref.watch(desktopAppThemeProvider).textTheme;
+    final textTheme = ref.watch(desktopAppThemeNotifierProvider).textTheme;
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
     final env = ref.watch(envProvider);
 

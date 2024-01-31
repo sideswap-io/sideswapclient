@@ -61,7 +61,7 @@ class DTopOverviewToolbar extends StatelessWidget {
         Consumer(
           builder: (context, ref, child) {
             final buttonStyle = ref
-                .watch(desktopAppThemeProvider)
+                .watch(desktopAppThemeNotifierProvider)
                 .mainBottomNavigationBarButtonStyle;
 
             final csvNotifier = ref.watch(csvNotifierProvider);

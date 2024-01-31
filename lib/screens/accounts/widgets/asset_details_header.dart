@@ -3,11 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/amount_to_string_model.dart';
-import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
@@ -26,8 +23,6 @@ class AssetDetailsHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var dollarConversion = '0.0';
-
     return Opacity(
       opacity: percent,
       child: Column(
@@ -48,6 +43,7 @@ class AssetDetailsHeader extends ConsumerWidget {
               );
             },
           ),
+          const SizedBox(height: 6),
           Consumer(
             builder: (context, ref, child) {
               final isAmp = ref
@@ -58,22 +54,28 @@ class AssetDetailsHeader extends ConsumerWidget {
 
               if (isAmp) {
                 return Container(
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(8),
-                    ),
+                  height: 20,
+                  decoration: ShapeDecoration(
                     color: SideSwapColors.blumine,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  margin: const EdgeInsets.all(8.0),
-                  child: const Text(
-                    'AMP wallet',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.normal,
-                      color: Colors.white,
-                    ),
+                  padding: const EdgeInsets.only(left: 6, right: 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        'AMP wallet'.tr(),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.12,
+                            color: SideSwapColors.brightTurquoise),
+                      ),
+                    ],
                   ),
                 );
               }
@@ -87,23 +89,12 @@ class AssetDetailsHeader extends ConsumerWidget {
               builder: (context, ref, child) {
                 final selectedWalletAccountAsset =
                     ref.watch(selectedWalletAccountAssetNotifierProvider);
-                final asset = ref.watch(assetsStateProvider.select(
-                    (value) => value[selectedWalletAccountAsset?.assetId]));
-                final balance = ref.watch(
-                    balancesNotifierProvider)[selectedWalletAccountAsset];
+                final assetBalance = ref.watch(
+                    accountAssetBalanceStringProvider(
+                        selectedWalletAccountAsset!));
 
-                final ticker = asset!.ticker;
-                final precision = ref
-                    .watch(assetUtilsProvider)
-                    .getPrecisionForAssetId(assetId: asset.assetId);
-                final amountProvider = ref.watch(amountToStringProvider);
-                final balanceStr = amountProvider.amountToStringNamed(
-                    AmountToStringNamedParameters(
-                        amount: balance ?? 0,
-                        precision: precision,
-                        ticker: ticker));
                 return Text(
-                  balanceStr,
+                  assetBalance,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w500,
@@ -119,30 +110,12 @@ class AssetDetailsHeader extends ConsumerWidget {
               builder: (context, ref, child) {
                 final selectedWalletAccountAsset =
                     ref.watch(selectedWalletAccountAssetNotifierProvider);
-                final asset = ref.watch(assetsStateProvider.select(
-                    (value) => value[selectedWalletAccountAsset?.assetId]));
-                final precision = ref
-                    .watch(assetUtilsProvider)
-                    .getPrecisionForAssetId(assetId: asset?.assetId);
-                final accountBalance = ref.watch(
-                        balancesNotifierProvider)[selectedWalletAccountAsset] ??
-                    0;
-                final amountProvider = ref.watch(amountToStringProvider);
-                final balanceStr = amountProvider.amountToString(
-                    AmountToStringParameters(
-                        amount: accountBalance, precision: precision));
-                final balance = double.tryParse(balanceStr) ?? .0;
-                final amountUsd =
-                    ref.watch(amountUsdProvider(asset?.assetId, balance));
-                dollarConversion = amountUsd.toStringAsFixed(2);
-                dollarConversion = replaceCharacterOnPosition(
-                    input: dollarConversion, currencyChar: '\$');
-                final visibleConversion = ref
-                    .read(walletProvider)
-                    .isAmountUsdAvailable(asset?.assetId);
+                final usdAssetBalance = ref.watch(
+                    accountAssetBalanceInUsdStringProvider(
+                        selectedWalletAccountAsset!));
 
                 return Text(
-                  visibleConversion ? '≈ $dollarConversion' : '',
+                  '\$ $usdAssetBalance',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.normal,

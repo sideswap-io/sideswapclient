@@ -12,6 +12,7 @@ import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/providers/licenses_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class DLicenses {
@@ -32,134 +33,123 @@ class DSettingsLicenses extends HookConsumerWidget {
     ref.read(walletProvider).settingsViewAboutUs();
   }
 
-  Future<List<DLicenses>> getLicenseEntries() async {
-    final licenses = <DLicenses>[];
-    await for (final LicenseEntry license in LicenseRegistry.licenses) {
-      licenses.add(DLicenses(
-          licenseEntry: license, paragraphs: license.paragraphs.toList()));
-    }
-
-    return licenses;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsDialogTheme =
-        ref.watch(desktopAppThemeProvider).settingsDialogTheme;
+        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+
+    final licenseEntries = ref.watch(licensesEntriesProvider);
 
     final licenses = useState(<Widget>[]);
     final licenseContent = useState(<String, List<Widget>>{});
-    final licenseEntries = useMemoized(() => getLicenseEntries());
-    final licenseSnapshot = useFuture(licenseEntries);
     final controller = useScrollController();
 
     useEffect(() {
-      if (!licenseSnapshot.hasData) {
-        return;
-      }
+      licenseEntries.whenData((value) {
+        final List<Widget> newLicenses = [];
+        final Map<String, List<Widget>> newLicenseContent = {};
+        for (var license in value) {
+          var tempSubWidget = <Widget>[];
 
-      final List<Widget> newLicenses = [];
-      final Map<String, List<Widget>> newLicenseContent = {};
-      for (var license in licenseSnapshot.data!) {
-        var tempSubWidget = <Widget>[];
+          if (newLicenseContent
+              .containsKey(license.licenseEntry.packages.join(', '))) {
+            tempSubWidget =
+                newLicenseContent[license.licenseEntry.packages.join(', ')] ??
+                    [];
+          }
 
-        if (newLicenseContent
-            .containsKey(license.licenseEntry.packages.join(', '))) {
-          tempSubWidget =
-              newLicenseContent[license.licenseEntry.packages.join(', ')] ?? [];
-        }
+          tempSubWidget.add(const Padding(
+            padding: EdgeInsets.symmetric(vertical: 18.0),
+            child: Text(
+              '\u2618',
+              textAlign: TextAlign.center,
+            ),
+          ));
 
-        tempSubWidget.add(const Padding(
-          padding: EdgeInsets.symmetric(vertical: 18.0),
-          child: Text(
-            '\u2618',
-            textAlign: TextAlign.center,
-          ),
-        ));
-
-        for (var paragraph in license.paragraphs) {
-          if (paragraph.indent == LicenseParagraph.centeredIndent) {
-            tempSubWidget.add(
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text(
-                  paragraph.text,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
+          for (var paragraph in license.paragraphs) {
+            if (paragraph.indent == LicenseParagraph.centeredIndent) {
+              tempSubWidget.add(
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(
+                    paragraph.text,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
+                ),
+              );
+            } else {
+              tempSubWidget.add(
+                Padding(
+                  padding: EdgeInsetsDirectional.only(
+                      top: 8.0, start: 16.0 * paragraph.indent),
+                  child: Text(
+                    paragraph.text,
+                  ),
+                ),
+              );
+            }
+          }
+
+          tempSubWidget.add(const Divider());
+          newLicenseContent[license.licenseEntry.packages.join(', ')] =
+              tempSubWidget;
+        }
+
+        newLicenseContent.keys.toList().sort();
+
+        for (var packageName in newLicenseContent.keys.toList()) {
+          var count = 0;
+          final value = newLicenseContent[packageName];
+
+          if (value != null) {
+            for (var element in value) {
+              if (element.runtimeType == Divider) count += 1;
+            }
+          }
+
+          final widget = Theme(
+            data: ThemeData().copyWith(
+              dividerColor: Colors.transparent,
+            ),
+            child: ExpansionTile(
+              collapsedIconColor: Colors.white,
+              title: Text(
+                packageName,
+                style: const TextStyle(
+                  color: Colors.white,
                 ),
               ),
-            );
+              subtitle: Text(
+                'licenses'.plural(count),
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              children: value != null
+                  ? <Widget>[
+                      ...value,
+                    ]
+                  : [],
+            ),
+          );
+
+          if (packageName == kPackageGdk || packageName == kPackageSideswap) {
+            newLicenses.insert(0, widget);
           } else {
-            tempSubWidget.add(
-              Padding(
-                padding: EdgeInsetsDirectional.only(
-                    top: 8.0, start: 16.0 * paragraph.indent),
-                child: Text(
-                  paragraph.text,
-                ),
-              ),
-            );
+            newLicenses.add(widget);
           }
         }
 
-        tempSubWidget.add(const Divider());
-        newLicenseContent[license.licenseEntry.packages.join(', ')] =
-            tempSubWidget;
-      }
-
-      newLicenseContent.keys.toList().sort();
-
-      for (var packageName in newLicenseContent.keys.toList()) {
-        var count = 0;
-        final value = newLicenseContent[packageName];
-
-        if (value != null) {
-          for (var element in value) {
-            if (element.runtimeType == Divider) count += 1;
-          }
-        }
-
-        final widget = Theme(
-          data: ThemeData().copyWith(
-            dividerColor: Colors.transparent,
-          ),
-          child: ExpansionTile(
-            collapsedIconColor: Colors.white,
-            title: Text(
-              packageName,
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            subtitle: Text(
-              'licenses'.plural(count),
-              style: const TextStyle(
-                color: Colors.white,
-              ),
-            ),
-            children: value != null
-                ? <Widget>[
-                    ...value,
-                  ]
-                : [],
-          ),
-        );
-
-        if (packageName == kPackageGdk || packageName == kPackageSideswap) {
-          newLicenses.insert(0, widget);
-        } else {
-          newLicenses.add(widget);
-        }
-      }
-
-      licenses.value = newLicenses;
-      licenseContent.value = newLicenseContent;
+        licenses.value = newLicenses;
+        licenseContent.value = newLicenseContent;
+      });
 
       return;
-    }, [licenseSnapshot.data]);
+    }, [licenseEntries]);
 
     return WillPopScope(
       onWillPop: () async {
@@ -197,7 +187,6 @@ class DSettingsLicenses extends HookConsumerWidget {
                     ),
                   ),
                 ),
-                // if (_licenses.value.isEmpty) ...[],
                 SizedBox(
                   height: 467,
                   child: ValueListenableBuilder(
@@ -256,7 +245,7 @@ class DSettingsLicenses extends HookConsumerWidget {
           ),
         ],
         style: const DContentDialogThemeData().merge(settingsDialogTheme),
-        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 693),
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 696),
       ),
     );
   }

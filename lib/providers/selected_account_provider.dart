@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/account_asset.dart';
 
-part 'generate_address_providers.g.dart';
+part 'selected_account_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class SelectedAccountTypeNotifier extends _$SelectedAccountTypeNotifier {

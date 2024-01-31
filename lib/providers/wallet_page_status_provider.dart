@@ -31,6 +31,8 @@ enum Status {
   pinWelcome,
   pinSetup,
   pinSuccess,
+  transactions,
+  orderFilers,
 
   registered,
   assetsSelect,

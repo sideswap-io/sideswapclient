@@ -83,7 +83,7 @@ class DWorkingOrdersList extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orders = ref.watch(marketOwnRequestOrdersProvider);
     final buttonStyle =
-        ref.watch(desktopAppThemeProvider).buttonWithoutBorderStyle;
+        ref.watch(desktopAppThemeNotifierProvider).buttonWithoutBorderStyle;
 
     return CustomScrollView(
       slivers: [

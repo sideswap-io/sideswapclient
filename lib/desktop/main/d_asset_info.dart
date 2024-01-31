@@ -282,7 +282,9 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                     CustomIconButton(
                       label: 'Send'.tr(),
                       onTap: () {
-                        ref.read(paymentProvider).createdTx = null;
+                        ref
+                            .read(paymentCreatedTxNotifierProvider.notifier)
+                            .setCreatedTx(null);
                         Navigator.pop(context);
                         ref
                             .read(sendAssetNotifierProvider.notifier)

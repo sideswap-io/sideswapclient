@@ -9,6 +9,7 @@ import 'package:sideswap/listeners/endpoint_listener.dart';
 import 'package:sideswap/listeners/jade_status_listener.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/sideswap_notification_listener.dart';
+import 'package:sideswap/listeners/ui_states_listener.dart';
 import 'package:sideswap/listeners/warmup_app_listener.dart';
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
@@ -71,6 +72,7 @@ class DesktopRootWidget extends HookConsumerWidget {
     return Stack(
       children: [
         const PinListener(),
+        const UiStatesListener(),
         const RouteContainer(),
         const SideswapNotificationListener(),
         const EndpointListener(),

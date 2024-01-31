@@ -28,8 +28,8 @@ class DAmpRegister extends HookConsumerWidget {
     final stokrItems = ref.watch(stokrSecuritiesProvider);
     final pegxItems = ref.watch(pegxSecuritiesProvider);
     final ampId = ref.watch(ampIdNotifierProvider);
-    final textTheme =
-        ref.watch(desktopAppThemeProvider.select((value) => value.textTheme));
+    final textTheme = ref.watch(
+        desktopAppThemeNotifierProvider.select((value) => value.textTheme));
     final pegxLoginState = ref.watch(pegxLoginStateNotifierProvider);
     final registerFailedReason = ref.watch(pegxRegisterFailedNotifierProvider);
     final checkAmpStatus = ref.watch(checkAmpStatusProvider);
@@ -172,7 +172,7 @@ class DAmpRegister extends HookConsumerWidget {
                 builder: (context, ref, child) {
                   final stokrGaidState = ref.watch(stokrGaidNotifierProvider);
                   final textTheme =
-                      ref.watch(desktopAppThemeProvider).textTheme;
+                      ref.watch(desktopAppThemeNotifierProvider).textTheme;
 
                   return stokrGaidState.maybeWhen(
                     registered: () {

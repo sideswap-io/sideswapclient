@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cached_memory_image/cached_memory_image.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -10,9 +9,6 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/builtin_assets.dart';
-import 'package:sideswap/models/tx_item.dart';
-import 'package:sideswap/providers/pegs_provider.dart';
-import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 import 'package:sideswap/common/bitmap_helper.dart';
@@ -526,65 +522,7 @@ class SideswapCachedMemoryImage extends ConsumerWidget {
   }
 }
 
-@riverpod
-Map<AccountAsset, List<TxItem>> accountAssetTransactions(
-    AccountAssetTransactionsRef ref) {
-  final allTxs = ref.watch(allTxsNotifierProvider);
-  final allPegs = ref.watch(allPegsNotifierProvider);
-  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-
-  final allAssets = <AccountAsset, List<TxItem>>{};
-
-  void addTxItem(Map<AccountAsset, List<TxItem>> accountAssetsTransactions,
-      AccountAsset accountAsset, TransItem transaction) {
-    if (accountAssetsTransactions[accountAsset] == null) {
-      accountAssetsTransactions[accountAsset] = [];
-    }
-    accountAssetsTransactions[accountAsset]!.add(TxItem(item: transaction));
-  }
-
-  final accountAssetTransactions = <AccountAsset, List<TxItem>>{};
-
-  for (final item in allTxs.values) {
-    final tx = item.tx;
-    for (final balance in tx.balances) {
-      final accountAsset =
-          AccountAsset(AccountType(item.account.id), balance.assetId);
-      addTxItem(accountAssetTransactions, accountAsset, item);
-    }
-  }
-
-  for (final order in allPegs.entries) {
-    for (final item in order.value) {
-      final accountAsset = AccountAsset(AccountType.reg, liquidAssetId);
-      addTxItem(accountAssetTransactions, accountAsset, item);
-    }
-  }
-
-  final dateFormat = DateFormat('yyyy-MM-dd');
-  for (var item in accountAssetTransactions.entries) {
-    item.value.sort((a, b) => b.compareTo(a));
-
-    final tempAssets = <TxItem>[];
-    for (var item in item.value) {
-      if (tempAssets.isEmpty) {
-        tempAssets.add(item.copyWith(showDate: true));
-      } else {
-        final last = DateTime.parse(dateFormat.format(
-            DateTime.fromMillisecondsSinceEpoch(tempAssets.last.createdAt)));
-        final current = DateTime.parse(dateFormat
-            .format(DateTime.fromMillisecondsSinceEpoch(item.createdAt)));
-        final diff = last.difference(current).inDays;
-        tempAssets.add(item.copyWith(showDate: diff != 0));
-      }
-    }
-
-    allAssets[item.key] = tempAssets;
-  }
-
-  return allAssets;
-}
-
+@Deprecated('Only for mobile app version, should not be used now')
 @Riverpod(keepAlive: true)
 class SelectedWalletAccountAssetNotifier
     extends _$SelectedWalletAccountAssetNotifier {

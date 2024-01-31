@@ -6,8 +6,23 @@ part of 'markets_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$marketsHelperHash() => r'36771d3f7d831b88bb06fdf1a1576704b430fcaa';
+
+/// See also [marketsHelper].
+@ProviderFor(marketsHelper)
+final marketsHelperProvider = AutoDisposeProvider<MarketsHelper>.internal(
+  marketsHelper,
+  name: r'marketsHelperProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketsHelperHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef MarketsHelperRef = AutoDisposeProviderRef<MarketsHelper>;
 String _$indexPriceForAssetHash() =>
-    r'23be9f78a907bae2f72a95b08eaaf371698670d6';
+    r'1c5b8a313471b95480b8238b4cd492efc31157d3';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -159,7 +174,7 @@ class _IndexPriceForAssetProviderElement
 }
 
 String _$lastIndexPriceForAssetHash() =>
-    r'6e077fa9d81f4a45a742e1e0aec0d2ace8c4f1b3';
+    r'a46c2e3a869efcfc0dc47e5609b65717a93cd739';
 
 /// See also [lastIndexPriceForAsset].
 @ProviderFor(lastIndexPriceForAsset)
@@ -421,7 +436,7 @@ class _LastStringIndexPriceForAssetProviderElement
 }
 
 String _$marketRequestOrderListHash() =>
-    r'd30b9ec3e1173089d71a734492dd19a6dd668309';
+    r'94a3c8c08df5fae5cf9c48a214474c7cabd70f45';
 
 /// See also [marketRequestOrderList].
 @ProviderFor(marketRequestOrderList)
@@ -438,7 +453,7 @@ final marketRequestOrderListProvider =
 
 typedef MarketRequestOrderListRef = AutoDisposeProviderRef<List<RequestOrder>>;
 String _$marketRequestOrderByIdHash() =>
-    r'63735f34b24a03fe97b68a2fd0f179134d30a8c6';
+    r'58c0cc7eb57cfec19a16628fa9e15ba84a3b753a';
 
 /// See also [marketRequestOrderById].
 @ProviderFor(marketRequestOrderById)
@@ -585,6 +600,23 @@ final marketOwnRequestOrdersProvider =
 );
 
 typedef MarketOwnRequestOrdersRef = AutoDisposeProviderRef<List<RequestOrder>>;
+String _$makeOrderBalanceAccountAssetHash() =>
+    r'28f2168218952cefea936746dcbd284f58e923bf';
+
+/// See also [makeOrderBalanceAccountAsset].
+@ProviderFor(makeOrderBalanceAccountAsset)
+final makeOrderBalanceAccountAssetProvider =
+    AutoDisposeProvider<AccountAsset?>.internal(
+  makeOrderBalanceAccountAsset,
+  name: r'makeOrderBalanceAccountAssetProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$makeOrderBalanceAccountAssetHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef MakeOrderBalanceAccountAssetRef = AutoDisposeProviderRef<AccountAsset?>;
 String _$makeOrderBalanceHash() => r'44037793a2734d9eab8fd41148e978b9205f33e6';
 
 /// See also [makeOrderBalance].
@@ -770,6 +802,115 @@ final orderEntryCallbackHandlersProvider =
 
 typedef OrderEntryCallbackHandlersRef
     = AutoDisposeProviderRef<OrderEntryCallbackHandlers>;
+String _$indexPriceSubscriberNotifierHash() =>
+    r'599c5c73c7f18c29f779fe2cade92afc071e9875';
+
+/// See also [IndexPriceSubscriberNotifier].
+@ProviderFor(IndexPriceSubscriberNotifier)
+final indexPriceSubscriberNotifierProvider =
+    NotifierProvider<IndexPriceSubscriberNotifier, Set<String>>.internal(
+  IndexPriceSubscriberNotifier.new,
+  name: r'indexPriceSubscriberNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$indexPriceSubscriberNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$IndexPriceSubscriberNotifier = Notifier<Set<String>>;
+String _$marketAssetSubscriberNotifierHash() =>
+    r'be2f2931eba9d73c029a999b2098e84be2926fd0';
+
+/// See also [MarketAssetSubscriberNotifier].
+@ProviderFor(MarketAssetSubscriberNotifier)
+final marketAssetSubscriberNotifierProvider = NotifierProvider<
+    MarketAssetSubscriberNotifier,
+    Set<
+        ({
+          String assetId,
+          SubscribedMarketEnumType subscribedMarketType
+        })>>.internal(
+  MarketAssetSubscriberNotifier.new,
+  name: r'marketAssetSubscriberNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketAssetSubscriberNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$MarketAssetSubscriberNotifier = Notifier<
+    Set<({String assetId, SubscribedMarketEnumType subscribedMarketType})>>;
+String _$marketsIndexPriceNotifierHash() =>
+    r'b72df652205dcb349e15d10846f72fae57028f1d';
+
+/// See also [MarketsIndexPriceNotifier].
+@ProviderFor(MarketsIndexPriceNotifier)
+final marketsIndexPriceNotifierProvider =
+    NotifierProvider<MarketsIndexPriceNotifier, Map<String, double>>.internal(
+  MarketsIndexPriceNotifier.new,
+  name: r'marketsIndexPriceNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketsIndexPriceNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$MarketsIndexPriceNotifier = Notifier<Map<String, double>>;
+String _$marketsLastIndexPriceNotifierHash() =>
+    r'e4da25b4944673dafc5dac242c596d90ee494898';
+
+/// See also [MarketsLastIndexPriceNotifier].
+@ProviderFor(MarketsLastIndexPriceNotifier)
+final marketsLastIndexPriceNotifierProvider = NotifierProvider<
+    MarketsLastIndexPriceNotifier, Map<String, double>>.internal(
+  MarketsLastIndexPriceNotifier.new,
+  name: r'marketsLastIndexPriceNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketsLastIndexPriceNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$MarketsLastIndexPriceNotifier = Notifier<Map<String, double>>;
+String _$indexPriceButtonStreamNotifierHash() =>
+    r'fb66822555e37894b93d54a7cdb66f6621d324a9';
+
+/// See also [IndexPriceButtonStreamNotifier].
+@ProviderFor(IndexPriceButtonStreamNotifier)
+final indexPriceButtonStreamNotifierProvider =
+    AutoDisposeStreamNotifierProvider<IndexPriceButtonStreamNotifier,
+        String>.internal(
+  IndexPriceButtonStreamNotifier.new,
+  name: r'indexPriceButtonStreamNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$indexPriceButtonStreamNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$IndexPriceButtonStreamNotifier = AutoDisposeStreamNotifier<String>;
+String _$marketsRequestOrdersNotifierHash() =>
+    r'95238085e6791b1726c0d0b3d9c8361f4968dd70';
+
+/// See also [MarketsRequestOrdersNotifier].
+@ProviderFor(MarketsRequestOrdersNotifier)
+final marketsRequestOrdersNotifierProvider = NotifierProvider<
+    MarketsRequestOrdersNotifier, Map<String, RequestOrder>>.internal(
+  MarketsRequestOrdersNotifier.new,
+  name: r'marketsRequestOrdersNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$marketsRequestOrdersNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$MarketsRequestOrdersNotifier = Notifier<Map<String, RequestOrder>>;
 String _$marketSelectedAccountAssetStateHash() =>
     r'2d7562ababf278bb0e58f1c8b565f8d46efe5631';
 
@@ -788,7 +929,7 @@ final marketSelectedAccountAssetStateProvider =
 
 typedef _$MarketSelectedAccountAssetState = Notifier<AccountAsset>;
 String _$makeOrderSideStateHash() =>
-    r'38303a2aa1063f1e21bb64deba9be09379eea89f';
+    r'1f5389bde146900b057350e5ad2d05736f8a4097';
 
 /// See also [MakeOrderSideState].
 @ProviderFor(MakeOrderSideState)

@@ -155,13 +155,6 @@ OrderEntryProductPair orderEntryProduct(OrderEntryProductRef ref) {
   );
 }
 
-// @riverpod
-// AccountAsset? accountAssetForMarketSelected(
-//     AccountAssetForMarketRef ref, String assetId) {
-//   return AccountAsset(AccountType(1), assetId);
-// }
-
-// TODO (malcolmpl): remove
 @riverpod
 OrderEntryAccountAsset deliverOrderEntryAccountAsset(
     DeliverOrderEntryAccountAssetRef ref) {
@@ -203,7 +196,6 @@ OrderEntryAccountAsset deliverOrderEntryAccountAsset(
   );
 }
 
-// TODO (malcolmpl): remove
 @riverpod
 OrderEntryAccountAsset receiveOrderEntryAccountAsset(
     ReceiveOrderEntryAccountAssetRef ref) {
@@ -248,8 +240,6 @@ OrderEntryAccountAsset receiveOrderEntryAccountAsset(
       .any((element) => element == receiveAccountAsset)) {
     logger.d('error');
   }
-  // assert(!receiveAccountAssetList
-  //     .any((element) => element == receiveAccountAsset));
 
   return OrderEntryAccountAsset(
     accountAsset: receiveAccountAsset,
@@ -291,7 +281,7 @@ class RequestOrderReceiveAccountAsset
   }
 }
 
-// TODO (malcolmpl): remove or use functions as providers
+// TODO (malcolmpl): move functions to providers
 final requestOrderProvider =
     AutoDisposeChangeNotifierProvider<RequestOrderProvider>((ref) {
   ref.keepAlive();
@@ -331,7 +321,6 @@ String receiveHintText(ReceiveHintTextRef ref) {
   return hint;
 }
 
-// TODO (malcolmpl): remove?
 @riverpod
 bool isDeliverLiquid(IsDeliverLiquidRef ref) {
   final deliverAccountAsset = ref.watch(deliverOrderEntryAccountAssetProvider);
@@ -346,15 +335,6 @@ AccountAsset tokenAccountAsset(TokenAccountAssetRef ref) {
   final receiveAccountAsset = orderEntryProductPair.receive.accountAsset;
   final deliverAccountAsset = orderEntryProductPair.deliver.accountAsset;
   return isDeliverLiquid ? receiveAccountAsset : deliverAccountAsset;
-}
-
-// TODO (malcolmpl): remove?
-@riverpod
-bool isDeliverToken(IsDeliverTokenRef ref) {
-  final tokenAccountAsset = ref.watch(tokenAccountAssetProvider);
-  return ref
-      .watch(assetUtilsProvider)
-      .isAssetToken(assetId: tokenAccountAsset.assetId);
 }
 
 @riverpod
@@ -532,29 +512,7 @@ bool isStablecoinMarket(IsStablecoinMarketRef ref) {
   return marketType == MarketType.stablecoin;
 }
 
-// TODO (malcolmpl): remove after cleanup
-@riverpod
-Asset? priceAsset(PriceAssetRef ref) {
-  final assetId = ref.watch(tokenAccountAssetProvider).assetId;
-  final asset = ref.watch(assetsStateProvider)[assetId];
-  if (asset?.swapMarket == true) {
-    return asset;
-  }
-
-  return ref.watch(assetUtilsProvider).regularLiquidAsset();
-}
-
-// TODO (malcolmpl): remove after cleanup
-@riverpod
-Asset? productAsset(ProductAssetRef ref) {
-  final productAssetId = ref.watch(tokenAccountAssetProvider).assetId;
-  final productAsset =
-      ref.watch(assetsStateProvider.select((value) => value[productAssetId]));
-
-  return productAsset;
-}
-
-// TODO (malcolmpl): remove or move to providers
+// TODO (malcolmpl): move functions to providers
 class RequestOrderProvider extends ChangeNotifier {
   final Ref ref;
 

@@ -1,5 +1,7 @@
 #![recursion_limit = "1024"]
 
+mod bitfinex_api;
+mod bitfinex_worker;
 mod module;
 
 pub mod proto {
@@ -581,6 +583,29 @@ fn main() {
                 }
             }
         }
+    });
+
+    let (bf_sender, bf_receiver) = crossbeam_channel::unbounded::<bitfinex_worker::Request>();
+    let bf_settings = bitfinex_worker::Settings {
+        bitfinex_key: args.bitfinex_key.clone(),
+        bitfinex_secret: args.bitfinex_secret.clone(),
+    };
+    let msg_tx_copy = msg_tx.clone();
+    std::thread::spawn(move || {
+        bitfinex_worker::run(bf_settings, bf_receiver, |resp| {
+            let msg = match resp {
+                bitfinex_worker::Response::Withdraw(msg) => {
+                    Msg::ModuleMessage(proto::from::Msg::Withdraw(msg))
+                }
+                bitfinex_worker::Response::Transfer(msg) => {
+                    Msg::ModuleMessage(proto::from::Msg::Transfer(msg))
+                }
+                bitfinex_worker::Response::Movements(msg) => {
+                    Msg::ModuleMessage(proto::from::Msg::Movements(msg))
+                }
+            };
+            msg_tx_copy.send(msg).unwrap();
+        });
     });
 
     let mut balancing_blocked = std::time::Instant::now();
@@ -1397,6 +1422,7 @@ fn main() {
                     &rpc_http_client,
                     &args,
                     &mod_tx,
+                    &bf_sender,
                 );
 
                 let check_exchange_age = now.duration_since(latest_check_exchange);
@@ -1535,16 +1561,15 @@ fn main() {
                             .duration_since(std::time::UNIX_EPOCH)
                             .unwrap()
                             .as_millis() as i64;
-                        send_msg(
-                            &mod_tx,
-                            proto::to::Msg::Movements(proto::to::Movements {
+                        bf_sender
+                            .send(bitfinex_worker::Request::Movements(proto::to::Movements {
                                 key: args.bitfinex_key.clone(),
                                 secret: args.bitfinex_secret.clone(),
                                 start: Some(start),
                                 end: None,
                                 limit: None,
-                            }),
-                        );
+                            }))
+                            .unwrap();
                     }
                 }
             }

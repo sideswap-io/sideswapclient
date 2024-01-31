@@ -8,7 +8,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/main/widgets/d_option_generate_widget.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
-import 'package:sideswap/providers/generate_address_providers.dart';
+import 'package:sideswap/providers/selected_account_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 
 class DGenerateAddressPopup extends HookConsumerWidget {

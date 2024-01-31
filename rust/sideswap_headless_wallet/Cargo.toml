@@ -1,0 +1,18 @@
+[package]
+name = "sideswap_headless_wallet"
+version = "0.1.2"
+edition = "2021"
+
+[dependencies]
+sideswap_api = { path = "../sideswap_api" }
+sideswap_client = { path = "../sideswap_client" }
+sideswap_common = { path = "../sideswap_common" }
+
+log.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+thiserror.workspace = true
+crossbeam-channel.workspace = true
+elements.workspace = true
+rand.workspace = true
+anyhow.workspace = true

@@ -4,25 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/screens/accounts/accounts.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
 import 'package:sideswap/screens/accounts/assets_list.dart';
 import 'package:sideswap/screens/home/home.dart';
-import 'package:sideswap/screens/markets/widgets/market_type_buttons.dart';
 import 'package:sideswap/screens/markets/markets.dart';
+import 'package:sideswap/screens/markets/widgets/market_type_buttons.dart';
 import 'package:sideswap/screens/swap/swap.dart';
 import 'package:sideswap/screens/wallet_main/widgets/main_bottom_navigation_bar.dart';
-
-final selectedMarketTypeProvider =
-    AutoDisposeStateProvider<MarketSelectedType>((ref) {
-  ref.keepAlive();
-  return MarketSelectedType.swap;
-});
 
 class WalletMain extends HookConsumerWidget {
   const WalletMain({super.key});
@@ -65,7 +59,7 @@ class WalletMain extends HookConsumerWidget {
                   ),
                   duration: const Duration(seconds: 3),
                   animationDuration: const Duration(milliseconds: 150),
-                  backgroundColor: const Color(0xFF0F4766),
+                  backgroundColor: SideSwapColors.chathamsBlueDark,
                   onTap: (flushbar) async {
                     await flushbar.dismiss();
                   },
@@ -88,7 +82,6 @@ class WalletMain extends HookConsumerWidget {
             child: WalletMainChildPage(),
           ),
           bottomNavigationBar: MainBottomNavigationBar(
-            currentIndex: currentPageIndex,
             onTap: (index) {
               ref.read(swapProvider).swapReset();
 
@@ -100,20 +93,16 @@ class WalletMain extends HookConsumerWidget {
 
               final navigationItemEnum =
                   newWalletMainArguments.navigationItemEnum;
-              switch (navigationItemEnum) {
-                case WalletMainNavigationItemEnum.pegs:
-                  ref.read(swapProvider).switchToPegs();
-                  break;
-                case WalletMainNavigationItemEnum.swap:
-                  ref.read(swapProvider).switchToSwaps();
-                  break;
-                case WalletMainNavigationItemEnum.markets:
-                  ref.read(selectedMarketTypeProvider.notifier).state =
-                      MarketSelectedType.swap;
-                  break;
-                case _:
-                  break;
-              }
+              (switch (navigationItemEnum) {
+                WalletMainNavigationItemEnum.pegs =>
+                  ref.read(swapProvider).switchToPegs(),
+                WalletMainNavigationItemEnum.swap =>
+                  ref.read(swapProvider).switchToSwaps(),
+                WalletMainNavigationItemEnum.markets => ref
+                    .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                    .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap),
+                _ => () {}(),
+              });
             },
           ),
         );
@@ -130,26 +119,12 @@ class WalletMainChildPage extends ConsumerWidget {
     final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
     final navigationItemEnum = walletMainArguments.navigationItemEnum;
 
-    final selectedMarketType = ref.watch(selectedMarketTypeProvider);
-
     return switch (navigationItemEnum) {
       WalletMainNavigationItemEnum.home => const Home(),
       WalletMainNavigationItemEnum.accounts => const Accounts(),
       WalletMainNavigationItemEnum.assetSelect => const AssetSelectList(),
       WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
-      WalletMainNavigationItemEnum.markets => Markets(
-          selectedMarketType: selectedMarketType,
-          onOrdersPressed: () {
-            ref.read(selectedMarketTypeProvider.notifier).state =
-                MarketSelectedType.orders;
-            ref.read(marketsProvider).unsubscribeMarket();
-            ref.read(marketsProvider).unsubscribeIndexPrice();
-          },
-          onSwapPressed: () {
-            ref.read(selectedMarketTypeProvider.notifier).state =
-                MarketSelectedType.swap;
-          },
-        ),
+      WalletMainNavigationItemEnum.markets => const Markets(),
       WalletMainNavigationItemEnum.swap => const SwapMain(key: ValueKey(false)),
       WalletMainNavigationItemEnum.pegs => const SwapMain(key: ValueKey(true)),
       _ => const SizedBox(),

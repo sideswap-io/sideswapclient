@@ -162,7 +162,8 @@ class AmpDesktopRegisterButton extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final buttonThemes = ref.watch(desktopAppThemeProvider).buttonThemeData;
+    final buttonThemes =
+        ref.watch(desktopAppThemeNotifierProvider).buttonThemeData;
 
     return DCustomFilledBigButton(
       width: 253,

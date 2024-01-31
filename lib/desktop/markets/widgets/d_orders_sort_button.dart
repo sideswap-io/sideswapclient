@@ -173,7 +173,8 @@ class DOrdersSortButton extends HookConsumerWidget {
     final buttonKey = useMemoized(() => GlobalKey());
     final clicked = useState(false);
 
-    final buttonThemes = ref.watch(desktopAppThemeProvider).buttonThemeData;
+    final buttonThemes =
+        ref.watch(desktopAppThemeNotifierProvider).buttonThemeData;
     final requestOrderSortFlag =
         ref.watch(requestOrderSortFlagNotifierProvider);
 

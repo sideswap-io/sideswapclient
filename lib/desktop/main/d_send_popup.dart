@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
@@ -31,9 +32,9 @@ class DSendPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final payment = ref.watch(paymentProvider);
+    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
 
-    return switch (payment.createdTx) {
+    return switch (createdTx) {
       CreatedTx() => const DSendPopupReview(),
       _ => const DSendPopupCreate(),
     };
@@ -67,6 +68,8 @@ class DSendPopupCreate extends HookConsumerWidget {
     var address = useState('');
     final amount = ref.watch(sendPopupAmountNotifierProvider);
 
+    final isMaxPressed = useState(false);
+
     // set text field related providers
     useEffect(() {
       addressController.addListener(() {
@@ -75,25 +78,27 @@ class DSendPopupCreate extends HookConsumerWidget {
             .setAddress(addressController.text));
       });
       amountController.addListener(() {
-        Future.microtask(() => ref
-            .read(sendPopupAmountNotifierProvider.notifier)
-            .setAmount(amountController.text));
+        Future.microtask(() {
+          ref
+              .read(sendPopupAmountNotifierProvider.notifier)
+              .setAmount(amountController.text);
+          isMaxPressed.value = false;
+        });
       });
 
       return;
     }, [addressController, amountController]);
 
-    final isAddressValid = ref.watch(sendPopupIsAddressValidProvider);
+    final parsedAddressResult = ref.watch(sendPopupParseAddressProvider);
 
     useEffect(() {
-      if (isAddressValid) {
-        amountFocusNode.requestFocus();
-      } else {
-        addressFocusNode.requestFocus();
-      }
+      (switch (parsedAddressResult) {
+        Left(value: final _) => addressFocusNode.requestFocus(),
+        Right(value: final _) => amountFocusNode.requestFocus(),
+      });
 
       return;
-    }, [isAddressValid]);
+    }, [parsedAddressResult]);
 
     useEffect(() {
       if (eiCreateTransaction is EICreateTransactionData) {
@@ -111,10 +116,8 @@ class DSendPopupCreate extends HookConsumerWidget {
 
     final dollarConversion = ref.watch(sendPopupDollarConversionProvider);
 
-    final parsedAddress = ref.watch(sendPopupParseAddressProvider);
-
     useEffect(() {
-      parsedAddress.match((l) {
+      parsedAddressResult.match((l) {
         logger.d('Invalid address');
       }, (r) {
         if (r.amount > 0) {
@@ -131,7 +134,7 @@ class DSendPopupCreate extends HookConsumerWidget {
       });
 
       return;
-    }, [parsedAddress]);
+    }, [parsedAddressResult]);
 
     return DPopupWithClose(
       width: 580,
@@ -185,10 +188,11 @@ class DSendPopupCreate extends HookConsumerWidget {
               controller: amountController,
               balance: ref.read(balanceStringProvider(selectedAccountAsset)),
               onSubmitted: (_) {
-                ref.read(paymentProvider).selectPaymentSend(
+                ref.read(paymentHelperProvider).selectPaymentSend(
                       amount,
                       selectedAccountAsset,
                       address: address.value,
+                      isGreedy: isMaxPressed.value,
                     );
               },
               onDropdownChanged: (accountAsset) {
@@ -200,6 +204,7 @@ class DSendPopupCreate extends HookConsumerWidget {
                 }
               },
               onMaxPressed: () {
+                isMaxPressed.value = true;
                 amountController.text =
                     ref.read(balanceStringProvider(selectedAccountAsset));
               },
@@ -210,10 +215,11 @@ class DSendPopupCreate extends HookConsumerWidget {
               isFilled: true,
               onPressed: buttonEnabled && !ref.read(walletProvider).isCreatingTx
                   ? () {
-                      ref.read(paymentProvider).selectPaymentSend(
+                      ref.read(paymentHelperProvider).selectPaymentSend(
                             amount,
                             selectedAccountAsset,
                             address: address.value,
+                            isGreedy: isMaxPressed.value,
                           );
                     }
                   : null,
@@ -232,16 +238,16 @@ class DSendPopupReview extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final wallet = ref.watch(walletProvider);
-    final payment = ref.watch(paymentProvider);
-    final createdTx = payment.createdTx!;
+    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
 
-    final feePerByteStr = '${createdTx.feePerByte.toStringAsFixed(3)} s/b';
+    final feePerByteStr =
+        '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
     final txSizeStr =
-        '${createdTx.size.toString()} Bytes / ${createdTx.vsize.toString()} VBytes';
+        '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
     final amountProvider = ref.watch(amountToStringProvider);
     final feeStr = amountProvider.amountToStringNamed(
         AmountToStringNamedParameters(
-            amount: createdTx.networkFee.toInt(), ticker: 'L-BTC'));
+            amount: createdTx?.networkFee.toInt() ?? 0, ticker: 'L-BTC'));
 
     const headerStyle = TextStyle(
       fontSize: 13,
@@ -276,13 +282,16 @@ class DSendPopupReview extends ConsumerWidget {
                   ),
                   const SizedBox(height: 14),
                   Column(
-                    children: createdTx.addressees
-                        .map((e) => RowTxReceiver(
-                              address: e.address,
-                              assetId: e.assetId,
-                              amount: e.amount.toInt(),
-                            ))
-                        .toList(),
+                    children: switch (createdTx) {
+                      CreatedTx(addressees: final addresses) => addresses
+                          .map((e) => RowTxReceiver(
+                                address: e.address,
+                                assetId: e.assetId,
+                                amount: e.amount.toInt(),
+                              ))
+                          .toList(),
+                      _ => [],
+                    },
                   ),
                 ],
               ),
@@ -300,10 +309,10 @@ class DSendPopupReview extends ConsumerWidget {
                   RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
                   RowTxDetail(
                       name: 'Number of inputs'.tr(),
-                      value: createdTx.inputCount.toString()),
+                      value: createdTx?.inputCount.toString() ?? ''),
                   RowTxDetail(
                       name: 'Number of outputs'.tr(),
-                      value: createdTx.outputCount.toString()),
+                      value: createdTx?.outputCount.toString() ?? ''),
                   const SizedBox(height: 18),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -313,7 +322,10 @@ class DSendPopupReview extends ConsumerWidget {
                         height: 44,
                         onPressed: !wallet.isSendingTx
                             ? () {
-                                ref.read(paymentProvider).createdTx = null;
+                                ref
+                                    .read(paymentCreatedTxNotifierProvider
+                                        .notifier)
+                                    .setCreatedTx(null);
                               }
                             : null,
                         child: Text(
@@ -355,10 +367,12 @@ class DSendPopupReview extends ConsumerWidget {
                                 if (await ref
                                     .read(walletProvider)
                                     .isAuthenticated()) {
-                                  ref
-                                      .read(walletProvider)
-                                      .assetSendConfirmCommon(
-                                          payment.createdTx!.req.account);
+                                  if (createdTx != null) {
+                                    ref
+                                        .read(walletProvider)
+                                        .assetSendConfirmCommon(
+                                            createdTx.req.account);
+                                  }
                                 }
                               }
                             : null,

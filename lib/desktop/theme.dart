@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
@@ -9,6 +10,8 @@ import 'package:sideswap/desktop/common/d_color.dart';
 import 'package:sideswap/desktop/common/d_focus.dart';
 import 'package:sideswap/desktop/common/d_typography.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+
+part 'theme.g.dart';
 
 bool is10footScreen([double? width]) {
   width ??= WidgetsBinding
@@ -26,10 +29,15 @@ extension BrightnessExtension on Brightness {
 
 enum NavigationIndicators { sticky, end }
 
-final desktopAppThemeProvider =
-    ChangeNotifierProvider<DesktopAppTheme>((ref) => DesktopAppTheme(ref));
+@riverpod
+class DesktopAppThemeNotifier extends _$DesktopAppThemeNotifier {
+  @override
+  DesktopAppTheme build() {
+    return DesktopAppTheme(ref);
+  }
+}
 
-class DesktopAppTheme extends ChangeNotifier {
+class DesktopAppTheme {
   final Ref ref;
 
   DesktopAppTheme(this.ref);
@@ -38,70 +46,70 @@ class DesktopAppTheme extends ChangeNotifier {
   ColorScheme get darkScheme => _darkScheme;
   set darkScheme(ColorScheme value) {
     _darkScheme = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Duration _fasterAnimationDuration = const Duration(milliseconds: 83);
   Duration get fasterAnimationDuration => _fasterAnimationDuration;
   set fasterAnimationDuration(Duration value) {
     _fasterAnimationDuration = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Duration _fastAnimationDuration = const Duration(milliseconds: 167);
   Duration get fastAnimationDuration => _fastAnimationDuration;
   set fastAnimationDuration(Duration value) {
     _fastAnimationDuration = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Duration _mediumAnimationDuration = const Duration(milliseconds: 250);
   Duration get mediumAnimationDuration => _mediumAnimationDuration;
   set mediumAnimationDuration(Duration value) {
     _mediumAnimationDuration = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Duration _slowAnimationDuration = const Duration(milliseconds: 358);
   Duration get slowAnimationDuration => _slowAnimationDuration;
   set slowAnimationDuration(Duration value) {
     _slowAnimationDuration = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Curve _animationCurve = Curves.easeInOut;
   Curve get animationCurve => _animationCurve;
   set animationCurve(Curve value) {
     _animationCurve = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   ThemeMode _mode = ThemeMode.dark;
   ThemeMode get mode => _mode;
   set mode(ThemeMode mode) {
     _mode = mode;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   TextDirection _textDirection = TextDirection.ltr;
   TextDirection get textDirection => _textDirection;
   set textDirection(TextDirection direction) {
     _textDirection = direction;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Color? _scaffoldBackgroundColor = Colors.transparent;
   Color? get scaffoldBackgroundColor => _scaffoldBackgroundColor;
   set scaffoldBackgroundColor(Color? value) {
     _scaffoldBackgroundColor = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   VisualDensity? _visualDensity = VisualDensity.adaptivePlatformDensity;
   VisualDensity? get visualDensity => _visualDensity;
   set visualDensity(VisualDensity? value) {
     _visualDensity = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   DTypography _typography =
@@ -109,14 +117,14 @@ class DesktopAppTheme extends ChangeNotifier {
   DTypography get typography => _typography;
   set typography(DTypography value) {
     _typography = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   String? _fontFamily = 'Roboto';
   String? get fontFamily => _fontFamily;
   set fontFamily(String? value) {
     _fontFamily = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   DFocusThemeData _focusThemeData = DFocusThemeData(
@@ -130,42 +138,42 @@ class DesktopAppTheme extends ChangeNotifier {
   DFocusThemeData get focusThemeData => _focusThemeData;
   set focusThemeData(DFocusThemeData value) {
     _focusThemeData = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Color? _menuColor = SideSwapColors.chathamsBlue;
   Color? get menuColor => _menuColor;
   set menuColor(Color? value) {
     _menuColor = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Color? _shadowColor = Colors.transparent;
   Color? get shadowColor => _shadowColor;
   set shadowColor(Color? value) {
     _shadowColor = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Color? _micaBackgroundColor = const Color(0xFF1E6389);
   Color? get micaBackgroundColor => _micaBackgroundColor;
   set micaBackgroundColor(Color? value) {
     _micaBackgroundColor = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Color _inactiveBackgroundColor = const Color(0xFF608FAA);
   Color get inactiveBackgroundColor => _inactiveBackgroundColor;
   set inactiveBackgroundColor(Color value) {
     _inactiveBackgroundColor = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Color _disabledColor = const Color(0xFF86A2BE);
   Color get disabledColor => _disabledColor;
   set disabledColor(Color value) {
     _disabledColor = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   Color borderInputColor = const Color.fromRGBO(0, 0, 0, 0.4458);
@@ -174,14 +182,14 @@ class DesktopAppTheme extends ChangeNotifier {
   Brightness get brightness => _brightness;
   set brightness(Brightness value) {
     _brightness = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   DContentDialogThemeData _dialogTheme = const DContentDialogThemeData();
   DContentDialogThemeData get dialogTheme => _dialogTheme;
   set dialogTheme(DContentDialogThemeData value) {
     _dialogTheme = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   DContentDialogThemeData _settingsDialogTheme = const DContentDialogThemeData(
@@ -198,7 +206,7 @@ class DesktopAppTheme extends ChangeNotifier {
   DContentDialogThemeData get settingsDialogTheme => _settingsDialogTheme;
   set settingsDialogTheme(DContentDialogThemeData value) {
     _settingsDialogTheme = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   ScrollbarThemeData? _scrollbarTheme = const ScrollbarThemeData(
@@ -210,14 +218,14 @@ class DesktopAppTheme extends ChangeNotifier {
   ScrollbarThemeData? get scrollbarTheme => _scrollbarTheme;
   set scrollbarTheme(ScrollbarThemeData? value) {
     _scrollbarTheme = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   DToggleSwitchThemeData _toggleSwitchTheme = DToggleSwitchThemeData();
   DToggleSwitchThemeData get toggleSwitchTheme => _toggleSwitchTheme;
   set toggleSwitchTheme(DToggleSwitchThemeData value) {
     _toggleSwitchTheme = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   DRadioButtonThemeData _radioButtonTheme =
@@ -264,7 +272,7 @@ class DesktopAppTheme extends ChangeNotifier {
   DRadioButtonThemeData get radioButtonTheme => _radioButtonTheme;
   set radioButtonTheme(DRadioButtonThemeData value) {
     _radioButtonTheme = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   DButtonStyle? get mainBottomNavigationBarButtonStyle =>
@@ -413,7 +421,7 @@ class DesktopAppTheme extends ChangeNotifier {
   DButtonThemeData get buttonThemeData => _buttonThemeData;
   set buttonThemeData(DButtonThemeData value) {
     _buttonThemeData = value;
-    notifyListeners();
+    ref.notifyListeners();
   }
 
   TextTheme get textTheme => darkTextTheme;

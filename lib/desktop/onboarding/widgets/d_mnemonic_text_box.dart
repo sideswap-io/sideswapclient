@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/providers/mnemonic_table_provider.dart';
 
 class DMnemonicTextBox extends HookConsumerWidget {
@@ -16,17 +17,21 @@ class DMnemonicTextBox extends HookConsumerWidget {
   final int currentIndex;
   final FocusNode focusNode;
 
-  void onSubmitted(String value, WidgetRef ref, FocusNode focusNode) {
-    ref.read(mnemonicTableProvider).validateOnSubmit(value, currentIndex);
+  Future<void> onSubmitted(
+      String value, WidgetRef ref, FocusNode focusNode) async {
+    await ref
+        .read(mnemonicWordItemsNotifierProvider.notifier)
+        .validateOnSubmit(value, currentIndex);
     focusNode.requestFocus();
   }
 
-  void tryJump(String value, WidgetRef ref) {
-    final suggestions =
-        ref.read(mnemonicTableProvider).suggestions(value.toLowerCase());
+  Future<void> tryJump(String value, WidgetRef ref) async {
+    final suggestions = await ref
+        .read(mnemonicWordItemsNotifierProvider.notifier)
+        .suggestions(value.toLowerCase());
 
     if (suggestions.length == 1) {
-      onSubmitted(value, ref, focusNode);
+      await onSubmitted(value, ref, focusNode);
     }
   }
 
@@ -35,18 +40,22 @@ class DMnemonicTextBox extends HookConsumerWidget {
     final keyboardListenerFocusNode = useFocusNode();
     final controller = useTextEditingController();
 
-    final currentWord =
-        ref.watch(mnemonicTableProvider.select((p) => p.word(currentIndex)));
+    final currentWord = ref
+        .watch(mnemonicWordItemsNotifierProvider.notifier)
+        .word(currentIndex);
 
-    useEffect(() {
-      Future.microtask(() {
-        controller.text = currentWord.word;
-        controller.selection = TextSelection.fromPosition(
-            TextPosition(offset: controller.text.length));
-      });
+    controller.text = currentWord.word;
+    controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length));
+
+    final words = ref.watch(mnemonicWordItemsNotifierProvider);
+    useAsyncEffect(() async {
+      if (words.isNotEmpty) {
+        ref.read(mnemonicWordItemsNotifierProvider.notifier).importMnemonic();
+      }
 
       return;
-    }, [currentWord]);
+    }, [words]);
 
     return Container(
       width: 460,
@@ -68,11 +77,11 @@ class DMnemonicTextBox extends HookConsumerWidget {
               textEditingController: controller,
               optionsBuilder: (TextEditingValue textEditingValue) {
                 return ref
-                    .read(mnemonicTableProvider)
+                    .read(mnemonicWordItemsNotifierProvider.notifier)
                     .suggestions(textEditingValue.text.toLowerCase());
               },
-              onSelected: (value) {
-                onSubmitted(value, ref, focusNode);
+              onSelected: (value) async {
+                await onSubmitted(value, ref, focusNode);
               },
               fieldViewBuilder: (
                 BuildContext context,
@@ -82,15 +91,18 @@ class DMnemonicTextBox extends HookConsumerWidget {
               ) {
                 return RawKeyboardListener(
                   focusNode: keyboardListenerFocusNode,
-                  onKey: (RawKeyEvent event) {
+                  onKey: (RawKeyEvent event) async {
                     if (event.isKeyPressed(LogicalKeyboardKey.tab) ||
                         event.isKeyPressed(LogicalKeyboardKey.enter)) {
-                      onSubmitted(textEditingController.text, ref, focusNode);
+                      await onSubmitted(
+                          textEditingController.text, ref, focusNode);
                       onFieldSubmitted();
                       final wordItems =
-                          ref.read(mnemonicTableProvider).wordItems;
+                          ref.read(mnemonicWordItemsNotifierProvider);
                       if (currentIndex + 1 == wordItems.length) {
-                        ref.read(mnemonicTableProvider).importMnemonic();
+                        ref
+                            .read(mnemonicWordItemsNotifierProvider.notifier)
+                            .importMnemonic();
                       }
                     }
                   },
@@ -128,22 +140,22 @@ class DMnemonicTextBox extends HookConsumerWidget {
                       fontWeight: FontWeight.normal,
                       color: Colors.black,
                     ),
-                    onChanged: (value) {
+                    onChanged: (value) async {
                       final oldValue = ref
-                              .read(mnemonicTableProvider)
-                              .wordItems[currentIndex]
+                              .read(mnemonicWordItemsNotifierProvider)[
+                                  currentIndex]
                               ?.word ??
                           '';
-                      ref
-                          .read(mnemonicTableProvider)
+                      await ref
+                          .read(mnemonicWordItemsNotifierProvider.notifier)
                           .validate(value, currentIndex);
 
                       if (oldValue != value) {
-                        tryJump(value, ref);
+                        await tryJump(value, ref);
                       }
                     },
-                    onSubmitted: (value) {
-                      onSubmitted(value, ref, focusNode);
+                    onSubmitted: (value) async {
+                      await onSubmitted(value, ref, focusNode);
                       onFieldSubmitted();
                     },
                   ),
@@ -186,37 +198,43 @@ class OptionsView extends StatelessWidget {
       alignment: Alignment.topLeft,
       child: Material(
         elevation: 4.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxHeight: 200, maxWidth: 200),
-          child: ListView.builder(
-            padding: EdgeInsets.zero,
-            shrinkWrap: true,
-            itemCount: options.length,
-            itemBuilder: (BuildContext context, int index) {
-              final String option = options.elementAt(index);
-              return InkWell(
-                onTap: () {
-                  onSelected(option);
-                },
-                child: Builder(builder: (BuildContext context) {
-                  final bool highlight =
-                      AutocompleteHighlightedOption.of(context) == index;
-                  if (highlight) {
-                    SchedulerBinding.instance
-                        .addPostFrameCallback((Duration timeStamp) {
-                      Scrollable.ensureVisible(context, alignment: 0.5);
-                    });
-                  }
-                  return Container(
-                    color: highlight
-                        ? SideSwapColors.navyBlue
-                        : const Color(0xFF062d44),
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(option),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: SingleChildScrollView(
+              reverse: true,
+              child: Column(
+                children: List.generate(options.length, (index) {
+                  final String option = options.elementAt(index);
+                  return InkWell(
+                    onTap: () {
+                      onSelected(option);
+                    },
+                    child: Builder(builder: (BuildContext context) {
+                      final bool highlight =
+                          AutocompleteHighlightedOption.of(context) == index;
+                      if (highlight) {
+                        SchedulerBinding.instance
+                            .addPostFrameCallback((Duration timeStamp) {
+                          Scrollable.ensureVisible(context);
+                        });
+                      }
+                      return Container(
+                        height: 54,
+                        width: 200,
+                        color: highlight
+                            ? SideSwapColors.navyBlue
+                            : const Color(0xFF062d44),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(option),
+                      );
+                    }),
                   );
                 }),
-              );
-            },
+              ),
+            ),
           ),
         ),
       ),

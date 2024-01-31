@@ -1,10 +1,11 @@
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
-import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/providers/balances_provider.dart';
-import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
+
+part 'asset_selector_provider.g.dart';
 
 class AssetSelectorItem extends Equatable {
   final String assetId;
@@ -19,42 +20,67 @@ class AssetSelectorItem extends Equatable {
   List<Object?> get props => [assetId, ticker];
 }
 
-final assetSelectorProvider =
-    AutoDisposeProviderFamily<List<AssetSelectorItem>, MarketType>(
-        (ref, marketType) {
-  // Only show token assets that we could sell or buy
-  final tokenAssetsToSell = ref
-      .watch(balancesNotifierProvider)
-      .entries
-      .where((e) => e.key.account == AccountType.reg && e.value > 0)
-      .map((e) => e.key.assetId);
-  final tokenAssetsToBuy = ref
-      .watch(marketRequestOrderListProvider)
-      .where((e) => e.marketType == MarketType.token)
-      .map((e) => e.assetId);
+@riverpod
+List<AssetSelectorItem> assetSelector(
+    AssetSelectorRef ref, MarketType marketType) {
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
   final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
   final assetsList = ref.watch(assetsStateProvider).values.toList();
 
-  final validTokenAssets = Set<String>.from(tokenAssetsToSell);
-  validTokenAssets.addAll(tokenAssetsToBuy);
-
-  final newAssetList = assetsList
+  final newAssetSet = assetsList
       .where((e) =>
           e.assetId != liquidAssetId &&
           e.assetId != bitcoinAssetId &&
-          assetMarketType(e) == marketType &&
-          (marketType != MarketType.token ||
-              validTokenAssets.contains(e.assetId)))
-      .toList();
+          assetMarketType(e) == marketType)
+      .toSet();
 
   return switch (marketType) {
-    MarketType.token => newAssetList
-        .where((element) => !element.unregistered)
-        .map((e) => AssetSelectorItem(assetId: e.assetId, ticker: e.ticker))
-        .toList(),
-    _ => newAssetList
+    MarketType.token => ref.watch(tokenAssetSelectorProvider(newAssetSet)),
+    _ => newAssetSet
         .map((e) => AssetSelectorItem(assetId: e.assetId, ticker: e.ticker))
         .toList(),
   };
-});
+}
+
+@Riverpod(keepAlive: true)
+class TokenMarketOrder extends _$TokenMarketOrder {
+  @override
+  List<String> build() {
+    return [];
+  }
+
+  void setTokenMarketOrder(List<String> values) {
+    state = values;
+  }
+}
+
+@riverpod
+List<AssetSelectorItem> tokenAssetSelector(
+    TokenAssetSelectorRef ref, Set<Asset> assetList) {
+  final tokenOrderAssets = ref.watch(tokenMarketOrderProvider);
+
+  final assetListCopy = [...assetList];
+  final assetItems = <AssetSelectorItem>[];
+
+  // create asset items in BE order
+  for (final assetId in tokenOrderAssets) {
+    final asset =
+        assetListCopy.firstWhereOrNull((element) => element.assetId == assetId);
+    (switch (asset) {
+      Asset() => () {
+          assetItems.add(
+              AssetSelectorItem(assetId: asset.assetId, ticker: asset.ticker));
+          assetListCopy.remove(asset);
+        }(),
+      _ => () {}(),
+    });
+  }
+
+  // add the rest if any
+  assetItems.addAll(assetListCopy
+      .where((element) => !element.unregistered)
+      .map((e) => AssetSelectorItem(assetId: e.assetId, ticker: e.ticker))
+      .toList());
+
+  return assetItems;
+}

@@ -3,43 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-
-import 'package:sideswap/screens/balances.dart';
-
-enum TxCircleImageType {
-  pegIn,
-  pegOut,
-  swap,
-  sent,
-  received,
-  sentAvatar,
-  receivedAvatar,
-  unknown
-}
-
-TxCircleImageType txTypeToImageType({required TxType type}) {
-  TxCircleImageType txCircleImageType;
-
-  switch (type) {
-    case TxType.received:
-      txCircleImageType = TxCircleImageType.received;
-      break;
-    case TxType.sent:
-      txCircleImageType = TxCircleImageType.sent;
-      break;
-    case TxType.swap:
-      txCircleImageType = TxCircleImageType.swap;
-      break;
-    case TxType.internal:
-      txCircleImageType = TxCircleImageType.swap;
-      break;
-    case TxType.unknown:
-      txCircleImageType = TxCircleImageType.unknown;
-      break;
-  }
-
-  return txCircleImageType;
-}
+import 'package:sideswap/providers/tx_provider.dart';
 
 class TxCircleImage extends StatefulWidget {
   const TxCircleImage({
@@ -66,7 +30,7 @@ class TxCircleImageState extends State<TxCircleImage> {
   double _smallWidth = 0;
   double _swapWidth = 0;
   final Color _fakeFrameColor = SideSwapColors.brightTurquoise;
-  final Color _fakeIconColor = const Color(0xFFFF996E);
+  final Color _fakeIconColor = SideSwapColors.cornFlower;
 
   @override
   void initState() {
@@ -85,7 +49,7 @@ class TxCircleImageState extends State<TxCircleImage> {
     Color frameColor;
     switch (widget.txCircleImageType) {
       case TxCircleImageType.pegIn:
-        frameColor = const Color(0xFFB3FF85);
+        frameColor = SideSwapColors.menthol;
         image = SvgPicture.asset(
           'assets/tx_peg_in.svg',
           width: _largeWidth,
@@ -125,7 +89,7 @@ class TxCircleImageState extends State<TxCircleImage> {
         );
         break;
       case TxCircleImageType.received:
-        frameColor = const Color(0xFFB3FF85);
+        frameColor = SideSwapColors.menthol;
         image = SvgPicture.asset(
           'assets/bottom_left_arrow.svg',
           width: _smallWidth,
@@ -137,7 +101,7 @@ class TxCircleImageState extends State<TxCircleImage> {
         frameColor = SideSwapColors.bitterSweet;
         break;
       case TxCircleImageType.receivedAvatar:
-        frameColor = const Color(0xFFB3FF85);
+        frameColor = SideSwapColors.menthol;
         break;
       case TxCircleImageType.unknown:
         frameColor = Colors.redAccent;

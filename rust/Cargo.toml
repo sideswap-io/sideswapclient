@@ -12,6 +12,7 @@ members = [
     "sideswap_headless",
     "sideswap_headless_server",
     "sideswap_headless_trader",
+    "sideswap_headless_wallet",
     "sideswap_jade",
     "sideswap_payjoin",
     "sideswap_types",

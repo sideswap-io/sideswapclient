@@ -16,8 +16,6 @@ import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/screens/balances.dart';
-import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DTxHistory extends StatelessWidget {
   const DTxHistory({
@@ -70,57 +68,6 @@ class DTxHistoryTransaction extends HookConsumerWidget {
   static DateFormat dateFormatDate = DateFormat('y-MM-dd ');
   static DateFormat dateFormatTime = DateFormat('HH:mm:ss');
 
-  Balance getSentBalance(
-      TransItem tx, TxType txType, String liquidBitcoin, String bitcoin) {
-    if (tx.hasPeg()) {
-      return Balance(
-          amount: tx.peg.amountSend,
-          assetId: tx.peg.isPegIn ? bitcoin : liquidBitcoin);
-    }
-
-    switch (txType) {
-      case TxType.sent:
-        final balance = tx.tx.balances.length == 1
-            ? tx.tx.balances.first
-            : tx.tx.balances.firstWhere((e) => e.assetId != liquidBitcoin);
-        final amount = balance.assetId == liquidBitcoin
-            ? -balance.amount - tx.tx.networkFee
-            : -balance.amount;
-        return Balance(amount: amount, assetId: balance.assetId);
-      case TxType.swap:
-        final balance = tx.tx.balances.firstWhere((e) => e.amount < 0);
-        return Balance(amount: -balance.amount, assetId: balance.assetId);
-      case TxType.received:
-      case TxType.internal:
-      case TxType.unknown:
-        return Balance();
-    }
-  }
-
-  Balance getRecvBalance(
-      TransItem tx, TxType txType, String liquidBitcoin, String bitcoin) {
-    if (tx.hasPeg()) {
-      return Balance(
-          amount: tx.peg.amountRecv,
-          assetId: tx.peg.isPegIn ? liquidBitcoin : bitcoin);
-    }
-
-    switch (txType) {
-      case TxType.received:
-      case TxType.swap:
-        final balance = tx.tx.balances.firstWhere((e) => e.amount > 0);
-        return Balance(amount: balance.amount, assetId: balance.assetId);
-      case TxType.sent:
-      case TxType.internal:
-      case TxType.unknown:
-        return Balance();
-    }
-  }
-
-  bool getRecvMultipleOutputs(TransItem tx) {
-    return tx.tx.balances.where((e) => e.amount > 0).length > 1;
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
@@ -152,13 +99,8 @@ class DTxHistoryTransaction extends HookConsumerWidget {
 
     return ListView.builder(
       itemBuilder: (BuildContext context, int index) {
-        final tx = txList[index];
-        final type = tx.hasPeg() ? TxType.unknown : txType(tx.tx);
-        final sentBalance =
-            getSentBalance(tx, type, liquidAssetId, bitcoinAssetId);
-        final recvBalance =
-            getRecvBalance(tx, type, liquidAssetId, bitcoinAssetId);
-        final recvMultipleOutputs = getRecvMultipleOutputs(tx);
+        final transItem = txList[index];
+        final transItemHelper = ref.watch(transItemHelperProvider(transItem));
 
         return Column(
           children: [
@@ -178,26 +120,27 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                     DTxHistoryDate(
                         dateFormatDate: dateFormatDate,
                         dateFormatTime: dateFormatTime,
-                        tx: tx),
-                    DTxHistoryWallet(tx: tx),
-                    DTxHistoryType(tx: tx, txType: type),
+                        tx: transItem),
+                    DTxHistoryWallet(tx: transItem),
+                    DTxHistoryType(transItem: transItem),
                     DTxHistoryAmount(
-                      balance: sentBalance,
+                      balance: transItemHelper.getSentBalance(
+                          liquidAssetId, bitcoinAssetId),
                       multipleOutputs: false,
                     ),
                     DTxHistoryAmount(
-                      balance: recvBalance,
-                      multipleOutputs: recvMultipleOutputs,
+                      balance: transItemHelper.getRecvBalance(
+                          liquidAssetId, bitcoinAssetId),
+                      multipleOutputs: transItemHelper.getRecvMultipleOutputs(),
                     ),
-                    DTxHistoryConfs(tx: tx),
-                    DTxHistoryLink(txid: tx.tx.txid),
+                    DTxHistoryConfs(tx: transItem),
+                    DTxHistoryLink(txid: transItem.tx.txid),
                   ],
                 ),
                 onPressed: () {
                   final allPegsById = ref.read(allPegsByIdProvider);
-                  ref
-                      .read(desktopDialogProvider)
-                      .showTx(tx.id, isPeg: allPegsById.containsKey(tx.id));
+                  ref.read(desktopDialogProvider).showTx(transItem,
+                      isPeg: allPegsById.containsKey(transItem.id));
                 },
               ),
             ),

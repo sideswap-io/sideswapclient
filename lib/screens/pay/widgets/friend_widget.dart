@@ -13,7 +13,7 @@ class FriendWidget extends StatelessWidget {
     required this.friend,
     this.onPressed,
     this.highlightName,
-    this.backgroundColor = const Color(0xFF1D6389),
+    this.backgroundColor = SideSwapColors.blueSapphire,
     this.showTrailingIcon = true,
     this.contentPadding,
     this.customDescription,

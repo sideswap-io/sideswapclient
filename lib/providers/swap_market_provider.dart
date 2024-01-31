@@ -1,11 +1,10 @@
 import 'dart:math';
 
-import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
-import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/orders_panel_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'swap_market_provider.g.dart';
@@ -84,33 +83,9 @@ final swapMarketOrdersProvider = AutoDisposeProvider<List<RequestOrder>>((ref) {
   return marketRequestOrderList.where((e) => !e.private).toList();
 });
 
-final swapMarketBidOffersProvider =
-    AutoDisposeProvider<List<RequestOrder>>((ref) {
-  final swapMarketOrders = ref.watch(swapMarketOrdersProvider);
-  final currentProduct = ref.watch(swapMarketCurrentProductProvider);
-
-  return swapMarketOrders
-      .where((e) =>
-          (e.sendBitcoins != (e.marketType == MarketType.stablecoin)) &&
-          e.assetId == currentProduct.accountAsset.assetId)
-      .sorted((a, b) => b.price.compareTo(a.price));
-});
-
-final swapMarketAskOffersProvider =
-    AutoDisposeProvider<List<RequestOrder>>((ref) {
-  final swapMarketOrders = ref.watch(swapMarketOrdersProvider);
-  final currentProduct = ref.watch(swapMarketCurrentProductProvider);
-
-  return swapMarketOrders
-      .where((e) =>
-          !(e.sendBitcoins != (e.marketType == MarketType.stablecoin)) &&
-          e.assetId == currentProduct.accountAsset.assetId)
-      .sorted((a, b) => a.price.compareTo(b.price));
-});
-
 final maxSwapOrderLengthProvider = AutoDisposeProvider<int>((ref) {
-  final swapMarketBidOffers = ref.watch(swapMarketBidOffersProvider);
-  final swapMarketAskOffers = ref.watch(swapMarketAskOffersProvider);
+  final bids = ref.watch(ordersPanelBidsProvider);
+  final asks = ref.watch(ordersPanelAsksProvider);
 
-  return max(swapMarketBidOffers.length, swapMarketAskOffers.length);
+  return max(bids.length, asks.length);
 });

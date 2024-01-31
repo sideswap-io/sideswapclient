@@ -34,22 +34,25 @@ class CsvExportButton extends HookConsumerWidget {
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
           ),
-          child: Row(
-            children: [
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(right: 6),
-                child: SvgPicture.asset(
-                  'assets/export.svg',
-                  width: 22,
-                  height: 21,
-                  colorFilter: ColorFilter.mode(
-                    disabled ? SideSwapColors.jellyBean : Colors.white,
-                    BlendMode.srcIn,
+          child: Center(
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: SvgPicture.asset(
+                    'assets/export2.svg',
+                    width: 23,
+                    height: 23,
+                    colorFilter: disabled
+                        ? const ColorFilter.mode(
+                            SideSwapColors.jellyBean,
+                            BlendMode.srcIn,
+                          )
+                        : null,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

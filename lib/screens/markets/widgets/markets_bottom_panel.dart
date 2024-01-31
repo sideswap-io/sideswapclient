@@ -48,15 +48,10 @@ class MarketsBottomBuySellPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
+    return const SizedBox(
       width: double.maxFinite,
-      height: 70,
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16), topRight: Radius.circular(16)),
-        color: SideSwapColors.chathamsBlueDark,
-      ),
-      child: const Padding(
+      height: 59,
+      child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 16),
         child: Row(
           children: [
@@ -90,8 +85,12 @@ class BuySellButton extends ConsumerWidget {
 
     return Expanded(
       child: CustomBigButton(
-        height: 40,
+        height: 39,
         text: isSell ? 'SELL'.tr() : 'BUY'.tr(),
+        textStyle: Theme.of(context)
+            .textTheme
+            .bodyLarge
+            ?.copyWith(fontWeight: FontWeight.bold, letterSpacing: 0.32),
         backgroundColor: isSell ? sellColor : buyColor,
         onPressed: () {
           ref

@@ -110,7 +110,7 @@ class DButtonTheme extends InheritedTheme {
   static DButtonThemeData of(BuildContext context) {
     final container = ProviderContainer();
     final buttonThemeData =
-        container.read(desktopAppThemeProvider).buttonThemeData;
+        container.read(desktopAppThemeNotifierProvider).buttonThemeData;
     return buttonThemeData.merge(_getInheritedButtonThemeData(context));
   }
 

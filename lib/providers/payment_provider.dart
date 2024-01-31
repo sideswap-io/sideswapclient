@@ -1,6 +1,9 @@
+import 'dart:math';
+
+import 'package:decimal/decimal.dart';
 import 'package:fixnum/fixnum.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
@@ -10,60 +13,124 @@ import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-final paymentProvider =
-    ChangeNotifierProvider<PaymentProvider>((ref) => PaymentProvider(ref));
+part 'payment_provider.g.dart';
 
-class PaymentProvider with ChangeNotifier {
+@riverpod
+int? parseAssetAmount(ParseAssetAmountRef ref,
+    {required String amount, required int precision}) {
+  if (precision < 0 || precision > 8) {
+    return null;
+  }
+
+  final newValue = amount.replaceAll(' ', '');
+  final newAmount = Decimal.tryParse(newValue);
+
+  if (newAmount == null) {
+    return null;
+  }
+
+  final amountDec = newAmount * Decimal.fromInt(pow(10, precision).toInt());
+
+  final amountInt = amountDec.toBigInt().toInt();
+
+  if (Decimal.fromInt(amountInt) != amountDec) {
+    return null;
+  }
+
+  return amountInt;
+}
+
+@riverpod
+int satoshiForAmount(SatoshiForAmountRef ref,
+    {required String assetId, required String amount}) {
+  final precision =
+      ref.watch(assetUtilsProvider).getPrecisionForAssetId(assetId: assetId);
+  return ref.watch(
+          parseAssetAmountProvider(amount: amount, precision: precision)) ??
+      0;
+}
+
+@Riverpod(keepAlive: true)
+class PaymentInsufficientFundsNotifier
+    extends _$PaymentInsufficientFundsNotifier {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setInsufficientFunds(bool value) {
+    state = value;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class PaymentSendAddressParsedNotifier
+    extends _$PaymentSendAddressParsedNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setSendAddressParsed(String address) {
+    state = address;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class PaymentSendAmountParsedNotifier
+    extends _$PaymentSendAmountParsedNotifier {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setSendAmountParsed(int amount) {
+    state = amount;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class PaymentCreatedTxNotifier extends _$PaymentCreatedTxNotifier {
+  @override
+  CreatedTx? build() {
+    return null;
+  }
+
+  void setCreatedTx(CreatedTx? createdTx) {
+    state = createdTx;
+  }
+
+  int sendNetworkFee() => state?.networkFee.toInt() ?? 0;
+}
+
+@Riverpod(keepAlive: true)
+class PaymentAmountPageArgumentsNotifier
+    extends _$PaymentAmountPageArgumentsNotifier {
+  @override
+  PaymentAmountPageArguments build() {
+    return PaymentAmountPageArguments();
+  }
+
+  void setPaymentAmountPageArguments(PaymentAmountPageArguments arguments) {
+    state = arguments;
+  }
+}
+
+@riverpod
+PaymentHelper paymentHelper(PaymentHelperRef ref) {
+  return PaymentHelper(ref);
+}
+
+class PaymentHelper {
   final Ref ref;
 
-  PaymentProvider(this.ref);
-
-  bool _insufficientFunds = false;
-  bool get insufficientFunds => _insufficientFunds;
-  set insufficientFunds(bool insufficientFunds) {
-    _insufficientFunds = insufficientFunds;
-    notifyListeners();
-  }
-
-  String _sendAddrParsed = '';
-  String get sendAddrParsed => _sendAddrParsed;
-  set sendAddrParsed(String sendAddrParsed) {
-    _sendAddrParsed = sendAddrParsed;
-    notifyListeners();
-  }
-
-  int _sendAmountParsed = 0;
-  int get sendAmountParsed => _sendAmountParsed;
-  set sendAmountParsed(int sendAmountParsed) {
-    _sendAmountParsed = sendAmountParsed;
-    notifyListeners();
-  }
-
-  CreatedTx? _createdTx;
-  CreatedTx? get createdTx => _createdTx;
-  set createdTx(CreatedTx? value) {
-    _createdTx = value;
-    notifyListeners();
-  }
-
-  int get sendNetworkFee => _createdTx?.networkFee.toInt() ?? 0;
-
-  PaymentAmountPageArguments paymentAmountPageArguments =
-      PaymentAmountPageArguments();
-
-  void selectPaymentAmountPage(PaymentAmountPageArguments arguments) {
-    paymentAmountPageArguments = arguments;
-    ref
-        .read(pageStatusStateProvider.notifier)
-        .setStatus(Status.paymentAmountPage);
-  }
+  PaymentHelper(this.ref);
 
   void selectPaymentSend(String amount, AccountAsset accountAsset,
-      {Friend? friend, String? address}) {
+      {Friend? friend, String? address, bool isGreedy = false}) {
     // TODO: handle friend payment send
     if (address == null) {
       logger.e('Address is null');
@@ -81,8 +148,8 @@ class PaymentProvider with ChangeNotifier {
     final precision = ref
         .read(assetUtilsProvider)
         .getPrecisionForAssetId(assetId: accountAsset.assetId);
-    final internalAmount =
-        ref.read(walletProvider).parseAssetAmount(amount, precision: precision);
+    final internalAmount = ref
+        .read(parseAssetAmountProvider(amount: amount, precision: precision));
     final balance = ref.read(balancesNotifierProvider)[accountAsset];
     if (balance == null) {
       logger.e('Wrong balance for selected wallet asset');
@@ -96,17 +163,22 @@ class PaymentProvider with ChangeNotifier {
       return;
     }
 
-    sendAddrParsed = address;
-    sendAmountParsed = internalAmount;
+    ref
+        .read(paymentSendAddressParsedNotifierProvider.notifier)
+        .setSendAddressParsed(address);
+    ref
+        .read(paymentSendAmountParsedNotifierProvider.notifier)
+        .setSendAmountParsed(internalAmount);
 
-    final createTx = CreateTx();
-    createTx.addr = sendAddrParsed;
-    createTx.balance = Balance();
-    createTx.balance.amount = Int64(sendAmountParsed);
-    createTx.balance.assetId = accountAsset.assetId ?? '';
-    createTx.account = getAccount(accountAsset.account);
+    final addressAmount = AddressAmount();
+    addressAmount.address = address;
+    addressAmount.amount = Int64(internalAmount);
+    addressAmount.assetId = accountAsset.assetId ?? '';
+    addressAmount.isGreedy = isGreedy && internalAmount == balance;
+
+    final createTx = CreateTx(
+        addressees: [addressAmount], account: getAccount(accountAsset.account));
+
     ref.read(walletProvider).createTx(createTx);
-
-    notifyListeners();
   }
 }

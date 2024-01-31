@@ -29,7 +29,7 @@ class DCustomFilledBigButton extends StatelessWidget {
     return Consumer(
       builder: ((context, ref, _) {
         final filledButtonStyle = ref
-            .watch(desktopAppThemeProvider)
+            .watch(desktopAppThemeNotifierProvider)
             .buttonThemeData
             .filledButtonStyle;
         return DButton(

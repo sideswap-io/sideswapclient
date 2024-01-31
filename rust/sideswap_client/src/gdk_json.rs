@@ -283,6 +283,7 @@ pub struct TransactionInput {
 
 #[derive(Deserialize, Debug)]
 pub struct TransactionOutput {
+    pub address: Option<String>,
     pub asset_id: Option<AssetId>,
     pub satoshi: Option<u64>,
     pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,

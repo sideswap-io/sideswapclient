@@ -136,21 +136,6 @@ final tokenAccountAssetProvider = AutoDisposeProvider<AccountAsset>.internal(
 );
 
 typedef TokenAccountAssetRef = AutoDisposeProviderRef<AccountAsset>;
-String _$isDeliverTokenHash() => r'20619312cc6f189fed638d29abdfdcbfcbdd141b';
-
-/// See also [isDeliverToken].
-@ProviderFor(isDeliverToken)
-final isDeliverTokenProvider = AutoDisposeProvider<bool>.internal(
-  isDeliverToken,
-  name: r'isDeliverTokenProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$isDeliverTokenHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef IsDeliverTokenRef = AutoDisposeProviderRef<bool>;
 String _$selectedAssetIsTokenHash() =>
     r'f76e88853394c85733d38e6a1d4f35d29d003a15';
 
@@ -650,34 +635,6 @@ final isStablecoinMarketProvider = AutoDisposeProvider<bool>.internal(
 );
 
 typedef IsStablecoinMarketRef = AutoDisposeProviderRef<bool>;
-String _$priceAssetHash() => r'5ba9fd7938db1ec38fd1b0277aba068333e1c835';
-
-/// See also [priceAsset].
-@ProviderFor(priceAsset)
-final priceAssetProvider = AutoDisposeProvider<Asset?>.internal(
-  priceAsset,
-  name: r'priceAssetProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$priceAssetHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef PriceAssetRef = AutoDisposeProviderRef<Asset?>;
-String _$productAssetHash() => r'd7b7aec8926d06ed66d6b91acfe7813516bedf75';
-
-/// See also [productAsset].
-@ProviderFor(productAsset)
-final productAssetProvider = AutoDisposeProvider<Asset?>.internal(
-  productAsset,
-  name: r'productAssetProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$productAssetHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef ProductAssetRef = AutoDisposeProviderRef<Asset?>;
 String _$addressToShareByOrderIdHash() =>
     r'3097eb2f7e7961a6e60d5d12e56a331ff8874ad2';
 

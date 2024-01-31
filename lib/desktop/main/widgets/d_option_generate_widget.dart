@@ -36,7 +36,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
       height: 270,
       onPressed: onPressed,
       style: ref
-          .watch(desktopAppThemeProvider)
+          .watch(desktopAppThemeNotifierProvider)
           .buttonThemeData
           .defaultButtonStyle
           ?.merge(

@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
@@ -20,48 +22,15 @@ import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/payment_amount_receiver_field.dart';
 import 'package:sideswap/screens/pay/widgets/payment_send_amount.dart';
 
-class PaymentAmountPageArguments {
-  PaymentAmountPageArguments({
-    this.result,
-    this.friend,
-  });
+part 'payment_amount_page.g.dart';
 
-  QrCodeResult? result;
-  Friend? friend;
-}
-
-class PaymentAmountPage extends ConsumerStatefulWidget {
-  const PaymentAmountPage({super.key});
-
+@riverpod
+class PaymentPageSelectedAccountAssetNotifier
+    extends _$PaymentPageSelectedAccountAssetNotifier {
   @override
-  PaymentAmountPageState createState() => PaymentAmountPageState();
-}
-
-class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
-  String dollarConversion = '';
-  late AccountAsset accountAsset;
-  late List<AccountAsset> availableAssets;
-  bool enabled = false;
-  String amount = '0';
-  TextEditingController? tickerAmountController;
-  late FocusNode tickerAmountFocusNode;
-  Friend? friend;
-
-  final _labelStyle = const TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w500,
-    color: SideSwapColors.brightTurquoise,
-  );
-
-  final _approximateStyle = const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: SideSwapColors.airSuperiorityBlue,
-  );
-
-  AccountAsset getSelectedAssetId() {
-    final result = ref.read(paymentProvider).paymentAmountPageArguments.result;
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+  AccountAsset build() {
+    final result = ref.watch(paymentAmountPageArgumentsNotifierProvider).result;
+    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
     // use regular wallet lbtc if assetid is lbtc or is empty
     if (result?.assetId == null || result?.assetId == liquidAssetId) {
@@ -69,7 +38,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
     }
 
     // let's check other assets and return it if found and balance is > 0
-    final balances = ref.read(balancesNotifierProvider);
+    final balances = ref.watch(balancesNotifierProvider);
     for (var account in balances.keys) {
       if (account.assetId == result?.assetId && balances[account] != 0) {
         return account;
@@ -80,128 +49,26 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
     return AccountAsset(AccountType.reg, result?.assetId);
   }
 
-  @override
-  void initState() {
-    super.initState();
-
-    dollarConversion = '0.0';
-
-    accountAsset = getSelectedAssetId();
-
-    // Asset amount always has precision 8, see here for details:
-    // https://github.com/btcpayserver/btcpayserver/pull/1402
-    // https://github.com/Blockstream/green_android/issues/86
-    final amountAsBtc =
-        ref.read(paymentProvider).paymentAmountPageArguments.result?.amount ??
-            0.0;
-    final amountInSat = toIntAmount(amountAsBtc);
-    final assetPrecision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: accountAsset.assetId);
-    final amountAsAsset = toFloat(amountInSat, precision: assetPrecision);
-    amount =
-        amountAsAsset == 0 ? "" : amountAsAsset.toStringAsFixed(assetPrecision);
-
-    availableAssets = ref.read(walletProvider).sendAssetsWithBalance();
-    if (!availableAssets.contains(accountAsset)) {
-      availableAssets.add(accountAsset);
-    }
-    availableAssets.sort();
-
-    enabled = false;
-    tickerAmountController = TextEditingController()
-      ..addListener(() {
-        validate(tickerAmountController?.text ?? '');
-      });
-
-    if (amount != '0') {
-      tickerAmountController?.text = amount;
-    }
-
-    tickerAmountFocusNode = FocusNode();
-
-    Future.microtask(() => ref.read(paymentProvider).insufficientFunds = false);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      FocusScope.of(context).requestFocus(tickerAmountFocusNode);
-    });
+  void setSelectedAccountAsset(AccountAsset value) {
+    state = value;
   }
+}
+
+class PaymentAmountPageArguments {
+  PaymentAmountPageArguments({
+    this.result,
+    this.friend,
+  });
+
+  QrCodeResult? result;
+  Friend? friend;
+}
+
+class PaymentAmountPage extends ConsumerWidget {
+  const PaymentAmountPage({super.key});
 
   @override
-  void dispose() {
-    tickerAmountFocusNode.dispose();
-    tickerAmountController?.dispose();
-    super.dispose();
-  }
-
-  void validate(String value) {
-    if (value.isEmpty) {
-      Future.microtask(() {
-        ref.read(paymentProvider).insufficientFunds = false;
-      });
-      setState(() {
-        enabled = false;
-        amount = '0';
-      });
-      return;
-    }
-
-    final precision = ref
-        .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: accountAsset.assetId);
-    final balance = ref.read(balancesNotifierProvider)[accountAsset];
-    final newValue = value.replaceAll(' ', '');
-    final newAmount = double.tryParse(newValue)?.toDouble();
-    final amountStr = ref.read(amountToStringProvider).amountToString(
-        AmountToStringParameters(amount: balance ?? 0, precision: precision));
-    final realBalance = double.tryParse(amountStr);
-
-    if (newAmount == null || realBalance == null) {
-      setState(() {
-        enabled = false;
-        amount = '0';
-      });
-      return;
-    }
-
-    setState(() {
-      amount = newValue;
-    });
-
-    if (newAmount <= 0) {
-      setState(() {
-        enabled = false;
-      });
-      return;
-    }
-
-    if (newAmount <= realBalance) {
-      setState(() {
-        enabled = true;
-      });
-      Future.microtask(() {
-        ref.read(paymentProvider).insufficientFunds = false;
-      });
-      return;
-    }
-
-    setState(() {
-      enabled = false;
-    });
-    Future.microtask(() {
-      ref.read(paymentProvider).insufficientFunds = true;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ref.listen(balancesNotifierProvider, ((previous, next) {
-      // validate every time when balancesProvider will change
-      if (tickerAmountController != null &&
-          tickerAmountController!.text.isNotEmpty) {
-        validate(tickerAmountController?.text ?? '');
-      }
-    }));
+  Widget build(BuildContext context, WidgetRef ref) {
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Pay'.tr(),
@@ -227,9 +94,8 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                       minWidth: constraints.maxWidth,
                       minHeight: constraints.maxHeight,
                     ),
-                    child: IntrinsicHeight(
-                      // TODO: need fix - set as new widget
-                      child: buildBody(),
+                    child: const IntrinsicHeight(
+                      child: PaymentAmountPageBody(),
                     ),
                   ),
                 );
@@ -240,9 +106,162 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
       ),
     );
   }
+}
 
-  Widget buildBody() {
+class PaymentAmountPageBody extends HookConsumerWidget {
+  const PaymentAmountPageBody({super.key});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final amountProvider = ref.watch(amountToStringProvider);
+
+    const labelStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w500,
+      color: SideSwapColors.brightTurquoise,
+    );
+
+    const approximateStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.normal,
+      color: SideSwapColors.airSuperiorityBlue,
+    );
+
+    final amount = useState('0');
+    final tickerAmountController = useTextEditingController();
+    final tickerAmountFocusNode = useFocusNode();
+    final enabled = useState(false);
+    final friend = useState<Friend?>(null);
+    final isMaxPressed = useState(false);
+    final availableAssets = ref.watch(walletProvider).sendAssetsWithBalance();
+    final accountAsset =
+        ref.watch(paymentPageSelectedAccountAssetNotifierProvider);
+
+    final validateCallback = useCallback((String value) {
+      if (value.isEmpty) {
+        Future.microtask(() {
+          ref
+              .read(paymentInsufficientFundsNotifierProvider.notifier)
+              .setInsufficientFunds(false);
+        });
+        enabled.value = false;
+        amount.value = '0';
+        return;
+      }
+
+      final precision = ref
+          .read(assetUtilsProvider)
+          .getPrecisionForAssetId(assetId: accountAsset.assetId);
+      final balance = ref.read(balancesNotifierProvider)[accountAsset];
+      final newValue = value.replaceAll(' ', '');
+      final newAmount = double.tryParse(newValue)?.toDouble();
+      final amountStr = ref.read(amountToStringProvider).amountToString(
+          AmountToStringParameters(amount: balance ?? 0, precision: precision));
+      final realBalance = double.tryParse(amountStr);
+
+      if (newAmount == null || realBalance == null) {
+        enabled.value = false;
+        amount.value = '0';
+        return;
+      }
+
+      amount.value = newValue;
+
+      if (newAmount <= 0) {
+        enabled.value = false;
+        return;
+      }
+
+      if (newAmount <= realBalance) {
+        enabled.value = true;
+
+        Future.microtask(() {
+          ref
+              .read(paymentInsufficientFundsNotifierProvider.notifier)
+              .setInsufficientFunds(false);
+        });
+        return;
+      }
+
+      enabled.value = false;
+
+      Future.microtask(() {
+        ref
+            .read(paymentInsufficientFundsNotifierProvider.notifier)
+            .setInsufficientFunds(true);
+      });
+    }, [accountAsset]);
+
+    final balances = ref.watch(balancesNotifierProvider);
+
+    useEffect(() {
+      if (tickerAmountController.text.isNotEmpty) {
+        validateCallback(tickerAmountController.text);
+      }
+
+      return;
+    }, [balances]);
+
+    // one time run
+    useEffect(() {
+      // Asset amount always has precision 8, see here for details:
+      // https://github.com/btcpayserver/btcpayserver/pull/1402
+      // https://github.com/Blockstream/green_android/issues/86
+      final amountAsBtc =
+          ref.read(paymentAmountPageArgumentsNotifierProvider).result?.amount ??
+              .0;
+      final amountInSat = toIntAmount(amountAsBtc);
+      final assetPrecision = ref
+          .read(assetUtilsProvider)
+          .getPrecisionForAssetId(assetId: accountAsset.assetId);
+      final amountAsAsset = toFloat(amountInSat, precision: assetPrecision);
+      amount.value = amountAsAsset == 0
+          ? ""
+          : amountAsAsset.toStringAsFixed(assetPrecision);
+
+      if (!availableAssets.contains(accountAsset)) {
+        availableAssets.add(accountAsset);
+      }
+      availableAssets.sort();
+
+      if (amount.value != '0') {
+        tickerAmountController.text = amount.value;
+      }
+
+      Future.microtask(() => ref
+          .read(paymentInsufficientFundsNotifierProvider.notifier)
+          .setInsufficientFunds(false));
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        FocusScope.of(context).requestFocus(tickerAmountFocusNode);
+      });
+
+      return;
+    }, const []);
+
+    useEffect(() {
+      tickerAmountController.addListener(() {
+        isMaxPressed.value = false;
+        validateCallback(tickerAmountController.text);
+      });
+
+      return;
+    }, [tickerAmountController]);
+
+    useEffect(() {
+      if (!availableAssets.contains(accountAsset)) {
+        availableAssets.add(accountAsset);
+      }
+      availableAssets.sort();
+
+      return;
+    }, [accountAsset, availableAssets]);
+
+    useEffect(() {
+      isMaxPressed.value = false;
+
+      return;
+    }, [accountAsset]);
+
     return Column(
       children: [
         Padding(
@@ -252,13 +271,14 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
             children: [
               Consumer(
                 builder: (context, watch, _) {
-                  final friend = ref.watch(paymentProvider
-                      .select((p) => p.paymentAmountPageArguments.friend));
-                  final address = ref.watch(paymentProvider.select(
-                      (p) => p.paymentAmountPageArguments.result?.address));
+                  final paymentAmountPageArguments =
+                      ref.watch(paymentAmountPageArgumentsNotifierProvider);
+                  final friend = paymentAmountPageArguments.friend;
+                  final address = paymentAmountPageArguments.result?.address;
+
                   return PaymentAmountReceiverField(
                     text: address ?? '',
-                    labelStyle: _labelStyle,
+                    labelStyle: labelStyle,
                     friend: friend,
                   );
                 },
@@ -267,12 +287,12 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                 padding: const EdgeInsets.only(top: 24),
                 child: Consumer(
                   builder: (context, watch, _) {
-                    final showError = ref.watch(
-                        paymentProvider.select((p) => p.insufficientFunds));
-                    final newAmount = double.tryParse(amount) ?? 0;
+                    final showError =
+                        ref.watch(paymentInsufficientFundsNotifierProvider);
+                    final newAmount = double.tryParse(amount.value) ?? 0;
                     final usdAmount = ref.watch(
                         amountUsdProvider(accountAsset.assetId, newAmount));
-                    dollarConversion = usdAmount.toStringAsFixed(2);
+                    var dollarConversion = usdAmount.toStringAsFixed(2);
                     final visibleConversion = ref
                         .watch(walletProvider)
                         .isAmountUsdAvailable(accountAsset.assetId);
@@ -281,20 +301,24 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                     final isAmp = accountAsset.account.isAmp;
                     return Column(
                       children: [
-                        if (showError) ...[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Visibility(
-                                visible: visibleConversion,
-                                child: Text(
-                                  '≈ $dollarConversion',
-                                  style: _approximateStyle,
-                                ),
-                              ),
+                        ...switch (showError) {
+                          true => [
+                              Row(
+                                children: [
+                                  ...switch (visibleConversion) {
+                                    true => [
+                                        Text(
+                                          '≈ $dollarConversion',
+                                          style: approximateStyle,
+                                        ),
+                                      ],
+                                    _ => [const SizedBox()],
+                                  },
+                                ],
+                              )
                             ],
-                          ),
-                        ],
+                          _ => [const SizedBox()],
+                        },
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -302,30 +326,33 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                               children: [
                                 Text(
                                   'Send'.tr(),
-                                  style: _labelStyle,
+                                  style: labelStyle,
                                 ),
                                 const SizedBox(width: 4, height: 24),
                                 if (isAmp) const AmpFlag()
                               ],
                             ),
-                            if (showError) ...[
-                              Text(
-                                'Insufficient funds'.tr(),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.normal,
-                                  color: SideSwapColors.bitterSweet,
-                                ),
-                              ),
-                            ] else ...[
-                              Visibility(
-                                visible: visibleConversion,
-                                child: Text(
-                                  '≈ $dollarConversion',
-                                  style: _approximateStyle,
-                                ),
-                              ),
-                            ],
+                            ...switch (showError) {
+                              true => [
+                                  Text(
+                                    'Insufficient funds'.tr(),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.normal,
+                                      color: SideSwapColors.bitterSweet,
+                                    ),
+                                  ),
+                                ],
+                              _ => [
+                                  switch (visibleConversion) {
+                                    true => Text(
+                                        '≈ $dollarConversion',
+                                        style: approximateStyle,
+                                      ),
+                                    _ => const SizedBox(),
+                                  }
+                                ],
+                            },
                           ],
                         ),
                       ],
@@ -340,12 +367,13 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                   controller: tickerAmountController,
                   dropdownValue: accountAsset,
                   focusNode: tickerAmountFocusNode,
-                  validate: (value) => validate(value),
+                  validate: (value) => validateCallback(value),
                   onDropdownChanged: (value) {
-                    setState(() {
-                      accountAsset = value;
-                      tickerAmountController?.text = '';
-                    });
+                    ref
+                        .read(paymentPageSelectedAccountAssetNotifierProvider
+                            .notifier)
+                        .setSelectedAccountAsset(value);
+                    tickerAmountController.text = '';
                   },
                 ),
               ),
@@ -366,9 +394,9 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                         final balanceStr = amountProvider.amountToString(
                             AmountToStringParameters(
                                 amount: balance, precision: precision));
-                        return Text(
+                        return const Text(
                           'Balance: {}',
-                          style: _approximateStyle,
+                          style: approximateStyle,
                         ).tr(args: [balanceStr]);
                       },
                     ),
@@ -385,29 +413,27 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
                       ),
                       child: TextButton(
                         onPressed: () {
-                          setState(() {
-                            final precision = ref
-                                .read(assetUtilsProvider)
-                                .getPrecisionForAssetId(
-                                    assetId: accountAsset.assetId);
-                            final balance = ref.read(
-                                    balancesNotifierProvider)[accountAsset] ??
-                                0;
-                            final text = amountProvider.amountToString(
-                                AmountToStringParameters(
-                                    amount: balance, precision: precision));
+                          final precision = ref
+                              .read(assetUtilsProvider)
+                              .getPrecisionForAssetId(
+                                  assetId: accountAsset.assetId);
+                          final balance = ref.read(
+                                  balancesNotifierProvider)[accountAsset] ??
+                              0;
+                          final text = amountProvider.amountToString(
+                              AmountToStringParameters(
+                                  amount: balance, precision: precision));
 
-                            if (tickerAmountController?.value != null) {
-                              tickerAmountController!.value =
-                                  tickerAmountController!.value.copyWith(
-                                text: text,
-                                selection: TextSelection(
-                                    baseOffset: text.length,
-                                    extentOffset: text.length),
-                                composing: TextRange.empty,
-                              );
-                            }
-                          });
+                          tickerAmountController.value =
+                              tickerAmountController.value.copyWith(
+                            text: text,
+                            selection: TextSelection(
+                                baseOffset: text.length,
+                                extentOffset: text.length),
+                            composing: TextRange.empty,
+                          );
+
+                          isMaxPressed.value = true;
                         },
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
@@ -438,7 +464,7 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
           padding:
               const EdgeInsets.only(top: 36, bottom: 24, left: 16, right: 16),
           child: Consumer(builder: (context, ref, _) {
-            final buttonEnabled = enabled &&
+            final buttonEnabled = enabled.value &&
                 !ref.watch(walletProvider.select((p) => p.isCreatingTx));
             return CustomBigButton(
               width: double.infinity,
@@ -448,15 +474,14 @@ class PaymentAmountPageState extends ConsumerState<PaymentAmountPage> {
               enabled: buttonEnabled,
               onPressed: buttonEnabled
                   ? () {
-                      ref.read(paymentProvider).selectPaymentSend(
-                            amount.toString(),
+                      final paymentAmountPageArguments =
+                          ref.read(paymentAmountPageArgumentsNotifierProvider);
+                      ref.read(paymentHelperProvider).selectPaymentSend(
+                            amount.value,
                             accountAsset,
-                            address: ref
-                                .read(paymentProvider)
-                                .paymentAmountPageArguments
-                                .result
-                                ?.address,
-                            friend: friend,
+                            address: paymentAmountPageArguments.result?.address,
+                            friend: friend.value,
+                            isGreedy: isMaxPressed.value,
                           );
                     }
                   : null,

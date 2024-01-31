@@ -14,7 +14,7 @@ class TopSwapButtons extends StatelessWidget {
     required this.onPegOutPressed,
   });
 
-  final _colorToggleBackgroundMobile = const Color(0xFF043857);
+  final _colorToggleBackgroundMobile = SideSwapColors.prussianBlue;
   final _colorToggleBackgroundDesktop = const Color(0xFF062D44);
 
   final _colorToggleOn = const Color(0xFF1F7EB1);

@@ -14,7 +14,7 @@ class DSettingsPinSuccess extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsDialogTheme =
-        ref.watch(desktopAppThemeProvider).settingsDialogTheme;
+        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
 
     return DContentDialog(
       title: DContentDialogTitle(

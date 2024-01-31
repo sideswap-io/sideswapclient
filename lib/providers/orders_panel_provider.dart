@@ -73,3 +73,13 @@ List<RequestOrder> ordersPanelAsks(OrdersPanelAsksRef ref) {
   asks.sort(compareRequestOrder(1));
   return asks;
 }
+
+@riverpod
+int ordersPanelFilterBadgeCounter(OrdersPanelFilterBadgeCounterRef ref) {
+  final requestOrderSortFlag = ref.watch(requestOrderSortFlagNotifierProvider);
+
+  return switch (requestOrderSortFlag) {
+    RequestOrderSortFlagAll() => 0,
+    _ => 1,
+  };
+}

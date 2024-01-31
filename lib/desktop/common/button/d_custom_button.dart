@@ -27,7 +27,7 @@ class DCustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        final buttonThemes = ref.watch(desktopAppThemeProvider).buttonThemeData;
+        final buttonThemes = ref.watch(desktopAppThemeNotifierProvider).buttonThemeData;
         final style = isFilled
             ? buttonThemes.filledButtonStyle
             : buttonThemes.defaultButtonStyle;

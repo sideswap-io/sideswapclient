@@ -12,7 +12,6 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
-import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -212,9 +211,7 @@ class AssetReceivePopupState extends State<AssetReceiveWidget> {
                               iconHeight: 48,
                               iconWidth: 48,
                               onTap: () async {
-                                final shortUri = getSendLinkUrl(recvAddress);
-                                await shareAddress(
-                                    'Liquid address:\n$recvAddress\n\nYou can open directly in app clicking this url: ${shortUri.toString()}');
+                                await shareAddress(recvAddress);
                               },
                               label: 'Share'.tr(),
                               buttonBackground: Colors.white,

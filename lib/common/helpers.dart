@@ -115,11 +115,6 @@ String txDateStrShort(DateTime timestamp) {
   return shortFormat.format(timestamp.toLocal());
 }
 
-String txDateStrLong(DateTime timestamp) {
-  final longFormat = DateFormat('MMM d, yyyy \'at\' HH:mm');
-  return longFormat.format(timestamp);
-}
-
 String txDateCsvExport(int timestamp) {
   final longFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
   return longFormat.format(DateTime.fromMillisecondsSinceEpoch(timestamp));
@@ -142,18 +137,6 @@ void showMessage(BuildContext context, String title, String message) {
       return alert;
     },
   );
-}
-
-String txItemToStatus(TransItem transItem, {bool isPeg = false}) {
-  if (isPeg && !transItem.hasConfs()) {
-    return !transItem.peg.hasTxidRecv() ? 'Initiated'.tr() : 'Complete'.tr();
-  }
-  var status = !transItem.hasConfs()
-      ? 'Confirmed'.tr()
-      : transItem.confs.count == 0
-          ? 'Unconfirmed'.tr()
-          : '${transItem.confs.count} / ${transItem.confs.total}';
-  return status;
 }
 
 class CustomTitle extends StatelessWidget {

@@ -28,7 +28,7 @@ class MakeOrderPanel extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const headerDefaultColor = Color(0xFF043857);
+    const headerDefaultColor = SideSwapColors.prussianBlue;
     const headerActiveColor = Color(0xFF084366);
     const panelColor = SideSwapColors.chathamsBlue;
 
@@ -91,25 +91,52 @@ class MakeOrderPanel extends HookConsumerWidget {
       return;
     }, [expanded.value]);
 
+    final drawProductColumns = useState<bool>(false);
+
+    useEffect(() {
+      animationController.addStatusListener((AnimationStatus status) {
+        if (status == AnimationStatus.dismissed) {
+          drawProductColumns.value = false;
+          return;
+        }
+
+        if (!drawProductColumns.value) {
+          drawProductColumns.value = true;
+        }
+      });
+
+      return;
+    }, [animationController]);
+
     final selectedAccountAsset =
         ref.watch(marketSelectedAccountAssetStateProvider);
     final selectedAsset =
         ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
-    final buttonIndexPrice = ref.watch(indexPriceButtonProvider);
+    final buttonIndexPrice = ref.watch(indexPriceButtonStreamNotifierProvider);
 
     final trackingAvailable = selectedAsset?.swapMarket == true;
 
     useEffect(() {
-      controllerPrice.text = buttonIndexPrice;
+      (switch (buttonIndexPrice) {
+        AsyncValue(hasValue: true, value: String data) when data.isNotEmpty =>
+          () {
+            controllerPrice.text = data;
+          }(),
+        _ => () {
+            controllerPrice.clear();
+          }(),
+      });
 
       return;
-    });
+    }, [buttonIndexPrice]);
 
     final resetCallback = useCallback(() {
       controllerAmount.clear();
       controllerPrice.clear();
       trackingValue.value = 0.0;
       trackingToggled.value = false;
+
+      Future.microtask(() => ref.invalidate(makeOrderSideStateProvider));
     }, []);
 
     final submitCallback = useCallback(() {
@@ -132,7 +159,7 @@ class MakeOrderPanel extends HookConsumerWidget {
             indexPrice: indexPrice,
             account: account.account,
           );
-      ref.read(indexPriceButtonProvider.notifier).setIndexPrice('0');
+      ref.invalidate(indexPriceButtonStreamNotifierProvider);
       resetCallback();
     }, [selectedAccountAsset, trackingValue.value, isSell]);
 
@@ -160,7 +187,7 @@ class MakeOrderPanel extends HookConsumerWidget {
         final targetIndexPriceStr =
             indexPrice != 0 ? indexPriceStr : lastPriceStr;
         ref
-            .read(indexPriceButtonProvider.notifier)
+            .read(indexPriceButtonStreamNotifierProvider.notifier)
             .setIndexPrice(targetIndexPriceStr);
 
         final orderBalance = ref.read(makeOrderBalanceProvider);
@@ -204,6 +231,13 @@ class MakeOrderPanel extends HookConsumerWidget {
       return;
     }, [selectedAccountAsset]);
 
+    // run only once on first build
+    useEffect(() {
+      resetCallback();
+
+      return;
+    }, const []);
+
     return Container(
       width: 377,
       decoration: const BoxDecoration(
@@ -220,7 +254,7 @@ class MakeOrderPanel extends HookConsumerWidget {
                   color: states.isHovering || expanded.value
                       ? headerActiveColor
                       : headerDefaultColor,
-                  borderRadius: expanded.value
+                  borderRadius: drawProductColumns.value
                       ? const BorderRadius.vertical(top: Radius.circular(8))
                       : const BorderRadius.all(Radius.circular(8)),
                 ),
@@ -263,8 +297,11 @@ class MakeOrderPanel extends HookConsumerWidget {
                           fontSize: 13,
                           activeText: 'Sell'.tr(),
                           inactiveText: 'Buy'.tr(),
-                          value: isSell,
-                          activeToggleBackground: isSell ? sellColor : buyColor,
+                          value: makeOrderSide == MakeOrderSide.sell,
+                          activeToggleBackground:
+                              makeOrderSide == MakeOrderSide.sell
+                                  ? sellColor
+                                  : buyColor,
                           inactiveToggleBackground: const Color(0xFF0E4D72),
                           backgroundColor: const Color(0xFF0E4D72),
                           borderColor: const Color(0xFF0E4D72),
@@ -278,9 +315,8 @@ class MakeOrderPanel extends HookConsumerWidget {
                                   .read(makeOrderSideStateProvider.notifier)
                                   .setSide(MakeOrderSide.buy);
                             }
-                            ref
-                                .read(indexPriceButtonProvider.notifier)
-                                .setIndexPrice('0');
+                            ref.invalidate(
+                                indexPriceButtonStreamNotifierProvider);
                           },
                         ),
                       ],
@@ -293,13 +329,13 @@ class MakeOrderPanel extends HookConsumerWidget {
               expanded.value = !expanded.value;
             },
           ),
-          Expanded(
+          Flexible(
             child: Stack(
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: FocusTraversalGroup(
-                    child: SingleChildScrollView(
+                FocusTraversalGroup(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                       child: Column(
                         children: [
                           MakeOrderPanelAmountSide(
@@ -345,32 +381,36 @@ class MakeOrderPanel extends HookConsumerWidget {
                 AnimatedBuilder(
                   animation: animationController.view,
                   builder: (context, child) {
-                    return ClipRRect(
-                      child: Align(
-                        heightFactor: heightFactor.value,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            color: headerActiveColor,
-                            borderRadius: BorderRadius.only(
-                                bottomLeft: Radius.circular(8),
-                                bottomRight: Radius.circular(8)),
-                          ),
-                          child: child,
+                    return FractionallySizedBox(
+                      heightFactor: heightFactor.value,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: headerActiveColor,
+                          borderRadius: BorderRadius.only(
+                              bottomLeft: Radius.circular(8),
+                              bottomRight: Radius.circular(8)),
                         ),
+                        child: child,
                       ),
                     );
                   },
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: ProductColumns(
-                      onAssetSelected: () {
-                        expanded.value = !expanded.value;
-                        ref
-                            .read(indexPriceButtonProvider.notifier)
-                            .setIndexPrice('0');
-                      },
-                    ),
-                  ),
+                  child: switch (drawProductColumns.value) {
+                    true => () {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: ProductColumns(
+                            onAssetSelected: () {
+                              expanded.value = !expanded.value;
+                              ref.invalidate(
+                                  indexPriceButtonStreamNotifierProvider);
+                            },
+                          ),
+                        );
+                      }(),
+                    _ => () {
+                        return const SizedBox();
+                      }(),
+                  },
                 ),
               ],
             ),
@@ -481,10 +521,7 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
           onEditingComplete: onEditingComplete,
           readonly: trackingToggled.value,
           hintText: priceHint,
-          onChanged: (value) {
-            // set last index price same as entered value
-            ref.read(indexPriceButtonProvider.notifier).setIndexPrice(value);
-          },
+          onChanged: (value) {},
         ),
         const BalanceLine(
           onMaxPressed: null,

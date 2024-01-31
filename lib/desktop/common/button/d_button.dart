@@ -22,9 +22,12 @@ class DButton extends DBaseButton {
   @override
   DButtonStyle defaultStyleOf(BuildContext context) {
     final container = ProviderContainer();
-    final shadowColor = container.read(desktopAppThemeProvider).shadowColor;
-    final brightness = container.read(desktopAppThemeProvider).brightness;
-    final disabledColor = container.read(desktopAppThemeProvider).disabledColor;
+    final shadowColor =
+        container.read(desktopAppThemeNotifierProvider).shadowColor;
+    final brightness =
+        container.read(desktopAppThemeNotifierProvider).brightness;
+    final disabledColor =
+        container.read(desktopAppThemeNotifierProvider).disabledColor;
 
     return DButtonStyle(
       elevation: ButtonState.resolveWith((states) {

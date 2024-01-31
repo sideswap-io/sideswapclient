@@ -75,12 +75,12 @@ class DSettingsButton extends ConsumerWidget {
 
     final buttonStyle = forward
         ? ref
-            .watch(desktopAppThemeProvider)
+            .watch(desktopAppThemeNotifierProvider)
             .buttonThemeData
             .filledButtonStyle
             ?.merge(settingsButtonStyle)
         : ref
-            .watch(desktopAppThemeProvider)
+            .watch(desktopAppThemeNotifierProvider)
             .buttonThemeData
             .defaultButtonStyle
             ?.merge(settingsButtonStyle);

@@ -59,10 +59,11 @@ class BaseButtonState extends ConsumerState<DBaseButton> {
   @override
   Widget build(BuildContext context) {
     final fasterAnimationDuration =
-        ref.watch(desktopAppThemeProvider).fasterAnimationDuration;
+        ref.watch(desktopAppThemeNotifierProvider).fasterAnimationDuration;
     final fastAnimationDuration =
-        ref.watch(desktopAppThemeProvider).fastAnimationDuration;
-    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
+        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
+    final animationCurve =
+        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
 
     final ThemeData theme = Theme.of(context);
 

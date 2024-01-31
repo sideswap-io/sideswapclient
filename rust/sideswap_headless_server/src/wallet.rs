@@ -18,6 +18,7 @@ pub enum Req {
         api_server::SendRequest,
         oneshot::Sender<Result<api_server::SendResponse, api_server::Error>>,
     ),
+    RecvAddress(oneshot::Sender<Result<api_server::RecvAddressResponse, api_server::Error>>),
     Timer,
 }
 
@@ -167,6 +168,22 @@ fn run(
                     }
                     Err(err) => {
                         log::error!("tx send failed: {err}");
+                        let _ = res_sender.send(Err(api_server::Error::Server(err.to_string())));
+                    }
+                }
+            }
+
+            Req::RecvAddress(res_sender) => {
+                let send_res = wallet.get_receive_address();
+
+                match send_res {
+                    Ok(address_info) => {
+                        let _ = res_sender.send(Ok(api_server::RecvAddressResponse {
+                            address: address_info.address,
+                        }));
+                    }
+                    Err(err) => {
+                        log::error!("recv address failed: {err}");
                         let _ = res_sender.send(Err(api_server::Error::Server(err.to_string())));
                     }
                 }

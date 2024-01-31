@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/screens/pay/widgets/friend_widget.dart';
@@ -53,7 +54,7 @@ class PaymentAmountReceiverField extends StatelessWidget {
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Color(0xFF1D6389),
+                fillColor: SideSwapColors.blueSapphire,
               ),
             ),
           ),

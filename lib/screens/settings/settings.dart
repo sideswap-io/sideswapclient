@@ -7,6 +7,7 @@ import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/custom_scrollable_container.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -18,7 +19,6 @@ import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
-import 'package:sideswap/screens/qr_scanner/address_qr_scanner.dart';
 import 'package:sideswap/screens/settings/settings_about_us.dart';
 import 'package:sideswap/screens/settings/settings_languages.dart';
 import 'package:sideswap/screens/settings/settings_logs.dart';

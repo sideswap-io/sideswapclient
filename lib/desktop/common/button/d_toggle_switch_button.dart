@@ -126,8 +126,8 @@ class DToggleSwitchTheme extends InheritedTheme {
 
   static DToggleSwitchThemeData of(BuildContext context) {
     final container = ProviderContainer();
-    return DToggleSwitchThemeData.standard()
-        .merge(container.read(desktopAppThemeProvider).toggleSwitchTheme);
+    return DToggleSwitchThemeData.standard().merge(
+        container.read(desktopAppThemeNotifierProvider).toggleSwitchTheme);
   }
 
   @override
@@ -177,9 +177,9 @@ class DToggleSwitchThemeData with Diagnosticable {
     );
     final container = ProviderContainer();
     final fastAnimationDuration =
-        container.read(desktopAppThemeProvider).fastAnimationDuration;
+        container.read(desktopAppThemeNotifierProvider).fastAnimationDuration;
     final animationCurve =
-        container.read(desktopAppThemeProvider).animationCurve;
+        container.read(desktopAppThemeNotifierProvider).animationCurve;
 
     return DToggleSwitchThemeData(
       checkedDecoration: ButtonState.resolveWith((states) {

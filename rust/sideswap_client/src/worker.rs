@@ -142,7 +142,7 @@ pub struct Data {
     send_utxo_updates: bool,
     force_auto_sign_maker: bool,
     wallets: BTreeMap<AccountId, Wallet>,
-    subscribes: BTreeSet<Option<AssetId>>,
+    subscribes: BTreeSet<AssetId>,
 
     active_swap: Option<ActiveSwap>,
     succeed_swap: Option<elements::Txid>,
@@ -964,7 +964,20 @@ impl Data {
             },
         ));
 
+        let token_market_order_asset_ids = assets
+            .iter()
+            .filter_map(|asset| {
+                (asset.market_type == Some(MarketType::Token)).then(|| asset.asset_id.to_string())
+            })
+            .collect::<Vec<_>>();
+
         self.register_assets_with_gdk_icons(assets);
+
+        self.ui.send(ffi::proto::from::Msg::TokenMarketOrder(
+            ffi::proto::from::TokenMarketOrder {
+                asset_ids: token_market_order_asset_ids,
+            },
+        ));
 
         let server_status = send_request!(self, ServerStatus, None)?;
         self.process_server_status(server_status);
@@ -3113,21 +3126,18 @@ impl Data {
         let new_subscribes = req
             .markets
             .iter()
-            .map(|market| {
-                market
-                    .asset_id
-                    .as_ref()
-                    .map(|asset_id| AssetId::from_str(asset_id).unwrap())
-            })
+            .map(|market| AssetId::from_str(&market.asset_id).unwrap())
             .collect();
 
         for unsubscribe in self.subscribes.difference(&new_subscribes) {
             self.send_request_msg(Request::Unsubscribe(UnsubscribeRequest {
-                asset: *unsubscribe,
+                asset: Some(*unsubscribe),
             }));
         }
         for subscribe in new_subscribes.difference(&self.subscribes) {
-            self.send_request_msg(Request::Subscribe(SubscribeRequest { asset: *subscribe }));
+            self.send_request_msg(Request::Subscribe(SubscribeRequest {
+                asset: Some(*subscribe),
+            }));
         }
 
         self.subscribes = new_subscribes;
@@ -3209,7 +3219,9 @@ impl Data {
 
     fn send_subscribe_request(&self) {
         for subscribe in self.subscribes.iter() {
-            self.send_request_msg(Request::Subscribe(SubscribeRequest { asset: *subscribe }));
+            self.send_request_msg(Request::Subscribe(SubscribeRequest {
+                asset: Some(*subscribe),
+            }));
         }
     }
 

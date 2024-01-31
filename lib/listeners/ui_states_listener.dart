@@ -13,19 +13,17 @@ class UiStatesListener extends ConsumerWidget {
       final navigationItemEnum = next.navigationItemEnum;
 
       if (navigationItemEnum != WalletMainNavigationItemEnum.markets) {
-        if (ref.read(marketsProvider).subscribedMarket !=
-            SubscribedMarket.none) {
-          ref.read(marketsProvider).unsubscribeMarket();
-        }
+        ref
+            .read(marketAssetSubscriberNotifierProvider.notifier)
+            .unsubscribeAll();
       }
 
       if (navigationItemEnum != WalletMainNavigationItemEnum.markets &&
           navigationItemEnum != WalletMainNavigationItemEnum.swap) {
-        if (ref
-            .read(marketsProvider)
-            .subscribedIndexPriceAssetId()
-            .isNotEmpty) {
-          ref.read(marketsProvider).unsubscribeIndexPrice();
+        if (ref.read(indexPriceSubscriberNotifierProvider).isNotEmpty) {
+          ref
+              .read(indexPriceSubscriberNotifierProvider.notifier)
+              .unsubscribeAll();
         }
       }
 

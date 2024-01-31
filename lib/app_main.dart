@@ -16,6 +16,7 @@ import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
@@ -30,6 +31,7 @@ import 'package:sideswap/screens/home/wallet_locked.dart';
 import 'package:sideswap/screens/markets/create_order_success.dart';
 import 'package:sideswap/screens/markets/create_order_view.dart';
 import 'package:sideswap/screens/markets/order_entry.dart';
+import 'package:sideswap/screens/markets/order_filters.dart';
 import 'package:sideswap/screens/onboarding/amp_register.dart';
 import 'package:sideswap/screens/onboarding/associate_phone_welcome.dart';
 import 'package:sideswap/screens/onboarding/confirm_phone.dart';
@@ -75,6 +77,7 @@ import 'package:sideswap/screens/settings/settings_security.dart';
 import 'package:sideswap/screens/settings/settings_user_details.dart';
 import 'package:sideswap/screens/settings/settings_view_backup.dart';
 import 'package:sideswap/screens/swap/peg_in_address.dart';
+import 'package:sideswap/screens/tx/transactions.dart';
 import 'package:sideswap/screens/tx/tx_details_popup.dart';
 import 'package:sideswap/screens/wallet_main/wallet_main.dart';
 
@@ -338,7 +341,8 @@ class RootWidgetState extends ConsumerState<RootWidget> {
         ];
       case Status.txDetails:
         return [
-          const MyPopupPage<Widget>(child: TxDetailsPopup()),
+          const MaterialPage<Widget>(child: WalletMain()),
+          const MaterialPage<Widget>(child: TxDetailsPopup()),
         ];
       case Status.txEditMemo:
         return [
@@ -405,7 +409,7 @@ class RootWidgetState extends ConsumerState<RootWidget> {
           const MyPopupPage<Widget>(child: PaymentSendPopup()),
         ];
       case Status.orderPopup:
-        final orderId = ref.read(walletProvider).orderDetailsData.orderId;
+        final orderId = ref.read(orderDetailsDataNotifierProvider).orderId;
         return [
           const MaterialPage<Widget>(child: WalletMain()),
           MaterialPage<Widget>(child: OrderPopup(key: Key(orderId))),
@@ -492,6 +496,14 @@ class RootWidgetState extends ConsumerState<RootWidget> {
       case Status.walletAddressDetail:
         return [
           const MaterialPage<Widget>(child: AssetReceiveScreen()),
+        ];
+      case Status.transactions:
+        return [
+          const MaterialPage<Widget>(child: Transactions()),
+        ];
+      case Status.orderFilers:
+        return [
+          const MaterialPage<Widget>(child: OrderFilters()),
         ];
     }
   }

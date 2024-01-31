@@ -313,24 +313,6 @@ class _ImageBytesResizedFutureProviderElement
   double get height => (origin as ImageBytesResizedFutureProvider).height;
 }
 
-String _$accountAssetTransactionsHash() =>
-    r'4fddee80ebc39599499d5077dfa1c113c606f50d';
-
-/// See also [accountAssetTransactions].
-@ProviderFor(accountAssetTransactions)
-final accountAssetTransactionsProvider =
-    AutoDisposeProvider<Map<AccountAsset, List<TxItem>>>.internal(
-  accountAssetTransactions,
-  name: r'accountAssetTransactionsProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$accountAssetTransactionsHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef AccountAssetTransactionsRef
-    = AutoDisposeProviderRef<Map<AccountAsset, List<TxItem>>>;
 String _$liquidAssetIdStateHash() =>
     r'0993e2408473de0a738dd0d0b42e264cac3165df';
 
@@ -413,7 +395,7 @@ final assetsStateProvider =
 
 typedef _$AssetsState = Notifier<Map<String, Asset>>;
 String _$selectedWalletAccountAssetNotifierHash() =>
-    r'1594d900e68cd31a76770d8cfdd0899ea406b9b1';
+    r'80c8b7c138ac843d68ee8c40ca5e32cfe29278a0';
 
 /// See also [SelectedWalletAccountAssetNotifier].
 @ProviderFor(SelectedWalletAccountAssetNotifier)

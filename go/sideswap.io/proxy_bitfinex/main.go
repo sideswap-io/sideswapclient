@@ -10,7 +10,7 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"strings"
+	"strconv"
 	"time"
 
 	"github.com/bitfinexcom/bitfinex-api-go/pkg/models/balanceinfo"
@@ -18,7 +18,6 @@ import (
 	"github.com/bitfinexcom/bitfinex-api-go/pkg/models/common"
 	"github.com/bitfinexcom/bitfinex-api-go/pkg/models/order"
 	"github.com/bitfinexcom/bitfinex-api-go/pkg/models/wallet"
-	"github.com/bitfinexcom/bitfinex-api-go/v2/rest"
 	"github.com/bitfinexcom/bitfinex-api-go/v2/websocket"
 	gws "github.com/gorilla/websocket"
 	"github.com/op/go-logging"
@@ -79,6 +78,17 @@ func (m jsonConvertor) sendMsg(from *myProto.From) (int, []byte) {
 	d, err := jsonMarshalOption.Marshal(from)
 	check(err)
 	return gws.TextMessage, d
+}
+
+type MyEpochNonceGenerator struct {
+	log *logging.Logger
+}
+
+func (u *MyEpochNonceGenerator) GetNonce() string {
+	microseconds := time.Now().UnixNano() / 1000
+	nonce := strconv.FormatInt(microseconds, 10)
+	u.log.Infof("new nonce: %v", nonce)
+	return nonce
 }
 
 func (m protoConvertor) recvMsg(messageType int, data []byte) (*myProto.To, error) {
@@ -211,7 +221,10 @@ func handler(d *Data, conv convertor) func(http.ResponseWriter, *http.Request) {
 						return
 					}
 
-					trader = websocket.NewWithParams(traderParams).Credentials(x.Login.GetKey(), x.Login.GetSecret())
+					nonceGen := MyEpochNonceGenerator{
+						log: d.log,
+					}
+					trader = websocket.NewWithParamsNonce(traderParams, &nonceGen).Credentials(x.Login.GetKey(), x.Login.GetSecret())
 
 					err := trader.Connect()
 					if err != nil {
@@ -252,43 +265,7 @@ func handler(d *Data, conv convertor) func(http.ResponseWriter, *http.Request) {
 					}
 
 				case *myProto.To_Movements_:
-					req := x.Movements
-					go func() {
-						c := rest.NewClient().Credentials(req.GetKey(), req.GetSecret())
-						items, err := c.Wallet.Movements(req.Start, req.End, req.Limit)
-						if err != nil {
-							d.log.Errorf("movements request failed: %v", err)
-						}
-						success := (err == nil)
-						itemsCopy := []*myProto.Movement{}
-						for _, item0 := range items {
-							item := item0
-							itemCopy := myProto.Movement{
-								Id:                      &item.ID,
-								Currency:                &item.Currency,
-								CurrencyName:            &item.CurrencyName,
-								MtsStarted:              &item.MtsStarted,
-								MtsUpdated:              &item.MtsUpdated,
-								Status:                  &item.Status,
-								Amount:                  &item.Amount,
-								Fees:                    &item.Fees,
-								DestinationAddress:      &item.DestinationAddress,
-								TransactionId:           &item.TransactionID,
-								WithdrawTransactionNote: &item.WithdrawTransactionNote,
-							}
-							itemsCopy = append(itemsCopy, &itemCopy)
-						}
-						movements := myProto.From{
-							Msg: &myProto.From_Movements_{
-								Movements: &myProto.From_Movements{
-									Success:   &success,
-									Key:       req.Key,
-									Movements: itemsCopy,
-								},
-							},
-						}
-						responses <- &movements
-					}()
+					break
 
 				case *myProto.To_Subscribe_:
 					if trader == nil {
@@ -306,64 +283,10 @@ func handler(d *Data, conv convertor) func(http.ResponseWriter, *http.Request) {
 					books[bookName] = bookData{}
 
 				case *myProto.To_Withdraw_:
-					d.log.Infof("start withdraw request...")
-					req := x.Withdraw
-					go func() {
-						var withdrawID int64
-						for i := 0; i < 6; i++ {
-							c := rest.NewClient().Credentials(req.GetKey(), req.GetSecret())
-							notfication, err := c.Wallet.Withdraw(req.GetWallet(), req.GetMethod(), req.GetAmount(), req.GetAddress(), nil)
-							retryAgain := false
-							if err == nil && notfication != nil {
-								d.log.Infof("withdraw result: %v", *notfication)
-								nraw := notfication.NotifyInfo.([]interface{})
-								withdrawID = int64(nraw[0].(float64))
-								retryAgain = withdrawID == 0 &&
-									notfication.Status == "SUCCESS" &&
-									notfication.Text == "Settlement / Transfer in progress, please try again in few seconds"
-							} else {
-								d.log.Infof("withdraw failed: %s", err)
-								retryAgain = strings.Contains(err.Error(), "nonce: small")
-							}
-							if !retryAgain {
-								break
-							}
-							d.log.Infof("retry withdraw...")
-							time.Sleep(time.Second * 10)
-						}
-						d.log.Infof("send withdraw result: %v", withdrawID)
-						withdraw := myProto.From{
-							Msg: &myProto.From_Withdraw_{
-								Withdraw: &myProto.From_Withdraw{
-									WithdrawId: &withdrawID,
-								},
-							},
-						}
-						responses <- &withdraw
-					}()
+					d.log.Infof("ignore withdraw request...")
 
 				case *myProto.To_Transfer_:
-					d.log.Infof("start transfer request...")
-					req := x.Transfer
-					go func() {
-						c := rest.NewClient().Credentials(req.GetKey(), req.GetSecret())
-						notfication, err := c.Wallet.Transfer(req.GetFrom(), req.GetTo(), req.GetCurrency(), req.GetCurrencyTo(), req.GetAmount())
-						success := false
-						if err == nil && notfication != nil {
-							d.log.Infof("transfer succeed: %v", *notfication)
-							success = notfication.Status == "SUCCESS"
-						} else {
-							d.log.Infof("transfer failed: %s", err)
-						}
-						transfer := myProto.From{
-							Msg: &myProto.From_Transfer_{
-								Transfer: &myProto.From_Transfer{
-									Success: &success,
-								},
-							},
-						}
-						responses <- &transfer
-					}()
+					d.log.Infof("ignore transfer request...")
 
 				case nil:
 					sendError(d, client, conv, "empty request, msg must be set")

@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,6 +12,7 @@ import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_progress_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -24,90 +24,57 @@ import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/autosign.dart';
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 
-class OrderPopup extends ConsumerStatefulWidget {
+class OrderPopup extends HookConsumerWidget {
   const OrderPopup({super.key});
 
   @override
-  OrderPopupState createState() => OrderPopupState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderDetailsData = ref.watch(orderDetailsDataNotifierProvider);
 
-class OrderPopupState extends ConsumerState<OrderPopup> {
-  int seconds = 60;
-  int percent = 100;
-  Timer? _percentTimer;
-  bool autoSign = true;
-  bool enabled = true;
-  bool percentEnabled = false;
-  bool orderTypeValue = false;
-  late int ttlSeconds;
-  late final bool showAssetDetails;
+    final autoSign = useState(true);
+    final ttlSeconds = useState(kOneWeek);
+    final showAssetDetails = useState(false);
+    final percentEnabled = useState(false);
+    final enabled = useState(true);
+    const seconds = 60;
+    const percent = 100;
 
-  @override
-  void initState() {
-    super.initState();
-    final orderDetailsData = ref.read(walletProvider).orderDetailsData;
-    autoSign = orderDetailsData.autoSign;
-    ttlSeconds = kOneWeek;
-    showAssetDetails = orderDetailsData.marketType == MarketType.amp &&
-        orderDetailsData.orderType == OrderDetailsDataType.quote;
+    useEffect(() {
+      autoSign.value = orderDetailsData.autoSign;
+      ttlSeconds.value = kOneWeek;
+      showAssetDetails.value = orderDetailsData.marketType == MarketType.amp &&
+          orderDetailsData.orderType == OrderDetailsDataType.quote;
 
-    // if (orderDetailsData.orderType == OrderType.execute) {
-    //   _percentTimer = Timer.periodic(Duration(seconds: 1), onTimer);
-    // }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (showAssetDetails) {
+      if (showAssetDetails.value) {
         ref
             .read(tokenMarketProvider)
             .requestAssetDetails(assetId: orderDetailsData.assetId);
       }
-    });
-  }
 
-  void onTimer(WidgetRef ref, Timer timer) {
-    seconds--;
-    if (seconds == 0) {
-      _percentTimer?.cancel();
-      ref.read(walletProvider).setRegistered();
-      Navigator.of(context).pop();
       return;
-    }
+    }, const []);
 
-    setState(() {
-      percent = seconds * 100 ~/ 60;
-    });
-  }
+    final onCloseCallback = useCallback(() {
+      ref.read(walletProvider).setSubmitDecision(
+            autosign: autoSign.value,
+            accept: false,
+          );
+      ref.read(walletProvider).goBack();
+    }, []);
 
-  @override
-  void dispose() {
-    _percentTimer?.cancel();
-    super.dispose();
-  }
-
-  void onClose() {
-    ref.read(walletProvider).setSubmitDecision(
-          autosign: autoSign,
-          accept: false,
-        );
-    ref.read(walletProvider).goBack();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return SideSwapScaffold(
       sideSwapBackground: false,
       extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFF064363),
       appBar: CustomAppBar(
-        onPressed: () {
-          onClose();
-        },
+        onPressed: onCloseCallback,
       ),
       body: SafeArea(
         child: Center(
           child: Consumer(
             builder: (context, ref, child) {
               final orderDetailsData =
-                  ref.watch(walletProvider).orderDetailsData;
+                  ref.watch(orderDetailsDataNotifierProvider);
               OrderDetailsDataType? orderType =
                   orderDetailsData.orderType ?? OrderDetailsDataType.submit;
               final dataAvailable = orderDetailsData.isDataAvailable();
@@ -197,7 +164,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       child: Container(
                         decoration: const BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(10)),
-                          color: Color(0xFF043857),
+                          color: SideSwapColors.prussianBlue,
                         ),
                         child: Padding(
                           padding: const EdgeInsets.all(16),
@@ -209,9 +176,9 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       ),
                     ),
                     if (orderType == OrderDetailsDataType.quote &&
-                        percentEnabled) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20),
+                        percentEnabled.value) ...[
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20),
                         child: SideSwapProgressBar(
                           percent: percent,
                           text: '${seconds}s left',
@@ -222,29 +189,25 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: AutoSign(
-                          value: autoSign,
+                          autoSign: autoSign.value,
                           onToggle: (value) {
-                            setState(() {
-                              autoSign = value;
-                            });
+                            autoSign.value = value;
                           },
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: TimeToLive(
-                            dropdownValue: ttlSeconds,
+                            dropdownValue: ttlSeconds.value,
                             dropdownItems: availableTtlValues(false),
                             onChanged: (value) {
-                              setState(() {
-                                ttlSeconds = value!;
-                              });
+                              ttlSeconds.value = value!;
                             }),
                       ),
                       const OrderTypeTracking(),
                     ],
                     const Spacer(),
-                    if (showAssetDetails && assetDetails != null) ...[
+                    if (showAssetDetails.value && assetDetails != null) ...[
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Column(
@@ -302,24 +265,23 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                     CustomBigButton(
                       width: double.maxFinite,
                       height: 54,
-                      enabled: dataAvailable && enabled,
+                      enabled: dataAvailable && enabled.value,
                       backgroundColor: SideSwapColors.brightTurquoise,
                       onPressed: () async {
                         final auth =
                             await ref.read(walletProvider).isAuthenticated();
                         if (auth) {
-                          setState(() {
-                            enabled = false;
-                          });
+                          enabled.value = false;
+
                           switch (orderType) {
                             case OrderDetailsDataType.submit:
                             case OrderDetailsDataType.quote:
                             case OrderDetailsDataType.sign:
                               ref.read(walletProvider).setSubmitDecision(
-                                    autosign: autoSign,
+                                    autosign: autoSign.value,
                                     accept: true,
                                     private: false,
-                                    ttlSeconds: ttlSeconds,
+                                    ttlSeconds: ttlSeconds.value,
                                   );
                               break;
                           }
@@ -328,7 +290,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          if (!enabled) ...[
+                          if (!enabled.value) ...[
                             Padding(
                               padding: const EdgeInsets.only(right: 200),
                               child: SpinKitCircle(
@@ -338,7 +300,7 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                             ),
                           ],
                           Text(
-                            enabled
+                            enabled.value
                                 ? (orderType == OrderDetailsDataType.submit ||
                                         orderType == OrderDetailsDataType.sign
                                     ? 'SUBMIT'.tr()
@@ -366,8 +328,8 @@ class OrderPopupState extends ConsumerState<OrderPopup> {
                         text: 'Cancel'.tr(),
                         textColor: SideSwapColors.brightTurquoise,
                         backgroundColor: Colors.transparent,
-                        enabled: enabled,
-                        onPressed: onClose,
+                        enabled: enabled.value,
+                        onPressed: onCloseCallback,
                       ),
                     )
                   ],
@@ -412,7 +374,7 @@ class OrderTypeTracking extends StatelessWidget {
               Consumer(
                 builder: (context, ref, child) {
                   final indexPrice =
-                      ref.watch(walletProvider).orderDetailsData.isTracking;
+                      ref.watch(orderDetailsDataNotifierProvider).isTracking;
                   return Text(
                     indexPrice ? 'Price tracking'.tr() : 'Limit order'.tr(),
                     style: const TextStyle(

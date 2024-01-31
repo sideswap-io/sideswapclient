@@ -148,7 +148,8 @@ class SideSwapPageHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final titleStyle = ref.watch(desktopAppThemeProvider).typography.title;
+    final titleStyle =
+        ref.watch(desktopAppThemeNotifierProvider).typography.title;
     final leading = this.leading;
     final horizontalPadding = SideSwapPageHeader.horizontalPadding(context);
     return Padding(

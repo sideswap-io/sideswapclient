@@ -224,8 +224,9 @@ class DWordRadioButton extends ConsumerWidget {
     ).merge(this.style);
 
     final fastAnimationDuration =
-        ref.watch(desktopAppThemeProvider).fastAnimationDuration;
-    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
+        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
+    final animationCurve =
+        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
 
     return DHoverButton(
       onPressed: onChanged == null ? null : () => onChanged!(!checked),

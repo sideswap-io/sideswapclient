@@ -24,8 +24,9 @@ class DWalletBackupState extends ConsumerState<DNewWalletBackup> {
       final words = ref.read(walletProvider).getMnemonicWords();
       final wordItems = Map<int, WordItem>.fromEntries(List.generate(
           words.length,
-          (index) => MapEntry(index, WordItem(words[index], true))));
-      ref.read(mnemonicWordItemsProvider.notifier).state = wordItems;
+          (index) =>
+              MapEntry(index, WordItem(word: words[index], isCorrect: true))));
+      ref.read(mnemonicWordItemsNotifierProvider.notifier).setItems(wordItems);
     });
   }
 

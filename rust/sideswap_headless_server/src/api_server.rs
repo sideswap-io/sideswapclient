@@ -22,6 +22,7 @@ pub enum Req {
     ),
     ListOrders((), oneshot::Sender<Vec<OrderInfo>>),
     Send(SendRequest, oneshot::Sender<Result<SendResponse, Error>>),
+    RecvAddress(oneshot::Sender<Result<RecvAddressResponse, Error>>),
 }
 
 pub type Callback = Box<dyn Fn(Req) + Send + Sync>;
@@ -108,6 +109,11 @@ pub struct SendResponse {
     pub txid: elements::Txid,
 }
 
+#[derive(serde::Serialize)]
+pub struct RecvAddressResponse {
+    pub address: elements::Address,
+}
+
 pub struct Server {
     context: Arc<Context>,
 }
@@ -127,6 +133,7 @@ pub struct OrderInfo {
     pub asset_amount: i64,
     pub price: f64,
     pub private: bool,
+    pub unique_key: Option<String>,
 }
 
 #[derive(serde::Serialize, Clone)]
@@ -198,6 +205,15 @@ async fn send(
     Ok(resp.into())
 }
 
+async fn recv_address(
+    State(context): State<Arc<Context>>,
+) -> Result<Json<RecvAddressResponse>, Error> {
+    let (sender, receiver) = oneshot::channel();
+    (context.callback)(Req::RecvAddress(sender));
+    let resp = receiver.await??;
+    Ok(resp.into())
+}
+
 pub async fn run(server: Server) {
     let app = axum::Router::new()
         .route("/orders/new", post(new_order))
@@ -206,6 +222,7 @@ pub async fn run(server: Server) {
         .route("/orders/:order_id/cancel", post(order_cancel))
         .route("/orders", get(list_orders))
         .route("/send", post(send))
+        .route("/recv_address", get(recv_address))
         .with_state(Arc::clone(&server.context))
         .layer(axum::middleware::from_fn_with_state(
             Arc::clone(&server.context),

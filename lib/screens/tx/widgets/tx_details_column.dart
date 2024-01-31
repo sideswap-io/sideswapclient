@@ -77,8 +77,8 @@ class TxDetailsColumn extends StatelessWidget {
                         },
                         child: SvgPicture.asset(
                           'assets/copy.svg',
-                          width: 26,
-                          height: 26,
+                          width: 18,
+                          height: 18,
                           colorFilter: const ColorFilter.mode(
                               SideSwapColors.brightTurquoise, BlendMode.srcIn),
                         ),

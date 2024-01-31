@@ -92,7 +92,7 @@ class AmpIdPanel extends StatelessWidget {
                   child: FlavorConfig.isDesktop
                       ? Consumer(builder: (context, ref, _) {
                           final buttonStyle = ref
-                              .watch(desktopAppThemeProvider)
+                              .watch(desktopAppThemeNotifierProvider)
                               .mainBottomNavigationBarButtonStyle;
 
                           return DButton(

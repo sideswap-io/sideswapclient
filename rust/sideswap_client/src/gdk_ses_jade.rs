@@ -61,8 +61,8 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
         self.watch_only.get_balances()
     }
 
-    fn get_transactions(&self) -> Result<Vec<crate::models::Transaction>, anyhow::Error> {
-        self.watch_only.get_transactions()
+    fn get_transactions_impl(&self) -> Result<Vec<crate::gdk_json::Transaction>, anyhow::Error> {
+        self.watch_only.get_transactions_impl()
     }
 
     fn get_receive_address(&self) -> Result<AddressInfo, anyhow::Error> {

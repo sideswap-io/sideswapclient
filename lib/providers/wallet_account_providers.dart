@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';

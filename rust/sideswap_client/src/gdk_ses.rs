@@ -170,7 +170,16 @@ pub trait GdkSes {
             .unwrap_or_default()
     }
 
-    fn get_transactions(&self) -> Result<Vec<models::Transaction>, anyhow::Error>;
+    fn get_transactions_impl(&self) -> Result<Vec<gdk_json::Transaction>, anyhow::Error>;
+
+    fn get_transactions(&self) -> Result<Vec<models::Transaction>, anyhow::Error> {
+        self.get_transactions_impl().map(|transactions| {
+            transactions
+                .iter()
+                .map(crate::gdk_ses_impl::convert_tx)
+                .collect()
+        })
+    }
 
     fn get_receive_address(&self) -> Result<AddressInfo, anyhow::Error>;
 

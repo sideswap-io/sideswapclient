@@ -46,8 +46,8 @@ class PaymentSendPopup extends StatelessWidget {
                 final precision = ref
                     .watch(assetUtilsProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
-                final sendAmountParsed = ref
-                    .watch(paymentProvider.select((p) => p.sendAmountParsed));
+                final sendAmountParsed =
+                    ref.watch(paymentSendAmountParsedNotifierProvider);
                 final amountProvider = ref.watch(amountToStringProvider);
                 final sendAmountStr = amountProvider.amountToString(
                     AmountToStringParameters(
@@ -76,8 +76,8 @@ class PaymentSendPopup extends StatelessWidget {
                 final precision = ref
                     .watch(assetUtilsProvider)
                     .getPrecisionForAssetId(assetId: asset?.assetId);
-                final sendAmountParsed = ref
-                    .watch(paymentProvider.select((p) => p.sendAmountParsed));
+                final sendAmountParsed =
+                    ref.watch(paymentSendAmountParsedNotifierProvider);
                 final amountProvider = ref.watch(amountToStringProvider);
                 final amountStr = amountProvider.amountToString(
                     AmountToStringParameters(
@@ -120,7 +120,7 @@ class PaymentSendPopup extends StatelessWidget {
             padding: const EdgeInsets.only(top: 16),
             child: Consumer(builder: (context, ref, _) {
               final details =
-                  ref.watch(paymentProvider.select((p) => p.sendAddrParsed));
+                  ref.watch(paymentSendAddressParsedNotifierProvider);
               return TxDetailsColumn(
                 description: 'To'.tr(),
                 details: details,
@@ -144,8 +144,9 @@ class PaymentSendPopup extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 20),
             child: Consumer(builder: (context, ref, _) {
-              final sendNetworkFee =
-                  ref.watch(paymentProvider.select((p) => p.sendNetworkFee));
+              final sendNetworkFee = ref
+                  .watch(paymentCreatedTxNotifierProvider.notifier)
+                  .sendNetworkFee();
               final amountProvider = ref.watch(amountToStringProvider);
               final networkFeeAmount = amountProvider.amountToStringNamed(
                   AmountToStringNamedParameters(

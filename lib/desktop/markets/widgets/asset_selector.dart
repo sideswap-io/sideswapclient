@@ -23,22 +23,29 @@ class AssetSelector extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          marketTypeName(marketType),
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: SideSwapColors.brightTurquoise,
+        Flexible(
+          flex: 1,
+          child: Text(
+            marketTypeName(marketType),
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: SideSwapColors.brightTurquoise,
+            ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 8),
-          child: Container(
-            height: 1,
-            color: const Color(0xFF3E82A8),
+        Flexible(
+          flex: 1,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 8),
+            child: Container(
+              height: 1,
+              color: const Color(0xFF3E82A8),
+            ),
           ),
         ),
-        Expanded(
+        Flexible(
+          flex: 20,
           child: Consumer(
             builder: (context, ref, child) {
               final assets =
@@ -55,10 +62,8 @@ class AssetSelector extends ConsumerWidget {
                               final selectedAccountAsset = ref.watch(
                                   marketSelectedAccountAssetStateProvider);
                               return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 7,
-                                  horizontal: 7,
-                                ),
+                                padding: const EdgeInsets.only(
+                                    left: 4, right: 0, top: 7, bottom: 7),
                                 decoration: BoxDecoration(
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(8)),

@@ -182,7 +182,8 @@ pub fn process_balancing(
     assets: &Assets,
     rpc_http_client: &reqwest::blocking::Client,
     args: &Args,
-    mod_tx: &module::Sender,
+    _mod_tx: &module::Sender,
+    bf_sender: &crossbeam_channel::Sender<bitfinex_worker::Request>,
 ) {
     let bitfinex_currency_btc = &args.bitfinex_currency_btc;
     let bitfinex_currency_lbtc = &args.bitfinex_currency_lbtc;
@@ -247,17 +248,16 @@ pub fn process_balancing(
                 if (usdt_balance >= balancing.amount.to_bitcoin() || !args.env.data().mainnet)
                     && module_connected
                 {
-                    send_msg(
-                        mod_tx,
-                        proto::to::Msg::Withdraw(proto::to::Withdraw {
+                    bf_sender
+                        .send(bitfinex_worker::Request::Withdraw(proto::to::Withdraw {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
                             wallet: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             method: BITFINEX_METHOD_USDT.to_owned(),
                             amount: balancing.amount.to_bitcoin(),
                             address: args.bitfinex_withdraw_address.clone(),
-                        }),
-                    );
+                        }))
+                        .unwrap();
                     update_balancing_state(
                         storage,
                         &args.storage_path,
@@ -313,9 +313,8 @@ pub fn process_balancing(
                     .cloned()
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {
-                    send_msg(
-                        mod_tx,
-                        proto::to::Msg::Transfer(proto::to::Transfer {
+                    bf_sender
+                        .send(bitfinex_worker::Request::Transfer(proto::to::Transfer {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
                             from: BITFINEX_WALLET_EXCHANGE.to_owned(),
@@ -323,8 +322,8 @@ pub fn process_balancing(
                             currency: bitfinex_currency_lbtc.0.clone(),
                             currency_to: bitfinex_currency_btc.0.clone(),
                             amount: balancing.amount.to_bitcoin(),
-                        }),
-                    );
+                        }))
+                        .unwrap();
                     update_balancing_state(
                         storage,
                         &args.storage_path,
@@ -355,9 +354,8 @@ pub fn process_balancing(
                 if (btc_balance >= balancing.amount.to_bitcoin() || !args.env.data().mainnet)
                     && module_connected
                 {
-                    send_msg(
-                        mod_tx,
-                        proto::to::Msg::Transfer(proto::to::Transfer {
+                    bf_sender
+                        .send(bitfinex_worker::Request::Transfer(proto::to::Transfer {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
                             from: BITFINEX_WALLET_EXCHANGE.to_owned(),
@@ -365,8 +363,8 @@ pub fn process_balancing(
                             currency: bitfinex_currency_btc.0.clone(),
                             currency_to: bitfinex_currency_lbtc.0.clone(),
                             amount: balancing.amount.to_bitcoin(),
-                        }),
-                    );
+                        }))
+                        .unwrap();
                     update_balancing_state(
                         storage,
                         &args.storage_path,
@@ -381,17 +379,16 @@ pub fn process_balancing(
                     .cloned()
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {
-                    send_msg(
-                        mod_tx,
-                        proto::to::Msg::Withdraw(proto::to::Withdraw {
+                    bf_sender
+                        .send(bitfinex_worker::Request::Withdraw(proto::to::Withdraw {
                             key: args.bitfinex_key.clone(),
                             secret: args.bitfinex_secret.clone(),
                             wallet: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             method: BITFINEX_METHOD_LBTC.to_owned(),
                             amount: balancing.amount.to_bitcoin(),
                             address: args.bitfinex_withdraw_address.clone(),
-                        }),
-                    );
+                        }))
+                        .unwrap();
                     update_balancing_state(
                         storage,
                         &args.storage_path,

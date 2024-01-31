@@ -40,7 +40,7 @@ class DUrlLinkButton extends ConsumerWidget {
     );
 
     final buttonStyle = ref
-        .watch(desktopAppThemeProvider)
+        .watch(desktopAppThemeNotifierProvider)
         .buttonThemeData
         .filledButtonStyle
         ?.merge(settingsButtonStyle);

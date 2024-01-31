@@ -44,8 +44,9 @@ class DRadioButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final style = DRadioButtonTheme.of(context).merge(this.style);
     final fastAnimationDuration =
-        ref.watch(desktopAppThemeProvider).fastAnimationDuration;
-    final animationCurve = ref.watch(desktopAppThemeProvider).animationCurve;
+        ref.watch(desktopAppThemeNotifierProvider).fastAnimationDuration;
+    final animationCurve =
+        ref.watch(desktopAppThemeNotifierProvider).animationCurve;
 
     return DHoverButton(
       autofocus: autofocus,
@@ -121,18 +122,19 @@ class DRadioButtonTheme extends InheritedTheme {
         context.dependOnInheritedWidgetOfExactType<DRadioButtonTheme>();
     final container = ProviderContainer();
     final themeRadioButtonTheme =
-        container.read(desktopAppThemeProvider).radioButtonTheme;
+        container.read(desktopAppThemeNotifierProvider).radioButtonTheme;
     return theme?.data ?? themeRadioButtonTheme;
   }
 
   static DRadioButtonThemeData of(BuildContext context) {
     final container = ProviderContainer();
     final accentColor = container
-        .read(desktopAppThemeProvider)
+        .read(desktopAppThemeNotifierProvider)
         .darkScheme
         .primary
         .toAccentColor();
-    final brightness = container.read(desktopAppThemeProvider).brightness;
+    final brightness =
+        container.read(desktopAppThemeNotifierProvider).brightness;
     return DRadioButtonThemeData.standard(
             accentColor: accentColor, brightness: brightness)
         .merge(
@@ -164,11 +166,12 @@ class DRadioButtonThemeData with Diagnosticable {
       {AccentColor? accentColor, Brightness? brightness}) {
     final container = ProviderContainer();
     final themeAccentColor = container
-        .read(desktopAppThemeProvider)
+        .read(desktopAppThemeNotifierProvider)
         .darkScheme
         .primary
         .toAccentColor();
-    final themeBrightness = container.read(desktopAppThemeProvider).brightness;
+    final themeBrightness =
+        container.read(desktopAppThemeNotifierProvider).brightness;
 
     return DRadioButtonThemeData(
       checkedDecoration: ButtonState.resolveWith((states) {
@@ -197,13 +200,15 @@ class DRadioButtonThemeData with Diagnosticable {
       }),
       uncheckedDecoration: ButtonState.resolveWith((states) {
         final container = ProviderContainer();
-        final inactiveBackgroundColor =
-            container.read(desktopAppThemeProvider).inactiveBackgroundColor;
+        final inactiveBackgroundColor = container
+            .read(desktopAppThemeNotifierProvider)
+            .inactiveBackgroundColor;
         final accentColor =
-            container.read(desktopAppThemeProvider).darkScheme.primary;
+            container.read(desktopAppThemeNotifierProvider).darkScheme.primary;
         final borderInputColor =
-            container.read(desktopAppThemeProvider).borderInputColor;
-        final brightness = container.read(desktopAppThemeProvider).brightness;
+            container.read(desktopAppThemeNotifierProvider).borderInputColor;
+        final brightness =
+            container.read(desktopAppThemeNotifierProvider).brightness;
 
         final backgroundColor = inactiveBackgroundColor;
         return BoxDecoration(

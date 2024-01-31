@@ -9,6 +9,7 @@ import 'package:sideswap/common/enums.dart';
 
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/qrcode_models.dart';
@@ -18,13 +19,6 @@ import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/qr_scanner/qr_overlay_shape.dart';
 import 'package:sideswap/screens/qr_scanner/qr_scanner_overlay_clipper.dart';
 import 'package:sideswap_permissions/sideswap_permissions.dart';
-
-void useAsyncEffect(Future<Dispose?> Function() effect, [List<Object?>? keys]) {
-  useEffect(() {
-    final disposeFuture = Future.microtask(effect);
-    return () => disposeFuture.then((dispose) => dispose?.call());
-  }, keys);
-}
 
 class AddressQrScanner extends HookConsumerWidget {
   final BIP21AddressTypeEnum? expectedAddress;

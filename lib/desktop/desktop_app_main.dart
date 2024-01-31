@@ -39,7 +39,7 @@ class DesktopApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer(
       builder: (context, ref, _) {
-        final desktopAppTheme = ref.watch(desktopAppThemeProvider);
+        final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
 
         return MaterialApp(
           title: 'SideSwap',

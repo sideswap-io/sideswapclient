@@ -335,7 +335,7 @@ message To {
 
   message Subscribe {
     message Market {
-      optional string asset_id = 1;
+      required string asset_id = 1;
     }
     repeated Market markets = 1;
   }
@@ -450,6 +450,10 @@ message From {
 
   message AmpAssets {
     repeated string assets = 1;
+  }
+
+  message TokenMarketOrder {
+    repeated string asset_ids = 1;
   }
 
   message UpdatedTxs {
@@ -726,6 +730,7 @@ message From {
     UpdatedPegs updated_pegs = 2;
     Asset new_asset = 3;
     AmpAssets amp_assets = 9;
+    TokenMarketOrder token_market_order = 18;
     BalanceUpdate balance_update = 4;
     UtxoUpdate utxo_update = 15;
     ServerStatus server_status = 5;

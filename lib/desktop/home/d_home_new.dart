@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/desktop/home/listeners/portfolio_prices_listener.dart';
 import 'package:sideswap/desktop/home/widgets/d_amp_wallet_assets_panel.dart';
 import 'package:sideswap/desktop/home/widgets/d_regular_wallet_assets_panel.dart';
@@ -16,8 +16,10 @@ class DesktopHomeNew extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
 
-    useEffect(() {
-      ref.read(marketsProvider).subscribeIndexPrice(tetherAssetId);
+    useAsyncEffect(() async {
+      ref
+          .read(indexPriceSubscriberNotifierProvider.notifier)
+          .subscribeOne(tetherAssetId);
 
       return;
     }, [tetherAssetId]);

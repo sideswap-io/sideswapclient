@@ -1,12 +1,8 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
-import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class AssetDetailsStats {
@@ -122,43 +118,3 @@ class TokenMarketAssetDetailsProvider
     state = tokenMarketAssetDetails;
   }
 }
-
-final tokenMarketOrdersByAssetId =
-    AutoDisposeProviderFamily<List<RequestOrder>, String>((ref, arg) {
-  final tokenMarketOrders = ref.watch(tokenMarketOrdersProvider);
-  if (arg.isEmpty) {
-    return tokenMarketOrders;
-  }
-
-  return tokenMarketOrders.where((e) => e.assetId == arg).toList();
-});
-
-final tokenMarketDropdownValuesProvider =
-    AutoDisposeProvider<List<TokenMarketDropdownValue>>((ref) {
-  final tokenMarketOrders = ref.watch(tokenMarketOrdersProvider);
-  final dropdownValues = <TokenMarketDropdownValue>[];
-  dropdownValues
-      .add(TokenMarketDropdownValue(assetId: '', name: 'All assets'.tr()));
-
-  for (var order in tokenMarketOrders) {
-    final value = TokenMarketDropdownValue(
-        name: ref.read(assetUtilsProvider).tickerForAssetId(order.assetId),
-        assetId: order.assetId);
-
-    if (!dropdownValues.any((e) => e.assetId == value.assetId)) {
-      dropdownValues.add(value);
-    }
-  }
-
-  return dropdownValues;
-});
-
-final tokenMarketOrdersProvider =
-    AutoDisposeProvider<List<RequestOrder>>((ref) {
-  final marketRequestOrderList = ref.watch(marketRequestOrderListProvider);
-
-  return marketRequestOrderList
-      .where((e) =>
-          !e.private && (e.marketType == MarketType.token) && !e.isExpired())
-      .toList();
-});

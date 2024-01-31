@@ -1,42 +1,70 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'package:sideswap/providers/wallet.dart';
 
-final currentMnemonicIndexProvider = StateProvider.autoDispose<int>((ref) {
-  ref.watch(mnemonicWordsCounterProvider);
-  return 0;
-});
+part 'mnemonic_table_provider.g.dart';
 
-final wordListFutureProvider =
-    FutureProvider.autoDispose<List<String>>((ref) async {
-  final List<String> wordList = [];
-  await rootBundle.loadString('assets/wordlist.txt').then((q) {
-    for (var i in const LineSplitter().convert(q)) {
-      wordList.add(i);
-    }
-  });
-  wordList.sort();
-  return wordList;
-});
+@riverpod
+class CurrentMnemonicIndexNotifier extends _$CurrentMnemonicIndexNotifier {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setIndex(int value) {
+    state = value;
+  }
+}
+
+@riverpod
+FutureOr<List<String>> wordListFuture(WordListFutureRef ref) async {
+  return [
+    ...const LineSplitter()
+        .convert(await rootBundle.loadString('assets/wordlist.txt'))
+  ]..sort();
+}
 
 class WordItem {
   final String word;
-  final bool correct;
+  final bool isCorrect;
+  WordItem({
+    this.word = '',
+    this.isCorrect = false,
+  });
 
-  WordItem(this.word, this.correct);
+  WordItem copyWith({
+    String? word,
+    bool? isCorrect,
+  }) {
+    return WordItem(
+      word: word ?? this.word,
+      isCorrect: isCorrect ?? this.isCorrect,
+    );
+  }
+
+  @override
+  String toString() => 'WordItem(word: $word, isCorrect: $isCorrect)';
+
+  @override
+  bool operator ==(covariant WordItem other) {
+    if (identical(this, other)) return true;
+
+    return other.word == word && other.isCorrect == isCorrect;
+  }
+
+  @override
+  int get hashCode => word.hashCode ^ isCorrect.hashCode;
 }
 
-final mnemonicWordsCounterProvider =
-    StateNotifierProvider.autoDispose<MnemonicWordsCounterProvider, int>(
-        (ref) => MnemonicWordsCounterProvider(ref));
-
-class MnemonicWordsCounterProvider extends StateNotifier<int> {
-  final Ref ref;
-
-  MnemonicWordsCounterProvider(this.ref) : super(12);
+@Riverpod(keepAlive: true)
+class MnemonicWordsCounterNotifier extends _$MnemonicWordsCounterNotifier {
+  @override
+  int build() {
+    return 12;
+  }
 
   void set12Words() {
     state = 12;
@@ -47,34 +75,24 @@ class MnemonicWordsCounterProvider extends StateNotifier<int> {
   }
 }
 
-final mnemonicWordItemsProvider =
-    StateProvider.autoDispose<Map<int, WordItem>>((ref) {
-  final mnemonicCounter = ref.watch(mnemonicWordsCounterProvider);
-  return Map.fromEntries(List.generate(
-      mnemonicCounter, (index) => MapEntry(index, WordItem('', false))));
-});
+@Riverpod(keepAlive: true)
+class MnemonicWordItemsNotifier extends _$MnemonicWordItemsNotifier {
+  @override
+  Map<int, WordItem> build() {
+    final mnemonicCounter = ref.watch(mnemonicWordsCounterNotifierProvider);
+    final words = ref.watch(walletProvider).getMnemonicWords();
+    if (words.isNotEmpty) {
+      return Map.fromEntries(List.generate(
+          words.length,
+          (index) =>
+              MapEntry(index, WordItem(word: words[index], isCorrect: true))));
+    }
+    return Map.fromEntries(
+        List.generate(mnemonicCounter, (index) => MapEntry(index, WordItem())));
+  }
 
-final mnemonicTableProvider =
-    ChangeNotifierProvider.autoDispose<MnemonicTableProvider>((ref) {
-  ref.keepAlive();
-  final wordItems = ref.watch(mnemonicWordItemsProvider);
-  final wordList = ref
-      .watch(wordListFutureProvider)
-      .maybeWhen(data: (data) => data, orElse: () => <String>[]);
-
-  return MnemonicTableProvider(ref, wordItems, wordList);
-});
-
-class MnemonicTableProvider extends ChangeNotifier {
-  final Ref ref;
-  Map<int, WordItem> wordItems;
-  final List<String> wordlist;
-
-  MnemonicTableProvider(this.ref, this.wordItems, this.wordlist);
-
-  void setWordItems(Map<int, WordItem> value) {
-    wordItems = value;
-    notifyListeners();
+  void setItems(Map<int, WordItem> value) {
+    state = value;
   }
 
   int maxIndex() {
@@ -82,20 +100,20 @@ class MnemonicTableProvider extends ChangeNotifier {
   }
 
   int length() {
-    return wordItems.length;
+    return state.length;
   }
 
   WordItem word(int index) {
     if (index < 0 || index > maxIndex()) {
-      return WordItem('', false);
+      return WordItem();
     }
 
-    return wordItems[index]!;
+    return state[index] ?? WordItem();
   }
 
   bool mnemonicIsValid() {
-    for (var wordItem in wordItems.values) {
-      if (!wordItem.correct) {
+    for (var wordItem in state.values) {
+      if (!wordItem.isCorrect) {
         return false;
       }
     }
@@ -113,12 +131,14 @@ class MnemonicTableProvider extends ChangeNotifier {
       ref.read(walletProvider).setImportWalletResult(false);
       return;
     }
-    ref.read(walletProvider).importMnemonic(newMnemonic);
+
+    Future.microtask(
+        () => ref.read(walletProvider).importMnemonic(newMnemonic));
   }
 
   String mnemonic() {
     final wordList = <String>[];
-    for (var wordItem in wordItems.values) {
+    for (var wordItem in state.values) {
       wordList.add(wordItem.word);
     }
     final result = wordList.fold<String>(
@@ -126,49 +146,32 @@ class MnemonicTableProvider extends ChangeNotifier {
     return result.trim();
   }
 
-  void validate(String value, int currentIndex) {
+  Future<void> validate(String value, int currentIndex) async {
     final searchWord = value.toLowerCase();
 
+    final wordItems = {...state};
+
     if (searchWord.isEmpty) {
-      wordItems[currentIndex] = WordItem('', false);
-      notifyListeners();
+      wordItems[currentIndex] = WordItem();
+      state = wordItems;
       return;
     }
 
     final previousValue = wordItems[currentIndex]!.word;
     if (previousValue.length > searchWord.length &&
         previousValue.startsWith(searchWord)) {
+      final wordlist = await ref.read(wordListFutureProvider.future);
       final found = wordlist.any((e) => e == searchWord);
-      wordItems[currentIndex] = WordItem(searchWord, found);
-      notifyListeners();
+      wordItems[currentIndex] = WordItem(word: searchWord, isCorrect: found);
+      state = wordItems;
       return;
     }
-
-    // final List<String> choosedWords = [];
-    // for (var w in wordlist) {
-    //   if (w.startsWith(searchWord)) {
-    //     choosedWords.add(w);
-    //   }
-    // }
-
-    // if (choosedWords.length == 1 && searchWord.length > 3) {
-    //   wordItems[currentIndex] = WordItem(choosedWords[0], true);
-    //   nextWord(currentIndex);
-    //   notifyListeners();
-    // } else {
-    //   final found = wordlist.any((e) => e == searchWord);
-    //   if (found) {
-    //     wordItems[currentIndex] = WordItem(searchWord, true);
-    //   } else {
-    //     wordItems[currentIndex] = WordItem(searchWord, false);
-    //   }
-    //   notifyListeners();
-    // }
   }
 
-  void validateOnSubmit(String value, int currentIndex) {
+  Future<void> validateOnSubmit(String value, int currentIndex) async {
     final List<String> choosedWords = [];
     final searchWord = value.toLowerCase();
+    final wordlist = await ref.read(wordListFutureProvider.future);
 
     for (var w in wordlist) {
       if (w.startsWith(searchWord)) {
@@ -178,35 +181,44 @@ class MnemonicTableProvider extends ChangeNotifier {
 
     if (choosedWords.contains(searchWord)) {
       final choosedIndex = choosedWords.indexOf(searchWord);
-      wordItems[currentIndex] = WordItem(choosedWords[choosedIndex], true);
+      final wordItems = {...state};
+      wordItems[currentIndex] =
+          WordItem(word: choosedWords[choosedIndex], isCorrect: true);
       nextWord(currentIndex);
-      notifyListeners();
+      state = wordItems;
     }
   }
 
-  void nextWord(int currentIndex) {
-    if (currentIndex >= 0 &&
-        currentIndex < maxIndex() &&
-        currentIndex == ref.read(currentMnemonicIndexProvider)) {
-      ref.read(currentMnemonicIndexProvider.notifier).state++;
+  void nextWord(int index) {
+    final currentIndex = ref.read(currentMnemonicIndexNotifierProvider);
+
+    if (index >= 0 && index < maxIndex() && index == currentIndex) {
+      ref
+          .read(currentMnemonicIndexNotifierProvider.notifier)
+          .setIndex(currentIndex + 1);
     }
   }
 
-  void validateAllItems() {
+  Future<void> validateAllItems() async {
+    final wordItems = {...state};
+    final wordlist = await ref.read(wordListFutureProvider.future);
+
     for (var index in wordItems.keys) {
       final searchWord = wordItems[index]?.word ?? '';
       if (searchWord.isNotEmpty) {
         final found = wordlist.any((e) => e == searchWord);
-        wordItems[index] = WordItem(searchWord, found);
+        wordItems[index] = WordItem(word: searchWord, isCorrect: found);
       }
     }
-    notifyListeners();
+    state = wordItems;
   }
 
-  Iterable<String> suggestions(String text) {
+  Future<Iterable<String>> suggestions(String text) async {
     if (text.isEmpty) {
       return const Iterable.empty();
     }
+
+    final wordlist = await ref.read(wordListFutureProvider.future);
     return wordlist.where((word) => word.startsWith(text));
   }
 }

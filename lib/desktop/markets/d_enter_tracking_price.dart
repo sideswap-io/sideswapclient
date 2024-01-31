@@ -26,8 +26,8 @@ class DEnterTrackingPrice extends StatelessWidget {
   Widget build(BuildContext context) {
     const negativeColor = SideSwapColors.bitterSweet;
     const positiveColor = SideSwapColors.turquoise;
-    const circleNegativeColor = Color(0xFF3E475F);
-    const circlePositiveColor = Color(0xFF147385);
+    const circleNegativeColor = SideSwapColors.policeBlue;
+    const circlePositiveColor = SideSwapColors.metallicSeaweed;
 
     const maxPercent = 1;
     const minPercent = -maxPercent;

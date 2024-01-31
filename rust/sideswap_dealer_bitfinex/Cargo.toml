@@ -31,6 +31,8 @@ signal-hook.workspace = true
 tokio = { workspace = true, features = ["macros", "net", "rt", "sync", "time"] }
 tungstenite = { workspace = true, default-features = false, features = [] }
 url.workspace = true
+ureq = { workspace = true, features = ["json"] }
+ring = "0.17.7"
 
 [build-dependencies]
 prost-build.workspace = true

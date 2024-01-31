@@ -53,7 +53,7 @@ class DPinKeyboard extends HookConsumerWidget {
     }
 
     final defaultButtonStyle = ref
-        .read(desktopAppThemeProvider)
+        .read(desktopAppThemeNotifierProvider)
         .buttonThemeData
         .defaultButtonStyle
         ?.merge(
@@ -75,7 +75,7 @@ class DPinKeyboard extends HookConsumerWidget {
         );
 
     final defaultEnterButtonStyle = ref
-        .read(desktopAppThemeProvider)
+        .read(desktopAppThemeNotifierProvider)
         .buttonThemeData
         .filledButtonStyle
         ?.merge(

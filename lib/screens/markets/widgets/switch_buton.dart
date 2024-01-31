@@ -4,18 +4,18 @@ import 'package:sideswap/common/sideswap_colors.dart';
 class SwitchButton extends StatefulWidget {
   const SwitchButton({
     super.key,
-    this.backgroundColor = const Color(0xFF043857),
+    this.backgroundColor = SideSwapColors.prussianBlue,
     this.borderRadius = 8,
     this.width = 142,
     this.height = 35,
     required this.value,
     this.onToggle,
-    this.borderColor = const Color(0xFF043857),
+    this.borderColor = SideSwapColors.prussianBlue,
     this.borderWidth = 2,
     this.activeToggle,
     this.inactiveToggle,
     this.activeToggleBackground = SideSwapColors.navyBlue,
-    this.inactiveToggleBackground = const Color(0xFF043857),
+    this.inactiveToggleBackground = SideSwapColors.prussianBlue,
     this.activeText = '',
     this.inactiveText = '',
     this.activeTextStyle,
@@ -120,7 +120,7 @@ class SwitchButtonState extends State<SwitchButton> {
                       inactiveToggleBackground: widget.inactiveToggleBackground,
                       activeText: widget.activeText,
                       inactiveText: widget.inactiveText,
-                      value: widget.value,
+                      switchValue: widget.value,
                       inactiveTextStyle:
                           widget.inactiveTextStyle ?? defaultInactiveTextStyle,
                     ),
@@ -134,7 +134,7 @@ class SwitchButtonState extends State<SwitchButton> {
                       enabled: enabled,
                       activeText: widget.activeText,
                       inactiveText: widget.inactiveText,
-                      value: widget.value,
+                      switchValue: widget.value,
                       activeToggleBackground: widget.activeToggleBackground,
                       activeTextStyle: activeTextStyle,
                     ),
@@ -148,7 +148,7 @@ class SwitchButtonState extends State<SwitchButton> {
                       enabled: enabled,
                       activeText: widget.activeText,
                       inactiveText: widget.inactiveText,
-                      value: widget.value,
+                      switchValue: widget.value,
                       activeToggleBackground: widget.activeToggleBackground,
                       activeTextStyle: activeTextStyle,
                     ),
@@ -160,7 +160,7 @@ class SwitchButtonState extends State<SwitchButton> {
                       inactiveToggleBackground: widget.inactiveToggleBackground,
                       activeText: widget.activeText,
                       inactiveText: widget.inactiveText,
-                      value: widget.value,
+                      switchValue: widget.value,
                       inactiveTextStyle:
                           widget.inactiveTextStyle ?? defaultInactiveTextStyle,
                     ),
@@ -183,7 +183,7 @@ class SwitchButtonActiveToggle extends StatelessWidget {
     required this.enabled,
     required this.activeText,
     required this.inactiveText,
-    required this.value,
+    required this.switchValue,
     required this.activeToggleBackground,
     this.activeTextStyle,
   });
@@ -195,7 +195,7 @@ class SwitchButtonActiveToggle extends StatelessWidget {
   final bool enabled;
   final String activeText;
   final String inactiveText;
-  final bool value;
+  final bool switchValue;
   final Color activeToggleBackground;
   final TextStyle? activeTextStyle;
 
@@ -213,7 +213,7 @@ class SwitchButtonActiveToggle extends StatelessWidget {
       ),
       child: Center(
         child: Text(
-          value ? activeText : inactiveText,
+          switchValue ? activeText : inactiveText,
           style: activeTextStyle,
         ),
       ),
@@ -229,7 +229,7 @@ class SwithButtonInactiveToggle extends StatelessWidget {
     required this.inactiveToggleBackground,
     required this.activeText,
     required this.inactiveText,
-    required this.value,
+    required this.switchValue,
     this.inactiveTextStyle,
   });
 
@@ -238,7 +238,7 @@ class SwithButtonInactiveToggle extends StatelessWidget {
   final Color inactiveToggleBackground;
   final String activeText;
   final String inactiveText;
-  final bool value;
+  final bool switchValue;
   final TextStyle? inactiveTextStyle;
 
   @override
@@ -249,7 +249,7 @@ class SwithButtonInactiveToggle extends StatelessWidget {
       color: inactiveToggleBackground,
       child: Center(
         child: Text(
-          value ? inactiveText : activeText,
+          switchValue ? inactiveText : activeText,
           style: inactiveTextStyle,
         ),
       ),

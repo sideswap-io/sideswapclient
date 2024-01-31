@@ -162,59 +162,19 @@ class RequestOrder {
   }
 }
 
-enum SubscribedMarket {
-  none,
-  token,
-  asset,
-}
-
-final marketsProvider =
-    ChangeNotifierProvider<MarketsProvider>((ref) => MarketsProvider(ref));
-
-class MarketsProvider extends ChangeNotifier {
-  final Ref ref;
-
-  MarketsProvider(this.ref);
-
-  String _subscribedIndexPriceAssetId = '';
-
-  SubscribedMarket subscribedMarket = SubscribedMarket.none;
-
-  void subscribeTokenMarket() {
-    subscribedMarket = SubscribedMarket.token;
-    final msg = To();
-    msg.subscribe = To_Subscribe();
-    msg.subscribe.markets.add(To_Subscribe_Market(assetId: null));
-    ref.read(walletProvider).sendMsg(msg);
+@Riverpod(keepAlive: true)
+class IndexPriceSubscriberNotifier extends _$IndexPriceSubscriberNotifier {
+  @override
+  Set<String> build() {
+    ref.onCancel(() {
+      unsubscribeAll();
+    });
+    return {};
   }
 
-  void subscribeSwapMarket(String? assetId) {
-    if (assetId == null || assetId.isEmpty) {
-      return;
-    }
-    final asset = ref.read(assetsStateProvider)[assetId];
-
-    subscribedMarket = SubscribedMarket.asset;
-    final msg = To();
-    msg.subscribe = To_Subscribe();
-    if (asset?.ampMarket == true || asset?.swapMarket == true) {
-      msg.subscribe.markets.add(To_Subscribe_Market(assetId: assetId));
-    }
-    // Subscribe to the token market constantly to show new assets in the product selector
-    msg.subscribe.markets.add(To_Subscribe_Market(assetId: null));
-    ref.read(walletProvider).sendMsg(msg);
-  }
-
-  void unsubscribeMarket() {
-    subscribedMarket = SubscribedMarket.none;
-    final msg = To();
-    msg.subscribe = To_Subscribe();
-    ref.read(walletProvider).sendMsg(msg);
-  }
-
-  void subscribeIndexPrice(String? assetId) {
-    if (assetId == null) {
-      logger.w("Asset id is null!");
+  void subscribe(String assetId) {
+    if (assetId.isEmpty) {
+      logger.w("assetid is empty!");
       return;
     }
 
@@ -224,36 +184,163 @@ class MarketsProvider extends ChangeNotifier {
       return;
     }
 
+    final subscribedAssets = {...state};
+
     // don't subscribe if already subscribed
-    if (assetId == _subscribedIndexPriceAssetId) {
+    if (isSubscribed(assetId)) {
       return;
     }
 
-    unsubscribeIndexPrice();
-    _subscribedIndexPriceAssetId = assetId;
+    _subscribe(assetId);
 
+    subscribedAssets.add(assetId);
+    state = subscribedAssets;
+  }
+
+  void subscribeOne(String assetId) {
+    final subscribedAssets = {...state};
+    subscribedAssets.remove(assetId);
+    for (final subscribedAssetId in subscribedAssets) {
+      unsubscribe(subscribedAssetId);
+    }
+
+    if (isSubscribed(assetId)) {
+      return;
+    }
+
+    subscribe(assetId);
+  }
+
+  void _subscribe(String assetId) {
     final msg = To();
     msg.subscribePrice = AssetId();
     msg.subscribePrice.assetId = assetId;
     ref.read(walletProvider).sendMsg(msg);
   }
 
-  void unsubscribeIndexPrice() {
-    if (_subscribedIndexPriceAssetId.isEmpty) {
+  void unsubscribe(String assetId) {
+    if (assetId.isEmpty) {
       return;
     }
 
+    final subscribedAssets = {...state};
+
+    if (!isSubscribed(assetId)) {
+      return;
+    }
+
+    _unsubscribe(assetId);
+
+    subscribedAssets.remove(assetId);
+    state = subscribedAssets;
+  }
+
+  void _unsubscribe(String assetId) {
     final msg = To();
     msg.unsubscribePrice = AssetId();
-    msg.unsubscribePrice.assetId = _subscribedIndexPriceAssetId;
+    msg.unsubscribePrice.assetId = assetId;
     ref.read(walletProvider).sendMsg(msg);
-
-    _subscribedIndexPriceAssetId = '';
   }
 
-  String subscribedIndexPriceAssetId() {
-    return _subscribedIndexPriceAssetId;
+  void unsubscribeAll() {
+    for (final subscribedAssetId in state) {
+      _unsubscribe(subscribedAssetId);
+    }
+
+    state = {};
   }
+
+  bool isSubscribed(String assetId) {
+    return state.contains(assetId);
+  }
+}
+
+enum SubscribedMarketEnumType {
+  none,
+  token,
+  asset,
+}
+
+@Riverpod(keepAlive: true)
+class MarketAssetSubscriberNotifier extends _$MarketAssetSubscriberNotifier {
+  @override
+  Set<({String assetId, SubscribedMarketEnumType subscribedMarketType})>
+      build() {
+    return {};
+  }
+
+  void subscribe(String assetId) {
+    return switch (assetId.isEmpty) {
+      true => () {}(),
+      _ => () {
+          if (isSubscribed(assetId)) {
+            return;
+          }
+
+          final asset = ref.read(assetsStateProvider)[assetId];
+
+          return switch (asset) {
+            final asset? when asset.ampMarket || asset.swapMarket => () {
+                _subscribe(assetId);
+                final subscribedAssets = {...state};
+                subscribedAssets.add((
+                  assetId: assetId,
+                  subscribedMarketType: SubscribedMarketEnumType.asset
+                ));
+                state = subscribedAssets;
+              }(),
+            final _? => () {
+                _subscribe(assetId);
+                final subscribedAssets = {...state};
+                subscribedAssets.add((
+                  assetId: assetId,
+                  subscribedMarketType: SubscribedMarketEnumType.token
+                ));
+                state = subscribedAssets;
+              }(),
+            _ => () {}(),
+          };
+        }(),
+    };
+  }
+
+  void _subscribe(String assetId) {
+    final msg = To();
+    msg.subscribe = To_Subscribe();
+    msg.subscribe.markets.add(To_Subscribe_Market(assetId: assetId));
+    ref.read(walletProvider).sendMsg(msg);
+  }
+
+  void unsubscribeAll() {
+    final subscribedAssets = {...state};
+    if (subscribedAssets.isEmpty) {
+      return;
+    }
+
+    _unsubscribeAll();
+    state = {};
+  }
+
+  void _unsubscribeAll() {
+    final msg = To();
+    msg.subscribe = To_Subscribe();
+    ref.read(walletProvider).sendMsg(msg);
+  }
+
+  bool isSubscribed(String assetId) {
+    return state.any((element) => element.assetId == assetId);
+  }
+}
+
+@riverpod
+MarketsHelper marketsHelper(MarketsHelperRef ref) {
+  return MarketsHelper(ref);
+}
+
+class MarketsHelper {
+  final Ref ref;
+
+  MarketsHelper(this.ref);
 
   Future<void> onModifyPrice(WidgetRef ref, RequestOrder? requestOrder) async {
     if (requestOrder == null) {
@@ -293,6 +380,7 @@ class MarketsProvider extends ChangeNotifier {
                 .getPrecisionForAssetId(assetId: requestOrder.assetId);
             final orderDetailsData =
                 OrderDetailsData.fromRequestOrder(requestOrder, assetPrecision);
+
             return ModifyPriceDialog(
               controller: controller,
               orderDetailsData: orderDetailsData,
@@ -307,15 +395,10 @@ class MarketsProvider extends ChangeNotifier {
   }
 }
 
-final marketsIndexPriceProvider =
-    AutoDisposeNotifierProvider<MarketsIndexPriceProvider, Map<String, double>>(
-        MarketsIndexPriceProvider.new);
-
-class MarketsIndexPriceProvider
-    extends AutoDisposeNotifier<Map<String, double>> {
+@Riverpod(keepAlive: true)
+class MarketsIndexPriceNotifier extends _$MarketsIndexPriceNotifier {
   @override
   Map<String, double> build() {
-    ref.keepAlive();
     return {};
   }
 
@@ -340,7 +423,7 @@ class MarketsIndexPriceProvider
 @riverpod
 IndexPriceForAsset indexPriceForAsset(
     IndexPriceForAssetRef ref, String? assetId) {
-  final indexPrice = ref.watch(marketsIndexPriceProvider);
+  final indexPrice = ref.watch(marketsIndexPriceNotifierProvider);
   final isAmp = ref.watch(assetUtilsProvider).isAmpMarket(assetId: assetId);
   return IndexPriceForAsset(indexPrice[assetId] ?? 0, assetId, isAmp);
 }
@@ -369,15 +452,10 @@ class IndexPriceForAsset {
   }
 }
 
-final marketsLastIndexPriceProvider = AutoDisposeNotifierProvider<
-    MarketsLastIndexPriceProvider,
-    Map<String, double>>(MarketsLastIndexPriceProvider.new);
-
-class MarketsLastIndexPriceProvider
-    extends AutoDisposeNotifier<Map<String, double>> {
+@Riverpod(keepAlive: true)
+class MarketsLastIndexPriceNotifier extends _$MarketsLastIndexPriceNotifier {
   @override
   Map<String, double> build() {
-    ref.keepAlive();
     return {};
   }
 
@@ -401,7 +479,7 @@ class MarketsLastIndexPriceProvider
 
 @riverpod
 double lastIndexPriceForAsset(LastIndexPriceForAssetRef ref, String? assetId) {
-  final lastIndexPriceMap = ref.watch(marketsLastIndexPriceProvider);
+  final lastIndexPriceMap = ref.watch(marketsLastIndexPriceNotifierProvider);
   return lastIndexPriceMap[assetId] ?? 0;
 }
 
@@ -424,49 +502,43 @@ String lastStringIndexPriceForAsset(
       precision: precision == 0 ? 8 : precision);
 }
 
-final indexPriceButtonProvider =
-    AutoDisposeStateNotifierProvider<IndexPriceProvider, String>(
-        (ref) => IndexPriceProvider(ref));
-
-class IndexPriceProvider extends StateNotifier<String> {
-  final Ref ref;
-
-  IndexPriceProvider(this.ref) : super('0');
+@riverpod
+class IndexPriceButtonStreamNotifier extends _$IndexPriceButtonStreamNotifier {
+  @override
+  Stream<String> build() {
+    return Stream.value('');
+  }
 
   void setIndexPrice(String value) {
-    if (mounted) {
-      state = value;
-      ref.notifyListeners();
-    }
+    state = AsyncValue.data(value);
   }
 }
 
-final marketRequestOrdersProvider = AutoDisposeNotifierProvider<
-    MarketOrdersProvider, Map<String, RequestOrder>>(MarketOrdersProvider.new);
-
-class MarketOrdersProvider
-    extends AutoDisposeNotifier<Map<String, RequestOrder>> {
-  final _marketRequestOrders = <String, RequestOrder>{};
-
+@Riverpod(keepAlive: true)
+class MarketsRequestOrdersNotifier extends _$MarketsRequestOrdersNotifier {
   @override
   Map<String, RequestOrder> build() {
-    ref.keepAlive();
-
-    return _marketRequestOrders;
+    return {};
   }
 
   void insertOrder(RequestOrder order) {
-    _marketRequestOrders[order.orderId] = order;
-    ref.notifyListeners();
+    final marketsRequestOrders = {...state};
+    marketsRequestOrders[order.orderId] = order;
+
+    state = marketsRequestOrders;
 
     if (ref.read(currentRequestOrderViewProvider)?.orderId == order.orderId) {
-      ref.read(currentRequestOrderViewProvider.notifier).state = order;
+      ref
+          .read(currentRequestOrderViewProvider.notifier)
+          .setCurrentRequestOrderView(order);
     }
   }
 
   void removeOrder(String orderId) {
-    _marketRequestOrders.remove(orderId);
-    ref.notifyListeners();
+    final marketsRequestOrders = {...state};
+    marketsRequestOrders.remove(orderId);
+
+    state = marketsRequestOrders;
 
     if (orderId == ref.read(currentRequestOrderViewProvider)?.orderId) {
       ref.read(walletProvider).setRegistered();
@@ -474,14 +546,13 @@ class MarketOrdersProvider
   }
 
   void clearOrders() {
-    _marketRequestOrders.clear();
-    ref.notifyListeners();
+    state = {};
   }
 }
 
 @riverpod
 List<RequestOrder> marketRequestOrderList(MarketRequestOrderListRef ref) {
-  final marketRequestOrders = ref.watch(marketRequestOrdersProvider);
+  final marketRequestOrders = ref.watch(marketsRequestOrdersNotifierProvider);
 
   return marketRequestOrders.values.toList();
 }
@@ -489,7 +560,7 @@ List<RequestOrder> marketRequestOrderList(MarketRequestOrderListRef ref) {
 @riverpod
 RequestOrder? marketRequestOrderById(
     MarketRequestOrderByIdRef ref, String orderId) {
-  final marketRequestOrders = ref.watch(marketRequestOrdersProvider);
+  final marketRequestOrders = ref.watch(marketsRequestOrdersNotifierProvider);
   return marketRequestOrders[orderId];
 }
 
@@ -513,8 +584,9 @@ class MarketSelectedAccountAssetState
   }
 }
 
-final makeOrderBalanceAccountAssetProvider =
-    AutoDisposeProvider<AccountAsset?>((ref) {
+@riverpod
+AccountAsset? makeOrderBalanceAccountAsset(
+    MakeOrderBalanceAccountAssetRef ref) {
   final selectedAccountAsset =
       ref.watch(marketSelectedAccountAssetStateProvider);
   final selectedAsset =
@@ -530,7 +602,7 @@ final makeOrderBalanceAccountAssetProvider =
   final allAccountAssets = ref.watch(allAccountAssetsProvider);
 
   return allAccountAssets.where((e) => e == balanceAssetAccount).firstOrNull;
-});
+}
 
 class MakeOrderBalance {
   late final String balanceString;
@@ -611,7 +683,7 @@ enum MakeOrderSide {
 class MakeOrderSideState extends _$MakeOrderSideState {
   @override
   MakeOrderSide build() {
-    return MakeOrderSide.sell;
+    return MakeOrderSide.buy;
   }
 
   void setSide(MakeOrderSide side) {
@@ -920,7 +992,7 @@ class OrderEntryCallbackHandlers {
           indexPrice: indexPrice,
           account: account.account,
         );
-    ref.read(indexPriceButtonProvider.notifier).setIndexPrice('0');
+    ref.invalidate(indexPriceButtonStreamNotifierProvider);
     reset(controllerAmount, controllerPrice, trackingValue, trackingToggled);
   }
 
@@ -945,7 +1017,7 @@ class OrderEntryCallbackHandlers {
       final targetIndexPriceStr =
           indexPrice != 0 ? indexPriceStr : lastPriceStr;
       ref
-          .read(indexPriceButtonProvider.notifier)
+          .read(indexPriceButtonStreamNotifierProvider.notifier)
           .setIndexPrice(targetIndexPriceStr);
 
       final orderBalance = ref.read(makeOrderBalanceProvider);

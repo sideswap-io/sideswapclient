@@ -24,7 +24,7 @@ class DContentDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dialogTheme = ref.watch(desktopAppThemeProvider).dialogTheme;
+    final dialogTheme = ref.watch(desktopAppThemeNotifierProvider).dialogTheme;
     final style = DContentDialogThemeData.standard().merge(
       dialogTheme.merge(this.style),
     );

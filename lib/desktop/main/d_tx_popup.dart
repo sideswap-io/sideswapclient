@@ -1,75 +1,43 @@
-import 'dart:math';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/widgets/tx_details.dart';
 import 'package:sideswap/desktop/desktop_helpers.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/screens/balances.dart';
+import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap/screens/tx/widgets/tx_image_small.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class DTxPopup extends ConsumerStatefulWidget {
+class DTxPopup extends HookConsumerWidget {
   const DTxPopup({
     super.key,
-    required this.id,
+    required this.transItem,
   });
 
-  final String id;
+  final TransItem transItem;
 
   @override
-  DTxPopupState createState() => DTxPopupState();
-}
-
-class DTxPopupState extends ConsumerState<DTxPopup> {
-  final scrollController = ScrollController();
-
-  void openTx(WidgetRef ref, bool unblinded) {
-    final allTxs = ref.read(allTxsNotifierProvider);
-    final txid = allTxs[widget.id]!.tx.txid;
-    openTxidUrl(ref, txid, true, unblinded);
-  }
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final allTxs = ref.watch(allTxsNotifierProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
     final amountProvider = ref.watch(amountToStringProvider);
 
-    final tx = allTxs[widget.id]!;
-    final type = txType(tx.tx);
-    final typeName = txTypeName(type);
-    final timestampStr = txDateStrLong(
-        DateTime.fromMillisecondsSinceEpoch(tx.createdAt.toInt()));
-    final feeStr = amountProvider.amountToStringNamed(
-        AmountToStringNamedParameters(
-            amount: tx.tx.networkFee.toInt(), ticker: 'L-BTC'));
+    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
 
-    // vsize is wrong on GDK for single-sig, do not show it here
-    final sizeStr = '${tx.tx.size} Bytes';
-    final count = tx.hasConfs() ? tx.confs.count : 2;
-    final total = tx.hasConfs() ? tx.confs.total : 2;
-    final confsStr = '$count/$total';
+    final balances = transItemHelper.txBalances();
+    final confs = transItemHelper.txConfs();
+    final status = transItemHelper.txStatus();
 
-    final allBalances = tx.tx.balancesAll
-        .map((e) => DPopupBalance(
-              assetId: e.assetId,
-              amount: e.amount.toInt(),
-            ))
-        .toList();
+    final openTxCallback = useCallback(({bool unblinded = false}) {
+      openTxidUrl(ref, transItem.tx.txid, true, unblinded);
+    });
 
     return DPopupWithClose(
       width: 580,
@@ -77,99 +45,98 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 40),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TxImageSmall(txType: type),
-              const SizedBox(width: 8),
-              Text(
-                typeName,
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              timestampStr,
-              style: const TextStyle(
-                color: SideSwapColors.halfBaked,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Asset'.tr(),
-                        style: const TextStyle(
-                          color: SideSwapColors.brightTurquoise,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        'Amount'.tr(),
-                        style: const TextStyle(
-                          color: SideSwapColors.brightTurquoise,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
+                const SizedBox(height: 40),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TxImageSmall(
+                        assetName: transItemHelper.getTxImageAssetName()),
+                    const SizedBox(width: 8),
+                    Text(
+                      transItemHelper.txTypeName(),
+                      style: Theme.of(context).textTheme.displaySmall,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                SizedBox(
-                  height: min(allBalances.length, 3) * 42,
-                  child: Scrollbar(
-                    controller: scrollController,
-                    thumbVisibility: true,
-                    child: ListView(
-                      controller: scrollController,
-                      children: allBalances,
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    transItemHelper.txDateTimeStr(),
+                    style: const TextStyle(
+                      color: SideSwapColors.halfBaked,
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Column(
-                    children: [
-                      DPopupField(name: 'Fee'.tr(), value: feeStr),
-                      const DPopupSeparator(),
-                      DPopupField(
-                          name: 'Size of transaction'.tr(), value: sizeStr),
-                      const DPopupSeparator(),
-                      DPopupField(
-                          name: 'Number of confirmations'.tr(),
-                          value: confsStr),
-                      const DPopupSeparator(),
-                      DPopupField(name: 'Transaction ID'.tr(), value: ''),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              tx.tx.txid,
-                            ),
-                          ),
-                          const SizedBox(width: 40),
-                          IconButton(
-                            onPressed: () =>
-                                copyToClipboard(context, tx.tx.txid),
-                            icon: SvgPicture.asset('assets/copy2.svg',
-                                width: 22, height: 22),
-                          )
-                        ],
+                const SizedBox(height: 24),
+                ...switch (transItemHelper.txType()) {
+                  TxType.swap => [
+                      TxDetailsSwap(transItem: transItem),
+                      const SizedBox(height: 14),
+                      TxDetailsRow(
+                        description: 'Price per unit'.tr(),
+                        details: transItemHelper.txTargetPrice(),
                       ),
                     ],
-                  ),
+                  TxType.sent => [
+                      TxDetailsSent(transItem: transItem),
+                    ],
+                  TxType.received => [
+                      TxDetailsReceive(transItem: transItem),
+                    ],
+                  TxType.internal => [
+                      TxDetailsSideRow(
+                          leftText: 'Asset'.tr(), rightText: 'Amount'.tr()),
+                      const SizedBox(height: 8),
+                      TxDetailsBalancesList(transItem: transItem),
+                    ],
+                  _ => List<Widget>.generate(balances.length, (index) {
+                      final balance = balances[index];
+                      final asset = ref.watch(assetsStateProvider
+                          .select((value) => value[balance.assetId]));
+                      final ticker =
+                          asset != null ? asset.ticker : kUnknownTicker;
+                      final balanceStr = amountProvider.amountToString(
+                          AmountToStringParameters(
+                              amount: balance.amount.toInt(),
+                              precision: asset?.precision ?? 8));
+
+                      return TxDetailsRow(
+                        description: 'Amount'.tr(),
+                        details: '$balanceStr $ticker',
+                      );
+                    }),
+                },
+                const SizedBox(height: 14),
+                TxDetailsRow(
+                  description: 'Status'.tr(),
+                  details: status,
+                  detailsColor: (confs.count != 0)
+                      ? SideSwapColors.airSuperiorityBlue
+                      : Colors.white,
+                ),
+                const SizedBox(height: 14),
+                const DPopupSeparator(),
+                const SizedBox(height: 14),
+                DPopupField(name: 'Transaction ID'.tr(), value: ''),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        transItem.tx.txid,
+                      ),
+                    ),
+                    const SizedBox(width: 40),
+                    IconButton(
+                      onPressed: () =>
+                          copyToClipboard(context, transItem.tx.txid),
+                      icon: SvgPicture.asset('assets/copy2.svg',
+                          width: 22, height: 22),
+                    )
+                  ],
                 ),
               ],
             ),
@@ -183,12 +150,12 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
               children: [
                 DPopupLinkButton(
                   text: 'Link to explorer\n(blinded data)'.tr(),
-                  onPressed: () => openTx(ref, false),
+                  onPressed: () => openTxCallback(),
                 ),
                 const SizedBox(width: 10),
                 DPopupLinkButton(
                   text: 'Link to explorer\n(unblinded data)'.tr(),
-                  onPressed: () => openTx(ref, true),
+                  onPressed: () => openTxCallback(unblinded: true),
                 ),
               ],
             ),
@@ -202,29 +169,26 @@ class DTxPopupState extends ConsumerState<DTxPopup> {
 class DPegPopup extends ConsumerWidget {
   const DPegPopup({
     super.key,
-    required this.id,
+    required this.transItem,
   });
 
-  final String id;
+  final TransItem transItem;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allPegsById = ref.watch(allPegsByIdProvider);
     final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
 
-    final txItem = allPegsById[id]!;
-    final typeName = txItem.peg.isPegIn ? 'Peg-in'.tr() : 'Peg-out'.tr();
-    final timestampStr = txDateStrLong(
-        DateTime.fromMillisecondsSinceEpoch(txItem.createdAt.toInt()));
-    final count = txItem.confs.count;
-    final total = txItem.confs.total;
-    final isPegIn = txItem.peg.isPegIn;
+    final typeName = transItem.peg.isPegIn ? 'Peg-in'.tr() : 'Peg-out'.tr();
+    final transItemHelper = ref.watch(transItemHelperProvider(transItem));
+    final count = transItem.confs.count;
+    final total = transItem.confs.total;
+    final isPegIn = transItem.peg.isPegIn;
     final sendAsset = isPegIn ? bitcoinAssetId : liquidAssetId;
     final recvAsset = isPegIn ? liquidAssetId : bitcoinAssetId;
-    final confsStr = txItem.hasConfs() ? '$count/$total' : 'Complete'.tr();
-    final amountSend = txItem.peg.amountSend.toInt();
-    final amountRecv = txItem.peg.amountRecv.toInt();
+    final confsStr = transItem.hasConfs() ? '$count/$total' : 'Complete'.tr();
+    final amountSend = transItem.peg.amountSend.toInt();
+    final amountRecv = transItem.peg.amountRecv.toInt();
     final conversionRate = (amountSend != 0 && amountRecv != 0)
         ? amountRecv * 100 / amountSend
         : 0;
@@ -240,7 +204,7 @@ class DPegPopup extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              PegImageSmall(isPegIn: txItem.peg.isPegIn),
+              PegImageSmall(isPegIn: transItem.peg.isPegIn),
               const SizedBox(width: 8),
               Text(
                 typeName,
@@ -251,7 +215,7 @@ class DPegPopup extends ConsumerWidget {
           const SizedBox(height: 8),
           Center(
             child: Text(
-              timestampStr,
+              transItemHelper.txDateTimeStr(),
               style: const TextStyle(
                 color: SideSwapColors.halfBaked,
               ),
@@ -284,11 +248,11 @@ class DPegPopup extends ConsumerWidget {
                 const SizedBox(height: 4),
                 DPopupBalance(
                   assetId: sendAsset,
-                  amount: -txItem.peg.amountSend.toInt(),
+                  amount: -transItem.peg.amountSend.toInt(),
                 ),
                 DPopupBalance(
                   assetId: recvAsset,
-                  amount: txItem.peg.amountRecv.toInt(),
+                  amount: transItem.peg.amountRecv.toInt(),
                 ),
                 const SizedBox(height: 10),
                 DPopupField(
@@ -302,13 +266,13 @@ class DPegPopup extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        txItem.peg.txidSend,
+                        transItem.peg.txidSend,
                       ),
                     ),
                     const SizedBox(width: 40),
                     IconButton(
                       onPressed: () =>
-                          copyToClipboard(context, txItem.peg.txidRecv),
+                          copyToClipboard(context, transItem.peg.txidRecv),
                       icon: SvgPicture.asset('assets/copy2.svg',
                           width: 22, height: 22),
                     )
@@ -326,15 +290,15 @@ class DPegPopup extends ConsumerWidget {
               children: [
                 DPopupLinkButton(
                   text: 'Link to explorer\n(pay-in)'.tr(),
-                  onPressed: () => openTxidUrl(
-                      ref, txItem.peg.txidSend, !txItem.peg.isPegIn, false),
+                  onPressed: () => openTxidUrl(ref, transItem.peg.txidSend,
+                      !transItem.peg.isPegIn, false),
                 ),
                 const SizedBox(width: 10),
                 DPopupLinkButton(
                   text: 'Link to explorer\n(pay-out)'.tr(),
-                  onPressed: txItem.peg.hasTxidRecv()
-                      ? () => openTxidUrl(
-                          ref, txItem.peg.txidRecv, txItem.peg.isPegIn, true)
+                  onPressed: transItem.peg.hasTxidRecv()
+                      ? () => openTxidUrl(ref, transItem.peg.txidRecv,
+                          transItem.peg.isPegIn, true)
                       : null,
                 ),
               ],
@@ -376,7 +340,7 @@ class DPopupBalance extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 12),
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8)),
-          color: SideSwapColors.chathamsBlue,
+          color: SideSwapColors.prussianBlue,
         ),
         child: Center(
           child: Row(
@@ -406,28 +370,25 @@ class DPopupField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 10),
-      child: Row(
-        children: [
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 14,
-              color: SideSwapColors.brightTurquoise,
-              fontWeight: FontWeight.w500,
-            ),
+    return Row(
+      children: [
+        Text(
+          name,
+          style: const TextStyle(
+            fontSize: 14,
+            color: SideSwapColors.brightTurquoise,
+            fontWeight: FontWeight.w500,
           ),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.normal,
-            ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

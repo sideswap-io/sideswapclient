@@ -36,8 +36,7 @@ class PaymentSendAmountState extends State<PaymentSendAmount> {
       builder: (context, ref, child) {
         final sendAssets = widget.availableDropdownAssets ??
             ref.watch(walletProvider).sendAssets();
-        final showError =
-            ref.watch(paymentProvider.select((p) => p.insufficientFunds));
+        final showError = ref.watch(paymentInsufficientFundsNotifierProvider);
         return TickerAmountTextField(
           focusNode: widget.focusNode,
           controller: widget.controller,

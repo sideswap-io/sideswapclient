@@ -30,8 +30,10 @@ class DIconButton extends DBaseButton {
   @override
   DButtonStyle defaultStyleOf(BuildContext context) {
     final container = ProviderContainer();
-    final brightness = container.read(desktopAppThemeProvider).brightness;
-    final disabledColor = container.read(desktopAppThemeProvider).disabledColor;
+    final brightness =
+        container.read(desktopAppThemeNotifierProvider).brightness;
+    final disabledColor =
+        container.read(desktopAppThemeNotifierProvider).disabledColor;
 
     final isIconSmall = SmallIconButton.of(context) != null ||
         iconButtonMode == IconButtonMode.tiny;

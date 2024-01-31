@@ -73,9 +73,11 @@ class DSettingsLogs extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsDialogTheme =
-        ref.watch(desktopAppThemeProvider).settingsDialogTheme;
-    final defaultButtonStyle =
-        ref.watch(desktopAppThemeProvider).buttonThemeData.defaultButtonStyle;
+        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultButtonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .buttonThemeData
+        .defaultButtonStyle;
 
     return PopScope(
       canPop: false,

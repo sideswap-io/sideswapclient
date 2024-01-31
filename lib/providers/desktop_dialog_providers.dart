@@ -13,6 +13,7 @@ import 'package:sideswap/desktop/main/d_wait_pegin.dart';
 import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'desktop_dialog_providers.g.dart';
 
@@ -71,12 +72,14 @@ class DesktopDialog {
     );
   }
 
-  void showTx(String id, {required bool isPeg}) {
+  void showTx(TransItem transItem, {required bool isPeg}) {
     closePopups();
     showDialog<void>(
       context: _context,
       builder: (context) {
-        return isPeg ? DPegPopup(id: id) : DTxPopup(id: id);
+        return isPeg
+            ? DPegPopup(transItem: transItem)
+            : DTxPopup(transItem: transItem);
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
     );

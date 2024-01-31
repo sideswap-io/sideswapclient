@@ -92,9 +92,8 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         unsafe { get_balances(self) }
     }
 
-    fn get_transactions(&self) -> Result<Vec<Transaction>, anyhow::Error> {
-        let result = unsafe { load_transactions(self) };
-        result.map(|list| list.iter().map(convert_tx).collect::<Vec<_>>())
+    fn get_transactions_impl(&self) -> Result<Vec<gdk_json::Transaction>, anyhow::Error> {
+        unsafe { load_transactions(self) }
     }
 
     fn get_receive_address(&self) -> Result<AddressInfo, anyhow::Error> {
@@ -968,7 +967,7 @@ fn convert_output(output: &gdk_json::TransactionOutput) -> Option<models::Balanc
     }
 }
 
-fn convert_tx(tx: &gdk_json::Transaction) -> Transaction {
+pub fn convert_tx(tx: &gdk_json::Transaction) -> Transaction {
     let created_at = tx.created_at_ts / 1000;
     let mut balances = std::collections::BTreeMap::<AssetId, i64>::new();
     for input in tx.inputs.iter() {
@@ -1159,18 +1158,53 @@ unsafe fn try_create_tx(
         .unwrap_or_default();
     ensure!(bitcoin_balance > 0, "Insufficient L-BTC to pay network fee");
 
+    // There should be no more than one is_greedy recepient
+    let greedy_count = tx
+        .addressees
+        .iter()
+        .map(|addresse| u32::from(addresse.is_greedy.unwrap_or_default()))
+        .sum::<u32>();
+    ensure!(greedy_count == 0 || greedy_count == 1);
+    // Find addresse with is_greedy (only consider L-BTC because is_greedy is not very useful for other assets)
+    let greedy_index = tx
+        .addressees
+        .iter()
+        .enumerate()
+        .filter(|(_index, addresse)| {
+            addresse.is_greedy.unwrap_or_default()
+                && addresse.asset_id == data.policy_asset.to_string()
+        })
+        .next()
+        .map(|(index, _addresse)| index);
+    if greedy_index.is_some() {
+        // Ensure that L-BTC send balance is equal to whole L-BTC balance.
+        // We don't want to send more than expected.
+        let total_bitcoin_send = tx
+            .addressees
+            .iter()
+            .filter_map(|addresse| {
+                (addresse.asset_id == data.policy_asset.to_string()).then(|| addresse.amount)
+            })
+            .sum::<i64>();
+        ensure!(total_bitcoin_send == bitcoin_balance as i64);
+    }
+
     let addressees = tx
         .addressees
         .iter()
-        .map(|addresse| -> Result<gdk_json::TxAddressee, anyhow::Error> {
-            let asset_id = AssetId::from_str(&addresse.asset_id)?;
-            Ok(gdk_json::TxAddressee {
-                address: addresse.address.clone(),
-                satoshi: addresse.amount as u64,
-                asset_id,
-                is_greedy: addresse.is_greedy,
-            })
-        })
+        .enumerate()
+        .map(
+            |(index, addresse)| -> Result<gdk_json::TxAddressee, anyhow::Error> {
+                let asset_id = AssetId::from_str(&addresse.asset_id)?;
+                Ok(gdk_json::TxAddressee {
+                    address: addresse.address.clone(),
+                    satoshi: addresse.amount as u64,
+                    asset_id,
+                    // Use sanitized greedy_index value to prevent setting it for non-LBTC assets
+                    is_greedy: greedy_index.map(|greedy_index| greedy_index == index),
+                })
+            },
+        )
         .collect::<Result<Vec<_>, _>>()?;
 
     let create_tx = gdk_json::CreateTransactionOpt {

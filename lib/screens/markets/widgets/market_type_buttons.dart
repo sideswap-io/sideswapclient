@@ -1,71 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/screens/swap/widgets/swap_button.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-enum MarketSelectedType {
+part 'market_type_buttons.g.dart';
+
+enum SelectedMarketTypeButtonEnum {
   swap,
   orders,
 }
 
-class MarketTypeButtons extends StatefulWidget {
-  const MarketTypeButtons({
-    super.key,
-    this.onOrdersPressed,
-    this.onTokenPressed,
-    this.onSwapPressed,
-    this.selectedType = MarketSelectedType.swap,
-  });
-
-  final VoidCallback? onOrdersPressed;
-  final VoidCallback? onTokenPressed;
-  final VoidCallback? onSwapPressed;
-  final MarketSelectedType selectedType;
-
+@riverpod
+class SelectedMarketTypeButtonNotifier
+    extends _$SelectedMarketTypeButtonNotifier {
   @override
-  MarketTypeButtonsState createState() => MarketTypeButtonsState();
+  SelectedMarketTypeButtonEnum build() {
+    return SelectedMarketTypeButtonEnum.swap;
+  }
+
+  void setSelectedMarketType(
+      SelectedMarketTypeButtonEnum selectedMarketTypeEnum) {
+    state = selectedMarketTypeEnum;
+  }
 }
 
-class MarketTypeButtonsState extends State<MarketTypeButtons> {
-  final colorToggleBackground = const Color(0xFF043857);
-  final colorToggleOn = const Color(0xFF1F7EB1);
-  final colorToggleTextOn = const Color(0xFFFFFFFF);
-  final colorToggleTextOff = SideSwapColors.airSuperiorityBlue;
+class MarketTypeButtons extends ConsumerWidget {
+  const MarketTypeButtons({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedMarketType =
+        ref.watch(selectedMarketTypeButtonNotifierProvider);
+
     return Container(
       width: double.maxFinite,
-      height: 39,
-      decoration: BoxDecoration(
-        color: colorToggleBackground,
-        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
+      height: 36,
+      decoration: const BoxDecoration(
+        color: SideSwapColors.prussianBlue,
+        borderRadius: BorderRadius.all(Radius.circular(10.0)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
+          Flexible(
             child: SwapButton(
-              color: widget.selectedType == MarketSelectedType.swap
-                  ? colorToggleOn
-                  : colorToggleBackground,
+              color: selectedMarketType == SelectedMarketTypeButtonEnum.swap
+                  ? SideSwapColors.cyanCornflowerBlue
+                  : SideSwapColors.prussianBlue,
               text: 'Markets'.tr(),
-              textColor: widget.selectedType == MarketSelectedType.swap
-                  ? colorToggleTextOn
-                  : colorToggleTextOff,
-              onPressed: widget.onSwapPressed,
+              textColor: selectedMarketType == SelectedMarketTypeButtonEnum.swap
+                  ? Colors.white
+                  : SideSwapColors.ceruleanFrost,
+              onPressed: () {
+                ref
+                    .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                    .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap);
+              },
             ),
           ),
-          Expanded(
+          Flexible(
             child: SwapButton(
-              color: widget.selectedType == MarketSelectedType.orders
-                  ? colorToggleOn
-                  : colorToggleBackground,
+              color: selectedMarketType == SelectedMarketTypeButtonEnum.orders
+                  ? SideSwapColors.cyanCornflowerBlue
+                  : SideSwapColors.prussianBlue,
               text: 'Orders'.tr(),
-              textColor: widget.selectedType == MarketSelectedType.orders
-                  ? colorToggleTextOn
-                  : colorToggleTextOff,
-              onPressed: widget.onOrdersPressed,
+              textColor:
+                  selectedMarketType == SelectedMarketTypeButtonEnum.orders
+                      ? Colors.white
+                      : SideSwapColors.ceruleanFrost,
+              onPressed: () {
+                ref
+                    .read(selectedMarketTypeButtonNotifierProvider.notifier)
+                    .setSelectedMarketType(SelectedMarketTypeButtonEnum.orders);
+              },
             ),
           ),
         ],

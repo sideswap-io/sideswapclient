@@ -7,6 +7,7 @@ import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/screens/tx/share_external_explorer_dialog.dart';
 import 'package:sideswap/screens/tx/widgets/tx_circle_image.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_bottom_buttons.dart';
@@ -14,8 +15,8 @@ import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
 import 'package:sideswap/screens/tx/widgets/tx_details_row.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class TxDetailsPeg extends ConsumerStatefulWidget {
-  const TxDetailsPeg({
+class PegDetails extends ConsumerStatefulWidget {
+  const PegDetails({
     super.key,
     required this.transItem,
   });
@@ -26,22 +27,18 @@ class TxDetailsPeg extends ConsumerStatefulWidget {
   TxDetailsPegState createState() => TxDetailsPegState();
 }
 
-class TxDetailsPegState extends ConsumerState<TxDetailsPeg> {
-  late String _timestampStr;
-  late String _status;
-
+class TxDetailsPegState extends ConsumerState<PegDetails> {
   @override
   void initState() {
     super.initState();
-    _timestampStr = txDateStrLong(DateTime.fromMillisecondsSinceEpoch(
-        widget.transItem.createdAt.toInt()));
-    _status = txItemToStatus(widget.transItem, isPeg: true);
   }
 
   @override
   Widget build(BuildContext context) {
     final amountProvider = ref.watch(amountToStringProvider);
-    _status = txItemToStatus(widget.transItem, isPeg: true);
+    final transItemHelper =
+        ref.watch(transItemHelperProvider(widget.transItem));
+
     final amountSendStr = amountProvider.amountToString(
         AmountToStringParameters(
             amount: widget.transItem.peg.amountSend.toInt()));
@@ -87,7 +84,7 @@ class TxDetailsPegState extends ConsumerState<TxDetailsPeg> {
         Padding(
           padding: const EdgeInsets.only(top: 11),
           child: Text(
-            _timestampStr,
+            transItemHelper.txDateTimeStr(),
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.normal,
@@ -138,7 +135,7 @@ class TxDetailsPegState extends ConsumerState<TxDetailsPeg> {
           padding: const EdgeInsets.only(top: 12),
           child: TxDetailsRow(
             description: 'Status'.tr(),
-            details: _status,
+            details: transItemHelper.txStatus(),
             detailsColor: widget.transItem.confs.count != 0
                 ? SideSwapColors.airSuperiorityBlue
                 : Colors.white,

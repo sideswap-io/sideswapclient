@@ -16,15 +16,11 @@ class DMnemonicTable extends StatefulWidget {
     this.itemHeight = 39,
     this.itemSelected = 0,
     this.onPressed,
-    this.width = 460,
-    this.height = 190,
     this.itemsCount = 12,
     this.enabled = true,
   });
 
   final int itemsCount;
-  final double width;
-  final double height;
   final double itemWidth;
   final double itemHeight;
   final int itemSelected;
@@ -67,105 +63,101 @@ class DMnemonicTableState extends State<DMnemonicTable> with WindowListener {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: widget.width,
-      height: widget.height,
-      child: GridView.count(
-        crossAxisCount: 3,
-        addRepaintBoundaries: false,
-        shrinkWrap: true,
-        padding: EdgeInsets.zero,
-        childAspectRatio: widget.itemWidth / widget.itemHeight,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        children: List.generate(widget.itemsCount, (index) {
-          return Consumer(
-            builder: ((context, ref, child) {
-              final wordItem =
-                  ref.watch(mnemonicTableProvider.select((p) => p.word(index)));
+    return GridView.count(
+      crossAxisCount: 3,
+      addRepaintBoundaries: false,
+      shrinkWrap: true,
+      padding: EdgeInsets.zero,
+      childAspectRatio: widget.itemWidth / widget.itemHeight,
+      mainAxisSpacing: 8,
+      crossAxisSpacing: 8,
+      children: List.generate(widget.itemsCount, (index) {
+        return Consumer(
+          builder: ((context, ref, child) {
+            final wordItem = ref
+                .watch(mnemonicWordItemsNotifierProvider.notifier)
+                .word(index);
 
-              return DButton(
-                onPressed: widget.enabled
-                    ? () {
-                        widget.onPressed?.call(index);
-                      }
-                    : null,
-                style: DButtonStyle(
-                  padding: ButtonState.all(EdgeInsets.zero),
-                  textStyle: ButtonState.all(
-                    const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
+            return DButton(
+              onPressed: widget.enabled
+                  ? () {
+                      widget.onPressed?.call(index);
+                    }
+                  : null,
+              style: DButtonStyle(
+                padding: ButtonState.all(EdgeInsets.zero),
+                textStyle: ButtonState.all(
+                  const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
                   ),
-                  backgroundColor: ButtonState.resolveWith((states) {
-                    if (states.isDisabled) {
-                      return const Color(0xFF23729D);
-                    }
-
-                    return SideSwapColors.blumine;
-                  }),
-                  border: ButtonState.resolveWith((states) {
-                    if (states.isDisabled) {
-                      return const BorderSide(color: Colors.transparent);
-                    }
-
-                    return widget.itemSelected == index
-                        ? const BorderSide(
-                            color: SideSwapColors.brightTurquoise)
-                        : const BorderSide(color: Color(0xFF23729D));
-                  }),
-                  shape: ButtonState.resolveWith((states) {
-                    return const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(8),
-                      ),
-                    );
-                  }),
                 ),
-                child: SizedBox(
-                  width: widget.itemWidth,
-                  height: widget.itemHeight,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 10),
+                backgroundColor: ButtonState.resolveWith((states) {
+                  if (states.isDisabled) {
+                    return const Color(0xFF23729D);
+                  }
+
+                  return SideSwapColors.blumine;
+                }),
+                border: ButtonState.resolveWith((states) {
+                  if (states.isDisabled) {
+                    return const BorderSide(color: Colors.transparent);
+                  }
+
+                  return widget.itemSelected == index
+                      ? const BorderSide(color: SideSwapColors.brightTurquoise)
+                      : const BorderSide(color: Color(0xFF23729D));
+                }),
+                shape: ButtonState.resolveWith((states) {
+                  return const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(8),
+                    ),
+                  );
+                }),
+              ),
+              child: SizedBox(
+                width: widget.itemWidth,
+                height: widget.itemHeight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10),
+                      child: Text(
+                        '${index + 1}',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          color: SideSwapColors.brightTurquoise,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ImageFiltered(
+                        imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                        enabled: !isFocused,
                         child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
+                          wordItem.word,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.normal,
-                            color: SideSwapColors.brightTurquoise,
+                            color: wordItem.isCorrect ||
+                                    widget.itemSelected == index
+                                ? Colors.white
+                                : SideSwapColors.bitterSweet,
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: ImageFiltered(
-                          imageFilter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                          enabled: !isFocused,
-                          child: Text(
-                            wordItem.word,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              color: wordItem.correct ||
-                                      widget.itemSelected == index
-                                  ? Colors.white
-                                  : SideSwapColors.bitterSweet,
-                            ),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
+                    )
+                  ],
                 ),
-              );
-            }),
-          );
-        }),
-      ),
+              ),
+            );
+          }),
+        );
+      }),
     );
   }
 }

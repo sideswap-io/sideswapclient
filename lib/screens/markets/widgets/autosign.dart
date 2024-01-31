@@ -7,12 +7,12 @@ class AutoSign extends StatelessWidget {
   const AutoSign({
     super.key,
     this.backgroundColor = SideSwapColors.chathamsBlue,
-    required this.value,
+    required this.autoSign,
     this.onToggle,
   });
 
   final Color backgroundColor;
-  final bool value;
+  final bool autoSign;
   final void Function(bool)? onToggle;
 
   @override
@@ -46,7 +46,7 @@ class AutoSign extends StatelessWidget {
                   borderWidth: 2,
                   activeText: 'On'.tr(),
                   inactiveText: 'Off'.tr(),
-                  value: value,
+                  value: autoSign,
                   onToggle: onToggle,
                 ),
               ],
