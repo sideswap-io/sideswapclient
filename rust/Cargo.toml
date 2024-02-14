@@ -8,7 +8,7 @@ members = [
     "sideswap_dealer",
     "sideswap_dealer_bitfinex",
     "sideswap_dealer_example",
-    "sideswap_dealer_ws",
+    "sideswap_dealer_stdio",
     "sideswap_headless",
     "sideswap_headless_server",
     "sideswap_headless_trader",

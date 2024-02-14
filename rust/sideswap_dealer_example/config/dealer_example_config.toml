@@ -1,4 +1,4 @@
-env = "Prod"
+env = "Testnet"
 log_settings = "config/dealer_example_logs.yml"
 
 bitcoin_amount_submit = 0.0001
@@ -6,7 +6,8 @@ bitcoin_amount_min = 0.0001
 bitcoin_amount_max = 0.001
 
 interest_submit = 1.01
-interest_sign = 1.005
+
+#api_key =
 
 [rpc]
 host = "localhost"

@@ -179,7 +179,6 @@ pub fn process_balancing(
     wallet_balances_confirmed: &WalletBalances,
     exchange_balances: &ExchangeBalances,
     module_connected: bool,
-    assets: &Assets,
     rpc_http_client: &ureq::Agent,
     args: &Args,
     _mod_tx: &module::Sender,
@@ -193,28 +192,28 @@ pub fn process_balancing(
         match balancing.state {
             TransferState::SendUsdtNew => {
                 let usdt_balance = wallet_balances_confirmed
-                    .get(&DEALER_USDT)
+                    .get(&DealerTicker::USDt)
                     .cloned()
                     .unwrap_or_default();
                 let bitcoin_balance = wallet_balances_confirmed
-                    .get(&DEALER_LBTC)
+                    .get(&DealerTicker::LBTC)
                     .cloned()
                     .unwrap_or_default();
                 if usdt_balance >= balancing.amount.to_bitcoin()
                     && bitcoin_balance > 0.0
                     && module_connected
                 {
-                    let asset = assets
-                        .iter()
-                        .find(|asset| asset.ticker.0 == TICKER_USDT)
-                        .expect("must be known");
+                    let usdt_asset_id =
+                        sideswap_api::AssetId::from_str(args.env.data().network.usdt_asset_id())
+                            .unwrap();
+
                     let result = rpc::make_rpc_call(
                         rpc_http_client,
                         &args.rpc,
                         rpc::SendToAddressCall {
                             address: args.bitfinex_fund_address.clone(),
                             amount: balancing.amount.to_bitcoin(),
-                            asset_id: asset.asset_id,
+                            asset_id: usdt_asset_id,
                         },
                     );
                     match result {
@@ -269,7 +268,7 @@ pub fn process_balancing(
 
             TransferState::SendBtcNew => {
                 let bitcoin_balance = wallet_balances_confirmed
-                    .get(&DEALER_LBTC)
+                    .get(&DealerTicker::LBTC)
                     .cloned()
                     .unwrap_or_default();
                 if bitcoin_balance >= balancing.amount.to_bitcoin() && module_connected {

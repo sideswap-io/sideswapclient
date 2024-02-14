@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "node-fetch": "^2.6.1",
-    "websocket": "^1.0.34"
-  }
-}

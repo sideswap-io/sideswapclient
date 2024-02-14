@@ -2,7 +2,13 @@ use std::str::FromStr;
 
 use bitcoin::hashes::Hash;
 
+/// Server fee that clients pay to the server for each swap.
+/// For swap markets it's applied to both sides (0.1% each side).
+/// For instant swaps it's applied to dealers.
 pub const SERVER_FEE_SHARE: f64 = 0.002;
+
+/// If the server fee for an instant swap/regular swap is less than 200 sat
+/// (total LBTC amount is less than 0.001), then the server fee is skipped
 pub const SERVER_FEE_MIN: i64 = 200;
 
 pub fn get_recv_amount(

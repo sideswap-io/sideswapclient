@@ -1,5 +1,5 @@
 [package]
-name = "sideswap_dealer_ws"
+name = "sideswap_dealer_stdio"
 version = "0.1.2"
 edition = "2021"
 
@@ -15,10 +15,4 @@ anyhow.workspace = true
 serde.workspace = true
 config.workspace = true
 log4rs.workspace = true
-tokio-tungstenite.workspace = true
-futures.workspace = true
-tokio.workspace = true
-futures-channel.workspace = true
-futures-util.workspace = true
-tungstenite.workspace = true
 crossbeam-channel.workspace = true

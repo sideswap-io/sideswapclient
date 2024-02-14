@@ -7,6 +7,9 @@ use sideswap_common::{types, ws};
 use std::collections::{BTreeMap, BTreeSet};
 use std::str::FromStr;
 
+// Keep some extra amount in the wallet for the various fees (server, network, external exchange)
+const INSTANT_SWAP_WORK_AMOUNT: f64 = 0.995;
+
 // Extra asset UTXO amount to cover future price edits
 const EXTRA_ASSET_UTXO_FRACTION: f64 = 0.03;
 
@@ -21,12 +24,6 @@ const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs
 const PRICE_EDIT_MIN_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
 
 #[derive(Debug, Clone)]
-pub struct TickerInfo {
-    pub interest_submit: f64,
-    pub interest_sign: f64,
-}
-
-#[derive(Debug, Clone)]
 pub struct Params {
     pub env: sideswap_common::env::Env,
 
@@ -36,7 +33,7 @@ pub struct Params {
 
     pub rpc: rpc::RpcServer,
 
-    pub tickers: BTreeMap<DealerTicker, TickerInfo>,
+    pub tickers: BTreeSet<DealerTicker>,
 
     pub bitcoin_amount_submit: Amount,
     pub bitcoin_amount_min: Amount,
@@ -45,10 +42,25 @@ pub struct Params {
     pub api_key: Option<String>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
+pub struct DealerPrice {
+    /// Instant and regular submit swaps
+    pub submit_price: PricePair,
+
+    /// Maximum amount of LBTC the dealer is allowed to receive to own wallet (in one swap)
+    pub limit_btc_dealer_recv: f64,
+
+    /// Maximum amount of LBTC the dealer is allowed to send from own wallet (in one swap)
+    pub limit_btc_dealer_send: f64,
+
+    /// Instant swaps balancing flag to let users know
+    pub balancing: bool,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ToPrice {
     pub ticker: DealerTicker,
-    pub price: Option<PricePair>,
+    pub price: Option<DealerPrice>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -62,24 +74,17 @@ pub struct ToLimitBalance {
 #[serde(rename_all = "snake_case")]
 pub enum To {
     Price(ToPrice),
-    LimitBalance(ToLimitBalance),
     ResetPrices(Empty),
-    PriceUpdate(PriceUpdateBroadcast),
-    BroadcastPriceStream(BroadcastPriceStreamRequest),
+    IndexPriceUpdate(PriceUpdateBroadcast),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum From {
     Swap(SwapSucceed),
-    ServerConnected(ServerConnected),
+    ServerConnected(Empty),
     ServerDisconnected(Empty),
     Utxos(rpc::ListUnspent),
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ServerConnected {
-    pub assets: Assets,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -108,18 +113,12 @@ pub struct Utxo {
 pub type Utxos = BTreeMap<TxOut, Utxo>;
 
 pub type WalletBalances = BTreeMap<DealerTicker, f64>;
-pub type IndexPrices = BTreeMap<DealerTicker, PriceTimestamp>;
-#[derive(Clone, Copy, PartialEq, Debug)]
-pub struct PriceTimestamp {
-    pub price: PricePair,
-    pub timestamp: std::time::Instant,
-}
+pub type DealerPrices = BTreeMap<DealerTicker, DealerPriceTimestamp>;
 
-#[derive(Default)]
-pub struct AllBalances {
-    wallet: WalletBalances,
-    max_send: WalletBalances,
-    max_recv: WalletBalances,
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub struct DealerPriceTimestamp {
+    pub dealer: DealerPrice,
+    pub timestamp: std::time::Instant,
 }
 
 pub struct OwnOrder {
@@ -137,12 +136,12 @@ struct OwnOrderKey {
 const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(30);
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-pub struct DealerTicker(pub &'static str);
-
-pub const DEALER_LBTC: DealerTicker = DealerTicker(TICKER_LBTC);
-pub const DEALER_USDT: DealerTicker = DealerTicker(TICKER_USDT);
-pub const DEALER_EURX: DealerTicker = DealerTicker(TICKER_EURX);
-pub const DEALER_DEPIX: DealerTicker = DealerTicker(TICKER_DEPIX);
+pub enum DealerTicker {
+    LBTC,
+    USDt,
+    EURx,
+    DePIX,
+}
 
 macro_rules! send_request {
     ($f:ident, $t:ident, $value:expr) => {
@@ -154,19 +153,34 @@ macro_rules! send_request {
     };
 }
 
-pub fn ticker_from_string(asset: &str) -> Result<DealerTicker, anyhow::Error> {
-    let ticker = match asset {
-        TICKER_LBTC => TICKER_LBTC,
-        TICKER_USDT => TICKER_USDT,
-        TICKER_EURX => TICKER_EURX,
-        TICKER_DEPIX => TICKER_DEPIX,
-        _ => bail!("ticker {} not found", asset),
-    };
-    Ok(DealerTicker(ticker))
+impl std::fmt::Display for DealerTicker {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        dealer_ticker_to_asset_ticker(*self).fmt(f)
+    }
 }
 
-pub fn ticker_from_asset(asset: &Asset) -> Result<DealerTicker, anyhow::Error> {
-    ticker_from_string(&asset.ticker.0)
+pub fn dealer_ticker_to_asset_ticker(dealer_ticker: DealerTicker) -> &'static str {
+    match dealer_ticker {
+        DealerTicker::LBTC => TICKER_LBTC,
+        DealerTicker::USDt => TICKER_USDT,
+        DealerTicker::EURx => TICKER_EURX,
+        DealerTicker::DePIX => TICKER_DEPIX,
+    }
+}
+
+pub fn dealer_ticker_from_asset_ticker(ticker: &str) -> Option<DealerTicker> {
+    let ticker = match ticker {
+        TICKER_LBTC => DealerTicker::LBTC,
+        TICKER_USDT => DealerTicker::USDt,
+        TICKER_EURX => DealerTicker::EURx,
+        TICKER_DEPIX => DealerTicker::DePIX,
+        _ => return None,
+    };
+    Some(ticker)
+}
+
+pub fn dealer_ticker_from_asset(asset: &Asset) -> Option<DealerTicker> {
+    dealer_ticker_from_asset_ticker(&asset.ticker.0)
 }
 
 impl<'de> Deserialize<'de> for DealerTicker {
@@ -175,11 +189,12 @@ impl<'de> Deserialize<'de> for DealerTicker {
         D: serde::Deserializer<'de>,
     {
         let name = String::deserialize(deserializer)?;
-        ticker_from_string(&name).map_err(serde::de::Error::custom)
+        dealer_ticker_from_asset_ticker(&name)
+            .ok_or_else(|| serde::de::Error::custom(anyhow!("unknown ticker {name}")))
     }
 }
 
-pub fn apply_interest(price: PricePair, interest: f64) -> PricePair {
+pub fn apply_interest(price: &PricePair, interest: f64) -> PricePair {
     // Limit to 10% as sanity check
     assert!((1.0..=1.1).contains(&interest));
     PricePair {
@@ -188,17 +203,20 @@ pub fn apply_interest(price: PricePair, interest: f64) -> PricePair {
     }
 }
 
-pub fn get_price_pair(price: PriceTimestamp) -> PricePair {
-    price.price
+pub fn pick_price(price: &PricePair, send_bitcoins: bool) -> f64 {
+    if send_bitcoins {
+        price.ask
+    } else {
+        price.bid
+    }
 }
 
 fn take_order(
     params: &Params,
     assets: &Assets,
     details: &Details,
-    all: &AllBalances,
-    index_prices: &IndexPrices,
-    interest: f64,
+    wallet_balances: &WalletBalances,
+    dealer_prices: &DealerPrices,
 ) -> Result<(), anyhow::Error> {
     ensure!(details.bitcoin_amount >= params.bitcoin_amount_min.to_sat());
     ensure!(details.bitcoin_amount <= params.bitcoin_amount_max.to_sat());
@@ -206,8 +224,12 @@ fn take_order(
         .iter()
         .find(|asset| asset.asset_id == details.asset)
         .unwrap();
-    let ticker = ticker_from_asset(asset)?;
-    let index_price = index_prices.get(&ticker).cloned();
+    let ticker =
+        dealer_ticker_from_asset(asset).ok_or_else(|| anyhow!("unknown asset {}", asset.name))?;
+    let dealer_price = dealer_prices
+        .get(&ticker)
+        .cloned()
+        .ok_or(anyhow!("dealer price for {ticker:?} is not known"))?;
     let actual_bitcoin_amount = Amount::from_sat(if details.send_bitcoins {
         details.bitcoin_amount + details.server_fee
     } else {
@@ -216,23 +238,26 @@ fn take_order(
     let asset_amount = types::asset_float_amount(details.asset_amount, asset.precision);
     let actual_price = asset_amount / actual_bitcoin_amount.to_bitcoin();
     assert!(actual_price > 0.0);
-    let index_price = get_price_pair(index_price.ok_or(anyhow!("index price is not known"))?);
-    let dealer_price = apply_interest(index_price, interest);
-    let bitcoin_amount_max =
-        get_bitcoin_amount(all, ticker, actual_price, details.send_bitcoins, true);
+    let bitcoin_amount_max = get_bitcoin_amount(
+        wallet_balances,
+        ticker,
+        actual_price,
+        details.send_bitcoins,
+        true,
+    );
     if details.send_bitcoins {
         ensure!(
-            actual_price >= dealer_price.ask,
+            actual_price >= dealer_price.dealer.submit_price.ask,
             "actual_price: {}, dealer_price.ask: {}",
             actual_price,
-            dealer_price.ask
+            dealer_price.dealer.submit_price.ask
         );
     } else {
         ensure!(
-            actual_price <= dealer_price.bid,
+            actual_price <= dealer_price.dealer.submit_price.bid,
             "actual_price: {}, dealer_price.bid: {}",
             actual_price,
-            dealer_price.bid
+            dealer_price.dealer.submit_price.bid
         );
     }
     ensure!(
@@ -377,53 +402,32 @@ fn sign_pset(
     Ok(sign_request)
 }
 
-fn get_price(price: &PricePair, send_bitcoins: bool, interest: f64) -> f64 {
-    if send_bitcoins {
-        price.ask * interest
-    } else {
-        price.bid / interest
-    }
-}
-
 fn amount_change(new: Amount, old: Amount) -> f64 {
     (new.to_bitcoin() - old.to_bitcoin()) / old.to_bitcoin()
 }
 
 fn get_bitcoin_amount(
-    all: &AllBalances,
+    wallet_balances: &WalletBalances,
     ticker: DealerTicker,
     price: f64,
     send_bitcoins: bool,
     max_amount: bool,
 ) -> Amount {
-    let wallet_asset = all.wallet.get(&ticker).cloned().unwrap_or_default();
-    let wallet_bitcoin =
-        all.wallet.get(&DEALER_LBTC).cloned().unwrap_or_default() / (1.0 + types::SERVER_FEE_RATE);
-    let bitcoin_max_send = all.max_send.get(&DEALER_LBTC).cloned().unwrap_or(f64::MAX);
-    let bitcoin_max_recv = all.max_recv.get(&DEALER_LBTC).cloned().unwrap_or(f64::MAX);
-    let asset_max_send = all.max_send.get(&ticker).cloned().unwrap_or(f64::MAX);
-    let asset_max_recv = all.max_recv.get(&ticker).cloned().unwrap_or(f64::MAX);
+    let wallet_asset = wallet_balances.get(&ticker).cloned().unwrap_or_default();
+    let wallet_bitcoin = wallet_balances
+        .get(&DealerTicker::LBTC)
+        .cloned()
+        .unwrap_or_default()
+        / (1.0 + types::SERVER_FEE_RATE);
     let extra_asset_downscale = if max_amount {
         1.0
     } else {
         1.0 / (1.0 + EXTRA_ASSET_UTXO_FRACTION)
     };
     if send_bitcoins {
-        Amount::from_bitcoin(f64::min(
-            f64::min(
-                wallet_bitcoin,
-                asset_max_recv * extra_asset_downscale / price,
-            ),
-            bitcoin_max_send,
-        ))
+        Amount::from_bitcoin(wallet_bitcoin)
     } else {
-        Amount::from_bitcoin(f64::min(
-            f64::min(
-                wallet_asset * extra_asset_downscale / price,
-                bitcoin_max_recv,
-            ),
-            asset_max_send * extra_asset_downscale / price,
-        ))
+        Amount::from_bitcoin(wallet_asset * extra_asset_downscale / price)
     }
 }
 
@@ -445,40 +449,41 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
     send_bitcoins: bool,
     assets: &Assets,
     ticker: DealerTicker,
-    index_prices: &IndexPrices,
-    all: &AllBalances,
+    index_prices: &DealerPrices,
+    wallet_balances: &WalletBalances,
     utxos: &Utxos,
     params: &Params,
     http_client: &ureq::Agent,
     send_request: &T,
 ) {
+    let dealer_ticker = dealer_ticker_to_asset_ticker(ticker);
     let asset = assets
         .iter()
-        .find(|asset| asset.ticker.0 == ticker.0)
+        .find(|asset| asset.ticker.0 == dealer_ticker)
         .unwrap();
     let price = index_prices.get(&ticker).cloned();
     let expected_server_fee = Amount::from_bitcoin(f64::max(
         types::SERVER_FEE_RATE * params.bitcoin_amount_submit.to_bitcoin(),
         types::MIN_SERVER_FEE.to_bitcoin(),
     ));
-    let interest_submit = params
-        .tickers
-        .get(&ticker)
-        .expect("must be known")
-        .interest_submit;
-    let interest_take_ajusted = interest_submit
-        * (1.0 + expected_server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin());
-    let price = price.map(|price| get_price(&price.price, send_bitcoins, interest_take_ajusted));
+    let server_fee_interest =
+        1.0 + expected_server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin();
+    let price = price.map(|price| {
+        pick_price(
+            &apply_interest(&price.dealer.submit_price, server_fee_interest),
+            send_bitcoins,
+        )
+    });
     let new_bitcoin_amount_normal = price
         .map(|price| {
             Amount::min(
-                get_bitcoin_amount(all, ticker, price, send_bitcoins, false),
+                get_bitcoin_amount(wallet_balances, ticker, price, send_bitcoins, false),
                 params.bitcoin_amount_submit,
             )
         })
         .unwrap_or_default();
     let new_bitcoin_amount_max = price
-        .map(|price| get_bitcoin_amount(all, ticker, price, send_bitcoins, true))
+        .map(|price| get_bitcoin_amount(wallet_balances, ticker, price, send_bitcoins, true))
         .unwrap_or_default();
     match (own.as_mut(), price) {
         (None, Some(price)) if new_bitcoin_amount_normal >= params.bitcoin_amount_min => {
@@ -592,7 +597,7 @@ fn worker(
     params: Params,
     to_rx: crossbeam_channel::Receiver<To>,
     from_tx: crossbeam_channel::Sender<From>,
-) {
+) -> ! {
     assert!(
         params.bitcoin_amount_min.to_bitcoin() >= MIN_BITCOIN_AMOUNT,
         "bitcoin_amount_min can't be less than {}",
@@ -600,12 +605,6 @@ fn worker(
     );
     assert!(params.bitcoin_amount_submit >= params.bitcoin_amount_min);
     assert!(params.bitcoin_amount_submit <= params.bitcoin_amount_max);
-
-    for ticker_info in params.tickers.values() {
-        assert!(ticker_info.interest_sign > 1.0);
-        assert!(ticker_info.interest_submit > ticker_info.interest_sign);
-        assert!(ticker_info.interest_submit < 1.1);
-    }
 
     let (ws_tx, ws_rx) = sideswap_common::ws::auto::start(
         params.server_host.clone(),
@@ -674,15 +673,15 @@ fn worker(
     let mut utxos = Utxos::new();
     let mut orders = BTreeMap::new();
     let mut taken_orders = BTreeSet::<OrderId>::new();
-    let mut all_balances = AllBalances::default();
-    let mut index_prices = IndexPrices::new();
+    let mut wallet_balances = WalletBalances::default();
+    let mut dealer_prices = DealerPrices::new();
     let mut pending_signs = BTreeMap::<OrderId, Details>::new();
     let mut own_orders = BTreeMap::<OwnOrderKey, Option<OwnOrder>>::new();
     let mut wallet_balance = None;
     let mut last_price_edit = std::time::Instant::now();
     let mut instant_swaps: BTreeMap<OrderId, InstantSwap> = BTreeMap::new();
 
-    for &ticker in params.tickers.keys() {
+    for &ticker in params.tickers.iter() {
         for &send_bitcoins in [false, true].iter() {
             let key = OwnOrderKey {
                 ticker,
@@ -707,21 +706,16 @@ fn worker(
                 .expect("loading assets failed")
                 .assets;
 
-                from_tx
-                    .send(From::ServerConnected(ServerConnected {
-                        assets: assets.clone(),
-                    }))
-                    .unwrap();
+                from_tx.send(From::ServerConnected(None)).unwrap();
 
                 let login_resp =
                     send_request!(send_request, Login, LoginRequest { session_id: None })
                         .expect("subscribing to order list failed");
                 assert!(login_resp.orders.is_empty());
                 for asset in assets.iter().filter(|asset| {
-                    params
-                        .tickers
-                        .keys()
-                        .any(|ticker| ticker.0 == asset.ticker.0)
+                    dealer_ticker_from_asset(asset)
+                        .map(|ticker| params.tickers.contains(&ticker))
+                        .unwrap_or(false)
                 }) {
                     let subscribe_resp = send_request!(
                         send_request,
@@ -773,38 +767,14 @@ fn worker(
                 }
 
                 Notification::Sign(order) => {
-                    let asset = assets
-                        .iter()
-                        .find(|asset| asset.asset_id == order.details.asset)
-                        .unwrap();
-                    let ticker = ticker_from_asset(asset).unwrap();
-                    let interest_sign = params.tickers.get(&ticker).unwrap().interest_sign;
-
                     debug!("sign notification received, order_id: {}", &order.order_id);
 
                     // TODO: Verify PSET
-                    let result = take_order(
-                        &params,
-                        &assets,
-                        &order.details,
-                        &all_balances,
-                        &index_prices,
-                        interest_sign,
-                    );
-                    match result {
-                        Ok(_) => {
-                            let result =
-                                sign_pset(&secp, &order, &params, &utxos, &rpc_http_client)
-                                    .unwrap();
-                            send_request!(send_request, Sign, result)
-                                .expect("sending signed PSBT failed");
-                            pending_signs.insert(order.order_id, order.details);
-                        }
-                        Err(e) => error!(
-                            "sign request ignored: {}, order_id: {}, details: {:?}",
-                            e, order.order_id, order.details
-                        ),
-                    }
+
+                    let result =
+                        sign_pset(&secp, &order, &params, &utxos, &rpc_http_client).unwrap();
+                    send_request!(send_request, Sign, result).expect("sending signed PSBT failed");
+                    pending_signs.insert(order.order_id, order.details);
                 }
 
                 Notification::Complete(msg) => {
@@ -823,7 +793,7 @@ fn worker(
                                 .iter()
                                 .find(|asset| asset.asset_id == details.asset)
                                 .unwrap();
-                            let ticker = ticker_from_asset(asset).unwrap();
+                            let ticker = dealer_ticker_from_asset(asset).unwrap();
                             let send_bitcoins = details.send_bitcoins;
                             let bitcoin_amount = Amount::from_sat(if send_bitcoins {
                                 details.bitcoin_amount + details.server_fee
@@ -1024,7 +994,7 @@ fn worker(
                             .iter()
                             .find(|v: &&Asset| v.asset_id == asset_id)
                             .expect("asset must be known");
-                        let ticker = ticker_from_asset(asset).unwrap();
+                        let ticker = dealer_ticker_from_asset(asset).unwrap();
                         let instant_swap_succeed = SwapSucceed {
                             txid,
                             dealer_send_bitcoins,
@@ -1062,12 +1032,12 @@ fn worker(
                             .map(|balance| (asset, *balance))
                     })
                     .flat_map(|(asset, balance)| {
-                        ticker_from_asset(asset).map(|ticker| (ticker, balance))
+                        dealer_ticker_from_asset(asset).map(|ticker| (ticker, balance))
                     })
                     .collect::<BTreeMap<_, _>>();
 
-                if all_balances.wallet != wallet_balances_new {
-                    all_balances.wallet = wallet_balances_new;
+                if wallet_balances != wallet_balances_new {
+                    wallet_balances = wallet_balances_new;
                 }
 
                 let old_keys: BTreeSet<_> = utxos.keys().cloned().collect();
@@ -1094,46 +1064,29 @@ fn worker(
             Msg::To(to) => match to {
                 To::Price(ToPrice { ticker, price }) => {
                     match price {
-                        Some(v) => index_prices.insert(
+                        Some(v) => dealer_prices.insert(
                             ticker,
-                            PriceTimestamp {
-                                price: v,
+                            DealerPriceTimestamp {
+                                dealer: v,
                                 timestamp: std::time::Instant::now(),
                             },
                         ),
-                        None => index_prices.remove(&ticker),
+                        None => dealer_prices.remove(&ticker),
                     };
                     msg_tx.send(Msg::Timer).unwrap();
                 }
 
-                To::LimitBalance(msg) => {
-                    if msg.recv_limit {
-                        all_balances.max_recv.insert(msg.ticker, msg.balance);
-                    } else {
-                        all_balances.max_send.insert(msg.ticker, msg.balance);
-                    }
+                To::ResetPrices(_) => {
+                    dealer_prices.clear();
                     msg_tx.send(Msg::Timer).unwrap();
                 }
 
-                To::ResetPrices(_) => {
-                    index_prices.clear();
-                }
-
-                To::PriceUpdate(price_update) => {
+                To::IndexPriceUpdate(price_update) => {
                     if server_connected {
                         let price_update =
                             send_request!(send_request, PriceUpdateBroadcast, price_update);
                         if let Err(e) = price_update {
                             error!("price update failed: {}", e);
-                        }
-                    }
-                }
-                To::BroadcastPriceStream(price_stream) => {
-                    if server_connected {
-                        let broadcast_price_resp =
-                            send_request!(send_request, BroadcastPriceStream, price_stream);
-                        if let Err(e) = broadcast_price_resp {
-                            error!("broadcast price failed: {}", e);
                         }
                     }
                 }
@@ -1148,8 +1101,8 @@ fn worker(
                             key.send_bitcoins,
                             &assets,
                             key.ticker,
-                            &index_prices,
-                            &all_balances,
+                            &dealer_prices,
+                            &wallet_balances,
                             &utxos,
                             &params,
                             &rpc_http_client,
@@ -1164,20 +1117,12 @@ fn worker(
                         continue;
                     }
 
-                    let asset = assets
-                        .iter()
-                        .find(|asset| asset.asset_id == order.details.asset)
-                        .unwrap();
-                    let ticker = ticker_from_asset(asset).unwrap();
-                    let interest_submit = params.tickers.get(&ticker).unwrap().interest_submit;
-
                     let result = take_order(
                         &params,
                         &assets,
                         &order.details,
-                        &all_balances,
-                        &index_prices,
-                        interest_submit,
+                        &wallet_balances,
+                        &dealer_prices,
                     );
                     if result.is_ok() {
                         info!("take order: {:?}", order);
@@ -1211,6 +1156,63 @@ fn worker(
                     }
                 }
 
+                for (ticker, dealer_price) in dealer_prices.iter() {
+                    let base_price = dealer_price.dealer.submit_price;
+
+                    // Correct price for the server fee on instant swaps
+                    let submit_price =
+                        apply_interest(&base_price, 1.0 + sideswap_common::pset::SERVER_FEE_SHARE);
+
+                    let wallet_asset_amount =
+                        wallet_balances.get(&ticker).copied().unwrap_or_default();
+                    let wallet_btc_amount = wallet_balances
+                        .get(&DealerTicker::LBTC)
+                        .copied()
+                        .unwrap_or_default();
+
+                    let mut list = PriceOffers::default();
+                    let max_send_asset_amount = f64::min(
+                        wallet_btc_amount * submit_price.ask,
+                        dealer_price.dealer.limit_btc_dealer_send * submit_price.ask,
+                    ) * INSTANT_SWAP_WORK_AMOUNT;
+                    let max_send_bitcoin_amount = f64::min(
+                        dealer_price.dealer.limit_btc_dealer_recv,
+                        wallet_asset_amount / submit_price.bid,
+                    ) * INSTANT_SWAP_WORK_AMOUNT;
+                    if max_send_asset_amount > 0.0 {
+                        list.push(PriceOffer {
+                            client_send_bitcoins: false,
+                            price: submit_price.ask,
+                            max_send_amount: Amount::from_bitcoin(max_send_asset_amount).to_sat(),
+                        });
+                    }
+                    if max_send_bitcoin_amount > 0.0 {
+                        list.push(PriceOffer {
+                            client_send_bitcoins: true,
+                            price: submit_price.bid,
+                            max_send_amount: Amount::from_bitcoin(max_send_bitcoin_amount).to_sat(),
+                        });
+                    }
+                    if server_connected {
+                        let ticker = dealer_ticker_to_asset_ticker(*ticker);
+                        let asset = assets
+                            .iter()
+                            .find(|asset| asset.ticker.0 == ticker)
+                            .unwrap();
+
+                        let price_stream = BroadcastPriceStreamRequest {
+                            asset: asset.asset_id,
+                            list,
+                            balancing: dealer_price.dealer.balancing,
+                        };
+                        let broadcast_price_resp =
+                            send_request!(send_request, BroadcastPriceStream, price_stream);
+                        if let Err(e) = broadcast_price_resp {
+                            error!("broadcast price failed: {}", e);
+                        }
+                    }
+                }
+
                 let wallet_result =
                     rpc::make_rpc_call(&rpc_http_client, &params.rpc, rpc::GetWalletInfoCall {});
                 match wallet_result {
@@ -1224,14 +1226,14 @@ fn worker(
                 }
 
                 let now = std::time::Instant::now();
-                let expired = index_prices
+                let expired = dealer_prices
                     .iter()
                     .filter(|(_, price)| now.duration_since(price.timestamp) > PRICE_EXPIRATON_TIME)
                     .map(|(ticker, _)| *ticker)
                     .collect::<Vec<_>>();
                 for ticker in expired {
-                    warn!("remove expired ticker: {}", ticker.0);
-                    index_prices.remove(&ticker);
+                    warn!("remove expired ticker: {ticker}");
+                    dealer_prices.remove(&ticker);
                 }
             }
         }

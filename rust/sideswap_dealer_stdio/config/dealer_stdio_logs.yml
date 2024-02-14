@@ -7,7 +7,7 @@ appenders:
 
   file:
     kind: rolling_file
-    path: log/sideswap_dealer_ws.log
+    path: log/sideswap_dealer_stdio.log
     encoder:
       kind: pattern
       pattern: "{d(%Y-%m-%d %H:%M:%S%.3f)(utc)} {h({l})} {M} {m}{n}"
@@ -18,7 +18,7 @@ appenders:
         limit: 100 mb
       roller:
         kind: fixed_window
-        pattern: 'log/sideswap_dealer_ws.{}.log.gz'
+        pattern: 'log/sideswap_dealer_stdio.{}.log.gz'
         base: 0
         count: 10
 
@@ -30,5 +30,7 @@ root:
     - file
 
 loggers:
-  reqwest:
+  ureq:
+    level: info
+  rustls:
     level: info

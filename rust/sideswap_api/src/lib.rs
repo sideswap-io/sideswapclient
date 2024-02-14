@@ -215,6 +215,7 @@ pub struct Swap {
 // In milliseconds since UNIX epoch
 pub type Timestamp = i64;
 
+// bid < ask
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq)]
 pub struct PricePair {
     pub bid: f64,

@@ -2478,16 +2478,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "sideswap_dealer_ws"
+name = "sideswap_dealer_stdio"
 version = "0.1.2"
 dependencies = [
  "anyhow",
  "clap",
  "config",
  "crossbeam-channel",
- "futures",
- "futures-channel",
- "futures-util",
  "log",
  "log4rs",
  "serde 1.0.196",
@@ -2495,9 +2492,6 @@ dependencies = [
  "sideswap_api",
  "sideswap_common",
  "sideswap_dealer",
- "tokio",
- "tokio-tungstenite",
- "tungstenite",
 ]
 
 [[package]]
