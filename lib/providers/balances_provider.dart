@@ -3,7 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -88,35 +87,38 @@ double amountUsd(AmountUsdRef ref, String? assetId, num amount) {
 String accountAssetsTotalUsdBalanceString(
     AccountAssetsTotalUsdBalanceStringRef ref,
     List<AccountAsset> accountAssets) {
-  double amountUsd =
+  Decimal amountUsdDecimal =
       ref.watch(accountAssetsTotalUsdBalanceProvider(accountAssets));
 
   var dollarConversion = '0.0';
-  dollarConversion = amountUsd.toStringAsFixed(2);
+  dollarConversion = amountUsdDecimal.toStringAsFixed(2);
   return dollarConversion;
 }
 
 @riverpod
-double accountAssetsTotalUsdBalance(
+Decimal accountAssetsTotalUsdBalance(
     AccountAssetsTotalUsdBalanceRef ref, List<AccountAsset> accountAssets) {
-  double amountUsd = 0;
+  var amountUsdDecimalSum = Decimal.zero;
 
   for (final accountAsset in accountAssets) {
-    amountUsd += ref.watch(accountAssetBalanceInUsdProvider(accountAsset));
+    amountUsdDecimalSum +=
+        ref.watch(accountAssetBalanceInUsdProvider(accountAsset));
   }
 
-  return amountUsd;
+  return amountUsdDecimalSum;
 }
 
 @riverpod
 String accountAssetsTotalLbtcBalance(
     AccountAssetsTotalLbtcBalanceRef ref, List<AccountAsset> accountAssets) {
-  final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
   final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
+  final liquidIndexPrice = portfolioPrices[liquidAssetId];
+  if (liquidIndexPrice == null) {
+    return '0.0';
+  }
 
-  final indexPrice =
-      ref.watch(indexPriceForAssetProvider(tetherAssetId)).indexPrice;
-  final indexPriceDecimal = Decimal.parse('$indexPrice');
+  final liquidIndexPriceDecimal = Decimal.parse('$liquidIndexPrice');
 
   final assetPrecision = ref
       .read(assetUtilsProvider)
@@ -125,12 +127,14 @@ String accountAssetsTotalLbtcBalance(
   final amountUsd =
       ref.watch(accountAssetsTotalUsdBalanceProvider(accountAssets));
   final amountUsdDecimal = Decimal.parse('$amountUsd');
-  final amountLbtc = indexPriceDecimal > Decimal.zero
-      ? (amountUsdDecimal / indexPriceDecimal)
+  final amountLbtc = liquidIndexPriceDecimal > Decimal.zero
+      ? (amountUsdDecimal / liquidIndexPriceDecimal)
           .toDecimal(scaleOnInfinitePrecision: assetPrecision)
       : Decimal.zero;
 
-  return indexPrice > 0 ? amountLbtc.toStringAsFixed(assetPrecision) : '0.0';
+  return liquidIndexPrice > 0
+      ? amountLbtc.toStringAsFixed(assetPrecision)
+      : '0.0';
 }
 
 @riverpod
@@ -142,7 +146,7 @@ String accountAssetBalanceInUsdString(
 }
 
 @riverpod
-double accountAssetBalanceInUsd(
+Decimal accountAssetBalanceInUsd(
     AccountAssetBalanceInUsdRef ref, AccountAsset accountAsset) {
   final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
   final assetPortfolioPrice = portfolioPrices[accountAsset.assetId];
@@ -151,10 +155,12 @@ double accountAssetBalanceInUsd(
     double assetPortfolioPrice => () {
         final assetBalanceStr =
             ref.watch(accountAssetBalanceStringProvider(accountAsset));
-        final assetBalance = double.tryParse(assetBalanceStr) ?? .0;
-        return assetBalance * assetPortfolioPrice;
+        final assetBalance = Decimal.tryParse(assetBalanceStr) ?? Decimal.zero;
+        final assetPortfolioPriceDecimal =
+            Decimal.tryParse('$assetPortfolioPrice') ?? Decimal.zero;
+        return assetBalance * assetPortfolioPriceDecimal;
       }(),
-    _ => .0,
+    _ => Decimal.zero,
   };
 }
 

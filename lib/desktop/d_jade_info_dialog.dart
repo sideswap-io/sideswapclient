@@ -19,7 +19,8 @@ class DJadeInfoDialog extends HookConsumerWidget {
     final jadeStatus = ref.watch(jadeStatusNotifierProvider);
     final jadeOnboardingRegistration =
         ref.watch(jadeOnboardingRegistrationNotifierProvider);
-    final showAmpOnboarding = ref.watch(configProvider).showAmpOnboarding;
+    final showAmpOnboarding =
+        ref.watch(configurationProvider).showAmpOnboarding;
 
     useEffect(() {
       if (jadeStatus != const JadeStatusMasterBlindingKey()) {

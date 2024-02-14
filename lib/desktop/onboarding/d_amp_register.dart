@@ -178,9 +178,9 @@ class DAmpRegister extends HookConsumerWidget {
                     registered: () {
                       return DCustomFilledBigButton(
                         width: 460,
-                        onPressed: () async {
-                          await ref
-                              .read(configProvider)
+                        onPressed: () {
+                          ref
+                              .read(configurationProvider.notifier)
                               .setShowAmpOnboarding(false);
                           ref.read(walletProvider).setRegistered();
                         },
@@ -191,9 +191,9 @@ class DAmpRegister extends HookConsumerWidget {
                     orElse: () {
                       return DCustomTextBigButton(
                         width: 460,
-                        onPressed: () async {
-                          await ref
-                              .read(configProvider)
+                        onPressed: () {
+                          ref
+                              .read(configurationProvider.notifier)
                               .setShowAmpOnboarding(false);
                           ref.read(walletProvider).setRegistered();
                         },

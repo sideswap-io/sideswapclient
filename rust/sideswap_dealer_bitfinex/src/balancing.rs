@@ -180,7 +180,7 @@ pub fn process_balancing(
     exchange_balances: &ExchangeBalances,
     module_connected: bool,
     assets: &Assets,
-    rpc_http_client: &reqwest::blocking::Client,
+    rpc_http_client: &ureq::Agent,
     args: &Args,
     _mod_tx: &module::Sender,
     bf_sender: &crossbeam_channel::Sender<bitfinex_worker::Request>,
@@ -208,14 +208,14 @@ pub fn process_balancing(
                         .iter()
                         .find(|asset| asset.ticker.0 == TICKER_USDT)
                         .expect("must be known");
-                    let result = rpc::make_rpc_call::<rpc::SendToAddressResult>(
+                    let result = rpc::make_rpc_call(
                         rpc_http_client,
                         &args.rpc,
-                        &rpc::sendtoaddress(
-                            &args.bitfinex_fund_address,
-                            balancing.amount.to_bitcoin(),
-                            &asset.asset_id,
-                        ),
+                        rpc::SendToAddressCall {
+                            address: args.bitfinex_fund_address.clone(),
+                            amount: balancing.amount.to_bitcoin(),
+                            asset_id: asset.asset_id,
+                        },
                     );
                     match result {
                         Ok(txid) => {
@@ -255,7 +255,7 @@ pub fn process_balancing(
                             wallet: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             method: BITFINEX_METHOD_USDT.to_owned(),
                             amount: balancing.amount.to_bitcoin(),
-                            address: args.bitfinex_withdraw_address.clone(),
+                            address: args.bitfinex_withdraw_address.to_string(),
                         }))
                         .unwrap();
                     update_balancing_state(
@@ -274,14 +274,14 @@ pub fn process_balancing(
                     .unwrap_or_default();
                 if bitcoin_balance >= balancing.amount.to_bitcoin() && module_connected {
                     let bitcoin_asset = AssetId::from_str(args.env.data().policy_asset).unwrap();
-                    let result = rpc::make_rpc_call::<rpc::SendToAddressResult>(
+                    let result = rpc::make_rpc_call(
                         rpc_http_client,
                         &args.rpc,
-                        &rpc::sendtoaddress(
-                            &args.bitfinex_fund_address,
-                            balancing.amount.to_bitcoin(),
-                            &bitcoin_asset,
-                        ),
+                        rpc::SendToAddressCall {
+                            address: args.bitfinex_fund_address.clone(),
+                            amount: balancing.amount.to_bitcoin(),
+                            asset_id: bitcoin_asset,
+                        },
                     );
                     match result {
                         Ok(txid) => {
@@ -386,7 +386,7 @@ pub fn process_balancing(
                             wallet: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             method: BITFINEX_METHOD_LBTC.to_owned(),
                             amount: balancing.amount.to_bitcoin(),
-                            address: args.bitfinex_withdraw_address.clone(),
+                            address: args.bitfinex_withdraw_address.to_string(),
                         }))
                         .unwrap();
                     update_balancing_state(
@@ -473,7 +473,8 @@ pub fn process_movements(
                     .movements
                     .iter()
                     .find(|item| {
-                        item.transaction_id == *txid && item.status == BITFINEX_STATUS_COMPLETED
+                        item.transaction_id == *txid.to_string()
+                            && item.status == BITFINEX_STATUS_COMPLETED
                     })
                     .is_some();
                 if tx_found {

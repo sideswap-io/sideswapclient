@@ -21,5 +21,21 @@ final sharedPreferencesProvider = Provider<SharedPreferences>.internal(
 );
 
 typedef SharedPreferencesRef = ProviderRef<SharedPreferences>;
+String _$configurationHash() => r'829b4185cb7156e7424e3168bdd1fa7157d4a0f3';
+
+/// See also [Configuration].
+@ProviderFor(Configuration)
+final configurationProvider =
+    AutoDisposeNotifierProvider<Configuration, SideswapSettings>.internal(
+  Configuration.new,
+  name: r'configurationProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$configurationHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$Configuration = AutoDisposeNotifier<SideswapSettings>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

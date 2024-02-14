@@ -1,10 +1,10 @@
-const FEE_RATE: f64 = 0.1;
+pub const FEE_RATE: f64 = 0.1;
 
-const WEIGHT_FIXED: usize = 44;
-const WEIGHT_VIN_SINGLE_SIG: usize = 367;
-const WEIGHT_VIN_MULTI_SIG: usize = 526;
-const WEIGHT_VOUT: usize = 4810;
-const WEIGHT_FEE: usize = 178;
+pub const WEIGHT_FIXED: usize = 44;
+pub const WEIGHT_VIN_SINGLE_SIG: usize = 367;
+pub const WEIGHT_VIN_MULTI_SIG: usize = 526;
+pub const WEIGHT_VOUT: usize = 4810;
+pub const WEIGHT_FEE: usize = 178;
 
 /// `vout_count` must not count the network fee output
 pub fn expected_network_fee(

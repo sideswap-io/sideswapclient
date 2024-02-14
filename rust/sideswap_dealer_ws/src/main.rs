@@ -5,7 +5,7 @@ use log::*;
 use serde::{Deserialize, Serialize};
 use sideswap_common::*;
 use sideswap_dealer::{dealer::*, rpc::RpcServer};
-use std::net::SocketAddr;
+use std::{collections::BTreeMap, net::SocketAddr};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::accept_async;
 
@@ -192,7 +192,13 @@ fn main() {
 
     log4rs::init_file(&settings.log_settings, Default::default()).expect("can't open log settings");
 
-    let tickers = vec![DEALER_USDT].into_iter().collect();
+    let tickers = BTreeMap::from([(
+        DEALER_USDT,
+        TickerInfo {
+            interest_submit: settings.interest_submit,
+            interest_sign: settings.interest_sign,
+        },
+    )]);
 
     let env_data = settings.env.data();
     let params = Params {
@@ -201,14 +207,11 @@ fn main() {
         server_port: env_data.port,
         server_use_tls: env_data.use_tls,
         rpc: settings.rpc.clone(),
-        interest_submit_usdt: settings.interest_submit,
-        interest_sign_usdt: settings.interest_sign,
-        interest_submit_eurx: settings.interest_submit,
-        interest_sign_eurx: settings.interest_sign,
         tickers,
         bitcoin_amount_submit: types::Amount::from_bitcoin(settings.bitcoin_amount_submit),
         bitcoin_amount_min: types::Amount::from_bitcoin(settings.bitcoin_amount_min),
         bitcoin_amount_max: types::Amount::from_bitcoin(settings.bitcoin_amount_max),
+        api_key: None,
     };
 
     let (dealer_tx, dealer_rx) = start(params.clone());

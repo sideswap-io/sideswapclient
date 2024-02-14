@@ -21,6 +21,12 @@ const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs
 const PRICE_EDIT_MIN_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
 
 #[derive(Debug, Clone)]
+pub struct TickerInfo {
+    pub interest_submit: f64,
+    pub interest_sign: f64,
+}
+
+#[derive(Debug, Clone)]
 pub struct Params {
     pub env: sideswap_common::env::Env,
 
@@ -30,16 +36,13 @@ pub struct Params {
 
     pub rpc: rpc::RpcServer,
 
-    pub interest_submit_usdt: f64,
-    pub interest_sign_usdt: f64,
-    pub interest_submit_eurx: f64,
-    pub interest_sign_eurx: f64,
-
-    pub tickers: BTreeSet<DealerTicker>,
+    pub tickers: BTreeMap<DealerTicker, TickerInfo>,
 
     pub bitcoin_amount_submit: Amount,
     pub bitcoin_amount_min: Amount,
     pub bitcoin_amount_max: Amount,
+
+    pub api_key: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -61,20 +64,30 @@ pub enum To {
     Price(ToPrice),
     LimitBalance(ToLimitBalance),
     ResetPrices(Empty),
+    PriceUpdate(PriceUpdateBroadcast),
+    BroadcastPriceStream(BroadcastPriceStreamRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum From {
     Swap(SwapSucceed),
-    WalletBalanceUpdated(Empty),
+    ServerConnected(ServerConnected),
+    ServerDisconnected(Empty),
+    Utxos(rpc::ListUnspent),
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ServerConnected {
+    pub assets: Assets,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SwapSucceed {
     pub txid: elements::Txid,
     pub ticker: DealerTicker,
     pub bitcoin_amount: sideswap_common::types::Amount,
-    pub send_bitcoins: bool,
+    pub dealer_send_bitcoins: bool,
 }
 
 enum Msg {
@@ -129,8 +142,7 @@ pub struct DealerTicker(pub &'static str);
 pub const DEALER_LBTC: DealerTicker = DealerTicker(TICKER_LBTC);
 pub const DEALER_USDT: DealerTicker = DealerTicker(TICKER_USDT);
 pub const DEALER_EURX: DealerTicker = DealerTicker(TICKER_EURX);
-pub const DEALER_LCAD: DealerTicker = DealerTicker(TICKER_LCAD);
-pub const DEALER_AUDL: DealerTicker = DealerTicker(TICKER_AUDL);
+pub const DEALER_DEPIX: DealerTicker = DealerTicker(TICKER_DEPIX);
 
 macro_rules! send_request {
     ($f:ident, $t:ident, $value:expr) => {
@@ -147,8 +159,7 @@ pub fn ticker_from_string(asset: &str) -> Result<DealerTicker, anyhow::Error> {
         TICKER_LBTC => TICKER_LBTC,
         TICKER_USDT => TICKER_USDT,
         TICKER_EURX => TICKER_EURX,
-        TICKER_LCAD => TICKER_LCAD,
-        TICKER_AUDL => TICKER_AUDL,
+        TICKER_DEPIX => TICKER_DEPIX,
         _ => bail!("ticker {} not found", asset),
     };
     Ok(DealerTicker(ticker))
@@ -238,7 +249,7 @@ fn get_pset(
     details: &Details,
     utxos: &Utxos,
     params: &Params,
-    http_client: &reqwest::blocking::Client,
+    http_client: &ureq::Agent,
     extra_asset_utxo: bool,
 ) -> Result<PsetMakerRequest, anyhow::Error> {
     let env_data = params.env.data();
@@ -292,12 +303,10 @@ fn get_pset(
         });
     }
 
-    let recv_addr =
-        rpc::make_rpc_call::<elements::Address>(http_client, &params.rpc, &rpc::get_new_address())
-            .expect("getting new address failed");
-    let change_addr =
-        rpc::make_rpc_call::<elements::Address>(http_client, &params.rpc, &rpc::get_new_address())
-            .expect("getting new address failed");
+    let recv_addr = rpc::make_rpc_call(http_client, &params.rpc, rpc::GetNewAddressCall {})
+        .expect("getting new address failed");
+    let change_addr = rpc::make_rpc_call(http_client, &params.rpc, rpc::GetNewAddressCall {})
+        .expect("getting new address failed");
 
     let addr_request = PsetMakerRequest {
         order_id: *order_id,
@@ -317,7 +326,7 @@ fn sign_pset(
     data: &SignNotification,
     params: &Params,
     utxos: &Utxos,
-    http_client: &reqwest::blocking::Client,
+    http_client: &ureq::Agent,
 ) -> Result<SignRequest, anyhow::Error> {
     let mut pset = elements::encode::deserialize::<elements::pset::PartiallySignedTransaction>(
         &base64::engine::general_purpose::STANDARD.decode(&data.pset)?,
@@ -330,18 +339,15 @@ fn sign_pset(
             vout: input.previous_output.vout,
         };
         if let Some(utxo) = utxos.get(&tx_out) {
-            let priv_key = rpc::make_rpc_call::<rpc::DumpPrivKey>(
+            let private_key = rpc::make_rpc_call(
                 http_client,
                 &params.rpc,
-                &rpc::dumpprivkey(&utxo.item.address),
+                rpc::DumpPrivKeyCall {
+                    address: utxo.item.address.clone(),
+                },
             )?;
-            let private_key = elements::bitcoin::PrivateKey::from_str(&priv_key)?;
 
-            let value_commitment =
-                hex::decode(utxo.item.amountcommitment.as_ref().unwrap()).unwrap();
-            let value_commitment =
-                elements::encode::deserialize::<elements::confidential::Value>(&value_commitment)
-                    .unwrap();
+            let value_commitment = utxo.item.amountcommitment.clone().unwrap().into_inner();
 
             let input_sign = sideswap_common::pset::internal_sign_elements(
                 secp,
@@ -443,7 +449,7 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
     all: &AllBalances,
     utxos: &Utxos,
     params: &Params,
-    http_client: &reqwest::blocking::Client,
+    http_client: &ureq::Agent,
     send_request: &T,
 ) {
     let asset = assets
@@ -455,11 +461,11 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
         types::SERVER_FEE_RATE * params.bitcoin_amount_submit.to_bitcoin(),
         types::MIN_SERVER_FEE.to_bitcoin(),
     ));
-    let interest_submit = match ticker {
-        DEALER_USDT => params.interest_submit_usdt,
-        DEALER_EURX => params.interest_submit_eurx,
-        _ => panic!("unexpected asset"),
-    };
+    let interest_submit = params
+        .tickers
+        .get(&ticker)
+        .expect("must be known")
+        .interest_submit;
     let interest_take_ajusted = interest_submit
         * (1.0 + expected_server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin());
     let price = price.map(|price| get_price(&price.price, send_bitcoins, interest_take_ajusted));
@@ -578,6 +584,10 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
     }
 }
 
+struct InstantSwap {
+    send_asset: AssetId,
+}
+
 fn worker(
     params: Params,
     to_rx: crossbeam_channel::Receiver<To>,
@@ -591,16 +601,11 @@ fn worker(
     assert!(params.bitcoin_amount_submit >= params.bitcoin_amount_min);
     assert!(params.bitcoin_amount_submit <= params.bitcoin_amount_max);
 
-    assert!(params.interest_sign_usdt > 1.0);
-    assert!(params.interest_submit_usdt > params.interest_sign_usdt);
-    assert!(params.interest_submit_usdt < 1.1);
-
-    assert!(params.interest_sign_eurx > 1.0);
-    assert!(params.interest_submit_eurx > params.interest_sign_eurx);
-    assert!(params.interest_submit_eurx < 1.1);
-
-    let asset_usdt = AssetId::from_str(params.env.data().network.usdt_asset_id()).unwrap();
-    let asset_eurx = AssetId::from_str(params.env.data().network.eurx_asset_id()).unwrap();
+    for ticker_info in params.tickers.values() {
+        assert!(ticker_info.interest_sign > 1.0);
+        assert!(ticker_info.interest_submit > ticker_info.interest_sign);
+        assert!(ticker_info.interest_submit < 1.1);
+    }
 
     let (ws_tx, ws_rx) = sideswap_common::ws::auto::start(
         params.server_host.clone(),
@@ -657,10 +662,11 @@ fn worker(
             .expect("request timeout")
     };
 
-    let rpc_http_client = reqwest::blocking::Client::builder()
-        .timeout(std::time::Duration::from_secs(5))
-        .build()
-        .expect("http client construction failed");
+    let rpc_http_client = ureq::AgentBuilder::new()
+        .timeout(std::time::Duration::from_secs(20))
+        .build();
+
+    let bitcoin_asset = AssetId::from_str(params.env.data().policy_asset).unwrap();
 
     let secp = elements::secp256k1_zkp::Secp256k1::new();
     let mut assets = Vec::new();
@@ -674,8 +680,9 @@ fn worker(
     let mut own_orders = BTreeMap::<OwnOrderKey, Option<OwnOrder>>::new();
     let mut wallet_balance = None;
     let mut last_price_edit = std::time::Instant::now();
+    let mut instant_swaps: BTreeMap<OrderId, InstantSwap> = BTreeMap::new();
 
-    for &ticker in params.tickers.iter() {
+    for &ticker in params.tickers.keys() {
         for &send_bitcoins in [false, true].iter() {
             let key = OwnOrderKey {
                 ticker,
@@ -700,6 +707,12 @@ fn worker(
                 .expect("loading assets failed")
                 .assets;
 
+                from_tx
+                    .send(From::ServerConnected(ServerConnected {
+                        assets: assets.clone(),
+                    }))
+                    .unwrap();
+
                 let login_resp =
                     send_request!(send_request, Login, LoginRequest { session_id: None })
                         .expect("subscribing to order list failed");
@@ -707,7 +720,7 @@ fn worker(
                 for asset in assets.iter().filter(|asset| {
                     params
                         .tickers
-                        .iter()
+                        .keys()
                         .any(|ticker| ticker.0 == asset.ticker.0)
                 }) {
                     let subscribe_resp = send_request!(
@@ -723,6 +736,17 @@ fn worker(
                     }
                 }
 
+                if let Some(api_key) = &params.api_key {
+                    send_request!(
+                        send_request,
+                        LoginDealer,
+                        LoginDealerRequest {
+                            api_key: api_key.to_owned(),
+                        }
+                    )
+                    .expect("dealer login failed");
+                }
+
                 server_connected = true;
 
                 msg_tx.send(Msg::ReloadUtxo).unwrap();
@@ -735,6 +759,7 @@ fn worker(
                 for own_order in own_orders.values_mut() {
                     *own_order = None;
                 }
+                from_tx.send(From::ServerDisconnected(None)).unwrap();
             }
 
             Msg::Notification(msg) => match msg {
@@ -748,14 +773,14 @@ fn worker(
                 }
 
                 Notification::Sign(order) => {
+                    let asset = assets
+                        .iter()
+                        .find(|asset| asset.asset_id == order.details.asset)
+                        .unwrap();
+                    let ticker = ticker_from_asset(asset).unwrap();
+                    let interest_sign = params.tickers.get(&ticker).unwrap().interest_sign;
+
                     debug!("sign notification received, order_id: {}", &order.order_id);
-                    let interest_sign = if order.details.asset == asset_usdt {
-                        params.interest_sign_usdt
-                    } else if order.details.asset == asset_eurx {
-                        params.interest_sign_eurx
-                    } else {
-                        panic!("unexpected asset");
-                    };
 
                     // TODO: Verify PSET
                     let result = take_order(
@@ -809,7 +834,7 @@ fn worker(
                                 txid,
                                 ticker,
                                 bitcoin_amount,
-                                send_bitcoins,
+                                dealer_send_bitcoins: send_bitcoins,
                             };
                             from_tx.send(From::Swap(swap_succeed)).unwrap();
                         }
@@ -817,16 +842,211 @@ fn worker(
                     };
                 }
 
+                Notification::StartSwapDealer(data) => {
+                    info!("start instant swap, order_id: {}", data.order_id);
+                    let inputs: Vec<_> = utxos
+                        .values()
+                        .filter(|utxo| {
+                            utxo.item.asset == data.send_asset
+                                && utxo.item.amountblinder.is_some()
+                                && utxo.item.assetblinder.is_some()
+                        })
+                        .map(|utxo| PsetInput {
+                            txid: utxo.item.txid,
+                            vout: utxo.item.vout,
+                            asset: utxo.item.asset,
+                            asset_bf: utxo.item.assetblinder.unwrap(),
+                            value: Amount::from_rpc(&utxo.item.amount).to_sat() as u64,
+                            value_bf: utxo.item.amountblinder.unwrap(),
+                            redeem_script: utxo.item.redeem_script.clone(),
+                        })
+                        .collect();
+
+                    let recv_addr = rpc::make_rpc_call(
+                        &rpc_http_client,
+                        &params.rpc,
+                        rpc::GetNewAddressCall {},
+                    )
+                    .expect("getting new address failed");
+                    let change_addr = rpc::make_rpc_call(
+                        &rpc_http_client,
+                        &params.rpc,
+                        rpc::GetNewAddressCall {},
+                    )
+                    .expect("getting new address failed");
+
+                    let start_swap_dealer_resp = send_request!(
+                        send_request,
+                        StartSwapDealer,
+                        StartSwapDealerRequest {
+                            order_id: data.order_id,
+                            inputs,
+                            recv_addr,
+                            change_addr,
+                        }
+                    );
+                    if let Err(e) = start_swap_dealer_resp {
+                        error!("starting swap failed: {}", e);
+                    }
+
+                    instant_swaps.insert(
+                        data.order_id,
+                        InstantSwap {
+                            send_asset: data.send_asset,
+                        },
+                    );
+                }
+
+                Notification::BlindedSwapDealer(data) => {
+                    info!("got blinded pset, order_id: {}", data.order_id);
+                    let mut pset = elements::encode::deserialize::<
+                        elements::pset::PartiallySignedTransaction,
+                    >(
+                        &base64::engine::general_purpose::STANDARD
+                            .decode(&data.pset)
+                            .unwrap(),
+                    )
+                    .expect("parsing pset failed");
+                    let swap = instant_swaps.get(&data.order_id).expect("order not found");
+
+                    let tx = pset.extract_tx().unwrap();
+
+                    let own_inputs: BTreeMap<_, _> = utxos
+                        .values()
+                        .filter(|utxo| {
+                            utxo.item.asset == swap.send_asset
+                                && utxo.item.amountblinder.is_some()
+                                && utxo.item.assetblinder.is_some()
+                        })
+                        .map(|utxo| {
+                            (
+                                TxOut {
+                                    txid: utxo.item.txid,
+                                    vout: utxo.item.vout,
+                                },
+                                utxo,
+                            )
+                        })
+                        .collect();
+
+                    // FIXME: Verify recv output
+                    // let recv_output = tx
+                    //     .output
+                    //     .iter()
+                    //     .filter(|output| output.script_pubkey == swap.recv_addr.script_pubkey())
+                    //     .filter_map(|output| {
+                    //         output.unblind(&secp, swap.recv_addr_blinding_key).ok()
+                    //     })
+                    //     .find(|output| {
+                    //         debug!(
+                    //             "unblinded recv output, amount: {}, asset: {}",
+                    //             output.value, output.asset
+                    //         );
+                    //         output.value == swap.recv_amount as u64
+                    //             && output.asset
+                    //                 == elements::AssetId::from_slice(&swap.recv_asset.0)
+                    //                     .unwrap()
+                    //     });
+                    // if recv_output.is_none() {
+                    //     error!("can't find own output for swap {}", data.order_id);
+                    //     continue;
+                    // }
+                    //assert!(recv_output.is_some());
+
+                    for (index, input) in tx.input.iter().enumerate() {
+                        let tx_out = TxOut {
+                            txid: input.previous_output.txid,
+                            vout: input.previous_output.vout,
+                        };
+                        if let Some(utxo) = own_inputs.get(&tx_out) {
+                            let private_key = rpc::make_rpc_call(
+                                &rpc_http_client,
+                                &params.rpc,
+                                rpc::DumpPrivKeyCall {
+                                    address: utxo.item.address.clone(),
+                                },
+                            )
+                            .expect("loading priv key failed");
+
+                            let value_commitment =
+                                utxo.item.amountcommitment.clone().unwrap().into_inner();
+                            let input_sign = sideswap_common::pset::internal_sign_elements(
+                                &secp,
+                                &tx,
+                                index,
+                                &private_key,
+                                value_commitment,
+                                elements::EcdsaSigHashType::All,
+                            );
+                            let public_key = private_key.public_key(&secp);
+                            let pset_input = pset.inputs_mut().get_mut(index).unwrap();
+                            pset_input.final_script_sig =
+                                utxo.item.redeem_script.as_ref().map(|script| {
+                                    elements::script::Builder::new()
+                                        .push_slice(script.as_bytes())
+                                        .into_script()
+                                });
+                            pset_input.final_script_witness =
+                                Some(vec![input_sign, public_key.to_bytes()]);
+                        }
+                    }
+
+                    let pset = elements::encode::serialize(&pset);
+                    let signed_swap_resp = send_request!(
+                        send_request,
+                        SignedSwapDealer,
+                        SignedSwapDealerRequest {
+                            order_id: data.order_id,
+                            pset: base64::engine::general_purpose::STANDARD.encode(&pset),
+                        }
+                    );
+                    if let Err(e) = signed_swap_resp {
+                        error!("starting swap failed: {}", e);
+                    }
+                }
+
+                Notification::SwapDone(swap) => {
+                    debug!("instant swap complete: {:?}", &swap);
+                    let _active_swap = instant_swaps
+                        .remove(&swap.order_id)
+                        .expect("order not found");
+                    if swap.status == SwapDoneStatus::Success {
+                        let txid = swap.txid.unwrap();
+                        // All reported amounts are from the client side
+                        let dealer_send_bitcoins = swap.recv_asset == bitcoin_asset;
+                        let (asset_id, bitcoin_amount) = if swap.recv_asset == bitcoin_asset {
+                            (swap.send_asset, swap.recv_amount)
+                        } else {
+                            (swap.recv_asset, swap.send_amount)
+                        };
+                        let bitcoin_amount = Amount::from_sat(bitcoin_amount);
+                        let asset = assets
+                            .iter()
+                            .find(|v: &&Asset| v.asset_id == asset_id)
+                            .expect("asset must be known");
+                        let ticker = ticker_from_asset(asset).unwrap();
+                        let instant_swap_succeed = SwapSucceed {
+                            txid,
+                            dealer_send_bitcoins,
+                            bitcoin_amount,
+                            ticker,
+                        };
+                        from_tx.send(From::Swap(instant_swap_succeed)).unwrap();
+                    }
+                }
+
                 _ => {}
             },
 
             Msg::ReloadUtxo => {
-                let unspent_with_zc = rpc::make_rpc_call::<rpc::ListUnspent>(
+                let unspent_with_zc = rpc::make_rpc_call(
                     &rpc_http_client,
                     &params.rpc,
-                    &rpc::listunspent(0),
+                    rpc::ListUnspentCall { minconf: 0 },
                 )
                 .expect("list_unspent failed");
+
+                from_tx.send(From::Utxos(unspent_with_zc.clone())).unwrap();
 
                 let mut asset_amounts = BTreeMap::<AssetId, f64>::new();
                 for item in unspent_with_zc.iter() {
@@ -885,6 +1105,7 @@ fn worker(
                     };
                     msg_tx.send(Msg::Timer).unwrap();
                 }
+
                 To::LimitBalance(msg) => {
                     if msg.recv_limit {
                         all_balances.max_recv.insert(msg.ticker, msg.balance);
@@ -893,8 +1114,28 @@ fn worker(
                     }
                     msg_tx.send(Msg::Timer).unwrap();
                 }
+
                 To::ResetPrices(_) => {
                     index_prices.clear();
+                }
+
+                To::PriceUpdate(price_update) => {
+                    if server_connected {
+                        let price_update =
+                            send_request!(send_request, PriceUpdateBroadcast, price_update);
+                        if let Err(e) = price_update {
+                            error!("price update failed: {}", e);
+                        }
+                    }
+                }
+                To::BroadcastPriceStream(price_stream) => {
+                    if server_connected {
+                        let broadcast_price_resp =
+                            send_request!(send_request, BroadcastPriceStream, price_stream);
+                        if let Err(e) = broadcast_price_resp {
+                            error!("broadcast price failed: {}", e);
+                        }
+                    }
                 }
             },
 
@@ -923,13 +1164,12 @@ fn worker(
                         continue;
                     }
 
-                    let interest_submit = if order.details.asset == asset_usdt {
-                        params.interest_submit_usdt
-                    } else if order.details.asset == asset_eurx {
-                        params.interest_submit_eurx
-                    } else {
-                        panic!("unexpected asset");
-                    };
+                    let asset = assets
+                        .iter()
+                        .find(|asset| asset.asset_id == order.details.asset)
+                        .unwrap();
+                    let ticker = ticker_from_asset(asset).unwrap();
+                    let interest_submit = params.tickers.get(&ticker).unwrap().interest_submit;
 
                     let result = take_order(
                         &params,
@@ -971,17 +1211,13 @@ fn worker(
                     }
                 }
 
-                let wallet_result = rpc::make_rpc_call::<rpc::GetWalletInfo>(
-                    &rpc_http_client,
-                    &params.rpc,
-                    &rpc::get_wallet_info(),
-                );
+                let wallet_result =
+                    rpc::make_rpc_call(&rpc_http_client, &params.rpc, rpc::GetWalletInfoCall {});
                 match wallet_result {
                     Ok(v) => {
                         if wallet_balance.as_ref() != Some(&v) {
                             wallet_balance = Some(v);
                             msg_tx.send(Msg::ReloadUtxo).unwrap();
-                            from_tx.send(From::WalletBalanceUpdated(None)).unwrap();
                         }
                     }
                     Err(e) => error!("wallet balance loading failed: {}", e),

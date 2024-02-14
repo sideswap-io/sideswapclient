@@ -188,7 +188,7 @@ class DOrderReview extends HookConsumerWidget {
       if (screen == ReviewScreen.submitStart &&
           twoStep &&
           order.txChainingRequired) {
-        allowChaining = await allowTxChaining(context);
+        allowChaining = await allowTxChaining(context, ref);
         if (!allowChaining) {
           return;
         }

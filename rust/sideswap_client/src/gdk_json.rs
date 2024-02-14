@@ -40,7 +40,11 @@ pub struct LoginUser {
 
 #[derive(Deserialize)]
 pub struct LoginUserResult {
+    /// A 32 byte, per-network unique identifier for the wallet, as a hex string.
     pub wallet_hash_id: String,
+    // A 32 byte, cross-network unique identifier for the wallet, as a hex string.
+    //pub xpub_hash_id: String,
+    //pub warnings: Vec<String>, TODO: Add warnings (GDK 0.70)
 }
 
 #[derive(Deserialize, Clone, Debug)]
@@ -133,8 +137,6 @@ pub struct UnspentOutput {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub script: Option<elements::Script>, // Present in multi-sig only
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub script_type: Option<u32>, // Present in multi-sig only
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subtype: Option<u32>, // Present in multi-sig only
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -338,7 +340,6 @@ pub struct AddressInfo {
     // Normally AMP only, example: 52210305b9d4acd4c6cd5a5a9eb5e9a4dcd74a7b962eb0109cab264ea7412d6901bfa42102945512944638fe25e24962866d19ec858fdc70dd5a68ae801d54b5c36231f2e652ae
     pub script: Option<elements::Script>,
     pub branch: Option<u32>,
-    pub script_type: Option<u32>,
     pub service_xpub: Option<String>,
     pub subtype: Option<u32>,
 
@@ -420,7 +421,7 @@ pub struct SignTransactionResult {
 #[derive(Serialize, Debug)]
 pub struct PsetDetailsOpt {
     pub psbt: String,
-    pub utxos: Vec<UnspentOutput>,
+    pub utxos: Vec<UnspentOutput>, // TODO: Switch to BTreeMap (GDK 0.70)
 }
 
 #[derive(Deserialize, Debug)]
@@ -441,7 +442,7 @@ pub struct PsetDetailsResult {
 #[derive(Serialize, Debug)]
 pub struct SignPsetOpt {
     pub psbt: String,
-    pub utxos: Vec<UnspentOutput>,
+    pub utxos: Vec<UnspentOutput>, // TODO: Switch to BTreeMap (GDK 0.70)
     pub blinding_nonces: Vec<String>,
 }
 

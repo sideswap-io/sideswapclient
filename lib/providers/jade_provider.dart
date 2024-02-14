@@ -66,7 +66,7 @@ class JadeOnboardingRegistrationNotifier
 
 @riverpod
 bool isJadeWallet(IsJadeWalletRef ref) {
-  final jadeId = ref.watch(configProvider).jadeId;
+  final jadeId = ref.watch(configurationProvider).jadeId;
 
   if (jadeId.isNotEmpty) {
     return true;

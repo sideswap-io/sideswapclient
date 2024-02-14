@@ -22,14 +22,14 @@ allo-isolate.workspace = true
 anyhow.workspace = true
 base64.workspace = true
 bip39.workspace = true
-bitcoin = { workspace = true, features = [ "serde" ] }
+bitcoin.workspace = true
 block-modes.workspace = true
 bytes.workspace = true
 chrono.workspace = true
 ciborium.workspace = true
 crossbeam-channel.workspace = true
 derive_more.workspace = true
-elements = { workspace = true, features = ["serde"] }
+elements.workspace = true
 flexi_logger.workspace = true
 hex.workspace = true
 libc.workspace = true
@@ -37,17 +37,17 @@ log.workspace = true
 once_cell.workspace = true
 prost.workspace = true
 rand.workspace = true
-secp256k1 = { workspace = true, features = ["rand"] }
-serde = { workspace = true, features = ["derive"] }
+secp256k1.workspace = true
+serde.workspace = true
 serde_bytes.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
-time = { workspace = true, features = ["local-offset", "formatting", "macros", "parsing"]}
-tokio = { workspace = true, features = ["macros", "net", "rt", "sync", "time"] }
-ureq = { workspace = true, features = ["json", "socks-proxy"] }
+time.workspace = true
+tokio.workspace = true
+ureq.workspace = true
 url.workspace = true
 
 [build-dependencies]
-git2 = { workspace = true, default-features = false, features = [] }
+git2.workspace = true
 prost-build.workspace = true
-vergen = { workspace = true, default-features = false, features = ["build", "rustc", "git"] }
+vergen.workspace = true

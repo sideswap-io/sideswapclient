@@ -66,7 +66,7 @@ Map<String, dynamic> _$$NetworkSettingsModelApplyImplToJson(
 // **************************************************************************
 
 String _$networkSettingsNeedSaveHash() =>
-    r'a960366514ce7b9981b9b8f78d57561059816e03';
+    r'df6dd45be6b1d41648932b3ab5f99e72a58c7bff';
 
 /// See also [networkSettingsNeedSave].
 @ProviderFor(networkSettingsNeedSave)
@@ -82,7 +82,7 @@ final networkSettingsNeedSaveProvider = AutoDisposeProvider<bool>.internal(
 
 typedef NetworkSettingsNeedSaveRef = AutoDisposeProviderRef<bool>;
 String _$networkSettingsNotifierHash() =>
-    r'56bbcf6e053b9f33b529653d67ee6e29d3052b72';
+    r'6d7ded108d20ba74ec659c15bd24b1d8c3352b15';
 
 /// See also [NetworkSettingsNotifier].
 @ProviderFor(NetworkSettingsNotifier)

@@ -5,5 +5,5 @@ part 'biometric_available_provider.g.dart';
 
 @riverpod
 bool isBiometricEnabled(IsBiometricEnabledRef ref) {
-  return ref.watch(configProvider).useBiometricProtection;
+  return ref.watch(configurationProvider).useBiometricProtection;
 }

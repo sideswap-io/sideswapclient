@@ -45,6 +45,24 @@ pub enum WalletInfo {
     WatchOnly(WatchOnly),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ElectrumServer {
+    SideSwap,
+    SideSwapCn,
+    Blockstream,
+    Custom {
+        host: String,
+        port: u16,
+        use_tls: bool,
+    },
+}
+
+impl Default for ElectrumServer {
+    fn default() -> Self {
+        Self::SideSwap
+    }
+}
+
 #[derive(Clone)]
 pub struct LoginInfo {
     pub account_id: worker::AccountId,
@@ -52,7 +70,7 @@ pub struct LoginInfo {
     pub cache_dir: String,
     pub wallet_info: WalletInfo,
     pub single_sig: bool,
-    pub network: Option<ffi::proto::network_settings::Selected>,
+    pub electrum_server: ElectrumServer,
     pub proxy: Option<String>,
 }
 

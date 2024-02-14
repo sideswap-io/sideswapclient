@@ -36,10 +36,10 @@ class DSettingsCustomHost extends HookConsumerWidget {
     );
 
     final useTls = useState(false);
-    final hostController =
-        useTextEditingController(text: ref.read(configProvider).settingsHost);
+    final hostController = useTextEditingController(
+        text: ref.read(configurationProvider).networkHost);
     final portController = useTextEditingController(
-        text: ref.read(configProvider).settingsPort.toString());
+        text: ref.read(configurationProvider).networkPort.toString());
     final applyEnabled = useState(false);
     final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
 

@@ -12,7 +12,8 @@ class JadeStatusListener extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final jadeStatus = ref.watch(jadeStatusNotifierProvider);
-    final showAmpOnboarding = ref.watch(configProvider).showAmpOnboarding;
+    final showAmpOnboarding =
+        ref.watch(configurationProvider).showAmpOnboarding;
     final jadeInfoDialogRoute = ref.watch(jadeInfoDialogNotifierProvider);
 
     ref.listen(jadeStatusNotifierProvider, (previous, next) {

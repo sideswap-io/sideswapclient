@@ -97,17 +97,15 @@ class DFirstLaunch extends HookConsumerWidget {
                         : Text('SWITCH AND EXIT'.tr());
                   }),
                 ),
-                onPressed: () async {
+                onPressed: () {
                   final selectedEnv = ref.read(selectedEnvProvider);
-                  await ref.read(envProvider.notifier).setEnv(selectedEnv);
+                  ref.read(envProvider.notifier).setEnv(selectedEnv);
 
                   // and also reset network settings model
                   ref
                       .read(networkSettingsNotifierProvider.notifier)
                       .setModel(const NetworkSettingsModelEmpty());
-                  await ref
-                      .read(networkSettingsNotifierProvider.notifier)
-                      .save();
+                  ref.read(networkSettingsNotifierProvider.notifier).save();
 
                   exit(0);
                 },
@@ -130,7 +128,7 @@ class DFirstLaunch extends HookConsumerWidget {
     useEffect(() {
       if (lang == 'zh') {
         ref
-            .read(configProvider.notifier)
+            .read(configurationProvider.notifier)
             .setSettingsNetworkType(SettingsNetworkType.sideswapChina);
       }
 

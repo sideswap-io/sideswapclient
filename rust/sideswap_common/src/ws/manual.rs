@@ -10,6 +10,7 @@ pub enum WrappedRequest {
         host: String,
         port: u16,
         use_tls: bool,
+        proxy: Option<String>,
     },
     Disconnect,
     Request(RequestMessage),
@@ -57,7 +58,6 @@ async fn run(
     req_rx: crossbeam_channel::Receiver<WrappedRequest>,
     resp_tx: crossbeam_channel::Sender<WrappedResponse>,
     mut hint_rx: tokio::sync::mpsc::UnboundedReceiver<()>,
-    proxy: Option<String>,
 ) {
     let (req_tx_async, mut req_rx_async) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
     std::thread::spawn(move || {
@@ -69,16 +69,17 @@ async fn run(
     });
 
     loop {
-        let (host, port, use_tls) = loop {
+        let (host, port, use_tls, proxy) = loop {
             let req = req_rx_async.recv().await;
             match req {
                 Some(WrappedRequest::Connect {
                     host,
                     port,
                     use_tls,
+                    proxy,
                 }) => {
                     info!("ws connect requested...");
-                    break (host, port, use_tls);
+                    break (host, port, use_tls, proxy);
                 }
                 Some(req) => {
                     debug!("drop unexpected request: {:?}", &req);
@@ -207,9 +208,7 @@ async fn run(
     }
 }
 
-pub fn start(
-    proxy: Option<String>,
-) -> (
+pub fn start() -> (
     crossbeam_channel::Sender<WrappedRequest>,
     crossbeam_channel::Receiver<WrappedResponse>,
     tokio::sync::mpsc::UnboundedSender<()>,
@@ -222,7 +221,7 @@ pub fn start(
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(run(req_rx, resp_tx, hint_rx, proxy));
+        rt.block_on(run(req_rx, resp_tx, hint_rx));
     });
     (req_tx, resp_rx, hint_tx)
 }

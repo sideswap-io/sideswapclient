@@ -70,16 +70,14 @@ class SelectEnv extends HookConsumerWidget {
                           : 'SWITCH AND EXIT'.tr();
 
                       return OutlinedButton(
-                        onPressed: () async {
+                        onPressed: () {
                           final selectedEnv = ref.read(selectedEnvProvider);
-                          await ref
-                              .read(envProvider.notifier)
-                              .setEnv(selectedEnv);
+                          ref.read(envProvider.notifier).setEnv(selectedEnv);
                           // and also reset network settings model
                           ref
                               .read(networkSettingsNotifierProvider.notifier)
                               .setModel(const NetworkSettingsModelEmpty());
-                          await ref
+                          ref
                               .read(networkSettingsNotifierProvider.notifier)
                               .save();
 

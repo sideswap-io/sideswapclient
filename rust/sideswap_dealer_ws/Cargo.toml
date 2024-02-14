@@ -12,13 +12,13 @@ clap.workspace = true
 log.workspace = true
 serde_json.workspace = true
 anyhow.workspace = true
-serde = { workspace = true, features = ["derive"] }
+serde.workspace = true
 config.workspace = true
 log4rs.workspace = true
-tokio-tungstenite = { workspace = true, features = [ "stream" ] }
+tokio-tungstenite.workspace = true
 futures.workspace = true
-tokio = { workspace = true, features = ["macros", "net", "rt", "sync", "time"] }
+tokio.workspace = true
 futures-channel.workspace = true
 futures-util.workspace = true
-tungstenite = { workspace = true, default-features = false, features = [] }
+tungstenite.workspace = true
 crossbeam-channel.workspace = true

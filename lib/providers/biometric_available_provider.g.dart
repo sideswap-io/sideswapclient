@@ -7,7 +7,7 @@ part of 'biometric_available_provider.dart';
 // **************************************************************************
 
 String _$isBiometricEnabledHash() =>
-    r'fbd7a62cd7058a62b29d2ce805518c7ee1f13cae';
+    r'28b6e6ac30c9423cde9048d16ae3571ea83f2280';
 
 /// See also [isBiometricEnabled].
 @ProviderFor(isBiometricEnabled)

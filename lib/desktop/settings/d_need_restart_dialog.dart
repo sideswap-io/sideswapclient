@@ -50,11 +50,9 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
                 width: 266,
                 height: 54,
                 isFilled: true,
-                onPressed: () async {
+                onPressed: () {
                   Navigator.of(context).pop();
-                  await ref
-                      .read(networkSettingsNotifierProvider.notifier)
-                      .save();
+                  ref.read(networkSettingsNotifierProvider.notifier).save();
                   ref
                       .read(pageStatusStateProvider.notifier)
                       .setStatus(Status.registered);

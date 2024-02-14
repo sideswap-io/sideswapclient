@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/enums.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -13,6 +12,7 @@ import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/common_providers.dart';
+import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
@@ -45,9 +45,6 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   final Ref ref;
 
   SwapChangeNotifierProvider(this.ref);
-
-  static const hidePegInInfo = 'hide_peg_in_info';
-  static const hidePegOutInfo = 'hide_peg_out_info_new';
 
   AccountAsset? _swapSendAsset;
   AccountAsset? get swapSendAsset => _swapSendAsset;
@@ -385,8 +382,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   void showPegInInformation() async {
     final navigatorKey = ref.read(navigatorKeyProvider);
-    final prefs = await SharedPreferences.getInstance();
-    final internalHidePegInInfo = prefs.getBool(hidePegInInfo) ?? false;
+    final internalHidePegInInfo = ref.read(configurationProvider).hidePegInInfo;
     if (internalHidePegInInfo) {
       return;
     }
@@ -403,7 +399,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
                 'Larger peg-in transactions may need 102 confirmations before your L-BTC are released.'
                     .tr(),
             onChanged: (value) {
-              prefs.setBool(hidePegInInfo, value);
+              ref.read(configurationProvider.notifier).setHidePegInInfo(value);
             },
           ),
         );
@@ -412,8 +408,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   }
 
   void showPegOutInformation() async {
-    final prefs = await SharedPreferences.getInstance();
-    final internalHidePegOutInfo = prefs.getBool(hidePegOutInfo) ?? false;
+    final internalHidePegOutInfo =
+        ref.read(configurationProvider).hidePegOutInfo;
     if (internalHidePegOutInfo) {
       return;
     }
@@ -429,8 +425,8 @@ class SwapChangeNotifierProvider with ChangeNotifier {
           ),
           child: ShowPegInfoWidget(
             text: 'PEGOUT_WARNING'.tr(),
-            onChanged: (value) async {
-              await prefs.setBool(hidePegOutInfo, value);
+            onChanged: (value) {
+              ref.read(configurationProvider.notifier).setHidePegOutInfo(value);
             },
           ),
         );

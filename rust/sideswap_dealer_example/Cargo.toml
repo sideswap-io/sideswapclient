@@ -13,6 +13,6 @@ clap.workspace = true
 config.workspace = true
 log.workspace = true
 log4rs.workspace = true
-reqwest = { workspace = true, default-features = false, features = ["blocking", "json", "rustls-tls"] }
-serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
+serde.workspace = true
+ureq.workspace = true

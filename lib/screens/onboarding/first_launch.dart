@@ -38,7 +38,7 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
     useEffect(() {
       if (lang == 'zh') {
         ref
-            .read(configProvider.notifier)
+            .read(configurationProvider.notifier)
             .setSettingsNetworkType(SettingsNetworkType.sideswapChina);
       }
 

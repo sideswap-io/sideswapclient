@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:enum_to_string/enum_to_string.dart';
-import 'package:flutter/widgets.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -12,6 +11,7 @@ import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/phone_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
+part 'config_provider.freezed.dart';
 part 'config_provider.g.dart';
 
 @Riverpod(keepAlive: true)
@@ -19,17 +19,64 @@ SharedPreferences sharedPreferences(SharedPreferencesRef ref) {
   throw UnimplementedError();
 }
 
-final configProvider =
-    ChangeNotifierProvider<ConfigChangeNotifierProvider>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return ConfigChangeNotifierProvider(ref, prefs);
-});
+@freezed
+class SideswapSettings with _$SideswapSettings {
+  factory SideswapSettings.empty({
+    required Uint8List mnemonicEncrypted,
+    @Default('') String jadeId,
+    @Default(false) bool licenseAccepted,
+    @Default(true) bool enableEndpoint,
+    @Default(false) bool useBiometricProtection,
+    @Default(0) int env,
+    @Default('') String phoneKey,
+    @Default('') String phoneNumber,
+    @Default(false) bool usePinProtection,
+    PinData? pinData,
+    @Default(SettingsNetworkType.sideswap)
+    SettingsNetworkType settingsNetworkType,
+    @Default('') String networkHost,
+    @Default(0) int networkPort,
+    @Default(false) bool networkUseTLS,
+    String? settings,
+    @Default(0) int knownNewReleaseBuild,
+    @Default(true) bool showAmpOnboarding,
+    NetworkSettingsModel? networkSettingsModel,
+    @Default(false) bool hideTxChainingPromptValue,
+    @Default(false) bool hidePegInInfo,
+    @Default(false) bool hidePegOutInfo,
+  }) = _SideswapSettings;
 
-class ConfigChangeNotifierProvider with ChangeNotifier {
+  factory SideswapSettings({
+    required String jadeId,
+    required bool licenseAccepted,
+    required bool enableEndpoint,
+    required bool useBiometricProtection,
+    required int env,
+    required String phoneKey,
+    required String phoneNumber,
+    required bool usePinProtection,
+    PinData? pinData,
+    required SettingsNetworkType settingsNetworkType,
+    required String networkHost,
+    required int networkPort,
+    required bool networkUseTLS,
+    String? settings,
+    required int knownNewReleaseBuild,
+    required bool showAmpOnboarding,
+    NetworkSettingsModel? networkSettingsModel,
+    required bool hideTxChainingPromptValue,
+    required bool hidePegInInfo,
+    required bool hidePegOutInfo,
+  }) {
+    return _SideswapSettings(mnemonicEncrypted: Uint8List.fromList([]));
+  }
+
+  // do not change EVER this fields. It will broke user configuration
   static const mnemonicEncryptedField = 'mnemonic_encrypted';
   static const jadeIdField = 'jade_id';
-  static const useBiometricProtectionField = 'biometric_protection';
   static const licenseAcceptedField = 'license_accepted';
+  static const enableEndpointField = 'enable_endpoint';
+  static const useBiometricProtectionField = 'biometric_protection';
   static const envField = 'env';
   static const phoneKeyField = 'phoneKey';
   static const phoneNumberField = 'phoneNumber';
@@ -44,124 +91,283 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
   static const settingsField = 'settings';
   static const knownNewReleaseField = 'known_new_release';
   static const showAmpOnboardingField = 'show_amp_onboarding';
-  static const enableEndpointField = 'enable_endpoint';
   static const networkSettingsModelField = 'network_settings_model';
+  static const hideTxChainingPromptField = 'hide_tx_chaining_prompt';
+  static const hidePegInInfoField = 'hide_peg_in_info';
+  static const hidePegOutInfoField = 'hide_peg_out_info_new';
+}
 
-  ConfigChangeNotifierProvider(this.ref, this.prefs);
+@riverpod
+class Configuration extends _$Configuration {
+  @override
+  SideswapSettings build() {
+    ref.listenSelf((_, __) async {
+      final prefs = ref.read(sharedPreferencesProvider);
+      await _saveSettings(prefs);
+    });
 
-  final Ref ref;
-  SharedPreferences prefs;
+    final prefs = ref.watch(sharedPreferencesProvider);
 
-  Uint8List get mnemonicEncrypted {
-    return base64.decode(prefs.getString(mnemonicEncryptedField) ?? '');
+    return _readSettings(prefs);
   }
 
-  Future<void> setMnemonicEncrypted(Uint8List mnemonicEncrypted) async {
-    if (mnemonicEncrypted.isEmpty) {
-      await prefs.remove(mnemonicEncryptedField);
+  SideswapSettings _readSettings(SharedPreferences prefs) {
+    return SideswapSettings.empty(
+      mnemonicEncrypted: _mnemonicEncrypted(prefs),
+      jadeId: _jadeId(prefs),
+      licenseAccepted: _licenseAccepted(prefs),
+      enableEndpoint: _enableEndpoint(prefs),
+      useBiometricProtection: _useBiometricProtection(prefs),
+      env: _env(prefs),
+      phoneKey: _phoneKey(prefs),
+      phoneNumber: _phoneNumber(prefs),
+      usePinProtection: _usePinProtection(prefs),
+      pinData: _pinData(prefs),
+      settingsNetworkType: _settingsNetworkType(prefs),
+      networkHost: _networkHost(prefs),
+      networkPort: _networkPort(prefs),
+      networkUseTLS: _networkUseTLS(prefs),
+      settings: _settings(prefs),
+      knownNewReleaseBuild: _knownNewReleaseBuild(prefs),
+      showAmpOnboarding: _showAmpOnboarding(prefs),
+      networkSettingsModel: _networkSettingsModel(prefs),
+      hideTxChainingPromptValue: _hideTxChainingPromptValue(prefs),
+      hidePegInInfo: _hidePegInInfo(prefs),
+      hidePegOutInfo: _hidePegOutInfo(prefs),
+    );
+  }
+
+  Future<void> _saveSettings(SharedPreferences prefs) async {
+    await _setMnemonicEncrypted(prefs, state.mnemonicEncrypted);
+    await _setJadeId(prefs, state.jadeId);
+    await _setLicenseAccepted(prefs, state.licenseAccepted);
+    await _setEnableEndpoint(prefs, state.enableEndpoint);
+    await _setUseBiometricProtection(prefs, state.useBiometricProtection);
+    await _setEnv(prefs, state.env);
+    await _setPhoneKey(prefs, state.phoneKey);
+    await _setPhoneNumber(prefs, state.phoneNumber);
+    await _setUsePinProtection(prefs, state.usePinProtection);
+    if (state.pinData != null) {
+      await _setPinData(prefs, state.pinData!);
     } else {
-      await prefs.setString(
-          mnemonicEncryptedField, base64.encode(mnemonicEncrypted));
+      await prefs.remove(SideswapSettings.pinEncryptedDataField);
+      await prefs.remove(SideswapSettings.pinIdentifierField);
+      await prefs.remove(SideswapSettings.pinSaltField);
     }
-
-    notifyListeners();
+    await _setSettingsNetworkType(prefs, state.settingsNetworkType);
+    await _setNetworkHost(prefs, state.networkHost);
+    await _setNetworkPort(prefs, state.networkPort);
+    await _setNetworkUseTLS(prefs, state.networkUseTLS);
+    if (state.settings != null) {
+      await _setSettings(prefs, state.settings!);
+    } else {
+      await prefs.remove(SideswapSettings.settingsField);
+    }
+    await _setKnownNewReleaseBuild(prefs, state.knownNewReleaseBuild);
+    await _setShowAmpOnboarding(prefs, state.showAmpOnboarding);
+    if (state.networkSettingsModel != null) {
+      await _setNetworkSettingsModel(prefs, state.networkSettingsModel!);
+    } else {
+      await prefs.remove(SideswapSettings.networkSettingsModelField);
+    }
+    await _setHideTxChainingPromptValue(prefs, state.hideTxChainingPromptValue);
+    await _setHidePegInInfo(prefs, state.hidePegInInfo);
+    await _setHidePegOutInfo(prefs, state.hidePegOutInfo);
   }
 
-  String get jadeId {
-    return prefs.getString(jadeIdField) ?? '';
+  void setMnemonicEncrypted(Uint8List mnemonicEncrypted) {
+    state = state.copyWith(mnemonicEncrypted: mnemonicEncrypted);
   }
 
-  Future<void> setJadeId(String jadeId) async {
-    await prefs.setString(jadeIdField, jadeId);
-    notifyListeners();
+  void setJadeId(String jadeId) {
+    state = state.copyWith(jadeId: jadeId);
   }
 
-  bool get licenseAccepted {
-    return prefs.getBool(licenseAcceptedField) ?? false;
+  void setLicenseAccepted(bool licenseAccepted) {
+    state = state.copyWith(licenseAccepted: licenseAccepted);
   }
 
-  Future<void> setLicenseAccepted(bool licenseAccepted) async {
-    await prefs.setBool(licenseAcceptedField, licenseAccepted);
-    notifyListeners();
+  void setEnableEndpoint(bool enableEndpoint) {
+    state = state.copyWith(enableEndpoint: enableEndpoint);
   }
 
-  bool get enableEndpoint {
-    return prefs.getBool(enableEndpointField) ?? true;
+  void setUseBiometricProtection(bool useBiometricProtection) {
+    state = state.copyWith(useBiometricProtection: useBiometricProtection);
   }
 
-  Future<void> setEnableEndpoint(bool enableEndpoint) async {
-    await prefs.setBool(enableEndpointField, enableEndpoint);
-    notifyListeners();
+  void setEnv(int env) {
+    state = state.copyWith(env: env);
   }
 
-  bool get useBiometricProtection {
-    return prefs.getBool(useBiometricProtectionField) ?? false;
+  void setPhoneKey(String phoneKey) {
+    state = state.copyWith(phoneKey: phoneKey);
   }
 
-  Future<void> setUseBiometricProtection(bool useBiometricProtection) async {
-    await prefs.setBool(useBiometricProtectionField, useBiometricProtection);
-    notifyListeners();
+  void setPhoneNumber(String phoneNumber) {
+    state = state.copyWith(phoneNumber: phoneNumber);
   }
 
-  int get env {
-    return prefs.getInt(envField) ?? 0;
+  void setUsePinProtection(bool usePinProtection) {
+    state = state.copyWith(usePinProtection: usePinProtection);
   }
 
-  Future<void> setEnv(int env) async {
-    await prefs.setInt(envField, env);
-    notifyListeners();
+  void setPinData(PinData? pinData) {
+    state = state.copyWith(pinData: pinData);
   }
 
-  Future<void> deleteConfig() async {
-    final currentEnv = env;
-    await prefs.clear();
-    logger.d(phoneNumber);
+  void setSettingsNetworkType(SettingsNetworkType settingsNetworkType) {
+    state = state.copyWith(settingsNetworkType: settingsNetworkType);
+  }
+
+  void setNetworkHost(String networkHost) {
+    state = state.copyWith(networkHost: networkHost);
+  }
+
+  void setNetworkPort(int networkPort) {
+    state = state.copyWith(networkPort: networkPort);
+  }
+
+  void setNetworkUseTLS(bool networkUseTLS) {
+    state = state.copyWith(networkUseTLS: networkUseTLS);
+  }
+
+  void setSettings(String? settings) {
+    state = state.copyWith(settings: settings);
+  }
+
+  void setKnownNewReleaseBuild(int knownNewReleaseBuild) {
+    state = state.copyWith(knownNewReleaseBuild: knownNewReleaseBuild);
+  }
+
+  void setShowAmpOnboarding(bool showAmpOnboarding) {
+    state = state.copyWith(showAmpOnboarding: showAmpOnboarding);
+  }
+
+  void setNetworkSettingsModel(NetworkSettingsModel? networkSettingsModel) {
+    state = state.copyWith(networkSettingsModel: networkSettingsModel);
+  }
+
+  void setHideTxChainingPromptValue(bool hideTxChainingPromptValue) {
+    state =
+        state.copyWith(hideTxChainingPromptValue: hideTxChainingPromptValue);
+  }
+
+  void setHidePegInInfo(bool hidePegInInfo) {
+    state = state.copyWith(hidePegInInfo: hidePegInInfo);
+  }
+
+  void setHidePegOutInfo(bool hidePegOutInfo) {
+    state = state.copyWith(hidePegOutInfo: hidePegOutInfo);
+  }
+
+  void deleteConfig() {
+    final currentEnv = state.env;
     ref
         .read(phoneProvider)
         .setConfirmPhoneData(confirmPhoneData: ConfirmPhoneData());
-    setShowAmpOnboarding(true);
-    await setEnv(currentEnv);
-    notifyListeners();
+    state = SideswapSettings.empty(
+        mnemonicEncrypted: Uint8List.fromList([]),
+        env: currentEnv,
+        showAmpOnboarding: true);
   }
 
-  Future<void> setPhoneKey(String phoneKey) async {
-    await prefs.setString(phoneKeyField, phoneKey);
-    notifyListeners();
+  void clearSettings() {
+    state = state.copyWith(settings: null);
   }
 
-  String get phoneKey {
-    return prefs.getString(phoneKeyField) ?? '';
+  ///
+  /// Shared preferences functions
+  Uint8List _mnemonicEncrypted(SharedPreferences prefs) {
+    return base64
+        .decode(prefs.getString(SideswapSettings.mnemonicEncryptedField) ?? '');
   }
 
-  Future<void> setPhoneNumber(String phoneNumber) async {
-    await prefs.setString(phoneNumberField, phoneNumber);
-    notifyListeners();
+  Future<void> _setMnemonicEncrypted(
+      SharedPreferences prefs, Uint8List mnemonicEncrypted) async {
+    if (mnemonicEncrypted.isEmpty) {
+      await prefs.remove(SideswapSettings.mnemonicEncryptedField);
+    } else {
+      await prefs.setString(SideswapSettings.mnemonicEncryptedField,
+          base64.encode(mnemonicEncrypted));
+    }
   }
 
-  String get phoneNumber {
-    return prefs.getString(phoneNumberField) ?? '';
+  String _jadeId(SharedPreferences prefs) {
+    return prefs.getString(SideswapSettings.jadeIdField) ?? '';
   }
 
-  Future<void> setPinData(PinData pinData) async {
-    await prefs.setString(pinSaltField, pinData.salt);
-    await prefs.setString(pinEncryptedDataField, pinData.encryptedData);
-    await prefs.setString(pinIdentifierField, pinData.pinIdentifier);
-    notifyListeners();
+  Future<void> _setJadeId(SharedPreferences prefs, String jadeId) async {
+    await prefs.setString(SideswapSettings.jadeIdField, jadeId);
   }
 
-  Future<void> setUsePinProtection(bool usePinProtection) async {
-    await prefs.setBool(usePinProtectionField, usePinProtection);
-    notifyListeners();
+  bool _licenseAccepted(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.licenseAcceptedField) ?? false;
   }
 
-  bool get usePinProtection {
-    return prefs.getBool(usePinProtectionField) ?? false;
+  Future<void> _setLicenseAccepted(
+      SharedPreferences prefs, bool licenseAccepted) async {
+    await prefs.setBool(SideswapSettings.licenseAcceptedField, licenseAccepted);
   }
 
-  PinData get pinData {
-    final salt = prefs.getString(pinSaltField);
-    final encryptedData = prefs.getString(pinEncryptedDataField);
-    final pinIdentifier = prefs.getString(pinIdentifierField);
+  bool _enableEndpoint(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.enableEndpointField) ?? true;
+  }
+
+  Future<void> _setEnableEndpoint(
+      SharedPreferences prefs, bool enableEndpoint) async {
+    await prefs.setBool(SideswapSettings.enableEndpointField, enableEndpoint);
+  }
+
+  bool _useBiometricProtection(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.useBiometricProtectionField) ?? false;
+  }
+
+  Future<void> _setUseBiometricProtection(
+      SharedPreferences prefs, bool useBiometricProtection) async {
+    await prefs.setBool(
+        SideswapSettings.useBiometricProtectionField, useBiometricProtection);
+  }
+
+  int _env(SharedPreferences prefs) {
+    return prefs.getInt(SideswapSettings.envField) ?? 0;
+  }
+
+  Future<void> _setEnv(SharedPreferences prefs, int env) async {
+    await prefs.setInt(SideswapSettings.envField, env);
+  }
+
+  Future<void> _setPhoneKey(SharedPreferences prefs, String phoneKey) async {
+    await prefs.setString(SideswapSettings.phoneKeyField, phoneKey);
+  }
+
+  String _phoneKey(SharedPreferences prefs) {
+    return prefs.getString(SideswapSettings.phoneKeyField) ?? '';
+  }
+
+  Future<void> _setPhoneNumber(
+      SharedPreferences prefs, String phoneNumber) async {
+    await prefs.setString(SideswapSettings.phoneNumberField, phoneNumber);
+  }
+
+  String _phoneNumber(SharedPreferences prefs) {
+    return prefs.getString(SideswapSettings.phoneNumberField) ?? '';
+  }
+
+  Future<void> _setUsePinProtection(
+      SharedPreferences prefs, bool usePinProtection) async {
+    await prefs.setBool(
+        SideswapSettings.usePinProtectionField, usePinProtection);
+  }
+
+  bool _usePinProtection(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.usePinProtectionField) ?? false;
+  }
+
+  PinData _pinData(SharedPreferences prefs) {
+    final salt = prefs.getString(SideswapSettings.pinSaltField);
+    final encryptedData =
+        prefs.getString(SideswapSettings.pinEncryptedDataField);
+    final pinIdentifier = prefs.getString(SideswapSettings.pinIdentifierField);
 
     if (salt == null || encryptedData == null || pinIdentifier == null) {
       return PinData();
@@ -171,14 +377,23 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
         salt: salt, encryptedData: encryptedData, pinIdentifier: pinIdentifier);
   }
 
-  Future<void> setSettingsNetworkType(SettingsNetworkType type) async {
+  Future<void> _setPinData(SharedPreferences prefs, PinData pinData) async {
+    await prefs.setString(SideswapSettings.pinSaltField, pinData.salt);
     await prefs.setString(
-        settingsNetworkTypeField, EnumToString.convertToString(type));
-    notifyListeners();
+        SideswapSettings.pinEncryptedDataField, pinData.encryptedData);
+    await prefs.setString(
+        SideswapSettings.pinIdentifierField, pinData.pinIdentifier);
   }
 
-  SettingsNetworkType get settingsNetworkType {
-    final typeString = prefs.getString(settingsNetworkTypeField);
+  Future<void> _setSettingsNetworkType(
+      SharedPreferences prefs, SettingsNetworkType type) async {
+    await prefs.setString(SideswapSettings.settingsNetworkTypeField,
+        EnumToString.convertToString(type));
+  }
+
+  SettingsNetworkType _settingsNetworkType(SharedPreferences prefs) {
+    final typeString =
+        prefs.getString(SideswapSettings.settingsNetworkTypeField);
 
     if (typeString == null) {
       return SettingsNetworkType.sideswap;
@@ -188,72 +403,64 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
         SettingsNetworkType.sideswap;
   }
 
-  Future<void> setSettingsHost(String host) async {
-    await prefs.setString(settingsHostField, host);
-    notifyListeners();
+  Future<void> _setNetworkHost(SharedPreferences prefs, String host) async {
+    await prefs.setString(SideswapSettings.settingsHostField, host);
   }
 
-  String get settingsHost {
-    return prefs.getString(settingsHostField) ?? '';
+  String _networkHost(SharedPreferences prefs) {
+    return prefs.getString(SideswapSettings.settingsHostField) ?? '';
   }
 
-  Future<void> setSettingsPort(int port) async {
-    await prefs.setInt(settingsPortField, port);
-    notifyListeners();
+  Future<void> _setNetworkPort(SharedPreferences prefs, int port) async {
+    await prefs.setInt(SideswapSettings.settingsPortField, port);
   }
 
-  int get settingsPort {
-    return prefs.getInt(settingsPortField) ?? 0;
+  int _networkPort(SharedPreferences prefs) {
+    return prefs.getInt(SideswapSettings.settingsPortField) ?? 0;
   }
 
-  Future<void> setSettingsUseTLS(bool value) async {
-    await prefs.setBool(settingsUseTLSField, value);
-    notifyListeners();
+  Future<void> _setNetworkUseTLS(SharedPreferences prefs, bool value) async {
+    await prefs.setBool(SideswapSettings.settingsUseTLSField, value);
   }
 
-  bool get settingsUseTLS {
-    return prefs.getBool(settingsUseTLSField) ?? false;
+  bool _networkUseTLS(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.settingsUseTLSField) ?? false;
   }
 
-  String? get settings {
-    return prefs.getString(settingsField);
+  String? _settings(SharedPreferences prefs) {
+    return prefs.getString(SideswapSettings.settingsField);
   }
 
-  Future<void> setSettings(String value) async {
-    await prefs.setString(settingsField, value);
-    notifyListeners();
+  Future<void> _setSettings(SharedPreferences prefs, String value) async {
+    await prefs.setString(SideswapSettings.settingsField, value);
   }
 
-  Future<void> clearSettings() async {
-    await prefs.remove(settingsField);
+  Future<void> _setKnownNewReleaseBuild(
+      SharedPreferences prefs, int value) async {
+    await prefs.setInt(SideswapSettings.knownNewReleaseField, value);
   }
 
-  Future<void> setKnownNewReleaseBuild(int value) async {
-    await prefs.setInt(knownNewReleaseField, value);
-    notifyListeners();
+  int _knownNewReleaseBuild(SharedPreferences prefs) {
+    return prefs.getInt(SideswapSettings.knownNewReleaseField) ?? 0;
   }
 
-  int get knownNewReleaseBuild {
-    return prefs.getInt(knownNewReleaseField) ?? 0;
+  Future<void> _setShowAmpOnboarding(
+      SharedPreferences prefs, bool value) async {
+    await prefs.setBool(SideswapSettings.showAmpOnboardingField, value);
   }
 
-  Future<void> setShowAmpOnboarding(bool value) async {
-    await prefs.setBool(showAmpOnboardingField, value);
-    notifyListeners();
+  bool _showAmpOnboarding(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.showAmpOnboardingField) ?? true;
   }
 
-  bool get showAmpOnboarding {
-    return prefs.getBool(showAmpOnboardingField) ?? true;
-  }
-
-  Future<void> setNetworkSettingsModel(NetworkSettingsModel model) async {
+  Future<void> _setNetworkSettingsModel(
+      SharedPreferences prefs, NetworkSettingsModel model) async {
     final encoded = jsonEncode(model.toJson());
-    await prefs.setString(networkSettingsModelField, encoded);
-    notifyListeners();
+    await prefs.setString(SideswapSettings.networkSettingsModelField, encoded);
   }
 
-  NetworkSettingsModel get networkSettingsModel {
-    final encoded = prefs.getString(networkSettingsModelField);
+  NetworkSettingsModel _networkSettingsModel(SharedPreferences prefs) {
+    final encoded = prefs.getString(SideswapSettings.networkSettingsModelField);
 
     try {
       return switch (encoded) {
@@ -263,8 +470,8 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
           }(),
         _ => () {
             return NetworkSettingsModelEmpty(
-              settingsNetworkType: settingsNetworkType,
-              env: env,
+              settingsNetworkType: _settingsNetworkType(prefs),
+              env: _env(prefs),
             );
           }(),
       };
@@ -273,8 +480,35 @@ class ConfigChangeNotifierProvider with ChangeNotifier {
     }
 
     return NetworkSettingsModelEmpty(
-      settingsNetworkType: settingsNetworkType,
-      env: env,
+      settingsNetworkType: _settingsNetworkType(prefs),
+      env: _env(prefs),
     );
+  }
+
+  Future<void> _setHideTxChainingPromptValue(
+      SharedPreferences prefs, bool value) async {
+    await prefs.setBool(SideswapSettings.hideTxChainingPromptField, value);
+  }
+
+  bool _hideTxChainingPromptValue(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.hideTxChainingPromptField) ?? false;
+  }
+
+  Future<void> _setHidePegInInfo(
+      SharedPreferences prefs, bool hidePegInInfo) async {
+    await prefs.setBool(SideswapSettings.hidePegInInfoField, hidePegInInfo);
+  }
+
+  bool _hidePegInInfo(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.hidePegInInfoField) ?? false;
+  }
+
+  Future<void> _setHidePegOutInfo(
+      SharedPreferences prefs, bool hidePegOutInfo) async {
+    await prefs.setBool(SideswapSettings.hidePegOutInfoField, hidePegOutInfo);
+  }
+
+  bool _hidePegOutInfo(SharedPreferences prefs) {
+    return prefs.getBool(SideswapSettings.hidePegOutInfoField) ?? false;
   }
 }

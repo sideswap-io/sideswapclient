@@ -29,6 +29,7 @@ import 'package:sideswap/screens/markets/widgets/share_and_copy_buttons_row.dart
 import 'package:sideswap/screens/markets/widgets/order_table.dart';
 import 'package:sideswap/screens/markets/widgets/time_to_live.dart';
 
+// TODO (malcolmpl): Fix entire widget
 class CreateOrderView extends HookConsumerWidget {
   const CreateOrderView({
     super.key,
@@ -232,7 +233,8 @@ class CreateOrderView extends HookConsumerWidget {
                               bool allowChaining = false;
                               if (twoStep &&
                                   orderDetailsData.txChainingRequired) {
-                                allowChaining = await allowTxChaining(context);
+                                allowChaining =
+                                    await allowTxChaining(context, ref);
                                 if (!allowChaining) {
                                   return;
                                 }

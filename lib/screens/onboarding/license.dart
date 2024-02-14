@@ -97,7 +97,7 @@ class LicenseTerms extends ConsumerWidget {
                   text: 'I AGREE'.tr(),
                   backgroundColor: SideSwapColors.brightTurquoise,
                   onPressed: () async {
-                    await ref.read(walletProvider).setLicenseAccepted();
+                    ref.read(walletProvider).setLicenseAccepted();
                     if (nextStep == LicenseNextStep.createWallet) {
                       await ref
                           .read(walletProvider)

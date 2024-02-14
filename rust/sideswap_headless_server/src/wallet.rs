@@ -83,7 +83,7 @@ fn run(
         cache_dir: work_dir,
         wallet_info: gdk_ses::WalletInfo::Mnemonic(mnemonic),
         single_sig: true,
-        network: None,
+        electrum_server: Default::default(),
         proxy: None,
     };
 

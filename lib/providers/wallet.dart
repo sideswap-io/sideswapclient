@@ -242,7 +242,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void sendMsg(To to) {
     if (kDebugMode) {
-      logger.d('send: $to');
+      logger.d('send: ${to.toDebugString()}');
     }
     final clientId = ref.read(libClientIdProvider);
 
@@ -306,19 +306,19 @@ class WalletChangeNotifier with ChangeNotifier {
     clientReady = true;
     processPendingPushMessages();
 
-    final config = ref.read(configProvider);
     final appResetRequired = await _encryption.appResetRequired(
-        hasEncryptedMnemonic: config.mnemonicEncrypted.isNotEmpty,
-        usePinProtection: config.usePinProtection);
+        hasEncryptedMnemonic:
+            ref.read(configurationProvider).mnemonicEncrypted.isNotEmpty,
+        usePinProtection: ref.read(configurationProvider).usePinProtection);
     if (appResetRequired) {
-      config.deleteConfig();
+      ref.read(configurationProvider.notifier).deleteConfig();
     }
 
-    if (config.jadeId.isNotEmpty) {
-      jadeLogin(config.jadeId);
-    } else if (config.mnemonicEncrypted.isNotEmpty) {
+    if (ref.read(configurationProvider).jadeId.isNotEmpty) {
+      jadeLogin(ref.read(configurationProvider).jadeId);
+    } else if (ref.read(configurationProvider).mnemonicEncrypted.isNotEmpty) {
       if (await _encryption.canAuthenticate() &&
-          config.useBiometricProtection) {
+          ref.read(configurationProvider).useBiometricProtection) {
         ref
             .read(pageStatusStateProvider.notifier)
             .setStatus(Status.lockedWalet);
@@ -326,7 +326,7 @@ class WalletChangeNotifier with ChangeNotifier {
         await unlockWallet();
       }
     } else {
-      if (config.usePinProtection) {
+      if (ref.read(configurationProvider).usePinProtection) {
         await unlockWallet();
       } else {
         ref.read(pageStatusStateProvider.notifier).setStatus(Status.noWallet);
@@ -650,7 +650,7 @@ class WalletChangeNotifier with ChangeNotifier {
               salt: data.salt,
               encryptedData: data.encryptedData,
               pinIdentifier: data.pinIdentifier);
-          await ref.read(configProvider).setPinData(pinData);
+          ref.read(configurationProvider.notifier).setPinData(pinData);
           pinEncryptDataSubject.add(pinData);
         }
         break;
@@ -778,7 +778,8 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.walletLoaded:
         ref.read(walletLoadedStateProvider.notifier).state = true;
-        final showAmpOnboarding = ref.read(configProvider).showAmpOnboarding;
+        final showAmpOnboarding =
+            ref.read(configurationProvider).showAmpOnboarding;
         if (showAmpOnboarding) {
           // wallet is loaded but we need to display onboarding amp setup
           ref
@@ -1147,7 +1148,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<void> setReviewLicenseCreateWallet() async {
     walletImporting = false;
-    if (ref.read(configProvider).licenseAccepted) {
+    if (ref.read(configurationProvider).licenseAccepted) {
       if (await _encryption.canAuthenticate()) {
         await newWalletBiometricPrompt();
         return;
@@ -1164,7 +1165,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void setReviewLicenseImportWallet() {
     walletImporting = true;
-    if (ref.read(configProvider).licenseAccepted) {
+    if (ref.read(configurationProvider).licenseAccepted) {
       startMnemonicImport();
     } else {
       ref
@@ -1174,13 +1175,13 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setLicenseAccepted() async {
-    await ref.read(configProvider).setLicenseAccepted(true);
+  void setLicenseAccepted() {
+    ref.read(configurationProvider.notifier).setLicenseAccepted(true);
     notifyListeners();
   }
 
   Future<void> newWalletBiometricPrompt() async {
-    assert(ref.read(configProvider).licenseAccepted == true);
+    assert(ref.read(configurationProvider).licenseAccepted == true);
     _mnemonic = getNewMnemonic();
     if (await _encryption.canAuthenticate()) {
       ref
@@ -1241,7 +1242,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<bool> walletPinEnable() async {
     if (await _registerWallet(false)) {
-      await enablePinProtection();
+      enablePinProtection();
       return true;
     }
 
@@ -1259,25 +1260,25 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     if (enableBiometric) {
-      await ref
-          .read(configProvider)
+      ref
+          .read(configurationProvider.notifier)
           .setMnemonicEncrypted(await _encryption.encryptBiometric(_mnemonic));
 
-      if (ref.read(configProvider).mnemonicEncrypted.isEmpty) {
+      if (ref.read(configurationProvider).mnemonicEncrypted.isEmpty) {
         return false;
       }
-      await ref.read(configProvider).setUseBiometricProtection(true);
-      await ref.read(configProvider).setUsePinProtection(false);
+      ref.read(configurationProvider.notifier).setUseBiometricProtection(true);
+      ref.read(configurationProvider.notifier).setUsePinProtection(false);
     } else {
-      await ref
-          .read(configProvider)
+      ref
+          .read(configurationProvider.notifier)
           .setMnemonicEncrypted(await _encryption.encryptFallback(_mnemonic));
       // Should not happen, something is very wrong
-      if (ref.read(configProvider).mnemonicEncrypted.isEmpty) {
+      if (ref.read(configurationProvider).mnemonicEncrypted.isEmpty) {
         return false;
       }
 
-      await ref.read(configProvider).setUseBiometricProtection(false);
+      ref.read(configurationProvider.notifier).setUseBiometricProtection(false);
     }
 
     return true;
@@ -1292,8 +1293,8 @@ class WalletChangeNotifier with ChangeNotifier {
     _login(mnemonic: _mnemonic);
   }
 
-  Future<void> acceptLicense() async {
-    await ref.read(configProvider).setLicenseAccepted(true);
+  void acceptLicense() {
+    ref.read(configurationProvider.notifier).setLicenseAccepted(true);
     ref.read(pageStatusStateProvider.notifier).setStatus(Status.noWallet);
   }
 
@@ -1520,8 +1521,6 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void _login({String mnemonic = '', String jadeId = ''}) {
-    final config = ref.read(configProvider);
-
     final msg = To();
     msg.login = To_Login();
     if (mnemonic.isNotEmpty) {
@@ -1533,10 +1532,12 @@ class WalletChangeNotifier with ChangeNotifier {
           .read(jadeOnboardingRegistrationNotifierProvider.notifier)
           .setState(const JadeOnboardingRegistrationStateProcessing());
     }
-    msg.login.network = getNetworkSettings();
 
-    if (config.phoneKey.isNotEmpty) {
-      msg.login.phoneKey = config.phoneKey;
+    sendProxySettings();
+    sendNetworkSettings();
+
+    if (ref.read(configurationProvider).phoneKey.isNotEmpty) {
+      msg.login.phoneKey = ref.read(configurationProvider).phoneKey;
     }
 
     sendMsg(msg);
@@ -1544,7 +1545,7 @@ class WalletChangeNotifier with ChangeNotifier {
     loadSettings();
 
     _loggedIn = true;
-    ref.read(configProvider).setJadeId(jadeId);
+    ref.read(configurationProvider.notifier).setJadeId(jadeId);
     notifyListeners();
   }
 
@@ -1710,7 +1711,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void loadSettings() {
     var settings = Settings();
-    final settingsStr = ref.read(configProvider).settings;
+    final settingsStr = ref.read(configurationProvider).settings;
     if (settingsStr != null) {
       settings = Settings.fromJson(settingsStr);
     }
@@ -1726,11 +1727,13 @@ class WalletChangeNotifier with ChangeNotifier {
       settings.disabledAccounts.add(Settings_AccountAsset(
           account: getAccount(v.account), assetId: v.assetId));
     }
-    await ref.read(configProvider).setSettings(settings.writeToJson());
+    ref
+        .read(configurationProvider.notifier)
+        .setSettings(settings.writeToJson());
   }
 
-  Future<void> resetSettings() async {
-    await ref.read(configProvider).clearSettings();
+  void resetSettings() {
+    ref.read(configurationProvider.notifier).clearSettings();
     loadSettings();
   }
 
@@ -1778,7 +1781,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsViewBackup() async {
-    if (ref.read(configProvider).usePinProtection) {
+    if (ref.read(configurationProvider).usePinProtection) {
       if (await ref.read(pinProtectionProvider).pinBlockadeUnlocked()) {
         ref
             .read(pageStatusStateProvider.notifier)
@@ -1789,11 +1792,11 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    final mnemonic = ref.read(configProvider).useBiometricProtection
+    final mnemonic = ref.read(configurationProvider).useBiometricProtection
         ? await _encryption
-            .decryptBiometric(ref.read(configProvider).mnemonicEncrypted)
+            .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted)
         : await _encryption
-            .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
+            .decryptFallback(ref.read(configurationProvider).mnemonicEncrypted);
     if (mnemonic == _mnemonic && validateMnemonic(mnemonic)) {
       ref
           .read(pageStatusStateProvider.notifier)
@@ -1860,7 +1863,7 @@ class WalletChangeNotifier with ChangeNotifier {
       notifyListeners();
     }
 
-    await deleteWalletAndCleanup();
+    deleteWalletAndCleanup();
   }
 
   void cleanupConnectionStates() {
@@ -1884,17 +1887,15 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> deleteWalletAndCleanup() async {
+  void deleteWalletAndCleanup() {
     unsubscribeFromPriceStream();
     cleanupConnectionStates();
-    await ref.read(configProvider).deleteConfig();
+    ref.read(configurationProvider.notifier).deleteConfig();
     cleanAppStates();
   }
 
   Future<void> unlockWallet() async {
-    final config = ref.read(configProvider);
-
-    if (config.usePinProtection) {
+    if (ref.read(configurationProvider).usePinProtection) {
       if (await ref
           .read(pinProtectionProvider)
           .pinBlockadeUnlocked(showBackButton: false)) {
@@ -1906,10 +1907,12 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    if (config.useBiometricProtection) {
-      _mnemonic = await _encryption.decryptBiometric(config.mnemonicEncrypted);
+    if (ref.read(configurationProvider).useBiometricProtection) {
+      _mnemonic = await _encryption
+          .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted);
     } else {
-      _mnemonic = await _encryption.decryptFallback(config.mnemonicEncrypted);
+      _mnemonic = await _encryption
+          .decryptFallback(ref.read(configurationProvider).mnemonicEncrypted);
     }
 
     if (validateMnemonic(_mnemonic)) {
@@ -1924,7 +1927,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<void> settingsEnableBiometric() async {
     final mnemonic = await _encryption
-        .decryptFallback(ref.read(configProvider).mnemonicEncrypted);
+        .decryptFallback(ref.read(configurationProvider).mnemonicEncrypted);
 
     if (mnemonic.isEmpty) {
       return;
@@ -1935,15 +1938,17 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    await ref.read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
+    ref
+        .read(configurationProvider.notifier)
+        .setMnemonicEncrypted(mnemonicEncrypted);
     _mnemonic = mnemonic;
-    await ref.read(configProvider).setUseBiometricProtection(true);
+    ref.read(configurationProvider.notifier).setUseBiometricProtection(true);
     notifyListeners();
   }
 
   Future<void> settingsDisableBiometric() async {
     final mnemonic = await _encryption
-        .decryptBiometric(ref.read(configProvider).mnemonicEncrypted);
+        .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted);
     if (mnemonic.isEmpty) {
       return;
     }
@@ -1953,22 +1958,25 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    await ref.read(configProvider).setMnemonicEncrypted(mnemonicEncrypted);
+    ref
+        .read(configurationProvider.notifier)
+        .setMnemonicEncrypted(mnemonicEncrypted);
     _mnemonic = mnemonic;
-    await ref.read(configProvider).setUseBiometricProtection(false);
+    ref.read(configurationProvider.notifier).setUseBiometricProtection(false);
     notifyListeners();
   }
 
   Future<bool> isAuthenticated() async {
-    if (ref.read(configProvider).usePinProtection) {
+    if (ref.read(configurationProvider).usePinProtection) {
       return ref.read(pinProtectionProvider).pinBlockadeUnlocked();
     }
 
-    if (ref.read(configProvider).useBiometricProtection) {
+    if (ref.read(configurationProvider).useBiometricProtection) {
       _mnemonic = await _encryption
-          .decryptBiometric(ref.read(configProvider).mnemonicEncrypted);
+          .decryptBiometric(ref.read(configurationProvider).mnemonicEncrypted);
     } else {
-      final mnemonicEncrypted = ref.read(configProvider).mnemonicEncrypted;
+      final mnemonicEncrypted =
+          ref.read(configurationProvider).mnemonicEncrypted;
       // Temporary workaround for Jade
       if (mnemonicEncrypted.isEmpty) {
         return true;
@@ -2186,7 +2194,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void uploadDeviceContacts(To_UploadContacts uploadContacts) {
-    uploadContacts.phoneKey = ref.read(configProvider).phoneKey;
+    uploadContacts.phoneKey = ref.read(configurationProvider).phoneKey;
     final msg = To();
     msg.uploadContacts = uploadContacts;
     sendMsg(msg);
@@ -2194,7 +2202,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void uploadAvatar({required String avatar}) {
     final uploadAvatar = To_UploadAvatar();
-    uploadAvatar.phoneKey = ref.read(configProvider).phoneKey;
+    uploadAvatar.phoneKey = ref.read(configurationProvider).phoneKey;
     uploadAvatar.image = avatar;
 
     final msg = To();
@@ -2237,7 +2245,12 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void sendDecryptPin(String pin) {
-    final pinData = ref.read(configProvider).pinData;
+    final pinData = ref.read(configurationProvider).pinData;
+
+    if (pinData == null) {
+      logger.w('pinData is empty!');
+      return;
+    }
 
     final msg = To();
     msg.decryptPin = To_DecryptPin();
@@ -2248,13 +2261,13 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  Future<void> setPinSuccess() async {
-    await enablePinProtection();
+  void setPinSuccess() {
+    enablePinProtection();
     ref.read(pageStatusStateProvider.notifier).setStatus(Status.pinSuccess);
   }
 
   Future<bool> disablePinProtection() async {
-    if (!ref.read(configProvider).usePinProtection) {
+    if (!ref.read(configurationProvider).usePinProtection) {
       // already disabled
       return true;
     }
@@ -2263,10 +2276,10 @@ class WalletChangeNotifier with ChangeNotifier {
         pinDecryptDataSubject.listen((pinDecryptedData) async {
       if (pinDecryptedData.success) {
         // turn off pin and save encrypted mnemonic
-        await ref.read(configProvider).setUsePinProtection(false);
+        ref.read(configurationProvider.notifier).setUsePinProtection(false);
         notifyListeners();
 
-        await ref.read(configProvider).setMnemonicEncrypted(
+        ref.read(configurationProvider.notifier).setMnemonicEncrypted(
             await _encryption.encryptFallback(pinDecryptedData.mnemonic));
       }
     });
@@ -2279,9 +2292,9 @@ class WalletChangeNotifier with ChangeNotifier {
     return ret;
   }
 
-  Future<void> enablePinProtection() async {
-    await ref.read(configProvider).setUseBiometricProtection(false);
-    await ref.read(configProvider).setUsePinProtection(true);
+  void enablePinProtection() {
+    ref.read(configurationProvider.notifier).setUseBiometricProtection(false);
+    ref.read(configurationProvider.notifier).setUsePinProtection(true);
     notifyListeners();
   }
 
@@ -2348,7 +2361,7 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void unregisterPhone() {
-    final phoneKey = ref.read(configProvider).phoneKey;
+    final phoneKey = ref.read(configurationProvider).phoneKey;
     if (phoneKey.isNotEmpty) {
       var msg = To();
       msg.unregisterPhone = To_UnregisterPhone();
@@ -2360,8 +2373,8 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void removePhoneKey() {
-    ref.read(configProvider).setPhoneKey('');
-    ref.read(configProvider).setPhoneNumber('');
+    ref.read(configurationProvider.notifier).setPhoneKey('');
+    ref.read(configurationProvider.notifier).setPhoneNumber('');
   }
 
   void cancelOrder(String orderId) {
@@ -2608,10 +2621,9 @@ class WalletChangeNotifier with ChangeNotifier {
     }
   }
 
-  NetworkSettings getNetworkSettings() {
-    final config = ref.read(configProvider);
-    final network = NetworkSettings();
-    switch (config.settingsNetworkType) {
+  To_NetworkSettings getNetworkSettings() {
+    final network = To_NetworkSettings();
+    switch (ref.read(configurationProvider).settingsNetworkType) {
       case SettingsNetworkType.blockstream:
         network.blockstream = Empty();
         break;
@@ -2622,20 +2634,29 @@ class WalletChangeNotifier with ChangeNotifier {
         network.sideswapCn = Empty();
         break;
       case SettingsNetworkType.personal:
-        network.custom = NetworkSettings_Custom();
-        network.custom.host = config.settingsHost;
-        network.custom.port = config.settingsPort;
-        network.custom.useTls = config.settingsUseTLS;
+        network.custom = To_NetworkSettings_Custom();
+        network.custom.host = ref.read(configurationProvider).networkHost;
+        network.custom.port = ref.read(configurationProvider).networkPort;
+        network.custom.useTls = ref.read(configurationProvider).networkUseTLS;
         break;
     }
     return network;
   }
 
-  // TODO (malcolmpl): remove after apply network settings?
-  void applyNetworkChange() {
+  To_ProxySettings getProxySettings() {
+    final proxy = To_ProxySettings();
+    return proxy;
+  }
+
+  void sendNetworkSettings() {
     final msg = To();
-    msg.changeNetwork = To_ChangeNetwork();
-    msg.changeNetwork.network = getNetworkSettings();
+    msg.networkSettings = getNetworkSettings();
+    sendMsg(msg);
+  }
+
+  void sendProxySettings() {
+    final msg = To();
+    msg.proxySettings = getProxySettings();
     sendMsg(msg);
   }
 

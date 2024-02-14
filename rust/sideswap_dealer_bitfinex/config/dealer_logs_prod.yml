@@ -25,7 +25,5 @@ root:
     - file
 
 loggers:
-  hyper:
-    level: info
-  reqwest:
+  ureq:
     level: info

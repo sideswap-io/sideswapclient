@@ -15,7 +15,7 @@ class EndpointListener extends HookConsumerWidget {
     }
 
     final endpointServer = ref.watch(endpointServerProvider);
-    final enableEndpoint = ref.watch(configProvider).enableEndpoint;
+    final enableEndpoint = ref.watch(configurationProvider).enableEndpoint;
 
     useEffect(() {
       if (enableEndpoint) {

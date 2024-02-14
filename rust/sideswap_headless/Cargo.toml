@@ -12,6 +12,6 @@ futures-util.workspace = true
 log.workspace = true
 prost.workspace = true
 serde_json.workspace = true
-tokio = { workspace = true, features = ["macros", "net", "rt", "sync", "time", "rt-multi-thread"] }
-tokio-tungstenite = { workspace = true, features = [ "stream" ] }
-tungstenite = { workspace = true, default-features = false, features = [] }
+tokio.workspace = true
+tokio-tungstenite.workspace = true
+tungstenite.workspace = true

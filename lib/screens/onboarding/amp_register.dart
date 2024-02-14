@@ -192,7 +192,9 @@ class AmpRegister extends HookConsumerWidget {
                               // TODO: Amp Fix that
                               // await ref.read(configProvider).setShowAmpOnboarding(false);
                               // ref.read(walletProvider).setRegistered();
-                              if (ref.read(configProvider).showAmpOnboarding) {
+                              if (ref
+                                  .read(configurationProvider)
+                                  .showAmpOnboarding) {
                                 ref.read(walletProvider).setRegistered();
                               } else {
                                 ref
@@ -201,7 +203,7 @@ class AmpRegister extends HookConsumerWidget {
                               }
 
                               ref
-                                  .read(configProvider)
+                                  .read(configurationProvider.notifier)
                                   .setShowAmpOnboarding(false);
                             },
                             child: Text(

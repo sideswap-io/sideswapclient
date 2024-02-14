@@ -78,11 +78,15 @@ class DSendPopupCreate extends HookConsumerWidget {
             .setAddress(addressController.text));
       });
       amountController.addListener(() {
+        final amount = ref.read(sendPopupAmountNotifierProvider);
+        if (amount == amountController.text) {
+          return;
+        }
+
         Future.microtask(() {
           ref
               .read(sendPopupAmountNotifierProvider.notifier)
               .setAmount(amountController.text);
-          isMaxPressed.value = false;
         });
       });
 
@@ -187,6 +191,11 @@ class DSendPopupCreate extends HookConsumerWidget {
               showAccountsInPopup: true,
               controller: amountController,
               balance: ref.read(balanceStringProvider(selectedAccountAsset)),
+              onChanged: (value) {
+                if (amount != value) {
+                  isMaxPressed.value = false;
+                }
+              },
               onSubmitted: (_) {
                 ref.read(paymentHelperProvider).selectPaymentSend(
                       amount,

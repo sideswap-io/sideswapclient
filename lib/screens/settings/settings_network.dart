@@ -139,11 +139,9 @@ class SettingsNetworkSaveButton extends ConsumerWidget {
                   title: 'Network changes will take effect on restart'.tr(),
                   icon: SettingsDialogIcon.restart,
                   buttonText: 'OK'.tr(),
-                  onPressed: (context) async {
+                  onPressed: (context) {
                     Navigator.of(context).pop();
-                    await ref
-                        .read(networkSettingsNotifierProvider.notifier)
-                        .save();
+                    ref.read(networkSettingsNotifierProvider.notifier).save();
                     ref
                         .read(pageStatusStateProvider.notifier)
                         .setStatus(Status.registered);

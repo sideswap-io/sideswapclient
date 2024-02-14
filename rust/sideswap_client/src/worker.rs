@@ -2,7 +2,7 @@ mod assets_registry;
 
 use crate::ffi::proto;
 use crate::gdk_json::AddressInfo;
-use crate::gdk_ses::{NotifCallback, WalletInfo};
+use crate::gdk_ses::{ElectrumServer, NotifCallback, WalletInfo};
 use crate::jade_mng::JadeState;
 use crate::settings::{RegInfo, WatchOnly};
 
@@ -180,7 +180,8 @@ pub struct Data {
 
     async_requests: BTreeMap<RequestId, Box<dyn FnOnce(&mut Data, Result<Response, Error>)>>,
 
-    network_settings: Option<proto::network_settings::Selected>,
+    network_settings: proto::to::NetworkSettings,
+    proxy_settings: proto::to::ProxySettings,
 }
 
 pub struct ActiveSwap {
@@ -1750,8 +1751,36 @@ impl Data {
         })
     }
 
-    fn proxy() -> Option<String> {
-        std::env::var("SOCKS_SERVER").ok()
+    fn electrum_server(&self) -> ElectrumServer {
+        match self.network_settings.selected.as_ref() {
+            Some(proto::to::network_settings::Selected::Sideswap(_)) | None => {
+                ElectrumServer::SideSwap
+            }
+            Some(proto::to::network_settings::Selected::SideswapCn(_)) => {
+                ElectrumServer::SideSwapCn
+            }
+            Some(proto::to::network_settings::Selected::Blockstream(_)) => {
+                ElectrumServer::Blockstream
+            }
+            Some(proto::to::network_settings::Selected::Custom(
+                proto::to::network_settings::Custom {
+                    host,
+                    port,
+                    use_tls,
+                },
+            )) => ElectrumServer::Custom {
+                host: host.clone(),
+                port: *port as u16,
+                use_tls: *use_tls,
+            },
+        }
+    }
+
+    fn proxy(&self) -> Option<String> {
+        match self.proxy_settings.proxy.as_ref() {
+            Some(proto::to::proxy_settings::Proxy { host, port }) => Some(format!("{host}:{port}")),
+            None => std::env::var("SOCKS_SERVER").ok(),
+        }
     }
 
     fn try_register(
@@ -1799,8 +1828,8 @@ impl Data {
             cache_dir: cache_dir.to_owned(),
             wallet_info: wallet_info.clone(),
             single_sig: false,
-            network: None,
-            proxy: Self::proxy(),
+            electrum_server: self.electrum_server(),
+            proxy: self.proxy(),
         };
 
         let mut wallet_amp = gdk_ses_impl::start_processing(info_amp, None)?;
@@ -1865,8 +1894,6 @@ impl Data {
         self.send_utxo_updates = req.send_utxo_updates.unwrap_or_default();
         self.force_auto_sign_maker = req.force_auto_sign_maker.unwrap_or_default();
 
-        let network = req.network.clone().selected;
-        self.network_settings = network.clone();
         let cache_dir = self.cache_path().to_str().unwrap().to_owned();
 
         let reg_info = match self.settings.reg_info_v3.clone() {
@@ -1923,8 +1950,8 @@ impl Data {
                 cache_dir: cache_dir.clone(),
                 wallet_info: wallet_info.clone(),
                 single_sig: true,
-                network: network.clone(),
-                proxy: Self::proxy(),
+                electrum_server: self.electrum_server(),
+                proxy: self.proxy(),
             };
 
             gdk_ses_impl::start_processing(info_reg, Some(self.get_notif_callback()))?
@@ -1937,8 +1964,8 @@ impl Data {
                 cache_dir,
                 wallet_info: wallet_info.clone(),
                 single_sig: false,
-                network,
-                proxy: Self::proxy(),
+                electrum_server: self.electrum_server(),
+                proxy: self.proxy(),
             };
 
             if let Some(watch_only) = reg_info.clone().jade_watch_only {
@@ -2077,41 +2104,50 @@ impl Data {
         self.restart_websocket();
     }
 
-    fn try_change_network(
-        &mut self,
-        req: ffi::proto::to::ChangeNetwork,
-    ) -> Result<(), anyhow::Error> {
-        debug!("process change network request...");
-        let network = req.network.selected;
-        let Wallet {
-            ses: wallet_old,
-            xpubs,
-        } = self
-            .wallets
-            .remove(&ACCOUNT_ID_REG)
-            .ok_or_else(|| anyhow!("no wallet"))?;
-        let mut login_info = wallet_old.login_info().clone();
-        login_info.network = network;
+    fn recreate_wallets(&mut self) {
+        let mut wallets = std::mem::take(&mut self.wallets);
+        for wallet in wallets.values_mut() {
+            let mut login_info = wallet.ses.login_info().clone();
+            login_info.electrum_server = self.electrum_server();
+            login_info.proxy = self.proxy();
 
-        drop(wallet_old);
-        let wallet = gdk_ses_impl::start_processing(login_info, Some(self.get_notif_callback()))?;
-        self.wallets.insert(
-            wallet.login_info().account_id,
-            Wallet { ses: wallet, xpubs },
-        );
-
-        Ok(())
+            let wallet_res =
+                gdk_ses_impl::start_processing(login_info, Some(self.get_notif_callback()));
+            match wallet_res {
+                Ok(new_wallet) => {
+                    wallet.ses = new_wallet;
+                }
+                Err(err) => {
+                    self.show_message(&format!("changing network failed: {err}"));
+                }
+            }
+        }
+        self.wallets = wallets;
     }
 
-    fn process_change_network(&mut self, req: ffi::proto::to::ChangeNetwork) {
-        let result = self.try_change_network(req);
-        if let Err(e) = result {
-            self.show_message(&format!("changing network failed: {}", e));
+    fn process_network_settings(&mut self, req: ffi::proto::to::NetworkSettings) {
+        let electrum_server_old = self.electrum_server();
+        self.network_settings = req;
+        let electrum_server_new = self.electrum_server();
+        if electrum_server_new != electrum_server_old {
+            debug!("new electrum server: {electrum_server_new:?}");
+            self.recreate_wallets();
+        }
+    }
+
+    fn process_proxy_settings(&mut self, req: ffi::proto::to::ProxySettings) {
+        let proxy_old = self.proxy();
+        self.proxy_settings = req;
+        let proxy_new = self.proxy();
+        if proxy_new != proxy_old {
+            debug!("new proxy: {proxy_new:?}");
+            self.recreate_wallets();
+            self.restart_websocket();
         }
     }
 
     fn process_encrypt_pin(&self, req: ffi::proto::to::EncryptPin) {
-        let result = match crate::pin::encrypt_pin(req.mnemonic, req.pin, Data::proxy().as_ref()) {
+        let result = match crate::pin::encrypt_pin(req.mnemonic, req.pin, self.proxy().as_ref()) {
             Ok(v) => {
                 ffi::proto::from::encrypt_pin::Result::Data(ffi::proto::from::encrypt_pin::Data {
                     salt: v.salt,
@@ -2134,7 +2170,7 @@ impl Data {
             encrypted_data: req.encrypted_data,
             pin_identifier: req.pin_identifier,
         };
-        let result = match crate::pin::decrypt_pin(&details, req.pin, Data::proxy().as_ref()) {
+        let result = match crate::pin::decrypt_pin(&details, req.pin, self.proxy().as_ref()) {
             Ok(v) => ffi::proto::from::decrypt_pin::Result::Mnemonic(v),
             Err(e) => ffi::proto::from::decrypt_pin::Result::Error(e.to_string()),
         };
@@ -3553,8 +3589,8 @@ impl Data {
 
     fn send_ws_connect(&self) {
         // TODO: Add a new env type
-        let (host, port, use_tls) = if self.network_settings
-            == Some(proto::network_settings::Selected::SideswapCn(
+        let (host, port, use_tls) = if self.network_settings.selected.as_ref()
+            == Some(&proto::to::network_settings::Selected::SideswapCn(
                 proto::Empty {},
             )) {
             ("cn.sideswap.io".to_owned(), 443, true)
@@ -3568,6 +3604,7 @@ impl Data {
                 host,
                 port,
                 use_tls,
+                proxy: self.proxy(),
             })
             .unwrap();
     }
@@ -3814,7 +3851,8 @@ impl Data {
         match msg {
             ffi::proto::to::Msg::Login(req) => self.process_login_request(req),
             ffi::proto::to::Msg::Logout(_) => self.process_logout_request(),
-            ffi::proto::to::Msg::ChangeNetwork(req) => self.process_change_network(req),
+            ffi::proto::to::Msg::NetworkSettings(req) => self.process_network_settings(req),
+            ffi::proto::to::Msg::ProxySettings(req) => self.process_proxy_settings(req),
             ffi::proto::to::Msg::EncryptPin(req) => self.process_encrypt_pin(req),
             ffi::proto::to::Msg::DecryptPin(req) => self.process_decrypt_pin(req),
             ffi::proto::to::Msg::AppState(req) => self.process_app_state(req),
@@ -4311,10 +4349,8 @@ pub fn start_processing(
     };
     ui.send(ffi::proto::from::Msg::EnvSettings(env_settings));
 
-    debug!("proxy env: {:?}", Data::proxy());
-
     let (resp_sender, resp_receiver) = crossbeam_channel::unbounded::<ServerResp>();
-    let (ws_sender, ws_receiver, ws_hint) = ws::start(Data::proxy());
+    let (ws_sender, ws_receiver, ws_hint) = ws::start();
 
     let ui_copy = ui.clone();
     let last_jade_status = std::sync::Arc::new(std::sync::Mutex::new(
@@ -4508,8 +4544,11 @@ pub fn start_processing(
         jades_scan_result: None,
         jade_status_callback,
         async_requests: BTreeMap::new(),
-        network_settings: None,
+        network_settings: Default::default(),
+        proxy_settings: Default::default(),
     };
+
+    debug!("proxy: {:?}", state.proxy());
 
     let registry_path = state.registry_path();
     let master_xpub = state.master_xpub();

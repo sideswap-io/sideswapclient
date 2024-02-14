@@ -13,6 +13,7 @@ pub const TICKER_BTC: &str = "BTC";
 pub const TICKER_LBTC: &str = "L-BTC";
 pub const TICKER_USDT: &str = "USDt";
 pub const TICKER_EURX: &str = "EURx";
+pub const TICKER_DEPIX: &str = "dePIX";
 pub const TICKER_LCAD: &str = "LCAD";
 pub const TICKER_AUDL: &str = "AUDL";
 
@@ -211,27 +212,8 @@ pub struct Swap {
     pub network_fee: i64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
-pub struct MatchRfq {
-    pub send_asset: AssetId,
-    pub send_amount: i64,
-    pub recv_asset: AssetId,
-    pub utxo_count: i32,
-    pub with_change: bool,
-}
-
 // In milliseconds since UNIX epoch
 pub type Timestamp = i64;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MatchRfqRequest {
-    pub rfq: MatchRfq,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct MatchRfqResponse {
-    pub order_id: OrderId,
-}
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq)]
 pub struct PricePair {
@@ -1057,7 +1039,6 @@ pub enum Request {
     PegStatus(PegStatusRequest),
     PegReturnAddress(PegReturnAddressRequest),
 
-    MatchRfq(MatchRfqRequest),
     PriceUpdateBroadcast(PriceUpdateBroadcast),
     PriceUpdateSubscribe(PriceUpdateSubscribe),
     LoginClient(LoginClientRequest),
@@ -1120,13 +1101,8 @@ pub enum Response {
     PegStatus(PegStatus),
     PegReturnAddress(PegReturnAddressResponse),
 
-    MatchRfq(MatchRfqResponse),
-    MatchRfqCancel(Empty),
-    MatchRfqAccept(Empty),
-    MatchQuote(Empty),
     PriceUpdateBroadcast(Empty),
     PriceUpdateSubscribe(Empty),
-    Swap(Empty),
     LoginClient(LoginClientResponse),
     LoginDealer(Empty),
 

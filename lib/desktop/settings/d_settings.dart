@@ -174,28 +174,28 @@ class DSettings extends ConsumerWidget {
                         forward: false,
                         onPressed: () {
                           final enableEndpoint =
-                              ref.read(configProvider).enableEndpoint;
+                              ref.read(configurationProvider).enableEndpoint;
                           ref
-                              .read(configProvider)
+                              .read(configurationProvider.notifier)
                               .setEnableEndpoint(!enableEndpoint);
                         },
                         child: Consumer(
                           builder: (context, ref, child) {
                             final enableEndpoint =
-                                ref.watch(configProvider).enableEndpoint;
+                                ref.watch(configurationProvider).enableEndpoint;
                             return IgnorePointer(
                               child: FlutterSwitch(
                                 value: enableEndpoint,
                                 onToggle: (value) {
                                   if (value) {
                                     ref
-                                        .read(configProvider)
+                                        .read(configurationProvider.notifier)
                                         .setEnableEndpoint(!true);
                                     return;
                                   }
 
                                   ref
-                                      .read(configProvider)
+                                      .read(configurationProvider.notifier)
                                       .setEnableEndpoint(false);
                                 },
                                 width: 40,

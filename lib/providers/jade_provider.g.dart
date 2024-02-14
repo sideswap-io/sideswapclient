@@ -20,7 +20,7 @@ final jadeRescanProvider = AutoDisposeProvider<void>.internal(
 );
 
 typedef JadeRescanRef = AutoDisposeProviderRef<void>;
-String _$isJadeWalletHash() => r'93780ce6362ea14f51bf866fb51f5cdf9089d191';
+String _$isJadeWalletHash() => r'e0cc808fc09722aedafde9ed1b9315bad3b70ddf';
 
 /// See also [isJadeWallet].
 @ProviderFor(isJadeWallet)

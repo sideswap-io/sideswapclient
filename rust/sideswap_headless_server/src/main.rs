@@ -69,7 +69,7 @@ async fn main() {
         }
     });
 
-    let (ws_sender, ws_receiver, _hint) = sideswap_common::ws::manual::start(None);
+    let (ws_sender, ws_receiver, _hint) = sideswap_common::ws::manual::start();
 
     let worker_sender_copy = worker_sender.clone();
     std::thread::spawn(move || loop {

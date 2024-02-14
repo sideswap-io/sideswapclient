@@ -30,5 +30,7 @@ root:
     - file
 
 loggers:
-  reqwest:
+  ureq:
+    level: info
+  rustls:
     level: info

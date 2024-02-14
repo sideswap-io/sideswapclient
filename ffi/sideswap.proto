@@ -143,21 +143,6 @@ message SwapDetails {
   required string upload_url = 6;
 }
 
-message NetworkSettings {
-  message Custom {
-    required string host = 1;
-    required int32 port = 2;
-    required bool use_tls = 3;
-  }
-
-  oneof selected {
-    Empty blockstream = 1;
-    Empty sideswap = 2;
-    Empty sideswap_cn = 4;
-    Custom custom = 3;
-  }
-}
-
 message CreateTx {
   repeated AddressAmount addressees = 1;
   required Account account = 2;
@@ -202,13 +187,32 @@ message To {
       string jade_id = 7;
     }
     optional string phone_key = 2;
-    required NetworkSettings network = 4;
     optional bool send_utxo_updates = 6;
     optional bool force_auto_sign_maker = 8;
   }
 
-  message ChangeNetwork {
-    required NetworkSettings network = 1;
+  message NetworkSettings {
+    message Custom {
+      required string host = 1;
+      required int32 port = 2;
+      required bool use_tls = 3;
+    }
+
+    oneof selected {
+      Empty blockstream = 1;
+      Empty sideswap = 2;
+      Empty sideswap_cn = 3;
+      Custom custom = 4;
+    }
+  }
+
+  message ProxySettings {
+    message Proxy {
+      required string host = 1;
+      required int32 port = 2;
+    }
+
+    optional Proxy proxy = 1;
   }
 
   message EncryptPin {
@@ -359,7 +363,8 @@ message To {
   oneof msg {
     Login login = 1;
     Empty logout = 2;
-    ChangeNetwork change_network = 9;
+    NetworkSettings network_settings = 9;
+    ProxySettings proxy_settings = 7;
     UpdatePushToken update_push_token = 3;
     EncryptPin encrypt_pin = 4;
     DecryptPin decrypt_pin = 5;

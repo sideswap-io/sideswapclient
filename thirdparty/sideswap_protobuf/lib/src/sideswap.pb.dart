@@ -1827,201 +1827,6 @@ class SwapDetails extends $pb.GeneratedMessage {
   void clearUploadUrl() => clearField(6);
 }
 
-class NetworkSettings_Custom extends $pb.GeneratedMessage {
-  factory NetworkSettings_Custom({
-    $core.String? host,
-    $core.int? port,
-    $core.bool? useTls,
-  }) {
-    final $result = create();
-    if (host != null) {
-      $result.host = host;
-    }
-    if (port != null) {
-      $result.port = port;
-    }
-    if (useTls != null) {
-      $result.useTls = useTls;
-    }
-    return $result;
-  }
-  NetworkSettings_Custom._() : super();
-  factory NetworkSettings_Custom.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory NetworkSettings_Custom.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NetworkSettings.Custom', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'host')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'port', $pb.PbFieldType.Q3)
-    ..a<$core.bool>(3, _omitFieldNames ? '' : 'useTls', $pb.PbFieldType.QB)
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  NetworkSettings_Custom clone() => NetworkSettings_Custom()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  NetworkSettings_Custom copyWith(void Function(NetworkSettings_Custom) updates) => super.copyWith((message) => updates(message as NetworkSettings_Custom)) as NetworkSettings_Custom;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static NetworkSettings_Custom create() => NetworkSettings_Custom._();
-  NetworkSettings_Custom createEmptyInstance() => create();
-  static $pb.PbList<NetworkSettings_Custom> createRepeated() => $pb.PbList<NetworkSettings_Custom>();
-  @$core.pragma('dart2js:noInline')
-  static NetworkSettings_Custom getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NetworkSettings_Custom>(create);
-  static NetworkSettings_Custom? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get host => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set host($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasHost() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearHost() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.int get port => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set port($core.int v) { $_setSignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasPort() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearPort() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.bool get useTls => $_getBF(2);
-  @$pb.TagNumber(3)
-  set useTls($core.bool v) { $_setBool(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasUseTls() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearUseTls() => clearField(3);
-}
-
-enum NetworkSettings_Selected {
-  blockstream, 
-  sideswap, 
-  custom, 
-  sideswapCn, 
-  notSet
-}
-
-class NetworkSettings extends $pb.GeneratedMessage {
-  factory NetworkSettings({
-    Empty? blockstream,
-    Empty? sideswap,
-    NetworkSettings_Custom? custom,
-    Empty? sideswapCn,
-  }) {
-    final $result = create();
-    if (blockstream != null) {
-      $result.blockstream = blockstream;
-    }
-    if (sideswap != null) {
-      $result.sideswap = sideswap;
-    }
-    if (custom != null) {
-      $result.custom = custom;
-    }
-    if (sideswapCn != null) {
-      $result.sideswapCn = sideswapCn;
-    }
-    return $result;
-  }
-  NetworkSettings._() : super();
-  factory NetworkSettings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory NetworkSettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static const $core.Map<$core.int, NetworkSettings_Selected> _NetworkSettings_SelectedByTag = {
-    1 : NetworkSettings_Selected.blockstream,
-    2 : NetworkSettings_Selected.sideswap,
-    3 : NetworkSettings_Selected.custom,
-    4 : NetworkSettings_Selected.sideswapCn,
-    0 : NetworkSettings_Selected.notSet
-  };
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'NetworkSettings', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4])
-    ..aOM<Empty>(1, _omitFieldNames ? '' : 'blockstream', subBuilder: Empty.create)
-    ..aOM<Empty>(2, _omitFieldNames ? '' : 'sideswap', subBuilder: Empty.create)
-    ..aOM<NetworkSettings_Custom>(3, _omitFieldNames ? '' : 'custom', subBuilder: NetworkSettings_Custom.create)
-    ..aOM<Empty>(4, _omitFieldNames ? '' : 'sideswapCn', subBuilder: Empty.create)
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  NetworkSettings clone() => NetworkSettings()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  NetworkSettings copyWith(void Function(NetworkSettings) updates) => super.copyWith((message) => updates(message as NetworkSettings)) as NetworkSettings;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static NetworkSettings create() => NetworkSettings._();
-  NetworkSettings createEmptyInstance() => create();
-  static $pb.PbList<NetworkSettings> createRepeated() => $pb.PbList<NetworkSettings>();
-  @$core.pragma('dart2js:noInline')
-  static NetworkSettings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<NetworkSettings>(create);
-  static NetworkSettings? _defaultInstance;
-
-  NetworkSettings_Selected whichSelected() => _NetworkSettings_SelectedByTag[$_whichOneof(0)]!;
-  void clearSelected() => clearField($_whichOneof(0));
-
-  @$pb.TagNumber(1)
-  Empty get blockstream => $_getN(0);
-  @$pb.TagNumber(1)
-  set blockstream(Empty v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasBlockstream() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearBlockstream() => clearField(1);
-  @$pb.TagNumber(1)
-  Empty ensureBlockstream() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  Empty get sideswap => $_getN(1);
-  @$pb.TagNumber(2)
-  set sideswap(Empty v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasSideswap() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearSideswap() => clearField(2);
-  @$pb.TagNumber(2)
-  Empty ensureSideswap() => $_ensure(1);
-
-  @$pb.TagNumber(3)
-  NetworkSettings_Custom get custom => $_getN(2);
-  @$pb.TagNumber(3)
-  set custom(NetworkSettings_Custom v) { setField(3, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasCustom() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearCustom() => clearField(3);
-  @$pb.TagNumber(3)
-  NetworkSettings_Custom ensureCustom() => $_ensure(2);
-
-  @$pb.TagNumber(4)
-  Empty get sideswapCn => $_getN(3);
-  @$pb.TagNumber(4)
-  set sideswapCn(Empty v) { setField(4, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasSideswapCn() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearSideswapCn() => clearField(4);
-  @$pb.TagNumber(4)
-  Empty ensureSideswapCn() => $_ensure(3);
-}
-
 class CreateTx extends $pb.GeneratedMessage {
   factory CreateTx({
     $core.Iterable<AddressAmount>? addressees,
@@ -2513,7 +2318,6 @@ class To_Login extends $pb.GeneratedMessage {
   factory To_Login({
     $core.String? mnemonic,
     $core.String? phoneKey,
-    NetworkSettings? network,
     $core.bool? sendUtxoUpdates,
     $core.String? jadeId,
     $core.bool? forceAutoSignMaker,
@@ -2524,9 +2328,6 @@ class To_Login extends $pb.GeneratedMessage {
     }
     if (phoneKey != null) {
       $result.phoneKey = phoneKey;
-    }
-    if (network != null) {
-      $result.network = network;
     }
     if (sendUtxoUpdates != null) {
       $result.sendUtxoUpdates = sendUtxoUpdates;
@@ -2552,10 +2353,10 @@ class To_Login extends $pb.GeneratedMessage {
     ..oo(0, [1, 7])
     ..aOS(1, _omitFieldNames ? '' : 'mnemonic')
     ..aOS(2, _omitFieldNames ? '' : 'phoneKey')
-    ..aQM<NetworkSettings>(4, _omitFieldNames ? '' : 'network', subBuilder: NetworkSettings.create)
     ..aOB(6, _omitFieldNames ? '' : 'sendUtxoUpdates')
     ..aOS(7, _omitFieldNames ? '' : 'jadeId')
     ..aOB(8, _omitFieldNames ? '' : 'forceAutoSignMaker')
+    ..hasRequiredFields = false
   ;
 
   @$core.Deprecated(
@@ -2600,94 +2401,341 @@ class To_Login extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearPhoneKey() => clearField(2);
 
-  @$pb.TagNumber(4)
-  NetworkSettings get network => $_getN(2);
-  @$pb.TagNumber(4)
-  set network(NetworkSettings v) { setField(4, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasNetwork() => $_has(2);
-  @$pb.TagNumber(4)
-  void clearNetwork() => clearField(4);
-  @$pb.TagNumber(4)
-  NetworkSettings ensureNetwork() => $_ensure(2);
-
   @$pb.TagNumber(6)
-  $core.bool get sendUtxoUpdates => $_getBF(3);
+  $core.bool get sendUtxoUpdates => $_getBF(2);
   @$pb.TagNumber(6)
-  set sendUtxoUpdates($core.bool v) { $_setBool(3, v); }
+  set sendUtxoUpdates($core.bool v) { $_setBool(2, v); }
   @$pb.TagNumber(6)
-  $core.bool hasSendUtxoUpdates() => $_has(3);
+  $core.bool hasSendUtxoUpdates() => $_has(2);
   @$pb.TagNumber(6)
   void clearSendUtxoUpdates() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.String get jadeId => $_getSZ(4);
+  $core.String get jadeId => $_getSZ(3);
   @$pb.TagNumber(7)
-  set jadeId($core.String v) { $_setString(4, v); }
+  set jadeId($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(7)
-  $core.bool hasJadeId() => $_has(4);
+  $core.bool hasJadeId() => $_has(3);
   @$pb.TagNumber(7)
   void clearJadeId() => clearField(7);
 
   @$pb.TagNumber(8)
-  $core.bool get forceAutoSignMaker => $_getBF(5);
+  $core.bool get forceAutoSignMaker => $_getBF(4);
   @$pb.TagNumber(8)
-  set forceAutoSignMaker($core.bool v) { $_setBool(5, v); }
+  set forceAutoSignMaker($core.bool v) { $_setBool(4, v); }
   @$pb.TagNumber(8)
-  $core.bool hasForceAutoSignMaker() => $_has(5);
+  $core.bool hasForceAutoSignMaker() => $_has(4);
   @$pb.TagNumber(8)
   void clearForceAutoSignMaker() => clearField(8);
 }
 
-class To_ChangeNetwork extends $pb.GeneratedMessage {
-  factory To_ChangeNetwork({
-    NetworkSettings? network,
+class To_NetworkSettings_Custom extends $pb.GeneratedMessage {
+  factory To_NetworkSettings_Custom({
+    $core.String? host,
+    $core.int? port,
+    $core.bool? useTls,
   }) {
     final $result = create();
-    if (network != null) {
-      $result.network = network;
+    if (host != null) {
+      $result.host = host;
+    }
+    if (port != null) {
+      $result.port = port;
+    }
+    if (useTls != null) {
+      $result.useTls = useTls;
     }
     return $result;
   }
-  To_ChangeNetwork._() : super();
-  factory To_ChangeNetwork.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory To_ChangeNetwork.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  To_NetworkSettings_Custom._() : super();
+  factory To_NetworkSettings_Custom.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_NetworkSettings_Custom.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.ChangeNetwork', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQM<NetworkSettings>(1, _omitFieldNames ? '' : 'network', subBuilder: NetworkSettings.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.NetworkSettings.Custom', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'host')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'port', $pb.PbFieldType.Q3)
+    ..a<$core.bool>(3, _omitFieldNames ? '' : 'useTls', $pb.PbFieldType.QB)
   ;
 
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
   'Will be removed in next major version')
-  To_ChangeNetwork clone() => To_ChangeNetwork()..mergeFromMessage(this);
+  To_NetworkSettings_Custom clone() => To_NetworkSettings_Custom()..mergeFromMessage(this);
   @$core.Deprecated(
   'Using this can add significant overhead to your binary. '
   'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
   'Will be removed in next major version')
-  To_ChangeNetwork copyWith(void Function(To_ChangeNetwork) updates) => super.copyWith((message) => updates(message as To_ChangeNetwork)) as To_ChangeNetwork;
+  To_NetworkSettings_Custom copyWith(void Function(To_NetworkSettings_Custom) updates) => super.copyWith((message) => updates(message as To_NetworkSettings_Custom)) as To_NetworkSettings_Custom;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static To_ChangeNetwork create() => To_ChangeNetwork._();
-  To_ChangeNetwork createEmptyInstance() => create();
-  static $pb.PbList<To_ChangeNetwork> createRepeated() => $pb.PbList<To_ChangeNetwork>();
+  static To_NetworkSettings_Custom create() => To_NetworkSettings_Custom._();
+  To_NetworkSettings_Custom createEmptyInstance() => create();
+  static $pb.PbList<To_NetworkSettings_Custom> createRepeated() => $pb.PbList<To_NetworkSettings_Custom>();
   @$core.pragma('dart2js:noInline')
-  static To_ChangeNetwork getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_ChangeNetwork>(create);
-  static To_ChangeNetwork? _defaultInstance;
+  static To_NetworkSettings_Custom getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_NetworkSettings_Custom>(create);
+  static To_NetworkSettings_Custom? _defaultInstance;
 
   @$pb.TagNumber(1)
-  NetworkSettings get network => $_getN(0);
+  $core.String get host => $_getSZ(0);
   @$pb.TagNumber(1)
-  set network(NetworkSettings v) { setField(1, v); }
+  set host($core.String v) { $_setString(0, v); }
   @$pb.TagNumber(1)
-  $core.bool hasNetwork() => $_has(0);
+  $core.bool hasHost() => $_has(0);
   @$pb.TagNumber(1)
-  void clearNetwork() => clearField(1);
+  void clearHost() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get port => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set port($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPort() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPort() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get useTls => $_getBF(2);
+  @$pb.TagNumber(3)
+  set useTls($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasUseTls() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUseTls() => clearField(3);
+}
+
+enum To_NetworkSettings_Selected {
+  blockstream, 
+  sideswap, 
+  sideswapCn, 
+  custom, 
+  notSet
+}
+
+class To_NetworkSettings extends $pb.GeneratedMessage {
+  factory To_NetworkSettings({
+    Empty? blockstream,
+    Empty? sideswap,
+    Empty? sideswapCn,
+    To_NetworkSettings_Custom? custom,
+  }) {
+    final $result = create();
+    if (blockstream != null) {
+      $result.blockstream = blockstream;
+    }
+    if (sideswap != null) {
+      $result.sideswap = sideswap;
+    }
+    if (sideswapCn != null) {
+      $result.sideswapCn = sideswapCn;
+    }
+    if (custom != null) {
+      $result.custom = custom;
+    }
+    return $result;
+  }
+  To_NetworkSettings._() : super();
+  factory To_NetworkSettings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_NetworkSettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static const $core.Map<$core.int, To_NetworkSettings_Selected> _To_NetworkSettings_SelectedByTag = {
+    1 : To_NetworkSettings_Selected.blockstream,
+    2 : To_NetworkSettings_Selected.sideswap,
+    3 : To_NetworkSettings_Selected.sideswapCn,
+    4 : To_NetworkSettings_Selected.custom,
+    0 : To_NetworkSettings_Selected.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.NetworkSettings', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2, 3, 4])
+    ..aOM<Empty>(1, _omitFieldNames ? '' : 'blockstream', subBuilder: Empty.create)
+    ..aOM<Empty>(2, _omitFieldNames ? '' : 'sideswap', subBuilder: Empty.create)
+    ..aOM<Empty>(3, _omitFieldNames ? '' : 'sideswapCn', subBuilder: Empty.create)
+    ..aOM<To_NetworkSettings_Custom>(4, _omitFieldNames ? '' : 'custom', subBuilder: To_NetworkSettings_Custom.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_NetworkSettings clone() => To_NetworkSettings()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_NetworkSettings copyWith(void Function(To_NetworkSettings) updates) => super.copyWith((message) => updates(message as To_NetworkSettings)) as To_NetworkSettings;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_NetworkSettings create() => To_NetworkSettings._();
+  To_NetworkSettings createEmptyInstance() => create();
+  static $pb.PbList<To_NetworkSettings> createRepeated() => $pb.PbList<To_NetworkSettings>();
+  @$core.pragma('dart2js:noInline')
+  static To_NetworkSettings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_NetworkSettings>(create);
+  static To_NetworkSettings? _defaultInstance;
+
+  To_NetworkSettings_Selected whichSelected() => _To_NetworkSettings_SelectedByTag[$_whichOneof(0)]!;
+  void clearSelected() => clearField($_whichOneof(0));
+
   @$pb.TagNumber(1)
-  NetworkSettings ensureNetwork() => $_ensure(0);
+  Empty get blockstream => $_getN(0);
+  @$pb.TagNumber(1)
+  set blockstream(Empty v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBlockstream() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBlockstream() => clearField(1);
+  @$pb.TagNumber(1)
+  Empty ensureBlockstream() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  Empty get sideswap => $_getN(1);
+  @$pb.TagNumber(2)
+  set sideswap(Empty v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasSideswap() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearSideswap() => clearField(2);
+  @$pb.TagNumber(2)
+  Empty ensureSideswap() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  Empty get sideswapCn => $_getN(2);
+  @$pb.TagNumber(3)
+  set sideswapCn(Empty v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasSideswapCn() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSideswapCn() => clearField(3);
+  @$pb.TagNumber(3)
+  Empty ensureSideswapCn() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  To_NetworkSettings_Custom get custom => $_getN(3);
+  @$pb.TagNumber(4)
+  set custom(To_NetworkSettings_Custom v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasCustom() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCustom() => clearField(4);
+  @$pb.TagNumber(4)
+  To_NetworkSettings_Custom ensureCustom() => $_ensure(3);
+}
+
+class To_ProxySettings_Proxy extends $pb.GeneratedMessage {
+  factory To_ProxySettings_Proxy({
+    $core.String? host,
+    $core.int? port,
+  }) {
+    final $result = create();
+    if (host != null) {
+      $result.host = host;
+    }
+    if (port != null) {
+      $result.port = port;
+    }
+    return $result;
+  }
+  To_ProxySettings_Proxy._() : super();
+  factory To_ProxySettings_Proxy.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_ProxySettings_Proxy.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.ProxySettings.Proxy', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'host')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'port', $pb.PbFieldType.Q3)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_ProxySettings_Proxy clone() => To_ProxySettings_Proxy()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_ProxySettings_Proxy copyWith(void Function(To_ProxySettings_Proxy) updates) => super.copyWith((message) => updates(message as To_ProxySettings_Proxy)) as To_ProxySettings_Proxy;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_ProxySettings_Proxy create() => To_ProxySettings_Proxy._();
+  To_ProxySettings_Proxy createEmptyInstance() => create();
+  static $pb.PbList<To_ProxySettings_Proxy> createRepeated() => $pb.PbList<To_ProxySettings_Proxy>();
+  @$core.pragma('dart2js:noInline')
+  static To_ProxySettings_Proxy getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_ProxySettings_Proxy>(create);
+  static To_ProxySettings_Proxy? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get host => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set host($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasHost() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearHost() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get port => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set port($core.int v) { $_setSignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasPort() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearPort() => clearField(2);
+}
+
+class To_ProxySettings extends $pb.GeneratedMessage {
+  factory To_ProxySettings({
+    To_ProxySettings_Proxy? proxy,
+  }) {
+    final $result = create();
+    if (proxy != null) {
+      $result.proxy = proxy;
+    }
+    return $result;
+  }
+  To_ProxySettings._() : super();
+  factory To_ProxySettings.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_ProxySettings.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.ProxySettings', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aOM<To_ProxySettings_Proxy>(1, _omitFieldNames ? '' : 'proxy', subBuilder: To_ProxySettings_Proxy.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_ProxySettings clone() => To_ProxySettings()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_ProxySettings copyWith(void Function(To_ProxySettings) updates) => super.copyWith((message) => updates(message as To_ProxySettings)) as To_ProxySettings;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_ProxySettings create() => To_ProxySettings._();
+  To_ProxySettings createEmptyInstance() => create();
+  static $pb.PbList<To_ProxySettings> createRepeated() => $pb.PbList<To_ProxySettings>();
+  @$core.pragma('dart2js:noInline')
+  static To_ProxySettings getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_ProxySettings>(create);
+  static To_ProxySettings? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  To_ProxySettings_Proxy get proxy => $_getN(0);
+  @$pb.TagNumber(1)
+  set proxy(To_ProxySettings_Proxy v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasProxy() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearProxy() => clearField(1);
+  @$pb.TagNumber(1)
+  To_ProxySettings_Proxy ensureProxy() => $_ensure(0);
 }
 
 class To_EncryptPin extends $pb.GeneratedMessage {
@@ -4543,8 +4591,9 @@ enum To_Msg {
   encryptPin, 
   decryptPin, 
   pushMessage, 
+  proxySettings, 
   appState, 
-  changeNetwork, 
+  networkSettings, 
   setMemo, 
   getRecvAddress, 
   createTx, 
@@ -4589,8 +4638,9 @@ class To extends $pb.GeneratedMessage {
     To_EncryptPin? encryptPin,
     To_DecryptPin? decryptPin,
     $core.String? pushMessage,
+    To_ProxySettings? proxySettings,
     To_AppState? appState,
-    To_ChangeNetwork? changeNetwork,
+    To_NetworkSettings? networkSettings,
     To_SetMemo? setMemo,
     Account? getRecvAddress,
     CreateTx? createTx,
@@ -4644,11 +4694,14 @@ class To extends $pb.GeneratedMessage {
     if (pushMessage != null) {
       $result.pushMessage = pushMessage;
     }
+    if (proxySettings != null) {
+      $result.proxySettings = proxySettings;
+    }
     if (appState != null) {
       $result.appState = appState;
     }
-    if (changeNetwork != null) {
-      $result.changeNetwork = changeNetwork;
+    if (networkSettings != null) {
+      $result.networkSettings = networkSettings;
     }
     if (setMemo != null) {
       $result.setMemo = setMemo;
@@ -4762,8 +4815,9 @@ class To extends $pb.GeneratedMessage {
     4 : To_Msg.encryptPin,
     5 : To_Msg.decryptPin,
     6 : To_Msg.pushMessage,
+    7 : To_Msg.proxySettings,
     8 : To_Msg.appState,
-    9 : To_Msg.changeNetwork,
+    9 : To_Msg.networkSettings,
     10 : To_Msg.setMemo,
     11 : To_Msg.getRecvAddress,
     12 : To_Msg.createTx,
@@ -4800,15 +4854,16 @@ class To extends $pb.GeneratedMessage {
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 71, 81])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 71, 81])
     ..aOM<To_Login>(1, _omitFieldNames ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, _omitFieldNames ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, _omitFieldNames ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
     ..aOM<To_EncryptPin>(4, _omitFieldNames ? '' : 'encryptPin', subBuilder: To_EncryptPin.create)
     ..aOM<To_DecryptPin>(5, _omitFieldNames ? '' : 'decryptPin', subBuilder: To_DecryptPin.create)
     ..aOS(6, _omitFieldNames ? '' : 'pushMessage')
+    ..aOM<To_ProxySettings>(7, _omitFieldNames ? '' : 'proxySettings', subBuilder: To_ProxySettings.create)
     ..aOM<To_AppState>(8, _omitFieldNames ? '' : 'appState', subBuilder: To_AppState.create)
-    ..aOM<To_ChangeNetwork>(9, _omitFieldNames ? '' : 'changeNetwork', subBuilder: To_ChangeNetwork.create)
+    ..aOM<To_NetworkSettings>(9, _omitFieldNames ? '' : 'networkSettings', subBuilder: To_NetworkSettings.create)
     ..aOM<To_SetMemo>(10, _omitFieldNames ? '' : 'setMemo', subBuilder: To_SetMemo.create)
     ..aOM<Account>(11, _omitFieldNames ? '' : 'getRecvAddress', subBuilder: Account.create)
     ..aOM<CreateTx>(12, _omitFieldNames ? '' : 'createTx', subBuilder: CreateTx.create)
@@ -4932,390 +4987,401 @@ class To extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   void clearPushMessage() => clearField(6);
 
+  @$pb.TagNumber(7)
+  To_ProxySettings get proxySettings => $_getN(6);
+  @$pb.TagNumber(7)
+  set proxySettings(To_ProxySettings v) { setField(7, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasProxySettings() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearProxySettings() => clearField(7);
+  @$pb.TagNumber(7)
+  To_ProxySettings ensureProxySettings() => $_ensure(6);
+
   @$pb.TagNumber(8)
-  To_AppState get appState => $_getN(6);
+  To_AppState get appState => $_getN(7);
   @$pb.TagNumber(8)
   set appState(To_AppState v) { setField(8, v); }
   @$pb.TagNumber(8)
-  $core.bool hasAppState() => $_has(6);
+  $core.bool hasAppState() => $_has(7);
   @$pb.TagNumber(8)
   void clearAppState() => clearField(8);
   @$pb.TagNumber(8)
-  To_AppState ensureAppState() => $_ensure(6);
+  To_AppState ensureAppState() => $_ensure(7);
 
   @$pb.TagNumber(9)
-  To_ChangeNetwork get changeNetwork => $_getN(7);
+  To_NetworkSettings get networkSettings => $_getN(8);
   @$pb.TagNumber(9)
-  set changeNetwork(To_ChangeNetwork v) { setField(9, v); }
+  set networkSettings(To_NetworkSettings v) { setField(9, v); }
   @$pb.TagNumber(9)
-  $core.bool hasChangeNetwork() => $_has(7);
+  $core.bool hasNetworkSettings() => $_has(8);
   @$pb.TagNumber(9)
-  void clearChangeNetwork() => clearField(9);
+  void clearNetworkSettings() => clearField(9);
   @$pb.TagNumber(9)
-  To_ChangeNetwork ensureChangeNetwork() => $_ensure(7);
+  To_NetworkSettings ensureNetworkSettings() => $_ensure(8);
 
   @$pb.TagNumber(10)
-  To_SetMemo get setMemo => $_getN(8);
+  To_SetMemo get setMemo => $_getN(9);
   @$pb.TagNumber(10)
   set setMemo(To_SetMemo v) { setField(10, v); }
   @$pb.TagNumber(10)
-  $core.bool hasSetMemo() => $_has(8);
+  $core.bool hasSetMemo() => $_has(9);
   @$pb.TagNumber(10)
   void clearSetMemo() => clearField(10);
   @$pb.TagNumber(10)
-  To_SetMemo ensureSetMemo() => $_ensure(8);
+  To_SetMemo ensureSetMemo() => $_ensure(9);
 
   @$pb.TagNumber(11)
-  Account get getRecvAddress => $_getN(9);
+  Account get getRecvAddress => $_getN(10);
   @$pb.TagNumber(11)
   set getRecvAddress(Account v) { setField(11, v); }
   @$pb.TagNumber(11)
-  $core.bool hasGetRecvAddress() => $_has(9);
+  $core.bool hasGetRecvAddress() => $_has(10);
   @$pb.TagNumber(11)
   void clearGetRecvAddress() => clearField(11);
   @$pb.TagNumber(11)
-  Account ensureGetRecvAddress() => $_ensure(9);
+  Account ensureGetRecvAddress() => $_ensure(10);
 
   @$pb.TagNumber(12)
-  CreateTx get createTx => $_getN(10);
+  CreateTx get createTx => $_getN(11);
   @$pb.TagNumber(12)
   set createTx(CreateTx v) { setField(12, v); }
   @$pb.TagNumber(12)
-  $core.bool hasCreateTx() => $_has(10);
+  $core.bool hasCreateTx() => $_has(11);
   @$pb.TagNumber(12)
   void clearCreateTx() => clearField(12);
   @$pb.TagNumber(12)
-  CreateTx ensureCreateTx() => $_ensure(10);
+  CreateTx ensureCreateTx() => $_ensure(11);
 
   @$pb.TagNumber(13)
-  To_SendTx get sendTx => $_getN(11);
+  To_SendTx get sendTx => $_getN(12);
   @$pb.TagNumber(13)
   set sendTx(To_SendTx v) { setField(13, v); }
   @$pb.TagNumber(13)
-  $core.bool hasSendTx() => $_has(11);
+  $core.bool hasSendTx() => $_has(12);
   @$pb.TagNumber(13)
   void clearSendTx() => clearField(13);
   @$pb.TagNumber(13)
-  To_SendTx ensureSendTx() => $_ensure(11);
+  To_SendTx ensureSendTx() => $_ensure(12);
 
   @$pb.TagNumber(14)
-  To_BlindedValues get blindedValues => $_getN(12);
+  To_BlindedValues get blindedValues => $_getN(13);
   @$pb.TagNumber(14)
   set blindedValues(To_BlindedValues v) { setField(14, v); }
   @$pb.TagNumber(14)
-  $core.bool hasBlindedValues() => $_has(12);
+  $core.bool hasBlindedValues() => $_has(13);
   @$pb.TagNumber(14)
   void clearBlindedValues() => clearField(14);
   @$pb.TagNumber(14)
-  To_BlindedValues ensureBlindedValues() => $_ensure(12);
+  To_BlindedValues ensureBlindedValues() => $_ensure(13);
 
   @$pb.TagNumber(15)
-  CreatePayjoin get createPayjoin => $_getN(13);
+  CreatePayjoin get createPayjoin => $_getN(14);
   @$pb.TagNumber(15)
   set createPayjoin(CreatePayjoin v) { setField(15, v); }
   @$pb.TagNumber(15)
-  $core.bool hasCreatePayjoin() => $_has(13);
+  $core.bool hasCreatePayjoin() => $_has(14);
   @$pb.TagNumber(15)
   void clearCreatePayjoin() => clearField(15);
   @$pb.TagNumber(15)
-  CreatePayjoin ensureCreatePayjoin() => $_ensure(13);
+  CreatePayjoin ensureCreatePayjoin() => $_ensure(14);
 
   @$pb.TagNumber(16)
-  CreatedPayjoin get sendPayjoin => $_getN(14);
+  CreatedPayjoin get sendPayjoin => $_getN(15);
   @$pb.TagNumber(16)
   set sendPayjoin(CreatedPayjoin v) { setField(16, v); }
   @$pb.TagNumber(16)
-  $core.bool hasSendPayjoin() => $_has(14);
+  $core.bool hasSendPayjoin() => $_has(15);
   @$pb.TagNumber(16)
   void clearSendPayjoin() => clearField(16);
   @$pb.TagNumber(16)
-  CreatedPayjoin ensureSendPayjoin() => $_ensure(14);
+  CreatedPayjoin ensureSendPayjoin() => $_ensure(15);
 
   @$pb.TagNumber(20)
-  To_SwapRequest get swapRequest => $_getN(15);
+  To_SwapRequest get swapRequest => $_getN(16);
   @$pb.TagNumber(20)
   set swapRequest(To_SwapRequest v) { setField(20, v); }
   @$pb.TagNumber(20)
-  $core.bool hasSwapRequest() => $_has(15);
+  $core.bool hasSwapRequest() => $_has(16);
   @$pb.TagNumber(20)
   void clearSwapRequest() => clearField(20);
   @$pb.TagNumber(20)
-  To_SwapRequest ensureSwapRequest() => $_ensure(15);
+  To_SwapRequest ensureSwapRequest() => $_ensure(16);
 
   @$pb.TagNumber(21)
-  To_PegInRequest get pegInRequest => $_getN(16);
+  To_PegInRequest get pegInRequest => $_getN(17);
   @$pb.TagNumber(21)
   set pegInRequest(To_PegInRequest v) { setField(21, v); }
   @$pb.TagNumber(21)
-  $core.bool hasPegInRequest() => $_has(16);
+  $core.bool hasPegInRequest() => $_has(17);
   @$pb.TagNumber(21)
   void clearPegInRequest() => clearField(21);
   @$pb.TagNumber(21)
-  To_PegInRequest ensurePegInRequest() => $_ensure(16);
+  To_PegInRequest ensurePegInRequest() => $_ensure(17);
 
   @$pb.TagNumber(22)
-  To_PegOutRequest get pegOutRequest => $_getN(17);
+  To_PegOutRequest get pegOutRequest => $_getN(18);
   @$pb.TagNumber(22)
   set pegOutRequest(To_PegOutRequest v) { setField(22, v); }
   @$pb.TagNumber(22)
-  $core.bool hasPegOutRequest() => $_has(17);
+  $core.bool hasPegOutRequest() => $_has(18);
   @$pb.TagNumber(22)
   void clearPegOutRequest() => clearField(22);
   @$pb.TagNumber(22)
-  To_PegOutRequest ensurePegOutRequest() => $_ensure(17);
+  To_PegOutRequest ensurePegOutRequest() => $_ensure(18);
 
   @$pb.TagNumber(23)
-  SwapDetails get swapAccept => $_getN(18);
+  SwapDetails get swapAccept => $_getN(19);
   @$pb.TagNumber(23)
   set swapAccept(SwapDetails v) { setField(23, v); }
   @$pb.TagNumber(23)
-  $core.bool hasSwapAccept() => $_has(18);
+  $core.bool hasSwapAccept() => $_has(19);
   @$pb.TagNumber(23)
   void clearSwapAccept() => clearField(23);
   @$pb.TagNumber(23)
-  SwapDetails ensureSwapAccept() => $_ensure(18);
+  SwapDetails ensureSwapAccept() => $_ensure(19);
 
   @$pb.TagNumber(24)
-  To_PegOutAmount get pegOutAmount => $_getN(19);
+  To_PegOutAmount get pegOutAmount => $_getN(20);
   @$pb.TagNumber(24)
   set pegOutAmount(To_PegOutAmount v) { setField(24, v); }
   @$pb.TagNumber(24)
-  $core.bool hasPegOutAmount() => $_has(19);
+  $core.bool hasPegOutAmount() => $_has(20);
   @$pb.TagNumber(24)
   void clearPegOutAmount() => clearField(24);
   @$pb.TagNumber(24)
-  To_PegOutAmount ensurePegOutAmount() => $_ensure(19);
+  To_PegOutAmount ensurePegOutAmount() => $_ensure(20);
 
   @$pb.TagNumber(40)
-  To_RegisterPhone get registerPhone => $_getN(20);
+  To_RegisterPhone get registerPhone => $_getN(21);
   @$pb.TagNumber(40)
   set registerPhone(To_RegisterPhone v) { setField(40, v); }
   @$pb.TagNumber(40)
-  $core.bool hasRegisterPhone() => $_has(20);
+  $core.bool hasRegisterPhone() => $_has(21);
   @$pb.TagNumber(40)
   void clearRegisterPhone() => clearField(40);
   @$pb.TagNumber(40)
-  To_RegisterPhone ensureRegisterPhone() => $_ensure(20);
+  To_RegisterPhone ensureRegisterPhone() => $_ensure(21);
 
   @$pb.TagNumber(41)
-  To_VerifyPhone get verifyPhone => $_getN(21);
+  To_VerifyPhone get verifyPhone => $_getN(22);
   @$pb.TagNumber(41)
   set verifyPhone(To_VerifyPhone v) { setField(41, v); }
   @$pb.TagNumber(41)
-  $core.bool hasVerifyPhone() => $_has(21);
+  $core.bool hasVerifyPhone() => $_has(22);
   @$pb.TagNumber(41)
   void clearVerifyPhone() => clearField(41);
   @$pb.TagNumber(41)
-  To_VerifyPhone ensureVerifyPhone() => $_ensure(21);
+  To_VerifyPhone ensureVerifyPhone() => $_ensure(22);
 
   @$pb.TagNumber(42)
-  To_UploadAvatar get uploadAvatar => $_getN(22);
+  To_UploadAvatar get uploadAvatar => $_getN(23);
   @$pb.TagNumber(42)
   set uploadAvatar(To_UploadAvatar v) { setField(42, v); }
   @$pb.TagNumber(42)
-  $core.bool hasUploadAvatar() => $_has(22);
+  $core.bool hasUploadAvatar() => $_has(23);
   @$pb.TagNumber(42)
   void clearUploadAvatar() => clearField(42);
   @$pb.TagNumber(42)
-  To_UploadAvatar ensureUploadAvatar() => $_ensure(22);
+  To_UploadAvatar ensureUploadAvatar() => $_ensure(23);
 
   @$pb.TagNumber(43)
-  To_UploadContacts get uploadContacts => $_getN(23);
+  To_UploadContacts get uploadContacts => $_getN(24);
   @$pb.TagNumber(43)
   set uploadContacts(To_UploadContacts v) { setField(43, v); }
   @$pb.TagNumber(43)
-  $core.bool hasUploadContacts() => $_has(23);
+  $core.bool hasUploadContacts() => $_has(24);
   @$pb.TagNumber(43)
   void clearUploadContacts() => clearField(43);
   @$pb.TagNumber(43)
-  To_UploadContacts ensureUploadContacts() => $_ensure(23);
+  To_UploadContacts ensureUploadContacts() => $_ensure(24);
 
   @$pb.TagNumber(44)
-  To_UnregisterPhone get unregisterPhone => $_getN(24);
+  To_UnregisterPhone get unregisterPhone => $_getN(25);
   @$pb.TagNumber(44)
   set unregisterPhone(To_UnregisterPhone v) { setField(44, v); }
   @$pb.TagNumber(44)
-  $core.bool hasUnregisterPhone() => $_has(24);
+  $core.bool hasUnregisterPhone() => $_has(25);
   @$pb.TagNumber(44)
   void clearUnregisterPhone() => clearField(44);
   @$pb.TagNumber(44)
-  To_UnregisterPhone ensureUnregisterPhone() => $_ensure(24);
+  To_UnregisterPhone ensureUnregisterPhone() => $_ensure(25);
 
   @$pb.TagNumber(49)
-  To_SubmitOrder get submitOrder => $_getN(25);
+  To_SubmitOrder get submitOrder => $_getN(26);
   @$pb.TagNumber(49)
   set submitOrder(To_SubmitOrder v) { setField(49, v); }
   @$pb.TagNumber(49)
-  $core.bool hasSubmitOrder() => $_has(25);
+  $core.bool hasSubmitOrder() => $_has(26);
   @$pb.TagNumber(49)
   void clearSubmitOrder() => clearField(49);
   @$pb.TagNumber(49)
-  To_SubmitOrder ensureSubmitOrder() => $_ensure(25);
+  To_SubmitOrder ensureSubmitOrder() => $_ensure(26);
 
   @$pb.TagNumber(50)
-  To_LinkOrder get linkOrder => $_getN(26);
+  To_LinkOrder get linkOrder => $_getN(27);
   @$pb.TagNumber(50)
   set linkOrder(To_LinkOrder v) { setField(50, v); }
   @$pb.TagNumber(50)
-  $core.bool hasLinkOrder() => $_has(26);
+  $core.bool hasLinkOrder() => $_has(27);
   @$pb.TagNumber(50)
   void clearLinkOrder() => clearField(50);
   @$pb.TagNumber(50)
-  To_LinkOrder ensureLinkOrder() => $_ensure(26);
+  To_LinkOrder ensureLinkOrder() => $_ensure(27);
 
   @$pb.TagNumber(51)
-  To_SubmitDecision get submitDecision => $_getN(27);
+  To_SubmitDecision get submitDecision => $_getN(28);
   @$pb.TagNumber(51)
   set submitDecision(To_SubmitDecision v) { setField(51, v); }
   @$pb.TagNumber(51)
-  $core.bool hasSubmitDecision() => $_has(27);
+  $core.bool hasSubmitDecision() => $_has(28);
   @$pb.TagNumber(51)
   void clearSubmitDecision() => clearField(51);
   @$pb.TagNumber(51)
-  To_SubmitDecision ensureSubmitDecision() => $_ensure(27);
+  To_SubmitDecision ensureSubmitDecision() => $_ensure(28);
 
   @$pb.TagNumber(52)
-  To_EditOrder get editOrder => $_getN(28);
+  To_EditOrder get editOrder => $_getN(29);
   @$pb.TagNumber(52)
   set editOrder(To_EditOrder v) { setField(52, v); }
   @$pb.TagNumber(52)
-  $core.bool hasEditOrder() => $_has(28);
+  $core.bool hasEditOrder() => $_has(29);
   @$pb.TagNumber(52)
   void clearEditOrder() => clearField(52);
   @$pb.TagNumber(52)
-  To_EditOrder ensureEditOrder() => $_ensure(28);
+  To_EditOrder ensureEditOrder() => $_ensure(29);
 
   @$pb.TagNumber(53)
-  To_CancelOrder get cancelOrder => $_getN(29);
+  To_CancelOrder get cancelOrder => $_getN(30);
   @$pb.TagNumber(53)
   set cancelOrder(To_CancelOrder v) { setField(53, v); }
   @$pb.TagNumber(53)
-  $core.bool hasCancelOrder() => $_has(29);
+  $core.bool hasCancelOrder() => $_has(30);
   @$pb.TagNumber(53)
   void clearCancelOrder() => clearField(53);
   @$pb.TagNumber(53)
-  To_CancelOrder ensureCancelOrder() => $_ensure(29);
+  To_CancelOrder ensureCancelOrder() => $_ensure(30);
 
   @$pb.TagNumber(54)
-  To_Subscribe get subscribe => $_getN(30);
+  To_Subscribe get subscribe => $_getN(31);
   @$pb.TagNumber(54)
   set subscribe(To_Subscribe v) { setField(54, v); }
   @$pb.TagNumber(54)
-  $core.bool hasSubscribe() => $_has(30);
+  $core.bool hasSubscribe() => $_has(31);
   @$pb.TagNumber(54)
   void clearSubscribe() => clearField(54);
   @$pb.TagNumber(54)
-  To_Subscribe ensureSubscribe() => $_ensure(30);
+  To_Subscribe ensureSubscribe() => $_ensure(31);
 
   @$pb.TagNumber(55)
-  AssetId get subscribePrice => $_getN(31);
+  AssetId get subscribePrice => $_getN(32);
   @$pb.TagNumber(55)
   set subscribePrice(AssetId v) { setField(55, v); }
   @$pb.TagNumber(55)
-  $core.bool hasSubscribePrice() => $_has(31);
+  $core.bool hasSubscribePrice() => $_has(32);
   @$pb.TagNumber(55)
   void clearSubscribePrice() => clearField(55);
   @$pb.TagNumber(55)
-  AssetId ensureSubscribePrice() => $_ensure(31);
+  AssetId ensureSubscribePrice() => $_ensure(32);
 
   @$pb.TagNumber(56)
-  AssetId get unsubscribePrice => $_getN(32);
+  AssetId get unsubscribePrice => $_getN(33);
   @$pb.TagNumber(56)
   set unsubscribePrice(AssetId v) { setField(56, v); }
   @$pb.TagNumber(56)
-  $core.bool hasUnsubscribePrice() => $_has(32);
+  $core.bool hasUnsubscribePrice() => $_has(33);
   @$pb.TagNumber(56)
   void clearUnsubscribePrice() => clearField(56);
   @$pb.TagNumber(56)
-  AssetId ensureUnsubscribePrice() => $_ensure(32);
+  AssetId ensureUnsubscribePrice() => $_ensure(33);
 
   @$pb.TagNumber(57)
-  AssetId get assetDetails => $_getN(33);
+  AssetId get assetDetails => $_getN(34);
   @$pb.TagNumber(57)
   set assetDetails(AssetId v) { setField(57, v); }
   @$pb.TagNumber(57)
-  $core.bool hasAssetDetails() => $_has(33);
+  $core.bool hasAssetDetails() => $_has(34);
   @$pb.TagNumber(57)
   void clearAssetDetails() => clearField(57);
   @$pb.TagNumber(57)
-  AssetId ensureAssetDetails() => $_ensure(33);
+  AssetId ensureAssetDetails() => $_ensure(34);
 
   @$pb.TagNumber(58)
-  To_SubscribePriceStream get subscribePriceStream => $_getN(34);
+  To_SubscribePriceStream get subscribePriceStream => $_getN(35);
   @$pb.TagNumber(58)
   set subscribePriceStream(To_SubscribePriceStream v) { setField(58, v); }
   @$pb.TagNumber(58)
-  $core.bool hasSubscribePriceStream() => $_has(34);
+  $core.bool hasSubscribePriceStream() => $_has(35);
   @$pb.TagNumber(58)
   void clearSubscribePriceStream() => clearField(58);
   @$pb.TagNumber(58)
-  To_SubscribePriceStream ensureSubscribePriceStream() => $_ensure(34);
+  To_SubscribePriceStream ensureSubscribePriceStream() => $_ensure(35);
 
   @$pb.TagNumber(59)
-  Empty get unsubscribePriceStream => $_getN(35);
+  Empty get unsubscribePriceStream => $_getN(36);
   @$pb.TagNumber(59)
   set unsubscribePriceStream(Empty v) { setField(59, v); }
   @$pb.TagNumber(59)
-  $core.bool hasUnsubscribePriceStream() => $_has(35);
+  $core.bool hasUnsubscribePriceStream() => $_has(36);
   @$pb.TagNumber(59)
   void clearUnsubscribePriceStream() => clearField(59);
   @$pb.TagNumber(59)
-  Empty ensureUnsubscribePriceStream() => $_ensure(35);
+  Empty ensureUnsubscribePriceStream() => $_ensure(36);
 
   @$pb.TagNumber(60)
-  To_MarketDataSubscribe get marketDataSubscribe => $_getN(36);
+  To_MarketDataSubscribe get marketDataSubscribe => $_getN(37);
   @$pb.TagNumber(60)
   set marketDataSubscribe(To_MarketDataSubscribe v) { setField(60, v); }
   @$pb.TagNumber(60)
-  $core.bool hasMarketDataSubscribe() => $_has(36);
+  $core.bool hasMarketDataSubscribe() => $_has(37);
   @$pb.TagNumber(60)
   void clearMarketDataSubscribe() => clearField(60);
   @$pb.TagNumber(60)
-  To_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(36);
+  To_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(37);
 
   @$pb.TagNumber(61)
-  Empty get marketDataUnsubscribe => $_getN(37);
+  Empty get marketDataUnsubscribe => $_getN(38);
   @$pb.TagNumber(61)
   set marketDataUnsubscribe(Empty v) { setField(61, v); }
   @$pb.TagNumber(61)
-  $core.bool hasMarketDataUnsubscribe() => $_has(37);
+  $core.bool hasMarketDataUnsubscribe() => $_has(38);
   @$pb.TagNumber(61)
   void clearMarketDataUnsubscribe() => clearField(61);
   @$pb.TagNumber(61)
-  Empty ensureMarketDataUnsubscribe() => $_ensure(37);
+  Empty ensureMarketDataUnsubscribe() => $_ensure(38);
 
   @$pb.TagNumber(62)
-  Empty get portfolioPrices => $_getN(38);
+  Empty get portfolioPrices => $_getN(39);
   @$pb.TagNumber(62)
   set portfolioPrices(Empty v) { setField(62, v); }
   @$pb.TagNumber(62)
-  $core.bool hasPortfolioPrices() => $_has(38);
+  $core.bool hasPortfolioPrices() => $_has(39);
   @$pb.TagNumber(62)
   void clearPortfolioPrices() => clearField(62);
   @$pb.TagNumber(62)
-  Empty ensurePortfolioPrices() => $_ensure(38);
+  Empty ensurePortfolioPrices() => $_ensure(39);
 
   @$pb.TagNumber(71)
-  Empty get jadeRescan => $_getN(39);
+  Empty get jadeRescan => $_getN(40);
   @$pb.TagNumber(71)
   set jadeRescan(Empty v) { setField(71, v); }
   @$pb.TagNumber(71)
-  $core.bool hasJadeRescan() => $_has(39);
+  $core.bool hasJadeRescan() => $_has(40);
   @$pb.TagNumber(71)
   void clearJadeRescan() => clearField(71);
   @$pb.TagNumber(71)
-  Empty ensureJadeRescan() => $_ensure(39);
+  Empty ensureJadeRescan() => $_ensure(40);
 
   @$pb.TagNumber(81)
-  To_GaidStatus get gaidStatus => $_getN(40);
+  To_GaidStatus get gaidStatus => $_getN(41);
   @$pb.TagNumber(81)
   set gaidStatus(To_GaidStatus v) { setField(81, v); }
   @$pb.TagNumber(81)
-  $core.bool hasGaidStatus() => $_has(40);
+  $core.bool hasGaidStatus() => $_has(41);
   @$pb.TagNumber(81)
   void clearGaidStatus() => clearField(81);
   @$pb.TagNumber(81)
-  To_GaidStatus ensureGaidStatus() => $_ensure(40);
+  To_GaidStatus ensureGaidStatus() => $_ensure(41);
 }
 
 enum From_Login_Result {

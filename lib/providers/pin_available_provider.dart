@@ -1,6 +1,9 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/providers/config_provider.dart';
 
-final pinAvailableProvider = Provider<bool>((ref) {
-  return ref.watch(configProvider).usePinProtection;
-});
+part 'pin_available_provider.g.dart';
+
+@riverpod
+bool pinAvailable(PinAvailableRef ref) {
+  return ref.watch(configurationProvider).usePinProtection;
+}

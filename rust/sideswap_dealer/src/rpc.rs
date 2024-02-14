@@ -1,5 +1,7 @@
+use base64::Engine;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use sideswap_types::hex_encoded::HexEncoded;
 use std::collections::BTreeMap;
 use std::vec::Vec;
 
@@ -11,72 +13,80 @@ pub struct RpcServer {
     pub password: String,
 }
 
+pub trait RpcCall {
+    type Response: serde::de::DeserializeOwned;
+
+    fn get_request(self) -> RpcRequest;
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RpcRequest {
-    pub method: String,
-    pub params: serde_json::value::Value,
+    method: String,
+    params: serde_json::value::Value,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct RpcError {
-    pub message: String,
+struct RpcError {
+    message: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct RpcResult<T> {
-    pub result: Option<T>,
-    pub error: Option<RpcError>,
+struct RpcResult<T> {
+    result: Option<T>,
+    error: Option<RpcError>,
 }
 
-fn make_rpc_impl(
-    http_client: &reqwest::blocking::Client,
+pub fn make_rpc_call<T: RpcCall>(
+    http_client: &ureq::Agent,
     rpc_server: &RpcServer,
-    req: &RpcRequest,
-) -> Result<(String, reqwest::StatusCode), anyhow::Error> {
-    let endpoint = format!("http://{}:{}", &rpc_server.host, rpc_server.port);
+    req: T,
+) -> Result<T::Response, anyhow::Error> {
+    let req = req.get_request();
+    let req = serde_json::to_string(&req).expect("should not fail");
+    trace!("make rpc request: {req}");
+
+    // If two or more wallets are loaded, most RPC calls must include the wallet name in the URL path
+    let wallet_name = "";
+    let endpoint = format!(
+        "http://{}:{}/wallet/{}",
+        &rpc_server.host, rpc_server.port, wallet_name
+    );
+
+    let encoded_credentials = base64::engine::general_purpose::STANDARD
+        .encode(format!("{}:{}", rpc_server.login, rpc_server.password));
+    let auth_header_value = format!("Basic {}", encoded_credentials);
     let res = http_client
-        .post(endpoint)
-        .basic_auth(&rpc_server.login, Some(&rpc_server.password))
-        .json(&req)
-        .send()?;
-    let status = res.status();
-    let data = std::str::from_utf8(&res.bytes()?)?.to_owned();
-    Ok((data, status))
-}
+        .post(&endpoint)
+        .set("Authorization", &auth_header_value)
+        .set("Content-Type", "application/json")
+        .send_string(&req)?;
+    let _status = res.status();
+    let data = res.into_string()?;
+    trace!("got rpc response: {}", data);
 
-pub fn make_rpc(
-    http_client: &reqwest::blocking::Client,
-    rpc_server: &RpcServer,
-    req: &RpcRequest,
-) -> Result<(String, reqwest::StatusCode), anyhow::Error> {
-    make_rpc_impl(http_client, rpc_server, req)
-}
+    let response = serde_json::from_str::<RpcResult<T::Response>>(&data)?;
 
-pub fn make_rpc_call_silent<T: serde::de::DeserializeOwned>(
-    http_client: &reqwest::blocking::Client,
-    rpc_server: &RpcServer,
-    req: &RpcRequest,
-) -> Result<T, anyhow::Error> {
-    let response = make_rpc(http_client, rpc_server, req)?;
-    let response = serde_json::from_str::<RpcResult<T>>(&response.0)?;
     if let Some(error) = response.error {
-        error!("rpc failed: {}", error.message);
-        Err(anyhow!("RPC failed: {}", error.message))
-    } else if let Some(result) = response.result {
-        Ok(result)
-    } else {
-        error!("empty RPC response");
-        Err(anyhow!("empty RPC response"))
+        bail!("RPC request failed: {}", error.message);
     }
+    let resp = match response.result {
+        Some(v) => v,
+        None => serde_json::from_value::<T::Response>(serde_json::Value::Null)?,
+    };
+    Ok(resp)
 }
 
-pub fn make_rpc_call<T: serde::de::DeserializeOwned>(
-    http_client: &reqwest::blocking::Client,
-    rpc_server: &RpcServer,
-    req: &RpcRequest,
-) -> Result<T, anyhow::Error> {
-    trace!("make request: {:?}", req);
-    make_rpc_call_silent(http_client, rpc_server, req)
+pub struct GetWalletInfoCall {}
+
+impl RpcCall for GetWalletInfoCall {
+    type Response = GetWalletInfo;
+
+    fn get_request(self) -> RpcRequest {
+        RpcRequest {
+            method: "getwalletinfo".to_owned(),
+            params: serde_json::Value::Null,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -86,15 +96,15 @@ pub struct GetWalletInfo {
     pub immature_balance: BTreeMap<String, f64>,
     pub private_keys_enabled: bool,
 }
-pub fn get_wallet_info() -> RpcRequest {
-    RpcRequest {
-        method: "getwalletinfo".to_owned(),
-        params: serde_json::Value::Null,
-    }
-}
 
-pub fn get_new_address() -> RpcRequest {
-    get_new_address_with_type(AddressType::P2SH)
+pub struct GetNewAddressCall {}
+
+impl RpcCall for GetNewAddressCall {
+    type Response = elements::Address;
+
+    fn get_request(self) -> RpcRequest {
+        get_new_address_with_type(AddressType::P2SH)
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -121,20 +131,28 @@ pub fn get_new_address_with_type(addr_type: AddressType) -> RpcRequest {
     }
 }
 
-pub fn listunspent(minconf: i32) -> RpcRequest {
-    // minconf
-    RpcRequest {
-        method: "listunspent".to_owned(),
-        params: json!({
-            "minconf": minconf,
-        }),
+pub struct ListUnspentCall {
+    pub minconf: i32,
+}
+
+impl RpcCall for ListUnspentCall {
+    type Response = ListUnspent;
+
+    fn get_request(self) -> RpcRequest {
+        RpcRequest {
+            method: "listunspent".to_owned(),
+            params: json!({
+                "minconf": self.minconf,
+            }),
+        }
     }
 }
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UnspentItem {
     pub txid: elements::Txid,
     pub vout: u32,
-    pub address: String,
+    pub address: elements::Address,
     pub amount: serde_json::Number,
     pub confirmations: i32,
     pub asset: sideswap_api::AssetId,
@@ -144,8 +162,8 @@ pub struct UnspentItem {
     pub redeem_script: Option<elements::Script>, // Not present for native segwit
     pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
     pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
-    pub assetcommitment: Option<String>,
-    pub amountcommitment: Option<String>,
+    pub assetcommitment: Option<HexEncoded<elements::confidential::Asset>>,
+    pub amountcommitment: Option<HexEncoded<elements::confidential::Value>>,
 }
 pub type ListUnspent = Vec<UnspentItem>;
 
@@ -158,24 +176,40 @@ impl UnspentItem {
     }
 }
 
-pub fn sendtoaddress(address: &str, amount: f64, asset_id: &elements::AssetId) -> RpcRequest {
-    RpcRequest {
-        method: "sendtoaddress".to_owned(),
-        params: json! ({
-            "address": address,
-            "amount": amount,
-            "assetlabel": asset_id,
-        }),
-    }
+pub struct SendToAddressCall {
+    pub address: elements::Address,
+    pub amount: f64,
+    pub asset_id: elements::AssetId,
 }
-pub type SendToAddressResult = String;
 
-pub fn dumpprivkey(address: &str) -> RpcRequest {
-    RpcRequest {
-        method: "dumpprivkey".to_owned(),
-        params: json! ({
-            "address": address,
-        }),
+impl RpcCall for SendToAddressCall {
+    type Response = elements::Txid;
+
+    fn get_request(self) -> RpcRequest {
+        RpcRequest {
+            method: "sendtoaddress".to_owned(),
+            params: json! ({
+                "address": self.address,
+                "amount": self.amount,
+                "assetlabel": self.asset_id,
+            }),
+        }
     }
 }
-pub type DumpPrivKey = String;
+
+pub struct DumpPrivKeyCall {
+    pub address: elements::Address,
+}
+
+impl RpcCall for DumpPrivKeyCall {
+    type Response = elements::bitcoin::PrivateKey;
+
+    fn get_request(self) -> RpcRequest {
+        RpcRequest {
+            method: "dumpprivkey".to_owned(),
+            params: json! ({
+                "address": self.address,
+            }),
+        }
+    }
+}

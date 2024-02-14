@@ -136,13 +136,14 @@ class PaymentAmountPageBody extends HookConsumerWidget {
     final accountAsset =
         ref.watch(paymentPageSelectedAccountAssetNotifierProvider);
 
-    final validateCallback = useCallback((String value) {
+    Future<void> validate(String value) async {
+      final accountAsset =
+          ref.read(paymentPageSelectedAccountAssetNotifierProvider);
+
       if (value.isEmpty) {
-        Future.microtask(() {
-          ref
-              .read(paymentInsufficientFundsNotifierProvider.notifier)
-              .setInsufficientFunds(false);
-        });
+        ref
+            .read(paymentInsufficientFundsNotifierProvider.notifier)
+            .setInsufficientFunds(false);
         enabled.value = false;
         amount.value = '0';
         return;
@@ -174,28 +175,24 @@ class PaymentAmountPageBody extends HookConsumerWidget {
       if (newAmount <= realBalance) {
         enabled.value = true;
 
-        Future.microtask(() {
-          ref
-              .read(paymentInsufficientFundsNotifierProvider.notifier)
-              .setInsufficientFunds(false);
-        });
+        ref
+            .read(paymentInsufficientFundsNotifierProvider.notifier)
+            .setInsufficientFunds(false);
         return;
       }
 
       enabled.value = false;
 
-      Future.microtask(() {
-        ref
-            .read(paymentInsufficientFundsNotifierProvider.notifier)
-            .setInsufficientFunds(true);
-      });
-    }, [accountAsset]);
+      ref
+          .read(paymentInsufficientFundsNotifierProvider.notifier)
+          .setInsufficientFunds(true);
+    }
 
     final balances = ref.watch(balancesNotifierProvider);
 
     useEffect(() {
       if (tickerAmountController.text.isNotEmpty) {
-        validateCallback(tickerAmountController.text);
+        validate(tickerAmountController.text);
       }
 
       return;
@@ -239,9 +236,8 @@ class PaymentAmountPageBody extends HookConsumerWidget {
     }, const []);
 
     useEffect(() {
-      tickerAmountController.addListener(() {
-        isMaxPressed.value = false;
-        validateCallback(tickerAmountController.text);
+      tickerAmountController.addListener(() async {
+        await validate(tickerAmountController.text);
       });
 
       return;
@@ -367,7 +363,10 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                   controller: tickerAmountController,
                   dropdownValue: accountAsset,
                   focusNode: tickerAmountFocusNode,
-                  validate: (value) => validateCallback(value),
+                  validate: (value) async => await validate(value),
+                  onChanged: (value) {
+                    isMaxPressed.value = false;
+                  },
                   onDropdownChanged: (value) {
                     ref
                         .read(paymentPageSelectedAccountAssetNotifierProvider

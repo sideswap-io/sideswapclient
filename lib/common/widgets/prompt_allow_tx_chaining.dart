@@ -1,15 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/allow_tx_chaining_button.dart';
+import 'package:sideswap/providers/config_provider.dart';
 
-Future<bool> allowTxChaining(BuildContext context) async {
-  const hideTxChainingPromptField = 'hide_tx_chaining_prompt';
-  final prefs = await SharedPreferences.getInstance();
+Future<bool> allowTxChaining(BuildContext context, WidgetRef ref) async {
   final hideTxChainingPromptValue =
-      prefs.getBool(hideTxChainingPromptField) ?? false;
+      ref.read(configurationProvider).hideTxChainingPromptValue;
+
   if (hideTxChainingPromptValue) {
     return true;
   }
@@ -27,7 +27,7 @@ Future<bool> allowTxChaining(BuildContext context) async {
   );
 
   if (result == AllowTxChaining.always) {
-    prefs.setBool(hideTxChainingPromptField, true);
+    ref.read(configurationProvider.notifier).setHideTxChainingPromptValue(true);
   }
 
   return result == AllowTxChaining.always || result == AllowTxChaining.once;

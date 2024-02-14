@@ -301,7 +301,7 @@ class _AmountUsdProviderElement extends AutoDisposeProviderElement<double>
 }
 
 String _$accountAssetsTotalUsdBalanceStringHash() =>
-    r'1d9a2106fcba1b0d808fc3c6a9b3d0b95e819ca9';
+    r'49e66f624ba9034cd159b8091c0bbb2faa1f1dd2';
 
 /// See also [accountAssetsTotalUsdBalanceString].
 @ProviderFor(accountAssetsTotalUsdBalanceString)
@@ -435,7 +435,7 @@ class _AccountAssetsTotalUsdBalanceStringProviderElement
 }
 
 String _$accountAssetsTotalUsdBalanceHash() =>
-    r'b2deff0aeb72a7f0d5080ea121f630d1e97430b2';
+    r'5cd9879d9f7e2456a9823e2f6c72aa279c0e5b3a';
 
 /// See also [accountAssetsTotalUsdBalance].
 @ProviderFor(accountAssetsTotalUsdBalance)
@@ -443,7 +443,7 @@ const accountAssetsTotalUsdBalanceProvider =
     AccountAssetsTotalUsdBalanceFamily();
 
 /// See also [accountAssetsTotalUsdBalance].
-class AccountAssetsTotalUsdBalanceFamily extends Family<double> {
+class AccountAssetsTotalUsdBalanceFamily extends Family<Decimal> {
   /// See also [accountAssetsTotalUsdBalance].
   const AccountAssetsTotalUsdBalanceFamily();
 
@@ -481,7 +481,8 @@ class AccountAssetsTotalUsdBalanceFamily extends Family<double> {
 }
 
 /// See also [accountAssetsTotalUsdBalance].
-class AccountAssetsTotalUsdBalanceProvider extends AutoDisposeProvider<double> {
+class AccountAssetsTotalUsdBalanceProvider
+    extends AutoDisposeProvider<Decimal> {
   /// See also [accountAssetsTotalUsdBalance].
   AccountAssetsTotalUsdBalanceProvider(
     List<AccountAsset> accountAssets,
@@ -516,7 +517,7 @@ class AccountAssetsTotalUsdBalanceProvider extends AutoDisposeProvider<double> {
 
   @override
   Override overrideWith(
-    double Function(AccountAssetsTotalUsdBalanceRef provider) create,
+    Decimal Function(AccountAssetsTotalUsdBalanceRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -533,7 +534,7 @@ class AccountAssetsTotalUsdBalanceProvider extends AutoDisposeProvider<double> {
   }
 
   @override
-  AutoDisposeProviderElement<double> createElement() {
+  AutoDisposeProviderElement<Decimal> createElement() {
     return _AccountAssetsTotalUsdBalanceProviderElement(this);
   }
 
@@ -552,13 +553,13 @@ class AccountAssetsTotalUsdBalanceProvider extends AutoDisposeProvider<double> {
   }
 }
 
-mixin AccountAssetsTotalUsdBalanceRef on AutoDisposeProviderRef<double> {
+mixin AccountAssetsTotalUsdBalanceRef on AutoDisposeProviderRef<Decimal> {
   /// The parameter `accountAssets` of this provider.
   List<AccountAsset> get accountAssets;
 }
 
 class _AccountAssetsTotalUsdBalanceProviderElement
-    extends AutoDisposeProviderElement<double>
+    extends AutoDisposeProviderElement<Decimal>
     with AccountAssetsTotalUsdBalanceRef {
   _AccountAssetsTotalUsdBalanceProviderElement(super.provider);
 
@@ -568,7 +569,7 @@ class _AccountAssetsTotalUsdBalanceProviderElement
 }
 
 String _$accountAssetsTotalLbtcBalanceHash() =>
-    r'2cca99f9a2b83d9cd5cb81f0429334dd88f44eda';
+    r'0a1bfd91b2236fcae0ee218debb66fb944dae7d2';
 
 /// See also [accountAssetsTotalLbtcBalance].
 @ProviderFor(accountAssetsTotalLbtcBalance)
@@ -836,14 +837,14 @@ class _AccountAssetBalanceInUsdStringProviderElement
 }
 
 String _$accountAssetBalanceInUsdHash() =>
-    r'37114aee65a36b3e3860dac1ac81ccc3041bf7d1';
+    r'2efa7ba36e51a10e1749e03bbd820a5bd36ad3af';
 
 /// See also [accountAssetBalanceInUsd].
 @ProviderFor(accountAssetBalanceInUsd)
 const accountAssetBalanceInUsdProvider = AccountAssetBalanceInUsdFamily();
 
 /// See also [accountAssetBalanceInUsd].
-class AccountAssetBalanceInUsdFamily extends Family<double> {
+class AccountAssetBalanceInUsdFamily extends Family<Decimal> {
   /// See also [accountAssetBalanceInUsd].
   const AccountAssetBalanceInUsdFamily();
 
@@ -881,7 +882,7 @@ class AccountAssetBalanceInUsdFamily extends Family<double> {
 }
 
 /// See also [accountAssetBalanceInUsd].
-class AccountAssetBalanceInUsdProvider extends AutoDisposeProvider<double> {
+class AccountAssetBalanceInUsdProvider extends AutoDisposeProvider<Decimal> {
   /// See also [accountAssetBalanceInUsd].
   AccountAssetBalanceInUsdProvider(
     AccountAsset accountAsset,
@@ -916,7 +917,7 @@ class AccountAssetBalanceInUsdProvider extends AutoDisposeProvider<double> {
 
   @override
   Override overrideWith(
-    double Function(AccountAssetBalanceInUsdRef provider) create,
+    Decimal Function(AccountAssetBalanceInUsdRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -933,7 +934,7 @@ class AccountAssetBalanceInUsdProvider extends AutoDisposeProvider<double> {
   }
 
   @override
-  AutoDisposeProviderElement<double> createElement() {
+  AutoDisposeProviderElement<Decimal> createElement() {
     return _AccountAssetBalanceInUsdProviderElement(this);
   }
 
@@ -952,13 +953,13 @@ class AccountAssetBalanceInUsdProvider extends AutoDisposeProvider<double> {
   }
 }
 
-mixin AccountAssetBalanceInUsdRef on AutoDisposeProviderRef<double> {
+mixin AccountAssetBalanceInUsdRef on AutoDisposeProviderRef<Decimal> {
   /// The parameter `accountAsset` of this provider.
   AccountAsset get accountAsset;
 }
 
 class _AccountAssetBalanceInUsdProviderElement
-    extends AutoDisposeProviderElement<double>
+    extends AutoDisposeProviderElement<Decimal>
     with AccountAssetBalanceInUsdRef {
   _AccountAssetBalanceInUsdProviderElement(super.provider);
 

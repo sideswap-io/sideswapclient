@@ -31,7 +31,7 @@ class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
     super.initState();
     Future.microtask(() async {
       avatar = await ref.read(avatarProvider).getUserAvatarThumbnail();
-      phoneNumber = ref.read(configProvider).phoneNumber;
+      phoneNumber = ref.read(configurationProvider).phoneNumber;
       setState(() {});
     });
   }

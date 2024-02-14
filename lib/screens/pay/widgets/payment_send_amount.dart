@@ -7,15 +7,16 @@ import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 
-class PaymentSendAmount extends StatefulWidget {
+class PaymentSendAmount extends ConsumerWidget {
   const PaymentSendAmount({
     super.key,
     this.controller,
     required this.focusNode,
     this.onDropdownChanged,
-    required this.dropdownValue,
     required this.validate,
+    required this.dropdownValue,
     this.availableDropdownAssets,
+    this.onChanged,
   });
 
   final TextEditingController? controller;
@@ -24,37 +25,36 @@ class PaymentSendAmount extends StatefulWidget {
   final void Function(String) validate;
   final AccountAsset dropdownValue;
   final List<AccountAsset>? availableDropdownAssets;
+  final void Function(String value)? onChanged;
 
   @override
-  PaymentSendAmountState createState() => PaymentSendAmountState();
-}
-
-class PaymentSendAmountState extends State<PaymentSendAmount> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Consumer(
       builder: (context, ref, child) {
-        final sendAssets = widget.availableDropdownAssets ??
-            ref.watch(walletProvider).sendAssets();
+        final sendAssets =
+            availableDropdownAssets ?? ref.watch(walletProvider).sendAssets();
         final showError = ref.watch(paymentInsufficientFundsNotifierProvider);
+
         return TickerAmountTextField(
-          focusNode: widget.focusNode,
-          controller: widget.controller,
+          focusNode: focusNode,
+          controller: controller,
           showError: showError,
           availableAssets: sendAssets,
-          onDropdownChanged: widget.onDropdownChanged,
-          dropdownValue: widget.dropdownValue,
+          onDropdownChanged: onDropdownChanged,
+          dropdownValue: dropdownValue,
           showAccountsInPopup: true,
           onChanged: (value) {
-            widget.validate(value);
+            validate(value);
             final newValue = replaceCharacterOnPosition(
               input: value,
             );
 
-            if (widget.controller != null) {
-              widget.controller!.value = fixCursorPosition(
-                  controller: widget.controller!, newValue: newValue);
+            if (controller != null) {
+              controller!.value = fixCursorPosition(
+                  controller: controller!, newValue: newValue);
             }
+
+            onChanged?.call(value);
           },
         );
       },

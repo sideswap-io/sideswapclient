@@ -30,7 +30,7 @@ pub struct Transfer {
     pub amount: Amount,
     pub created_at: std::time::SystemTime,
     pub updated_at: std::time::SystemTime,
-    pub txid: Option<String>,
+    pub txid: Option<elements::Txid>,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Default)]

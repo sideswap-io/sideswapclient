@@ -74,7 +74,7 @@ class DLicense extends ConsumerWidget {
           child: Text('I AGREE'.tr()),
           onPressed: () async {
             Navigator.pop(context);
-            await ref.read(walletProvider).setLicenseAccepted();
+            ref.read(walletProvider).setLicenseAccepted();
             if (nextStep == LicenseNextStep.createWallet) {
               await ref.read(walletProvider).setReviewLicenseCreateWallet();
               return;

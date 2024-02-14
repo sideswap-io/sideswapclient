@@ -10,12 +10,12 @@ part 'env_provider.g.dart';
 class Env extends _$Env {
   @override
   int build() {
-    final env = ref.watch(configProvider.select((value) => value.env));
+    final env = ref.watch(configurationProvider.select((value) => value.env));
     return env;
   }
 
-  Future<void> setEnv(int env) async {
-    await ref.read(configProvider).setEnv(env);
+  void setEnv(int env) {
+    ref.read(configurationProvider.notifier).setEnv(env);
   }
 
   void restart() {

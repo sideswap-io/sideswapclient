@@ -65,9 +65,6 @@ fn main() {
         client,
         to::Msg::Login(to::Login {
             wallet: Some(to::login::Wallet::Mnemonic(args.mnemonic.clone())),
-            network: NetworkSettings {
-                selected: Some(network_settings::Selected::Sideswap(Empty {})),
-            },
             phone_key: None,
             send_utxo_updates: None,
             force_auto_sign_maker: None,

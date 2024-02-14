@@ -350,7 +350,7 @@ class PinSetupProvider extends ChangeNotifier {
     logger.d('PIN OK');
 
     _done();
-    await ref.read(walletProvider).setPinSuccess();
+    ref.read(walletProvider).setPinSuccess();
   }
 }
 

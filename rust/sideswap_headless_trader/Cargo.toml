@@ -12,4 +12,4 @@ clap.workspace = true
 config.workspace = true
 log.workspace = true
 prost.workspace = true
-serde = { workspace = true, features = ["derive"] }
+serde.workspace = true

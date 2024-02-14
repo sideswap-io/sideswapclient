@@ -37,19 +37,20 @@ class NetworkSettingsModel with _$NetworkSettingsModel {
 class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
   @override
   NetworkSettingsModel build() {
-    final networkSettingsModel =
-        ref.watch(configProvider.select((value) => value.networkSettingsModel));
+    final networkSettingsModel = ref.watch(
+        configurationProvider.select((value) => value.networkSettingsModel));
 
-    if (networkSettingsModel is NetworkSettingsModelEmpty) {
-      final env = ref.watch(configProvider.select((value) => value.env));
-      final settingsNetworkType = ref
-          .watch(configProvider.select((value) => value.settingsNetworkType));
+    if (networkSettingsModel is NetworkSettingsModelEmpty ||
+        networkSettingsModel == null) {
+      final env = ref.watch(configurationProvider.select((value) => value.env));
+      final settingsNetworkType = ref.watch(
+          configurationProvider.select((value) => value.settingsNetworkType));
       final settingsHost =
-          ref.watch(configProvider.select((value) => value.settingsHost));
+          ref.watch(configurationProvider.select((value) => value.networkHost));
       final settingsPort =
-          ref.watch(configProvider.select((value) => value.settingsPort));
-      final settingsUseTls =
-          ref.watch(configProvider.select((value) => value.settingsUseTLS));
+          ref.watch(configurationProvider.select((value) => value.networkPort));
+      final settingsUseTls = ref
+          .watch(configurationProvider.select((value) => value.networkUseTLS));
 
       return NetworkSettingsModelEmpty(
           settingsNetworkType: settingsNetworkType,
@@ -65,78 +66,80 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
   void setModel(NetworkSettingsModel networkSettingsModel) {
     // make sure that empty model have current base settings
     if (networkSettingsModel is NetworkSettingsModelEmpty) {
-      final env = ref.read(configProvider).env;
-      final settingsNetworkType = ref.read(configProvider).settingsNetworkType;
-      final settingsHost = ref.read(configProvider).settingsHost;
-      final settingsPort = ref.read(configProvider).settingsPort;
-      final settingsUseTls = ref.read(configProvider).settingsUseTLS;
+      final env = ref.read(configurationProvider).env;
+      final settingsNetworkType =
+          ref.read(configurationProvider).settingsNetworkType;
+      final networkHost = ref.read(configurationProvider).networkHost;
+      final networkPort = ref.read(configurationProvider).networkPort;
+      final networkUseTls = ref.read(configurationProvider).networkUseTLS;
       state = NetworkSettingsModel.empty(
           settingsNetworkType: settingsNetworkType,
           env: env,
-          host: settingsHost,
-          port: settingsPort,
-          useTls: settingsUseTls);
+          host: networkHost,
+          port: networkPort,
+          useTls: networkUseTls);
       return;
     }
 
     state = networkSettingsModel;
   }
 
-  Future<void> save() async {
-    await ref.read(configProvider).setNetworkSettingsModel(state);
+  void save() {
+    ref.read(configurationProvider.notifier).setNetworkSettingsModel(state);
   }
 
-  Future<void> applySettings() async {
+  void applySettings() {
     if (state is NetworkSettingsModelApply) {
-      final settingsNetworkType = ref.read(configProvider).settingsNetworkType;
-      final settingsHost = ref.read(configProvider).settingsHost;
-      final settingsPort = ref.read(configProvider).settingsPort;
-      final settingsUseTls = ref.read(configProvider).settingsUseTLS;
-      final env = ref.read(configProvider).env;
+      final settingsNetworkType =
+          ref.read(configurationProvider).settingsNetworkType;
+      final settingsHost = ref.read(configurationProvider).networkHost;
+      final settingsPort = ref.read(configurationProvider).networkPort;
+      final settingsUseTls = ref.read(configurationProvider).networkUseTLS;
+      final env = ref.read(configurationProvider).env;
 
       (switch (state.settingsNetworkType) {
         final newSettingsNetworkType?
             when newSettingsNetworkType != settingsNetworkType =>
           ref
-              .read(configProvider)
+              .read(configurationProvider.notifier)
               .setSettingsNetworkType(newSettingsNetworkType),
         _ => () {}(),
       });
 
       (switch (state.host) {
         final newHost? when newHost != settingsHost =>
-          ref.read(configProvider).setSettingsHost(newHost),
+          ref.read(configurationProvider.notifier).setNetworkHost(newHost),
         _ => () {}(),
       });
 
       (switch (state.port) {
         final newPort? when newPort != settingsPort =>
-          ref.read(configProvider).setSettingsPort(newPort),
+          ref.read(configurationProvider.notifier).setNetworkPort(newPort),
         _ => () {}(),
       });
 
       (switch (state.useTls) {
         final newUseTls? when newUseTls != settingsUseTls =>
-          ref.read(configProvider).setSettingsUseTLS(newUseTls),
+          ref.read(configurationProvider.notifier).setNetworkUseTLS(newUseTls),
         _ => () {}(),
       });
 
       (switch (state.env) {
         final newEnv? when newEnv != env =>
-          ref.read(configProvider).setEnv(newEnv),
+          ref.read(configurationProvider.notifier).setEnv(newEnv),
         _ => () {}(),
       });
 
       setModel(const NetworkSettingsModelEmpty());
-      await save();
+      save();
     }
   }
 }
 
 @riverpod
 bool networkSettingsNeedSave(NetworkSettingsNeedSaveRef ref) {
-  final configNetworkSettingsModel =
-      ref.watch(configProvider.select((value) => value.networkSettingsModel));
+  final configNetworkSettingsModel = ref.watch(
+      configurationProvider.select((value) => value.networkSettingsModel));
   final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
   return networkSettingsModel != configNetworkSettingsModel;
 }

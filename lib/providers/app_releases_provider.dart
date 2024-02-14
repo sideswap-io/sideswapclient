@@ -53,14 +53,16 @@ class AppReleasesChangeNotifier with ChangeNotifier {
   }
 
   bool newDesktopReleaseAvailable() {
-    final knownNewReleaseBuild = ref.read(configProvider).knownNewReleaseBuild;
+    final knownNewReleaseBuild =
+        ref.read(configurationProvider).knownNewReleaseBuild;
     return max(appBuildNumber, knownNewReleaseBuild) <
         (buildDesktopLatest ?? 0);
   }
 
-  Future<void> ackNewDesktopRelease() async {
-    final config = ref.read(configProvider);
-    await config.setKnownNewReleaseBuild(buildDesktopLatest!);
+  void ackNewDesktopRelease() {
+    ref
+        .read(configurationProvider.notifier)
+        .setKnownNewReleaseBuild(buildDesktopLatest!);
     notifyListeners();
   }
 

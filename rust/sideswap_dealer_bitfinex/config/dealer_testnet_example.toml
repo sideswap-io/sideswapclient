@@ -1,12 +1,12 @@
-log_settings = "config/dealer_logs_regtest.yml"
-env = "Regtest"
+log_settings = "config/dealer_logs_testnet.yml"
+env = "Testnet"
 bitcoin_amount_submit = 0.005
 bitcoin_amount_min = 0.0001
 bitcoin_amount_max = 1.0
 apikey = ""
 proxy_port = 4101
 
-server_host = "api-regtest.sideswap.io"
+server_host = "api-testnet.sideswap.io"
 server_port = 443
 server_use_tls = true
 notificationurl = ""
@@ -26,7 +26,7 @@ bitfinex_currency_lbtc = "TESTLBT"
 bitfinex_currency_usdt = "TESTUSD"
 bitfinex_currency_eur = "TESTEUR"
 
-storage_path = "config/storage_regtest.txt"
+storage_path = "config/storage_testnet.txt"
 balancing_enabled = false
 
 [rpc]

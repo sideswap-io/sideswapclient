@@ -134,8 +134,8 @@ class PaymentPage extends HookConsumerWidget {
       body: SafeArea(
         child: HookBuilder(
           builder: (_) {
-            final isPhoneRegistered =
-                ref.watch(configProvider.select((p) => p.phoneKey.isNotEmpty));
+            final isPhoneRegistered = ref.watch(
+                configurationProvider.select((p) => p.phoneKey.isNotEmpty));
 
             if (FlavorConfig.isProduction &&
                 FlavorConfig.enableOnboardingUserFeatures) {

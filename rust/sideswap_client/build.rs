@@ -42,6 +42,7 @@ fn main() {
         "macos" => {
             println!("cargo:rustc-link-lib=static=greenaddress_full");
             println!("cargo:rustc-link-lib=dylib=c++");
+            println!("cargo:rustc-link-lib=framework=Security");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         _ => {

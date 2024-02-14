@@ -207,8 +207,10 @@ class PhoneProvider with ChangeNotifier {
       {String phoneKey = '', String errorMsg = ''}) async {
     if (phoneKey.isNotEmpty) {
       _phoneKey = phoneKey;
-      await ref.read(configProvider).setPhoneKey(phoneKey);
-      await ref.read(configProvider).setPhoneNumber(countryPhoneNumber);
+      ref.read(configurationProvider.notifier).setPhoneKey(phoneKey);
+      ref
+          .read(configurationProvider.notifier)
+          .setPhoneNumber(countryPhoneNumber);
       _phoneRegisterStep = PhoneRegisterStep.phoneNumberAccepted;
       _smsCodeStep = SmsCodeStep.visible;
       notifyListeners();

@@ -50,6 +50,7 @@ fn request_ws_connect(data: &mut Data) {
         host: env_data.host.to_owned(),
         port: env_data.port,
         use_tls: env_data.use_tls,
+        proxy: None,
     };
     data.ws_sender.send(ws_connect).unwrap();
 }

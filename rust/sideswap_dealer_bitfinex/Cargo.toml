@@ -9,30 +9,29 @@ sideswap_common = { path = "../sideswap_common" }
 sideswap_dealer = { path = "../sideswap_dealer" }
 
 anyhow.workspace = true
-tokio-tungstenite = { workspace = true, features = [ "stream" ] }
+axum.workspace = true
 base64.workspace = true
 clap.workspace = true
 config.workspace = true
 crossbeam-channel.workspace = true
-elements = { workspace = true, features = ["serde"] }
+elements.workspace = true
 futures-util.workspace = true
 futures.workspace = true
 hex.workspace = true
-hyper = { workspace = true, features = ["server"] }
 libc.workspace = true
 log.workspace = true
-log4rs = { workspace = true, features = ["gzip"] }
+log4rs.workspace = true
 prost.workspace = true
 rand.workspace = true
-reqwest = { workspace = true, default-features = false, features = ["blocking", "json", "rustls-tls"] }
-serde = { workspace = true, features = ["derive"] }
+ring.workspace = true
 serde_json.workspace = true
+serde.workspace = true
 signal-hook.workspace = true
-tokio = { workspace = true, features = ["macros", "net", "rt", "sync", "time"] }
-tungstenite = { workspace = true, default-features = false, features = [] }
+tokio-tungstenite.workspace = true
+tokio.workspace = true
+tungstenite.workspace = true
+ureq.workspace = true
 url.workspace = true
-ureq = { workspace = true, features = ["json"] }
-ring = "0.17.7"
 
 [build-dependencies]
 prost-build.workspace = true

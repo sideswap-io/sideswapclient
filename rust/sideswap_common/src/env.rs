@@ -87,6 +87,18 @@ impl Network {
         }
     }
 
+    pub fn depix_asset_id(&self) -> Option<&'static str> {
+        match self {
+            Network::Mainnet => {
+                Some("811e0f0e84d3343f58e3f6cb5b137b6abc3a2f7ca8c3cb8a49985af0d5a2e567")
+            }
+            Network::Testnet => {
+                Some("bee14e1514d638afa39fdc954ec4534ccadeb4e2199c38c5a9017952e0b8e214")
+            }
+            Network::Regtest | Network::Local => None,
+        }
+    }
+
     pub fn bitcoin_network(&self) -> bitcoin::Network {
         match self {
             Network::Mainnet => bitcoin::Network::Bitcoin,

@@ -3,6 +3,7 @@ use crate::gdk;
 use crate::gdk_json;
 use crate::gdk_json::AddressInfo;
 use crate::gdk_ses;
+use crate::gdk_ses::ElectrumServer;
 use crate::gdk_ses::JadeStatusCallback;
 use crate::gdk_ses::NotifCallback;
 use crate::gdk_ses::TxType;
@@ -1683,7 +1684,6 @@ unsafe fn sig_single_maker_utxo(
         user_path: Some(address_info.user_path),
         block_height: None,
         script: address_info.script,
-        script_type: address_info.script_type,
         subtype: address_info.subtype,
         user_status: None,
         asset_tag: asset_commitment.into(),
@@ -2230,30 +2230,24 @@ pub unsafe fn select_network(info: &gdk_ses::LoginInfo) -> String {
         _ => panic!("Unknown network: {:?}", info.env.data().network),
     };
 
-    let custom_electrum = match info.network.clone() {
-        None | Some(ffi::proto::network_settings::Selected::Blockstream(_)) => None,
-        Some(ffi::proto::network_settings::Selected::Sideswap(_)) => match info.env {
+    let custom_electrum = match &info.electrum_server {
+        ElectrumServer::Blockstream => None,
+        ElectrumServer::SideSwap => match info.env {
             Env::Prod | Env::Staging | Env::LocalLiquid => {
-                Some(("electrs.sideswap.io".to_owned(), 12001, true))
+                Some(("electrs.sideswap.io", 12001, true))
             }
-            Env::Testnet | Env::LocalTestnet => {
-                Some(("electrs.sideswap.io".to_owned(), 12002, true))
-            }
+            Env::Testnet | Env::LocalTestnet => Some(("electrs.sideswap.io", 12002, true)),
             Env::Regtest | Env::Local => panic!("Unsupported network {:?}", info.env),
         },
-        Some(ffi::proto::network_settings::Selected::SideswapCn(_)) => match info.env {
-            Env::Prod | Env::Staging | Env::LocalLiquid => {
-                Some(("cn.sideswap.io".to_owned(), 12001, true))
-            }
+        ElectrumServer::SideSwapCn => match info.env {
+            Env::Prod | Env::Staging | Env::LocalLiquid => Some(("cn.sideswap.io", 12001, true)),
             Env::Testnet | Env::LocalTestnet | Env::Regtest | Env::Local => None,
         },
-        Some(ffi::proto::network_settings::Selected::Custom(
-            ffi::proto::network_settings::Custom {
-                host,
-                port,
-                use_tls,
-            },
-        )) => Some((host, port, use_tls)),
+        ElectrumServer::Custom {
+            host,
+            port,
+            use_tls,
+        } => Some((host.as_str(), *port, *use_tls)),
     };
 
     let (custom_host, custom_port, custom_tls) = match custom_electrum {

@@ -4,16 +4,15 @@ pub struct SlackMsg {
 }
 
 pub fn send_slack_once(text: &str, url: &str) -> Result<(), anyhow::Error> {
-    let http_client = reqwest::blocking::Client::builder()
+    let http_client = ureq::AgentBuilder::new()
         .timeout(std::time::Duration::from_secs(10))
-        .build()
-        .expect("http client construction failed");
+        .build();
 
     let msg = SlackMsg {
         text: text.to_owned(),
     };
 
-    let resp = http_client.post(url).json(&msg).send()?.text()?;
+    let resp = http_client.post(url).send_json(&msg)?.into_string()?;
     ensure!(resp == "ok", "sending message failed: {}", &resp);
     Ok(())
 }
