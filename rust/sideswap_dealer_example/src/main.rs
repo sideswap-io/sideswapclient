@@ -62,13 +62,20 @@ fn main() {
     let (dealer_tx, dealer_rx) = start(params.clone());
 
     let dealer_tx_copy = dealer_tx.clone();
-    std::thread::spawn(move || loop {
-        let price = prices::download_bitcoin_last_prices();
+    std::thread::spawn(move || {
+        let http_client = ureq::AgentBuilder::new()
+            .timeout(std::time::Duration::from_secs(20))
+            .build();
 
-        match price {
-            Ok(v) => {
-                if let Some(brl) = v.brl {
-                    let base_price = PricePair { bid: brl, ask: brl };
+        loop {
+            let price = prices::download_bitcoin_last_prices(&http_client);
+
+            match price {
+                Ok(v) => {
+                    let base_price = PricePair {
+                        bid: v.brl,
+                        ask: v.brl,
+                    };
                     let submit_price = apply_interest(&base_price, settings.interest_submit);
                     let price = dealer::DealerPrice {
                         submit_price,
@@ -81,11 +88,14 @@ fn main() {
                         price: Some(price),
                     });
                     dealer_tx_copy.send(msg).unwrap();
+                    std::thread::sleep(std::time::Duration::from_secs(10));
+                }
+                Err(e) => {
+                    log::error!("price download failed: {}", e);
+                    std::thread::sleep(std::time::Duration::from_secs(60));
                 }
             }
-            Err(e) => log::error!("price download failed: {}", e),
         }
-        std::thread::sleep(std::time::Duration::from_secs(30));
     });
 
     loop {

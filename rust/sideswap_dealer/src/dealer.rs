@@ -140,7 +140,21 @@ pub enum DealerTicker {
     LBTC,
     USDt,
     EURx,
+    MEX,
     DePIX,
+}
+
+pub fn get_dealer_asset_id(
+    known_assets: &sideswap_common::env::KnownAssetIds,
+    ticker: DealerTicker,
+) -> elements::AssetId {
+    match ticker {
+        DealerTicker::LBTC => known_assets.bitcoin,
+        DealerTicker::USDt => known_assets.usdt,
+        DealerTicker::EURx => known_assets.eurx,
+        DealerTicker::MEX => known_assets.mex,
+        DealerTicker::DePIX => known_assets.depix,
+    }
 }
 
 macro_rules! send_request {
@@ -164,6 +178,7 @@ pub fn dealer_ticker_to_asset_ticker(dealer_ticker: DealerTicker) -> &'static st
         DealerTicker::LBTC => TICKER_LBTC,
         DealerTicker::USDt => TICKER_USDT,
         DealerTicker::EURx => TICKER_EURX,
+        DealerTicker::MEX => TICKER_MEX,
         DealerTicker::DePIX => TICKER_DEPIX,
     }
 }

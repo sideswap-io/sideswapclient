@@ -1,3 +1,7 @@
+use std::str::FromStr;
+
+use elements::AssetId;
+
 #[derive(Debug, Eq, PartialEq, Copy, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Env {
     Prod,
@@ -48,12 +52,29 @@ impl EnvData {
     }
 }
 
+pub struct KnownAssetIds {
+    pub bitcoin: AssetId,
+    pub usdt: AssetId,
+    pub eurx: AssetId,
+    pub mex: AssetId,
+    pub depix: AssetId,
+}
+
 impl Network {
     pub fn elements_params(&self) -> &'static elements::AddressParams {
         match *self {
             Network::Mainnet => &elements::address::AddressParams::LIQUID,
             Network::Testnet => &elements::address::AddressParams::LIQUID_TESTNET,
             Network::Regtest | Network::Local => &elements::address::AddressParams::ELEMENTS,
+        }
+    }
+
+    pub fn lbtc_asset_id(&self) -> &'static str {
+        match self {
+            Network::Mainnet => "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
+            Network::Testnet => "144c654344aa716d6f3abcc1ca90e5641e4e2a7f633bc09fe3baf64585819a49",
+            Network::Regtest => "",
+            Network::Local => "",
         }
     }
 
@@ -75,27 +96,21 @@ impl Network {
         }
     }
 
-    pub fn mex_asset_id(&self) -> Option<&'static str> {
+    pub fn mex_asset_id(&self) -> &'static str {
         match self {
-            Network::Mainnet => {
-                Some("26ac924263ba547b706251635550a8649545ee5c074fe5db8d7140557baaf32e")
-            }
-            Network::Testnet => {
-                Some("485ff8a902ad063bd8886ef8cfc0d22a068d14dcbe6ae06cf3f904dc581fbd2b")
-            }
-            Network::Regtest | Network::Local => None,
+            Network::Mainnet => "26ac924263ba547b706251635550a8649545ee5c074fe5db8d7140557baaf32e",
+            Network::Testnet => "485ff8a902ad063bd8886ef8cfc0d22a068d14dcbe6ae06cf3f904dc581fbd2b",
+            Network::Regtest => unimplemented!(),
+            Network::Local => unimplemented!(),
         }
     }
 
-    pub fn depix_asset_id(&self) -> Option<&'static str> {
+    pub fn depix_asset_id(&self) -> &'static str {
         match self {
-            Network::Mainnet => {
-                Some("811e0f0e84d3343f58e3f6cb5b137b6abc3a2f7ca8c3cb8a49985af0d5a2e567")
-            }
-            Network::Testnet => {
-                Some("bee14e1514d638afa39fdc954ec4534ccadeb4e2199c38c5a9017952e0b8e214")
-            }
-            Network::Regtest | Network::Local => None,
+            Network::Mainnet => "02f22f8d9c76ab41661a2729e4752e2c5d1a263012141b86ea98af5472df5189",
+            Network::Testnet => "bee14e1514d638afa39fdc954ec4534ccadeb4e2199c38c5a9017952e0b8e214",
+            Network::Regtest => unimplemented!(),
+            Network::Local => unimplemented!(),
         }
     }
 
@@ -113,6 +128,16 @@ impl Network {
             Network::Testnet | Network::Regtest | Network::Local => {
                 [0x80000031, 0x80000001, 0x80000000]
             }
+        }
+    }
+
+    pub fn known_assets(&self) -> KnownAssetIds {
+        KnownAssetIds {
+            bitcoin: AssetId::from_str(self.lbtc_asset_id()).unwrap(),
+            usdt: AssetId::from_str(self.usdt_asset_id()).unwrap(),
+            eurx: AssetId::from_str(self.eurx_asset_id()).unwrap(),
+            mex: AssetId::from_str(self.mex_asset_id()).unwrap(),
+            depix: AssetId::from_str(self.depix_asset_id()).unwrap(),
         }
     }
 }

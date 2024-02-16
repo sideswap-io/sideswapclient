@@ -9,13 +9,11 @@ pub use elements::{
 use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, vec::Vec};
 
-pub const TICKER_BTC: &str = "BTC";
 pub const TICKER_LBTC: &str = "L-BTC";
 pub const TICKER_USDT: &str = "USDt";
 pub const TICKER_EURX: &str = "EURx";
+pub const TICKER_MEX: &str = "MEX";
 pub const TICKER_DEPIX: &str = "dePIX";
-pub const TICKER_LCAD: &str = "LCAD";
-pub const TICKER_AUDL: &str = "AUDL";
 
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";

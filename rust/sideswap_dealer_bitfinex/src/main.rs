@@ -66,8 +66,8 @@ extern crate futures;
 
 const PRICE_EXPIRED: std::time::Duration = std::time::Duration::from_secs(300);
 
-const INTEREST_SUBMIT_USDT: f64 = 1.0075;
-const INTEREST_SUBMIT_EURX: f64 = 1.0040;
+const INTEREST_SUBMIT_USDT: f64 = 1.0075 - pset::SERVER_FEE_SHARE;
+const INTEREST_SUBMIT_EURX: f64 = 1.0040 - pset::SERVER_FEE_SHARE;
 
 const MIN_HEDGE_AMOUNT: f64 = 0.0002;
 
@@ -353,6 +353,7 @@ fn hedge_order(
 }
 
 struct DealerState {
+    known_assets: sideswap_common::env::KnownAssetIds,
     server_connected: bool,
     module_connected: bool,
     wallet_balances: WalletBalances,
@@ -492,6 +493,7 @@ fn main() {
     });
 
     let mut state = DealerState {
+        known_assets: args.env.data().network.known_assets(),
         server_connected: false,
         module_connected: false,
         wallet_balances: WalletBalances::new(),
@@ -694,6 +696,18 @@ fn main() {
                     dealer_tx
                         .send(To::Price(ToPrice { ticker, price }))
                         .unwrap();
+
+                    if let Some(price) = module_prices.get(&ticker) {
+                        dealer_tx
+                            .send(To::IndexPriceUpdate(PriceUpdateBroadcast {
+                                asset: get_dealer_asset_id(&state.known_assets, ticker),
+                                price: PricePair {
+                                    bid: price.bid,
+                                    ask: price.ask,
+                                },
+                            }))
+                            .unwrap();
+                    }
                 }
 
                 let balance_wallet_bitcoin = state
@@ -1018,18 +1032,16 @@ fn main() {
 
                 From::Utxos(unspent_with_zc) => {
                     let convert_balances = |amounts: &BTreeMap<AssetId, f64>| {
-                        let get_balance = |asset_id: &str| -> f64 {
-                            let asset_id = sideswap_api::AssetId::from_str(asset_id).unwrap();
-                            amounts.get(&asset_id).copied().unwrap_or_default()
+                        let get_balance = |ticker: DealerTicker| -> (DealerTicker, f64) {
+                            let asset_id = get_dealer_asset_id(&state.known_assets, ticker);
+                            let amount = amounts.get(&asset_id).copied().unwrap_or_default();
+                            (ticker, amount)
                         };
-                        let lbtc_asset_id = args.env.data().policy_asset;
-                        let usdt_asset_id = args.env.data().network.usdt_asset_id();
-                        let eurx_asset_id = args.env.data().network.eurx_asset_id();
 
                         BTreeMap::from([
-                            (DealerTicker::LBTC, get_balance(lbtc_asset_id)),
-                            (DealerTicker::USDt, get_balance(usdt_asset_id)),
-                            (DealerTicker::EURx, get_balance(eurx_asset_id)),
+                            get_balance(DealerTicker::LBTC),
+                            get_balance(DealerTicker::USDt),
+                            get_balance(DealerTicker::EURx),
                         ])
                     };
 
