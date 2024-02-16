@@ -1,12 +1,13 @@
 use anyhow::ensure;
 use serde::Deserialize;
 
-const TICKER_ENDPOINT: &str = "https://api3.binance.com/api/v3/ticker/price?symbol=BTCBRL";
+const TICKER_ENDPOINT: &str = "https://api.bitpreco.com/btc-brl/ticker";
 
 #[derive(Deserialize)]
 struct PriceItem {
-    symbol: String,
-    price: String,
+    success: bool,
+    market: String,
+    last: f64,
 }
 
 pub struct LastBitcoinPrices {
@@ -20,7 +21,7 @@ pub fn download_bitcoin_last_prices(
         .get(TICKER_ENDPOINT)
         .call()?
         .into_json::<PriceItem>()?;
-    ensure!(item.symbol == "BTCBRL");
-    let price: f64 = item.price.parse()?;
-    Ok(LastBitcoinPrices { brl: price })
+    ensure!(item.success);
+    ensure!(item.market == "BTC-BRL");
+    Ok(LastBitcoinPrices { brl: item.last })
 }
