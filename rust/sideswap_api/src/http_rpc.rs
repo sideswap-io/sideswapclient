@@ -17,6 +17,7 @@ pub struct SwapStartRequest {
     pub send_amount: i64,
     pub recv_asset: AssetId,
     pub recv_amount: i64,
+    pub api_key: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]

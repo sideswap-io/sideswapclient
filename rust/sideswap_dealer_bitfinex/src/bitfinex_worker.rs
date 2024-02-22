@@ -25,8 +25,7 @@ pub fn run(
 ) {
     let bf_api =
         bitfinex_api::Bitfinex::new(settings.bitfinex_key.clone(), settings.bitfinex_secret);
-    loop {
-        let req = req_receiver.recv().unwrap();
+    while let Ok(req) = req_receiver.recv() {
         match req {
             Request::Transfer(req) => {
                 let res = bf_api.make_request(bitfinex_api::TransferRequest {

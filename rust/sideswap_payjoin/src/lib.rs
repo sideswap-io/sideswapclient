@@ -68,7 +68,6 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     let StartResponse {
         order_id,
         expires_at: _,
-        fee: _,
         fee_address,
         change_address: server_change_address,
         utxos: server_utxos,

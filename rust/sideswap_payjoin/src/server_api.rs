@@ -9,7 +9,6 @@ pub struct AcceptedAssetsResponse {
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct AcceptedAsset {
     pub asset_id: elements::AssetId,
-    pub fee: u64, // FIXME: Remove
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
@@ -35,7 +34,6 @@ pub struct StartRequest {
 pub struct StartResponse {
     pub order_id: String,
     pub expires_at: u64,
-    pub fee: u64, // FIXME: Remove
     pub price: f64,
     pub fixed_fee: u64,
     pub fee_address: elements::Address,

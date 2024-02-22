@@ -13,7 +13,7 @@ pub const TICKER_LBTC: &str = "L-BTC";
 pub const TICKER_USDT: &str = "USDt";
 pub const TICKER_EURX: &str = "EURx";
 pub const TICKER_MEX: &str = "MEX";
-pub const TICKER_DEPIX: &str = "dePIX";
+pub const TICKER_DEPIX: &str = "DePix";
 
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";
@@ -332,7 +332,7 @@ pub struct ServerStatus {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LoginClientRequest {
-    pub api_key: String,
+    pub api_key: Option<String>,
     pub cookie: Option<String>,
     pub user_agent: String,
     pub version: String,

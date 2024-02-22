@@ -917,7 +917,7 @@ impl Data {
             self,
             LoginClient,
             LoginClientRequest {
-                api_key: CLIENT_API_KEY.into(),
+                api_key: Some(CLIENT_API_KEY.to_owned()),
                 cookie,
                 user_agent: USER_AGENT.to_owned(),
                 version: self.params.version.clone(),
@@ -1536,6 +1536,7 @@ impl Data {
                 send_amount,
                 recv_asset,
                 recv_amount,
+                api_key: Some(CLIENT_API_KEY.to_owned()),
             }),
         };
         let response = self.send_rest_request(request, &upload_url)?;
