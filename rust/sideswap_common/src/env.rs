@@ -108,7 +108,7 @@ impl Network {
     pub fn depix_asset_id(&self) -> &'static str {
         match self {
             Network::Mainnet => "02f22f8d9c76ab41661a2729e4752e2c5d1a263012141b86ea98af5472df5189",
-            Network::Testnet => "bee14e1514d638afa39fdc954ec4534ccadeb4e2199c38c5a9017952e0b8e214",
+            Network::Testnet => "a5de979bc31dc731fa94b3661ae19c1e20cd067642c69798cad9011094a26f60",
             Network::Regtest => unimplemented!(),
             Network::Local => unimplemented!(),
         }
