@@ -161,19 +161,20 @@ impl JadeMng {
         Ok(self
             .known_ports
             .iter()
-            .map(|(jade_id, jade)| match jade {
-                JadeStatus {
+            .map(|(jade_id, jade)| {
+                let JadeStatus {
                     version,
                     serial,
                     port_name,
                     state,
-                } => ManagedPort {
+                } = jade;
+                ManagedPort {
                     jade_id: jade_id.clone(),
                     serial: serial.clone(),
                     version: version.clone(),
                     port_name: port_name.clone(),
                     state: *state,
-                },
+                }
             })
             .collect())
     }

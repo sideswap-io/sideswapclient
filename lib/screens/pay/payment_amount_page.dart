@@ -18,6 +18,7 @@ import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/pay/widgets/payment_amount_receiver_field.dart';
 import 'package:sideswap/screens/pay/widgets/payment_send_amount.dart';
@@ -74,7 +75,9 @@ class PaymentAmountPage extends ConsumerWidget {
         title: 'Pay'.tr(),
         showTrailingButton: true,
         onTrailingButtonPressed: () {
-          ref.read(walletProvider).setRegistered();
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.registered);
         },
       ),
       canPop: false,
@@ -175,9 +178,9 @@ class PaymentAmountPageBody extends HookConsumerWidget {
       if (newAmount <= realBalance) {
         enabled.value = true;
 
-        ref
+        Future.microtask(() => ref
             .read(paymentInsufficientFundsNotifierProvider.notifier)
-            .setInsufficientFunds(false);
+            .setInsufficientFunds(false));
         return;
       }
 
@@ -258,6 +261,19 @@ class PaymentAmountPageBody extends HookConsumerWidget {
       return;
     }, [accountAsset]);
 
+    final createTxState = ref.watch(createTxStateNotifierProvider);
+
+    useEffect(() {
+      if (createTxState == const CreateTxStateCreating()) {
+        enabled.value = false;
+        return;
+      }
+
+      enabled.value = true;
+
+      return;
+    }, [createTxState]);
+
     return Column(
       children: [
         Padding(
@@ -286,14 +302,19 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                     final showError =
                         ref.watch(paymentInsufficientFundsNotifierProvider);
                     final newAmount = double.tryParse(amount.value) ?? 0;
-                    final usdAmount = ref.watch(
-                        amountUsdProvider(accountAsset.assetId, newAmount));
-                    var dollarConversion = usdAmount.toStringAsFixed(2);
+                    final defaultCurrencyAmount = ref.watch(
+                        amountUsdInDefaultCurrencyProvider(
+                            accountAsset.assetId, newAmount));
+                    final defaultCurrencyTicker =
+                        ref.watch(defaultCurrencyTickerProvider);
+                    var defaultCurrencyConversion =
+                        defaultCurrencyAmount.toStringAsFixed(2);
                     final visibleConversion = ref
                         .watch(walletProvider)
                         .isAmountUsdAvailable(accountAsset.assetId);
-                    dollarConversion = replaceCharacterOnPosition(
-                        input: dollarConversion, currencyChar: '\$');
+                    defaultCurrencyConversion = replaceCharacterOnPosition(
+                        input: defaultCurrencyConversion,
+                        currencyChar: defaultCurrencyTicker);
                     final isAmp = accountAsset.account.isAmp;
                     return Column(
                       children: [
@@ -304,7 +325,7 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                                   ...switch (visibleConversion) {
                                     true => [
                                         Text(
-                                          '≈ $dollarConversion',
+                                          '≈ $defaultCurrencyConversion',
                                           style: approximateStyle,
                                         ),
                                       ],
@@ -342,7 +363,7 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                               _ => [
                                   switch (visibleConversion) {
                                     true => Text(
-                                        '≈ $dollarConversion',
+                                        '≈ $defaultCurrencyConversion',
                                         style: approximateStyle,
                                       ),
                                     _ => const SizedBox(),
@@ -463,15 +484,13 @@ class PaymentAmountPageBody extends HookConsumerWidget {
           padding:
               const EdgeInsets.only(top: 36, bottom: 24, left: 16, right: 16),
           child: Consumer(builder: (context, ref, _) {
-            final buttonEnabled = enabled.value &&
-                !ref.watch(walletProvider.select((p) => p.isCreatingTx));
             return CustomBigButton(
               width: double.infinity,
               height: 54,
               backgroundColor: SideSwapColors.brightTurquoise,
               text: 'CONTINUE'.tr(),
-              enabled: buttonEnabled,
-              onPressed: buttonEnabled
+              enabled: enabled.value,
+              onPressed: enabled.value
                   ? () {
                       final paymentAmountPageArguments =
                           ref.read(paymentAmountPageArgumentsNotifierProvider);

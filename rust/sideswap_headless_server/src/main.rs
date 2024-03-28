@@ -47,7 +47,6 @@ async fn main() {
             worker_sender_copy
                 .send(worker::Req::ApiServer(req))
                 .unwrap()
-                .into()
         }),
     );
 
@@ -81,10 +80,7 @@ async fn main() {
         worker::run(env, worker_receiver, ws_sender, wallet, db);
     });
 
-    std::panic::set_hook(Box::new(|i| {
-        log::error!("sideswap panic detected: {:?}", i);
-        std::process::abort();
-    }));
+    sideswap_common::panic_handler::install_panic_handler();
 
     api_server::run(api_server).await;
 }

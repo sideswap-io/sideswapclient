@@ -65,7 +65,7 @@ fn reload_transactions(state: &mut State) {
             };
             if txout.is_relevant && !state.reported.contains(&outpoint) {
                 let address = txout.address.as_ref().unwrap();
-                let address = elements::Address::from_str(&address).unwrap();
+                let address = elements::Address::from_str(address).unwrap();
                 send_resp(Response::AddressOutput {
                     created_at: transaction.created_at_ts,
                     txid: transaction.txhash,
@@ -103,10 +103,7 @@ fn main() {
 
     sideswap_client::ffi::init_log(&work_dir);
 
-    std::panic::set_hook(Box::new(|i| {
-        log::error!("sideswap panic detected: {:?}", i);
-        std::process::abort();
-    }));
+    sideswap_common::panic_handler::install_panic_handler();
 
     let env = if testnet { Env::Testnet } else { Env::Prod };
 
@@ -138,7 +135,7 @@ fn main() {
         reported: BTreeSet::new(),
     };
 
-    let msg_sender_copy = msg_sender.clone();
+    let msg_sender_copy = msg_sender;
     std::thread::spawn(move || loop {
         let req = get_req();
         msg_sender_copy.send(Msg::Req(req)).unwrap();

@@ -9,7 +9,7 @@ import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/result_page.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/order_table_row.dart';
@@ -73,7 +73,9 @@ class CreateOrderSuccess extends ConsumerWidget {
           ref
               .read(indexPriceSubscriberNotifierProvider.notifier)
               .unsubscribeAll();
-          ref.read(walletProvider).setRegistered();
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.registered);
         },
       ),
     );

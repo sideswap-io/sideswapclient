@@ -46,8 +46,8 @@ class OrderTable extends ConsumerWidget {
     final priceAssetIcon =
         ref.watch(assetImageProvider).getSmallImage(priceAsset?.assetId);
     final priceAmount = orderDetailsData.priceAmountStr;
-    final priceDollarConversion = !isStablecoin
-        ? ref.watch(dollarConversionProvider(
+    final priceDefaultCurrencyConversion = !isStablecoin
+        ? ref.watch(defaultCurrencyConversionProvider(
             bitcoinAsset?.assetId, double.tryParse(priceAmount) ?? 0))
         : null;
     final isAmp =
@@ -90,7 +90,7 @@ class OrderTable extends ConsumerWidget {
           value: '$priceAmount ${priceAsset?.ticker ?? ''}',
           icon: priceAssetIcon,
           orderTableRowType: orderTableRowType,
-          dollarConversion: priceDollarConversion,
+          defaultCurrencyConversion: priceDefaultCurrencyConversion,
           enabled: enabled,
         ),
         if (useTokenView) ...[
@@ -108,7 +108,7 @@ class OrderTable extends ConsumerWidget {
             enabled: enabled,
             amount: orderDetailsData.fee,
             assetId: bitcoinAsset?.assetId,
-            showDollarConversion: false,
+            showCurrencyConversion: false,
           ),
           OrderTableRow.assetAmount(
             description: 'Receive'.tr(),

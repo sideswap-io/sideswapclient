@@ -67,7 +67,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Compute a hashed wallet identifier from a BIP32 xpub or mnemonic.\n\n The identifier returned is computed from the network combined with the\n master chain code and public key of the xpub/mnemonic. It can be used\n as a unique wallet identifier to mitigate privacy risks associated with\n storing the wallet's xpub.\n\n :param net_params: The :ref:`net-params` of the network to compute an identifier for.\n :param params: The :ref:`wallet-id-request` to compute an identifier for.\n :param output: Destination for the output JSON.\n|     Returned GA_json should be freed using `GA_destroy_json`."]
+    #[doc = " Compute a hashed wallet identifier from a BIP32 xpub or mnemonic.\n\n The identifier returned is computed from the network combined with the\n master chain code and public key of the xpub/mnemonic. It can be used\n as a unique wallet identifier to mitigate privacy risks associated with\n storing the wallet's xpub.\n\n :param net_params: The :ref:`net-params` of the network to compute an identifier for.\n :param params: The :ref:`wallet-id-request` to compute an identifier for.\n :param output: Destination for the output JSON.\n|     The call handlers result is :ref:`login-result`.\n|     Returned GA_json should be freed using `GA_destroy_json`."]
     pub fn GA_get_wallet_identifier(
         net_params: *const GA_json,
         params: *const GA_json,
@@ -114,7 +114,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Create a new user wallet.\n\n :param session: The session to use.\n :param hw_device: :ref:`hw-device` or empty JSON for software wallet registration.\n :param details: The :ref:`login-credentials` for software wallet registration.\n :param call: Destination for the resulting GA_auth_handler to perform the registration.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameters ``hw_device`` and ``details`` will be emptied when the call\ncompletes."]
+    #[doc = " Create a new user wallet.\n\n :param session: The session to use.\n :param hw_device: :ref:`hw-device` or empty JSON for software wallet registration.\n :param details: The :ref:`login-credentials` for software wallet registration.\n :param call: Destination for the resulting GA_auth_handler to perform the registration.\n|     The call handlers result is :ref:`login-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameters ``hw_device`` and ``details`` will be emptied when the call\ncompletes."]
     pub fn GA_register_user(
         session: *mut GA_session,
         hw_device: *mut GA_json,
@@ -123,7 +123,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Authenticate to a user's wallet.\n\n :param session: The session to use.\n :param hw_device: :ref:`hw-device` or empty JSON for software wallet login.\n :param details: The :ref:`login-credentials` for authenticating the user.\n :param call: Destination for the resulting GA_auth_handler to perform the login.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n If a sessions underlying network connection has disconnected and\n reconnected, the user will need to login again using this function. In\n this case, the caller can pass empty JSON for both ``hw_device`` and\n ``details`` to login using the previously passed credentials and device.\n\n .. note:: When calling from C/C++, the parameters ``hw_device`` and ``details`` will be emptied when the call\ncompletes."]
+    #[doc = " Authenticate to a user's wallet.\n\n :param session: The session to use.\n :param hw_device: :ref:`hw-device` or empty JSON for software wallet login.\n :param details: The :ref:`login-credentials` for authenticating the user.\n :param call: Destination for the resulting GA_auth_handler to perform the login.\n|     The call handlers result is :ref:`login-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n If a sessions underlying network connection has disconnected and\n reconnected, the user will need to login again using this function. In\n this case, the caller can pass empty JSON for both ``hw_device`` and\n ``details`` to login using the previously passed credentials and device.\n\n .. note:: When calling from C/C++, the parameters ``hw_device`` and ``details`` will be emptied when the call\ncompletes."]
     pub fn GA_login_user(
         session: *mut GA_session,
         hw_device: *mut GA_json,
@@ -341,6 +341,13 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    pub fn GA_psbt_from_json(
+        session: *mut GA_session,
+        details: *mut GA_json,
+        call: *mut *mut GA_auth_handler,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
     #[doc = " Get wallet details of a PSBT or PSET.\n\n :param session: The session to use.\n :param details: The :ref:`psbt-wallet-details` for getting the wallet details.\n :param call: Destination for the resulting GA_auth_handler to get the wallet details.\n|     The call handlers result is :ref:`psbt-get-details-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes.\n\n .. note:: EXPERIMENTAL warning: this call may be changed in future releases."]
     pub fn GA_psbt_get_details(
         session: *mut GA_session,
@@ -534,7 +541,7 @@ extern "C" {
     pub fn GA_destroy_auth_handler(call: *mut GA_auth_handler) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Enable or disable a two factor authentication method.\n\n :param session: The session to use\n :param method: The two factor method to enable/disable, i.e. ``\"email\"``, ``\"sms\"``, ``\"phone\"``, ``\"gauth\"``\n :param twofactor_details: The two factor method and associated data such as an email address. :ref:`twofactor-detail`\n :param call: Destination for the resulting GA_auth_handler to perform the action\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``twofactor_details`` will be emptied when the call completes."]
+    #[doc = " Enable or disable a two factor authentication method.\n\n :param session: The session to use\n :param method: The two factor method to enable/disable, e.g. ``\"email\"``, ``\"sms\"``, ``\"phone\"``, ``\"gauth\"``\n :param twofactor_details: :ref:`twofactor-detail` giving the two factor method and associated data.\n :param call: Destination for the resulting GA_auth_handler to perform the action\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``twofactor_details`` will be emptied when the call completes."]
     pub fn GA_change_settings_twofactor(
         session: *mut GA_session,
         method: *const ::std::os::raw::c_char,
@@ -567,7 +574,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Change twofactor limits settings.\n\n :param session: The session to use.\n :param limit_details: Details of the new :ref:`transaction-limits`\n :param call: Destination for the resulting GA_auth_handler to perform the change.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``limit_details`` will be emptied when the call completes."]
+    #[doc = " Change twofactor limits settings.\n\n :param session: The session to use.\n :param limit_details: :ref:`transaction-limits` containing the new limits to set.\n :param call: Destination for the resulting GA_auth_handler to perform the change.\n|     The call handlers result is :ref:`transaction-limits`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameter ``limit_details`` will be emptied when the call completes."]
     pub fn GA_twofactor_change_limits(
         session: *mut GA_session,
         limit_details: *mut GA_json,

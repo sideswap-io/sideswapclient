@@ -38,7 +38,7 @@ class PaymentContinueButton extends ConsumerWidget {
                     result: QrCodeResult(address: addressController.text),
                   ));
               ref
-                  .read(pageStatusStateProvider.notifier)
+                  .read(pageStatusNotifierProvider.notifier)
                   .setStatus(Status.paymentAmountPage);
             },
     );

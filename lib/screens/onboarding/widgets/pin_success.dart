@@ -20,7 +20,7 @@ class PinSuccess extends ConsumerWidget {
         description: 'PIN added successfully'.tr(),
         buttonText: 'CONTINUE'.tr(),
         onPressed: () {
-          ref.read(pinSetupProvider).onSuccess();
+          ref.read(pinHelperProvider).onSuccess();
         },
       ),
     );

@@ -144,7 +144,7 @@ class DWorkingOrdersEmpty extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isConnected = ref.watch(serverConnectionStateProvider);
+    final isConnected = ref.watch(serverConnectionNotifierProvider);
 
     return Text(
       isConnected ? 'No working orders'.tr() : 'Connecting ...'.tr(),

@@ -40,7 +40,8 @@ class MobileChart extends StatefulWidget {
 
   final Function() onReachEnd;
 
-  MobileChart({
+  const MobileChart({
+    super.key,
     required this.onScaleUpdate,
     required this.onHorizontalDragUpdate,
     required this.candleWidth,
@@ -61,7 +62,7 @@ class _MobileChartState extends State<MobileChart> {
   double additionalVerticalPadding = 0;
 
   double calcutePriceScale(double height, double high, double low) {
-    int minTiles = (height / MIN_PRICETILE_HEIGHT).floor();
+    int minTiles = (height / minPricetileHeight).floor();
     minTiles = max(2, minTiles);
     double sizeRange = high - low;
     double minStepSize = sizeRange / minTiles;
@@ -79,8 +80,8 @@ class _MobileChartState extends State<MobileChart> {
     return LayoutBuilder(
       builder: (context, constraints) {
         // determine charts width and height
-        final double maxWidth = constraints.maxWidth - PRICE_BAR_WIDTH;
-        final double maxHeight = constraints.maxHeight - DATE_BAR_HEIGHT;
+        final double maxWidth = constraints.maxWidth - priceBarWidth;
+        final double maxHeight = constraints.maxHeight - dateBarHeight;
 
         // visible candles start and end indexes
         final int candlesStartIndex = max(widget.index, 0);
@@ -104,7 +105,7 @@ class _MobileChartState extends State<MobileChart> {
 
         // calcute priceScale
         double chartHeight = maxHeight * 0.75 -
-            2 * (MAIN_CHART_VERTICAL_PADDING + additionalVerticalPadding);
+            2 * (mainChartVerticalPadding + additionalVerticalPadding);
         double priceScale =
             calcutePriceScale(chartHeight, candlesHighPrice, candlesLowPrice);
 
@@ -127,11 +128,11 @@ class _MobileChartState extends State<MobileChart> {
 
         return TweenAnimationBuilder(
           tween: Tween(begin: candlesHighPrice, end: candlesHighPrice),
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           builder: (context, double high, _) {
             return TweenAnimationBuilder(
               tween: Tween(begin: candlesLowPrice, end: candlesLowPrice),
-              duration: Duration(milliseconds: 300),
+              duration: const Duration(milliseconds: 300),
               builder: (context, double low, _) {
                 final currentCandle = longPressX == null
                     ? null
@@ -193,10 +194,11 @@ class _MobileChartState extends State<MobileChart> {
                                           ),
                                         ),
                                         child: AnimatedPadding(
-                                          duration: Duration(milliseconds: 300),
+                                          duration:
+                                              const Duration(milliseconds: 300),
                                           padding: EdgeInsets.symmetric(
                                               vertical:
-                                                  MAIN_CHART_VERTICAL_PADDING +
+                                                  mainChartVerticalPadding +
                                                       additionalVerticalPadding),
                                           child: RepaintBoundary(
                                             child: CandleStickWidget(
@@ -214,8 +216,8 @@ class _MobileChartState extends State<MobileChart> {
                                         ),
                                       ),
                                     ),
-                                    SizedBox(
-                                      width: PRICE_BAR_WIDTH,
+                                    const SizedBox(
+                                      width: priceBarWidth,
                                     ),
                                   ],
                                 ),
@@ -253,12 +255,13 @@ class _MobileChartState extends State<MobileChart> {
                                   ),
                                 ),
                                 SizedBox(
+                                  width: priceBarWidth,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       SizedBox(
-                                        height: DATE_BAR_HEIGHT,
+                                        height: dateBarHeight,
                                         child: Center(
                                           child: Row(
                                             children: [
@@ -276,13 +279,12 @@ class _MobileChartState extends State<MobileChart> {
                                       ),
                                     ],
                                   ),
-                                  width: PRICE_BAR_WIDTH,
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(
-                            height: DATE_BAR_HEIGHT,
+                          const SizedBox(
+                            height: dateBarHeight,
                           ),
                         ],
                       ),
@@ -300,6 +302,8 @@ class _MobileChartState extends State<MobileChart> {
                                   Container(
                                     color: Theme.of(context)
                                         .hoverIndicatorBackgroundColor,
+                                    width: priceBarWidth,
+                                    height: 20,
                                     child: Center(
                                       child: Text(
                                         longPressY! < maxHeight * 0.75
@@ -326,8 +330,6 @@ class _MobileChartState extends State<MobileChart> {
                                         ),
                                       ),
                                     ),
-                                    width: PRICE_BAR_WIDTH,
-                                    height: 20,
                                   ),
                                 ],
                               ),
@@ -335,15 +337,15 @@ class _MobileChartState extends State<MobileChart> {
                           : Container(),
                       longPressX != null
                           ? Positioned(
+                              right: (maxWidth - longPressX!) ~/
+                                      widget.candleWidth *
+                                      widget.candleWidth +
+                                  priceBarWidth,
                               child: Container(
                                 width: widget.candleWidth,
                                 height: maxHeight,
                                 color: Theme.of(context).gold.withOpacity(0.2),
                               ),
-                              right: (maxWidth - longPressX!) ~/
-                                      widget.candleWidth *
-                                      widget.candleWidth +
-                                  PRICE_BAR_WIDTH,
                             )
                           : Container(),
                       Padding(

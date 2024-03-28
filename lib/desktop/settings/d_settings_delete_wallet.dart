@@ -8,24 +8,27 @@ import 'package:sideswap/desktop/settings/widgets/d_colored_circular_icon.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DSettingsDeleteWallet extends ConsumerWidget {
   const DSettingsDeleteWallet({super.key});
 
   void goBack(WidgetRef ref) {
-    ref.read(walletProvider).setRegistered();
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
     ref.read(walletProvider).settingsViewPage();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
-    return WillPopScope(
-      onWillPop: () async {
-        goBack(ref);
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          goBack(ref);
+        }
       },
       child: DContentDialog(
         title: DContentDialogTitle(
@@ -97,7 +100,7 @@ class DSettingsDeleteWallet extends ConsumerWidget {
             ],
           ),
         ],
-        style: const DContentDialogThemeData().merge(settingsDialogTheme),
+        style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
       ),
     );

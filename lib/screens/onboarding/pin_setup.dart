@@ -1,11 +1,12 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/pin_models.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/pin_available_provider.dart';
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
@@ -13,53 +14,36 @@ import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_keyboard.dart';
 import 'package:sideswap/screens/onboarding/widgets/pin_text_field.dart';
 
-class PinSetup extends ConsumerStatefulWidget {
+class PinSetup extends HookConsumerWidget {
   const PinSetup({super.key});
-
   @override
-  PinSetupState createState() => PinSetupState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final firstPinFocusNode = useFocusNode();
+    final secondPinFocusNode = useFocusNode();
 
-class PinSetupState extends ConsumerState<PinSetup> {
-  late FocusNode _firstPinFocusNode;
-  late FocusNode _secondPinFocusNode;
-  StreamSubscription<PinKey>? keyPressedSubscription;
+    final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
 
-  @override
-  void initState() {
-    _firstPinFocusNode = FocusNode();
-    _secondPinFocusNode = FocusNode();
+    useEffect(() {
+      pinKeyStream.listen((pinKey) {
+        ref.read(pinHelperProvider).onKeyEntered(pinKey);
+      });
 
-    keyPressedSubscription =
-        ref.read(pinKeyboardProvider).keyPressedSubject.listen((pinKey) {
-      ref.read(pinSetupProvider).onKeyEntered(pinKey);
-    });
-    super.initState();
-  }
+      return;
+    }, [pinKeyStream]);
 
-  @override
-  void dispose() {
-    keyPressedSubscription?.cancel();
-    _firstPinFocusNode.dispose();
-    _secondPinFocusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return SideSwapScaffold(
       backgroundColor: SideSwapColors.chathamsBlue,
       sideSwapBackground: false,
       appBar: CustomAppBar(
         title: 'Protect your wallet'.tr(),
         onPressed: () {
-          ref.read(pinSetupProvider).onBack();
+          ref.read(pinHelperProvider).onBack();
         },
       ),
       canPop: false,
       onPopInvoked: (bool didPop) {
         if (!didPop) {
-          ref.read(pinSetupProvider).onBack();
+          ref.read(pinHelperProvider).onBack();
         }
       },
       body: SafeArea(
@@ -98,20 +82,21 @@ class PinSetupState extends ConsumerState<PinSetup> {
                             const EdgeInsets.only(top: 10, left: 16, right: 16),
                         child: Consumer(
                           builder: (context, ref, child) {
-                            final pin = ref.watch(pinSetupProvider).firstPin;
-                            final fieldState =
-                                ref.watch(pinSetupProvider).fieldState;
-                            if (fieldState == PinFieldState.firstPin) {
-                              _firstPinFocusNode.requestFocus();
+                            final firstPin =
+                                ref.watch(firstPinNotifierProvider);
+                            final pinFieldState =
+                                ref.watch(pinFieldStateNotifierProvider);
+                            if (pinFieldState == const PinFieldStateFirst()) {
+                              firstPinFocusNode.requestFocus();
                             }
-                            final enabled =
-                                ref.watch(pinSetupProvider).firstPinEnabled;
+                            final firstPinEnabled =
+                                ref.watch(firstPinEnabledProvider);
 
                             return PinTextField(
-                              enabled: enabled,
-                              pin: pin,
-                              focusNode: _firstPinFocusNode,
-                              onTap: ref.read(pinSetupProvider).onTap,
+                              enabled: firstPinEnabled,
+                              pin: firstPin,
+                              focusNode: firstPinFocusNode,
+                              onTap: ref.read(pinHelperProvider).onTap,
                             );
                           },
                         ),
@@ -132,25 +117,29 @@ class PinSetupState extends ConsumerState<PinSetup> {
                             const EdgeInsets.only(top: 10, left: 16, right: 16),
                         child: Consumer(
                           builder: (context, ref, child) {
-                            final pin = ref.watch(pinSetupProvider).secondPin;
-                            final fieldState =
-                                ref.watch(pinSetupProvider).fieldState;
-                            if (fieldState == PinFieldState.secondPin) {
-                              _secondPinFocusNode.requestFocus();
+                            final secondPin =
+                                ref.watch(secondPinNotifierProvider);
+                            final pinFieldState =
+                                ref.watch(pinFieldStateNotifierProvider);
+                            if (pinFieldState == const PinFieldState.second()) {
+                              secondPinFocusNode.requestFocus();
                             }
-                            final enabled =
-                                ref.watch(pinSetupProvider).secondPinEnabled;
-                            final state = ref.watch(pinSetupProvider).state;
+                            final secondPinEnabled =
+                                ref.watch(secondPinEnabledProvider);
+                            final pinSetupState =
+                                ref.watch(pinSetupStateNotifierProvider);
                             final errorMessage =
-                                ref.watch(pinSetupProvider).errorMessage;
+                                (pinSetupState is PinSetupStateError)
+                                    ? pinSetupState.message
+                                    : '';
 
                             return PinTextField(
-                              enabled: enabled,
-                              error: state == PinSetupStateEnum.error,
+                              enabled: secondPinEnabled,
+                              error: (pinSetupState is PinSetupStateError),
                               errorMessage: errorMessage,
-                              pin: pin,
-                              focusNode: _secondPinFocusNode,
-                              onTap: ref.read(pinSetupProvider).onTap,
+                              pin: secondPin,
+                              focusNode: secondPinFocusNode,
+                              onTap: ref.read(pinHelperProvider).onTap,
                             );
                           },
                         ),
@@ -160,14 +149,17 @@ class PinSetupState extends ConsumerState<PinSetup> {
                         padding: const EdgeInsets.only(bottom: 32),
                         child: Consumer(
                           builder: (context, ref, child) {
-                            final isNewWallet =
-                                ref.read(pinSetupProvider).isNewWallet;
+                            final firstLaunchState =
+                                ref.watch(firstLaunchStateNotifierProvider);
                             final isPinEnabled =
                                 ref.watch(pinAvailableProvider);
+                            final pinFieldState =
+                                ref.watch(pinFieldStateNotifierProvider);
                             return PinKeyboard(
-                              acceptType: isNewWallet
-                                  ? ref.watch(pinSetupProvider).fieldState ==
-                                          PinFieldState.secondPin
+                              acceptType: firstLaunchState !=
+                                      const FirstLaunchStateEmpty()
+                                  ? pinFieldState ==
+                                          const PinFieldState.second()
                                       ? PinKeyboardAcceptType.save
                                       : PinKeyboardAcceptType.icon
                                   : isPinEnabled

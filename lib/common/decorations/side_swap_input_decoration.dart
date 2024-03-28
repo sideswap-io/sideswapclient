@@ -68,7 +68,7 @@ class SideSwapInputDecoration extends InputDecoration {
   Color get focusColor => super.focusColor ?? Colors.white;
 
   @override
-  Color get hoverColor => super.hoverColor ?? Colors.white;
+  Color get hoverColor => super.hoverColor ?? Colors.transparent;
 
   @override
   bool get filled => true;

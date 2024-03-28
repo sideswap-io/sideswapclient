@@ -72,21 +72,29 @@ class DToggleSwitchButton extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Text(
-                          checkedName,
-                          style: checked
-                              ? toggleSwitchStyle.checkedTextStyle1
-                                  ?.resolve(states)
-                              : toggleSwitchStyle.uncheckedTextStyle1
-                                  ?.resolve(states),
+                        SizedBox(
+                          width: (width - 4) / 2,
+                          child: Text(
+                            checkedName,
+                            textAlign: TextAlign.center,
+                            style: checked
+                                ? toggleSwitchStyle.checkedTextStyle1
+                                    ?.resolve(states)
+                                : toggleSwitchStyle.uncheckedTextStyle1
+                                    ?.resolve(states),
+                          ),
                         ),
-                        Text(
-                          uncheckedName,
-                          style: checked
-                              ? toggleSwitchStyle.checkedTextStyle2
-                                  ?.resolve(states)
-                              : toggleSwitchStyle.uncheckedTextStyle2
-                                  ?.resolve(states),
+                        SizedBox(
+                          width: (width - 4) / 2,
+                          child: Text(
+                            uncheckedName,
+                            textAlign: TextAlign.center,
+                            style: checked
+                                ? toggleSwitchStyle.checkedTextStyle2
+                                    ?.resolve(states)
+                                : toggleSwitchStyle.uncheckedTextStyle2
+                                    ?.resolve(states),
+                          ),
                         ),
                       ],
                     ),

@@ -19,10 +19,12 @@ class DSettingsJadeDevice extends HookConsumerWidget {
     final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
     ref.listen(jadeRescanProvider, (_, __) {});
 
-    return WillPopScope(
-      onWillPop: () async {
-        Navigator.of(context).pop();
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          Navigator.of(context).pop();
+        }
       },
       child: DContentDialog(
         title: DContentDialogTitle(
@@ -32,7 +34,7 @@ class DSettingsJadeDevice extends HookConsumerWidget {
           },
         ),
         style: const DContentDialogThemeData()
-            .merge(desktopAppTheme.settingsDialogTheme),
+            .merge(desktopAppTheme.defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
         content: Center(
           child: SizedBox(

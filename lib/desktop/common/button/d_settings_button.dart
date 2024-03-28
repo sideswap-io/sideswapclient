@@ -19,6 +19,7 @@ enum DSettingsButtonIcon {
   apiServer,
   logs,
   export,
+  currency,
 }
 
 class DSettingsButton extends ConsumerWidget {
@@ -50,6 +51,7 @@ class DSettingsButton extends ConsumerWidget {
       DSettingsButtonIcon.apiServer => 'assets/recovery.svg',
       DSettingsButtonIcon.logs => 'assets/logs.svg',
       DSettingsButtonIcon.export => 'assets/settings_export.svg',
+      DSettingsButtonIcon.currency => 'assets/currency.svg',
     };
 
     final settingsButtonStyle = DButtonStyle(

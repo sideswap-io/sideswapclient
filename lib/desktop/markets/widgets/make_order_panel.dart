@@ -1,4 +1,3 @@
-import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -14,12 +13,8 @@ import 'package:sideswap/desktop/markets/widgets/balance_line.dart';
 import 'package:sideswap/desktop/markets/widgets/make_order_button.dart';
 import 'package:sideswap/desktop/markets/widgets/product_columns.dart';
 import 'package:sideswap/models/account_asset.dart';
-import 'package:sideswap/models/amount_to_string_model.dart';
-import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_account_providers.dart';
+import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 
@@ -130,92 +125,10 @@ class MakeOrderPanel extends HookConsumerWidget {
       return;
     }, [buttonIndexPrice]);
 
-    final resetCallback = useCallback(() {
-      controllerAmount.clear();
-      controllerPrice.clear();
-      trackingValue.value = 0.0;
-      trackingToggled.value = false;
+    final callbackHandlers = ref.watch(orderEntryCallbackHandlersProvider);
 
-      Future.microtask(() => ref.invalidate(makeOrderSideStateProvider));
-    }, []);
-
-    final submitCallback = useCallback(() {
-      final asset = ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
-      final amount = double.tryParse(controllerAmount.text) ?? 0.0;
-      final price = double.tryParse(controllerPrice.text) ?? 0.0;
-      final isAssetAmount = !(asset?.swapMarket == true);
-      final indexPrice = trackingToggled.value
-          ? trackerValueToIndexPrice(trackingValue.value)
-          : null;
-      final account = ref.watch(accountAssetFromAssetProvider(asset));
-      final sign = isSell ? -1 : 1;
-      final amountWithSign = amount * sign;
-
-      ref.read(walletProvider).submitOrder(
-            selectedAccountAsset.assetId,
-            amountWithSign,
-            price,
-            isAssetAmount: isAssetAmount,
-            indexPrice: indexPrice,
-            account: account.account,
-          );
-      ref.invalidate(indexPriceButtonStreamNotifierProvider);
-      resetCallback();
-    }, [selectedAccountAsset, trackingValue.value, isSell]);
-
-    final pricePerUnit = ref.watch(marketOrderPriceNotifierProvider);
-
-    // called when max button is clicked
-    final handleMaxCallback = useCallback(() {
-      final asset = ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
-      final assetPrecision = ref
-          .read(assetUtilsProvider)
-          .getPrecisionForAssetId(assetId: selectedAccountAsset.assetId);
-      final isPricedInLiquid =
-          ref.read(assetUtilsProvider).isPricedInLiquid(asset: asset);
-
-      final marketSide = ref.read(makeOrderSideStateProvider);
-      // on buy side calculate max amount based on index price and buying power
-      if (marketSide == MakeOrderSide.buy) {
-        final indexPrice = ref
-            .read(indexPriceForAssetProvider(selectedAccountAsset.assetId))
-            .indexPrice;
-        final lastPrice = ref
-            .read(lastIndexPriceForAssetProvider(selectedAccountAsset.assetId));
-        final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
-        final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
-        final targetIndexPriceStr =
-            indexPrice != 0 ? indexPriceStr : lastPriceStr;
-        ref
-            .read(indexPriceButtonStreamNotifierProvider.notifier)
-            .setIndexPrice(targetIndexPriceStr);
-
-        final orderBalance = ref.read(makeOrderBalanceProvider);
-
-        final targetIndexPrice =
-            Decimal.tryParse(targetIndexPriceStr) ?? Decimal.zero;
-        final balance = orderBalance.asDecimal();
-        if (targetIndexPrice != Decimal.zero) {
-          final targetAmount = (balance / targetIndexPrice)
-              .toDecimal(scaleOnInfinitePrecision: assetPrecision)
-              .toStringAsFixed(assetPrecision);
-          setControllerValue(controllerAmount, targetAmount);
-          return;
-        }
-      }
-
-      // for sell side insert max balance only
-      final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-      final account = isPricedInLiquid
-          ? ref.read(accountAssetFromAssetProvider(asset))
-          : AccountAsset(AccountType.reg, liquidAssetId);
-      final balance = ref.read(balancesNotifierProvider)[account] ?? 0;
-      final amountProvider = ref.read(amountToStringProvider);
-      final balanceStr = amountProvider.amountToString(
-          AmountToStringParameters(amount: balance, precision: assetPrecision));
-      setControllerValue(controllerAmount, balanceStr);
-      focusNodePrice.requestFocus();
-    }, [selectedAccountAsset, pricePerUnit]);
+    final stokrLastSelectedAccountAsset =
+        ref.watch(stokrLastSelectedAccountAssetNotifierProvider);
 
     useEffect(() {
       final selectedAsset =
@@ -226,14 +139,29 @@ class MakeOrderPanel extends HookConsumerWidget {
             .setSide(MakeOrderSide.sell));
       }
 
-      resetCallback();
+      callbackHandlers.reset(
+          controllerAmount, controllerPrice, trackingValue, trackingToggled);
 
       return;
     }, [selectedAccountAsset]);
 
+    useEffect(() {
+      if (selectedAccountAsset != stokrLastSelectedAccountAsset) {
+        Future.microtask(() {
+          callbackHandlers.stokrAssetRestrictedPopup();
+          ref
+              .read(stokrLastSelectedAccountAssetNotifierProvider.notifier)
+              .setLastSelectedAccountAsset(selectedAccountAsset);
+        });
+      }
+
+      return;
+    }, [selectedAccountAsset, stokrLastSelectedAccountAsset]);
+
     // run only once on first build
     useEffect(() {
-      resetCallback();
+      callbackHandlers.reset(
+          controllerAmount, controllerPrice, trackingValue, trackingToggled);
 
       return;
     }, const []);
@@ -342,13 +270,22 @@ class MakeOrderPanel extends HookConsumerWidget {
                             controller: controllerAmount,
                             focusNode: focusNodeAmount,
                             onEditingComplete: focusNodePrice.requestFocus,
-                            onMaxPressed: handleMaxCallback,
+                            onMaxPressed: () {
+                              callbackHandlers.handleMax(
+                                  controllerAmount, focusNodePrice);
+                            },
                           ),
                           const SizedBox(height: 8),
                           MakeOrderPanelValueSide(
                             controller: controllerPrice,
                             focusNode: focusNodePrice,
-                            onEditingComplete: submitCallback,
+                            onEditingComplete: () {
+                              callbackHandlers.submit(
+                                  controllerAmount,
+                                  controllerPrice,
+                                  trackingToggled,
+                                  trackingValue);
+                            },
                             trackingToggled: trackingToggled,
                             trackingValue: trackingValue,
                           ),
@@ -370,7 +307,13 @@ class MakeOrderPanel extends HookConsumerWidget {
                           const SizedBox(height: 8),
                           MakeOrderButton(
                             isSell: isSell,
-                            onPressed: submitCallback,
+                            onPressed: () {
+                              callbackHandlers.submit(
+                                  controllerAmount,
+                                  controllerPrice,
+                                  trackingToggled,
+                                  trackingValue);
+                            },
                           ),
                           const SizedBox(height: 8),
                         ],

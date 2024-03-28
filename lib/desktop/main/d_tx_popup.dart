@@ -40,13 +40,13 @@ class DTxPopup extends HookConsumerWidget {
     });
 
     return DPopupWithClose(
-      width: 580,
+      width: 634,
       height: 660,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
               children: [
                 const SizedBox(height: 40),
@@ -145,19 +145,22 @@ class DTxPopup extends HookConsumerWidget {
           Container(
             color: SideSwapColors.chathamsBlue,
             height: 138,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                DPopupLinkButton(
-                  text: 'Link to explorer\n(blinded data)'.tr(),
-                  onPressed: () => openTxCallback(),
-                ),
-                const SizedBox(width: 10),
-                DPopupLinkButton(
-                  text: 'Link to explorer\n(unblinded data)'.tr(),
-                  onPressed: () => openTxCallback(unblinded: true),
-                ),
-              ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  DPopupLinkButton(
+                    text: 'Link to explorer\n(blinded data)'.tr(),
+                    onPressed: () => openTxCallback(),
+                  ),
+                  const SizedBox(width: 10),
+                  DPopupLinkButton(
+                    text: 'Link to explorer\n(unblinded data)'.tr(),
+                    onPressed: () => openTxCallback(unblinded: true),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -418,20 +421,20 @@ class DPopupLinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DCustomTextBigButton(
-      width: 245,
+      width: 280,
       height: 60,
       onPressed: onPressed,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(width: 16),
           SvgPicture.asset(
             'assets/share3.svg',
             width: 22,
             height: 22,
           ),
-          const SizedBox(width: 16),
+          const Spacer(),
           Text(text.toUpperCase(), textAlign: TextAlign.start),
+          const Spacer(),
         ],
       ),
     );

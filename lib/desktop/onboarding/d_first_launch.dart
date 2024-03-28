@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'dart:ui' as ui;
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/desktop/common/button/d_radio_button.dart';
@@ -11,9 +12,10 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
+import 'package:sideswap/desktop/onboarding/d_network_access_onboarding.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/env_provider.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/mnemonic_table_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
@@ -105,7 +107,6 @@ class DFirstLaunch extends HookConsumerWidget {
                   ref
                       .read(networkSettingsNotifierProvider.notifier)
                       .setModel(const NetworkSettingsModelEmpty());
-                  ref.read(networkSettingsNotifierProvider.notifier).save();
 
                   exit(0);
                 },
@@ -123,17 +124,7 @@ class DFirstLaunch extends HookConsumerWidget {
       }
     });
 
-    final lang = ref.watch(localesProvider).selectedLang(context);
-
-    useEffect(() {
-      if (lang == 'zh') {
-        ref
-            .read(configurationProvider.notifier)
-            .setSettingsNetworkType(SettingsNetworkType.sideswapChina);
-      }
-
-      return;
-    }, [lang]);
+    final lang = ref.watch(localesNotifierProvider);
 
     return Stack(
       key: ValueKey(lang),
@@ -141,7 +132,7 @@ class DFirstLaunch extends HookConsumerWidget {
         SideSwapScaffoldPage(
           content: Column(
             children: [
-              Expanded(child: Container()),
+              const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(top: 0),
                 child: FirstLaunchClickableLogo(
@@ -173,6 +164,11 @@ class DFirstLaunch extends HookConsumerWidget {
                 padding: const EdgeInsets.only(top: 126),
                 child: DCustomFilledBigButton(
                   onPressed: () async {
+                    ref
+                        .read(firstLaunchStateNotifierProvider.notifier)
+                        .setFirstLaunchState(
+                            const FirstLaunchStateCreateWallet());
+
                     await ref
                         .read(walletProvider)
                         .setReviewLicenseCreateWallet();
@@ -185,8 +181,14 @@ class DFirstLaunch extends HookConsumerWidget {
                 child: DCustomTextBigButton(
                   width: 266,
                   onPressed: () {
+                    ref.read(walletProvider).cleanAppStates();
                     ref.invalidate(mnemonicWordItemsNotifierProvider);
                     ref.read(walletProvider).setReviewLicenseImportWallet();
+
+                    ref
+                        .read(firstLaunchStateNotifierProvider.notifier)
+                        .setFirstLaunchState(
+                            const FirstLaunchStateImportWallet());
                   },
                   child: Text('IMPORT WALLET'.tr()),
                 ),
@@ -198,7 +200,7 @@ class DFirstLaunch extends HookConsumerWidget {
                     width: 266,
                     onPressed: () {
                       ref
-                          .read(pageStatusStateProvider.notifier)
+                          .read(pageStatusNotifierProvider.notifier)
                           .setStatus(Status.jadeImport);
                       // desktopImportJade(context);
                     },
@@ -230,14 +232,55 @@ class DFirstLaunch extends HookConsumerWidget {
             ],
           ),
         ),
-        const Align(
-          alignment: Alignment.topRight,
-          child: Padding(
-            padding: EdgeInsets.all(24.0),
-            child: LangSelector(),
+        const Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Directionality(
+            textDirection: ui.TextDirection.ltr,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                LangSelector(),
+                SizedBox(width: 8),
+                DFirstLaunchNetworkSettingsButton(),
+              ],
+            ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class DFirstLaunchNetworkSettingsButton extends ConsumerWidget {
+  const DFirstLaunchNetworkSettingsButton({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      width: 170,
+      height: 39,
+      child: DCustomTextBigButton(
+          child: Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: SvgPicture.asset('assets/network.svg'),
+              ),
+              const SizedBox(width: 10),
+              Text('Network'.tr()),
+            ],
+          ),
+          onPressed: () async {
+            await showDialog<void>(
+              useRootNavigator: false,
+              barrierDismissible: false,
+              context: context,
+              builder: (_) => const DNetworkAccessOnboarding(),
+            );
+          }),
     );
   }
 }

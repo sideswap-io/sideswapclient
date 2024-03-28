@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/models/qrcode_models.dart';
 
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
@@ -19,22 +20,28 @@ class HomeBottomPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final result = ref.watch(qrcodeResultModelProvider);
-    result.maybeWhen(
-      data: (result) {
-        Future.microtask(() {
-          ref
-              .read(paymentAmountPageArgumentsNotifierProvider.notifier)
-              .setPaymentAmountPageArguments(PaymentAmountPageArguments(
-                result: result,
-              ));
-          ref
-              .read(pageStatusStateProvider.notifier)
-              .setStatus(Status.paymentAmountPage);
-        });
-      },
-      orElse: () {},
-    );
+    ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
+      next.when(
+          empty: () {},
+          data: (result) {
+            if (result?.outputsData != null) {
+              // go to the confirm transaction page directly
+              ref.read(paymentHelperProvider).outputsPaymentSend();
+              return;
+            }
+
+            Future.microtask(() {
+              ref
+                  .read(paymentAmountPageArgumentsNotifierProvider.notifier)
+                  .setPaymentAmountPageArguments(PaymentAmountPageArguments(
+                    result: result,
+                  ));
+              ref
+                  .read(pageStatusNotifierProvider.notifier)
+                  .setStatus(Status.paymentAmountPage);
+            });
+          });
+    });
 
     return Container(
       height: 180,
@@ -56,7 +63,7 @@ class HomeBottomPanel extends ConsumerWidget {
                 onTap: () {
                   // ref.read(walletProvider).selectAssetReceiveFromWalletMain();
                   ref
-                      .read(pageStatusStateProvider.notifier)
+                      .read(pageStatusNotifierProvider.notifier)
                       .setStatus(Status.generateWalletAddress);
                 },
                 label: 'Receive'.tr(),

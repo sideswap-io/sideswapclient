@@ -226,7 +226,7 @@ impl GdkJson {
     }
 
     unsafe fn owned(ptr: *mut gdk::GA_json) -> Self {
-        assert!(ptr != std::ptr::null_mut());
+        assert!(!ptr.is_null());
         Self {
             json: ptr,
             str: std::ptr::null_mut(),
@@ -254,7 +254,7 @@ impl Drop for GdkJson {
     fn drop(&mut self) {
         let rc = unsafe { gdk::GA_destroy_json(self.json) };
         assert!(rc == 0);
-        if self.str != std::ptr::null_mut() {
+        if !self.str.is_null() {
             unsafe { gdk::GA_destroy_string(self.str) };
         }
     }
@@ -459,7 +459,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
 
                 for path in paths {
                     let xpub = if let Some(xpub) = hw_data.xpubs.get(&path) {
-                        xpub.clone()
+                        *xpub
                     } else {
                         hw_data.clear_queue();
                         let network = if hw_data.env.data().mainnet {
@@ -980,11 +980,8 @@ pub fn convert_tx(tx: &gdk_json::Transaction) -> Transaction {
         }
     }
     for output in tx.outputs.iter() {
-        match (output.asset_id, output.satoshi) {
-            (Some(asset_id), Some(amount)) => {
-                *balances.entry(asset_id).or_default() += amount as i64
-            }
-            _ => {}
+        if let (Some(asset_id), Some(amount)) = (output.asset_id, output.satoshi) {
+            *balances.entry(asset_id).or_default() += amount as i64
         }
     }
     let balances = balances
@@ -1171,11 +1168,10 @@ unsafe fn try_create_tx(
         .addressees
         .iter()
         .enumerate()
-        .filter(|(_index, addresse)| {
+        .find(|(_index, addresse)| {
             addresse.is_greedy.unwrap_or_default()
                 && addresse.asset_id == data.policy_asset.to_string()
         })
-        .next()
         .map(|(index, _addresse)| index);
     if greedy_index.is_some() {
         // Ensure that L-BTC send balance is equal to whole L-BTC balance.
@@ -1184,7 +1180,7 @@ unsafe fn try_create_tx(
             .addressees
             .iter()
             .filter_map(|addresse| {
-                (addresse.asset_id == data.policy_asset.to_string()).then(|| addresse.amount)
+                (addresse.asset_id == data.policy_asset.to_string()).then_some(addresse.amount)
             })
             .sum::<i64>();
         ensure!(total_bitcoin_send == bitcoin_balance as i64);
@@ -1805,29 +1801,23 @@ unsafe fn get_blinded_values(data: &GdkSesImpl, txid: &str) -> Result<Vec<String
         .ok_or_else(|| anyhow!("tx not found"))?;
     let mut result = Vec::new();
     for input in tx.inputs.iter() {
-        match (
+        if let (Some(value), Some(asset_id), Some(value_bf), Some(asset_bf)) = (
             input.satoshi,
             input.asset_id,
             input.amountblinder,
             input.assetblinder,
         ) {
-            (Some(value), Some(asset_id), Some(value_bf), Some(asset_bf)) => {
-                result.push(get_blinded_value(value, &asset_id, &value_bf, &asset_bf))
-            }
-            _ => {}
+            result.push(get_blinded_value(value, &asset_id, &value_bf, &asset_bf))
         }
     }
     for output in tx.outputs.iter() {
-        match (
+        if let (Some(value), Some(asset_id), Some(value_bf), Some(asset_bf)) = (
             output.satoshi,
             output.asset_id,
             output.amountblinder,
             output.assetblinder,
         ) {
-            (Some(value), Some(asset_id), Some(value_bf), Some(asset_bf)) => {
-                result.push(get_blinded_value(value, &asset_id, &value_bf, &asset_bf))
-            }
-            _ => {}
+            result.push(get_blinded_value(value, &asset_id, &value_bf, &asset_bf))
         }
     }
     Ok(result)

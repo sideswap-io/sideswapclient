@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 
 class ToolBar extends StatelessWidget {
   const ToolBar({
-    Key? key,
+    super.key,
     required this.onZoomInPressed,
     required this.onZoomOutPressed,
     required this.children,
-  }) : super(key: key);
+  });
 
   final void Function() onZoomInPressed;
   final void Function() onZoomOutPressed;

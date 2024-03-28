@@ -20,7 +20,7 @@ class OrdersPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 631,
+      width: 665,
       child: Column(
         children: [
           Container(
@@ -28,7 +28,7 @@ class OrdersPanel extends StatelessWidget {
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               border: Border.all(color: SideSwapColors.blumine),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             height: 56,
             child: Row(
               children: [

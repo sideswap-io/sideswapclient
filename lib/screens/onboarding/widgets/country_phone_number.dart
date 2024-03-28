@@ -10,7 +10,7 @@ import 'package:sideswap/screens/onboarding/widgets/wait_sms_confirmation.dart';
 
 typedef PhoneNumberCallback = void Function(CountryCode, String);
 
-class CountryPhoneNumber extends ConsumerStatefulWidget {
+class CountryPhoneNumber extends StatefulHookConsumerWidget {
   const CountryPhoneNumber({
     super.key,
     required this.phoneNumberCallback,
@@ -25,7 +25,7 @@ class CountryPhoneNumber extends ConsumerStatefulWidget {
 }
 
 class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
-  late CountryCode visibleCountryCode;
+  late CountryCode? visibleCountryCode;
   String visiblePhoneNumber = '';
   late FocusNode phoneFocusNode;
   TextEditingController controller = TextEditingController();
@@ -41,9 +41,6 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
     color: Color(0xFF002241),
   );
 
-  List<DropdownMenuItem<CountryCode>> _menuItems =
-      <DropdownMenuItem<CountryCode>>[];
-
   @override
   void initState() {
     super.initState();
@@ -51,30 +48,6 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
     phoneFocusNode = widget.focusNode ?? FocusNode();
 
     visibleCountryCode = ref.read(phoneProvider).countryCode;
-    _menuItems = ref
-        .read(countriesProvider)
-        .countries
-        .map(
-          (e) => DropdownMenuItem<CountryCode>(
-            value: e,
-            child: Row(
-              children: [
-                Text(
-                  e.isoUnicodeFlag,
-                  style: _flagStyle,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Text(
-                    e.iso3Code ?? '',
-                    style: _defaultTextStyle,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )
-        .toList();
 
     WidgetsBinding.instance
         .addPostFrameCallback((_) => afterBuild(ref, context));
@@ -99,6 +72,32 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
 
   @override
   Widget build(BuildContext context) {
+    final countries = ref.watch(countriesFutureProvider);
+    final menuItems = switch (countries) {
+      AsyncValue(hasValue: true, value: List<CountryCode> c) => c
+          .map(
+            (e) => DropdownMenuItem<CountryCode>(
+              value: e,
+              child: Row(
+                children: [
+                  Text(
+                    e.isoUnicodeFlag,
+                    style: _flagStyle,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Text(
+                      e.iso3Code ?? '',
+                      style: _defaultTextStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+          .toList(),
+      _ => <DropdownMenuItem<CountryCode>>[],
+    };
     return SizedBox(
       height: 117,
       child: Column(
@@ -140,7 +139,7 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                               Icons.keyboard_arrow_down,
                               color: Color(0xFF00B4E9),
                             ),
-                            items: _menuItems,
+                            items: menuItems,
                             onChanged: (value) {
                               if (value == null) {
                                 return;
@@ -149,8 +148,10 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                               setState(() {
                                 visibleCountryCode = value;
                               });
-                              widget.phoneNumberCallback(
-                                  visibleCountryCode, visiblePhoneNumber);
+                              if (visibleCountryCode != null) {
+                                widget.phoneNumberCallback(
+                                    visibleCountryCode!, visiblePhoneNumber);
+                              }
                             },
                           ),
                         ),
@@ -174,7 +175,7 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                           child: SizedBox(
                             width: 56,
                             child: Text(
-                              '+${visibleCountryCode.dialCode}',
+                              '+${visibleCountryCode?.dialCode}',
                               style: _defaultTextStyle,
                             ),
                           ),
@@ -216,8 +217,10 @@ class CountryPhoneNumberState extends ConsumerState<CountryPhoneNumber> {
                                     .formatEditUpdate(
                                         controller.value, controller.value);
                             visiblePhoneNumber = controller.value.text;
-                            widget.phoneNumberCallback(
-                                visibleCountryCode, visiblePhoneNumber);
+                            if (visibleCountryCode != null) {
+                              widget.phoneNumberCallback(
+                                  visibleCountryCode!, visiblePhoneNumber);
+                            }
                           },
                         ),
                       ),

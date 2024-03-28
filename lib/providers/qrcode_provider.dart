@@ -1,21 +1,35 @@
 import 'dart:convert';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/widgets.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
 
-final qrcodeResultModelProvider = StateProvider.autoDispose<QrCodeResultModel>(
-    (ref) => const QrCodeResultModelEmpty());
+part 'qrcode_provider.g.dart';
 
-final qrcodeProvider = ChangeNotifierProvider<QrCodeNotifierProvider>(
-    (ref) => QrCodeNotifierProvider(ref));
+@riverpod
+class QrCodeResultModelNotifier extends _$QrCodeResultModelNotifier {
+  @override
+  QrCodeResultModel build() {
+    return const QrCodeResultModelEmpty();
+  }
+
+  void setModel(QrCodeResultModel model) {
+    state = model;
+  }
+}
+
+@riverpod
+QrCodeHelper qrcodeHelper(QrcodeHelperRef ref) {
+  return QrCodeHelper(ref);
+}
 
 enum QrCodeResultType {
   merchant,
@@ -34,6 +48,7 @@ class QrCodeResult {
   bool? error;
   String? errorMessage;
   String? assetId;
+  OutputsData? outputsData;
 
   QrCodeResult({
     this.address,
@@ -46,6 +61,7 @@ class QrCodeResult {
     this.error,
     this.errorMessage,
     this.assetId,
+    this.outputsData,
   });
 
   QrCodeResult copyWith({
@@ -60,6 +76,7 @@ class QrCodeResult {
     String? errorMessage,
     String? orderId,
     String? assetId,
+    OutputsData? outputsData,
   }) {
     return QrCodeResult(
       address: address ?? this.address,
@@ -72,12 +89,13 @@ class QrCodeResult {
       error: error ?? this.error,
       errorMessage: errorMessage ?? this.errorMessage,
       assetId: assetId ?? this.assetId,
+      outputsData: outputsData ?? this.outputsData,
     );
   }
 
   @override
   String toString() {
-    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, ticker: $ticker, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage, assetId: $assetId)';
+    return 'QrCodeResult(address: $address, addressType: $addressType, amount: $amount, ticker: $ticker, message: $message, label: $label, bitMask: $bitMask, error: $error, errorMessage: $errorMessage, assetId: $assetId, outputsData: $outputsData)';
   }
 
   @override
@@ -94,7 +112,8 @@ class QrCodeResult {
         other.bitMask == bitMask &&
         other.error == error &&
         other.errorMessage == errorMessage &&
-        other.assetId == assetId;
+        other.assetId == assetId &&
+        other.outputsData == outputsData;
   }
 
   @override
@@ -108,7 +127,8 @@ class QrCodeResult {
         bitMask.hashCode ^
         error.hashCode ^
         errorMessage.hashCode ^
-        assetId.hashCode;
+        assetId.hashCode ^
+        outputsData.hashCode;
   }
 }
 
@@ -120,13 +140,14 @@ class QrCodeResult {
 // url encoded message - 64 characters? - we need here something small, maybe even 32 characters;
 // bit mask;
 
-class QrCodeNotifierProvider extends ChangeNotifier {
+class QrCodeHelper {
   final Ref ref;
   QrCodeResult _result = QrCodeResult();
 
-  QrCodeNotifierProvider(this.ref);
+  QrCodeHelper(this.ref);
 
-  Either<Exception, QrCodeResult> parseDynamicQrCode(String qrCode) {
+  Future<Either<Exception, QrCodeResult>> parseDynamicQrCode(
+      String qrCode) async {
     if (qrCode.isEmpty) {
       return Right(_emitError('Empty qr code'.tr()));
     }
@@ -137,75 +158,98 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     if (ref.read(isAddrTypeValidProvider(qrCode, AddrType.bitcoin))) {
       _result.address = qrCode;
       _result.addressType = BIP21AddressTypeEnum.bitcoin;
-      notifyListeners();
       return Right(_result);
     }
 
     if (ref.read(isAddrTypeValidProvider(qrCode, AddrType.elements))) {
       _result.address = qrCode;
       _result.addressType = BIP21AddressTypeEnum.elements;
-      notifyListeners();
       return Right(_result);
     }
 
-    final url = Uri.parse(qrCode);
+    try {
+      final url = Uri.parse(qrCode);
 
-    if (url.scheme == 'bitcoin') {
-      final bip21Result =
-          ref.read(parseBIP21Provider(qrCode, BIP21AddressTypeEnum.bitcoin));
-      return bip21Result.match(
-        (l) => Left(l),
-        (r) => Right(
-          QrCodeResult(
-            address: r.address,
-            addressType: r.addressType,
-            amount: r.amount,
-            ticker: r.ticker,
-            message: r.message,
-            label: r.label,
-            assetId: r.assetId,
+      if (url.scheme == 'bitcoin') {
+        final bip21Result =
+            ref.read(parseBIP21Provider(qrCode, BIP21AddressTypeEnum.bitcoin));
+        return bip21Result.match(
+          (l) => Left(l),
+          (r) => Right(
+            QrCodeResult(
+              address: r.address,
+              addressType: r.addressType,
+              amount: r.amount,
+              ticker: r.ticker,
+              message: r.message,
+              label: r.label,
+              assetId: r.assetId,
+            ),
           ),
-        ),
-      );
-    }
+        );
+      }
 
-    if (url.scheme == 'liquidnetwork') {
-      final bip21Result = ref
-          .read(parseBIP21Provider(qrCode, BIP21AddressTypeEnum.liquidnetwork));
-      return bip21Result.match(
-        (l) => Left(l),
-        (r) => Right(
-          QrCodeResult(
-            address: r.address,
-            addressType: r.addressType,
-            amount: r.amount,
-            ticker: r.ticker,
-            message: r.message,
-            label: r.label,
-            assetId: r.assetId,
+      if (url.scheme == 'liquidnetwork') {
+        final bip21Result = ref.read(
+            parseBIP21Provider(qrCode, BIP21AddressTypeEnum.liquidnetwork));
+        return bip21Result.match(
+          (l) => Left(l),
+          (r) => Right(
+            QrCodeResult(
+              address: r.address,
+              addressType: r.addressType,
+              amount: r.amount,
+              ticker: r.ticker,
+              message: r.message,
+              label: r.label,
+              assetId: r.assetId,
+            ),
           ),
-        ),
-      );
+        );
+      }
+
+      // TODO: do we really need this?
+      // scheme could be anything so any random qr code is valid too
+      // check other bip21 schemes
+      // if (url.scheme != 'sideswap' && url.scheme != 'https') {
+      //   return parseBIP21(qrCode: qrCode, addressType: QrCodeAddressType.other);
+      // }
+
+      if (url.scheme == 'sideswap') {
+        return parseSideSwapAddress(qrCode);
+      }
+
+      _emitError('Invalid QR code'.tr());
+
+      _result.error = true;
+      _result.errorMessage = 'Invalid QR code'.tr();
+
+      return Right(_result);
+    } catch (e) {
+      logger.w(e);
     }
 
-    // TODO: do we really need this?
-    // scheme could be anything so any random qr code is valid too
-    // check other bip21 schemes
-    // if (url.scheme != 'sideswap' && url.scheme != 'https') {
-    //   return parseBIP21(qrCode: qrCode, addressType: QrCodeAddressType.other);
-    // }
+    // maybe it's a json?
+    try {
+      await ref
+          .read(outputsReaderNotifierProvider.notifier)
+          .decodeJsonString(qrCode);
+      final outputsData = ref.read(outputsReaderNotifierProvider);
+      return outputsData.match((l) {
+        return Right(_emitError(l.message ?? ''));
+      }, (r) {
+        return Right(QrCodeResult(outputsData: r));
+      });
+    } catch (e) {
+      logger.e(e);
 
-    if (url.scheme == 'sideswap') {
-      return parseSideSwapAddress(qrCode);
+      _emitError('Invalid QR code'.tr());
+
+      _result.error = true;
+      _result.errorMessage = 'Invalid QR code'.tr();
+
+      return Right(_result);
     }
-
-    _emitError('Invalid QR code'.tr());
-
-    _result.error = true;
-    _result.errorMessage = 'Invalid QR code'.tr();
-    notifyListeners();
-
-    return Right(_result);
   }
 
   Either<Exception, QrCodeResult> parseSideSwapAddress(String qrCode) {
@@ -276,7 +320,6 @@ class QrCodeNotifierProvider extends ChangeNotifier {
     _result = QrCodeResult();
     _result.error = true;
     _result.errorMessage = errorMessage;
-    notifyListeners();
     return _result;
   }
 

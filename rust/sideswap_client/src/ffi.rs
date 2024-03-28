@@ -98,8 +98,8 @@ pub extern "C" fn sideswap_client_start(
     let version = get_string(version);
 
     let start_params = StartParams {
-        work_dir: work_dir.to_owned(),
-        version: version.to_owned(),
+        work_dir,
+        version,
         disable_device_key: None,
     };
 
@@ -113,10 +113,7 @@ pub fn sideswap_client_start_impl(env: Env, start_params: StartParams, dart_port
         init_log(&start_params.work_dir);
     });
 
-    std::panic::set_hook(Box::new(|i| {
-        error!("sideswap panic detected: {:?}", i);
-        std::process::abort();
-    }));
+    sideswap_common::panic_handler::install_panic_handler();
 
     info!(
         "started: {} ({}/{})",
@@ -169,7 +166,7 @@ pub fn sideswap_client_start_impl(env: Env, start_params: StartParams, dart_port
 #[no_mangle]
 pub extern "C" fn sideswap_send_request(client: IntPtr, data: *const u8, len: u64) {
     assert!(client != 0);
-    assert!(data != std::ptr::null());
+    assert!(!data.is_null());
     let client = unsafe { &mut *(client as *mut Client) };
     let slice = unsafe { std::slice::from_raw_parts(data, len as usize) };
     let to = proto::To::decode(slice).expect("message decode failed");
@@ -240,7 +237,7 @@ pub const SIDESWAP_ENV_LOCAL_TESTNET: i32 = 6;
 #[no_mangle]
 pub extern "C" fn sideswap_check_addr(client: IntPtr, addr: *const c_char, addr_type: i32) -> bool {
     assert!(client != 0);
-    assert!(addr != std::ptr::null());
+    assert!(!addr.is_null());
     let addr = unsafe { CStr::from_ptr(addr) }
         .to_str()
         .expect("invalid c-str");

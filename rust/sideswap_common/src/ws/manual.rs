@@ -1,6 +1,7 @@
 use super::*;
 
 use futures::prelude::*;
+use rand::distributions::Distribution;
 use sideswap_api::*;
 use std::time::Instant;
 
@@ -23,20 +24,17 @@ pub enum WrappedResponse {
     Response(ResponseMessage),
 }
 
+type WsStream = (
+    tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>,
+    tokio_tungstenite::tungstenite::handshake::client::Response,
+);
+
 async fn connect_async(
     url: &str,
     proxy: Option<&String>,
     host: &str,
     port: u16,
-) -> Result<
-    (
-        tokio_tungstenite::WebSocketStream<
-            tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>,
-        >,
-        tokio_tungstenite::tungstenite::handshake::client::Response,
-    ),
-    anyhow::Error,
-> {
+) -> Result<WsStream, anyhow::Error> {
     let stream = if let Some(proxy) = proxy {
         let stream = tokio::net::TcpStream::connect(proxy).await?;
         let stream = tokio_socks::tcp::Socks5Stream::connect_with_socket(
@@ -52,6 +50,33 @@ async fn connect_async(
     let ws = tokio_tungstenite::client_async_tls(url, stream).await?;
 
     Ok(ws)
+}
+
+async fn connect_with_error_delay(
+    url: &str,
+    proxy: Option<&String>,
+    host: &str,
+    port: u16,
+    error_delay: Duration,
+) -> Result<WsStream, anyhow::Error> {
+    let connect_result = tokio::time::timeout(
+        Duration::from_secs(30),
+        connect_async(&url, proxy, host, port),
+    )
+    .await;
+    match connect_result {
+        Ok(Ok(stream)) => Ok(stream),
+        Ok(Err(err)) => {
+            let dist = rand::distributions::Uniform::from(0.0..2.0);
+            let jitter = dist.sample(&mut rand::thread_rng());
+            tokio::time::sleep(error_delay.mul_f64(jitter)).await;
+            Err(err)
+        }
+        Err(_timeout) => {
+            // Do not wait more, we have already spent some time
+            Err(anyhow!("connection timeout"))
+        }
+    }
 }
 
 async fn run(
@@ -99,17 +124,11 @@ async fn run(
 
         while ws_stream.is_none() {
             debug!("try ws connection to {url}...");
-            let delay = RECONNECT_WAIT_PERIODS
+            let error_delay = *RECONNECT_WAIT_PERIODS
                 .get(reconnect_count)
                 .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
             tokio::select! {
-                connect_result = async {
-                    let connect_result = connect_async(&url, proxy.as_ref(), &host, port).await;
-                    if connect_result.is_err() {
-                        tokio::time::sleep(*delay).await
-                    }
-                    connect_result
-                } => {
+                connect_result = connect_with_error_delay(&url, proxy.as_ref(), &host, port, error_delay) => {
                     match connect_result {
                         Ok((v, _)) => ws_stream = Some(v),
                         Err(e) => {

@@ -406,6 +406,7 @@ message To {
     MarketDataSubscribe market_data_subscribe = 60;
     Empty market_data_unsubscribe = 61;
     Empty portfolio_prices = 62;
+    Empty conversion_rates = 63;
 
     Empty jade_rescan = 71;
 
@@ -686,6 +687,10 @@ message From {
     map<string, double> prices_usd = 1;
   }
 
+  message ConversionRates {
+    map<string, double> usd_conversion_rates = 1;
+  }
+
   message JadePorts {
     enum State {
       UNINIT = 0;
@@ -788,6 +793,7 @@ message From {
     MarketDataSubscribe market_data_subscribe = 70;
     MarketDataUpdate market_data_update = 71;
     PortfolioPrices portfolio_prices = 72;
+    ConversionRates conversion_rates = 73;
 
     JadePorts jade_ports = 80;
     JadeStatus jade_status = 83;

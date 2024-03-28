@@ -5,7 +5,7 @@ part 'ui_state_args_provider.g.dart';
 enum WalletMainNavigationItemEnum {
   home,
   accounts,
-  assetSelect,
+  // assetSelect,
   assetDetails,
   transactions,
   pegs,
@@ -122,47 +122,3 @@ class UiStateArgsNotifier extends _$UiStateArgsNotifier {
     );
   }
 }
-
-
-// final uiStateArgsProvider =
-//     ChangeNotifierProvider<UiStateArgsChangeNotifierProvider>((ref) {
-//   return UiStateArgsChangeNotifierProvider();
-// });
-
-// class UiStateArgsChangeNotifierProvider extends ChangeNotifier {
-//   WalletMainArguments _walletMainArguments;
-//   WalletMainArguments _lastWalletMainArguments = WalletMainArguments(
-//       currentIndex: 0,
-//       navigationItem: WalletMainNavigationItem(
-//           navigationItemEnum: WalletMainNavigationItemEnum.home));
-
-//   WalletMainArguments get walletMainArguments => _walletMainArguments;
-//   set walletMainArguments(WalletMainArguments value) {
-//     _lastWalletMainArguments = _walletMainArguments;
-//     _walletMainArguments = value;
-//     notifyListeners();
-//   }
-
-//   void clear() {
-//     _walletMainArguments = WalletMainArguments(
-//         currentIndex: 0,
-//         navigationItem: WalletMainNavigationItem(
-//             navigationItemEnum: WalletMainNavigationItemEnum.home));
-//     _lastWalletMainArguments = _walletMainArguments;
-//   }
-
-//   WalletMainArguments get lastWalletMainArguments => _lastWalletMainArguments;
-
-//   factory UiStateArgsChangeNotifierProvider() {
-//     return _uiStateArgs;
-//   }
-
-//   UiStateArgsChangeNotifierProvider._internal()
-//       : _walletMainArguments = WalletMainArguments(
-//             currentIndex: 0,
-//             navigationItem: WalletMainNavigationItem(
-//                 navigationItemEnum: WalletMainNavigationItemEnum.home));
-
-//   static final UiStateArgsChangeNotifierProvider _uiStateArgs =
-//       UiStateArgsChangeNotifierProvider._internal();
-// }

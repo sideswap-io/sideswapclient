@@ -88,41 +88,46 @@ enum SmsCodeStep {
   wrongCode,
 }
 
-final phoneProvider = ChangeNotifierProvider<PhoneProvider>((ref) {
+final phoneProvider = ChangeNotifierProvider.autoDispose<PhoneProvider>((ref) {
   logger.d('Init phone provider');
-  return PhoneProvider(ref, ConfirmPhoneData());
+  final countryCode = ref.watch(defaultSystemCountryAsyncNotifierProvider);
+  return switch (countryCode) {
+    AsyncValue(hasValue: true, value: CountryCode countryCode) => PhoneProvider(
+        ref: ref,
+        confirmPhoneData: ConfirmPhoneData(),
+        countryCode: countryCode),
+    _ => PhoneProvider(ref: ref, confirmPhoneData: ConfirmPhoneData()),
+  };
 });
 
 class PhoneProvider with ChangeNotifier {
-  PhoneProvider(
-    this.ref,
-    this._confirmPhoneData,
-  ) {
-    _countryCode = ref.read(countriesProvider).getSystemDefaultCountry();
-  }
+  PhoneProvider({
+    required this.ref,
+    this.confirmPhoneData,
+    this.countryCode,
+  });
 
   final Ref ref;
 
   String _phoneNumber = '';
-  CountryCode _countryCode = const CountryCode();
+  CountryCode? countryCode;
   String _smsCode = '';
   PhoneRegisterStep _phoneRegisterStep = PhoneRegisterStep.init;
   SmsCodeStep _smsCodeStep = SmsCodeStep.hidden;
   DateTime? _phoneRegisterTime;
   bool barier = false;
   String _phoneKey = '';
-  ConfirmPhoneData _confirmPhoneData;
+  ConfirmPhoneData? confirmPhoneData;
 
   String get countryPhoneNumber {
     if (_phoneNumber.isNotEmpty) {
-      return '+${_countryCode.dialCode}$_phoneNumber';
+      return '+${countryCode?.dialCode}$_phoneNumber';
     }
 
     return '';
   }
 
   String get phoneNumber => _phoneNumber;
-  CountryCode get countryCode => _countryCode;
 
   PhoneRegisterStep get phoneRegisterStep {
     return _phoneRegisterStep;
@@ -133,15 +138,15 @@ class PhoneProvider with ChangeNotifier {
   }
 
   void setConfirmPhoneData({required ConfirmPhoneData confirmPhoneData}) {
-    _confirmPhoneData = confirmPhoneData;
+    confirmPhoneData = confirmPhoneData;
   }
 
-  ConfirmPhoneData getConfirmPhoneData() {
-    return _confirmPhoneData;
+  ConfirmPhoneData? getConfirmPhoneData() {
+    return confirmPhoneData;
   }
 
   void setPhoneNumber(CountryCode countryCode, [String phoneNumber = '']) {
-    _countryCode = countryCode;
+    countryCode = countryCode;
     _phoneNumber = phoneNumber;
 
     if (_phoneNumber.isNotEmpty) {
@@ -243,18 +248,18 @@ class PhoneProvider with ChangeNotifier {
       return;
     }
 
-    _confirmPhoneData.onConfirmPhoneSuccess!(context);
+    confirmPhoneData?.onConfirmPhoneSuccess!(context);
   }
 
   void clearData() {
     _phoneNumber = '';
-    _countryCode = const CountryCode();
+    countryCode = const CountryCode();
     _smsCode = '';
     _phoneRegisterStep = PhoneRegisterStep.init;
     _smsCodeStep = SmsCodeStep.hidden;
     _phoneRegisterTime = null;
     barier = false;
     _phoneKey = '';
-    _confirmPhoneData;
+    confirmPhoneData = ConfirmPhoneData();
   }
 }

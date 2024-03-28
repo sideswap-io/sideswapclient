@@ -464,6 +464,19 @@ class TransItemHelper {
     return transItem.tx.balances.where((e) => e.amount > 0).length > 1;
   }
 
+  bool getSentMultipleOutputs() {
+    if (txType() != TxType.sent) {
+      return false;
+    }
+
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+    final txFee = transItem.tx.networkFee;
+    final tempBalances = [...transItem.tx.balances];
+    tempBalances.removeWhere((element) => element.assetId != liquidAssetId);
+    return (tempBalances.any((element) => element.amount != -txFee) &&
+        transItem.tx.balances.length > 1);
+  }
+
   List<({String assetId, String ticker, String amount})> getBalancesAll() {
     final values = <({String assetId, String ticker, String amount})>[];
     if (!transItem.hasTx()) {

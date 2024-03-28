@@ -21,7 +21,7 @@ class OrderTableRow extends StatefulWidget {
     this.icon,
     this.displayDivider = true,
     this.topPadding,
-    this.dollarConversion,
+    this.defaultCurrencyConversion,
     this.orderTableRowType = OrderTableRowType.normal,
     this.enabled = true,
     this.style,
@@ -34,7 +34,7 @@ class OrderTableRow extends StatefulWidget {
   final Widget? icon;
   final bool displayDivider;
   final double? topPadding;
-  final String? dollarConversion;
+  final String? defaultCurrencyConversion;
   final OrderTableRowType orderTableRowType;
   final bool enabled;
   final TextStyle? style;
@@ -51,7 +51,7 @@ class OrderTableRow extends StatefulWidget {
     required OrderTableRowType orderTableRowType,
     bool enabled = true,
     bool displayDivider = true,
-    bool showDollarConversion = true,
+    bool showCurrencyConversion = true,
   }) {
     return Builder(builder: (context) {
       return Consumer(
@@ -68,16 +68,16 @@ class OrderTableRow extends StatefulWidget {
                   amount: amount,
                   ticker: ticker ?? '',
                   precision: asset?.precision ?? 8));
-          final dollarConversion = liquidAssetId == assetId &&
-                  showDollarConversion
-              ? ref.watch(dollarConversionProvider(
+          final defaultCurrencyConversion = liquidAssetId == assetId &&
+                  showCurrencyConversion
+              ? ref.watch(defaultCurrencyConversionProvider(
                   assetId, toFloat(amount, precision: asset?.precision ?? 8)))
               : null;
 
           return OrderTableRow(
             description: description,
             value: amountStr,
-            dollarConversion: dollarConversion,
+            defaultCurrencyConversion: defaultCurrencyConversion,
             icon: icon,
             orderTableRowType: orderTableRowType,
             displayDivider: displayDivider,
@@ -149,15 +149,15 @@ class OrderTableRowState extends State<OrderTableRow> {
               ),
             ],
           ),
-          if (widget.dollarConversion != null &&
-              widget.dollarConversion!.isNotEmpty) ...[
+          if (widget.defaultCurrencyConversion != null &&
+              widget.defaultCurrencyConversion!.isNotEmpty) ...[
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    '≈ ${widget.dollarConversion}',
+                    '≈ ${widget.defaultCurrencyConversion}',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,

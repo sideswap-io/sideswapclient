@@ -1,11 +1,26 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'wallet.dart';
+part of 'client_ffi.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
+String _$libClientStateHash() => r'203f02511a20ca7807297d960c644e9e43b50860';
+
+/// See also [libClientState].
+@ProviderFor(libClientState)
+final libClientStateProvider = Provider<LibClientState>.internal(
+  libClientState,
+  name: r'libClientStateProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$libClientStateHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef LibClientStateRef = ProviderRef<LibClientState>;
 String _$libClientIdHash() => r'848a6c2450dd03273452115f644e9b17a604fda8';
 
 /// See also [LibClientId].

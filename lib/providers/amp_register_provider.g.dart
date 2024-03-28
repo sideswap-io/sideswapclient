@@ -38,7 +38,7 @@ final pegxSecuritiesProvider =
 );
 
 typedef PegxSecuritiesRef = AutoDisposeProviderRef<List<SecuritiesItem>>;
-String _$checkAmpStatusHash() => r'9ce4d4dfc199d0839586b91ac12fbb74d4349aa4';
+String _$checkAmpStatusHash() => r'b1cfc7ecccbeca8810256c9b9602c7b2d242dd6d';
 
 /// See also [checkAmpStatus].
 @ProviderFor(checkAmpStatus)
@@ -54,12 +54,12 @@ final checkAmpStatusProvider =
 );
 
 typedef CheckAmpStatusRef = AutoDisposeProviderRef<CheckAmpStatusProvider>;
-String _$stokrGaidNotifierHash() => r'4d9477cfea1792c7bb69029f55aec555c8efbd8c';
+String _$stokrGaidNotifierHash() => r'8673920fa61f49de33d9cfeefdfd63d3d3602706';
 
 /// See also [StokrGaidNotifier].
 @ProviderFor(StokrGaidNotifier)
 final stokrGaidNotifierProvider =
-    AutoDisposeNotifierProvider<StokrGaidNotifier, StokrGaidState>.internal(
+    NotifierProvider<StokrGaidNotifier, StokrGaidState>.internal(
   StokrGaidNotifier.new,
   name: r'stokrGaidNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -69,6 +69,6 @@ final stokrGaidNotifierProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$StokrGaidNotifier = AutoDisposeNotifier<StokrGaidState>;
+typedef _$StokrGaidNotifier = Notifier<StokrGaidState>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

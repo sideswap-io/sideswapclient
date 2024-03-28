@@ -4625,6 +4625,7 @@ enum To_Msg {
   marketDataSubscribe, 
   marketDataUnsubscribe, 
   portfolioPrices, 
+  conversionRates, 
   jadeRescan, 
   gaidStatus, 
   notSet
@@ -4672,6 +4673,7 @@ class To extends $pb.GeneratedMessage {
     To_MarketDataSubscribe? marketDataSubscribe,
     Empty? marketDataUnsubscribe,
     Empty? portfolioPrices,
+    Empty? conversionRates,
     Empty? jadeRescan,
     To_GaidStatus? gaidStatus,
   }) {
@@ -4796,6 +4798,9 @@ class To extends $pb.GeneratedMessage {
     if (portfolioPrices != null) {
       $result.portfolioPrices = portfolioPrices;
     }
+    if (conversionRates != null) {
+      $result.conversionRates = conversionRates;
+    }
     if (jadeRescan != null) {
       $result.jadeRescan = jadeRescan;
     }
@@ -4849,12 +4854,13 @@ class To extends $pb.GeneratedMessage {
     60 : To_Msg.marketDataSubscribe,
     61 : To_Msg.marketDataUnsubscribe,
     62 : To_Msg.portfolioPrices,
+    63 : To_Msg.conversionRates,
     71 : To_Msg.jadeRescan,
     81 : To_Msg.gaidStatus,
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 71, 81])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 71, 81])
     ..aOM<To_Login>(1, _omitFieldNames ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, _omitFieldNames ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, _omitFieldNames ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
@@ -4895,6 +4901,7 @@ class To extends $pb.GeneratedMessage {
     ..aOM<To_MarketDataSubscribe>(60, _omitFieldNames ? '' : 'marketDataSubscribe', subBuilder: To_MarketDataSubscribe.create)
     ..aOM<Empty>(61, _omitFieldNames ? '' : 'marketDataUnsubscribe', subBuilder: Empty.create)
     ..aOM<Empty>(62, _omitFieldNames ? '' : 'portfolioPrices', subBuilder: Empty.create)
+    ..aOM<Empty>(63, _omitFieldNames ? '' : 'conversionRates', subBuilder: Empty.create)
     ..aOM<Empty>(71, _omitFieldNames ? '' : 'jadeRescan', subBuilder: Empty.create)
     ..aOM<To_GaidStatus>(81, _omitFieldNames ? '' : 'gaidStatus', subBuilder: To_GaidStatus.create)
   ;
@@ -5361,27 +5368,38 @@ class To extends $pb.GeneratedMessage {
   @$pb.TagNumber(62)
   Empty ensurePortfolioPrices() => $_ensure(39);
 
+  @$pb.TagNumber(63)
+  Empty get conversionRates => $_getN(40);
+  @$pb.TagNumber(63)
+  set conversionRates(Empty v) { setField(63, v); }
+  @$pb.TagNumber(63)
+  $core.bool hasConversionRates() => $_has(40);
+  @$pb.TagNumber(63)
+  void clearConversionRates() => clearField(63);
+  @$pb.TagNumber(63)
+  Empty ensureConversionRates() => $_ensure(40);
+
   @$pb.TagNumber(71)
-  Empty get jadeRescan => $_getN(40);
+  Empty get jadeRescan => $_getN(41);
   @$pb.TagNumber(71)
   set jadeRescan(Empty v) { setField(71, v); }
   @$pb.TagNumber(71)
-  $core.bool hasJadeRescan() => $_has(40);
+  $core.bool hasJadeRescan() => $_has(41);
   @$pb.TagNumber(71)
   void clearJadeRescan() => clearField(71);
   @$pb.TagNumber(71)
-  Empty ensureJadeRescan() => $_ensure(40);
+  Empty ensureJadeRescan() => $_ensure(41);
 
   @$pb.TagNumber(81)
-  To_GaidStatus get gaidStatus => $_getN(41);
+  To_GaidStatus get gaidStatus => $_getN(42);
   @$pb.TagNumber(81)
   set gaidStatus(To_GaidStatus v) { setField(81, v); }
   @$pb.TagNumber(81)
-  $core.bool hasGaidStatus() => $_has(41);
+  $core.bool hasGaidStatus() => $_has(42);
   @$pb.TagNumber(81)
   void clearGaidStatus() => clearField(81);
   @$pb.TagNumber(81)
-  To_GaidStatus ensureGaidStatus() => $_ensure(41);
+  To_GaidStatus ensureGaidStatus() => $_ensure(42);
 }
 
 enum From_Login_Result {
@@ -8690,6 +8708,50 @@ class From_PortfolioPrices extends $pb.GeneratedMessage {
   $core.Map<$core.String, $core.double> get pricesUsd => $_getMap(0);
 }
 
+class From_ConversionRates extends $pb.GeneratedMessage {
+  factory From_ConversionRates({
+    $core.Map<$core.String, $core.double>? usdConversionRates,
+  }) {
+    final $result = create();
+    if (usdConversionRates != null) {
+      $result.usdConversionRates.addAll(usdConversionRates);
+    }
+    return $result;
+  }
+  From_ConversionRates._() : super();
+  factory From_ConversionRates.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_ConversionRates.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.ConversionRates', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..m<$core.String, $core.double>(1, _omitFieldNames ? '' : 'usdConversionRates', entryClassName: 'From.ConversionRates.UsdConversionRatesEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OD, packageName: const $pb.PackageName('sideswap.proto'))
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_ConversionRates clone() => From_ConversionRates()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_ConversionRates copyWith(void Function(From_ConversionRates) updates) => super.copyWith((message) => updates(message as From_ConversionRates)) as From_ConversionRates;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_ConversionRates create() => From_ConversionRates._();
+  From_ConversionRates createEmptyInstance() => create();
+  static $pb.PbList<From_ConversionRates> createRepeated() => $pb.PbList<From_ConversionRates>();
+  @$core.pragma('dart2js:noInline')
+  static From_ConversionRates getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_ConversionRates>(create);
+  static From_ConversionRates? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.Map<$core.String, $core.double> get usdConversionRates => $_getMap(0);
+}
+
 class From_JadePorts_Port extends $pb.GeneratedMessage {
   factory From_JadePorts_Port({
     $core.String? jadeId,
@@ -9019,6 +9081,7 @@ enum From_Msg {
   marketDataSubscribe, 
   marketDataUpdate, 
   portfolioPrices, 
+  conversionRates, 
   jadePorts, 
   jadeStatus, 
   gaidStatus, 
@@ -9081,6 +9144,7 @@ class From extends $pb.GeneratedMessage {
     From_MarketDataSubscribe? marketDataSubscribe,
     From_MarketDataUpdate? marketDataUpdate,
     From_PortfolioPrices? portfolioPrices,
+    From_ConversionRates? conversionRates,
     From_JadePorts? jadePorts,
     From_JadeStatus? jadeStatus,
     From_GaidStatus? gaidStatus,
@@ -9248,6 +9312,9 @@ class From extends $pb.GeneratedMessage {
     if (portfolioPrices != null) {
       $result.portfolioPrices = portfolioPrices;
     }
+    if (conversionRates != null) {
+      $result.conversionRates = conversionRates;
+    }
     if (jadePorts != null) {
       $result.jadePorts = jadePorts;
     }
@@ -9318,13 +9385,14 @@ class From extends $pb.GeneratedMessage {
     70 : From_Msg.marketDataSubscribe,
     71 : From_Msg.marketDataUpdate,
     72 : From_Msg.portfolioPrices,
+    73 : From_Msg.conversionRates,
     80 : From_Msg.jadePorts,
     83 : From_Msg.jadeStatus,
     91 : From_Msg.gaidStatus,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 30, 31, 32, 33, 34, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 80, 83, 91])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 30, 31, 32, 33, 34, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 80, 83, 91])
     ..aOM<From_UpdatedTxs>(1, _omitFieldNames ? '' : 'updatedTxs', subBuilder: From_UpdatedTxs.create)
     ..aOM<From_UpdatedPegs>(2, _omitFieldNames ? '' : 'updatedPegs', subBuilder: From_UpdatedPegs.create)
     ..aOM<Asset>(3, _omitFieldNames ? '' : 'newAsset', subBuilder: Asset.create)
@@ -9379,6 +9447,7 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_MarketDataSubscribe>(70, _omitFieldNames ? '' : 'marketDataSubscribe', subBuilder: From_MarketDataSubscribe.create)
     ..aOM<From_MarketDataUpdate>(71, _omitFieldNames ? '' : 'marketDataUpdate', subBuilder: From_MarketDataUpdate.create)
     ..aOM<From_PortfolioPrices>(72, _omitFieldNames ? '' : 'portfolioPrices', subBuilder: From_PortfolioPrices.create)
+    ..aOM<From_ConversionRates>(73, _omitFieldNames ? '' : 'conversionRates', subBuilder: From_ConversionRates.create)
     ..aOM<From_JadePorts>(80, _omitFieldNames ? '' : 'jadePorts', subBuilder: From_JadePorts.create)
     ..aOM<From_JadeStatus>(83, _omitFieldNames ? '' : 'jadeStatus', subBuilder: From_JadeStatus.create)
     ..aOM<From_GaidStatus>(91, _omitFieldNames ? '' : 'gaidStatus', subBuilder: From_GaidStatus.create)
@@ -10000,38 +10069,49 @@ class From extends $pb.GeneratedMessage {
   @$pb.TagNumber(72)
   From_PortfolioPrices ensurePortfolioPrices() => $_ensure(53);
 
+  @$pb.TagNumber(73)
+  From_ConversionRates get conversionRates => $_getN(54);
+  @$pb.TagNumber(73)
+  set conversionRates(From_ConversionRates v) { setField(73, v); }
+  @$pb.TagNumber(73)
+  $core.bool hasConversionRates() => $_has(54);
+  @$pb.TagNumber(73)
+  void clearConversionRates() => clearField(73);
+  @$pb.TagNumber(73)
+  From_ConversionRates ensureConversionRates() => $_ensure(54);
+
   @$pb.TagNumber(80)
-  From_JadePorts get jadePorts => $_getN(54);
+  From_JadePorts get jadePorts => $_getN(55);
   @$pb.TagNumber(80)
   set jadePorts(From_JadePorts v) { setField(80, v); }
   @$pb.TagNumber(80)
-  $core.bool hasJadePorts() => $_has(54);
+  $core.bool hasJadePorts() => $_has(55);
   @$pb.TagNumber(80)
   void clearJadePorts() => clearField(80);
   @$pb.TagNumber(80)
-  From_JadePorts ensureJadePorts() => $_ensure(54);
+  From_JadePorts ensureJadePorts() => $_ensure(55);
 
   @$pb.TagNumber(83)
-  From_JadeStatus get jadeStatus => $_getN(55);
+  From_JadeStatus get jadeStatus => $_getN(56);
   @$pb.TagNumber(83)
   set jadeStatus(From_JadeStatus v) { setField(83, v); }
   @$pb.TagNumber(83)
-  $core.bool hasJadeStatus() => $_has(55);
+  $core.bool hasJadeStatus() => $_has(56);
   @$pb.TagNumber(83)
   void clearJadeStatus() => clearField(83);
   @$pb.TagNumber(83)
-  From_JadeStatus ensureJadeStatus() => $_ensure(55);
+  From_JadeStatus ensureJadeStatus() => $_ensure(56);
 
   @$pb.TagNumber(91)
-  From_GaidStatus get gaidStatus => $_getN(56);
+  From_GaidStatus get gaidStatus => $_getN(57);
   @$pb.TagNumber(91)
   set gaidStatus(From_GaidStatus v) { setField(91, v); }
   @$pb.TagNumber(91)
-  $core.bool hasGaidStatus() => $_has(56);
+  $core.bool hasGaidStatus() => $_has(57);
   @$pb.TagNumber(91)
   void clearGaidStatus() => clearField(91);
   @$pb.TagNumber(91)
-  From_GaidStatus ensureGaidStatus() => $_ensure(56);
+  From_GaidStatus ensureGaidStatus() => $_ensure(57);
 }
 
 class Settings_AccountAsset extends $pb.GeneratedMessage {

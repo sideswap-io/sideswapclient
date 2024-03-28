@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/desktop/main/d_asset_info.dart';
+import 'package:sideswap/desktop/main/d_export_tx_success.dart';
 import 'package:sideswap/desktop/main/d_generate_address_popup.dart';
 import 'package:sideswap/desktop/main/d_open_tx_import.dart';
-import 'package:sideswap/desktop/main/d_open_url.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/desktop/main/d_recv_popup.dart';
 import 'package:sideswap/desktop/main/d_send_popup.dart';
@@ -11,6 +11,7 @@ import 'package:sideswap/desktop/main/d_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_view_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_wait_pegin.dart';
 import 'package:sideswap/desktop/settings/d_need_restart_dialog.dart';
+import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
@@ -110,17 +111,6 @@ class DesktopDialog {
     );
   }
 
-  @Deprecated("Will be replaced by openImport")
-  void openUrl() {
-    showDialog<void>(
-      context: _context,
-      builder: (context) {
-        return const DOpenUrl();
-      },
-      routeSettings: const RouteSettings(name: _popupRouteName),
-    );
-  }
-
   void openTxImport() {
     showDialog<void>(
       context: _context,
@@ -131,11 +121,26 @@ class DesktopDialog {
     );
   }
 
-  void openViewTx() {
-    showDialog<void>(
+  Future<DialogReturnValue> openViewTx() async {
+    final result = await showDialog<DialogReturnValue>(
       context: _context,
       builder: (context) {
         return const DViewTxPopup();
+      },
+      routeSettings: const RouteSettings(name: _popupRouteName),
+    );
+
+    return switch (result) {
+      final result? => result,
+      _ => const DialogReturnValueCancelled(),
+    };
+  }
+
+  Future<void> openExportTxSuccess() async {
+    await showDialog<void>(
+      context: _context,
+      builder: (context) {
+        return const DExportTxSuccess();
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
     );

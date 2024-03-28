@@ -7,12 +7,12 @@ part of 'portfolio_prices_providers.dart';
 // **************************************************************************
 
 String _$requestPortfolioPricesHash() =>
-    r'7e23a77e0c7ba7514e61f92bd1024d54d853607d';
+    r'70ea8ac302018dccd8ba1ed35940eb2c2f0c2cdd';
 
 /// See also [RequestPortfolioPrices].
 @ProviderFor(RequestPortfolioPrices)
 final requestPortfolioPricesProvider =
-    AutoDisposeNotifierProvider<RequestPortfolioPrices, void>.internal(
+    NotifierProvider<RequestPortfolioPrices, void>.internal(
   RequestPortfolioPrices.new,
   name: r'requestPortfolioPricesProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -22,14 +22,14 @@ final requestPortfolioPricesProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$RequestPortfolioPrices = AutoDisposeNotifier<void>;
+typedef _$RequestPortfolioPrices = Notifier<void>;
 String _$portfolioPricesNotifierHash() =>
-    r'573a471fe0f9f2b65ee600171f8c0d31dfe499c0';
+    r'4d75b711c74303bc3e478383a80ced04195037d0';
 
 /// See also [PortfolioPricesNotifier].
 @ProviderFor(PortfolioPricesNotifier)
-final portfolioPricesNotifierProvider = AutoDisposeNotifierProvider<
-    PortfolioPricesNotifier, Map<String, double>>.internal(
+final portfolioPricesNotifierProvider =
+    NotifierProvider<PortfolioPricesNotifier, Map<String, double>>.internal(
   PortfolioPricesNotifier.new,
   name: r'portfolioPricesNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -39,6 +39,6 @@ final portfolioPricesNotifierProvider = AutoDisposeNotifierProvider<
   allTransitiveDependencies: null,
 );
 
-typedef _$PortfolioPricesNotifier = AutoDisposeNotifier<Map<String, double>>;
+typedef _$PortfolioPricesNotifier = Notifier<Map<String, double>>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

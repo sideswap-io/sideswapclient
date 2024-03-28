@@ -106,7 +106,7 @@ class PinKeyboardState extends ConsumerState<PinKeyboard> {
             child: InkWell(
               onTap: () {
                 HapticFeedback.mediumImpact();
-                ref.read(pinKeyboardProvider).keyPressed(index);
+                ref.read(pinKeyboardHelperProvider).keyPressed(index);
               },
               borderRadius: const BorderRadius.all(Radius.circular(8)),
               child: Container(

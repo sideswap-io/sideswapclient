@@ -17,6 +17,8 @@ class SideSwapPopupPage extends ConsumerWidget {
   final VoidCallback? onEscapeKey;
   final VoidCallback? onEnterKey;
   final bool hideClose;
+  final bool hideBack;
+  final VoidCallback? onBack;
 
   const SideSwapPopupPage({
     super.key,
@@ -31,6 +33,8 @@ class SideSwapPopupPage extends ConsumerWidget {
     this.hideClose = false,
     this.onEscapeKey,
     this.onEnterKey,
+    this.hideBack = true,
+    this.onBack,
   });
 
   @override
@@ -49,6 +53,8 @@ class SideSwapPopupPage extends ConsumerWidget {
               content: title,
               hideClose: hideClose,
               onClose: onClose,
+              hideBack: hideBack,
+              onBack: onBack,
             ),
             content: content,
             actions: actions,

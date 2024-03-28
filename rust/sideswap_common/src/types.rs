@@ -1,3 +1,5 @@
+use sideswap_api::ServerFee;
+
 #[derive(
     Eq,
     PartialEq,
@@ -107,26 +109,28 @@ pub fn timestamp_now() -> i64 {
         .as_millis() as i64
 }
 
-pub const MIN_BITCOIN_AMOUNT: Amount = Amount(2000);
-pub const MIN_SERVER_FEE: Amount = Amount(500);
-pub const SERVER_FEE_RATE: f64 = 0.001;
+pub const SWAP_MARKETS_MIN_BITCOIN_AMOUNT: Amount = Amount(2000);
+pub const SWAP_MARKETS_MIN_SERVER_FEE: Amount = Amount(500);
 
-pub fn get_server_fee(bitcoin_amount: Amount) -> Amount {
-    let server_fee = Amount::from_bitcoin(bitcoin_amount.to_bitcoin() * SERVER_FEE_RATE);
-    std::cmp::max(server_fee, MIN_SERVER_FEE)
+pub fn get_server_fee(bitcoin_amount: Amount, server_fee: ServerFee) -> Amount {
+    let server_fee = Amount::from_bitcoin(bitcoin_amount.to_bitcoin() * server_fee.value());
+    std::cmp::max(server_fee, SWAP_MARKETS_MIN_SERVER_FEE)
 }
 
-pub fn get_max_bitcoin_amount(bitcoin_balance: Amount) -> Result<Amount, anyhow::Error> {
+pub fn get_max_bitcoin_amount(
+    bitcoin_balance: Amount,
+    server_fee: ServerFee,
+) -> Result<Amount, anyhow::Error> {
     assert!(bitcoin_balance.to_sat() >= 0);
     ensure!(
-        bitcoin_balance >= MIN_BITCOIN_AMOUNT + MIN_SERVER_FEE,
+        bitcoin_balance >= SWAP_MARKETS_MIN_BITCOIN_AMOUNT + SWAP_MARKETS_MIN_SERVER_FEE,
         "balance is too low"
     );
     let network_fee_scaled =
-        Amount::from_bitcoin(bitcoin_balance.to_bitcoin() * (1. - 1. / (1. + SERVER_FEE_RATE)));
-    let network_fee = Amount::max(network_fee_scaled, MIN_SERVER_FEE);
+        Amount::from_bitcoin(bitcoin_balance.to_bitcoin() * (1. - 1. / (1. + server_fee.value())));
+    let network_fee = Amount::max(network_fee_scaled, SWAP_MARKETS_MIN_SERVER_FEE);
     let bitcoin_amount = bitcoin_balance - network_fee;
-    let actual_server_fee = get_server_fee(bitcoin_amount);
+    let actual_server_fee = get_server_fee(bitcoin_amount, server_fee);
     if bitcoin_balance < bitcoin_amount + actual_server_fee {
         Ok(bitcoin_amount - Amount::from_sat(1))
     } else {
@@ -241,12 +245,13 @@ mod tests {
         let test_count = 10000000;
         for _ in 0..test_count {
             let balance: i64 = rng.gen_range(
-                MIN_BITCOIN_AMOUNT.to_sat() + MIN_SERVER_FEE.to_sat()
+                SWAP_MARKETS_MIN_BITCOIN_AMOUNT.to_sat() + SWAP_MARKETS_MIN_SERVER_FEE.to_sat()
                     ..Amount::from_bitcoin(100.0).to_sat(),
             );
             let balance = Amount::from_sat(balance);
-            let amount = get_max_bitcoin_amount(balance).unwrap();
-            let server_fee = get_server_fee(amount);
+            let server_fee = ServerFee::new(None);
+            let amount = get_max_bitcoin_amount(balance, server_fee).unwrap();
+            let server_fee = get_server_fee(amount, server_fee);
             if amount + server_fee > balance {
                 more_count += 1;
             }

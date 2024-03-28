@@ -56,7 +56,7 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
               Future.microtask(() async {
                 final confirmPhoneData =
                     ref.read(phoneProvider).getConfirmPhoneData();
-                await confirmPhoneData.onImportContactsSuccess!(context);
+                await confirmPhoneData?.onImportContactsSuccess!(context);
               });
             }
             return Column(
@@ -122,7 +122,7 @@ class ImportContactsState extends ConsumerState<ImportContacts> {
                       onPressed: () async {
                         final confirmPhoneData =
                             ref.read(phoneProvider).getConfirmPhoneData();
-                        await confirmPhoneData.onImportContactsDone!(context);
+                        await confirmPhoneData?.onImportContactsDone!(context);
                       },
                     ),
                   ),

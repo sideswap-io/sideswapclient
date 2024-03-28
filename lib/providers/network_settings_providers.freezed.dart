@@ -12,7 +12,7 @@ part of 'network_settings_providers.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 NetworkSettingsModel _$NetworkSettingsModelFromJson(Map<String, dynamic> json) {
   switch (json['runtimeType']) {
@@ -248,24 +248,6 @@ class _$NetworkSettingsModelEmptyImpl implements NetworkSettingsModelEmpty {
     return 'NetworkSettingsModel.empty(settingsNetworkType: $settingsNetworkType, env: $env, host: $host, port: $port, useTls: $useTls)';
   }
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$NetworkSettingsModelEmptyImpl &&
-            (identical(other.settingsNetworkType, settingsNetworkType) ||
-                other.settingsNetworkType == settingsNetworkType) &&
-            (identical(other.env, env) || other.env == env) &&
-            (identical(other.host, host) || other.host == host) &&
-            (identical(other.port, port) || other.port == port) &&
-            (identical(other.useTls, useTls) || other.useTls == useTls));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, settingsNetworkType, env, host, port, useTls);
-
   @JsonKey(ignore: true)
   @override
   @pragma('vm:prefer-inline')
@@ -476,24 +458,6 @@ class _$NetworkSettingsModelApplyImpl implements NetworkSettingsModelApply {
   String toString() {
     return 'NetworkSettingsModel.apply(settingsNetworkType: $settingsNetworkType, env: $env, host: $host, port: $port, useTls: $useTls)';
   }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$NetworkSettingsModelApplyImpl &&
-            (identical(other.settingsNetworkType, settingsNetworkType) ||
-                other.settingsNetworkType == settingsNetworkType) &&
-            (identical(other.env, env) || other.env == env) &&
-            (identical(other.host, host) || other.host == host) &&
-            (identical(other.port, port) || other.port == port) &&
-            (identical(other.useTls, useTls) || other.useTls == useTls));
-  }
-
-  @JsonKey(ignore: true)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, settingsNetworkType, env, host, port, useTls);
 
   @JsonKey(ignore: true)
   @override

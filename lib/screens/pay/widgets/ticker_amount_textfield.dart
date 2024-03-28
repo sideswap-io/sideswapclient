@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
+import 'package:sideswap/desktop/main/d_payment_select_asset.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
-import 'package:sideswap/screens/pay/payment_select_account.dart';
+import 'package:sideswap/screens/pay/payment_select_asset.dart';
 
-class TickerAmountTextField extends StatefulWidget {
+class TickerAmountTextField extends HookConsumerWidget {
   const TickerAmountTextField({
     super.key,
     this.text,
@@ -51,206 +53,81 @@ class TickerAmountTextField extends StatefulWidget {
   final bool showAccountsInPopup;
 
   @override
-  TickerAmountTextFieldState createState() => TickerAmountTextFieldState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    const textFieldStyle = TextStyle(
+      fontSize: 26,
+      fontWeight: FontWeight.normal,
+      color: Colors.white,
+    );
 
-class TickerAmountTextFieldState extends State<TickerAmountTextField> {
-  final _textFieldStyle = const TextStyle(
-    fontSize: 26,
-    fontWeight: FontWeight.normal,
-    color: Colors.white,
-  );
+    final swapType = ref.watch(swapProvider).swapType();
+    final assetPrecision = ref
+        .watch(assetUtilsProvider)
+        .getPrecisionForAssetId(assetId: dropdownValue.assetId);
 
-  final _dropdownTextStyle = const TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.normal,
-    color: Colors.white,
-  );
+    final textfieldFocusNode = focusNode ?? useFocusNode();
+    final visibleHintText =
+        useState(swapType == SwapType.pegIn && readOnly ? false : showHintText);
 
-  FocusNode _textfieldFocusNode = FocusNode();
-  bool _visibleHintText = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _visibleHintText = widget.showHintText;
-
-    _textfieldFocusNode = widget.focusNode ?? FocusNode();
-    _textfieldFocusNode.addListener(() {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        if (_textfieldFocusNode.hasFocus && !widget.readOnly) {
-          _visibleHintText = false;
-        } else {
-          _visibleHintText = widget.showHintText;
-        }
+    useEffect(() {
+      textfieldFocusNode.addListener(() {
+        (switch (textfieldFocusNode.hasFocus) {
+          true when !readOnly => visibleHintText.value = false,
+          _ => visibleHintText.value = showHintText,
+        });
       });
-    });
-  }
 
-  Widget buildDropdown() {
-    return Builder(builder: (context) {
-      return SizedBox(
-        width: 90,
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<AccountAsset>(
-            isExpanded: true,
-            icon: widget.dropdownReadOnly
-                ? Container()
-                : const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.white,
-                  ),
-            dropdownColor: SideSwapColors.jellyBean,
-            style: _dropdownTextStyle,
-            onChanged: widget.dropdownReadOnly
-                ? null
-                : (value) {
-                    if (widget.onDropdownChanged == null || value == null) {
-                      return;
-                    }
-                    widget.onDropdownChanged!(value);
-                  },
-            disabledHint: widget.dropdownReadOnly
-                ? Row(
-                    children: [
-                      Expanded(
-                        child: Consumer(
-                          builder: (context, ref, _) {
-                            final asset = ref.watch(assetsStateProvider.select(
-                                (value) =>
-                                    value[widget.dropdownValue.assetId]));
-                            final text = asset?.ticker ?? '';
-                            return Text(
-                              text,
-                              textAlign: TextAlign.left,
-                              style: _dropdownTextStyle,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.fade,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  )
-                : null,
-            value: widget.dropdownValue,
-            items: widget.availableAssets.map((value) {
-              return DropdownMenuItem<AccountAsset>(
-                value: value,
-                child: Row(
-                  children: [
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final asset = ref.watch(assetsStateProvider
-                            .select((p) => p[value.assetId]));
-                        final image = ref
-                            .watch(assetImageProvider)
-                            .getSmallImage(asset?.assetId);
-                        return image;
-                      },
-                    ),
-                    Container(width: 8),
-                    Consumer(builder: (context, ref, _) {
-                      final asset = ref.watch(
-                          assetsStateProvider.select((p) => p[value.assetId]));
+      return;
+    }, [textfieldFocusNode]);
 
-                      if (asset?.ticker != null) {
-                        return Expanded(
-                          child: Text(
-                            asset?.ticker ?? '',
-                            textAlign: TextAlign.left,
-                            style: _dropdownTextStyle,
-                            maxLines: 1,
-                            softWrap: false,
-                            overflow: TextOverflow.fade,
-                          ),
-                        );
-                      }
-
-                      return const SizedBox();
-                    }),
-                  ],
-                ),
-              );
-            }).toList(),
-            selectedItemBuilder: (context) {
-              return widget.availableAssets.map((value) {
-                return Consumer(
-                  builder: (context, ref, _) {
-                    final asset = ref.watch(
-                        assetsStateProvider.select((p) => p[value.assetId]));
-
-                    if (asset?.ticker != null) {
-                      return Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              asset?.ticker ?? '',
-                              textAlign: TextAlign.left,
-                              style: _dropdownTextStyle,
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.fade,
-                            ),
-                          ),
-                        ],
-                      );
-                    }
-
-                    return const SizedBox();
-                  },
-                );
-              }).toList();
-            },
-          ),
-        ),
-      );
-    });
-  }
-
-  void showAccountsPopup() {
-    Widget builder(BuildContext context) {
-      return PaymentSelectAccount(
-        availableAssets: widget.availableAssets,
-        disabledAssets: widget.disabledAssets,
-        onSelected: (AccountAsset value) {
-          widget.onDropdownChanged?.call(value);
-        },
+    void showAccountsPopup() {
+      Navigator.of(context, rootNavigator: true).push<void>(
+        FlavorConfig.isDesktop
+            ? DialogRoute(
+                barrierColor: Colors.transparent,
+                builder: (context) {
+                  return DPaymentSelectAsset(
+                    availableAssets: availableAssets,
+                    disabledAssets: disabledAssets,
+                    onSelected: (value) {
+                      onDropdownChanged?.call(value);
+                    },
+                  );
+                },
+                context: context,
+              )
+            : MaterialPageRoute(
+                builder: (context) {
+                  return PaymentSelectAsset(
+                    availableAssets: availableAssets,
+                    disabledAssets: disabledAssets,
+                    onSelected: (AccountAsset value) {
+                      onDropdownChanged?.call(value);
+                    },
+                  );
+                },
+              ),
       );
     }
 
-    Navigator.of(context, rootNavigator: true).push<void>(
-      FlavorConfig.isDesktop
-          ? DialogRoute(builder: builder, context: context)
-          : MaterialPageRoute(builder: builder),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final borderDecoration = BoxDecoration(
-      shape: BoxShape.rectangle,
-      border: Border(
-        bottom: BorderSide(
-          color: (widget.showError && !widget.readOnly)
-              ? SideSwapColors.bitterSweet
-              : (_textfieldFocusNode.hasFocus && !widget.readOnly)
-                  ? SideSwapColors.brightTurquoise
-                  : SideSwapColors.jellyBean,
-          style: BorderStyle.solid,
-          width: 1,
-        ),
-      ),
-    );
-
     return Container(
       height: 43,
-      decoration: borderDecoration,
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        border: Border(
+          bottom: BorderSide(
+            color: switch (showError) {
+              true when !readOnly => SideSwapColors.bitterSweet,
+              _ => switch (textfieldFocusNode.hasFocus) {
+                  true when !readOnly => SideSwapColors.brightTurquoise,
+                  _ => SideSwapColors.jellyBean,
+                }
+            },
+            style: BorderStyle.solid,
+            width: 1,
+          ),
+        ),
+      ),
       child: Column(
         children: [
           SizedBox(
@@ -264,81 +141,75 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
                       builder: (context, ref, _) {
                         final icon = ref
                             .watch(assetImageProvider)
-                            .getSmallImage(widget.dropdownValue.assetId);
+                            .getSmallImage(dropdownValue.assetId);
 
-                        return SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: Center(child: icon),
-                        );
+                        return icon;
                       },
                     ),
                     Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: (widget.showAccountsInPopup)
-                            ? GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: widget.dropdownReadOnly
-                                    ? null
-                                    : showAccountsPopup,
-                                child: IgnorePointer(child: buildDropdown()))
-                            : buildDropdown()),
+                      padding: const EdgeInsets.only(left: 8),
+                      child: (showAccountsInPopup)
+                          ? GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap:
+                                  dropdownReadOnly ? null : showAccountsPopup,
+                              child: IgnorePointer(
+                                child: TickerAmountDropdown(
+                                  dropdownValue: dropdownValue,
+                                  onDropdownChanged: onDropdownChanged,
+                                  dropdownReadOnly: dropdownReadOnly,
+                                  availableAssets: availableAssets,
+                                ),
+                              ),
+                            )
+                          : TickerAmountDropdown(
+                              dropdownValue: dropdownValue,
+                              onDropdownChanged: onDropdownChanged,
+                              dropdownReadOnly: dropdownReadOnly,
+                              availableAssets: availableAssets,
+                            ),
+                    ),
                   ],
                 ),
                 Expanded(
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      final swapType = ref.watch(swapProvider).swapType();
-                      if (swapType == SwapType.pegIn && widget.readOnly) {
-                        _visibleHintText = false;
-                      }
-
-                      final assetPrecision = ref
-                          .watch(assetUtilsProvider)
-                          .getPrecisionForAssetId(
-                              assetId: widget.dropdownValue.assetId);
-
-                      return SizedBox(
-                        height: 42,
-                        child: TextField(
-                          autofocus: false,
-                          readOnly: widget.readOnly,
-                          controller: widget.controller,
-                          focusNode: _textfieldFocusNode,
-                          textAlign: TextAlign.end,
-                          style: _textFieldStyle,
-                          cursorColor: Colors.white,
-                          keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true),
-                          inputFormatters: [
-                            CommaTextInputFormatter(),
-                            if (assetPrecision == 0) ...[
-                              FilteringTextInputFormatter.deny(
-                                  RegExp('[\\-|,\\ .]')),
-                            ] else ...[
-                              FilteringTextInputFormatter.deny(
-                                  RegExp('[\\-|,\\ ]')),
-                            ],
-                            DecimalTextInputFormatter(
-                                decimalRange: assetPrecision),
-                          ],
-                          onChanged: widget.onChanged,
-                          onSubmitted: widget.onSubmitted,
-                          textInputAction: widget.textInputAction,
-                          onEditingComplete: widget.onEditingComplete,
-                          decoration: InputDecoration(
-                            contentPadding: EdgeInsets.zero,
-                            border: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            hintText: _visibleHintText ? widget.hintText : '',
-                            hintStyle: _textFieldStyle.copyWith(),
-                          ),
-                        ),
-                      );
-                    },
+                  child: SizedBox(
+                    height: 42,
+                    child: TextField(
+                      autofocus: false,
+                      readOnly: readOnly,
+                      controller: controller,
+                      focusNode: textfieldFocusNode,
+                      textAlign: TextAlign.end,
+                      style: textFieldStyle,
+                      cursorColor: Colors.white,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        CommaTextInputFormatter(),
+                        if (assetPrecision == 0) ...[
+                          FilteringTextInputFormatter.deny(
+                              RegExp('[\\-|,\\ .A-Za-z]')),
+                        ] else ...[
+                          FilteringTextInputFormatter.deny(
+                              RegExp('[\\-|,\\ ]A-Za-z')),
+                        ],
+                        DecimalTextInputFormatter(decimalRange: assetPrecision),
+                      ],
+                      onChanged: onChanged,
+                      onSubmitted: onSubmitted,
+                      textInputAction: textInputAction,
+                      onEditingComplete: onEditingComplete,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.zero,
+                        border: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        hintText: visibleHintText.value ? hintText : '',
+                        hintStyle: textFieldStyle.copyWith(),
+                      ),
+                    ),
                   ),
                 )
               ],
@@ -348,6 +219,150 @@ class TickerAmountTextFieldState extends State<TickerAmountTextField> {
             child: Container(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class TickerAmountDropdown extends HookConsumerWidget {
+  const TickerAmountDropdown({
+    this.dropdownReadOnly = false,
+    this.onDropdownChanged,
+    required this.dropdownValue,
+    this.availableAssets = const [],
+    super.key,
+  });
+
+  final bool dropdownReadOnly;
+  final void Function(AccountAsset)? onDropdownChanged;
+  final AccountAsset dropdownValue;
+  final List<AccountAsset> availableAssets;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    const dropdownTextStyle = TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.normal,
+      color: Colors.white,
+    );
+
+    return SizedBox(
+      width: 90,
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<AccountAsset>(
+          isExpanded: true,
+          icon: switch (dropdownReadOnly) {
+            true => const SizedBox(),
+            _ => const Icon(
+                Icons.keyboard_arrow_down,
+                color: Colors.white,
+              ),
+          },
+          dropdownColor: SideSwapColors.jellyBean,
+          style: dropdownTextStyle,
+          onChanged: switch (dropdownReadOnly) {
+            true => null,
+            _ => (value) {
+                return switch (value) {
+                  final value? => onDropdownChanged?.call(value),
+                  _ => () {}(),
+                };
+              },
+          },
+          disabledHint: switch (dropdownReadOnly) {
+            true => Row(
+                children: [
+                  Expanded(
+                    child: Consumer(
+                      builder: (context, ref, _) {
+                        final asset = ref
+                            .watch(assetsStateProvider)[dropdownValue.assetId];
+
+                        return Text(
+                          switch (asset?.ticker) {
+                            final ticker? => ticker,
+                            _ => '',
+                          },
+                          textAlign: TextAlign.left,
+                          style: dropdownTextStyle,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.fade,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            _ => null,
+          },
+          value: dropdownValue,
+          items: availableAssets.map((value) {
+            return DropdownMenuItem<AccountAsset>(
+              value: value,
+              child: Row(
+                children: [
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final asset =
+                          ref.watch(assetsStateProvider)[value.assetId];
+                      final image = ref
+                          .watch(assetImageProvider)
+                          .getSmallImage(asset?.assetId);
+
+                      return image;
+                    },
+                  ),
+                  Container(width: 8),
+                  Consumer(builder: (context, ref, _) {
+                    final asset = ref.watch(assetsStateProvider)[value.assetId];
+
+                    return switch (asset?.ticker) {
+                      final ticker? => Expanded(
+                          child: Text(
+                            ticker,
+                            textAlign: TextAlign.left,
+                            style: dropdownTextStyle,
+                            maxLines: 1,
+                            softWrap: false,
+                            overflow: TextOverflow.fade,
+                          ),
+                        ),
+                      _ => const SizedBox(),
+                    };
+                  }),
+                ],
+              ),
+            );
+          }).toList(),
+          selectedItemBuilder: (context) {
+            return availableAssets.map((value) {
+              return Consumer(
+                builder: (context, ref, _) {
+                  final asset = ref.watch(assetsStateProvider)[value.assetId];
+
+                  return switch (asset?.ticker) {
+                    final ticker? => Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              ticker,
+                              textAlign: TextAlign.left,
+                              style: dropdownTextStyle,
+                              maxLines: 1,
+                              softWrap: false,
+                              overflow: TextOverflow.fade,
+                            ),
+                          ),
+                        ],
+                      ),
+                    _ => const SizedBox(),
+                  };
+                },
+              );
+            }).toList();
+          },
+        ),
       ),
     );
   }

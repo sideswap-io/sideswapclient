@@ -1,206 +1,251 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/providers/biometric_available_provider.dart';
+import 'package:sideswap/providers/config_provider.dart';
 
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
-final pinSetupProvider =
-    ChangeNotifierProvider<PinSetupProvider>((ref) => PinSetupProvider(ref));
+part 'pin_setup_provider.g.dart';
 
-enum PinFieldState {
-  firstPin,
-  secondPin,
+@riverpod
+class PinDataNotifier extends _$PinDataNotifier {
+  @override
+  PinDataState build() {
+    return const PinDataState.empty();
+  }
+
+  void setPinDataState(PinDataState value) {
+    state = value;
+  }
 }
 
-enum PinSetupStateEnum {
-  idle,
-  error,
-  done,
+@riverpod
+class PinSetupCallerNotifier extends _$PinSetupCallerNotifier {
+  @override
+  PinSetupCallerState build() {
+    return const PinSetupCallerState.empty();
+  }
+
+  void setPinSetupCallerState(PinSetupCallerState value) {
+    state = value;
+  }
 }
 
-class PinSetupProvider extends ChangeNotifier {
-  final Ref ref;
+@riverpod
+class PinSetupExitNotifier extends _$PinSetupExitNotifier {
+  @override
+  PinSetupExitState build() {
+    return const PinSetupExitState.empty();
+  }
 
-  PinSetupProvider(this.ref);
+  void setPinSetupExitState(PinSetupExitState value) {
+    state = value;
+  }
+}
 
-  static const minPinLength = 6;
-  static const maxPinLength = 8;
+@riverpod
+class PinFieldStateNotifier extends _$PinFieldStateNotifier {
+  @override
+  PinFieldState build() {
+    return const PinFieldState.first();
+  }
 
-  PinFieldState fieldState = PinFieldState.firstPin;
-  PinSetupStateEnum state = PinSetupStateEnum.idle;
+  void setPinFieldState(PinFieldState value) {
+    state = value;
+  }
+}
 
-  StreamSubscription<PinData>? pinEnryptedSubscription;
+@riverpod
+class PinSetupStateNotifier extends _$PinSetupStateNotifier {
+  @override
+  PinSetupState build() {
+    return const PinSetupState.idle();
+  }
 
-  String _firstPin = '';
-  String get firstPin => _firstPin;
-  set firstPin(String value) {
+  void setPinSetupState(PinSetupState value) {
+    state = value;
+  }
+}
+
+@riverpod
+class FirstPinNotifier extends _$FirstPinNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setFirstPin(String value) {
+    final firstPinEnabled = ref.read(firstPinEnabledProvider);
     if (!firstPinEnabled) {
       return;
     }
 
-    _firstPin = value;
-    state = PinSetupStateEnum.idle;
-    errorMessage = '';
-    notifyListeners();
+    state = value;
+    ref
+        .read(pinSetupStateNotifierProvider.notifier)
+        .setPinSetupState(const PinSetupState.idle());
+  }
+}
+
+@riverpod
+class SecondPinNotifier extends _$SecondPinNotifier {
+  @override
+  String build() {
+    return '';
   }
 
-  String _secondPin = '';
-  String get secondPin => _secondPin;
-  set secondPin(String value) {
+  void setSecondPin(String value) {
+    final secondPinEnabled = ref.read(secondPinEnabledProvider);
     if (!secondPinEnabled) {
       return;
     }
 
-    _secondPin = value;
-    state = PinSetupStateEnum.idle;
-    errorMessage = '';
-    notifyListeners();
+    state = value;
+    ref
+        .read(pinSetupStateNotifierProvider.notifier)
+        .setPinSetupState(const PinSetupState.idle());
   }
+}
 
-  bool _firstPinEnabled = true;
-  set firstPinEnabled(bool value) {
-    _firstPinEnabled = value;
-    notifyListeners();
-  }
-
-  bool get firstPinEnabled {
-    if (state == PinSetupStateEnum.done) {
+@riverpod
+class FirstPinEnabled extends _$FirstPinEnabled {
+  @override
+  bool build() {
+    final pinSetupState = ref.watch(pinSetupStateNotifierProvider);
+    if (pinSetupState == const PinSetupState.done()) {
       return false;
     }
 
-    return _firstPinEnabled;
+    return true;
   }
 
-  bool _secondPinEnabled = false;
-  set secondPinEnabled(bool value) {
-    _secondPinEnabled = value;
-    notifyListeners();
+  void setFirstPinEnabled(bool value) {
+    state = value;
   }
+}
 
-  bool get secondPinEnabled {
-    if (state == PinSetupStateEnum.done) {
+@riverpod
+class SecondPinEnabled extends _$SecondPinEnabled {
+  @override
+  bool build() {
+    final pinSetupState = ref.watch(pinSetupStateNotifierProvider);
+
+    if (pinSetupState == const PinSetupState.done()) {
       return false;
     }
 
-    return _secondPinEnabled;
+    return false;
   }
 
-  bool _isNewWallet = false;
-  bool get isNewWallet => _isNewWallet;
-  set isNewWallet(bool value) {
-    _isNewWallet = value;
-    notifyListeners();
+  void setSecondPinEnabled(bool value) {
+    state = value;
   }
+}
 
-  String errorMessage = '';
+@riverpod
+PinHelper pinHelper(PinHelperRef ref) {
+  return PinHelper(ref: ref);
+}
+
+class PinHelper {
+  final Ref ref;
+
+  PinHelper({required this.ref});
+
+  static const _minPinLength = 6;
+  static const _maxPinLength = 8;
+
+  int get minPinLength => _minPinLength;
+  int get maxPinLength => _maxPinLength;
 
   void onSuccess() {
-    ref.read(pinSetupExitStateProvider.notifier).state =
-        const PinSetupExitState.success();
+    ref
+        .read(pinSetupExitNotifierProvider.notifier)
+        .setPinSetupExitState(const PinSetupExitState.success());
   }
 
   void onBack() {
-    ref.read(pinSetupExitStateProvider.notifier).state =
-        const PinSetupExitState.back();
+    ref
+        .read(pinSetupExitNotifierProvider.notifier)
+        .setPinSetupExitState(const PinSetupExitState.back());
   }
 
   void initPinSetupSettings() {
-    ref.read(pinSetupExitStateProvider.notifier).state =
-        const PinSetupExitState.empty();
-    ref.read(pinSetupCallerStateProvider.notifier).state =
-        const PinSetupCallerState.settings();
+    ref
+        .read(pinSetupExitNotifierProvider.notifier)
+        .setPinSetupExitState(const PinSetupExitState.empty());
+    ref
+        .read(pinSetupCallerNotifierProvider.notifier)
+        .setPinSetupCallerState(const PinSetupCallerState.settings());
     _clearStates();
-    ref.read(walletProvider).setPinSetup();
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSetup);
   }
 
   void initPinSetupNewWalletPinWelcome() {
-    ref.read(pinSetupExitStateProvider.notifier).state =
-        const PinSetupExitState.empty();
-    ref.read(pinSetupCallerStateProvider.notifier).state =
-        const PinSetupCallerState.newWalletPinWelcome();
+    ref
+        .read(pinSetupExitNotifierProvider.notifier)
+        .setPinSetupExitState(const PinSetupExitState.empty());
+    ref.read(pinSetupCallerNotifierProvider.notifier).setPinSetupCallerState(
+        const PinSetupCallerState.newWalletPinWelcome());
     _clearStates();
-    ref.read(walletProvider).setPinSetup();
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSetup);
   }
 
   void initPinSetupPinWelcome() {
-    ref.read(pinSetupExitStateProvider.notifier).state =
-        const PinSetupExitState.empty();
-    ref.read(pinSetupCallerStateProvider.notifier).state =
-        const PinSetupCallerState.pinWelcome();
+    ref
+        .read(pinSetupExitNotifierProvider.notifier)
+        .setPinSetupExitState(const PinSetupExitState.empty());
+    ref
+        .read(pinSetupCallerNotifierProvider.notifier)
+        .setPinSetupCallerState(const PinSetupCallerState.pinWelcome());
     _clearStates();
-    ref.read(walletProvider).setPinSetup();
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSetup);
   }
 
   void _done() {
-    state = PinSetupStateEnum.done;
-    notifyListeners();
+    ref
+        .read(pinSetupStateNotifierProvider.notifier)
+        .setPinSetupState(const PinSetupState.done());
 
-    Future.microtask(() {
-      _clearStates();
-      notifyListeners();
-    });
+    _clearStates();
   }
 
   void _clearStates() {
-    state = PinSetupStateEnum.idle;
-    fieldState = PinFieldState.firstPin;
-    firstPin = '';
-    firstPinEnabled = true;
-    secondPin = '';
-    secondPinEnabled = false;
-    errorMessage = '';
-    notifyListeners();
+    ref.invalidate(pinSetupStateNotifierProvider);
+    ref.invalidate(pinFieldStateNotifierProvider);
+
+    ref.invalidate(firstPinNotifierProvider);
+    ref.invalidate(firstPinEnabledProvider);
+
+    ref.invalidate(secondPinNotifierProvider);
+    ref.invalidate(secondPinEnabledProvider);
   }
 
-  Future<void> onKeyEntered(PinKey key) async {
-    switch (key) {
-      case PinKey.zero:
-        _onNumber('0');
-        break;
-      case PinKey.one:
-        _onNumber('1');
-        break;
-      case PinKey.two:
-        _onNumber('2');
-        break;
-      case PinKey.three:
-        _onNumber('3');
-        break;
-      case PinKey.four:
-        _onNumber('4');
-        break;
-      case PinKey.five:
-        _onNumber('5');
-        break;
-      case PinKey.six:
-        _onNumber('6');
-        break;
-      case PinKey.seven:
-        _onNumber('7');
-        break;
-      case PinKey.eight:
-        _onNumber('8');
-        break;
-      case PinKey.nine:
-        _onNumber('9');
-        break;
-      case PinKey.backspace:
-        _onBackspace();
-        break;
-      case PinKey.enter:
-        await _onEnter();
-        break;
-    }
+  void onKeyEntered(PinKeyEnum key) async {
+    return switch (key) {
+      PinKeyEnum.zero => _onNumber('0'),
+      PinKeyEnum.one => _onNumber('1'),
+      PinKeyEnum.two => _onNumber('2'),
+      PinKeyEnum.three => _onNumber('3'),
+      PinKeyEnum.four => _onNumber('4'),
+      PinKeyEnum.five => _onNumber('5'),
+      PinKeyEnum.six => _onNumber('6'),
+      PinKeyEnum.seven => _onNumber('7'),
+      PinKeyEnum.eight => _onNumber('8'),
+      PinKeyEnum.nine => _onNumber('9'),
+      PinKeyEnum.backspace => _onBackspace(),
+      PinKeyEnum.enter => _onEnter(),
+    };
   }
 
   void _onNumber(String number) {
-    if (fieldState == PinFieldState.firstPin) {
+    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    if (pinFieldState == const PinFieldStateFirst()) {
       _onFirstPinNumber(number);
       return;
     }
@@ -209,103 +254,112 @@ class PinSetupProvider extends ChangeNotifier {
   }
 
   void _onFirstPinNumber(String number) {
-    if (firstPin.length == maxPinLength) {
+    final firstPin = ref.read(firstPinNotifierProvider);
+    if (firstPin.length == _maxPinLength) {
       return;
     }
 
-    firstPin = '$_firstPin$number';
+    final newFirstPin = '$firstPin$number';
 
-    if (firstPin.length >= minPinLength) {
-      secondPinEnabled = true;
+    if (newFirstPin.length >= _minPinLength) {
+      ref.read(secondPinEnabledProvider.notifier).setSecondPinEnabled(true);
     }
-    notifyListeners();
+
+    ref.read(firstPinNotifierProvider.notifier).setFirstPin(newFirstPin);
   }
 
   void _onSecondPinNumber(String number) {
-    if (secondPin.length == maxPinLength) {
+    final secondPin = ref.read(secondPinNotifierProvider);
+    if (secondPin.length == _maxPinLength) {
       return;
     }
 
-    secondPin = '$_secondPin$number';
-    notifyListeners();
+    final newSecondPin = '$secondPin$number';
+    ref.read(secondPinNotifierProvider.notifier).setSecondPin(newSecondPin);
   }
 
   void _onBackspace() {
-    if (fieldState == PinFieldState.firstPin) {
+    final firstPin = ref.read(firstPinNotifierProvider);
+    final firstPinEnabled = ref.read(firstPinEnabledProvider);
+
+    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    if (pinFieldState == const PinFieldStateFirst()) {
       if (firstPin.isEmpty || !firstPinEnabled) {
         return;
       }
 
-      firstPin = firstPin.substring(0, _firstPin.length - 1);
+      final newFirstPin = firstPin.substring(0, firstPin.length - 1);
 
-      if (firstPin.length < 4) {
-        secondPin = '';
-        secondPinEnabled = false;
+      if (newFirstPin.length < 4) {
+        ref.read(secondPinNotifierProvider.notifier).setSecondPin('');
+        ref.read(secondPinEnabledProvider.notifier).setSecondPinEnabled(false);
       }
-      notifyListeners();
+
+      ref.read(firstPinNotifierProvider.notifier).setFirstPin(newFirstPin);
       return;
     }
+
+    final secondPin = ref.read(secondPinNotifierProvider);
+    final secondPinEnabled = ref.read(secondPinEnabledProvider);
 
     if (secondPin.isEmpty || !secondPinEnabled) {
       return;
     }
 
-    secondPin = secondPin.substring(0, secondPin.length - 1);
-    notifyListeners();
+    final newSecondPin = secondPin.substring(0, secondPin.length - 1);
+    ref.read(secondPinNotifierProvider.notifier).setSecondPin(newSecondPin);
   }
 
-  Future<void> _onEnter() async {
-    if (state == PinSetupStateEnum.done) {
+  void _onEnter() async {
+    final pinSetupState = ref.read(pinSetupStateNotifierProvider);
+    if (pinSetupState == const PinSetupState.done()) {
       return;
     }
 
-    if (fieldState == PinFieldState.firstPin && secondPinEnabled) {
-      fieldState = PinFieldState.secondPin;
-      notifyListeners();
+    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    final secondPinEnabled = ref.read(secondPinEnabledProvider);
+
+    if (pinFieldState == const PinFieldState.first() && secondPinEnabled) {
+      ref
+          .read(pinFieldStateNotifierProvider.notifier)
+          .setPinFieldState(const PinFieldState.second());
       return;
     }
 
-    if (fieldState == PinFieldState.secondPin && secondPinEnabled) {
+    final firstPin = ref.read(firstPinNotifierProvider);
+    final secondPin = ref.read(secondPinNotifierProvider);
+    if (pinFieldState == const PinFieldState.second() && secondPinEnabled) {
       if (firstPin != secondPin) {
-        state = PinSetupStateEnum.error;
-        errorMessage = "PIN code doesn't match".tr();
-        notifyListeners();
+        ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
+            PinSetupState.error(message: "PIN code doesn't match".tr()));
         return;
       } else {
-        await _prepareToSendPin(firstPin);
+        _prepareToSendPin(firstPin);
         return;
       }
     }
   }
 
   void onTap() {
+    final secondPinEnabled = ref.read(secondPinEnabledProvider);
     if (!secondPinEnabled) {
       return;
     }
 
-    if (fieldState == PinFieldState.firstPin) {
-      fieldState = PinFieldState.secondPin;
-    } else {
-      fieldState = PinFieldState.firstPin;
+    final pinFieldState = ref.read(pinFieldStateNotifierProvider);
+    if (pinFieldState == const PinFieldState.first()) {
+      ref
+          .read(pinFieldStateNotifierProvider.notifier)
+          .setPinFieldState(const PinFieldState.second());
+      return;
     }
 
-    notifyListeners();
+    ref
+        .read(pinFieldStateNotifierProvider.notifier)
+        .setPinFieldState(const PinFieldState.first());
   }
 
-  void setFirstPinState() {
-    fieldState = PinFieldState.firstPin;
-    notifyListeners();
-  }
-
-  void setSecondPinState() {
-    fieldState = PinFieldState.secondPin;
-    notifyListeners();
-  }
-
-  Future<void> _prepareToSendPin(String pin) async {
-    await pinEnryptedSubscription?.cancel();
-    pinEnryptedSubscription =
-        ref.read(walletProvider).pinEncryptDataSubject.listen(_onPinData);
+  void _prepareToSendPin(String pin) async {
     if (ref.read(isBiometricEnabledProvider)) {
       if (await ref.read(walletProvider).isAuthenticated()) {
         _sendPin(pin);
@@ -317,46 +371,43 @@ class PinSetupProvider extends ChangeNotifier {
     }
 
     logger.e('Biometric authentication failed on sending pin');
-    errorMessage = 'Biometric authentication failed'.tr();
-    state = PinSetupStateEnum.error;
-    notifyListeners();
+    ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
+        PinSetupState.error(message: 'Biometric authentication failed'.tr()));
   }
 
   void _sendPin(String pin) {
     final result = ref.read(walletProvider).sendEncryptPin(pin);
 
     if (!result) {
-      errorMessage = 'Error setup new PIN code - mnemonic error'.tr();
-      state = PinSetupStateEnum.error;
-      notifyListeners();
+      ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
+          PinSetupState.error(
+              message: 'Error setup new PIN code - mnemonic error'.tr()));
       return;
     }
 
-    state = PinSetupStateEnum.done;
-    notifyListeners();
+    ref
+        .read(pinSetupStateNotifierProvider.notifier)
+        .setPinSetupState(const PinSetupState.done());
   }
 
-  void _onPinData(PinData pinData) async {
-    await pinEnryptedSubscription?.cancel();
-    logger.d(pinData);
+  void onPinData(PinDataState pinDataState) async {
+    logger.d(pinDataState);
 
-    if (pinData.error.isNotEmpty) {
-      errorMessage = 'Error setup new PIN code'.tr();
-      state = PinSetupStateEnum.error;
-      notifyListeners();
+    if (pinDataState is PinDataStateError) {
+      ref.read(pinSetupStateNotifierProvider.notifier).setPinSetupState(
+          PinSetupState.error(message: 'Error setup new PIN code'.tr()));
       return;
     }
 
     logger.d('PIN OK');
 
     _done();
-    ref.read(walletProvider).setPinSuccess();
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinSuccess);
+    enablePinProtection();
+  }
+
+  void enablePinProtection() {
+    ref.read(configurationProvider.notifier).setUseBiometricProtection(false);
+    ref.read(configurationProvider.notifier).setUsePinProtection(true);
   }
 }
-
-final pinSetupCallerStateProvider =
-    StateProvider.autoDispose<PinSetupCallerState>(
-        (ref) => const PinSetupCallerState.empty());
-
-final pinSetupExitStateProvider = StateProvider.autoDispose<PinSetupExitState>(
-    (ref) => const PinSetupExitState.empty());

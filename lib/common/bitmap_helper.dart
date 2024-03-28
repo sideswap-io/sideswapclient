@@ -76,8 +76,9 @@ class BitmapHelper {
     String? assetSvg,
     String? base64,
     double width,
-    double height,
-  ) async {
+    double height, {
+    bool resize = false,
+  }) async {
     if (base64 != null) {
       const converter = Base64Decoder();
       final imageBytes = converter.convert(base64);
@@ -85,14 +86,21 @@ class BitmapHelper {
       if (img == null) {
         return Uint8List(0);
       }
-      final resized = image.copyResize(
-        img,
-        width: width.ceil(),
-        height: height.ceil(),
-        maintainAspect: true,
-        interpolation: image.Interpolation.average,
-      );
-      ui.Codec codec = await ui.instantiateImageCodec(image.encodePng(resized));
+
+      image.Image newImage;
+      if (img.width <= width || img.height <= height || !resize) {
+        newImage = img;
+      } else {
+        newImage = image.copyResize(
+          img,
+          width: width.ceil(),
+          height: height.ceil(),
+          maintainAspect: true,
+          interpolation: image.Interpolation.cubic,
+        );
+      }
+      ui.Codec codec =
+          await ui.instantiateImageCodec(image.encodePng(newImage));
       ui.FrameInfo frameInfo = await codec.getNextFrame();
       final resizedBytes =
           await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);

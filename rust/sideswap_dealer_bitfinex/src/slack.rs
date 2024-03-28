@@ -12,7 +12,7 @@ pub fn send_slack_once(text: &str, url: &str) -> Result<(), anyhow::Error> {
         text: text.to_owned(),
     };
 
-    let resp = http_client.post(url).send_json(&msg)?.into_string()?;
+    let resp = http_client.post(url).send_json(msg)?.into_string()?;
     ensure!(resp == "ok", "sending message failed: {}", &resp);
     Ok(())
 }

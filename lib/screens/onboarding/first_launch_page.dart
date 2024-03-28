@@ -8,20 +8,21 @@ import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
-class FirstLaunch extends StatefulHookConsumerWidget {
-  const FirstLaunch({super.key});
+class FirstLaunchPage extends StatefulHookConsumerWidget {
+  const FirstLaunchPage({super.key});
 
   @override
-  FirstLaunchState createState() => FirstLaunchState();
+  FirstLaunchPageState createState() => FirstLaunchPageState();
 }
 
-class FirstLaunchState extends ConsumerState<FirstLaunch> {
+class FirstLaunchPageState extends ConsumerState<FirstLaunchPage> {
   var tapCount = 0;
 
   @override
@@ -29,24 +30,32 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
     ref.listen(selectEnvDialogProvider, (_, next) async {
       if (next) {
         ref.read(selectEnvDialogProvider.notifier).setSelectEnvDialog(false);
-        ref.read(pageStatusStateProvider.notifier).setStatus(Status.selectEnv);
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.selectEnv);
       }
     });
 
-    final lang = ref.watch(localesProvider).selectedLang(context);
+    final locale = ref.watch(localesNotifierProvider);
 
     useEffect(() {
-      if (lang == 'zh') {
+      if (locale == 'zh') {
         ref
             .read(configurationProvider.notifier)
             .setSettingsNetworkType(SettingsNetworkType.sideswapChina);
       }
 
       return;
-    }, [lang]);
+    }, [locale]);
+
+    useEffect(() {
+      Future.microtask(() => ref.invalidate(firstLaunchStateNotifierProvider));
+
+      return;
+    }, const []);
 
     return SideSwapScaffold(
-      key: ValueKey(lang),
+      key: ValueKey(locale),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -119,6 +128,12 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                                 fontWeight: FontWeight.bold,
                               ),
                               onPressed: () async {
+                                ref
+                                    .read(firstLaunchStateNotifierProvider
+                                        .notifier)
+                                    .setFirstLaunchState(
+                                        const FirstLaunchStateCreateWallet());
+
                                 await ref
                                     .read(walletProvider)
                                     .setReviewLicenseCreateWallet();
@@ -138,6 +153,11 @@ class FirstLaunchState extends ConsumerState<FirstLaunch> {
                               backgroundColor: Colors.transparent,
                               textColor: SideSwapColors.brightTurquoise,
                               onPressed: () {
+                                ref
+                                    .read(firstLaunchStateNotifierProvider
+                                        .notifier)
+                                    .setFirstLaunchState(
+                                        const FirstLaunchStateImportWallet());
                                 ref
                                     .read(walletProvider)
                                     .setReviewLicenseImportWallet();

@@ -2,21 +2,62 @@ import 'dart:math';
 
 import 'package:decimal/decimal.dart';
 import 'package:fixnum/fixnum.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
 
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
+part 'payment_provider.freezed.dart';
 part 'payment_provider.g.dart';
+
+@freezed
+class CreateTxState with _$CreateTxState {
+  const factory CreateTxState.empty() = CreateTxStateEmpty;
+  const factory CreateTxState.creating() = CreateTxStateCreating;
+}
+
+@freezed
+class SendTxState with _$SendTxState {
+  const factory SendTxState.empty() = SendTxStateEmpty;
+  const factory SendTxState.sending() = SendTxStateSending;
+}
+
+@Riverpod(keepAlive: true)
+class CreateTxStateNotifier extends _$CreateTxStateNotifier {
+  @override
+  CreateTxState build() {
+    return const CreateTxStateEmpty();
+  }
+
+  void setCreateTxState(CreateTxState createTxState) {
+    state = createTxState;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class SendTxStateNotifier extends _$SendTxStateNotifier {
+  @override
+  SendTxState build() {
+    return const SendTxStateEmpty();
+  }
+
+  void setSendTxState(SendTxState sendTxState) {
+    state = sendTxState;
+  }
+}
 
 @riverpod
 int? parseAssetAmount(ParseAssetAmountRef ref,
@@ -121,13 +162,50 @@ class PaymentAmountPageArgumentsNotifier
 
 @riverpod
 PaymentHelper paymentHelper(PaymentHelperRef ref) {
-  return PaymentHelper(ref);
+  final outputsData = ref.watch(outputsCreatorProvider);
+  final selectedAccountAsset =
+      ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
+  return PaymentHelper(ref, outputsData, selectedAccountAsset);
 }
 
 class PaymentHelper {
   final Ref ref;
+  final Either<OutputsError, OutputsData> outputsData;
+  final AccountAsset accountAsset;
 
-  PaymentHelper(this.ref);
+  PaymentHelper(this.ref, this.outputsData, this.accountAsset);
+
+  String? outputsPaymentSend({bool isGreedy = false}) {
+    return switch (outputsData) {
+      Left(value: final l) => l.message,
+      Right(value: final r) => () {
+          final addressAmounts = r.receivers?.map((e) {
+            final prec = ref
+                .read(assetUtilsProvider)
+                .getPrecisionForAssetId(assetId: e.assetId);
+
+            final intAmount = ref.read(parseAssetAmountProvider(
+                amount: e.amount.toString(), precision: prec));
+
+            // set greedy flag only when outputs contains only one item (first one is always entered by user in ui)
+            final greedyFlag = r.receivers?.length == 1 ? isGreedy : false;
+
+            return AddressAmount(
+              address: e.address,
+              amount: Int64(intAmount ?? 0),
+              assetId: e.assetId,
+              isGreedy: greedyFlag,
+            );
+          }).toList();
+
+          final createTx = CreateTx(
+              addressees: addressAmounts,
+              account: getAccount(accountAsset.account));
+
+          ref.read(walletProvider).createTx(createTx);
+        }(),
+    };
+  }
 
   void selectPaymentSend(String amount, AccountAsset accountAsset,
       {Friend? friend, String? address, bool isGreedy = false}) {
@@ -137,9 +215,11 @@ class PaymentHelper {
       return;
     }
 
-    ref
+    /// Used only in mobile - it should be removed if outputs are added to mobile?
+    Future.microtask(() => ref
         .read(selectedWalletAccountAssetNotifierProvider.notifier)
-        .setAccountAsset(accountAsset);
+        .setAccountAsset(accountAsset));
+
     if (!ref.read(isAddrTypeValidProvider(address, AddrType.elements))) {
       logger.e('Invalid address $address');
       return;
@@ -163,6 +243,7 @@ class PaymentHelper {
       return;
     }
 
+    /// Used only in mobile - it should be removed if outputs are added to mobile?
     ref
         .read(paymentSendAddressParsedNotifierProvider.notifier)
         .setSendAddressParsed(address);

@@ -14,17 +14,18 @@ class DAssetListTileAmount extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usdAssetBalance =
-        ref.watch(accountAssetBalanceInUsdStringProvider(accountAsset));
+    final defaultCurrencyAssetBalance = ref.watch(
+        accountAssetBalanceInDefaultCurrencyStringProvider(accountAsset));
     final assetBalance =
         ref.watch(accountAssetBalanceStringProvider(accountAsset));
+    final defaultCurrencyTicker = ref.watch(defaultCurrencyTickerProvider);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '$usdAssetBalance USD',
+          '$defaultCurrencyAssetBalance $defaultCurrencyTicker',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
               fontSize: 13,
               letterSpacing: 0.07,

@@ -72,8 +72,8 @@ class DSettingsLogs extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
     final defaultButtonStyle = ref
         .watch(desktopAppThemeNotifierProvider)
         .buttonThemeData
@@ -138,7 +138,7 @@ class DSettingsLogs extends ConsumerWidget {
             ),
           ),
         ],
-        style: const DContentDialogThemeData().merge(settingsDialogTheme),
+        style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 693),
       ),
     );

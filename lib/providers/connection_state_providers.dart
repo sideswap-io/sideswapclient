@@ -1,18 +1,28 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/connection_models.dart';
 
-final serverConnectionStateProvider = AutoDisposeStateProvider<bool>((ref) {
-  ref.keepAlive();
-  return false;
-});
+part 'connection_state_providers.g.dart';
 
-final walletLoadedStateProvider = AutoDisposeStateProvider<bool>((ref) {
-  ref.keepAlive();
-  return false;
-});
+@Riverpod(keepAlive: true)
+class ServerConnectionNotifier extends _$ServerConnectionNotifier {
+  @override
+  bool build() {
+    return false;
+  }
 
-final serverLoginStateProvider =
-    AutoDisposeStateProvider<ServerLoginState>((ref) {
-  ref.keepAlive();
-  return const ServerLoginStateLogout();
-});
+  void setServerConnectionState(bool serverConnectionState) {
+    state = serverConnectionState;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class ServerLoginNotifier extends _$ServerLoginNotifier {
+  @override
+  ServerLoginState build() {
+    return const ServerLoginStateLogin();
+  }
+
+  void setServerLoginState(ServerLoginState serverLoginState) {
+    state = serverLoginState;
+  }
+}

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/use_async_effect.dart';
-import 'package:sideswap/desktop/home/listeners/portfolio_prices_listener.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/selected_account_provider.dart';
 
@@ -30,7 +29,6 @@ class Accounts extends HookConsumerWidget {
 
     return Column(
       children: [
-        const PortfolioPricesListener(),
         const ColoredBox(
           color: SideSwapColors.chathamsBlue,
           child: Padding(

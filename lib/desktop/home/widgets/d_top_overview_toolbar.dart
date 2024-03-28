@@ -48,7 +48,7 @@ class DTopOverviewToolbar extends StatelessWidget {
                         ),
                 onTap: () {
                   ref
-                      .read(pageStatusStateProvider.notifier)
+                      .read(pageStatusNotifierProvider.notifier)
                       .setStatus(Status.ampRegister);
                 },
               );

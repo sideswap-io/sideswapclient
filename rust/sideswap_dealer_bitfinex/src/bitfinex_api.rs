@@ -75,16 +75,16 @@ impl ApiCall for MovementsRequest {
                 let list = item.as_array().ok_or_else(|| anyhow!("array expected"))?;
                 Ok(Movement {
                     id: get_i64(list, 0),
-                    currency: get_string(&list, 1),
-                    currency_name: get_string(&list, 2),
+                    currency: get_string(list, 1),
+                    currency_name: get_string(list, 2),
                     mts_started: get_i64(list, 5),
                     mts_updated: get_i64(list, 6),
-                    status: get_string(&list, 9),
+                    status: get_string(list, 9),
                     amount: get_f64(list, 12),
                     fees: get_f64(list, 13),
-                    destination_address: get_string(&list, 16),
-                    transaction_id: get_string(&list, 20),
-                    withdraw_transaction_note: get_string(&list, 21),
+                    destination_address: get_string(list, 16),
+                    transaction_id: get_string(list, 20),
+                    withdraw_transaction_note: get_string(list, 21),
                 })
             })
             .collect()
@@ -140,12 +140,12 @@ impl ApiCall for WithdrawRequest {
             status: get_string(list, 6),
             text: get_string(list, 7),
 
-            withdrawal_id: get_i64(&sublist, 0),
-            method: get_string(&sublist, 2),
-            payment_id: get_string(&sublist, 3),
-            wallet: get_string(&sublist, 4),
-            amount: get_f64(&sublist, 5),
-            withdrawal_fee: get_f64(&sublist, 8),
+            withdrawal_id: get_i64(sublist, 0),
+            method: get_string(sublist, 2),
+            payment_id: get_string(sublist, 3),
+            wallet: get_string(sublist, 4),
+            amount: get_f64(sublist, 5),
+            withdrawal_fee: get_f64(sublist, 8),
         })
     }
 }
@@ -200,12 +200,12 @@ impl ApiCall for TransferRequest {
             status: get_string(list, 6),
             text: get_string(list, 7),
 
-            mts_update: get_i64(&sublist, 0),
-            wallet_from: get_string(&sublist, 1),
-            wallet_to: get_string(&sublist, 2),
-            currency: get_string(&sublist, 4),
-            currency_to: get_string(&sublist, 5),
-            amount: get_f64(&sublist, 7),
+            mts_update: get_i64(sublist, 0),
+            wallet_from: get_string(sublist, 1),
+            wallet_to: get_string(sublist, 2),
+            currency: get_string(sublist, 4),
+            currency_to: get_string(sublist, 5),
+            amount: get_f64(sublist, 7),
         })
     }
 }

@@ -143,7 +143,8 @@ class DUnconfirmedTx extends StatelessWidget {
                                       DTxHistoryAmount(
                                         balance: transItemHelper.getSentBalance(
                                             liquidAssetId, bitcoinAssetId),
-                                        multipleOutputs: false,
+                                        multipleOutputs: transItemHelper
+                                            .getSentMultipleOutputs(),
                                         textStyle: Theme.of(context)
                                             .textTheme
                                             .titleSmall,

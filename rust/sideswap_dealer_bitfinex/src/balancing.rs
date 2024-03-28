@@ -468,14 +468,10 @@ pub fn process_movements(
         match balancing.state {
             TransferState::SendUsdtWaitConfirm => {
                 let txid = balancing.txid.as_ref().expect("txid must be known");
-                let tx_found = msg
-                    .movements
-                    .iter()
-                    .find(|item| {
-                        item.transaction_id == *txid.to_string()
-                            && item.status == BITFINEX_STATUS_COMPLETED
-                    })
-                    .is_some();
+                let tx_found = msg.movements.iter().any(|item| {
+                    item.transaction_id == *txid.to_string()
+                        && item.status == BITFINEX_STATUS_COMPLETED
+                });
                 if tx_found {
                     update_balancing_state(
                         storage,
@@ -486,14 +482,10 @@ pub fn process_movements(
                 }
             }
             TransferState::RecvUsdtWaitConfirm => {
-                let tx_found = msg
-                    .movements
-                    .iter()
-                    .find(|item| {
-                        Some(item.id) == balancing.withdraw_id
-                            && item.status == BITFINEX_STATUS_COMPLETED
-                    })
-                    .is_some();
+                let tx_found = msg.movements.iter().any(|item| {
+                    Some(item.id) == balancing.withdraw_id
+                        && item.status == BITFINEX_STATUS_COMPLETED
+                });
                 // TODO: wait for actual transaction?
                 if tx_found {
                     update_balancing_state(
@@ -505,14 +497,10 @@ pub fn process_movements(
                 }
             }
             TransferState::RecvBtcWaitConfirm => {
-                let tx_found = msg
-                    .movements
-                    .iter()
-                    .find(|item| {
-                        Some(item.id) == balancing.withdraw_id
-                            && item.status == BITFINEX_STATUS_COMPLETED
-                    })
-                    .is_some();
+                let tx_found = msg.movements.iter().any(|item| {
+                    Some(item.id) == balancing.withdraw_id
+                        && item.status == BITFINEX_STATUS_COMPLETED
+                });
                 // TODO: wait for actual transaction?
                 if tx_found {
                     update_balancing_state(

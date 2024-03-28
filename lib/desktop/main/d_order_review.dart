@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -19,6 +20,7 @@ import 'package:sideswap/desktop/widgets/d_toggle_button.dart';
 import 'package:sideswap/listeners/order_review_listeners.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/order_details_provider.dart';
@@ -121,15 +123,17 @@ class DOrderReview extends HookConsumerWidget {
     final ttlValue = getTtlDescription(ttlSeconds);
     final shareUrl = ref.watch(addressToShareByOrderIdProvider(order.orderId));
     final isSell = order.sellBitcoin == asset?.swapMarket;
-    final dollarConversionPrice = priceInLiquid
-        ? ref.watch(dollarConversionProvider(liquidAssetId, order.priceAmount))
-        : '';
+    final defaultCurrencyPrice = priceInLiquid
+        ? ref.watch(amountUsdInDefaultCurrencyProvider(
+            liquidAssetId, order.priceAmount))
+        : Decimal.zero;
+    final defaultCurrencyTicker = ref.watch(defaultCurrencyTickerProvider);
     final orderType = order.twoStep ? 'Offline'.tr() : 'Online'.tr();
 
     final reviewState = useState(ReviewState.idle);
     final autoSign = useState(true);
     final autoSignPrev = useState(true);
-    final isTracking = useState(false);
+    final isTracking = useState(order.isTracking);
     final controllerPrice = useTextEditingController();
     final priceTrackerValue = useState(.0);
 
@@ -343,11 +347,11 @@ class DOrderReview extends HookConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(priceValue),
-                                  if (dollarConversionPrice.isNotEmpty)
+                                  if (defaultCurrencyPrice != Decimal.zero)
                                     Padding(
                                       padding: const EdgeInsets.only(top: 4),
                                       child: Text(
-                                        '≈ $dollarConversionPrice',
+                                        '≈ $defaultCurrencyPrice $defaultCurrencyTicker',
                                         style: const TextStyle(
                                           fontSize: 13,
                                           color:
@@ -566,6 +570,7 @@ class DOrderReview extends HookConsumerWidget {
               autosign: false,
               accept: false,
             );
+        Navigator.of(context).pop();
       },
     );
   }
@@ -594,8 +599,9 @@ class DOrderReviewBalance extends ConsumerWidget {
     final amountSt = amountProvider.amountToString(
         AmountToStringParameters(amount: amount, precision: assetPrecision));
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final dollarConversion = assetId == liquidAssetId
-        ? ref.watch(dollarConversionFromStringProvider(assetId, amountSt))
+    final defaultCurrencyConversion = assetId == liquidAssetId
+        ? ref.watch(
+            defaultCurrencyConversionFromStringProvider(assetId, amountSt))
         : '';
 
     return Padding(
@@ -624,9 +630,9 @@ class DOrderReviewBalance extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 4),
-                if (dollarConversion.isNotEmpty)
+                if (defaultCurrencyConversion.isNotEmpty)
                   Text(
-                    '≈ $dollarConversion',
+                    '≈ $defaultCurrencyConversion',
                     style: const TextStyle(
                       fontSize: 13,
                       color: SideSwapColors.airSuperiorityBlue,

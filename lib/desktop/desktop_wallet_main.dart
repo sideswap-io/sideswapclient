@@ -6,17 +6,17 @@ import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
 
 import 'package:sideswap/desktop/d_main_bottom_navigation_bar.dart';
 import 'package:sideswap/desktop/d_tx_history.dart';
-import 'package:sideswap/desktop/home/d_home_new.dart';
+import 'package:sideswap/desktop/home/d_home.dart';
 import 'package:sideswap/desktop/markets/d_markets_root.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
-import 'package:sideswap/screens/accounts/assets_list.dart';
 import 'package:sideswap/screens/swap/swap.dart';
 
 class DesktopWalletMain extends HookConsumerWidget {
@@ -24,9 +24,8 @@ class DesktopWalletMain extends HookConsumerWidget {
 
   Widget getChild(WalletMainArguments walletMainArguments) {
     return switch (walletMainArguments.navigationItemEnum) {
-      WalletMainNavigationItemEnum.home => const DesktopHomeNew(),
+      WalletMainNavigationItemEnum.home => const DHome(),
       WalletMainNavigationItemEnum.accounts => const SizedBox(),
-      WalletMainNavigationItemEnum.assetSelect => const AssetSelectList(),
       WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
       WalletMainNavigationItemEnum.transactions => const DTxHistory(),
       WalletMainNavigationItemEnum.markets => const DMarkets(),
@@ -108,9 +107,9 @@ class TopToolbar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lang = ref.watch(localesProvider).selectedLang(context);
+    final locale = ref.watch(localesNotifierProvider);
     return Container(
-      key: ValueKey(lang),
+      key: ValueKey(locale),
       color: const Color(0xFF021C36),
       height: 34,
       child: Row(
@@ -120,9 +119,10 @@ class TopToolbar extends ConsumerWidget {
             name: 'Send'.tr(),
             icon: 'assets/toolbar/send.svg',
             onPressed: () {
-              ref
-                  .read(paymentCreatedTxNotifierProvider.notifier)
-                  .setCreatedTx(null);
+              ref.invalidate(paymentCreatedTxNotifierProvider);
+              ref.invalidate(outputsReaderNotifierProvider);
+              ref.invalidate(outputsCreatorProvider);
+
               ref.read(desktopDialogProvider).showSendTx();
             },
           ),
@@ -133,21 +133,13 @@ class TopToolbar extends ConsumerWidget {
               ref.read(desktopDialogProvider).showGenerateAddress();
             },
           ),
-          DTopToolbarButtonOld(
-            name: 'URL'.tr(),
-            icon: 'assets/toolbar/open_url.svg',
+          DTopToolbarButton(
+            name: 'Import'.tr(),
+            icon: 'assets/toolbar/import.svg',
             onPressed: () {
-              ref.read(desktopDialogProvider).openUrl();
+              ref.read(desktopDialogProvider).openTxImport();
             },
           ),
-          // TODO (malcolmpl): replace when new import will be ready
-          // DTopToolbarButton(
-          //   name: 'Import'.tr(),
-          //   icon: 'assets/toolbar/import.svg',
-          //   onPressed: () {
-          //     ref.read(desktopDialogProvider).openTxImport();
-          //   },
-          // ),
           DTopToolbarButton(
             name: '',
             icon: 'assets/toolbar/settings.svg',

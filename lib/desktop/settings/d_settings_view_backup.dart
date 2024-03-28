@@ -71,8 +71,8 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
 
   @override
   Widget build(BuildContext context) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
     useEffect(() {
       WindowManager.instance.addListener(this);
@@ -170,8 +170,8 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                                               width: 16,
                                             ),
                                             const SizedBox(width: 8),
-                                            const Text(
-                                              'Copy mnemonic',
+                                            Text(
+                                              'Copy mnemonic'.tr(),
                                             ),
                                           ],
                                         ),
@@ -199,8 +199,8 @@ class _DSettingsViewBackupState extends ConsumerState<DSettingsViewBackup>
                       ),
                     ),
                   ],
-                  style: const DContentDialogThemeData()
-                      .merge(settingsDialogTheme),
+                  style:
+                      const DContentDialogThemeData().merge(defaultDialogTheme),
                   constraints: const BoxConstraints(maxWidth: 580),
                 ),
               );

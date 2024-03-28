@@ -46,7 +46,8 @@ class PegxLoginStateNotifier extends _$PegxLoginStateNotifier {
   }
 }
 
-@riverpod
+// (malcolmpl): it must maintain state for the entire life of the application!
+@Riverpod(keepAlive: true)
 class PegxGaidNotifier extends _$PegxGaidNotifier {
   @override
   PegxGaidState build() {
@@ -363,7 +364,7 @@ class PegxWebsocketClient {
 
     disconnect();
 
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.ampRegister);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.ampRegister);
   }
 
   /// generates a random Int64 whose value falls between [min] (inclusive) and [max] (exclusive)

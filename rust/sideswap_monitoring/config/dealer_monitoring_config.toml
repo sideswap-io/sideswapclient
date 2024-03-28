@@ -1,0 +1,2 @@
+env = "Prod"
+log_settings = "config/dealer_monitoring_logs.yml"

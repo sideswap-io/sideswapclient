@@ -164,7 +164,7 @@ class UniversalLinkProvider with ChangeNotifier {
             result: QrCodeResult(address: address),
           ));
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.paymentAmountPage);
 
       return HandleResult.success;
@@ -224,7 +224,7 @@ class UniversalLinkProvider with ChangeNotifier {
             ),
           ));
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.paymentAmountPage);
 
       return HandleResult.success;

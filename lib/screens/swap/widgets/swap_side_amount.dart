@@ -58,8 +58,8 @@ class SwapSideAmount extends ConsumerStatefulWidget {
     this.errorDescription = '',
     this.onSubmitted,
     this.onEditingCompleted,
-    this.dollarConversion = '',
-    this.dollarConversion2,
+    this.defaultCurrencyConversion = '',
+    this.defaultCurrencyConversion2,
     this.textInputAction,
     this.showAccountsInPopup = false,
   });
@@ -97,8 +97,8 @@ class SwapSideAmount extends ConsumerStatefulWidget {
   final String errorDescription;
   final void Function(String)? onSubmitted;
   final void Function()? onEditingCompleted;
-  final String dollarConversion;
-  final String? dollarConversion2;
+  final String defaultCurrencyConversion;
+  final String? defaultCurrencyConversion2;
   final TextInputAction? textInputAction;
   final bool showAccountsInPopup;
 
@@ -130,7 +130,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
 
   @override
   Widget build(BuildContext context) {
-    final result = ref.watch(qrcodeResultModelProvider);
+    final result = ref.watch(qrCodeResultModelNotifierProvider);
     result.maybeWhen(
       data: (result) {
         widget.addressController?.text = result?.address ?? '';
@@ -181,10 +181,10 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                 ] else ...[
                   Container(),
                 ],
-                if (widget.dollarConversion2 != null &&
-                    widget.dollarConversion2!.isNotEmpty)
+                if (widget.defaultCurrencyConversion2 != null &&
+                    widget.defaultCurrencyConversion2!.isNotEmpty)
                   Text(
-                    '≈ ${widget.dollarConversion2}',
+                    '≈ ${widget.defaultCurrencyConversion2}',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.normal,
@@ -486,11 +486,11 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                         ),
                       ),
                     ],
-                    if (widget.dollarConversion.isNotEmpty) ...[
+                    if (widget.defaultCurrencyConversion.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          '≈ ${widget.dollarConversion}',
+                          '≈ ${widget.defaultCurrencyConversion}',
                           style: _balanceStyle,
                         ),
                       ),
@@ -508,14 +508,14 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
             child: Padding(
               padding: widget.padding,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Fee suggestions'.tr(),
                     style: _labelStyle,
                   ),
-                  const SizedBox(width: 8),
+                  const Spacer(),
                   const FeeRatesDropdown(),
                 ],
               ),

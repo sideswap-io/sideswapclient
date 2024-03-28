@@ -8,6 +8,8 @@ import 'package:sideswap/desktop/pin/widgets/d_pin_text_field.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:sideswap/models/pin_models.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
@@ -28,11 +30,9 @@ class DPinProtection extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final focusNode = useFocusNode();
 
-    final pinOldValue = useState('');
-
     useEffect(() {
       focusNode.requestFocus();
-      ref.read(pinProtectionProvider).init(
+      ref.read(pinProtectionHelperProvider).init(
         onUnlockCallback: () {
           Navigator.of(context).pop(true);
         },
@@ -45,21 +45,23 @@ class DPinProtection extends HookConsumerWidget {
       return;
     }, [focusNode]);
 
+    final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
+
     useEffect(() {
-      final subscription =
-          ref.read(pinKeyboardProvider).keyPressedSubject.listen((pinKey) {
-        Future.microtask(
-            () => ref.read(pinProtectionProvider).onKeyEntered(pinKey));
+      pinKeyStream.listen((pinKey) {
+        ref.read(pinProtectionHelperProvider).onKeyEntered(pinKey);
       });
-      return subscription.cancel;
-    }, [ref.read(pinKeyboardProvider).keyPressedSubject]);
 
-    ref.listen<PinProtectionProvider>(pinProtectionProvider, (_, next) {
-      pinOldValue.value = next.pinCode;
+      return;
+    }, [pinKeyStream]);
+
+    final pinCode = ref.watch(pinCodeProtectionNotifierProvider);
+
+    useEffect(() {
       focusNode.requestFocus();
-    });
 
-    final isNewWallet = ref.read(pinSetupProvider).isNewWallet;
+      return;
+    }, [pinCode]);
 
     return SideSwapPopupPage(
       onClose: () {
@@ -88,12 +90,8 @@ class DPinProtection extends HookConsumerWidget {
                   padding: const EdgeInsets.only(top: 8),
                   child: Consumer(
                     builder: ((context, ref, child) {
-                      final pin = ref.watch(
-                          pinProtectionProvider.select((p) => p.pinCode));
-                      final state = ref
-                          .watch(pinProtectionProvider.select((p) => p.state));
-                      final errorMessage = ref.watch(
-                          pinProtectionProvider.select((p) => p.errorMessage));
+                      final pinProtectionState =
+                          ref.watch(pinProtectionStateNotifierProvider);
 
                       return DPinTextField(
                         focusNode: focusNode,
@@ -101,17 +99,21 @@ class DPinProtection extends HookConsumerWidget {
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(8),
                         ],
-                        pin: pin,
-                        enabled: state != PinProtectionState.waiting,
-                        error: state == PinProtectionState.error,
-                        errorMessage: errorMessage,
+                        pin: pinCode,
+                        enabled: pinProtectionState !=
+                            const PinProtectionState.waiting(),
+                        error: pinProtectionState is PinProtectionStateError,
+                        errorMessage:
+                            (pinProtectionState is PinProtectionStateError)
+                                ? pinProtectionState.message ?? ''
+                                : '',
                         onChanged: (value) {
                           ref
-                              .read(pinKeyboardProvider)
-                              .onDesktopKeyChanged(pinOldValue.value, value);
+                              .read(pinKeyboardHelperProvider)
+                              .onDesktopKeyChanged(pinCode, value);
                         },
                         onSubmitted: (_) {
-                          ref.read(pinKeyboardProvider).keyPressed(11);
+                          ref.read(pinKeyboardHelperProvider).keyPressed(11);
                         },
                       );
                     }),
@@ -119,15 +121,24 @@ class DPinProtection extends HookConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 24),
-                  child: DPinKeyboard(
-                    width: 260,
-                    height: 206,
-                    acceptType: isNewWallet
-                        ? ref.watch(pinSetupProvider).fieldState ==
-                                PinFieldState.secondPin
-                            ? PinKeyboardAcceptType.save
-                            : PinKeyboardAcceptType.icon
-                        : iconType,
+                  child: Consumer(
+                    builder: (context, ref, child) {
+                      final firstLaunchState =
+                          ref.watch(firstLaunchStateNotifierProvider);
+                      final pinFieldState =
+                          ref.watch(pinFieldStateNotifierProvider);
+
+                      return DPinKeyboard(
+                        width: 260,
+                        height: 206,
+                        acceptType:
+                            (firstLaunchState != const FirstLaunchState.empty())
+                                ? pinFieldState == const PinFieldState.second()
+                                    ? PinKeyboardAcceptType.save
+                                    : PinKeyboardAcceptType.icon
+                                : iconType,
+                      );
+                    },
                   ),
                 ),
                 const Spacer(),

@@ -78,7 +78,7 @@ class _DesktopChartState extends State<DesktopChart> {
   }
 
   double calcutePriceScale(double height, double high, double low) {
-    int minTiles = (height / MIN_PRICETILE_HEIGHT).floor();
+    int minTiles = (height / minPricetileHeight).floor();
     minTiles = max(2, minTiles);
     double sizeRange = high - low;
     double minStepSize = sizeRange / minTiles;
@@ -96,8 +96,8 @@ class _DesktopChartState extends State<DesktopChart> {
     return LayoutBuilder(
       builder: (context, constraints) {
         // determine charts width and height
-        final double maxWidth = constraints.maxWidth - PRICE_BAR_WIDTH;
-        final double maxHeight = constraints.maxHeight - DATE_BAR_HEIGHT;
+        final double maxWidth = constraints.maxWidth - priceBarWidth;
+        final double maxHeight = constraints.maxHeight - dateBarHeight;
 
         // visible candles start and end indexes
         final int candlesStartIndex = max(widget.index, 0);
@@ -124,7 +124,7 @@ class _DesktopChartState extends State<DesktopChart> {
 
         // calcute priceScale
         double chartHeight = maxHeight * pricesHeightScale -
-            2 * (MAIN_CHART_VERTICAL_PADDING + additionalVerticalPadding);
+            2 * (mainChartVerticalPadding + additionalVerticalPadding);
         double priceScale =
             calcutePriceScale(chartHeight, candlesHighPrice, candlesLowPrice);
 
@@ -210,7 +210,7 @@ class _DesktopChartState extends State<DesktopChart> {
                                               const Duration(milliseconds: 300),
                                           padding: EdgeInsets.symmetric(
                                               vertical:
-                                                  MAIN_CHART_VERTICAL_PADDING +
+                                                  mainChartVerticalPadding +
                                                       additionalVerticalPadding),
                                           child: RepaintBoundary(
                                             child: CandleStickWidget(
@@ -229,7 +229,7 @@ class _DesktopChartState extends State<DesktopChart> {
                                       ),
                                     ),
                                     const SizedBox(
-                                      width: PRICE_BAR_WIDTH,
+                                      width: priceBarWidth,
                                     ),
                                   ],
                                 ),
@@ -269,13 +269,13 @@ class _DesktopChartState extends State<DesktopChart> {
                                   ),
                                 ),
                                 SizedBox(
-                                  width: PRICE_BAR_WIDTH,
+                                  width: priceBarWidth,
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       SizedBox(
-                                        height: DATE_BAR_HEIGHT,
+                                        height: dateBarHeight,
                                         child: Center(
                                           child: Row(
                                             children: [
@@ -298,7 +298,7 @@ class _DesktopChartState extends State<DesktopChart> {
                             ),
                           ),
                           const SizedBox(
-                            height: DATE_BAR_HEIGHT,
+                            height: dateBarHeight,
                           ),
                         ],
                       ),
@@ -316,7 +316,7 @@ class _DesktopChartState extends State<DesktopChart> {
                                   Container(
                                     color: Theme.of(context)
                                         .hoverIndicatorBackgroundColor,
-                                    width: PRICE_BAR_WIDTH,
+                                    width: priceBarWidth,
                                     height: 20,
                                     child: Center(
                                       child: Text(

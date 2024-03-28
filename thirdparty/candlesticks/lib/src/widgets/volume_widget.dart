@@ -9,7 +9,8 @@ class VolumeWidget extends LeafRenderObjectWidget {
   final Color bullColor;
   final Color bearColor;
 
-  VolumeWidget({
+  const VolumeWidget({
+    super.key,
     required this.candles,
     required this.index,
     required this.barWidth,

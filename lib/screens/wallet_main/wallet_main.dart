@@ -11,7 +11,6 @@ import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/screens/accounts/accounts.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
-import 'package:sideswap/screens/accounts/assets_list.dart';
 import 'package:sideswap/screens/home/home.dart';
 import 'package:sideswap/screens/markets/markets.dart';
 import 'package:sideswap/screens/markets/widgets/market_type_buttons.dart';
@@ -122,7 +121,6 @@ class WalletMainChildPage extends ConsumerWidget {
     return switch (navigationItemEnum) {
       WalletMainNavigationItemEnum.home => const Home(),
       WalletMainNavigationItemEnum.accounts => const Accounts(),
-      WalletMainNavigationItemEnum.assetSelect => const AssetSelectList(),
       WalletMainNavigationItemEnum.assetDetails => const AssetDetails(),
       WalletMainNavigationItemEnum.markets => const Markets(),
       WalletMainNavigationItemEnum.swap => const SwapMain(key: ValueKey(false)),

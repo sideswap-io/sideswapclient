@@ -42,7 +42,7 @@ class SettingsAboutUs extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: Text(
-                    'VERSION'.tr(args: [appVersion]),
+                    'VERSION: {}'.tr(args: [appVersion]),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

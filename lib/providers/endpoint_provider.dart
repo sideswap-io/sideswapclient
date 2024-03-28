@@ -51,7 +51,7 @@ class EndpointServerProvider {
   ) {
     logger.d('$channelId $request');
 
-    final isBackendConnected = ref.read(serverConnectionStateProvider);
+    final isBackendConnected = ref.read(serverConnectionNotifierProvider);
     if (!isBackendConnected) {
       logger.w(
           'Client requested: $request but SideSwap isn\'t connected to backend yet.');

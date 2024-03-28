@@ -12,53 +12,51 @@ class TimeRow extends StatefulWidget {
   final int index;
 
   const TimeRow({
-    Key? key,
+    super.key,
     required this.candles,
     required this.candleWidth,
     this.indicatorX,
     required this.indicatorTime,
     required this.index,
-  }) : super(key: key);
+  });
 
   @override
   State<TimeRow> createState() => _TimeRowState();
 }
 
 class _TimeRowState extends State<TimeRow> {
-  final ScrollController _scrollController = new ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   /// Calculates number of candles between two time indicator
   int _stepCalculator() {
-    if (widget.candleWidth < 3)
-      return 31;
-    else if (widget.candleWidth < 5)
-      return 19;
-    else if (widget.candleWidth < 7)
-      return 13;
-    else
-      return 9;
+    return switch (widget.candleWidth) {
+      final candleWidth when candleWidth < 3 => 31,
+      final candleWidth when candleWidth < 5 => 19,
+      final candleWidth when candleWidth < 7 => 13,
+      _ => 9,
+    };
   }
 
   /// Calculates [DateTime] of a given candle index
   DateTime _timeCalculator(int step, int index, Duration dif) {
     int candleNumber = (step + 1) ~/ 2 - 10 + index * step + -1;
-    DateTime? _time;
-    if (candleNumber < 0)
-      _time = widget
+    DateTime? time;
+    if (candleNumber < 0) {
+      time = widget
           .candles[math.min(step + candleNumber, widget.candles.length - 1)]
           .date
           .add(dif);
-    else if (candleNumber < widget.candles.length)
-      _time = widget.candles[candleNumber].date;
-    else {
+    } else if (candleNumber < widget.candles.length) {
+      time = widget.candles[candleNumber].date;
+    } else {
       final stepsBack = (candleNumber - widget.candles.length) ~/ step + 1;
       final newIndex = candleNumber - stepsBack * step;
-      _time = widget
+      time = widget
           .candles[math.max(0, math.min(newIndex, widget.candles.length - 1))]
           .date
           .subtract(dif * stepsBack);
     }
-    return _time;
+    return time;
   }
 
   /// Fomats number as 2 digit integer
@@ -67,9 +65,9 @@ class _TimeRowState extends State<TimeRow> {
   }
 
   /// Day/month text widget
-  Text _monthDayText(DateTime _time, Color color) {
+  Text _monthDayText(DateTime time, Color color) {
     return Text(
-      numberFormat(_time.month) + "/" + numberFormat(_time.day),
+      "${numberFormat(time.month)}/${numberFormat(time.day)}",
       style: TextStyle(
         color: color,
         fontSize: 12,
@@ -78,9 +76,9 @@ class _TimeRowState extends State<TimeRow> {
   }
 
   /// Hour/minute text widget
-  Text _hourMinuteText(DateTime _time, Color color) {
+  Text _hourMinuteText(DateTime time, Color color) {
     return Text(
-      numberFormat(_time.hour) + ":" + numberFormat(_time.minute),
+      "${numberFormat(time.hour)}:${numberFormat(time.minute)}",
       style: TextStyle(
         color: color,
         fontSize: 12,
@@ -95,8 +93,9 @@ class _TimeRowState extends State<TimeRow> {
   @override
   void didUpdateWidget(TimeRow oldWidget) {
     if (oldWidget.index != widget.index ||
-        oldWidget.candleWidth != widget.candleWidth)
+        oldWidget.candleWidth != widget.candleWidth) {
       _scrollController.jumpTo((widget.index + 10) * widget.candleWidth);
+    }
     super.didUpdateWidget(oldWidget);
   }
 
@@ -106,18 +105,18 @@ class _TimeRowState extends State<TimeRow> {
     final dif = widget.candles[0].date.difference(
         widget.candles[math.min(step, widget.candles.length - 1)].date);
     return Padding(
-      padding: const EdgeInsets.only(right: PRICE_BAR_WIDTH + 1.0),
+      padding: const EdgeInsets.only(right: priceBarWidth + 1.0),
       child: Stack(
         children: [
           ListView.builder(
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             itemCount: widget.candles.length,
             scrollDirection: Axis.horizontal,
             itemExtent: step * widget.candleWidth,
             controller: _scrollController,
             reverse: true,
             itemBuilder: (context, index) {
-              DateTime _time = _timeCalculator(step, index, dif);
+              DateTime time = _timeCalculator(step, index, dif);
               return Column(
                 mainAxisSize: MainAxisSize.max,
                 children: [
@@ -127,11 +126,10 @@ class _TimeRowState extends State<TimeRow> {
                       color: Theme.of(context).grayColor,
                     ),
                   ),
-                  dif.compareTo(Duration(days: 1)) > 0
-                      ? _monthDayText(
-                          _time, Theme.of(context).scaleNumbersColor)
+                  dif.compareTo(const Duration(days: 1)) > 0
+                      ? _monthDayText(time, Theme.of(context).scaleNumbersColor)
                       : _hourMinuteText(
-                          _time, Theme.of(context).scaleNumbersColor),
+                          time, Theme.of(context).scaleNumbersColor),
                 ],
               );
             },
@@ -143,6 +141,8 @@ class _TimeRowState extends State<TimeRow> {
                   left: math.max(widget.indicatorX! - 55, 0),
                   child: Container(
                     color: Theme.of(context).hoverIndicatorBackgroundColor,
+                    width: 110,
+                    height: 20,
                     child: Center(
                       child: Text(
                         dateFormatter(widget.indicatorTime!),
@@ -152,8 +152,6 @@ class _TimeRowState extends State<TimeRow> {
                         ),
                       ),
                     ),
-                    width: 110,
-                    height: 20,
                   ),
                 ),
         ],

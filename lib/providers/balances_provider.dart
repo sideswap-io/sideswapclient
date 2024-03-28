@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/currency_rates_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -55,9 +56,17 @@ String balanceString(BalanceStringRef ref, AccountAsset accountAsset) {
 }
 
 @riverpod
-double amountUsd(AmountUsdRef ref, String? assetId, num amount) {
+Decimal amountUsdInDefaultCurrency(
+    AmountUsdInDefaultCurrencyRef ref, String? assetId, num amount) {
+  final amountUsd = ref.watch(amountUsdProvider(assetId, amount));
+  final rateMultiplier = ref.watch(defaultConversionRateMultiplierProvider);
+  return amountUsd * rateMultiplier;
+}
+
+@riverpod
+Decimal amountUsd(AmountUsdRef ref, String? assetId, num amount) {
   if (assetId == null) {
-    return 0;
+    return Decimal.zero;
   }
 
   final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
@@ -66,48 +75,39 @@ double amountUsd(AmountUsdRef ref, String? assetId, num amount) {
   final tetherPrice =
       ref.watch(walletAssetPricesNotifierProvider)[tetherAssetId];
 
-  final internalPriceNum =
-      tetherPrice == null ? 0 : (tetherPrice.bid + tetherPrice.ask) / 2;
+  final tetherPriceBid =
+      Decimal.tryParse('${tetherPrice?.bid ?? 0}') ?? Decimal.zero;
+  final tetherPriceAsk =
+      Decimal.tryParse('${tetherPrice?.ask ?? 0}') ?? Decimal.zero;
+  final internalPriceNum = tetherPrice == null
+      ? Decimal.zero
+      : ((tetherPriceBid + tetherPriceAsk) / Decimal.fromInt(2))
+          .toDecimal(scaleOnInfinitePrecision: 8);
+
+  final assetPriceBid =
+      Decimal.tryParse('${assetPrice?.bid ?? 0}') ?? Decimal.zero;
+  final assetPriceAsk =
+      Decimal.tryParse('${assetPrice?.ask ?? 0}') ?? Decimal.zero;
   final internalPriceDen = assetId == liquidAssetId
-      ? 1
+      ? Decimal.one
       : assetPrice == null
-          ? 0
-          : (assetPrice.bid + assetPrice.ask) / 2;
+          ? Decimal.zero
+          : ((assetPriceBid + assetPriceAsk) / Decimal.fromInt(2))
+              .toDecimal(scaleOnInfinitePrecision: 8);
 
-  if (internalPriceDen == 0 || internalPriceNum == 0) {
-    return 0;
+  if (internalPriceDen == Decimal.zero || internalPriceNum == Decimal.zero) {
+    return Decimal.zero;
   }
 
-  final price = internalPriceNum / internalPriceDen;
+  final price = (internalPriceNum / internalPriceDen)
+      .toDecimal(scaleOnInfinitePrecision: 8);
 
-  return amount * price;
+  final amountDecimal = Decimal.tryParse('$amount') ?? Decimal.zero;
+
+  return amountDecimal * price;
 }
 
-@riverpod
-String accountAssetsTotalUsdBalanceString(
-    AccountAssetsTotalUsdBalanceStringRef ref,
-    List<AccountAsset> accountAssets) {
-  Decimal amountUsdDecimal =
-      ref.watch(accountAssetsTotalUsdBalanceProvider(accountAssets));
-
-  var dollarConversion = '0.0';
-  dollarConversion = amountUsdDecimal.toStringAsFixed(2);
-  return dollarConversion;
-}
-
-@riverpod
-Decimal accountAssetsTotalUsdBalance(
-    AccountAssetsTotalUsdBalanceRef ref, List<AccountAsset> accountAssets) {
-  var amountUsdDecimalSum = Decimal.zero;
-
-  for (final accountAsset in accountAssets) {
-    amountUsdDecimalSum +=
-        ref.watch(accountAssetBalanceInUsdProvider(accountAsset));
-  }
-
-  return amountUsdDecimalSum;
-}
-
+/// Total LBTC ============
 @riverpod
 String accountAssetsTotalLbtcBalance(
     AccountAssetsTotalLbtcBalanceRef ref, List<AccountAsset> accountAssets) {
@@ -124,9 +124,8 @@ String accountAssetsTotalLbtcBalance(
       .read(assetUtilsProvider)
       .getPrecisionForAssetId(assetId: liquidAssetId);
 
-  final amountUsd =
-      ref.watch(accountAssetsTotalUsdBalanceProvider(accountAssets));
-  final amountUsdDecimal = Decimal.parse('$amountUsd');
+  final amountUsdDecimal =
+      ref.watch(_accountAssetsTotalUsdBalanceProvider(accountAssets));
   final amountLbtc = liquidIndexPriceDecimal > Decimal.zero
       ? (amountUsdDecimal / liquidIndexPriceDecimal)
           .toDecimal(scaleOnInfinitePrecision: assetPrecision)
@@ -137,17 +136,35 @@ String accountAssetsTotalLbtcBalance(
       : '0.0';
 }
 
+/// USD currency converters ============
 @riverpod
-String accountAssetBalanceInUsdString(
-    AccountAssetBalanceInUsdStringRef ref, AccountAsset accountAsset) {
-  final usdAssetBalance =
-      ref.watch(accountAssetBalanceInUsdProvider(accountAsset));
-  return usdAssetBalance.toStringAsFixed(2);
+String _accountAssetsTotalUsdBalanceString(
+    _AccountAssetsTotalUsdBalanceStringRef ref,
+    List<AccountAsset> accountAssets) {
+  Decimal amountUsdDecimal =
+      ref.watch(_accountAssetsTotalUsdBalanceProvider(accountAssets));
+
+  var dollarConversion = '0.0';
+  dollarConversion = amountUsdDecimal.toStringAsFixed(2);
+  return dollarConversion;
 }
 
 @riverpod
-Decimal accountAssetBalanceInUsd(
-    AccountAssetBalanceInUsdRef ref, AccountAsset accountAsset) {
+Decimal _accountAssetsTotalUsdBalance(
+    _AccountAssetsTotalUsdBalanceRef ref, List<AccountAsset> accountAssets) {
+  var amountUsdDecimalSum = Decimal.zero;
+
+  for (final accountAsset in accountAssets) {
+    amountUsdDecimalSum +=
+        ref.watch(_accountAssetBalanceInUsdProvider(accountAsset));
+  }
+
+  return amountUsdDecimalSum;
+}
+
+@riverpod
+Decimal _accountAssetBalanceInUsd(
+    _AccountAssetBalanceInUsdRef ref, AccountAsset accountAsset) {
   final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
   final assetPortfolioPrice = portfolioPrices[accountAsset.assetId];
 
@@ -165,6 +182,71 @@ Decimal accountAssetBalanceInUsd(
 }
 
 @riverpod
+String _accountAssetBalanceInUsdString(
+    _AccountAssetBalanceInUsdStringRef ref, AccountAsset accountAsset) {
+  final usdAssetBalance =
+      ref.watch(_accountAssetBalanceInUsdProvider(accountAsset));
+  return usdAssetBalance.toStringAsFixed(2);
+}
+
+/// Default currency converters ============
+@riverpod
+String accountAssetsTotalDefaultCurrencyBalanceString(
+    AccountAssetsTotalDefaultCurrencyBalanceStringRef ref,
+    List<AccountAsset> accountAssets) {
+  Decimal amountDefaultCurrencyDecimal = ref
+      .watch(accountAssetsTotalDefaultCurrencyBalanceProvider(accountAssets));
+
+  var defaultCurrencyConversion = '0.0';
+  defaultCurrencyConversion = amountDefaultCurrencyDecimal.toStringAsFixed(2);
+  return defaultCurrencyConversion;
+}
+
+@riverpod
+Decimal accountAssetsTotalDefaultCurrencyBalance(
+    AccountAssetsTotalDefaultCurrencyBalanceRef ref,
+    List<AccountAsset> accountAssets) {
+  var amountDefaultCurrencyDecimalSum = Decimal.zero;
+
+  for (final accountAsset in accountAssets) {
+    amountDefaultCurrencyDecimalSum +=
+        ref.watch(accountAssetBalanceInDefaultCurrencyProvider(accountAsset));
+  }
+
+  return amountDefaultCurrencyDecimalSum;
+}
+
+@riverpod
+Decimal accountAssetBalanceInDefaultCurrency(
+    AccountAssetBalanceInDefaultCurrencyRef ref, AccountAsset accountAsset) {
+  final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
+  final assetPortfolioUsdPrice = portfolioPrices[accountAsset.assetId];
+  final rateMultiplier = ref.watch(defaultConversionRateMultiplierProvider);
+
+  return switch (assetPortfolioUsdPrice) {
+    double assetPortfolioUsdPrice => () {
+        final assetBalanceStr =
+            ref.watch(accountAssetBalanceStringProvider(accountAsset));
+        final assetBalance = Decimal.tryParse(assetBalanceStr) ?? Decimal.zero;
+        final assetPortfolioUsdPriceDecimal =
+            Decimal.tryParse('$assetPortfolioUsdPrice') ?? Decimal.zero;
+        return assetBalance * assetPortfolioUsdPriceDecimal * rateMultiplier;
+      }(),
+    _ => Decimal.zero,
+  };
+}
+
+@riverpod
+String accountAssetBalanceInDefaultCurrencyString(
+    AccountAssetBalanceInDefaultCurrencyStringRef ref,
+    AccountAsset accountAsset) {
+  final defaultCurrencyAssetBalance =
+      ref.watch(accountAssetBalanceInDefaultCurrencyProvider(accountAsset));
+  return defaultCurrencyAssetBalance.toStringAsFixed(2);
+}
+
+/// Asset balance ============
+@riverpod
 String accountAssetBalanceString(
     AccountAssetBalanceStringRef ref, AccountAsset accountAsset) {
   final accountBalance = ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
@@ -179,4 +261,11 @@ String accountAssetBalanceString(
       }(),
     _ => '0',
   };
+}
+
+@riverpod
+String defaultCurrencyTicker(DefaultCurrencyTickerRef ref) {
+  final defaultConversionRate =
+      ref.watch(defaultConversionRateNotifierProvider);
+  return defaultConversionRate?.name ?? '';
 }

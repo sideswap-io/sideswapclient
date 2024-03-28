@@ -82,7 +82,8 @@ List<SecuritiesItem> pegxSecurities(PegxSecuritiesRef ref) {
   return assets;
 }
 
-@riverpod
+// (malcolmpl): it must maintain state for the entire life of the application!
+@Riverpod(keepAlive: true)
 class StokrGaidNotifier extends _$StokrGaidNotifier {
   @override
   StokrGaidState build() {
@@ -96,7 +97,7 @@ class StokrGaidNotifier extends _$StokrGaidNotifier {
 
 @riverpod
 CheckAmpStatusProvider checkAmpStatus(CheckAmpStatusRef ref) {
-  final loginState = ref.watch(serverLoginStateProvider);
+  final loginState = ref.watch(serverLoginNotifierProvider);
   final ampId = ref.watch(ampIdNotifierProvider);
   final pegxAssetId = ref
       .watch(pegxSecuritiesProvider)

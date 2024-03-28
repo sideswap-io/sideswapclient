@@ -59,10 +59,10 @@ class SettingsUserDetailsState extends ConsumerState<SettingsUserDetails> {
                           builder: (context, ref, _) {
                             return ChooseAvatarImage(
                               resizerData: ImportAvatarResizerData(
-                                onBack: (context) async {
+                                onBack: () {
                                   Navigator.of(context).pop();
                                 },
-                                onSave: (context) async {
+                                onSave: () async {
                                   Navigator.of(context).pop();
                                   // refresh avatar
                                   avatar = await ref

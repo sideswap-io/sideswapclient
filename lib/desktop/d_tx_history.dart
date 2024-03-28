@@ -126,7 +126,7 @@ class DTxHistoryTransaction extends HookConsumerWidget {
                     DTxHistoryAmount(
                       balance: transItemHelper.getSentBalance(
                           liquidAssetId, bitcoinAssetId),
-                      multipleOutputs: false,
+                      multipleOutputs: transItemHelper.getSentMultipleOutputs(),
                     ),
                     DTxHistoryAmount(
                       balance: transItemHelper.getRecvBalance(

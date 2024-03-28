@@ -14,6 +14,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/licenses_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
 class DLicenses {
   LicenseEntry licenseEntry;
@@ -29,14 +30,14 @@ class DSettingsLicenses extends HookConsumerWidget {
   const DSettingsLicenses({super.key});
 
   void goBack(WidgetRef ref) {
-    ref.read(walletProvider).setRegistered();
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
     ref.read(walletProvider).settingsViewAboutUs();
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
     final licenseEntries = ref.watch(licensesEntriesProvider);
 
@@ -151,10 +152,12 @@ class DSettingsLicenses extends HookConsumerWidget {
       return;
     }, [licenseEntries]);
 
-    return WillPopScope(
-      onWillPop: () async {
-        goBack(ref);
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          goBack(ref);
+        }
       },
       child: DContentDialog(
         title: DContentDialogTitle(
@@ -169,7 +172,7 @@ class DSettingsLicenses extends HookConsumerWidget {
             child: Column(
               children: [
                 Text(
-                  'VERSION'.tr(args: [appVersion]),
+                  'VERSION: {}'.tr(args: [appVersion]),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.normal,
@@ -244,7 +247,7 @@ class DSettingsLicenses extends HookConsumerWidget {
             ),
           ),
         ],
-        style: const DContentDialogThemeData().merge(settingsDialogTheme),
+        style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 696),
       ),
     );

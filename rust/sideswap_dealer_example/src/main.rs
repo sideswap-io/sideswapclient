@@ -32,8 +32,6 @@ fn main() {
         .get_matches();
     let config_path = matches.value_of("config").unwrap();
 
-    log::info!("starting up");
-
     let mut conf = config::Config::new();
     conf.merge(config::File::with_name(config_path))
         .expect("can't load config");
@@ -42,6 +40,10 @@ fn main() {
     let settings: Settings = conf.try_into().expect("invalid config");
 
     log4rs::init_file(&settings.log_settings, Default::default()).expect("can't open log settings");
+
+    log::info!("starting up");
+
+    sideswap_common::panic_handler::install_panic_handler();
 
     let tickers = BTreeSet::from([DealerTicker::DePIX]);
 
@@ -59,9 +61,9 @@ fn main() {
         api_key: settings.api_key.clone(),
     };
 
-    let (dealer_tx, dealer_rx) = start(params.clone());
+    let (dealer_tx, dealer_rx) = start(params);
 
-    let dealer_tx_copy = dealer_tx.clone();
+    let dealer_tx_copy = dealer_tx;
     std::thread::spawn(move || {
         let http_client = ureq::AgentBuilder::new()
             .timeout(std::time::Duration::from_secs(20))

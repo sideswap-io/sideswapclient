@@ -785,7 +785,7 @@ final selectedAssetTickerProvider = AutoDisposeProvider<String>.internal(
 
 typedef SelectedAssetTickerRef = AutoDisposeProviderRef<String>;
 String _$orderEntryCallbackHandlersHash() =>
-    r'017802e56b1e85eb855dd591f1511149f6002e98';
+    r'a856ae136cc8d6152e8a8d15ccebdfaefa57b886';
 
 /// See also [orderEntryCallbackHandlers].
 @ProviderFor(orderEntryCallbackHandlers)
@@ -895,7 +895,7 @@ final indexPriceButtonStreamNotifierProvider =
 
 typedef _$IndexPriceButtonStreamNotifier = AutoDisposeStreamNotifier<String>;
 String _$marketsRequestOrdersNotifierHash() =>
-    r'95238085e6791b1726c0d0b3d9c8361f4968dd70';
+    r'5cf905504096e64c117a499c8671102440bb95f2';
 
 /// See also [MarketsRequestOrdersNotifier].
 @ProviderFor(MarketsRequestOrdersNotifier)

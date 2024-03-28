@@ -57,6 +57,7 @@ class DesktopApp extends StatelessWidget {
             visualDensity: desktopAppTheme.visualDensity,
             fontFamily: desktopAppTheme.fontFamily,
             scrollbarTheme: desktopAppTheme.scrollbarTheme,
+            textSelectionTheme: desktopAppTheme.textSelectionTheme,
           ),
           scrollBehavior: DSideSwapScrollBehavior(),
           builder: (context, widget) {

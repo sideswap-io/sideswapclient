@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'dart:ffi' as ffi;
 import 'dart:io';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
+
+part 'client_ffi.g.dart';
+part 'client_ffi.freezed.dart';
 
 ffi.DynamicLibrary getDynLib() {
   final dl = runZonedGuarded(() {
@@ -33,4 +38,33 @@ ffi.DynamicLibrary getDynLib() {
 class Lib {
   static var dynLib = getDynLib();
   static var lib = NativeLibrary(Lib.dynLib);
+}
+
+@Riverpod(keepAlive: true)
+class LibClientId extends _$LibClientId {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setClientId(int clientId) {
+    state = clientId;
+  }
+}
+
+@freezed
+sealed class LibClientState with _$LibClientState {
+  const factory LibClientState.empty() = LibClientStateEmpty;
+  const factory LibClientState.initialized() = LibClientStateInitialized;
+}
+
+@Riverpod(keepAlive: true)
+LibClientState libClientState(LibClientStateRef ref) {
+  final clientId = ref.watch(libClientIdProvider);
+
+  if (clientId == 0) {
+    return const LibClientState.empty();
+  }
+
+  return const LibClientState.initialized();
 }

@@ -10,9 +10,9 @@ class PinListener extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(pinSetupCallerStateProvider, (_, __) {});
-    ref.listen<PinSetupExitState>(pinSetupExitStateProvider, (_, next) {
-      final caller = ref.read(pinSetupCallerStateProvider);
+    ref.listen(pinSetupCallerNotifierProvider, (_, __) {});
+    ref.listen<PinSetupExitState>(pinSetupExitNotifierProvider, (_, next) {
+      final caller = ref.read(pinSetupCallerNotifierProvider);
       next.when(
           empty: () {},
           back: () {
@@ -47,8 +47,9 @@ class PinListener extends ConsumerWidget {
                 });
           });
 
-      ref.read(pinSetupCallerStateProvider.notifier).state =
-          const PinSetupCallerState.empty();
+      ref
+          .read(pinSetupCallerNotifierProvider.notifier)
+          .setPinSetupCallerState(const PinSetupCallerState.empty());
     });
     return const SizedBox();
   }

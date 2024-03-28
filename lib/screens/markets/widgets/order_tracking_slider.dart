@@ -20,7 +20,7 @@ class OrderTrackingSlider extends StatelessWidget {
     this.asset,
     this.icon,
     this.price = '',
-    this.dollarConversion = '',
+    this.currencyConversion = '',
     this.invertColors,
   });
 
@@ -31,7 +31,7 @@ class OrderTrackingSlider extends StatelessWidget {
   final Asset? asset;
   final Widget? icon;
   final String price;
-  final String dollarConversion;
+  final String currencyConversion;
   final bool? invertColors;
 
   final trackingValueStyle = const TextStyle(
@@ -79,9 +79,9 @@ class OrderTrackingSlider extends StatelessWidget {
                     color: SideSwapColors.brightTurquoise,
                   ),
                 ),
-                if (dollarConversion.isNotEmpty) ...[
+                if (currencyConversion.isNotEmpty) ...[
                   Text(
-                    '≈ $dollarConversion',
+                    '≈ $currencyConversion',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.normal,

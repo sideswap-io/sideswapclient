@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 
 class CandleInfoText extends StatelessWidget {
   const CandleInfoText({
-    Key? key,
+    super.key,
     required this.candle,
-  }) : super(key: key);
+  });
 
   final Candle candle;
 
@@ -26,36 +26,36 @@ class CandleInfoText extends StatelessWidget {
         text: dateFormatter(candle.date),
         style: TextStyle(color: Theme.of(context).grayColor, fontSize: 12),
         children: <TextSpan>[
-          TextSpan(text: "   O: "),
+          const TextSpan(text: "   O: "),
           TextSpan(
               text: HelperFunctions.priceToString(candle.open),
               style: TextStyle(
                   color: candle.isBull
                       ? Theme.of(context).primaryGreen
                       : Theme.of(context).primaryRed)),
-          TextSpan(text: "   H: "),
+          const TextSpan(text: "   H: "),
           TextSpan(
               text: HelperFunctions.priceToString(candle.high),
               style: TextStyle(
                   color: candle.isBull
                       ? Theme.of(context).primaryGreen
                       : Theme.of(context).primaryRed)),
-          TextSpan(text: "   L: "),
+          const TextSpan(text: "   L: "),
           TextSpan(
               text: HelperFunctions.priceToString(candle.low),
               style: TextStyle(
                   color: candle.isBull
                       ? Theme.of(context).primaryGreen
                       : Theme.of(context).primaryRed)),
-          TextSpan(text: "   C: "),
+          const TextSpan(text: "   C: "),
           TextSpan(
               text: HelperFunctions.priceToString(candle.close),
               style: TextStyle(
                   color: candle.isBull
                       ? Theme.of(context).primaryGreen
                       : Theme.of(context).primaryRed)),
-          TextSpan(text: "\n\n"),
-          TextSpan(text: "Volume: "),
+          const TextSpan(text: "\n\n"),
+          const TextSpan(text: "Volume: "),
           TextSpan(text: candle.volume.toString()),
         ],
       ),

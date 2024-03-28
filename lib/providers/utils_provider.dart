@@ -34,6 +34,7 @@ class UtilsProvider {
     String secondButtonText = '',
     void Function(BuildContext context)? onSecondPressed,
     SettingsDialogIcon icon = SettingsDialogIcon.error,
+    double? width,
   }) async {
     final context = ref.read(navigatorKeyProvider).currentContext;
 
@@ -56,8 +57,7 @@ class UtilsProvider {
           'assets/restart.svg',
           width: 23,
           height: 23,
-          colorFilter: const ColorFilter.mode(
-              SideSwapColors.brightTurquoise, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
         );
         borderColor = SideSwapColors.brightTurquoise;
         break;
@@ -77,83 +77,87 @@ class UtilsProvider {
               ),
               color: SideSwapColors.blumine,
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(60),
-                      border: Border.all(
-                        color: borderColor!,
-                        width: 2,
-                        style: BorderStyle.solid,
+            child: SizedBox(
+              width: width,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(60),
+                        border: Border.all(
+                          color: borderColor!,
+                          width: 4,
+                          style: BorderStyle.solid,
+                        ),
+                      ),
+                      child: Center(
+                        child: iconWidget,
                       ),
                     ),
-                    child: Center(
-                      child: iconWidget,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  if (description.isNotEmpty) ...[
                     Padding(
-                      padding: const EdgeInsets.only(top: 12),
+                      padding: const EdgeInsets.only(top: 32),
                       child: Text(
-                        description,
+                        title,
                         style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                         textAlign: TextAlign.center,
                       ),
                     ),
-                  ],
-                  Padding(
-                    padding: const EdgeInsets.only(top: 32),
-                    child: CustomBigButton(
-                      width: double.maxFinite,
-                      height: 54,
-                      text: buttonText,
-                      backgroundColor: SideSwapColors.brightTurquoise,
-                      onPressed: () {
-                        onPressed(context);
-                      },
-                    ),
-                  ),
-                  if (secondButtonText.isNotEmpty) ...[
+                    if (description.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text(
+                          description,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: 32),
                       child: CustomBigButton(
                         width: double.maxFinite,
                         height: 54,
-                        text: secondButtonText,
-                        backgroundColor: Colors.transparent,
-                        textColor: SideSwapColors.brightTurquoise,
+                        text: buttonText,
+                        backgroundColor: SideSwapColors.brightTurquoise,
                         onPressed: () {
-                          if (onSecondPressed != null) {
-                            onSecondPressed(context);
-                          }
+                          onPressed(context);
                         },
                       ),
                     ),
+                    if (secondButtonText.isNotEmpty) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: CustomBigButton(
+                          width: double.maxFinite,
+                          height: 54,
+                          text: secondButtonText,
+                          backgroundColor: Colors.transparent,
+                          textColor: SideSwapColors.brightTurquoise,
+                          onPressed: () {
+                            if (onSecondPressed != null) {
+                              onSecondPressed(context);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -191,14 +195,14 @@ class UtilsProvider {
       barrierDismissible:
           FlavorConfig.isDesktop, // Allow close popups with Esc on desktop
       builder: (BuildContext context) {
-        return RawKeyboardListener(
+        return KeyboardListener(
           focusNode: FocusNode(),
           autofocus: true,
-          onKey: (RawKeyEvent event) {
+          onKeyEvent: (value) {
             if (FlavorConfig.isDesktop &&
-                event is RawKeyDownEvent &&
-                event.logicalKey == LogicalKeyboardKey.enter) {
-              Navigator.of(context).pop(); // Dismiss the dialog
+                value is KeyDownEvent &&
+                value.logicalKey == LogicalKeyboardKey.enter) {
+              Navigator.of(context).pop();
             }
           },
           child: Dialog(
@@ -298,12 +302,12 @@ class UtilsProvider {
       barrierDismissible: FlavorConfig.isDesktop,
       // Allow close popups with Esc on desktop
       builder: (BuildContext context) {
-        return RawKeyboardListener(
+        return KeyboardListener(
           focusNode: FocusNode(),
           autofocus: true,
-          onKey: (RawKeyEvent event) {
+          onKeyEvent: (KeyEvent event) {
             if (FlavorConfig.isDesktop &&
-                event is RawKeyDownEvent &&
+                event is KeyDownEvent &&
                 event.logicalKey == LogicalKeyboardKey.enter) {
               Navigator.of(context).pop(); // Dismiss the dialog
             }
@@ -326,12 +330,12 @@ class UtilsProvider {
       barrierDismissible:
           FlavorConfig.isDesktop, // Allow close popups with Esc on desktop
       builder: (BuildContext context) {
-        return RawKeyboardListener(
+        return KeyboardListener(
           focusNode: FocusNode(),
           autofocus: true,
-          onKey: (RawKeyEvent event) {
+          onKeyEvent: (KeyEvent event) {
             if (FlavorConfig.isDesktop &&
-                event is RawKeyDownEvent &&
+                event is KeyDownEvent &&
                 event.logicalKey == LogicalKeyboardKey.enter) {
               Navigator.of(context).pop(); // Dismiss the dialog
             }

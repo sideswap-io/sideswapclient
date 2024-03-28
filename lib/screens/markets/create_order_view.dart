@@ -21,6 +21,7 @@ import 'package:sideswap/providers/order_details_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/markets/widgets/sign_type.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/screens/markets/widgets/autosign.dart';
@@ -89,7 +90,9 @@ class CreateOrderView extends HookConsumerWidget {
         if (isModifyDialogOpened.value) {
           Navigator.of(context, rootNavigator: true).pop();
         }
-        ref.read(walletProvider).setRegistered();
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.registered);
       }
     }, const Duration(seconds: 1));
 
@@ -118,7 +121,9 @@ class CreateOrderView extends HookConsumerWidget {
         RequestOrder(own: true, twoStep: true) => () {
             ref.read(walletProvider).goBack();
           }(),
-        RequestOrder()? => ref.read(walletProvider).setRegistered(),
+        RequestOrder()? => ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.registered),
         _ => () {
             final twoStep = ref.read(orderReviewTwoStepProvider);
             final ttl = ref.read(orderReviewTtlProvider);
@@ -131,7 +136,9 @@ class CreateOrderView extends HookConsumerWidget {
                   ttlSeconds: ttl,
                   twoStep: twoStep,
                 );
-            ref.read(walletProvider).setRegistered();
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.registered);
           }(),
       };
     }, []);

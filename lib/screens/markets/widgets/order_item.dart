@@ -128,8 +128,9 @@ class OrderItemState extends ConsumerState<OrderItem> {
     final priceIcon = isStablecoin ? assetIcon : bitcoinIcon;
     final priceAmount = priceStrForMarket(
         widget.requestOrder.price, widget.requestOrder.marketType);
-    final dollarConversionRecv = ref
-        .watch(dollarConversionFromStringProvider(liquidAssetId, buyAmountStr));
+    final defaultCurrencyConversionRecv = ref.watch(
+        defaultCurrencyConversionFromStringProvider(
+            liquidAssetId, buyAmountStr));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -322,7 +323,7 @@ class OrderItemState extends ConsumerState<OrderItem> {
                           Row(
                             children: [
                               Text(
-                                '≈ $dollarConversionRecv',
+                                '≈ $defaultCurrencyConversionRecv',
                                 style: amountStyle.copyWith(
                                     color: SideSwapColors.airSuperiorityBlue),
                               ),

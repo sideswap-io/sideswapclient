@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/numerical_range_formatter.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
@@ -21,7 +22,7 @@ class SettingsCustomHost extends HookConsumerWidget {
     final defaultTextStyle = useMemoized(() => const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF00B4E9),
+          color: SideSwapColors.brightTurquoise,
         ));
 
     final hostController = useTextEditingController();
@@ -114,6 +115,7 @@ class SettingsCustomHost extends HookConsumerWidget {
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                             LengthLimitingTextInputFormatter(5),
+                            NumericalRangeFormatter(min: 1, max: 65535),
                           ],
                         ),
                       ),

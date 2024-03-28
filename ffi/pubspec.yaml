@@ -1,10 +1,10 @@
 name: side_swap_ffi
 
 environment:
-  sdk: ">=3.2.0 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 dev_dependencies:
-  ffigen: ^10.0.0
+  ffigen: ^11.0.0
   flutter_lints: ^3.0.1
 
 ffigen:

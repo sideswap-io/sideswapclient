@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/numerical_range_formatter.dart';
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
@@ -13,7 +14,7 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
-import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
 class DSettingsCustomHost extends HookConsumerWidget {
@@ -21,13 +22,15 @@ class DSettingsCustomHost extends HookConsumerWidget {
 
   void goBack(BuildContext context, WidgetRef ref) {
     Navigator.of(context).pop();
-    ref.read(walletProvider).settingsNetwork();
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.settingsNetwork);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
     const textStyle = TextStyle(
       fontSize: 13,
@@ -112,6 +115,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,
                       LengthLimitingTextInputFormatter(5),
+                      NumericalRangeFormatter(min: 1, max: 65535),
                     ],
                   ),
                 ),
@@ -174,7 +178,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
             ),
           ),
         ],
-        style: const DContentDialogThemeData().merge(settingsDialogTheme),
+        style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
       ),
     );

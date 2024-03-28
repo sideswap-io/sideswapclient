@@ -33,7 +33,7 @@ class ImportContactsSuccess extends ConsumerWidget {
         onPressed: () async {
           final confirmPhoneData =
               ref.read(phoneProvider).getConfirmPhoneData();
-          await confirmPhoneData.onImportContactsDone!(context);
+          await confirmPhoneData?.onImportContactsDone!(context);
         },
       ),
     );

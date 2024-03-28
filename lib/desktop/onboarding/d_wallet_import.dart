@@ -206,8 +206,8 @@ class DWalletImport extends HookConsumerWidget {
                                             BlendMode.srcIn),
                                       ),
                                       const SizedBox(width: 8),
-                                      const Text(
-                                        'Paste mnemonic',
+                                      Text(
+                                        'Paste mnemonic'.tr(),
                                       ),
                                     ],
                                   ),

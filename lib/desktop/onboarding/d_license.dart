@@ -5,13 +5,11 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_popup_page.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/screens/onboarding/license.dart';
 
 class DLicense extends ConsumerWidget {
-  const DLicense({super.key, required this.nextStep});
-
-  final LicenseNextStep nextStep;
+  const DLicense({super.key});
 
   Future<String> loadLicense() async {
     return await rootBundle.loadString('LICENSE');
@@ -19,6 +17,8 @@ class DLicense extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
+
     return SideSwapPopupPage(
       onClose: () {
         ref.read(walletProvider).goBack();
@@ -75,14 +75,11 @@ class DLicense extends ConsumerWidget {
           onPressed: () async {
             Navigator.pop(context);
             ref.read(walletProvider).setLicenseAccepted();
-            if (nextStep == LicenseNextStep.createWallet) {
-              await ref.read(walletProvider).setReviewLicenseCreateWallet();
-              return;
-            }
-
-            if (nextStep == LicenseNextStep.importWallet) {
-              ref.read(walletProvider).startMnemonicImport();
-            }
+            return switch (firstLaunchState) {
+              FirstLaunchStateCreateWallet() =>
+                await ref.read(walletProvider).setReviewLicenseCreateWallet(),
+              _ => ref.read(walletProvider).startMnemonicImport(),
+            };
           },
         ),
       ],

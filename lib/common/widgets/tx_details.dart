@@ -331,7 +331,7 @@ class TxDetailsSent extends ConsumerWidget {
         const SizedBox(height: 8),
         TxDetailsBalancesList(transItem: transItem, removeFeeAsset: true),
         const SizedBox(height: 18),
-        TxDetailsSideRow(leftText: 'Network fee'.tr(), rightText: ''),
+        TxDetailsSideRow(leftText: 'Network Fee'.tr(), rightText: ''),
         const SizedBox(height: 8),
         TxDetailsNetworkFee(transItem: transItem),
       ],

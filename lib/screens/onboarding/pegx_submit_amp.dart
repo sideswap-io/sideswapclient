@@ -60,7 +60,7 @@ class PegxSubmitAmp extends HookConsumerWidget {
             .read(pegxLoginStateNotifierProvider.notifier)
             .setState(const PegxLoginStateLoading());
         ref
-            .read(pageStatusStateProvider.notifier)
+            .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.ampRegister);
       },
       child: Padding(
@@ -131,7 +131,7 @@ class PegxSubmitAmp extends HookConsumerWidget {
                         .read(pegxLoginStateNotifierProvider.notifier)
                         .setState(const PegxLoginStateLoading());
                     ref
-                        .read(pageStatusStateProvider.notifier)
+                        .read(pageStatusNotifierProvider.notifier)
                         .setStatus(Status.ampRegister);
                   },
                   child: Text(
@@ -189,7 +189,7 @@ class PegxSubmitAmp extends HookConsumerWidget {
                         .read(pegxLoginStateNotifierProvider.notifier)
                         .setState(const PegxLoginStateLoading());
                     ref
-                        .read(pageStatusStateProvider.notifier)
+                        .read(pageStatusNotifierProvider.notifier)
                         .setStatus(Status.ampRegister);
                   },
                   child: Text(

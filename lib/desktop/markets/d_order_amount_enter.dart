@@ -46,10 +46,10 @@ class DOrderAmountEnter extends ConsumerWidget {
     final precision =
         (isPriceField && asset?.swapMarket == true) ? 2 : assetPrecision;
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final showDollarConversion =
+    final showConversion =
         isPriceField && accountAsset?.assetId == liquidAssetId;
-    final dollarConversion = showDollarConversion
-        ? ref.watch(dollarConversionFromStringProvider(
+    final defaultCurrencyConversion = showConversion
+        ? ref.watch(defaultCurrencyConversionFromStringProvider(
             accountAsset?.assetId, controller.text))
         : null;
 
@@ -71,9 +71,9 @@ class DOrderAmountEnter extends ConsumerWidget {
                 ),
               ],
             ),
-            if (showDollarConversion && dollarConversion!.isNotEmpty)
+            if (showConversion && defaultCurrencyConversion!.isNotEmpty)
               Text(
-                '≈ $dollarConversion',
+                '≈ $defaultCurrencyConversion',
                 style: const TextStyle(
                   fontSize: 13,
                   color: SideSwapColors.halfBaked,

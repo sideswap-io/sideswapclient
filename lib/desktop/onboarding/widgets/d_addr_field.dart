@@ -10,12 +10,14 @@ class DAddrTextField extends ConsumerWidget {
   final TextEditingController? controller;
   final bool autofocus;
   final FocusNode? focusNode;
+  final void Function()? onPressed;
 
   const DAddrTextField({
     super.key,
     this.controller,
     this.autofocus = false,
     this.focusNode,
+    this.onPressed,
   });
 
   @override
@@ -33,6 +35,7 @@ class DAddrTextField extends ConsumerWidget {
         text: address,
         onPressed: () {
           controller?.text = '';
+          onPressed?.call();
         },
       );
     }

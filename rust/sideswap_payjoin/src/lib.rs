@@ -63,6 +63,7 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     let req = server_api::Request::Start(server_api::StartRequest {
         asset_id: send_asset_id,
         user_agent,
+        api_key: None,
     });
     let resp = make_server_request(&agent, &url, req)?;
     let StartResponse {

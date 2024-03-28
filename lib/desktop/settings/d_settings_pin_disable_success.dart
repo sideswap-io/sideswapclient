@@ -13,8 +13,8 @@ class DSettingsPinDisableSuccess extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
     return DContentDialog(
       title: DContentDialogTitle(
@@ -56,7 +56,7 @@ class DSettingsPinDisableSuccess extends ConsumerWidget {
           ),
         )
       ],
-      style: const DContentDialogThemeData().merge(settingsDialogTheme),
+      style: const DContentDialogThemeData().merge(defaultDialogTheme),
       constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
     );
   }

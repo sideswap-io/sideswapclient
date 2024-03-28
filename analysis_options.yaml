@@ -13,3 +13,4 @@ analyzer:
   errors:
     invalid_use_of_visible_for_testing_member: error
     collection_methods_unrelated_type: error
+    invalid_annotation_target: ignore

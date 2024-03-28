@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/custom_scrollable_container.dart';
@@ -8,7 +7,6 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/new_wallet_backup_skip_prompt_providers.dart';
-import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
@@ -20,15 +18,6 @@ class WalletBackupNewPrompt extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final skipForNow = ref.watch(skipForNowNotifierProvider);
-
-    useEffect(() {
-      // clear pin new wallet state
-      Future.microtask(() {
-        ref.read(pinSetupProvider).isNewWallet = false;
-      });
-
-      return;
-    }, const []);
 
     return SideSwapScaffold(
       body: SafeArea(

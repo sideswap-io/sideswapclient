@@ -9,10 +9,9 @@ import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
-import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/orders_panel_provider.dart';
-import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/swap_market_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -25,6 +24,26 @@ class SwapMarket extends HookConsumerWidget {
   const SwapMarket({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final swapMarketCurrentProduct =
+        ref.watch(swapMarketCurrentProductProvider);
+    final stokrLastSelectedAccountAsset =
+        ref.watch(stokrLastSelectedAccountAssetNotifierProvider);
+    final callbackHandlers = ref.watch(orderEntryCallbackHandlersProvider);
+
+    useEffect(() {
+      if (swapMarketCurrentProduct.accountAsset !=
+          stokrLastSelectedAccountAsset) {
+        Future.microtask(() {
+          callbackHandlers.stokrAssetRestrictedPopup();
+          ref
+              .read(stokrLastSelectedAccountAssetNotifierProvider.notifier)
+              .setLastSelectedAccountAsset(
+                  swapMarketCurrentProduct.accountAsset);
+        });
+      }
+
+      return;
+    }, [swapMarketCurrentProduct]);
     return const Column(
       children: [
         SwapMarketTopPanel(),
@@ -61,6 +80,12 @@ class SwapMarketBidOfferList extends HookConsumerWidget {
 
       if (order.own) {
         await ref.read(marketsHelperProvider).onModifyPrice(ref, order);
+        return;
+      }
+
+      final callbackHandler = ref.read(orderEntryCallbackHandlersProvider);
+
+      if (!callbackHandler.stokrConditionsMet()) {
         return;
       }
 
@@ -279,7 +304,7 @@ class SwapMarketFilterButton extends ConsumerWidget {
       backgroundColor: SideSwapColors.chathamsBlue,
       onPressed: () {
         ref
-            .read(pageStatusStateProvider.notifier)
+            .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.orderFilers);
       },
       child: SizedBox(
@@ -356,30 +381,23 @@ class SwapMarketAssetPairButton extends HookConsumerWidget {
           return const MarketSelectPopup();
         }),
       );
-    });
-
-    final indexPrice = ref
-        .watch(indexPriceForAssetProvider(
-            swapMarketCurrentProduct.accountAsset.assetId))
-        .getIndexPriceStr();
-    final lastPrice = ref.watch(lastStringIndexPriceForAssetProvider(
-        swapMarketCurrentProduct.accountAsset.assetId));
+    }, const []);
 
     final asset = ref.watch(
         assetsStateProvider)[swapMarketCurrentProduct.accountAsset.assetId];
-    final priceStr = asset?.swapMarket == true ? indexPrice : lastPrice;
-    final price = double.tryParse(priceStr) ?? 0;
-    final amountUsd = ref.watch(amountUsdProvider(asset?.assetId, price));
-    var dollarConversion = '0.0';
-    dollarConversion = amountUsd.toStringAsFixed(2);
-    dollarConversion =
-        replaceCharacterOnPosition(input: dollarConversion, currencyChar: '\$');
-
-    if (asset?.swapMarket != true) {
-      final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-      dollarConversion =
-          ref.watch(dollarConversionProvider(liquidAssetId, price));
-    }
+    final indexPrice = ref
+        .watch(indexPriceForAssetProvider(
+            swapMarketCurrentProduct.accountAsset.assetId))
+        .indexPrice;
+    final lastPrice = ref.watch(lastIndexPriceForAssetProvider(
+        swapMarketCurrentProduct.accountAsset.assetId));
+    final pricedInLiquid =
+        ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
+    final indexPriceStr = priceStr(indexPrice, pricedInLiquid);
+    final lastPriceStr = priceStr(lastPrice, pricedInLiquid);
+    final icon = ref
+        .watch(assetImageProvider)
+        .getVerySmallImage(swapMarketCurrentProduct.accountAsset.assetId);
 
     return CustomBigButton(
       width: 245,
@@ -403,32 +421,27 @@ class SwapMarketAssetPairButton extends HookConsumerWidget {
                       .bodyLarge
                       ?.copyWith(fontWeight: FontWeight.w500),
                 ),
-                ...switch (dollarConversion.isEmpty) {
-                  true => [const SizedBox()],
-                  _ => [
-                      RichText(
-                        text: TextSpan(
-                          text: priceStr,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(fontSize: 14),
-                          children: [
-                            TextSpan(
-                              text: ' ≈ $dollarConversion',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                    fontSize: 14,
-                                    color: SideSwapColors.halfBaked,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                }
+                Row(
+                  children: [
+                    Text(
+                      indexPrice != 0 ? indexPriceStr : lastPriceStr,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(fontSize: 14),
+                    ),
+                    const SizedBox(width: 8),
+                    icon,
+                    const SizedBox(width: 5),
+                    Text(
+                      asset?.ticker ?? '',
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyLarge
+                          ?.copyWith(fontSize: 14),
+                    ),
+                  ],
+                ),
               ],
             ),
             const Spacer(),

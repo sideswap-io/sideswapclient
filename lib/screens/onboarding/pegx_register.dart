@@ -40,12 +40,12 @@ class PegxRegister extends HookConsumerWidget {
         () => pegxLoginState.maybeWhen(
           logged: () {
             ref
-                .read(pageStatusStateProvider.notifier)
+                .read(pageStatusNotifierProvider.notifier)
                 .setStatus(Status.pegxSubmitAmp);
           },
           gaidAdded: () {
             ref
-                .read(pageStatusStateProvider.notifier)
+                .read(pageStatusNotifierProvider.notifier)
                 .setStatus(Status.pegxSubmitAmp);
           },
           orElse: () {},

@@ -403,8 +403,8 @@ class OrderPopupStatsRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final price = value.toStringAsFixed(8);
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
-    final dollarConversion =
-        ref.watch(dollarConversionProvider(liquidAssetId, value));
+    final defaultCurrencyConversion =
+        ref.watch(defaultCurrencyConversionProvider(liquidAssetId, value));
 
     return Column(
       children: [
@@ -420,7 +420,9 @@ class OrderPopupStatsRow extends ConsumerWidget {
             )),
         const SizedBox(height: 4),
         Text(
-          dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
+          defaultCurrencyConversion.isEmpty
+              ? ''
+              : '≈ $defaultCurrencyConversion',
           style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.normal,

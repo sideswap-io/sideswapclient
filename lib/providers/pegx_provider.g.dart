@@ -23,12 +23,12 @@ final pegxLoginStateNotifierProvider = AutoDisposeNotifierProvider<
 );
 
 typedef _$PegxLoginStateNotifier = AutoDisposeNotifier<PegxLoginState>;
-String _$pegxGaidNotifierHash() => r'eb25e4d69978cc55d422115e40ad23ca7694eb7f';
+String _$pegxGaidNotifierHash() => r'664deec870ded7b5d5a7079f293bc851fb85008a';
 
 /// See also [PegxGaidNotifier].
 @ProviderFor(PegxGaidNotifier)
 final pegxGaidNotifierProvider =
-    AutoDisposeNotifierProvider<PegxGaidNotifier, PegxGaidState>.internal(
+    NotifierProvider<PegxGaidNotifier, PegxGaidState>.internal(
   PegxGaidNotifier.new,
   name: r'pegxGaidNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -38,7 +38,7 @@ final pegxGaidNotifierProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$PegxGaidNotifier = AutoDisposeNotifier<PegxGaidState>;
+typedef _$PegxGaidNotifier = Notifier<PegxGaidState>;
 String _$pegxRegisterFailedNotifierHash() =>
     r'97f867718eb8db0729c3d85585dd2fdfcc26ed70';
 

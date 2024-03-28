@@ -97,7 +97,7 @@ final builtinAssetsProvider = AutoDisposeProvider<Map<String, Asset>>.internal(
 
 typedef BuiltinAssetsRef = AutoDisposeProviderRef<Map<String, Asset>>;
 String _$imageBytesResizedFutureHash() =>
-    r'c92706c9157a5b27f651c4ba3606d022f0564535';
+    r'8e0fac4f5ac48f9d75eff18f7b1234479a290849';
 
 /// Copied from Dart SDK
 class _SystemHash {

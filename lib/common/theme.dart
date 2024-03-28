@@ -69,9 +69,9 @@ class MobileThemeData {
   }
 
   TextSelectionThemeData _textSelectionTheme = const TextSelectionThemeData(
-    selectionHandleColor: SideSwapColors.regentStBlue,
-    selectionColor: SideSwapColors.regentStBlue,
-    cursorColor: Colors.white,
+    selectionHandleColor: SideSwapColors.chathamsBlueDark,
+    selectionColor: SideSwapColors.chathamsBlueDark,
+    cursorColor: SideSwapColors.chathamsBlueDark,
   );
 
   TextSelectionThemeData get textSelectionTheme => _textSelectionTheme;
@@ -98,6 +98,10 @@ class MobileThemeData {
           fontWeight: FontWeight.bold,
           fontSize: 22,
           color: Colors.white,
+        ),
+        titleMedium: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.normal,
         ),
         labelMedium: TextStyle(
           fontSize: 12,

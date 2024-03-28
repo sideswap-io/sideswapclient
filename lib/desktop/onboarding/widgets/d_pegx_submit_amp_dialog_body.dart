@@ -34,7 +34,7 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
           },
           gaidAdded: () {
             ref
-                .read(pageStatusStateProvider.notifier)
+                .read(pageStatusNotifierProvider.notifier)
                 .setStatus(Status.pegxSubmitFinish);
           },
           gaidError: () {
@@ -107,7 +107,7 @@ class DPegxSubmitAmpDialogBody extends HookConsumerWidget {
                       height: 49,
                       onPressed: () {
                         ref
-                            .read(pageStatusStateProvider.notifier)
+                            .read(pageStatusNotifierProvider.notifier)
                             .setStatus(Status.ampRegister);
                       },
                       child: Text(

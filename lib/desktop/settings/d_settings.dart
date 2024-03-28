@@ -26,8 +26,8 @@ class DSettings extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
     final isPinEnabled = ref.watch(pinAvailableProvider);
     final isJade = ref.watch(isJadeWalletProvider);
 
@@ -47,7 +47,7 @@ class DSettings extends ConsumerWidget {
         ),
         content: Center(
           child: SizedBox(
-            height: 569,
+            height: 582,
             child: Column(
               children: [
                 switch (isJade) {
@@ -85,7 +85,9 @@ class DSettings extends ConsumerWidget {
                                     .read(walletProvider)
                                     .disablePinProtection();
                                 if (ret) {
-                                  ref.read(walletProvider).setRegistered();
+                                  ref
+                                      .read(pageStatusNotifierProvider.notifier)
+                                      .setStatus(Status.registered);
                                   navigator.pushAndRemoveUntil(
                                       RawDialogRoute<Widget>(
                                         pageBuilder: (_, __, ___) =>
@@ -95,7 +97,7 @@ class DSettings extends ConsumerWidget {
                                 }
                               } else {
                                 ref
-                                    .read(pinSetupProvider)
+                                    .read(pinHelperProvider)
                                     .initPinSetupSettings();
                               }
                             },
@@ -107,7 +109,9 @@ class DSettings extends ConsumerWidget {
                           child: DSettingsButton(
                             title: 'Network access'.tr(),
                             onPressed: () {
-                              ref.read(walletProvider).settingsNetwork();
+                              ref
+                                  .read(pageStatusNotifierProvider.notifier)
+                                  .setStatus(Status.settingsNetwork);
                             },
                             icon: DSettingsButtonIcon.network,
                           ),
@@ -160,10 +164,22 @@ class DSettings extends ConsumerWidget {
                     title: 'Logs'.tr(),
                     onPressed: () {
                       ref
-                          .read(pageStatusStateProvider.notifier)
+                          .read(pageStatusNotifierProvider.notifier)
                           .setStatus(Status.settingsLogs);
                     },
                     icon: DSettingsButtonIcon.logs,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: DSettingsButton(
+                    title: 'Currency'.tr(),
+                    onPressed: () {
+                      ref
+                          .read(pageStatusNotifierProvider.notifier)
+                          .setStatus(Status.settingsCurrency);
+                    },
+                    icon: DSettingsButtonIcon.currency,
                   ),
                 ),
                 switch (FlavorConfig.enableLocalEndpoint) {
@@ -233,8 +249,8 @@ class DSettings extends ConsumerWidget {
             ),
           ),
         ),
-        style: const DContentDialogThemeData().merge(settingsDialogTheme),
-        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 665),
+        style: const DContentDialogThemeData().merge(defaultDialogTheme),
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 678),
       ),
     );
   }

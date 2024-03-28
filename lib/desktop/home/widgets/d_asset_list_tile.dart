@@ -23,6 +23,7 @@ class DAssetListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonStyle =
         ref.watch(desktopAppThemeNotifierProvider).buttonWithoutBorderStyle;
+
     return DButton(
       style: buttonStyle?.merge(
         DButtonStyle(

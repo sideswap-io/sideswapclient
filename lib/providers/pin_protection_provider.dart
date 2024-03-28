@@ -4,20 +4,15 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/models/pin_models.dart';
 
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
-final pinProtectionProvider = ChangeNotifierProvider<PinProtectionProvider>(
-    (ref) => PinProtectionProvider(ref));
-
-enum PinProtectionState {
-  idle,
-  waiting,
-  error,
-}
+part 'pin_protection_provider.g.dart';
 
 enum PinKeyboardAcceptType {
   icon,
@@ -27,147 +22,184 @@ enum PinKeyboardAcceptType {
   save,
 }
 
-class PinProtectionProvider extends ChangeNotifier {
+@riverpod
+class PinProtectionStateNotifier extends _$PinProtectionStateNotifier {
+  @override
+  PinProtectionState build() {
+    return const PinProtectionState.idle();
+  }
+
+  void setPinProtectionState(PinProtectionState value) {
+    state = value;
+  }
+}
+
+@riverpod
+class PinCodeProtectionNotifier extends _$PinCodeProtectionNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setPinCode(String value) {
+    state = value;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class PinDecryptedDataNotifier extends _$PinDecryptedDataNotifier {
+  @override
+  PinDecryptedData build() {
+    return PinDecryptedData(false);
+  }
+
+  void setPinDecryptedData(PinDecryptedData value) {
+    state = value;
+  }
+}
+
+@Riverpod(keepAlive: true)
+PinProtectionHelper pinProtectionHelper(PinProtectionHelperRef ref) {
+  return PinProtectionHelper(ref: ref);
+}
+
+class PinProtectionHelper {
   final Ref ref;
 
-  PinProtectionProvider(this.ref);
+  PinProtectionHelper({required this.ref});
 
   Future<bool> Function(String?, bool, PinKeyboardAcceptType)?
       onPinBlockadeCallback;
+  VoidCallback? onUnlock;
+  VoidCallback? onUnlockFailed;
+  int wrongCount = 0;
 
-  Future<bool> pinBlockadeUnlocked(
-      {String? title,
-      bool showBackButton = true,
-      PinKeyboardAcceptType iconType = PinKeyboardAcceptType.unlock}) async {
+  Future<bool> pinBlockadeUnlocked({
+    String? title,
+    bool showBackButton = true,
+    PinKeyboardAcceptType iconType = PinKeyboardAcceptType.unlock,
+  }) async {
     if (onPinBlockadeCallback != null) {
       return await onPinBlockadeCallback!(title, showBackButton, iconType);
     }
     return false;
   }
 
-  VoidCallback? onUnlock;
-  VoidCallback? onUnlockFailed;
-
-  StreamSubscription<PinDecryptedData>? pinDecryptedSubscription;
-  PinProtectionState state = PinProtectionState.idle;
-
-  String pinCode = '';
-  String errorMessage = '';
-  int wrongCount = 0;
-
   void init({
     required VoidCallback onUnlockCallback,
     VoidCallback? onUnlockFailedCallback,
   }) {
-    pinCode = '';
-    errorMessage = '';
-    state = PinProtectionState.idle;
+    ref.invalidate(pinCodeProtectionNotifierProvider);
+    ref.invalidate(pinProtectionStateNotifierProvider);
     onUnlock = onUnlockCallback;
     onUnlockFailed = onUnlockFailedCallback;
   }
 
   void deinit() {
-    pinCode = '';
-    state = PinProtectionState.idle;
-    pinDecryptedSubscription?.cancel();
+    ref.invalidate(pinCodeProtectionNotifierProvider);
+    ref.invalidate(pinProtectionStateNotifierProvider);
   }
 
-  Future<void> onKeyEntered(PinKey key) async {
-    if (state == PinProtectionState.waiting) {
+  void onKeyEntered(PinKeyEnum key) async {
+    final pinProtectionState = ref.read(pinProtectionStateNotifierProvider);
+    if (pinProtectionState == const PinProtectionState.waiting()) {
       return;
     }
 
-    state = PinProtectionState.idle;
-    notifyListeners();
+    ref
+        .read(pinProtectionStateNotifierProvider.notifier)
+        .setPinProtectionState(const PinProtectionState.idle());
 
     switch (key) {
-      case PinKey.zero:
+      case PinKeyEnum.zero:
         _onNumber('0');
         break;
-      case PinKey.one:
+      case PinKeyEnum.one:
         _onNumber('1');
         break;
-      case PinKey.two:
+      case PinKeyEnum.two:
         _onNumber('2');
         break;
-      case PinKey.three:
+      case PinKeyEnum.three:
         _onNumber('3');
         break;
-      case PinKey.four:
+      case PinKeyEnum.four:
         _onNumber('4');
         break;
-      case PinKey.five:
+      case PinKeyEnum.five:
         _onNumber('5');
         break;
-      case PinKey.six:
+      case PinKeyEnum.six:
         _onNumber('6');
         break;
-      case PinKey.seven:
+      case PinKeyEnum.seven:
         _onNumber('7');
         break;
-      case PinKey.eight:
+      case PinKeyEnum.eight:
         _onNumber('8');
         break;
-      case PinKey.nine:
+      case PinKeyEnum.nine:
         _onNumber('9');
         break;
-      case PinKey.backspace:
+      case PinKeyEnum.backspace:
         _onBackspace();
         break;
-      case PinKey.enter:
-        await _onEnter();
+      case PinKeyEnum.enter:
+        _onEnter();
         break;
     }
   }
 
-  void reset() {
+  void resetCounter() {
     wrongCount = 0;
   }
 
   void _onNumber(String number) {
-    if (pinCode.length == PinSetupProvider.maxPinLength) {
+    final pinCode = ref.read(pinCodeProtectionNotifierProvider);
+    if (pinCode.length == ref.read(pinHelperProvider).maxPinLength) {
       return;
     }
 
-    pinCode = '$pinCode$number';
-    notifyListeners();
+    final newPinCode = '$pinCode$number';
+    ref.read(pinCodeProtectionNotifierProvider.notifier).setPinCode(newPinCode);
   }
 
   void _onBackspace() {
+    final pinCode = ref.read(pinCodeProtectionNotifierProvider);
     if (pinCode.isEmpty) {
       return;
     }
 
-    pinCode = pinCode.substring(0, pinCode.length - 1);
-    notifyListeners();
+    final newPinCode = pinCode.substring(0, pinCode.length - 1);
+    ref.read(pinCodeProtectionNotifierProvider.notifier).setPinCode(newPinCode);
   }
 
-  Future<void> _onEnter() async {
-    if (pinCode.length < PinSetupProvider.minPinLength) {
-      state = PinProtectionState.error;
-      pinCode = '';
-      errorMessage = 'PIN code is too short'.tr();
-      notifyListeners();
+  void _onEnter() async {
+    final pinCode = ref.read(pinCodeProtectionNotifierProvider);
+    if (pinCode.length < ref.read(pinHelperProvider).minPinLength) {
+      ref
+          .read(pinProtectionStateNotifierProvider.notifier)
+          .setPinProtectionState(
+              PinProtectionState.error(message: 'PIN code is too short'.tr()));
+      ref.invalidate(pinCodeProtectionNotifierProvider);
       return;
     }
 
-    state = PinProtectionState.waiting;
-    errorMessage = '';
-    notifyListeners();
-
-    await pinDecryptedSubscription?.cancel();
-    pinDecryptedSubscription =
-        ref.read(walletProvider).pinDecryptDataSubject.listen(_onPinDecrypted);
+    ref
+        .read(pinProtectionStateNotifierProvider.notifier)
+        .setPinProtectionState(const PinProtectionState.waiting());
 
     ref.read(walletProvider).sendDecryptPin(pinCode);
   }
 
-  void _onPinDecrypted(PinDecryptedData pinDecryptedData) async {
-    state = PinProtectionState.idle;
-    notifyListeners();
+  void onPinDecrypted(PinDecryptedData pinDecryptedData) async {
+    ref.invalidate(pinProtectionStateNotifierProvider);
 
-    await pinDecryptedSubscription?.cancel();
     logger.d(pinDecryptedData);
+
+    ref
+        .read(pinDecryptedDataNotifierProvider.notifier)
+        .setPinDecryptedData(pinDecryptedData);
 
     if (pinDecryptedData.success) {
       wrongCount = 0;
@@ -177,31 +209,27 @@ class PinProtectionProvider extends ChangeNotifier {
       return;
     }
 
-    pinCode = '';
-    switch (pinDecryptedData.error) {
-      case 'Failed handshake with PIN server':
-        errorMessage = 'Connection failed'.tr();
-        break;
-      case 'Couldn\'t decrypt data: BlockModeError':
-        wrongCount += 1;
-        switch (wrongCount) {
-          case 1:
-            errorMessage = 'Wrong PIN code. Two attempts left.'.tr();
-            break;
-          case 2:
-            errorMessage = 'Wrong PIN code. Last attempt left.'.tr();
-            break;
-          default:
-            ref.read(walletProvider).settingsDeletePromptConfirm();
-            return;
-        }
-        break;
-      default:
-        errorMessage = 'Unknown error'.tr(args: [pinDecryptedData.error]);
-        break;
+    ref.invalidate(pinCodeProtectionNotifierProvider);
+
+    wrongCount += 1;
+
+    if (wrongCount >= 3) {
+      await ref.read(walletProvider).settingsDeletePromptConfirm();
+      return;
     }
-    state = PinProtectionState.error;
-    notifyListeners();
+
+    final errorMessage = switch (pinDecryptedData.error) {
+      'Failed handshake with PIN server' => 'Connection failed'.tr(),
+      'Couldn\'t decrypt data: BlockModeError' when wrongCount == 1 =>
+        'Wrong PIN code. Two attempts left.'.tr(),
+      'Couldn\'t decrypt data: BlockModeError' when wrongCount == 2 =>
+        'Wrong PIN code. Last attempt left.'.tr(),
+      _ => 'Unknown error'.tr(args: [pinDecryptedData.error]),
+    };
+
+    ref
+        .read(pinProtectionStateNotifierProvider.notifier)
+        .setPinProtectionState(PinProtectionStateError(message: errorMessage));
 
     if (onUnlockFailed != null) {
       onUnlockFailed!();

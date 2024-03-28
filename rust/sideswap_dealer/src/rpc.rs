@@ -11,6 +11,7 @@ pub struct RpcServer {
     pub port: u16,
     pub login: String,
     pub password: String,
+    pub wallet: Option<String>,
 }
 
 pub trait RpcCall {
@@ -46,7 +47,7 @@ pub fn make_rpc_call<T: RpcCall>(
     trace!("make rpc request: {req}");
 
     // If two or more wallets are loaded, most RPC calls must include the wallet name in the URL path
-    let wallet_name = "";
+    let wallet_name = rpc_server.wallet.as_ref().map(String::as_str).unwrap_or("");
     let endpoint = format!(
         "http://{}:{}/wallet/{}",
         &rpc_server.host, rpc_server.port, wallet_name

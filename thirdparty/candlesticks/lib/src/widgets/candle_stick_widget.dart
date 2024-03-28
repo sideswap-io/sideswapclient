@@ -12,7 +12,8 @@ class CandleStickWidget extends LeafRenderObjectWidget {
   final Color bullColor;
   final Color bearColor;
 
-  CandleStickWidget({
+  const CandleStickWidget({
+    super.key,
     required this.candles,
     required this.index,
     required this.candleWidth,

@@ -19,8 +19,9 @@ class AssetsHeader extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dollarConversion =
-        ref.watch(accountAssetsTotalUsdBalanceStringProvider(accountAssets));
+    final defaultCurrencyConversion = ref.watch(
+        accountAssetsTotalDefaultCurrencyBalanceStringProvider(accountAssets));
+    final defaultCurrencyTicker = ref.watch(defaultCurrencyTickerProvider);
 
     final lbtcConversion =
         ref.watch(accountAssetsTotalLbtcBalanceProvider(accountAssets));
@@ -56,7 +57,7 @@ class AssetsHeader extends HookConsumerWidget {
                     ),
               ),
               Text(
-                '\$ $dollarConversion',
+                '$defaultCurrencyTicker $defaultCurrencyConversion',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(),
               ),
             ],
@@ -119,7 +120,7 @@ class WalletTransactions extends HookConsumerWidget {
       backgroundColor: backgroundColor,
       onPressed: () {
         ref
-            .read(pageStatusStateProvider.notifier)
+            .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.transactions);
       },
       child: SizedBox(

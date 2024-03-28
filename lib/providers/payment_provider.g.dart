@@ -317,7 +317,7 @@ class _SatoshiForAmountProviderElement extends AutoDisposeProviderElement<int>
   String get amount => (origin as SatoshiForAmountProvider).amount;
 }
 
-String _$paymentHelperHash() => r'01a4c45cd8dc35854ad00f9e4ecf09dff2889e08';
+String _$paymentHelperHash() => r'5b3ef574b9c22c3b56325aecbb49eadcfe6c788d';
 
 /// See also [paymentHelper].
 @ProviderFor(paymentHelper)
@@ -332,6 +332,40 @@ final paymentHelperProvider = AutoDisposeProvider<PaymentHelper>.internal(
 );
 
 typedef PaymentHelperRef = AutoDisposeProviderRef<PaymentHelper>;
+String _$createTxStateNotifierHash() =>
+    r'f68ff9d72afd9357f14098b35b191bf05516def6';
+
+/// See also [CreateTxStateNotifier].
+@ProviderFor(CreateTxStateNotifier)
+final createTxStateNotifierProvider =
+    NotifierProvider<CreateTxStateNotifier, CreateTxState>.internal(
+  CreateTxStateNotifier.new,
+  name: r'createTxStateNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$createTxStateNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$CreateTxStateNotifier = Notifier<CreateTxState>;
+String _$sendTxStateNotifierHash() =>
+    r'7b11dadb3ef928c6288c75715fb42578d5727c4a';
+
+/// See also [SendTxStateNotifier].
+@ProviderFor(SendTxStateNotifier)
+final sendTxStateNotifierProvider =
+    NotifierProvider<SendTxStateNotifier, SendTxState>.internal(
+  SendTxStateNotifier.new,
+  name: r'sendTxStateNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sendTxStateNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$SendTxStateNotifier = Notifier<SendTxState>;
 String _$paymentInsufficientFundsNotifierHash() =>
     r'2f7cb58452f78885860c288d3b7dcc44ae928cac';
 

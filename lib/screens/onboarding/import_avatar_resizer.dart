@@ -13,9 +13,9 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/avatar_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
-typedef ImageFakeCanvas = Future<void> Function();
-typedef OnBack = Future<void> Function(BuildContext context);
-typedef OnSave = Future<void> Function(BuildContext context);
+typedef ImageFakeCanvas = void Function();
+typedef OnBack = void Function();
+typedef OnSave = void Function();
 
 class ImportAvatarResizerData {
   final OnBack? onBack;
@@ -41,11 +41,11 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
     super.initState();
     if (widget.resizerData == null) {
       resizerData = ImportAvatarResizerData(
-        onBack: (context) async {
+        onBack: () {
           Navigator.of(context).pop();
           ref.read(walletProvider).setImportAvatar();
         },
-        onSave: (context) async {
+        onSave: () {
           Navigator.of(context).pop();
           ref.read(walletProvider).setImportAvatarSuccess();
         },
@@ -104,10 +104,10 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
       sized: false,
       child: SideSwapScaffold(
         canPop: false,
-        onPopInvoked: (bool didPop) async {
+        onPopInvoked: (bool didPop) {
           if (!didPop) {
             if (resizerData.onBack != null) {
-              await resizerData.onBack!(context);
+              resizerData.onBack!();
             }
           }
         },
@@ -115,9 +115,9 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
         backgroundColor: Colors.black,
         appBar: CustomAppBar(
           title: 'Size setting'.tr(),
-          onPressed: () async {
+          onPressed: () {
             if (resizerData.onBack != null) {
-              await resizerData.onBack!(context);
+              resizerData.onBack!();
             }
           },
         ),
@@ -142,7 +142,7 @@ class ImportAvatarResizerState extends ConsumerState<ImportAvatarResizer> {
                   if (thumbnail != null) {
                     await ref.read(avatarProvider).uploadAvatar();
                     if (resizerData.onSave != null) {
-                      await resizerData.onSave!(context);
+                      resizerData.onSave!();
                     }
                   }
                 },

@@ -20,8 +20,11 @@ class DAmpWalletAssetsPanel extends StatelessWidget {
             builder: (context, ref, _) {
               final ampAccountAssets =
                   ref.watch(ampVisibleAccountAssetsProvider);
-              final dollarConversion = ref.watch(
-                  accountAssetsTotalUsdBalanceStringProvider(ampAccountAssets));
+              final defaultCurrencyConversion = ref.watch(
+                  accountAssetsTotalDefaultCurrencyBalanceStringProvider(
+                      ampAccountAssets));
+              final defaultCurrencyTicker =
+                  ref.watch(defaultCurrencyTickerProvider);
 
               final lbtcConversion = ref.watch(
                   accountAssetsTotalLbtcBalanceProvider(ampAccountAssets));
@@ -29,7 +32,7 @@ class DAmpWalletAssetsPanel extends StatelessWidget {
               return DAssetsPanelHeader(
                 title: 'AMP Securities wallet'.tr(),
                 totalValueLabel: 'Total Value'.tr(),
-                totalValue: '$dollarConversion USD',
+                totalValue: '$defaultCurrencyConversion $defaultCurrencyTicker',
                 totalBtcValue: '$lbtcConversion L-BTC',
                 walletType: '2-of-2 multisig',
               );

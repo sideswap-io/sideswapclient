@@ -66,8 +66,8 @@ extern crate futures;
 
 const PRICE_EXPIRED: std::time::Duration = std::time::Duration::from_secs(300);
 
-const INTEREST_SUBMIT_USDT: f64 = 1.0075 - pset::SERVER_FEE_SHARE;
-const INTEREST_SUBMIT_EURX: f64 = 1.0040 - pset::SERVER_FEE_SHARE;
+const INTEREST_SUBMIT_USDT: f64 = 1.0075 - pset::INSTANT_SWAPS_SERVER_FEE;
+const INTEREST_SUBMIT_EURX: f64 = 1.0040 - pset::INSTANT_SWAPS_SERVER_FEE;
 
 const MIN_HEDGE_AMOUNT: f64 = 0.0002;
 
@@ -365,18 +365,10 @@ struct DealerState {
 }
 
 fn main() {
-    std::panic::set_hook(Box::new(|i| {
-        eprint!("panic: {:?}", i);
-        error!("panic: {:?}", i);
-        std::process::abort();
-    }));
-
     let matches = App::new("sideswap_dealer")
         .arg(Arg::with_name("config").required(true))
         .get_matches();
     let config_path = matches.value_of("config").unwrap();
-
-    info!("starting up");
 
     let mut conf = config::Config::new();
     conf.merge(config::File::with_name(config_path))
@@ -401,6 +393,10 @@ fn main() {
     };
 
     log4rs::init_file(&args.log_settings, Default::default()).expect("can't open log settings");
+
+    info!("starting up");
+
+    sideswap_common::panic_handler::install_panic_handler();
 
     info!("starting proxy...");
     unsafe {

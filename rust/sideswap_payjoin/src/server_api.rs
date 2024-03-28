@@ -28,6 +28,7 @@ pub struct Utxo {
 pub struct StartRequest {
     pub asset_id: elements::AssetId,
     pub user_agent: String,
+    pub api_key: Option<String>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]

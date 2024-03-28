@@ -12,7 +12,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/enums.dart';
@@ -23,14 +22,17 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/models/pegx_model.dart';
+import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/asset_selector_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/common_providers.dart';
+import 'package:sideswap/providers/currency_rates_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
 import 'package:sideswap/providers/market_data_provider.dart';
@@ -71,18 +73,17 @@ import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
-part 'wallet.g.dart';
+class SideSwapException implements Exception {
+  final String message;
 
-@Riverpod(keepAlive: true)
-class LibClientId extends _$LibClientId {
+  const SideSwapException(this.message);
+
   @override
-  int build() {
-    return 0;
-  }
+  String toString() => message;
+}
 
-  void setClientId(int clientId) {
-    state = clientId;
-  }
+class ClientNotInitializedException extends SideSwapException {
+  ClientNotInitializedException(super.message);
 }
 
 List<int> envValues() {
@@ -130,25 +131,6 @@ AccountType getAccountType(Account account) {
   return AccountType(account.id);
 }
 
-class PinData {
-  final String salt;
-  final String encryptedData;
-  final String pinIdentifier;
-  final String error;
-
-  PinData({
-    this.salt = '',
-    this.encryptedData = '',
-    this.pinIdentifier = '',
-    this.error = '',
-  });
-
-  @override
-  String toString() {
-    return 'PinData(salt: $salt, encryptedData: <redacted>, pinIdentifier: $pinIdentifier, error: $error)';
-  }
-}
-
 MarketType getMarketType(Asset? asset) {
   if (asset == null) {
     return MarketType.token;
@@ -194,14 +176,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
   String _mnemonic = '';
 
-  // Used only to differentiate import and new wallet startup flows
-  // when same states are used (for example newWalletPinWelcome)
-  bool walletImporting = false;
-
-  bool _loggedIn = false;
-
-  final disabledAccounts = <AccountAsset>{};
-
   ServerStatus? _serverStatus;
   ServerStatus? get serverStatus => _serverStatus;
 
@@ -213,9 +187,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
   final _recvSubject = PublishSubject<From>();
   StreamSubscription<From>? _recvSubscription;
-
-  var isCreatingTx = false;
-  var isSendingTx = false;
 
   // Toggle assets page
   var filteredToggleAccounts = <AccountAsset>[];
@@ -236,10 +207,6 @@ class WalletChangeNotifier with ChangeNotifier {
   SwapDetails? swapDetails;
   bool swapPromptWaitingTx = false;
 
-  PublishSubject<PinData> pinEncryptDataSubject = PublishSubject<PinData>();
-  PublishSubject<PinDecryptedData> pinDecryptDataSubject =
-      PublishSubject<PinDecryptedData>();
-
   void sendMsg(To to) {
     if (kDebugMode) {
       logger.d('send: ${to.toDebugString()}');
@@ -247,7 +214,7 @@ class WalletChangeNotifier with ChangeNotifier {
     final clientId = ref.read(libClientIdProvider);
 
     if (clientId == 0) {
-      throw ErrorDescription('client is not initialized');
+      throw ClientNotInitializedException('client is not initialized');
     }
     final buf = to.writeToBuffer();
 
@@ -268,7 +235,13 @@ class WalletChangeNotifier with ChangeNotifier {
   Future<void> startClient() async {
     logger.d('startClient');
 
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.walletLoading);
+    ref.invalidate(defaultAccountsStateProvider);
+    ref.invalidate(assetsStateProvider);
+    ref.invalidate(swapProvider);
+
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.walletLoading);
 
     _recvSubscription?.cancel();
     _receivePortSubscription?.cancel();
@@ -311,7 +284,7 @@ class WalletChangeNotifier with ChangeNotifier {
             ref.read(configurationProvider).mnemonicEncrypted.isNotEmpty,
         usePinProtection: ref.read(configurationProvider).usePinProtection);
     if (appResetRequired) {
-      ref.read(configurationProvider.notifier).deleteConfig();
+      await ref.read(configurationProvider.notifier).deleteConfig();
     }
 
     if (ref.read(configurationProvider).jadeId.isNotEmpty) {
@@ -320,7 +293,7 @@ class WalletChangeNotifier with ChangeNotifier {
       if (await _encryption.canAuthenticate() &&
           ref.read(configurationProvider).useBiometricProtection) {
         ref
-            .read(pageStatusStateProvider.notifier)
+            .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.lockedWalet);
       } else {
         await unlockWallet();
@@ -329,13 +302,15 @@ class WalletChangeNotifier with ChangeNotifier {
       if (ref.read(configurationProvider).usePinProtection) {
         await unlockWallet();
       } else {
-        ref.read(pageStatusStateProvider.notifier).setStatus(Status.noWallet);
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.noWallet);
         notifyListeners();
       }
     }
 
     // Initiate wallet unlock after startup
-    final status = ref.read(pageStatusStateProvider);
+    final status = ref.read(pageStatusNotifierProvider);
     if (status == Status.lockedWalet) {
       await unlockWallet();
     }
@@ -429,10 +404,10 @@ class WalletChangeNotifier with ChangeNotifier {
             from.swapFailed;
         notifyListeners();
         await ref.read(utilsProvider).showErrorDialog(from.swapFailed);
-        final status = ref.read(pageStatusStateProvider);
+        final status = ref.read(pageStatusNotifierProvider);
         if (status == Status.swapPrompt) {
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.registered);
         }
         break;
@@ -455,7 +430,7 @@ class WalletChangeNotifier with ChangeNotifier {
         ref.read(swapStateProvider.notifier).state = SwapState.idle;
         if (!FlavorConfig.isDesktop) {
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.swapWaitPegTx);
         } else {
           ref.read(desktopDialogProvider).waitPegin();
@@ -472,7 +447,9 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.createTxResult:
-        isCreatingTx = false;
+        ref
+            .read(createTxStateNotifierProvider.notifier)
+            .setCreateTxState(const CreateTxStateEmpty());
         switch (from.createTxResult.whichResult()) {
           case From_CreateTxResult_Result.errorMsg:
             await ref
@@ -486,7 +463,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
             if (!FlavorConfig.isDesktop) {
               ref
-                  .read(pageStatusStateProvider.notifier)
+                  .read(pageStatusNotifierProvider.notifier)
                   .setStatus(Status.paymentSend);
             }
             break;
@@ -497,10 +474,13 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.sendResult:
-        isSendingTx = false;
+        ref
+            .read(sendTxStateNotifierProvider.notifier)
+            .setSendTxState(const SendTxStateEmpty());
+
         if (!FlavorConfig.isDesktop) {
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.assetDetails);
         }
         switch (from.sendResult.whichResult()) {
@@ -642,27 +622,28 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.encryptPin:
         if (from.encryptPin.hasError()) {
-          final pinData = PinData(error: from.encryptPin.error);
-          pinEncryptDataSubject.add(pinData);
+          final pinData = PinDataState.error(message: from.encryptPin.error);
+          ref.read(pinHelperProvider).onPinData(pinData);
         } else {
           final data = from.encryptPin.data;
-          final pinData = PinData(
+          final pinData = PinDataStateData(
               salt: data.salt,
               encryptedData: data.encryptedData,
               pinIdentifier: data.pinIdentifier);
           ref.read(configurationProvider.notifier).setPinData(pinData);
-          pinEncryptDataSubject.add(pinData);
+          ref.read(pinHelperProvider).onPinData(pinData);
         }
         break;
 
       case From_Msg.decryptPin:
         if (from.decryptPin.hasError()) {
-          pinDecryptDataSubject
-              .add(PinDecryptedData(false, error: from.decryptPin.error));
+          ref.read(pinProtectionHelperProvider).onPinDecrypted(
+              PinDecryptedData(false, error: from.decryptPin.error));
         } else {
           _mnemonic = from.decryptPin.mnemonic;
-          pinDecryptDataSubject
-              .add(PinDecryptedData(true, mnemonic: _mnemonic));
+          ref
+              .read(pinProtectionHelperProvider)
+              .onPinDecrypted(PinDecryptedData(true, mnemonic: _mnemonic));
         }
 
         break;
@@ -735,13 +716,17 @@ class WalletChangeNotifier with ChangeNotifier {
             }
 
             if (orderDetailsData.orderType == OrderDetailsDataType.submit) {
-              setRegistered();
+              ref
+                  .read(pageStatusNotifierProvider.notifier)
+                  .setStatus(Status.registered);
             } else if (orderDetailsData.orderType ==
                 OrderDetailsDataType.quote) {
               setResponseSuccess();
             } else if (orderDetailsData.orderType ==
                 OrderDetailsDataType.sign) {
-              setRegistered();
+              ref
+                  .read(pageStatusNotifierProvider.notifier)
+                  .setStatus(Status.registered);
             }
             break;
 
@@ -769,7 +754,9 @@ class WalletChangeNotifier with ChangeNotifier {
                   .read(utilsProvider)
                   .showUnregisteredGaid(from.submitResult.unregisteredGaid);
             }
-            setRegistered();
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.registered);
             break;
           case From_SubmitResult_Result.notSet:
             throw Exception('invalid SubmitResult message');
@@ -777,18 +764,19 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.walletLoaded:
-        ref.read(walletLoadedStateProvider.notifier).state = true;
         final showAmpOnboarding =
             ref.read(configurationProvider).showAmpOnboarding;
         if (showAmpOnboarding) {
           // wallet is loaded but we need to display onboarding amp setup
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.ampRegister);
           return;
         }
 
-        setRegistered();
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.registered);
 
         // check initial deep link
         // process links before login request for loading screen to work properly
@@ -831,10 +819,12 @@ class WalletChangeNotifier with ChangeNotifier {
         }
         break;
       case From_Msg.serverConnected:
-        ref.read(serverConnectionStateProvider.notifier).state = true;
+        ref
+            .read(serverConnectionNotifierProvider.notifier)
+            .setServerConnectionState(true);
         break;
       case From_Msg.serverDisconnected:
-        ref.read(serverConnectionStateProvider.notifier).state = false;
+        ref.invalidate(serverConnectionNotifierProvider);
         ref.read(marketsRequestOrdersNotifierProvider.notifier).clearOrders();
         break;
       case From_Msg.orderCreated:
@@ -978,7 +968,9 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.logout:
         cleanupConnectionStates();
-        ref.read(pageStatusStateProvider.notifier).setStatus(Status.noWallet);
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.noWallet);
         break;
       case From_Msg.jadeStatus:
         final status = JadeStatus.fromStatus(from.jadeStatus.status);
@@ -1027,15 +1019,15 @@ class WalletChangeNotifier with ChangeNotifier {
         logger.d(from.login);
         (switch (from.login.whichResult()) {
           From_Login_Result.success => ref
-              .read(serverLoginStateProvider.notifier)
-              .state = const ServerLoginStateLogin(),
-          From_Login_Result.errorMsg => () {
-              ref.read(serverLoginStateProvider.notifier).state =
-                  ServerLoginStateError(message: from.login.errorMsg);
-            }(),
+              .read(serverLoginNotifierProvider.notifier)
+              .setServerLoginState(const ServerLoginStateLogin()),
+          From_Login_Result.errorMsg => ref
+              .read(serverLoginNotifierProvider.notifier)
+              .setServerLoginState(
+                  ServerLoginStateError(message: from.login.errorMsg)),
           From_Login_Result.notSet => ref
-              .read(serverLoginStateProvider.notifier)
-              .state = const ServerLoginStateError(),
+              .read(serverLoginNotifierProvider.notifier)
+              .setServerLoginState(const ServerLoginStateError()),
         });
         break;
       case From_Msg.createPayjoinResult:
@@ -1058,6 +1050,10 @@ class WalletChangeNotifier with ChangeNotifier {
         ref
             .read(tokenMarketOrderProvider.notifier)
             .setTokenMarketOrder(from.tokenMarketOrder.assetIds);
+      case From_Msg.conversionRates:
+        ref
+            .read(conversionRatesNotifierProvider.notifier)
+            .setConversionRates(from.conversionRates);
     }
   }
 
@@ -1147,7 +1143,6 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> setReviewLicenseCreateWallet() async {
-    walletImporting = false;
     if (ref.read(configurationProvider).licenseAccepted) {
       if (await _encryption.canAuthenticate()) {
         await newWalletBiometricPrompt();
@@ -1157,20 +1152,19 @@ class WalletChangeNotifier with ChangeNotifier {
       setNewWalletPinWelcome();
     } else {
       ref
-          .read(pageStatusStateProvider.notifier)
-          .setStatus(Status.reviewLicenseCreateWallet);
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.reviewLicense);
     }
     notifyListeners();
   }
 
   void setReviewLicenseImportWallet() {
-    walletImporting = true;
     if (ref.read(configurationProvider).licenseAccepted) {
       startMnemonicImport();
     } else {
       ref
-          .read(pageStatusStateProvider.notifier)
-          .setStatus(Status.reviewLicenseImportWallet);
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.reviewLicense);
     }
     notifyListeners();
   }
@@ -1185,7 +1179,7 @@ class WalletChangeNotifier with ChangeNotifier {
     _mnemonic = getNewMnemonic();
     if (await _encryption.canAuthenticate()) {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.newWalletBiometricPrompt);
       notifyListeners();
       return;
@@ -1198,21 +1192,23 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void newWalletBackupPrompt() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.newWalletBackupPrompt);
   }
 
   void startMnemonicImport() {
-    final status = ref.read(pageStatusStateProvider);
+    final status = ref.read(pageStatusNotifierProvider);
     assert(status == Status.noWallet ||
         status == Status.importWallet ||
         status == Status.importWalletError ||
-        status == Status.reviewLicenseImportWallet);
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.importWallet);
+        status == Status.reviewLicense);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.importWallet);
   }
 
   void importMnemonic(String mnemonic) {
-    final status = ref.read(pageStatusStateProvider);
+    final status = ref.read(pageStatusNotifierProvider);
     assert(status == Status.importWallet ||
         status == Status.importWalletSuccess ||
         status == Status.newWalletPinWelcome);
@@ -1220,9 +1216,8 @@ class WalletChangeNotifier with ChangeNotifier {
     _mnemonic = mnemonic;
 
     if (FlavorConfig.isDesktop) {
-      ref.read(pinSetupProvider).isNewWallet = true;
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.newWalletPinWelcome);
       return;
     }
@@ -1232,7 +1227,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void backupNewWalletEnable() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.newWalletBackupView);
   }
 
@@ -1242,7 +1237,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<bool> walletPinEnable() async {
     if (await _registerWallet(false)) {
-      enablePinProtection();
+      ref.read(pinHelperProvider).enablePinProtection();
       return true;
     }
 
@@ -1295,7 +1290,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void acceptLicense() {
     ref.read(configurationProvider.notifier).setLicenseAccepted(true);
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.noWallet);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
   }
 
   void backupNewWalletCheck() {
@@ -1321,7 +1316,7 @@ class WalletChangeNotifier with ChangeNotifier {
       backupCheckAllWords[selectedIndex] = otherWords;
     }
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.newWalletBackupCheck);
     notifyListeners();
   }
@@ -1356,18 +1351,18 @@ class WalletChangeNotifier with ChangeNotifier {
   void backupNewWalletVerify() {
     if (_validSelectedWords()) {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.newWalletBackupCheckSucceed);
       return;
     }
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.newWalletBackupCheckFailed);
     notifyListeners();
   }
 
   bool goBack() {
-    var status = ref.read(pageStatusStateProvider);
+    var status = ref.read(pageStatusNotifierProvider);
     switch (status) {
       case Status.newWalletBackupCheck:
         status = Status.newWalletBackupView;
@@ -1384,12 +1379,12 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.selectEnv:
       case Status.importAvatar:
       case Status.associatePhoneWelcome:
-      case Status.reviewLicenseImportWallet:
+      case Status.reviewLicense:
       case Status.newWalletBackupPrompt:
       case Status.jadeImport:
+      case Status.networkAccessOnboarding:
         status = Status.noWallet;
         break;
-
       // pages without back
       case Status.confirmPhoneSuccess:
       case Status.importAvatarSuccess:
@@ -1459,6 +1454,7 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.settingsUserDetails:
       case Status.settingsNetwork:
       case Status.settingsLogs:
+      case Status.settingsCurrency:
         status = Status.settingsPage;
         break;
       case Status.settingsPage:
@@ -1471,9 +1467,6 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.importWalletBiometricPrompt:
         // don't use Status.importWallet here as it breaks text fields
         // user will need to start over
-        status = Status.noWallet;
-        break;
-      case Status.reviewLicenseCreateWallet:
         status = Status.noWallet;
         break;
       case Status.registered:
@@ -1510,13 +1503,16 @@ class WalletChangeNotifier with ChangeNotifier {
       case Status.generateWalletAddress:
         status = Status.registered;
         break;
-
       case Status.walletAddressDetail:
         status = Status.generateWalletAddress;
         break;
+      case Status.stokrRestrictionsInfo:
+      case Status.stokrNeedRegister:
+        status = Status.registered;
+        break;
     }
 
-    ref.read(pageStatusStateProvider.notifier).setStatus(status);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(status);
     return false;
   }
 
@@ -1542,10 +1538,11 @@ class WalletChangeNotifier with ChangeNotifier {
 
     sendMsg(msg);
 
-    loadSettings();
-
-    _loggedIn = true;
     ref.read(configurationProvider.notifier).setJadeId(jadeId);
+
+    ref
+        .read(firstLaunchStateNotifierProvider.notifier)
+        .setFirstLaunchState(const FirstLaunchStateEmpty());
     notifyListeners();
   }
 
@@ -1553,14 +1550,12 @@ class WalletChangeNotifier with ChangeNotifier {
     final msg = To();
     msg.logout = Empty();
     sendMsg(msg);
-
-    resetSettings();
-
-    _loggedIn = false;
   }
 
   void selectAssetDetails(AccountAsset value) {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.assetDetails);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.assetDetails);
     ref
         .read(selectedWalletAccountAssetNotifierProvider.notifier)
         .setAccountAsset(value);
@@ -1569,7 +1564,9 @@ class WalletChangeNotifier with ChangeNotifier {
   void selectAssetReceive(AccountType accountType) {
     toggleRecvAddrType(accountType);
 
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.assetReceive);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.assetReceive);
     notifyListeners();
   }
 
@@ -1584,11 +1581,11 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void selectPaymentPage() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.paymentPage);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.paymentPage);
   }
 
   void showTxDetails(TransItem tx) {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.txDetails);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.txDetails);
     txDetails = tx;
 
     _listenTxDetailsChanges();
@@ -1599,7 +1596,7 @@ class WalletChangeNotifier with ChangeNotifier {
   void showSwapTxDetails(TransItem transItem) {
     if (!FlavorConfig.isDesktop) {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.swapTxDetails);
       txDetails = transItem;
 
@@ -1647,7 +1644,9 @@ class WalletChangeNotifier with ChangeNotifier {
     final msg = To();
     msg.createTx = createTx;
     sendMsg(msg);
-    isCreatingTx = true;
+    ref
+        .read(createTxStateNotifierProvider.notifier)
+        .setCreateTxState(const CreateTxStateCreating());
     notifyListeners();
   }
 
@@ -1666,13 +1665,17 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.sendTx = To_SendTx();
     msg.sendTx.account = account;
     sendMsg(msg);
-    isSendingTx = true;
+    ref
+        .read(sendTxStateNotifierProvider.notifier)
+        .setSendTxState(const SendTxStateSending());
     notifyListeners();
   }
 
   void selectAvailableAssets() {
     setToggleAssetFilter('');
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.assetsSelect);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.assetsSelect);
   }
 
   bool _showAsset(Asset asset, String filterLowerCase) {
@@ -1705,50 +1708,8 @@ class WalletChangeNotifier with ChangeNotifier {
     }
   }
 
-  bool disabledAssetAccount(AccountAsset account) {
-    return disabledAccounts.contains(account);
-  }
-
-  void loadSettings() {
-    var settings = Settings();
-    final settingsStr = ref.read(configurationProvider).settings;
-    if (settingsStr != null) {
-      settings = Settings.fromJson(settingsStr);
-    }
-    disabledAccounts.clear();
-    for (final v in settings.disabledAccounts) {
-      disabledAccounts.add(AccountAsset(getAccountType(v.account), v.assetId));
-    }
-  }
-
-  Future<void> saveSettings() async {
-    final settings = Settings();
-    for (var v in disabledAccounts) {
-      settings.disabledAccounts.add(Settings_AccountAsset(
-          account: getAccount(v.account), assetId: v.assetId));
-    }
-    ref
-        .read(configurationProvider.notifier)
-        .setSettings(settings.writeToJson());
-  }
-
-  void resetSettings() {
-    ref.read(configurationProvider.notifier).clearSettings();
-    loadSettings();
-  }
-
-  Future<void> toggleAssetVisibility(AccountAsset account) async {
-    if (disabledAssetAccount(account)) {
-      disabledAccounts.remove(account);
-    } else {
-      disabledAccounts.add(account);
-    }
-    await saveSettings();
-    notifyListeners();
-  }
-
   void editTxMemo(Object arguments) {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.txEditMemo);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.txEditMemo);
   }
 
   String txMemo(Tx? tx) {
@@ -1782,9 +1743,9 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<void> settingsViewBackup() async {
     if (ref.read(configurationProvider).usePinProtection) {
-      if (await ref.read(pinProtectionProvider).pinBlockadeUnlocked()) {
+      if (await ref.read(pinProtectionHelperProvider).pinBlockadeUnlocked()) {
         ref
-            .read(pageStatusStateProvider.notifier)
+            .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.settingsBackup);
         return;
       }
@@ -1799,37 +1760,33 @@ class WalletChangeNotifier with ChangeNotifier {
             .decryptFallback(ref.read(configurationProvider).mnemonicEncrypted);
     if (mnemonic == _mnemonic && validateMnemonic(mnemonic)) {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.settingsBackup);
     }
   }
 
   void settingsUserDetails() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.settingsUserDetails);
   }
 
   void settingsViewPage() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.settingsPage);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.settingsPage);
   }
 
   void settingsViewAboutUs() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.settingsAboutUs);
-  }
-
-  void settingsNetwork() {
-    ref
-        .read(pageStatusStateProvider.notifier)
-        .setStatus(Status.settingsNetwork);
   }
 
   Future<void> settingsViewSecurity() async {
     settingsBiometricAvailable = await _encryption.canAuthenticate();
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.settingsSecurity);
     notifyListeners();
   }
@@ -1840,70 +1797,71 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> settingsDeletePromptConfirm() async {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.walletLoading);
+    final navigatorKey = ref.read(navigatorKeyProvider);
+
+    Navigator.of(navigatorKey.currentContext!)
+        .popUntil((route) => route.isFirst);
 
     if (FlavorConfig.isDesktop) {
-      final navigatorKey = ref.read(navigatorKeyProvider);
-
-      Navigator.of(navigatorKey.currentContext!, rootNavigator: true)
-          .popUntil((route) => route.isFirst);
       Navigator.of(navigatorKey.currentContext!)
           .popUntil((route) => route.isFirst);
     }
 
-    if (_loggedIn) {
-      // cancel all orders
-      final orders = ref.read(marketOwnRequestOrdersProvider);
-      for (var order in orders) {
-        cancelOrder(order.orderId);
-      }
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
 
-      unregisterPhone();
-      await _logout();
-      notifyListeners();
+    // cancel all orders
+    final orders = ref.read(marketOwnRequestOrdersProvider);
+    for (var order in orders) {
+      cancelOrder(order.orderId);
     }
 
-    deleteWalletAndCleanup();
+    unregisterPhone();
+
+    await deleteWalletAndCleanup();
   }
 
   void cleanupConnectionStates() {
-    ref.read(serverLoginStateProvider.notifier).state =
-        const ServerLoginStateLogout();
-    ref.read(serverConnectionStateProvider.notifier).state = false;
-    ref.read(walletLoadedStateProvider.notifier).state = false;
+    logger.w('Clean connection states');
+    ref.invalidate(serverLoginNotifierProvider);
+    ref.invalidate(serverConnectionNotifierProvider);
     cleanAppStates();
   }
 
   void cleanAppStates() {
+    logger.w('Clean app states');
     ref.read(balancesNotifierProvider.notifier).clear();
     ref.read(uiStateArgsNotifierProvider.notifier).clear();
     ref.read(phoneProvider).clearData();
-    ref.read(pinProtectionProvider).reset();
+    ref.read(pinProtectionHelperProvider).resetCounter();
     ref.read(allTxsNotifierProvider.notifier).clear();
     ref.read(allPegsNotifierProvider.notifier).clear();
     ref.read(ampIdNotifierProvider.notifier).setAmpId('');
     ref.invalidate(jadeOnboardingRegistrationNotifierProvider);
+    ref.invalidate(firstLaunchStateNotifierProvider);
     _mnemonic = "";
     notifyListeners();
   }
 
-  void deleteWalletAndCleanup() {
+  Future<void> deleteWalletAndCleanup() async {
     unsubscribeFromPriceStream();
+    await ref.read(configurationProvider.notifier).deleteConfig();
+    await _logout();
     cleanupConnectionStates();
-    ref.read(configurationProvider.notifier).deleteConfig();
-    cleanAppStates();
   }
 
   Future<void> unlockWallet() async {
-    if (ref.read(configurationProvider).usePinProtection) {
+    final usePinProtection = ref.read(configurationProvider).usePinProtection;
+    if (usePinProtection) {
       if (await ref
-          .read(pinProtectionProvider)
+          .read(pinProtectionHelperProvider)
           .pinBlockadeUnlocked(showBackButton: false)) {
         _login(mnemonic: _mnemonic);
         return;
       }
 
-      ref.read(pageStatusStateProvider.notifier).setStatus(Status.lockedWalet);
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.lockedWalet);
       return;
     }
 
@@ -1919,7 +1877,7 @@ class WalletChangeNotifier with ChangeNotifier {
       _login(mnemonic: _mnemonic);
     } else {
       // TODO: Show error
-      ref.read(pageStatusStateProvider.notifier).setStatus(Status.lockedWalet);
+      ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.noWallet);
     }
 
     notifyListeners();
@@ -1968,7 +1926,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   Future<bool> isAuthenticated() async {
     if (ref.read(configurationProvider).usePinProtection) {
-      return ref.read(pinProtectionProvider).pinBlockadeUnlocked();
+      return ref.read(pinProtectionHelperProvider).pinBlockadeUnlocked();
     }
 
     if (ref.read(configurationProvider).useBiometricProtection) {
@@ -1994,11 +1952,11 @@ class WalletChangeNotifier with ChangeNotifier {
   void setImportWalletResult(bool success) {
     if (success) {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.importWalletSuccess);
     } else {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.importWalletError);
     }
 
@@ -2009,7 +1967,7 @@ class WalletChangeNotifier with ChangeNotifier {
     final canAuthenticate = await _encryption.canAuthenticate();
     if (canAuthenticate) {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.importWalletBiometricPrompt);
       return;
     }
@@ -2019,11 +1977,14 @@ class WalletChangeNotifier with ChangeNotifier {
     }
   }
 
-  void setRegistered() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.registered);
-  }
-
   void updatePushToken(String? token) {
+    final clientId = ref.read(libClientIdProvider);
+    if (clientId == 0) {
+      logger.w(
+          'Client lib is not initialized. Are you trying to send message too early?');
+      return;
+    }
+
     if (token == null) {
       return;
     }
@@ -2052,38 +2013,44 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setImportAvatar() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.importAvatar);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.importAvatar);
   }
 
   void setImportAvatarSuccess() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.importAvatarSuccess);
   }
 
   void setAssociatePhoneWelcome() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.associatePhoneWelcome);
   }
 
   void setConfirmPhone() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.confirmPhone);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.confirmPhone);
   }
 
   void setConfirmPhoneSuccess() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.confirmPhoneSuccess);
   }
 
   void setImportContacts() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.importContacts);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.importContacts);
   }
 
   void setImportContactsSuccess() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.importContactsSuccess);
   }
 
@@ -2099,10 +2066,12 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.registered);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
 
     Future.microtask(() {
-      ref.read(pageStatusStateProvider.notifier).setStatus(Status.orderPopup);
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.orderPopup);
 
       final instance = WidgetsBinding.instance;
       if (orderDetailsData.orderType == OrderDetailsDataType.sign &&
@@ -2141,12 +2110,14 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void setOrderSuccess() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.orderSuccess);
+    ref
+        .read(pageStatusNotifierProvider.notifier)
+        .setStatus(Status.orderSuccess);
   }
 
   void setResponseSuccess() {
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.orderResponseSuccess);
   }
 
@@ -2212,9 +2183,8 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void setNewWalletPinWelcome() {
     _mnemonic = getNewMnemonic();
-    ref.read(pinSetupProvider).isNewWallet = true;
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.newWalletPinWelcome);
   }
 
@@ -2223,11 +2193,7 @@ class WalletChangeNotifier with ChangeNotifier {
       await setImportWalletBiometricPrompt();
       return;
     }
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.pinWelcome);
-  }
-
-  void setPinSetup() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.pinSetup);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.pinWelcome);
   }
 
   bool sendEncryptPin(String pin) {
@@ -2245,9 +2211,9 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void sendDecryptPin(String pin) {
-    final pinData = ref.read(configurationProvider).pinData;
+    final pinData = ref.read(configurationProvider).pinDataState;
 
-    if (pinData == null) {
+    if (pinData == null || pinData is! PinDataStateData) {
       logger.w('pinData is empty!');
       return;
     }
@@ -2261,41 +2227,28 @@ class WalletChangeNotifier with ChangeNotifier {
     sendMsg(msg);
   }
 
-  void setPinSuccess() {
-    enablePinProtection();
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.pinSuccess);
-  }
-
   Future<bool> disablePinProtection() async {
     if (!ref.read(configurationProvider).usePinProtection) {
       // already disabled
       return true;
     }
 
-    final pinDecryptedSubscription =
-        pinDecryptDataSubject.listen((pinDecryptedData) async {
+    final ret = await ref.read(pinProtectionHelperProvider).pinBlockadeUnlocked(
+        iconType: PinKeyboardAcceptType.disable,
+        title: 'Disable PIN protection'.tr());
+
+    if (ret) {
+      final pinDecryptedData = ref.read(pinDecryptedDataNotifierProvider);
       if (pinDecryptedData.success) {
         // turn off pin and save encrypted mnemonic
         ref.read(configurationProvider.notifier).setUsePinProtection(false);
-        notifyListeners();
 
         ref.read(configurationProvider.notifier).setMnemonicEncrypted(
             await _encryption.encryptFallback(pinDecryptedData.mnemonic));
       }
-    });
-
-    final ret = await ref.read(pinProtectionProvider).pinBlockadeUnlocked(
-        iconType: PinKeyboardAcceptType.disable,
-        title: 'Disable PIN protection'.tr());
-    await pinDecryptedSubscription.cancel();
+    }
 
     return ret;
-  }
-
-  void enablePinProtection() {
-    ref.read(configurationProvider.notifier).setUseBiometricProtection(false);
-    ref.read(configurationProvider.notifier).setUsePinProtection(true);
-    notifyListeners();
   }
 
   void processPendingPushMessages() {
@@ -2323,7 +2276,7 @@ class WalletChangeNotifier with ChangeNotifier {
   void setCreateOrderEntry() {
     ref.read(requestOrderProvider).validateDeliverAsset();
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.createOrderEntry);
   }
 
@@ -2333,7 +2286,7 @@ class WalletChangeNotifier with ChangeNotifier {
       return;
     }
 
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.createOrder);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.createOrder);
   }
 
   void setCreateOrderSuccess() {
@@ -2353,10 +2306,12 @@ class WalletChangeNotifier with ChangeNotifier {
 
     if (orderDetailsData.private) {
       ref
-          .read(pageStatusStateProvider.notifier)
+          .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.createOrderSuccess);
     } else {
-      ref.read(pageStatusStateProvider.notifier).setStatus(Status.registered);
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.registered);
     }
   }
 
@@ -2410,12 +2365,6 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   void modifyOrderAutoSign(String orderId, bool autoSign) {
-    final orderDetailsData = OrderDetailsData.empty();
-
-    Future.microtask(() => ref
-        .read(orderDetailsDataNotifierProvider.notifier)
-        .setOrderDetailsData(orderDetailsData));
-
     final msg = To();
     msg.editOrder = To_EditOrder();
     msg.editOrder.orderId = orderId;
@@ -2456,7 +2405,7 @@ class WalletChangeNotifier with ChangeNotifier {
     }
 
     ref
-        .read(pageStatusStateProvider.notifier)
+        .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.orderRequestView);
   }
 
@@ -2566,13 +2515,13 @@ class WalletChangeNotifier with ChangeNotifier {
     swapDetails = swap;
     swapPromptWaitingTx = false;
     notifyListeners();
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.swapPrompt);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.swapPrompt);
   }
 
   void swapReviewAccept() {
     swapPromptWaitingTx = true;
     notifyListeners();
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.swapPrompt);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.swapPrompt);
 
     final msg = To();
     msg.swapAccept = swapDetails!;
@@ -2645,6 +2594,19 @@ class WalletChangeNotifier with ChangeNotifier {
 
   To_ProxySettings getProxySettings() {
     final proxy = To_ProxySettings();
+    final host = ref.read(configurationProvider).proxySettings?.host;
+    final port = ref.read(configurationProvider).proxySettings?.port;
+    final useProxy = ref.read(configurationProvider).useProxy;
+
+    if (useProxy &&
+        host != null &&
+        host.isNotEmpty &&
+        port != null &&
+        port > 0 &&
+        port < 65535) {
+      proxy.proxy = To_ProxySettings_Proxy(host: host, port: port);
+    }
+
     return proxy;
   }
 

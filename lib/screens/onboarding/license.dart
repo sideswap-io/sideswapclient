@@ -6,20 +6,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
-
-enum LicenseNextStep {
-  createWallet,
-  importWallet,
-}
 
 class LicenseTerms extends ConsumerWidget {
   const LicenseTerms({
     super.key,
-    required this.nextStep,
   });
-
-  final LicenseNextStep nextStep;
 
   Future<String> loadLicense() async {
     return await rootBundle.loadString('LICENSE');
@@ -27,6 +20,8 @@ class LicenseTerms extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
+
     return SideSwapPopup(
       enableInsideHorizontalPadding: false,
       child: Column(
@@ -98,16 +93,12 @@ class LicenseTerms extends ConsumerWidget {
                   backgroundColor: SideSwapColors.brightTurquoise,
                   onPressed: () async {
                     ref.read(walletProvider).setLicenseAccepted();
-                    if (nextStep == LicenseNextStep.createWallet) {
-                      await ref
+                    return switch (firstLaunchState) {
+                      FirstLaunchStateCreateWallet() => await ref
                           .read(walletProvider)
-                          .setReviewLicenseCreateWallet();
-                      return;
-                    }
-
-                    if (nextStep == LicenseNextStep.importWallet) {
-                      ref.read(walletProvider).startMnemonicImport();
-                    }
+                          .setReviewLicenseCreateWallet(),
+                      _ => ref.read(walletProvider).startMnemonicImport(),
+                    };
                   },
                 ),
               ),

@@ -12,6 +12,7 @@ enum SettingsButtonType {
   language,
   logs,
   export,
+  currency,
 }
 
 class SettingsButton extends StatefulWidget {
@@ -82,6 +83,11 @@ class SettingsButtonState extends State<SettingsButton> {
         ),
       SettingsButtonType.export => SvgPicture.asset(
           'assets/settings_export.svg',
+          width: 24,
+          height: 24,
+        ),
+      SettingsButtonType.currency => SvgPicture.asset(
+          'assets/currency.svg',
           width: 24,
           height: 24,
         ),

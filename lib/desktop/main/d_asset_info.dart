@@ -68,11 +68,13 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
     final balanceStr = amountProvider.amountToString(AmountToStringParameters(
         amount: accountBalance, precision: assetPrecision));
     final balance = double.tryParse(balanceStr) ?? .0;
-    final amountUsd = ref.watch(amountUsdProvider(asset?.assetId, balance));
-    var dollarConversion = '0.0';
-    dollarConversion = amountUsd.toStringAsFixed(2);
-    dollarConversion =
-        replaceCharacterOnPosition(input: dollarConversion, currencyChar: '\$');
+    final defaultCurrencyAmount =
+        ref.watch(amountUsdInDefaultCurrencyProvider(asset?.assetId, balance));
+    final defaultCurrencyTicker = ref.read(defaultCurrencyTickerProvider);
+    var defaultCurrencyConversion = '0.0';
+    defaultCurrencyConversion = defaultCurrencyAmount.toStringAsFixed(2);
+    defaultCurrencyConversion = replaceCharacterOnPosition(
+        input: defaultCurrencyConversion, currencyChar: defaultCurrencyTicker);
     final visibleConversion =
         ref.read(walletProvider).isAmountUsdAvailable(asset?.assetId);
 
@@ -128,7 +130,7 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                         ),
                       ),
                       Text(
-                        visibleConversion ? '≈ $dollarConversion' : '',
+                        visibleConversion ? '≈ $defaultCurrencyConversion' : '',
                         style: const TextStyle(
                           fontSize: 16,
                           color: SideSwapColors.halfBaked,

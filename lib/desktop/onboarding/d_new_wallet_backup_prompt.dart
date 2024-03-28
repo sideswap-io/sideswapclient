@@ -1,12 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/desktop/onboarding/widgets/d_new_wallet_backup_logo.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
-import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/onboarding/widgets/page_dots.dart';
 
@@ -15,13 +13,6 @@ class DNewWalletBackupPrompt extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    useAsyncEffect(() async {
-      // clear pin new wallet state
-      ref.read(pinSetupProvider).isNewWallet = false;
-
-      return;
-    }, const []);
-
     return SideSwapScaffoldPage(
       content: Center(
         child: SizedBox(

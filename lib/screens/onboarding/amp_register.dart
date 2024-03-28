@@ -13,7 +13,6 @@ import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/amp_service_register_box.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -42,7 +41,7 @@ class AmpRegister extends HookConsumerWidget {
         () => pegxLoginState.maybeWhen(
           loginDialog: () {
             ref
-                .read(pageStatusStateProvider.notifier)
+                .read(pageStatusNotifierProvider.notifier)
                 .setStatus(Status.pegxRegister);
           },
           loading: () {
@@ -141,7 +140,7 @@ class AmpRegister extends HookConsumerWidget {
                                             ? () {
                                                 ref
                                                     .read(
-                                                        pageStatusStateProvider
+                                                        pageStatusNotifierProvider
                                                             .notifier)
                                                     .setStatus(
                                                         Status.stokrLogin);
@@ -189,16 +188,15 @@ class AmpRegister extends HookConsumerWidget {
                             width: double.infinity,
                             backgroundColor: SideSwapColors.brightTurquoise,
                             onPressed: () async {
-                              // TODO: Amp Fix that
-                              // await ref.read(configProvider).setShowAmpOnboarding(false);
-                              // ref.read(walletProvider).setRegistered();
                               if (ref
                                   .read(configurationProvider)
                                   .showAmpOnboarding) {
-                                ref.read(walletProvider).setRegistered();
+                                ref
+                                    .read(pageStatusNotifierProvider.notifier)
+                                    .setStatus(Status.registered);
                               } else {
                                 ref
-                                    .read(pageStatusStateProvider.notifier)
+                                    .read(pageStatusNotifierProvider.notifier)
                                     .setStatus(Status.settingsPage);
                               }
 

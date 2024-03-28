@@ -15,7 +15,6 @@ import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/onboarding/widgets/amp_service_register_box.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -54,7 +53,7 @@ class DAmpRegister extends HookConsumerWidget {
         () => pegxLoginState.maybeWhen(
           loginDialog: () {
             ref
-                .read(pageStatusStateProvider.notifier)
+                .read(pageStatusNotifierProvider.notifier)
                 .setStatus(Status.pegxRegister);
           },
           orElse: () {},
@@ -124,7 +123,8 @@ class DAmpRegister extends HookConsumerWidget {
                                     const StokrGaidStateUnregistered())
                                 ? () {
                                     ref
-                                        .read(pageStatusStateProvider.notifier)
+                                        .read(
+                                            pageStatusNotifierProvider.notifier)
                                         .setStatus(Status.stokrLogin);
                                   }
                                 : null,
@@ -182,7 +182,9 @@ class DAmpRegister extends HookConsumerWidget {
                           ref
                               .read(configurationProvider.notifier)
                               .setShowAmpOnboarding(false);
-                          ref.read(walletProvider).setRegistered();
+                          ref
+                              .read(pageStatusNotifierProvider.notifier)
+                              .setStatus(Status.registered);
                         },
                         child:
                             Text('CONTINUE'.tr(), style: textTheme.labelLarge),
@@ -195,7 +197,9 @@ class DAmpRegister extends HookConsumerWidget {
                           ref
                               .read(configurationProvider.notifier)
                               .setShowAmpOnboarding(false);
-                          ref.read(walletProvider).setRegistered();
+                          ref
+                              .read(pageStatusNotifierProvider.notifier)
+                              .setStatus(Status.registered);
                         },
                         child: Text(
                           'NOT NOW'.tr(),

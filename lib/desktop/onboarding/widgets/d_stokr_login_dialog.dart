@@ -17,8 +17,8 @@ class DStokrLoginDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
     return DContentDialog(
       title: Padding(
@@ -33,7 +33,7 @@ class DStokrLoginDialog extends HookConsumerWidget {
         ),
       ),
       style: const DContentDialogThemeData().merge(
-        settingsDialogTheme.merge(
+        defaultDialogTheme.merge(
           const DContentDialogThemeData(
             titlePadding: EdgeInsets.zero,
             bodyPadding: EdgeInsets.zero,

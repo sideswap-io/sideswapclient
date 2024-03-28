@@ -6,24 +6,22 @@ part of 'd_send_popup_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$sendPopupButtonEnabledHash() =>
-    r'a7f34ec9ba4e7ba68fe12f75d2490ea81188aaaa';
+String _$sendPopupDecimalAmountHash() =>
+    r'6bcc0c4e565e5e569a5284324ebdeb142a028154';
 
-/// Accept only liquidnetwork or elements address type
-///
-/// Copied from [sendPopupButtonEnabled].
-@ProviderFor(sendPopupButtonEnabled)
-final sendPopupButtonEnabledProvider = AutoDisposeProvider<bool>.internal(
-  sendPopupButtonEnabled,
-  name: r'sendPopupButtonEnabledProvider',
+/// See also [sendPopupDecimalAmount].
+@ProviderFor(sendPopupDecimalAmount)
+final sendPopupDecimalAmountProvider = AutoDisposeProvider<Decimal>.internal(
+  sendPopupDecimalAmount,
+  name: r'sendPopupDecimalAmountProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$sendPopupButtonEnabledHash,
+      : _$sendPopupDecimalAmountHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef SendPopupButtonEnabledRef = AutoDisposeProviderRef<bool>;
+typedef SendPopupDecimalAmountRef = AutoDisposeProviderRef<Decimal>;
 String _$sendPopupShowInsufficientFundsHash() =>
     r'7f670311c8260e7d5dd96e6f41e107aae727e6e6';
 
@@ -41,22 +39,23 @@ final sendPopupShowInsufficientFundsProvider =
 );
 
 typedef SendPopupShowInsufficientFundsRef = AutoDisposeProviderRef<bool>;
-String _$sendPopupDollarConversionHash() =>
-    r'ff2faa4f4c6b8e28a03301544e82bfcd3ce2a09f';
+String _$sendPopupDefaultCurrencyConversionHash() =>
+    r'5440265fe94a8b80de9eb1f45134574e09be965e';
 
-/// See also [sendPopupDollarConversion].
-@ProviderFor(sendPopupDollarConversion)
-final sendPopupDollarConversionProvider = AutoDisposeProvider<String?>.internal(
-  sendPopupDollarConversion,
-  name: r'sendPopupDollarConversionProvider',
+/// See also [sendPopupDefaultCurrencyConversion].
+@ProviderFor(sendPopupDefaultCurrencyConversion)
+final sendPopupDefaultCurrencyConversionProvider =
+    AutoDisposeProvider<String?>.internal(
+  sendPopupDefaultCurrencyConversion,
+  name: r'sendPopupDefaultCurrencyConversionProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$sendPopupDollarConversionHash,
+      : _$sendPopupDefaultCurrencyConversionHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef SendPopupDollarConversionRef = AutoDisposeProviderRef<String?>;
+typedef SendPopupDefaultCurrencyConversionRef = AutoDisposeProviderRef<String?>;
 String _$sendPopupParseAddressHash() =>
     r'0bcd2afad3936618e44c98efbf82525df3c21a0b';
 
@@ -76,12 +75,12 @@ final sendPopupParseAddressProvider =
 typedef SendPopupParseAddressRef
     = AutoDisposeProviderRef<Either<Exception, SendPopupAddressResult>>;
 String _$sendPopupAmountNotifierHash() =>
-    r'b0fd24fda70410caa76142f354bb72f090e4833b';
+    r'6c132a490cfe10c9469b86711ca2da3fbe72d724';
 
 /// See also [SendPopupAmountNotifier].
 @ProviderFor(SendPopupAmountNotifier)
 final sendPopupAmountNotifierProvider =
-    AutoDisposeNotifierProvider<SendPopupAmountNotifier, String>.internal(
+    NotifierProvider<SendPopupAmountNotifier, String>.internal(
   SendPopupAmountNotifier.new,
   name: r'sendPopupAmountNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -91,14 +90,14 @@ final sendPopupAmountNotifierProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$SendPopupAmountNotifier = AutoDisposeNotifier<String>;
+typedef _$SendPopupAmountNotifier = Notifier<String>;
 String _$sendPopupAddressNotifierHash() =>
-    r'8e4c0b30d1b962df5680cda8eedd7ea5713c4948';
+    r'd19b4480407c0c9dad14df36f484daea8e7ad031';
 
 /// See also [SendPopupAddressNotifier].
 @ProviderFor(SendPopupAddressNotifier)
 final sendPopupAddressNotifierProvider =
-    AutoDisposeNotifierProvider<SendPopupAddressNotifier, String>.internal(
+    NotifierProvider<SendPopupAddressNotifier, String>.internal(
   SendPopupAddressNotifier.new,
   name: r'sendPopupAddressNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -108,15 +107,14 @@ final sendPopupAddressNotifierProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$SendPopupAddressNotifier = AutoDisposeNotifier<String>;
+typedef _$SendPopupAddressNotifier = Notifier<String>;
 String _$sendPopupSelectedAccountAssetNotifierHash() =>
-    r'e12490eee3be88c9b9da172dff960ee936251dea';
+    r'bd00e91e51b8d47992ad193d06c5d7e14c988c10';
 
 /// See also [SendPopupSelectedAccountAssetNotifier].
 @ProviderFor(SendPopupSelectedAccountAssetNotifier)
-final sendPopupSelectedAccountAssetNotifierProvider =
-    AutoDisposeNotifierProvider<SendPopupSelectedAccountAssetNotifier,
-        AccountAsset>.internal(
+final sendPopupSelectedAccountAssetNotifierProvider = NotifierProvider<
+    SendPopupSelectedAccountAssetNotifier, AccountAsset>.internal(
   SendPopupSelectedAccountAssetNotifier.new,
   name: r'sendPopupSelectedAccountAssetNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -126,10 +124,9 @@ final sendPopupSelectedAccountAssetNotifierProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$SendPopupSelectedAccountAssetNotifier
-    = AutoDisposeNotifier<AccountAsset>;
+typedef _$SendPopupSelectedAccountAssetNotifier = Notifier<AccountAsset>;
 String _$sendPopupReceiveConversionNotifierHash() =>
-    r'29c0b8fb371b33d63f748e0817b92292b0108b93';
+    r'582586056503229c7bc51e6918560c7c7494365d';
 
 /// See also [SendPopupReceiveConversionNotifier].
 @ProviderFor(SendPopupReceiveConversionNotifier)
@@ -145,5 +142,59 @@ final sendPopupReceiveConversionNotifierProvider = AutoDisposeNotifierProvider<
 );
 
 typedef _$SendPopupReceiveConversionNotifier = AutoDisposeNotifier<String>;
+String _$sendPopupValidDataInsertedHash() =>
+    r'2335633ab1eda2c5a5fff26b97833631fc0a5b8e';
+
+/// See also [SendPopupValidDataInserted].
+@ProviderFor(SendPopupValidDataInserted)
+final sendPopupValidDataInsertedProvider =
+    AutoDisposeAsyncNotifierProvider<SendPopupValidDataInserted, bool>.internal(
+  SendPopupValidDataInserted.new,
+  name: r'sendPopupValidDataInsertedProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sendPopupValidDataInsertedHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$SendPopupValidDataInserted = AutoDisposeAsyncNotifier<bool>;
+String _$sendPopupAddMoreOutputsButtonEnabledHash() =>
+    r'5f2225e2b77a62e82261f0b2c9208546434858eb';
+
+/// See also [SendPopupAddMoreOutputsButtonEnabled].
+@ProviderFor(SendPopupAddMoreOutputsButtonEnabled)
+final sendPopupAddMoreOutputsButtonEnabledProvider =
+    AutoDisposeAsyncNotifierProvider<SendPopupAddMoreOutputsButtonEnabled,
+        bool>.internal(
+  SendPopupAddMoreOutputsButtonEnabled.new,
+  name: r'sendPopupAddMoreOutputsButtonEnabledProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sendPopupAddMoreOutputsButtonEnabledHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$SendPopupAddMoreOutputsButtonEnabled = AutoDisposeAsyncNotifier<bool>;
+String _$sendPopupReviewButtonEnabledHash() =>
+    r'ac934200ae38b09af81ed7abf854a1309a585cbd';
+
+/// Accept only liquidnetwork or elements address type
+///
+/// Copied from [SendPopupReviewButtonEnabled].
+@ProviderFor(SendPopupReviewButtonEnabled)
+final sendPopupReviewButtonEnabledProvider = AutoDisposeAsyncNotifierProvider<
+    SendPopupReviewButtonEnabled, bool>.internal(
+  SendPopupReviewButtonEnabled.new,
+  name: r'sendPopupReviewButtonEnabledProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$sendPopupReviewButtonEnabledHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$SendPopupReviewButtonEnabled = AutoDisposeAsyncNotifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

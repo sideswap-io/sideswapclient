@@ -13,6 +13,8 @@ import 'package:sideswap/desktop/pin/d_pin_keyboard.dart';
 import 'package:sideswap/desktop/pin/widgets/d_pin_text_field.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
+import 'package:sideswap/models/pin_models.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/pin_available_provider.dart';
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
@@ -26,30 +28,29 @@ class DPinSetup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
-    final isNewWallet = ref.read(pinSetupProvider).isNewWallet;
+    final firstLaunchState = ref.watch(firstLaunchStateNotifierProvider);
 
-    if (isNewWallet) {
+    if (firstLaunchState != const FirstLaunchStateEmpty()) {
       return SideSwapScaffoldPage(
         onEscapeKey: onEscapeKey ??
             () {
               Future.microtask(() {
-                if (ref.read(pinSetupProvider).isNewWallet) {
-                  ref.read(walletProvider).setNewWalletPinWelcome();
-                  return;
-                }
-                ref.read(pinSetupProvider).onBack();
+                ref.read(walletProvider).setNewWalletPinWelcome();
+                ref.read(pinHelperProvider).onBack();
               });
             },
         content: const DPinSetupContent(),
       );
     } else {
-      return WillPopScope(
-        onWillPop: () async {
-          ref.read(walletProvider).settingsViewPage();
-          return true;
+      return PopScope(
+        canPop: true,
+        onPopInvoked: (didPop) {
+          if (!didPop) {
+            ref.read(walletProvider).settingsViewPage();
+          }
         },
         child: DContentDialog(
           title: DContentDialogTitle(
@@ -71,7 +72,7 @@ class DPinSetup extends ConsumerWidget {
               ),
             ),
           ],
-          style: const DContentDialogThemeData().merge(settingsDialogTheme),
+          style: const DContentDialogThemeData().merge(defaultDialogTheme),
           constraints: const BoxConstraints(maxWidth: 580, maxHeight: 645),
           content: const DPinSetupContent(),
         ),
@@ -87,16 +88,46 @@ class DPinSetupContent extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final firstPinOldValue = useState('');
-    final secondPinOldValue = useState('');
-    final firstPinFocusNode = useFocusNode(skipTraversal: true);
-    final secondPinFocusNode = useFocusNode(skipTraversal: true);
+    final firstPinFocusNode = useFocusNode();
+    final secondPinFocusNode = useFocusNode();
+
+    final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
 
     useEffect(() {
-      firstPinFocusNode.requestFocus();
+      pinKeyStream.listen((pinKey) {
+        ref.read(pinHelperProvider).onKeyEntered(pinKey);
+      });
+
+      return;
+    }, [pinKeyStream]);
+
+    ref.listen(pinKeyboardIndexProvider, (_, __) {});
+
+    final pinFieldState = ref.watch(pinFieldStateNotifierProvider);
+
+    useEffect(() {
+      if (pinFieldState == const PinFieldState.first() &&
+          !firstPinFocusNode.hasFocus) {
+        firstPinFocusNode.requestFocus();
+      }
+
+      if (pinFieldState == const PinFieldState.second() &&
+          !secondPinFocusNode.hasFocus) {
+        secondPinFocusNode.requestFocus();
+      }
+      return;
+    }, [pinFieldState]);
+
+    final isPinEnabled = ref.watch(pinAvailableProvider);
+
+    useEffect(() {
       firstPinFocusNode.addListener(() {
         if (firstPinFocusNode.hasFocus) {
-          Future.microtask(() => ref.read(pinSetupProvider).setFirstPinState());
+          Future.microtask(() {
+            ref
+                .read(pinFieldStateNotifierProvider.notifier)
+                .setPinFieldState(const PinFieldState.first());
+          });
         }
       });
       return;
@@ -105,41 +136,15 @@ class DPinSetupContent extends HookConsumerWidget {
     useEffect(() {
       secondPinFocusNode.addListener(() {
         if (secondPinFocusNode.hasFocus) {
-          Future.microtask(
-              () => ref.read(pinSetupProvider).setSecondPinState());
+          Future.microtask(() {
+            ref
+                .read(pinFieldStateNotifierProvider.notifier)
+                .setPinFieldState(const PinFieldState.second());
+          });
         }
       });
       return;
     }, [secondPinFocusNode]);
-
-    useEffect(() {
-      final subscription =
-          ref.read(pinKeyboardProvider).keyPressedSubject.listen((value) {
-        Future.microtask(() => ref.read(pinSetupProvider).onKeyEntered(value));
-      });
-      return subscription.cancel;
-    }, [ref.read(pinKeyboardProvider).keyPressedSubject]);
-
-    ref.listen(pinKeyboardIndexProvider, (_, __) {});
-    ref.listen<PinSetupProvider>(pinSetupProvider, (_, next) {
-      firstPinOldValue.value = next.firstPin;
-      secondPinOldValue.value = next.secondPin;
-      if (next.fieldState == PinFieldState.firstPin &&
-          !firstPinFocusNode.hasFocus) {
-        firstPinFocusNode.requestFocus();
-      }
-
-      if (next.fieldState == PinFieldState.secondPin &&
-          !secondPinFocusNode.hasFocus) {
-        secondPinFocusNode.requestFocus();
-      }
-    });
-
-    final isNewWallet = ref.read(pinSetupProvider).isNewWallet;
-    final isPinEnabled = ref.watch(pinAvailableProvider);
-
-    final firstPinKeyboardFocusNode = useFocusNode();
-    final secondPinKeyboardFocusNode = useFocusNode();
 
     return Center(
       child: SizedBox(
@@ -165,37 +170,26 @@ class DPinSetupContent extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 10),
               child: Consumer(
                 builder: ((context, ref, child) {
-                  final pin = ref.watch(pinSetupProvider).firstPin;
-                  final fieldState = ref.watch(pinSetupProvider).fieldState;
-                  if (fieldState == PinFieldState.firstPin) {
-                    firstPinFocusNode.requestFocus();
-                  }
-                  final enabled = ref.watch(pinSetupProvider).firstPinEnabled;
+                  final firstPin = ref.watch(firstPinNotifierProvider);
+                  final firstPinEnabled = ref.watch(firstPinEnabledProvider);
 
-                  return RawKeyboardListener(
-                    focusNode: firstPinKeyboardFocusNode,
-                    onKey: (RawKeyEvent event) {
-                      if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
-                        secondPinFocusNode.requestFocus();
-                      }
+                  return DPinTextField(
+                    focusNode: firstPinFocusNode,
+                    autofocus: true,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(8),
+                    ],
+                    enabled: firstPinEnabled,
+                    pin: firstPin,
+                    onChanged: (value) {
+                      ref
+                          .read(pinKeyboardHelperProvider)
+                          .onDesktopKeyChanged(firstPin, value);
                     },
-                    child: DPinTextField(
-                      focusNode: firstPinFocusNode,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(8),
-                      ],
-                      enabled: enabled,
-                      pin: pin,
-                      onChanged: (value) {
-                        ref
-                            .read(pinKeyboardProvider)
-                            .onDesktopKeyChanged(firstPinOldValue.value, value);
-                      },
-                      onSubmitted: (_) {
-                        ref.read(pinKeyboardProvider).keyPressed(11);
-                      },
-                    ),
+                    onSubmitted: (_) {
+                      ref.read(pinKeyboardHelperProvider).keyPressed(11);
+                    },
                   );
                 }),
               ),
@@ -218,54 +212,58 @@ class DPinSetupContent extends HookConsumerWidget {
               padding: const EdgeInsets.only(top: 10),
               child: Consumer(
                 builder: ((context, ref, child) {
-                  final pin = ref.watch(pinSetupProvider).secondPin;
-                  final fieldState = ref.watch(pinSetupProvider).fieldState;
-                  if (fieldState == PinFieldState.secondPin) {
+                  final secondPin = ref.watch(secondPinNotifierProvider);
+                  if (pinFieldState == const PinFieldState.second()) {
                     secondPinFocusNode.requestFocus();
                   }
-                  final enabled = ref.watch(pinSetupProvider).secondPinEnabled;
-                  final state = ref.watch(pinSetupProvider).state;
-                  final errorMessage = ref.watch(pinSetupProvider).errorMessage;
-                  return RawKeyboardListener(
-                    focusNode: secondPinKeyboardFocusNode,
-                    onKey: (RawKeyEvent event) {
-                      if (event.isKeyPressed(LogicalKeyboardKey.tab)) {
-                        firstPinFocusNode.requestFocus();
-                      }
+                  final secondPinEnabled = ref.watch(secondPinEnabledProvider);
+                  final pinSetupState =
+                      ref.watch(pinSetupStateNotifierProvider);
+                  final errorMessage = (pinSetupState is PinSetupStateError)
+                      ? pinSetupState.message
+                      : '';
+
+                  return DPinTextField(
+                    focusNode: secondPinFocusNode,
+                    autofocus: true,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(8),
+                    ],
+                    enabled: secondPinEnabled,
+                    pin: secondPin,
+                    error: pinSetupState is PinSetupStateError,
+                    errorMessage: errorMessage,
+                    onChanged: (value) {
+                      ref
+                          .read(pinKeyboardHelperProvider)
+                          .onDesktopKeyChanged(secondPin, value);
                     },
-                    child: DPinTextField(
-                      focusNode: secondPinFocusNode,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
-                        LengthLimitingTextInputFormatter(8),
-                      ],
-                      enabled: enabled,
-                      pin: pin,
-                      error: state == PinSetupStateEnum.error,
-                      errorMessage: errorMessage,
-                      onChanged: (value) {
-                        ref.read(pinKeyboardProvider).onDesktopKeyChanged(
-                            secondPinOldValue.value, value);
-                      },
-                      onSubmitted: (_) {
-                        ref.read(pinKeyboardProvider).keyPressed(11);
-                      },
-                    ),
+                    onSubmitted: (_) {
+                      ref.read(pinKeyboardHelperProvider).keyPressed(11);
+                    },
                   );
                 }),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: DPinKeyboard(
-                acceptType: isNewWallet
-                    ? ref.watch(pinSetupProvider).fieldState ==
-                            PinFieldState.secondPin
-                        ? PinKeyboardAcceptType.save
-                        : PinKeyboardAcceptType.icon
-                    : isPinEnabled
-                        ? PinKeyboardAcceptType.disable
-                        : PinKeyboardAcceptType.enable,
+              child: Consumer(
+                builder: (context, ref, child) {
+                  final firstLaunchState =
+                      ref.watch(firstLaunchStateNotifierProvider);
+
+                  return DPinKeyboard(
+                    acceptType:
+                        (firstLaunchState != const FirstLaunchStateEmpty())
+                            ? pinFieldState == const PinFieldState.second()
+                                ? PinKeyboardAcceptType.save
+                                : PinKeyboardAcceptType.icon
+                            : isPinEnabled
+                                ? PinKeyboardAcceptType.disable
+                                : PinKeyboardAcceptType.enable,
+                  );
+                },
               ),
             ),
           ],

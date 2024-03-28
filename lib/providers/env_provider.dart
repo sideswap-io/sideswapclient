@@ -10,7 +10,7 @@ part 'env_provider.g.dart';
 class Env extends _$Env {
   @override
   int build() {
-    final env = ref.watch(configurationProvider.select((value) => value.env));
+    final env = ref.watch(configurationProvider).env;
     return env;
   }
 

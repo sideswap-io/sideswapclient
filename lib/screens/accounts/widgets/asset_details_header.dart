@@ -110,12 +110,14 @@ class AssetDetailsHeader extends ConsumerWidget {
               builder: (context, ref, child) {
                 final selectedWalletAccountAsset =
                     ref.watch(selectedWalletAccountAssetNotifierProvider);
-                final usdAssetBalance = ref.watch(
-                    accountAssetBalanceInUsdStringProvider(
+                final defaultCurrencyAssetBalance = ref.watch(
+                    accountAssetBalanceInDefaultCurrencyStringProvider(
                         selectedWalletAccountAsset!));
+                final defaultCurrencyTicker =
+                    ref.watch(defaultCurrencyTickerProvider);
 
                 return Text(
-                  '\$ $usdAssetBalance',
+                  '$defaultCurrencyTicker $defaultCurrencyAssetBalance',
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.normal,
@@ -161,7 +163,7 @@ class AssetDetailsHeader extends ConsumerWidget {
                       wallet.selectAssetReceive(
                           selectedWalletAccountAsset!.account);
                       ref
-                          .read(pageStatusStateProvider.notifier)
+                          .read(pageStatusNotifierProvider.notifier)
                           .setStatus(Status.generateWalletAddress);
                     },
                     label: 'Receive'.tr(),

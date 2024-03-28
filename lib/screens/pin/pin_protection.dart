@@ -1,12 +1,13 @@
-import 'dart:async';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/pin_models.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_protection_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
@@ -63,47 +64,34 @@ class PinProtection extends StatelessWidget {
   }
 }
 
-class PinProtectionBody extends ConsumerStatefulWidget {
-  const PinProtectionBody({
-    super.key,
-    required this.iconType,
-  });
+class PinProtectionBody extends HookConsumerWidget {
+  const PinProtectionBody({required this.iconType, super.key});
 
   final PinKeyboardAcceptType iconType;
 
   @override
-  PinProtectionBodyState createState() => PinProtectionBodyState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pinFocusNode = useFocusNode();
 
-class PinProtectionBodyState extends ConsumerState<PinProtectionBody> {
-  late FocusNode pinFocusNode;
-  StreamSubscription<PinKey>? keyPressedSubscription;
+    useEffect(() {
+      pinFocusNode.requestFocus();
+      ref.read(pinProtectionHelperProvider).init(onUnlockCallback: () {
+        Navigator.of(context).pop(true);
+      });
 
-  @override
-  void initState() {
-    pinFocusNode = FocusNode();
+      return;
+    }, const []);
 
-    keyPressedSubscription =
-        ref.read(pinKeyboardProvider).keyPressedSubject.listen((pinKey) {
-      ref.read(pinProtectionProvider).onKeyEntered(pinKey);
-    });
+    final pinKeyStream = ref.watch(pinKeyboardHelperProvider).pinKeyStream;
 
-    pinFocusNode.requestFocus();
-    ref.read(pinProtectionProvider).init(onUnlockCallback: () {
-      Navigator.of(context).pop(true);
-    });
-    super.initState();
-  }
+    useEffect(() {
+      pinKeyStream.listen((pinKey) {
+        ref.read(pinProtectionHelperProvider).onKeyEntered(pinKey);
+      });
 
-  @override
-  void dispose() {
-    keyPressedSubscription?.cancel();
-    pinFocusNode.dispose();
-    super.dispose();
-  }
+      return;
+    }, [pinKeyStream]);
 
-  @override
-  Widget build(BuildContext context) {
     return Center(
       child: Column(
         children: [
@@ -130,17 +118,19 @@ class PinProtectionBodyState extends ConsumerState<PinProtectionBody> {
             padding: const EdgeInsets.only(top: 10, left: 16, right: 16),
             child: Consumer(
               builder: (context, ref, _) {
-                final pin =
-                    ref.watch(pinProtectionProvider.select((p) => p.pinCode));
-                final state =
-                    ref.watch(pinProtectionProvider.select((p) => p.state));
-                final errorMessage = ref
-                    .watch(pinProtectionProvider.select((p) => p.errorMessage));
+                final pinCode = ref.watch(pinCodeProtectionNotifierProvider);
+                final pinProtectionState =
+                    ref.watch(pinProtectionStateNotifierProvider);
+                final errorMessage =
+                    (pinProtectionState is PinProtectionStateError)
+                        ? pinProtectionState.message ?? ''
+                        : '';
 
                 return PinTextField(
-                  pin: pin,
-                  enabled: state != PinProtectionState.waiting,
-                  error: state == PinProtectionState.error,
+                  pin: pinCode,
+                  enabled:
+                      pinProtectionState != const PinProtectionState.waiting(),
+                  error: pinProtectionState is PinProtectionStateError,
                   errorMessage: errorMessage,
                   focusNode: pinFocusNode,
                   onTap: () => pinFocusNode.requestFocus(),
@@ -153,14 +143,15 @@ class PinProtectionBodyState extends ConsumerState<PinProtectionBody> {
             padding: const EdgeInsets.only(bottom: 32),
             child: Consumer(
               builder: ((context, ref, _) {
-                final isNewWallet = ref.read(pinSetupProvider).isNewWallet;
+                final firstLaunchState =
+                    ref.watch(firstLaunchStateNotifierProvider);
+                final pinFieldState = ref.watch(pinFieldStateNotifierProvider);
                 return PinKeyboard(
-                  acceptType: isNewWallet
-                      ? ref.watch(pinSetupProvider).fieldState ==
-                              PinFieldState.secondPin
+                  acceptType: firstLaunchState != const FirstLaunchState.empty()
+                      ? pinFieldState == const PinFieldState.second()
                           ? PinKeyboardAcceptType.save
                           : PinKeyboardAcceptType.icon
-                      : widget.iconType,
+                      : iconType,
                 );
               }),
             ),

@@ -3,8 +3,8 @@ import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_check_box.dart';
 
-class SettingsNetworkCheckbox extends StatelessWidget {
-  const SettingsNetworkCheckbox({
+class SettingsCheckbox extends StatelessWidget {
+  const SettingsCheckbox({
     super.key,
     required this.value,
     required this.onChanged,

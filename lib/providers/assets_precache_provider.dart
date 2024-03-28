@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -11,29 +8,21 @@ part 'assets_precache_provider.g.dart';
 @riverpod
 FutureOr<bool> assetsPrecacheFuture(AssetsPrecacheFutureRef ref) async {
   logger.d('Precaching assets...');
-  if (kDebugMode) {
-    // flutter.svg >= 2.0.0 svg parsing has moved to isolates and it causing
-    // extreme lag in debug mode during precaching multiple images
-    // https://github.com/dnfield/flutter_svg/issues/837
-    return true;
-  }
 
-  final manifestContent = await rootBundle.loadString('AssetManifest.json');
-  final manifestMap = json.decode(manifestContent) as Map<String, dynamic>;
+  final assetManifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+  final assets = assetManifest
+      .listAssets()
+      .where((element) => element.contains('assets/'))
+      .where((element) => element.contains('.svg'));
 
-  final imagePaths = manifestMap.keys
-      .where((String key) => key.contains('assets/'))
-      .where((String key) => key.contains('.svg'))
-      .toList();
-
-  for (var image in imagePaths) {
-    logger.d('Precaching: $image');
+  for (var svgImage in assets) {
+    logger.d('Precaching: $svgImage');
     try {
-      final loader = SvgAssetLoader(image);
+      final loader = SvgAssetLoader(svgImage);
       await svg.cache
           .putIfAbsent(loader.cacheKey(null), () => loader.loadBytes(null));
     } catch (e) {
-      logger.e('Error precaching $image: $e');
+      logger.e('Error precaching $svgImage: $e');
     }
   }
 

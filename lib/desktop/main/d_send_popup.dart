@@ -1,4 +1,7 @@
+import 'package:decimal/decimal.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:another_flushbar/flushbar.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fpdart/fpdart.dart';
@@ -6,6 +9,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
+import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
 import 'package:sideswap/desktop/main/widgets/row_tx_detail.dart';
 import 'package:sideswap/desktop/main/widgets/row_tx_receiver.dart';
@@ -17,7 +22,9 @@ import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
 import 'package:sideswap/providers/endpoint_provider.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
@@ -46,12 +53,10 @@ class DSendPopupCreate extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final addressController = useTextEditingController();
-    final amountController = useTextEditingController();
-    final addressFocusNode = useFocusNode();
-    final amountFocusNode = useFocusNode();
-
-    final buttonEnabled = ref.watch(sendPopupButtonEnabledProvider);
+    ref.watch(outputsReaderNotifierProvider);
+    final reviewButtonEnabled = ref.watch(sendPopupReviewButtonEnabledProvider);
+    final addMoreOutputsButtonEnabled =
+        ref.watch(sendPopupAddMoreOutputsButtonEnabledProvider);
     final showInsufficientFunds =
         ref.watch(sendPopupShowInsufficientFundsProvider);
     final selectedAccountAsset =
@@ -65,10 +70,41 @@ class DSendPopupCreate extends HookConsumerWidget {
         .where((account) =>
             (balances[account] ?? 0) != 0 || account == regularLiquidAccount)
         .toList();
-    var address = useState('');
-    final amount = ref.watch(sendPopupAmountNotifierProvider);
+
+    final amountController = useTextEditingController();
+    final addressController = useTextEditingController();
+    final addressFocusNode = useFocusNode();
+    final amountFocusNode = useFocusNode();
 
     final isMaxPressed = useState(false);
+
+    void insertOutputs() {
+      final selectedAccountAsset =
+          ref.read(sendPopupSelectedAccountAssetNotifierProvider);
+      final amount = ref.read(sendPopupDecimalAmountProvider);
+      final address = ref.read(sendPopupAddressNotifierProvider);
+      final assetId = selectedAccountAsset.assetId;
+
+      if (amount == Decimal.zero || address.isEmpty) {
+        return;
+      }
+
+      ref.read(outputsReaderNotifierProvider.notifier).insertOutput(
+          assetId: assetId ?? '', address: address, amount: amount);
+    }
+
+    void cleanupOnClose() {
+      ref.invalidate(sendAssetNotifierProvider);
+      ref.invalidate(sendPopupSelectedAccountAssetNotifierProvider);
+      ref.invalidate(sendPopupAmountNotifierProvider);
+      ref.invalidate(sendPopupAddressNotifierProvider);
+    }
+
+    useEffect(() {
+      Future.microtask(() => cleanupOnClose());
+
+      return;
+    }, const []);
 
     // set text field related providers
     useEffect(() {
@@ -118,7 +154,8 @@ class DSendPopupCreate extends HookConsumerWidget {
       return;
     }, [eiCreateTransaction]);
 
-    final dollarConversion = ref.watch(sendPopupDollarConversionProvider);
+    final defaultCurrencyConversion =
+        ref.watch(sendPopupDefaultCurrencyConversionProvider);
 
     useEffect(() {
       parsedAddressResult.match((l) {
@@ -127,18 +164,30 @@ class DSendPopupCreate extends HookConsumerWidget {
         if (r.amount > 0) {
           amountController.text = r.amount.toString();
         }
-        final asset = ref.watch(assetsStateProvider)[r.assetId];
-        Future.microtask(() {
-          ref.read(sendAssetNotifierProvider.notifier).setSendAsset(
-              AccountAsset(
-                  asset?.ampMarket ?? false ? AccountType.amp : AccountType.reg,
-                  r.assetId));
-        });
-        address.value = r.address;
       });
 
       return;
     }, [parsedAddressResult]);
+
+    final outputsData = ref.watch(outputsReaderNotifierProvider);
+
+    useAsyncEffect(() async {
+      (switch (outputsData) {
+        Left(value: final l) => () async {
+            if (l.message != null) {
+              final flushbar = Flushbar<void>(
+                messageText: Text(l.message!),
+                duration: const Duration(seconds: 5),
+                backgroundColor: SideSwapColors.chathamsBlue,
+              );
+              await flushbar.show(context);
+            }
+          }(),
+        _ => () {}(),
+      });
+
+      return;
+    }, [outputsData]);
 
     return DPopupWithClose(
       width: 580,
@@ -147,6 +196,8 @@ class DSendPopupCreate extends HookConsumerWidget {
         ref
             .read(eiCreateTransactionNotifierProvider.notifier)
             .setState(EICreateTransactionEmpty());
+        Navigator.of(context).pop();
+        cleanupOnClose();
       },
       child: Padding(
         padding: const EdgeInsets.all(40.0),
@@ -169,19 +220,26 @@ class DSendPopupCreate extends HookConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Column(
-              children: [
-                DAddrTextField(
-                  focusNode: addressFocusNode,
-                  autofocus: true,
-                  controller: addressController,
-                ),
-              ],
+            SizedBox(
+              height: 76,
+              child: Column(
+                children: [
+                  DAddrTextField(
+                    focusNode: addressFocusNode,
+                    autofocus: true,
+                    controller: addressController,
+                    onPressed: () {
+                      ref.invalidate(sendPopupAddressNotifierProvider);
+                    },
+                  ),
+                  const Spacer(),
+                ],
+              ),
             ),
             const SizedBox(height: 16),
             SwapSideAmount(
               showInsufficientFunds: showInsufficientFunds,
-              dollarConversion2: dollarConversion,
+              defaultCurrencyConversion2: defaultCurrencyConversion,
               focusNode: amountFocusNode,
               availableAssets: accounts,
               dropdownValue: selectedAccountAsset,
@@ -192,17 +250,20 @@ class DSendPopupCreate extends HookConsumerWidget {
               controller: amountController,
               balance: ref.read(balanceStringProvider(selectedAccountAsset)),
               onChanged: (value) {
-                if (amount != value) {
-                  isMaxPressed.value = false;
-                }
+                isMaxPressed.value = false;
               },
-              onSubmitted: (_) {
-                ref.read(paymentHelperProvider).selectPaymentSend(
-                      amount,
-                      selectedAccountAsset,
-                      address: address.value,
-                      isGreedy: isMaxPressed.value,
-                    );
+              onSubmitted: (_) async {
+                final errorMessage = ref
+                    .read(paymentHelperProvider)
+                    .outputsPaymentSend(isGreedy: isMaxPressed.value);
+                if (errorMessage != null) {
+                  final flushbar = Flushbar<void>(
+                    messageText: Text(errorMessage),
+                    duration: const Duration(seconds: 5),
+                    backgroundColor: SideSwapColors.chathamsBlue,
+                  );
+                  await flushbar.show(context);
+                }
               },
               onDropdownChanged: (accountAsset) {
                 if (selectedAccountAsset != accountAsset) {
@@ -211,6 +272,7 @@ class DSendPopupCreate extends HookConsumerWidget {
                       .setSendAsset(accountAsset);
                   amountController.clear();
                 }
+                amountFocusNode.requestFocus();
               },
               onMaxPressed: () {
                 isMaxPressed.value = true;
@@ -218,21 +280,52 @@ class DSendPopupCreate extends HookConsumerWidget {
                     ref.read(balanceStringProvider(selectedAccountAsset));
               },
             ),
+            const DSendPopupOutputs(),
             const Spacer(),
-            DCustomButton(
-              height: 44,
-              isFilled: true,
-              onPressed: buttonEnabled && !ref.read(walletProvider).isCreatingTx
-                  ? () {
-                      ref.read(paymentHelperProvider).selectPaymentSend(
-                            amount,
-                            selectedAccountAsset,
-                            address: address.value,
-                            isGreedy: isMaxPressed.value,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                DCustomButton(
+                  width: 245,
+                  height: 44,
+                  onPressed: switch (addMoreOutputsButtonEnabled) {
+                    AsyncLoading() => null,
+                    _ => () {
+                        insertOutputs();
+                        amountController.text = '';
+                        addressController.text = '';
+                        addressFocusNode.requestFocus();
+                      },
+                  },
+                  child: Text('Add more outputs'.tr().toUpperCase()),
+                ),
+                DCustomButton(
+                  width: 245,
+                  height: 44,
+                  isFilled: true,
+                  onPressed: switch (reviewButtonEnabled) {
+                    AsyncLoading() => null,
+                    _ => () async {
+                        insertOutputs();
+                        amountController.text = '';
+                        addressController.text = '';
+
+                        final errorMessage = ref
+                            .read(paymentHelperProvider)
+                            .outputsPaymentSend(isGreedy: isMaxPressed.value);
+                        if (errorMessage != null) {
+                          final flushbar = Flushbar<void>(
+                            messageText: Text(errorMessage),
+                            duration: const Duration(seconds: 5),
+                            backgroundColor: SideSwapColors.chathamsBlue,
                           );
-                    }
-                  : null,
-              child: Text('Review'.tr().toUpperCase()),
+                          await flushbar.show(context);
+                        }
+                      },
+                  },
+                  child: Text('Review'.tr().toUpperCase()),
+                ),
+              ],
             ),
           ],
         ),
@@ -246,8 +339,8 @@ class DSendPopupReview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final wallet = ref.watch(walletProvider);
     final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+    final sendTxState = ref.watch(sendTxStateNotifierProvider);
 
     final feePerByteStr =
         '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
@@ -264,9 +357,27 @@ class DSendPopupReview extends ConsumerWidget {
       color: SideSwapColors.brightTurquoise,
     );
 
+    void cleanupOnBack() {
+      ref.invalidate(paymentCreatedTxNotifierProvider);
+    }
+
+    void cleanupOnClose() {
+      cleanupOnBack();
+      ref.invalidate(outputsReaderNotifierProvider);
+      ref.invalidate(outputsCreatorProvider);
+      ref.invalidate(sendAssetNotifierProvider);
+      ref.invalidate(sendPopupSelectedAccountAssetNotifierProvider);
+      ref.invalidate(sendPopupAmountNotifierProvider);
+      ref.invalidate(sendPopupAddressNotifierProvider);
+    }
+
     return DPopupWithClose(
       width: 580,
       height: 605,
+      onClose: () {
+        cleanupOnClose();
+        Navigator.of(context).pop();
+      },
       child: Column(
         children: [
           Expanded(
@@ -290,18 +401,38 @@ class DSendPopupReview extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  Column(
-                    children: switch (createdTx) {
-                      CreatedTx(addressees: final addresses) => addresses
-                          .map((e) => RowTxReceiver(
-                                address: e.address,
-                                assetId: e.assetId,
-                                amount: e.amount.toInt(),
-                              ))
-                          .toList(),
-                      _ => [],
-                    },
-                  ),
+                  switch (createdTx) {
+                    CreatedTx(addressees: final addresses) => () {
+                        final listHeight = (addresses.length * 44.0);
+                        final containerHeight =
+                            listHeight > 180 ? 180.0 : listHeight;
+                        return Container(
+                          height: containerHeight,
+                          constraints: const BoxConstraints(
+                              minHeight: 44, maxHeight: 180),
+                          decoration: const BoxDecoration(
+                            color: SideSwapColors.prussianBlue,
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          ),
+                          child: CustomScrollView(
+                            slivers: [
+                              SliverList.builder(
+                                itemBuilder: (context, index) {
+                                  return RowTxReceiver(
+                                    address: addresses[index].address,
+                                    assetId: addresses[index].assetId,
+                                    amount: addresses[index].amount.toInt(),
+                                    index: index,
+                                  );
+                                },
+                                itemCount: addresses.length,
+                              )
+                            ],
+                          ),
+                        );
+                      }(),
+                    _ => const SizedBox(),
+                  },
                 ],
               ),
             ),
@@ -329,12 +460,9 @@ class DSendPopupReview extends ConsumerWidget {
                       DCustomButton(
                         width: 160,
                         height: 44,
-                        onPressed: !wallet.isSendingTx
+                        onPressed: sendTxState == const SendTxStateEmpty()
                             ? () {
-                                ref
-                                    .read(paymentCreatedTxNotifierProvider
-                                        .notifier)
-                                    .setCreatedTx(null);
+                                cleanupOnBack();
                               }
                             : null,
                         child: Text(
@@ -348,30 +476,41 @@ class DSendPopupReview extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      // TODO (malcolmpl): enable this when export will be ready
-                      // DCustomButton(
-                      //   width: 160,
-                      //   height: 44,
-                      //   onPressed: () {
-                      //     ref.read(desktopDialogProvider).openViewTx();
-                      //   },
-                      //   child: Text(
-                      //     'EXPORT TX'.tr(),
-                      //     style: const TextStyle(
-                      //       fontSize: 14,
-                      //       fontFamily: 'Roboto',
-                      //       fontWeight: FontWeight.w700,
-                      //       height: 0,
-                      //       letterSpacing: 0.28,
-                      //     ),
-                      //   ),
-                      // ),
+                      DCustomButton(
+                        width: 160,
+                        height: 44,
+                        onPressed: () async {
+                          final result = await ref
+                              .read(desktopDialogProvider)
+                              .openViewTx();
+                          return switch (result) {
+                            DialogReturnValueAccepted() => () async {
+                                final navigator = Navigator.of(context);
+                                await ref
+                                    .read(desktopDialogProvider)
+                                    .openExportTxSuccess();
+                                navigator.pop();
+                              }(),
+                            _ => () {}(),
+                          };
+                        },
+                        child: Text(
+                          'EXPORT TX'.tr(),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'Roboto',
+                            fontWeight: FontWeight.w700,
+                            height: 0,
+                            letterSpacing: 0.28,
+                          ),
+                        ),
+                      ),
                       DCustomButton(
                         width: 160,
                         height: 44,
                         autofocus: true,
                         isFilled: true,
-                        onPressed: !wallet.isSendingTx
+                        onPressed: sendTxState == const SendTxStateEmpty()
                             ? () async {
                                 if (await ref
                                     .read(walletProvider)
@@ -402,8 +541,8 @@ class DSendPopupReview extends ConsumerWidget {
                               child: Row(
                                 children: [
                                   const SizedBox(width: 4),
-                                  switch (wallet.isSendingTx) {
-                                    true => const SpinKitCircle(
+                                  switch (sendTxState) {
+                                    SendTxStateSending() => const SpinKitCircle(
                                         color: Colors.white,
                                         size: 32,
                                       ),
@@ -422,6 +561,210 @@ class DSendPopupReview extends ConsumerWidget {
             ),
           )
         ],
+      ),
+    );
+  }
+}
+
+class DSendPopupOutputs extends ConsumerWidget {
+  const DSendPopupOutputs({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final outputsData = ref.watch(outputsReaderNotifierProvider);
+
+    return switch (outputsData) {
+      Right(value: final r)
+          when r.receivers != null && r.receivers!.isNotEmpty =>
+        () {
+          final listHeight = (r.receivers!.length * 44.0);
+          final containerHeight = listHeight > 132 ? 132.0 : listHeight;
+
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 186),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 24),
+                Text(
+                  'Outputs list'.tr(),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: SideSwapColors.brightTurquoise,
+                      ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  height: containerHeight,
+                  constraints:
+                      const BoxConstraints(minHeight: 44, maxHeight: 132),
+                  decoration: const BoxDecoration(
+                    color: SideSwapColors.prussianBlue,
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverList.builder(
+                        itemBuilder: (context, index) {
+                          return DSendPopupOutputItem(
+                              outputsData: r, index: index);
+                        },
+                        itemCount: r.receivers!.length,
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+          );
+        }(),
+      _ => const SizedBox(),
+    };
+  }
+}
+
+class DSendPopupOutputItem extends ConsumerWidget {
+  const DSendPopupOutputItem({
+    required this.outputsData,
+    required this.index,
+    super.key,
+  });
+
+  final OutputsData outputsData;
+  final int index;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final item = outputsData.receivers?[index];
+
+    return switch (item) {
+      final item? => () {
+          return Consumer(
+            builder: (context, ref, child) {
+              final icon = ref
+                  .watch(assetImageProvider)
+                  .getCustomImage(item.assetId, width: 24, height: 24);
+              final ticker =
+                  ref.watch(assetsStateProvider)[item.assetId]?.ticker ?? '';
+
+              return DSendPopupAddressAmountItem(
+                address: item.address ?? '',
+                amount: item.amount.toString(),
+                ticker: ticker,
+                index: index,
+                icon: icon,
+                onPressed: () {
+                  ref
+                      .read(outputsReaderNotifierProvider.notifier)
+                      .removeOutput(index);
+                },
+              );
+            },
+          );
+        }(),
+      null => const SizedBox(),
+    };
+  }
+}
+
+class DSendPopupAddressAmountItem extends StatelessWidget {
+  const DSendPopupAddressAmountItem({
+    super.key,
+    required this.address,
+    required this.amount,
+    this.icon,
+    required this.ticker,
+    this.onPressed,
+    required this.index,
+  });
+
+  final String address;
+  final String amount;
+  final Widget? icon;
+  final String ticker;
+  final void Function()? onPressed;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 44,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, right: 20),
+        child: Column(
+          children: [
+            const SizedBox(height: 1),
+            switch (index) {
+              0 => const SizedBox(),
+              _ => const Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: SideSwapColors.lapisLazuli,
+                ),
+            },
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                SizedBox(
+                  width: 155,
+                  child: ExtendedText(
+                    address,
+                    style: Theme.of(context).textTheme.titleSmall,
+                    maxLines: 1,
+                    overflowWidget: TextOverflowWidget(
+                      position: TextOverflowPosition.middle,
+                      align: TextOverflowAlign.center,
+                      child: Text(
+                        '...',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  amount,
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(width: 8),
+                ...switch (icon) {
+                  final icon? => [
+                      icon,
+                      const SizedBox(width: 8),
+                    ],
+                  _ => [
+                      const SizedBox(),
+                    ],
+                },
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 40),
+                  child: Text(
+                    ticker,
+                    textAlign: TextAlign.right,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                ...switch (onPressed) {
+                  final onPressed? => [
+                      const SizedBox(width: 8),
+                      DIconButton(
+                          icon: const Icon(
+                            Icons.close,
+                            color: SideSwapColors.brightTurquoise,
+                            size: 16,
+                          ),
+                          onPressed: onPressed),
+                    ],
+                  _ => [
+                      const SizedBox(),
+                    ],
+                },
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

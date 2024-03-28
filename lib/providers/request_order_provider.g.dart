@@ -277,7 +277,8 @@ final receiveAssetPrecisionProvider = AutoDisposeProvider<int>.internal(
 );
 
 typedef ReceiveAssetPrecisionRef = AutoDisposeProviderRef<int>;
-String _$dollarConversionHash() => r'0f8ca3775408a3ab448fad79f741dc361fb63c30';
+String _$defaultCurrencyConversionHash() =>
+    r'86ef33d7a8c90d8a22a474ec566d7c873b67c5b2';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -300,29 +301,29 @@ class _SystemHash {
   }
 }
 
-/// See also [dollarConversion].
-@ProviderFor(dollarConversion)
-const dollarConversionProvider = DollarConversionFamily();
+/// See also [defaultCurrencyConversion].
+@ProviderFor(defaultCurrencyConversion)
+const defaultCurrencyConversionProvider = DefaultCurrencyConversionFamily();
 
-/// See also [dollarConversion].
-class DollarConversionFamily extends Family<String> {
-  /// See also [dollarConversion].
-  const DollarConversionFamily();
+/// See also [defaultCurrencyConversion].
+class DefaultCurrencyConversionFamily extends Family<String> {
+  /// See also [defaultCurrencyConversion].
+  const DefaultCurrencyConversionFamily();
 
-  /// See also [dollarConversion].
-  DollarConversionProvider call(
+  /// See also [defaultCurrencyConversion].
+  DefaultCurrencyConversionProvider call(
     String? assetId,
     num amount,
   ) {
-    return DollarConversionProvider(
+    return DefaultCurrencyConversionProvider(
       assetId,
       amount,
     );
   }
 
   @override
-  DollarConversionProvider getProviderOverride(
-    covariant DollarConversionProvider provider,
+  DefaultCurrencyConversionProvider getProviderOverride(
+    covariant DefaultCurrencyConversionProvider provider,
   ) {
     return call(
       provider.assetId,
@@ -342,35 +343,35 @@ class DollarConversionFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'dollarConversionProvider';
+  String? get name => r'defaultCurrencyConversionProvider';
 }
 
-/// See also [dollarConversion].
-class DollarConversionProvider extends AutoDisposeProvider<String> {
-  /// See also [dollarConversion].
-  DollarConversionProvider(
+/// See also [defaultCurrencyConversion].
+class DefaultCurrencyConversionProvider extends AutoDisposeProvider<String> {
+  /// See also [defaultCurrencyConversion].
+  DefaultCurrencyConversionProvider(
     String? assetId,
     num amount,
   ) : this._internal(
-          (ref) => dollarConversion(
-            ref as DollarConversionRef,
+          (ref) => defaultCurrencyConversion(
+            ref as DefaultCurrencyConversionRef,
             assetId,
             amount,
           ),
-          from: dollarConversionProvider,
-          name: r'dollarConversionProvider',
+          from: defaultCurrencyConversionProvider,
+          name: r'defaultCurrencyConversionProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$dollarConversionHash,
-          dependencies: DollarConversionFamily._dependencies,
+                  : _$defaultCurrencyConversionHash,
+          dependencies: DefaultCurrencyConversionFamily._dependencies,
           allTransitiveDependencies:
-              DollarConversionFamily._allTransitiveDependencies,
+              DefaultCurrencyConversionFamily._allTransitiveDependencies,
           assetId: assetId,
           amount: amount,
         );
 
-  DollarConversionProvider._internal(
+  DefaultCurrencyConversionProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -386,12 +387,12 @@ class DollarConversionProvider extends AutoDisposeProvider<String> {
 
   @override
   Override overrideWith(
-    String Function(DollarConversionRef provider) create,
+    String Function(DefaultCurrencyConversionRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: DollarConversionProvider._internal(
-        (ref) => create(ref as DollarConversionRef),
+      override: DefaultCurrencyConversionProvider._internal(
+        (ref) => create(ref as DefaultCurrencyConversionRef),
         from: from,
         name: null,
         dependencies: null,
@@ -405,12 +406,12 @@ class DollarConversionProvider extends AutoDisposeProvider<String> {
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _DollarConversionProviderElement(this);
+    return _DefaultCurrencyConversionProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is DollarConversionProvider &&
+    return other is DefaultCurrencyConversionProvider &&
         other.assetId == assetId &&
         other.amount == amount;
   }
@@ -425,7 +426,7 @@ class DollarConversionProvider extends AutoDisposeProvider<String> {
   }
 }
 
-mixin DollarConversionRef on AutoDisposeProviderRef<String> {
+mixin DefaultCurrencyConversionRef on AutoDisposeProviderRef<String> {
   /// The parameter `assetId` of this provider.
   String? get assetId;
 
@@ -433,42 +434,44 @@ mixin DollarConversionRef on AutoDisposeProviderRef<String> {
   num get amount;
 }
 
-class _DollarConversionProviderElement
-    extends AutoDisposeProviderElement<String> with DollarConversionRef {
-  _DollarConversionProviderElement(super.provider);
+class _DefaultCurrencyConversionProviderElement
+    extends AutoDisposeProviderElement<String>
+    with DefaultCurrencyConversionRef {
+  _DefaultCurrencyConversionProviderElement(super.provider);
 
   @override
-  String? get assetId => (origin as DollarConversionProvider).assetId;
+  String? get assetId => (origin as DefaultCurrencyConversionProvider).assetId;
   @override
-  num get amount => (origin as DollarConversionProvider).amount;
+  num get amount => (origin as DefaultCurrencyConversionProvider).amount;
 }
 
-String _$dollarConversionFromStringHash() =>
-    r'2c29cf8c66da6a368dbdeb403a5dd73bb07b7012';
+String _$defaultCurrencyConversionFromStringHash() =>
+    r'76c78980a63f33cae138ef0fddc86366cb4d7ced';
 
-/// See also [dollarConversionFromString].
-@ProviderFor(dollarConversionFromString)
-const dollarConversionFromStringProvider = DollarConversionFromStringFamily();
+/// See also [defaultCurrencyConversionFromString].
+@ProviderFor(defaultCurrencyConversionFromString)
+const defaultCurrencyConversionFromStringProvider =
+    DefaultCurrencyConversionFromStringFamily();
 
-/// See also [dollarConversionFromString].
-class DollarConversionFromStringFamily extends Family<String> {
-  /// See also [dollarConversionFromString].
-  const DollarConversionFromStringFamily();
+/// See also [defaultCurrencyConversionFromString].
+class DefaultCurrencyConversionFromStringFamily extends Family<String> {
+  /// See also [defaultCurrencyConversionFromString].
+  const DefaultCurrencyConversionFromStringFamily();
 
-  /// See also [dollarConversionFromString].
-  DollarConversionFromStringProvider call(
+  /// See also [defaultCurrencyConversionFromString].
+  DefaultCurrencyConversionFromStringProvider call(
     String? assetId,
     String amount,
   ) {
-    return DollarConversionFromStringProvider(
+    return DefaultCurrencyConversionFromStringProvider(
       assetId,
       amount,
     );
   }
 
   @override
-  DollarConversionFromStringProvider getProviderOverride(
-    covariant DollarConversionFromStringProvider provider,
+  DefaultCurrencyConversionFromStringProvider getProviderOverride(
+    covariant DefaultCurrencyConversionFromStringProvider provider,
   ) {
     return call(
       provider.assetId,
@@ -488,35 +491,36 @@ class DollarConversionFromStringFamily extends Family<String> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'dollarConversionFromStringProvider';
+  String? get name => r'defaultCurrencyConversionFromStringProvider';
 }
 
-/// See also [dollarConversionFromString].
-class DollarConversionFromStringProvider extends AutoDisposeProvider<String> {
-  /// See also [dollarConversionFromString].
-  DollarConversionFromStringProvider(
+/// See also [defaultCurrencyConversionFromString].
+class DefaultCurrencyConversionFromStringProvider
+    extends AutoDisposeProvider<String> {
+  /// See also [defaultCurrencyConversionFromString].
+  DefaultCurrencyConversionFromStringProvider(
     String? assetId,
     String amount,
   ) : this._internal(
-          (ref) => dollarConversionFromString(
-            ref as DollarConversionFromStringRef,
+          (ref) => defaultCurrencyConversionFromString(
+            ref as DefaultCurrencyConversionFromStringRef,
             assetId,
             amount,
           ),
-          from: dollarConversionFromStringProvider,
-          name: r'dollarConversionFromStringProvider',
+          from: defaultCurrencyConversionFromStringProvider,
+          name: r'defaultCurrencyConversionFromStringProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$dollarConversionFromStringHash,
-          dependencies: DollarConversionFromStringFamily._dependencies,
-          allTransitiveDependencies:
-              DollarConversionFromStringFamily._allTransitiveDependencies,
+                  : _$defaultCurrencyConversionFromStringHash,
+          dependencies: DefaultCurrencyConversionFromStringFamily._dependencies,
+          allTransitiveDependencies: DefaultCurrencyConversionFromStringFamily
+              ._allTransitiveDependencies,
           assetId: assetId,
           amount: amount,
         );
 
-  DollarConversionFromStringProvider._internal(
+  DefaultCurrencyConversionFromStringProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -532,12 +536,12 @@ class DollarConversionFromStringProvider extends AutoDisposeProvider<String> {
 
   @override
   Override overrideWith(
-    String Function(DollarConversionFromStringRef provider) create,
+    String Function(DefaultCurrencyConversionFromStringRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
-      override: DollarConversionFromStringProvider._internal(
-        (ref) => create(ref as DollarConversionFromStringRef),
+      override: DefaultCurrencyConversionFromStringProvider._internal(
+        (ref) => create(ref as DefaultCurrencyConversionFromStringRef),
         from: from,
         name: null,
         dependencies: null,
@@ -551,12 +555,12 @@ class DollarConversionFromStringProvider extends AutoDisposeProvider<String> {
 
   @override
   AutoDisposeProviderElement<String> createElement() {
-    return _DollarConversionFromStringProviderElement(this);
+    return _DefaultCurrencyConversionFromStringProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is DollarConversionFromStringProvider &&
+    return other is DefaultCurrencyConversionFromStringProvider &&
         other.assetId == assetId &&
         other.amount == amount;
   }
@@ -571,7 +575,7 @@ class DollarConversionFromStringProvider extends AutoDisposeProvider<String> {
   }
 }
 
-mixin DollarConversionFromStringRef on AutoDisposeProviderRef<String> {
+mixin DefaultCurrencyConversionFromStringRef on AutoDisposeProviderRef<String> {
   /// The parameter `assetId` of this provider.
   String? get assetId;
 
@@ -579,15 +583,17 @@ mixin DollarConversionFromStringRef on AutoDisposeProviderRef<String> {
   String get amount;
 }
 
-class _DollarConversionFromStringProviderElement
+class _DefaultCurrencyConversionFromStringProviderElement
     extends AutoDisposeProviderElement<String>
-    with DollarConversionFromStringRef {
-  _DollarConversionFromStringProviderElement(super.provider);
+    with DefaultCurrencyConversionFromStringRef {
+  _DefaultCurrencyConversionFromStringProviderElement(super.provider);
 
   @override
-  String? get assetId => (origin as DollarConversionFromStringProvider).assetId;
+  String? get assetId =>
+      (origin as DefaultCurrencyConversionFromStringProvider).assetId;
   @override
-  String get amount => (origin as DollarConversionFromStringProvider).amount;
+  String get amount =>
+      (origin as DefaultCurrencyConversionFromStringProvider).amount;
 }
 
 String _$receiveBalanceHash() => r'180f8b3430cc44608d5094c15f7a41e621f46df0';
@@ -780,54 +786,57 @@ final requestOrderIndexPriceProvider = AutoDisposeProvider<String>.internal(
 );
 
 typedef RequestOrderIndexPriceRef = AutoDisposeProviderRef<String>;
-String _$deliverDollarConversionHash() =>
-    r'1044dd20e520732a011892da919b38762da32272';
+String _$deliverDefaultCurrencyConversionHash() =>
+    r'32b0b23de9618d109e26a00ce9c737e77a27fb7f';
 
-/// See also [deliverDollarConversion].
-@ProviderFor(deliverDollarConversion)
-final deliverDollarConversionProvider = AutoDisposeProvider<String>.internal(
-  deliverDollarConversion,
-  name: r'deliverDollarConversionProvider',
+/// See also [deliverDefaultCurrencyConversion].
+@ProviderFor(deliverDefaultCurrencyConversion)
+final deliverDefaultCurrencyConversionProvider =
+    AutoDisposeProvider<String>.internal(
+  deliverDefaultCurrencyConversion,
+  name: r'deliverDefaultCurrencyConversionProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$deliverDollarConversionHash,
+      : _$deliverDefaultCurrencyConversionHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef DeliverDollarConversionRef = AutoDisposeProviderRef<String>;
-String _$receiveDollarConversionHash() =>
-    r'5e700b97425bcee6d7cc22ad28100768e66a21cf';
+typedef DeliverDefaultCurrencyConversionRef = AutoDisposeProviderRef<String>;
+String _$receiveDefaultCurrencyConversionHash() =>
+    r'cdf8c75f5fc7b8e22f6944f73d07b32d1605fe27';
 
-/// See also [receiveDollarConversion].
-@ProviderFor(receiveDollarConversion)
-final receiveDollarConversionProvider = AutoDisposeProvider<String>.internal(
-  receiveDollarConversion,
-  name: r'receiveDollarConversionProvider',
+/// See also [receiveDefaultCurrencyConversion].
+@ProviderFor(receiveDefaultCurrencyConversion)
+final receiveDefaultCurrencyConversionProvider =
+    AutoDisposeProvider<String>.internal(
+  receiveDefaultCurrencyConversion,
+  name: r'receiveDefaultCurrencyConversionProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$receiveDollarConversionHash,
+      : _$receiveDefaultCurrencyConversionHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef ReceiveDollarConversionRef = AutoDisposeProviderRef<String>;
-String _$priceDollarConversionHash() =>
-    r'39504aa141e4e66bf49cb113fc477337a270583a';
+typedef ReceiveDefaultCurrencyConversionRef = AutoDisposeProviderRef<String>;
+String _$priceDefaultCurrencyConversionHash() =>
+    r'b0cdd53da646aee8f434027ad6c12a8cfc767236';
 
-/// See also [priceDollarConversion].
-@ProviderFor(priceDollarConversion)
-final priceDollarConversionProvider = AutoDisposeProvider<String>.internal(
-  priceDollarConversion,
-  name: r'priceDollarConversionProvider',
+/// See also [priceDefaultCurrencyConversion].
+@ProviderFor(priceDefaultCurrencyConversion)
+final priceDefaultCurrencyConversionProvider =
+    AutoDisposeProvider<String>.internal(
+  priceDefaultCurrencyConversion,
+  name: r'priceDefaultCurrencyConversionProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$priceDollarConversionHash,
+      : _$priceDefaultCurrencyConversionHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef PriceDollarConversionRef = AutoDisposeProviderRef<String>;
+typedef PriceDefaultCurrencyConversionRef = AutoDisposeProviderRef<String>;
 String _$isSellOrderHash() => r'5d8093d05dee96fb0936dc44473d9959d9638574';
 
 /// See also [isSellOrder].

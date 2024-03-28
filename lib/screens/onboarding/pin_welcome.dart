@@ -102,7 +102,7 @@ class PinWelcomeBody extends ConsumerWidget {
               text: 'YES'.tr(),
               onPressed: onYesPressed ??
                   () {
-                    ref.read(pinSetupProvider).initPinSetupPinWelcome();
+                    ref.read(pinHelperProvider).initPinSetupPinWelcome();
                   },
             ),
             Padding(

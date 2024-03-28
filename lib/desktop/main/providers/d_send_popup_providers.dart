@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'package:decimal/decimal.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
@@ -8,13 +9,15 @@ import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/bip32_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'd_send_popup_providers.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class SendPopupAmountNotifier extends _$SendPopupAmountNotifier {
   @override
   String build() {
@@ -27,6 +30,16 @@ class SendPopupAmountNotifier extends _$SendPopupAmountNotifier {
 }
 
 @riverpod
+Decimal sendPopupDecimalAmount(SendPopupDecimalAmountRef ref) {
+  final amount = ref.watch(sendPopupAmountNotifierProvider);
+  if (amount.isEmpty) {
+    return Decimal.zero;
+  }
+
+  return Decimal.tryParse(amount) ?? Decimal.zero;
+}
+
+@Riverpod(keepAlive: true)
 class SendPopupAddressNotifier extends _$SendPopupAddressNotifier {
   @override
   String build() {
@@ -38,7 +51,7 @@ class SendPopupAddressNotifier extends _$SendPopupAddressNotifier {
   }
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class SendPopupSelectedAccountAssetNotifier
     extends _$SendPopupSelectedAccountAssetNotifier {
   @override
@@ -60,7 +73,7 @@ class SendPopupReceiveConversionNotifier
     final selectedAccountAsset =
         ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
     final amount = ref.watch(sendPopupAmountNotifierProvider);
-    final conversion = ref.watch(dollarConversionFromStringProvider(
+    final conversion = ref.watch(defaultCurrencyConversionFromStringProvider(
         selectedAccountAsset.assetId, amount));
     return conversion;
   }
@@ -70,30 +83,70 @@ class SendPopupReceiveConversionNotifier
   }
 }
 
+@riverpod
+class SendPopupValidDataInserted extends _$SendPopupValidDataInserted {
+  @override
+  FutureOr<bool> build() {
+    final parseAddressResult = ref.watch(sendPopupParseAddressProvider);
+
+    return switch (parseAddressResult) {
+      Left(value: final _) => future,
+      Right(value: final r) => () {
+          final amountString = ref.watch(sendPopupAmountNotifierProvider);
+          final selectedAccountAsset =
+              ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
+          final balanceString =
+              ref.watch(balanceStringProvider(selectedAccountAsset));
+
+          final amount = double.tryParse(amountString) ?? 0.0;
+          final balance = double.tryParse(balanceString) ?? 0.0;
+
+          final properNetwork = switch (r.addressType) {
+            BIP21AddressTypeEnum.elements ||
+            BIP21AddressTypeEnum.liquidnetwork =>
+              true,
+            _ => false,
+          };
+          final enabled = properNetwork && amount > 0 && amount <= balance;
+          return switch (enabled) {
+            true => Future<bool>.value(enabled),
+            _ => future,
+          };
+        }(),
+    };
+  }
+}
+
+@riverpod
+class SendPopupAddMoreOutputsButtonEnabled
+    extends _$SendPopupAddMoreOutputsButtonEnabled {
+  @override
+  FutureOr<bool> build() {
+    final createTxState = ref.watch(createTxStateNotifierProvider);
+    if (createTxState == const CreateTxStateCreating()) {
+      return future;
+    }
+
+    return ref.watch(sendPopupValidDataInsertedProvider.future);
+  }
+}
+
 /// Accept only liquidnetwork or elements address type
 @riverpod
-bool sendPopupButtonEnabled(SendPopupButtonEnabledRef ref) {
-  final parseAddressResult = ref.watch(sendPopupParseAddressProvider);
-  final amountString = ref.watch(sendPopupAmountNotifierProvider);
-  final selectedAccountAsset =
-      ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
-  final balanceString = ref.watch(balanceStringProvider(selectedAccountAsset));
+class SendPopupReviewButtonEnabled extends _$SendPopupReviewButtonEnabled {
+  @override
+  FutureOr<bool> build() {
+    final createTxState = ref.watch(createTxStateNotifierProvider);
+    if (createTxState == const CreateTxStateCreating()) {
+      return future;
+    }
 
-  final amount = double.tryParse(amountString) ?? 0.0;
-  final balance = double.tryParse(balanceString) ?? 0.0;
-
-  return switch (parseAddressResult) {
-    Left(value: final _) => false,
-    Right(value: final r) => () {
-        final properNetwork = switch (r.addressType) {
-          BIP21AddressTypeEnum.elements ||
-          BIP21AddressTypeEnum.liquidnetwork =>
-            true,
-          _ => false,
-        };
-        return properNetwork && amount > 0 && amount <= balance;
-      }(),
-  };
+    final outputsData = ref.watch(outputsReaderNotifierProvider);
+    return switch (outputsData) {
+      Right(value: _) => Future<bool>.value(true),
+      _ => ref.watch(sendPopupValidDataInsertedProvider.future),
+    };
+  }
 }
 
 @riverpod
@@ -110,7 +163,8 @@ bool sendPopupShowInsufficientFunds(SendPopupShowInsufficientFundsRef ref) {
 }
 
 @riverpod
-String? sendPopupDollarConversion(SendPopupDollarConversionRef ref) {
+String? sendPopupDefaultCurrencyConversion(
+    SendPopupDefaultCurrencyConversionRef ref) {
   final receiveConversion =
       ref.watch(sendPopupReceiveConversionNotifierProvider);
   final showInsufficientFunds =

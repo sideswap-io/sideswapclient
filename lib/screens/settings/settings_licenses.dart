@@ -165,7 +165,7 @@ class SettingsLicenses extends HookConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          'VERSION'.tr(args: [appVersion]),
+                          'VERSION: {}'.tr(args: [appVersion]),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.normal,

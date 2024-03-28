@@ -60,7 +60,7 @@ fn send_request(data: &Data, req: sideswap_api::Request) {
         let request_id = sideswap_common::ws::next_request_id_str();
         data.ws_sender
             .send(ws::WrappedRequest::Request(
-                sideswap_api::RequestMessage::Request(request_id.clone(), req),
+                sideswap_api::RequestMessage::Request(request_id, req),
             ))
             .unwrap();
     }
@@ -286,7 +286,7 @@ fn process_submit_inputs(
 
                 if let Some(unique_key) = new_order.unique_key.as_ref() {
                     if let Some(existing_order_id) = data.unique_orders.get(unique_key) {
-                        let is_allowed = match data.orders.get(&existing_order_id) {
+                        let is_allowed = match data.orders.get(existing_order_id) {
                             Some(OrderState::Pending(_)) => false,
                             Some(OrderState::Active(_, _)) => false,
                             Some(OrderState::Succeed(_, _)) => false,
@@ -306,7 +306,7 @@ fn process_submit_inputs(
                 }
 
                 let new_order = api_server::OrderInfo {
-                    order_id: order_id,
+                    order_id,
                     asset_id: details.asset,
                     bitcoin_amount: details.bitcoin_amount,
                     asset_amount: details.asset_amount,

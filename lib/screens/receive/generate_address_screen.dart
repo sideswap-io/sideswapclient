@@ -68,7 +68,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
                     onPressed: () {
                       if (selectedAccountType.isRegular) {
                         ref
-                            .read(pageStatusStateProvider.notifier)
+                            .read(pageStatusNotifierProvider.notifier)
                             .setStatus(Status.walletAddressDetail);
                         return;
                       }
@@ -94,7 +94,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
                     onPressed: () {
                       if (selectedAccountType.isAmp) {
                         ref
-                            .read(pageStatusStateProvider.notifier)
+                            .read(pageStatusNotifierProvider.notifier)
                             .setStatus(Status.walletAddressDetail);
                         return;
                       }
@@ -115,7 +115,7 @@ class GenerateAddressScreen extends HookConsumerWidget {
                 textColor: Colors.white,
                 onPressed: () {
                   ref
-                      .read(pageStatusStateProvider.notifier)
+                      .read(pageStatusNotifierProvider.notifier)
                       .setStatus(Status.walletAddressDetail);
                 },
               ),

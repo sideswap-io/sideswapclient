@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
+import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
@@ -32,8 +33,10 @@ class DPinWelcome extends HookConsumerWidget {
 
     return SideSwapScaffoldPage(
       onEscapeKey: () {
-        ref.read(pinSetupProvider).isNewWallet = false;
-        ref.read(pageStatusStateProvider.notifier).setStatus(Status.noWallet);
+        ref.invalidate(firstLaunchStateNotifierProvider);
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.noWallet);
       },
       content: Center(
         child: SizedBox(
@@ -73,7 +76,7 @@ class DPinWelcome extends HookConsumerWidget {
                   focusNode: yesFocusNode,
                   onPressed: onYesPressed ??
                       () {
-                        ref.read(pinSetupProvider).initPinSetupPinWelcome();
+                        ref.read(pinHelperProvider).initPinSetupPinWelcome();
                       },
                   child: Text('YES'.tr()),
                 ),

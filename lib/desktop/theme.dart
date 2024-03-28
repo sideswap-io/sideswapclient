@@ -192,7 +192,7 @@ class DesktopAppTheme {
     ref.notifyListeners();
   }
 
-  DContentDialogThemeData _settingsDialogTheme = const DContentDialogThemeData(
+  DContentDialogThemeData _defaultDialogTheme = const DContentDialogThemeData(
     padding: EdgeInsets.zero,
     titlePadding: EdgeInsets.only(top: 24, bottom: 28, left: 24, right: 24),
     bodyPadding: EdgeInsets.zero,
@@ -203,9 +203,9 @@ class DesktopAppTheme {
       color: SideSwapColors.blumine,
     ),
   );
-  DContentDialogThemeData get settingsDialogTheme => _settingsDialogTheme;
-  set settingsDialogTheme(DContentDialogThemeData value) {
-    _settingsDialogTheme = value;
+  DContentDialogThemeData get defaultDialogTheme => _defaultDialogTheme;
+  set defaultDialogTheme(DContentDialogThemeData value) {
+    _defaultDialogTheme = value;
     ref.notifyListeners();
   }
 
@@ -425,6 +425,18 @@ class DesktopAppTheme {
   }
 
   TextTheme get textTheme => darkTextTheme;
+
+  TextSelectionThemeData _textSelectionTheme = const TextSelectionThemeData(
+    selectionHandleColor: SideSwapColors.chathamsBlueDark,
+    selectionColor: SideSwapColors.chathamsBlueDark,
+    cursorColor: SideSwapColors.chathamsBlueDark,
+  );
+
+  TextSelectionThemeData get textSelectionTheme => _textSelectionTheme;
+  set textSelectionTheme(TextSelectionThemeData value) {
+    _textSelectionTheme = value;
+    ref.notifyListeners();
+  }
 }
 
 TextTheme get darkTextTheme {
@@ -436,31 +448,31 @@ TextTheme get darkTextTheme {
     ),
     titleLarge: TextStyle(
       fontSize: 22,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w700, // bold
       fontFamily: 'Roboto',
       color: Colors.white,
     ),
     titleSmall: TextStyle(
       fontSize: 14,
-      fontWeight: FontWeight.normal,
+      fontWeight: FontWeight.w400, // normal
       fontFamily: 'Roboto',
       color: Colors.white,
     ),
     labelLarge: TextStyle(
       fontSize: 15,
-      fontWeight: FontWeight.bold,
+      fontWeight: FontWeight.w700, // bold
       fontFamily: 'Roboto',
       color: Colors.white,
     ),
     labelMedium: TextStyle(
       fontSize: 12,
-      fontWeight: FontWeight.normal,
+      fontWeight: FontWeight.w400, // normal
       fontFamily: 'Roboto',
       color: Colors.white,
     ),
     bodyMedium: TextStyle(
       fontSize: 16,
-      fontWeight: FontWeight.normal,
+      fontWeight: FontWeight.w400, // normal
       fontFamily: 'Roboto',
       color: Colors.white,
     ),

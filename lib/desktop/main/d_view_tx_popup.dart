@@ -1,20 +1,29 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
 import 'package:sideswap/desktop/common/d_text_icon_container.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 
-class DViewTxPopup extends StatelessWidget {
+class DViewTxPopup extends ConsumerWidget {
   const DViewTxPopup({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+
     return DPopupWithClose(
       width: 580,
       height: 272,
+      onClose: () {
+        Navigator.of(context).pop(const DialogReturnValueCancelled());
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
@@ -32,6 +41,7 @@ class DViewTxPopup extends StatelessWidget {
             ),
             const SizedBox(height: 28),
             DTextIconContainer(
+              text: createdTx?.addressees.first.address,
               trailingIcon: DIconButton(
                 icon: SvgPicture.asset(
                   'assets/copy.svg',
@@ -40,7 +50,10 @@ class DViewTxPopup extends StatelessWidget {
                   colorFilter: const ColorFilter.mode(
                       SideSwapColors.brightTurquoise, BlendMode.srcIn),
                 ),
-                onPressed: () {},
+                onPressed: () async {
+                  await copyToClipboard(
+                      context, createdTx?.addressees.first.address ?? '');
+                },
               ),
             ),
             const SizedBox(height: 28),
@@ -51,7 +64,8 @@ class DViewTxPopup extends StatelessWidget {
                   width: 245,
                   height: 44,
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Navigator.of(context)
+                        .pop(const DialogReturnValueCancelled());
                   },
                   child: Text('BACK'.tr()),
                 ),
@@ -59,8 +73,14 @@ class DViewTxPopup extends StatelessWidget {
                   width: 245,
                   height: 44,
                   isFilled: true,
-                  onPressed: () {
-                    Navigator.of(context).pop();
+                  onPressed: () async {
+                    final navigator = Navigator.of(context);
+                    final result = await ref
+                        .read(outputsCreatorProvider.notifier)
+                        .saveToFile();
+                    if (result) {
+                      navigator.pop(const DialogReturnValueAccepted());
+                    }
                   },
                   child: Text('EXPORT FILE'.tr()),
                 ),

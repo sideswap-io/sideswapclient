@@ -254,6 +254,7 @@ fn take_order(
     let actual_price = asset_amount / actual_bitcoin_amount.to_bitcoin();
     assert!(actual_price > 0.0);
     let bitcoin_amount_max = get_bitcoin_amount(
+        asset,
         wallet_balances,
         ticker,
         actual_price,
@@ -422,6 +423,7 @@ fn amount_change(new: Amount, old: Amount) -> f64 {
 }
 
 fn get_bitcoin_amount(
+    asset: &Asset,
     wallet_balances: &WalletBalances,
     ticker: DealerTicker,
     price: f64,
@@ -433,7 +435,7 @@ fn get_bitcoin_amount(
         .get(&DealerTicker::LBTC)
         .cloned()
         .unwrap_or_default()
-        / (1.0 + types::SERVER_FEE_RATE);
+        / (1.0 + asset.server_fee().value());
     let extra_asset_downscale = if max_amount {
         1.0
     } else {
@@ -478,8 +480,8 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
         .unwrap();
     let price = index_prices.get(&ticker).cloned();
     let expected_server_fee = Amount::from_bitcoin(f64::max(
-        types::SERVER_FEE_RATE * params.bitcoin_amount_submit.to_bitcoin(),
-        types::MIN_SERVER_FEE.to_bitcoin(),
+        asset.server_fee().value() * params.bitcoin_amount_submit.to_bitcoin(),
+        types::SWAP_MARKETS_MIN_SERVER_FEE.to_bitcoin(),
     ));
     let server_fee_interest =
         1.0 + expected_server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin();
@@ -492,13 +494,13 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
     let new_bitcoin_amount_normal = price
         .map(|price| {
             Amount::min(
-                get_bitcoin_amount(wallet_balances, ticker, price, send_bitcoins, false),
+                get_bitcoin_amount(asset, wallet_balances, ticker, price, send_bitcoins, false),
                 params.bitcoin_amount_submit,
             )
         })
         .unwrap_or_default();
     let new_bitcoin_amount_max = price
-        .map(|price| get_bitcoin_amount(wallet_balances, ticker, price, send_bitcoins, true))
+        .map(|price| get_bitcoin_amount(asset, wallet_balances, ticker, price, send_bitcoins, true))
         .unwrap_or_default();
     match (own.as_mut(), price) {
         (None, Some(price)) if new_bitcoin_amount_normal >= params.bitcoin_amount_min => {
@@ -1175,11 +1177,13 @@ fn worker(
                     let base_price = dealer_price.dealer.submit_price;
 
                     // Correct price for the server fee on instant swaps
-                    let submit_price =
-                        apply_interest(&base_price, 1.0 + sideswap_common::pset::SERVER_FEE_SHARE);
+                    let submit_price = apply_interest(
+                        &base_price,
+                        1.0 + sideswap_common::pset::INSTANT_SWAPS_SERVER_FEE,
+                    );
 
                     let wallet_asset_amount =
-                        wallet_balances.get(&ticker).copied().unwrap_or_default();
+                        wallet_balances.get(ticker).copied().unwrap_or_default();
                     let wallet_btc_amount = wallet_balances
                         .get(&DealerTicker::LBTC)
                         .copied()

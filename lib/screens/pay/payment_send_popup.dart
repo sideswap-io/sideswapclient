@@ -3,134 +3,110 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
+import 'package:sideswap/desktop/main/widgets/row_tx_detail.dart';
+import 'package:sideswap/desktop/main/widgets/row_tx_receiver.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
-import 'package:sideswap/screens/tx/widgets/tx_details_column.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class PaymentSendPopup extends StatelessWidget {
+class PaymentSendPopup extends ConsumerWidget {
   const PaymentSendPopup({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    var dollarConversion = '0.0';
+  Widget build(BuildContext context, WidgetRef ref) {
+    const headerStyle = TextStyle(
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+      color: SideSwapColors.brightTurquoise,
+    );
+
+    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
 
     return SideSwapPopup(
+      onClose: () {
+        if (createdTx != null && createdTx.addressees.length > 1) {
+          // multiple outputs cleanup
+          ref.invalidate(outputsReaderNotifierProvider);
+          ref.invalidate(outputsCreatorProvider);
+          ref.invalidate(selectedWalletAccountAssetNotifierProvider);
+          ref.invalidate(paymentSendAmountParsedNotifierProvider);
+          ref.invalidate(defaultCurrencyTickerProvider);
+          ref.invalidate(paymentCreatedTxNotifierProvider);
+          ref.invalidate(sendTxStateNotifierProvider);
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.registered);
+          return;
+        }
+
+        ref.read(walletProvider).goBack();
+      },
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Send',
-            style: TextStyle(
-              fontSize: 15,
+          Text(
+            'Confirm transaction'.tr(),
+            style: const TextStyle(
+              fontSize: 20,
               fontWeight: FontWeight.w500,
-              color: SideSwapColors.brightTurquoise,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 10),
-            child: Consumer(
-              builder: (context, ref, _) {
-                final selectedWalletAccountAsset =
-                    ref.watch(selectedWalletAccountAssetNotifierProvider);
-                final asset = ref.watch(assetsStateProvider.select(
-                    (value) => value[selectedWalletAccountAsset?.assetId]));
-                final precision = ref
-                    .watch(assetUtilsProvider)
-                    .getPrecisionForAssetId(assetId: asset?.assetId);
-                final sendAmountParsed =
-                    ref.watch(paymentSendAmountParsedNotifierProvider);
-                final amountProvider = ref.watch(amountToStringProvider);
-                final sendAmountStr = amountProvider.amountToString(
-                    AmountToStringParameters(
-                        amount: sendAmountParsed, precision: precision));
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Address'.tr(), style: headerStyle),
+              Text('Amount'.tr(), style: headerStyle),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Consumer(
+            builder: (context, ref, child) {
+              final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
 
-                final amount = '$sendAmountStr ${asset?.ticker}';
-                return Text(
-                  amount,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.white,
-                  ),
-                );
-              },
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Consumer(
-              builder: (context, ref, _) {
-                final selectedWalletAccountAsset =
-                    ref.watch(selectedWalletAccountAssetNotifierProvider);
-                final asset = ref.watch(assetsStateProvider.select(
-                    (value) => value[selectedWalletAccountAsset?.assetId]));
-                final precision = ref
-                    .watch(assetUtilsProvider)
-                    .getPrecisionForAssetId(assetId: asset?.assetId);
-                final sendAmountParsed =
-                    ref.watch(paymentSendAmountParsedNotifierProvider);
-                final amountProvider = ref.watch(amountToStringProvider);
-                final amountStr = amountProvider.amountToString(
-                    AmountToStringParameters(
-                        amount: sendAmountParsed, precision: precision));
-                final amount = double.tryParse(amountStr) ?? 0;
-                dollarConversion = ref
-                    .watch(amountUsdProvider(asset?.assetId ?? '', amount))
-                    .toStringAsFixed(2);
-
-                dollarConversion = replaceCharacterOnPosition(
-                  input: dollarConversion,
-                  currencyChar: '\$',
-                  currencyCharAlignment: CurrencyCharAlignment.begin,
-                );
-                final visibleConversion = ref
-                    .watch(walletProvider)
-                    .isAmountUsdAvailable(asset?.assetId);
-
-                return Text(
-                  visibleConversion ? '≈ $dollarConversion' : '',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.normal,
-                    color: Color(0xFFD3E5F0),
-                  ),
-                );
-              },
-            ),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: DottedLine(
-              dashColor: SideSwapColors.jellyBean,
-              dashGapColor: Colors.transparent,
-              dashLength: 1.0,
-              dashGapLength: 0.0,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 16),
-            child: Consumer(builder: (context, ref, _) {
-              final details =
-                  ref.watch(paymentSendAddressParsedNotifierProvider);
-              return TxDetailsColumn(
-                description: 'To'.tr(),
-                details: details,
-                detailsStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.white,
-                ),
-              );
-            }),
+              return switch (createdTx) {
+                CreatedTx(addressees: final addresses) => () {
+                    final listHeight = (addresses.length * 44.0);
+                    final containerHeight =
+                        listHeight > 180 ? 180.0 : listHeight;
+                    return Container(
+                      height: containerHeight,
+                      constraints:
+                          const BoxConstraints(minHeight: 44, maxHeight: 180),
+                      decoration: const BoxDecoration(
+                        color: SideSwapColors.prussianBlue,
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ),
+                      child: CustomScrollView(
+                        slivers: [
+                          SliverList.builder(
+                            itemBuilder: (context, index) {
+                              return RowTxReceiver(
+                                address: addresses[index].address,
+                                assetId: addresses[index].assetId,
+                                amount: addresses[index].amount.toInt(),
+                                index: index,
+                              );
+                            },
+                            itemCount: addresses.length,
+                          )
+                        ],
+                      ),
+                    );
+                  }(),
+                _ => const SizedBox(),
+              };
+            },
           ),
           const Padding(
             padding: EdgeInsets.only(top: 16),
@@ -141,35 +117,47 @@ class PaymentSendPopup extends StatelessWidget {
               dashGapLength: 0.0,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: Consumer(builder: (context, ref, _) {
-              final sendNetworkFee = ref
-                  .watch(paymentCreatedTxNotifierProvider.notifier)
-                  .sendNetworkFee();
+          const SizedBox(height: 16),
+          Consumer(
+            builder: (context, ref, child) {
+              final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+
+              final feePerByteStr =
+                  '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
+              final txSizeStr =
+                  '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
               final amountProvider = ref.watch(amountToStringProvider);
-              final networkFeeAmount = amountProvider.amountToStringNamed(
+              final feeStr = amountProvider.amountToStringNamed(
                   AmountToStringNamedParameters(
-                      amount: sendNetworkFee, ticker: kLiquidBitcoinTicker));
-              return TxDetailsColumn(
-                description: 'Network Fee'.tr(),
-                details: networkFeeAmount,
-                detailsStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                  color: Colors.white,
+                      amount: createdTx?.networkFee.toInt() ?? 0,
+                      ticker: 'L-BTC'));
+
+              return Container(
+                decoration: const BoxDecoration(
+                  color: SideSwapColors.chathamsBlue,
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8, right: 8, bottom: 10, top: 10),
+                  child: Column(
+                    children: [
+                      RowTxDetail(
+                          name: 'Fee per byte'.tr(), value: feePerByteStr),
+                      RowTxDetail(
+                          name: 'Transaction size'.tr(), value: txSizeStr),
+                      RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
+                      RowTxDetail(
+                          name: 'Number of inputs'.tr(),
+                          value: createdTx?.inputCount.toString() ?? ''),
+                      RowTxDetail(
+                          name: 'Number of outputs'.tr(),
+                          value: createdTx?.outputCount.toString() ?? ''),
+                    ],
+                  ),
                 ),
               );
-            }),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: DottedLine(
-              dashColor: SideSwapColors.jellyBean,
-              dashGapColor: Colors.transparent,
-              dashLength: 1.0,
-              dashGapLength: 0.0,
-            ),
+            },
           ),
           Expanded(
             child: Container(),
@@ -177,8 +165,9 @@ class PaymentSendPopup extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 40, bottom: 40),
             child: Consumer(builder: (context, ref, _) {
-              final buttonEnabled =
-                  !ref.watch(walletProvider.select((p) => p.isSendingTx));
+              final sendTxState = ref.watch(sendTxStateNotifierProvider);
+              final buttonEnabled = sendTxState == const SendTxStateEmpty();
+
               return CustomBigButton(
                 width: MediaQuery.of(context).size.width,
                 height: 54,

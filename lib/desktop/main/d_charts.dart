@@ -358,9 +358,10 @@ class DChartsAssetDetailsField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dollarPrice = (assetAmount != null && assetId != null)
-        ? ref.watch(amountUsdProvider(assetId, assetAmount!))
+    final defaultCurrencyPrice = (assetAmount != null && assetId != null)
+        ? ref.watch(amountUsdInDefaultCurrencyProvider(assetId, assetAmount!))
         : null;
+    final defaultCurrencyTicker = ref.read(defaultCurrencyTickerProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -378,9 +379,9 @@ class DChartsAssetDetailsField extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 8),
-        if (dollarPrice != null)
+        if (defaultCurrencyPrice != null)
           Text(
-            '≈ \$ ${formatThousandsSep(dollarPrice)}',
+            '≈ ${formatThousandsSep(defaultCurrencyPrice.toDouble())} $defaultCurrencyTicker',
             style: const TextStyle(
               fontSize: 12,
               color: Color(0xFF87C1E1),

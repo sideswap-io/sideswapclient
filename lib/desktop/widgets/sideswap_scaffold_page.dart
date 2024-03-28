@@ -72,17 +72,17 @@ class SideSwapScaffoldPageState extends State<SideSwapScaffoldPage> {
   @override
   void initState() {
     super.initState();
-    RawKeyboard.instance.addListener(_onRawKey);
+    HardwareKeyboard.instance.addHandler(_onHardwareKey);
   }
 
   @override
   void dispose() {
-    RawKeyboard.instance.removeListener(_onRawKey);
+    HardwareKeyboard.instance.removeHandler(_onHardwareKey);
     super.dispose();
   }
 
-  void _onRawKey(RawKeyEvent event) {
-    if (event is RawKeyDownEvent) {
+  bool _onHardwareKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
       final logicalKey = event.logicalKey;
       if (logicalKey == LogicalKeyboardKey.escape) {
         widget.onEscapeKey?.call();
@@ -92,6 +92,7 @@ class SideSwapScaffoldPageState extends State<SideSwapScaffoldPage> {
         widget.onEnterKey?.call();
       }
     }
+    return false;
   }
 
   @override

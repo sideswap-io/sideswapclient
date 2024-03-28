@@ -17,13 +17,15 @@ class DSettingsAboutUs extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
-    return WillPopScope(
-      onWillPop: () async {
-        ref.read(walletProvider).goBack();
-        return false;
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          ref.read(walletProvider).goBack();
+        }
       },
       child: DContentDialog(
         title: DContentDialogTitle(
@@ -47,7 +49,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
                         // showExportLogMenu(context);
                       },
                       child: Text(
-                        'VERSION'.tr(args: [appVersion]),
+                        'VERSION: {}'.tr(args: [appVersion]),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -130,7 +132,7 @@ class DSettingsAboutUs extends HookConsumerWidget {
             ),
           ),
         ],
-        style: const DContentDialogThemeData().merge(settingsDialogTheme),
+        style: const DContentDialogThemeData().merge(defaultDialogTheme),
         constraints: const BoxConstraints(maxWidth: 580, maxHeight: 693),
       ),
     );

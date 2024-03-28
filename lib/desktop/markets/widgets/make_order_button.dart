@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/desktop/common/button/d_button_theme.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_hover_button.dart';
 import 'package:sideswap/desktop/common/d_color.dart';
 
-class MakeOrderButton extends StatelessWidget {
+class MakeOrderButton extends ConsumerWidget {
   const MakeOrderButton({
     super.key,
     required this.isSell,
@@ -17,8 +18,9 @@ class MakeOrderButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final color = isSell ? sellColor : buyColor;
+
     return DCustomFilledBigButton(
       width: 344,
       height: 44,

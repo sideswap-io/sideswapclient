@@ -53,7 +53,7 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
     currentContext = ref.read(navigatorKeyProvider).currentContext;
 
     widget.controller.addListener(() {
-      updateDollarConversion();
+      updateDefaultCurrencyConversion();
     });
 
     inversePrice = !widget.orderDetailsData.sellBitcoin;
@@ -129,13 +129,13 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
     Navigator.of(context).pop();
   }
 
-  void updateDollarConversion() {
+  void updateDefaultCurrencyConversion() {
     final priceAssetId = widget.asset?.assetId;
     setState(() {
       if (priceAssetId == ref.read(tetherAssetIdStateProvider)) {
         priceConversion = '';
       } else {
-        priceConversion = ref.read(dollarConversionFromStringProvider(
+        priceConversion = ref.read(defaultCurrencyConversionFromStringProvider(
             priceAssetId, widget.controller.text));
       }
     });
@@ -155,14 +155,14 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
     final indexPriceStr = ref
         .watch(indexPriceForAssetProvider(widget.asset?.assetId))
         .getIndexPriceStr();
-    if (!tracking && (!isToken && indexPriceStr.isNotEmpty)) {
+    if (tracking && (!isToken && indexPriceStr.isNotEmpty)) {
       displaySlider = true;
     }
 
     if (displaySlider) {
       widget.controller.text = trackingPriceFixed;
     }
-    updateDollarConversion();
+    updateDefaultCurrencyConversion();
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -245,7 +245,7 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
                                       onEditingComplete: onSubmit,
                                       tracking:
                                           widget.orderDetailsData.isTracking,
-                                      dollarConversion: priceConversion,
+                                      currencyConversion: priceConversion,
                                       displaySlider: displaySlider,
                                       invertColors: inversePrice,
                                     ),

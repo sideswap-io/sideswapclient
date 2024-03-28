@@ -34,7 +34,7 @@ class DJadeInfoDialog extends HookConsumerWidget {
 
       if (!showAmpOnboarding) {
         Future.microtask(() => ref
-            .read(pageStatusStateProvider.notifier)
+            .read(pageStatusNotifierProvider.notifier)
             .setStatus(Status.registered));
         return;
       }
@@ -42,10 +42,8 @@ class DJadeInfoDialog extends HookConsumerWidget {
       return;
     }, [jadeStatus, jadeOnboardingRegistration, showAmpOnboarding]);
 
-    return WillPopScope(
-      onWillPop: () async {
-        return false;
-      },
+    return PopScope(
+      canPop: false,
       child: DContentDialog(
         constraints: const BoxConstraints(minWidth: 200, minHeight: 100),
         style: const DContentDialogThemeData().merge(

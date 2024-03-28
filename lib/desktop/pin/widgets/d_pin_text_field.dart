@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/decorations/d_side_swap_input_decoration.dart';
 import 'package:sideswap/desktop/pin/widgets/d_pin_icon_button.dart';
 
-class DPinTextField extends HookWidget {
+class DPinTextField extends HookConsumerWidget {
   const DPinTextField({
     super.key,
     this.focusNode,
@@ -17,6 +18,7 @@ class DPinTextField extends HookWidget {
     this.pin = '',
     this.error = false,
     this.errorMessage = '',
+    this.autofocus = false,
   });
 
   final FocusNode? focusNode;
@@ -28,15 +30,17 @@ class DPinTextField extends HookWidget {
   final String pin;
   final bool error;
   final String errorMessage;
+  final bool autofocus;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final controller = useTextEditingController();
     final obscureText = useState(true);
 
     controller.text = pin;
     controller.selection = TextSelection.fromPosition(
         TextPosition(offset: controller.text.length));
+
     return SizedBox(
       width: 344,
       height: 69,
@@ -45,6 +49,7 @@ class DPinTextField extends HookWidget {
         child: AbsorbPointer(
           absorbing: enabled ? false : true,
           child: TextField(
+            autofocus: true,
             controller: controller,
             focusNode: focusNode,
             obscureText: obscureText.value,

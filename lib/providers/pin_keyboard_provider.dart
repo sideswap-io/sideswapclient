@@ -1,8 +1,12 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:rxdart/subjects.dart';
-import 'package:sideswap/desktop/pin/d_pin_keyboard.dart';
+import 'dart:async';
 
-enum PinKey {
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:rxdart/rxdart.dart';
+
+part 'pin_keyboard_provider.g.dart';
+
+enum PinKeyEnum {
   one,
   two,
   three,
@@ -17,28 +21,31 @@ enum PinKey {
   enter,
 }
 
-final pinKeyboardProvider =
-    Provider<PinKeyboardProvider>((ref) => PinKeyboardProvider(ref));
+@riverpod
+PinKeyboardHelper pinKeyboardHelper(PinKeyboardHelperRef ref) {
+  return PinKeyboardHelper(ref: ref);
+}
 
-class PinKeyboardProvider {
+class PinKeyboardHelper {
   final Ref ref;
 
-  PinKeyboardProvider(this.ref);
+  PinKeyboardHelper({required this.ref});
 
-  PublishSubject<PinKey> keyPressedSubject = PublishSubject<PinKey>();
+  final PublishSubject<PinKeyEnum> pinKeySubject = PublishSubject();
+  late final Stream<PinKeyEnum> pinKeyStream = pinKeySubject;
 
-  PinKey indexToKey(int index) {
-    if (index < 0 || index > PinKey.values.length) {
-      return PinKey.backspace;
+  PinKeyEnum indexToKey(int index) {
+    if (index < 0 || index > PinKeyEnum.values.length) {
+      return PinKeyEnum.backspace;
     }
 
-    return PinKey.values[index];
+    return PinKeyEnum.values[index];
   }
 
   void keyPressed(int index) {
     final key = indexToKey(index);
 
-    keyPressedSubject.add(key);
+    pinKeySubject.add(key);
   }
 
   void onDesktopKeyChanged(String oldValue, String newValue) {
@@ -46,21 +53,22 @@ class PinKeyboardProvider {
       return;
     }
 
-    if (oldValue.length > newValue.length) {
-      ref.read(pinKeyboardIndexProvider).pinIndex = 10;
+    final oldPinKeys =
+        oldValue.runes.map((e) => String.fromCharCode(e)).toList();
+    for (var _ in oldPinKeys) {
+      // backspace
       keyPressed(9);
-      return;
     }
 
-    final lastCharacter =
-        newValue.substring((newValue.length - 1).clamp(0, newValue.length));
-    final index = int.tryParse(lastCharacter) ?? -1;
-    if (index == 0) {
-      ref.read(pinKeyboardIndexProvider).pinIndex = 11;
-      keyPressed(10);
-    } else {
-      ref.read(pinKeyboardIndexProvider).pinIndex = index;
-      keyPressed(index - 1);
+    final newPinKeys = newValue.runes.map((e) => String.fromCharCode(e));
+    for (final char in newPinKeys) {
+      final index = int.tryParse(char) ?? -1;
+      if (index == 0) {
+        // zero
+        keyPressed(10);
+      } else {
+        keyPressed(index - 1);
+      }
     }
   }
 }

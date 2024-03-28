@@ -47,9 +47,12 @@ class ImageSourceChooser extends ConsumerWidget {
                   ),
                 ),
                 onPressed: () async {
+                  final navigator = Navigator.of(context);
+                  final rootNavigator =
+                      Navigator.of(context, rootNavigator: true);
                   if (await ref.read(avatarProvider).loadCameraImage()) {
-                    Navigator.pop(context);
-                    await Navigator.of(context, rootNavigator: true).push<void>(
+                    navigator.pop();
+                    await rootNavigator.push<void>(
                       MaterialPageRoute(
                         builder: (context) => ImportAvatarResizer(
                           resizerData: resizerData,
@@ -87,9 +90,12 @@ class ImageSourceChooser extends ConsumerWidget {
                   ),
                 ),
                 onPressed: () async {
+                  final navigator = Navigator.of(context);
+                  final rootNavigator =
+                      Navigator.of(context, rootNavigator: true);
                   if (await ref.read(avatarProvider).loadGalleryImage()) {
-                    Navigator.pop(context);
-                    await Navigator.of(context, rootNavigator: true).push<void>(
+                    navigator.pop();
+                    await rootNavigator.push<void>(
                       MaterialPageRoute(
                         builder: (context) => ImportAvatarResizer(
                           resizerData: resizerData,

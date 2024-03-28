@@ -1,9 +1,11 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
+part 'wallet_page_status_provider.g.dart';
+
 enum Status {
-  reviewLicenseCreateWallet,
-  reviewLicenseImportWallet,
+  networkAccessOnboarding,
+  reviewLicense,
   noWallet,
   selectEnv,
   lockedWalet,
@@ -53,6 +55,7 @@ enum Status {
   settingsUserDetails,
   settingsNetwork,
   settingsLogs,
+  settingsCurrency,
 
   paymentPage,
   paymentAmountPage,
@@ -76,28 +79,22 @@ enum Status {
   pegxSubmitFinish,
 
   jadeImport,
+
+  stokrRestrictionsInfo,
+  stokrNeedRegister,
 }
 
-final pageStatusStateProvider =
-    AutoDisposeStateNotifierProvider<PageStatus, Status>((ref) {
-  ref.keepAlive();
-
-  return PageStatus(ref);
-});
-
-class PageStatus extends StateNotifier<Status> {
-  final Ref ref;
-
-  PageStatus(this.ref) : super(Status.walletLoading) {
+@Riverpod(keepAlive: true)
+class PageStatusNotifier extends _$PageStatusNotifier {
+  @override
+  Status build() {
     ref.listenSelf((_, next) {
-      logger.d('${pageStatusStateProvider.toString()}: $next');
+      logger.d('${pageStatusNotifierProvider.toString()}: $next');
     });
+    return Status.walletLoading;
   }
 
   void setStatus(Status status) {
-    logger.d(status);
-    if (mounted) {
-      state = status;
-    }
+    state = status;
   }
 }

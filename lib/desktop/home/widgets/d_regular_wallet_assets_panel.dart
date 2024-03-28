@@ -20,8 +20,11 @@ class DRegularWalletAssetsPanel extends StatelessWidget {
             builder: (context, ref, _) {
               final regularAccounts =
                   ref.watch(regularVisibleAccountAssetsProvider);
-              final dollarConversion = ref.watch(
-                  accountAssetsTotalUsdBalanceStringProvider(regularAccounts));
+              final defaultCurrencyConversion = ref.watch(
+                  accountAssetsTotalDefaultCurrencyBalanceStringProvider(
+                      regularAccounts));
+              final defaultCurrencyTicker =
+                  ref.watch(defaultCurrencyTickerProvider);
 
               final lbtcConversion = ref.watch(
                   accountAssetsTotalLbtcBalanceProvider(regularAccounts));
@@ -29,7 +32,7 @@ class DRegularWalletAssetsPanel extends StatelessWidget {
               return DAssetsPanelHeader(
                 title: 'Regular wallet'.tr(),
                 totalValueLabel: 'Total Value'.tr(),
-                totalValue: '$dollarConversion USD',
+                totalValue: '$defaultCurrencyConversion $defaultCurrencyTicker',
                 totalBtcValue: '$lbtcConversion L-BTC',
                 walletType: 'Singlesig',
               );

@@ -214,7 +214,7 @@ class DAnimatedPinButton extends HookConsumerWidget {
       height: itemHeight,
       padding: EdgeInsets.zero,
       onPressed: () {
-        ref.read(pinKeyboardProvider).keyPressed(index);
+        ref.read(pinKeyboardHelperProvider).keyPressed(index);
         ref.watch(pinKeyboardIndexProvider).pinIndex = index + 1;
       },
       style: buttonStyle,

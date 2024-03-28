@@ -28,13 +28,13 @@ class AddressQrScanner extends HookConsumerWidget {
     this.expectedAddress,
   });
 
-  void onQrViewCreated(
+  Future<void> onQrViewCreated(
     BuildContext context,
     WidgetRef ref,
     String code,
     BIP21AddressTypeEnum? expectedAddress,
     Null Function(String) errorCallback,
-  ) {
+  ) async {
     logger.d('Scanned data: $code');
 
     final handleResult = ref.read(universalLinkProvider).handleAppUrlStr(code);
@@ -48,15 +48,23 @@ class AddressQrScanner extends HookConsumerWidget {
           errorCallback('Invalid QR code'.tr());
           return;
         }(),
-      _ => () {
+      _ => () async {
           final liquidAssetId = ref.read(liquidAssetIdStateProvider);
           logger.d(liquidAssetId);
 
-          final result = ref.read(qrcodeProvider).parseDynamicQrCode(code);
+          final result =
+              await ref.read(qrcodeHelperProvider).parseDynamicQrCode(code);
 
           result.match((l) => errorCallback('Invalid QR code'), (r) {
             if (r.error != null) {
               errorCallback(r.errorMessage ?? 'Invalid QR code'.tr());
+              return;
+            }
+
+            if (r.outputsData != null) {
+              ref
+                  .read(qrCodeResultModelNotifierProvider.notifier)
+                  .setModel(QrCodeResultModelData(result: r));
               return;
             }
 
@@ -71,8 +79,9 @@ class AddressQrScanner extends HookConsumerWidget {
               return;
             }
 
-            ref.read(qrcodeResultModelProvider.notifier).state =
-                QrCodeResultModelData(result: r);
+            ref
+                .read(qrCodeResultModelNotifierProvider.notifier)
+                .setModel(QrCodeResultModelData(result: r));
           });
 
           Navigator.of(context).pop();
@@ -152,13 +161,13 @@ class AddressQrScanner extends HookConsumerWidget {
             if (hasCameraPermission.value) ...[
               MobileScanner(
                 controller: cameraController,
-                onDetect: (capture) {
+                onDetect: (capture) async {
                   final List<Barcode> barcodes = capture.barcodes;
                   if (barcodes.isNotEmpty) {
                     if (barCodeTimer == null || !barCodeTimer!.isActive) {
                       barCodeTimer = Timer(const Duration(seconds: 3), () {});
 
-                      onQrViewCreated(
+                      await onQrViewCreated(
                         context,
                         ref,
                         barcodes.first.rawValue ?? '',

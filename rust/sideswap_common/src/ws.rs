@@ -19,14 +19,15 @@ pub fn next_request_id_str() -> RequestId {
     )
 }
 
-const RECONNECT_WAIT_PERIODS: [Duration; 5] = [
+const RECONNECT_WAIT_PERIODS: [Duration; 6] = [
     Duration::from_secs(0),
     Duration::from_secs(1),
     Duration::from_secs(3),
-    Duration::from_secs(6),
     Duration::from_secs(9),
+    Duration::from_secs(15),
+    Duration::from_secs(30),
 ];
-const RECONNECT_WAIT_MAX_PERIOD: Duration = Duration::from_secs(12);
+const RECONNECT_WAIT_MAX_PERIOD: Duration = Duration::from_secs(60);
 
 const PING_PERIOD: Duration = Duration::from_secs(30);
 const PONG_TIMEOUT: Duration = Duration::from_secs(90);

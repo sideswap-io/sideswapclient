@@ -1,11 +1,17 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/common/button/d_custom_button.dart';
 import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
+import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
@@ -110,7 +116,6 @@ class DOpenTxImport extends HookConsumerWidget {
               keyboardType: TextInputType.multiline,
               minLines: 3,
               maxLines: 3,
-              selectionControls: DesktopTextSelectionControls(),
               style: const TextStyle(
                 color: Colors.black,
                 fontSize: 16,
@@ -179,7 +184,59 @@ class DOpenTxImport extends HookConsumerWidget {
                 DCustomButton(
                   width: 245,
                   height: 44,
-                  // onPressed: () {},
+                  onPressed: () async {
+                    final navigator = Navigator.of(context);
+                    const XTypeGroup typeGroup = XTypeGroup(
+                      label: 'Outputs json',
+                      extensions: <String>['json'],
+                    );
+                    final XFile? file = await openFile(
+                        acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+                    final result = await ref
+                        .read(outputsReaderNotifierProvider.notifier)
+                        .setXFile(file);
+
+                    return switch (result) {
+                      true => () async {
+                          final errorMessage = ref
+                              .read(paymentHelperProvider)
+                              .outputsPaymentSend();
+                          if (errorMessage != null) {
+                            final flushbar = Flushbar<void>(
+                              messageText: Text(errorMessage),
+                              duration: const Duration(seconds: 5),
+                              backgroundColor: SideSwapColors.chathamsBlue,
+                            );
+
+                            if (context.mounted) {
+                              await flushbar.show(context);
+                            }
+                            return;
+                          }
+
+                          navigator.pop();
+                          ref.read(desktopDialogProvider).showSendTx();
+                        }(),
+                      _ => () {
+                          final outputsData =
+                              ref.read(outputsReaderNotifierProvider);
+                          return switch (outputsData) {
+                            Left(value: final l) => () async {
+                                if (l.message != null) {
+                                  final flushbar = Flushbar<void>(
+                                    messageText: Text(l.message!),
+                                    duration: const Duration(seconds: 5),
+                                    backgroundColor:
+                                        SideSwapColors.chathamsBlue,
+                                  );
+                                  await flushbar.show(context);
+                                }
+                              }(),
+                            _ => () {}(),
+                          };
+                        }(),
+                    };
+                  },
                   child: Text('IMPORT FILE'.tr()),
                 ),
                 DCustomButton(

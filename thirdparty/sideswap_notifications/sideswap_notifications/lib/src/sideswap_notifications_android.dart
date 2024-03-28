@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:sideswap_notifications/src/firebase_options.dart';
 import 'package:sideswap_notifications/src/notification_logger.dart';
 import 'package:sideswap_notifications_platform_interface/sideswap_notifications_platform_interface.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,7 +13,8 @@ class SideswapNotificationsAndroidPlugin
   @override
   Future<void> firebaseInitializeApp() async {
     logger.d('Initialize firebase app');
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
   }
 
   @override

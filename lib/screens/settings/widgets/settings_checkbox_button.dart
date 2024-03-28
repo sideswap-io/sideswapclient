@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
-import 'package:sideswap/screens/settings/widgets/settings_network_checkbox.dart';
+import 'package:sideswap/screens/settings/widgets/settings_checkbox.dart';
 
-class SettingsNetworkButton extends StatefulWidget {
-  const SettingsNetworkButton({
+class SettingsCheckboxButton extends StatefulWidget {
+  const SettingsCheckboxButton({
     super.key,
-    required this.value,
+    required this.checked,
     required this.onChanged,
-    required this.title,
+    required this.content,
     this.trailingIconVisible = false,
   });
 
-  final bool value;
+  final bool checked;
   final ValueChanged<bool> onChanged;
-  final Widget title;
+  final Widget content;
   final bool trailingIconVisible;
 
   @override
-  SettingsNetworkButtonState createState() => SettingsNetworkButtonState();
+  SettingsCheckboxButtonState createState() => SettingsCheckboxButtonState();
 }
 
-class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
+class SettingsCheckboxButtonState extends State<SettingsCheckboxButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -29,7 +29,7 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
       width: double.infinity,
       child: TextButton(
         onPressed: () {
-          widget.onChanged(!widget.value);
+          widget.onChanged(!widget.checked);
         },
         style: TextButton.styleFrom(
           foregroundColor: Colors.white,
@@ -53,10 +53,10 @@ class SettingsNetworkButtonState extends State<SettingsNetworkButton> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               IgnorePointer(
-                child: SettingsNetworkCheckbox(
-                  value: widget.value,
+                child: SettingsCheckbox(
+                  value: widget.checked,
                   onChanged: (value) {},
-                  title: widget.title,
+                  title: widget.content,
                 ),
               ),
               const Spacer(),

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
-class SwitchButton extends StatefulWidget {
+class SwitchButton extends StatelessWidget {
   const SwitchButton({
     super.key,
     this.backgroundColor = SideSwapColors.prussianBlue,
     this.borderRadius = 8,
-    this.width = 142,
-    this.height = 35,
+    required this.width,
+    required this.height,
     required this.value,
     this.onToggle,
     this.borderColor = SideSwapColors.prussianBlue,
@@ -42,127 +42,108 @@ class SwitchButton extends StatefulWidget {
   final double? fontSize;
 
   @override
-  SwitchButtonState createState() => SwitchButtonState();
-}
-
-class SwitchButtonState extends State<SwitchButton> {
-  late double switchWidth = (widget.width - 3 * widget.borderWidth) / 2;
-  late double switchHeight = widget.height - 2 * widget.borderWidth;
-  bool enabled = true;
-
-  @override
-  void initState() {
-    super.initState();
-    enabled = widget.onToggle != null;
-  }
-
-  @override
-  void didUpdateWidget(SwitchButton oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.onToggle != widget.onToggle) {
-      enabled = widget.onToggle != null;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final enabled = onToggle != null;
+
     final defaultActiveTextStyle = TextStyle(
       fontFamily: 'Roboto',
-      fontSize: widget.fontSize ?? 14,
+      fontSize: fontSize ?? 14,
       fontWeight: FontWeight.w500,
       color: Colors.white,
     );
 
     final defaultInactiveTextStyle = TextStyle(
       fontFamily: 'Roboto',
-      fontSize: widget.fontSize ?? 14,
+      fontSize: fontSize ?? 14,
       fontWeight: FontWeight.w500,
       color: SideSwapColors.ceruleanFrost,
     );
 
-    var activeTextStyle = (enabled
-            ? widget.activeTextStyle
-            : widget.activeTextStyle?.copyWith(
-                color: widget.activeTextStyle?.color?.withOpacity(0.2))) ??
+    final internalActiveTextStyle = (enabled
+            ? activeTextStyle
+            : activeTextStyle?.copyWith(
+                color: activeTextStyle?.color?.withOpacity(0.2))) ??
         (enabled
             ? defaultActiveTextStyle
             : defaultActiveTextStyle.copyWith(
                 color: SideSwapColors.ceruleanFrost));
 
+    final switchWidth = (width / 2) - borderWidth;
+    final switchHeight = height - borderWidth;
+
     return GestureDetector(
       onTap: () {
-        if (enabled && widget.onToggle != null) {
-          widget.onToggle!(!widget.value);
+        if (enabled && onToggle != null) {
+          onToggle!(!value);
         }
       },
       child: Opacity(
         opacity: enabled ? 1 : 1,
         child: Container(
-          width: widget.width,
-          height: widget.height,
+          width: width,
+          height: height,
           decoration: BoxDecoration(
             shape: BoxShape.rectangle,
             border: Border.all(
-              width: widget.borderWidth,
-              color: widget.borderColor,
+              width: borderWidth,
+              color: borderColor,
             ),
-            borderRadius:
-                BorderRadius.all(Radius.circular(widget.borderRadius)),
-            color: widget.backgroundColor,
+            borderRadius: BorderRadius.all(Radius.circular(borderRadius)),
+            color: backgroundColor,
           ),
           child: Row(
             children: [
-              if (widget.value) ...[
-                widget.inactiveToggle ??
+              if (value) ...[
+                inactiveToggle ??
                     SwithButtonInactiveToggle(
                       switchWidth: switchWidth,
                       switchHeight: switchHeight,
-                      inactiveToggleBackground: widget.inactiveToggleBackground,
-                      activeText: widget.activeText,
-                      inactiveText: widget.inactiveText,
-                      switchValue: widget.value,
+                      inactiveToggleBackground: inactiveToggleBackground,
+                      activeText: activeText,
+                      inactiveText: inactiveText,
+                      switchValue: value,
                       inactiveTextStyle:
-                          widget.inactiveTextStyle ?? defaultInactiveTextStyle,
+                          inactiveTextStyle ?? defaultInactiveTextStyle,
                     ),
                 const Spacer(),
-                widget.activeToggle ??
+                activeToggle ??
                     SwitchButtonActiveToggle(
                       switchWidth: switchWidth,
                       switchHeight: switchHeight,
-                      borderRadius: widget.borderRadius,
-                      borderWidth: widget.borderWidth,
+                      borderRadius: borderRadius,
+                      borderWidth: borderWidth,
                       enabled: enabled,
-                      activeText: widget.activeText,
-                      inactiveText: widget.inactiveText,
-                      switchValue: widget.value,
-                      activeToggleBackground: widget.activeToggleBackground,
-                      activeTextStyle: activeTextStyle,
+                      activeText: activeText,
+                      inactiveText: inactiveText,
+                      switchValue: value,
+                      activeToggleBackground: activeToggleBackground,
+                      activeTextStyle: internalActiveTextStyle,
                     ),
               ] else ...[
-                widget.activeToggle ??
+                activeToggle ??
                     SwitchButtonActiveToggle(
                       switchWidth: switchWidth,
                       switchHeight: switchHeight,
-                      borderRadius: widget.borderRadius,
-                      borderWidth: widget.borderWidth,
+                      borderRadius: borderRadius,
+                      borderWidth: borderWidth,
                       enabled: enabled,
-                      activeText: widget.activeText,
-                      inactiveText: widget.inactiveText,
-                      switchValue: widget.value,
-                      activeToggleBackground: widget.activeToggleBackground,
-                      activeTextStyle: activeTextStyle,
+                      activeText: activeText,
+                      inactiveText: inactiveText,
+                      switchValue: value,
+                      activeToggleBackground: activeToggleBackground,
+                      activeTextStyle: internalActiveTextStyle,
                     ),
                 const Spacer(),
-                widget.inactiveToggle ??
+                inactiveToggle ??
                     SwithButtonInactiveToggle(
                       switchWidth: switchWidth,
                       switchHeight: switchHeight,
-                      inactiveToggleBackground: widget.inactiveToggleBackground,
-                      activeText: widget.activeText,
-                      inactiveText: widget.inactiveText,
-                      switchValue: widget.value,
+                      inactiveToggleBackground: inactiveToggleBackground,
+                      activeText: activeText,
+                      inactiveText: inactiveText,
+                      switchValue: value,
                       inactiveTextStyle:
-                          widget.inactiveTextStyle ?? defaultInactiveTextStyle,
+                          inactiveTextStyle ?? defaultInactiveTextStyle,
                     ),
               ]
             ],

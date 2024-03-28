@@ -17,7 +17,6 @@ class DSideSwapPasteIconInputDecoration extends InputDecoration {
           errorStyle: const TextStyle(
             fontSize: 14,
             color: SideSwapColors.bitterSweet,
-            // color: Color(0xFFFF5555),
           ),
           border: const OutlineInputBorder(
             borderRadius: BorderRadius.all(

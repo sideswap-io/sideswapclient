@@ -1,6 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/numerical_range_formatter.dart';
+import 'package:sideswap/common/widgets/sideswap_text_field.dart';
 
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_settings_radio_button.dart';
@@ -8,9 +14,14 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/settings/d_settings_custom_host.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
+import 'package:sideswap/providers/network_access_tab_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
+import 'package:sideswap/providers/proxy_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
 class DSettingsNetworkAccess extends ConsumerWidget {
@@ -18,8 +29,8 @@ class DSettingsNetworkAccess extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settingsDialogTheme =
-        ref.watch(desktopAppThemeNotifierProvider).settingsDialogTheme;
+    final defaultDialogTheme =
+        ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
 
     return PopScope(
       canPop: false,
@@ -36,8 +47,11 @@ class DSettingsNetworkAccess extends ConsumerWidget {
           content: Text('Network access'.tr()),
         ),
         content: const DSettingsNetworkAccessContent(),
-        style: const DContentDialogThemeData().merge(settingsDialogTheme),
-        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 605),
+        style: const DContentDialogThemeData().merge(defaultDialogTheme),
+        constraints: const BoxConstraints(maxWidth: 580, maxHeight: 635),
+        actions: const [
+          DSettingsNetworkAccessSaveOrBackButton(),
+        ],
       ),
     );
   }
@@ -50,119 +64,44 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+    final networkAccessTab = ref.watch(networkAccessTabNotifierProvider);
 
     return Center(
       child: SizedBox(
         width: 344,
-        height: 509,
+        height: 446,
         child: Column(
           children: [
-            DSettingsRadioButton(
-              checked: networkSettingsModel.settingsNetworkType ==
-                      SettingsNetworkType.blockstream &&
-                  networkSettingsModel.env == SIDESWAP_ENV_PROD,
-              onChanged: (value) {
-                ref.read(networkSettingsNotifierProvider.notifier).setModel(
-                      const NetworkSettingsModelApply(
-                        settingsNetworkType: SettingsNetworkType.blockstream,
-                        env: SIDESWAP_ENV_PROD,
-                      ),
-                    );
+            SwitchButton(
+              width: 344,
+              height: 36,
+              backgroundColor: SideSwapColors.chathamsBlue,
+              borderColor: SideSwapColors.chathamsBlue,
+              inactiveToggleBackground: SideSwapColors.chathamsBlue,
+              value: networkAccessTab == const NetworkAccessTabStateProxy(),
+              activeText: 'Proxy'.tr(),
+              inactiveText: 'Network access server'.tr(),
+              onToggle: (value) {
+                ref
+                    .read(networkAccessTabNotifierProvider.notifier)
+                    .setNetworkAccessTab(value
+                        ? const NetworkAccessTabStateProxy()
+                        : const NetworkAccessTabStateServer());
               },
-              content: const Text(
-                'Blockstream (Mainnet)',
-              ),
+              activeTextStyle: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(color: Colors.white),
+              inactiveTextStyle: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(color: Colors.white),
             ),
-            const SizedBox(height: 10),
-            DSettingsRadioButton(
-              checked: networkSettingsModel.settingsNetworkType ==
-                      SettingsNetworkType.blockstream &&
-                  networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
-              onChanged: (value) {
-                ref.read(networkSettingsNotifierProvider.notifier).setModel(
-                      const NetworkSettingsModelApply(
-                        settingsNetworkType: SettingsNetworkType.blockstream,
-                        env: SIDESWAP_ENV_TESTNET,
-                      ),
-                    );
-              },
-              content: const Text(
-                'Blockstream (Testnet)',
-              ),
-            ),
-            const SizedBox(height: 10),
-            DSettingsRadioButton(
-              checked: networkSettingsModel.settingsNetworkType ==
-                      SettingsNetworkType.sideswap &&
-                  networkSettingsModel.env == SIDESWAP_ENV_PROD,
-              onChanged: (value) {
-                ref.read(networkSettingsNotifierProvider.notifier).setModel(
-                      const NetworkSettingsModelApply(
-                        settingsNetworkType: SettingsNetworkType.sideswap,
-                        env: SIDESWAP_ENV_PROD,
-                      ),
-                    );
-              },
-              content: const Text(
-                'SideSwap (Mainnet)',
-              ),
-            ),
-            const SizedBox(height: 10),
-            DSettingsRadioButton(
-              checked: networkSettingsModel.settingsNetworkType ==
-                      SettingsNetworkType.sideswap &&
-                  networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
-              onChanged: (value) {
-                ref.read(networkSettingsNotifierProvider.notifier).setModel(
-                      const NetworkSettingsModelApply(
-                        settingsNetworkType: SettingsNetworkType.sideswap,
-                        env: SIDESWAP_ENV_TESTNET,
-                      ),
-                    );
-              },
-              content: const Text(
-                'SideSwap (Testnet)',
-              ),
-            ),
-            const SizedBox(height: 10),
-            DSettingsRadioButton(
-              checked: networkSettingsModel.settingsNetworkType ==
-                  SettingsNetworkType.sideswapChina,
-              onChanged: (value) {
-                ref.read(networkSettingsNotifierProvider.notifier).setModel(
-                      const NetworkSettingsModelApply(
-                        settingsNetworkType: SettingsNetworkType.sideswapChina,
-                        env: SIDESWAP_ENV_PROD,
-                      ),
-                    );
-              },
-              content: const Text(
-                'SideSwap China (Mainnet)',
-              ),
-            ),
-            const SizedBox(height: 10),
-            DSettingsRadioButton(
-              trailingIcon: true,
-              checked: networkSettingsModel.settingsNetworkType ==
-                  SettingsNetworkType.personal,
-              onChanged: (value) {
-                ref.read(walletProvider).setRegistered();
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    RawDialogRoute<Widget>(
-                      pageBuilder: (_, __, ___) => const DSettingsCustomHost(),
-                    ),
-                    (route) => route.isFirst);
-              },
-              content: Text(
-                'Personal Electrum Server'.tr(),
-              ),
-            ),
-            const Spacer(),
-            const SizedBox(height: 16),
-            const DSettingsNetworkAccessSaveButton(),
-            const SizedBox(height: 16),
+            switch (networkAccessTab) {
+              NetworkAccessTabStateServer() =>
+                const DSettingsNetworkAccessServer(),
+              _ => const Flexible(child: DSettingsNetworkAccessProxy()),
+            },
           ],
         ),
       ),
@@ -170,8 +109,239 @@ class DSettingsNetworkAccessContent extends ConsumerWidget {
   }
 }
 
-class DSettingsNetworkAccessSaveButton extends ConsumerWidget {
-  const DSettingsNetworkAccessSaveButton({
+class DSettingsNetworkAccessProxy extends HookConsumerWidget {
+  const DSettingsNetworkAccessProxy({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hostController = useTextEditingController();
+    final portController = useTextEditingController();
+
+    final useProxy = ref.watch(useProxyNotifierProvider);
+
+    final validateCallback = useCallback(() {
+      final host = hostController.text;
+      final port = portController.text;
+
+      if (host.isEmpty && port.isEmpty) {
+        ref.read(configurationProvider.notifier).setProxySettings(null);
+      } else {
+        ref.read(configurationProvider.notifier).setProxySettings(ProxySettings(
+            host: host.isEmpty ? null : host, port: int.tryParse(port)));
+      }
+    }, const []);
+
+    useEffect(() {
+      hostController.text =
+          ref.read(configurationProvider).proxySettings?.host ?? '';
+      portController.text =
+          '${ref.read(configurationProvider).proxySettings?.port ?? ''}';
+
+      hostController.addListener(() {
+        validateCallback();
+      });
+      portController.addListener(() {
+        validateCallback();
+      });
+
+      return;
+    }, [hostController, portController]);
+
+    return SizedBox(
+      height: 422,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Use proxy'.tr(),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: SideSwapColors.brightTurquoise),
+              ),
+              FlutterSwitch(
+                value: useProxy,
+                onToggle: (value) {
+                  ref
+                      .read(useProxyNotifierProvider.notifier)
+                      .setProxyState(value);
+                },
+                width: 40,
+                height: 22,
+                toggleSize: 18,
+                padding: 2,
+                activeColor: SideSwapColors.brightTurquoise,
+                inactiveColor: SideSwapColors.prussianBlue,
+                toggleColor: Colors.white,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Host',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: SideSwapColors.brightTurquoise),
+          ),
+          const SizedBox(height: 10),
+          SideSwapTextField(
+            controller: hostController,
+            hintText: '127.0.0.1',
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Port',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: SideSwapColors.brightTurquoise),
+          ),
+          const SizedBox(height: 10),
+          SideSwapTextField(
+            controller: portController,
+            hintText: 'Range 1-65535'.tr(),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(5),
+              NumericalRangeFormatter(min: 1, max: 65535),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DSettingsNetworkAccessServer extends ConsumerWidget {
+  const DSettingsNetworkAccessServer({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final networkSettingsModel = ref.watch(networkSettingsNotifierProvider);
+
+    return SizedBox(
+      width: 344,
+      height: 410,
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+          DSettingsRadioButton(
+            checked: networkSettingsModel.settingsNetworkType ==
+                    SettingsNetworkType.blockstream &&
+                networkSettingsModel.env == SIDESWAP_ENV_PROD,
+            onChanged: (value) {
+              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+                    const NetworkSettingsModelApply(
+                      settingsNetworkType: SettingsNetworkType.blockstream,
+                      env: SIDESWAP_ENV_PROD,
+                    ),
+                  );
+            },
+            content: const Text(
+              'Blockstream (Mainnet)',
+            ),
+          ),
+          const SizedBox(height: 10),
+          DSettingsRadioButton(
+            checked: networkSettingsModel.settingsNetworkType ==
+                    SettingsNetworkType.blockstream &&
+                networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
+            onChanged: (value) {
+              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+                    const NetworkSettingsModelApply(
+                      settingsNetworkType: SettingsNetworkType.blockstream,
+                      env: SIDESWAP_ENV_TESTNET,
+                    ),
+                  );
+            },
+            content: const Text(
+              'Blockstream (Testnet)',
+            ),
+          ),
+          const SizedBox(height: 10),
+          DSettingsRadioButton(
+            checked: networkSettingsModel.settingsNetworkType ==
+                    SettingsNetworkType.sideswap &&
+                networkSettingsModel.env == SIDESWAP_ENV_PROD,
+            onChanged: (value) {
+              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+                    const NetworkSettingsModelApply(
+                      settingsNetworkType: SettingsNetworkType.sideswap,
+                      env: SIDESWAP_ENV_PROD,
+                    ),
+                  );
+            },
+            content: const Text(
+              'SideSwap (Mainnet)',
+            ),
+          ),
+          const SizedBox(height: 10),
+          DSettingsRadioButton(
+            checked: networkSettingsModel.settingsNetworkType ==
+                    SettingsNetworkType.sideswap &&
+                networkSettingsModel.env == SIDESWAP_ENV_TESTNET,
+            onChanged: (value) {
+              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+                    const NetworkSettingsModelApply(
+                      settingsNetworkType: SettingsNetworkType.sideswap,
+                      env: SIDESWAP_ENV_TESTNET,
+                    ),
+                  );
+            },
+            content: const Text(
+              'SideSwap (Testnet)',
+            ),
+          ),
+          const SizedBox(height: 10),
+          DSettingsRadioButton(
+            checked: networkSettingsModel.settingsNetworkType ==
+                SettingsNetworkType.sideswapChina,
+            onChanged: (value) {
+              ref.read(networkSettingsNotifierProvider.notifier).setModel(
+                    const NetworkSettingsModelApply(
+                      settingsNetworkType: SettingsNetworkType.sideswapChina,
+                      env: SIDESWAP_ENV_PROD,
+                    ),
+                  );
+            },
+            content: const Text(
+              'SideSwap China (Mainnet)',
+            ),
+          ),
+          const SizedBox(height: 10),
+          DSettingsRadioButton(
+            trailingIcon: true,
+            checked: networkSettingsModel.settingsNetworkType ==
+                SettingsNetworkType.personal,
+            onChanged: (value) {
+              ref
+                  .read(pageStatusNotifierProvider.notifier)
+                  .setStatus(Status.registered);
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  RawDialogRoute<Widget>(
+                    pageBuilder: (_, __, ___) => const DSettingsCustomHost(),
+                  ),
+                  (route) => route.isFirst);
+            },
+            content: Text(
+              'Personal Electrum Server'.tr(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DSettingsNetworkAccessSaveOrBackButton extends ConsumerWidget {
+  const DSettingsNetworkAccessSaveOrBackButton({
     super.key,
   });
 
@@ -179,9 +349,9 @@ class DSettingsNetworkAccessSaveButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final needSave = ref.watch(networkSettingsNeedSaveProvider);
 
-    return switch (needSave) {
-      true => Center(
-          child: DCustomTextBigButton(
+    return Center(
+      child: switch (needSave) {
+        true => DCustomTextBigButton(
             width: 266,
             onPressed: () {
               ref.read(desktopDialogProvider).showNeedRestartDialog();
@@ -190,8 +360,16 @@ class DSettingsNetworkAccessSaveButton extends ConsumerWidget {
               'SAVE'.tr(),
             ),
           ),
-        ),
-      false => const SizedBox(),
-    };
+        false => DCustomTextBigButton(
+            width: 266,
+            onPressed: () {
+              ref.read(walletProvider).goBack();
+            },
+            child: Text(
+              'BACK'.tr(),
+            ),
+          ),
+      },
+    );
   }
 }

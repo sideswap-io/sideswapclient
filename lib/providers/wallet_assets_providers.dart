@@ -451,13 +451,11 @@ FutureOr<Uint8List?> imageBytesResizedFuture(
 }) async {
   // replace disk cache to own memory cache if you want to load images faster
   final cacheManager = ref.watch(cachedImageManagerProvider);
-  const ext = 'png';
 
   final cacheKey = '${uniqueKey}_${width.ceil()}x${height.ceil()}';
 
   if (await cacheManager.isExists(cacheKey)) {
-    final cachedFile = await cacheManager.cacheBytes(cacheKey, Uint8List(0),
-        fileExtension: ext);
+    final cachedFile = await cacheManager.cacheBytes(cacheKey, Uint8List(0));
     return cachedFile.readAsBytes();
   }
 
@@ -469,8 +467,7 @@ FutureOr<Uint8List?> imageBytesResizedFuture(
     return imageBytes;
   }
 
-  final cachedFile =
-      await cacheManager.cacheBytes(cacheKey, imageBytes, fileExtension: ext);
+  final cachedFile = await cacheManager.cacheBytes(cacheKey, imageBytes);
   return cachedFile.readAsBytes();
 }
 

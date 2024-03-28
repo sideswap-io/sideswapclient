@@ -38,7 +38,7 @@ class AssetReceiveScreen extends HookConsumerWidget {
         ),
         onTrailingButtonPressed: () {
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.registered);
         },
       ),

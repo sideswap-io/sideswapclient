@@ -25,6 +25,8 @@ pub const OS_TYPE_IOS: i32 = 2;
 pub const CONTACT_ADDRESSES_UPLOAD_COUNT_DEFAULT: usize = 20;
 pub const CONTACT_ADDRESSES_UPLOAD_COUNT_MAX: usize = 20;
 
+const SWAP_MARKETS_DEFAULT_SERVER_FEE: f64 = 0.001;
+
 pub fn get_os_type() -> i32 {
     if cfg!(target_os = "android") {
         OS_TYPE_ANDROID
@@ -110,7 +112,24 @@ pub struct IssuancePrevout {
     pub vout: u32,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone)]
+pub struct ServerFee {
+    value: f64,
+}
+
+impl ServerFee {
+    pub fn new(value: Option<f64>) -> Self {
+        let value = value.unwrap_or(SWAP_MARKETS_DEFAULT_SERVER_FEE);
+        assert!(value >= 0.0);
+        assert!(value < 1.0);
+        Self { value }
+    }
+    pub fn value(&self) -> f64 {
+        self.value
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Asset {
     pub asset_id: AssetId,
     pub name: String,
@@ -126,6 +145,13 @@ pub struct Asset {
     pub issuer_pubkey: Option<String>,
     pub contract: Option<serde_json::Value>,
     pub market_type: Option<MarketType>,
+    pub server_fee: Option<f64>,
+}
+
+impl Asset {
+    pub fn server_fee(&self) -> ServerFee {
+        ServerFee::new(self.server_fee)
+    }
 }
 
 pub type Assets = Vec<Asset>;
@@ -560,6 +586,13 @@ pub type PortfolioPricesRequest = Empty;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PortfolioPricesResponse {
     pub prices_usd: BTreeMap<AssetId, f64>,
+}
+
+pub type ConversionRatesRequest = Empty;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ConversionRatesResponse {
+    // Example: `"EUR": 0.922` (meaning that 1 USD is equal to 0.922 EUR)
+    pub usd_conversion_rates: BTreeMap<String, f64>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1060,6 +1093,7 @@ pub enum Request {
     LoadPrices(LoadPricesRequest),
     CancelPrices(CancelPricesRequest),
     PortfolioPrices(PortfolioPricesRequest),
+    ConversionRates(ConversionRatesRequest),
     Submit(SubmitRequest),
     Edit(EditRequest),
     Cancel(CancelRequest),
@@ -1122,6 +1156,7 @@ pub enum Response {
     LoadPrices(LoadPricesResponse),
     CancelPrices(CancelPricesResponse),
     PortfolioPrices(PortfolioPricesResponse),
+    ConversionRates(ConversionRatesResponse),
     Submit(SubmitResponse),
     Edit(EditResponse),
     Cancel(CancelResponse),

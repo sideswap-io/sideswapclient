@@ -12,7 +12,7 @@ part of 'config_provider.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 /// @nodoc
 mixin _$SideswapSettings {
@@ -25,13 +25,12 @@ mixin _$SideswapSettings {
   String get phoneKey => throw _privateConstructorUsedError;
   String get phoneNumber => throw _privateConstructorUsedError;
   bool get usePinProtection => throw _privateConstructorUsedError;
-  PinData? get pinData => throw _privateConstructorUsedError;
+  PinDataState? get pinDataState => throw _privateConstructorUsedError;
   SettingsNetworkType get settingsNetworkType =>
       throw _privateConstructorUsedError;
   String get networkHost => throw _privateConstructorUsedError;
   int get networkPort => throw _privateConstructorUsedError;
   bool get networkUseTLS => throw _privateConstructorUsedError;
-  String? get settings => throw _privateConstructorUsedError;
   int get knownNewReleaseBuild => throw _privateConstructorUsedError;
   bool get showAmpOnboarding => throw _privateConstructorUsedError;
   NetworkSettingsModel? get networkSettingsModel =>
@@ -39,6 +38,11 @@ mixin _$SideswapSettings {
   bool get hideTxChainingPromptValue => throw _privateConstructorUsedError;
   bool get hidePegInInfo => throw _privateConstructorUsedError;
   bool get hidePegOutInfo => throw _privateConstructorUsedError;
+  ProxySettings? get proxySettings => throw _privateConstructorUsedError;
+  bool get useProxy => throw _privateConstructorUsedError;
+  String? get defaultCurrency => throw _privateConstructorUsedError;
+  StokrSettingsModel? get stokrSettingsModel =>
+      throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(
@@ -51,18 +55,21 @@ mixin _$SideswapSettings {
             String phoneKey,
             String phoneNumber,
             bool usePinProtection,
-            PinData? pinData,
+            PinDataState? pinDataState,
             SettingsNetworkType settingsNetworkType,
             String networkHost,
             int networkPort,
             bool networkUseTLS,
-            String? settings,
             int knownNewReleaseBuild,
             bool showAmpOnboarding,
             NetworkSettingsModel? networkSettingsModel,
             bool hideTxChainingPromptValue,
             bool hidePegInInfo,
-            bool hidePegOutInfo)
+            bool hidePegOutInfo,
+            ProxySettings? proxySettings,
+            bool useProxy,
+            String? defaultCurrency,
+            StokrSettingsModel? stokrSettingsModel)
         empty,
   }) =>
       throw _privateConstructorUsedError;
@@ -78,18 +85,21 @@ mixin _$SideswapSettings {
             String phoneKey,
             String phoneNumber,
             bool usePinProtection,
-            PinData? pinData,
+            PinDataState? pinDataState,
             SettingsNetworkType settingsNetworkType,
             String networkHost,
             int networkPort,
             bool networkUseTLS,
-            String? settings,
             int knownNewReleaseBuild,
             bool showAmpOnboarding,
             NetworkSettingsModel? networkSettingsModel,
             bool hideTxChainingPromptValue,
             bool hidePegInInfo,
-            bool hidePegOutInfo)?
+            bool hidePegOutInfo,
+            ProxySettings? proxySettings,
+            bool useProxy,
+            String? defaultCurrency,
+            StokrSettingsModel? stokrSettingsModel)?
         empty,
   }) =>
       throw _privateConstructorUsedError;
@@ -105,18 +115,21 @@ mixin _$SideswapSettings {
             String phoneKey,
             String phoneNumber,
             bool usePinProtection,
-            PinData? pinData,
+            PinDataState? pinDataState,
             SettingsNetworkType settingsNetworkType,
             String networkHost,
             int networkPort,
             bool networkUseTLS,
-            String? settings,
             int knownNewReleaseBuild,
             bool showAmpOnboarding,
             NetworkSettingsModel? networkSettingsModel,
             bool hideTxChainingPromptValue,
             bool hidePegInInfo,
-            bool hidePegOutInfo)?
+            bool hidePegOutInfo,
+            ProxySettings? proxySettings,
+            bool useProxy,
+            String? defaultCurrency,
+            StokrSettingsModel? stokrSettingsModel)?
         empty,
     required TResult orElse(),
   }) =>
@@ -159,20 +172,26 @@ abstract class $SideswapSettingsCopyWith<$Res> {
       String phoneKey,
       String phoneNumber,
       bool usePinProtection,
-      PinData? pinData,
+      PinDataState? pinDataState,
       SettingsNetworkType settingsNetworkType,
       String networkHost,
       int networkPort,
       bool networkUseTLS,
-      String? settings,
       int knownNewReleaseBuild,
       bool showAmpOnboarding,
       NetworkSettingsModel? networkSettingsModel,
       bool hideTxChainingPromptValue,
       bool hidePegInInfo,
-      bool hidePegOutInfo});
+      bool hidePegOutInfo,
+      ProxySettings? proxySettings,
+      bool useProxy,
+      String? defaultCurrency,
+      StokrSettingsModel? stokrSettingsModel});
 
+  $PinDataStateCopyWith<$Res>? get pinDataState;
   $NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel;
+  $ProxySettingsCopyWith<$Res>? get proxySettings;
+  $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel;
 }
 
 /// @nodoc
@@ -197,18 +216,21 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
     Object? phoneKey = null,
     Object? phoneNumber = null,
     Object? usePinProtection = null,
-    Object? pinData = freezed,
+    Object? pinDataState = freezed,
     Object? settingsNetworkType = null,
     Object? networkHost = null,
     Object? networkPort = null,
     Object? networkUseTLS = null,
-    Object? settings = freezed,
     Object? knownNewReleaseBuild = null,
     Object? showAmpOnboarding = null,
     Object? networkSettingsModel = freezed,
     Object? hideTxChainingPromptValue = null,
     Object? hidePegInInfo = null,
     Object? hidePegOutInfo = null,
+    Object? proxySettings = freezed,
+    Object? useProxy = null,
+    Object? defaultCurrency = freezed,
+    Object? stokrSettingsModel = freezed,
   }) {
     return _then(_value.copyWith(
       mnemonicEncrypted: null == mnemonicEncrypted
@@ -247,10 +269,10 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
           ? _value.usePinProtection
           : usePinProtection // ignore: cast_nullable_to_non_nullable
               as bool,
-      pinData: freezed == pinData
-          ? _value.pinData
-          : pinData // ignore: cast_nullable_to_non_nullable
-              as PinData?,
+      pinDataState: freezed == pinDataState
+          ? _value.pinDataState
+          : pinDataState // ignore: cast_nullable_to_non_nullable
+              as PinDataState?,
       settingsNetworkType: null == settingsNetworkType
           ? _value.settingsNetworkType
           : settingsNetworkType // ignore: cast_nullable_to_non_nullable
@@ -267,10 +289,6 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
           ? _value.networkUseTLS
           : networkUseTLS // ignore: cast_nullable_to_non_nullable
               as bool,
-      settings: freezed == settings
-          ? _value.settings
-          : settings // ignore: cast_nullable_to_non_nullable
-              as String?,
       knownNewReleaseBuild: null == knownNewReleaseBuild
           ? _value.knownNewReleaseBuild
           : knownNewReleaseBuild // ignore: cast_nullable_to_non_nullable
@@ -295,7 +313,35 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
           ? _value.hidePegOutInfo
           : hidePegOutInfo // ignore: cast_nullable_to_non_nullable
               as bool,
+      proxySettings: freezed == proxySettings
+          ? _value.proxySettings
+          : proxySettings // ignore: cast_nullable_to_non_nullable
+              as ProxySettings?,
+      useProxy: null == useProxy
+          ? _value.useProxy
+          : useProxy // ignore: cast_nullable_to_non_nullable
+              as bool,
+      defaultCurrency: freezed == defaultCurrency
+          ? _value.defaultCurrency
+          : defaultCurrency // ignore: cast_nullable_to_non_nullable
+              as String?,
+      stokrSettingsModel: freezed == stokrSettingsModel
+          ? _value.stokrSettingsModel
+          : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
+              as StokrSettingsModel?,
     ) as $Val);
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $PinDataStateCopyWith<$Res>? get pinDataState {
+    if (_value.pinDataState == null) {
+      return null;
+    }
+
+    return $PinDataStateCopyWith<$Res>(_value.pinDataState!, (value) {
+      return _then(_value.copyWith(pinDataState: value) as $Val);
+    });
   }
 
   @override
@@ -308,6 +354,31 @@ class _$SideswapSettingsCopyWithImpl<$Res, $Val extends SideswapSettings>
     return $NetworkSettingsModelCopyWith<$Res>(_value.networkSettingsModel!,
         (value) {
       return _then(_value.copyWith(networkSettingsModel: value) as $Val);
+    });
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $ProxySettingsCopyWith<$Res>? get proxySettings {
+    if (_value.proxySettings == null) {
+      return null;
+    }
+
+    return $ProxySettingsCopyWith<$Res>(_value.proxySettings!, (value) {
+      return _then(_value.copyWith(proxySettings: value) as $Val);
+    });
+  }
+
+  @override
+  @pragma('vm:prefer-inline')
+  $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel {
+    if (_value.stokrSettingsModel == null) {
+      return null;
+    }
+
+    return $StokrSettingsModelCopyWith<$Res>(_value.stokrSettingsModel!,
+        (value) {
+      return _then(_value.copyWith(stokrSettingsModel: value) as $Val);
     });
   }
 }
@@ -330,21 +401,30 @@ abstract class _$$SideswapSettingsImplCopyWith<$Res>
       String phoneKey,
       String phoneNumber,
       bool usePinProtection,
-      PinData? pinData,
+      PinDataState? pinDataState,
       SettingsNetworkType settingsNetworkType,
       String networkHost,
       int networkPort,
       bool networkUseTLS,
-      String? settings,
       int knownNewReleaseBuild,
       bool showAmpOnboarding,
       NetworkSettingsModel? networkSettingsModel,
       bool hideTxChainingPromptValue,
       bool hidePegInInfo,
-      bool hidePegOutInfo});
+      bool hidePegOutInfo,
+      ProxySettings? proxySettings,
+      bool useProxy,
+      String? defaultCurrency,
+      StokrSettingsModel? stokrSettingsModel});
 
   @override
+  $PinDataStateCopyWith<$Res>? get pinDataState;
+  @override
   $NetworkSettingsModelCopyWith<$Res>? get networkSettingsModel;
+  @override
+  $ProxySettingsCopyWith<$Res>? get proxySettings;
+  @override
+  $StokrSettingsModelCopyWith<$Res>? get stokrSettingsModel;
 }
 
 /// @nodoc
@@ -367,18 +447,21 @@ class __$$SideswapSettingsImplCopyWithImpl<$Res>
     Object? phoneKey = null,
     Object? phoneNumber = null,
     Object? usePinProtection = null,
-    Object? pinData = freezed,
+    Object? pinDataState = freezed,
     Object? settingsNetworkType = null,
     Object? networkHost = null,
     Object? networkPort = null,
     Object? networkUseTLS = null,
-    Object? settings = freezed,
     Object? knownNewReleaseBuild = null,
     Object? showAmpOnboarding = null,
     Object? networkSettingsModel = freezed,
     Object? hideTxChainingPromptValue = null,
     Object? hidePegInInfo = null,
     Object? hidePegOutInfo = null,
+    Object? proxySettings = freezed,
+    Object? useProxy = null,
+    Object? defaultCurrency = freezed,
+    Object? stokrSettingsModel = freezed,
   }) {
     return _then(_$SideswapSettingsImpl(
       mnemonicEncrypted: null == mnemonicEncrypted
@@ -417,10 +500,10 @@ class __$$SideswapSettingsImplCopyWithImpl<$Res>
           ? _value.usePinProtection
           : usePinProtection // ignore: cast_nullable_to_non_nullable
               as bool,
-      pinData: freezed == pinData
-          ? _value.pinData
-          : pinData // ignore: cast_nullable_to_non_nullable
-              as PinData?,
+      pinDataState: freezed == pinDataState
+          ? _value.pinDataState
+          : pinDataState // ignore: cast_nullable_to_non_nullable
+              as PinDataState?,
       settingsNetworkType: null == settingsNetworkType
           ? _value.settingsNetworkType
           : settingsNetworkType // ignore: cast_nullable_to_non_nullable
@@ -437,10 +520,6 @@ class __$$SideswapSettingsImplCopyWithImpl<$Res>
           ? _value.networkUseTLS
           : networkUseTLS // ignore: cast_nullable_to_non_nullable
               as bool,
-      settings: freezed == settings
-          ? _value.settings
-          : settings // ignore: cast_nullable_to_non_nullable
-              as String?,
       knownNewReleaseBuild: null == knownNewReleaseBuild
           ? _value.knownNewReleaseBuild
           : knownNewReleaseBuild // ignore: cast_nullable_to_non_nullable
@@ -465,6 +544,22 @@ class __$$SideswapSettingsImplCopyWithImpl<$Res>
           ? _value.hidePegOutInfo
           : hidePegOutInfo // ignore: cast_nullable_to_non_nullable
               as bool,
+      proxySettings: freezed == proxySettings
+          ? _value.proxySettings
+          : proxySettings // ignore: cast_nullable_to_non_nullable
+              as ProxySettings?,
+      useProxy: null == useProxy
+          ? _value.useProxy
+          : useProxy // ignore: cast_nullable_to_non_nullable
+              as bool,
+      defaultCurrency: freezed == defaultCurrency
+          ? _value.defaultCurrency
+          : defaultCurrency // ignore: cast_nullable_to_non_nullable
+              as String?,
+      stokrSettingsModel: freezed == stokrSettingsModel
+          ? _value.stokrSettingsModel
+          : stokrSettingsModel // ignore: cast_nullable_to_non_nullable
+              as StokrSettingsModel?,
     ));
   }
 }
@@ -482,18 +577,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
       this.phoneKey = '',
       this.phoneNumber = '',
       this.usePinProtection = false,
-      this.pinData,
+      this.pinDataState,
       this.settingsNetworkType = SettingsNetworkType.sideswap,
       this.networkHost = '',
       this.networkPort = 0,
       this.networkUseTLS = false,
-      this.settings,
       this.knownNewReleaseBuild = 0,
       this.showAmpOnboarding = true,
       this.networkSettingsModel,
       this.hideTxChainingPromptValue = false,
       this.hidePegInInfo = false,
-      this.hidePegOutInfo = false});
+      this.hidePegOutInfo = false,
+      this.proxySettings,
+      this.useProxy = false,
+      this.defaultCurrency,
+      this.stokrSettingsModel});
 
   @override
   final Uint8List mnemonicEncrypted;
@@ -522,7 +620,7 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
   @JsonKey()
   final bool usePinProtection;
   @override
-  final PinData? pinData;
+  final PinDataState? pinDataState;
   @override
   @JsonKey()
   final SettingsNetworkType settingsNetworkType;
@@ -535,8 +633,6 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
   @override
   @JsonKey()
   final bool networkUseTLS;
-  @override
-  final String? settings;
   @override
   @JsonKey()
   final int knownNewReleaseBuild;
@@ -554,10 +650,19 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
   @override
   @JsonKey()
   final bool hidePegOutInfo;
+  @override
+  final ProxySettings? proxySettings;
+  @override
+  @JsonKey()
+  final bool useProxy;
+  @override
+  final String? defaultCurrency;
+  @override
+  final StokrSettingsModel? stokrSettingsModel;
 
   @override
   String toString() {
-    return 'SideswapSettings.empty(mnemonicEncrypted: $mnemonicEncrypted, jadeId: $jadeId, licenseAccepted: $licenseAccepted, enableEndpoint: $enableEndpoint, useBiometricProtection: $useBiometricProtection, env: $env, phoneKey: $phoneKey, phoneNumber: $phoneNumber, usePinProtection: $usePinProtection, pinData: $pinData, settingsNetworkType: $settingsNetworkType, networkHost: $networkHost, networkPort: $networkPort, networkUseTLS: $networkUseTLS, settings: $settings, knownNewReleaseBuild: $knownNewReleaseBuild, showAmpOnboarding: $showAmpOnboarding, networkSettingsModel: $networkSettingsModel, hideTxChainingPromptValue: $hideTxChainingPromptValue, hidePegInInfo: $hidePegInInfo, hidePegOutInfo: $hidePegOutInfo)';
+    return 'SideswapSettings.empty(mnemonicEncrypted: $mnemonicEncrypted, jadeId: $jadeId, licenseAccepted: $licenseAccepted, enableEndpoint: $enableEndpoint, useBiometricProtection: $useBiometricProtection, env: $env, phoneKey: $phoneKey, phoneNumber: $phoneNumber, usePinProtection: $usePinProtection, pinDataState: $pinDataState, settingsNetworkType: $settingsNetworkType, networkHost: $networkHost, networkPort: $networkPort, networkUseTLS: $networkUseTLS, knownNewReleaseBuild: $knownNewReleaseBuild, showAmpOnboarding: $showAmpOnboarding, networkSettingsModel: $networkSettingsModel, hideTxChainingPromptValue: $hideTxChainingPromptValue, hidePegInInfo: $hidePegInInfo, hidePegOutInfo: $hidePegOutInfo, proxySettings: $proxySettings, useProxy: $useProxy, defaultCurrency: $defaultCurrency, stokrSettingsModel: $stokrSettingsModel)';
   }
 
   @override
@@ -581,7 +686,8 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
                 other.phoneNumber == phoneNumber) &&
             (identical(other.usePinProtection, usePinProtection) ||
                 other.usePinProtection == usePinProtection) &&
-            (identical(other.pinData, pinData) || other.pinData == pinData) &&
+            (identical(other.pinDataState, pinDataState) ||
+                other.pinDataState == pinDataState) &&
             (identical(other.settingsNetworkType, settingsNetworkType) ||
                 other.settingsNetworkType == settingsNetworkType) &&
             (identical(other.networkHost, networkHost) ||
@@ -590,8 +696,6 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
                 other.networkPort == networkPort) &&
             (identical(other.networkUseTLS, networkUseTLS) ||
                 other.networkUseTLS == networkUseTLS) &&
-            (identical(other.settings, settings) ||
-                other.settings == settings) &&
             (identical(other.knownNewReleaseBuild, knownNewReleaseBuild) ||
                 other.knownNewReleaseBuild == knownNewReleaseBuild) &&
             (identical(other.showAmpOnboarding, showAmpOnboarding) ||
@@ -604,7 +708,15 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
             (identical(other.hidePegInInfo, hidePegInInfo) ||
                 other.hidePegInInfo == hidePegInInfo) &&
             (identical(other.hidePegOutInfo, hidePegOutInfo) ||
-                other.hidePegOutInfo == hidePegOutInfo));
+                other.hidePegOutInfo == hidePegOutInfo) &&
+            (identical(other.proxySettings, proxySettings) ||
+                other.proxySettings == proxySettings) &&
+            (identical(other.useProxy, useProxy) ||
+                other.useProxy == useProxy) &&
+            (identical(other.defaultCurrency, defaultCurrency) ||
+                other.defaultCurrency == defaultCurrency) &&
+            (identical(other.stokrSettingsModel, stokrSettingsModel) ||
+                other.stokrSettingsModel == stokrSettingsModel));
   }
 
   @override
@@ -619,18 +731,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
         phoneKey,
         phoneNumber,
         usePinProtection,
-        pinData,
+        pinDataState,
         settingsNetworkType,
         networkHost,
         networkPort,
         networkUseTLS,
-        settings,
         knownNewReleaseBuild,
         showAmpOnboarding,
         networkSettingsModel,
         hideTxChainingPromptValue,
         hidePegInInfo,
-        hidePegOutInfo
+        hidePegOutInfo,
+        proxySettings,
+        useProxy,
+        defaultCurrency,
+        stokrSettingsModel
       ]);
 
   @JsonKey(ignore: true)
@@ -653,18 +768,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
             String phoneKey,
             String phoneNumber,
             bool usePinProtection,
-            PinData? pinData,
+            PinDataState? pinDataState,
             SettingsNetworkType settingsNetworkType,
             String networkHost,
             int networkPort,
             bool networkUseTLS,
-            String? settings,
             int knownNewReleaseBuild,
             bool showAmpOnboarding,
             NetworkSettingsModel? networkSettingsModel,
             bool hideTxChainingPromptValue,
             bool hidePegInInfo,
-            bool hidePegOutInfo)
+            bool hidePegOutInfo,
+            ProxySettings? proxySettings,
+            bool useProxy,
+            String? defaultCurrency,
+            StokrSettingsModel? stokrSettingsModel)
         empty,
   }) {
     return empty(
@@ -677,18 +795,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
         phoneKey,
         phoneNumber,
         usePinProtection,
-        pinData,
+        pinDataState,
         settingsNetworkType,
         networkHost,
         networkPort,
         networkUseTLS,
-        settings,
         knownNewReleaseBuild,
         showAmpOnboarding,
         networkSettingsModel,
         hideTxChainingPromptValue,
         hidePegInInfo,
-        hidePegOutInfo);
+        hidePegOutInfo,
+        proxySettings,
+        useProxy,
+        defaultCurrency,
+        stokrSettingsModel);
   }
 
   @override
@@ -704,18 +825,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
             String phoneKey,
             String phoneNumber,
             bool usePinProtection,
-            PinData? pinData,
+            PinDataState? pinDataState,
             SettingsNetworkType settingsNetworkType,
             String networkHost,
             int networkPort,
             bool networkUseTLS,
-            String? settings,
             int knownNewReleaseBuild,
             bool showAmpOnboarding,
             NetworkSettingsModel? networkSettingsModel,
             bool hideTxChainingPromptValue,
             bool hidePegInInfo,
-            bool hidePegOutInfo)?
+            bool hidePegOutInfo,
+            ProxySettings? proxySettings,
+            bool useProxy,
+            String? defaultCurrency,
+            StokrSettingsModel? stokrSettingsModel)?
         empty,
   }) {
     return empty?.call(
@@ -728,18 +852,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
         phoneKey,
         phoneNumber,
         usePinProtection,
-        pinData,
+        pinDataState,
         settingsNetworkType,
         networkHost,
         networkPort,
         networkUseTLS,
-        settings,
         knownNewReleaseBuild,
         showAmpOnboarding,
         networkSettingsModel,
         hideTxChainingPromptValue,
         hidePegInInfo,
-        hidePegOutInfo);
+        hidePegOutInfo,
+        proxySettings,
+        useProxy,
+        defaultCurrency,
+        stokrSettingsModel);
   }
 
   @override
@@ -755,18 +882,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
             String phoneKey,
             String phoneNumber,
             bool usePinProtection,
-            PinData? pinData,
+            PinDataState? pinDataState,
             SettingsNetworkType settingsNetworkType,
             String networkHost,
             int networkPort,
             bool networkUseTLS,
-            String? settings,
             int knownNewReleaseBuild,
             bool showAmpOnboarding,
             NetworkSettingsModel? networkSettingsModel,
             bool hideTxChainingPromptValue,
             bool hidePegInInfo,
-            bool hidePegOutInfo)?
+            bool hidePegOutInfo,
+            ProxySettings? proxySettings,
+            bool useProxy,
+            String? defaultCurrency,
+            StokrSettingsModel? stokrSettingsModel)?
         empty,
     required TResult orElse(),
   }) {
@@ -781,18 +911,21 @@ class _$SideswapSettingsImpl implements _SideswapSettings {
           phoneKey,
           phoneNumber,
           usePinProtection,
-          pinData,
+          pinDataState,
           settingsNetworkType,
           networkHost,
           networkPort,
           networkUseTLS,
-          settings,
           knownNewReleaseBuild,
           showAmpOnboarding,
           networkSettingsModel,
           hideTxChainingPromptValue,
           hidePegInInfo,
-          hidePegOutInfo);
+          hidePegOutInfo,
+          proxySettings,
+          useProxy,
+          defaultCurrency,
+          stokrSettingsModel);
     }
     return orElse();
   }
@@ -837,18 +970,21 @@ abstract class _SideswapSettings implements SideswapSettings {
       final String phoneKey,
       final String phoneNumber,
       final bool usePinProtection,
-      final PinData? pinData,
+      final PinDataState? pinDataState,
       final SettingsNetworkType settingsNetworkType,
       final String networkHost,
       final int networkPort,
       final bool networkUseTLS,
-      final String? settings,
       final int knownNewReleaseBuild,
       final bool showAmpOnboarding,
       final NetworkSettingsModel? networkSettingsModel,
       final bool hideTxChainingPromptValue,
       final bool hidePegInInfo,
-      final bool hidePegOutInfo}) = _$SideswapSettingsImpl;
+      final bool hidePegOutInfo,
+      final ProxySettings? proxySettings,
+      final bool useProxy,
+      final String? defaultCurrency,
+      final StokrSettingsModel? stokrSettingsModel}) = _$SideswapSettingsImpl;
 
   @override
   Uint8List get mnemonicEncrypted;
@@ -869,7 +1005,7 @@ abstract class _SideswapSettings implements SideswapSettings {
   @override
   bool get usePinProtection;
   @override
-  PinData? get pinData;
+  PinDataState? get pinDataState;
   @override
   SettingsNetworkType get settingsNetworkType;
   @override
@@ -878,8 +1014,6 @@ abstract class _SideswapSettings implements SideswapSettings {
   int get networkPort;
   @override
   bool get networkUseTLS;
-  @override
-  String? get settings;
   @override
   int get knownNewReleaseBuild;
   @override
@@ -892,6 +1026,14 @@ abstract class _SideswapSettings implements SideswapSettings {
   bool get hidePegInInfo;
   @override
   bool get hidePegOutInfo;
+  @override
+  ProxySettings? get proxySettings;
+  @override
+  bool get useProxy;
+  @override
+  String? get defaultCurrency;
+  @override
+  StokrSettingsModel? get stokrSettingsModel;
   @override
   @JsonKey(ignore: true)
   _$$SideswapSettingsImplCopyWith<_$SideswapSettingsImpl> get copyWith =>

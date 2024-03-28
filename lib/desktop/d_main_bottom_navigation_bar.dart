@@ -32,9 +32,9 @@ class DesktopMainBottomNavigationBarState
 
   @override
   Widget build(BuildContext context) {
-    final lang = ref.watch(localesProvider).selectedLang(context);
+    final locale = ref.watch(localesNotifierProvider);
     return Container(
-      key: ValueKey(lang),
+      key: ValueKey(locale),
       height: 56,
       color: const Color(0xFF021C36),
       child: Row(
@@ -49,6 +49,7 @@ class DesktopMainBottomNavigationBarState
             selectedIndex: widget.currentIndex,
             onSelected: selected,
           ),
+          const SizedBox(width: 24),
           ToolbarButton(
             name: 'Swap Markets'.tr(),
             selectedIcon: 'assets/requests_active.svg',
@@ -57,6 +58,7 @@ class DesktopMainBottomNavigationBarState
             selectedIndex: widget.currentIndex,
             onSelected: selected,
           ),
+          const SizedBox(width: 24),
           ToolbarButton(
             name: 'Instant Swap'.tr(),
             selectedIcon: 'assets/swap_active.svg',
@@ -65,6 +67,7 @@ class DesktopMainBottomNavigationBarState
             selectedIndex: widget.currentIndex,
             onSelected: selected,
           ),
+          const SizedBox(width: 24),
           ToolbarButton(
             name: 'Peg-In/Out'.tr(),
             selectedIcon: 'assets/peg-in-out_active.svg',
@@ -73,6 +76,7 @@ class DesktopMainBottomNavigationBarState
             selectedIndex: widget.currentIndex,
             onSelected: selected,
           ),
+          const SizedBox(width: 24),
           ToolbarButton(
             name: 'Transactions'.tr(),
             selectedIcon: 'assets/transactions_active.svg',
@@ -115,37 +119,34 @@ class ToolbarButton extends ConsumerWidget {
     return DButton(
       style: buttonStyle,
       onPressed: () => onSelected(index),
-      child: SizedBox(
-        width: 94,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(height: 8),
-            SizedBox(
-              width: 29,
-              height: 27,
-              child: Center(
-                child: SvgPicture.asset(
-                  isSelected ? selectedIcon : unselectedIcon,
-                  width: 24,
-                ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 8),
+          SizedBox(
+            width: 29,
+            height: 27,
+            child: Center(
+              child: SvgPicture.asset(
+                isSelected ? selectedIcon : unselectedIcon,
+                width: 24,
               ),
             ),
-            const Spacer(),
-            Text(
-              name,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              style: TextStyle(
-                color: isSelected
-                    ? SideSwapColors.brightTurquoise
-                    : const Color(0xFF68839E),
-                fontSize: 10,
-              ),
+          ),
+          const Spacer(),
+          Text(
+            name,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            style: TextStyle(
+              color: isSelected
+                  ? SideSwapColors.brightTurquoise
+                  : const Color(0xFF68839E),
+              fontSize: 10,
             ),
-            const SizedBox(height: 5),
-          ],
-        ),
+          ),
+          const SizedBox(height: 5),
+        ],
       ),
     );
   }

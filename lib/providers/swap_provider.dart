@@ -319,7 +319,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   void pegStop() {
     swapReset();
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.registered);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
   }
 
   void setSwapPeg(bool value) {
@@ -435,7 +435,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   }
 
   void selectSwap() {
-    ref.read(pageStatusStateProvider.notifier).setStatus(Status.registered);
+    ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
 
     final walletMainArguments = ref.read(uiStateArgsNotifierProvider);
     ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(

@@ -27,8 +27,9 @@ bool _isDesktop() {
 }
 
 Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
-  logger.d('Starting app');
   WidgetsFlutterBinding.ensureInitialized();
+
+  logger.d('Starting app');
 
   if (_isDesktop()) {
     await windowManager.ensureInitialized();

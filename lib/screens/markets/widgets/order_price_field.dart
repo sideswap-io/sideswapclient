@@ -22,7 +22,7 @@ class OrderPriceField extends ConsumerWidget {
     required this.productAsset,
     this.icon,
     this.focusNode,
-    this.dollarConversion = '',
+    this.currencyConversion = '',
     this.onEditingComplete,
     this.tracking = false,
     this.onToggleTracking,
@@ -36,7 +36,7 @@ class OrderPriceField extends ConsumerWidget {
   final Asset? productAsset;
   final Widget? icon;
   final FocusNode? focusNode;
-  final String dollarConversion;
+  final String currencyConversion;
   final void Function()? onEditingComplete;
   final bool tracking;
   final void Function(bool)? onToggleTracking;
@@ -146,7 +146,7 @@ class OrderPriceField extends ConsumerWidget {
                     icon: icon,
                     asset: asset,
                     price: controller?.text ?? '',
-                    dollarConversion: dollarConversion,
+                    currencyConversion: currencyConversion,
                     invertColors: invertColors,
                   );
                 },

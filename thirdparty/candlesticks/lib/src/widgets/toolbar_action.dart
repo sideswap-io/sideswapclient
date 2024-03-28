@@ -8,11 +8,11 @@ class ToolBarAction extends StatelessWidget {
   final double width;
 
   const ToolBarAction({
-    Key? key,
+    super.key,
     required this.child,
     required this.onPressed,
     this.width = 30,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -31,8 +31,9 @@ class OrderPriceTextField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dollarConversion = ref.watch(dollarConversionProvider(
-        asset?.assetId ?? '', double.tryParse(controller?.text ?? '0') ?? 0));
+    final defaultCurrencyConversion = ref.watch(
+        defaultCurrencyConversionProvider(asset?.assetId ?? '',
+            double.tryParse(controller?.text ?? '0') ?? 0));
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -65,7 +66,9 @@ class OrderPriceTextField extends ConsumerWidget {
                       ),
                     ),
                     Text(
-                      dollarConversion.isEmpty ? '' : '≈ $dollarConversion',
+                      defaultCurrencyConversion.isEmpty
+                          ? ''
+                          : '≈ $defaultCurrencyConversion',
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.normal,

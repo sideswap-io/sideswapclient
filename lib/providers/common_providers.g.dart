@@ -6,7 +6,7 @@ part of 'common_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$isAddrTypeValidHash() => r'7649906241c4a5564f344e2e0b4d8a48905e0806';
+String _$isAddrTypeValidHash() => r'b20a6bb2339b315b4aa5a619eed521f69204a0f4';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -19,7 +19,7 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
         onClose: () {
           Navigator.of(context).pop();
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.registered);
         },
         content: SvgPicture.asset(
@@ -54,7 +54,7 @@ class DNeedRestartPopupDialog extends ConsumerWidget {
                   Navigator.of(context).pop();
                   ref.read(networkSettingsNotifierProvider.notifier).save();
                   ref
-                      .read(pageStatusStateProvider.notifier)
+                      .read(pageStatusNotifierProvider.notifier)
                       .setStatus(Status.registered);
                 },
                 child: Text('OK'.tr()),

@@ -89,11 +89,13 @@ class DMnemonicTextBox extends HookConsumerWidget {
                 FocusNode focusNode,
                 VoidCallback onFieldSubmitted,
               ) {
-                return RawKeyboardListener(
+                return KeyboardListener(
                   focusNode: keyboardListenerFocusNode,
-                  onKey: (RawKeyEvent event) async {
-                    if (event.isKeyPressed(LogicalKeyboardKey.tab) ||
-                        event.isKeyPressed(LogicalKeyboardKey.enter)) {
+                  onKeyEvent: (value) async {
+                    if (HardwareKeyboard.instance
+                            .isLogicalKeyPressed(LogicalKeyboardKey.tab) ||
+                        HardwareKeyboard.instance
+                            .isLogicalKeyPressed(LogicalKeyboardKey.enter)) {
                       await onSubmitted(
                           textEditingController.text, ref, focusNode);
                       onFieldSubmitted();

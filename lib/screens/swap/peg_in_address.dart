@@ -17,7 +17,7 @@ class PegInAddress extends HookConsumerWidget {
       appBar: CustomAppBar(
         onPressed: () {
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.registered);
         },
       ),

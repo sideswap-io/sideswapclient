@@ -8,22 +8,25 @@ import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 
 class AccountItem extends StatelessWidget {
-  final AccountAsset accountAsset;
-  final ValueChanged<AccountAsset> onSelected;
-  final bool disabled;
-
   const AccountItem({
     super.key,
     required this.accountAsset,
     required this.onSelected,
     this.disabled = false,
+    this.disabledBackgroundColor = const Color(0xFF034569),
+    this.backgroundColor = SideSwapColors.chathamsBlue,
   });
+
+  final AccountAsset accountAsset;
+  final ValueChanged<AccountAsset> onSelected;
+  final bool disabled;
+  final Color disabledBackgroundColor;
+  final Color backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
-    final backgrounColor =
-        disabled ? const Color(0xFF034569) : SideSwapColors.chathamsBlue;
+    final bgColor = disabled ? disabledBackgroundColor : backgroundColor;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -31,7 +34,7 @@ class AccountItem extends StatelessWidget {
         height: 80,
         child: TextButton(
           style: TextButton.styleFrom(
-            backgroundColor: backgrounColor,
+            backgroundColor: bgColor,
             padding: EdgeInsets.zero,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -156,11 +159,14 @@ class AccountItemConversion extends StatelessWidget {
         ),
         Consumer(
           builder: (context, ref, child) {
-            final usdAssetBalance =
-                ref.watch(accountAssetBalanceInUsdStringProvider(accountAsset));
+            final defaultCurrencyAssetBalance = ref.watch(
+                accountAssetBalanceInDefaultCurrencyStringProvider(
+                    accountAsset));
+            final defaultCurrencyTicker =
+                ref.watch(defaultCurrencyTickerProvider);
 
             return Text(
-              '$usdAssetBalance \$',
+              '$defaultCurrencyAssetBalance $defaultCurrencyTicker',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.normal,

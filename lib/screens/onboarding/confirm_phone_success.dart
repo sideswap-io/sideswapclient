@@ -50,7 +50,7 @@ class ConfirmPhoneSuccess extends ConsumerWidget {
         onPressed: () async {
           final confirmPhoneData =
               ref.read(phoneProvider).getConfirmPhoneData();
-          await confirmPhoneData.onConfirmPhoneDone!(context);
+          await confirmPhoneData?.onConfirmPhoneDone!(context);
         },
       ),
     );

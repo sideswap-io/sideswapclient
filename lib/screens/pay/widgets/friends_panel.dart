@@ -50,7 +50,7 @@ class FriendsPanelState extends State<FriendsPanel> {
                             friend: friends[index],
                           ));
                       ref
-                          .read(pageStatusStateProvider.notifier)
+                          .read(pageStatusNotifierProvider.notifier)
                           .setStatus(Status.paymentAmountPage);
                     },
                   ),

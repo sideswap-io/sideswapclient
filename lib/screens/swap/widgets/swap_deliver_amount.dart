@@ -50,10 +50,10 @@ class SwapDeliverAmount extends HookConsumerWidget {
           controller: swapSendAmountController, newValue: newValue);
     });
 
-    final showDeliverDollarConversion = swapType == SwapType.pegOut;
+    final showDeliverDefaultCurrencyConversion = swapType == SwapType.pegOut;
 
-    final dollarConversion2 = showDeliverDollarConversion
-        ? ref.watch(dollarConversionFromStringProvider(
+    final defaultCurrencyConversion2 = showDeliverDefaultCurrencyConversion
+        ? ref.watch(defaultCurrencyConversionFromStringProvider(
             swapSendAsset.assetId, swapSendAmountController.text))
         : null;
 
@@ -77,7 +77,7 @@ class SwapDeliverAmount extends HookConsumerWidget {
       dropdownValue: swapSendAsset,
       availableAssets: swapSendAssets,
       labelGroupValue: swapSendWallet,
-      dollarConversion2: dollarConversion2,
+      defaultCurrencyConversion2: defaultCurrencyConversion2,
       swapType: swapType,
       showInsufficientFunds: showInsufficientFunds,
       errorDescription: serverError,

@@ -14,7 +14,7 @@ class DPegxSubmitAmp extends HookConsumerWidget {
       DPegxLoginDialog(
         onClose: () {
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.ampRegister);
         },
         content: const DPegxSubmitAmpDialogBody(),

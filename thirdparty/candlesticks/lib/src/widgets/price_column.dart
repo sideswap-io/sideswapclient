@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 class PriceColumn extends StatefulWidget {
   const PriceColumn({
-    Key? key,
+    super.key,
     required this.low,
     required this.high,
     required this.priceScale,
@@ -15,7 +15,7 @@ class PriceColumn extends StatefulWidget {
     required this.lastCandle,
     required this.onScale,
     required this.additionalVerticalPadding,
-  }) : super(key: key);
+  });
 
   final double low;
   final double high;
@@ -31,7 +31,7 @@ class PriceColumn extends StatefulWidget {
 }
 
 class _PriceColumnState extends State<PriceColumn> {
-  ScrollController scrollController = new ScrollController();
+  ScrollController scrollController = ScrollController();
 
   double calcutePriceIndicatorTopPadding(
       double chartHeight, double low, double high) {
@@ -55,30 +55,31 @@ class _PriceColumnState extends State<PriceColumn> {
           child: Stack(
             children: [
               AnimatedPositioned(
-                duration: Duration(milliseconds: 300),
-                top: MAIN_CHART_VERTICAL_PADDING - priceTileHeight / 2,
+                duration: const Duration(milliseconds: 300),
+                top: mainChartVerticalPadding - priceTileHeight / 2,
                 height: widget.chartHeight +
-                    MAIN_CHART_VERTICAL_PADDING +
+                    mainChartVerticalPadding +
                     priceTileHeight / 2,
                 width: widget.width,
                 child: ListView(
                   controller: scrollController,
                   children: List<Widget>.generate(20, (i) {
                     return AnimatedContainer(
-                      duration: Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 300),
                       height: priceTileHeight,
                       width: double.infinity,
                       child: Center(
                         child: Row(
                           children: [
                             Container(
-                              width: widget.width - PRICE_BAR_WIDTH,
+                              width: widget.width - priceBarWidth,
                               height: 0.05,
                               color: Theme.of(context).grayColor,
                             ),
                             Expanded(
                               child: Text(
-                                "${HelperFunctions.priceToString(widget.high - widget.priceScale * i)}",
+                                HelperFunctions.priceToString(
+                                    widget.high - widget.priceScale * i),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Theme.of(context).scaleNumbersColor,
@@ -94,7 +95,7 @@ class _PriceColumnState extends State<PriceColumn> {
                 ),
               ),
               AnimatedPositioned(
-                duration: Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
                 right: 0,
                 top: calcutePriceIndicatorTopPadding(
                   widget.chartHeight,
@@ -107,6 +108,8 @@ class _PriceColumnState extends State<PriceColumn> {
                       color: widget.lastCandle.isBull
                           ? Theme.of(context).primaryGreen
                           : Theme.of(context).primaryRed,
+                      width: priceBarWidth,
+                      height: priceIndicatorHeight,
                       child: Center(
                         child: Text(
                           HelperFunctions.priceToString(
@@ -117,8 +120,6 @@ class _PriceColumnState extends State<PriceColumn> {
                           ),
                         ),
                       ),
-                      width: PRICE_BAR_WIDTH,
-                      height: PRICE_INDICATOR_HEIGHT,
                     ),
                   ],
                 ),

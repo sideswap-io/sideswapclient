@@ -77,9 +77,6 @@ class SelectEnv extends HookConsumerWidget {
                           ref
                               .read(networkSettingsNotifierProvider.notifier)
                               .setModel(const NetworkSettingsModelEmpty());
-                          ref
-                              .read(networkSettingsNotifierProvider.notifier)
-                              .save();
 
                           exit(0);
                         },

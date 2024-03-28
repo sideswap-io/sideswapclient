@@ -7,7 +7,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/desktop/home/listeners/portfolio_prices_listener.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/env_provider.dart';
@@ -61,7 +60,6 @@ class AssetDetails extends HookConsumerWidget {
             ),
           ),
         ),
-        PortfolioPricesListener(),
         AssetDetailsTopHeader(),
         Padding(
           padding: EdgeInsets.only(top: 16),

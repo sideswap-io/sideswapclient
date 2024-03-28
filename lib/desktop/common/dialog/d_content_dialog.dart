@@ -106,22 +106,48 @@ class DContentDialogTitle extends StatelessWidget {
     this.content,
     this.hideClose = false,
     required this.onClose,
+    this.height,
+    this.hideBack = true,
+    this.onBack,
   });
 
   final Widget? content;
   final bool hideClose;
   final VoidCallback? onClose;
+  final double? height;
+  final bool hideBack;
+  final VoidCallback? onBack;
 
   @override
   Widget build(BuildContext context) {
+    final titleHeight = height == null
+        ? content == null
+            ? 36.0
+            : 44.0
+        : height! < 28
+            ? 28.0
+            : height!;
     return SizedBox(
-        height: content == null ? 36 : 44,
+        height: titleHeight,
         child: Stack(
           children: [
             Align(
+              alignment: Alignment.topLeft,
+              child: hideBack
+                  ? const SizedBox()
+                  : DIconButton(
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: SideSwapColors.freshAir,
+                        size: 18,
+                      ),
+                      onPressed: onBack,
+                    ),
+            ),
+            Align(
               alignment: Alignment.topRight,
               child: hideClose
-                  ? Container()
+                  ? const SizedBox()
                   : DIconButton(
                       icon: const Icon(
                         Icons.close,
@@ -133,7 +159,7 @@ class DContentDialogTitle extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.bottomCenter,
-              child: content ?? Container(),
+              child: content ?? const SizedBox(),
             ),
           ],
         ));

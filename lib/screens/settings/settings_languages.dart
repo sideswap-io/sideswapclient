@@ -6,6 +6,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
+import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
 class Languages extends ConsumerWidget {
@@ -22,7 +23,8 @@ class Languages extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final languages = supportedLanguages();
-    final selectedLang = ref.watch(localesProvider).selectedLang(context);
+    final selectedLang = ref.watch(localesNotifierProvider);
+
     return SideSwapScaffold(
       canPop: true,
       appBar: CustomAppBar(
@@ -65,8 +67,8 @@ class Languages extends ConsumerWidget {
                             ),
                             onTap: () {
                               ref
-                                  .read(localesProvider)
-                                  .setSelectedLang(context, lang);
+                                  .read(localesNotifierProvider.notifier)
+                                  .setSelectedLang(lang);
                               Navigator.of(context).pop();
                             },
                             child: Padding(
@@ -100,7 +102,7 @@ class Languages extends ConsumerWidget {
               ),
             ),
             Container(
-              color: SideSwapColors.chathamsBlue,
+              decoration: DContentDialogThemeData.standard().actionsDecoration,
               padding:
                   const EdgeInsets.symmetric(vertical: 20, horizontal: 118),
               child: DCustomTextBigButton(

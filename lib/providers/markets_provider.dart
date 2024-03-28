@@ -9,13 +9,18 @@ import 'package:sideswap/common/utils/market_helpers.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/models/stokr_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
+import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
+import 'package:sideswap/providers/config_provider.dart';
 
 import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/markets/widgets/modify_price_dialog.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
@@ -541,7 +546,9 @@ class MarketsRequestOrdersNotifier extends _$MarketsRequestOrdersNotifier {
     state = marketsRequestOrders;
 
     if (orderId == ref.read(currentRequestOrderViewProvider)?.orderId) {
-      ref.read(walletProvider).setRegistered();
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.registered);
     }
   }
 
@@ -933,13 +940,20 @@ OrderEntryCallbackHandlers orderEntryCallbackHandlers(
       ref.watch(marketSelectedAccountAssetStateProvider);
   final makeOrderSide = ref.watch(makeOrderSideStateProvider);
   final isSell = makeOrderSide == MakeOrderSide.sell;
-  final asset = ref.read(assetsStateProvider)[selectedAccountAsset.assetId];
+  final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+  final stokrGaidState = ref.watch(stokrGaidNotifierProvider);
+  final stokrSettingsModel =
+      ref.watch(configurationProvider).stokrSettingsModel;
+  final stokrSecurities = ref.watch(stokrSecuritiesProvider);
 
   return OrderEntryCallbackHandlers(
     ref: ref,
     selectedAccountAsset: selectedAccountAsset,
     isSell: isSell,
     asset: asset,
+    stokrGaidState: stokrGaidState,
+    stokrSettingsModel: stokrSettingsModel,
+    stokrSecurities: stokrSecurities,
   );
 }
 
@@ -948,12 +962,18 @@ class OrderEntryCallbackHandlers {
   final AccountAsset selectedAccountAsset;
   final bool isSell;
   final Asset? asset;
+  final StokrGaidState stokrGaidState;
+  final StokrSettingsModel? stokrSettingsModel;
+  final List<SecuritiesItem> stokrSecurities;
 
   OrderEntryCallbackHandlers({
     required this.ref,
     required this.selectedAccountAsset,
     required this.isSell,
     required this.asset,
+    required this.stokrGaidState,
+    required this.stokrSettingsModel,
+    required this.stokrSecurities,
   });
 
   void reset(
@@ -974,6 +994,10 @@ class OrderEntryCallbackHandlers {
     ValueNotifier<bool> trackingToggled,
     ValueNotifier<double> trackingValue,
   ) {
+    if (!stokrConditionsMet()) {
+      return;
+    }
+
     final amount = double.tryParse(controllerAmount.text) ?? 0.0;
     final price = double.tryParse(controllerPrice.text) ?? 0.0;
     final isAssetAmount = !(asset?.swapMarket == true);
@@ -996,6 +1020,52 @@ class OrderEntryCallbackHandlers {
     reset(controllerAmount, controllerPrice, trackingValue, trackingToggled);
   }
 
+  bool stokrConditionsMet() {
+    // is stokr asset
+    final stokrSecurities = ref.read(stokrSecuritiesProvider);
+    final assetNeedCheck =
+        stokrSecurities.any((element) => element.assetId == asset?.assetId);
+    if (!assetNeedCheck) {
+      return true;
+    }
+
+    // if not registered
+    final stokrRegistered = switch (stokrGaidState) {
+      StokrGaidStateEmpty() ||
+      StokrGaidStateLoading() ||
+      StokrGaidStateUnregistered() =>
+        false,
+      _ => true,
+    };
+
+    if (!stokrRegistered) {
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.stokrNeedRegister);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool stokrAssetRestrictedPopup() {
+    // is stokr asset
+    final assetNeedCheck =
+        stokrSecurities.any((element) => element.assetId == asset?.assetId);
+    if (!assetNeedCheck) {
+      return false;
+    }
+
+    if (stokrSettingsModel?.firstRun != false) {
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.stokrRestrictionsInfo);
+      return true;
+    }
+
+    return false;
+  }
+
   void handleMax(
       TextEditingController controllerAmount, FocusNode focusNodePrice) {
     final assetPrecision = ref
@@ -1007,6 +1077,7 @@ class OrderEntryCallbackHandlers {
     final marketSide = ref.read(makeOrderSideStateProvider);
     // on buy side calculate max amount based on index price and buying power
     if (marketSide == MakeOrderSide.buy) {
+      final price = ref.read(marketOrderPriceNotifierProvider);
       final indexPrice = ref
           .read(indexPriceForAssetProvider(selectedAccountAsset.assetId))
           .indexPrice;
@@ -1016,9 +1087,12 @@ class OrderEntryCallbackHandlers {
       final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
       final targetIndexPriceStr =
           indexPrice != 0 ? indexPriceStr : lastPriceStr;
-      ref
-          .read(indexPriceButtonStreamNotifierProvider.notifier)
-          .setIndexPrice(targetIndexPriceStr);
+
+      if (price.amount == Decimal.zero) {
+        ref
+            .read(indexPriceButtonStreamNotifierProvider.notifier)
+            .setIndexPrice(targetIndexPriceStr);
+      }
 
       final orderBalance = ref.read(makeOrderBalanceProvider);
 

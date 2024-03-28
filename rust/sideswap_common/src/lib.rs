@@ -4,6 +4,7 @@ extern crate log;
 extern crate anyhow;
 
 pub mod env;
+pub mod panic_handler;
 pub mod pset;
 pub mod types;
 pub mod ws;

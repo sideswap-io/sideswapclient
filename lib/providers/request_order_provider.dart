@@ -437,39 +437,36 @@ int receiveAssetPrecision(ReceiveAssetPrecisionRef ref) {
 }
 
 @riverpod
-String dollarConversion(DollarConversionRef ref, String? assetId, num amount) {
+String defaultCurrencyConversion(
+    DefaultCurrencyConversionRef ref, String? assetId, num amount) {
   ref.watch(requestOrderIndexPriceProvider);
-  final amountUsd = ref.watch(amountUsdProvider(assetId, amount));
+  final defaultCurrencyAmount =
+      ref.watch(amountUsdInDefaultCurrencyProvider(assetId, amount));
 
-  if (amountUsd == 0) {
-    return '';
+  if (defaultCurrencyAmount == Decimal.zero) {
+    return '0.0';
   }
 
   if (assetId == null || assetId.isEmpty) {
     return '';
   }
 
-  final amountDecimal = Decimal.tryParse(amountUsd.toString()) ?? Decimal.zero;
-  if (amountDecimal == Decimal.zero) {
-    return '0.0';
-  }
+  var conversion = defaultCurrencyAmount.toStringAsFixed(2);
+  final defaultCurrencyTicker = ref.watch(defaultCurrencyTickerProvider);
 
-  var dollarConversion = amountDecimal
-      .toRational()
-      .toDecimal(scaleOnInfinitePrecision: 2)
-      .toStringAsFixed(2);
-
-  dollarConversion = replaceCharacterOnPosition(
-      input: dollarConversion,
-      currencyChar: 'USD',
+  conversion = replaceCharacterOnPosition(
+      input: conversion,
+      currencyChar: defaultCurrencyTicker,
       currencyCharAlignment: CurrencyCharAlignment.end);
 
-  return dollarConversion;
+  return conversion;
 }
 
 @riverpod
-String dollarConversionFromString(
-    DollarConversionFromStringRef ref, String? assetId, String amount) {
+String defaultCurrencyConversionFromString(
+    DefaultCurrencyConversionFromStringRef ref,
+    String? assetId,
+    String amount) {
   if (amount.isEmpty) {
     return '';
   }
@@ -479,7 +476,7 @@ String dollarConversionFromString(
     return '';
   }
 
-  return ref.watch(dollarConversionProvider(assetId, amountParsed));
+  return ref.watch(defaultCurrencyConversionProvider(assetId, amountParsed));
 }
 
 @riverpod
@@ -687,7 +684,8 @@ class OrderPriceFieldSliderValue extends _$OrderPriceFieldSliderValue {
 }
 
 @riverpod
-String deliverDollarConversion(DeliverDollarConversionRef ref) {
+String deliverDefaultCurrencyConversion(
+    DeliverDefaultCurrencyConversionRef ref) {
   final orderEntryProductPair = ref.watch(orderEntryProductProvider);
   final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
   if (orderEntryProductPair.deliver.accountAsset.assetId == tetherAssetId) {
@@ -695,15 +693,17 @@ String deliverDollarConversion(DeliverDollarConversionRef ref) {
   }
 
   final deliverAmount = ref.watch(orderEntryDeliverAmountProvider);
-  final deliverConversion = ref.watch(dollarConversionFromStringProvider(
-      orderEntryProductPair.deliver.accountAsset.assetId,
-      deliverAmount.toDisplay()));
+  final deliverConversion = ref.watch(
+      defaultCurrencyConversionFromStringProvider(
+          orderEntryProductPair.deliver.accountAsset.assetId,
+          deliverAmount.toDisplay()));
 
   return deliverConversion;
 }
 
 @riverpod
-String receiveDollarConversion(ReceiveDollarConversionRef ref) {
+String receiveDefaultCurrencyConversion(
+    ReceiveDefaultCurrencyConversionRef ref) {
   final orderEntryProductPair = ref.watch(orderEntryProductProvider);
   final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
   if (orderEntryProductPair.receive.accountAsset.assetId == tetherAssetId) {
@@ -711,15 +711,16 @@ String receiveDollarConversion(ReceiveDollarConversionRef ref) {
   }
 
   final receiveAmount = ref.watch(orderEntryReceiveAmountProvider);
-  final receiveConversion = ref.watch(dollarConversionFromStringProvider(
-      orderEntryProductPair.receive.accountAsset.assetId,
-      receiveAmount.toDisplay()));
+  final receiveConversion = ref.watch(
+      defaultCurrencyConversionFromStringProvider(
+          orderEntryProductPair.receive.accountAsset.assetId,
+          receiveAmount.toDisplay()));
 
   return receiveConversion;
 }
 
 @riverpod
-String priceDollarConversion(PriceDollarConversionRef ref) {
+String priceDefaultCurrencyConversion(PriceDefaultCurrencyConversionRef ref) {
   final selectedAccountAsset =
       ref.watch(marketSelectedAccountAssetStateProvider);
   final selectedAsset =
@@ -734,15 +735,15 @@ String priceDollarConversion(PriceDollarConversionRef ref) {
   final indexPriceStr = priceStr(indexPrice, isPricedInLiquid);
   final lastPriceStr = priceStr(lastPrice, isPricedInLiquid);
   final targetIndexPriceStr = indexPrice != 0 ? indexPriceStr : lastPriceStr;
-  final indexPriceDollarConversion = ref.watch(
-      dollarConversionFromStringProvider(
+  final indexPriceDefaultCurrencyConversion = ref.watch(
+      defaultCurrencyConversionFromStringProvider(
           selectedAccountAsset.assetId, targetIndexPriceStr));
 
   if (selectedAccountAsset.assetId == ref.watch(tetherAssetIdStateProvider)) {
     return '';
   }
 
-  return indexPriceDollarConversion;
+  return indexPriceDefaultCurrencyConversion;
 }
 
 class OrderEntryAmount {

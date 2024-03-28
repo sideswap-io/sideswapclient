@@ -75,7 +75,7 @@ class AmpIdPanel extends StatelessWidget {
                 ampId,
                 style: ampIdTextStyle ??
                     Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.normal,
                         ),
               ),

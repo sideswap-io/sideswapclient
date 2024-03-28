@@ -40,6 +40,7 @@ class OptionGenerateWidget extends StatelessWidget {
       ),
       onPressed: onPressed,
       child: Container(
+        width: 400,
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -56,7 +57,6 @@ class OptionGenerateWidget extends StatelessWidget {
                   width: 16,
                 ),
                 Column(
-                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -68,13 +68,17 @@ class OptionGenerateWidget extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Text(
-                      subTitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: accentColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
+                    SizedBox(
+                      width: 251,
+                      child: Text(
+                        subTitle,
+                        textAlign: TextAlign.left,
+                        softWrap: true,
+                        style: TextStyle(
+                          color: accentColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ],

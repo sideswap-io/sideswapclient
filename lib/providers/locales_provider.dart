@@ -2,37 +2,38 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sideswap/providers/warmup_app_provider.dart';
+
+part 'locales_provider.g.dart';
 
 List<String> supportedLanguages() {
   return [
-    'en',
-    'sv',
-    'pl',
-    'ru',
     'ar',
+    'en',
+    'es',
+    'pl',
+    'pt',
+    'ru',
+    'sv',
     'ur',
     'zh',
   ];
 }
 
 String localeName(String lang) {
-  switch (lang) {
-    case 'en':
-      return 'English';
-    case 'sv':
-      return 'Svenska';
-    case 'pl':
-      return 'Polski';
-    case 'ru':
-      return 'Русский';
-    case 'ar':
-      return 'اَلْعَرَبِيَّةُ';
-    case 'ur':
-      return 'اُردُو';
-    case 'zh':
-      return '中国人';
-  }
-  return lang;
+  return switch (lang) {
+    'ar' => 'اَلْعَرَبِيَّةُ',
+    'en' => 'English',
+    'es' => 'Español',
+    'pl' => 'Polski',
+    'pt' => 'Português',
+    'ru' => 'Русский',
+    'sv' => 'Svenska',
+    'ur' => 'اُردُو',
+    'zh' => '中国人',
+    _ => '',
+  };
 }
 
 Widget localeIconFile(String lang) {
@@ -47,20 +48,29 @@ List<Locale> supportedLocales() {
   return supportedLanguages().map((e) => Locale(e)).toList();
 }
 
-final localesProvider = ChangeNotifierProvider<LocalesChangeNotifier>((ref) {
-  return LocalesChangeNotifier();
-});
+@riverpod
+class LocalesNotifier extends _$LocalesNotifier {
+  @override
+  String build() {
+    final context = ref.watch(navigatorKeyProvider).currentContext;
+    if (context == null) {
+      return 'en';
+    }
 
-class LocalesChangeNotifier with ChangeNotifier {
-  String selectedLang(BuildContext context) {
     return context.locale.languageCode;
   }
 
-  Future<void> setSelectedLang(BuildContext context, String value) async {
+  Future<void> setSelectedLang(String value) async {
+    final context = ref.read(navigatorKeyProvider).currentContext;
+    if (context == null) {
+      return;
+    }
+
     await context.setLocale(Locale(value));
+
     // Workaround for https://github.com/aissat/easy_localization/issues/370
-    Future.delayed(const Duration(milliseconds: 100), () {
-      notifyListeners();
+    Future.delayed(const Duration(milliseconds: 30), () {
+      state = context.locale.languageCode;
     });
   }
 }

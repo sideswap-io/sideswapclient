@@ -20,18 +20,18 @@ class Candlesticks extends StatefulWidget {
   /// list of buttons you what to add on top tool bar
   final List<ToolBarAction> actions;
 
-  Candlesticks({
-    Key? key,
+  const Candlesticks({
+    super.key,
     required this.candles,
     this.onLoadMoreCandles,
     this.actions = const [],
-  }) : super(key: key);
+  });
 
   @override
-  _CandlesticksState createState() => _CandlesticksState();
+  CandlesticksState createState() => CandlesticksState();
 }
 
-class _CandlesticksState extends State<Candlesticks> {
+class CandlesticksState extends State<Candlesticks> {
   /// index of the newest candle to be displayed
   /// changes when user scrolls along the chart
   int index = -10;
@@ -73,7 +73,7 @@ class _CandlesticksState extends State<Candlesticks> {
           Expanded(
             child: TweenAnimationBuilder(
               tween: Tween(begin: 6.toDouble(), end: candleWidth),
-              duration: Duration(milliseconds: 120),
+              duration: const Duration(milliseconds: 120),
               builder: (_, double width, __) {
                 if (kIsWeb ||
                     Platform.isMacOS ||

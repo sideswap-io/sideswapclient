@@ -76,10 +76,16 @@ class PaymentPage extends HookConsumerWidget {
       return;
     }, [addressText]);
 
-    ref.listen<QrCodeResultModel>(qrcodeResultModelProvider, (_, next) {
+    ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
       next.when(
           empty: () {},
           data: (result) {
+            if (result?.outputsData != null) {
+              // go to the confirm transaction page directly
+              ref.invalidate(paymentAmountPageArgumentsNotifierProvider);
+              ref.read(paymentHelperProvider).outputsPaymentSend();
+              return;
+            }
             addressController.text = result?.address ?? '';
 
             friend.value =
@@ -95,7 +101,7 @@ class PaymentPage extends HookConsumerWidget {
                     result: result,
                   ));
               ref
-                  .read(pageStatusStateProvider.notifier)
+                  .read(pageStatusNotifierProvider.notifier)
                   .setStatus(Status.paymentAmountPage);
 
               return;
@@ -113,7 +119,7 @@ class PaymentPage extends HookConsumerWidget {
                 result: QrCodeResult(address: addressController.text),
               ));
           ref
-              .read(pageStatusStateProvider.notifier)
+              .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.paymentAmountPage);
         });
       }

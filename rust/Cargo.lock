@@ -2585,6 +2585,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "sideswap_monitoring"
+version = "0.1.2"
+dependencies = [
+ "anyhow",
+ "clap",
+ "config",
+ "crossbeam-channel",
+ "log",
+ "log4rs",
+ "serde 1.0.196",
+ "serde_json",
+ "sideswap_api",
+ "sideswap_common",
+]
+
+[[package]]
 name = "sideswap_payjoin"
 version = "0.1.2"
 dependencies = [

@@ -63,7 +63,7 @@ class DPegxSubmitFinishDialogBody extends HookConsumerWidget {
                   height: 49,
                   onPressed: () {
                     ref
-                        .read(pageStatusStateProvider.notifier)
+                        .read(pageStatusNotifierProvider.notifier)
                         .setStatus(Status.ampRegister);
                   },
                   child: Text(
