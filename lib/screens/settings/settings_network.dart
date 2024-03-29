@@ -30,14 +30,29 @@ class SettingsNetwork extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final networkAccessTab = ref.watch(networkAccessTabNotifierProvider);
 
+    void goBack() {
+      final isRegistered =
+          ref.read(configurationProvider.notifier).isRegistered();
+
+      if (isRegistered) {
+        ref.read(walletProvider).goBack();
+        return;
+      }
+
+      Navigator.of(context).pop();
+    }
+
     return SideSwapScaffold(
       appBar: CustomAppBar(
         title: 'Network access'.tr(),
+        onPressed: () {
+          goBack();
+        },
       ),
       canPop: false,
       onPopInvoked: (bool didPop) {
         if (!didPop) {
-          ref.read(walletProvider).goBack();
+          goBack();
         }
       },
       body: SafeArea(
@@ -295,19 +310,29 @@ class SettingsNetworkSaveButton extends ConsumerWidget {
 
     return switch (needSave) {
       true => CustomBigButton(
-          onPressed: () {
-            ref.read(utilsProvider).settingsErrorDialog(
+          onPressed: () async {
+            final navigator = Navigator.of(context);
+            await ref.read(utilsProvider).settingsErrorDialog(
                   title: 'Network changes will take effect on restart'.tr(),
                   icon: SettingsDialogIcon.restart,
                   buttonText: 'OK'.tr(),
                   onPressed: (context) {
                     Navigator.of(context).pop();
                     ref.read(networkSettingsNotifierProvider.notifier).save();
-                    ref
-                        .read(pageStatusNotifierProvider.notifier)
-                        .setStatus(Status.registered);
                   },
                 );
+
+            final isRegistered =
+                ref.read(configurationProvider.notifier).isRegistered();
+
+            if (isRegistered) {
+              ref
+                  .read(pageStatusNotifierProvider.notifier)
+                  .setStatus(Status.registered);
+              return;
+            }
+
+            navigator.pop();
           },
           width: double.maxFinite,
           height: 54,

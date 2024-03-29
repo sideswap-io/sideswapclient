@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
@@ -128,4 +129,31 @@ class MobileThemeData {
           color: Colors.white,
         ),
       );
+
+  TextButtonThemeData get textButtonTheme => _textButtonTheme;
+  set textButtonTheme(TextButtonThemeData value) {
+    _textButtonTheme = value;
+    ref.notifyListeners();
+  }
+
+  TextButtonThemeData _textButtonTheme = const TextButtonThemeData();
+
+  TextButtonThemeData firstLaunchNetworkSettingsButtonTheme =
+      TextButtonThemeData(
+    style: ButtonStyle(
+      side: const MaterialStatePropertyAll(
+        BorderSide(color: SideSwapColors.brightTurquoise),
+      ),
+      shape: MaterialStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: SideSwapColors.brightTurquoise),
+        ),
+      ),
+      foregroundColor: const MaterialStatePropertyAll(Colors.white),
+      textStyle: const MaterialStatePropertyAll(
+        TextStyle(fontSize: 16),
+      ),
+    ),
+  );
 }

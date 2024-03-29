@@ -11,6 +11,7 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_settings_radio_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
+import 'package:sideswap/desktop/settings/d_settings_custom_host.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/network_access_tab_provider.dart';
@@ -192,7 +193,13 @@ class DNetworkAccessOnboardingServer extends HookConsumerWidget {
             trailingIcon: true,
             checked: networkSettingsModel.settingsNetworkType ==
                 SettingsNetworkType.personal,
-            onChanged: (value) {},
+            onChanged: (value) async {
+              await Navigator.of(context).push(
+                RawDialogRoute<Widget>(
+                  pageBuilder: (_, __, ___) => const DSettingsCustomHost(),
+                ),
+              );
+            },
             content: Text(
               'Personal Electrum Server'.tr(),
             ),

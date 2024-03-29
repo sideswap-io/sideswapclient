@@ -202,7 +202,6 @@ class DFirstLaunch extends HookConsumerWidget {
                       ref
                           .read(pageStatusNotifierProvider.notifier)
                           .setStatus(Status.jadeImport);
-                      // desktopImportJade(context);
                     },
                     child: Row(
                       children: [

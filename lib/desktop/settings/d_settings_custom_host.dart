@@ -21,10 +21,19 @@ class DSettingsCustomHost extends HookConsumerWidget {
   const DSettingsCustomHost({super.key});
 
   void goBack(BuildContext context, WidgetRef ref) {
+    final isRegistered =
+        ref.read(configurationProvider.notifier).isRegistered();
     Navigator.of(context).pop();
-    ref
-        .read(pageStatusNotifierProvider.notifier)
-        .setStatus(Status.settingsNetwork);
+
+    if (isRegistered) {
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.registered);
+
+      ref
+          .read(pageStatusNotifierProvider.notifier)
+          .setStatus(Status.settingsNetwork);
+    }
   }
 
   @override

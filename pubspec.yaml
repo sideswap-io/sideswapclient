@@ -3,16 +3,16 @@ description: Sideswap Client.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.4.8+86
+version: 1.4.9+87
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
-  flutter: ">=3.19.0"
+  flutter: ">=3.19.5"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^3.0.2
   # secure recovery page
   secure_application: ^4.0.0
   animations: ^2.0.11
@@ -26,14 +26,14 @@ dependencies:
   easy_localization: ^3.0.5
   enum_to_string: ^2.0.1
   faker: ^2.1.0
-  firebase_core: ^2.27.1
-  firebase_messaging: ^14.7.20
+  firebase_core: ^2.27.2
+  firebase_messaging: ^14.7.21
   fixnum: ^1.1.0
   # contacts
   flutter_contacts: ^1.1.7+1
   flutter_plugin_android_lifecycle: ^2.0.17
   # license loading indicator
-  flutter_spinkit: ^5.2.0
+  flutter_spinkit: ^5.2.1
   flutter_svg: ^2.0.10+1
   # switch
   flutter_switch: ^0.3.2
@@ -126,7 +126,7 @@ dependencies:
   fpdart: ^1.1.0
   riverpod_annotation: ^2.3.5
   extended_text: ^13.0.0
-  logger: ^2.1.0
+  logger: ^2.2.0
 
 dependency_overrides:
   flutter_local_notifications_platform_interface:
@@ -138,7 +138,7 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.4.8
+  build_runner: ^2.4.9
   freezed: ^2.4.7
   json_serializable: ^6.7.1
   # icon generator

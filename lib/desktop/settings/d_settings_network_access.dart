@@ -20,7 +20,6 @@ import 'package:sideswap/providers/network_access_tab_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/proxy_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
-import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/markets/widgets/switch_buton.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
@@ -319,12 +318,8 @@ class DSettingsNetworkAccessServer extends ConsumerWidget {
             trailingIcon: true,
             checked: networkSettingsModel.settingsNetworkType ==
                 SettingsNetworkType.personal,
-            onChanged: (value) {
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.registered);
-              Navigator.pushAndRemoveUntil(
-                  context,
+            onChanged: (value) async {
+              await Navigator.of(context).pushAndRemoveUntil(
                   RawDialogRoute<Widget>(
                     pageBuilder: (_, __, ___) => const DSettingsCustomHost(),
                   ),

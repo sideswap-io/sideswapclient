@@ -1,32 +1,29 @@
+import 'dart:ui' as ui;
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/theme.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
-import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/screens/settings/settings_network.dart';
+import 'package:sideswap/side_swap_client_ffi.dart';
 
-class FirstLaunchPage extends StatefulHookConsumerWidget {
+class FirstLaunchPage extends HookConsumerWidget {
   const FirstLaunchPage({super.key});
 
   @override
-  FirstLaunchPageState createState() => FirstLaunchPageState();
-}
-
-class FirstLaunchPageState extends ConsumerState<FirstLaunchPage> {
-  var tapCount = 0;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     ref.listen(selectEnvDialogProvider, (_, next) async {
       if (next) {
         ref.read(selectEnvDialogProvider.notifier).setSelectEnvDialog(false);
@@ -40,9 +37,16 @@ class FirstLaunchPageState extends ConsumerState<FirstLaunchPage> {
 
     useEffect(() {
       if (locale == 'zh') {
-        ref
-            .read(configurationProvider.notifier)
-            .setSettingsNetworkType(SettingsNetworkType.sideswapChina);
+        Future.microtask(
+          () {
+            ref.read(networkSettingsNotifierProvider.notifier).setModel(
+                  const NetworkSettingsModelApply(
+                      settingsNetworkType: SettingsNetworkType.sideswapChina,
+                      env: SIDESWAP_ENV_PROD),
+                );
+            ref.read(networkSettingsNotifierProvider.notifier).save();
+          },
+        );
       }
 
       return;
@@ -76,11 +80,20 @@ class FirstLaunchPageState extends ConsumerState<FirstLaunchPage> {
                                 ref.read(selectEnvTapProvider.notifier).setTap,
                             child: Column(
                               children: [
-                                const Align(
-                                  alignment: Alignment.center,
-                                  child: Padding(
-                                    padding: EdgeInsets.all(24.0),
-                                    child: LangSelector(),
+                                const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 24.0),
+                                  child: Directionality(
+                                    textDirection: ui.TextDirection.ltr,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        LangSelector(),
+                                        // SizedBox(width: 8),
+                                        Spacer(),
+                                        FirstLaunchNetworkSettingsButton(),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 SizedBox(
@@ -172,6 +185,46 @@ class FirstLaunchPageState extends ConsumerState<FirstLaunchPage> {
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class FirstLaunchNetworkSettingsButton extends ConsumerWidget {
+  const FirstLaunchNetworkSettingsButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final buttonStyle = ref
+        .watch(mobileAppThemeNotifierProvider)
+        .firstLaunchNetworkSettingsButtonTheme
+        .style;
+
+    return SizedBox(
+      height: 39,
+      child: TextButton(
+        style: buttonStyle,
+        onPressed: () async {
+          await showDialog<void>(
+            useRootNavigator: true,
+            barrierDismissible: false,
+            context: context,
+            builder: (_) => const SettingsNetwork(),
+          );
+        },
+        child: Row(
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: SvgPicture.asset('assets/network.svg'),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Network'.tr(),
+            ),
+          ],
         ),
       ),
     );

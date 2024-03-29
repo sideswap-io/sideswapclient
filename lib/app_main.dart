@@ -96,6 +96,7 @@ class MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         scaffoldBackgroundColor: mobileThemeData.scaffoldBackgroundColor,
         textSelectionTheme: mobileThemeData.textSelectionTheme,
         scrollbarTheme: mobileThemeData.scrollbarTheme,
+        textButtonTheme: mobileThemeData.textButtonTheme,
       ),
       builder: (context, widget) {
         return MediaQuery(

@@ -183,6 +183,12 @@ class Configuration extends _$Configuration {
     await _setStokrSettings(prefs, state.stokrSettingsModel);
   }
 
+  bool isRegistered() {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final mnemonic = _mnemonicEncrypted(prefs);
+    return mnemonic.isNotEmpty;
+  }
+
   void setSettings(SideswapSettings sideswapSettings) {
     state = sideswapSettings;
   }

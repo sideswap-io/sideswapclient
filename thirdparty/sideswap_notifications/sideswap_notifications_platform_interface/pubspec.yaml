@@ -1,11 +1,11 @@
 name: sideswap_notifications_platform_interface
 description: SideSwap notifications plugin interface
 publish_to: "none"
-version: 0.0.7
+version: 0.0.8
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
-  flutter: ">=3.19.0"
+  flutter: ">=3.19.5"
 
 dependencies:
   flutter:
@@ -13,8 +13,8 @@ dependencies:
   plugin_platform_interface: ^2.1.8
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
-  firebase_core: ^2.27.1
-  firebase_messaging: ^14.7.20
+  firebase_core: ^2.27.2
+  firebase_messaging: ^14.7.21
   sideswap_protobuf:
     path: ../../sideswap_protobuf
   flutter_local_notifications: # update me
@@ -26,10 +26,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.1
+  flutter_lints: ^3.0.2
   freezed: ^2.4.7
   json_serializable: ^6.7.1
-  build_runner: ^2.4.8
+  build_runner: ^2.4.9
 
 dependency_overrides:
   # temporary, because of https://github.com/firebase/flutterfire/issues/10931
