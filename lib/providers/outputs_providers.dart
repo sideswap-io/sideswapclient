@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
+import 'package:sideswap/providers/payment_provider.dart';
 
 part 'outputs_providers.freezed.dart';
 part 'outputs_providers.g.dart';
@@ -49,7 +50,7 @@ class OutputsReceiver with _$OutputsReceiver {
   const factory OutputsReceiver({
     String? address,
     @JsonKey(name: 'asset_id') String? assetId,
-    @DoubleToDecimalConverter() Decimal? amount,
+    int? satoshi,
     String? comment,
   }) = _OutputsReceiver;
 
@@ -74,12 +75,12 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
                 Left(OutputsErrorWrongTypeOfFile('Wrong type of file'.tr()));
             return false;
           }(),
-        {'version': String version} when version != '1' => () {
+        {'version': String version} when version != '2' => () {
             state = Left(
                 OutputsErrorWrongVersionOfFile('Wrong version of file'.tr()));
             return false;
           }(),
-        {'type': 'sideswap_app', 'version': '1'} => () {
+        {'type': 'sideswap_app', 'version': '2'} => () {
             try {
               final outputsData = OutputsData.fromJson(json);
               state = Right(outputsData);
@@ -126,18 +127,18 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
   void insertOutput({
     required String assetId,
     required String address,
-    required Decimal amount,
+    required int satoshi,
   }) {
-    if (assetId.isEmpty || address.isEmpty || amount == Decimal.zero) {
+    if (assetId.isEmpty || address.isEmpty || satoshi == 0) {
       logger.w(
-          'Inserting invalid output receiver arguments. AssetId: $assetId, address: $address, amount $amount');
+          'Inserting invalid output receiver arguments. AssetId: $assetId, address: $address, satoshi $satoshi');
       return;
     }
 
     final currentOutputs = switch (state) {
       Left<OutputsError, OutputsData>() => OutputsData(
           type: 'sideswap_app',
-          version: '1',
+          version: '2',
           timestamp: DateTime.now().millisecondsSinceEpoch,
           receivers: [],
         ),
@@ -146,7 +147,7 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
 
     final newOutputs = currentOutputs.copyWith(receivers: [
       ...currentOutputs.receivers ?? [],
-      ...[OutputsReceiver(address: address, assetId: assetId, amount: amount)]
+      ...[OutputsReceiver(address: address, assetId: assetId, satoshi: satoshi)]
     ]);
 
     state = Right(newOutputs);
@@ -184,15 +185,13 @@ class OutputsCreator extends _$OutputsCreator {
     final sendPopupAmount = ref.watch(sendPopupAmountNotifierProvider);
     final address = ref.watch(sendPopupAddressNotifierProvider);
     final outputsData = ref.watch(outputsReaderNotifierProvider);
-    final amount = Decimal.tryParse(sendPopupAmount);
-    final assetId = selectedAccountAsset.assetId;
+    final assetId = selectedAccountAsset.assetId ?? '';
+    final satoshi = ref.watch(
+        satoshiForAmountProvider(amount: sendPopupAmount, assetId: assetId));
 
     return switch (outputsData) {
       Left(value: final _)
-          when amount == null ||
-              assetId == null ||
-              assetId.isEmpty ||
-              address.isEmpty =>
+          when satoshi == 0 || assetId.isEmpty || address.isEmpty =>
         () {
           return const Left<OutputsError, OutputsData>(
               OutputsErrorRequiredDataIsEmpty());
@@ -200,11 +199,11 @@ class OutputsCreator extends _$OutputsCreator {
       Left(value: final _) => () {
           return Right<OutputsError, OutputsData>(OutputsData(
               type: 'sideswap_app',
-              version: '1',
+              version: '2',
               timestamp: DateTime.now().millisecondsSinceEpoch,
               receivers: [
                 OutputsReceiver(
-                    address: address, assetId: assetId, amount: amount)
+                    address: address, assetId: assetId, satoshi: satoshi)
               ]));
         }(),
       Right(value: final value) => () {
@@ -214,7 +213,7 @@ class OutputsCreator extends _$OutputsCreator {
 
           final outputs = OutputsData(
             type: 'sideswap_app',
-            version: '1',
+            version: '2',
             timestamp: DateTime.now().millisecondsSinceEpoch,
             receivers: receivers,
           );

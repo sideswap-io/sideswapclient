@@ -527,5 +527,6 @@
   "Open the list": "افتح القائمة",
   "DON'T SHOW AGAIN": "لا تظهر مرة أخرى",
   "Wrong PIN code. Two attempts left.": "رمز PIN خاطئ. بقي محاولتان.",
-  "Wrong PIN code. Last attempt left.": "رمز PIN خاطئ. آخر محاولة متبقية."  
+  "Wrong PIN code. Last attempt left.": "رمز PIN خاطئ. آخر محاولة متبقية.",
+  "Connection issues detected. Check your network connection and restart the app.": "تم اكتشاف مشكلات في الاتصال. تحقق من اتصال الشبكة وأعد تشغيل التطبيق."
 }

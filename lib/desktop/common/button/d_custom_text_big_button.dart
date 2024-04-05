@@ -15,6 +15,7 @@ class DCustomTextBigButton extends StatelessWidget {
     this.autofocus = false,
     this.style,
     this.padding,
+    this.enabled = true,
   });
 
   final double? width;
@@ -25,6 +26,7 @@ class DCustomTextBigButton extends StatelessWidget {
   final bool autofocus;
   final DButtonStyle? style;
   final EdgeInsetsGeometry? padding;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,7 @@ class DCustomTextBigButton extends StatelessWidget {
             .buttonThemeData
             .defaultButtonStyle;
         return DButton(
-          onPressed: onPressed,
+          onPressed: enabled ? onPressed : null,
           focusNode: focusNode,
           autofocus: autofocus,
           style: style ?? defaultButtonStyle,

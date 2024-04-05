@@ -307,7 +307,9 @@ pub fn unlock_hw(
             };
             jade.send(sideswap_jade::Req::AuthUser(network));
             (status_callback)(gdk_ses::JadeStatus::AuthUser);
-            let resp = jade.recv(std::time::Duration::from_secs(120));
+            // It might take some time to enter passphrase on Jade.
+            // Use a long timeout for this reason.
+            let resp = jade.recv(std::time::Duration::from_secs(300));
             (status_callback)(gdk_ses::JadeStatus::Idle);
             let res = match resp {
                 Ok(sideswap_jade::Resp::AuthUser(v)) => v,

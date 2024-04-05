@@ -285,12 +285,14 @@ where
                                 if let Err(e) = result {
                                     callback(WorkerResp::FatalError(e));
                                 } else {
-                                    let next_step =
-                                        if v.http_request.on_reply == "handshake_complete" {
-                                            PendingRequest::AuthComplete
-                                        } else {
-                                            PendingRequest::HttpRequest
-                                        };
+                                    let next_step = if v.http_request.on_reply
+                                        == "handshake_complete"
+                                        || v.http_request.on_reply == "pin"
+                                    {
+                                        PendingRequest::AuthComplete
+                                    } else {
+                                        PendingRequest::HttpRequest
+                                    };
                                     state
                                         .pending_requests
                                         .insert(state.last_request_id, next_step);
@@ -431,9 +433,7 @@ where
                         ))));
                     }
                     (None, Some(ciborium::value::Value::Text(v))) => {
-                        let v = base64::engine::general_purpose::STANDARD
-                            .decode(v)
-                            .unwrap();
+                        let v = base64::engine::general_purpose::STANDARD.decode(v).unwrap();
                         callback(WorkerResp::Resp(Ok(Resp::GetSignature(Some(v)))));
                     }
                     (None, Some(ciborium::value::Value::Bytes(v))) => {

@@ -37,6 +37,8 @@ class AddressQrScanner extends HookConsumerWidget {
   ) async {
     logger.d('Scanned data: $code');
 
+    final navigator = Navigator.of(context);
+
     final handleResult = ref.read(universalLinkProvider).handleAppUrlStr(code);
 
     return switch (handleResult) {
@@ -84,7 +86,7 @@ class AddressQrScanner extends HookConsumerWidget {
                 .setModel(QrCodeResultModelData(result: r));
           });
 
-          Navigator.of(context).pop();
+          navigator.pop();
         }(),
     };
   }

@@ -12,7 +12,9 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
@@ -21,11 +23,11 @@ class DSettingsCustomHost extends HookConsumerWidget {
   const DSettingsCustomHost({super.key});
 
   void goBack(BuildContext context, WidgetRef ref) {
-    final isRegistered =
-        ref.read(configurationProvider.notifier).isRegistered();
+    final serverState = ref.read(serverLoginNotifierProvider);
+
     Navigator.of(context).pop();
 
-    if (isRegistered) {
+    if (serverState is ServerLoginStateLogin) {
       ref
           .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.registered);

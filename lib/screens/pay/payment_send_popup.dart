@@ -165,6 +165,7 @@ class PaymentSendPopup extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 40, bottom: 40),
             child: Consumer(builder: (context, ref, _) {
+              final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
               final sendTxState = ref.watch(sendTxStateNotifierProvider);
               final buttonEnabled = sendTxState == const SendTxStateEmpty();
 
@@ -177,7 +178,11 @@ class PaymentSendPopup extends ConsumerWidget {
                 onPressed: buttonEnabled
                     ? () async {
                         if (await ref.read(walletProvider).isAuthenticated()) {
-                          ref.read(walletProvider).assetSendConfirmMobile();
+                          if (createdTx != null) {
+                            ref
+                                .read(walletProvider)
+                                .assetSendConfirmCommon(createdTx.req.account);
+                          }
                         }
                       }
                     : null,

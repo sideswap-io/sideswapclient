@@ -235,8 +235,7 @@ mixin _$OutputsReceiver {
   String? get address => throw _privateConstructorUsedError;
   @JsonKey(name: 'asset_id')
   String? get assetId => throw _privateConstructorUsedError;
-  @DoubleToDecimalConverter()
-  Decimal? get amount => throw _privateConstructorUsedError;
+  int? get satoshi => throw _privateConstructorUsedError;
   String? get comment => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -254,7 +253,7 @@ abstract class $OutputsReceiverCopyWith<$Res> {
   $Res call(
       {String? address,
       @JsonKey(name: 'asset_id') String? assetId,
-      @DoubleToDecimalConverter() Decimal? amount,
+      int? satoshi,
       String? comment});
 }
 
@@ -273,7 +272,7 @@ class _$OutputsReceiverCopyWithImpl<$Res, $Val extends OutputsReceiver>
   $Res call({
     Object? address = freezed,
     Object? assetId = freezed,
-    Object? amount = freezed,
+    Object? satoshi = freezed,
     Object? comment = freezed,
   }) {
     return _then(_value.copyWith(
@@ -285,10 +284,10 @@ class _$OutputsReceiverCopyWithImpl<$Res, $Val extends OutputsReceiver>
           ? _value.assetId
           : assetId // ignore: cast_nullable_to_non_nullable
               as String?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as Decimal?,
+      satoshi: freezed == satoshi
+          ? _value.satoshi
+          : satoshi // ignore: cast_nullable_to_non_nullable
+              as int?,
       comment: freezed == comment
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
@@ -308,7 +307,7 @@ abstract class _$$OutputsReceiverImplCopyWith<$Res>
   $Res call(
       {String? address,
       @JsonKey(name: 'asset_id') String? assetId,
-      @DoubleToDecimalConverter() Decimal? amount,
+      int? satoshi,
       String? comment});
 }
 
@@ -325,7 +324,7 @@ class __$$OutputsReceiverImplCopyWithImpl<$Res>
   $Res call({
     Object? address = freezed,
     Object? assetId = freezed,
-    Object? amount = freezed,
+    Object? satoshi = freezed,
     Object? comment = freezed,
   }) {
     return _then(_$OutputsReceiverImpl(
@@ -337,10 +336,10 @@ class __$$OutputsReceiverImplCopyWithImpl<$Res>
           ? _value.assetId
           : assetId // ignore: cast_nullable_to_non_nullable
               as String?,
-      amount: freezed == amount
-          ? _value.amount
-          : amount // ignore: cast_nullable_to_non_nullable
-              as Decimal?,
+      satoshi: freezed == satoshi
+          ? _value.satoshi
+          : satoshi // ignore: cast_nullable_to_non_nullable
+              as int?,
       comment: freezed == comment
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
@@ -356,7 +355,7 @@ class _$OutputsReceiverImpl implements _OutputsReceiver {
   const _$OutputsReceiverImpl(
       {this.address,
       @JsonKey(name: 'asset_id') this.assetId,
-      @DoubleToDecimalConverter() this.amount,
+      this.satoshi,
       this.comment});
 
   factory _$OutputsReceiverImpl.fromJson(Map<String, dynamic> json) =>
@@ -368,14 +367,13 @@ class _$OutputsReceiverImpl implements _OutputsReceiver {
   @JsonKey(name: 'asset_id')
   final String? assetId;
   @override
-  @DoubleToDecimalConverter()
-  final Decimal? amount;
+  final int? satoshi;
   @override
   final String? comment;
 
   @override
   String toString() {
-    return 'OutputsReceiver(address: $address, assetId: $assetId, amount: $amount, comment: $comment)';
+    return 'OutputsReceiver(address: $address, assetId: $assetId, satoshi: $satoshi, comment: $comment)';
   }
 
   @override
@@ -385,14 +383,14 @@ class _$OutputsReceiverImpl implements _OutputsReceiver {
             other is _$OutputsReceiverImpl &&
             (identical(other.address, address) || other.address == address) &&
             (identical(other.assetId, assetId) || other.assetId == assetId) &&
-            (identical(other.amount, amount) || other.amount == amount) &&
+            (identical(other.satoshi, satoshi) || other.satoshi == satoshi) &&
             (identical(other.comment, comment) || other.comment == comment));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, address, assetId, amount, comment);
+      Object.hash(runtimeType, address, assetId, satoshi, comment);
 
   @JsonKey(ignore: true)
   @override
@@ -413,7 +411,7 @@ abstract class _OutputsReceiver implements OutputsReceiver {
   const factory _OutputsReceiver(
       {final String? address,
       @JsonKey(name: 'asset_id') final String? assetId,
-      @DoubleToDecimalConverter() final Decimal? amount,
+      final int? satoshi,
       final String? comment}) = _$OutputsReceiverImpl;
 
   factory _OutputsReceiver.fromJson(Map<String, dynamic> json) =
@@ -425,8 +423,7 @@ abstract class _OutputsReceiver implements OutputsReceiver {
   @JsonKey(name: 'asset_id')
   String? get assetId;
   @override
-  @DoubleToDecimalConverter()
-  Decimal? get amount;
+  int? get satoshi;
   @override
   String? get comment;
   @override

@@ -37,8 +37,7 @@ _$OutputsReceiverImpl _$$OutputsReceiverImplFromJson(Map json) =>
     _$OutputsReceiverImpl(
       address: json['address'] as String?,
       assetId: json['asset_id'] as String?,
-      amount:
-          const DoubleToDecimalConverter().fromJson(json['amount'] as double?),
+      satoshi: json['satoshi'] as int?,
       comment: json['comment'] as String?,
     );
 
@@ -54,8 +53,7 @@ Map<String, dynamic> _$$OutputsReceiverImplToJson(
 
   writeNotNull('address', instance.address);
   writeNotNull('asset_id', instance.assetId);
-  writeNotNull(
-      'amount', const DoubleToDecimalConverter().toJson(instance.amount));
+  writeNotNull('satoshi', instance.satoshi);
   writeNotNull('comment', instance.comment);
   return val;
 }
@@ -65,7 +63,7 @@ Map<String, dynamic> _$$OutputsReceiverImplToJson(
 // **************************************************************************
 
 String _$outputsReaderNotifierHash() =>
-    r'd6f75ba2478c60c8ca4b5982d9c44acc428d3506';
+    r'b454d544bc57a008498148c34beb571bc5d19314';
 
 /// See also [OutputsReaderNotifier].
 @ProviderFor(OutputsReaderNotifier)
@@ -81,7 +79,7 @@ final outputsReaderNotifierProvider = NotifierProvider<OutputsReaderNotifier,
 );
 
 typedef _$OutputsReaderNotifier = Notifier<Either<OutputsError, OutputsData>>;
-String _$outputsCreatorHash() => r'80e4425cb805ae07f6e4b4b8fa6f384b6f4c6a4a';
+String _$outputsCreatorHash() => r'a0a1e635d977c7413b20f712c1f85e6758239630';
 
 /// See also [OutputsCreator].
 @ProviderFor(OutputsCreator)

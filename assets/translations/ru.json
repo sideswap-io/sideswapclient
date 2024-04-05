@@ -553,5 +553,6 @@
   "Open the list": "Открыть список",
   "DON'T SHOW AGAIN": "БОЛЬШЕ НЕ ПОКАЗЫВАТЬ",
   "Wrong PIN code. Two attempts left.": "Неверный PIN-код. Осталось две попытки.",
-  "Wrong PIN code. Last attempt left.": "Неверный PIN-код. Осталась последняя попытка."
+  "Wrong PIN code. Last attempt left.": "Неверный PIN-код. Осталась последняя попытка.",
+  "Connection issues detected. Check your network connection and restart the app.": "Обнаружены проблемы с подключением. Проверьте подключение к сети и перезапустите приложение."
 }

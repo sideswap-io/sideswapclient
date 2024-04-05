@@ -564,5 +564,6 @@
   "Open the list": "Otwórz listę",
   "DON'T SHOW AGAIN": "NIE POKAZUJ PONOWNIE",
   "Wrong PIN code. Two attempts left.": "Niepoprawny kod PIN. Pozostały dwie próby.",
-  "Wrong PIN code. Last attempt left.": "Niepoprawny kod PIN. Pozostała ostatnia próba."
+  "Wrong PIN code. Last attempt left.": "Niepoprawny kod PIN. Pozostała ostatnia próba.",
+  "Connection issues detected. Check your network connection and restart the app.": "Wykryto problemy z połączeniem. Sprawdź połączenie sieciowe i uruchom ponownie aplikację."
 }

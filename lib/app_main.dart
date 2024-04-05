@@ -22,6 +22,7 @@ import 'package:sideswap/providers/route_providers.dart';
 import 'package:sideswap/providers/universal_link_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/background/preload_background_painter.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -194,8 +195,9 @@ class RootWidget extends HookConsumerWidget {
         ServerLoginStateError(message: String msg) =>
           Future.microtask(() async {
             await ref.read(utilsProvider).showErrorDialog(msg);
-            ref.read(walletProvider).cleanupConnectionStates();
-            ref.read(warmupAppProvider.notifier).reinitialize();
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.noWallet);
           }),
         _ => () {}(),
       });

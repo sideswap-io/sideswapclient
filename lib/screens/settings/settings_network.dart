@@ -11,7 +11,9 @@ import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
+import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/network_access_tab_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/proxy_provider.dart';
@@ -31,10 +33,9 @@ class SettingsNetwork extends ConsumerWidget {
     final networkAccessTab = ref.watch(networkAccessTabNotifierProvider);
 
     void goBack() {
-      final isRegistered =
-          ref.read(configurationProvider.notifier).isRegistered();
+      final serverState = ref.read(serverLoginNotifierProvider);
 
-      if (isRegistered) {
+      if (serverState is ServerLoginStateLogin) {
         ref.read(walletProvider).goBack();
         return;
       }
@@ -322,10 +323,9 @@ class SettingsNetworkSaveButton extends ConsumerWidget {
                   },
                 );
 
-            final isRegistered =
-                ref.read(configurationProvider.notifier).isRegistered();
+            final serverState = ref.read(serverLoginNotifierProvider);
 
-            if (isRegistered) {
+            if (serverState is ServerLoginStateLogin) {
               ref
                   .read(pageStatusNotifierProvider.notifier)
                   .setStatus(Status.registered);

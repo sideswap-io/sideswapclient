@@ -24,7 +24,7 @@ final serverConnectionNotifierProvider =
 
 typedef _$ServerConnectionNotifier = Notifier<bool>;
 String _$serverLoginNotifierHash() =>
-    r'9c03631a9a152118eca53bbccbdd43c3e037e1e2';
+    r'378f9bc8e4e463729a3789980bcfdaea255c85fd';
 
 /// See also [ServerLoginNotifier].
 @ProviderFor(ServerLoginNotifier)

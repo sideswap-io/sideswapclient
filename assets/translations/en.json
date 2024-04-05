@@ -554,5 +554,6 @@
   "Open the list": "Open the list",
   "DON'T SHOW AGAIN": "DON'T SHOW AGAIN",
   "Wrong PIN code. Two attempts left.": "Wrong PIN code. Two attempts left.",
-  "Wrong PIN code. Last attempt left.": "Wrong PIN code. Last attempt left."
+  "Wrong PIN code. Last attempt left.": "Wrong PIN code. Last attempt left.",
+  "Connection issues detected. Check your network connection and restart the app.": "Connection issues detected. Check your network connection and restart the app."
 }

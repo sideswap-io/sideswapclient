@@ -1650,16 +1650,6 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void assetSendConfirmMobile() {
-    final selectedWalletAccountAsset =
-        ref.read(selectedWalletAccountAssetNotifierProvider);
-    if (selectedWalletAccountAsset == null) {
-      return;
-    }
-
-    assetSendConfirmCommon(getAccount(selectedWalletAccountAsset.account));
-  }
-
   void assetSendConfirmCommon(Account account) {
     final msg = To();
     msg.sendTx = To_SendTx();

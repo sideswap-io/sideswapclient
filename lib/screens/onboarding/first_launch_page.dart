@@ -10,6 +10,8 @@ import 'package:sideswap/common/theme.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
+import 'package:sideswap/models/connection_models.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
@@ -58,6 +60,8 @@ class FirstLaunchPage extends HookConsumerWidget {
       return;
     }, const []);
 
+    final serverLoginState = ref.watch(serverLoginNotifierProvider);
+
     return SideSwapScaffold(
       key: ValueKey(locale),
       body: SafeArea(
@@ -89,7 +93,6 @@ class FirstLaunchPage extends HookConsumerWidget {
                                           MainAxisAlignment.center,
                                       children: [
                                         LangSelector(),
-                                        // SizedBox(width: 8),
                                         Spacer(),
                                         FirstLaunchNetworkSettingsButton(),
                                       ],
@@ -114,16 +117,36 @@ class FirstLaunchPage extends HookConsumerWidget {
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(top: 12),
-                                  child: const Text(
-                                    'SideSwap is the easiest way to send, receive and swap on the Liquid network.',
+                                  child: Text(
+                                    'SideSwap is the easiest way to send, receive and swap on the Liquid network.'
+                                        .tr(),
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.normal,
                                       color: Colors.white,
                                     ),
                                   ).tr(),
                                 ),
+                                ...switch (serverLoginState) {
+                                  ServerLoginStateError() => [
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 48),
+                                        child: Text(
+                                          'Connection issues detected. Check your network connection and restart the app.'
+                                              .tr(),
+                                          textAlign: TextAlign.center,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                  color: SideSwapColors
+                                                      .bitterSweet),
+                                        ),
+                                      ),
+                                    ],
+                                  _ => [const SizedBox()],
+                                },
                               ],
                             ),
                           ),
@@ -135,6 +158,8 @@ class FirstLaunchPage extends HookConsumerWidget {
                             child: CustomBigButton(
                               width: double.infinity,
                               height: 54,
+                              enabled:
+                                  serverLoginState is! ServerLoginStateError,
                               text: 'CREATE NEW WALLET'.tr(),
                               textStyle: const TextStyle(
                                 fontSize: 16,
@@ -158,6 +183,8 @@ class FirstLaunchPage extends HookConsumerWidget {
                             child: CustomBigButton(
                               width: double.infinity,
                               height: 54,
+                              enabled:
+                                  serverLoginState is! ServerLoginStateError,
                               text: 'IMPORT WALLET'.tr(),
                               textStyle: const TextStyle(
                                 fontSize: 16,

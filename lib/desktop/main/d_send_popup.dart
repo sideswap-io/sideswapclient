@@ -83,14 +83,17 @@ class DSendPopupCreate extends HookConsumerWidget {
           ref.read(sendPopupSelectedAccountAssetNotifierProvider);
       final amount = ref.read(sendPopupDecimalAmountProvider);
       final address = ref.read(sendPopupAddressNotifierProvider);
-      final assetId = selectedAccountAsset.assetId;
+      final assetId = selectedAccountAsset.assetId ?? '';
+      final satoshi = ref.read(satoshiForAmountProvider(
+          amount: amount.toString(), assetId: assetId));
 
       if (amount == Decimal.zero || address.isEmpty) {
         return;
       }
 
-      ref.read(outputsReaderNotifierProvider.notifier).insertOutput(
-          assetId: assetId ?? '', address: address, amount: amount);
+      ref
+          .read(outputsReaderNotifierProvider.notifier)
+          .insertOutput(assetId: assetId, address: address, satoshi: satoshi);
     }
 
     void cleanupOnClose() {
@@ -648,10 +651,17 @@ class DSendPopupOutputItem extends ConsumerWidget {
                   .getCustomImage(item.assetId, width: 24, height: 24);
               final ticker =
                   ref.watch(assetsStateProvider)[item.assetId]?.ticker ?? '';
+              final assetPrecision = ref
+                  .watch(assetUtilsProvider)
+                  .getPrecisionForAssetId(assetId: item.assetId);
+              final amountString = ref
+                  .watch(amountToStringProvider)
+                  .amountToString(AmountToStringParameters(
+                      amount: item.satoshi ?? 0, precision: assetPrecision));
 
               return DSendPopupAddressAmountItem(
                 address: item.address ?? '',
-                amount: item.amount.toString(),
+                amount: amountString,
                 ticker: ticker,
                 index: index,
                 icon: icon,

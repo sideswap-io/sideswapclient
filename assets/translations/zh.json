@@ -553,5 +553,6 @@
   "Open the list": "打开列表",
   "DON'T SHOW AGAIN": "不再显示",
   "Wrong PIN code. Two attempts left.": "PIN码错误。还剩两次尝试。",
-  "Wrong PIN code. Last attempt left.": "PIN码错误。还剩最后一次尝试。"
+  "Wrong PIN code. Last attempt left.": "PIN码错误。还剩最后一次尝试。",
+  "Connection issues detected. Check your network connection and restart the app.": "检测到连接问题。 检查您的网络连接并重新启动应用程序。"
 }

@@ -6,6 +6,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/lang_selector.dart';
 import 'package:sideswap/desktop/common/button/d_radio_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
@@ -14,6 +15,8 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/onboarding/d_network_access_onboarding.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
+import 'package:sideswap/models/connection_models.dart';
+import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
@@ -126,6 +129,8 @@ class DFirstLaunch extends HookConsumerWidget {
 
     final lang = ref.watch(localesNotifierProvider);
 
+    final serverLoginState = ref.watch(serverLoginNotifierProvider);
+
     return Stack(
       key: ValueKey(lang),
       children: [
@@ -160,8 +165,26 @@ class DFirstLaunch extends HookConsumerWidget {
                   ),
                 ),
               ),
+              ...switch (serverLoginState) {
+                ServerLoginStateError() => [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 48),
+                      child: Text(
+                        'Connection issues detected. Check your network connection and restart the app.'
+                            .tr(),
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(color: SideSwapColors.bitterSweet),
+                      ),
+                    ),
+                  ],
+                _ => [const SizedBox()],
+              },
               Padding(
-                padding: const EdgeInsets.only(top: 126),
+                padding: EdgeInsets.only(
+                    top: serverLoginState is ServerLoginStateError ? 78 : 126),
                 child: DCustomFilledBigButton(
                   onPressed: () async {
                     ref
@@ -179,6 +202,7 @@ class DFirstLaunch extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: DCustomTextBigButton(
+                  enabled: serverLoginState is! ServerLoginStateError,
                   width: 266,
                   onPressed: () {
                     ref.read(walletProvider).cleanAppStates();
@@ -197,6 +221,7 @@ class DFirstLaunch extends HookConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: DCustomTextBigButton(
+                    enabled: serverLoginState is! ServerLoginStateError,
                     width: 266,
                     onPressed: () {
                       ref

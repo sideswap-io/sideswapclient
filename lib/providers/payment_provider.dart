@@ -180,19 +180,12 @@ class PaymentHelper {
       Left(value: final l) => l.message,
       Right(value: final r) => () {
           final addressAmounts = r.receivers?.map((e) {
-            final prec = ref
-                .read(assetUtilsProvider)
-                .getPrecisionForAssetId(assetId: e.assetId);
-
-            final intAmount = ref.read(parseAssetAmountProvider(
-                amount: e.amount.toString(), precision: prec));
-
             // set greedy flag only when outputs contains only one item (first one is always entered by user in ui)
             final greedyFlag = r.receivers?.length == 1 ? isGreedy : false;
 
             return AddressAmount(
               address: e.address,
-              amount: Int64(intAmount ?? 0),
+              amount: Int64(e.satoshi ?? 0),
               assetId: e.assetId,
               isGreedy: greedyFlag,
             );

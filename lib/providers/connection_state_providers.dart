@@ -19,7 +19,7 @@ class ServerConnectionNotifier extends _$ServerConnectionNotifier {
 class ServerLoginNotifier extends _$ServerLoginNotifier {
   @override
   ServerLoginState build() {
-    return const ServerLoginStateLogin();
+    return const ServerLoginStateLogout();
   }
 
   void setServerLoginState(ServerLoginState serverLoginState) {
