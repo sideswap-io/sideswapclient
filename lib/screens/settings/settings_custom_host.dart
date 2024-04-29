@@ -8,7 +8,7 @@ import 'package:sideswap/common/utils/numerical_range_formatter.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/common/widgets/custom_check_box.dart';
+import 'package:sideswap/common/widgets/custom_check_box_row.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
@@ -123,7 +123,7 @@ class SettingsCustomHost extends HookConsumerWidget {
                         padding: const EdgeInsets.only(top: 10),
                         child: Consumer(
                           builder: (context, watch, child) {
-                            return CustomCheckBox(
+                            return CustomCheckBoxRow(
                               value: useTls.value,
                               onChanged: (value) {
                                 useTls.value = value;

@@ -50,3 +50,20 @@ class CurrentReceiveAddress extends _$CurrentReceiveAddress {
     state = receiveAddress;
   }
 }
+
+@Riverpod(keepAlive: true)
+class RegularAccountAddresses extends _$RegularAccountAddresses {
+  @override
+  List<ReceiveAddress> build() {
+    return [];
+  }
+
+  void insertAddress(ReceiveAddress receiveAddress) {
+    if (receiveAddress.accountType != AccountType.reg) {
+      return;
+    }
+
+    final addresses = [...state, receiveAddress];
+    state = addresses;
+  }
+}

@@ -2,7 +2,6 @@ pub mod be;
 pub mod descriptor;
 pub mod error;
 pub mod exchange_rates;
-pub mod mnemonic;
 pub mod model;
 pub mod network;
 pub mod notification;
@@ -13,22 +12,22 @@ pub mod slip132;
 pub mod state;
 pub mod store;
 pub mod util;
-pub mod wally;
 pub mod aes {
     pub use aes::*;
     pub use aes_gcm_siv::*;
 }
 
 pub use bitcoin;
-pub use ciborium;
 pub use electrum_client;
 pub use elements;
+pub use elements_miniscript;
 pub use error::*;
 pub use log;
 pub use miniscript;
 pub use network::*;
 pub use once_cell;
 pub use rand;
+pub use serde_cbor;
 pub use state::State;
 pub use ureq;
 

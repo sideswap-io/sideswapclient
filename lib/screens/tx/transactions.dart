@@ -1,15 +1,12 @@
-import 'dart:convert';
-import 'dart:math';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_back_button.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/page_storage_provider.dart';
 import 'package:sideswap/providers/selected_account_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -18,22 +15,6 @@ import 'package:sideswap/screens/markets/widgets/amp_flag.dart';
 import 'package:sideswap/screens/markets/widgets/regular_flag.dart';
 import 'package:sideswap/screens/tx/widgets/empty_tx_list_item.dart';
 import 'package:sideswap/screens/tx/widgets/tx_list_item.dart';
-
-part 'transactions.g.dart';
-
-@Riverpod(keepAlive: true)
-class PageStorageKeyData extends _$PageStorageKeyData {
-  @override
-  String build() {
-    return getRandString(5);
-  }
-
-  String getRandString(int len) {
-    var random = Random.secure();
-    var values = List<int>.generate(len, (i) => random.nextInt(255));
-    return base64UrlEncode(values);
-  }
-}
 
 class Transactions extends HookConsumerWidget {
   const Transactions({super.key});

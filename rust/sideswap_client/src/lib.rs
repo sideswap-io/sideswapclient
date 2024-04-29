@@ -7,7 +7,6 @@ pub mod ffi;
 pub mod gdk_ses;
 pub mod gdk_ses_impl;
 mod gdk_ses_jade;
-mod jade_mng;
 mod models;
 mod pin;
 mod settings;

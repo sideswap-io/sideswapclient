@@ -52,6 +52,7 @@ class OutputsReceiver with _$OutputsReceiver {
     @JsonKey(name: 'asset_id') String? assetId,
     int? satoshi,
     String? comment,
+    int? account,
   }) = _OutputsReceiver;
 
   factory OutputsReceiver.fromJson(Map<String, dynamic> json) =>
@@ -128,6 +129,7 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
     required String assetId,
     required String address,
     required int satoshi,
+    required int account,
   }) {
     if (assetId.isEmpty || address.isEmpty || satoshi == 0) {
       logger.w(
@@ -147,7 +149,14 @@ class OutputsReaderNotifier extends _$OutputsReaderNotifier {
 
     final newOutputs = currentOutputs.copyWith(receivers: [
       ...currentOutputs.receivers ?? [],
-      ...[OutputsReceiver(address: address, assetId: assetId, satoshi: satoshi)]
+      ...[
+        OutputsReceiver(
+          address: address,
+          assetId: assetId,
+          satoshi: satoshi,
+          account: account,
+        )
+      ]
     ]);
 
     state = Right(newOutputs);

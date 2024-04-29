@@ -2,6 +2,7 @@
 resolver = "2"
 
 members = [
+    "sideswap_amp",
     "sideswap_api",
     "sideswap_client",
     "sideswap_common",
@@ -24,9 +25,11 @@ allo-isolate = "0.1"
 anyhow = "1.0"
 axum = { version = "0.7", default_features = false, features = ["form", "http1", "json", "matched-path", "query", "tokio"] }
 base64 = "0.21"
-bip39 = "1.0"
-bitcoin = { version = "0.30", features = [ "serde" ] }
+bip39 = "2.0.0"
+bitcoin = { version = "0.31", features = [ "serde" ] }
+bitcoin_hashes = "0.14.0"
 block-modes = "0.8.0"
+btleplug = { version = "0.11.5" }
 bytes = "1.5"
 chrono = "0.4"
 ciborium = "0.2"
@@ -35,7 +38,8 @@ clap = "3.2"
 config = "0.11"
 crossbeam-channel = "0.5"
 derive_more = "0.99"
-elements = { version = "0.22", features = ["serde"] }
+elements = { version = "0.24.1", features = ["serde"] }
+elements-miniscript = "0.3.0"
 flexi_logger = "0.27"
 futures = "0.3"
 futures-channel = "0.3"
@@ -51,7 +55,9 @@ prost-build = "0.12"
 rand = "0.8"
 ring = { version = "0.17.7" }
 rusqlite = { version = "0.30.0", features = ["bundled"] }
-secp256k1 = { version = "0.27", features = ["rand"] }
+secp256k1 = { version = "0.28", features = ["global-context", "rand"] }
+secp256k1-zkp = { version = "0.10.0", features = ["global-context"] }
+semver = { version = "1.0.22" }
 serde = { version = "1.0", features = ["derive"] }
 serde_bytes = "0.11"
 serde_json = { version = "1.0", features = ["arbitrary_precision"] }
@@ -66,6 +72,8 @@ tokio-tungstenite = { version = "0.20", features = ["stream", "rustls-tls-webpki
 tungstenite = { version = "0.20", default-features = false }
 ureq = { version = "2.9", features = ["json", "socks-proxy"] }
 url = "2.3"
+uuid = { version = "1.8.0" }
 vergen = { version = "5.1", default-features = false, features = ["build", "rustc", "git"] }
+wamp_async = "0.3.1"
 
 # Please also update deps in sideswap_payjoin (which does not use workspace versions)

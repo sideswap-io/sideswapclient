@@ -237,6 +237,7 @@ mixin _$OutputsReceiver {
   String? get assetId => throw _privateConstructorUsedError;
   int? get satoshi => throw _privateConstructorUsedError;
   String? get comment => throw _privateConstructorUsedError;
+  int? get account => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -254,7 +255,8 @@ abstract class $OutputsReceiverCopyWith<$Res> {
       {String? address,
       @JsonKey(name: 'asset_id') String? assetId,
       int? satoshi,
-      String? comment});
+      String? comment,
+      int? account});
 }
 
 /// @nodoc
@@ -274,6 +276,7 @@ class _$OutputsReceiverCopyWithImpl<$Res, $Val extends OutputsReceiver>
     Object? assetId = freezed,
     Object? satoshi = freezed,
     Object? comment = freezed,
+    Object? account = freezed,
   }) {
     return _then(_value.copyWith(
       address: freezed == address
@@ -292,6 +295,10 @@ class _$OutputsReceiverCopyWithImpl<$Res, $Val extends OutputsReceiver>
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
               as String?,
+      account: freezed == account
+          ? _value.account
+          : account // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -308,7 +315,8 @@ abstract class _$$OutputsReceiverImplCopyWith<$Res>
       {String? address,
       @JsonKey(name: 'asset_id') String? assetId,
       int? satoshi,
-      String? comment});
+      String? comment,
+      int? account});
 }
 
 /// @nodoc
@@ -326,6 +334,7 @@ class __$$OutputsReceiverImplCopyWithImpl<$Res>
     Object? assetId = freezed,
     Object? satoshi = freezed,
     Object? comment = freezed,
+    Object? account = freezed,
   }) {
     return _then(_$OutputsReceiverImpl(
       address: freezed == address
@@ -344,6 +353,10 @@ class __$$OutputsReceiverImplCopyWithImpl<$Res>
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
               as String?,
+      account: freezed == account
+          ? _value.account
+          : account // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -356,7 +369,8 @@ class _$OutputsReceiverImpl implements _OutputsReceiver {
       {this.address,
       @JsonKey(name: 'asset_id') this.assetId,
       this.satoshi,
-      this.comment});
+      this.comment,
+      this.account});
 
   factory _$OutputsReceiverImpl.fromJson(Map<String, dynamic> json) =>
       _$$OutputsReceiverImplFromJson(json);
@@ -370,10 +384,12 @@ class _$OutputsReceiverImpl implements _OutputsReceiver {
   final int? satoshi;
   @override
   final String? comment;
+  @override
+  final int? account;
 
   @override
   String toString() {
-    return 'OutputsReceiver(address: $address, assetId: $assetId, satoshi: $satoshi, comment: $comment)';
+    return 'OutputsReceiver(address: $address, assetId: $assetId, satoshi: $satoshi, comment: $comment, account: $account)';
   }
 
   @override
@@ -384,13 +400,14 @@ class _$OutputsReceiverImpl implements _OutputsReceiver {
             (identical(other.address, address) || other.address == address) &&
             (identical(other.assetId, assetId) || other.assetId == assetId) &&
             (identical(other.satoshi, satoshi) || other.satoshi == satoshi) &&
-            (identical(other.comment, comment) || other.comment == comment));
+            (identical(other.comment, comment) || other.comment == comment) &&
+            (identical(other.account, account) || other.account == account));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, address, assetId, satoshi, comment);
+      Object.hash(runtimeType, address, assetId, satoshi, comment, account);
 
   @JsonKey(ignore: true)
   @override
@@ -412,7 +429,8 @@ abstract class _OutputsReceiver implements OutputsReceiver {
       {final String? address,
       @JsonKey(name: 'asset_id') final String? assetId,
       final int? satoshi,
-      final String? comment}) = _$OutputsReceiverImpl;
+      final String? comment,
+      final int? account}) = _$OutputsReceiverImpl;
 
   factory _OutputsReceiver.fromJson(Map<String, dynamic> json) =
       _$OutputsReceiverImpl.fromJson;
@@ -426,6 +444,8 @@ abstract class _OutputsReceiver implements OutputsReceiver {
   int? get satoshi;
   @override
   String? get comment;
+  @override
+  int? get account;
   @override
   @JsonKey(ignore: true)
   _$$OutputsReceiverImplCopyWith<_$OutputsReceiverImpl> get copyWith =>

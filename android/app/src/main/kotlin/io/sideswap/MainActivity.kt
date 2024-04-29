@@ -17,9 +17,15 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
+import kotlin.concurrent.thread
 import kotlin.system.exitProcess
 
 class MainActivity : FlutterFragmentActivity() {
+    init {
+        System.loadLibrary("sideswap_client");
+    }
+
+    private external fun bleThread()
 
     private val ANDROID_KEY_STORE = "AndroidKeyStore";
 
@@ -37,6 +43,10 @@ class MainActivity : FlutterFragmentActivity() {
     val SPEC_CIPHER = "$SPEC_KEY_TYPE/$SPEC_BLOCK_MODE/$SPEC_PADDING"
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        thread(start = true) {
+            bleThread()
+        }
+
         // Aligns the Flutter view vertically with the window.
         WindowCompat.setDecorFitsSystemWindows(window, false)
 

@@ -160,7 +160,7 @@ class AccountItemConversion extends StatelessWidget {
         Consumer(
           builder: (context, ref, child) {
             final defaultCurrencyAssetBalance = ref.watch(
-                accountAssetBalanceInDefaultCurrencyStringProvider(
+                accountAssetBalanceWithInputsInDefaultCurrencyStringProvider(
                     accountAsset));
             final defaultCurrencyTicker =
                 ref.watch(defaultCurrencyTickerProvider);
@@ -193,7 +193,7 @@ class AccountItemAmount extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetBalance =
-        ref.watch(accountAssetBalanceStringProvider(accountAsset));
+        ref.watch(balanceStringWithInputsForAccountAssetProvider(accountAsset));
 
     final textColor = disabled ? const Color(0xFFAAAAAA) : Colors.white;
 

@@ -88,16 +88,12 @@ class SendPopupValidDataInserted extends _$SendPopupValidDataInserted {
   @override
   FutureOr<bool> build() {
     final parseAddressResult = ref.watch(sendPopupParseAddressProvider);
+    final amountString = ref.watch(sendPopupAmountNotifierProvider);
+    final balanceString = ref.watch(balanceStringWithInputsProvider);
 
     return switch (parseAddressResult) {
       Left(value: final _) => future,
       Right(value: final r) => () {
-          final amountString = ref.watch(sendPopupAmountNotifierProvider);
-          final selectedAccountAsset =
-              ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
-          final balanceString =
-              ref.watch(balanceStringProvider(selectedAccountAsset));
-
           final amount = double.tryParse(amountString) ?? 0.0;
           final balance = double.tryParse(balanceString) ?? 0.0;
 
@@ -142,9 +138,12 @@ class SendPopupReviewButtonEnabled extends _$SendPopupReviewButtonEnabled {
     }
 
     final outputsData = ref.watch(outputsReaderNotifierProvider);
+    final sendPopupFuture =
+        ref.watch(sendPopupValidDataInsertedProvider.future);
+
     return switch (outputsData) {
       Right(value: _) => Future<bool>.value(true),
-      _ => ref.watch(sendPopupValidDataInsertedProvider.future),
+      _ => sendPopupFuture,
     };
   }
 }
@@ -152,9 +151,7 @@ class SendPopupReviewButtonEnabled extends _$SendPopupReviewButtonEnabled {
 @riverpod
 bool sendPopupShowInsufficientFunds(SendPopupShowInsufficientFundsRef ref) {
   final amountString = ref.watch(sendPopupAmountNotifierProvider);
-  final selectedAccountAsset =
-      ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
-  final balanceString = ref.watch(balanceStringProvider(selectedAccountAsset));
+  final balanceString = ref.watch(balanceStringWithInputsProvider);
 
   final amount = double.tryParse(amountString) ?? 0.0;
   final balance = double.tryParse(balanceString) ?? 0.0;

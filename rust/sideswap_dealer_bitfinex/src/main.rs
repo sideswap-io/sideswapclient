@@ -107,8 +107,6 @@ pub struct Args {
     #[serde(rename = "apikey")]
     api_key: Option<String>,
 
-    module: module::Server,
-
     notifications: NotificationSettings,
 
     #[serde(rename = "bitfinexkey")]
@@ -136,6 +134,7 @@ enum Msg {
     ModuleConnected,
     ModuleDisconnected,
     ModuleMessage(proto::from::Msg),
+    BfWorker(bitfinex_worker::Response),
     Cli(CliRequestData),
     Exit,
     CheckExchange,
@@ -302,7 +301,7 @@ fn hedge_order(
     wallet_balances: &WalletBalances,
     exchange_balances: &ExchangeBalances,
     book_names: &BTreeMap<DealerTicker, String>,
-    mod_tx: &module::Sender,
+    bf_sender: &crossbeam_channel::Sender<bitfinex_worker::Request>,
     pending_orders: &mut PendingOrders,
 ) {
     info!(
@@ -335,14 +334,16 @@ fn hedge_order(
             "swap succeed, txid: {}, send order request, amount: {}, bookname: {}, cid: {}",
             swap.txid, signed_bitcoin_amount, bookname, cid
         );
-        send_msg(
-            mod_tx,
-            proto::to::Msg::OrderSubmit(proto::to::OrderSubmit {
-                cid,
-                amount: signed_bitcoin_amount,
-                book_name: bookname.clone(),
-            }),
-        );
+        bf_sender
+            .send(bitfinex_worker::Request::OrderSubmit(
+                bitfinex_worker::OrderSubmit {
+                    market_type: bitfinex_worker::MarketType::ExchangeMarket,
+                    symbol: bookname.clone(),
+                    cid,
+                    amount: signed_bitcoin_amount,
+                },
+            ))
+            .unwrap();
         pending_orders.insert(cid, std::time::Instant::now());
     } else {
         debug!(
@@ -362,6 +363,8 @@ struct DealerState {
     exchange_balances_reported: ExchangeBalances,
     profit_reports: Option<ProfitsReport>,
     pending_orders: PendingOrders,
+    failed_orders_count: u32,
+    failed_orders_total: f64,
 }
 
 fn main() {
@@ -416,7 +419,7 @@ fn main() {
     let (msg_tx, msg_rx) = crossbeam_channel::unbounded::<Msg>();
 
     let msg_tx_copy = msg_tx.clone();
-    let (mod_tx, mod_rx) = module::start(args.module.clone());
+    let (mod_tx, mod_rx) = module::start(args.proxy_port);
     std::thread::spawn(move || {
         for msg in mod_rx {
             match msg {
@@ -443,18 +446,7 @@ fn main() {
     let msg_tx_copy = msg_tx.clone();
     std::thread::spawn(move || {
         bitfinex_worker::run(bf_settings, bf_receiver, |resp| {
-            let msg = match resp {
-                bitfinex_worker::Response::Withdraw(msg) => {
-                    Msg::ModuleMessage(proto::from::Msg::Withdraw(msg))
-                }
-                bitfinex_worker::Response::Transfer(msg) => {
-                    Msg::ModuleMessage(proto::from::Msg::Transfer(msg))
-                }
-                bitfinex_worker::Response::Movements(msg) => {
-                    Msg::ModuleMessage(proto::from::Msg::Movements(msg))
-                }
-            };
-            msg_tx_copy.send(msg).unwrap();
+            msg_tx_copy.send(Msg::BfWorker(resp)).unwrap();
         });
     });
 
@@ -498,6 +490,8 @@ fn main() {
         exchange_balances_reported: ExchangeBalances::new(),
         profit_reports: None,
         pending_orders: PendingOrders::new(),
+        failed_orders_count: 0,
+        failed_orders_total: 0.0,
     };
 
     let bitfinex_currency_btc = &args.bitfinex_currency_btc;
@@ -628,15 +622,10 @@ fn main() {
                             }
                         }
                     }
-                    proto::from::Msg::Withdraw(msg) => {
-                        balancing::process_withdraw(&mut storage, msg, &args);
-                    }
-                    proto::from::Msg::Movements(msg) => {
-                        balancing::process_movements(&mut storage, msg, &args, &mut movements);
-                    }
-
-                    proto::from::Msg::Transfer(msg) => {
-                        balancing::process_transfer(&mut storage, msg, &args);
+                    proto::from::Msg::Withdraw(_)
+                    | proto::from::Msg::Movements(_)
+                    | proto::from::Msg::Transfer(_) => {
+                        unreachable!()
                     }
 
                     proto::from::Msg::Error(msg) => {
@@ -647,6 +636,36 @@ fn main() {
                     }
                 }
             }
+
+            Msg::BfWorker(resp) => match resp {
+                bitfinex_worker::Response::Withdraw(msg) => {
+                    balancing::process_withdraw(&mut storage, msg, &args);
+                }
+                bitfinex_worker::Response::Transfer(msg) => {
+                    balancing::process_transfer(&mut storage, msg, &args);
+                }
+                bitfinex_worker::Response::Movements(msg) => {
+                    balancing::process_movements(&mut storage, msg, &args, &mut movements);
+                }
+                bitfinex_worker::Response::OrderSubmit(req, res) => match res {
+                    Ok(order) => {
+                        info!("order submit succeed, order_id: {}", order.order_id);
+                    }
+                    Err(err) => {
+                        error!("order submit failed: {}", err);
+                        state.failed_orders_count += 1;
+                        state.failed_orders_total += req.amount;
+
+                        send_notification(
+                            &format!(
+                                "bfx order(s) submit failed, count: {}, total: {} btc",
+                                state.failed_orders_count, state.failed_orders_total,
+                            ),
+                            &args.notifications.url,
+                        );
+                    }
+                },
+            },
 
             Msg::Timer => {
                 for &ticker in params.tickers.iter() {
@@ -757,6 +776,7 @@ fn main() {
                     (balance_wallet_usdt < MIN_BALANCE_TETHER).then_some("WalletTetherLow"),
                     (balance_exchange_usdt < MIN_BALANCE_TETHER).then_some("ExchangeTetherLow"),
                     balancing_expired.then_some("BalancingStuck"),
+                    (state.failed_orders_count != 0).then_some("FailedOrderSubmit"),
                 ]
                 .iter()
                 .flatten()
@@ -1008,7 +1028,7 @@ fn main() {
                         &state.wallet_balances,
                         &state.exchange_balances,
                         &book_names,
-                        &mod_tx,
+                        &bf_sender,
                         &mut state.pending_orders,
                     );
                 }

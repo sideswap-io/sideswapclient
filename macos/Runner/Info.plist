@@ -27,8 +27,10 @@
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
-    <string>NSApplication</string>
-    <key>LSApplicationCategoryType</key>
-    <string>public.app-category.finance</string>
+	<string>NSApplication</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.finance</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This application requires access to Bluetooth to scan and connect to hardware wallets</string>
 </dict>
 </plist>

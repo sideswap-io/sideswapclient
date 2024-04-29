@@ -8,7 +8,7 @@ import 'package:sideswap/desktop/widgets/d_tx_history_confs.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_date.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_header.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_link.dart';
-import 'package:sideswap/desktop/widgets/d_tx_history_row.dart';
+import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_wallet.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
@@ -37,7 +37,7 @@ class DUnconfirmedTx extends StatelessWidget {
                     .labelMedium
                     ?.copyWith(color: SideSwapColors.glacier),
               ),
-              child: DTxHistoryRow(
+              child: DFlexesRow(
                 flexes: const [183, 97, 137, 205, 205, 125, 26],
                 children: [
                   DTxHistoryHeader(text: 'Date'.tr()),
@@ -102,7 +102,7 @@ class DUnconfirmedTx extends StatelessWidget {
                                         isPeg: allPegsById
                                             .containsKey(transItem.id));
                                   },
-                                  child: DTxHistoryRow(
+                                  child: DFlexesRow(
                                     flexes: const [
                                       183,
                                       97,

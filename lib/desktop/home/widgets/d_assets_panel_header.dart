@@ -20,7 +20,7 @@ class DAssetsPanelHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 85,
+      height: 86,
       decoration: const ShapeDecoration(
         color: SideSwapColors.lapisLazuli,
         shape: RoundedRectangleBorder(

@@ -39,6 +39,7 @@ _$OutputsReceiverImpl _$$OutputsReceiverImplFromJson(Map json) =>
       assetId: json['asset_id'] as String?,
       satoshi: json['satoshi'] as int?,
       comment: json['comment'] as String?,
+      account: json['account'] as int?,
     );
 
 Map<String, dynamic> _$$OutputsReceiverImplToJson(
@@ -55,6 +56,7 @@ Map<String, dynamic> _$$OutputsReceiverImplToJson(
   writeNotNull('asset_id', instance.assetId);
   writeNotNull('satoshi', instance.satoshi);
   writeNotNull('comment', instance.comment);
+  writeNotNull('account', instance.account);
   return val;
 }
 
@@ -63,7 +65,7 @@ Map<String, dynamic> _$$OutputsReceiverImplToJson(
 // **************************************************************************
 
 String _$outputsReaderNotifierHash() =>
-    r'b454d544bc57a008498148c34beb571bc5d19314';
+    r'075221eb374fdf681a678714f1efd1c2edd7ee62';
 
 /// See also [OutputsReaderNotifier].
 @ProviderFor(OutputsReaderNotifier)

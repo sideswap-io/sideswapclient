@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/desktop/addresses/d_addresses.dart';
 import 'package:sideswap/desktop/common/button/d_toolbar_button.dart';
 
 import 'package:sideswap/desktop/d_main_bottom_navigation_bar.dart';
@@ -19,6 +20,8 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/screens/accounts/asset_details.dart';
 import 'package:sideswap/screens/swap/swap.dart';
 
+final pageStorageBucket = PageStorageBucket();
+
 class DesktopWalletMain extends HookConsumerWidget {
   const DesktopWalletMain({super.key});
 
@@ -32,6 +35,7 @@ class DesktopWalletMain extends HookConsumerWidget {
       WalletMainNavigationItemEnum.swap =>
         const DSwapMain(key: ValueKey(false)),
       WalletMainNavigationItemEnum.pegs => const DSwapMain(key: ValueKey(true)),
+      WalletMainNavigationItemEnum.addresses => const DAddresses(),
     };
   }
 
@@ -41,10 +45,13 @@ class DesktopWalletMain extends HookConsumerWidget {
 
     return SideSwapScaffoldPage(
       header: const TopToolbar(),
-      content: Column(
-        children: [
-          Expanded(child: getChild(walletMainArguments)),
-        ],
+      content: PageStorage(
+        bucket: pageStorageBucket,
+        child: Column(
+          children: [
+            Expanded(child: getChild(walletMainArguments)),
+          ],
+        ),
       ),
       bottomBar: DesktopMainBottomNavigationBar(
         currentIndex: walletMainArguments.currentIndex,

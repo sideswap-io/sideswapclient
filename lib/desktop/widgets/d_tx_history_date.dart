@@ -30,11 +30,15 @@ class DTxHistoryDate extends StatelessWidget {
     return Row(children: [
       Text(
         dateFormatDate.format(timestampCopy),
-        style: dateTextStyle,
+        style: dateTextStyle?.merge(const TextStyle(
+          color: SideSwapColors.airSuperiorityBlue,
+        )),
       ),
       Text(
         dateFormatTime.format(timestampCopy),
-        style: timeTextStyle,
+        style: timeTextStyle?.merge(const TextStyle(
+          color: SideSwapColors.airSuperiorityBlue,
+        )),
       ),
     ]);
   }

@@ -7,7 +7,7 @@ import 'package:sideswap/desktop/common/button/d_button.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/locales_provider.dart';
 
-class DesktopMainBottomNavigationBar extends ConsumerStatefulWidget {
+class DesktopMainBottomNavigationBar extends ConsumerWidget {
   const DesktopMainBottomNavigationBar({
     super.key,
     required this.onTap,
@@ -18,21 +18,9 @@ class DesktopMainBottomNavigationBar extends ConsumerStatefulWidget {
   final int currentIndex;
 
   @override
-  DesktopMainBottomNavigationBarState createState() =>
-      DesktopMainBottomNavigationBarState();
-}
-
-class DesktopMainBottomNavigationBarState
-    extends ConsumerState<DesktopMainBottomNavigationBar> {
-  void selected(int index) {
-    setState(() {
-      widget.onTap(index);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localesNotifierProvider);
+
     return Container(
       key: ValueKey(locale),
       height: 56,
@@ -46,8 +34,8 @@ class DesktopMainBottomNavigationBarState
             selectedIcon: 'assets/home_active.svg',
             unselectedIcon: 'assets/home.svg',
             index: 0,
-            selectedIndex: widget.currentIndex,
-            onSelected: selected,
+            selectedIndex: currentIndex,
+            onSelected: onTap,
           ),
           const SizedBox(width: 24),
           ToolbarButton(
@@ -55,8 +43,8 @@ class DesktopMainBottomNavigationBarState
             selectedIcon: 'assets/requests_active.svg',
             unselectedIcon: 'assets/requests.svg',
             index: 1,
-            selectedIndex: widget.currentIndex,
-            onSelected: selected,
+            selectedIndex: currentIndex,
+            onSelected: onTap,
           ),
           const SizedBox(width: 24),
           ToolbarButton(
@@ -64,8 +52,8 @@ class DesktopMainBottomNavigationBarState
             selectedIcon: 'assets/swap_active.svg',
             unselectedIcon: 'assets/swap.svg',
             index: 2,
-            selectedIndex: widget.currentIndex,
-            onSelected: selected,
+            selectedIndex: currentIndex,
+            onSelected: onTap,
           ),
           const SizedBox(width: 24),
           ToolbarButton(
@@ -73,8 +61,8 @@ class DesktopMainBottomNavigationBarState
             selectedIcon: 'assets/peg-in-out_active.svg',
             unselectedIcon: 'assets/peg-in-out.svg',
             index: 4,
-            selectedIndex: widget.currentIndex,
-            onSelected: selected,
+            selectedIndex: currentIndex,
+            onSelected: onTap,
           ),
           const SizedBox(width: 24),
           ToolbarButton(
@@ -82,8 +70,17 @@ class DesktopMainBottomNavigationBarState
             selectedIcon: 'assets/transactions_active.svg',
             unselectedIcon: 'assets/transactions.svg',
             index: 3,
-            selectedIndex: widget.currentIndex,
-            onSelected: selected,
+            selectedIndex: currentIndex,
+            onSelected: onTap,
+          ),
+          const SizedBox(width: 24),
+          ToolbarButton(
+            name: 'Addresses'.tr(),
+            selectedIcon: 'assets/addresses_active.svg',
+            unselectedIcon: 'assets/addresses.svg',
+            index: 5,
+            selectedIndex: currentIndex,
+            onSelected: onTap,
           ),
         ],
       ),

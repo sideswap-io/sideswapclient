@@ -1,4 +1,3 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
@@ -80,17 +79,6 @@ class JadeDevicesState with _$JadeDevicesState {
       {required List<From_JadePorts_Port> devices}) = JadeDevicesStateAvailable;
 }
 
-enum JadePortStateEnum {
-  uninitialized(From_JadePorts_State.UNINIT, 'Uninitialized'),
-  mainnet(From_JadePorts_State.MAIN, 'Mainnet'),
-  testnet(From_JadePorts_State.TEST, 'Testnet');
-
-  const JadePortStateEnum(this.state, this.value);
-
-  final From_JadePorts_State state;
-  final String value;
-}
-
 @freezed
 class JadePort with _$JadePort {
   JadePort._();
@@ -99,31 +87,6 @@ class JadePort with _$JadePort {
     required From_JadePorts_Port fromJadePortsPort,
   }) = _JadePort;
 
-  (String major, String minor, String build) extractVersion() {
-    final parts = fromJadePortsPort.version.split('.');
-
-    if (parts.length == 3) {
-      return (parts[0], parts[1], parts[2]);
-    }
-
-    return ('', '', '');
-  }
-
   String get jadeId => fromJadePortsPort.jadeId;
   String get port => fromJadePortsPort.port;
-  Either<Exception, String> get serial => fromJadePortsPort.hasSerial()
-      ? Right(fromJadePortsPort.serial)
-      : Left(Exception('Unable to get device serial number'));
-  String get version => fromJadePortsPort.version;
-  Either<Exception, JadePortStateEnum> get state =>
-      switch (fromJadePortsPort.state) {
-        From_JadePorts_State.UNINIT =>
-          const Right(JadePortStateEnum.uninitialized),
-        From_JadePorts_State.MAIN => const Right(JadePortStateEnum.mainnet),
-        From_JadePorts_State.TEST => const Right(JadePortStateEnum.testnet),
-        From_JadePorts_State() => Left(Exception('Unexpected JadePorts state')),
-      };
-  int get major => int.tryParse(extractVersion().$1) ?? 0;
-  int get minor => int.tryParse(extractVersion().$2) ?? 0;
-  int get build => int.tryParse(extractVersion().$3) ?? 0;
 }

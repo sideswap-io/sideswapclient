@@ -156,6 +156,7 @@ fn run(
                         })
                         .collect(),
                     account: Default::default(),
+                    utxos: Vec::new(),
                 };
 
                 let send_res = wallet

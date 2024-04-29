@@ -81,7 +81,8 @@ class DecimalTextInputFormatter extends TextInputFormatter {
       );
     }
 
-    final decimalValue = Decimal.tryParse(newValue.text);
+    final replaced = newValue.text.replaceAll(' ', '');
+    final decimalValue = Decimal.tryParse(replaced);
     if (decimalValue == null) {
       return oldValue;
     }

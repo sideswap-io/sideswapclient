@@ -1,4 +1,4 @@
-use bitcoin::bip32::ExtendedPubKey;
+use bitcoin::bip32;
 use serde::{Deserialize, Serialize};
 use sideswap_api::{OrderId, SessionId};
 
@@ -27,10 +27,10 @@ pub struct AmpPrevAddrs {
 pub struct WatchOnly {
     pub master_blinding_key: String,
 
-    pub root_xpub: ExtendedPubKey,
-    pub password_xpub: ExtendedPubKey,
-    pub single_sig_account_xpub: ExtendedPubKey,
-    pub multi_sig_user_xpub: ExtendedPubKey,
+    pub root_xpub: bip32::Xpub,
+    pub password_xpub: bip32::Xpub,
+    pub single_sig_account_xpub: bip32::Xpub,
+    pub multi_sig_user_xpub: bip32::Xpub,
 
     pub username: String,
     pub password: String,
@@ -57,7 +57,7 @@ pub struct Settings {
 
     pub session_id: Option<SessionId>,
     pub amp_prev_addrs_v2: Option<AmpPrevAddrs>,
-    pub master_pub_key: Option<bitcoin::bip32::ExtendedPubKey>,
+    pub master_pub_key: Option<bip32::Xpub>,
 
     pub reg_info_v3: Option<RegInfo>,
 }

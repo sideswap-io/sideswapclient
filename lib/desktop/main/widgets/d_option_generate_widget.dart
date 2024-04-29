@@ -33,7 +33,7 @@ class DOptionGenerateWidget extends ConsumerWidget {
         isSelected ? Colors.white : SideSwapColors.ceruleanFrost;
     return DCustomTextBigButton(
       width: 247,
-      height: 270,
+      height: 280,
       onPressed: onPressed,
       style: ref
           .watch(desktopAppThemeNotifierProvider)

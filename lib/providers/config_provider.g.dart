@@ -21,7 +21,7 @@ final sharedPreferencesProvider = Provider<SharedPreferences>.internal(
 );
 
 typedef SharedPreferencesRef = ProviderRef<SharedPreferences>;
-String _$configurationHash() => r'ea9afd2f47999aa111a1b64b14d2bc55dffd83d1';
+String _$configurationHash() => r'9f9d6be4965d5659a9c3585ed9e9f59fe3c9adb3';
 
 /// See also [Configuration].
 @ProviderFor(Configuration)

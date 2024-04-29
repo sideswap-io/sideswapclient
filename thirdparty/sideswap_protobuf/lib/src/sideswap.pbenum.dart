@@ -30,23 +30,6 @@ class From_SubmitReview_Step extends $pb.ProtobufEnum {
   const From_SubmitReview_Step._($core.int v, $core.String n) : super(v, n);
 }
 
-class From_JadePorts_State extends $pb.ProtobufEnum {
-  static const From_JadePorts_State UNINIT = From_JadePorts_State._(0, _omitEnumNames ? '' : 'UNINIT');
-  static const From_JadePorts_State MAIN = From_JadePorts_State._(1, _omitEnumNames ? '' : 'MAIN');
-  static const From_JadePorts_State TEST = From_JadePorts_State._(2, _omitEnumNames ? '' : 'TEST');
-
-  static const $core.List<From_JadePorts_State> values = <From_JadePorts_State> [
-    UNINIT,
-    MAIN,
-    TEST,
-  ];
-
-  static final $core.Map<$core.int, From_JadePorts_State> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static From_JadePorts_State? valueOf($core.int value) => _byValue[value];
-
-  const From_JadePorts_State._($core.int v, $core.String n) : super(v, n);
-}
-
 class From_JadeStatus_Status extends $pb.ProtobufEnum {
   static const From_JadeStatus_Status IDLE = From_JadeStatus_Status._(1, _omitEnumNames ? '' : 'IDLE');
   static const From_JadeStatus_Status READ_STATUS = From_JadeStatus_Status._(2, _omitEnumNames ? '' : 'READ_STATUS');

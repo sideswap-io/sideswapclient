@@ -1,4 +1,4 @@
-use gdk_common::{bitcoin, ciborium, elements, ureq};
+use gdk_common::{bitcoin, serde_cbor, ureq};
 use std::sync::{MutexGuard, PoisonError, TryLockError};
 
 /// Result type alias of the `gdk_registry` crate.
@@ -36,10 +36,6 @@ pub enum Error {
     #[error("Specify either `assets_id` or one of more of the following fields when calling `get_assets`: `names`, `tickers`, `category`")]
     GetAssetsNoFields,
 
-    /// Wraps hex parsing error
-    #[error(transparent)]
-    Hex(#[from] elements::bitcoin::hashes::hex::Error),
-
     /// An invalid network as been specified
     #[error("InvalidNetwork({0})")]
     InvalidNetwork(String),
@@ -69,17 +65,13 @@ pub enum Error {
     #[error(transparent)]
     SerdeJson(#[from] serde_json::Error),
 
-    /// Wraps errors happened when serializing CBORs.
-    #[error(transparent)]
-    SerializeCbor(#[from] ciborium::ser::Error<std::io::Error>),
-
-    /// Wraps errors happened when deserializing CBORs.
-    #[error(transparent)]
-    DeserializeCbor(#[from] ciborium::de::Error<std::io::Error>),
-
     /// Wraps http errors.
     #[error(transparent)]
     Ureq(#[from] ureq::Error),
+
+    /// Wraps serde error.
+    #[error(transparent)]
+    SerdeCbor(#[from] serde_cbor::Error),
 
     /// A generic error.
     #[error("{0}")]

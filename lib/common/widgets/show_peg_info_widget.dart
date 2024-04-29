@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/widgets/custom_big_button.dart';
-import 'package:sideswap/common/widgets/custom_check_box.dart';
+import 'package:sideswap/common/widgets/custom_check_box_row.dart';
 
 class ShowPegInfoWidget extends StatefulWidget {
   const ShowPegInfoWidget({
@@ -73,7 +73,7 @@ class ShowPegInfoWidgetState extends State<ShowPegInfoWidget> {
                 color: Color(0xFF357CA4),
               ),
             ),
-            CustomCheckBox(
+            CustomCheckBoxRow(
               onChanged: (value) {
                 widget.onChanged(value);
                 setState(() {

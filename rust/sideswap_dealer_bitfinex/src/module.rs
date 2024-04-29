@@ -1,5 +1,4 @@
 use futures::prelude::*;
-use serde::Deserialize;
 use tokio_tungstenite::connect_async;
 
 #[derive(Debug)]
@@ -14,17 +13,11 @@ pub enum WrappedResponse {
     Data(Vec<u8>),
 }
 
-#[derive(Debug, Deserialize, Clone)]
-pub struct Server {
-    host: String,
-    port: i32,
-}
-
 pub type Sender = crossbeam_channel::Sender<WrappedRequest>;
 pub type Receiver = crossbeam_channel::Receiver<WrappedResponse>;
 
 async fn run(
-    server: Server,
+    proxy_port: u16,
     req_rx: crossbeam_channel::Receiver<WrappedRequest>,
     resp_tx: crossbeam_channel::Sender<WrappedResponse>,
 ) {
@@ -36,7 +29,7 @@ async fn run(
     });
 
     loop {
-        let url = format!("ws://{}:{}/binary", &server.host, server.port);
+        let url = format!("ws://localhost:{}/binary", proxy_port);
 
         let connect_result = connect_async(url).await;
 
@@ -99,12 +92,12 @@ async fn run(
     }
 }
 
-pub fn start(server: Server) -> (Sender, Receiver) {
+pub fn start(proxy_port: u16) -> (Sender, Receiver) {
     let (req_tx, req_rx) = crossbeam_channel::unbounded::<WrappedRequest>();
     let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<WrappedResponse>();
     std::thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().unwrap();
-        rt.block_on(run(server, req_rx, resp_tx));
+        rt.block_on(run(proxy_port, req_rx, resp_tx));
     });
     (req_tx, resp_rx)
 }

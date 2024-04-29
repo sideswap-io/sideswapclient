@@ -240,6 +240,13 @@ String generateAssetUrl({required String? assetId, required bool testnet}) {
   return '$baseUrl/asset/${assetId ?? ''}';
 }
 
+String generateAddressUrl({required String? address, required bool testnet}) {
+  final baseUrl = testnet
+      ? 'https://blockstream.info/liquidtestnet'
+      : 'https://blockstream.info/liquid';
+  return '$baseUrl/address/${address ?? ''}';
+}
+
 Future<void> shareTxid(String txid) async {
   await Share.share(txid);
 }
@@ -323,35 +330,6 @@ String replaceCharacterOnPosition({
   }
 
   return newValue;
-}
-
-TextEditingValue fixCursorPosition({
-  required TextEditingController controller,
-  required String newValue,
-}) {
-  var baseOffset = controller.value.selection.baseOffset;
-  var additionalOffset = 0;
-  var breakOffset = 0;
-  for (var i = 0; i < newValue.length; i++) {
-    if (newValue[i] == ' ') {
-      additionalOffset++;
-    } else {
-      breakOffset++;
-    }
-
-    if (breakOffset == baseOffset) {
-      break;
-    }
-  }
-  baseOffset = baseOffset + additionalOffset;
-  if (baseOffset > newValue.length) {
-    baseOffset = newValue.length;
-  }
-
-  return TextEditingValue(
-    text: newValue,
-    selection: TextSelection.collapsed(offset: baseOffset),
-  );
 }
 
 List<TransItem> selectTransactions(

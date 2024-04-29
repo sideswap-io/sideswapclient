@@ -12,8 +12,8 @@ use std::collections::HashMap;
 
 use crate::error::Error;
 use crate::scripts::ScriptType;
-use crate::wally::MasterBlindingKey;
-use bitcoin::bip32::{ChildNumber, DerivationPath, ExtendedPrivKey, ExtendedPubKey, Fingerprint};
+use crate::util::MasterBlindingKey;
+use bitcoin::bip32::{ChildNumber, DerivationPath, Fingerprint, Xpriv, Xpub};
 use bitcoin::hashes::{sha256, Hash};
 use std::convert::TryFrom;
 use std::fmt;
@@ -110,7 +110,7 @@ pub struct GetUnspentOpt {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LoadStoreOpt {
-    pub master_xpub: ExtendedPubKey,
+    pub master_xpub: Xpub,
     pub master_xpub_fingerprint: Option<Fingerprint>,
 }
 
@@ -143,7 +143,7 @@ pub struct CreateAccountOpt {
     pub subaccount: u32,
     pub name: String,
     // The account xpub if passed by the caller
-    pub xpub: Option<ExtendedPubKey>,
+    pub xpub: Option<Xpub>,
     #[serde(default)]
     pub discovered: bool,
     #[serde(default)]
@@ -156,7 +156,7 @@ pub struct CreateAccountOpt {
 pub struct DiscoverAccountOpt {
     #[serde(rename = "type")]
     pub script_type: ScriptType,
-    pub xpub: ExtendedPubKey,
+    pub xpub: Xpub,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -176,12 +176,6 @@ pub struct GetAvailableCurrenciesParams {
     /// The url to use to fetch the available currency pairs.
     #[serde(rename = "currency_url")]
     pub url: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RenameAccountOpt {
-    pub subaccount: u32,
-    pub new_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -295,9 +289,6 @@ pub struct GetTxInOut {
     ///
     /// For liquid is 0 if the amount cannot be unblinded.
     pub satoshi: u64,
-
-    /// Multisig field, always 0.
-    pub script_type: u32,
 
     /// Multisig field, always 0.
     pub subtype: u32,
@@ -426,32 +417,6 @@ pub struct AccountInfo {
     pub slip132_extended_pubkey: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct AccountInfoPruned {
-    #[serde(rename = "pointer")]
-    pub account_num: u32,
-    #[serde(rename = "type")]
-    pub script_type: ScriptType,
-    #[serde(flatten)]
-    pub settings: AccountSettings,
-    pub required_ca: u32,     // unused, always 0
-    pub receiving_id: String, // unused, always ""
-    pub bip44_discovered: bool,
-}
-
-impl From<AccountInfo> for AccountInfoPruned {
-    fn from(info: AccountInfo) -> Self {
-        Self {
-            account_num: info.account_num,
-            script_type: info.script_type,
-            settings: info.settings.clone(),
-            required_ca: info.required_ca,
-            receiving_id: info.receiving_id.clone(),
-            bip44_discovered: info.bip44_discovered,
-        }
-    }
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Credentials {
     pub mnemonic: String,
@@ -470,11 +435,19 @@ pub enum WatchOnlyCredentials {
 #[derive(Debug, Clone)]
 pub struct AccountData {
     pub account_num: u32,
-    pub xpub: ExtendedPubKey,
+    pub xpub: Xpub,
     pub master_xpub_fingerprint: Option<Fingerprint>,
+    pub master_blinding_key: Option<MasterBlindingKey>,
 }
 
-fn from_slip132_extended_pubkey(s: &str, expected_is_mainnet: bool) -> Result<AccountData, Error> {
+fn from_slip132_extended_pubkey(
+    s: &str,
+    expected_is_mainnet: bool,
+    is_liquid: bool,
+) -> Result<AccountData, Error> {
+    if is_liquid {
+        return Err(Error::UnsupportedDescriptor);
+    }
     let (is_mainnet, script_type, xpub) = decode_from_slip132_string(s)?;
     if is_mainnet != expected_is_mainnet {
         return Err(Error::MismatchingNetwork);
@@ -487,17 +460,22 @@ fn from_slip132_extended_pubkey(s: &str, expected_is_mainnet: bool) -> Result<Ac
         account_num,
         xpub,
         master_xpub_fingerprint: None,
+        master_blinding_key: None,
     })
 }
 
-fn from_descriptor(s: &str, expected_is_mainnet: bool) -> Result<AccountData, Error> {
-    let coin_type = if expected_is_mainnet {
-        0
-    } else {
-        1
+fn from_descriptor(
+    s: &str,
+    expected_is_mainnet: bool,
+    is_liquid: bool,
+) -> Result<AccountData, Error> {
+    let coin_type = match (expected_is_mainnet, is_liquid) {
+        (true, true) => 1776,
+        (true, false) => 0,
+        (false, _) => 1,
     };
-    let (script_type, xpub, bip32_account, master_xpub_fingerprint) =
-        parse_single_sig_descriptor(s, coin_type)?;
+    let (script_type, xpub, bip32_account, master_xpub_fingerprint, master_blinding_key) =
+        parse_single_sig_descriptor(s, coin_type, is_liquid)?;
     let is_mainnet = match xpub.network {
         Network::Bitcoin => true,
         _ => false,
@@ -512,15 +490,13 @@ fn from_descriptor(s: &str, expected_is_mainnet: bool) -> Result<AccountData, Er
         account_num,
         xpub,
         master_xpub_fingerprint: Some(master_xpub_fingerprint),
+        master_blinding_key,
     })
 }
 
 impl WatchOnlyCredentials {
     // Derive an extended public key to use for the store
-    pub fn store_master_xpub(
-        &self,
-        net_params: &NetworkParameters,
-    ) -> Result<ExtendedPubKey, Error> {
+    pub fn store_master_xpub(&self, net_params: &NetworkParameters) -> Result<Xpub, Error> {
         let network = if net_params.mainnet {
             Network::Bitcoin
         } else {
@@ -528,23 +504,29 @@ impl WatchOnlyCredentials {
         };
         let b = serde_json::to_vec(self).unwrap();
         let seed = sha256::Hash::hash(&b);
-        let xprv = ExtendedPrivKey::new_master(network, seed.as_byte_array())?;
-        let xpub = ExtendedPubKey::from_priv(&crate::EC, &xprv);
+        let xprv = Xpriv::new_master(network, seed.as_byte_array())?;
+        let xpub = Xpub::from_priv(&crate::EC, &xprv);
         Ok(xpub)
     }
 
-    pub fn accounts(self, is_mainnet: bool) -> Result<(Vec<AccountData>, Fingerprint), Error> {
+    pub fn accounts(
+        self,
+        is_mainnet: bool,
+        is_liquid: bool,
+    ) -> Result<(Vec<AccountData>, Fingerprint, Option<MasterBlindingKey>), Error> {
         let r: Result<Vec<_>, _> = match self {
-            WatchOnlyCredentials::Slip132ExtendedPubkeys(keys) => {
-                keys.iter().map(|k| from_slip132_extended_pubkey(&k, is_mainnet)).collect()
-            }
+            WatchOnlyCredentials::Slip132ExtendedPubkeys(keys) => keys
+                .iter()
+                .map(|k| from_slip132_extended_pubkey(&k, is_mainnet, is_liquid))
+                .collect(),
             WatchOnlyCredentials::CoreDescriptors(descriptors) => {
-                descriptors.iter().map(|d| from_descriptor(&d, is_mainnet)).collect()
+                descriptors.iter().map(|d| from_descriptor(&d, is_mainnet, is_liquid)).collect()
             }
         };
         // Handle duplicates
-        let mut m = HashMap::<u32, ExtendedPubKey>::new();
+        let mut m = HashMap::<u32, Xpub>::new();
         let mut master_xpub_fingerprint = None;
+        let mut master_blinding_key = None;
         for a in r? {
             if let Some(old) = m.insert(a.account_num, a.xpub.clone()) {
                 if old != a.xpub {
@@ -562,6 +544,17 @@ impl WatchOnlyCredentials {
                     }
                 }
             }
+            // Check all master blinding keys are equal
+            match master_blinding_key.as_ref() {
+                None => {
+                    master_blinding_key = a.master_blinding_key;
+                }
+                Some(f) => {
+                    if Some(f) != a.master_blinding_key.as_ref() {
+                        return Err(Error::MismatchingDescriptor);
+                    }
+                }
+            }
         }
         let v = m
             .iter()
@@ -569,10 +562,11 @@ impl WatchOnlyCredentials {
                 account_num: *k,
                 xpub: *v,
                 master_xpub_fingerprint: master_xpub_fingerprint.clone(),
+                master_blinding_key: master_blinding_key.clone(),
             })
             .collect();
         let master_xpub_fingerprint = master_xpub_fingerprint.unwrap_or_default();
-        Ok((v, master_xpub_fingerprint))
+        Ok((v, master_xpub_fingerprint, master_blinding_key))
     }
 }
 
@@ -624,11 +618,15 @@ impl Settings {
         }
         if let Some(pricing) = json.get("pricing") {
             if let Some(currency) = pricing.get("currency").and_then(|v| v.as_str()) {
-                let currency = Currency::from_str(currency)?;
-                self.pricing.currency = currency.to_string();
+                if !currency.is_empty() {
+                    let currency = Currency::from_str(currency)?;
+                    self.pricing.currency = currency.to_string();
+                }
             }
             if let Some(exchange) = pricing.get("exchange").and_then(|v| v.as_str()) {
-                self.pricing.exchange = exchange.to_string();
+                if !exchange.is_empty() {
+                    self.pricing.exchange = exchange.to_string();
+                }
             }
         }
         if let Some(sound) = json.get("sound").and_then(|v| v.as_bool()) {
@@ -649,12 +647,6 @@ pub struct UpdateAccountOpt {
     pub subaccount: u32,
     pub name: Option<String>,
     pub hidden: Option<bool>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct SetAccountHiddenOpt {
-    pub subaccount: u32,
-    pub hidden: bool,
 }
 
 /// see comment for struct Settings

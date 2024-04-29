@@ -482,7 +482,11 @@ class Configuration extends _$Configuration {
       return SettingsNetworkType.sideswapChina;
     }
 
-    return SettingsNetworkType.sideswap;
+    if (settingsNetworkType == null) {
+      return SettingsNetworkType.sideswap;
+    }
+
+    return settingsNetworkType;
   }
 
   Future<void> _setNetworkHost(SharedPreferences prefs, String host) async {

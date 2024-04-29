@@ -1,0 +1,27 @@
+[package]
+name = "sideswap_amp"
+version = "0.1.2"
+edition = "2021"
+
+[lib]
+name = "sideswap_amp"
+
+[dependencies]
+anyhow.workspace = true
+base64.workspace = true
+bip39.workspace = true
+bitcoin_hashes.workspace = true
+bitcoin.workspace = true
+bytes.workspace = true
+elements-miniscript.workspace = true
+elements.workspace = true
+hex.workspace = true
+log.workspace = true
+rand.workspace = true
+secp256k1-zkp.workspace = true
+secp256k1.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+wamp_async.workspace = true

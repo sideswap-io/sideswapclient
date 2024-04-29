@@ -6,7 +6,7 @@ part of 'payment_select_asset.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$paymentAssetTypesHash() => r'7afbf0ce7825e2655eabbfb7edd72a27682c9cbe';
+String _$paymentAssetTypesHash() => r'4c70d27cbcb39d990e317ff27193b8c2ee07e696';
 
 /// See also [paymentAssetTypes].
 @ProviderFor(paymentAssetTypes)
@@ -174,8 +174,26 @@ class _PaymentIsAssetDisabledProviderElement
       (origin as PaymentIsAssetDisabledProvider).accountAsset;
 }
 
+String _$paymentAvailableAssetsWithInputsFilteredHash() =>
+    r'b3b8424688345d8dc6ea1dd291592639a5f8a4b6';
+
+/// See also [paymentAvailableAssetsWithInputsFiltered].
+@ProviderFor(paymentAvailableAssetsWithInputsFiltered)
+final paymentAvailableAssetsWithInputsFilteredProvider =
+    AutoDisposeProvider<List<AccountAsset>>.internal(
+  paymentAvailableAssetsWithInputsFiltered,
+  name: r'paymentAvailableAssetsWithInputsFilteredProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$paymentAvailableAssetsWithInputsFilteredHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef PaymentAvailableAssetsWithInputsFilteredRef
+    = AutoDisposeProviderRef<List<AccountAsset>>;
 String _$paymentAccountAssetsByTypeHash() =>
-    r'8d36ea7f9de087d3b55e789ecacb76aa27966fec';
+    r'af0b4405470e58135197cad3ea5a4d8d7598f49f';
 
 /// See also [paymentAccountAssetsByType].
 @ProviderFor(paymentAccountAssetsByType)

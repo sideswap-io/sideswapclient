@@ -24,11 +24,11 @@ class DImportWalletError extends ConsumerWidget {
         logger.d('onEnter');
         goBack(ref);
       },
-      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 418),
+      constraints: const BoxConstraints(maxWidth: 628, maxHeight: 420),
       content: Center(
         child: SizedBox(
           width: 484,
-          height: 239,
+          height: 242,
           child: Column(
             children: [
               const DErrorIcon(),

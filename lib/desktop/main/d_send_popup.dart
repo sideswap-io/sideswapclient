@@ -20,6 +20,7 @@ import 'package:sideswap/desktop/widgets/d_popup_with_close.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/models/endpoint_internal_model.dart';
+import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
@@ -40,6 +41,7 @@ class DSendPopup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+    ref.listen(selectedInputsHelperProvider, (previous, next) {});
 
     return switch (createdTx) {
       CreatedTx() => const DSendPopupReview(),
@@ -53,6 +55,7 @@ class DSendPopupCreate extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(selectedInputsHelperProvider, (previous, next) {});
     ref.watch(outputsReaderNotifierProvider);
     final reviewButtonEnabled = ref.watch(sendPopupReviewButtonEnabledProvider);
     final addMoreOutputsButtonEnabled =
@@ -91,9 +94,11 @@ class DSendPopupCreate extends HookConsumerWidget {
         return;
       }
 
-      ref
-          .read(outputsReaderNotifierProvider.notifier)
-          .insertOutput(assetId: assetId, address: address, satoshi: satoshi);
+      ref.read(outputsReaderNotifierProvider.notifier).insertOutput(
+          assetId: assetId,
+          address: address,
+          satoshi: satoshi,
+          account: selectedAccountAsset.account.id);
     }
 
     void cleanupOnClose() {
@@ -192,6 +197,8 @@ class DSendPopupCreate extends HookConsumerWidget {
       return;
     }, [outputsData]);
 
+    final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+
     return DPopupWithClose(
       width: 580,
       height: 630,
@@ -249,16 +256,17 @@ class DSendPopupCreate extends HookConsumerWidget {
               swapType: SwapType.atomic,
               text: 'Send',
               isMaxVisible: true,
+              isInputsVisible: true,
               showAccountsInPopup: true,
               controller: amountController,
-              balance: ref.read(balanceStringProvider(selectedAccountAsset)),
+              balance: ref.read(balanceStringWithInputsProvider),
               onChanged: (value) {
                 isMaxPressed.value = false;
               },
               onSubmitted: (_) async {
                 final errorMessage = ref
                     .read(paymentHelperProvider)
-                    .outputsPaymentSend(isGreedy: isMaxPressed.value);
+                    .outputsPaymentSend(selectedInputs: selectedInputs);
                 if (errorMessage != null) {
                   final flushbar = Flushbar<void>(
                     messageText: Text(errorMessage),
@@ -280,7 +288,10 @@ class DSendPopupCreate extends HookConsumerWidget {
               onMaxPressed: () {
                 isMaxPressed.value = true;
                 amountController.text =
-                    ref.read(balanceStringProvider(selectedAccountAsset));
+                    ref.read(balanceStringWithInputsProvider);
+              },
+              onSelectInputs: () {
+                ref.read(desktopDialogProvider).showSelectInputs();
               },
             ),
             const DSendPopupOutputs(),
@@ -315,7 +326,7 @@ class DSendPopupCreate extends HookConsumerWidget {
 
                         final errorMessage = ref
                             .read(paymentHelperProvider)
-                            .outputsPaymentSend(isGreedy: isMaxPressed.value);
+                            .outputsPaymentSend(selectedInputs: selectedInputs);
                         if (errorMessage != null) {
                           final flushbar = Flushbar<void>(
                             messageText: Text(errorMessage),
@@ -366,6 +377,7 @@ class DSendPopupReview extends ConsumerWidget {
 
     void cleanupOnClose() {
       cleanupOnBack();
+      ref.invalidate(selectedInputsNotifierProvider);
       ref.invalidate(outputsReaderNotifierProvider);
       ref.invalidate(outputsCreatorProvider);
       ref.invalidate(sendAssetNotifierProvider);

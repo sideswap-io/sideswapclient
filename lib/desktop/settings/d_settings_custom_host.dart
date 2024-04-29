@@ -4,7 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/numerical_range_formatter.dart';
-import 'package:sideswap/common/widgets/custom_check_box.dart';
+import 'package:sideswap/common/widgets/custom_check_box_row.dart';
 import 'package:sideswap/common/widgets/sideswap_text_field.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
@@ -132,7 +132,7 @@ class DSettingsCustomHost extends HookConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 18),
-                  child: CustomCheckBox(
+                  child: CustomCheckBoxRow(
                     value: useTls.value,
                     onChanged: (value) {
                       useTls.value = value;

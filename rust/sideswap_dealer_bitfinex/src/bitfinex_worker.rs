@@ -7,15 +7,93 @@ pub struct Settings {
     pub bitfinex_secret: String,
 }
 
+pub enum MarketType {
+    ExchangeMarket,
+}
+
+impl ToString for MarketType {
+    fn to_string(&self) -> String {
+        match self {
+            MarketType::ExchangeMarket => "EXCHANGE MARKET".to_owned(),
+        }
+    }
+}
+
+pub struct OrderSubmit {
+    pub market_type: MarketType,
+    pub symbol: String,
+    pub cid: i64,
+    pub amount: f64,
+}
+
+pub struct Order {
+    pub order_id: i64,
+}
+
 pub enum Request {
     Withdraw(proto::to::Withdraw),
     Transfer(proto::to::Transfer),
     Movements(proto::to::Movements),
+    OrderSubmit(OrderSubmit),
 }
 pub enum Response {
     Withdraw(proto::from::Withdraw),
     Transfer(proto::from::Transfer),
     Movements(proto::from::Movements),
+    OrderSubmit(OrderSubmit, Result<Order, anyhow::Error>),
+}
+
+fn order_submit_with_retry(
+    bf_api: &bitfinex_api::Bitfinex,
+    req: &OrderSubmit,
+) -> Result<bitfinex_api::submit::SubmitResponse, anyhow::Error> {
+    for index in 0..5 {
+        // Do not check history for the first time, cid must be unique
+        if index != 0 {
+            let history_res =
+                bf_api.make_request(bitfinex_api::order_history::OrderHistoryRequest {
+                    start: None,
+                    end: None,
+                    limit: None,
+                });
+
+            match history_res {
+                Ok(history) => {
+                    let cid_known = history.iter().any(|order| order.cid == req.cid);
+                    ensure!(
+                        !cid_known,
+                        "order with cid {} already exists in history",
+                        req.cid
+                    );
+                }
+                Err(err) => {
+                    error!("loading order history failed: {err}");
+                    std::thread::sleep(Duration::from_secs(3));
+                    continue;
+                }
+            }
+        }
+
+        let submit_res = bf_api.make_request(bitfinex_api::submit::SubmitRequest {
+            type_: req.market_type.to_string(),
+            cid: req.cid,
+            symbol: req.symbol.clone(),
+            amount: req.amount.to_string(),
+        });
+        match submit_res {
+            Ok(order) => {
+                info!("order submit succeed");
+                return Ok(order);
+            }
+            Err(err) => {
+                error!("order submit failed: {err}");
+                std::thread::sleep(Duration::from_secs(3));
+                continue;
+            }
+        }
+    }
+
+    bail!("all order submit retries failed");
 }
 
 pub fn run(
@@ -28,7 +106,7 @@ pub fn run(
     while let Ok(req) = req_receiver.recv() {
         match req {
             Request::Transfer(req) => {
-                let res = bf_api.make_request(bitfinex_api::TransferRequest {
+                let res = bf_api.make_request(bitfinex_api::transfer::TransferRequest {
                     from: req.from,
                     to: req.to,
                     currency: req.currency,
@@ -44,10 +122,11 @@ pub fn run(
                     }
                 }
             }
+
             Request::Withdraw(req) => {
                 let mut retry_count = 0;
                 let res = loop {
-                    let res = bf_api.make_request(bitfinex_api::WithdrawRequest {
+                    let res = bf_api.make_request(bitfinex_api::withdraw::WithdrawRequest {
                         wallet: req.wallet.clone(),
                         method: req.method.clone(),
                         amount: req.amount.to_string(),
@@ -75,8 +154,9 @@ pub fn run(
                     }
                 }
             }
+
             Request::Movements(req) => {
-                let res = bf_api.make_request(bitfinex_api::MovementsRequest {
+                let res = bf_api.make_request(bitfinex_api::movements::MovementsRequest {
                     start: req.start,
                     end: req.end,
                     limit: req.limit,
@@ -108,6 +188,16 @@ pub fn run(
                         movements: Vec::new(),
                     })),
                 }
+            }
+
+            Request::OrderSubmit(req) => {
+                let res = order_submit_with_retry(&bf_api, &req);
+                resp_callback(Response::OrderSubmit(
+                    req,
+                    res.map(|resp| Order {
+                        order_id: resp.order_id,
+                    }),
+                ));
             }
         }
     }

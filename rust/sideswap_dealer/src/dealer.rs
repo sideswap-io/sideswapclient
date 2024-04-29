@@ -13,10 +13,6 @@ const INSTANT_SWAP_WORK_AMOUNT: f64 = 0.995;
 // Extra asset UTXO amount to cover future price edits
 const EXTRA_ASSET_UTXO_FRACTION: f64 = 0.03;
 
-// Recreated order if bitcoin amount increase to more than that value
-// (for example if wallet balance increase).
-const RECREATE_ORDER_AMOUNT_FRACTION: f64 = 0.05;
-
 const MIN_BITCOIN_AMOUNT: f64 = 0.0001;
 
 const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs(60);
@@ -259,7 +255,6 @@ fn take_order(
         ticker,
         actual_price,
         details.send_bitcoins,
-        true,
     );
     if details.send_bitcoins {
         ensure!(
@@ -268,6 +263,7 @@ fn take_order(
             actual_price,
             dealer_price.dealer.submit_price.ask
         );
+        ensure!(actual_bitcoin_amount.to_bitcoin() <= dealer_price.dealer.limit_btc_dealer_send);
     } else {
         ensure!(
             actual_price <= dealer_price.dealer.submit_price.bid,
@@ -275,6 +271,7 @@ fn take_order(
             actual_price,
             dealer_price.dealer.submit_price.bid
         );
+        ensure!(actual_bitcoin_amount.to_bitcoin() <= dealer_price.dealer.limit_btc_dealer_recv);
     }
     ensure!(
         details.bitcoin_amount <= bitcoin_amount_max.to_sat(),
@@ -396,7 +393,7 @@ fn sign_pset(
                 index,
                 &private_key,
                 value_commitment,
-                elements::EcdsaSigHashType::All,
+                elements::EcdsaSighashType::All,
             );
             let public_key = private_key.public_key(secp);
             let pset_input = pset.inputs_mut().get_mut(index).unwrap();
@@ -418,17 +415,12 @@ fn sign_pset(
     Ok(sign_request)
 }
 
-fn amount_change(new: Amount, old: Amount) -> f64 {
-    (new.to_bitcoin() - old.to_bitcoin()) / old.to_bitcoin()
-}
-
 fn get_bitcoin_amount(
     asset: &Asset,
     wallet_balances: &WalletBalances,
     ticker: DealerTicker,
     price: f64,
     send_bitcoins: bool,
-    max_amount: bool,
 ) -> Amount {
     let wallet_asset = wallet_balances.get(&ticker).cloned().unwrap_or_default();
     let wallet_bitcoin = wallet_balances
@@ -436,15 +428,10 @@ fn get_bitcoin_amount(
         .cloned()
         .unwrap_or_default()
         / (1.0 + asset.server_fee().value());
-    let extra_asset_downscale = if max_amount {
-        1.0
-    } else {
-        1.0 / (1.0 + EXTRA_ASSET_UTXO_FRACTION)
-    };
     if send_bitcoins {
         Amount::from_bitcoin(wallet_bitcoin)
     } else {
-        Amount::from_bitcoin(wallet_asset * extra_asset_downscale / price)
+        Amount::from_bitcoin(wallet_asset / price)
     }
 }
 
@@ -478,32 +465,39 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
         .iter()
         .find(|asset| asset.ticker.0 == dealer_ticker)
         .unwrap();
-    let price = index_prices.get(&ticker).cloned();
-    let expected_server_fee = Amount::from_bitcoin(f64::max(
+    let price_with_limits = index_prices.get(&ticker).cloned();
+    let server_fee = Amount::from_bitcoin(f64::max(
         asset.server_fee().value() * params.bitcoin_amount_submit.to_bitcoin(),
         types::SWAP_MARKETS_MIN_SERVER_FEE.to_bitcoin(),
     ));
     let server_fee_interest =
-        1.0 + expected_server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin();
-    let price = price.map(|price| {
+        1.0 + server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin();
+
+    let price = price_with_limits.map(|price| {
         pick_price(
             &apply_interest(&price.dealer.submit_price, server_fee_interest),
             send_bitcoins,
         )
     });
-    let new_bitcoin_amount_normal = price
+
+    let bitcoin_amount_limit_external = price_with_limits
         .map(|price| {
-            Amount::min(
-                get_bitcoin_amount(asset, wallet_balances, ticker, price, send_bitcoins, false),
-                params.bitcoin_amount_submit,
-            )
+            if send_bitcoins {
+                price.dealer.limit_btc_dealer_send
+            } else {
+                price.dealer.limit_btc_dealer_recv
+            }
         })
         .unwrap_or_default();
-    let new_bitcoin_amount_max = price
-        .map(|price| get_bitcoin_amount(asset, wallet_balances, ticker, price, send_bitcoins, true))
-        .unwrap_or_default();
+    let bitcoin_amount_limit_wallet = price
+        .map(|price| get_bitcoin_amount(asset, wallet_balances, ticker, price, send_bitcoins))
+        .unwrap_or_default()
+        .to_bitcoin();
+    let bitcoin_amount_limit = bitcoin_amount_limit_wallet.min(bitcoin_amount_limit_external);
+    let order_allowed = params.bitcoin_amount_submit.to_bitcoin() <= bitcoin_amount_limit;
+
     match (own.as_mut(), price) {
-        (None, Some(price)) if new_bitcoin_amount_normal >= params.bitcoin_amount_min => {
+        (None, Some(price)) if order_allowed => {
             let submit_result = send_request!(
                 send_request,
                 Submit,
@@ -511,9 +505,9 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                     order: PriceOrder {
                         asset: asset.asset_id,
                         bitcoin_amount: Some(if send_bitcoins {
-                            -new_bitcoin_amount_normal.to_bitcoin()
+                            -params.bitcoin_amount_submit.to_bitcoin()
                         } else {
-                            new_bitcoin_amount_normal.to_bitcoin()
+                            params.bitcoin_amount_submit.to_bitcoin()
                         }),
                         asset_amount: None,
                         price: Some(price),
@@ -537,7 +531,7 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                             Ok(_) => {
                                 *own = Some(OwnOrder {
                                     order_id: submit_resp.order_id,
-                                    bitcoin_amount: new_bitcoin_amount_normal,
+                                    bitcoin_amount: params.bitcoin_amount_submit,
                                     price,
                                 });
                             }
@@ -548,25 +542,18 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                 }
             }
         }
-        (Some(data), Some(_))
-            if new_bitcoin_amount_max.to_sat() == 0
-                || data.bitcoin_amount > new_bitcoin_amount_max
-                || amount_change(new_bitcoin_amount_normal, data.bitcoin_amount)
-                    >= RECREATE_ORDER_AMOUNT_FRACTION =>
-        {
-            info!(
-                "cancel order {} because bitcoin amount changes, old: {}, new: {}, max: {}",
-                data.order_id,
-                data.bitcoin_amount.to_bitcoin(),
-                new_bitcoin_amount_normal.to_bitcoin(),
-                new_bitcoin_amount_max.to_bitcoin(),
-            );
+        // Amount is not enough or index price is not known, do nothing
+        (None, _) => {}
+
+        (Some(data), _) if !order_allowed => {
+            info!("cancel order {}, submit is not allowed", data.order_id,);
             cancel_order(data, send_request);
         }
         (Some(data), None) => {
-            info!("cancel order {} because index price expired", data.order_id,);
+            info!("cancel order {} because index price expired", data.order_id);
             cancel_order(data, send_request);
         }
+
         (Some(data), Some(price)) => {
             if data.price != price {
                 let edit_result = send_request!(
@@ -599,10 +586,6 @@ fn update_price<T: Fn(Request) -> Result<Response, Error>>(
                 }
             }
         }
-        // Index price is not known
-        (None, None) => {}
-        // Amount is not enough to submit
-        (None, Some(_)) => {}
     }
 }
 
@@ -963,7 +946,7 @@ fn worker(
                                 index,
                                 &private_key,
                                 value_commitment,
-                                elements::EcdsaSigHashType::All,
+                                elements::EcdsaSighashType::All,
                             );
                             let public_key = private_key.public_key(&secp);
                             let pset_input = pset.inputs_mut().get_mut(index).unwrap();

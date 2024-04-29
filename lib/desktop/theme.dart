@@ -231,41 +231,77 @@ class DesktopAppTheme {
   DRadioButtonThemeData _radioButtonTheme =
       DRadioButtonThemeData(checkedDecoration: ButtonState.resolveWith(
     (states) {
-      return BoxDecoration(
-        color: !states.isDisabled
-            ? const Color(0xFF144866)
-            : const Color(0xFF144866).lerpWith(Colors.black, 0.3),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: !states.isDisabled
-              ? SideSwapColors.brightTurquoise
-              : SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.3),
-          width: !states.isDisabled
-              ? states.isHovering && !states.isPressing
-                  ? 3.4
-                  : 5.0
-              : 4.0,
-        ),
-      );
+      return switch (states) {
+        Set<ButtonStates>() when states.isDisabled => BoxDecoration(
+            color: SideSwapColors.ataneoBlue.lerpWith(Colors.black, 0.3),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.3),
+              width: 4.0,
+            ),
+          ),
+        Set<ButtonStates>() when states.isHovering => BoxDecoration(
+            color: SideSwapColors.ataneoBlue,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: SideSwapColors.brightTurquoise,
+              width: 3.4,
+            ),
+          ),
+        Set<ButtonStates>() when states.isPressing => BoxDecoration(
+            color: SideSwapColors.ataneoBlue,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: SideSwapColors.brightTurquoise,
+              width: 5.0,
+            ),
+          ),
+        _ => BoxDecoration(
+            color: SideSwapColors.ataneoBlue,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: SideSwapColors.brightTurquoise,
+              width: 5.0,
+            ),
+          ),
+      };
     },
   ), uncheckedDecoration: ButtonState.resolveWith(
     (states) {
-      return BoxDecoration(
-        color: states.isPressing
-            ? const Color(0xFF292929)
-            : states.isHovering
-                ? const Color(0xFF292929).withOpacity(0.8)
-                : const Color(0xFF292929).withOpacity(0.0),
-        shape: BoxShape.circle,
-        border: Border.all(
-          width: states.isPressing ? 4.5 : 1,
-          color: !states.isDisabled
-              ? states.isPressing
-                  ? const Color.fromRGBO(255, 255, 255, 0.5442)
-                  : const Color.fromRGBO(255, 255, 255, 0.5442)
-              : const Color.fromRGBO(0, 0, 0, 0.2169),
-        ),
-      );
+      return switch (states) {
+        Set<ButtonStates>() when states.isDisabled => BoxDecoration(
+            color: SideSwapColors.charlestonGreen.withOpacity(0.0),
+            shape: BoxShape.circle,
+            border: Border.all(
+              width: 1,
+              color: const Color.fromRGBO(0, 0, 0, 0.2169),
+            ),
+          ),
+        Set<ButtonStates>() when states.isPressing => BoxDecoration(
+            color: SideSwapColors.charlestonGreen,
+            shape: BoxShape.circle,
+            border: Border.all(
+              width: 4.5,
+              color: const Color.fromRGBO(255, 255, 255, 0.5442),
+            ),
+          ),
+        Set<ButtonStates>() when states.isPressing => BoxDecoration(
+            color: SideSwapColors.charlestonGreen.withOpacity(0.8),
+            shape: BoxShape.circle,
+            border: Border.all(
+              width: 1,
+              color: const Color.fromRGBO(255, 255, 255, 0.5442),
+            ),
+          ),
+        _ => BoxDecoration(
+            color: SideSwapColors.charlestonGreen.withOpacity(0.0),
+            shape: BoxShape.circle,
+            border: Border.all(
+              width: 1,
+              color: const Color.fromRGBO(255, 255, 255, 0.5442),
+            ),
+          ),
+      };
     },
   ));
 
@@ -301,61 +337,130 @@ class DesktopAppTheme {
         ),
       );
 
+  DButtonStyle? addressDetailsItemButtonStyle() {
+    return buttonWithoutBorderStyle?.merge(
+      DButtonStyle(
+        backgroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled => Colors.transparent,
+            Set<ButtonStates>() when states.isPressing =>
+              Colors.transparent.lerpWith(Colors.black, 0.25),
+            Set<ButtonStates>() when states.isHovering =>
+              Colors.transparent.lerpWith(Colors.black, 0.2),
+            _ => Colors.transparent,
+          };
+        }),
+        foregroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled =>
+              Colors.white.lerpWith(Colors.black, 0.2),
+            _ => Colors.white,
+          };
+        }),
+        textStyle: ButtonState.all(
+          textTheme.titleSmall,
+        ),
+        padding: ButtonState.all(EdgeInsets.zero),
+        shape: ButtonState.all(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(2),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  DButtonStyle? addressesButtonStyle(bool value) {
+    return _buttonThemeData.defaultButtonStyle?.merge(
+      DButtonStyle(
+        border: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled => BorderSide(
+                color: SideSwapColors.steelBlue.lerpWith(Colors.black, 0.1),
+                width: 1),
+            Set<ButtonStates>() when states.isPressing => BorderSide(
+                color: SideSwapColors.steelBlue.lerpWith(Colors.black, 0.15),
+                width: 1),
+            Set<ButtonStates>() when states.isHovering => BorderSide(
+                color: SideSwapColors.steelBlue.lerpWith(Colors.black, 0.1),
+                width: 1),
+            _ => const BorderSide(color: SideSwapColors.steelBlue, width: 1)
+          };
+        }),
+        backgroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled && value =>
+              SideSwapColors.steelBlue.lerpWith(Colors.black, 0.1),
+            Set<ButtonStates>() when states.isDisabled && !value =>
+              Colors.transparent.lerpWith(Colors.black, .1),
+            Set<ButtonStates>() when states.isPressing && value =>
+              SideSwapColors.steelBlue.lerpWith(Colors.black, 0.15),
+            Set<ButtonStates>() when states.isPressing && !value =>
+              Colors.transparent.lerpWith(Colors.black, .15),
+            Set<ButtonStates>() when states.isHovering && value =>
+              SideSwapColors.steelBlue.lerpWith(Colors.black, 0.1),
+            Set<ButtonStates>() when states.isHovering && !value =>
+              Colors.transparent.lerpWith(Colors.black, .1),
+            _ when value => SideSwapColors.steelBlue,
+            _ => Colors.transparent
+          };
+        }),
+      ),
+    );
+  }
+
   DButtonThemeData _buttonThemeData = DButtonThemeData(
     iconButtonStyle: DButtonStyle(
       backgroundColor: ButtonState.resolveWith((states) {
-        if (states.isDisabled) {
-          return Colors.transparent.lerpWith(Colors.black, 0.3);
-        }
-        if (states.isPressing) {
-          return Colors.transparent.lerpWith(Colors.black, 0.2);
-        }
-        if (states.isHovering) {
-          return Colors.transparent.lerpWith(Colors.black, 0.1);
-        }
-        return Colors.transparent;
+        return switch (states) {
+          Set<ButtonStates>() when states.isDisabled =>
+            Colors.transparent.lerpWith(Colors.black, 0.3),
+          Set<ButtonStates>() when states.isPressing =>
+            Colors.transparent.lerpWith(Colors.black, 0.2),
+          Set<ButtonStates>() when states.isHovering =>
+            Colors.transparent.lerpWith(Colors.black, 0.1),
+          _ => Colors.transparent,
+        };
       }),
       iconSize: ButtonState.all(18),
     ),
     defaultButtonStyle: DButtonStyle(
       border: ButtonState.resolveWith((states) {
-        if (states.isDisabled) {
-          return BorderSide(
+        return switch (states) {
+          Set<ButtonStates>() when states.isDisabled => BorderSide(
               color: SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1),
-              width: 1);
-        }
-        if (states.isPressing) {
-          return BorderSide(
+              width: 1),
+          Set<ButtonStates>() when states.isPressing => BorderSide(
               color:
                   SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.15),
-              width: 1);
-        }
-        if (states.isHovering) {
-          return BorderSide(
+              width: 1),
+          Set<ButtonStates>() when states.isHovering => BorderSide(
               color: SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1),
-              width: 1);
-        }
-        return const BorderSide(
-            color: SideSwapColors.brightTurquoise, width: 1);
+              width: 1),
+          _ =>
+            const BorderSide(color: SideSwapColors.brightTurquoise, width: 1),
+        };
       }),
       backgroundColor: ButtonState.resolveWith((states) {
-        if (states.isDisabled) {
-          return Colors.transparent.lerpWith(Colors.black, 0.1);
-        }
-        if (states.isPressing) {
-          return Colors.transparent.lerpWith(Colors.black, 0.15);
-        }
-        if (states.isHovering) {
-          return Colors.transparent.lerpWith(Colors.black, 0.1);
-        }
-        return Colors.transparent;
+        return switch (states) {
+          Set<ButtonStates>() when states.isDisabled =>
+            Colors.transparent.lerpWith(Colors.black, 0.1),
+          Set<ButtonStates>() when states.isPressing =>
+            Colors.transparent.lerpWith(Colors.black, 0.15),
+          Set<ButtonStates>() when states.isHovering =>
+            Colors.transparent.lerpWith(Colors.black, 0.1),
+          _ => Colors.transparent,
+        };
       }),
       foregroundColor: ButtonState.resolveWith(
         (states) {
-          if (states.isDisabled) {
-            return Colors.white.lerpWith(Colors.black, 0.3);
-          }
-          return SideSwapColors.brightTurquoise;
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled =>
+              Colors.white.lerpWith(Colors.black, 0.3),
+            _ => SideSwapColors.brightTurquoise,
+          };
         },
       ),
       shadowColor: ButtonState.all(Colors.transparent),
@@ -386,23 +491,23 @@ class DesktopAppTheme {
         ),
       ),
       backgroundColor: ButtonState.resolveWith((states) {
-        if (states.isDisabled) {
-          return SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.3);
-        }
-        if (states.isPressing) {
-          return SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.2);
-        }
-        if (states.isHovering) {
-          return SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1);
-        }
-        return SideSwapColors.brightTurquoise;
+        return switch (states) {
+          Set<ButtonStates>() when states.isDisabled =>
+            SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.3),
+          Set<ButtonStates>() when states.isPressing =>
+            SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.2),
+          Set<ButtonStates>() when states.isHovering =>
+            SideSwapColors.brightTurquoise.lerpWith(Colors.black, 0.1),
+          _ => SideSwapColors.brightTurquoise,
+        };
       }),
       foregroundColor: ButtonState.resolveWith(
         (states) {
-          if (states.isDisabled) {
-            return Colors.white.lerpWith(Colors.black, 0.3);
-          }
-          return Colors.white;
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled =>
+              Colors.white.lerpWith(Colors.black, 0.3),
+            _ => Colors.white,
+          };
         },
       ),
       shape: ButtonState.all(
@@ -412,9 +517,9 @@ class DesktopAppTheme {
           ),
         ),
       ),
-      border: ButtonState.resolveWith((states) {
-        return const BorderSide(color: Colors.transparent, width: 1);
-      }),
+      border: ButtonState.all(
+        const BorderSide(color: Colors.transparent, width: 1),
+      ),
     ),
   );
 

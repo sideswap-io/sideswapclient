@@ -11,6 +11,7 @@ import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
 
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
@@ -175,13 +176,27 @@ class PaymentHelper {
 
   PaymentHelper(this.ref, this.outputsData, this.accountAsset);
 
-  String? outputsPaymentSend({bool isGreedy = false}) {
+  String? outputsPaymentSend({List<UtxosItem>? selectedInputs}) {
     return switch (outputsData) {
       Left(value: final l) => l.message,
       Right(value: final r) => () {
           final addressAmounts = r.receivers?.map((e) {
             // set greedy flag only when outputs contains only one item (first one is always entered by user in ui)
-            final greedyFlag = r.receivers?.length == 1 ? isGreedy : false;
+            final greedyFlag = switch (r.receivers?.length) {
+              1 => () {
+                  if (selectedInputs?.isNotEmpty == true) {
+                    final maxAssetBalance = ref.read(
+                        maxAvailableBalanceWithInputsForAccountAssetProvider(
+                            accountAsset));
+                    return maxAssetBalance == e.satoshi;
+                  }
+
+                  final maxAssetBalance = ref.read(
+                      maxAvailableBalanceForAccountAssetProvider(accountAsset));
+                  return maxAssetBalance == e.satoshi;
+                }(),
+              _ => false,
+            };
 
             return AddressAmount(
               address: e.address,
@@ -191,9 +206,14 @@ class PaymentHelper {
             );
           }).toList();
 
+          final utxos =
+              selectedInputs?.map((e) => OutPoint(txid: e.txid, vout: e.vout));
+
           final createTx = CreateTx(
-              addressees: addressAmounts,
-              account: getAccount(accountAsset.account));
+            addressees: addressAmounts,
+            account: getAccount(accountAsset.account),
+            utxos: utxos,
+          );
 
           ref.read(walletProvider).createTx(createTx);
         }(),

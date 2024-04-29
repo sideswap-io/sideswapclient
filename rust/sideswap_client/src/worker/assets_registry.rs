@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use sideswap_api::{Asset, AssetId, IssuancePrevout, Ticker};
 use sideswap_common::env::{self, Env};
 
-pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::ExtendedPubKey) {
+pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::Xpub) {
     if let Err(error) = gdk_registry::init(registry_path) {
         match error {
             gdk_registry::Error::AlreadyInitialized => {}
@@ -11,7 +11,7 @@ pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::Ext
         }
     }
 
-    let xpub = gdk_common::bitcoin::bip32::ExtendedPubKey::decode(&xpub.encode()).unwrap();
+    let xpub = gdk_common::bitcoin::bip32::Xpub::decode(&xpub.encode()).unwrap();
 
     std::thread::spawn(move || {
         gdk_registry::refresh_assets(gdk_registry::RefreshAssetsParams {
@@ -25,11 +25,11 @@ pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::Ext
 
 pub fn get_assets(
     env: Env,
-    xpub: bitcoin::bip32::ExtendedPubKey,
+    xpub: bitcoin::bip32::Xpub,
     asset_ids: &[AssetId],
 ) -> Result<Vec<Asset>, anyhow::Error> {
     let asset_ids_copy = asset_ids.to_vec();
-    let xpub = gdk_common::bitcoin::bip32::ExtendedPubKey::decode(&xpub.encode()).unwrap();
+    let xpub = gdk_common::bitcoin::bip32::Xpub::decode(&xpub.encode()).unwrap();
     let loaded_assets = gdk_registry::get_assets(gdk_registry::GetAssetsParams {
         assets_id: Some(asset_ids_copy.clone()),
         xpub: Some(xpub),

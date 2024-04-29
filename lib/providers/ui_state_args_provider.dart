@@ -11,6 +11,7 @@ enum WalletMainNavigationItemEnum {
   pegs,
   markets,
   swap,
+  addresses,
 }
 
 class WalletMainArguments {
@@ -41,6 +42,9 @@ class WalletMainArguments {
       4 => copyWith(
           currentIndex: value,
           navigationItemEnum: WalletMainNavigationItemEnum.pegs),
+      5 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.addresses),
       _ => copyWith(
           currentIndex: value,
           navigationItemEnum: WalletMainNavigationItemEnum.home),
@@ -64,6 +68,9 @@ class WalletMainArguments {
       4 => copyWith(
           currentIndex: value,
           navigationItemEnum: WalletMainNavigationItemEnum.pegs),
+      5 => copyWith(
+          currentIndex: value,
+          navigationItemEnum: WalletMainNavigationItemEnum.addresses),
       _ => copyWith(
           currentIndex: value,
           navigationItemEnum: WalletMainNavigationItemEnum.home),

@@ -282,6 +282,7 @@ fn generate_mnemonic12_from_rng<R: rand::RngCore + rand::CryptoRng>(rng: &mut R)
 
 #[no_mangle]
 pub extern "C" fn sideswap_generate_mnemonic12() -> *mut c_char {
+    log::debug!("generate new mnemonic...");
     let mut rng = rand::rngs::OsRng::default();
     let str = generate_mnemonic12_from_rng(&mut rng);
     let value = CString::new(str).unwrap();
@@ -356,14 +357,14 @@ fn check_bitcoin_address(env: Env, addr: &str) -> bool {
         Err(_) => return false,
     };
     match env {
-        Env::Prod | Env::Staging | Env::LocalLiquid => addr.network == bitcoin::Network::Bitcoin,
+        Env::Prod | Env::Staging | Env::LocalLiquid => *addr.network() == bitcoin::Network::Bitcoin,
         Env::Local | Env::Regtest | Env::Testnet | Env::LocalTestnet => {
-            let script_hash = match addr.payload {
+            let script_hash = match addr.payload() {
                 bitcoin::address::Payload::ScriptHash(_) => true,
                 _ => false,
             };
-            addr.network == bitcoin::Network::Regtest
-                || addr.network == bitcoin::Network::Testnet && script_hash
+            *addr.network() == bitcoin::Network::Regtest
+                || *addr.network() == bitcoin::Network::Testnet && script_hash
         }
     }
 }
@@ -371,7 +372,7 @@ fn check_bitcoin_address(env: Env, addr: &str) -> bool {
 fn elements_params(env: sideswap_common::env::Env) -> &'static elements::AddressParams {
     match env {
         Env::Prod | Env::Staging | Env::LocalLiquid => &elements::address::AddressParams::LIQUID,
-        Env::Testnet | Env::LocalTestnet => &gdk_common::network::LIQUID_TESTNET,
+        Env::Testnet | Env::LocalTestnet => &elements::address::AddressParams::LIQUID_TESTNET,
         Env::Regtest | Env::Local => &elements::address::AddressParams::ELEMENTS,
     }
 }

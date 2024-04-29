@@ -564,4 +564,40 @@ class SideSwapColors {
     },
   );
   static const int _yellowOrange = 0xFFFFB43D;
+
+  // #327FA9
+  static const MaterialColor steelBlue = MaterialColor(
+    _steelBlue,
+    <int, Color>{
+      50: Color.fromRGBO(50, 127, 169, .1),
+      100: Color.fromRGBO(50, 127, 169, .2),
+      200: Color.fromRGBO(50, 127, 169, .3),
+      300: Color.fromRGBO(50, 127, 169, .4),
+      400: Color.fromRGBO(50, 127, 169, .5),
+      500: Color.fromRGBO(50, 127, 169, .6),
+      600: Color.fromRGBO(50, 127, 169, .7),
+      700: Color.fromRGBO(50, 127, 169, .8),
+      800: Color.fromRGBO(50, 127, 169, .9),
+      900: Color.fromRGBO(50, 127, 169, 1),
+    },
+  );
+  static const int _steelBlue = 0xFF327FA9;
+
+  // #292929
+  static const MaterialColor charlestonGreen = MaterialColor(
+    _charlestonGreen,
+    <int, Color>{
+      50: Color.fromRGBO(41, 41, 41, .1),
+      100: Color.fromRGBO(41, 41, 41, .2),
+      200: Color.fromRGBO(41, 41, 41, .3),
+      300: Color.fromRGBO(41, 41, 41, .4),
+      400: Color.fromRGBO(41, 41, 41, .5),
+      500: Color.fromRGBO(41, 41, 41, .6),
+      600: Color.fromRGBO(41, 41, 41, .7),
+      700: Color.fromRGBO(41, 41, 41, .8),
+      800: Color.fromRGBO(41, 41, 41, .9),
+      900: Color.fromRGBO(41, 41, 41, 1),
+    },
+  );
+  static const int _charlestonGreen = 0xFF292929;
 }

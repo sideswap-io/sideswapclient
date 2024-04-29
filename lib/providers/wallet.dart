@@ -24,6 +24,7 @@ import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/models/pegx_model.dart';
 import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/models/stokr_model.dart';
+import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/amp_register_provider.dart';
 import 'package:sideswap/providers/asset_selector_provider.dart';
@@ -452,6 +453,7 @@ class WalletChangeNotifier with ChangeNotifier {
             .setCreateTxState(const CreateTxStateEmpty());
         switch (from.createTxResult.whichResult()) {
           case From_CreateTxResult_Result.errorMsg:
+            logger.e(from.createTxResult.errorMsg);
             await ref
                 .read(utilsProvider)
                 .showErrorDialog(from.createTxResult.errorMsg);
@@ -1017,18 +1019,25 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.login:
         logger.d(from.login);
-        (switch (from.login.whichResult()) {
-          From_Login_Result.success => ref
-              .read(serverLoginNotifierProvider.notifier)
-              .setServerLoginState(const ServerLoginStateLogin()),
-          From_Login_Result.errorMsg => ref
-              .read(serverLoginNotifierProvider.notifier)
-              .setServerLoginState(
-                  ServerLoginStateError(message: from.login.errorMsg)),
-          From_Login_Result.notSet => ref
-              .read(serverLoginNotifierProvider.notifier)
-              .setServerLoginState(const ServerLoginStateError()),
-        });
+        switch (from.login.whichResult()) {
+          case From_Login_Result.errorMsg:
+            ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
+                ServerLoginStateError(message: from.login.errorMsg));
+            break;
+          case From_Login_Result.success:
+            ref
+                .read(serverLoginNotifierProvider.notifier)
+                .setServerLoginState(const ServerLoginStateLogin());
+            ref
+                .read(firstLaunchStateNotifierProvider.notifier)
+                .setFirstLaunchState(const FirstLaunchStateEmpty());
+            break;
+          case From_Login_Result.notSet:
+            ref
+                .read(serverLoginNotifierProvider.notifier)
+                .setServerLoginState(const ServerLoginStateError());
+            break;
+        }
         break;
       case From_Msg.createPayjoinResult:
         // TODO: Handle this case.
@@ -1050,10 +1059,18 @@ class WalletChangeNotifier with ChangeNotifier {
         ref
             .read(tokenMarketOrderProvider.notifier)
             .setTokenMarketOrder(from.tokenMarketOrder.assetIds);
+        break;
       case From_Msg.conversionRates:
         ref
             .read(conversionRatesNotifierProvider.notifier)
             .setConversionRates(from.conversionRates);
+        break;
+      case From_Msg.loadAddresses:
+        _handleLoadAddresses(from.loadAddresses);
+        break;
+      case From_Msg.loadUtxos:
+        _handleLoadUtxos(from.loadUtxos);
+        break;
     }
   }
 
@@ -1540,9 +1557,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
     ref.read(configurationProvider.notifier).setJadeId(jadeId);
 
-    ref
-        .read(firstLaunchStateNotifierProvider.notifier)
-        .setFirstLaunchState(const FirstLaunchStateEmpty());
     notifyListeners();
   }
 
@@ -2629,6 +2643,49 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.gaidStatus.gaid = ampId;
     msg.gaidStatus.assetId = assetId;
     sendMsg(msg);
+  }
+
+  void loadAddresses(Account account) {
+    Future.microtask(() => ref
+        .read(loadAddressesStateNotifierProvider.notifier)
+        .setLoadAddressesState(const LoadAddressesState.loading()));
+
+    final msg = To();
+    msg.loadAddresses = account;
+    sendMsg(msg);
+  }
+
+  void _handleLoadAddresses(From_LoadAddresses loadAddresses) {
+    if (loadAddresses.errorMsg.isNotEmpty) {
+      ref
+          .read(loadAddressesStateNotifierProvider.notifier)
+          .setLoadAddressesState(
+              LoadAddressesState.error(loadAddresses.errorMsg));
+      return;
+    }
+
+    ref
+        .read(loadAddressesStateNotifierProvider.notifier)
+        .setLoadAddressesState(LoadAddressesState.data(loadAddresses));
+  }
+
+  void loadUtxos(Account account) {
+    final msg = To();
+    msg.loadUtxos = account;
+    sendMsg(msg);
+  }
+
+  void _handleLoadUtxos(From_LoadUtxos loadUtxos) {
+    if (loadUtxos.hasErrorMsg()) {
+      ref
+          .read(loadUtxosStateNotifierProvider.notifier)
+          .setLoadUtxosState(LoadUtxosState.error(loadUtxos.errorMsg));
+      return;
+    }
+
+    ref
+        .read(loadUtxosStateNotifierProvider.notifier)
+        .setLoadUtxosState(LoadUtxosState.data(loadUtxos));
   }
 }
 

@@ -63,7 +63,7 @@ class DJadeInfoDialog extends HookConsumerWidget {
                 borderRadius: const BorderRadius.all(
                   Radius.circular(8),
                 ),
-                color: const Color(0xFF144866),
+                color: SideSwapColors.ataneoBlue,
                 border: Border.all(
                   color: SideSwapColors.brightTurquoise,
                   width: 1.0,

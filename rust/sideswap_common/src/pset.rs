@@ -93,18 +93,18 @@ pub fn internal_sign_elements(
     input_index: usize,
     private_key: &elements::bitcoin::PrivateKey,
     value: elements::confidential::Value,
-    sighash_type: elements::EcdsaSigHashType,
+    sighash_type: elements::EcdsaSighashType,
 ) -> Vec<u8> {
     let public_key = &elements::bitcoin::PublicKey::from_private_key(secp, private_key);
     let script_code = p2pkh_script(public_key);
-    let sighash = elements::sighash::SigHashCache::new(tx).segwitv0_sighash(
+    let sighash = elements::sighash::SighashCache::new(tx).segwitv0_sighash(
         input_index,
         &script_code,
         value,
         sighash_type,
     );
 
-    let message = elements::secp256k1_zkp::Message::from_slice(&sighash[..]).unwrap();
+    let message = elements::secp256k1_zkp::Message::from_digest_slice(&sighash[..]).unwrap();
     let signature = secp.sign_ecdsa(&message, &private_key.inner);
     let mut signature = signature.serialize_der().to_vec();
     signature.push(sighash_type.as_u32() as u8);
@@ -121,10 +121,7 @@ pub fn p2pkh_script(pk: &elements::bitcoin::PublicKey) -> elements::Script {
 pub fn p2shwpkh_redeem_script(public_key: &elements::bitcoin::PublicKey) -> elements::Script {
     elements::script::Builder::new()
         .push_int(0)
-        .push_slice(
-            &elements::bitcoin::hash_types::PubkeyHash::hash(&public_key.to_bytes())
-                .to_byte_array(),
-        )
+        .push_slice(&elements::bitcoin::PubkeyHash::hash(&public_key.to_bytes()).to_byte_array())
         .into_script()
 }
 

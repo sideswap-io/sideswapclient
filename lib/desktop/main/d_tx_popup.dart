@@ -413,16 +413,20 @@ class DPopupLinkButton extends StatelessWidget {
     super.key,
     required this.text,
     required this.onPressed,
+    this.width = 280,
+    this.height = 60,
   });
 
   final String text;
   final VoidCallback? onPressed;
+  final double? width;
+  final double? height;
 
   @override
   Widget build(BuildContext context) {
     return DCustomTextBigButton(
-      width: 280,
-      height: 60,
+      width: width,
+      height: height,
       onPressed: onPressed,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

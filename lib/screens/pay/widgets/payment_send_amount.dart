@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -45,14 +44,8 @@ class PaymentSendAmount extends ConsumerWidget {
           showAccountsInPopup: true,
           onChanged: (value) {
             validate(value);
-            final newValue = replaceCharacterOnPosition(
-              input: value,
-            );
 
-            if (controller != null) {
-              controller!.value = fixCursorPosition(
-                  controller: controller!, newValue: newValue);
-            }
+            controller?.text = value;
 
             onChanged?.call(value);
           },

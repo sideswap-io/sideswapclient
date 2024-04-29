@@ -6,6 +6,7 @@ import 'package:sideswap/desktop/main/d_generate_address_popup.dart';
 import 'package:sideswap/desktop/main/d_open_tx_import.dart';
 import 'package:sideswap/desktop/main/d_order_review.dart';
 import 'package:sideswap/desktop/main/d_recv_popup.dart';
+import 'package:sideswap/desktop/main/d_select_inputs_popup.dart';
 import 'package:sideswap/desktop/main/d_send_popup.dart';
 import 'package:sideswap/desktop/main/d_tx_popup.dart';
 import 'package:sideswap/desktop/main/d_view_tx_popup.dart';
@@ -66,6 +67,18 @@ class DesktopDialog {
       context: _context,
       builder: (context) {
         return const DSendPopup();
+      },
+      routeSettings: const RouteSettings(name: _popupRouteName),
+      // Non-root navigator used so Jade status popup is visible
+      useRootNavigator: false,
+    );
+  }
+
+  void showSelectInputs() {
+    showDialog<void>(
+      context: _context,
+      builder: (context) {
+        return const DSelectInputsPopup();
       },
       routeSettings: const RouteSettings(name: _popupRouteName),
       // Non-root navigator used so Jade status popup is visible

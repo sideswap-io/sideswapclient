@@ -20,11 +20,12 @@ class DTxHistoryConfs extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         '$count/$total',
-        style: textStyle ??
-            TextStyle(
-              color:
-                  confirmed ? const Color(0xFF87C0E0) : const Color(0xFFFFFFFF),
-            ),
+        style: textStyle?.merge(
+          TextStyle(
+            color:
+                confirmed ? const Color(0xFF87C0E0) : const Color(0xFFFFFFFF),
+          ),
+        ),
       ),
     );
   }

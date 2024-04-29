@@ -1,172 +1,108 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/desktop/common/button/d_button.dart';
+import 'package:sideswap/desktop/theme.dart';
 
-class CustomCheckBox extends StatefulWidget {
+class CustomCheckBox extends HookConsumerWidget {
   const CustomCheckBox({
     super.key,
-    required this.onChanged,
-    required this.child,
-    this.frameChecked = const Color(0xFFB1EDFF),
-    this.frameUnchecked = SideSwapColors.brightTurquoise,
-    this.backgroundChecked = SideSwapColors.brightTurquoise,
-    this.backgroundUnchecked = const Color(0xFF357CA4),
-    this.radius,
-    this.size,
+    this.onChecked,
     this.icon,
-    required this.value,
+    this.size,
+    this.iconSize,
+    this.radius,
+    this.frameChecked = SideSwapColors.brightTurquoise,
+    this.frameUnchecked = SideSwapColors.ceruleanFrost,
+    this.backgroundChecked = SideSwapColors.brightTurquoise,
+    this.backgroundUnchecked = SideSwapColors.blumine,
+    this.value = false,
   });
 
-  final ValueChanged<bool> onChanged;
-  final Widget child;
+  final ValueChanged<bool>? onChecked;
+  final Widget? icon;
+  final double? size;
+  final double? iconSize;
+  final Radius? radius;
   final Color frameChecked;
   final Color frameUnchecked;
   final Color backgroundChecked;
   final Color backgroundUnchecked;
-  final Radius? radius;
-  final double? size;
-  final Widget? icon;
   final bool value;
 
   @override
-  CustomCheckBoxState createState() => CustomCheckBoxState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final frameColorController =
+        useAnimationController(duration: const Duration(microseconds: 200));
+    final frameColorCurve = useMemoized(() =>
+        CurvedAnimation(parent: frameColorController, curve: Curves.easeOut));
+    final frameColorAnimation = useAnimation(
+        ColorTween(begin: frameUnchecked, end: frameChecked)
+            .animate(frameColorCurve));
 
-class CustomCheckBoxState extends State<CustomCheckBox>
-    with TickerProviderStateMixin {
-  late Radius radius;
-  late double size;
-  late Widget icon;
+    final backgroundColorController =
+        useAnimationController(duration: const Duration(milliseconds: 200));
+    final backgroundColorCurve = useMemoized(() => CurvedAnimation(
+        parent: backgroundColorController, curve: Curves.easeOut));
+    final backgroundColorAnimation = useAnimation(
+        ColorTween(begin: backgroundUnchecked, end: backgroundChecked)
+            .animate(backgroundColorCurve));
 
-  bool? value;
+    final fadeController =
+        useAnimationController(duration: const Duration(milliseconds: 200));
+    final fadeCurve = useMemoized(
+        () => CurvedAnimation(parent: fadeController, curve: Curves.easeOut));
+    final fadeAnimation =
+        useAnimation(Tween(begin: 0.0, end: 1.0).animate(fadeCurve));
 
-  late AnimationController frameColorController;
-  late Animation<Color?> frameColorAnimation;
-  late CurvedAnimation frameColorCurve;
+    useEffect(() {
+      if (value) {
+        frameColorController.forward();
+        backgroundColorController.forward();
+        fadeController.forward();
+        return;
+      }
 
-  late AnimationController backgroundColorController;
-  late Animation<Color?> backgroundColorAnimation;
-  late CurvedAnimation backgroundColorCurve;
-
-  late AnimationController fadeController;
-  late Animation<double?> fadeAnimation;
-  late CurvedAnimation fadeCurve;
-
-  @override
-  void initState() {
-    super.initState();
-
-    value = widget.value;
-
-    radius = widget.radius ?? const Radius.circular(4);
-    size = widget.size ?? 16;
-    icon = widget.icon ??
-        const Icon(
-          Icons.check,
-          size: 13,
-        );
-
-    frameColorController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    frameColorCurve =
-        CurvedAnimation(parent: frameColorController, curve: Curves.easeOut);
-    frameColorAnimation =
-        ColorTween(begin: widget.frameUnchecked, end: widget.frameChecked)
-            .animate(frameColorCurve)
-          ..addListener(() {
-            setState(() {});
-          });
-
-    backgroundColorController = AnimationController(
-        duration: const Duration(milliseconds: 200), vsync: this);
-    backgroundColorCurve = CurvedAnimation(
-        parent: backgroundColorController, curve: Curves.easeOut);
-    backgroundColorAnimation = ColorTween(
-            begin: widget.backgroundUnchecked, end: widget.backgroundChecked)
-        .animate(backgroundColorCurve)
-      ..addListener(() {
-        setState(() {});
-      });
-
-    fadeController = AnimationController(
-        duration: const Duration(milliseconds: 200), vsync: this);
-    fadeCurve = CurvedAnimation(parent: fadeController, curve: Curves.easeOut);
-    fadeAnimation = Tween(begin: 0.0, end: 1.0).animate(fadeController)
-      ..addListener(() {
-        setState(() {});
-      });
-
-    animate();
-  }
-
-  @override
-  void dispose() {
-    frameColorController.dispose();
-    backgroundColorController.dispose();
-    fadeController.dispose();
-    super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(CustomCheckBox oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.value != widget.value) {
-      value = widget.value;
-      animate();
-    }
-  }
-
-  void animate() {
-    if (value == true) {
-      frameColorController.forward();
-      backgroundColorController.forward();
-      fadeController.forward();
-    } else {
       frameColorController.reverse();
       backgroundColorController.reverse();
       fadeController.reverse();
-    }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        widget.onChanged(!widget.value);
-        setState(() {});
+      return;
+    }, [value]);
+
+    final buttonStyle = ref
+        .watch(desktopAppThemeNotifierProvider)
+        .mainBottomNavigationBarButtonStyle;
+
+    return DButton(
+      style: buttonStyle,
+      onPressed: () {
+        onChecked?.call(!value);
       },
-      child: Container(
-        color: Colors.transparent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 11),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: size,
-                  height: size,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: frameColorAnimation.value ?? Colors.transparent,
-                    ),
-                    borderRadius: BorderRadius.all(
-                      radius,
-                    ),
-                    color: backgroundColorAnimation.value ?? Colors.transparent,
+      child: Center(
+        child: Container(
+          width: size ?? 18,
+          height: size ?? 18,
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: frameColorAnimation ?? Colors.transparent,
+            ),
+            borderRadius: BorderRadius.all(
+              radius ?? const Radius.circular(6),
+            ),
+            color: backgroundColorAnimation ?? Colors.transparent,
+          ),
+          child: Center(
+            child: Opacity(
+              opacity: fadeAnimation,
+              child: icon ??
+                  Icon(
+                    Icons.check,
+                    size: iconSize ?? 13,
+                    color: Colors.white,
                   ),
-                  child: Center(
-                    child: Opacity(
-                      opacity: fadeAnimation.value ?? .0,
-                      child: icon,
-                    ),
-                  ),
-                ),
-              ),
-              widget.child,
-            ],
+            ),
           ),
         ),
       ),

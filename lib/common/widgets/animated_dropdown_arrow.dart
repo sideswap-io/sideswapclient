@@ -10,6 +10,7 @@ class AnimatedDropdownArrow extends StatelessWidget {
     this.width,
     this.height,
     this.initFrom = 0,
+    this.iconColor = Colors.white,
   });
 
   final double target;
@@ -17,10 +18,17 @@ class AnimatedDropdownArrow extends StatelessWidget {
   final double? width;
   final double? height;
   final double? initFrom;
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
-    return SvgPicture.asset('assets/arrow_down.svg')
+    return SvgPicture.asset(
+      'assets/arrow_down.svg',
+      colorFilter: ColorFilter.mode(
+        iconColor,
+        BlendMode.srcIn,
+      ),
+    )
         .animate(
             target: target,
             onInit: (controller) {

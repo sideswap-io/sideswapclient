@@ -5,14 +5,12 @@ import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
-import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/jade_provider.dart';
-import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 class DJadeImport extends ConsumerWidget {
@@ -200,30 +198,6 @@ class JadeDevice extends StatelessWidget {
                 title: 'Port',
                 value: jadePort.port,
               ),
-              jadePort.serial.match(
-                (l) {
-                  logger.e(l);
-                  return const SizedBox();
-                },
-                (r) => JadeDeviceDetailsLine(
-                  title: 'Serial',
-                  value: r,
-                ),
-              ),
-              JadeDeviceDetailsLine(
-                title: 'Firmware',
-                value: jadePort.version,
-              ),
-              jadePort.state.match(
-                (l) {
-                  logger.e(l);
-                  return const SizedBox();
-                },
-                (r) => JadeDeviceDetailsLine(
-                  title: 'Network'.tr(),
-                  value: r.value.tr(),
-                ),
-              ),
             ],
           ),
         ),
@@ -237,17 +211,7 @@ class JadeDevice extends StatelessWidget {
                 onPressed: jadeOnboardingRegistration !=
                         const JadeOnboardingRegistrationStateIdle()
                     ? null
-                    : () async {
-                        if (jadePort.major == 0 &&
-                            jadePort.minor <= 1 &&
-                            jadePort.build < 48) {
-                          await ref.read(utilsProvider).showErrorDialog(
-                              'Please upgrade your Jade firmware to 0.1.48 or higher to use SideSwap with your Jade device'
-                                  .tr(),
-                              buttonText: 'OK'.tr());
-                          return;
-                        }
-
+                    : () {
                         ref.read(walletProvider).jadeLogin(jadePort.jadeId);
                       },
                 child: Text('REGISTER'.tr()),

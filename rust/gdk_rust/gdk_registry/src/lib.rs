@@ -1,5 +1,3 @@
-// #![warn(missing_docs)]
-
 //! # GDK registry
 //
 //! This library provides Liquid assets metadata ensuring data is verified and

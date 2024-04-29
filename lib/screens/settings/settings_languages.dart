@@ -28,7 +28,7 @@ class Languages extends ConsumerWidget {
     return SideSwapScaffold(
       canPop: true,
       appBar: CustomAppBar(
-        title: 'Languages'.tr(),
+        title: 'Language'.tr(),
         onPressed: close(context),
       ),
       body: SafeArea(

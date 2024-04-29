@@ -3,7 +3,7 @@ description: Sideswap Client.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.4.10+88
+version: 1.5.0+91
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -26,12 +26,12 @@ dependencies:
   easy_localization: ^3.0.5
   enum_to_string: ^2.0.1
   faker: ^2.1.0
-  firebase_core: ^2.27.2
-  firebase_messaging: ^14.7.21
+  firebase_core: ^2.29.0
+  firebase_messaging: ^14.8.1
   fixnum: ^1.1.0
   # contacts
   flutter_contacts: ^1.1.7+1
-  flutter_plugin_android_lifecycle: ^2.0.17
+  flutter_plugin_android_lifecycle: ^2.0.18
   # license loading indicator
   flutter_spinkit: ^5.2.1
   flutter_svg: ^2.0.10+1
@@ -58,7 +58,7 @@ dependencies:
   qr_flutter: ^4.1.0
   # rxdart
   rxdart: ^0.27.7
-  share_plus: ^8.0.2
+  share_plus: ^8.0.3
   shared_preferences: ^2.2.2
   # sliding tx list
   sliding_up_panel: ^2.0.0+1
@@ -108,7 +108,7 @@ dependencies:
   matrix4_transform: ^3.0.1
   file_selector: ^1.0.3
   ffi: ^2.1.2
-  web_socket_channel: ^2.4.4
+  web_socket_channel: ^2.4.5
   flutter_animate: ^4.5.0
   window_size:
     git:
@@ -118,7 +118,7 @@ dependencies:
   shelf_web_socket: ^1.0.4
   shelf: ^1.4.1
   shelf_router: ^1.1.4
-  uuid: ^4.3.3
+  uuid: ^4.4.0
   websocket_universal: ^1.2.5
   easy_logger: ^0.0.2
   collection: ^1.18.0
@@ -139,7 +139,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner: ^2.4.9
-  freezed: ^2.4.7
+  freezed: ^2.5.2
   json_serializable: ^6.7.1
   # icon generator
   icons_launcher: ^2.1.7
@@ -286,6 +286,9 @@ flutter:
     - assets/info_circular.svg
     - assets/currency.svg
     - assets/warning.svg
+    - assets/prev_address.svg
+    - assets/addresses.svg
+    - assets/addresses_active.svg
 
   fonts:
     - family: Roboto

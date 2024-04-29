@@ -15,6 +15,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		B0A4543425E8395A004E91B9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B0A4543325E8395A004E91B9 /* GoogleService-Info.plist */; };
+		B0C246272BDBAFC90026FEDF /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B0C246262BDBAFC90026FEDF /* CoreBluetooth.framework */; };
 		B0CA660D274CED8100C136E1 /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B0CA660C274CED8100C136E1 /* libc++.tbd */; };
 		D473D0DE29F2D42600D4D6B6 /* libsideswap_client.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D473D0DD29F2D42600D4D6B6 /* libsideswap_client.a */; };
 /* End PBXBuildFile section */
@@ -51,6 +52,7 @@
 		A9F8D110FD5523C7145C2859 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		B0A4543325E8395A004E91B9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		B0A4549925EFAE6F004E91B9 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		B0C246262BDBAFC90026FEDF /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		B0CA660C274CED8100C136E1 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "usr/lib/libc++.tbd"; sourceTree = SDKROOT; };
 		D473D0DD29F2D42600D4D6B6 /* libsideswap_client.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsideswap_client.a; path = "../rust/target/aarch64-apple-ios/release/libsideswap_client.a"; sourceTree = "<group>"; };
 		D5E03FE7DDA056F6884837D4 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
@@ -63,6 +65,7 @@
 			files = (
 				D473D0DE29F2D42600D4D6B6 /* libsideswap_client.a in Frameworks */,
 				B0CA660D274CED8100C136E1 /* libc++.tbd in Frameworks */,
+				B0C246272BDBAFC90026FEDF /* CoreBluetooth.framework in Frameworks */,
 				82561C401FD5ACC337598EBF /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -73,6 +76,7 @@
 		0BF124F1BD2C83BAC49ACCE3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				B0C246262BDBAFC90026FEDF /* CoreBluetooth.framework */,
 				D473D0DD29F2D42600D4D6B6 /* libsideswap_client.a */,
 				B0CA660C274CED8100C136E1 /* libc++.tbd */,
 				5BC0F709E40DAEDEF6D7EC8B /* Pods_Runner.framework */,

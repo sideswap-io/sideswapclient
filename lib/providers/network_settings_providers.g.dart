@@ -82,7 +82,7 @@ final networkSettingsNeedSaveProvider = AutoDisposeProvider<bool>.internal(
 
 typedef NetworkSettingsNeedSaveRef = AutoDisposeProviderRef<bool>;
 String _$networkSettingsNotifierHash() =>
-    r'8f692a85da4a0fc9c87417644e11639dadf2152a';
+    r'bb968b4af2a3f8480940d3d41bf5c742e12f0076';
 
 /// See also [NetworkSettingsNotifier].
 @ProviderFor(NetworkSettingsNotifier)

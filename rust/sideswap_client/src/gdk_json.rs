@@ -1,4 +1,4 @@
-use bitcoin::bip32::ExtendedPubKey;
+use bitcoin::bip32;
 use sideswap_api::AssetId;
 use std::collections::BTreeMap;
 
@@ -328,7 +328,7 @@ pub struct AddressInfo {
     pub address_type: AddressType,
     pub pointer: u32,
     pub user_path: Vec<u32>,
-    pub unconfidential_address: String,
+    pub unconfidential_address: elements::Address,
     pub blinding_key: String,
     pub is_confidential: bool,
     pub scriptpubkey: String, // Same format for all nested segwit addresses, for example: a9145c35160c7cbe5a5a7daec0b2e4dff056991ce4d087
@@ -347,47 +347,53 @@ pub struct AddressInfo {
     pub tx_count: Option<u32>, // Set only from GA_get_previous_addresses
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct TxAddressee {
+#[derive(Serialize, Debug)]
+pub struct TxCreateAddressee {
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub address_info: Option<AddressInfo>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub address: Option<elements::Address>,
+
+    pub satoshi: u64,
+    pub asset_id: AssetId,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_greedy: Option<bool>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct TxResultAddressee {
     pub address: String,
     pub satoshi: u64,
     pub asset_id: AssetId,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_greedy: Option<bool>,
+    pub user_path: Option<Vec<u32>>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-pub struct TxInternalAddressee {
-    #[serde(flatten)]
-    pub address_info: AddressInfo,
-
-    pub satoshi: u64,
-    pub asset_id: AssetId,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_greedy: Option<bool>,
+#[derive(Serialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum UtxoStrategy {
+    Default,
+    Manual,
 }
 
 #[derive(Serialize, Debug)]
 pub struct CreateTransactionOpt {
     pub subaccount: i32,
-    pub addressees: Vec<TxAddressee>,
+    pub addressees: Vec<TxCreateAddressee>,
     pub utxos: BTreeMap<AssetId, Vec<UnspentOutput>>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub utxo_strategy: Option<gdk_common::model::UtxoStrategy>,
-    pub is_partial: bool,
-    pub used_utxos: Option<Vec<UnspentOutput>>,
-}
-
-#[derive(Serialize, Debug)]
-pub struct CreateInternalTransactionOpt {
-    pub subaccount: i32,
-    pub addressees: Vec<TxInternalAddressee>,
-    pub utxos: BTreeMap<AssetId, Vec<UnspentOutput>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transaction_inputs: Option<Vec<UnspentOutput>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub utxo_strategy: Option<UtxoStrategy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_partial: Option<bool>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct CreateTransactionResult {
-    pub addressees: Vec<TxAddressee>,
+    pub addressees: Vec<TxResultAddressee>,
     pub transaction_outputs: Vec<CreatedTransactionOutput>,
     pub transaction: Option<sideswap_types::Transaction>,
     pub fee: Option<u64>,
@@ -563,7 +569,7 @@ pub struct ErrorDetailsResult {
 
 #[derive(Serialize)]
 pub struct GetXPubsRes {
-    pub xpubs: Vec<ExtendedPubKey>,
+    pub xpubs: Vec<bip32::Xpub>,
 }
 
 #[derive(Serialize)]
@@ -606,6 +612,7 @@ pub struct PreviousAddressesOpts {
     pub subaccount: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_pointer: Option<u32>,
+    pub is_internal: Option<bool>,
 }
 
 #[derive(Deserialize)]

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
-import 'package:sideswap/common/widgets/custom_check_box.dart';
+import 'package:sideswap/common/widgets/custom_check_box_row.dart';
 
 class SettingsCheckbox extends StatelessWidget {
   const SettingsCheckbox({
@@ -17,7 +17,7 @@ class SettingsCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCheckBox(
+    return CustomCheckBoxRow(
       size: 24,
       radius: const Radius.circular(12),
       frameChecked: SideSwapColors.brightTurquoise,

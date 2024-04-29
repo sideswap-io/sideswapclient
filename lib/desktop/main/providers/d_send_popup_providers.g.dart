@@ -23,7 +23,7 @@ final sendPopupDecimalAmountProvider = AutoDisposeProvider<Decimal>.internal(
 
 typedef SendPopupDecimalAmountRef = AutoDisposeProviderRef<Decimal>;
 String _$sendPopupShowInsufficientFundsHash() =>
-    r'7f670311c8260e7d5dd96e6f41e107aae727e6e6';
+    r'22b391f0cefe9857553e1d8eca8e8bc1ec7d4ed0';
 
 /// See also [sendPopupShowInsufficientFunds].
 @ProviderFor(sendPopupShowInsufficientFunds)
@@ -143,7 +143,7 @@ final sendPopupReceiveConversionNotifierProvider = AutoDisposeNotifierProvider<
 
 typedef _$SendPopupReceiveConversionNotifier = AutoDisposeNotifier<String>;
 String _$sendPopupValidDataInsertedHash() =>
-    r'2335633ab1eda2c5a5fff26b97833631fc0a5b8e';
+    r'4321fb0628d487403c6106c1a3638df629ad4c8e';
 
 /// See also [SendPopupValidDataInserted].
 @ProviderFor(SendPopupValidDataInserted)
@@ -178,7 +178,7 @@ final sendPopupAddMoreOutputsButtonEnabledProvider =
 
 typedef _$SendPopupAddMoreOutputsButtonEnabled = AutoDisposeAsyncNotifier<bool>;
 String _$sendPopupReviewButtonEnabledHash() =>
-    r'ac934200ae38b09af81ed7abf854a1309a585cbd';
+    r'7ff88602c1fed8c4094087b33bc6145ca16d2d0a';
 
 /// Accept only liquidnetwork or elements address type
 ///

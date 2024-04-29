@@ -9,6 +9,7 @@ import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/screens/accounts/widgets/account_item.dart';
 
 part 'payment_select_asset.g.dart';
@@ -48,18 +49,24 @@ class PaymentDisabledAssets extends _$PaymentDisabledAssets {
 
 @riverpod
 List<PaymentAccountType> paymentAssetTypes(PaymentAssetTypesRef ref) {
-  final availableAssets = ref.watch(paymentAvailableAssetsProvider);
+  final filteredAccountAssets =
+      ref.watch(paymentAvailableAssetsWithInputsFilteredProvider);
   final paymentAccountTypes = <PaymentAccountType>[];
-  if (availableAssets.isNotEmpty) {
+  if (filteredAccountAssets.isNotEmpty) {
     paymentAccountTypes.add(const PaymentAccountType.all());
   }
 
-  if (availableAssets.any((element) => element.account.isRegular)) {
+  if (filteredAccountAssets.any((element) => element.account.isRegular)) {
     paymentAccountTypes.add(const PaymentAccountType.regular());
   }
 
-  if (availableAssets.any((element) => element.account.isAmp)) {
+  if (filteredAccountAssets.any((element) => element.account.isAmp)) {
     paymentAccountTypes.add(const PaymentAccountType.amp());
+  }
+
+  // keep at least one type
+  if (paymentAccountTypes.isEmpty) {
+    paymentAccountTypes.add(const PaymentAccountType.all());
   }
 
   return paymentAccountTypes;
@@ -73,17 +80,35 @@ bool paymentIsAssetDisabled(
 }
 
 @riverpod
+List<AccountAsset> paymentAvailableAssetsWithInputsFiltered(
+    PaymentAvailableAssetsWithInputsFilteredRef ref) {
+  final allAssets = ref.watch(paymentAvailableAssetsProvider);
+  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+  if (selectedInputs.isEmpty) {
+    return allAssets;
+  }
+
+  return allAssets
+      .where((element) => selectedInputs.any((si) =>
+          si.assetId == element.assetId && si.account == element.account.id))
+      .toList();
+}
+
+@riverpod
 List<AccountAsset> paymentAccountAssetsByType(
   PaymentAccountAssetsByTypeRef ref,
   PaymentAccountType paymentAccountType,
 ) {
-  final allAssets = ref.watch(paymentAvailableAssetsProvider);
+  final filteredAccountAssets =
+      ref.watch(paymentAvailableAssetsWithInputsFilteredProvider);
+
   return switch (paymentAccountType) {
-    PaymentAccountTypeAll() => allAssets,
-    PaymentAccountTypeRegular() =>
-      allAssets.where((element) => element.account.isRegular).toList(),
+    PaymentAccountTypeAll() => filteredAccountAssets,
+    PaymentAccountTypeRegular() => filteredAccountAssets
+        .where((element) => element.account.isRegular)
+        .toList(),
     PaymentAccountTypeAmp() =>
-      allAssets.where((element) => element.account.isAmp).toList(),
+      filteredAccountAssets.where((element) => element.account.isAmp).toList(),
     PaymentAccountTypeBtc() => [],
   };
 }
@@ -156,10 +181,11 @@ class PaymentSelectAssetTabBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final allAssets = ref.watch(paymentAvailableAssetsProvider);
+    final filteredAccountAssets =
+        ref.watch(paymentAvailableAssetsWithInputsFilteredProvider);
     final assetTypes = ref.watch(paymentAssetTypesProvider);
 
-    return switch (allAssets.isEmpty) {
+    return switch (filteredAccountAssets.isEmpty) {
       true => const SizedBox(),
       _ => DefaultTabController(
           length: assetTypes.length,

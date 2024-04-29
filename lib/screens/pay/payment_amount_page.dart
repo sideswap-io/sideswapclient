@@ -144,9 +144,9 @@ class PaymentAmountPageBody extends HookConsumerWidget {
           ref.read(paymentPageSelectedAccountAssetNotifierProvider);
 
       if (value.isEmpty) {
-        ref
+        Future.microtask(() => ref
             .read(paymentInsufficientFundsNotifierProvider.notifier)
-            .setInsufficientFunds(false);
+            .setInsufficientFunds(false));
         enabled.value = false;
         amount.value = '0';
         return;
@@ -186,9 +186,9 @@ class PaymentAmountPageBody extends HookConsumerWidget {
 
       enabled.value = false;
 
-      ref
+      Future.microtask(() => ref
           .read(paymentInsufficientFundsNotifierProvider.notifier)
-          .setInsufficientFunds(true);
+          .setInsufficientFunds(true));
     }
 
     final balances = ref.watch(balancesNotifierProvider);
@@ -414,10 +414,10 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                         final balanceStr = amountProvider.amountToString(
                             AmountToStringParameters(
                                 amount: balance, precision: precision));
-                        return const Text(
-                          'Balance: {}',
+                        return Text(
+                          'Balance: {}'.tr(args: [balanceStr]),
                           style: approximateStyle,
-                        ).tr(args: [balanceStr]);
+                        );
                       },
                     ),
                     Container(

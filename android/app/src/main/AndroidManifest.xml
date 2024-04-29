@@ -11,6 +11,16 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
+    <!--
+        Required for Jade BLE connection.
+        ACCESS_FINE_LOCATION is only required on Android 11 and lower.
+        See https://developer.android.com/develop/connectivity/bluetooth/bt-permissions#assert-never-for-location for reference.
+    -->
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />

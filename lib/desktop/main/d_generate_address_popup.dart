@@ -51,7 +51,7 @@ class DGenerateAddressPopup extends HookConsumerWidget {
           Container(
             padding: const EdgeInsets.all(2),
             width: 500,
-            height: 270,
+            height: 280,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               color: SideSwapColors.tarawera,

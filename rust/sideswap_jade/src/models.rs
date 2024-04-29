@@ -1,6 +1,11 @@
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
+#[derive(serde::Serialize)]
+pub enum Never {}
+
+pub type EmptyRequest = Option<Never>;
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AssetId(serde_bytes::ByteBuf);
 
@@ -57,65 +62,11 @@ impl JadeNetwork {
     }
 }
 
-#[derive(Serialize)]
-pub struct Req<T> {
-    pub id: String,
-    pub method: String,
-    pub params: Option<T>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Resp<T> {
-    pub id: String,
-    pub result: Option<T>,
-    pub error: Option<Error>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Error {
-    pub code: i32,
-    pub message: String,
-}
-
-#[derive(Debug)]
-pub enum BlindingFactorType {
-    Asset,
-    Value,
-}
-
-#[derive(Debug)]
-pub struct ResolveXpubReq {
-    pub network: JadeNetwork,
-    pub path: Vec<u32>,
-}
-
 #[derive(Debug)]
 pub struct SignMessageReq {
     pub path: Vec<u32>,
     pub message: String,
     pub ae_host_commitment: Vec<u8>,
-}
-
-#[derive(Debug)]
-pub struct GetSharedNonceReq {
-    pub script: Vec<u8>,
-    pub their_pubkey: Vec<u8>,
-}
-
-#[derive(Debug)]
-pub struct GetBlindingFactorReq {
-    pub hash_prevouts: Vec<u8>,
-    pub output_index: u32,
-    pub factor_type: BlindingFactorType,
-}
-
-#[derive(Debug)]
-pub struct GetCommitmentsReq {
-    pub asset_id: AssetId,
-    pub value: u64,
-    pub hash_prevouts: Vec<u8>,
-    pub output_index: u32,
-    pub vbf: Option<Vec<u8>>,
 }
 
 // Other fields:

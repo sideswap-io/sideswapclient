@@ -1827,10 +1827,74 @@ class SwapDetails extends $pb.GeneratedMessage {
   void clearUploadUrl() => clearField(6);
 }
 
+class OutPoint extends $pb.GeneratedMessage {
+  factory OutPoint({
+    $core.String? txid,
+    $core.int? vout,
+  }) {
+    final $result = create();
+    if (txid != null) {
+      $result.txid = txid;
+    }
+    if (vout != null) {
+      $result.vout = vout;
+    }
+    return $result;
+  }
+  OutPoint._() : super();
+  factory OutPoint.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory OutPoint.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'OutPoint', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'txid')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'vout', $pb.PbFieldType.QU3)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  OutPoint clone() => OutPoint()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  OutPoint copyWith(void Function(OutPoint) updates) => super.copyWith((message) => updates(message as OutPoint)) as OutPoint;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OutPoint create() => OutPoint._();
+  OutPoint createEmptyInstance() => create();
+  static $pb.PbList<OutPoint> createRepeated() => $pb.PbList<OutPoint>();
+  @$core.pragma('dart2js:noInline')
+  static OutPoint getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OutPoint>(create);
+  static OutPoint? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get txid => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set txid($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTxid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTxid() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get vout => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set vout($core.int v) { $_setUnsignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasVout() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearVout() => clearField(2);
+}
+
 class CreateTx extends $pb.GeneratedMessage {
   factory CreateTx({
     $core.Iterable<AddressAmount>? addressees,
     Account? account,
+    $core.Iterable<OutPoint>? utxos,
   }) {
     final $result = create();
     if (addressees != null) {
@@ -1838,6 +1902,9 @@ class CreateTx extends $pb.GeneratedMessage {
     }
     if (account != null) {
       $result.account = account;
+    }
+    if (utxos != null) {
+      $result.utxos.addAll(utxos);
     }
     return $result;
   }
@@ -1848,6 +1915,7 @@ class CreateTx extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'CreateTx', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..pc<AddressAmount>(1, _omitFieldNames ? '' : 'addressees', $pb.PbFieldType.PM, subBuilder: AddressAmount.create)
     ..aQM<Account>(2, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
+    ..pc<OutPoint>(3, _omitFieldNames ? '' : 'utxos', $pb.PbFieldType.PM, subBuilder: OutPoint.create)
   ;
 
   @$core.Deprecated(
@@ -1884,6 +1952,9 @@ class CreateTx extends $pb.GeneratedMessage {
   void clearAccount() => clearField(2);
   @$pb.TagNumber(2)
   Account ensureAccount() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.List<OutPoint> get utxos => $_getList(2);
 }
 
 class CreatedTx extends $pb.GeneratedMessage {
@@ -4601,6 +4672,8 @@ enum To_Msg {
   blindedValues, 
   createPayjoin, 
   sendPayjoin, 
+  loadUtxos, 
+  loadAddresses, 
   swapRequest, 
   pegInRequest, 
   pegOutRequest, 
@@ -4649,6 +4722,8 @@ class To extends $pb.GeneratedMessage {
     To_BlindedValues? blindedValues,
     CreatePayjoin? createPayjoin,
     CreatedPayjoin? sendPayjoin,
+    Account? loadUtxos,
+    Account? loadAddresses,
     To_SwapRequest? swapRequest,
     To_PegInRequest? pegInRequest,
     To_PegOutRequest? pegOutRequest,
@@ -4725,6 +4800,12 @@ class To extends $pb.GeneratedMessage {
     }
     if (sendPayjoin != null) {
       $result.sendPayjoin = sendPayjoin;
+    }
+    if (loadUtxos != null) {
+      $result.loadUtxos = loadUtxos;
+    }
+    if (loadAddresses != null) {
+      $result.loadAddresses = loadAddresses;
     }
     if (swapRequest != null) {
       $result.swapRequest = swapRequest;
@@ -4830,6 +4911,8 @@ class To extends $pb.GeneratedMessage {
     14 : To_Msg.blindedValues,
     15 : To_Msg.createPayjoin,
     16 : To_Msg.sendPayjoin,
+    17 : To_Msg.loadUtxos,
+    18 : To_Msg.loadAddresses,
     20 : To_Msg.swapRequest,
     21 : To_Msg.pegInRequest,
     22 : To_Msg.pegOutRequest,
@@ -4860,7 +4943,7 @@ class To extends $pb.GeneratedMessage {
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 71, 81])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 71, 81])
     ..aOM<To_Login>(1, _omitFieldNames ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, _omitFieldNames ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, _omitFieldNames ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
@@ -4877,6 +4960,8 @@ class To extends $pb.GeneratedMessage {
     ..aOM<To_BlindedValues>(14, _omitFieldNames ? '' : 'blindedValues', subBuilder: To_BlindedValues.create)
     ..aOM<CreatePayjoin>(15, _omitFieldNames ? '' : 'createPayjoin', subBuilder: CreatePayjoin.create)
     ..aOM<CreatedPayjoin>(16, _omitFieldNames ? '' : 'sendPayjoin', subBuilder: CreatedPayjoin.create)
+    ..aOM<Account>(17, _omitFieldNames ? '' : 'loadUtxos', subBuilder: Account.create)
+    ..aOM<Account>(18, _omitFieldNames ? '' : 'loadAddresses', subBuilder: Account.create)
     ..aOM<To_SwapRequest>(20, _omitFieldNames ? '' : 'swapRequest', subBuilder: To_SwapRequest.create)
     ..aOM<To_PegInRequest>(21, _omitFieldNames ? '' : 'pegInRequest', subBuilder: To_PegInRequest.create)
     ..aOM<To_PegOutRequest>(22, _omitFieldNames ? '' : 'pegOutRequest', subBuilder: To_PegOutRequest.create)
@@ -5104,302 +5189,324 @@ class To extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   CreatedPayjoin ensureSendPayjoin() => $_ensure(15);
 
+  @$pb.TagNumber(17)
+  Account get loadUtxos => $_getN(16);
+  @$pb.TagNumber(17)
+  set loadUtxos(Account v) { setField(17, v); }
+  @$pb.TagNumber(17)
+  $core.bool hasLoadUtxos() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearLoadUtxos() => clearField(17);
+  @$pb.TagNumber(17)
+  Account ensureLoadUtxos() => $_ensure(16);
+
+  @$pb.TagNumber(18)
+  Account get loadAddresses => $_getN(17);
+  @$pb.TagNumber(18)
+  set loadAddresses(Account v) { setField(18, v); }
+  @$pb.TagNumber(18)
+  $core.bool hasLoadAddresses() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearLoadAddresses() => clearField(18);
+  @$pb.TagNumber(18)
+  Account ensureLoadAddresses() => $_ensure(17);
+
   @$pb.TagNumber(20)
-  To_SwapRequest get swapRequest => $_getN(16);
+  To_SwapRequest get swapRequest => $_getN(18);
   @$pb.TagNumber(20)
   set swapRequest(To_SwapRequest v) { setField(20, v); }
   @$pb.TagNumber(20)
-  $core.bool hasSwapRequest() => $_has(16);
+  $core.bool hasSwapRequest() => $_has(18);
   @$pb.TagNumber(20)
   void clearSwapRequest() => clearField(20);
   @$pb.TagNumber(20)
-  To_SwapRequest ensureSwapRequest() => $_ensure(16);
+  To_SwapRequest ensureSwapRequest() => $_ensure(18);
 
   @$pb.TagNumber(21)
-  To_PegInRequest get pegInRequest => $_getN(17);
+  To_PegInRequest get pegInRequest => $_getN(19);
   @$pb.TagNumber(21)
   set pegInRequest(To_PegInRequest v) { setField(21, v); }
   @$pb.TagNumber(21)
-  $core.bool hasPegInRequest() => $_has(17);
+  $core.bool hasPegInRequest() => $_has(19);
   @$pb.TagNumber(21)
   void clearPegInRequest() => clearField(21);
   @$pb.TagNumber(21)
-  To_PegInRequest ensurePegInRequest() => $_ensure(17);
+  To_PegInRequest ensurePegInRequest() => $_ensure(19);
 
   @$pb.TagNumber(22)
-  To_PegOutRequest get pegOutRequest => $_getN(18);
+  To_PegOutRequest get pegOutRequest => $_getN(20);
   @$pb.TagNumber(22)
   set pegOutRequest(To_PegOutRequest v) { setField(22, v); }
   @$pb.TagNumber(22)
-  $core.bool hasPegOutRequest() => $_has(18);
+  $core.bool hasPegOutRequest() => $_has(20);
   @$pb.TagNumber(22)
   void clearPegOutRequest() => clearField(22);
   @$pb.TagNumber(22)
-  To_PegOutRequest ensurePegOutRequest() => $_ensure(18);
+  To_PegOutRequest ensurePegOutRequest() => $_ensure(20);
 
   @$pb.TagNumber(23)
-  SwapDetails get swapAccept => $_getN(19);
+  SwapDetails get swapAccept => $_getN(21);
   @$pb.TagNumber(23)
   set swapAccept(SwapDetails v) { setField(23, v); }
   @$pb.TagNumber(23)
-  $core.bool hasSwapAccept() => $_has(19);
+  $core.bool hasSwapAccept() => $_has(21);
   @$pb.TagNumber(23)
   void clearSwapAccept() => clearField(23);
   @$pb.TagNumber(23)
-  SwapDetails ensureSwapAccept() => $_ensure(19);
+  SwapDetails ensureSwapAccept() => $_ensure(21);
 
   @$pb.TagNumber(24)
-  To_PegOutAmount get pegOutAmount => $_getN(20);
+  To_PegOutAmount get pegOutAmount => $_getN(22);
   @$pb.TagNumber(24)
   set pegOutAmount(To_PegOutAmount v) { setField(24, v); }
   @$pb.TagNumber(24)
-  $core.bool hasPegOutAmount() => $_has(20);
+  $core.bool hasPegOutAmount() => $_has(22);
   @$pb.TagNumber(24)
   void clearPegOutAmount() => clearField(24);
   @$pb.TagNumber(24)
-  To_PegOutAmount ensurePegOutAmount() => $_ensure(20);
+  To_PegOutAmount ensurePegOutAmount() => $_ensure(22);
 
   @$pb.TagNumber(40)
-  To_RegisterPhone get registerPhone => $_getN(21);
+  To_RegisterPhone get registerPhone => $_getN(23);
   @$pb.TagNumber(40)
   set registerPhone(To_RegisterPhone v) { setField(40, v); }
   @$pb.TagNumber(40)
-  $core.bool hasRegisterPhone() => $_has(21);
+  $core.bool hasRegisterPhone() => $_has(23);
   @$pb.TagNumber(40)
   void clearRegisterPhone() => clearField(40);
   @$pb.TagNumber(40)
-  To_RegisterPhone ensureRegisterPhone() => $_ensure(21);
+  To_RegisterPhone ensureRegisterPhone() => $_ensure(23);
 
   @$pb.TagNumber(41)
-  To_VerifyPhone get verifyPhone => $_getN(22);
+  To_VerifyPhone get verifyPhone => $_getN(24);
   @$pb.TagNumber(41)
   set verifyPhone(To_VerifyPhone v) { setField(41, v); }
   @$pb.TagNumber(41)
-  $core.bool hasVerifyPhone() => $_has(22);
+  $core.bool hasVerifyPhone() => $_has(24);
   @$pb.TagNumber(41)
   void clearVerifyPhone() => clearField(41);
   @$pb.TagNumber(41)
-  To_VerifyPhone ensureVerifyPhone() => $_ensure(22);
+  To_VerifyPhone ensureVerifyPhone() => $_ensure(24);
 
   @$pb.TagNumber(42)
-  To_UploadAvatar get uploadAvatar => $_getN(23);
+  To_UploadAvatar get uploadAvatar => $_getN(25);
   @$pb.TagNumber(42)
   set uploadAvatar(To_UploadAvatar v) { setField(42, v); }
   @$pb.TagNumber(42)
-  $core.bool hasUploadAvatar() => $_has(23);
+  $core.bool hasUploadAvatar() => $_has(25);
   @$pb.TagNumber(42)
   void clearUploadAvatar() => clearField(42);
   @$pb.TagNumber(42)
-  To_UploadAvatar ensureUploadAvatar() => $_ensure(23);
+  To_UploadAvatar ensureUploadAvatar() => $_ensure(25);
 
   @$pb.TagNumber(43)
-  To_UploadContacts get uploadContacts => $_getN(24);
+  To_UploadContacts get uploadContacts => $_getN(26);
   @$pb.TagNumber(43)
   set uploadContacts(To_UploadContacts v) { setField(43, v); }
   @$pb.TagNumber(43)
-  $core.bool hasUploadContacts() => $_has(24);
+  $core.bool hasUploadContacts() => $_has(26);
   @$pb.TagNumber(43)
   void clearUploadContacts() => clearField(43);
   @$pb.TagNumber(43)
-  To_UploadContacts ensureUploadContacts() => $_ensure(24);
+  To_UploadContacts ensureUploadContacts() => $_ensure(26);
 
   @$pb.TagNumber(44)
-  To_UnregisterPhone get unregisterPhone => $_getN(25);
+  To_UnregisterPhone get unregisterPhone => $_getN(27);
   @$pb.TagNumber(44)
   set unregisterPhone(To_UnregisterPhone v) { setField(44, v); }
   @$pb.TagNumber(44)
-  $core.bool hasUnregisterPhone() => $_has(25);
+  $core.bool hasUnregisterPhone() => $_has(27);
   @$pb.TagNumber(44)
   void clearUnregisterPhone() => clearField(44);
   @$pb.TagNumber(44)
-  To_UnregisterPhone ensureUnregisterPhone() => $_ensure(25);
+  To_UnregisterPhone ensureUnregisterPhone() => $_ensure(27);
 
   @$pb.TagNumber(49)
-  To_SubmitOrder get submitOrder => $_getN(26);
+  To_SubmitOrder get submitOrder => $_getN(28);
   @$pb.TagNumber(49)
   set submitOrder(To_SubmitOrder v) { setField(49, v); }
   @$pb.TagNumber(49)
-  $core.bool hasSubmitOrder() => $_has(26);
+  $core.bool hasSubmitOrder() => $_has(28);
   @$pb.TagNumber(49)
   void clearSubmitOrder() => clearField(49);
   @$pb.TagNumber(49)
-  To_SubmitOrder ensureSubmitOrder() => $_ensure(26);
+  To_SubmitOrder ensureSubmitOrder() => $_ensure(28);
 
   @$pb.TagNumber(50)
-  To_LinkOrder get linkOrder => $_getN(27);
+  To_LinkOrder get linkOrder => $_getN(29);
   @$pb.TagNumber(50)
   set linkOrder(To_LinkOrder v) { setField(50, v); }
   @$pb.TagNumber(50)
-  $core.bool hasLinkOrder() => $_has(27);
+  $core.bool hasLinkOrder() => $_has(29);
   @$pb.TagNumber(50)
   void clearLinkOrder() => clearField(50);
   @$pb.TagNumber(50)
-  To_LinkOrder ensureLinkOrder() => $_ensure(27);
+  To_LinkOrder ensureLinkOrder() => $_ensure(29);
 
   @$pb.TagNumber(51)
-  To_SubmitDecision get submitDecision => $_getN(28);
+  To_SubmitDecision get submitDecision => $_getN(30);
   @$pb.TagNumber(51)
   set submitDecision(To_SubmitDecision v) { setField(51, v); }
   @$pb.TagNumber(51)
-  $core.bool hasSubmitDecision() => $_has(28);
+  $core.bool hasSubmitDecision() => $_has(30);
   @$pb.TagNumber(51)
   void clearSubmitDecision() => clearField(51);
   @$pb.TagNumber(51)
-  To_SubmitDecision ensureSubmitDecision() => $_ensure(28);
+  To_SubmitDecision ensureSubmitDecision() => $_ensure(30);
 
   @$pb.TagNumber(52)
-  To_EditOrder get editOrder => $_getN(29);
+  To_EditOrder get editOrder => $_getN(31);
   @$pb.TagNumber(52)
   set editOrder(To_EditOrder v) { setField(52, v); }
   @$pb.TagNumber(52)
-  $core.bool hasEditOrder() => $_has(29);
+  $core.bool hasEditOrder() => $_has(31);
   @$pb.TagNumber(52)
   void clearEditOrder() => clearField(52);
   @$pb.TagNumber(52)
-  To_EditOrder ensureEditOrder() => $_ensure(29);
+  To_EditOrder ensureEditOrder() => $_ensure(31);
 
   @$pb.TagNumber(53)
-  To_CancelOrder get cancelOrder => $_getN(30);
+  To_CancelOrder get cancelOrder => $_getN(32);
   @$pb.TagNumber(53)
   set cancelOrder(To_CancelOrder v) { setField(53, v); }
   @$pb.TagNumber(53)
-  $core.bool hasCancelOrder() => $_has(30);
+  $core.bool hasCancelOrder() => $_has(32);
   @$pb.TagNumber(53)
   void clearCancelOrder() => clearField(53);
   @$pb.TagNumber(53)
-  To_CancelOrder ensureCancelOrder() => $_ensure(30);
+  To_CancelOrder ensureCancelOrder() => $_ensure(32);
 
   @$pb.TagNumber(54)
-  To_Subscribe get subscribe => $_getN(31);
+  To_Subscribe get subscribe => $_getN(33);
   @$pb.TagNumber(54)
   set subscribe(To_Subscribe v) { setField(54, v); }
   @$pb.TagNumber(54)
-  $core.bool hasSubscribe() => $_has(31);
+  $core.bool hasSubscribe() => $_has(33);
   @$pb.TagNumber(54)
   void clearSubscribe() => clearField(54);
   @$pb.TagNumber(54)
-  To_Subscribe ensureSubscribe() => $_ensure(31);
+  To_Subscribe ensureSubscribe() => $_ensure(33);
 
   @$pb.TagNumber(55)
-  AssetId get subscribePrice => $_getN(32);
+  AssetId get subscribePrice => $_getN(34);
   @$pb.TagNumber(55)
   set subscribePrice(AssetId v) { setField(55, v); }
   @$pb.TagNumber(55)
-  $core.bool hasSubscribePrice() => $_has(32);
+  $core.bool hasSubscribePrice() => $_has(34);
   @$pb.TagNumber(55)
   void clearSubscribePrice() => clearField(55);
   @$pb.TagNumber(55)
-  AssetId ensureSubscribePrice() => $_ensure(32);
+  AssetId ensureSubscribePrice() => $_ensure(34);
 
   @$pb.TagNumber(56)
-  AssetId get unsubscribePrice => $_getN(33);
+  AssetId get unsubscribePrice => $_getN(35);
   @$pb.TagNumber(56)
   set unsubscribePrice(AssetId v) { setField(56, v); }
   @$pb.TagNumber(56)
-  $core.bool hasUnsubscribePrice() => $_has(33);
+  $core.bool hasUnsubscribePrice() => $_has(35);
   @$pb.TagNumber(56)
   void clearUnsubscribePrice() => clearField(56);
   @$pb.TagNumber(56)
-  AssetId ensureUnsubscribePrice() => $_ensure(33);
+  AssetId ensureUnsubscribePrice() => $_ensure(35);
 
   @$pb.TagNumber(57)
-  AssetId get assetDetails => $_getN(34);
+  AssetId get assetDetails => $_getN(36);
   @$pb.TagNumber(57)
   set assetDetails(AssetId v) { setField(57, v); }
   @$pb.TagNumber(57)
-  $core.bool hasAssetDetails() => $_has(34);
+  $core.bool hasAssetDetails() => $_has(36);
   @$pb.TagNumber(57)
   void clearAssetDetails() => clearField(57);
   @$pb.TagNumber(57)
-  AssetId ensureAssetDetails() => $_ensure(34);
+  AssetId ensureAssetDetails() => $_ensure(36);
 
   @$pb.TagNumber(58)
-  To_SubscribePriceStream get subscribePriceStream => $_getN(35);
+  To_SubscribePriceStream get subscribePriceStream => $_getN(37);
   @$pb.TagNumber(58)
   set subscribePriceStream(To_SubscribePriceStream v) { setField(58, v); }
   @$pb.TagNumber(58)
-  $core.bool hasSubscribePriceStream() => $_has(35);
+  $core.bool hasSubscribePriceStream() => $_has(37);
   @$pb.TagNumber(58)
   void clearSubscribePriceStream() => clearField(58);
   @$pb.TagNumber(58)
-  To_SubscribePriceStream ensureSubscribePriceStream() => $_ensure(35);
+  To_SubscribePriceStream ensureSubscribePriceStream() => $_ensure(37);
 
   @$pb.TagNumber(59)
-  Empty get unsubscribePriceStream => $_getN(36);
+  Empty get unsubscribePriceStream => $_getN(38);
   @$pb.TagNumber(59)
   set unsubscribePriceStream(Empty v) { setField(59, v); }
   @$pb.TagNumber(59)
-  $core.bool hasUnsubscribePriceStream() => $_has(36);
+  $core.bool hasUnsubscribePriceStream() => $_has(38);
   @$pb.TagNumber(59)
   void clearUnsubscribePriceStream() => clearField(59);
   @$pb.TagNumber(59)
-  Empty ensureUnsubscribePriceStream() => $_ensure(36);
+  Empty ensureUnsubscribePriceStream() => $_ensure(38);
 
   @$pb.TagNumber(60)
-  To_MarketDataSubscribe get marketDataSubscribe => $_getN(37);
+  To_MarketDataSubscribe get marketDataSubscribe => $_getN(39);
   @$pb.TagNumber(60)
   set marketDataSubscribe(To_MarketDataSubscribe v) { setField(60, v); }
   @$pb.TagNumber(60)
-  $core.bool hasMarketDataSubscribe() => $_has(37);
+  $core.bool hasMarketDataSubscribe() => $_has(39);
   @$pb.TagNumber(60)
   void clearMarketDataSubscribe() => clearField(60);
   @$pb.TagNumber(60)
-  To_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(37);
+  To_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(39);
 
   @$pb.TagNumber(61)
-  Empty get marketDataUnsubscribe => $_getN(38);
+  Empty get marketDataUnsubscribe => $_getN(40);
   @$pb.TagNumber(61)
   set marketDataUnsubscribe(Empty v) { setField(61, v); }
   @$pb.TagNumber(61)
-  $core.bool hasMarketDataUnsubscribe() => $_has(38);
+  $core.bool hasMarketDataUnsubscribe() => $_has(40);
   @$pb.TagNumber(61)
   void clearMarketDataUnsubscribe() => clearField(61);
   @$pb.TagNumber(61)
-  Empty ensureMarketDataUnsubscribe() => $_ensure(38);
+  Empty ensureMarketDataUnsubscribe() => $_ensure(40);
 
   @$pb.TagNumber(62)
-  Empty get portfolioPrices => $_getN(39);
+  Empty get portfolioPrices => $_getN(41);
   @$pb.TagNumber(62)
   set portfolioPrices(Empty v) { setField(62, v); }
   @$pb.TagNumber(62)
-  $core.bool hasPortfolioPrices() => $_has(39);
+  $core.bool hasPortfolioPrices() => $_has(41);
   @$pb.TagNumber(62)
   void clearPortfolioPrices() => clearField(62);
   @$pb.TagNumber(62)
-  Empty ensurePortfolioPrices() => $_ensure(39);
+  Empty ensurePortfolioPrices() => $_ensure(41);
 
   @$pb.TagNumber(63)
-  Empty get conversionRates => $_getN(40);
+  Empty get conversionRates => $_getN(42);
   @$pb.TagNumber(63)
   set conversionRates(Empty v) { setField(63, v); }
   @$pb.TagNumber(63)
-  $core.bool hasConversionRates() => $_has(40);
+  $core.bool hasConversionRates() => $_has(42);
   @$pb.TagNumber(63)
   void clearConversionRates() => clearField(63);
   @$pb.TagNumber(63)
-  Empty ensureConversionRates() => $_ensure(40);
+  Empty ensureConversionRates() => $_ensure(42);
 
   @$pb.TagNumber(71)
-  Empty get jadeRescan => $_getN(41);
+  Empty get jadeRescan => $_getN(43);
   @$pb.TagNumber(71)
   set jadeRescan(Empty v) { setField(71, v); }
   @$pb.TagNumber(71)
-  $core.bool hasJadeRescan() => $_has(41);
+  $core.bool hasJadeRescan() => $_has(43);
   @$pb.TagNumber(71)
   void clearJadeRescan() => clearField(71);
   @$pb.TagNumber(71)
-  Empty ensureJadeRescan() => $_ensure(41);
+  Empty ensureJadeRescan() => $_ensure(43);
 
   @$pb.TagNumber(81)
-  To_GaidStatus get gaidStatus => $_getN(42);
+  To_GaidStatus get gaidStatus => $_getN(44);
   @$pb.TagNumber(81)
   set gaidStatus(To_GaidStatus v) { setField(81, v); }
   @$pb.TagNumber(81)
-  $core.bool hasGaidStatus() => $_has(42);
+  $core.bool hasGaidStatus() => $_has(44);
   @$pb.TagNumber(81)
   void clearGaidStatus() => clearField(81);
   @$pb.TagNumber(81)
-  To_GaidStatus ensureGaidStatus() => $_ensure(42);
+  To_GaidStatus ensureGaidStatus() => $_ensure(44);
 }
 
 enum From_Login_Result {
@@ -6631,6 +6738,376 @@ class From_RecvAddress extends $pb.GeneratedMessage {
   void clearAccount() => clearField(2);
   @$pb.TagNumber(2)
   Account ensureAccount() => $_ensure(1);
+}
+
+class From_LoadUtxos_Utxo extends $pb.GeneratedMessage {
+  factory From_LoadUtxos_Utxo({
+    $core.String? txid,
+    $core.int? vout,
+    $core.String? assetId,
+    $fixnum.Int64? amount,
+    $core.String? address,
+    $core.bool? isInternal,
+    $core.bool? isConfidential,
+  }) {
+    final $result = create();
+    if (txid != null) {
+      $result.txid = txid;
+    }
+    if (vout != null) {
+      $result.vout = vout;
+    }
+    if (assetId != null) {
+      $result.assetId = assetId;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (address != null) {
+      $result.address = address;
+    }
+    if (isInternal != null) {
+      $result.isInternal = isInternal;
+    }
+    if (isConfidential != null) {
+      $result.isConfidential = isConfidential;
+    }
+    return $result;
+  }
+  From_LoadUtxos_Utxo._() : super();
+  factory From_LoadUtxos_Utxo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_LoadUtxos_Utxo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.LoadUtxos.Utxo', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'txid')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'vout', $pb.PbFieldType.QU3)
+    ..aQS(3, _omitFieldNames ? '' : 'assetId')
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aQS(5, _omitFieldNames ? '' : 'address')
+    ..a<$core.bool>(6, _omitFieldNames ? '' : 'isInternal', $pb.PbFieldType.QB)
+    ..a<$core.bool>(7, _omitFieldNames ? '' : 'isConfidential', $pb.PbFieldType.QB)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_LoadUtxos_Utxo clone() => From_LoadUtxos_Utxo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_LoadUtxos_Utxo copyWith(void Function(From_LoadUtxos_Utxo) updates) => super.copyWith((message) => updates(message as From_LoadUtxos_Utxo)) as From_LoadUtxos_Utxo;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_LoadUtxos_Utxo create() => From_LoadUtxos_Utxo._();
+  From_LoadUtxos_Utxo createEmptyInstance() => create();
+  static $pb.PbList<From_LoadUtxos_Utxo> createRepeated() => $pb.PbList<From_LoadUtxos_Utxo>();
+  @$core.pragma('dart2js:noInline')
+  static From_LoadUtxos_Utxo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_LoadUtxos_Utxo>(create);
+  static From_LoadUtxos_Utxo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get txid => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set txid($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTxid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTxid() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get vout => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set vout($core.int v) { $_setUnsignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasVout() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearVout() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.String get assetId => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set assetId($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAssetId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAssetId() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get address => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set address($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasAddress() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAddress() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get isInternal => $_getBF(5);
+  @$pb.TagNumber(6)
+  set isInternal($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasIsInternal() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIsInternal() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get isConfidential => $_getBF(6);
+  @$pb.TagNumber(7)
+  set isConfidential($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasIsConfidential() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIsConfidential() => clearField(7);
+}
+
+class From_LoadUtxos extends $pb.GeneratedMessage {
+  factory From_LoadUtxos({
+    Account? account,
+    $core.Iterable<From_LoadUtxos_Utxo>? utxos,
+    $core.String? errorMsg,
+  }) {
+    final $result = create();
+    if (account != null) {
+      $result.account = account;
+    }
+    if (utxos != null) {
+      $result.utxos.addAll(utxos);
+    }
+    if (errorMsg != null) {
+      $result.errorMsg = errorMsg;
+    }
+    return $result;
+  }
+  From_LoadUtxos._() : super();
+  factory From_LoadUtxos.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_LoadUtxos.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.LoadUtxos', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
+    ..pc<From_LoadUtxos_Utxo>(2, _omitFieldNames ? '' : 'utxos', $pb.PbFieldType.PM, subBuilder: From_LoadUtxos_Utxo.create)
+    ..aOS(3, _omitFieldNames ? '' : 'errorMsg')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_LoadUtxos clone() => From_LoadUtxos()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_LoadUtxos copyWith(void Function(From_LoadUtxos) updates) => super.copyWith((message) => updates(message as From_LoadUtxos)) as From_LoadUtxos;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_LoadUtxos create() => From_LoadUtxos._();
+  From_LoadUtxos createEmptyInstance() => create();
+  static $pb.PbList<From_LoadUtxos> createRepeated() => $pb.PbList<From_LoadUtxos>();
+  @$core.pragma('dart2js:noInline')
+  static From_LoadUtxos getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_LoadUtxos>(create);
+  static From_LoadUtxos? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.List<From_LoadUtxos_Utxo> get utxos => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMsg => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMsg($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMsg() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMsg() => clearField(3);
+}
+
+class From_LoadAddresses_Address extends $pb.GeneratedMessage {
+  factory From_LoadAddresses_Address({
+    $core.String? address,
+    $core.int? index,
+    $core.bool? isInternal,
+    $core.String? unconfidentialAddress,
+  }) {
+    final $result = create();
+    if (address != null) {
+      $result.address = address;
+    }
+    if (index != null) {
+      $result.index = index;
+    }
+    if (isInternal != null) {
+      $result.isInternal = isInternal;
+    }
+    if (unconfidentialAddress != null) {
+      $result.unconfidentialAddress = unconfidentialAddress;
+    }
+    return $result;
+  }
+  From_LoadAddresses_Address._() : super();
+  factory From_LoadAddresses_Address.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_LoadAddresses_Address.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.LoadAddresses.Address', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'address')
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'index', $pb.PbFieldType.QU3)
+    ..a<$core.bool>(3, _omitFieldNames ? '' : 'isInternal', $pb.PbFieldType.QB)
+    ..aQS(4, _omitFieldNames ? '' : 'unconfidentialAddress')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_LoadAddresses_Address clone() => From_LoadAddresses_Address()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_LoadAddresses_Address copyWith(void Function(From_LoadAddresses_Address) updates) => super.copyWith((message) => updates(message as From_LoadAddresses_Address)) as From_LoadAddresses_Address;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_LoadAddresses_Address create() => From_LoadAddresses_Address._();
+  From_LoadAddresses_Address createEmptyInstance() => create();
+  static $pb.PbList<From_LoadAddresses_Address> createRepeated() => $pb.PbList<From_LoadAddresses_Address>();
+  @$core.pragma('dart2js:noInline')
+  static From_LoadAddresses_Address getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_LoadAddresses_Address>(create);
+  static From_LoadAddresses_Address? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get address => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set address($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAddress() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAddress() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get index => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set index($core.int v) { $_setUnsignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIndex() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIndex() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.bool get isInternal => $_getBF(2);
+  @$pb.TagNumber(3)
+  set isInternal($core.bool v) { $_setBool(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasIsInternal() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearIsInternal() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get unconfidentialAddress => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set unconfidentialAddress($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUnconfidentialAddress() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUnconfidentialAddress() => clearField(4);
+}
+
+class From_LoadAddresses extends $pb.GeneratedMessage {
+  factory From_LoadAddresses({
+    Account? account,
+    $core.Iterable<From_LoadAddresses_Address>? addresses,
+    $core.String? errorMsg,
+  }) {
+    final $result = create();
+    if (account != null) {
+      $result.account = account;
+    }
+    if (addresses != null) {
+      $result.addresses.addAll(addresses);
+    }
+    if (errorMsg != null) {
+      $result.errorMsg = errorMsg;
+    }
+    return $result;
+  }
+  From_LoadAddresses._() : super();
+  factory From_LoadAddresses.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_LoadAddresses.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.LoadAddresses', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
+    ..pc<From_LoadAddresses_Address>(2, _omitFieldNames ? '' : 'addresses', $pb.PbFieldType.PM, subBuilder: From_LoadAddresses_Address.create)
+    ..aOS(3, _omitFieldNames ? '' : 'errorMsg')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_LoadAddresses clone() => From_LoadAddresses()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_LoadAddresses copyWith(void Function(From_LoadAddresses) updates) => super.copyWith((message) => updates(message as From_LoadAddresses)) as From_LoadAddresses;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_LoadAddresses create() => From_LoadAddresses._();
+  From_LoadAddresses createEmptyInstance() => create();
+  static $pb.PbList<From_LoadAddresses> createRepeated() => $pb.PbList<From_LoadAddresses>();
+  @$core.pragma('dart2js:noInline')
+  static From_LoadAddresses getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_LoadAddresses>(create);
+  static From_LoadAddresses? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  Account get account => $_getN(0);
+  @$pb.TagNumber(1)
+  set account(Account v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAccount() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAccount() => clearField(1);
+  @$pb.TagNumber(1)
+  Account ensureAccount() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.List<From_LoadAddresses_Address> get addresses => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.String get errorMsg => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set errorMsg($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasErrorMsg() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearErrorMsg() => clearField(3);
 }
 
 enum From_CreateTxResult_Result {
@@ -8756,9 +9233,6 @@ class From_JadePorts_Port extends $pb.GeneratedMessage {
   factory From_JadePorts_Port({
     $core.String? jadeId,
     $core.String? port,
-    $core.String? serial,
-    $core.String? version,
-    From_JadePorts_State? state,
   }) {
     final $result = create();
     if (jadeId != null) {
@@ -8766,15 +9240,6 @@ class From_JadePorts_Port extends $pb.GeneratedMessage {
     }
     if (port != null) {
       $result.port = port;
-    }
-    if (serial != null) {
-      $result.serial = serial;
-    }
-    if (version != null) {
-      $result.version = version;
-    }
-    if (state != null) {
-      $result.state = state;
     }
     return $result;
   }
@@ -8785,9 +9250,6 @@ class From_JadePorts_Port extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.JadePorts.Port', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..aQS(1, _omitFieldNames ? '' : 'jadeId')
     ..aQS(2, _omitFieldNames ? '' : 'port')
-    ..aQS(3, _omitFieldNames ? '' : 'serial')
-    ..aQS(4, _omitFieldNames ? '' : 'version')
-    ..e<From_JadePorts_State>(5, _omitFieldNames ? '' : 'state', $pb.PbFieldType.QE, defaultOrMaker: From_JadePorts_State.UNINIT, valueOf: From_JadePorts_State.valueOf, enumValues: From_JadePorts_State.values)
   ;
 
   @$core.Deprecated(
@@ -8828,33 +9290,6 @@ class From_JadePorts_Port extends $pb.GeneratedMessage {
   $core.bool hasPort() => $_has(1);
   @$pb.TagNumber(2)
   void clearPort() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get serial => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set serial($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasSerial() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearSerial() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get version => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set version($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasVersion() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearVersion() => clearField(4);
-
-  @$pb.TagNumber(5)
-  From_JadePorts_State get state => $_getN(4);
-  @$pb.TagNumber(5)
-  set state(From_JadePorts_State v) { setField(5, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasState() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearState() => clearField(5);
 }
 
 class From_JadePorts extends $pb.GeneratedMessage {
@@ -9054,6 +9489,8 @@ enum From_Msg {
   sendResult, 
   blindedValues, 
   createPayjoinResult, 
+  loadUtxos, 
+  loadAddresses, 
   registerPhone, 
   verifyPhone, 
   uploadAvatar, 
@@ -9117,6 +9554,8 @@ class From extends $pb.GeneratedMessage {
     From_SendResult? sendResult,
     From_BlindedValues? blindedValues,
     From_CreatePayjoinResult? createPayjoinResult,
+    From_LoadUtxos? loadUtxos,
+    From_LoadAddresses? loadAddresses,
     From_RegisterPhone? registerPhone,
     From_VerifyPhone? verifyPhone,
     GenericResponse? uploadAvatar,
@@ -9230,6 +9669,12 @@ class From extends $pb.GeneratedMessage {
     }
     if (createPayjoinResult != null) {
       $result.createPayjoinResult = createPayjoinResult;
+    }
+    if (loadUtxos != null) {
+      $result.loadUtxos = loadUtxos;
+    }
+    if (loadAddresses != null) {
+      $result.loadAddresses = loadAddresses;
     }
     if (registerPhone != null) {
       $result.registerPhone = registerPhone;
@@ -9358,6 +9803,8 @@ class From extends $pb.GeneratedMessage {
     32 : From_Msg.sendResult,
     33 : From_Msg.blindedValues,
     34 : From_Msg.createPayjoinResult,
+    35 : From_Msg.loadUtxos,
+    36 : From_Msg.loadAddresses,
     40 : From_Msg.registerPhone,
     41 : From_Msg.verifyPhone,
     42 : From_Msg.uploadAvatar,
@@ -9392,7 +9839,7 @@ class From extends $pb.GeneratedMessage {
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 30, 31, 32, 33, 34, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 80, 83, 91])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 30, 31, 32, 33, 34, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 80, 83, 91])
     ..aOM<From_UpdatedTxs>(1, _omitFieldNames ? '' : 'updatedTxs', subBuilder: From_UpdatedTxs.create)
     ..aOM<From_UpdatedPegs>(2, _omitFieldNames ? '' : 'updatedPegs', subBuilder: From_UpdatedPegs.create)
     ..aOM<Asset>(3, _omitFieldNames ? '' : 'newAsset', subBuilder: Asset.create)
@@ -9420,6 +9867,8 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_SendResult>(32, _omitFieldNames ? '' : 'sendResult', subBuilder: From_SendResult.create)
     ..aOM<From_BlindedValues>(33, _omitFieldNames ? '' : 'blindedValues', subBuilder: From_BlindedValues.create)
     ..aOM<From_CreatePayjoinResult>(34, _omitFieldNames ? '' : 'createPayjoinResult', subBuilder: From_CreatePayjoinResult.create)
+    ..aOM<From_LoadUtxos>(35, _omitFieldNames ? '' : 'loadUtxos', subBuilder: From_LoadUtxos.create)
+    ..aOM<From_LoadAddresses>(36, _omitFieldNames ? '' : 'loadAddresses', subBuilder: From_LoadAddresses.create)
     ..aOM<From_RegisterPhone>(40, _omitFieldNames ? '' : 'registerPhone', subBuilder: From_RegisterPhone.create)
     ..aOM<From_VerifyPhone>(41, _omitFieldNames ? '' : 'verifyPhone', subBuilder: From_VerifyPhone.create)
     ..aOM<GenericResponse>(42, _omitFieldNames ? '' : 'uploadAvatar', subBuilder: GenericResponse.create)
@@ -9772,346 +10221,368 @@ class From extends $pb.GeneratedMessage {
   @$pb.TagNumber(34)
   From_CreatePayjoinResult ensureCreatePayjoinResult() => $_ensure(26);
 
+  @$pb.TagNumber(35)
+  From_LoadUtxos get loadUtxos => $_getN(27);
+  @$pb.TagNumber(35)
+  set loadUtxos(From_LoadUtxos v) { setField(35, v); }
+  @$pb.TagNumber(35)
+  $core.bool hasLoadUtxos() => $_has(27);
+  @$pb.TagNumber(35)
+  void clearLoadUtxos() => clearField(35);
+  @$pb.TagNumber(35)
+  From_LoadUtxos ensureLoadUtxos() => $_ensure(27);
+
+  @$pb.TagNumber(36)
+  From_LoadAddresses get loadAddresses => $_getN(28);
+  @$pb.TagNumber(36)
+  set loadAddresses(From_LoadAddresses v) { setField(36, v); }
+  @$pb.TagNumber(36)
+  $core.bool hasLoadAddresses() => $_has(28);
+  @$pb.TagNumber(36)
+  void clearLoadAddresses() => clearField(36);
+  @$pb.TagNumber(36)
+  From_LoadAddresses ensureLoadAddresses() => $_ensure(28);
+
   @$pb.TagNumber(40)
-  From_RegisterPhone get registerPhone => $_getN(27);
+  From_RegisterPhone get registerPhone => $_getN(29);
   @$pb.TagNumber(40)
   set registerPhone(From_RegisterPhone v) { setField(40, v); }
   @$pb.TagNumber(40)
-  $core.bool hasRegisterPhone() => $_has(27);
+  $core.bool hasRegisterPhone() => $_has(29);
   @$pb.TagNumber(40)
   void clearRegisterPhone() => clearField(40);
   @$pb.TagNumber(40)
-  From_RegisterPhone ensureRegisterPhone() => $_ensure(27);
+  From_RegisterPhone ensureRegisterPhone() => $_ensure(29);
 
   @$pb.TagNumber(41)
-  From_VerifyPhone get verifyPhone => $_getN(28);
+  From_VerifyPhone get verifyPhone => $_getN(30);
   @$pb.TagNumber(41)
   set verifyPhone(From_VerifyPhone v) { setField(41, v); }
   @$pb.TagNumber(41)
-  $core.bool hasVerifyPhone() => $_has(28);
+  $core.bool hasVerifyPhone() => $_has(30);
   @$pb.TagNumber(41)
   void clearVerifyPhone() => clearField(41);
   @$pb.TagNumber(41)
-  From_VerifyPhone ensureVerifyPhone() => $_ensure(28);
+  From_VerifyPhone ensureVerifyPhone() => $_ensure(30);
 
   @$pb.TagNumber(42)
-  GenericResponse get uploadAvatar => $_getN(29);
+  GenericResponse get uploadAvatar => $_getN(31);
   @$pb.TagNumber(42)
   set uploadAvatar(GenericResponse v) { setField(42, v); }
   @$pb.TagNumber(42)
-  $core.bool hasUploadAvatar() => $_has(29);
+  $core.bool hasUploadAvatar() => $_has(31);
   @$pb.TagNumber(42)
   void clearUploadAvatar() => clearField(42);
   @$pb.TagNumber(42)
-  GenericResponse ensureUploadAvatar() => $_ensure(29);
+  GenericResponse ensureUploadAvatar() => $_ensure(31);
 
   @$pb.TagNumber(43)
-  GenericResponse get uploadContacts => $_getN(30);
+  GenericResponse get uploadContacts => $_getN(32);
   @$pb.TagNumber(43)
   set uploadContacts(GenericResponse v) { setField(43, v); }
   @$pb.TagNumber(43)
-  $core.bool hasUploadContacts() => $_has(30);
+  $core.bool hasUploadContacts() => $_has(32);
   @$pb.TagNumber(43)
   void clearUploadContacts() => clearField(43);
   @$pb.TagNumber(43)
-  GenericResponse ensureUploadContacts() => $_ensure(30);
+  GenericResponse ensureUploadContacts() => $_ensure(32);
 
   @$pb.TagNumber(44)
-  Contact get contactCreated => $_getN(31);
+  Contact get contactCreated => $_getN(33);
   @$pb.TagNumber(44)
   set contactCreated(Contact v) { setField(44, v); }
   @$pb.TagNumber(44)
-  $core.bool hasContactCreated() => $_has(31);
+  $core.bool hasContactCreated() => $_has(33);
   @$pb.TagNumber(44)
   void clearContactCreated() => clearField(44);
   @$pb.TagNumber(44)
-  Contact ensureContactCreated() => $_ensure(31);
+  Contact ensureContactCreated() => $_ensure(33);
 
   @$pb.TagNumber(45)
-  From_ContactRemoved get contactRemoved => $_getN(32);
+  From_ContactRemoved get contactRemoved => $_getN(34);
   @$pb.TagNumber(45)
   set contactRemoved(From_ContactRemoved v) { setField(45, v); }
   @$pb.TagNumber(45)
-  $core.bool hasContactRemoved() => $_has(32);
+  $core.bool hasContactRemoved() => $_has(34);
   @$pb.TagNumber(45)
   void clearContactRemoved() => clearField(45);
   @$pb.TagNumber(45)
-  From_ContactRemoved ensureContactRemoved() => $_ensure(32);
+  From_ContactRemoved ensureContactRemoved() => $_ensure(34);
 
   @$pb.TagNumber(46)
-  ContactTransaction get contactTransaction => $_getN(33);
+  ContactTransaction get contactTransaction => $_getN(35);
   @$pb.TagNumber(46)
   set contactTransaction(ContactTransaction v) { setField(46, v); }
   @$pb.TagNumber(46)
-  $core.bool hasContactTransaction() => $_has(33);
+  $core.bool hasContactTransaction() => $_has(35);
   @$pb.TagNumber(46)
   void clearContactTransaction() => clearField(46);
   @$pb.TagNumber(46)
-  ContactTransaction ensureContactTransaction() => $_ensure(33);
+  ContactTransaction ensureContactTransaction() => $_ensure(35);
 
   @$pb.TagNumber(47)
-  From_AccountStatus get accountStatus => $_getN(34);
+  From_AccountStatus get accountStatus => $_getN(36);
   @$pb.TagNumber(47)
   set accountStatus(From_AccountStatus v) { setField(47, v); }
   @$pb.TagNumber(47)
-  $core.bool hasAccountStatus() => $_has(34);
+  $core.bool hasAccountStatus() => $_has(36);
   @$pb.TagNumber(47)
   void clearAccountStatus() => clearField(47);
   @$pb.TagNumber(47)
-  From_AccountStatus ensureAccountStatus() => $_ensure(34);
+  From_AccountStatus ensureAccountStatus() => $_ensure(36);
 
   @$pb.TagNumber(50)
-  From_ShowMessage get showMessage => $_getN(35);
+  From_ShowMessage get showMessage => $_getN(37);
   @$pb.TagNumber(50)
   set showMessage(From_ShowMessage v) { setField(50, v); }
   @$pb.TagNumber(50)
-  $core.bool hasShowMessage() => $_has(35);
+  $core.bool hasShowMessage() => $_has(37);
   @$pb.TagNumber(50)
   void clearShowMessage() => clearField(50);
   @$pb.TagNumber(50)
-  From_ShowMessage ensureShowMessage() => $_ensure(35);
+  From_ShowMessage ensureShowMessage() => $_ensure(37);
 
   @$pb.TagNumber(51)
-  From_SubmitReview get submitReview => $_getN(36);
+  From_SubmitReview get submitReview => $_getN(38);
   @$pb.TagNumber(51)
   set submitReview(From_SubmitReview v) { setField(51, v); }
   @$pb.TagNumber(51)
-  $core.bool hasSubmitReview() => $_has(36);
+  $core.bool hasSubmitReview() => $_has(38);
   @$pb.TagNumber(51)
   void clearSubmitReview() => clearField(51);
   @$pb.TagNumber(51)
-  From_SubmitReview ensureSubmitReview() => $_ensure(36);
+  From_SubmitReview ensureSubmitReview() => $_ensure(38);
 
   @$pb.TagNumber(52)
-  From_SubmitResult get submitResult => $_getN(37);
+  From_SubmitResult get submitResult => $_getN(39);
   @$pb.TagNumber(52)
   set submitResult(From_SubmitResult v) { setField(52, v); }
   @$pb.TagNumber(52)
-  $core.bool hasSubmitResult() => $_has(37);
+  $core.bool hasSubmitResult() => $_has(39);
   @$pb.TagNumber(52)
   void clearSubmitResult() => clearField(52);
   @$pb.TagNumber(52)
-  From_SubmitResult ensureSubmitResult() => $_ensure(37);
+  From_SubmitResult ensureSubmitResult() => $_ensure(39);
 
   @$pb.TagNumber(53)
-  GenericResponse get editOrder => $_getN(38);
+  GenericResponse get editOrder => $_getN(40);
   @$pb.TagNumber(53)
   set editOrder(GenericResponse v) { setField(53, v); }
   @$pb.TagNumber(53)
-  $core.bool hasEditOrder() => $_has(38);
+  $core.bool hasEditOrder() => $_has(40);
   @$pb.TagNumber(53)
   void clearEditOrder() => clearField(53);
   @$pb.TagNumber(53)
-  GenericResponse ensureEditOrder() => $_ensure(38);
+  GenericResponse ensureEditOrder() => $_ensure(40);
 
   @$pb.TagNumber(54)
-  GenericResponse get cancelOrder => $_getN(39);
+  GenericResponse get cancelOrder => $_getN(41);
   @$pb.TagNumber(54)
   set cancelOrder(GenericResponse v) { setField(54, v); }
   @$pb.TagNumber(54)
-  $core.bool hasCancelOrder() => $_has(39);
+  $core.bool hasCancelOrder() => $_has(41);
   @$pb.TagNumber(54)
   void clearCancelOrder() => clearField(54);
   @$pb.TagNumber(54)
-  GenericResponse ensureCancelOrder() => $_ensure(39);
+  GenericResponse ensureCancelOrder() => $_ensure(41);
 
   @$pb.TagNumber(55)
-  From_ShowInsufficientFunds get insufficientFunds => $_getN(40);
+  From_ShowInsufficientFunds get insufficientFunds => $_getN(42);
   @$pb.TagNumber(55)
   set insufficientFunds(From_ShowInsufficientFunds v) { setField(55, v); }
   @$pb.TagNumber(55)
-  $core.bool hasInsufficientFunds() => $_has(40);
+  $core.bool hasInsufficientFunds() => $_has(42);
   @$pb.TagNumber(55)
   void clearInsufficientFunds() => clearField(55);
   @$pb.TagNumber(55)
-  From_ShowInsufficientFunds ensureInsufficientFunds() => $_ensure(40);
+  From_ShowInsufficientFunds ensureInsufficientFunds() => $_ensure(42);
 
   @$pb.TagNumber(56)
-  From_StartTimer get startTimer => $_getN(41);
+  From_StartTimer get startTimer => $_getN(43);
   @$pb.TagNumber(56)
   set startTimer(From_StartTimer v) { setField(56, v); }
   @$pb.TagNumber(56)
-  $core.bool hasStartTimer() => $_has(41);
+  $core.bool hasStartTimer() => $_has(43);
   @$pb.TagNumber(56)
   void clearStartTimer() => clearField(56);
   @$pb.TagNumber(56)
-  From_StartTimer ensureStartTimer() => $_ensure(41);
+  From_StartTimer ensureStartTimer() => $_ensure(43);
 
   @$pb.TagNumber(60)
-  Empty get serverConnected => $_getN(42);
+  Empty get serverConnected => $_getN(44);
   @$pb.TagNumber(60)
   set serverConnected(Empty v) { setField(60, v); }
   @$pb.TagNumber(60)
-  $core.bool hasServerConnected() => $_has(42);
+  $core.bool hasServerConnected() => $_has(44);
   @$pb.TagNumber(60)
   void clearServerConnected() => clearField(60);
   @$pb.TagNumber(60)
-  Empty ensureServerConnected() => $_ensure(42);
+  Empty ensureServerConnected() => $_ensure(44);
 
   @$pb.TagNumber(61)
-  Empty get serverDisconnected => $_getN(43);
+  Empty get serverDisconnected => $_getN(45);
   @$pb.TagNumber(61)
   set serverDisconnected(Empty v) { setField(61, v); }
   @$pb.TagNumber(61)
-  $core.bool hasServerDisconnected() => $_has(43);
+  $core.bool hasServerDisconnected() => $_has(45);
   @$pb.TagNumber(61)
   void clearServerDisconnected() => clearField(61);
   @$pb.TagNumber(61)
-  Empty ensureServerDisconnected() => $_ensure(43);
+  Empty ensureServerDisconnected() => $_ensure(45);
 
   @$pb.TagNumber(62)
-  From_OrderCreated get orderCreated => $_getN(44);
+  From_OrderCreated get orderCreated => $_getN(46);
   @$pb.TagNumber(62)
   set orderCreated(From_OrderCreated v) { setField(62, v); }
   @$pb.TagNumber(62)
-  $core.bool hasOrderCreated() => $_has(44);
+  $core.bool hasOrderCreated() => $_has(46);
   @$pb.TagNumber(62)
   void clearOrderCreated() => clearField(62);
   @$pb.TagNumber(62)
-  From_OrderCreated ensureOrderCreated() => $_ensure(44);
+  From_OrderCreated ensureOrderCreated() => $_ensure(46);
 
   @$pb.TagNumber(63)
-  From_OrderRemoved get orderRemoved => $_getN(45);
+  From_OrderRemoved get orderRemoved => $_getN(47);
   @$pb.TagNumber(63)
   set orderRemoved(From_OrderRemoved v) { setField(63, v); }
   @$pb.TagNumber(63)
-  $core.bool hasOrderRemoved() => $_has(45);
+  $core.bool hasOrderRemoved() => $_has(47);
   @$pb.TagNumber(63)
   void clearOrderRemoved() => clearField(63);
   @$pb.TagNumber(63)
-  From_OrderRemoved ensureOrderRemoved() => $_ensure(45);
+  From_OrderRemoved ensureOrderRemoved() => $_ensure(47);
 
   @$pb.TagNumber(64)
-  From_IndexPrice get indexPrice => $_getN(46);
+  From_IndexPrice get indexPrice => $_getN(48);
   @$pb.TagNumber(64)
   set indexPrice(From_IndexPrice v) { setField(64, v); }
   @$pb.TagNumber(64)
-  $core.bool hasIndexPrice() => $_has(46);
+  $core.bool hasIndexPrice() => $_has(48);
   @$pb.TagNumber(64)
   void clearIndexPrice() => clearField(64);
   @$pb.TagNumber(64)
-  From_IndexPrice ensureIndexPrice() => $_ensure(46);
+  From_IndexPrice ensureIndexPrice() => $_ensure(48);
 
   @$pb.TagNumber(65)
-  From_AssetDetails get assetDetails => $_getN(47);
+  From_AssetDetails get assetDetails => $_getN(49);
   @$pb.TagNumber(65)
   set assetDetails(From_AssetDetails v) { setField(65, v); }
   @$pb.TagNumber(65)
-  $core.bool hasAssetDetails() => $_has(47);
+  $core.bool hasAssetDetails() => $_has(49);
   @$pb.TagNumber(65)
   void clearAssetDetails() => clearField(65);
   @$pb.TagNumber(65)
-  From_AssetDetails ensureAssetDetails() => $_ensure(47);
+  From_AssetDetails ensureAssetDetails() => $_ensure(49);
 
   @$pb.TagNumber(66)
-  From_UpdatePriceStream get updatePriceStream => $_getN(48);
+  From_UpdatePriceStream get updatePriceStream => $_getN(50);
   @$pb.TagNumber(66)
   set updatePriceStream(From_UpdatePriceStream v) { setField(66, v); }
   @$pb.TagNumber(66)
-  $core.bool hasUpdatePriceStream() => $_has(48);
+  $core.bool hasUpdatePriceStream() => $_has(50);
   @$pb.TagNumber(66)
   void clearUpdatePriceStream() => clearField(66);
   @$pb.TagNumber(66)
-  From_UpdatePriceStream ensureUpdatePriceStream() => $_ensure(48);
+  From_UpdatePriceStream ensureUpdatePriceStream() => $_ensure(50);
 
   @$pb.TagNumber(67)
-  From_OrderComplete get orderComplete => $_getN(49);
+  From_OrderComplete get orderComplete => $_getN(51);
   @$pb.TagNumber(67)
   set orderComplete(From_OrderComplete v) { setField(67, v); }
   @$pb.TagNumber(67)
-  $core.bool hasOrderComplete() => $_has(49);
+  $core.bool hasOrderComplete() => $_has(51);
   @$pb.TagNumber(67)
   void clearOrderComplete() => clearField(67);
   @$pb.TagNumber(67)
-  From_OrderComplete ensureOrderComplete() => $_ensure(49);
+  From_OrderComplete ensureOrderComplete() => $_ensure(51);
 
   @$pb.TagNumber(68)
-  From_LocalMessage get localMessage => $_getN(50);
+  From_LocalMessage get localMessage => $_getN(52);
   @$pb.TagNumber(68)
   set localMessage(From_LocalMessage v) { setField(68, v); }
   @$pb.TagNumber(68)
-  $core.bool hasLocalMessage() => $_has(50);
+  $core.bool hasLocalMessage() => $_has(52);
   @$pb.TagNumber(68)
   void clearLocalMessage() => clearField(68);
   @$pb.TagNumber(68)
-  From_LocalMessage ensureLocalMessage() => $_ensure(50);
+  From_LocalMessage ensureLocalMessage() => $_ensure(52);
 
   @$pb.TagNumber(70)
-  From_MarketDataSubscribe get marketDataSubscribe => $_getN(51);
+  From_MarketDataSubscribe get marketDataSubscribe => $_getN(53);
   @$pb.TagNumber(70)
   set marketDataSubscribe(From_MarketDataSubscribe v) { setField(70, v); }
   @$pb.TagNumber(70)
-  $core.bool hasMarketDataSubscribe() => $_has(51);
+  $core.bool hasMarketDataSubscribe() => $_has(53);
   @$pb.TagNumber(70)
   void clearMarketDataSubscribe() => clearField(70);
   @$pb.TagNumber(70)
-  From_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(51);
+  From_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(53);
 
   @$pb.TagNumber(71)
-  From_MarketDataUpdate get marketDataUpdate => $_getN(52);
+  From_MarketDataUpdate get marketDataUpdate => $_getN(54);
   @$pb.TagNumber(71)
   set marketDataUpdate(From_MarketDataUpdate v) { setField(71, v); }
   @$pb.TagNumber(71)
-  $core.bool hasMarketDataUpdate() => $_has(52);
+  $core.bool hasMarketDataUpdate() => $_has(54);
   @$pb.TagNumber(71)
   void clearMarketDataUpdate() => clearField(71);
   @$pb.TagNumber(71)
-  From_MarketDataUpdate ensureMarketDataUpdate() => $_ensure(52);
+  From_MarketDataUpdate ensureMarketDataUpdate() => $_ensure(54);
 
   @$pb.TagNumber(72)
-  From_PortfolioPrices get portfolioPrices => $_getN(53);
+  From_PortfolioPrices get portfolioPrices => $_getN(55);
   @$pb.TagNumber(72)
   set portfolioPrices(From_PortfolioPrices v) { setField(72, v); }
   @$pb.TagNumber(72)
-  $core.bool hasPortfolioPrices() => $_has(53);
+  $core.bool hasPortfolioPrices() => $_has(55);
   @$pb.TagNumber(72)
   void clearPortfolioPrices() => clearField(72);
   @$pb.TagNumber(72)
-  From_PortfolioPrices ensurePortfolioPrices() => $_ensure(53);
+  From_PortfolioPrices ensurePortfolioPrices() => $_ensure(55);
 
   @$pb.TagNumber(73)
-  From_ConversionRates get conversionRates => $_getN(54);
+  From_ConversionRates get conversionRates => $_getN(56);
   @$pb.TagNumber(73)
   set conversionRates(From_ConversionRates v) { setField(73, v); }
   @$pb.TagNumber(73)
-  $core.bool hasConversionRates() => $_has(54);
+  $core.bool hasConversionRates() => $_has(56);
   @$pb.TagNumber(73)
   void clearConversionRates() => clearField(73);
   @$pb.TagNumber(73)
-  From_ConversionRates ensureConversionRates() => $_ensure(54);
+  From_ConversionRates ensureConversionRates() => $_ensure(56);
 
   @$pb.TagNumber(80)
-  From_JadePorts get jadePorts => $_getN(55);
+  From_JadePorts get jadePorts => $_getN(57);
   @$pb.TagNumber(80)
   set jadePorts(From_JadePorts v) { setField(80, v); }
   @$pb.TagNumber(80)
-  $core.bool hasJadePorts() => $_has(55);
+  $core.bool hasJadePorts() => $_has(57);
   @$pb.TagNumber(80)
   void clearJadePorts() => clearField(80);
   @$pb.TagNumber(80)
-  From_JadePorts ensureJadePorts() => $_ensure(55);
+  From_JadePorts ensureJadePorts() => $_ensure(57);
 
   @$pb.TagNumber(83)
-  From_JadeStatus get jadeStatus => $_getN(56);
+  From_JadeStatus get jadeStatus => $_getN(58);
   @$pb.TagNumber(83)
   set jadeStatus(From_JadeStatus v) { setField(83, v); }
   @$pb.TagNumber(83)
-  $core.bool hasJadeStatus() => $_has(56);
+  $core.bool hasJadeStatus() => $_has(58);
   @$pb.TagNumber(83)
   void clearJadeStatus() => clearField(83);
   @$pb.TagNumber(83)
-  From_JadeStatus ensureJadeStatus() => $_ensure(56);
+  From_JadeStatus ensureJadeStatus() => $_ensure(58);
 
   @$pb.TagNumber(91)
-  From_GaidStatus get gaidStatus => $_getN(57);
+  From_GaidStatus get gaidStatus => $_getN(59);
   @$pb.TagNumber(91)
   set gaidStatus(From_GaidStatus v) { setField(91, v); }
   @$pb.TagNumber(91)
-  $core.bool hasGaidStatus() => $_has(57);
+  $core.bool hasGaidStatus() => $_has(59);
   @$pb.TagNumber(91)
   void clearGaidStatus() => clearField(91);
   @$pb.TagNumber(91)
-  From_GaidStatus ensureGaidStatus() => $_ensure(57);
+  From_GaidStatus ensureGaidStatus() => $_ensure(59);
 }
 
 class Settings_AccountAsset extends $pb.GeneratedMessage {

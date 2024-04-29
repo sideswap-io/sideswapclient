@@ -18,7 +18,7 @@ class DNewWalletBackupCheckSucceed extends ConsumerWidget {
       },
       constraints: const BoxConstraints(
         maxWidth: 628,
-        maxHeight: 437,
+        maxHeight: 446,
       ),
       backgroundContent: const DNewWalletBackupLogoBackground(),
       content: Center(

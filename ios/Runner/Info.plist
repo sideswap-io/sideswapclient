@@ -36,11 +36,11 @@
 	<string>Use biometric authentication for wallet protection</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to photos to setup user avatar</string>
-    <key>UIBackgroundModes</key>
-    <array>
-	    <string>fetch</string>
-    	<string>remote-notification</string>
-    </array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -66,5 +66,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This application requires access to Bluetooth to scan and connect to hardware wallets</string>
 </dict>
 </plist>

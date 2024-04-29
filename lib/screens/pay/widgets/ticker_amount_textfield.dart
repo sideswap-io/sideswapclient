@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 
 import 'package:sideswap/common/utils/decimal_text_input_formatter.dart';
+import 'package:sideswap/common/utils/number_spaced_formatter.dart';
 import 'package:sideswap/desktop/main/d_payment_select_asset.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/swap_provider.dart';
@@ -71,14 +72,24 @@ class TickerAmountTextField extends HookConsumerWidget {
 
     useEffect(() {
       textfieldFocusNode.addListener(() {
-        (switch (textfieldFocusNode.hasFocus) {
-          true when !readOnly => visibleHintText.value = false,
-          _ => visibleHintText.value = showHintText,
-        });
+        if (!context.mounted) {
+          return;
+        }
+
+        if (swapType == SwapType.pegIn && readOnly) {
+          return;
+        }
+
+        if (textfieldFocusNode.hasFocus && !readOnly) {
+          visibleHintText.value = false;
+          return;
+        }
+
+        visibleHintText.value = showHintText;
       });
 
       return;
-    }, [textfieldFocusNode]);
+    }, const []);
 
     void showAccountsPopup() {
       Navigator.of(context, rootNavigator: true).push<void>(
@@ -194,6 +205,7 @@ class TickerAmountTextField extends HookConsumerWidget {
                               RegExp('[\\-|,\\ ]A-Za-z')),
                         ],
                         DecimalTextInputFormatter(decimalRange: assetPrecision),
+                        NumberSpacedFormatter(),
                       ],
                       onChanged: onChanged,
                       onSubmitted: onSubmitted,

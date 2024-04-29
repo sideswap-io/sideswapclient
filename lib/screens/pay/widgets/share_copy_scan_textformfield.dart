@@ -128,113 +128,69 @@ class ShareCopyScanTextFormFieldState
     final gestureAreaWidth = _spaceBetween * 2 + _iconWidth;
     final suffixWidth = suffixCounter * gestureAreaWidth;
 
-    return FutureBuilder<ClipboardData?>(
-        future: Clipboard.getData(Clipboard.kTextPlain),
-        builder: (data, clipboardData) {
-          final clipboardText = clipboardData.data?.text?.trim() ?? '';
-          return Consumer(
-            builder: (context, ref, _) {
-              final showPasteFromClipboard = !FlavorConfig.isDesktop &&
-                  ref.read(isAddrTypeValidProvider(
-                      clipboardText, widget.addrType)) &&
-                  widget.controller != null;
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  TextField(
-                    key: widget.textFormKey,
-                    focusNode: _focusNode,
-                    controller: widget.controller,
-                    style: widget.textStyle ??
-                        _defaultStyle.copyWith(color: Colors.black),
-                    enabled: widget.enabled,
-                    readOnly: widget.readOnly,
-                    onChanged: widget.onChanged,
-                    contextMenuBuilder: (context, editableTextState) =>
-                        AdaptiveTextSelectionToolbar.buttonItems(
-                      anchors: editableTextState.contextMenuAnchors,
-                      buttonItems: editableTextState.contextMenuButtonItems,
-                    ),
-                    onEditingComplete: widget.onEditingCompleted,
-                    inputFormatters: [alphaNumFormatter],
-                    decoration: SideSwapInputDecoration(
-                      hintStyle: widget.hintStyle,
-                      hintText: widget.hintText,
-                      errorText: widget.errorText,
-                      errorStyle: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: SideSwapColors.bitterSweet,
+    return SizedBox(
+      width: 538,
+      child: FutureBuilder<ClipboardData?>(
+          future: Clipboard.getData(Clipboard.kTextPlain),
+          builder: (data, clipboardData) {
+            final clipboardText = clipboardData.data?.text?.trim() ?? '';
+            return Consumer(
+              builder: (context, ref, _) {
+                final showPasteFromClipboard = !FlavorConfig.isDesktop &&
+                    ref.read(isAddrTypeValidProvider(
+                        clipboardText, widget.addrType)) &&
+                    widget.controller != null;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      key: widget.textFormKey,
+                      focusNode: _focusNode,
+                      controller: widget.controller,
+                      style: widget.textStyle ??
+                          _defaultStyle.copyWith(color: Colors.black),
+                      enabled: widget.enabled,
+                      readOnly: widget.readOnly,
+                      onChanged: widget.onChanged,
+                      contextMenuBuilder: (context, editableTextState) =>
+                          AdaptiveTextSelectionToolbar.buttonItems(
+                        anchors: editableTextState.contextMenuAnchors,
+                        buttonItems: editableTextState.contextMenuButtonItems,
                       ),
-                      suffixIcon: _emptySuffix
-                          ? null
-                          : Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              child: SizedBox(
-                                width: suffixWidth,
-                                height: 24,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    if (widget.onCopyTap != null) ...[
-                                      SizedBox(
-                                        width: gestureAreaWidth,
-                                        height: double.maxFinite,
-                                        child: InkWell(
-                                          onTap: () {
-                                            onTapSuffix();
-                                          },
-                                          child: Center(
-                                            child: SvgPicture.asset(
-                                              'assets/copy.svg',
-                                              width: _iconWidth,
-                                              height: _iconWidth,
-                                              colorFilter:
-                                                  const ColorFilter.mode(
-                                                      Color(0xFF00B4E9),
-                                                      BlendMode.srcIn),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    if (widget.onPasteTap != null) ...[
-                                      SizedBox(
-                                        width: gestureAreaWidth,
-                                        height: double.maxFinite,
-                                        child: InkWell(
-                                          onTap: () {
-                                            onTapSuffix(
-                                                onTap: widget.onPasteTap);
-                                          },
-                                          child: Center(
-                                            child: Icon(
-                                              Icons.content_paste,
-                                              size: _iconWidth,
-                                              color: const Color(0xFF00B4E9),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                    if (widget.onScanTap != null) ...[
-                                      SizedBox(
-                                        width: gestureAreaWidth,
-                                        height: double.maxFinite,
-                                        child: Material(
-                                          color: Colors.transparent,
+                      onEditingComplete: widget.onEditingCompleted,
+                      inputFormatters: [alphaNumFormatter],
+                      decoration: SideSwapInputDecoration(
+                        hintStyle: widget.hintStyle,
+                        hintText: widget.hintText,
+                        errorText: widget.errorText,
+                        errorStyle: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.normal,
+                          color: SideSwapColors.bitterSweet,
+                        ),
+                        suffixIcon: _emptySuffix
+                            ? null
+                            : Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: SizedBox(
+                                  width: suffixWidth,
+                                  height: 24,
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceAround,
+                                    children: [
+                                      if (widget.onCopyTap != null) ...[
+                                        SizedBox(
+                                          width: gestureAreaWidth,
+                                          height: double.maxFinite,
                                           child: InkWell(
                                             onTap: () {
-                                              if (widget.shareEnabled) {
-                                                onTapSuffix(
-                                                    onTap: widget.onScanTap);
-                                              }
+                                              onTapSuffix();
                                             },
                                             child: Center(
                                               child: SvgPicture.asset(
-                                                'assets/qr_icon.svg',
+                                                'assets/copy.svg',
                                                 width: _iconWidth,
                                                 height: _iconWidth,
                                                 colorFilter:
@@ -245,124 +201,174 @@ class ShareCopyScanTextFormFieldState
                                             ),
                                           ),
                                         ),
-                                      )
-                                    ],
-                                    if (widget.onShareTap != null) ...[
-                                      SizedBox(
-                                        width: gestureAreaWidth,
-                                        height: double.maxFinite,
-                                        child: Builder(
-                                          builder: (BuildContext context) =>
-                                              InkWell(
-                                            onTap: widget.onShareTap != null
-                                                ? () {
-                                                    _focusNode.unfocus();
-                                                    _focusNode.canRequestFocus =
-                                                        false;
-                                                    if (widget.shareEnabled) {
-                                                      widget
-                                                          .onShareTap!(context);
-                                                    }
-                                                    Future.delayed(
-                                                        const Duration(
-                                                            milliseconds: 100),
-                                                        () {
-                                                      _focusNode
-                                                              .canRequestFocus =
-                                                          true;
-                                                    });
-                                                  }
-                                                : null,
+                                      ],
+                                      if (widget.onPasteTap != null) ...[
+                                        SizedBox(
+                                          width: gestureAreaWidth,
+                                          height: double.maxFinite,
+                                          child: InkWell(
+                                            onTap: () {
+                                              onTapSuffix(
+                                                  onTap: widget.onPasteTap);
+                                            },
                                             child: Center(
                                               child: Icon(
-                                                Icons.share,
+                                                Icons.content_paste,
                                                 size: _iconWidth,
-                                                color: widget.shareEnabled
-                                                    ? const Color(0xFF00B4E9)
-                                                    : const Color(0xFFA5A9AF),
+                                                color: const Color(0xFF00B4E9),
                                               ),
                                             ),
                                           ),
                                         ),
-                                      ),
-                                    ]
-                                  ],
+                                      ],
+                                      if (widget.onScanTap != null) ...[
+                                        SizedBox(
+                                          width: gestureAreaWidth,
+                                          height: double.maxFinite,
+                                          child: Material(
+                                            color: Colors.transparent,
+                                            child: InkWell(
+                                              onTap: () {
+                                                if (widget.shareEnabled) {
+                                                  onTapSuffix(
+                                                      onTap: widget.onScanTap);
+                                                }
+                                              },
+                                              child: Center(
+                                                child: SvgPicture.asset(
+                                                  'assets/qr_icon.svg',
+                                                  width: _iconWidth,
+                                                  height: _iconWidth,
+                                                  colorFilter:
+                                                      const ColorFilter.mode(
+                                                          Color(0xFF00B4E9),
+                                                          BlendMode.srcIn),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                      if (widget.onShareTap != null) ...[
+                                        SizedBox(
+                                          width: gestureAreaWidth,
+                                          height: double.maxFinite,
+                                          child: Builder(
+                                            builder: (BuildContext context) =>
+                                                InkWell(
+                                              onTap: widget.onShareTap != null
+                                                  ? () {
+                                                      _focusNode.unfocus();
+                                                      _focusNode
+                                                              .canRequestFocus =
+                                                          false;
+                                                      if (widget.shareEnabled) {
+                                                        widget.onShareTap!(
+                                                            context);
+                                                      }
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              milliseconds:
+                                                                  100), () {
+                                                        _focusNode
+                                                                .canRequestFocus =
+                                                            true;
+                                                      });
+                                                    }
+                                                  : null,
+                                              child: Center(
+                                                child: Icon(
+                                                  Icons.share,
+                                                  size: _iconWidth,
+                                                  color: widget.shareEnabled
+                                                      ? const Color(0xFF00B4E9)
+                                                      : const Color(0xFFA5A9AF),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ]
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                    ),
-                  ),
-                  if (showPasteFromClipboard) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: SideSwapColors.chathamsBlue,
-                        borderRadius: BorderRadius.all(Radius.circular(20)),
                       ),
-                      child: TextButton(
-                        onPressed: () {
-                          setControllerValue(widget.controller!, clipboardText);
-                          if (widget.onChanged != null) {
-                            widget.onChanged!(clipboardText);
-                          }
-                        },
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                            side: const BorderSide(
-                              width: 1.0,
-                              style: BorderStyle.solid,
-                              color: SideSwapColors.chathamsBlue,
+                    ),
+                    if (showPasteFromClipboard) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: SideSwapColors.chathamsBlue,
+                          borderRadius: BorderRadius.all(Radius.circular(20)),
+                        ),
+                        child: TextButton(
+                          onPressed: () {
+                            setControllerValue(
+                                widget.controller!, clipboardText);
+                            if (widget.onChanged != null) {
+                              widget.onChanged!(clipboardText);
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: const BorderSide(
+                                width: 1.0,
+                                style: BorderStyle.solid,
+                                color: SideSwapColors.chathamsBlue,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Paste from clipboard'.tr(),
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.normal,
-                                        color: Color(0xFF00B4E9),
-                                      ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 7),
-                                      child: Text(
-                                        clipboardText,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Paste from clipboard'.tr(),
                                         style: const TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.normal,
-                                          color: Colors.white,
+                                          color: Color(0xFF00B4E9),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 7),
+                                        child: Text(
+                                          clipboardText,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.normal,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(
-                                Icons.content_paste,
-                                size: _iconWidth,
-                                color: const Color(0xFFFFFFFF),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.content_paste,
+                                  size: _iconWidth,
+                                  color: const Color(0xFFFFFFFF),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ]
-                ],
-              );
-            },
-          );
-        });
+                    ]
+                  ],
+                );
+              },
+            );
+          }),
+    );
   }
 }

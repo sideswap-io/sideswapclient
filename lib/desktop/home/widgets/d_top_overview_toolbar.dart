@@ -9,13 +9,13 @@ import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/csv_provider.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 
-class DTopOverviewToolbar extends StatelessWidget {
+class DTopOverviewToolbar extends ConsumerWidget {
   const DTopOverviewToolbar({
     super.key,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         SvgPicture.asset(
@@ -32,6 +32,32 @@ class DTopOverviewToolbar extends StatelessWidget {
             color: Colors.white,
           ),
         ),
+        // Address button
+        // const SizedBox(width: 16),
+        // Consumer(
+        //   builder: (context, ref, child) {
+        //     final walletMainArguments = ref.watch(uiStateArgsNotifierProvider);
+        //     final regularAccountAddressess =
+        //         ref.watch(regularAccountAddressesProvider);
+
+        //     return DPreviousAddressButton(
+        //       onButtonPressed: () {
+        //         ref.read(swapProvider).swapReset();
+        //         final newWalletMainArguments =
+        //             walletMainArguments.fromIndexDesktop(5); // addresses
+        //         ref
+        //             .read(uiStateArgsNotifierProvider.notifier)
+        //             .setWalletMainArguments(newWalletMainArguments);
+        //       },
+        //       onTextPressed: () {
+        //         if (regularAccountAddressess.isNotEmpty) {
+        //           copyToClipboard(
+        //               context, regularAccountAddressess.last.recvAddress);
+        //         }
+        //       },
+        //     );
+        //   },
+        // ),
         const Spacer(),
         Consumer(
           builder: (context, ref, child) {

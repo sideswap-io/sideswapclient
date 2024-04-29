@@ -5,9 +5,10 @@ use crate::gdk_json::{self, AddressInfo};
 use crate::settings::WatchOnly;
 use crate::worker;
 use crate::{ffi, models};
-use bitcoin::bip32::ExtendedPubKey;
+use bitcoin::bip32;
 use sideswap_api::{Asset, AssetId};
 use sideswap_common::env::Env;
+use sideswap_jade::jade_mng;
 use sideswap_jade::models::JadeNetwork;
 
 #[derive(Copy, Clone)]
@@ -32,10 +33,10 @@ pub type JadeStatusCallback = std::sync::Arc<Box<dyn Fn(JadeStatus)>>;
 pub struct HwData {
     pub env: Env,
     pub name: String,
-    pub jade: std::sync::Arc<crate::jade_mng::ManagedJade>,
+    pub jade: std::sync::Arc<jade_mng::ManagedJade>,
     pub status_callback: JadeStatusCallback,
     pub master_blinding_key: String,
-    pub xpubs: BTreeMap<Vec<u32>, ExtendedPubKey>,
+    pub xpubs: BTreeMap<Vec<u32>, bip32::Xpub>,
 }
 
 #[derive(Clone)]
@@ -77,24 +78,6 @@ pub struct LoginInfo {
 pub type NotifCallback = Box<dyn Fn(worker::AccountId, crate::gdk_json::Notification)>;
 
 impl HwData {
-    pub fn clear_queue(&self) {
-        // TODO: Should we clear pending queue here?
-        while let Ok(msg) = self.jade.recv(std::time::Duration::ZERO) {
-            warn!("unexpected Jade response ignored: {:?}", msg);
-        }
-    }
-
-    pub fn get_resp_with_timeout(
-        &self,
-        time: std::time::Duration,
-    ) -> Result<sideswap_jade::Resp, anyhow::Error> {
-        self.jade.recv(time)
-    }
-
-    pub fn get_resp(&self) -> Result<sideswap_jade::Resp, anyhow::Error> {
-        self.get_resp_with_timeout(std::time::Duration::from_secs(10))
-    }
-
     pub fn get_hw_device(hw_data: Option<&Self>) -> crate::gdk_json::HwDevice {
         crate::gdk_json::HwDevice {
             device: hw_data.map(|hw_data| crate::gdk_json::HwDeviceDetails {
@@ -112,18 +95,9 @@ impl HwData {
         &self,
         network: JadeNetwork,
         path: &[u32],
-    ) -> Result<ExtendedPubKey, anyhow::Error> {
-        self.jade.send(sideswap_jade::Req::ResolveXpub(
-            sideswap_jade::models::ResolveXpubReq {
-                network,
-                path: path.to_vec(),
-            },
-        ));
-        let xpub = match self.jade.recv(std::time::Duration::from_secs(20)) {
-            Ok(sideswap_jade::Resp::ResolveXpub(v)) => v,
-            resp => bail!("unexpected Jade response: {:?}", resp),
-        };
-        let xpub = ExtendedPubKey::from_str(&xpub)?;
+    ) -> Result<bip32::Xpub, anyhow::Error> {
+        let xpub = self.jade.resolve_xpub(network, path)?;
+        let xpub = bip32::Xpub::from_str(&xpub)?;
         Ok(xpub)
     }
 
@@ -184,7 +158,7 @@ pub trait GdkSes {
     fn get_balance(&self, asset_id: &AssetId) -> i64 {
         self.get_balances()
             .ok()
-            .and_then(|balances| balances.get(asset_id).cloned())
+            .and_then(|balances| balances.get(asset_id).copied())
             .unwrap_or_default()
     }
 

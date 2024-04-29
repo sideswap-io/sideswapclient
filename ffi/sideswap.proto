@@ -143,9 +143,15 @@ message SwapDetails {
   required string upload_url = 6;
 }
 
+message OutPoint {
+  required string txid = 1;
+  required uint32 vout = 2;
+}
+
 message CreateTx {
   repeated AddressAmount addressees = 1;
   required Account account = 2;
+  repeated OutPoint utxos = 3;
 }
 
 message CreatedTx {
@@ -378,6 +384,8 @@ message To {
     CreatePayjoin create_payjoin = 15;
     CreatedPayjoin send_payjoin = 16;
     BlindedValues blinded_values = 14;
+    Account load_utxos = 17;
+    Account load_addresses = 18;
 
     SwapRequest swap_request = 20;
     PegInRequest peg_in_request = 21;
@@ -514,6 +522,35 @@ message From {
   message RecvAddress {
     required Address addr = 1;
     required Account account = 2;
+  }
+
+  message LoadUtxos {
+    message Utxo {
+      required string txid = 1;
+      required uint32 vout = 2;
+      required string asset_id = 3;
+      required uint64 amount = 4;
+      required string address = 5;
+      required bool is_internal = 6;
+      required bool is_confidential = 7;
+    }
+
+    required Account account = 1;
+    repeated Utxo utxos = 2;
+    optional string error_msg = 3;
+  }
+
+  message LoadAddresses {
+    message Address {
+      required string address = 1;
+      required string unconfidential_address = 4;
+      required uint32 index = 2;
+      required bool is_internal = 3;
+    }
+
+    required Account account = 1;
+    repeated Address addresses = 2;
+    optional string error_msg = 3;
   }
 
   message CreateTxResult {
@@ -692,18 +729,9 @@ message From {
   }
 
   message JadePorts {
-    enum State {
-      UNINIT = 0;
-      MAIN = 1;
-      TEST = 2;
-    }
-
     message Port {
       required string jade_id = 1;
       required string port = 2;
-      required string serial = 3;
-      required string version = 4;
-      required State state = 5;
     }
 
     repeated Port ports = 1;
@@ -761,6 +789,8 @@ message From {
     CreatePayjoinResult create_payjoin_result = 34;
     SendResult send_result = 32;
     BlindedValues blinded_values = 33;
+    LoadUtxos load_utxos = 35;
+    LoadAddresses load_addresses = 36;
 
     RegisterPhone register_phone = 40;
     VerifyPhone verify_phone = 41;

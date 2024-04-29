@@ -39,7 +39,7 @@ impl Env {
             Env::Prod | Env::Staging | Env::LocalLiquid => {
                 &elements::address::AddressParams::LIQUID
             }
-            Env::Testnet | Env::LocalTestnet => &LIQUID_TESTNET,
+            Env::Testnet | Env::LocalTestnet => &elements::address::AddressParams::LIQUID_TESTNET,
             Env::Regtest | Env::Local => &elements::address::AddressParams::ELEMENTS,
         }
     }
@@ -141,22 +141,6 @@ impl Network {
         }
     }
 }
-
-pub const LIQUID_TESTNET: elements::AddressParams = elements::AddressParams {
-    p2pkh_prefix: 36,
-    p2sh_prefix: 19,
-    blinded_prefix: 23,
-    bech_hrp: "tex",
-    blech_hrp: "tlq",
-};
-
-pub const LIQUID_TESTNET_PSET: elements::AddressParams = elements::AddressParams {
-    p2pkh_prefix: 36,
-    p2sh_prefix: 19,
-    blinded_prefix: 23,
-    bech_hrp: "tex",
-    blech_hrp: "tlq",
-};
 
 pub struct EnvData {
     pub host: &'static str,

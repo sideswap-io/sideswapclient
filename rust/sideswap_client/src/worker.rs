@@ -3,13 +3,13 @@ mod assets_registry;
 use crate::ffi::proto;
 use crate::gdk_json::AddressInfo;
 use crate::gdk_ses::{ElectrumServer, NotifCallback, WalletInfo};
-use crate::jade_mng::JadeState;
 use crate::settings::{RegInfo, WatchOnly};
 
 use super::*;
 use base64::Engine;
+use bitcoin::bip32;
 use bitcoin::secp256k1::global::SECP256K1;
-use elements::bitcoin::bip32::{ChildNumber, ExtendedPrivKey, ExtendedPubKey};
+use elements::bitcoin::bip32::ChildNumber;
 use rand::Rng;
 use secp256k1::hashes::Hash;
 use settings::{Peg, PegDir};
@@ -18,7 +18,7 @@ use sideswap_common::env::Env;
 use sideswap_common::types::*;
 use sideswap_common::ws::{next_request_id, next_request_id_str};
 use sideswap_common::*;
-use sideswap_jade::serial::JadeId;
+use sideswap_jade::{jade_mng, JadeId};
 use std::collections::{HashMap, HashSet};
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
@@ -92,9 +92,6 @@ struct UiData {
 struct JadeData {
     jade_id: JadeId,
     port_name: String,
-    serial: String,
-    version: String,
-    state: JadeState,
 }
 
 #[derive(Default)]
@@ -105,9 +102,9 @@ struct UsedAddresses {
 
 #[derive(Clone)]
 pub struct XPubInfo {
-    single_sig_account: ExtendedPubKey,
-    multi_sig_service_xpub: ExtendedPubKey,
-    multi_sig_user_xpub: ExtendedPubKey,
+    single_sig_account: bip32::Xpub,
+    multi_sig_service_xpub: bip32::Xpub,
+    multi_sig_user_xpub: bip32::Xpub,
 }
 
 pub struct Wallet {
@@ -290,6 +287,7 @@ pub fn get_created_tx(
     let addressees = unsigned_tx
         .addressees
         .iter()
+        .filter(|addr| addr.user_path.is_none())
         .map(|addr| {
             let amount = if req.account.id == ACCOUNT_ID_REG {
                 addr.satoshi
@@ -413,7 +411,7 @@ fn select_swap_inputs(
 }
 
 fn derive_single_sig_address(
-    account_xpub: &ExtendedPubKey,
+    account_xpub: &bip32::Xpub,
     network: env::Network,
     is_internal: bool,
     pointer: u32,
@@ -432,8 +430,8 @@ fn derive_single_sig_address(
 }
 
 fn derive_multi_sig_address(
-    multi_sig_service_xpub: &ExtendedPubKey,
-    multi_sig_user_xpub: &ExtendedPubKey,
+    multi_sig_service_xpub: &bip32::Xpub,
+    multi_sig_user_xpub: &bip32::Xpub,
     network: env::Network,
     pointer: u32,
 ) -> elements::Address {
@@ -516,7 +514,6 @@ fn load_all_addresses(
                 result.len(),
                 result_pointer
             );
-            ensure!(!result.is_empty());
             return Ok((result_pointer, result));
         }
         last_pointer = list.last_pointer;
@@ -564,14 +561,12 @@ impl Data {
         !self.wallets.is_empty()
     }
 
-    fn master_xpub(&mut self) -> bitcoin::bip32::ExtendedPubKey {
+    fn master_xpub(&mut self) -> bip32::Xpub {
         if self.settings.master_pub_key.is_none() {
             let seed = rand::Rng::gen::<[u8; 32]>(&mut rand::thread_rng());
             let master_priv_key =
-                bitcoin::bip32::ExtendedPrivKey::new_master(bitcoin::Network::Bitcoin, &seed)
-                    .unwrap();
-            let master_pub_key =
-                bitcoin::bip32::ExtendedPubKey::from_priv(swaps::secp(), &master_priv_key);
+                bip32::Xpriv::new_master(bitcoin::Network::Bitcoin, &seed).unwrap();
+            let master_pub_key = bitcoin::bip32::Xpub::from_priv(swaps::secp(), &master_priv_key);
             self.settings.master_pub_key = Some(master_pub_key);
             self.save_settings();
         }
@@ -1793,16 +1788,9 @@ impl Data {
                 gdk_ses_impl::unlock_hw(self.env, &jade, &self.jade_status_callback)?;
 
                 (self.jade_status_callback)(gdk_ses::JadeStatus::MasterBlindingKey);
-                jade.send(sideswap_jade::Req::GetMasterBlindingKey);
-                let resp = jade.recv(std::time::Duration::from_secs(120));
+                let res = jade.master_blinding_key();
                 (self.jade_status_callback)(gdk_ses::JadeStatus::Idle);
-                let resp = match resp {
-                    Ok(sideswap_jade::Resp::GetMasterBlindingKey(v)) => v,
-                    resp => bail!(
-                        "unexpected Jade response: {:?}, expected GetMasterBlindingKey",
-                        resp
-                    ),
-                };
+                let resp = res?;
                 let master_blinding_key = hex::encode(resp);
 
                 WalletInfo::HwData(gdk_ses::HwData {
@@ -1968,7 +1956,7 @@ impl Data {
 
         let single_sig_account_path = self.env.data().network.single_sig_account_path();
         let multi_sig_service_xpub =
-            ExtendedPubKey::from_str(&reg_info.multi_sig_service_xpub).expect("must be valid");
+            bip32::Xpub::from_str(&reg_info.multi_sig_service_xpub).expect("must be valid");
         let multi_sig_user_path = reg_info.multi_sig_user_path.clone();
 
         let (single_sig_account, multi_sig_user_xpub) =
@@ -1982,7 +1970,7 @@ impl Data {
                 let mnemonic = bip39::Mnemonic::parse(mnemonic)?;
                 let seed = mnemonic.to_seed("");
                 let bitcoin_network = self.env.data().network.bitcoin_network();
-                let master_key = ExtendedPrivKey::new_master(bitcoin_network, &seed).unwrap();
+                let master_key = bip32::Xpriv::new_master(bitcoin_network, &seed).unwrap();
                 let single_sig_xpriv = master_key
                     .derive_priv(
                         SECP256K1,
@@ -2002,8 +1990,8 @@ impl Data {
                     )
                     .unwrap();
                 (
-                    ExtendedPubKey::from_priv(SECP256K1, &single_sig_xpriv),
-                    ExtendedPubKey::from_priv(SECP256K1, &multi_sig_xpriv),
+                    bip32::Xpub::from_priv(SECP256K1, &single_sig_xpriv),
+                    bip32::Xpub::from_priv(SECP256K1, &multi_sig_xpriv),
                 )
             };
 
@@ -2273,6 +2261,149 @@ impl Data {
         }
     }
 
+    fn try_load_all_addresses(
+        &mut self,
+        account: &ffi::proto::Account,
+    ) -> Result<Vec<AddressInfo>, anyhow::Error> {
+        if account.id == ACCOUNT_ID_AMP {
+            self.refresh_amp_addresses()?;
+
+            // Loading multi-sig addresses is slow, use locally cached list
+            let addresses = self
+                .settings
+                .amp_prev_addrs_v2
+                .as_ref()
+                .map(|data| data.list.clone())
+                .unwrap_or_default();
+
+            Ok(addresses)
+        } else {
+            let wallet = Self::get_wallet_mut(&mut self.wallets, account.id)?;
+
+            // Loading single-sig addresses is fast, load them from GDK
+            let mut list = load_all_addresses(wallet.as_mut(), false, None)?.1;
+            let mut internal = load_all_addresses(wallet.as_mut(), true, None)?.1;
+            list.append(&mut internal);
+
+            Ok(list)
+        }
+    }
+
+    fn try_process_load_utxos(
+        &mut self,
+        account: &ffi::proto::Account,
+    ) -> Result<Vec<ffi::proto::from::load_utxos::Utxo>, anyhow::Error> {
+        let wallet = Self::get_wallet_mut(&mut self.wallets, account.id)?;
+
+        // Load utxos before loading address (to prevent a race)
+        let inputs = wallet
+            .get_utxos()?
+            .unspent_outputs
+            .into_values()
+            .flat_map(|utxos| utxos.into_iter())
+            .collect::<Vec<_>>();
+
+        let addresses = self.try_load_all_addresses(account)?;
+
+        #[derive(PartialEq, Eq, PartialOrd, Ord)]
+        struct AddressPointer {
+            pointer: u32,
+            is_internal: bool,
+        }
+
+        let addresses = addresses
+            .into_iter()
+            .map(|address| {
+                (
+                    AddressPointer {
+                        pointer: address.pointer,
+                        is_internal: address.is_internal.unwrap_or_default(),
+                    },
+                    address,
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
+
+        let mut utxos = Vec::new();
+        for input in inputs {
+            let address = addresses
+                .get(&AddressPointer {
+                    pointer: input.pointer,
+                    is_internal: input.is_internal,
+                })
+                .ok_or_else(|| {
+                    anyhow!("address {}/{} not found", input.pointer, input.is_internal)
+                })?;
+
+            utxos.push(ffi::proto::from::load_utxos::Utxo {
+                txid: input.txhash.to_string(),
+                vout: input.vout,
+                asset_id: input.asset_id.to_string(),
+                amount: input.satoshi,
+                address: address.address.to_string(),
+                is_internal: input.is_internal,
+                is_confidential: input.is_confidential.unwrap_or_default(),
+            });
+        }
+
+        Ok(utxos)
+    }
+
+    fn process_load_utxos(&mut self, account: ffi::proto::Account) {
+        let result = self.try_process_load_utxos(&account);
+        let (utxos, error_msg) = match result {
+            Ok(utxos) => (utxos, None),
+            Err(e) => {
+                error!("loading utxos failed: {}", e);
+                (Vec::new(), Some(e.to_string()))
+            }
+        };
+        self.ui.send(ffi::proto::from::Msg::LoadUtxos(
+            ffi::proto::from::LoadUtxos {
+                account,
+                utxos,
+                error_msg,
+            },
+        ));
+    }
+
+    fn try_process_load_addresses(
+        &mut self,
+        account: &ffi::proto::Account,
+    ) -> Result<Vec<ffi::proto::from::load_addresses::Address>, anyhow::Error> {
+        let addresses = self.try_load_all_addresses(account)?;
+
+        let addresses = addresses
+            .into_iter()
+            .map(|addr| ffi::proto::from::load_addresses::Address {
+                address: addr.address.to_string(),
+                unconfidential_address: addr.unconfidential_address.to_string(),
+                index: addr.pointer,
+                is_internal: addr.is_internal.unwrap_or_default(),
+            })
+            .collect();
+
+        Ok(addresses)
+    }
+
+    fn process_load_addresses(&mut self, account: ffi::proto::Account) {
+        let result = self.try_process_load_addresses(&account);
+        let (addresses, error_msg) = match result {
+            Ok(utxos) => (utxos, None),
+            Err(e) => {
+                error!("loading utxos failed: {}", e);
+                (Vec::new(), Some(e.to_string()))
+            }
+        };
+        self.ui.send(ffi::proto::from::Msg::LoadAddresses(
+            ffi::proto::from::LoadAddresses {
+                account,
+                addresses,
+                error_msg,
+            },
+        ));
+    }
+
     fn process_update_push_token(&mut self, req: ffi::proto::to::UpdatePushToken) {
         self.push_token = Some(req.token);
         self.update_push_token();
@@ -2523,20 +2654,7 @@ impl Data {
         Ok(())
     }
 
-    fn find_own_address_info(
-        &mut self,
-        addr: &elements::Address,
-    ) -> Result<AddressInfo, anyhow::Error> {
-        let addr_info = self
-            .settings
-            .amp_prev_addrs_v2
-            .as_ref()
-            .and_then(|data| data.list.iter().find(|info| info.address == *addr))
-            .cloned();
-        if let Some(addr_info) = addr_info {
-            return Ok(addr_info);
-        }
-
+    fn refresh_amp_addresses(&mut self) -> Result<(), anyhow::Error> {
         let last_old_pointer = self
             .settings
             .amp_prev_addrs_v2
@@ -2553,6 +2671,24 @@ impl Data {
         amp_prev_addrs.last_pointer = last_new_pointer;
         amp_prev_addrs.list.extend(new_list);
         self.save_settings();
+        Ok(())
+    }
+
+    fn find_own_address_info(
+        &mut self,
+        addr: &elements::Address,
+    ) -> Result<AddressInfo, anyhow::Error> {
+        let addr_info = self
+            .settings
+            .amp_prev_addrs_v2
+            .as_ref()
+            .and_then(|data| data.list.iter().find(|info| info.address == *addr))
+            .cloned();
+        if let Some(addr_info) = addr_info {
+            return Ok(addr_info);
+        }
+
+        self.refresh_amp_addresses()?;
 
         let addr_info = self
             .settings
@@ -3885,6 +4021,8 @@ impl Data {
             ffi::proto::to::Msg::SendPayjoin(req) => self.process_send_payjoin(req),
             ffi::proto::to::Msg::BlindedValues(req) => self.process_blinded_values(req),
             ffi::proto::to::Msg::SetMemo(req) => self.process_set_memo(req),
+            ffi::proto::to::Msg::LoadUtxos(req) => self.process_load_utxos(req),
+            ffi::proto::to::Msg::LoadAddresses(req) => self.process_load_addresses(req),
             ffi::proto::to::Msg::UpdatePushToken(req) => self.process_update_push_token(req),
             ffi::proto::to::Msg::RegisterPhone(req) => self.process_register_phone(req),
             ffi::proto::to::Msg::VerifyPhone(req) => self.process_verify_phone(req),
@@ -4261,7 +4399,7 @@ impl Data {
         self.process_scan_jade(ports_result.unwrap_or_default());
     }
 
-    fn process_scan_jade(&mut self, ports: Vec<crate::jade_mng::ManagedPort>) {
+    fn process_scan_jade(&mut self, ports: Vec<jade_mng::ManagedPort>) {
         let mut sync_required = false;
 
         for port in ports.iter() {
@@ -4270,9 +4408,6 @@ impl Data {
                 self.jades.push(JadeData {
                     jade_id: port.jade_id.clone(),
                     port_name: port.port_name.clone(),
-                    serial: port.serial.clone(),
-                    version: port.version.clone(),
-                    state: port.state,
                 });
                 sync_required = true;
             }
@@ -4306,13 +4441,6 @@ impl Data {
             .map(|data| ffi::proto::from::jade_ports::Port {
                 jade_id: data.jade_id.clone(),
                 port: data.port_name.clone(),
-                serial: data.serial.clone(),
-                version: data.version.clone(),
-                state: match data.state {
-                    JadeState::Uninit => ffi::proto::from::jade_ports::State::Uninit,
-                    JadeState::Main => ffi::proto::from::jade_ports::State::Main,
-                    JadeState::Test => ffi::proto::from::jade_ports::State::Test,
-                } as i32,
             })
             .collect();
         self.ui.send(ffi::proto::from::Msg::JadePorts(

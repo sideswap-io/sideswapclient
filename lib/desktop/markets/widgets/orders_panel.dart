@@ -43,7 +43,7 @@ class OrdersPanel extends StatelessWidget {
                 const IndexPrice(),
                 const Spacer(),
                 SizedBox(
-                  width: 240,
+                  width: 245,
                   child: Row(
                     children: [
                       const Spacer(),

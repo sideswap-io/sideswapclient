@@ -83,21 +83,27 @@ class NetworkSettingsNotifier extends _$NetworkSettingsNotifier {
       return;
     }
 
+    final oldNetworkSettingsModel = NetworkSettingsModel.apply(
+        settingsNetworkType: settingsNetworkType,
+        env: env,
+        host: host,
+        port: port,
+        useTls: useTls);
+
     // if it's the same values like current, set model as empty
-    if (networkSettingsModel is NetworkSettingsModelApply &&
-        networkSettingsModel.settingsNetworkType == settingsNetworkType &&
-        networkSettingsModel.env == env) {
+    if (networkSettingsModel == oldNetworkSettingsModel) {
       state = NetworkSettingsModel.empty(
-          settingsNetworkType: settingsNetworkType,
-          env: env,
-          host: host,
-          port: port,
-          useTls: useTls);
+          settingsNetworkType: networkSettingsModel.settingsNetworkType,
+          env: networkSettingsModel.env,
+          host: networkSettingsModel.host,
+          port: networkSettingsModel.port,
+          useTls: networkSettingsModel.useTls);
       save();
       return;
     }
 
     state = networkSettingsModel;
+    save();
   }
 
   void save() {

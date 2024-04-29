@@ -1,9 +1,12 @@
 import 'package:decimal/decimal.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
+import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/currency_rates_provider.dart';
+import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -42,17 +45,125 @@ class BalancesNotifier extends _$BalancesNotifier {
 }
 
 @riverpod
-String balanceString(BalanceStringRef ref, AccountAsset accountAsset) {
-  final selected = ref.watch(sendAssetNotifierProvider);
+int outputsBalanceForAsset(
+    OutputsBalanceForAssetRef ref, AccountAsset accountAsset) {
+  final outputsData = ref.watch(outputsReaderNotifierProvider);
+
+  return switch (outputsData) {
+    Right(value: final r) when r.receivers != null && r.receivers!.isNotEmpty =>
+      () {
+        final receivers = [...r.receivers!];
+        receivers.retainWhere((element) =>
+            element.assetId == accountAsset.assetId &&
+            element.account == accountAsset.account.id);
+        return receivers.fold(0,
+            (previousValue, element) => previousValue + (element.satoshi ?? 0));
+      }(),
+    _ => 0,
+  };
+}
+
+/// Inputs related providers
+@riverpod
+int selectedInputsBalanceForAsset(
+    SelectedInputsBalanceForAssetRef ref, AccountAsset accountAsset) {
+  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+
+  return switch (selectedInputs) {
+    List<UtxosItem> items when items.isNotEmpty => () {
+        final inputs = [...items];
+        inputs.retainWhere((element) =>
+            element.assetId == accountAsset.assetId &&
+            element.account == accountAsset.account.id);
+        return inputs.fold(0,
+            (previousValue, element) => previousValue + (element.amount ?? 0));
+      }(),
+    _ => 0,
+  };
+}
+
+@riverpod
+int maxAvailableBalanceWithInputsForAccountAsset(
+    MaxAvailableBalanceWithInputsForAccountAssetRef ref,
+    AccountAsset accountAsset) {
+  return ref.watch(selectedInputsBalanceForAssetProvider(accountAsset));
+}
+
+@riverpod
+int balanceWithInputsForAccountAsset(
+    BalanceWithInputsForAccountAssetRef ref, AccountAsset accountAsset) {
+  final selectedInputs = ref.watch(selectedInputsNotifierProvider);
+
+  final outputsBalance =
+      ref.watch(outputsBalanceForAssetProvider(accountAsset));
+  final allBalances = ref.watch(balancesNotifierProvider);
+
+  if (selectedInputs.isNotEmpty) {
+    final selectedInputsBalance =
+        ref.watch(selectedInputsBalanceForAssetProvider(accountAsset));
+    return selectedInputsBalance - outputsBalance;
+  }
+
+  return (allBalances[accountAsset] ?? 0) - outputsBalance;
+}
+
+@riverpod
+String balanceStringWithInputsForAccountAsset(
+    BalanceStringWithInputsForAccountAssetRef ref, AccountAsset accountAsset) {
+  final walletBalance =
+      ref.watch(balanceWithInputsForAccountAssetProvider(accountAsset));
   final asset = ref.watch(assetsStateProvider)[accountAsset.assetId];
   final assetPrecision = ref
       .watch(assetUtilsProvider)
       .getPrecisionForAssetId(assetId: asset?.assetId);
-  final balance = ref.watch(balancesNotifierProvider)[selected] ?? 0;
   final amountProvider = ref.watch(amountToStringProvider);
-  final balanceStr = amountProvider.amountToString(
-      AmountToStringParameters(amount: balance, precision: assetPrecision));
+  final balanceStr = amountProvider.amountToString(AmountToStringParameters(
+      amount: walletBalance, precision: assetPrecision));
   return balanceStr;
+}
+
+@riverpod
+String balanceStringWithInputs(BalanceStringWithInputsRef ref) {
+  final selected = ref.watch(sendAssetNotifierProvider);
+  return ref.watch(balanceStringWithInputsForAccountAssetProvider(selected));
+}
+
+@riverpod
+Decimal accountAssetBalanceWithInputsInDefaultCurrency(
+    AccountAssetBalanceWithInputsInDefaultCurrencyRef ref,
+    AccountAsset accountAsset) {
+  final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
+  final assetPortfolioUsdPrice = portfolioPrices[accountAsset.assetId];
+  final rateMultiplier = ref.watch(defaultConversionRateMultiplierProvider);
+  final assetBalanceStr =
+      ref.watch(balanceStringWithInputsForAccountAssetProvider(accountAsset));
+
+  return switch (assetPortfolioUsdPrice) {
+    double assetPortfolioUsdPrice => () {
+        final assetBalance = Decimal.tryParse(assetBalanceStr) ?? Decimal.zero;
+        final assetPortfolioUsdPriceDecimal =
+            Decimal.tryParse('$assetPortfolioUsdPrice') ?? Decimal.zero;
+        return assetBalance * assetPortfolioUsdPriceDecimal * rateMultiplier;
+      }(),
+    _ => Decimal.zero,
+  };
+}
+
+@riverpod
+String accountAssetBalanceWithInputsInDefaultCurrencyString(
+    AccountAssetBalanceWithInputsInDefaultCurrencyStringRef ref,
+    AccountAsset accountAsset) {
+  final defaultCurrencyAssetBalance = ref.watch(
+      accountAssetBalanceWithInputsInDefaultCurrencyProvider(accountAsset));
+  return defaultCurrencyAssetBalance.toStringAsFixed(2);
+}
+
+/// Balance providers without inputs
+
+@riverpod
+int maxAvailableBalanceForAccountAsset(
+    MaxAvailableBalanceForAccountAssetRef ref, AccountAsset accountAsset) {
+  return ref.watch(balancesNotifierProvider)[accountAsset] ?? 0;
 }
 
 @riverpod
@@ -222,11 +333,11 @@ Decimal accountAssetBalanceInDefaultCurrency(
   final portfolioPrices = ref.watch(portfolioPricesNotifierProvider);
   final assetPortfolioUsdPrice = portfolioPrices[accountAsset.assetId];
   final rateMultiplier = ref.watch(defaultConversionRateMultiplierProvider);
+  final assetBalanceStr =
+      ref.watch(accountAssetBalanceStringProvider(accountAsset));
 
   return switch (assetPortfolioUsdPrice) {
     double assetPortfolioUsdPrice => () {
-        final assetBalanceStr =
-            ref.watch(accountAssetBalanceStringProvider(accountAsset));
         final assetBalance = Decimal.tryParse(assetBalanceStr) ?? Decimal.zero;
         final assetPortfolioUsdPriceDecimal =
             Decimal.tryParse('$assetPortfolioUsdPrice') ?? Decimal.zero;

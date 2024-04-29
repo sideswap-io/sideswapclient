@@ -247,22 +247,7 @@ func handler(d *Data, conv convertor) func(http.ResponseWriter, *http.Request) {
 					}()
 
 				case *myProto.To_OrderSubmit_:
-					if trader == nil {
-						sendError(d, client, conv, "must be logged in")
-						return
-					}
-
-					d.log.Infof("submit new order, amount: %f, cid: %d", x.OrderSubmit.GetAmount(), x.OrderSubmit.GetCid())
-					err := trader.SubmitOrder(context.Background(), &order.NewRequest{
-						Symbol: *x.OrderSubmit.BookName,
-						CID:    x.OrderSubmit.GetCid(),
-						Amount: x.OrderSubmit.GetAmount(),
-						Type:   orderTypeMarket,
-					})
-					if err != nil {
-						sendError(d, client, conv, fmt.Sprintf("sending request failed: %v", err))
-						return
-					}
+					break
 
 				case *myProto.To_Movements_:
 					break

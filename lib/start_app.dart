@@ -104,10 +104,11 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
     (switch (level) {
       LevelMessages.debug => logger.d('[$name] ${object.toString()}'),
       LevelMessages.info => logger.i('[$name] ${object.toString()}'),
-      LevelMessages.warning => logger.w('[$name] ${object.toString()}'),
+      LevelMessages.warning =>
+        logger.w('[$name] ${object.toString()} ${StackTrace.current}'),
       LevelMessages.error => () {
           logger.e('[$name] ${object.toString()}');
-          logger.d(stackTrace);
+          logger.d(StackTrace.current);
         }(),
       _ => () {
           // do nothing
@@ -140,9 +141,12 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
     await plugin.firebaseInitializeApp();
 
     runApp(
-      ProviderScope(overrides: [
-        sharedPreferencesProvider.overrideWithValue(sharedPrefs),
-      ], child: const AppMain()),
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(sharedPrefs),
+        ],
+        child: const AppMain(),
+      ),
     );
     return;
   }

@@ -40,6 +40,7 @@ impl BufReader {
         buf.data.extend_from_slice(data);
     }
 
+    #[allow(dead_code)]
     pub fn size(&self) -> usize {
         let buf = self.buf.lock().unwrap();
         buf.data.len()

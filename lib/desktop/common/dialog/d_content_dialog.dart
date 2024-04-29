@@ -14,6 +14,7 @@ class DContentDialog extends ConsumerWidget {
     this.actions,
     this.style,
     this.constraints = const BoxConstraints(maxWidth: 368),
+    this.alignment,
   });
 
   final Widget? title;
@@ -21,6 +22,7 @@ class DContentDialog extends ConsumerWidget {
   final List<Widget>? actions;
   final DContentDialogThemeData? style;
   final BoxConstraints constraints;
+  final AlignmentGeometry? alignment;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -29,7 +31,7 @@ class DContentDialog extends ConsumerWidget {
       dialogTheme.merge(this.style),
     );
     return Align(
-      alignment: Alignment.center,
+      alignment: alignment ?? Alignment.center,
       child: Container(
         constraints: constraints,
         decoration: style.decoration,
@@ -109,6 +111,7 @@ class DContentDialogTitle extends StatelessWidget {
     this.height,
     this.hideBack = true,
     this.onBack,
+    this.contentAlignment,
   });
 
   final Widget? content;
@@ -117,6 +120,7 @@ class DContentDialogTitle extends StatelessWidget {
   final double? height;
   final bool hideBack;
   final VoidCallback? onBack;
+  final AlignmentGeometry? contentAlignment;
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +162,7 @@ class DContentDialogTitle extends StatelessWidget {
                     ),
             ),
             Align(
-              alignment: Alignment.bottomCenter,
+              alignment: contentAlignment ?? Alignment.bottomCenter,
               child: content ?? const SizedBox(),
             ),
           ],

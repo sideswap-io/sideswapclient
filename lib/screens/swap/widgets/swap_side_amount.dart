@@ -12,6 +12,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
@@ -22,7 +23,7 @@ import 'package:sideswap/screens/pay/widgets/ticker_amount_textfield.dart';
 import 'package:sideswap/screens/swap/widgets/labeled_radio.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-class SwapSideAmount extends ConsumerStatefulWidget {
+class SwapSideAmount extends HookConsumerWidget {
   const SwapSideAmount({
     super.key,
     required this.text,
@@ -31,6 +32,7 @@ class SwapSideAmount extends ConsumerStatefulWidget {
     this.onDropdownChanged,
     this.onChanged,
     this.onMaxPressed,
+    this.onSelectInputs,
     required this.dropdownValue,
     required this.availableAssets,
     this.disabledAssets = const <AccountAsset>[],
@@ -38,6 +40,7 @@ class SwapSideAmount extends ConsumerStatefulWidget {
     this.localLabelOnChanged,
     this.externalLabelOnChanged,
     this.isMaxVisible = false,
+    this.isInputsVisible = false,
     this.readOnly = false,
     this.dropdownReadOnly = false,
     this.padding = EdgeInsets.zero,
@@ -70,12 +73,14 @@ class SwapSideAmount extends ConsumerStatefulWidget {
   final ValueChanged<AccountAsset>? onDropdownChanged;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onMaxPressed;
+  final VoidCallback? onSelectInputs;
   final AccountAsset dropdownValue;
   final List<AccountAsset> availableAssets;
   final List<AccountAsset> disabledAssets;
   final SwapWallet labelGroupValue;
   final ValueChanged<SwapWallet>? localLabelOnChanged;
   final ValueChanged<SwapWallet>? externalLabelOnChanged;
+  final bool isInputsVisible;
   final bool isMaxVisible;
   final bool readOnly;
   final bool dropdownReadOnly;
@@ -103,47 +108,34 @@ class SwapSideAmount extends ConsumerStatefulWidget {
   final bool showAccountsInPopup;
 
   @override
-  SwapSideAmountState createState() => SwapSideAmountState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    const labelStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w500,
+      color: SideSwapColors.brightTurquoise,
+    );
 
-class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
-  final _labelStyle = const TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w500,
-    color: SideSwapColors.brightTurquoise,
-  );
+    const balanceStyle = TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.normal,
+      color: SideSwapColors.airSuperiorityBlue,
+    );
 
-  final _balanceStyle = const TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.normal,
-    color: SideSwapColors.airSuperiorityBlue,
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    widget.addressController?.addListener(() {
-      ref.read(swapProvider).swapRecvAddressExternal =
-          widget.addressController?.text ?? '';
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
     final result = ref.watch(qrCodeResultModelNotifierProvider);
+
     result.maybeWhen(
       data: (result) {
-        widget.addressController?.text = result?.address ?? '';
+        addressController?.text = result?.address ?? '';
       },
       orElse: () {},
     );
 
-    final isAmp = widget.dropdownValue.account.isAmp;
+    final isAmp = dropdownValue.account.isAmp;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: widget.padding,
+          padding: padding,
           child: SizedBox(
             height: 20,
             child: Row(
@@ -154,8 +146,8 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                   child: Row(
                     children: [
                       Text(
-                        widget.text,
-                        style: _labelStyle,
+                        text,
+                        style: labelStyle,
                       ),
                       if (isAmp)
                         const AmpFlag(
@@ -169,7 +161,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     ],
                   ),
                 ),
-                if (widget.showInsufficientFunds && !widget.readOnly) ...[
+                if (showInsufficientFunds && !readOnly) ...[
                   Text(
                     'Insufficient funds'.tr(),
                     style: const TextStyle(
@@ -179,19 +171,19 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                     ),
                   ),
                 ] else ...[
-                  Container(),
+                  const SizedBox(),
                 ],
-                if (widget.defaultCurrencyConversion2 != null &&
-                    widget.defaultCurrencyConversion2!.isNotEmpty)
+                if (defaultCurrencyConversion2 != null &&
+                    defaultCurrencyConversion2!.isNotEmpty)
                   Text(
-                    '≈ ${widget.defaultCurrencyConversion2}',
+                    '≈ $defaultCurrencyConversion2',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.normal,
                       color: SideSwapColors.halfBaked,
                     ),
                   ),
-                if (widget.errorDescription.isNotEmpty && !widget.readOnly) ...[
+                if (errorDescription.isNotEmpty && !readOnly) ...[
                   Expanded(
                     child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -202,7 +194,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                         );
                         final renderParagraph = RenderParagraph(
                           TextSpan(
-                            text: widget.errorDescription,
+                            text: errorDescription,
                             style: textStyle,
                           ),
                           textDirection: ui.TextDirection.ltr,
@@ -216,7 +208,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                             renderParagraph.constraints.maxWidth;
                         return textWidth > constraintsWidth
                             ? Marquee(
-                                text: widget.errorDescription,
+                                text: errorDescription,
                                 style: textStyle,
                                 scrollAxis: Axis.horizontal,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -237,7 +229,7 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                             : Align(
                                 alignment: Alignment.centerRight,
                                 child: Text(
-                                  widget.errorDescription,
+                                  errorDescription,
                                   style: textStyle,
                                 ),
                               );
@@ -252,32 +244,31 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
         Padding(
           padding: const EdgeInsets.only(top: 0),
           child: Padding(
-            padding: widget.padding,
+            padding: padding,
             child: SizedBox(
               height: 43,
               child: TickerAmountTextField(
-                readOnly: widget.readOnly,
-                dropdownReadOnly: widget.dropdownReadOnly,
-                showError: widget.showInsufficientFunds ||
-                    widget.errorDescription.isNotEmpty,
-                controller: widget.controller,
-                focusNode: widget.focusNode ?? FocusNode(),
-                dropdownValue: widget.dropdownValue,
-                availableAssets: widget.availableAssets,
-                disabledAssets: widget.disabledAssets,
-                onDropdownChanged: widget.onDropdownChanged,
-                onChanged: widget.onChanged,
-                hintText: widget.hintText,
-                showHintText: widget.showHintText,
-                onSubmitted: widget.onSubmitted,
-                onEditingComplete: widget.onEditingCompleted,
-                textInputAction: widget.textInputAction,
-                showAccountsInPopup: widget.showAccountsInPopup,
+                readOnly: readOnly,
+                dropdownReadOnly: dropdownReadOnly,
+                showError: showInsufficientFunds || errorDescription.isNotEmpty,
+                controller: controller,
+                focusNode: focusNode ?? FocusNode(),
+                dropdownValue: dropdownValue,
+                availableAssets: availableAssets,
+                disabledAssets: disabledAssets,
+                onDropdownChanged: onDropdownChanged,
+                onChanged: onChanged,
+                hintText: hintText,
+                showHintText: showHintText,
+                onSubmitted: onSubmitted,
+                onEditingComplete: onEditingCompleted,
+                textInputAction: textInputAction,
+                showAccountsInPopup: showAccountsInPopup,
               ),
             ),
           ),
         ),
-        if (widget.swapType != SwapType.atomic && widget.visibleToggles) ...[
+        if (swapType != SwapType.atomic && visibleToggles) ...[
           Padding(
             padding: const EdgeInsets.only(top: 14),
             child: SizedBox(
@@ -287,14 +278,14 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
                   LabeledRadio<SwapWallet>(
                     label: 'Local wallet'.tr(),
                     value: SwapWallet.local,
-                    groupValue: widget.labelGroupValue,
-                    onChanged: widget.localLabelOnChanged,
+                    groupValue: labelGroupValue,
+                    onChanged: localLabelOnChanged,
                   ),
                   LabeledRadio<SwapWallet>(
                     label: 'External wallet'.tr(),
                     value: SwapWallet.extern,
-                    groupValue: widget.labelGroupValue,
-                    onChanged: widget.externalLabelOnChanged,
+                    groupValue: labelGroupValue,
+                    onChanged: externalLabelOnChanged,
                   ),
                 ],
               ),
@@ -304,194 +295,94 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
         Padding(
           padding: const EdgeInsets.only(top: 10),
           child: Padding(
-            padding: widget.padding,
+            padding: padding,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (widget.swapType != SwapType.atomic &&
-                    !widget.isMaxVisible &&
-                    !widget.isAddressLabelVisible &&
-                    widget.labelGroupValue == SwapWallet.extern) ...[
-                  Flexible(
-                    child: ShareCopyScanTextFormField(
-                      focusNode: widget.receiveAddressFocusNode ?? FocusNode(),
-                      errorText: widget.addressErrorText,
-                      controller:
-                          widget.addressController ?? TextEditingController(),
-                      onChanged: widget.onAddressChanged,
-                      onPasteTap: FlavorConfig.isDesktop &&
-                              widget.addressController != null
-                          ? () async {
-                              await handlePasteSingleLine(
-                                  widget.addressController!);
-                              setState(() {});
-                            }
-                          : null,
-                      onScanTap: FlavorConfig.isDesktop
-                          ? null
-                          : () async {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              await Navigator.of(context, rootNavigator: true)
-                                  .push<void>(
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      getAddressQrScanner(bitcoinAddress: true),
-                                ),
-                              );
-                              logger.d('Scanner Done');
-                            },
-                      onEditingCompleted: widget.onAddressEditingCompleted,
-                      addrType: AddrType.bitcoin,
-                    ),
+                if (swapType != SwapType.atomic &&
+                    !isMaxVisible &&
+                    !isAddressLabelVisible &&
+                    labelGroupValue == SwapWallet.extern) ...[
+                  ShareCopyScanTextFormField(
+                    focusNode: receiveAddressFocusNode ?? FocusNode(),
+                    errorText: addressErrorText,
+                    controller: addressController ?? TextEditingController(),
+                    onChanged: onAddressChanged,
+                    onPasteTap:
+                        FlavorConfig.isDesktop && addressController != null
+                            ? () async {
+                                await handlePasteSingleLine(addressController!);
+                              }
+                            : null,
+                    onScanTap: FlavorConfig.isDesktop
+                        ? null
+                        : () async {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                            await Navigator.of(context, rootNavigator: true)
+                                .push<void>(
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    getAddressQrScanner(bitcoinAddress: true),
+                              ),
+                            );
+                            logger.d('Scanner Done');
+                          },
+                    onEditingCompleted: onAddressEditingCompleted,
+                    addrType: AddrType.bitcoin,
                   ),
                 ],
-                if (widget.swapType == SwapType.pegOut &&
-                    widget.labelGroupValue == SwapWallet.extern &&
-                    widget.isAddressLabelVisible) ...[
-                  Expanded(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF226F99),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(8),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Text(
-                                widget.addressController?.text ?? '',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Material(
-                            color: const Color(0xFF226F99),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(21),
-                              onTap: widget.onAddressLabelClose,
-                              child: Container(
-                                width: 42,
-                                height: 42,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(21),
-                                ),
-                                child: Center(
-                                  child: SvgPicture.asset(
-                                    'assets/close.svg',
-                                    width: 14,
-                                    height: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  )
+                if (swapType == SwapType.pegOut &&
+                    labelGroupValue == SwapWallet.extern &&
+                    isAddressLabelVisible) ...[
+                  SwapSideAmountPegOutAddressLabel(
+                      addressController: addressController,
+                      onAddressLabelClose: onAddressLabelClose),
                 ],
-                if (widget.labelGroupValue == SwapWallet.extern &&
-                    widget.swapType == SwapType.atomic) ...[
+                if (labelGroupValue == SwapWallet.extern &&
+                    swapType == SwapType.atomic) ...[
                   Text(
-                    'Balance: unknown',
-                    style: _balanceStyle,
+                    'Balance: unknown'.tr(),
+                    style: balanceStyle,
                   ).tr(),
                 ],
-                if (widget.labelGroupValue == SwapWallet.local &&
-                    (widget.swapType == SwapType.atomic ||
-                        widget.swapType == SwapType.pegOut)) ...[
+                if (labelGroupValue == SwapWallet.local &&
+                    (swapType == SwapType.atomic ||
+                        swapType == SwapType.pegOut)) ...[
                   Text(
-                    'Balance: {}',
-                    style: _balanceStyle,
-                  ).tr(args: [widget.balance]),
-                ],
-                if (widget.labelGroupValue == SwapWallet.extern &&
-                    widget.swapType == SwapType.pegIn) ...[
-                  Expanded(
-                    child: SizedBox(
-                      height: 36,
-                      child: Text(
-                        'SideSwap will generate a Peg-In address for you to deliver BTC into'
-                            .tr(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: SideSwapColors.airSuperiorityBlue,
-                        ),
-                      ),
-                    ),
+                    'Balance: {}'.tr(args: [balance]),
+                    style: balanceStyle,
                   ),
                 ],
-                if (widget.labelGroupValue == SwapWallet.local &&
-                    widget.swapType == SwapType.pegIn) ...[
-                  Expanded(
-                    child: SizedBox(
-                      height: 36,
-                      child: Text(
-                        'Your SideSwap wallet will auto-generate a L-BTC address with which to receive the Peg-In amount'
-                            .tr(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.normal,
-                          color: SideSwapColors.airSuperiorityBlue,
-                        ),
-                      ),
-                    ),
-                  ),
+                if (labelGroupValue == SwapWallet.extern &&
+                    swapType == SwapType.pegIn) ...[
+                  const SwapSideAmountExternPegInDescription(),
+                ],
+                if (labelGroupValue == SwapWallet.local &&
+                    swapType == SwapType.pegIn) ...[
+                  const SwapSideAmountLocalPegInDescription(),
                 ],
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    if (widget.isMaxVisible &&
-                        widget.labelGroupValue != SwapWallet.extern) ...[
-                      Container(
-                        width: 54,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: SideSwapColors.brightTurquoise,
-                            width: 2,
-                            style: BorderStyle.solid,
-                          ),
-                        ),
-                        child: TextButton(
-                          onPressed: widget.onMaxPressed,
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(8),
-                              ),
-                            ),
-                          ),
-                          child: const Text(
-                            'MAX',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.normal,
-                              color: SideSwapColors.brightTurquoise,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                    if (widget.defaultCurrencyConversion.isNotEmpty) ...[
+                    Row(
+                      children: [
+                        if (isInputsVisible &&
+                            labelGroupValue != SwapWallet.extern) ...[
+                          SwapSideAmountSelectInputsButton(
+                              onInputsSelected: onSelectInputs),
+                        ],
+                        if (isMaxVisible &&
+                            labelGroupValue != SwapWallet.extern) ...[
+                          SwapSideAmountMaxButton(onMaxPressed: onMaxPressed),
+                        ],
+                      ],
+                    ),
+                    if (defaultCurrencyConversion.isNotEmpty) ...[
                       Padding(
                         padding: const EdgeInsets.only(top: 8),
                         child: Text(
-                          '≈ ${widget.defaultCurrencyConversion}',
-                          style: _balanceStyle,
+                          '≈ $defaultCurrencyConversion',
+                          style: balanceStyle,
                         ),
                       ),
                     ],
@@ -501,26 +392,288 @@ class SwapSideAmountState extends ConsumerState<SwapSideAmount> {
             ),
           ),
         ),
-        if (widget.swapType == SwapType.pegOut &&
-            widget.labelGroupValue == SwapWallet.extern)
+        if (swapType == SwapType.pegOut && labelGroupValue == SwapWallet.extern)
+          SwapSideAmountFeeSuggestionsDropdown(padding: padding),
+      ],
+    );
+  }
+}
+
+class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
+  const SwapSideAmountPegOutAddressLabel({
+    super.key,
+    required this.addressController,
+    required this.onAddressLabelClose,
+  });
+
+  final TextEditingController? addressController;
+  final ui.VoidCallback? onAddressLabelClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 538,
+      height: 54,
+      decoration: const BoxDecoration(
+        color: Color(0xFF226F99),
+        borderRadius: BorderRadius.all(
+          Radius.circular(8),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
           Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Padding(
-              padding: widget.padding,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    'Fee suggestions'.tr(),
-                    style: _labelStyle,
-                  ),
-                  const Spacer(),
-                  const FeeRatesDropdown(),
-                ],
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              addressController?.text ?? '',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.normal,
+                color: Colors.white,
               ),
             ),
           ),
+          const Spacer(),
+          Material(
+            color: const Color(0xFF226F99),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(21),
+              onTap: onAddressLabelClose,
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(21),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    'assets/close.svg',
+                    width: 14,
+                    height: 14,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+      ),
+    );
+  }
+}
+
+class SwapSideAmountLocalPegInDescription extends StatelessWidget {
+  const SwapSideAmountLocalPegInDescription({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 538,
+      height: 36,
+      child: Text(
+        'Your SideSwap wallet will auto-generate a L-BTC address with which to receive the Peg-In amount'
+            .tr(),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: SideSwapColors.airSuperiorityBlue,
+        ),
+      ),
+    );
+  }
+}
+
+class SwapSideAmountExternPegInDescription extends StatelessWidget {
+  const SwapSideAmountExternPegInDescription({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 538,
+      height: 36,
+      child: Text(
+        'SideSwap will generate a Peg-In address for you to deliver BTC into'
+            .tr(),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.normal,
+          color: SideSwapColors.airSuperiorityBlue,
+        ),
+      ),
+    );
+  }
+}
+
+class SwapSideAmountFeeSuggestionsDropdown extends StatelessWidget {
+  const SwapSideAmountFeeSuggestionsDropdown({
+    super.key,
+    required this.padding,
+  });
+
+  final EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    const labelStyle = TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w500,
+      color: SideSwapColors.brightTurquoise,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Padding(
+        padding: padding,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              'Fee suggestions'.tr(),
+              style: labelStyle,
+            ),
+            const Spacer(),
+            const FeeRatesDropdown(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class SwapSideAmountMaxButton extends StatelessWidget {
+  const SwapSideAmountMaxButton({
+    super.key,
+    required this.onMaxPressed,
+  });
+
+  final ui.VoidCallback? onMaxPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 54,
+      height: 24,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: SideSwapColors.brightTurquoise,
+          width: 1,
+          style: BorderStyle.solid,
+        ),
+      ),
+      child: TextButton(
+        onPressed: onMaxPressed,
+        style: TextButton.styleFrom(
+          foregroundColor: Colors.black,
+          padding: EdgeInsets.zero,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(8),
+            ),
+          ),
+        ),
+        child: const Text(
+          'MAX',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: SideSwapColors.brightTurquoise,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SwapSideAmountSelectInputsButton extends ConsumerWidget {
+  const SwapSideAmountSelectInputsButton({
+    super.key,
+    required this.onInputsSelected,
+  });
+
+  final ui.VoidCallback? onInputsSelected;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedInputsHelper = ref.watch(selectedInputsHelperProvider);
+    final utxoCount = selectedInputsHelper.count();
+    final containsUtxo = utxoCount > 0;
+
+    return Row(
+      children: [
+        Container(
+          height: 24,
+          decoration: containsUtxo
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: SideSwapColors.turquoise,
+                )
+              : BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: SideSwapColors.brightTurquoise,
+                    width: 1,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+          child: TextButton(
+            onPressed: onInputsSelected,
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.black,
+              padding: EdgeInsets.zero,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(
+                  Radius.circular(8),
+                ),
+              ),
+            ),
+            child: switch (containsUtxo) {
+              true => Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.done,
+                      size: 10,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '{} INPUTS'.plural(utxoCount, args: ['$utxoCount']),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+              _ => Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    Text(
+                      'SELECT INPUTS'.tr(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.normal,
+                        color: SideSwapColors.brightTurquoise,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+            },
+          ),
+        ),
+        const SizedBox(width: 4),
       ],
     );
   }

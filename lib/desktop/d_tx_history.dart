@@ -9,7 +9,7 @@ import 'package:sideswap/desktop/widgets/d_tx_history_confs.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_date.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_header.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_link.dart';
-import 'package:sideswap/desktop/widgets/d_tx_history_row.dart';
+import 'package:sideswap/desktop/widgets/d_flexes_row.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_type.dart';
 import 'package:sideswap/desktop/widgets/d_tx_history_wallet.dart';
 import 'package:sideswap/providers/desktop_dialog_providers.dart';
@@ -34,7 +34,7 @@ class DTxHistory extends StatelessWidget {
         Padding(
           padding:
               EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12),
-          child: DTxHistoryRow(children: [
+          child: DFlexesRow(children: [
             DTxHistoryHeader(text: 'Date'.tr()),
             DTxHistoryHeader(text: 'Wallet'.tr()),
             DTxHistoryHeader(text: 'Type'.tr()),
@@ -115,25 +115,60 @@ class DTxHistoryTransaction extends HookConsumerWidget {
               padding: EdgeInsets.symmetric(
                   horizontal: horizontalPadding, vertical: 1),
               child: DTransparentButton(
-                child: DTxHistoryRow(
+                child: DFlexesRow(
                   children: [
                     DTxHistoryDate(
-                        dateFormatDate: dateFormatDate,
-                        dateFormatTime: dateFormatTime,
-                        tx: transItem),
-                    DTxHistoryWallet(tx: transItem),
-                    DTxHistoryType(transItem: transItem),
+                      dateFormatDate: dateFormatDate,
+                      dateFormatTime: dateFormatTime,
+                      tx: transItem,
+                      dateTextStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 14),
+                      timeTextStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 14),
+                    ),
+                    DTxHistoryWallet(
+                      tx: transItem,
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 14),
+                    ),
+                    DTxHistoryType(
+                      transItem: transItem,
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 14),
+                    ),
                     DTxHistoryAmount(
                       balance: transItemHelper.getSentBalance(
                           liquidAssetId, bitcoinAssetId),
                       multipleOutputs: transItemHelper.getSentMultipleOutputs(),
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 14),
                     ),
                     DTxHistoryAmount(
                       balance: transItemHelper.getRecvBalance(
                           liquidAssetId, bitcoinAssetId),
                       multipleOutputs: transItemHelper.getRecvMultipleOutputs(),
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 14),
                     ),
-                    DTxHistoryConfs(tx: transItem),
+                    DTxHistoryConfs(
+                      tx: transItem,
+                      textStyle: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontSize: 14),
+                    ),
                     DTxHistoryLink(txid: transItem.tx.txid),
                   ],
                 ),
