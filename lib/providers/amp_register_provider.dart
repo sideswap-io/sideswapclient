@@ -68,6 +68,11 @@ List<SecuritiesItem> stokrSecurities(StokrSecuritiesRef ref) {
       icon: '',
       assetId:
           '3caca4d1e7c596d4f59db73d62e514963c098cc327cab550bd460a9927f5fdbe'));
+  assets.add(SecuritiesItem(
+      token: 'CMSTR',
+      icon: '',
+      assetId:
+          'e8305bb5c1794b256a858a01e5d8af7a5817d257fbfbc2c9d49620f13ff401a9'));
   return assets;
 }
 

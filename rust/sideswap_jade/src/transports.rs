@@ -29,6 +29,7 @@ impl AllTransports {
         #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
         transports.push(Box::new(serial::SerialTransport::new()));
 
+        #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
         transports.push(Box::new(ble::BleTransport::new()));
 
         AllTransports { transports }
