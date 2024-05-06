@@ -130,6 +130,11 @@ impl ServerFee {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct AmpAssetRestrictions {
+    pub allowed_countries: Option<Vec<String>>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct Asset {
     pub asset_id: AssetId,
     pub name: String,
@@ -140,12 +145,14 @@ pub struct Asset {
     pub instant_swaps: Option<bool>,
     pub domain: Option<String>,
     pub domain_agent: Option<String>,
+    pub domain_agent_link: Option<String>,
     pub always_show: Option<bool>,
     pub issuance_prevout: Option<IssuancePrevout>,
     pub issuer_pubkey: Option<String>,
     pub contract: Option<serde_json::Value>,
     pub market_type: Option<MarketType>,
     pub server_fee: Option<f64>,
+    pub amp_asset_restrictions: Option<AmpAssetRestrictions>,
 }
 
 impl Asset {
@@ -160,6 +167,7 @@ pub type Assets = Vec<Asset>;
 pub struct AssetsRequestParam {
     pub embedded_icons: Option<bool>,
     pub all_assets: Option<bool>,
+    pub amp_asset_restrictions: Option<bool>,
 }
 pub type AssetsRequest = Option<AssetsRequestParam>;
 

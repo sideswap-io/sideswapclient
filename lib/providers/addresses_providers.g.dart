@@ -632,7 +632,7 @@ final addressesAddressTypeFlagNotifierProvider = AutoDisposeNotifierProvider<
 typedef _$AddressesAddressTypeFlagNotifier
     = AutoDisposeNotifier<AddressesAddressTypeFlag>;
 String _$addressesBalanceTypeFlagNotifierHash() =>
-    r'75e79e0eb62513b93d67c5638d773e42c16b4c98';
+    r'0e13c3bafcdca1fc1c14852d4da8ba4c91bf9aa0';
 
 /// See also [AddressesBalanceTypeFlagNotifier].
 @ProviderFor(AddressesBalanceTypeFlagNotifier)

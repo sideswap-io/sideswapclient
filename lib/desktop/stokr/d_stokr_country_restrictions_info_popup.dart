@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_icon_button.dart';
@@ -12,8 +13,10 @@ import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
   const DStokrCountryRestrictionsInfoPopup({super.key});
@@ -22,6 +25,10 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme =
         ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
 
     return DContentDialog(
       title: DContentDialogTitle(
@@ -82,7 +89,9 @@ class DStokrCountryRestrictionsInfoPopup extends ConsumerWidget {
                   DCustomFilledBigButton(
                     width: 245,
                     onPressed: () {
-                      openUrl('https://stokr.io/');
+                      if (asset != null) {
+                        openUrl(asset.domainAgentLink);
+                      }
                     },
                     child: Text('REGISTER ON STOKR'.tr()),
                   ),
@@ -122,21 +131,18 @@ class DStokrCountryBlacklistDropdown extends HookConsumerWidget {
     final icon = useState(Icons.expand_more);
     final expanded = useState(false);
 
-    final blacklistedCountries = useState(<StokrAllowedCountry>[]);
-    final allBlockedCountries = useState(<StokrAllowedCountry>[]);
+    final blacklistedCountries = useState(<CountryCode>[]);
+    final allBlockedCountries = useState(<CountryCode>[]);
     final stokrCountryBlacklist = ref.watch(stokrBlockedCountriesProvider);
 
     useEffect(() {
       final countries = switch (stokrCountryBlacklist) {
-        AsyncValue(
-          hasValue: true,
-          value: List<StokrAllowedCountry> countries
-        ) =>
+        AsyncValue(hasValue: true, value: List<CountryCode> countries) =>
           countries,
-        _ => <StokrAllowedCountry>[],
+        _ => <CountryCode>[],
       };
 
-      allBlockedCountries.value = countries;
+      allBlockedCountries.value = [...countries];
       blacklistedCountries.value = countries;
 
       return;
@@ -226,7 +232,7 @@ class DStokrCountryBlacklistDropdown extends HookConsumerWidget {
                           return Padding(
                             padding: const EdgeInsets.only(top: 2, bottom: 2),
                             child: Text(
-                              blacklistedCountries.value[index].name,
+                              '${blacklistedCountries.value[index].english ?? ''} (${blacklistedCountries.value[index].name ?? ''})',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           );

@@ -1,10 +1,12 @@
 [
   {
     "always_show": true,
+    "amp_asset_restrictions": null,
     "asset_id": "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
     "contract": null,
     "domain": null,
     "domain_agent": null,
+    "domain_agent_link": null,
     "icon": null,
     "icon_url": "https://api.sideswap.io/assets/icons/6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d.png",
     "instant_swaps": false,
@@ -18,6 +20,7 @@
   },
   {
     "always_show": true,
+    "amp_asset_restrictions": null,
     "asset_id": "ce091c998b83c78bb71a632313ba3760f1763d9cfcffae02258ffa9865a37bd2",
     "contract": {
       "entity": {
@@ -31,6 +34,7 @@
     },
     "domain": "tether.to",
     "domain_agent": null,
+    "domain_agent_link": null,
     "icon": null,
     "icon_url": "https://api.sideswap.io/assets/icons/ce091c998b83c78bb71a632313ba3760f1763d9cfcffae02258ffa9865a37bd2.png",
     "instant_swaps": true,
@@ -47,6 +51,7 @@
   },
   {
     "always_show": true,
+    "amp_asset_restrictions": null,
     "asset_id": "18729918ab4bca843656f08d4dd877bed6641fbd596a0a963abbf199cfeb3cec",
     "contract": {
       "entity": {
@@ -60,6 +65,7 @@
     },
     "domain": "pegx.io",
     "domain_agent": null,
+    "domain_agent_link": null,
     "icon": null,
     "icon_url": "https://api.sideswap.io/assets/icons/18729918ab4bca843656f08d4dd877bed6641fbd596a0a963abbf199cfeb3cec.png",
     "instant_swaps": true,
@@ -76,6 +82,7 @@
   },
   {
     "always_show": true,
+    "amp_asset_restrictions": null,
     "asset_id": "11f91cb5edd5d0822997ad81f068ed35002daec33986da173461a8427ac857e1",
     "contract": {
       "entity": {
@@ -89,6 +96,7 @@
     },
     "domain": "blockstream.com",
     "domain_agent": "stokr.io",
+    "domain_agent_link": "https://stokr.io",
     "icon": null,
     "icon_url": "https://api.sideswap.io/assets/icons/11f91cb5edd5d0822997ad81f068ed35002daec33986da173461a8427ac857e1.png",
     "instant_swaps": false,
@@ -105,6 +113,7 @@
   },
   {
     "always_show": true,
+    "amp_asset_restrictions": null,
     "asset_id": "06d1085d6a3a1328fb8189d106c7a8afbef3d327e34504828c4cac2c74ac0802",
     "contract": {
       "entity": {
@@ -118,6 +127,7 @@
     },
     "domain": "sswp.pegx.io",
     "domain_agent": "pegx.io",
+    "domain_agent_link": "https://pegx.io",
     "icon": null,
     "icon_url": "https://api.sideswap.io/assets/icons/06d1085d6a3a1328fb8189d106c7a8afbef3d327e34504828c4cac2c74ac0802.png",
     "instant_swaps": false,

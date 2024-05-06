@@ -172,7 +172,7 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                         const DAssetInfoSeparator(),
                       ]
                     : [],
-                ...asset?.hasDomainAgent() == true
+                ...asset?.hasDomainAgentLink() == true
                     ? [
                         DAssetInfoField(
                           name: 'Registration Agent'.tr(),
@@ -180,14 +180,14 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                             cursor: SystemMouseCursors.click,
                             builder: (context, states) {
                               return Text(
-                                asset?.domainAgent ?? '',
+                                asset?.domainAgentLink ?? '',
                                 style: const TextStyle(
                                     color: SideSwapColors.brightTurquoise,
                                     decoration: TextDecoration.underline),
                               );
                             },
                             onPressed: () {
-                              openUrl('https://${asset?.domainAgent ?? ''}');
+                              openUrl(asset?.domainAgentLink ?? '');
                             },
                           ),
                         ),

@@ -701,6 +701,7 @@ fn worker(
                     Some(AssetsRequestParam {
                         embedded_icons: Some(false),
                         all_assets: Some(true),
+                        amp_asset_restrictions: Some(false),
                     })
                 )
                 .expect("loading assets failed")

@@ -24,6 +24,10 @@ message Balance {
   required int64 amount = 2;
 }
 
+message AmpAssetRestrictions {
+  repeated string allowed_countries = 1;
+}
+
 message Asset {
   required string asset_id = 1;
   required string name = 2;
@@ -36,7 +40,9 @@ message Asset {
   required bool unregistered = 8;
   optional string domain = 7;
   optional string domain_agent = 10;
+  optional string domain_agent_link = 13;
   optional bool always_show = 12;
+  optional AmpAssetRestrictions amp_asset_restrictions = 14;
 }
 
 message Tx {

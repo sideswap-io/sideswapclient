@@ -302,6 +302,50 @@ class Balance extends $pb.GeneratedMessage {
   void clearAmount() => clearField(2);
 }
 
+class AmpAssetRestrictions extends $pb.GeneratedMessage {
+  factory AmpAssetRestrictions({
+    $core.Iterable<$core.String>? allowedCountries,
+  }) {
+    final $result = create();
+    if (allowedCountries != null) {
+      $result.allowedCountries.addAll(allowedCountries);
+    }
+    return $result;
+  }
+  AmpAssetRestrictions._() : super();
+  factory AmpAssetRestrictions.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AmpAssetRestrictions.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AmpAssetRestrictions', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..pPS(1, _omitFieldNames ? '' : 'allowedCountries')
+    ..hasRequiredFields = false
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AmpAssetRestrictions clone() => AmpAssetRestrictions()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AmpAssetRestrictions copyWith(void Function(AmpAssetRestrictions) updates) => super.copyWith((message) => updates(message as AmpAssetRestrictions)) as AmpAssetRestrictions;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AmpAssetRestrictions create() => AmpAssetRestrictions._();
+  AmpAssetRestrictions createEmptyInstance() => create();
+  static $pb.PbList<AmpAssetRestrictions> createRepeated() => $pb.PbList<AmpAssetRestrictions>();
+  @$core.pragma('dart2js:noInline')
+  static AmpAssetRestrictions getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AmpAssetRestrictions>(create);
+  static AmpAssetRestrictions? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.String> get allowedCountries => $_getList(0);
+}
+
 class Asset extends $pb.GeneratedMessage {
   factory Asset({
     $core.String? assetId,
@@ -316,6 +360,8 @@ class Asset extends $pb.GeneratedMessage {
     $core.String? domainAgent,
     $core.bool? instantSwaps,
     $core.bool? alwaysShow,
+    $core.String? domainAgentLink,
+    AmpAssetRestrictions? ampAssetRestrictions,
   }) {
     final $result = create();
     if (assetId != null) {
@@ -354,6 +400,12 @@ class Asset extends $pb.GeneratedMessage {
     if (alwaysShow != null) {
       $result.alwaysShow = alwaysShow;
     }
+    if (domainAgentLink != null) {
+      $result.domainAgentLink = domainAgentLink;
+    }
+    if (ampAssetRestrictions != null) {
+      $result.ampAssetRestrictions = ampAssetRestrictions;
+    }
     return $result;
   }
   Asset._() : super();
@@ -373,6 +425,8 @@ class Asset extends $pb.GeneratedMessage {
     ..aOS(10, _omitFieldNames ? '' : 'domainAgent')
     ..a<$core.bool>(11, _omitFieldNames ? '' : 'instantSwaps', $pb.PbFieldType.QB)
     ..aOB(12, _omitFieldNames ? '' : 'alwaysShow')
+    ..aOS(13, _omitFieldNames ? '' : 'domainAgentLink')
+    ..aOM<AmpAssetRestrictions>(14, _omitFieldNames ? '' : 'ampAssetRestrictions', subBuilder: AmpAssetRestrictions.create)
   ;
 
   @$core.Deprecated(
@@ -503,6 +557,26 @@ class Asset extends $pb.GeneratedMessage {
   $core.bool hasAlwaysShow() => $_has(11);
   @$pb.TagNumber(12)
   void clearAlwaysShow() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.String get domainAgentLink => $_getSZ(12);
+  @$pb.TagNumber(13)
+  set domainAgentLink($core.String v) { $_setString(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasDomainAgentLink() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearDomainAgentLink() => clearField(13);
+
+  @$pb.TagNumber(14)
+  AmpAssetRestrictions get ampAssetRestrictions => $_getN(13);
+  @$pb.TagNumber(14)
+  set ampAssetRestrictions(AmpAssetRestrictions v) { setField(14, v); }
+  @$pb.TagNumber(14)
+  $core.bool hasAmpAssetRestrictions() => $_has(13);
+  @$pb.TagNumber(14)
+  void clearAmpAssetRestrictions() => clearField(14);
+  @$pb.TagNumber(14)
+  AmpAssetRestrictions ensureAmpAssetRestrictions() => $_ensure(13);
 }
 
 class Tx extends $pb.GeneratedMessage {

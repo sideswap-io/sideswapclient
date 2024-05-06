@@ -25,40 +25,12 @@ Map<String, dynamic> _$$StokrSettingsModelImplToJson(
   return val;
 }
 
-_$StokrAllowedCountryImpl _$$StokrAllowedCountryImplFromJson(Map json) =>
-    _$StokrAllowedCountryImpl(
-      name: json['name'] as String,
-      isAllowed: json['isAllowed'] as bool? ?? false,
-    );
-
-Map<String, dynamic> _$$StokrAllowedCountryImplToJson(
-        _$StokrAllowedCountryImpl instance) =>
-    <String, dynamic>{
-      'name': instance.name,
-      'isAllowed': instance.isAllowed,
-    };
-
-_$StokrAllowedCountryListImpl _$$StokrAllowedCountryListImplFromJson(
-        Map json) =>
-    _$StokrAllowedCountryListImpl(
-      countries: (json['countries'] as List<dynamic>?)
-          ?.map((e) =>
-              StokrAllowedCountry.fromJson(Map<String, dynamic>.from(e as Map)))
-          .toList(),
-    );
-
-Map<String, dynamic> _$$StokrAllowedCountryListImplToJson(
-        _$StokrAllowedCountryListImpl instance) =>
-    <String, dynamic>{
-      'countries': instance.countries,
-    };
-
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
 String _$stokrCountryBlacklistSearchHash() =>
-    r'e234c33da53eabed1931a70fdd419aa1433846cb';
+    r'4a1f76d00e4f22c417a5af10c7aa196eaefaf4a3';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -87,7 +59,7 @@ const stokrCountryBlacklistSearchProvider = StokrCountryBlacklistSearchFamily();
 
 /// See also [stokrCountryBlacklistSearch].
 class StokrCountryBlacklistSearchFamily
-    extends Family<AsyncValue<List<StokrAllowedCountry>>> {
+    extends Family<AsyncValue<List<CountryCode>>> {
   /// See also [stokrCountryBlacklistSearch].
   const StokrCountryBlacklistSearchFamily();
 
@@ -126,7 +98,7 @@ class StokrCountryBlacklistSearchFamily
 
 /// See also [stokrCountryBlacklistSearch].
 class StokrCountryBlacklistSearchProvider
-    extends AutoDisposeFutureProvider<List<StokrAllowedCountry>> {
+    extends AutoDisposeFutureProvider<List<CountryCode>> {
   /// See also [stokrCountryBlacklistSearch].
   StokrCountryBlacklistSearchProvider(
     String value,
@@ -161,7 +133,7 @@ class StokrCountryBlacklistSearchProvider
 
   @override
   Override overrideWith(
-    FutureOr<List<StokrAllowedCountry>> Function(
+    FutureOr<List<CountryCode>> Function(
             StokrCountryBlacklistSearchRef provider)
         create,
   ) {
@@ -180,7 +152,7 @@ class StokrCountryBlacklistSearchProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<StokrAllowedCountry>> createElement() {
+  AutoDisposeFutureProviderElement<List<CountryCode>> createElement() {
     return _StokrCountryBlacklistSearchProviderElement(this);
   }
 
@@ -199,13 +171,13 @@ class StokrCountryBlacklistSearchProvider
 }
 
 mixin StokrCountryBlacklistSearchRef
-    on AutoDisposeFutureProviderRef<List<StokrAllowedCountry>> {
+    on AutoDisposeFutureProviderRef<List<CountryCode>> {
   /// The parameter `value` of this provider.
   String get value;
 }
 
 class _StokrCountryBlacklistSearchProviderElement
-    extends AutoDisposeFutureProviderElement<List<StokrAllowedCountry>>
+    extends AutoDisposeFutureProviderElement<List<CountryCode>>
     with StokrCountryBlacklistSearchRef {
   _StokrCountryBlacklistSearchProviderElement(super.provider);
 
@@ -231,12 +203,12 @@ final stokrSettingsNotifierProvider = AutoDisposeNotifierProvider<
 
 typedef _$StokrSettingsNotifier = AutoDisposeNotifier<StokrSettingsModel>;
 String _$stokrBlockedCountriesHash() =>
-    r'3c890cbade9f9496f4271e8fd8bce76736aeefbb';
+    r'a135ec2e67b3712a348a0a961201640740381ed4';
 
 /// See also [StokrBlockedCountries].
 @ProviderFor(StokrBlockedCountries)
 final stokrBlockedCountriesProvider = AutoDisposeAsyncNotifierProvider<
-    StokrBlockedCountries, List<StokrAllowedCountry>>.internal(
+    StokrBlockedCountries, List<CountryCode>>.internal(
   StokrBlockedCountries.new,
   name: r'stokrBlockedCountriesProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -246,8 +218,7 @@ final stokrBlockedCountriesProvider = AutoDisposeAsyncNotifierProvider<
   allTransitiveDependencies: null,
 );
 
-typedef _$StokrBlockedCountries
-    = AutoDisposeAsyncNotifier<List<StokrAllowedCountry>>;
+typedef _$StokrBlockedCountries = AutoDisposeAsyncNotifier<List<CountryCode>>;
 String _$stokrLastSelectedAccountAssetNotifierHash() =>
     r'5adb603cedb1897efe858665ce5c36c43dafe52b';
 

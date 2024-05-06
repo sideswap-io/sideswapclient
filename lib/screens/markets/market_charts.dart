@@ -297,10 +297,10 @@ class AssetDetails extends ConsumerWidget {
                   'Asset'.tr(),
                   assetUrl,
                 ),
-                if (asset?.hasDomainAgent() == true)
+                if (asset?.hasDomainAgentLink() == true)
                   assetDetailsUrl(
                     'Registration Agent'.tr(),
-                    'https://${asset?.domainAgent ?? ''}',
+                    asset?.domainAgentLink ?? '',
                   ),
               ],
             ),

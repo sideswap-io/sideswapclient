@@ -1,11 +1,11 @@
-import 'dart:convert';
-
-import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sideswap/common/utils/sideswap_logger.dart';
+import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/countries_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'stokr_providers.g.dart';
 part 'stokr_providers.freezed.dart';
@@ -39,57 +39,49 @@ class StokrSettingsNotifier extends _$StokrSettingsNotifier {
   }
 }
 
-@freezed
-sealed class StokrAllowedCountry with _$StokrAllowedCountry {
-  const factory StokrAllowedCountry({
-    required String name,
-    @Default(false) bool isAllowed,
-  }) = _StokrAllowedCountry;
-
-  factory StokrAllowedCountry.fromJson(Map<String, dynamic> json) =>
-      _$StokrAllowedCountryFromJson(json);
-}
-
-@freezed
-sealed class StokrAllowedCountryList with _$StokrAllowedCountryList {
-  const factory StokrAllowedCountryList({
-    List<StokrAllowedCountry>? countries,
-  }) = _StokrAllowedCountryList;
-
-  factory StokrAllowedCountryList.fromJson(Map<String, dynamic> json) =>
-      _$StokrAllowedCountryListFromJson(json);
-}
-
 @riverpod
 class StokrBlockedCountries extends _$StokrBlockedCountries {
   @override
-  FutureOr<List<StokrAllowedCountry>> build() async {
-    try {
-      String jsonFile =
-          await rootBundle.loadString('assets/stokr/smstr_countries.json');
-      final json = jsonDecode(jsonFile) as Map<String, dynamic>;
-      final stokrCountries = StokrAllowedCountryList.fromJson(json);
-      final countries = <StokrAllowedCountry>[];
-      countries.addAll(stokrCountries.countries ?? []);
-      countries.sort((a, b) => a.name.compareTo(b.name));
-      return countries.where((element) => !element.isAllowed).toList();
-    } catch (e) {
-      logger.e(e);
+  FutureOr<List<CountryCode>> build() async {
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+
+    if (asset == null || !asset.hasAmpAssetRestrictions()) {
+      return future;
     }
 
-    return future;
+    final allowedCountries = asset.ampAssetRestrictions.allowedCountries;
+    final countries = ref.watch(countriesFutureProvider);
+
+    return switch (countries) {
+      AsyncValue(hasValue: true, value: List<CountryCode> countryList) => () {
+          final newList = [...countryList];
+          newList.retainWhere((element) =>
+              !allowedCountries.any((allowed) => element.iso3Code == allowed));
+          newList.sort((a, b) => a.english?.compareTo(b.english ?? '') ?? 0);
+          return Future<List<CountryCode>>.value(newList);
+        }(),
+      _ => future,
+    };
   }
 }
 
 @riverpod
-FutureOr<List<StokrAllowedCountry>> stokrCountryBlacklistSearch(
+FutureOr<List<CountryCode>> stokrCountryBlacklistSearch(
     StokrCountryBlacklistSearchRef ref, String value) async {
-  final stokrCountryBlacklist =
-      await ref.watch(stokrBlockedCountriesProvider.future);
-  final newList = stokrCountryBlacklist
-      .where((element) => element.name.toLowerCase().startsWith(value))
-      .toList();
-  return newList;
+  final stokrCountryBlacklist = ref.watch(stokrBlockedCountriesProvider);
+
+  return switch (stokrCountryBlacklist) {
+    AsyncValue(hasValue: true, value: List<CountryCode> countries) => countries
+        .where((element) =>
+            (element.english?.toLowerCase().contains(value.toLowerCase()) ??
+                false) ||
+            (element.name?.toLowerCase().contains(value.toLowerCase()) ??
+                false))
+        .toList(),
+    _ => [],
+  };
 }
 
 @Riverpod(keepAlive: true)

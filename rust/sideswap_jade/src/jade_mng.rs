@@ -207,7 +207,7 @@ impl ManagedJade {
             // New Jade
             let resp = self.make_request::<ciborium::value::Value, models::RespAuthComplete>(
                 &resp.http_request.on_reply,
-                std::time::Duration::from_secs(10),
+                std::time::Duration::from_secs(300),
                 http_resp,
             )?;
             Ok(resp)
@@ -215,13 +215,13 @@ impl ManagedJade {
             // Old Jade
             let resp = self.make_request::<ciborium::value::Value, models::RespAuthUser>(
                 &resp.http_request.on_reply,
-                std::time::Duration::from_secs(10),
+                std::time::Duration::from_secs(300),
                 http_resp,
             )?;
             let http_resp = handle_http_request(&self.agent, &resp)?;
             let resp = self.make_request::<ciborium::value::Value, models::RespAuthComplete>(
                 &resp.http_request.on_reply,
-                std::time::Duration::from_secs(10),
+                std::time::Duration::from_secs(300),
                 http_resp,
             )?;
             Ok(resp)

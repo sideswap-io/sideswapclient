@@ -1021,7 +1021,6 @@ class OrderEntryCallbackHandlers {
   }
 
   bool stokrConditionsMet() {
-    // is stokr asset
     final stokrSecurities = ref.read(stokrSecuritiesProvider);
     final assetNeedCheck =
         stokrSecurities.any((element) => element.assetId == asset?.assetId);

@@ -8,7 +8,9 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog.dart';
 import 'package:sideswap/desktop/common/dialog/d_content_dialog_theme.dart';
 import 'package:sideswap/desktop/theme.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class DStokrNeedRegisterPopup extends ConsumerWidget {
   const DStokrNeedRegisterPopup({super.key});
@@ -17,6 +19,10 @@ class DStokrNeedRegisterPopup extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final defaultDialogTheme =
         ref.watch(desktopAppThemeNotifierProvider).defaultDialogTheme;
+
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
 
     return DContentDialog(
       title: DContentDialogTitle(
@@ -55,7 +61,9 @@ class DStokrNeedRegisterPopup extends ConsumerWidget {
               DCustomFilledBigButton(
                 width: 500,
                 onPressed: () {
-                  openUrl('https://stokr.io/');
+                  if (asset != null) {
+                    openUrl(asset.domainAgentLink);
+                  }
                 },
                 child: Text('REGISTER ON STOKR'.tr()),
               ),

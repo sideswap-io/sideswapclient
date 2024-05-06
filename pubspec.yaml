@@ -3,7 +3,7 @@ description: Sideswap Client.
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 1.5.1+92
+version: 1.5.2+95
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -163,7 +163,6 @@ flutter:
     - assets/wordlist.txt
     - assets/translations/
     - assets/translations/icons/
-    - assets/stokr/smstr_countries.json
     - assets/btc_logo.svg
     - assets/usdt_logo.svg
     - assets/lbtc_logo.svg

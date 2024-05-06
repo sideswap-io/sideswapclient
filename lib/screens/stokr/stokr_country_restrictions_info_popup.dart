@@ -6,18 +6,25 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/country_code.dart';
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/providers/config_provider.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/stokr_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
   const StokrCountryRestrictionsInfoPopup({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+
     return SideSwapPopup(
       onClose: () {
         ref.read(walletProvider).goBack();
@@ -98,7 +105,9 @@ class StokrCountryRestrictionsInfoPopup extends HookConsumerWidget {
                 height: 54,
                 backgroundColor: SideSwapColors.brightTurquoise,
                 onPressed: () {
-                  openUrl('https://stokr.io/');
+                  if (asset != null) {
+                    openUrl(asset.domainAgentLink);
+                  }
                 },
                 child: Text(
                   'REGISTER ON STOKR'.tr(),
@@ -176,18 +185,15 @@ class StokrBlockedCountriesPopup extends HookConsumerWidget {
     );
 
     final controller = useTextEditingController();
-    final blacklistedCountries = useState(<StokrAllowedCountry>[]);
-    final allBlockedCountries = useState(<StokrAllowedCountry>[]);
+    final blacklistedCountries = useState(<CountryCode>[]);
+    final allBlockedCountries = useState(<CountryCode>[]);
     final stokrCountryBlacklist = ref.watch(stokrBlockedCountriesProvider);
 
     useEffect(() {
       final countries = switch (stokrCountryBlacklist) {
-        AsyncValue(
-          hasValue: true,
-          value: List<StokrAllowedCountry> countries
-        ) =>
+        AsyncValue(hasValue: true, value: List<CountryCode> countries) =>
           countries,
-        _ => <StokrAllowedCountry>[],
+        _ => <CountryCode>[],
       };
 
       allBlockedCountries.value = countries;
@@ -246,7 +252,7 @@ class StokrBlockedCountriesPopup extends HookConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.only(top: 2, bottom: 2),
                         child: Text(
-                          blacklistedCountries.value[index].name,
+                          '${blacklistedCountries.value[index].english ?? ''} (${blacklistedCountries.value[index].name ?? ''})',
                           style: Theme.of(context)
                               .textTheme
                               .titleMedium

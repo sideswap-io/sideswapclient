@@ -47,16 +47,18 @@ class AmpServiceRegisterBox extends HookConsumerWidget {
       child: Padding(
         padding: padding,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SvgPicture.asset(
               boxLogo,
               height: 20,
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 17),
-              child: AmpSecuritiesList(
-                items: items,
+            SizedBox(
+              height: 206,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 17),
+                child: AmpSecuritiesList(
+                  items: items,
+                ),
               ),
             ),
             const Spacer(),
@@ -79,7 +81,7 @@ class AmpServiceRegisterBox extends HookConsumerWidget {
                         loading: loading,
                       ),
                     ),
-            )
+            ),
           ],
         ),
       ),

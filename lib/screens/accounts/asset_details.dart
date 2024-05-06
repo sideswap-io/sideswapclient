@@ -170,13 +170,13 @@ class AssetDetailsPanelBuilder extends HookConsumerWidget {
                   );
                 },
               ),
-              ...switch (asset.hasDomainAgent()) {
+              ...switch (asset.hasDomainAgentLink()) {
                 true => [
                     AssetDetailsText(text: 'Registration Agent'.tr()),
                     AssetDetailsUnderlineButton(
-                      text: asset.domainAgent,
+                      text: asset.domainAgentLink,
                       onPressed: () {
-                        openUrl(asset.domainAgent);
+                        openUrl(asset.domainAgentLink);
                       },
                     ),
                   ],

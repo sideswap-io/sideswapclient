@@ -7,13 +7,19 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/widgets/custom_big_button.dart';
 import 'package:sideswap/common/widgets/side_swap_popup.dart';
 import 'package:sideswap/desktop/stokr/d_stokr_need_register_popup.dart';
+import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 class StokrNeedRegisterPopup extends HookConsumerWidget {
   const StokrNeedRegisterPopup({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedAccountAsset =
+        ref.watch(marketSelectedAccountAssetStateProvider);
+    final asset = ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
+
     return SideSwapPopup(
       onClose: () {
         ref.read(walletProvider).goBack();
@@ -43,7 +49,9 @@ class StokrNeedRegisterPopup extends HookConsumerWidget {
                 height: 54,
                 backgroundColor: SideSwapColors.brightTurquoise,
                 onPressed: () {
-                  openUrl('https://stokr.io/');
+                  if (asset != null) {
+                    openUrl(asset.domainAgentLink);
+                  }
                 },
                 child: Text(
                   'REGISTER ON STOKR'.tr(),

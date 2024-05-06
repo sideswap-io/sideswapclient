@@ -8,6 +8,7 @@ import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/providers/wallet_assets_providers.dart';
 
 part 'amp_register_provider.g.dart';
 
@@ -52,28 +53,11 @@ class SecuritiesItem {
 
 @riverpod
 List<SecuritiesItem> stokrSecurities(StokrSecuritiesRef ref) {
-  final List<SecuritiesItem> assets = [];
-  assets.add(SecuritiesItem(
-      token: 'BMN',
-      icon: 'assets/bmn.svg',
-      assetId:
-          '11f91cb5edd5d0822997ad81f068ed35002daec33986da173461a8427ac857e1'));
-  assets.add(SecuritiesItem(
-      token: 'EXO',
-      icon: 'assets/tx_icons/unknown.svg',
-      assetId:
-          "0db21df3ca7d71f0fb9aafb019e67d0a23c3c79a11eb9e8c4e32e1cb5910e2da"));
-  assets.add(SecuritiesItem(
-      token: 'AQF',
-      icon: '',
-      assetId:
-          '3caca4d1e7c596d4f59db73d62e514963c098cc327cab550bd460a9927f5fdbe'));
-  assets.add(SecuritiesItem(
-      token: 'CMSTR',
-      icon: '',
-      assetId:
-          'e8305bb5c1794b256a858a01e5d8af7a5817d257fbfbc2c9d49620f13ff401a9'));
-  return assets;
+  final assets = ref.watch(assetsStateProvider);
+  return assets.values
+      .where((element) => element.hasAmpAssetRestrictions())
+      .map((e) => SecuritiesItem(token: e.ticker, assetId: e.assetId, icon: ''))
+      .toList();
 }
 
 @riverpod
@@ -110,18 +94,15 @@ CheckAmpStatusProvider checkAmpStatus(CheckAmpStatusRef ref) {
       .first
       .assetId;
 
-  final stokrAssetId = ref
-      .watch(stokrSecuritiesProvider)
-      .where((e) => e.token == 'BMN')
-      .first
-      .assetId;
+  final stokrSecurities = ref.watch(stokrSecuritiesProvider);
 
   return CheckAmpStatusProvider(
     ref: ref,
     loginState: loginState,
     ampId: ampId,
     pegxAssetId: pegxAssetId,
-    stokrAssetId: stokrAssetId,
+    stokrAssetId:
+        stokrSecurities.isNotEmpty ? stokrSecurities.first.assetId : null,
   );
 }
 

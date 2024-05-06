@@ -6,7 +6,7 @@ part of 'amp_register_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$stokrSecuritiesHash() => r'976072d96ce8eea83112f663285f568202d4a8a2';
+String _$stokrSecuritiesHash() => r'ab36369f054db4ecf5ac86a17136a8969ae292dd';
 
 /// See also [stokrSecurities].
 @ProviderFor(stokrSecurities)
@@ -38,7 +38,7 @@ final pegxSecuritiesProvider =
 );
 
 typedef PegxSecuritiesRef = AutoDisposeProviderRef<List<SecuritiesItem>>;
-String _$checkAmpStatusHash() => r'b1cfc7ecccbeca8810256c9b9602c7b2d242dd6d';
+String _$checkAmpStatusHash() => r'4d123a68f1915c4fecdabed2aa69dc906dddf42f';
 
 /// See also [checkAmpStatus].
 @ProviderFor(checkAmpStatus)

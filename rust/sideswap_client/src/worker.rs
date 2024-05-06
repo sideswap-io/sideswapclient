@@ -710,12 +710,14 @@ impl Data {
                             instant_swaps: Some(false),
                             domain: None,
                             domain_agent: None,
+                            domain_agent_link: None,
                             always_show: None,
                             issuance_prevout: None,
                             issuer_pubkey: None,
                             contract: None,
                             market_type: None,
                             server_fee: None,
+                            amp_asset_restrictions: None,
                         }
                     }
                 };
@@ -923,6 +925,7 @@ impl Data {
             Some(AssetsRequestParam {
                 embedded_icons: Some(false),
                 all_assets: Some(true),
+                amp_asset_restrictions: Some(true),
             })
         )?
         .assets;
@@ -4102,6 +4105,13 @@ impl Data {
     pub fn register_asset(&mut self, asset: Asset) {
         let asset_id = asset.asset_id;
         let unregistered = asset.asset_id != self.liquid_asset_id && asset.domain.is_none();
+        let amp_asset_restrictions =
+            asset
+                .amp_asset_restrictions
+                .clone()
+                .map(|info| ffi::proto::AmpAssetRestrictions {
+                    allowed_countries: info.allowed_countries.unwrap_or_default(),
+                });
         let asset_copy = ffi::proto::Asset {
             asset_id: asset.asset_id.to_string(),
             name: asset.name.clone(),
@@ -4115,9 +4125,11 @@ impl Data {
             amp_market: asset.market_type == Some(MarketType::Amp),
             domain: asset.domain.clone(),
             domain_agent: asset.domain_agent.clone(),
+            domain_agent_link: asset.domain_agent_link.clone(),
             unregistered,
             instant_swaps: asset.instant_swaps.unwrap_or(false),
             always_show: asset.always_show,
+            amp_asset_restrictions,
         };
 
         self.assets.insert(asset_id, asset);

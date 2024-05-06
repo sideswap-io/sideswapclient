@@ -55,6 +55,7 @@ pub fn get_assets(
                     instant_swaps: Some(false),
                     domain: v.entity["domain"].as_str().map(|s| s.to_owned()),
                     domain_agent: None,
+                    domain_agent_link: None,
                     always_show: None,
                     issuance_prevout: Some(IssuancePrevout {
                         txid: v.issuance_prevout.txid,
@@ -64,6 +65,7 @@ pub fn get_assets(
                     contract: Some(v.contract.clone()),
                     market_type: Some(sideswap_api::MarketType::Token),
                     server_fee: None,
+                    amp_asset_restrictions: None,
                 }
             })
         })

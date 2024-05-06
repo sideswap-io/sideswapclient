@@ -337,6 +337,41 @@ class DesktopAppTheme {
         ),
       );
 
+  DButtonStyle? appReleasesButtonStyle() {
+    return buttonWithoutBorderStyle?.merge(
+      DButtonStyle(
+        backgroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled => Colors.transparent,
+            Set<ButtonStates>() when states.isPressing =>
+              Colors.transparent.lerpWith(Colors.black, 0.25),
+            Set<ButtonStates>() when states.isHovering =>
+              Colors.transparent.lerpWith(Colors.black, 0.2),
+            _ => Colors.transparent,
+          };
+        }),
+        foregroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled =>
+              Colors.white.lerpWith(Colors.black, 0.2),
+            _ => Colors.white,
+          };
+        }),
+        textStyle: ButtonState.all(
+          textTheme.titleSmall,
+        ),
+        padding: ButtonState.all(EdgeInsets.zero),
+        shape: ButtonState.all(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(2),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   DButtonStyle? addressDetailsItemButtonStyle() {
     return buttonWithoutBorderStyle?.merge(
       DButtonStyle(

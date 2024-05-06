@@ -77,6 +77,19 @@ final $typed_data.Uint8List balanceDescriptor = $convert.base64Decode(
     'CgdCYWxhbmNlEhkKCGFzc2V0X2lkGAEgAigJUgdhc3NldElkEhYKBmFtb3VudBgCIAIoA1IGYW'
     '1vdW50');
 
+@$core.Deprecated('Use ampAssetRestrictionsDescriptor instead')
+const AmpAssetRestrictions$json = {
+  '1': 'AmpAssetRestrictions',
+  '2': [
+    {'1': 'allowed_countries', '3': 1, '4': 3, '5': 9, '10': 'allowedCountries'},
+  ],
+};
+
+/// Descriptor for `AmpAssetRestrictions`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List ampAssetRestrictionsDescriptor = $convert.base64Decode(
+    'ChRBbXBBc3NldFJlc3RyaWN0aW9ucxIrChFhbGxvd2VkX2NvdW50cmllcxgBIAMoCVIQYWxsb3'
+    'dlZENvdW50cmllcw==');
+
 @$core.Deprecated('Use assetDescriptor instead')
 const Asset$json = {
   '1': 'Asset',
@@ -92,7 +105,9 @@ const Asset$json = {
     {'1': 'unregistered', '3': 8, '4': 2, '5': 8, '10': 'unregistered'},
     {'1': 'domain', '3': 7, '4': 1, '5': 9, '10': 'domain'},
     {'1': 'domain_agent', '3': 10, '4': 1, '5': 9, '10': 'domainAgent'},
+    {'1': 'domain_agent_link', '3': 13, '4': 1, '5': 9, '10': 'domainAgentLink'},
     {'1': 'always_show', '3': 12, '4': 1, '5': 8, '10': 'alwaysShow'},
+    {'1': 'amp_asset_restrictions', '3': 14, '4': 1, '5': 11, '6': '.sideswap.proto.AmpAssetRestrictions', '10': 'ampAssetRestrictions'},
   ],
 };
 
@@ -103,8 +118,10 @@ final $typed_data.Uint8List assetDescriptor = $convert.base64Decode(
     'GAUgAigNUglwcmVjaXNpb24SIwoNaW5zdGFudF9zd2FwcxgLIAIoCFIMaW5zdGFudFN3YXBzEh'
     '8KC3N3YXBfbWFya2V0GAYgAigIUgpzd2FwTWFya2V0Eh0KCmFtcF9tYXJrZXQYCSACKAhSCWFt'
     'cE1hcmtldBIiCgx1bnJlZ2lzdGVyZWQYCCACKAhSDHVucmVnaXN0ZXJlZBIWCgZkb21haW4YBy'
-    'ABKAlSBmRvbWFpbhIhCgxkb21haW5fYWdlbnQYCiABKAlSC2RvbWFpbkFnZW50Eh8KC2Fsd2F5'
-    'c19zaG93GAwgASgIUgphbHdheXNTaG93');
+    'ABKAlSBmRvbWFpbhIhCgxkb21haW5fYWdlbnQYCiABKAlSC2RvbWFpbkFnZW50EioKEWRvbWFp'
+    'bl9hZ2VudF9saW5rGA0gASgJUg9kb21haW5BZ2VudExpbmsSHwoLYWx3YXlzX3Nob3cYDCABKA'
+    'hSCmFsd2F5c1Nob3cSWgoWYW1wX2Fzc2V0X3Jlc3RyaWN0aW9ucxgOIAEoCzIkLnNpZGVzd2Fw'
+    'LnByb3RvLkFtcEFzc2V0UmVzdHJpY3Rpb25zUhRhbXBBc3NldFJlc3RyaWN0aW9ucw==');
 
 @$core.Deprecated('Use txDescriptor instead')
 const Tx$json = {

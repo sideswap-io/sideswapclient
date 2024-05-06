@@ -6,21 +6,22 @@ edition = "2021"
 [dependencies]
 sideswap_api = { path = "../sideswap_api" }
 
-serde.workspace = true
-serde_json.workspace = true
 anyhow.workspace = true
-log.workspace = true
-tokio-tungstenite.workspace = true
-futures.workspace = true
+bitcoin.workspace = true
+crossbeam-channel.workspace = true
+derive_more.workspace = true
+elements.workspace = true
 futures-util.workspace = true
+futures.workspace = true
+log.workspace = true
+rand.workspace = true
+serde_json.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+tokio-socks.workspace = true
+tokio-tungstenite.workspace = true
 tokio.workspace = true
 tungstenite.workspace = true
-derive_more.workspace = true
-bitcoin.workspace = true
-elements.workspace = true
-rand.workspace = true
-crossbeam-channel.workspace = true
-tokio-socks.workspace = true
 
 [dev-dependencies]
 hex.workspace = true
