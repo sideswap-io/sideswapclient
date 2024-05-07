@@ -8,6 +8,7 @@ name = "sideswap_amp"
 
 [dependencies]
 sideswap_common = { path = "../sideswap_common" }
+sideswap_payjoin = { path = "../sideswap_payjoin" }
 
 anyhow.workspace = true
 async-trait.workspace = true

@@ -1,10 +1,9 @@
 use std::{
-    collections::HashMap,
-    str::FromStr,
+    collections::{BTreeMap, HashMap},
     time::{Duration, Instant},
 };
 
-use anyhow::{anyhow, bail, ensure};
+use anyhow::{anyhow, bail, ensure, Context};
 use bitcoin::{
     bip32::{ChildNumber, Xpriv, Xpub},
     hashes::Hash,
@@ -33,8 +32,13 @@ const DEFAULT_AGENT_STR: &str = "sideswap_amp";
 
 #[derive(Debug)]
 pub enum Event {
-    Connected { gaid: String },
+    Connected {
+        gaid: String,
+    },
     Disconnected,
+    BalanceUpdated {
+        balances: BTreeMap<elements::AssetId, u64>,
+    },
 }
 
 #[derive(Copy, Clone)]
@@ -50,15 +54,23 @@ impl Network {
             Network::LiquidTestnet => &NETWORK_PARAMS_LIQUID_TESTNET,
         }
     }
+
+    fn known_assets(self) -> sideswap_common::env::KnownAssetIds {
+        match self {
+            Network::Liquid => sideswap_common::env::Network::Mainnet.known_assets(),
+            Network::LiquidTestnet => sideswap_common::env::Network::Testnet.known_assets(),
+        }
+    }
 }
 
 pub struct Wallet {
     command_sender: UnboundedSender<Command>,
+    policy_asset: elements::AssetId,
 }
 
 enum Command {
     ReceiveAddress(oneshot::Sender<Result<elements::Address, anyhow::Error>>),
-    UnspentOutputs(oneshot::Sender<Result<Vec<Utxo>, anyhow::Error>>),
+    UnspentOutputs(oneshot::Sender<Vec<Utxo>>),
     SignTx(
         elements::Transaction,
         Vec<String>,
@@ -70,6 +82,25 @@ fn convert_pubkey(pk: elements::secp256k1_zkp::PublicKey) -> bitcoin::PublicKey 
     bitcoin::PublicKey::new(pk)
 }
 
+#[derive(Debug)]
+pub struct Recipient {
+    pub address: elements::Address,
+    pub asset_id: elements::AssetId,
+    pub amount: u64,
+}
+
+fn parse_args1<T1: serde::de::DeserializeOwned>(mut args: WampArgs) -> Result<T1, anyhow::Error> {
+    match &mut *args {
+        [value] => {
+            let value = serde_json::from_value::<T1>(std::mem::take(value)).with_context(|| {
+                format!("parsing args failed for {}", std::any::type_name::<T1>())
+            })?;
+            Ok(value)
+        }
+        _ => bail!("unexpected arguments count, expected vector of 1"),
+    }
+}
+
 impl Wallet {
     pub fn new(mnemonic: bip39::Mnemonic, network: Network) -> (Wallet, UnboundedReceiver<Event>) {
         let (command_sender, command_receiver) = tokio::sync::mpsc::unbounded_channel();
@@ -77,7 +108,16 @@ impl Wallet {
 
         tokio::spawn(run(mnemonic, network, command_receiver, event_sender));
 
-        (Wallet { command_sender }, event_receiver)
+        let wallet = Wallet {
+            command_sender,
+            policy_asset: network.known_assets().bitcoin,
+        };
+
+        (wallet, event_receiver)
+    }
+
+    pub fn policy_asset(&self) -> elements::AssetId {
+        self.policy_asset
     }
 
     pub async fn receive_address(&self) -> Result<elements::Address, anyhow::Error> {
@@ -91,71 +131,134 @@ impl Wallet {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
             .send(Command::UnspentOutputs(res_sender))?;
-        res_receiver.await?
+        let utxos = res_receiver.await?;
+        Ok(utxos)
     }
 
     pub async fn sign(
         &self,
-        address: elements::Address,
-        asset_id: elements::AssetId,
-        amount: u64,
+        mut recipients: Vec<Recipient>,
     ) -> Result<elements::Transaction, anyhow::Error> {
         let utxos = self.unspent_outputs().await?;
 
-        let policy_asset = elements::AssetId::from_str(
-            "144c654344aa716d6f3abcc1ca90e5641e4e2a7f633bc09fe3baf64585819a49",
-        )
-        .unwrap();
-        let utxo = utxos
-            .into_iter()
-            .find(|utxo| {
-                utxo.tx_out_sec.asset == policy_asset
-                    && utxo.tx_out_sec.asset_bf
-                        != elements::confidential::AssetBlindingFactor::zero()
-                    && utxo.tx_out_sec.value >= 1000
-            })
-            .unwrap();
-        let receiver = elements::Address::from_str(
-            "vjU5hdTpoJN9xRcAorEd1FXyTNfvownuuKt2pX4uyQNYrQ6ZuU5CfsMYyRTkPMkUjRgmXM1DGxKZNehm",
-        )
-        .unwrap();
-
         let mut pset = pset::PartiallySignedTransaction::new_v2();
-        let mut input = pset::Input::from_prevout(utxo.outpoint);
-        input.witness_utxo = Some(utxo.txout.clone());
-        pset.add_input(input);
 
-        let fee = 500;
-        let change = utxo.tx_out_sec.value - fee;
+        let mut output_amounts = BTreeMap::<elements::AssetId, u64>::new();
+        for recipient in recipients.iter() {
+            ensure!(recipient.amount > 0);
+            let output_amount = output_amounts.entry(recipient.asset_id).or_default();
+            *output_amount = output_amount
+                .checked_add(recipient.amount)
+                .ok_or_else(|| anyhow!("output amount overflow"))?;
+        }
 
-        let output = pset::Output {
-            script_pubkey: receiver.script_pubkey(),
-            amount: Some(change),
-            asset: Some(policy_asset),
-            blinding_key: receiver.blinding_pubkey.map(convert_pubkey),
-            blinder_index: Some(0),
-            ..Default::default()
-        };
-        pset.add_output(output);
+        let mut input_amounts = BTreeMap::<elements::AssetId, u64>::new();
+        let mut used_utxos = Vec::new();
+        for utxo in utxos.into_iter() {
+            let add_input = if utxo.tx_out_sec.asset == self.policy_asset {
+                // TODO: Add only required LBTC inputs
+                true
+            } else {
+                let input_amount = input_amounts
+                    .get(&utxo.tx_out_sec.asset)
+                    .copied()
+                    .unwrap_or_default();
+                let output_amount = output_amounts
+                    .get(&utxo.tx_out_sec.asset)
+                    .copied()
+                    .unwrap_or_default();
+                output_amount > input_amount
+            };
+            if add_input {
+                let mut input = pset::Input::from_prevout(utxo.outpoint);
+                input.final_script_sig = Some(get_redeem_script(&utxo.redeem_script));
+                input.redeem_script = Some(utxo.redeem_script.clone());
+                input.witness_utxo = Some(utxo.txout.clone());
+                pset.add_input(input);
 
-        let fee_output =
-            pset::Output::new_explicit(elements::Script::default(), fee, policy_asset, None);
+                *input_amounts.entry(utxo.tx_out_sec.asset).or_default() += utxo.tx_out_sec.value;
+
+                used_utxos.push(utxo);
+            }
+        }
+
+        for (&asset_id, &output_amount) in output_amounts.iter() {
+            if asset_id != self.policy_asset {
+                let input_amount = input_amounts.get(&asset_id).copied().unwrap_or_default();
+                ensure!(input_amount >= output_amount);
+                let change_amount = input_amount - output_amount;
+                if change_amount > 0 {
+                    let change_address = self.receive_address().await?;
+                    recipients.push(Recipient {
+                        address: change_address,
+                        asset_id,
+                        amount: change_amount,
+                    });
+                }
+            }
+        }
+
+        // TODO: Load addresses from backend only after all checks succeed
+        // TODO: Load addresses from backend concurrently
+
+        // FIXME: Use correct network fee
+        let network_fee = sideswap_payjoin::network_fee::expected_network_fee(
+            0,
+            pset.n_inputs(),
+            recipients.len() + 1, // 1 change outputs for LBTC
+        );
+        let policy_asset_input = input_amounts
+            .get(&self.policy_asset)
+            .copied()
+            .unwrap_or_default();
+        let policy_asset_output = output_amounts
+            .get(&self.policy_asset)
+            .copied()
+            .unwrap_or_default();
+        ensure!(policy_asset_input >= policy_asset_output + network_fee);
+        let policy_asset_change = policy_asset_input - policy_asset_output - network_fee;
+
+        if policy_asset_change > 0 {
+            let change_address = self.receive_address().await?;
+            recipients.push(Recipient {
+                address: change_address,
+                asset_id: self.policy_asset,
+                amount: policy_asset_change,
+            });
+        }
+
+        for recipient in recipients {
+            let output = pset::Output {
+                script_pubkey: recipient.address.script_pubkey(),
+                amount: Some(recipient.amount),
+                asset: Some(recipient.asset_id),
+                blinding_key: recipient.address.blinding_pubkey.map(convert_pubkey),
+                blinder_index: Some(0),
+                ..Default::default()
+            };
+            pset.add_output(output);
+        }
+
+        let fee_output = pset::Output::new_explicit(
+            elements::Script::default(),
+            network_fee,
+            self.policy_asset,
+            None,
+        );
 
         pset.add_output(fee_output);
 
-        let blinding_nonces =
-            sideswap_common::pset_blind::blind_pset(&mut pset, &[utxo.tx_out_sec])?;
-
-        for pset_input in pset.inputs_mut() {
-            pset_input.final_script_sig = Some(get_redeem_script(&utxo.redeem_script));
-            pset_input.redeem_script = Some(utxo.redeem_script.clone());
-        }
+        let inp_txout_sec = used_utxos
+            .iter()
+            .map(|utxo| utxo.tx_out_sec)
+            .collect::<Vec<_>>();
+        let blinding_nonces = sideswap_common::pset_blind::blind_pset(&mut pset, &inp_txout_sec)?;
 
         let mut tx = pset.extract_tx()?;
         let tx_copy = tx.clone();
 
         let mut sighash_cache = elements::sighash::SighashCache::new(&tx_copy);
-        for (index, tx_input) in tx.input.iter_mut().enumerate() {
+        for (index, (tx_input, utxo)) in tx.input.iter_mut().zip(used_utxos.iter()).enumerate() {
             let green_dummy_sig = hex::decode("304402207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f02207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f01").unwrap();
 
             let hash_ty = elements_miniscript::elements::EcdsaSighashType::All;
@@ -188,7 +291,12 @@ impl Wallet {
     }
 }
 
-type Callback = Box<dyn FnOnce(&mut Data, Result<WampArgs, anyhow::Error>) + Send>;
+// If the callback returns an error, the wallet connection is restarted
+type Callback =
+    Box<dyn FnOnce(&mut Data, Result<WampArgs, anyhow::Error>) -> Result<(), anyhow::Error> + Send>;
+
+// If the callback returns an error, the wallet connection is restarted
+type SubscribeCallback = fn(&mut Data, WampArgs) -> Result<(), anyhow::Error>;
 
 type Connection =
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
@@ -201,9 +309,14 @@ struct Data {
     subaccount: u32,
     user_xpriv: Xpriv,
     service_xpub: Xpub,
+    event_sender: UnboundedSender<Event>,
+    pending_subscribe: HashMap<WampId, SubscribeCallback>,
+    active_subscribe: HashMap<WampId, SubscribeCallback>,
+    utxos: Vec<Utxo>,
+    reload_utxos: bool,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Utxo {
     pub pointer: u32,
     pub txout: elements::TxOut,
@@ -473,10 +586,10 @@ async fn process_msg(data: &mut Data, msg: Msg) -> Result<(), anyhow::Error> {
             if let Some(callback) = data.pending_requests.remove(&request) {
                 match arguments {
                     Some(arguments) => {
-                        callback(data, Ok(arguments));
+                        callback(data, Ok(arguments))?;
                     }
                     None => {
-                        callback(data, Err(anyhow::anyhow!("arguments is empty")));
+                        callback(data, Err(anyhow::anyhow!("arguments is empty")))?;
                     }
                 }
             }
@@ -490,11 +603,11 @@ async fn process_msg(data: &mut Data, msg: Msg) -> Result<(), anyhow::Error> {
             ..
         } => {
             match typ {
-                wamp::message::SUBSCRIBE_ID => log::error!("subscribe failed: {error}"),
-                wamp::message::UNSUBSCRIBE_ID => log::error!("unsubscribe failed: {error}"),
+                wamp::message::SUBSCRIBE_ID => bail!("subscribe failed: {error}"),
+                wamp::message::UNSUBSCRIBE_ID => bail!("unsubscribe failed: {error}"),
                 wamp::message::CALL_ID => {
                     if let Some(callback) = data.pending_requests.remove(&request) {
-                        callback(data, Err(anyhow::anyhow!("request failed: {error}")));
+                        callback(data, Err(anyhow::anyhow!("request failed: {error}")))?;
                     } else {
                         log::error!("unknown request: {request}");
                     }
@@ -512,21 +625,34 @@ async fn process_msg(data: &mut Data, msg: Msg) -> Result<(), anyhow::Error> {
             subscription,
         } => {
             log::debug!("subscribed sucesfully, request: {request}, subscription: {subscription}");
+            if let Some(callback) = data.pending_subscribe.remove(&request) {
+                data.active_subscribe.insert(subscription, callback);
+            }
             Ok(())
         }
 
-        Msg::Unsubscribed { request } => {
-            log::debug!("unsubscribed sucesfully, request: {request}");
-            Ok(())
-        }
+        Msg::Unsubscribed { .. } => bail!("unexpected unsubscribed event received"),
 
         Msg::Event {
-            subscription: _,
+            subscription,
             publication: _,
             details: _,
-            arguments: _,
+            arguments,
             arguments_kw: _,
-        } => Ok(()),
+        } => {
+            if let Some(callback) = data.active_subscribe.get(&subscription) {
+                if let Some(arguments) = arguments {
+                    callback(data, arguments).with_context(|| {
+                        format!("subscription {subscription} processing failed")
+                    })?;
+                } else {
+                    log::error!("arguments is empty in subscription");
+                }
+            } else {
+                log::error!("unknown subscription received");
+            }
+            Ok(())
+        }
 
         // Unsupported messages
         Msg::Welcome { .. } => bail!("unexpected welcome message received"),
@@ -632,20 +758,13 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), anyhow
                 "com.greenaddress.vault.fund",
                 vec![data.subaccount.into(), true.into(), "p2wsh".into()],
                 Box::new(move |data, res| {
-                    let res =
-                        res.and_then(|mut value| -> Result<elements::Address, anyhow::Error> {
-                            match &mut *value {
-                                [value] => {
-                                    let address = serde_json::from_value::<models::ReceiveAddress>(
-                                        std::mem::take(value),
-                                    )?;
-                                    let address = data.get_address(address.pointer);
-                                    Ok(address)
-                                }
-                                _ => bail!("unexpected address response"),
-                            }
-                        });
+                    let res = res.and_then(|args| -> Result<elements::Address, anyhow::Error> {
+                        let address = parse_args1::<models::ReceiveAddress>(args)?;
+                        let address = data.get_address(address.pointer);
+                        Ok(address)
+                    });
                     let _ = res_channel.send(res);
+                    Ok(())
                 }),
             )
             .await?;
@@ -654,28 +773,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), anyhow
         }
 
         Command::UnspentOutputs(res_channel) => {
-            let confs = 0u32;
-            make_request(
-                data,
-                "com.greenaddress.txs.get_all_unspent_outputs",
-                vec![confs.into(), data.subaccount.into()],
-                Box::new(move |data, res| {
-                    let res = res.and_then(|mut value| -> Result<Vec<Utxo>, anyhow::Error> {
-                        match &mut *value {
-                            [value] => {
-                                let utxos = serde_json::from_value::<Vec<models::Utxo>>(
-                                    std::mem::take(value),
-                                )?;
-                                Ok(data.unblind_utxos(utxos))
-                            }
-                            _ => bail!("unexpected address response"),
-                        }
-                    });
-                    let _ = res_channel.send(res);
-                }),
-            )
-            .await?;
-
+            let _ = res_channel.send(data.utxos.clone());
             Ok(())
         }
 
@@ -705,21 +803,15 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), anyhow
                 "com.greenaddress.vault.sign_raw_tx",
                 vec![transaction.into(), twofac_data, priv_data],
                 Box::new(move |_data, res| {
-                    let res = res.and_then(
-                        |mut value| -> Result<elements::Transaction, anyhow::Error> {
-                            match &mut *value {
-                                [value] => {
-                                    let output =
-                                        serde_json::from_value::<Output>(std::mem::take(value))?;
-                                    let transaction = hex::decode(&output.tx)?;
-                                    let transaction = elements::encode::deserialize(&transaction)?;
-                                    Ok(transaction)
-                                }
-                                _ => bail!("unexpected address response"),
-                            }
-                        },
-                    );
+                    let res =
+                        res.and_then(|args| -> Result<elements::Transaction, anyhow::Error> {
+                            let output = parse_args1::<Output>(args)?;
+                            let transaction = hex::decode(&output.tx)?;
+                            let transaction = elements::encode::deserialize(&transaction)?;
+                            Ok(transaction)
+                        });
                     let _ = res_channel.send(res);
+                    Ok(())
                 }),
             )
             .await?;
@@ -840,6 +932,7 @@ async fn get_challenge(
 
 struct AuthenticateResp {
     gait_path: String,
+    wallet_id: String,
     gaid: String,
     subaccount: u32,
 }
@@ -891,10 +984,8 @@ async fn authenticate(
             request, arguments, ..
         } => {
             ensure!(request == request_id);
-            let arguments = arguments.ok_or_else(|| anyhow!("empty response"))?;
-            ensure!(arguments.len() == 1);
-            let arg0 = arguments.into_iter().next().expect("array is not empty");
-            let auth_res = serde_json::from_value::<models::AuthenticateResult>(arg0)?;
+            let args = arguments.ok_or_else(|| anyhow!("empty response"))?;
+            let auth_res = parse_args1::<models::AuthenticateResult>(args)?;
             let subaccount = auth_res
                 .subaccounts
                 .into_iter()
@@ -903,6 +994,7 @@ async fn authenticate(
             log::info!("authenticaton succeed");
             Ok(AuthenticateResp {
                 gait_path: auth_res.gait_path,
+                wallet_id: auth_res.receiving_id,
                 gaid: subaccount.receiving_id,
                 subaccount: subaccount.pointer,
             })
@@ -915,7 +1007,11 @@ async fn authenticate(
     }
 }
 
-async fn subscribe(data: &mut Data, topic: WampString) -> Result<(), anyhow::Error> {
+async fn subscribe(
+    data: &mut Data,
+    topic: WampString,
+    callback: SubscribeCallback,
+) -> Result<(), anyhow::Error> {
     let request = WampId::generate();
     log::debug!("send subscribe request, request: {request}, topic: {topic}");
 
@@ -932,6 +1028,52 @@ async fn subscribe(data: &mut Data, topic: WampString) -> Result<(), anyhow::Err
     )
     .await?;
 
+    data.pending_subscribe.insert(request, callback);
+
+    Ok(())
+}
+
+fn block_callback(_data: &mut Data, args: WampArgs) -> Result<(), anyhow::Error> {
+    let block = parse_args1::<models::BlockEvent>(args)?;
+    log::debug!("block callback: {block:?}");
+    Ok(())
+}
+
+fn tx_callback(data: &mut Data, args: WampArgs) -> Result<(), anyhow::Error> {
+    let tx = parse_args1::<models::TransactionEvent>(args)?;
+    log::debug!("tx callback: {tx:?}");
+    data.reload_utxos = true;
+    Ok(())
+}
+
+fn send_event(data: &mut Data, event: Event) {
+    let res = data.event_sender.send(event);
+    if res.is_err() {
+        log::warn!("event sending failed");
+    }
+}
+
+async fn reload_wallet_utxos(data: &mut Data) -> Result<(), anyhow::Error> {
+    let confs = 0u32;
+    make_request(
+        data,
+        "com.greenaddress.txs.get_all_unspent_outputs",
+        vec![confs.into(), data.subaccount.into()],
+        Box::new(move |data, res| {
+            let args = res?;
+            let utxos = parse_args1::<Vec<models::Utxo>>(args)?;
+            let utxos = data.unblind_utxos(utxos);
+
+            let mut balances = BTreeMap::<elements::AssetId, u64>::new();
+            for utxo in utxos.iter() {
+                *balances.entry(utxo.tx_out_sec.asset).or_default() += utxo.tx_out_sec.value;
+            }
+            send_event(data, Event::BalanceUpdated { balances });
+            data.utxos = utxos;
+            Ok(())
+        }),
+    )
+    .await?;
     Ok(())
 }
 
@@ -939,7 +1081,7 @@ async fn connect(
     mnemonic: &bip39::Mnemonic,
     network: Network,
     command_receiver: &mut UnboundedReceiver<Command>,
-    event_sender: &UnboundedSender<Event>,
+    event_sender: UnboundedSender<Event>,
 ) -> Result<(), anyhow::Error> {
     let bitcoin_network = match network {
         Network::Liquid => bitcoin::Network::Bitcoin,
@@ -957,45 +1099,55 @@ async fn connect(
     let challenge = get_challenge(&mut connection, &master_key, network).await?;
     log::debug!("got challenge: {challenge}");
 
-    let authenticate_res = authenticate(&mut connection, &master_key, &challenge).await?;
+    let AuthenticateResp {
+        gait_path,
+        wallet_id,
+        gaid,
+        subaccount,
+    } = authenticate(&mut connection, &master_key, &challenge).await?;
     log::debug!("authentication succeed");
 
-    let user_xpriv = derive_user_xpriv(&master_key, authenticate_res.subaccount);
+    let user_xpriv = derive_user_xpriv(&master_key, subaccount);
 
-    let service_xpub = derive_service_xpub(
-        network,
-        &authenticate_res.gait_path,
-        authenticate_res.subaccount,
-    )?;
+    let service_xpub = derive_service_xpub(network, &gait_path, subaccount)?;
 
     let mut data = Data {
         connection,
         pending_requests: HashMap::new(),
         network,
         master_blinding_key,
-        subaccount: authenticate_res.subaccount,
+        subaccount,
         user_xpriv,
         service_xpub,
+        event_sender,
+        pending_subscribe: HashMap::new(),
+        active_subscribe: HashMap::new(),
+        utxos: Vec::new(),
+        reload_utxos: true,
     };
 
-    subscribe(&mut data, "com.greenaddress.tickers".to_owned()).await?;
     subscribe(
         &mut data,
-        "com.greenaddress.cbs.wallet_GA3ksGGgAgQjYcZYf7hMLyLJDFM8xt".to_owned(),
+        "com.greenaddress.blocks".to_owned(),
+        block_callback,
     )
     .await?;
-    subscribe(
-        &mut data,
-        "com.greenaddress.txs.wallet_GA3ksGGgAgQjYcZYf7hMLyLJDFM8xt".to_owned(),
-    )
-    .await?;
-    subscribe(&mut data, "com.greenaddress.blocks".to_owned()).await?;
 
-    let _ = event_sender.send(Event::Connected {
-        gaid: authenticate_res.gaid,
-    });
+    subscribe(
+        &mut data,
+        format!("com.greenaddress.txs.wallet_{wallet_id}"),
+        tx_callback,
+    )
+    .await?;
+
+    send_event(&mut data, Event::Connected { gaid });
 
     loop {
+        if data.reload_utxos {
+            reload_wallet_utxos(&mut data).await?;
+            data.reload_utxos = false;
+        }
+
         tokio::select! {
             msg = data.connection.next() => {
                 let msg = match msg {
@@ -1041,7 +1193,13 @@ async fn run(
     loop {
         let started = Instant::now();
 
-        let res = connect(&mnemonic, network, &mut command_receiver, &event_sender).await;
+        let res = connect(
+            &mnemonic,
+            network,
+            &mut command_receiver,
+            event_sender.clone(),
+        )
+        .await;
 
         if Instant::now().duration_since(started) < Duration::from_secs(60) {
             failed_count += 1;

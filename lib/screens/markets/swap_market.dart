@@ -83,12 +83,6 @@ class SwapMarketBidOfferList extends HookConsumerWidget {
         return;
       }
 
-      final callbackHandler = ref.read(orderEntryCallbackHandlersProvider);
-
-      if (!callbackHandler.stokrConditionsMet()) {
-        return;
-      }
-
       if (order.marketType != MarketType.token) {
         ref.read(walletProvider).linkOrder(order.orderId);
         return;

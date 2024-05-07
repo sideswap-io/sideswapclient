@@ -83,11 +83,7 @@ class OrderItem extends ConsumerWidget {
           if (order.own) {
             ref.read(walletProvider).setOrderRequestView(order);
           } else {
-            final callbackHandler =
-                ref.read(orderEntryCallbackHandlersProvider);
-            if (callbackHandler.stokrConditionsMet()) {
-              ref.read(walletProvider).linkOrder(order.orderId);
-            }
+            ref.read(walletProvider).linkOrder(order.orderId);
           }
         },
       ),

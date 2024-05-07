@@ -738,27 +738,43 @@ class WalletChangeNotifier with ChangeNotifier {
             break;
 
           case From_SubmitResult_Result.error:
+            if (FlavorConfig.isDesktop) {
+              ref.read(desktopDialogProvider).closePopups();
+            }
+
+            final errorText = from.submitResult.error == 'id_insufficient_funds'
+                ? 'Insufficient L-BTC wallet balance'.tr()
+                : from.submitResult.error;
+            await ref
+                .read(utilsProvider)
+                .showErrorDialog(errorText, buttonText: 'CONTINUE'.tr());
+
+            break;
           case From_SubmitResult_Result.unregisteredGaid:
             if (FlavorConfig.isDesktop) {
               ref.read(desktopDialogProvider).closePopups();
             }
-            if (from.submitResult.whichResult() ==
-                From_SubmitResult_Result.error) {
-              final errorText =
-                  from.submitResult.error == 'id_insufficient_funds'
-                      ? 'Insufficient L-BTC wallet balance'.tr()
-                      : from.submitResult.error;
-              await ref
-                  .read(utilsProvider)
-                  .showErrorDialog(errorText, buttonText: 'CONTINUE'.tr());
+            final orderDetailsData = ref.read(orderDetailsDataNotifierProvider);
+            final stokrSecurities = ref.read(stokrSecuritiesProvider);
+            if (stokrSecurities.any(
+                (element) => element.assetId == orderDetailsData.assetId)) {
+              // stokr asset
+              ref
+                  .read(stokrGaidNotifierProvider.notifier)
+                  .setStokrGaidState(const StokrGaidState.unregistered());
+              ref
+                  .read(pageStatusNotifierProvider.notifier)
+                  .setStatus(Status.stokrNeedRegister);
             } else {
+              // any other amp error
+              ref
+                  .read(pegxGaidNotifierProvider.notifier)
+                  .setState(const PegxGaidState.unregistered());
               await ref
                   .read(utilsProvider)
                   .showUnregisteredGaid(from.submitResult.unregisteredGaid);
             }
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.registered);
+
             break;
           case From_SubmitResult_Result.notSet:
             throw Exception('invalid SubmitResult message');

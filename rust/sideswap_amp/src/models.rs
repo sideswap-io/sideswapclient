@@ -15,6 +15,7 @@ pub struct Subaccount {
 #[derive(Deserialize)]
 pub struct AuthenticateResult {
     pub gait_path: String,
+    pub receiving_id: String,
     pub subaccounts: Vec<Subaccount>,
 }
 
@@ -49,6 +50,20 @@ pub struct Utxo {
     pub surj_proof: Option<Box<secp256k1_zkp::SurjectionProof>>,
     #[serde(deserialize_with = "helpers::deserialize_with_optional_empty_string")]
     pub range_proof: Option<Box<secp256k1_zkp::RangeProof>>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct BlockEvent {
+    pub count: u32,
+    pub diverged_count: u32,
+    pub block_hash: String,
+    pub previous_hash: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct TransactionEvent {
+    pub subaccounts: Vec<u32>,
+    pub txhash: elements::Txid,
 }
 
 #[cfg(test)]

@@ -1,4 +1,4 @@
-const appVersion = '1.5.2';
-const appBuildNumber = 95;
+const appVersion = '1.5.3';
+const appBuildNumber = 97;
 
 const appVersionFull = '$appVersion+$appBuildNumber';

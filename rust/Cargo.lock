@@ -2792,6 +2792,7 @@ dependencies = [
  "serde 1.0.198",
  "serde_json",
  "sideswap_common",
+ "sideswap_payjoin",
  "thiserror",
  "tokio",
  "tokio-tungstenite",

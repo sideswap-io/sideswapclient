@@ -55,20 +55,20 @@ class SecuritiesItem {
 List<SecuritiesItem> stokrSecurities(StokrSecuritiesRef ref) {
   final assets = ref.watch(assetsStateProvider);
   return assets.values
-      .where((element) => element.hasAmpAssetRestrictions())
+      .where((element) =>
+          element.hasDomainAgent() && element.domainAgent.contains('stokr.io'))
       .map((e) => SecuritiesItem(token: e.ticker, assetId: e.assetId, icon: ''))
       .toList();
 }
 
 @riverpod
 List<SecuritiesItem> pegxSecurities(PegxSecuritiesRef ref) {
-  final List<SecuritiesItem> assets = [];
-  assets.add(SecuritiesItem(
-      token: 'SSWP',
-      icon: 'assets/logo.svg',
-      assetId:
-          '06d1085d6a3a1328fb8189d106c7a8afbef3d327e34504828c4cac2c74ac0802'));
-  return assets;
+  final assets = ref.watch(assetsStateProvider);
+  return assets.values
+      .where((element) =>
+          element.hasDomainAgent() && element.domainAgent.contains('pegx.io'))
+      .map((e) => SecuritiesItem(token: e.ticker, assetId: e.assetId, icon: ''))
+      .toList();
 }
 
 // (malcolmpl): it must maintain state for the entire life of the application!

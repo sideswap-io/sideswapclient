@@ -109,7 +109,8 @@ class MakeOrderPanel extends HookConsumerWidget {
         ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
     final buttonIndexPrice = ref.watch(indexPriceButtonStreamNotifierProvider);
 
-    final trackingAvailable = selectedAsset?.swapMarket == true;
+    final assetType = assetMarketType(selectedAsset);
+    final trackingAvailable = assetType != MarketType.token;
 
     useEffect(() {
       (switch (buttonIndexPrice) {

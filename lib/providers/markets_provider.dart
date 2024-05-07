@@ -994,10 +994,6 @@ class OrderEntryCallbackHandlers {
     ValueNotifier<bool> trackingToggled,
     ValueNotifier<double> trackingValue,
   ) {
-    if (!stokrConditionsMet()) {
-      return;
-    }
-
     final amount = double.tryParse(controllerAmount.text) ?? 0.0;
     final price = double.tryParse(controllerPrice.text) ?? 0.0;
     final isAssetAmount = !(asset?.swapMarket == true);
@@ -1018,33 +1014,6 @@ class OrderEntryCallbackHandlers {
         );
     ref.invalidate(indexPriceButtonStreamNotifierProvider);
     reset(controllerAmount, controllerPrice, trackingValue, trackingToggled);
-  }
-
-  bool stokrConditionsMet() {
-    final stokrSecurities = ref.read(stokrSecuritiesProvider);
-    final assetNeedCheck =
-        stokrSecurities.any((element) => element.assetId == asset?.assetId);
-    if (!assetNeedCheck) {
-      return true;
-    }
-
-    // if not registered
-    final stokrRegistered = switch (stokrGaidState) {
-      StokrGaidStateEmpty() ||
-      StokrGaidStateLoading() ||
-      StokrGaidStateUnregistered() =>
-        false,
-      _ => true,
-    };
-
-    if (!stokrRegistered) {
-      ref
-          .read(pageStatusNotifierProvider.notifier)
-          .setStatus(Status.stokrNeedRegister);
-      return false;
-    }
-
-    return true;
   }
 
   bool stokrAssetRestrictedPopup() {
