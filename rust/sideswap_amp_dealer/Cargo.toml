@@ -1,17 +1,18 @@
 [package]
-name = "sideswap_monitoring"
+name = "sideswap_amp_dealer"
 version = "0.1.2"
 edition = "2021"
 
 [dependencies]
+sideswap_amp = { path = "../sideswap_amp" }
 sideswap_api = { path = "../sideswap_api" }
 sideswap_common = { path = "../sideswap_common" }
 
 anyhow.workspace = true
-clap.workspace = true
+base64.workspace = true
+bip39.workspace = true
 config.workspace = true
+elements.workspace = true
 log.workspace = true
-log4rs.workspace = true
-serde_json.workspace = true
 serde.workspace = true
 tokio.workspace = true

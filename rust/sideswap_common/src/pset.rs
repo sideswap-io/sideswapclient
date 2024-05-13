@@ -131,3 +131,13 @@ pub fn p2shwpkh_script_sig(public_key: &elements::bitcoin::PublicKey) -> element
         .push_slice(p2shwpkh_redeem_script(public_key).as_bytes())
         .into_script()
 }
+
+pub fn copy_tx_signatures(
+    tx: &elements::Transaction,
+    pset: &mut elements::pset::PartiallySignedTransaction,
+) {
+    for (tx_input, pset_input) in tx.input.iter().zip(pset.inputs_mut()) {
+        pset_input.final_script_sig = Some(tx_input.script_sig.clone());
+        pset_input.final_script_witness = Some(tx_input.witness.script_witness.clone());
+    }
+}

@@ -1,7 +1,4 @@
-use std::{
-    collections::{BTreeMap, HashSet},
-    str::FromStr,
-};
+use std::collections::{BTreeMap, HashSet};
 
 use rand::seq::SliceRandom;
 use sideswap_api::RequestId;
@@ -45,7 +42,7 @@ struct Data {
 }
 
 fn request_ws_connect(data: &mut Data) {
-    let env_data = data.env.data();
+    let env_data = data.env.d();
     let ws_connect = ws::WrappedRequest::Connect {
         host: env_data.host.to_owned(),
         port: env_data.port,
@@ -533,7 +530,7 @@ pub fn run(
     wallet: wallet::Wallet,
     db: Db,
 ) {
-    let policy_asset = sideswap_api::AssetId::from_str(env.data().policy_asset).unwrap();
+    let policy_asset = env.nd().policy_asset.asset_id();
 
     let mut data = Data {
         env,

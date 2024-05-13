@@ -36,7 +36,6 @@ use sideswap_dealer::rpc;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::net::TcpListener;
-use std::str::FromStr;
 use storage::*;
 use types::Amount;
 
@@ -312,7 +311,7 @@ fn hedge_order(
         swap.bitcoin_amount.to_bitcoin()
     );
     *balancing_blocked = std::time::Instant::now();
-    let bf_fee = if args.env.data().mainnet {
+    let bf_fee = if args.env.d().mainnet {
         BITFINEX_FEE_PROD
     } else {
         BITFINEX_FEE_TEST
@@ -354,7 +353,7 @@ fn hedge_order(
 }
 
 struct DealerState {
-    known_assets: sideswap_common::env::KnownAssetIds,
+    network: sideswap_common::network::Network,
     server_connected: bool,
     module_connected: bool,
     wallet_balances: WalletBalances,
@@ -481,7 +480,7 @@ fn main() {
     });
 
     let mut state = DealerState {
-        known_assets: args.env.data().network.known_assets(),
+        network: args.env.d().network,
         server_connected: false,
         module_connected: false,
         wallet_balances: WalletBalances::new(),
@@ -715,7 +714,7 @@ fn main() {
                     if let Some(price) = module_prices.get(&ticker) {
                         dealer_tx
                             .send(To::IndexPriceUpdate(PriceUpdateBroadcast {
-                                asset: get_dealer_asset_id(&state.known_assets, ticker),
+                                asset: get_dealer_asset_id(state.network, ticker),
                                 price: PricePair {
                                     bid: price.bid,
                                     ask: price.ask,
@@ -790,7 +789,7 @@ fn main() {
 
                 let usdt_price = module_prices.get(&DealerTicker::USDt).cloned();
                 if storage.balancing.is_none()
-                    && args.env.data().mainnet
+                    && args.env.d().mainnet
                     && now.duration_since(balancing_blocked) > std::time::Duration::from_secs(60)
                     && args.balancing_enabled
                     && usdt_price.is_some()
@@ -826,7 +825,7 @@ fn main() {
                     let module_price = module_prices.get(ticker);
                     if let Some(module_price) = module_price {
                         let price_age = now.duration_since(module_price.timestamp);
-                        if price_age > PRICE_EXPIRED && args.env.data().mainnet {
+                        if price_age > PRICE_EXPIRED && args.env.d().mainnet {
                             warn!("price expired");
                             send_notification(
                                 &format!("module price expired for {}", ticker),
@@ -1049,7 +1048,7 @@ fn main() {
                 From::Utxos(unspent_with_zc) => {
                     let convert_balances = |amounts: &BTreeMap<AssetId, f64>| {
                         let get_balance = |ticker: DealerTicker| -> (DealerTicker, f64) {
-                            let asset_id = get_dealer_asset_id(&state.known_assets, ticker);
+                            let asset_id = get_dealer_asset_id(state.network, ticker);
                             let amount = amounts.get(&asset_id).copied().unwrap_or_default();
                             (ticker, amount)
                         };

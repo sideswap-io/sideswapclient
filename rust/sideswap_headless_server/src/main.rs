@@ -33,7 +33,7 @@ async fn main() {
         api_server,
     } = conf.try_into().expect("invalid config");
 
-    sideswap_client::ffi::init_log(&work_dir);
+    sideswap_common::log_init::init_log(&work_dir);
 
     let db_path = std::path::Path::new(&work_dir).join("data.sqlite");
     let db = db::Db::open(&db_path).expect("must not fail");

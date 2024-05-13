@@ -141,15 +141,15 @@ pub enum DealerTicker {
 }
 
 pub fn get_dealer_asset_id(
-    known_assets: &sideswap_common::env::KnownAssetIds,
+    network: sideswap_common::network::Network,
     ticker: DealerTicker,
 ) -> elements::AssetId {
     match ticker {
-        DealerTicker::LBTC => known_assets.bitcoin,
-        DealerTicker::USDt => known_assets.usdt,
-        DealerTicker::EURx => known_assets.eurx,
-        DealerTicker::MEX => known_assets.mex,
-        DealerTicker::DePIX => known_assets.depix,
+        DealerTicker::LBTC => network.d().policy_asset.asset_id(),
+        DealerTicker::USDt => network.d().known_assets.usdt.asset_id(),
+        DealerTicker::EURx => network.d().known_assets.eurx.asset_id(),
+        DealerTicker::MEX => network.d().known_assets.mex.asset_id(),
+        DealerTicker::DePIX => network.d().known_assets.depix.asset_id(),
     }
 }
 
@@ -290,8 +290,7 @@ fn get_pset(
     http_client: &ureq::Agent,
     extra_asset_utxo: bool,
 ) -> Result<PsetMakerRequest, anyhow::Error> {
-    let env_data = params.env.data();
-    let bitcoin_asset = AssetId::from_str(env_data.policy_asset).unwrap();
+    let bitcoin_asset = params.env.nd().policy_asset.asset_id();
     let (send_asset, send_amount) = if details.send_bitcoins {
         (bitcoin_asset, details.bitcoin_amount + details.server_fee)
     } else {
@@ -606,7 +605,7 @@ fn worker(
     assert!(params.bitcoin_amount_submit >= params.bitcoin_amount_min);
     assert!(params.bitcoin_amount_submit <= params.bitcoin_amount_max);
 
-    let (ws_tx, ws_rx) = sideswap_common::ws::auto::start(
+    let (ws_tx, mut ws_rx) = sideswap_common::ws::auto::start(
         params.server_host.clone(),
         params.server_port,
         params.server_use_tls,
@@ -624,21 +623,20 @@ fn worker(
     let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<Result<Response, Error>>();
 
     let msg_tx_copy = msg_tx.clone();
-    std::thread::spawn(move || {
-        for msg in ws_rx {
-            match msg {
-                ws::auto::WrappedResponse::Connected => {
-                    msg_tx_copy.send(Msg::Connected).unwrap();
-                }
-                ws::auto::WrappedResponse::Disconnected => {
-                    msg_tx_copy.send(Msg::Disconnected).unwrap();
-                }
-                ws::auto::WrappedResponse::Response(ResponseMessage::Response(_, response)) => {
-                    resp_tx.send(response).unwrap()
-                }
-                ws::auto::WrappedResponse::Response(ResponseMessage::Notification(msg)) => {
-                    msg_tx_copy.send(Msg::Notification(msg)).unwrap();
-                }
+    std::thread::spawn(move || loop {
+        let msg = ws_rx.blocking_recv().expect("must be open");
+        match msg {
+            ws::auto::WrappedResponse::Connected => {
+                msg_tx_copy.send(Msg::Connected).unwrap();
+            }
+            ws::auto::WrappedResponse::Disconnected => {
+                msg_tx_copy.send(Msg::Disconnected).unwrap();
+            }
+            ws::auto::WrappedResponse::Response(ResponseMessage::Response(_, response)) => {
+                resp_tx.send(response).unwrap()
+            }
+            ws::auto::WrappedResponse::Response(ResponseMessage::Notification(msg)) => {
+                msg_tx_copy.send(Msg::Notification(msg)).unwrap();
             }
         }
     });
@@ -665,7 +663,7 @@ fn worker(
         .timeout(std::time::Duration::from_secs(20))
         .build();
 
-    let bitcoin_asset = AssetId::from_str(params.env.data().policy_asset).unwrap();
+    let bitcoin_asset = params.env.nd().policy_asset.asset_id();
 
     let secp = elements::secp256k1_zkp::Secp256k1::new();
     let mut assets = Vec::new();

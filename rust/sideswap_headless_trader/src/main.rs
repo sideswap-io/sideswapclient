@@ -71,8 +71,7 @@ fn main() {
         }),
     );
 
-    let usdt_asset_id =
-        sideswap_api::AssetId::from_str(args.env.data().network.usdt_asset_id()).unwrap();
+    let usdt_asset_id = args.env.d().network.d().known_assets.usdt.asset_id();
     let mut usdt_index_price = None;
 
     let mut asset_data = args

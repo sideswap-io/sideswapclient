@@ -3,6 +3,7 @@ use super::*;
 use futures::prelude::*;
 use sideswap_api::*;
 use std::time::Instant;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 #[derive(Debug)]
 pub enum WrappedRequest {
@@ -16,22 +17,13 @@ pub enum WrappedResponse {
     Response(ResponseMessage),
 }
 
-async fn run(
-    host: String,
+pub async fn run(
+    host: &str,
     port: u16,
     use_tls: bool,
-    req_rx: crossbeam_channel::Receiver<WrappedRequest>,
-    resp_tx: crossbeam_channel::Sender<WrappedResponse>,
+    mut req_rx: UnboundedReceiver<WrappedRequest>,
+    resp_tx: UnboundedSender<WrappedResponse>,
 ) {
-    let (req_tx_async, mut req_rx_async) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
-    std::thread::spawn(move || {
-        while let Ok(req) = req_rx.recv() {
-            if let Err(e) = req_tx_async.send(req) {
-                error!("unexpected sending error: {}", e);
-            }
-        }
-    });
-
     let protocol = if use_tls { "wss" } else { "ws" };
     let url = format!("{}://{}:{}/{}", protocol, &host, port, PATH_JSON_RUST_WS);
 
@@ -102,7 +94,7 @@ async fn run(
                     }
                 }
 
-                client_result = req_rx_async.recv() => {
+                client_result = req_rx.recv() => {
                     let client_result = match client_result {
                         Some(v) => v,
                         None => {
@@ -141,17 +133,17 @@ pub fn start(
     port: u16,
     use_tls: bool,
 ) -> (
-    crossbeam_channel::Sender<WrappedRequest>,
-    crossbeam_channel::Receiver<WrappedResponse>,
+    UnboundedSender<WrappedRequest>,
+    UnboundedReceiver<WrappedResponse>,
 ) {
-    let (req_tx, req_rx) = crossbeam_channel::unbounded::<WrappedRequest>();
-    let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<WrappedResponse>();
+    let (req_tx, req_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
+    let (resp_tx, resp_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedResponse>();
     std::thread::spawn(move || {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(run(host, port, use_tls, req_rx, resp_tx));
+        rt.block_on(run(&host, port, use_tls, req_rx, resp_tx));
     });
     (req_tx, resp_rx)
 }

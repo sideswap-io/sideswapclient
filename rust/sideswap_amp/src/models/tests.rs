@@ -3,7 +3,7 @@ use super::*;
 #[test]
 fn test_authenticate_result() {
     // Blinded, confirmed
-    let utxo1 = r#" {
+    let auth_result = r#" {
         "appearance": {
             "unit": "BTC",
             "replace_by_fee": true,
@@ -93,7 +93,7 @@ fn test_authenticate_result() {
             "is_fiat": false
         }
     } "#;
-    serde_json::from_str::<AuthenticateResult>(&utxo1).unwrap();
+    serde_json::from_str::<AuthenticateResult>(&auth_result).unwrap();
 }
 
 #[test]

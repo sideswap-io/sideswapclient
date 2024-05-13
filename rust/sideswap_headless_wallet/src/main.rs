@@ -101,7 +101,7 @@ fn main() {
         _ => panic!("unexpected request, login request is expected"),
     };
 
-    sideswap_client::ffi::init_log(&work_dir);
+    sideswap_common::log_init::init_log(&work_dir);
 
     sideswap_common::panic_handler::install_panic_handler();
 

@@ -250,6 +250,7 @@ class ModifyPriceDialogState extends ConsumerState<ModifyPriceDialog> {
                                       invertColors: inversePrice,
                                     ),
                                   ),
+                                  const Spacer(),
                                   Padding(
                                     padding: const EdgeInsets.only(top: 16),
                                     child: CustomBigButton(

@@ -1,6 +1,5 @@
 use std::{
     collections::BTreeMap,
-    str::FromStr,
     time::{Duration, Instant},
 };
 
@@ -95,7 +94,7 @@ fn run(
 
     wallet.login().unwrap();
 
-    let policy_asset = AssetId::from_str(env.data().policy_asset).unwrap();
+    let policy_asset = env.nd().policy_asset.asset_id();
 
     let mut utxo_update_timestamp = Instant::now();
     let mut utxo_update_needed = true;
