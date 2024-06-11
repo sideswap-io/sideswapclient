@@ -50,7 +50,7 @@ class OrderPriceField extends ConsumerWidget {
         ref.watch(assetUtilsProvider).isAssetToken(assetId: asset?.assetId);
     final marketType = getMarketType(productAsset);
     final indexPriceStr = ref
-        .watch(indexPriceForAssetProvider(productAsset?.assetId))
+        .watch(indexPriceForAssetProvider(asset?.assetId))
         .getIndexPriceStr();
     final lastPriceStr =
         ref.watch(lastStringIndexPriceForAssetProvider(productAsset?.assetId));
@@ -74,24 +74,26 @@ class OrderPriceField extends ConsumerWidget {
               children: [
                 Builder(
                   builder: (context) {
-                    if (indexPriceStr.isEmpty && lastPriceStr.isEmpty) {
+                    if (marketType == MarketType.stablecoin &&
+                            indexPriceStr.isEmpty ||
+                        marketType != MarketType.stablecoin &&
+                            lastPriceStr.isEmpty) {
                       return const SizedBox();
                     }
 
                     return GestureDetector(
                       onTap: () {
                         setControllerValue(
-                          controller,
-                          indexPriceStr.isNotEmpty
-                              ? indexPriceStr
-                              : lastPriceStr,
-                        );
+                            controller,
+                            marketType == MarketType.stablecoin
+                                ? indexPriceStr
+                                : lastPriceStr);
                       },
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            indexPriceStr.isNotEmpty
+                            marketType == MarketType.stablecoin
                                 ? 'Index price:'.tr()
                                 : 'Last price:'.tr(),
                             style: const TextStyle(
@@ -101,7 +103,7 @@ class OrderPriceField extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            indexPriceStr.isNotEmpty
+                            marketType == MarketType.stablecoin
                                 ? '${replaceCharacterOnPosition(input: indexPriceStr)} ${asset?.ticker ?? ''}'
                                 : '$lastPriceStr L-BTC',
                             style: const TextStyle(

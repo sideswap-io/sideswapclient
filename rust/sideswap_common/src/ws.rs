@@ -4,7 +4,6 @@ use sideswap_api::RequestId;
 
 pub mod auto;
 pub mod manual;
-pub mod ws_req_sender;
 
 static GLOBAL_REQUEST_ID: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(1);
 

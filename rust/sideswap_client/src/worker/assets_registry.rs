@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use sideswap_api::{Asset, AssetId, IssuancePrevout, Ticker};
-use sideswap_common::env::Env;
+use sideswap_common::env::{self, Env};
 
 pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::Xpub) {
     if let Err(error) = gdk_registry::init(registry_path) {
@@ -74,16 +74,16 @@ pub fn get_assets(
 }
 
 fn get_registry_config(env: Env) -> gdk_registry::Config {
-    let network = match env.d().network {
-        sideswap_common::network::Network::Liquid => gdk_registry::ElementsNetwork::Liquid,
-        sideswap_common::network::Network::LiquidTestnet => {
-            gdk_registry::ElementsNetwork::LiquidTestnet
+    let network = match env.data().network {
+        env::Network::Mainnet => gdk_registry::ElementsNetwork::Liquid,
+        env::Network::Testnet => gdk_registry::ElementsNetwork::LiquidTestnet,
+        env::Network::Regtest | env::Network::Local => {
+            gdk_registry::ElementsNetwork::ElementsRegtest
         }
     };
     gdk_registry::Config {
-        // FIXME: Use correct proxy value
         proxy: None,
-        url: env.nd().asset_registry_url.to_owned(),
+        url: env.data().asset_registry_url.to_owned(),
         network,
         custom_headers: HashMap::new(),
     }

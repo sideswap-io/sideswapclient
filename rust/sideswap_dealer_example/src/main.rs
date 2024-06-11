@@ -47,7 +47,7 @@ fn main() {
 
     let tickers = BTreeSet::from([DealerTicker::DePIX]);
 
-    let env_data = settings.env.d();
+    let env_data = settings.env.data();
     let params = Params {
         env: settings.env,
         server_host: env_data.host.to_owned(),

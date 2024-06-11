@@ -8,15 +8,11 @@ use bitcoin::{
     bip32::{ChildNumber, Xpriv, Xpub},
     hashes::Hash,
 };
-use elements::{
-    pset::{self, PartiallySignedTransaction},
-    Transaction,
-};
+use elements::pset;
 use elements_miniscript::slip77::MasterBlindingKey;
 use futures::{SinkExt, StreamExt};
 use secp256k1::global::SECP256K1 as secp1;
 use secp256k1_zkp::global::SECP256K1 as secp2;
-use sideswap_common::network::Network;
 use tokio::sync::{
     mpsc::{UnboundedReceiver, UnboundedSender},
     oneshot,
@@ -43,6 +39,28 @@ pub enum Event {
     BalanceUpdated {
         balances: BTreeMap<elements::AssetId, u64>,
     },
+}
+
+#[derive(Copy, Clone)]
+pub enum Network {
+    Liquid,
+    LiquidTestnet,
+}
+
+impl Network {
+    fn network_params(self) -> &'static NetworkParams {
+        match self {
+            Network::Liquid => &NETWORK_PARAMS_LIQUID,
+            Network::LiquidTestnet => &NETWORK_PARAMS_LIQUID_TESTNET,
+        }
+    }
+
+    fn known_assets(self) -> sideswap_common::env::KnownAssetIds {
+        match self {
+            Network::Liquid => sideswap_common::env::Network::Mainnet.known_assets(),
+            Network::LiquidTestnet => sideswap_common::env::Network::Testnet.known_assets(),
+        }
+    }
 }
 
 pub struct Wallet {
@@ -83,31 +101,6 @@ fn parse_args1<T1: serde::de::DeserializeOwned>(mut args: WampArgs) -> Result<T1
     }
 }
 
-fn parse_args2<T1: serde::de::DeserializeOwned, T2: serde::de::DeserializeOwned>(
-    mut args: WampArgs,
-) -> Result<(T1, T2), anyhow::Error> {
-    match &mut *args {
-        [value1, value2] => {
-            let value1 =
-                serde_json::from_value::<T1>(std::mem::take(value1)).with_context(|| {
-                    format!("parsing args failed for {}", std::any::type_name::<T1>())
-                })?;
-            let value2 =
-                serde_json::from_value::<T2>(std::mem::take(value2)).with_context(|| {
-                    format!("parsing args failed for {}", std::any::type_name::<T2>())
-                })?;
-            Ok((value1, value2))
-        }
-        _ => bail!("unexpected arguments count, expected vector of 1"),
-    }
-}
-
-pub struct CreatedTx {
-    pub pset: PartiallySignedTransaction,
-    pub blinding_nonces: Vec<String>,
-    pub used_utxos: Vec<Utxo>,
-}
-
 impl Wallet {
     pub fn new(mnemonic: bip39::Mnemonic, network: Network) -> (Wallet, UnboundedReceiver<Event>) {
         let (command_sender, command_receiver) = tokio::sync::mpsc::unbounded_channel();
@@ -117,7 +110,7 @@ impl Wallet {
 
         let wallet = Wallet {
             command_sender,
-            policy_asset: network.d().policy_asset.asset_id(),
+            policy_asset: network.known_assets().bitcoin,
         };
 
         (wallet, event_receiver)
@@ -142,11 +135,11 @@ impl Wallet {
         Ok(utxos)
     }
 
-    pub async fn create_tx(
+    pub async fn sign(
         &self,
         mut recipients: Vec<Recipient>,
-    ) -> Result<CreatedTx, anyhow::Error> {
-        let all_utxos = self.unspent_outputs().await?;
+    ) -> Result<elements::Transaction, anyhow::Error> {
+        let utxos = self.unspent_outputs().await?;
 
         let mut pset = pset::PartiallySignedTransaction::new_v2();
 
@@ -161,7 +154,7 @@ impl Wallet {
 
         let mut input_amounts = BTreeMap::<elements::AssetId, u64>::new();
         let mut used_utxos = Vec::new();
-        for utxo in all_utxos.into_iter() {
+        for utxo in utxos.into_iter() {
             let add_input = if utxo.tx_out_sec.asset == self.policy_asset {
                 // TODO: Add only required LBTC inputs
                 true
@@ -178,8 +171,8 @@ impl Wallet {
             };
             if add_input {
                 let mut input = pset::Input::from_prevout(utxo.outpoint);
-                input.final_script_sig = Some(get_script_sig(&utxo.prevout_script));
-                input.redeem_script = Some(utxo.prevout_script.clone());
+                input.final_script_sig = Some(get_redeem_script(&utxo.redeem_script));
+                input.redeem_script = Some(utxo.redeem_script.clone());
                 input.witness_utxo = Some(utxo.txout.clone());
                 pset.add_input(input);
 
@@ -261,63 +254,32 @@ impl Wallet {
             .collect::<Vec<_>>();
         let blinding_nonces = sideswap_common::pset_blind::blind_pset(&mut pset, &inp_txout_sec)?;
 
-        Ok(CreatedTx {
-            pset,
-            blinding_nonces,
-            used_utxos,
-        })
-    }
-
-    pub async fn sign_pset(&self, created_tx: CreatedTx) -> Result<Transaction, anyhow::Error> {
-        let CreatedTx {
-            pset,
-            blinding_nonces,
-            used_utxos,
-        } = created_tx;
-
         let mut tx = pset.extract_tx()?;
         let tx_copy = tx.clone();
 
-        for (pset_input, tx_input) in pset.inputs().iter().zip(tx.input.iter_mut()) {
-            let redeem_script = pset_input
-                .redeem_script
-                .clone()
-                .ok_or_else(|| anyhow!("no redeem_script"))?;
-
-            tx_input.script_sig = elements::script::Builder::new()
-                .push_slice(redeem_script.as_bytes())
-                .into_script();
-        }
-
         let mut sighash_cache = elements::sighash::SighashCache::new(&tx_copy);
-        for (index, tx_input) in tx.input.iter_mut().enumerate() {
-            if let Some(utxo) = used_utxos
-                .iter()
-                .find(|utxo| utxo.outpoint == tx_input.previous_output)
-            {
-                let green_dummy_sig = hex::decode("304402207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f02207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f01").unwrap();
+        for (index, (tx_input, utxo)) in tx.input.iter_mut().zip(used_utxos.iter()).enumerate() {
+            let green_dummy_sig = hex::decode("304402207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f02207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f01").unwrap();
 
-                let hash_ty = elements_miniscript::elements::EcdsaSighashType::All;
-                let sighash = sighash_cache.segwitv0_sighash(
-                    index,
-                    &utxo.prevout_script,
-                    utxo.txout.value,
-                    hash_ty,
-                );
-                let msg =
-                    elements::secp256k1_zkp::Message::from_digest_slice(&sighash[..]).unwrap();
+            let hash_ty = elements_miniscript::elements::EcdsaSighashType::All;
+            let sighash = sighash_cache.segwitv0_sighash(
+                index,
+                &utxo.redeem_script,
+                utxo.txout.value,
+                hash_ty,
+            );
+            let msg = elements::secp256k1_zkp::Message::from_digest_slice(&sighash[..]).unwrap();
 
-                let user_sig = secp1.sign_ecdsa_low_r(&msg, &utxo.priv_key_user.inner);
+            let user_sig = secp1.sign_ecdsa_low_r(&msg, &utxo.priv_key_user.inner);
 
-                let user_sig = elements_miniscript::elementssig_to_rawsig(&(user_sig, hash_ty));
+            let user_sig = elements_miniscript::elementssig_to_rawsig(&(user_sig, hash_ty));
 
-                tx_input.witness.script_witness = vec![
-                    vec![],
-                    green_dummy_sig,
-                    user_sig,
-                    utxo.prevout_script.to_bytes(),
-                ];
-            }
+            tx_input.witness.script_witness = vec![
+                vec![],
+                green_dummy_sig,
+                user_sig,
+                utxo.redeem_script.to_bytes(),
+            ];
         }
 
         let (res_sender, res_receiver) = oneshot::channel();
@@ -339,16 +301,9 @@ type SubscribeCallback = fn(&mut Data, WampArgs) -> Result<(), anyhow::Error>;
 type Connection =
     tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
 
-struct PendingRequest {
-    callback: Callback,
-    expires_at: Instant,
-}
-
-type PendingRequests = BTreeMap<WampId, PendingRequest>;
-
 struct Data {
     connection: Connection,
-    pending_requests: PendingRequests,
+    pending_requests: HashMap<WampId, Callback>,
     network: Network,
     master_blinding_key: MasterBlindingKey,
     subaccount: u32,
@@ -359,36 +314,32 @@ struct Data {
     active_subscribe: HashMap<WampId, SubscribeCallback>,
     utxos: Vec<Utxo>,
     reload_utxos: bool,
-    ca_addresses: Vec<elements::Address>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Utxo {
     pub pointer: u32,
     pub txout: elements::TxOut,
     pub outpoint: elements::OutPoint,
     pub tx_out_sec: elements::TxOutSecrets,
     pub priv_key_user: bitcoin::PrivateKey,
-    // Example: 522103cab1a2a707d13ff3fcc9d08f888724e01c37d54ad8e8d9b274cb33eaebe3461321037888f798b59ff4e1122bdf52ad4c541be32ca755311746b67af2bc5e58df188b52ae
-    pub prevout_script: elements::Script,
+    pub redeem_script: elements::Script,
 }
 
-// Example: 0020953851a48d22e33a16eb11e9fb89ce1a410db6f0f681ec5b834b036fb84264c9
 pub fn get_redeem_script(prevout_script: &elements::Script) -> elements::Script {
     elements::script::Builder::new()
-        .push_int(0)
-        .push_slice(&elements::WScriptHash::hash(prevout_script.as_bytes())[..])
-        .into_script()
-}
-
-pub fn get_script_sig(prevout_script: &elements::Script) -> elements::Script {
-    elements::script::Builder::new()
-        .push_slice(get_redeem_script(prevout_script).as_bytes())
+        .push_slice(
+            elements::script::Builder::new()
+                .push_int(0)
+                .push_slice(&elements::WScriptHash::hash(prevout_script.as_bytes())[..])
+                .into_script()
+                .as_bytes(),
+        )
         .into_script()
 }
 
 impl Data {
-    fn derive_address(&self, pointer: u32) -> elements::Address {
+    fn get_address(&self, pointer: u32) -> elements::Address {
         get_address(
             &self.user_xpriv,
             &self.service_xpub,
@@ -463,7 +414,7 @@ impl Data {
                     outpoint: out_point,
                     pointer: utxo.pointer,
                     priv_key_user,
-                    prevout_script: redeem_script,
+                    redeem_script,
                 })
             })
             .collect()
@@ -520,8 +471,13 @@ fn get_address(
 
     let script_hash = elements::ScriptHash::hash(script.as_bytes());
 
+    let params = match network {
+        Network::Liquid => &elements::AddressParams::LIQUID,
+        Network::LiquidTestnet => &elements::AddressParams::LIQUID_TESTNET,
+    };
+
     let address = elements::Address {
-        params: network.d().elements_params,
+        params,
         payload: elements::address::Payload::ScriptHash(script_hash),
         blinding_pubkey: None,
     };
@@ -530,6 +486,21 @@ fn get_address(
 
     address.to_confidential(blinder)
 }
+
+struct NetworkParams {
+    service_pubkey: &'static str,
+    service_chain_code: &'static str,
+}
+
+const NETWORK_PARAMS_LIQUID: NetworkParams = NetworkParams {
+    service_chain_code: "02721cc509aa0c2f4a90628e9da0391b196abeabc6393ed4789dd6222c43c489",
+    service_pubkey: "02c408c3bb8a3d526103fb93246f54897bdd997904d3e18295b49a26965cb41b7f",
+};
+
+const NETWORK_PARAMS_LIQUID_TESTNET: NetworkParams = NetworkParams {
+    service_chain_code: "c660eec6d9c536f4121854146da22e02d4c91d72af004d41729b9a592f0788e5",
+    service_pubkey: "02c47d84a5b256ee3c29df89642d14b6ed73d17a2b8af0aca18f6f1900f1633533",
+};
 
 fn parse_gait_path(gait_path: &str) -> Result<Vec<u32>, anyhow::Error> {
     let bytes = hex::decode(gait_path)?;
@@ -560,14 +531,17 @@ fn derive_service_xpub(
 ) -> Result<Xpub, anyhow::Error> {
     let gait_path = parse_gait_path(gait_path)?;
 
+    let network_params = network.network_params();
     let root_xpub = Xpub {
         network: bitcoin::Network::Testnet,
         depth: 0,
         parent_fingerprint: Default::default(),
         child_number: 0.into(),
-        public_key: network.d().service_pubkey.parse().expect("must be valid"),
-        chain_code: network
-            .d()
+        public_key: network_params
+            .service_pubkey
+            .parse()
+            .expect("must be valid"),
+        chain_code: network_params
             .service_chain_code
             .parse()
             .expect("must be valid"),
@@ -590,7 +564,11 @@ fn derive_service_xpub(
 
 fn get_challenge_address(master_key: &Xpriv, network: Network) -> elements::Address {
     let pk = master_key.to_keypair(secp1).public_key();
-    elements::Address::p2pkh(&pk.into(), None, network.d().elements_params)
+    let params = match network {
+        Network::Liquid => &elements::AddressParams::LIQUID,
+        Network::LiquidTestnet => &elements::AddressParams::LIQUID_TESTNET,
+    };
+    elements::Address::p2pkh(&pk.into(), None, params)
 }
 
 async fn send(connection: &mut Connection, msg: Msg) -> Result<(), anyhow::Error> {
@@ -605,13 +583,13 @@ async fn process_msg(data: &mut Data, msg: Msg) -> Result<(), anyhow::Error> {
         Msg::Result {
             request, arguments, ..
         } => {
-            if let Some(req) = data.pending_requests.remove(&request) {
+            if let Some(callback) = data.pending_requests.remove(&request) {
                 match arguments {
                     Some(arguments) => {
-                        (req.callback)(data, Ok(arguments))?;
+                        callback(data, Ok(arguments))?;
                     }
                     None => {
-                        (req.callback)(data, Err(anyhow::anyhow!("arguments is empty")))?;
+                        callback(data, Err(anyhow::anyhow!("arguments is empty")))?;
                     }
                 }
             }
@@ -621,18 +599,15 @@ async fn process_msg(data: &mut Data, msg: Msg) -> Result<(), anyhow::Error> {
         Msg::Error {
             typ,
             request,
-            error,     // Example: com.greenaddress.error
-            arguments, // Example: ["http://greenaddressit.com/error#sessionexpired","Session expired"]
+            error,
             ..
         } => {
             match typ {
                 wamp::message::SUBSCRIBE_ID => bail!("subscribe failed: {error}"),
                 wamp::message::UNSUBSCRIBE_ID => bail!("unsubscribe failed: {error}"),
                 wamp::message::CALL_ID => {
-                    if let Some(req) = data.pending_requests.remove(&request) {
-                        let args = arguments.ok_or_else(|| anyhow!("empty args"))?;
-                        let (_error_url, error_text) = parse_args2::<String, String>(args)?;
-                        (req.callback)(data, Err(anyhow::anyhow!("green backend: {error_text}")))?;
+                    if let Some(callback) = data.pending_requests.remove(&request) {
+                        callback(data, Err(anyhow::anyhow!("request failed: {error}")))?;
                     } else {
                         log::error!("unknown request: {request}");
                     }
@@ -757,7 +732,7 @@ async fn make_request(
     let request = WampId::generate();
 
     let mut options = WampDict::new();
-    options.insert("timeout".to_owned(), Arg::Integer(30000));
+    options.insert("timeout".to_owned(), Arg::Integer(10000));
 
     send(
         &mut data.connection,
@@ -770,49 +745,31 @@ async fn make_request(
         },
     )
     .await?;
-    let old_request = data.pending_requests.insert(
-        request,
-        PendingRequest {
-            callback,
-            expires_at: Instant::now() + Duration::from_secs(60),
-        },
-    );
+    let old_request = data.pending_requests.insert(request, callback);
     assert!(old_request.is_none());
     Ok(())
-}
-
-async fn recv_addr_request(data: &mut Data, callback: Callback) -> Result<(), anyhow::Error> {
-    let return_pointer = true;
-    let addr_type = "p2wsh";
-    make_request(
-        data,
-        "com.greenaddress.vault.fund",
-        vec![
-            data.subaccount.into(),
-            return_pointer.into(),
-            addr_type.into(),
-        ],
-        callback,
-    )
-    .await
 }
 
 async fn process_command(data: &mut Data, command: Command) -> Result<(), anyhow::Error> {
     match command {
         Command::ReceiveAddress(res_channel) => {
-            recv_addr_request(
+            make_request(
                 data,
+                "com.greenaddress.vault.fund",
+                vec![data.subaccount.into(), true.into(), "p2wsh".into()],
                 Box::new(move |data, res| {
                     let res = res.and_then(|args| -> Result<elements::Address, anyhow::Error> {
                         let address = parse_args1::<models::ReceiveAddress>(args)?;
-                        let address = data.derive_address(address.pointer);
+                        let address = data.get_address(address.pointer);
                         Ok(address)
                     });
                     let _ = res_channel.send(res);
                     Ok(())
                 }),
             )
-            .await
+            .await?;
+
+            Ok(())
         }
 
         Command::UnspentOutputs(res_channel) => {
@@ -960,8 +917,8 @@ async fn get_challenge(
             request, arguments, ..
         } => {
             ensure!(request == request_id);
-            let args = arguments.ok_or_else(|| anyhow!("empty args"))?;
-            parse_args1::<String>(args)?
+            // FIXME: Fix unwrap
+            arguments.unwrap()[0].as_str().unwrap().to_owned()
         }
         Msg::Error { request, error, .. } => {
             ensure!(request == request_id);
@@ -978,7 +935,6 @@ struct AuthenticateResp {
     wallet_id: String,
     gaid: String,
     subaccount: u32,
-    required_ca: u32,
 }
 
 async fn authenticate(
@@ -1041,7 +997,6 @@ async fn authenticate(
                 wallet_id: auth_res.receiving_id,
                 gaid: subaccount.receiving_id,
                 subaccount: subaccount.pointer,
-                required_ca: subaccount.required_ca,
             })
         }
         Msg::Error { request, error, .. } => {
@@ -1122,123 +1077,6 @@ async fn reload_wallet_utxos(data: &mut Data) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn request_timeout(reqs: &mut PendingRequests) -> PendingRequest {
-    let (&wamp_id, req) = reqs
-        .iter()
-        .min_by_key(|req| req.1.expires_at)
-        .expect("reqs can't be empty");
-    let timeout = req.expires_at.saturating_duration_since(Instant::now());
-    tokio::time::sleep(timeout).await;
-    log::error!("request {wamp_id} timeout");
-    reqs.remove(&wamp_id).expect("must be known")
-}
-
-async fn connection_check(data: &mut Data) -> Result<(), anyhow::Error> {
-    make_request(
-        data,
-        "com.greenaddress.addressbook.get_my_addresses",
-        vec![data.subaccount.into()],
-        Box::new(move |_data, res| {
-            let _args = res?;
-            log::debug!("connection check succeed");
-            Ok(())
-        }),
-    )
-    .await?;
-    Ok(())
-}
-
-// TODO: Upload 20 CA addresses when AMP account is created
-// TODO: Upload CA addresses periodically?
-// TODO: Upload CA addresses if the server can't resolve our gaid?
-async fn upload_ca_addresses(data: &mut Data, num: u32) -> Result<(), anyhow::Error> {
-    log::debug!("upload {num} ca addresses");
-    for _ in 0..num {
-        recv_addr_request(
-            data,
-            Box::new(move |data, res| {
-                let address = parse_args1::<models::ReceiveAddress>(res?)?;
-                let address = data.derive_address(address.pointer);
-                data.ca_addresses.push(address);
-                Ok(())
-            }),
-        )
-        .await?;
-    }
-    Ok(())
-}
-
-async fn send_ca_addresses(data: &mut Data) -> Result<(), anyhow::Error> {
-    let addresses = std::mem::take(&mut data.ca_addresses);
-    let addresses = addresses
-        .into_iter()
-        .map(|a| serde_json::Value::String(a.to_string()))
-        .collect::<Vec<_>>();
-    if !addresses.is_empty() {
-        log::debug!("send {} ca addresses", addresses.len());
-        make_request(
-            data,
-            "com.greenaddress.txs.upload_authorized_assets_confidential_address",
-            vec![data.subaccount.into(), addresses.into()],
-            Box::new(move |_data, res| {
-                let success = parse_args1::<bool>(res?)?;
-                ensure!(success, "uploading ca addresses failed");
-                Ok(())
-            }),
-        )
-        .await?;
-    }
-    Ok(())
-}
-
-async fn processing_loop(
-    data: &mut Data,
-    command_receiver: &mut UnboundedReceiver<Command>,
-) -> Result<(), anyhow::Error> {
-    // Prevent "Session expired"
-    let mut connection_check_interval = tokio::time::interval(Duration::from_secs(3000));
-
-    loop {
-        if data.reload_utxos {
-            reload_wallet_utxos(data).await?;
-            data.reload_utxos = false;
-        }
-
-        if !data.ca_addresses.is_empty() && data.pending_requests.is_empty() {
-            send_ca_addresses(data).await?;
-        }
-
-        tokio::select! {
-            msg = data.connection.next() => {
-                let msg = match msg {
-                    Some(Ok(msg)) => msg,
-                    Some(Err(err)) => return Err(err.into()),
-                    None => return Ok(()),
-                };
-                process_ws_msg(data, msg).await?;
-            }
-
-            command = command_receiver.recv() => {
-                let command = match command {
-                    Some(command) => command,
-                    None => return Ok(()),
-                };
-                process_command(data, command).await?;
-            }
-
-            req = request_timeout(&mut data.pending_requests), if !data.pending_requests.is_empty() => {
-                (req.callback)(data, Err(anyhow!("request timeout")))?;
-                // Restart processing just in case
-                bail!("disconnect because of request timeout");
-            }
-
-            _ = connection_check_interval.tick() => {
-                connection_check(data).await?;
-            }
-        }
-    }
-}
-
 async fn connect(
     mnemonic: &bip39::Mnemonic,
     network: Network,
@@ -1266,7 +1104,6 @@ async fn connect(
         wallet_id,
         gaid,
         subaccount,
-        required_ca,
     } = authenticate(&mut connection, &master_key, &challenge).await?;
     log::debug!("authentication succeed");
 
@@ -1276,7 +1113,7 @@ async fn connect(
 
     let mut data = Data {
         connection,
-        pending_requests: BTreeMap::new(),
+        pending_requests: HashMap::new(),
         network,
         master_blinding_key,
         subaccount,
@@ -1287,10 +1124,7 @@ async fn connect(
         active_subscribe: HashMap::new(),
         utxos: Vec::new(),
         reload_utxos: true,
-        ca_addresses: Vec::new(),
     };
-
-    send_event(&mut data, Event::Connected { gaid });
 
     subscribe(
         &mut data,
@@ -1306,15 +1140,33 @@ async fn connect(
     )
     .await?;
 
-    upload_ca_addresses(&mut data, required_ca).await?;
+    send_event(&mut data, Event::Connected { gaid });
 
-    let res = processing_loop(&mut data, command_receiver).await;
+    loop {
+        if data.reload_utxos {
+            reload_wallet_utxos(&mut data).await?;
+            data.reload_utxos = false;
+        }
 
-    while let Some(req) = data.pending_requests.pop_first() {
-        let _ = (req.1.callback)(&mut data, Err(anyhow!("connection closed")));
+        tokio::select! {
+            msg = data.connection.next() => {
+                let msg = match msg {
+                    Some(Ok(msg)) => msg,
+                    Some(Err(err)) => return Err(err.into()),
+                    None => return Ok(()),
+                };
+                process_ws_msg(&mut data, msg).await?;
+            }
+
+            command = command_receiver.recv() => {
+                let command = match command {
+                    Some(command) => command,
+                    None => return Ok(()),
+                };
+                process_command(&mut data, command).await?;
+            }
+        }
     }
-
-    res
 }
 
 const DELAYS: [Duration; 6] = [

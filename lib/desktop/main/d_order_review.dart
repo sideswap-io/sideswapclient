@@ -135,9 +135,7 @@ class DOrderReview extends HookConsumerWidget {
     final autoSignPrev = useState(true);
     final isTracking = useState(order.isTracking);
     final controllerPrice = useTextEditingController();
-
-    final priceTrackerValue =
-        useState(indexPriceToTrackerValue(order.indexPrice));
+    final priceTrackerValue = useState(.0);
 
     useEffect(() {
       if (screen == ReviewScreen.edit) {
@@ -374,27 +372,34 @@ class DOrderReview extends HookConsumerWidget {
                     builder: (context, ref, child) {
                       final isJadeWallet = ref.watch(isJadeWalletProvider);
 
-                      return switch (screen) {
-                        ReviewScreen.edit ||
-                        ReviewScreen.submitStart
-                            when (isJadeWallet || isTracking.value) =>
-                          const DOrderReviewSignTypeControls(
-                            onTwoStepChanged: null,
-                          ),
-                        ReviewScreen.submitStart =>
-                          DOrderReviewSignTypeControls(
-                            onTwoStepChanged: (bool value) {
-                              ref
-                                  .read(orderReviewTwoStepProvider.notifier)
-                                  .setTwoStep(value);
+                      if (screen == ReviewScreen.edit) {
+                        return const DOrderReviewSignTypeControls(
+                          onTwoStepChanged: null,
+                        );
+                      }
 
-                              if (value) {
-                                autoSign.value = true;
-                              }
-                            },
-                          ),
-                        _ => const SizedBox(),
-                      };
+                      // turn off online for jade wallet
+                      if (isJadeWallet && screen == ReviewScreen.submitStart) {
+                        return const DOrderReviewSignTypeControls(
+                          onTwoStepChanged: null,
+                        );
+                      }
+
+                      if (screen == ReviewScreen.submitStart) {
+                        return DOrderReviewSignTypeControls(
+                          onTwoStepChanged: (bool value) {
+                            ref
+                                .read(orderReviewTwoStepProvider.notifier)
+                                .setTwoStep(value);
+
+                            if (value) {
+                              autoSign.value = true;
+                            }
+                          },
+                        );
+                      }
+
+                      return const SizedBox();
                     },
                   ),
                   if (screen == ReviewScreen.submitStart ||

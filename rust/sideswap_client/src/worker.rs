@@ -15,7 +15,6 @@ use secp256k1::hashes::Hash;
 use settings::{Peg, PegDir};
 use sideswap_api::*;
 use sideswap_common::env::Env;
-use sideswap_common::network::Network;
 use sideswap_common::types::*;
 use sideswap_common::ws::{next_request_id, next_request_id_str};
 use sideswap_common::*;
@@ -413,7 +412,7 @@ fn select_swap_inputs(
 
 fn derive_single_sig_address(
     account_xpub: &bip32::Xpub,
-    network: Network,
+    network: env::Network,
     is_internal: bool,
     pointer: u32,
 ) -> elements::Address {
@@ -427,13 +426,13 @@ fn derive_single_sig_address(
         )
         .unwrap()
         .to_pub();
-    elements::Address::p2shwpkh(&pub_key, None, network.d().elements_params)
+    elements::Address::p2shwpkh(&pub_key, None, network.elements_params())
 }
 
 fn derive_multi_sig_address(
     multi_sig_service_xpub: &bip32::Xpub,
     multi_sig_user_xpub: &bip32::Xpub,
-    network: Network,
+    network: env::Network,
     pointer: u32,
 ) -> elements::Address {
     let pub_key_green = multi_sig_service_xpub
@@ -461,7 +460,7 @@ fn derive_multi_sig_address(
     let script_hash = elements::ScriptHash::hash(script.as_bytes());
 
     elements::Address {
-        params: network.d().elements_params,
+        params: network.elements_params(),
         payload: elements::address::Payload::ScriptHash(script_hash),
         blinding_pubkey: None,
     }
@@ -876,7 +875,7 @@ impl Data {
     }
 
     fn data_path(env: Env, path: &str) -> std::path::PathBuf {
-        let env_data = env.d();
+        let env_data = env.data();
         let path = std::path::Path::new(&path).join(env_data.name);
         std::fs::create_dir_all(&path).expect("can't create data path");
         path
@@ -1834,9 +1833,10 @@ impl Data {
 
             wallet_amp.set_watch_only(&username, &password)?;
 
-            let single_sig_account_path = self.env.d().network.d().single_sig_account_path.to_vec();
+            let single_sig_account_path =
+                self.env.data().network.single_sig_account_path().to_vec();
 
-            let network = if self.env.d().mainnet {
+            let network = if self.env.data().mainnet {
                 sideswap_jade::models::JadeNetwork::Liquid
             } else {
                 sideswap_jade::models::JadeNetwork::TestnetLiquid
@@ -1905,7 +1905,7 @@ impl Data {
                     (XPUB_PATH_ROOT.to_vec(), jade_watch_only.root_xpub),
                     (XPUB_PATH_PASS.to_vec(), jade_watch_only.password_xpub),
                     (
-                        self.env.d().network.d().single_sig_account_path.to_vec(),
+                        self.env.data().network.single_sig_account_path().to_vec(),
                         jade_watch_only.single_sig_account_xpub,
                     ),
                     (
@@ -1957,7 +1957,7 @@ impl Data {
             }
         };
 
-        let single_sig_account_path = self.env.d().network.d().single_sig_account_path;
+        let single_sig_account_path = self.env.data().network.single_sig_account_path();
         let multi_sig_service_xpub =
             bip32::Xpub::from_str(&reg_info.multi_sig_service_xpub).expect("must be valid");
         let multi_sig_user_path = reg_info.multi_sig_user_path.clone();
@@ -1972,7 +1972,7 @@ impl Data {
                 let mnemonic = wallet_info.mnemonic().expect("mnemonic must be set");
                 let mnemonic = bip39::Mnemonic::parse(mnemonic)?;
                 let seed = mnemonic.to_seed("");
-                let bitcoin_network = self.env.d().network.d().bitcoin_network;
+                let bitcoin_network = self.env.data().network.bitcoin_network();
                 let master_key = bip32::Xpriv::new_master(bitcoin_network, &seed).unwrap();
                 let single_sig_xpriv = master_key
                     .derive_priv(
@@ -3753,7 +3753,7 @@ impl Data {
             )) {
             ("cn.sideswap.io".to_owned(), 443, true)
         } else {
-            let env_data = self.env.d();
+            let env_data = self.env.data();
             (env_data.host.to_owned(), env_data.port, env_data.use_tls)
         };
 
@@ -4158,9 +4158,10 @@ impl Data {
     }
 
     pub fn load_default_assets(&mut self) {
-        let data = match self.env.d().network {
-            Network::Liquid => include_str!("../data/assets.json"),
-            Network::LiquidTestnet => include_str!("../data/assets-testnet.json"),
+        let data = match self.env.data().network {
+            env::Network::Mainnet => include_str!("../data/assets.json"),
+            env::Network::Testnet => include_str!("../data/assets-testnet.json"),
+            env::Network::Regtest | env::Network::Local => "[]",
         };
         let assets = serde_json::from_str::<Assets>(data).unwrap();
         self.register_assets_with_gdk_icons(assets);
@@ -4248,7 +4249,7 @@ impl Data {
                     .map(|pointer| {
                         derive_single_sig_address(
                             &wallet.xpubs.single_sig_account,
-                            self.env.d().network,
+                            self.env.data().network,
                             is_internal,
                             pointer,
                         )
@@ -4288,7 +4289,7 @@ impl Data {
                     derive_multi_sig_address(
                         &wallet.xpubs.multi_sig_service_xpub,
                         &wallet.xpubs.multi_sig_user_xpub,
-                        self.env.d().network,
+                        self.env.data().network,
                         pointer,
                     )
                     .to_string()
@@ -4495,9 +4496,9 @@ pub fn start_processing(
         ui_stopped: Default::default(),
     };
     let env_settings = ffi::proto::from::EnvSettings {
-        policy_asset_id: env.nd().policy_asset.asset_id().to_string(),
-        usdt_asset_id: env.nd().known_assets.usdt.asset_id().to_string(),
-        eurx_asset_id: env.nd().known_assets.eurx.asset_id().to_string(),
+        policy_asset_id: env.data().policy_asset.to_owned(),
+        usdt_asset_id: env.data().network.usdt_asset_id().to_owned(),
+        eurx_asset_id: env.data().network.eurx_asset_id().to_owned(),
     };
     ui.send(ffi::proto::from::Msg::EnvSettings(env_settings));
 
@@ -4635,7 +4636,7 @@ pub fn start_processing(
     let mut settings = settings::load_settings(&settings_path).unwrap_or_default();
     settings::prune(&mut settings);
 
-    let liquid_asset_id = env.nd().policy_asset.asset_id();
+    let liquid_asset_id = AssetId::from_str(env.data().policy_asset).unwrap();
 
     let mut state = Data {
         app_active: true,

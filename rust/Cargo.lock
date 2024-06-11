@@ -1362,12 +1362,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "hex-literal"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
-
-[[package]]
 name = "hex_lit"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2806,23 +2800,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sideswap_amp_dealer"
-version = "0.1.2"
-dependencies = [
- "anyhow",
- "base64 0.21.7",
- "bip39",
- "config",
- "elements",
- "log",
- "serde 1.0.198",
- "sideswap_amp",
- "sideswap_api",
- "sideswap_common",
- "tokio",
-]
-
-[[package]]
 name = "sideswap_api"
 version = "0.1.2"
 dependencies = [
@@ -2885,17 +2862,13 @@ name = "sideswap_common"
 version = "0.1.2"
 dependencies = [
  "anyhow",
- "arc-swap",
- "base64 0.21.7",
  "bitcoin",
  "crossbeam-channel",
  "derive_more",
  "elements",
- "flexi_logger",
  "futures",
  "futures-util",
  "hex",
- "hex-literal",
  "log",
  "rand",
  "serde 1.0.198",
@@ -2906,7 +2879,6 @@ dependencies = [
  "tokio-socks",
  "tokio-tungstenite",
  "tungstenite",
- "ureq",
 ]
 
 [[package]]
@@ -3100,13 +3072,13 @@ dependencies = [
  "anyhow",
  "clap",
  "config",
+ "crossbeam-channel",
  "log",
  "log4rs",
  "serde 1.0.198",
  "serde_json",
  "sideswap_api",
  "sideswap_common",
- "tokio",
 ]
 
 [[package]]

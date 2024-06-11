@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 pub type WampUri = String;
 
 /// id: an integer ID as defined in IDs
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub struct WampId(u64);
 
 impl fmt::Display for WampId {

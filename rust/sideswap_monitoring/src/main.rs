@@ -9,7 +9,6 @@ use sideswap_common::{
     types::COIN,
     ws::{self, auto::WrappedRequest},
 };
-use tokio::sync::mpsc::UnboundedSender;
 
 #[derive(Debug, Deserialize)]
 pub struct Settings {
@@ -62,7 +61,7 @@ fn add_sub(subs: &mut Subscribes, asset_id: &AssetId, ticker: &str) {
     );
 }
 
-fn send_req(ws_tx: &UnboundedSender<WrappedRequest>, req: Request) {
+fn send_req(ws_tx: &crossbeam_channel::Sender<WrappedRequest>, req: Request) {
     ws_tx
         .send(WrappedRequest::Request(
             sideswap_api::RequestMessage::Request(sideswap_api::RequestId::Int(0), req),
@@ -117,24 +116,23 @@ fn main() {
 
     sideswap_common::panic_handler::install_panic_handler();
 
-    let known_assets = &env.d().network.d().known_assets;
-    let env_data = env.d();
+    let known_assets = env.data().network.known_assets();
+    let env_data = env.data();
 
-    let (ws_tx, mut ws_rx) =
+    let (ws_tx, ws_rx) =
         sideswap_common::ws::auto::start(env_data.host.to_owned(), env_data.port, env_data.use_tls);
 
     let mut subs = Subscribes::new();
-    add_sub(&mut subs, &known_assets.usdt.asset_id(), "usdt");
-    add_sub(&mut subs, &known_assets.eurx.asset_id(), "eurx");
-    add_sub(&mut subs, &known_assets.depix.asset_id(), "depix");
+    add_sub(&mut subs, &known_assets.usdt, "usdt");
+    add_sub(&mut subs, &known_assets.eurx, "eurx");
+    add_sub(&mut subs, &known_assets.depix, "depix");
 
     let mut ticker_states = BTreeMap::new();
     for sub in subs.values() {
         ticker_states.insert(sub.ticker.clone(), true);
     }
 
-    loop {
-        let msg = ws_rx.blocking_recv().expect("must be open");
+    for msg in ws_rx {
         match msg {
             ws::auto::WrappedResponse::Connected => {
                 log::info!("connected to the server");

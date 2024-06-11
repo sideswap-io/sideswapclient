@@ -2,6 +2,7 @@ use prost::Message;
 use sideswap_common::env::Env;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::Once;
 
@@ -58,6 +59,9 @@ fn convert_from_msg(msg: FromMsg) -> u64 {
 pub fn get_ffi_from_env(env: i32) -> Option<Env> {
     match env {
         SIDESWAP_ENV_PROD => Some(Env::Prod),
+        SIDESWAP_ENV_STAGING => Some(Env::Staging),
+        SIDESWAP_ENV_REGTEST => Some(Env::Regtest),
+        SIDESWAP_ENV_LOCAL => Some(Env::Local),
         SIDESWAP_ENV_LOCAL_LIQUID => Some(Env::LocalLiquid),
         SIDESWAP_ENV_TESTNET => Some(Env::Testnet),
         SIDESWAP_ENV_LOCAL_TESTNET => Some(Env::LocalTestnet),
@@ -106,7 +110,7 @@ pub fn sideswap_client_start_impl(env: Env, start_params: StartParams, dart_port
     let enable_dart = dart_port != SIDESWAP_DART_PORT_DISABLED;
 
     INIT_LOGGER_FLAG.call_once(|| {
-        sideswap_common::log_init::init_log(&start_params.work_dir);
+        init_log(&start_params.work_dir);
     });
 
     sideswap_common::panic_handler::install_panic_handler();
@@ -223,8 +227,11 @@ pub const SIDESWAP_BITCOIN: i32 = 1;
 pub const SIDESWAP_ELEMENTS: i32 = 2;
 
 pub const SIDESWAP_ENV_PROD: i32 = 0;
-pub const SIDESWAP_ENV_TESTNET: i32 = 5;
+pub const SIDESWAP_ENV_STAGING: i32 = 1;
+pub const SIDESWAP_ENV_REGTEST: i32 = 2;
+pub const SIDESWAP_ENV_LOCAL: i32 = 3;
 pub const SIDESWAP_ENV_LOCAL_LIQUID: i32 = 4;
+pub const SIDESWAP_ENV_TESTNET: i32 = 5;
 pub const SIDESWAP_ENV_LOCAL_TESTNET: i32 = 6;
 
 #[no_mangle]
@@ -298,14 +305,60 @@ pub extern "C" fn sideswap_string_free(str: *mut c_char) {
     }
 }
 
+const LOG_FILTER: &str = "debug,hyper=info,rustls=info,ureq=warn";
+
+pub const TIMESTAMP_FORMAT: &str = "%Y-%m-%d %H:%M:%S.%3f";
+
+pub fn log_format(
+    w: &mut dyn std::io::Write,
+    now: &mut flexi_logger::DeferredNow,
+    record: &log::Record,
+) -> Result<(), std::io::Error> {
+    let text = format!(
+        "[{}] {} {} {}",
+        now.format(TIMESTAMP_FORMAT),
+        record.level(),
+        record.module_path().unwrap_or("<unnamed>"),
+        &record.args()
+    );
+    let line_limit = if cfg!(debug_assertions) {
+        1024 * 1024
+    } else {
+        2 * 1024
+    };
+    let len = std::cmp::min(text.len(), line_limit);
+    write!(w, "{}", &text.as_str()[..len])
+}
+
+pub fn init_log(work_dir: impl AsRef<Path>) {
+    let path = work_dir.as_ref().join("sideswap.log");
+
+    let file_size = std::fs::metadata(&path)
+        .map(|metadata| metadata.len())
+        .unwrap_or_default();
+    if file_size > 50 * 1024 * 1024 {
+        let path_old = work_dir.as_ref().join("sideswap_prev.log");
+        let _ = std::fs::rename(&path, path_old);
+    }
+
+    let _ = flexi_logger::Logger::try_with_str(LOG_FILTER)
+        .unwrap()
+        .format(log_format)
+        .use_utc()
+        .log_to_file(flexi_logger::FileSpec::try_from(path).unwrap())
+        .append()
+        .duplicate_to_stderr(flexi_logger::Duplicate::Error)
+        .start();
+}
+
 fn check_bitcoin_address(env: Env, addr: &str) -> bool {
     let addr = match bitcoin::Address::from_str(addr) {
         Ok(a) => a,
         Err(_) => return false,
     };
     match env {
-        Env::Prod | Env::LocalLiquid => *addr.network() == bitcoin::Network::Bitcoin,
-        Env::Testnet | Env::LocalTestnet => {
+        Env::Prod | Env::Staging | Env::LocalLiquid => *addr.network() == bitcoin::Network::Bitcoin,
+        Env::Local | Env::Regtest | Env::Testnet | Env::LocalTestnet => {
             let script_hash = match addr.payload() {
                 bitcoin::address::Payload::ScriptHash(_) => true,
                 _ => false,
@@ -318,8 +371,9 @@ fn check_bitcoin_address(env: Env, addr: &str) -> bool {
 
 fn elements_params(env: sideswap_common::env::Env) -> &'static elements::AddressParams {
     match env {
-        Env::Prod | Env::LocalLiquid => &elements::address::AddressParams::LIQUID,
+        Env::Prod | Env::Staging | Env::LocalLiquid => &elements::address::AddressParams::LIQUID,
         Env::Testnet | Env::LocalTestnet => &elements::address::AddressParams::LIQUID_TESTNET,
+        Env::Regtest | Env::Local => &elements::address::AddressParams::ELEMENTS,
     }
 }
 

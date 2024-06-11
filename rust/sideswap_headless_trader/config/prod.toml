@@ -1,4 +1,4 @@
-# SideSwap prod server for the Liquid network
+# SideSwap prod server (and Liquid network)
 env = "Prod"
 
 # Work dir to store temporary files

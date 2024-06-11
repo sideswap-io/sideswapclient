@@ -3,7 +3,6 @@ resolver = "2"
 
 members = [
     "sideswap_amp",
-    "sideswap_amp_dealer",
     "sideswap_api",
     "sideswap_client",
     "sideswap_common",
@@ -24,7 +23,6 @@ members = [
 [workspace.dependencies]
 allo-isolate = "0.1"
 anyhow = "1.0"
-arc-swap = "1.7.1"
 async-trait = "0.1"
 axum = { version = "0.7", default_features = false, features = ["form", "http1", "json", "matched-path", "query", "tokio"] }
 base64 = "0.21"
@@ -49,7 +47,6 @@ futures-channel = "0.3"
 futures-util = "0.3"
 git2 = { version = "0.18", default-features = false }
 hex = "0.4"
-hex-literal = "0.4.1"
 libc = "0.2"
 log = "0.4"
 log4rs = { version = "1.2", features = ["gzip"] }
