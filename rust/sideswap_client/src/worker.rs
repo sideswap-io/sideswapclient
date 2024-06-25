@@ -15,15 +15,18 @@ use secp256k1::hashes::Hash;
 use settings::{Peg, PegDir};
 use sideswap_api::*;
 use sideswap_common::env::Env;
+use sideswap_common::network::Network;
 use sideswap_common::types::*;
 use sideswap_common::ws::{next_request_id, next_request_id_str};
 use sideswap_common::*;
-use sideswap_jade::{jade_mng, JadeId};
+use sideswap_jade::jade_mng::{self, JadeStatus, JadeStatusCallback};
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 use std::{
     collections::{BTreeMap, BTreeSet, VecDeque},
     str::FromStr,
 };
+use tokio::sync::mpsc::UnboundedSender;
 use types::Amount;
 
 use ws::manual as ws;
@@ -89,11 +92,6 @@ struct UiData {
     ui_stopped: std::sync::Arc<std::sync::atomic::AtomicBool>,
 }
 
-struct JadeData {
-    jade_id: JadeId,
-    port_name: String,
-}
-
 #[derive(Default)]
 struct UsedAddresses {
     single_sig: [u32; 2],
@@ -125,8 +123,8 @@ pub struct Data {
     assets: BTreeMap<AssetId, Asset>,
     amp_assets: BTreeSet<AssetId>,
     msg_sender: crossbeam_channel::Sender<Message>,
-    ws_sender: crossbeam_channel::Sender<ws::WrappedRequest>,
-    ws_hint: tokio::sync::mpsc::UnboundedSender<()>,
+    ws_sender: UnboundedSender<ws::WrappedRequest>,
+    ws_hint: UnboundedSender<()>,
     resp_receiver: crossbeam_channel::Receiver<ServerResp>,
     params: ffi::StartParams,
     unsigned_tx: Option<serde_json::Value>,
@@ -173,9 +171,7 @@ pub struct Data {
     used_addresses: UsedAddresses,
 
     jade_mng: jade_mng::JadeMng,
-    jades: Vec<JadeData>,
-    jades_scan_result: Option<String>,
-    jade_status_callback: gdk_ses::JadeStatusCallback,
+    jade_status_callback: JadeStatusCallback,
 
     async_requests: AsyncRequests,
 
@@ -412,7 +408,7 @@ fn select_swap_inputs(
 
 fn derive_single_sig_address(
     account_xpub: &bip32::Xpub,
-    network: env::Network,
+    network: Network,
     is_internal: bool,
     pointer: u32,
 ) -> elements::Address {
@@ -426,13 +422,13 @@ fn derive_single_sig_address(
         )
         .unwrap()
         .to_pub();
-    elements::Address::p2shwpkh(&pub_key, None, network.elements_params())
+    elements::Address::p2shwpkh(&pub_key, None, network.d().elements_params)
 }
 
 fn derive_multi_sig_address(
     multi_sig_service_xpub: &bip32::Xpub,
     multi_sig_user_xpub: &bip32::Xpub,
-    network: env::Network,
+    network: Network,
     pointer: u32,
 ) -> elements::Address {
     let pub_key_green = multi_sig_service_xpub
@@ -460,7 +456,7 @@ fn derive_multi_sig_address(
     let script_hash = elements::ScriptHash::hash(script.as_bytes());
 
     elements::Address {
-        params: network.elements_params(),
+        params: network.d().elements_params,
         payload: elements::address::Payload::ScriptHash(script_hash),
         blinding_pubkey: None,
     }
@@ -875,7 +871,7 @@ impl Data {
     }
 
     fn data_path(env: Env, path: &str) -> std::path::PathBuf {
-        let env_data = env.data();
+        let env_data = env.d();
         let path = std::path::Path::new(&path).join(env_data.name);
         std::fs::create_dir_all(&path).expect("can't create data path");
         path
@@ -1786,13 +1782,12 @@ impl Data {
             }
             ffi::proto::to::login::Wallet::JadeId(jade_id) => {
                 let name = format!("Jade {}", jade_id);
-                let jade = self.jade_mng.open(jade_id);
+                let jade = self.jade_mng.open(jade_id)?;
+                gdk_ses_impl::unlock_hw(self.env, &jade)?;
 
-                gdk_ses_impl::unlock_hw(self.env, &jade, &self.jade_status_callback)?;
-
-                (self.jade_status_callback)(gdk_ses::JadeStatus::MasterBlindingKey);
+                (self.jade_status_callback)(JadeStatus::MasterBlindingKey);
                 let res = jade.master_blinding_key();
-                (self.jade_status_callback)(gdk_ses::JadeStatus::Idle);
+                (self.jade_status_callback)(JadeStatus::Idle);
                 let resp = res?;
                 let master_blinding_key = hex::encode(resp);
 
@@ -1800,7 +1795,6 @@ impl Data {
                     env: self.env,
                     name,
                     jade: std::sync::Arc::new(jade),
-                    status_callback: self.jade_status_callback.clone(),
                     master_blinding_key,
                     xpubs: BTreeMap::new(),
                 })
@@ -1833,10 +1827,9 @@ impl Data {
 
             wallet_amp.set_watch_only(&username, &password)?;
 
-            let single_sig_account_path =
-                self.env.data().network.single_sig_account_path().to_vec();
+            let single_sig_account_path = self.env.d().network.d().single_sig_account_path.to_vec();
 
-            let network = if self.env.data().mainnet {
+            let network = if self.env.d().mainnet {
                 sideswap_jade::models::JadeNetwork::Liquid
             } else {
                 sideswap_jade::models::JadeNetwork::TestnetLiquid
@@ -1891,11 +1884,11 @@ impl Data {
             }
         };
 
-        let wallet_info = match req.wallet.unwrap() {
+        let wallet_info = match req.wallet.ok_or_else(|| anyhow!("empty login request"))? {
             ffi::proto::to::login::Wallet::Mnemonic(mnemonic) => WalletInfo::Mnemonic(mnemonic),
             ffi::proto::to::login::Wallet::JadeId(jade_id) => {
                 let name = format!("Jade {}", jade_id);
-                let jade_port = self.jade_mng.open(&jade_id);
+                let jade_port = self.jade_mng.open(&jade_id)?;
                 let jade_watch_only = reg_info
                     .jade_watch_only
                     .as_ref()
@@ -1905,7 +1898,7 @@ impl Data {
                     (XPUB_PATH_ROOT.to_vec(), jade_watch_only.root_xpub),
                     (XPUB_PATH_PASS.to_vec(), jade_watch_only.password_xpub),
                     (
-                        self.env.data().network.single_sig_account_path().to_vec(),
+                        self.env.d().network.d().single_sig_account_path.to_vec(),
                         jade_watch_only.single_sig_account_xpub,
                     ),
                     (
@@ -1918,7 +1911,6 @@ impl Data {
                     env: self.env,
                     name,
                     jade: std::sync::Arc::new(jade_port),
-                    status_callback: self.jade_status_callback.clone(),
                     master_blinding_key: jade_watch_only.master_blinding_key.clone(),
                     xpubs,
                 })
@@ -1957,7 +1949,7 @@ impl Data {
             }
         };
 
-        let single_sig_account_path = self.env.data().network.single_sig_account_path();
+        let single_sig_account_path = self.env.d().network.d().single_sig_account_path;
         let multi_sig_service_xpub =
             bip32::Xpub::from_str(&reg_info.multi_sig_service_xpub).expect("must be valid");
         let multi_sig_user_path = reg_info.multi_sig_user_path.clone();
@@ -1972,7 +1964,7 @@ impl Data {
                 let mnemonic = wallet_info.mnemonic().expect("mnemonic must be set");
                 let mnemonic = bip39::Mnemonic::parse(mnemonic)?;
                 let seed = mnemonic.to_seed("");
-                let bitcoin_network = self.env.data().network.bitcoin_network();
+                let bitcoin_network = self.env.d().network.d().bitcoin_network;
                 let master_key = bip32::Xpriv::new_master(bitcoin_network, &seed).unwrap();
                 let single_sig_xpriv = master_key
                     .derive_priv(
@@ -2128,12 +2120,14 @@ impl Data {
     }
 
     fn process_encrypt_pin(&self, req: ffi::proto::to::EncryptPin) {
-        let result = match crate::pin::encrypt_pin(req.mnemonic, req.pin, self.proxy().as_ref()) {
+        let result = match pin::encrypt_pin(&req.mnemonic, &req.pin, self.proxy().as_ref()) {
             Ok(v) => {
+                let data = serde_json::from_str::<pin::PinData>(&v).expect("must not fail");
                 ffi::proto::from::encrypt_pin::Result::Data(ffi::proto::from::encrypt_pin::Data {
-                    salt: v.salt,
-                    encrypted_data: v.encrypted_data,
-                    pin_identifier: v.pin_identifier,
+                    salt: data.salt,
+                    encrypted_data: data.encrypted_data,
+                    pin_identifier: data.pin_identifier,
+                    hmac: data.hmac,
                 })
             }
             Err(e) => ffi::proto::from::encrypt_pin::Result::Error(e.to_string()),
@@ -2146,14 +2140,30 @@ impl Data {
     }
 
     fn process_decrypt_pin(&self, req: ffi::proto::to::DecryptPin) {
-        let details = crate::pin::PinData {
+        let details = pin::PinData {
             salt: req.salt,
             encrypted_data: req.encrypted_data,
             pin_identifier: req.pin_identifier,
+            hmac: req.hmac,
         };
-        let result = match crate::pin::decrypt_pin(&details, req.pin, self.proxy().as_ref()) {
+        let data = serde_json::to_string(&details).expect("must not fail");
+        let result = match pin::decrypt_pin(&data, &req.pin, self.proxy().as_ref()) {
             Ok(v) => ffi::proto::from::decrypt_pin::Result::Mnemonic(v),
-            Err(e) => ffi::proto::from::decrypt_pin::Result::Error(e.to_string()),
+            Err(e) => {
+                let error_code = match &e {
+                    pin::Error::WrongPin => ffi::proto::from::decrypt_pin::ErrorCode::WrongPin,
+                    pin::Error::NetworkError(_) => {
+                        ffi::proto::from::decrypt_pin::ErrorCode::NetworkError
+                    }
+                    pin::Error::InvalidData(_) => {
+                        ffi::proto::from::decrypt_pin::ErrorCode::InvalidData
+                    }
+                };
+                ffi::proto::from::decrypt_pin::Result::Error(ffi::proto::from::decrypt_pin::Error {
+                    error_msg: e.to_string(),
+                    error_code: error_code.into(),
+                })
+            }
         };
         self.ui.send(ffi::proto::from::Msg::DecryptPin(
             ffi::proto::from::DecryptPin {
@@ -3537,14 +3547,6 @@ impl Data {
         self.ui.send(ffi::proto::from::Msg::IndexPrice(index_price));
     }
 
-    fn process_contact_created(&mut self, _contact: Contact) {}
-
-    fn process_contact_removed(&mut self, _contact_key: ContactKey) {}
-
-    fn process_contact_tx(&mut self, _tx: ContactTransaction) {}
-
-    fn process_account_status(&mut self, _registered: bool) {}
-
     fn process_update_price_stream(&self, msg: SubscribePriceStreamResponse) {
         let msg = ffi::proto::from::UpdatePriceStream {
             asset_id: msg.asset.to_string(),
@@ -3753,7 +3755,7 @@ impl Data {
             )) {
             ("cn.sideswap.io".to_owned(), 443, true)
         } else {
-            let env_data = self.env.data();
+            let env_data = self.env.d();
             (env_data.host.to_owned(), env_data.port, env_data.use_tls)
         };
 
@@ -4068,10 +4070,6 @@ impl Data {
             Notification::OrderCreated(msg) => self.process_order_created(msg),
             Notification::OrderRemoved(msg) => self.process_order_removed(msg),
             Notification::UpdatePrices(msg) => self.process_update_prices(msg),
-            Notification::ContactCreated(msg) => self.process_contact_created(msg.contact),
-            Notification::ContactRemoved(msg) => self.process_contact_removed(msg.contact_key),
-            Notification::ContactTransaction(msg) => self.process_contact_tx(msg.tx),
-            Notification::AccountStatus(msg) => self.process_account_status(msg.registered),
             Notification::UpdatePriceStream(msg) => self.process_update_price_stream(msg),
             Notification::BlindedSwapClient(msg) => self.process_blinded_swap_client(msg),
             Notification::SwapDone(msg) => self.process_swap_done(msg),
@@ -4158,10 +4156,9 @@ impl Data {
     }
 
     pub fn load_default_assets(&mut self) {
-        let data = match self.env.data().network {
-            env::Network::Mainnet => include_str!("../data/assets.json"),
-            env::Network::Testnet => include_str!("../data/assets-testnet.json"),
-            env::Network::Regtest | env::Network::Local => "[]",
+        let data = match self.env.d().network {
+            Network::Liquid => include_str!("../data/assets.json"),
+            Network::LiquidTestnet => include_str!("../data/assets-testnet.json"),
         };
         let assets = serde_json::from_str::<Assets>(data).unwrap();
         self.register_assets_with_gdk_icons(assets);
@@ -4249,7 +4246,7 @@ impl Data {
                     .map(|pointer| {
                         derive_single_sig_address(
                             &wallet.xpubs.single_sig_account,
-                            self.env.data().network,
+                            self.env.d().network,
                             is_internal,
                             pointer,
                         )
@@ -4289,7 +4286,7 @@ impl Data {
                     derive_multi_sig_address(
                         &wallet.xpubs.multi_sig_service_xpub,
                         &wallet.xpubs.multi_sig_user_xpub,
-                        self.env.data().network,
+                        self.env.d().network,
                         pointer,
                     )
                     .to_string()
@@ -4400,64 +4397,21 @@ impl Data {
 
     fn process_jade_rescan_request(&mut self) {
         let ports_result = self.jade_mng.ports();
-        let new_result = match &ports_result {
-            Ok(v) => format!("succeed: {:?}", v),
-            Err(e) => format!("failed: {}", e),
-        };
-        if self.jades_scan_result.as_ref() != Some(&new_result) {
-            debug!("jade ports scan: {}", new_result);
-            self.jades_scan_result = Some(new_result);
-        }
-        self.process_scan_jade(ports_result.unwrap_or_default());
-    }
-
-    fn process_scan_jade(&mut self, ports: Vec<jade_mng::ManagedPort>) {
-        let mut sync_required = false;
-
-        for port in ports.iter() {
-            if !self.jades.iter().any(|data| data.jade_id == port.jade_id) {
-                debug!("new jade device detected: {}", port.jade_id);
-                self.jades.push(JadeData {
-                    jade_id: port.jade_id.clone(),
-                    port_name: port.port_name.clone(),
-                });
-                sync_required = true;
+        match ports_result {
+            Ok(ports) => {
+                let ports = ports
+                    .iter()
+                    .map(|data| ffi::proto::from::jade_ports::Port {
+                        jade_id: data.jade_id.clone(),
+                        port: data.port_name.clone(),
+                    })
+                    .collect();
+                self.ui.send(ffi::proto::from::Msg::JadePorts(
+                    ffi::proto::from::JadePorts { ports },
+                ))
             }
+            Err(e) => error!("jade port scan failed: {e}"),
         }
-
-        loop {
-            let removed = self
-                .jades
-                .iter()
-                .enumerate()
-                .find(|(_, data)| !ports.iter().any(|port| data.jade_id == port.jade_id));
-            match removed {
-                Some((index, _)) => {
-                    let data = self.jades.remove(index);
-                    debug!("jade device removed: {}", data.jade_id);
-                    sync_required = true;
-                }
-                None => break,
-            }
-        }
-
-        if sync_required {
-            self.sync_jade();
-        }
-    }
-
-    fn sync_jade(&self) {
-        let ports = self
-            .jades
-            .iter()
-            .map(|data| ffi::proto::from::jade_ports::Port {
-                jade_id: data.jade_id.clone(),
-                port: data.port_name.clone(),
-            })
-            .collect();
-        self.ui.send(ffi::proto::from::Msg::JadePorts(
-            ffi::proto::from::JadePorts { ports },
-        ))
     }
 
     fn process_gaid_status_req(&mut self, msg: ffi::proto::to::GaidStatus) {
@@ -4496,37 +4450,36 @@ pub fn start_processing(
         ui_stopped: Default::default(),
     };
     let env_settings = ffi::proto::from::EnvSettings {
-        policy_asset_id: env.data().policy_asset.to_owned(),
-        usdt_asset_id: env.data().network.usdt_asset_id().to_owned(),
-        eurx_asset_id: env.data().network.eurx_asset_id().to_owned(),
+        policy_asset_id: env.nd().policy_asset.asset_id().to_string(),
+        usdt_asset_id: env.nd().known_assets.usdt.asset_id().to_string(),
+        eurx_asset_id: env.nd().known_assets.eurx.asset_id().to_string(),
     };
     ui.send(ffi::proto::from::Msg::EnvSettings(env_settings));
 
     let (resp_sender, resp_receiver) = crossbeam_channel::unbounded::<ServerResp>();
-    let (ws_sender, ws_receiver, ws_hint) = ws::start();
+    let (ws_sender, mut ws_receiver, ws_hint) = ws::start();
 
     let ui_copy = ui.clone();
     let last_jade_status = std::sync::Arc::new(std::sync::Mutex::new(
         ffi::proto::from::jade_status::Status::Idle as i32,
     ));
-    let jade_status_callback: gdk_ses::JadeStatusCallback =
-        std::sync::Arc::new(Box::new(move |status: gdk_ses::JadeStatus| {
+    let jade_status_callback: JadeStatusCallback =
+        std::sync::Arc::new(Box::new(move |status: JadeStatus| {
             let status: i32 = match status {
-                gdk_ses::JadeStatus::Idle => ffi::proto::from::jade_status::Status::Idle,
-                gdk_ses::JadeStatus::ReadStatus => {
-                    ffi::proto::from::jade_status::Status::ReadStatus
-                }
-                gdk_ses::JadeStatus::AuthUser => ffi::proto::from::jade_status::Status::AuthUser,
-                gdk_ses::JadeStatus::MasterBlindingKey => {
+                JadeStatus::Connecting => ffi::proto::from::jade_status::Status::Connecting,
+                JadeStatus::Idle => ffi::proto::from::jade_status::Status::Idle,
+                JadeStatus::ReadStatus => ffi::proto::from::jade_status::Status::ReadStatus,
+                JadeStatus::AuthUser => ffi::proto::from::jade_status::Status::AuthUser,
+                JadeStatus::MasterBlindingKey => {
                     ffi::proto::from::jade_status::Status::MasterBlindingKey
                 }
-                gdk_ses::JadeStatus::SignTx(tx_type) => match tx_type {
-                    gdk_ses::TxType::Normal => ffi::proto::from::jade_status::Status::SignTx,
-                    gdk_ses::TxType::Swap => ffi::proto::from::jade_status::Status::SignSwap,
-                    gdk_ses::TxType::OfflineSwapOutput => {
+                JadeStatus::SignTx(tx_type) => match tx_type {
+                    jade_mng::TxType::Normal => ffi::proto::from::jade_status::Status::SignTx,
+                    jade_mng::TxType::Swap => ffi::proto::from::jade_status::Status::SignSwap,
+                    jade_mng::TxType::OfflineSwapOutput => {
                         ffi::proto::from::jade_status::Status::SignSwapOutput
                     }
-                    gdk_ses::TxType::OfflineSwap => {
+                    jade_mng::TxType::OfflineSwap => {
                         ffi::proto::from::jade_status::Status::SignOfflineSwap
                     }
                 },
@@ -4543,7 +4496,7 @@ pub fn start_processing(
 
     let msg_sender_copy = msg_sender.clone();
     std::thread::spawn(move || {
-        while let Ok(msg) = ws_receiver.recv() {
+        while let Some(msg) = ws_receiver.blocking_recv() {
             match msg {
                 ws::WrappedResponse::Connected => {
                     msg_sender_copy.send(Message::ServerConnected).unwrap();
@@ -4636,7 +4589,7 @@ pub fn start_processing(
     let mut settings = settings::load_settings(&settings_path).unwrap_or_default();
     settings::prune(&mut settings);
 
-    let liquid_asset_id = AssetId::from_str(env.data().policy_asset).unwrap();
+    let liquid_asset_id = env.nd().policy_asset.asset_id();
 
     let mut state = Data {
         app_active: true,
@@ -4692,9 +4645,7 @@ pub fn start_processing(
         last_connection_check: std::time::Instant::now(),
         last_blocks: BTreeMap::new(),
         used_addresses: Default::default(),
-        jade_mng: jade_mng::JadeMng::new(),
-        jades: Vec::new(),
-        jades_scan_result: None,
+        jade_mng: jade_mng::JadeMng::new(Arc::clone(&jade_status_callback)),
         jade_status_callback,
         async_requests: BTreeMap::new(),
         network_settings: Default::default(),

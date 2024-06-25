@@ -47,12 +47,9 @@ fn main() {
 
     let tickers = BTreeSet::from([DealerTicker::DePIX]);
 
-    let env_data = settings.env.data();
     let params = Params {
         env: settings.env,
-        server_host: env_data.host.to_owned(),
-        server_port: env_data.port,
-        server_use_tls: env_data.use_tls,
+        server_url: settings.env.base_server_ws_url(),
         rpc: settings.rpc.clone(),
         tickers,
         bitcoin_amount_submit: Amount::from_bitcoin(settings.bitcoin_amount_submit),

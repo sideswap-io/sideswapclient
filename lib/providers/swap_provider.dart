@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 
 import 'package:sideswap/common/helpers.dart';
@@ -21,6 +22,8 @@ import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
+
+part 'swap_provider.g.dart';
 
 final swapProvider = ChangeNotifierProvider<SwapChangeNotifierProvider>(
     (ref) => SwapChangeNotifierProvider(ref));
@@ -207,7 +210,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
 
   void clearNetworkStates() {
     Future.microtask(() {
-      ref.read(swapNetworkErrorStateProvider.notifier).state = '';
+      ref.invalidate(swapNetworkErrorNotifierProvider);
       ref
           .read(satoshiSendAmountStateNotifierProvider.notifier)
           .setSatoshiAmount(0);
@@ -227,11 +230,11 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   void clearAmounts() {
     Future.microtask(() {
       clearNetworkStates();
-      ref.read(swapSendAmountChangeNotifierProvider).setAmount('');
-      ref.read(swapRecvAmountChangeNotifierProvider).setAmount('');
-      ref.read(swapPriceSubscribeStateNotifierProvider.notifier).setEmpty();
+      ref.invalidate(swapSendAmountChangeNotifierProvider);
+      ref.invalidate(swapRecvAmountChangeNotifierProvider);
+      ref.invalidate(swapPriceSubscribeNotifierProvider);
       ref
-          .read(priceStreamSubscribeChangeNotifierProvider)
+          .read(priceStreamSubscribeNotifierProvider.notifier)
           .subscribeToPriceStream();
     });
   }
@@ -360,7 +363,9 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   void onPegOutAmountReceived(From_PegOutAmount value) {
     switch (value.whichResult()) {
       case From_PegOutAmount_Result.errorMsg:
-        ref.read(swapNetworkErrorStateProvider.notifier).state = value.errorMsg;
+        ref
+            .read(swapNetworkErrorNotifierProvider.notifier)
+            .setState(value.errorMsg);
         break;
       case From_PegOutAmount_Result.amounts:
         if (value.amounts.isSendEntered) {
@@ -456,11 +461,11 @@ class SwapChangeNotifierProvider with ChangeNotifier {
         AmountToStringParameters(amount: balance ?? 0, precision: precision));
 
     var amount = balanceStr;
-    ref.read(swapPriceSubscribeStateNotifierProvider.notifier).setSend();
+    ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
 
     ref.read(swapSendAmountChangeNotifierProvider).setAmount(amount);
     ref
-        .read(priceStreamSubscribeChangeNotifierProvider)
+        .read(priceStreamSubscribeNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -468,7 +473,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     clearAmounts();
     setSelectedLeftAsset(accountAsset);
     ref
-        .read(priceStreamSubscribeChangeNotifierProvider)
+        .read(priceStreamSubscribeNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -476,7 +481,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     clearAmounts();
     setSelectedRightAsset(accountAsset);
     ref
-        .read(priceStreamSubscribeChangeNotifierProvider)
+        .read(priceStreamSubscribeNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -486,7 +491,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     swapRecvAddressExternal = '';
     clearAmounts();
     ref
-        .read(priceStreamSubscribeChangeNotifierProvider)
+        .read(priceStreamSubscribeNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -496,7 +501,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     clearAmounts();
     swapReset();
     ref
-        .read(priceStreamSubscribeChangeNotifierProvider)
+        .read(priceStreamSubscribeNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -510,7 +515,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     clearAmounts();
     swapReset();
     ref
-        .read(priceStreamSubscribeChangeNotifierProvider)
+        .read(priceStreamSubscribeNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -565,7 +570,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     if (type == SwapType.pegOut) {
       final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider)
           as SwapCurrentFeeRateData;
-      final subscribe = ref.read(swapPriceSubscribeStateNotifierProvider);
+      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
 
       final msg = To();
       msg.pegOutRequest = To_PegOutRequest();
@@ -598,22 +603,16 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   }
 }
 
-final swapPriceSubscribeStateNotifierProvider =
-    StateNotifierProvider.autoDispose<SwapPriceSubscribeStateNotifierProvider,
-        SwapPriceSubscribeState>((ref) {
-  return SwapPriceSubscribeStateNotifierProvider(ref);
-});
+@riverpod
+class SwapPriceSubscribeNotifier extends _$SwapPriceSubscribeNotifier {
+  @override
+  SwapPriceSubscribeState build() {
+    return const SwapPriceSubscribeStateEmpty();
+  }
 
-class SwapPriceSubscribeStateNotifierProvider
-    extends StateNotifier<SwapPriceSubscribeState> {
-  final Ref ref;
-
-  SwapPriceSubscribeStateNotifierProvider(this.ref)
-      : super(const SwapPriceSubscribeState.empty());
-
-  void setEmpty() => state = const SwapPriceSubscribeState.empty();
-  void setSend() => state = const SwapPriceSubscribeState.send();
-  void setRecv() => state = const SwapPriceSubscribeState.recv();
+  void setEmpty() => state = const SwapPriceSubscribeStateEmpty();
+  void setSend() => state = const SwapPriceSubscribeStateSend();
+  void setRecv() => state = const SwapPriceSubscribeStateRecv();
 }
 
 final bitcoinCurrentFeeRateStateNotifierProvider =
@@ -659,7 +658,7 @@ class BitcoinCurrentFeeRateStateNotifierProvider
   void setFeeRate(FeeRate feeRate) {
     state = SwapCurrentFeeRate.data(feeRate: feeRate);
     ref
-        .read(priceStreamSubscribeChangeNotifierProvider)
+        .read(priceStreamSubscribeNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -759,7 +758,7 @@ class SwapRecvAmountProvider extends ChangeNotifier {
 }
 
 final showInsufficientFundsProvider = Provider.autoDispose<bool>((ref) {
-  final serverError = ref.watch(swapNetworkErrorStateProvider);
+  final serverError = ref.watch(swapNetworkErrorNotifierProvider);
   if (serverError.isNotEmpty) {
     return false;
   }
@@ -771,42 +770,35 @@ final showInsufficientFundsProvider = Provider.autoDispose<bool>((ref) {
   return satoshiAmount > 0 && satoshiAmount > balance;
 });
 
-final priceStreamSubscribeChangeNotifierProvider =
-    ChangeNotifierProvider.autoDispose<PriceStreamSubscribeProvider>((ref) {
-  final provider = PriceStreamSubscribeProvider(ref);
-  final subscription = ref
-      .read(walletProvider)
-      .updatePriceStream
-      .listen(provider.onUpdatePriceStreamChanged);
+@riverpod
+class PriceStreamSubscribeNotifier extends _$PriceStreamSubscribeNotifier {
+  @override
+  From_UpdatePriceStream build() {
+    final subscription = ref
+        .watch(walletProvider)
+        .updatePriceStream
+        .listen(onUpdatePriceStreamChanged);
 
-  ref.onDispose(() {
-    subscription.cancel();
-  });
-
-  return provider;
-});
-
-class PriceStreamSubscribeProvider extends ChangeNotifier {
-  final Ref ref;
-  From_UpdatePriceStream msg = From_UpdatePriceStream();
-
-  PriceStreamSubscribeProvider(this.ref);
+    ref.onDispose(() {
+      subscription.cancel();
+    });
+    return From_UpdatePriceStream();
+  }
 
   void onUpdatePriceStreamChanged(From_UpdatePriceStream value) {
-    msg = value;
+    state = value;
 
-    if (msg.hasRecvAmount()) {
+    if (value.hasRecvAmount()) {
       ref
           .read(satoshiRecvAmountStateNotifierProvider.notifier)
-          .setSatoshiAmount(msg.recvAmount.toInt());
+          .setSatoshiAmount(value.recvAmount.toInt());
     }
 
-    if (msg.hasSendAmount()) {
+    if (value.hasSendAmount()) {
       ref
           .read(satoshiSendAmountStateNotifierProvider.notifier)
-          .setSatoshiAmount(msg.sendAmount.toInt());
+          .setSatoshiAmount(value.sendAmount.toInt());
     }
-    notifyListeners();
   }
 
   Future<void> subscribeToPriceStream() async {
@@ -820,7 +812,7 @@ class PriceStreamSubscribeProvider extends ChangeNotifier {
     if (type == SwapType.atomic) {
       final swapSendAsset = ref.read(swapProvider).swapSendAsset;
       final swapRecvAsset = ref.read(swapProvider).swapRecvAsset;
-      final subscribe = ref.read(swapPriceSubscribeStateNotifierProvider);
+      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
       final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
           ? ref.read(swapSendAmountChangeNotifierProvider).satoshiAmount
           : null;
@@ -837,7 +829,7 @@ class PriceStreamSubscribeProvider extends ChangeNotifier {
             recvAmount,
           );
     } else if (type == SwapType.pegOut) {
-      final subscribe = ref.read(swapPriceSubscribeStateNotifierProvider);
+      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
       final swapSendAsset = ref.read(swapProvider).swapSendAsset;
       final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider);
       final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
@@ -894,7 +886,7 @@ final recvAmountPriceStreamWatcherProvider =
     return const SwapRecvAmountPriceStream.empty();
   }
 
-  final subscribeState = ref.watch(swapPriceSubscribeStateNotifierProvider);
+  final subscribeState = ref.watch(swapPriceSubscribeNotifierProvider);
 
   if (subscribeState != const SwapPriceSubscribeState.send()) {
     return const SwapRecvAmountPriceStream.empty();
@@ -924,14 +916,13 @@ final sendAmountPriceStreamWatcherProvider =
     return const SwapSendAmountPriceStream.empty();
   }
 
-  final subscribeState = ref.watch(swapPriceSubscribeStateNotifierProvider);
+  final subscribeState = ref.watch(swapPriceSubscribeNotifierProvider);
 
   if (subscribeState != const SwapPriceSubscribeState.recv()) {
     return const SwapSendAmountPriceStream.empty();
   }
 
-  final msg = ref
-      .watch(priceStreamSubscribeChangeNotifierProvider.select((p) => p.msg));
+  final msg = ref.watch(priceStreamSubscribeNotifierProvider);
   if (!msg.hasSendAmount()) {
     return const SwapSendAmountPriceStream.empty();
   }
@@ -957,14 +948,22 @@ final authInProgressStateProvider =
 final swapStateProvider =
     StateProvider.autoDispose<SwapState>((ref) => SwapState.idle);
 
-final swapNetworkErrorStateProvider = StateProvider.autoDispose<String>((ref) {
-  final msg = ref
-      .watch(priceStreamSubscribeChangeNotifierProvider.select((p) => p.msg));
-  if (msg.hasErrorMsg()) {
-    return msg.errorMsg;
+@riverpod
+class SwapNetworkErrorNotifier extends _$SwapNetworkErrorNotifier {
+  @override
+  String build() {
+    final msg = ref.watch(priceStreamSubscribeNotifierProvider);
+    if (msg.hasErrorMsg()) {
+      return msg.errorMsg;
+    }
+
+    return '';
   }
-  return '';
-});
+
+  void setState(String value) {
+    state = value;
+  }
+}
 
 final swapPriceStateNotifierProvider =
     StateNotifierProvider.autoDispose<SwapPriceProvider, double?>((ref) {

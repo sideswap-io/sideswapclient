@@ -78,7 +78,11 @@ enum Status {
   pegxSubmitAmp,
   pegxSubmitFinish,
 
+  jadeBluetoothPermission,
   jadeImport,
+  jadeDevices,
+  jadeConnecting,
+  jadeLogin,
 
   stokrRestrictionsInfo,
   stokrNeedRegister,

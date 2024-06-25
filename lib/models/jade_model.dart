@@ -13,6 +13,8 @@ class JadeOnboardingRegistrationState with _$JadeOnboardingRegistrationState {
       JadeOnboardingRegistrationStateDone;
 }
 
+class JadeStatusException implements Exception {}
+
 @freezed
 class JadeStatus with _$JadeStatus {
   const JadeStatus._();
@@ -25,30 +27,24 @@ class JadeStatus with _$JadeStatus {
   const factory JadeStatus.signOfflineSwap() = JadeStatusSignOfflineSwap;
   const factory JadeStatus.signSwap() = JadeStatusSignSwap;
   const factory JadeStatus.signSwapOutput() = JadeStatusSignSwapOutput;
+  const factory JadeStatus.connecting() = JadeStatusConnecting;
 
   factory JadeStatus.fromStatus(From_JadeStatus_Status status) {
-    switch (status) {
-      case From_JadeStatus_Status.AUTH_USER:
-        return const JadeStatusAuthUser();
-      case From_JadeStatus_Status.IDLE:
-        return const JadeStatusIdle();
-      case From_JadeStatus_Status.READ_STATUS:
-        return const JadeStatusReadStatus();
-      case From_JadeStatus_Status.MASTER_BLINDING_KEY:
-        return const JadeStatusMasterBlindingKey();
-
-      case From_JadeStatus_Status.SIGN_TX:
-        return const JadeStatusSignTx();
-      case From_JadeStatus_Status.SIGN_OFFLINE_SWAP:
-        return const JadeStatus.signOfflineSwap();
-      case From_JadeStatus_Status.SIGN_SWAP:
-        return const JadeStatus.signSwap();
-      case From_JadeStatus_Status.SIGN_SWAP_OUTPUT:
-        return const JadeStatus.signSwapOutput();
-
-      default:
-        return const JadeStatus.idle();
-    }
+    return switch (status) {
+      From_JadeStatus_Status.AUTH_USER => const JadeStatusAuthUser(),
+      From_JadeStatus_Status.IDLE => const JadeStatusIdle(),
+      From_JadeStatus_Status.READ_STATUS => const JadeStatusReadStatus(),
+      From_JadeStatus_Status.MASTER_BLINDING_KEY =>
+        const JadeStatusMasterBlindingKey(),
+      From_JadeStatus_Status.SIGN_TX => const JadeStatusSignTx(),
+      From_JadeStatus_Status.SIGN_OFFLINE_SWAP =>
+        const JadeStatusSignOfflineSwap(),
+      From_JadeStatus_Status.SIGN_SWAP => const JadeStatusSignSwap(),
+      From_JadeStatus_Status.SIGN_SWAP_OUTPUT =>
+        const JadeStatusSignSwapOutput(),
+      From_JadeStatus_Status.CONNECTING => const JadeStatusConnecting(),
+      _ => throw JadeStatusException(),
+    };
   }
 
   From_JadeStatus_Status toStatus() {
@@ -68,6 +64,8 @@ class JadeStatus with _$JadeStatus {
       return From_JadeStatus_Status.SIGN_SWAP_OUTPUT;
     }, signOfflineSwap: () {
       return From_JadeStatus_Status.SIGN_OFFLINE_SWAP;
+    }, connecting: () {
+      return From_JadeStatus_Status.CONNECTING;
     });
   }
 }

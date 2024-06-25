@@ -1,0 +1,9 @@
+[package]
+name = "stableapp_api"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+elements.workspace = true
+serde.workspace = true
+thiserror.workspace = true

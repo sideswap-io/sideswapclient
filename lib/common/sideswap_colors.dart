@@ -600,4 +600,6 @@ class SideSwapColors {
     },
   );
   static const int _charlestonGreen = 0xFF292929;
+
+  // #06506F
 }

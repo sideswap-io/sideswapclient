@@ -171,7 +171,9 @@ Decimal amountUsdInDefaultCurrency(
     AmountUsdInDefaultCurrencyRef ref, String? assetId, num amount) {
   final amountUsd = ref.watch(amountUsdProvider(assetId, amount));
   final rateMultiplier = ref.watch(defaultConversionRateMultiplierProvider);
-  return amountUsd * rateMultiplier;
+  final amountUsdInDefaultCurrencyString =
+      (amountUsd * rateMultiplier).toStringAsFixed(2);
+  return Decimal.tryParse(amountUsdInDefaultCurrencyString) ?? Decimal.zero;
 }
 
 @riverpod

@@ -1,15 +1,15 @@
 use std::{
-    collections::BTreeMap,
+    sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
-
-use btleplug::api::{Central, Manager, Peripheral, ScanFilter, WriteType};
-use futures::{Stream, StreamExt};
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tokio::sync::oneshot;
 
 use crate::JadeId;
 
-use super::{Connection, Port, Transport};
+use super::{Connection, Port, Transport, TransportType};
+
+const MAX_WRITE_SIZE: usize = 500;
 
 pub struct BleTransport {
     msg_sender: tokio::sync::mpsc::UnboundedSender<Msg>,
@@ -29,38 +29,24 @@ enum Msg {
     Close(JadeId),
 }
 
-const SERVICE_UUID: uuid::Uuid = uuid::uuid!("6E400001-B5A3-F393-E0A9-E50E24DCCA9E");
-const WRITE_CHAR_UUID: uuid::Uuid = uuid::uuid!("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
-const INDICATE_CHAR_UUID: uuid::Uuid = uuid::uuid!("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
-
 impl BleTransport {
-    #[cfg(not(target_os = "android"))]
-    pub fn new() -> Self {
-        let (msg_sender, msg_receiver) = tokio::sync::mpsc::unbounded_channel();
-        std::thread::spawn(move || {
-            let rt = tokio::runtime::Builder::new_current_thread()
-                .enable_all()
-                .build()
-                .expect("should not fail");
-            rt.block_on(run(msg_receiver));
-        });
-
-        BleTransport { msg_sender }
-    }
-
-    #[cfg(target_os = "android")]
+    #[allow(dead_code)]
     pub fn new() -> Self {
         let msg_sender = MSG_SENDER
             .lock()
-            .expect("MSG_SENDER must be already initialized")
+            .expect("must not fail")
             .clone()
-            .unwrap();
+            .expect("MSG_SENDER must be already initialized");
 
         BleTransport { msg_sender }
     }
 }
 
 impl Transport for BleTransport {
+    fn transport_type(&self) -> TransportType {
+        TransportType::Ble
+    }
+
     fn ports(&self) -> Result<Vec<Port>, anyhow::Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.msg_sender.send(Msg::Ports(res_sender))?;
@@ -106,297 +92,224 @@ impl Drop for BleConnection {
     }
 }
 
-struct Data {
-    adapter: btleplug::platform::Adapter,
-    connected: BTreeMap<JadeId, ConnectedData>,
-    scan_activated_at: Option<Instant>,
-}
-
-struct ConnectedData {
-    peripheral: btleplug::platform::Peripheral,
-    write_char: btleplug::api::Characteristic,
-    read_char: btleplug::api::Characteristic,
-    notification_stream:
-        std::pin::Pin<Box<dyn Stream<Item = btleplug::api::ValueNotification> + Send>>,
-}
-
 fn get_jade_id(local_name: &str) -> String {
     format!("ble:{local_name}")
 }
 
-async fn ports(data: &mut Data) -> Result<Vec<Port>, anyhow::Error> {
-    start_scan(data).await?;
-
-    let peripherals = data.adapter.peripherals().await?;
-    let mut ports = Vec::new();
-
-    for peripheral in peripherals {
-        let properties = peripheral.properties().await?;
-        let local_name = properties.and_then(|properties| properties.local_name);
-        if let Some(local_name) = local_name {
-            if local_name.starts_with("Jade") {
-                ports.push(Port {
-                    jade_id: get_jade_id(&local_name),
-                    port_name: local_name,
-                    serial_number: String::new(),
-                });
-            }
-        }
-    }
-
-    Ok(ports)
+struct Data {
+    ble_api: Arc<dyn BleApi>,
+    scan_activated_at: Option<Instant>,
 }
 
-struct FoundDevice {
-    peripheral: btleplug::platform::Peripheral,
-    local_name: String,
-}
+static MSG_SENDER: Mutex<Option<UnboundedSender<Msg>>> = Mutex::new(None);
+static MSG_RECEIVER: Mutex<Option<UnboundedReceiver<Msg>>> = Mutex::new(None);
 
-async fn find_device(data: &mut Data, jade_id: &JadeId) -> Result<FoundDevice, anyhow::Error> {
-    for index in 0..20 {
-        let peripherals = data.adapter.peripherals().await?;
-
-        for peripheral in peripherals {
-            let properties = peripheral.properties().await?;
-            let local_name = properties.and_then(|properties| properties.local_name);
-
-            if let Some(local_name) = local_name {
-                let id = get_jade_id(&local_name);
-                if id == *jade_id {
-                    return Ok(FoundDevice {
-                        peripheral,
-                        local_name,
-                    });
-                }
-            }
-        }
-
-        if index == 0 {
-            start_scan(data).await?;
-        }
-
-        tokio::time::sleep(Duration::from_secs(1)).await;
-    }
-
-    bail!("device not found");
-}
-
-async fn open(data: &mut Data, jade_id: JadeId) -> Result<(), anyhow::Error> {
-    close(data, &jade_id).await;
-
-    let FoundDevice {
-        peripheral,
-        local_name,
-    } = find_device(data, &jade_id).await?;
-
-    let is_connected = peripheral.is_connected().await?;
-    if !is_connected {
-        log::debug!("start connecting to BLE device {}", &local_name);
-        peripheral.connect().await?;
-        log::debug!("finish connecting to BLE device {}", &local_name);
-    }
-
-    log::debug!("start discovering BLE services on {}", &local_name);
-    peripheral.discover_services().await?;
-    log::debug!("finish discovering BLE services on {}", &local_name);
-
-    let chars = peripheral.characteristics();
-    let read_char = chars
-        .iter()
-        .find(|c| c.uuid == INDICATE_CHAR_UUID)
-        .ok_or_else(|| anyhow!("INDICATE_CHAR_UUID not found"))?
-        .clone();
-    let write_char = chars
-        .iter()
-        .find(|c| c.uuid == WRITE_CHAR_UUID)
-        .ok_or_else(|| anyhow!("WRITE_CHAR_UUID not found"))?
-        .clone();
-
-    let notification_stream = peripheral.notifications().await?;
-
-    peripheral.subscribe(&read_char).await?;
-
-    data.connected.insert(
-        jade_id,
-        ConnectedData {
-            peripheral,
-            write_char,
-            read_char,
-            notification_stream,
-        },
-    );
-
-    Ok(())
-}
-
-async fn write(data: &mut Data, jade_id: JadeId, buf: Vec<u8>) -> Result<(), anyhow::Error> {
-    let connected_data = data
-        .connected
-        .get_mut(&jade_id)
-        .ok_or_else(|| anyhow!("not connected"))?;
-    // FIXME: Use correct chunk size
-    for chunk in buf.chunks(200) {
-        connected_data
-            .peripheral
-            .write(&connected_data.write_char, chunk, WriteType::WithResponse)
-            .await?;
-    }
-    Ok(())
-}
-
-async fn read(data: &mut Data, jade_id: JadeId) -> Result<Vec<u8>, anyhow::Error> {
-    let connected_data = data
-        .connected
-        .get_mut(&jade_id)
-        .ok_or_else(|| anyhow!("not connected"))?;
-    let res = tokio::time::timeout(
-        Duration::from_millis(10),
-        connected_data.notification_stream.next(),
-    )
-    .await;
-    match res {
-        Ok(Some(notif)) => Ok(notif.value),
-        Ok(None) => Ok(Vec::new()),
-        Err(_timeout) => Ok(Vec::new()),
-    }
-}
-
-async fn close(data: &mut Data, jade_id: &JadeId) {
-    let connected_data = data.connected.get_mut(jade_id);
-    if let Some(connected_data) = connected_data {
-        let _ = connected_data
-            .peripheral
-            .unsubscribe(&connected_data.read_char)
-            .await;
-    }
-    data.connected.remove(jade_id);
-}
-
-async fn process_msg(data: &mut Data, msg: Msg) {
-    match msg {
-        Msg::Ports(res_sender) => {
-            let res = ports(data).await;
-            res_sender.send(res).expect("must be open");
-        }
-        Msg::Open(jade_id, res_sender) => {
-            let res = open(data, jade_id).await;
-            res_sender.send(res).expect("must be open");
-        }
-        Msg::Write(jade_id, buf, res_sender) => {
-            let res = write(data, jade_id, buf).await;
-            res_sender.send(res).expect("must be open");
-        }
-        Msg::Read(jade_id, res_sender) => {
-            let res = read(data, jade_id).await;
-            res_sender.send(res).expect("must be open");
-        }
-        Msg::Close(jade_id) => {
-            close(data, &jade_id).await;
-        }
-    }
-}
-
-async fn start_scan(data: &mut Data) -> Result<(), anyhow::Error> {
+fn start_scan(data: &mut Data) -> Result<(), BleApiError> {
     if data.scan_activated_at.is_none() {
-        log::debug!("start BLE scan...");
-        data.scan_activated_at = Some(Instant::now());
-        data.adapter
-            .start_scan(ScanFilter {
-                services: vec![SERVICE_UUID],
-            })
-            .await?;
-        log::debug!("BLE scan started");
+        data.ble_api.start_scan()?;
     }
     data.scan_activated_at = Some(Instant::now());
     Ok(())
 }
 
-async fn stop_scan_if_needed(data: &mut Data) {
-    if let Some(scan_requested_at) = data.scan_activated_at {
-        if Instant::now().duration_since(scan_requested_at) > Duration::from_secs(10) {
-            let res = data.adapter.stop_scan().await;
-            if let Err(err) = res {
-                log::error!("stopping scan failed: {err}");
-            }
-            log::debug!("BLE scan stopped");
-            data.scan_activated_at = None;
+fn stop_scan(data: &mut Data) {
+    if data.scan_activated_at.is_some() {
+        data.scan_activated_at = None;
+        let res = data.ble_api.stop_scan();
+        if let Err(err) = res {
+            log::error!("stop scan failed: {err}");
         }
     }
 }
 
-async fn try_run(
-    mut msg_receiver: tokio::sync::mpsc::UnboundedReceiver<Msg>,
-) -> Result<(), anyhow::Error> {
-    let first_msg = match msg_receiver.recv().await {
-        Some(msg) => msg,
-        None => return Ok(()),
-    };
-
-    // Do not try to create a new Manager until the first message is received.
-    // We want to show Bluetooth promp only when needed.
-    let manager = btleplug::platform::Manager::new().await?;
-    let adapter_list = manager.adapters().await?;
-    let adapter = adapter_list
-        .into_iter()
-        .next()
-        .ok_or_else(|| anyhow!("not BLE adapters found"))?;
-
-    let mut data = Data {
-        adapter,
-        connected: BTreeMap::new(),
-        scan_activated_at: None,
-    };
-
-    process_msg(&mut data, first_msg).await;
-
-    loop {
-        tokio::select! {
-            msg = msg_receiver.recv() => {
-                match msg {
-                    Some(msg) => {
-                        process_msg(&mut data, msg).await;
-                    },
-                    None => {
-                        break;
-                    },
-                }
-            },
-
-            _ = tokio::time::sleep(Duration::from_secs(1)), if data.scan_activated_at.is_some() => {}
+fn stop_scan_if_needed(data: &mut Data) {
+    if let Some(scan_requested_at) = data.scan_activated_at {
+        if Instant::now().duration_since(scan_requested_at) > Duration::from_secs(10) {
+            stop_scan(data);
         }
-
-        stop_scan_if_needed(&mut data).await;
     }
+}
+
+fn get_available_devices(data: &mut Data) -> Result<Vec<Port>, BleApiError> {
+    let names = data.ble_api.device_names()?;
+    let ports = names
+        .into_iter()
+        .map(|device_name| Port {
+            jade_id: get_jade_id(&device_name),
+            port_name: device_name,
+            serial_number: String::new(),
+        })
+        .collect();
+    Ok(ports)
+}
+
+fn start_scan_and_get_available_devices(data: &mut Data) -> Result<Vec<Port>, BleApiError> {
+    start_scan(data)?;
+
+    let ports = get_available_devices(data)?;
+
+    Ok(ports)
+}
+
+fn open(data: &mut Data, jade_id: &JadeId) -> Result<(), BleApiError> {
+    // Make sure device is known
+    let started = Instant::now();
+    while Instant::now().duration_since(started) < Duration::from_secs(30) {
+        let ports = get_available_devices(data)?;
+        if ports.iter().any(|port| port.jade_id == *jade_id) {
+            break;
+        }
+        // No bonded or scanned device found, start scan and wait for device
+        start_scan(data)?;
+        std::thread::sleep(Duration::from_millis(100));
+    }
+
+    // It's recommended to stop BLE scan before initiating a new connection
+    stop_scan(data);
+
+    let device_name = get_device_name(data, jade_id);
+
+    data.ble_api.open(device_name)?;
 
     Ok(())
 }
 
-async fn run(msg_receiver: tokio::sync::mpsc::UnboundedReceiver<Msg>) {
-    let res = try_run(msg_receiver).await;
+fn write(data: &mut Data, jade_id: &JadeId, buf: Vec<u8>) -> Result<(), BleApiError> {
+    let device_name = get_device_name(data, jade_id);
+    for chunk in buf.chunks(MAX_WRITE_SIZE) {
+        data.ble_api.write(device_name.clone(), chunk.to_vec())?;
+    }
+    Ok(())
+}
+
+fn read(data: &mut Data, jade_id: &JadeId) -> Result<Vec<u8>, BleApiError> {
+    let device_name = get_device_name(data, jade_id);
+    data.ble_api.read(device_name)
+}
+
+fn close(data: &mut Data, jade_id: &JadeId) {
+    let device_name = get_device_name(data, jade_id);
+    let res = data.ble_api.close(device_name);
     if let Err(err) = res {
-        log::error!("BLE worker failed: {err}");
+        log::error!("close failed: {err}");
     }
 }
 
-#[cfg(target_os = "android")]
-static MSG_SENDER: std::sync::Mutex<Option<tokio::sync::mpsc::UnboundedSender<Msg>>> =
-    std::sync::Mutex::new(None);
+fn get_device_name(_data: &Data, jade_id: &JadeId) -> String {
+    jade_id.trim_start_matches("ble:").to_owned()
+}
 
-#[cfg(target_os = "android")]
-#[no_mangle]
-pub extern "system" fn Java_io_sideswap_MainActivity_bleThread<'local>(
-    env: jni::JNIEnv<'local>,
-    _class: jni::objects::JClass<'local>,
-) {
-    jni_utils::init(&env).unwrap();
-    btleplug::platform::init(&env).unwrap();
+fn process_msg(data: &mut Data, msg: Msg) {
+    match msg {
+        Msg::Ports(res_sender) => {
+            let res = start_scan_and_get_available_devices(data).map_err(Into::into);
+            res_sender.send(res).expect("must be open");
+        }
+        Msg::Open(jade_id, res_sender) => {
+            let res = open(data, &jade_id).map_err(Into::into);
+            res_sender.send(res).expect("must be open");
+        }
+        Msg::Write(jade_id, buf, res_sender) => {
+            let res = write(data, &jade_id, buf).map_err(Into::into);
+            res_sender.send(res).expect("must be open");
+        }
+        Msg::Read(jade_id, res_sender) => {
+            let res = read(data, &jade_id).map_err(Into::into);
+            res_sender.send(res).expect("must be open");
+        }
+        Msg::Close(jade_id) => {
+            close(data, &jade_id);
+        }
+    }
+}
 
-    let (msg_sender, msg_receiver) = tokio::sync::mpsc::unbounded_channel();
-    *MSG_SENDER.lock().unwrap() = Some(msg_sender);
+async fn run(mut msg_receiver: UnboundedReceiver<Msg>, mut data: Data) {
+    loop {
+        tokio::select! {
+            msg = msg_receiver.recv() => {
+                let msg = msg.expect("channel is always open");
+                process_msg(&mut data, msg);
+            }
 
-    let rt = tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .expect("should not fail");
-    rt.block_on(run(msg_receiver));
+            _ = tokio::time::sleep(Duration::from_secs(1)), if data.scan_activated_at.is_some() => {}
+        }
+
+        stop_scan_if_needed(&mut data);
+    }
+}
+
+#[derive(Debug, thiserror::Error, uniffi::Error)]
+pub enum BleApiError {
+    #[error("{msg}")]
+    General { msg: String },
+}
+
+impl From<uniffi::UnexpectedUniFFICallbackError> for BleApiError {
+    fn from(value: uniffi::UnexpectedUniFFICallbackError) -> Self {
+        BleApiError::General {
+            msg: value.to_string(),
+        }
+    }
+}
+
+#[uniffi::export(with_foreign)]
+pub trait BleApi: Send + Sync {
+    fn start_scan(&self) -> Result<(), BleApiError>;
+
+    fn stop_scan(&self) -> Result<(), BleApiError>;
+
+    fn device_names(&self) -> Result<Vec<String>, BleApiError>;
+
+    fn open(&self, device_name: String) -> Result<(), BleApiError>;
+
+    fn write(&self, device_name: String, buf: Vec<u8>) -> Result<(), BleApiError>;
+
+    fn read(&self, device_name: String) -> Result<Vec<u8>, BleApiError>;
+
+    fn close(&self, device_name: String) -> Result<(), BleApiError>;
+}
+
+#[derive(uniffi::Object)]
+pub struct BleClient {
+    ble_api: Arc<dyn BleApi>,
+}
+
+#[uniffi::export]
+impl BleClient {
+    #[uniffi::constructor]
+    pub fn new(ble_api: Arc<dyn BleApi>) -> Self {
+        let (msg_sender, msg_receiver) = tokio::sync::mpsc::unbounded_channel();
+        *MSG_SENDER.lock().expect("must not fail") = Some(msg_sender);
+        *MSG_RECEIVER.lock().expect("must not fail") = Some(msg_receiver);
+
+        Self { ble_api }
+    }
+
+    pub fn run(&self) {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("should not fail");
+
+        let data = Data {
+            ble_api: Arc::clone(&self.ble_api),
+            scan_activated_at: None,
+        };
+
+        let msg_receiver = MSG_RECEIVER
+            .lock()
+            .expect("must not fail")
+            .take()
+            .expect("MSG_RECEIVER must be already initialized");
+
+        rt.block_on(run(msg_receiver, data));
+    }
+}
+
+mod uniffi_log {
+    // Use a separate module as a workaround for https://github.com/mozilla/uniffi-rs/issues/1702
+    #[uniffi::export]
+    pub fn log(msg: String) {
+        info!("{}", msg);
+    }
 }

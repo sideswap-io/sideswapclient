@@ -48,7 +48,7 @@ class SwapMarket extends HookConsumerWidget {
       children: [
         SwapMarketTopPanel(),
         SwapMarketBidOfferHeader(),
-        Expanded(child: SwapMarketBidOfferList()),
+        Flexible(child: SwapMarketBidOfferList()),
       ],
     );
   }
@@ -156,7 +156,7 @@ class SwapMarketBidOfferHeader extends StatelessWidget {
       padding: const EdgeInsets.only(top: 12, bottom: 15, left: 14, right: 14),
       child: Row(
         children: [
-          Expanded(
+          Flexible(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -172,7 +172,7 @@ class SwapMarketBidOfferHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 11),
-          Expanded(
+          Flexible(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

@@ -69,3 +69,15 @@ fn test_gait_path() {
     let xpub = derive_service_xpub(Network::LiquidTestnet, "7f112a1838c8af4d4fea8a2c840ae7faa52b91a8650e040bd7d76c434d3b36243b3b34b1c4d9c0eadd406d1f32834e84a9c7d90adc811f21393e2deb8c587ed8", 1).unwrap();
     assert_eq!(xpub.to_string(), "tpubECMbgHMZm4QyjyuVHUU8x8Jdg68N8oaewDZsrtxF9A6SBuMEK4AM6KHosDvnAW6DCd4N8PqGk2mkJ2yEKNryUFGESXguefdkMi4WEFgUpmb");
 }
+
+#[test]
+fn test_derive_gait_path() {
+    let mnemonic = bip39::Mnemonic::from_str(
+        "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about",
+    )
+    .unwrap();
+    let seed = mnemonic.to_seed("");
+    let master_key = Xpriv::new_master(bitcoin::Network::Bitcoin, &seed).unwrap();
+    let ga_path = derive_ga_path(&master_key);
+    assert_eq!(hex::encode(ga_path), "7f112a1838c8af4d4fea8a2c840ae7faa52b91a8650e040bd7d76c434d3b36243b3b34b1c4d9c0eadd406d1f32834e84a9c7d90adc811f21393e2deb8c587ed8");
+}

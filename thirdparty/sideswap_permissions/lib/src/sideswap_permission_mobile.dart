@@ -5,21 +5,41 @@ class SideswapPermissionMobilePlugin
     extends SideswapPermissionPlatformInterface {
   @override
   Future<bool> hasContactPermission() async {
-    return await PermissionHandler.hasContactPermission();
+    return PermissionHandler.hasContactPermission();
   }
 
   @override
   Future<bool> requestContactPermission() async {
-    return await PermissionHandler.requestCameraPermission();
+    return PermissionHandler.requestCameraPermission();
   }
 
   @override
   Future<bool> hasCameraPermission() async {
-    return await PermissionHandler.hasCameraPermission();
+    return PermissionHandler.hasCameraPermission();
   }
 
   @override
   Future<bool> requestCameraPermission() async {
-    return await PermissionHandler.requestCameraPermission();
+    return PermissionHandler.requestCameraPermission();
+  }
+
+  @override
+  Future<bool> hasBluetoothScanPermission() async {
+    return PermissionHandler.hasBluetoothScanPermission();
+  }
+
+  @override
+  Future<bool> requestBluetoothScanPermission() async {
+    return PermissionHandler.requestBluetoothScanPermission();
+  }
+
+  @override
+  Future<bool> hasBluetoothConnectPermission() async {
+    return PermissionHandler.hasBluetoothConnectPermission();
+  }
+
+  @override
+  Future<bool> requestBluetoothConnectPermission() async {
+    return PermissionHandler.requestBluetoothConnectPermission();
   }
 }

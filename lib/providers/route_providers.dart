@@ -58,6 +58,10 @@ import 'package:sideswap/screens/onboarding/import_contacts.dart';
 import 'package:sideswap/screens/onboarding/import_contacts_success.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_error.dart';
 import 'package:sideswap/screens/onboarding/import_wallet_success.dart';
+import 'package:sideswap/screens/onboarding/jade/jade_bluetooth_permission.dart';
+import 'package:sideswap/screens/onboarding/jade/jade_connecting.dart';
+import 'package:sideswap/screens/onboarding/jade/jade_devices.dart';
+import 'package:sideswap/screens/onboarding/jade/jade_login.dart';
 import 'package:sideswap/screens/onboarding/license.dart';
 import 'package:sideswap/screens/onboarding/pegx_register.dart';
 import 'package:sideswap/screens/onboarding/pegx_submit_amp.dart';
@@ -386,6 +390,18 @@ class MobileRoutePage {
       Status.stokrNeedRegister => [
           const MyPopupPage<Widget>(child: StokrNeedRegisterPopup()),
         ],
+      Status.jadeBluetoothPermission => [
+          const MaterialPage<Widget>(child: JadeBluetoothPermission()),
+        ],
+      Status.jadeDevices => [
+          const MaterialPage<Widget>(child: JadeDevices()),
+        ],
+      Status.jadeConnecting => [
+          const MaterialPage<Widget>(child: JadeConnecting()),
+        ],
+      Status.jadeLogin => [
+          const MaterialPage<Widget>(child: JadeLogin()),
+        ],
     };
   }
 }
@@ -417,185 +433,108 @@ class DesktopRoutePage {
     final context = ref.read(navigatorKeyProvider).currentContext!;
     final navigator = ref.read(navigatorKeyProvider).currentState!;
 
-    var routeName = RouteName.errorRoute;
-    switch (status) {
-      case Status.walletLoading:
-        routeName = RouteName.first;
-        break;
-      case Status.noWallet:
-      case Status.selectEnv:
-        routeName = RouteName.noWallet;
-        break;
-      case Status.reviewLicense:
-        routeName = RouteName.reviewLicense;
-        break;
-      case Status.importWallet:
-        routeName = RouteName.importWallet;
-        break;
-      case Status.importWalletError:
-        routeName = RouteName.importWalletError;
-        break;
-      case Status.importWalletSuccess:
-        // TODO: temporary, to handle login wallet after importing
-        ref.read(walletProvider).setImportWalletBiometricPrompt();
-        routeName = RouteName.registered;
-        break;
-      case Status.newWalletPinWelcome:
-        routeName = RouteName.newWalletPinWelcome;
-        break;
-      case Status.pinWelcome:
-      case Status.pinSetup:
-        routeName = RouteName.pinSetup;
+    (switch (status) {
+      Status.walletLoading => await navigator.pushNamedAndRemoveUntil(
+          RouteName.first, (route) => false),
+      Status.noWallet || Status.selectEnv => await navigator
+          .pushNamedAndRemoveUntil(RouteName.noWallet, (route) => false),
+      Status.reviewLicense => await navigator.pushNamedAndRemoveUntil(
+          RouteName.reviewLicense, (route) => false),
+      Status.importWallet => await navigator.pushNamedAndRemoveUntil(
+          RouteName.importWallet, (route) => false),
+      Status.importWalletError => await navigator.pushNamedAndRemoveUntil(
+          RouteName.importWalletError, (route) => false),
+      Status.importWalletSuccess => () async {
+          ref.read(walletProvider).setImportWalletBiometricPrompt();
+          await navigator.pushNamedAndRemoveUntil(
+              RouteName.registered, (route) => false);
+        }(),
+      Status.newWalletPinWelcome => await navigator.pushNamedAndRemoveUntil(
+          RouteName.newWalletPinWelcome, (route) => false),
+      Status.pinWelcome || Status.pinSetup => () async {
+          if (firstLaunchState == const FirstLaunchStateEmpty()) {
+            await navigator.pushNamedAndRemoveUntil(
+                RouteName.pinSetup, (route) => route.isFirst);
+            return;
+          }
+        }(),
+      Status.pinSuccess => () async {
+          if (firstLaunchState != const FirstLaunchStateEmpty()) {
+            await ref.read(walletProvider).walletBiometricSkip();
+            final firstLaunchState = ref.read(firstLaunchStateNotifierProvider);
 
-        if (firstLaunchState == const FirstLaunchStateEmpty()) {
-          navigator.pushNamedAndRemoveUntil(
-              routeName, (route) => route.isFirst);
-          return;
-        }
-        break;
-      case Status.pinSuccess:
-        if (firstLaunchState != const FirstLaunchStateEmpty()) {
-          await ref.read(walletProvider).walletBiometricSkip();
-          final firstLaunchState = ref.read(firstLaunchStateNotifierProvider);
+            return switch (firstLaunchState) {
+              FirstLaunchStateCreateWallet() =>
+                ref.read(walletProvider).newWalletBackupPrompt(),
+              _ => ref.read(walletProvider).setImportWalletBiometricPrompt(),
+            };
+          }
 
-          return switch (firstLaunchState) {
-            FirstLaunchStateCreateWallet() =>
-              ref.read(walletProvider).newWalletBackupPrompt(),
-            _ => ref.read(walletProvider).setImportWalletBiometricPrompt(),
-          };
-        }
-
-        routeName = RouteName.pinSuccess;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.importAvatar:
-      case Status.importAvatarSuccess:
-      case Status.associatePhoneWelcome:
-      case Status.confirmPhone:
-      case Status.confirmPhoneSuccess:
-      case Status.importContacts:
-      case Status.importContactsSuccess:
-        await ref.read(walletProvider).newWalletBiometricPrompt();
-        return;
-      case Status.newWalletBackupPrompt:
-        routeName = RouteName.newWalletBackupPrompt;
-        break;
-      case Status.newWalletBackupView:
-        routeName = RouteName.newWalletBackupView;
-        break;
-      case Status.newWalletBackupCheck:
-        routeName = RouteName.newWalletBackupCheck;
-        break;
-      case Status.newWalletBackupCheckFailed:
-        routeName = RouteName.newWalletBackupCheckFailed;
-        break;
-      case Status.newWalletBackupCheckSucceed:
-        routeName = RouteName.newWalletBackupCheckSucceed;
-        break;
-      case Status.registered:
-        routeName = RouteName.registered;
-
-        if (Navigator.canPop(context)) {
-          navigator.popUntil((route) => route.isFirst);
-          navigator.pushReplacementNamed(routeName);
-        } else {
-          navigator.pushReplacementNamed(routeName);
-        }
-
-        return;
-      case Status.settingsPage:
-        routeName = RouteName.settingsPage;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.settingsBackup:
-        routeName = RouteName.settingsBackup;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.settingsAboutUs:
-        routeName = RouteName.settingsAboutUs;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.settingsNetwork:
-        routeName = RouteName.settingsNetwork;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.settingsLogs:
-        routeName = RouteName.settingsLogs;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.settingsCurrency:
-        routeName = RouteName.settingsFiat;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-
-      case Status.lockedWalet:
-      case Status.newWalletBiometricPrompt:
-      case Status.importWalletBiometricPrompt:
-      case Status.assetsSelect:
-      case Status.assetDetails:
-      case Status.txDetails:
-      case Status.txEditMemo:
-      case Status.assetReceive:
-      case Status.assetReceiveFromWalletMain:
-      case Status.swapWaitPegTx:
-      case Status.swapTxDetails:
-      case Status.settingsSecurity:
-      case Status.settingsUserDetails:
-      case Status.paymentPage:
-      case Status.paymentAmountPage:
-      case Status.paymentSend:
-      case Status.orderPopup:
-      case Status.orderSuccess:
-      case Status.orderResponseSuccess:
-      case Status.swapPrompt:
-      case Status.createOrderEntry:
-      case Status.createOrder:
-      case Status.createOrderSuccess:
-      case Status.orderRequestView:
-      case Status.generateWalletAddress:
-      case Status.walletAddressDetail:
-      case Status.transactions:
-      case Status.orderFilers:
-        // Not used on desktop
-        break;
-      case Status.ampRegister:
-        routeName = RouteName.ampRegister;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.stokrLogin:
-        routeName = RouteName.stokrLogin;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.pegxRegister:
-        routeName = RouteName.pegxRegister;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.pegxSubmitAmp:
-        routeName = RouteName.pegxSubmitAmp;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.pegxSubmitFinish:
-        routeName = RouteName.pegxSubmitFinish;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.jadeImport:
-        routeName = RouteName.jadeImport;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.stokrRestrictionsInfo:
-        routeName = RouteName.stokrRestrictionsInfo;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.stokrNeedRegister:
-        routeName = RouteName.stokrNeedRegister;
-        navigator.pushNamedAndRemoveUntil(routeName, (route) => route.isFirst);
-        return;
-      case Status.networkAccessOnboarding:
-        routeName = RouteName.networkAccessOnboarding;
-        break;
-    }
-
-    await navigator.pushNamedAndRemoveUntil(routeName, (route) => false);
+          await navigator.pushNamedAndRemoveUntil(
+              RouteName.pinSuccess, (route) => route.isFirst);
+        }(),
+      Status.importAvatar ||
+      Status.importAvatarSuccess ||
+      Status.associatePhoneWelcome ||
+      Status.confirmPhone ||
+      Status.confirmPhoneSuccess ||
+      Status.importContacts ||
+      Status.importContactsSuccess =>
+        await ref.read(walletProvider).newWalletBiometricPrompt(),
+      Status.newWalletBackupPrompt => await navigator.pushNamedAndRemoveUntil(
+          RouteName.newWalletBackupPrompt, (route) => false),
+      Status.newWalletBackupView => await navigator.pushNamedAndRemoveUntil(
+          RouteName.newWalletBackupView, (route) => false),
+      Status.newWalletBackupCheck => await navigator.pushNamedAndRemoveUntil(
+          RouteName.newWalletBackupCheck, (route) => false),
+      Status.newWalletBackupCheckFailed =>
+        await navigator.pushNamedAndRemoveUntil(
+            RouteName.newWalletBackupCheckFailed, (route) => false),
+      Status.newWalletBackupCheckSucceed =>
+        await navigator.pushNamedAndRemoveUntil(
+            RouteName.newWalletBackupCheckSucceed, (route) => false),
+      Status.registered => () async {
+          if (Navigator.canPop(context)) {
+            navigator.popUntil((route) => route.isFirst);
+            await navigator.pushReplacementNamed(RouteName.registered);
+          } else {
+            await navigator.pushReplacementNamed(RouteName.registered);
+          }
+        }(),
+      Status.settingsPage => await navigator.pushNamedAndRemoveUntil(
+          RouteName.settingsPage, (route) => route.isFirst),
+      Status.settingsBackup => await navigator.pushNamedAndRemoveUntil(
+          RouteName.settingsBackup, (route) => route.isFirst),
+      Status.settingsAboutUs => await navigator.pushNamedAndRemoveUntil(
+          RouteName.settingsAboutUs, (route) => route.isFirst),
+      Status.settingsNetwork => await navigator.pushNamedAndRemoveUntil(
+          RouteName.settingsNetwork, (route) => route.isFirst),
+      Status.settingsLogs => await navigator.pushNamedAndRemoveUntil(
+          RouteName.settingsLogs, (route) => route.isFirst),
+      Status.settingsCurrency => await navigator.pushNamedAndRemoveUntil(
+          RouteName.settingsFiat, (route) => route.isFirst),
+      Status.ampRegister => await navigator.pushNamedAndRemoveUntil(
+          RouteName.ampRegister, (route) => route.isFirst),
+      Status.stokrLogin => await navigator.pushNamedAndRemoveUntil(
+          RouteName.stokrLogin, (route) => route.isFirst),
+      Status.pegxRegister => await navigator.pushNamedAndRemoveUntil(
+          RouteName.pegxRegister, (route) => route.isFirst),
+      Status.pegxSubmitAmp => await navigator.pushNamedAndRemoveUntil(
+          RouteName.pegxSubmitAmp, (route) => route.isFirst),
+      Status.pegxSubmitFinish => await navigator.pushNamedAndRemoveUntil(
+          RouteName.pegxSubmitFinish, (route) => route.isFirst),
+      Status.jadeImport => await navigator.pushNamedAndRemoveUntil(
+          RouteName.jadeImport, (route) => route.isFirst),
+      Status.stokrRestrictionsInfo => await navigator.pushNamedAndRemoveUntil(
+          RouteName.stokrRestrictionsInfo, (route) => route.isFirst),
+      Status.stokrNeedRegister => await navigator.pushNamedAndRemoveUntil(
+          RouteName.stokrNeedRegister, (route) => route.isFirst),
+      Status.networkAccessOnboarding => await navigator.pushNamedAndRemoveUntil(
+          RouteName.networkAccessOnboarding, (route) => false),
+      _ => () {
+          logger.w('Unhandled $status');
+        }(),
+    });
   }
 
   Route<Widget> generateRoute(RouteSettings settings) {

@@ -1,13 +1,38 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/screens/flavor_config.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'jade_provider.g.dart';
+part 'jade_provider.freezed.dart';
+
+@freezed
+sealed class JadeBluetoothPermissionState with _$JadeBluetoothPermissionState {
+  const factory JadeBluetoothPermissionState.empty() =
+      JadeBluetoothPermissionStateEmpty;
+  const factory JadeBluetoothPermissionState.request() =
+      JadeBluetoothPermissionStateRequest;
+}
+
+@riverpod
+class JadeBluetoothPermissionStateNotifier
+    extends _$JadeBluetoothPermissionStateNotifier {
+  @override
+  JadeBluetoothPermissionState build() {
+    return const JadeBluetoothPermissionState.empty();
+  }
+
+  void setPermissionState(JadeBluetoothPermissionState value) {
+    state = value;
+  }
+}
 
 @riverpod
 void jadeRescan(JadeRescanRef ref) {
@@ -30,7 +55,24 @@ class JadeDeviceNotifier extends _$JadeDeviceNotifier {
   }
 
   void setState(JadeDevicesState jadeDevicesState) {
-    state = jadeDevicesState;
+    if (FlavorConfig.isDesktop) {
+      state = jadeDevicesState;
+      return;
+    }
+
+    state = switch (jadeDevicesState) {
+      JadeDevicesStateAvailable(devices: List<From_JadePorts_Port> devices) =>
+        () {
+          logger.d(devices);
+          for (final device in devices) {
+            if (device.jadeId.toLowerCase().contains('jade')) {
+              return JadeDevicesState.available(devices: [device]);
+            }
+          }
+          return const JadeDevicesState.unavailable();
+        }(),
+      _ => jadeDevicesState,
+    };
   }
 }
 
@@ -96,5 +138,17 @@ class JadeOrderIdTimerNotifier extends _$JadeOrderIdTimerNotifier {
 
   void setOrderId(String orderId) {
     state = orderId;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class JadeSelectedDevice extends _$JadeSelectedDevice {
+  @override
+  From_JadePorts_Port? build() {
+    return null;
+  }
+
+  void setJadePortsPort(From_JadePorts_Port device) {
+    state = device;
   }
 }

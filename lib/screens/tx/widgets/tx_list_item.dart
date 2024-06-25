@@ -35,15 +35,15 @@ class TxListItem extends HookConsumerWidget {
             : Container(),
         TextButton(
           style: ButtonStyle(
-            padding: const MaterialStatePropertyAll<EdgeInsetsGeometry>(
+            padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
                 EdgeInsets.zero),
-            shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
+            shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
             backgroundColor:
-                const MaterialStatePropertyAll(SideSwapColors.blueSapphire),
+                const WidgetStatePropertyAll(SideSwapColors.blueSapphire),
           ),
           onPressed: () {
             ref.read(walletProvider).showTxDetails(txItem.item);

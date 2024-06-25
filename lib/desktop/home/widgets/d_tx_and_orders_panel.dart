@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/desktop/home/widgets/d_background_panel.dart';
@@ -17,9 +16,6 @@ class DTxAndOrdersPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // TODO (malcolmpl): check in flutter higher than 3.19.6 if it's still crashing when tabs are changed
-    // https://github.com/flutter/flutter/issues/144087
-
     final appReleasesStateAsync = ref.watch(appReleasesStateNotifierProvider);
     final showNewReleaseAsync = ref.watch(showNewReleaseFutureProvider);
     var tabsLength = onlyWorkingOrders ? 1 : 2;
@@ -61,15 +57,18 @@ class DTxAndOrdersPanel extends ConsumerWidget {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 8, right: 16),
+                padding: const EdgeInsets.only(left: 16, right: 16),
                 child: TabBar(
                   tabAlignment: TabAlignment.start,
                   isScrollable: true,
                   indicatorColor: SideSwapColors.brightTurquoise,
                   indicatorSize: TabBarIndicatorSize.label,
-                  labelPadding: const EdgeInsets.all(8),
+                  labelPadding: const EdgeInsets.only(left: 8, bottom: 8),
                   unselectedLabelColor: SideSwapColors.cornFlower,
                   labelColor: Colors.white,
+                  dividerHeight: 1,
+                  dividerColor: SideSwapColors.jellyBean,
+                  indicatorPadding: EdgeInsets.zero,
                   labelStyle: Theme.of(context)
                       .textTheme
                       .bodyMedium
@@ -95,13 +94,8 @@ class DTxAndOrdersPanel extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Divider(
-                color: SideSwapColors.jellyBean,
-                height: 1,
-                thickness: 0,
-              ),
               Padding(
-                padding: const EdgeInsets.only(left: 16),
+                padding: const EdgeInsets.only(left: 16, right: 16),
                 child: SizedBox(
                   height: 186,
                   child: TabBarView(

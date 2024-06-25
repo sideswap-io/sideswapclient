@@ -1,3 +1,5 @@
+use elements::pset::raw::{ProprietaryKey, ProprietaryType};
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Output {0} value must be set")]
@@ -8,6 +10,105 @@ pub enum Error {
     NoBlindingOutputFound,
     #[error("Blinding error: {0}")]
     BlindingError(#[from] elements::secp256k1_zkp::Error),
+    #[error("Invalid input: {0}")]
+    InvalidInput(&'static str),
+}
+
+const PSET_IN_EXPLICIT_VALUE: ProprietaryType = 0x11; // 8 bytes
+const PSET_IN_VALUE_PROOF: ProprietaryType = 0x12; // 73 bytes
+const PSET_IN_EXPLICIT_ASSET: ProprietaryType = 0x13; // 2 bytes
+const PSET_IN_ASSET_PROOF: ProprietaryType = 0x14; // 67 bytes
+
+pub fn remove_explicit_values(pset: &mut elements::pset::PartiallySignedTransaction) {
+    for input in pset.inputs_mut() {
+        for subtype in [
+            PSET_IN_EXPLICIT_VALUE,
+            PSET_IN_EXPLICIT_ASSET,
+            PSET_IN_VALUE_PROOF,
+            PSET_IN_ASSET_PROOF,
+        ] {
+            input
+                .proprietary
+                .remove(&ProprietaryKey::from_pset_pair(subtype, Vec::new()));
+        }
+    }
+}
+
+fn add_input_explicit_proofs(
+    input: &mut elements::pset::Input,
+    secret: &elements::TxOutSecrets,
+) -> Result<(), Error> {
+    let mut rng = rand::thread_rng();
+    let asset_gen_unblinded = elements::secp256k1_zkp::Generator::new_unblinded(
+        elements::secp256k1_zkp::global::SECP256K1,
+        secret.asset.into_tag(),
+    );
+    let asset_gen_blinded = input
+        .witness_utxo
+        .as_ref()
+        .ok_or(Error::InvalidInput("no witness_utxo"))?
+        .asset
+        .into_asset_gen(elements::secp256k1_zkp::global::SECP256K1)
+        .ok_or(Error::InvalidInput("no asset_gen"))?;
+
+    let blind_asset_proof = elements::secp256k1_zkp::SurjectionProof::new(
+        elements::secp256k1_zkp::global::SECP256K1,
+        &mut rng,
+        secret.asset.into_tag(),
+        secret.asset_bf.into_inner(),
+        &[(
+            asset_gen_unblinded,
+            secret.asset.into_tag(),
+            elements::secp256k1_zkp::ZERO_TWEAK,
+        )],
+    )?;
+
+    let blind_value_proof = elements::secp256k1_zkp::RangeProof::new(
+        elements::secp256k1_zkp::global::SECP256K1,
+        secret.value,
+        input
+            .witness_utxo
+            .as_ref()
+            .ok_or(Error::InvalidInput("no witness_utxo"))?
+            .value
+            .commitment()
+            .ok_or(Error::InvalidInput("invalid commitment"))?,
+        secret.value,
+        secret.value_bf.into_inner(),
+        &[],
+        &[],
+        elements::secp256k1_zkp::SecretKey::new(&mut rng),
+        -1,
+        0,
+        asset_gen_blinded,
+    )?;
+
+    input.proprietary.insert(
+        ProprietaryKey::from_pset_pair(PSET_IN_EXPLICIT_VALUE, Vec::new()),
+        elements::encode::serialize(&secret.value),
+    );
+
+    input.proprietary.insert(
+        ProprietaryKey::from_pset_pair(PSET_IN_EXPLICIT_ASSET, Vec::new()),
+        elements::encode::serialize(&secret.asset),
+    );
+
+    let mut blind_value_proof = elements::encode::serialize(&blind_value_proof);
+    blind_value_proof.remove(0);
+    let mut blind_asset_proof = elements::encode::serialize(&blind_asset_proof);
+    blind_asset_proof.remove(0);
+
+    input.proprietary.insert(
+        ProprietaryKey::from_pset_pair(PSET_IN_VALUE_PROOF, Vec::new()),
+        blind_value_proof,
+    );
+
+    input.proprietary.insert(
+        ProprietaryKey::from_pset_pair(PSET_IN_ASSET_PROOF, Vec::new()),
+        blind_asset_proof,
+    );
+
+    Ok(())
 }
 
 /// Blind PSET and return blinding nonces (they are required by the Green backend for AMP accounts)
@@ -18,6 +119,30 @@ pub fn blind_pset(
     let secp = elements::secp256k1_zkp::global::SECP256K1;
 
     let rng = &mut rand::thread_rng();
+
+    for (input, secret) in pset.inputs_mut().iter_mut().zip(inp_txout_sec.iter()) {
+        add_input_explicit_proofs(input, secret)?;
+    }
+
+    // ensure!(pset.inputs().len() == input_secrets.len());
+
+    // let mut inputs = pset
+    //     .inputs()
+    //     .iter()
+    //     .cloned()
+    //     .zip(input_secrets)
+    //     .collect::<Vec<_>>();
+    // let outputs = pset.outputs_mut();
+
+    // inputs.shuffle(&mut rng);
+    // outputs.shuffle(&mut rng);
+
+    // let fee_output = outputs
+    //     .iter()
+    //     .position(|output| output.blinding_key.is_none())
+    //     .ok_or_else(|| anyhow!("can't find network fee output"))?;
+    // let output_count = outputs.len();
+    // outputs.swap(fee_output, output_count - 1);
 
     let mut last_blinded_index = None;
 

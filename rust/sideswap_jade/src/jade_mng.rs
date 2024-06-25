@@ -6,10 +6,29 @@ use std::{
 use base64::Engine;
 use serde::{Deserialize, Serialize};
 
+#[derive(Copy, Clone)]
+pub enum TxType {
+    Normal,
+    Swap,
+    OfflineSwapOutput,
+    OfflineSwap,
+}
+
+pub enum JadeStatus {
+    Connecting,
+    Idle,
+    ReadStatus,
+    AuthUser,
+    MasterBlindingKey,
+    SignTx(TxType),
+}
+
+pub type JadeStatusCallback = std::sync::Arc<Box<dyn Fn(JadeStatus)>>;
+
 use crate::{
     http_request::handle_http_request,
     models,
-    transports::{AllTransports, Connection, Transport},
+    transports::{self, Connection, Transport},
     JadeId,
 };
 
@@ -57,21 +76,27 @@ pub struct ManagedJade {
     jade_id: JadeId,
     data: Arc<Mutex<ManagedJadeData>>,
     agent: ureq::Agent,
-    transports: Arc<Box<dyn Transport>>,
+    transport: Arc<dyn Transport>,
+    status_callback: JadeStatusCallback,
 }
 
 pub struct JadeMng {
-    transports: Arc<Box<dyn Transport>>,
+    transports: Vec<Arc<dyn Transport>>,
+    status_callback: JadeStatusCallback,
 }
 
 impl ManagedJade {
+    pub fn set_status(&self, status: JadeStatus) {
+        (self.status_callback)(status);
+    }
+
     fn try_make_request<Request: serde::Serialize, Response: serde::de::DeserializeOwned>(
         &self,
         name: &str,
         timeout: Duration,
         req: Request,
     ) -> Result<Response, anyhow::Error> {
-        let mut data = self.data.lock().unwrap();
+        let mut data = self.data.lock().expect("must not fail");
 
         data.last_request_id += 1;
         let request_id = data.last_request_id;
@@ -85,10 +110,17 @@ impl ManagedJade {
         }
 
         if data.connection.is_none() {
-            let jade = self.transports.open(&self.jade_id)?;
+            let connecting_status = match self.transport.transport_type() {
+                transports::TransportType::Serial => JadeStatus::Idle,
+                transports::TransportType::Ble => JadeStatus::Connecting,
+            };
+            self.set_status(connecting_status);
+            let open_res = self.transport.open(&self.jade_id);
+            self.set_status(JadeStatus::Idle);
+            let jade = open_res?;
             data.connection = Some(jade);
         }
-        let jade = data.connection.as_mut().unwrap();
+        let jade = data.connection.as_mut().expect("connection is open now");
 
         loop {
             let resp = jade.read()?;
@@ -114,6 +146,7 @@ impl ManagedJade {
 
         let now = std::time::Instant::now();
         let reader = crate::reader::BufReader::default();
+        let mut delay = 0;
         loop {
             let data = jade.read()?;
 
@@ -121,8 +154,11 @@ impl ManagedJade {
                 if std::time::Instant::now().duration_since(now) > timeout {
                     bail!("timeout");
                 }
+                std::thread::sleep(Duration::from_millis(delay));
+                delay = std::cmp::min(delay + 1, 100);
                 continue;
             }
+            delay = 0;
 
             reader.append_data(&data);
             reader.reset_pos();
@@ -359,18 +395,30 @@ impl ManagedJade {
 // }
 
 impl JadeMng {
-    pub fn new() -> Self {
+    pub fn new(status_callback: JadeStatusCallback) -> Self {
+        let mut transports = Vec::<Arc<dyn Transport>>::new();
+
+        #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
+        transports.push(Arc::new(transports::serial::SerialTransport::new()));
+
+        #[cfg(any(target_os = "android", target_os = "ios"))]
+        transports.push(Arc::new(transports::ble::BleTransport::new()));
+
         JadeMng {
-            transports: Arc::new(Box::new(AllTransports::new())),
+            transports,
+            status_callback,
         }
     }
 
     pub fn ports(&mut self) -> Result<Vec<ManagedPort>, anyhow::Error> {
         // On macOS Jade reported as two devices.
         // Use BTreeMap to include every Jade just once.
-        let ports = self
-            .transports
-            .ports()?
+        let mut ports = Vec::new();
+        for transport in self.transports.iter() {
+            ports.append(&mut transport.ports()?);
+        }
+
+        let ports = ports
             .into_iter()
             .map(|port| (port.jade_id.clone(), port))
             .collect::<std::collections::BTreeMap<_, _>>();
@@ -384,21 +432,29 @@ impl JadeMng {
             .collect())
     }
 
-    pub fn open(&mut self, jade_id: &JadeId) -> ManagedJade {
+    pub fn open(&mut self, jade_id: &JadeId) -> Result<ManagedJade, anyhow::Error> {
         let seconds = std::time::SystemTime::now()
             .duration_since(std::time::SystemTime::UNIX_EPOCH)
             .unwrap()
             .as_secs();
+
         let jade_data = ManagedJadeData {
             connection: None,
             last_request_id: seconds,
         };
 
-        ManagedJade {
+        let transport = self
+            .transports
+            .iter()
+            .find(|transport| transport.belongs(jade_id))
+            .ok_or_else(|| anyhow!("can't find transport for {jade_id}"))?;
+
+        Ok(ManagedJade {
             jade_id: jade_id.clone(),
             data: Arc::new(Mutex::new(jade_data)),
             agent: ureq::Agent::new(), // FIXME: Use proxy
-            transports: Arc::clone(&self.transports),
-        }
+            transport: Arc::clone(&transport),
+            status_callback: Arc::clone(&self.status_callback),
+        })
     }
 }

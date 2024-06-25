@@ -5,9 +5,7 @@ use crate::gdk_json::AddressInfo;
 use crate::gdk_json::UtxoStrategy;
 use crate::gdk_ses;
 use crate::gdk_ses::ElectrumServer;
-use crate::gdk_ses::JadeStatusCallback;
 use crate::gdk_ses::NotifCallback;
-use crate::gdk_ses::TxType;
 use crate::models;
 use crate::models::Transaction;
 use crate::swaps;
@@ -23,8 +21,9 @@ use serde_bytes::ByteBuf;
 use sideswap_api::Asset;
 use sideswap_api::AssetId;
 use sideswap_common::env::Env;
-use sideswap_common::env::Network;
+use sideswap_common::network::Network;
 use sideswap_jade::jade_mng;
+use sideswap_jade::jade_mng::JadeStatus;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::collections::HashMap;
@@ -82,7 +81,7 @@ impl gdk_ses::GdkSes for GdkSesImpl {
 
     fn unlock_hww(&self) -> Result<(), anyhow::Error> {
         if let Some(hw_data) = self.hw_data.as_ref() {
-            unlock_hw(hw_data.env, &hw_data.jade, &hw_data.status_callback)
+            unlock_hw(hw_data.env, &hw_data.jade)
         } else {
             Ok(())
         }
@@ -274,11 +273,7 @@ impl Drop for AuthHandlerOwner {
     }
 }
 
-pub fn unlock_hw(
-    env: Env,
-    jade: &jade_mng::ManagedJade,
-    status_callback: &JadeStatusCallback,
-) -> Result<(), anyhow::Error> {
+pub fn unlock_hw(env: Env, jade: &jade_mng::ManagedJade) -> Result<(), anyhow::Error> {
     // (status_callback)(gdk_ses::JadeStatus::ReadStatus);
     let res = jade.read_status();
     // (status_callback)(gdk_ses::JadeStatus::Idle);
@@ -290,14 +285,14 @@ pub fn unlock_hw(
             debug!("jade already unlocked");
         }
         sideswap_jade::models::State::Locked => {
-            let network = if env.data().mainnet {
+            let network = if env.d().mainnet {
                 sideswap_jade::models::JadeNetwork::Liquid
             } else {
                 sideswap_jade::models::JadeNetwork::TestnetLiquid
             };
-            (status_callback)(gdk_ses::JadeStatus::AuthUser);
+            jade.set_status(JadeStatus::AuthUser);
             let res = jade.auth_user(network);
-            (status_callback)(gdk_ses::JadeStatus::Idle);
+            jade.set_status(JadeStatus::Idle);
             let resp = res?;
             debug!("jade unlock result: {}", resp);
             ensure!(resp, "unlock failed");
@@ -315,14 +310,14 @@ pub fn unlock_hw(
 
 struct HandlerParams<'a> {
     assets: Option<&'a BTreeMap<AssetId, Asset>>,
-    tx_type: TxType,
+    tx_type: jade_mng::TxType,
 }
 
 impl<'a> HandlerParams<'a> {
     fn new() -> Self {
         HandlerParams {
             assets: None,
-            tx_type: TxType::Normal,
+            tx_type: jade_mng::TxType::Normal,
         }
     }
 
@@ -331,7 +326,7 @@ impl<'a> HandlerParams<'a> {
         self
     }
 
-    fn with_tx_status(mut self, status: TxType) -> Self {
+    fn with_tx_status(mut self, status: jade_mng::TxType) -> Self {
         self.tx_type = status;
         self
     }
@@ -344,7 +339,7 @@ unsafe fn run_auth_handler<T: serde::de::DeserializeOwned>(
 ) -> Result<T, anyhow::Error> {
     let result = run_auth_handler_impl(hw_data, call, params);
     if let Some(hw_data) = hw_data {
-        hw_data.set_status(gdk_ses::JadeStatus::Idle);
+        hw_data.set_status(JadeStatus::Idle);
     }
     result
 }
@@ -435,7 +430,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
             | gdk_json::HwAction::SignMessage => true,
         };
         if required_hw {
-            unlock_hw(hw_data.env, &hw_data.jade, &hw_data.status_callback)?;
+            unlock_hw(hw_data.env, &hw_data.jade)?;
         }
 
         match required_data.action {
@@ -447,7 +442,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     let xpub = if let Some(xpub) = hw_data.xpubs.get(&path) {
                         *xpub
                     } else {
-                        let network = if hw_data.env.data().mainnet {
+                        let network = if hw_data.env.d().mainnet {
                             sideswap_jade::models::JadeNetwork::Liquid
                         } else {
                             sideswap_jade::models::JadeNetwork::TestnetLiquid
@@ -514,7 +509,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
             }
 
             gdk_json::HwAction::SignTx => {
-                hw_data.set_status(gdk_ses::JadeStatus::SignTx(params.tx_type));
+                hw_data.set_status(JadeStatus::SignTx(params.tx_type));
 
                 let transaction = required_data.transaction.unwrap();
                 let transaction_inputs = required_data.transaction_inputs.unwrap();
@@ -597,7 +592,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     }
                 }
 
-                let network = if hw_data.env.data().mainnet {
+                let network = if hw_data.env.d().mainnet {
                     sideswap_jade::models::JadeNetwork::Liquid
                 } else {
                     sideswap_jade::models::JadeNetwork::TestnetLiquid
@@ -1350,7 +1345,7 @@ unsafe fn try_create_payjoin(
         .collect::<Vec<_>>();
 
     let resp = sideswap_payjoin::create_payjoin(sideswap_payjoin::CreatePayjoin {
-        base_url: data.login_info.env.data().base_server_url(),
+        base_url: data.login_info.env.base_server_http_url(),
         user_agent: worker::USER_AGENT.to_owned(),
         asset_id: send_asset,
         amount: send_amount,
@@ -1358,6 +1353,7 @@ unsafe fn try_create_payjoin(
         address,
         change_address,
         utxos,
+        multisig: !data.login_info.single_sig,
     })?;
 
     let pset =
@@ -1513,7 +1509,7 @@ unsafe fn verify_and_sign_pset(
         call,
         HandlerParams::new()
             .with_assets(assets)
-            .with_tx_status(TxType::Swap),
+            .with_tx_status(jade_mng::TxType::Swap),
     )
     .map_err(|e| anyhow!("signing pset failed: {}", e))?;
     Ok(signed_pset.psbt)
@@ -1614,7 +1610,7 @@ unsafe fn sig_single_maker_utxo(
         call,
         HandlerParams::new()
             .with_assets(assets)
-            .with_tx_status(TxType::OfflineSwapOutput),
+            .with_tx_status(jade_mng::TxType::OfflineSwapOutput),
     )
     .map_err(|e| anyhow!("signing tx failed: {}", e))?;
     debug!("signed tx: {:?}", &signed_tx);
@@ -1739,7 +1735,7 @@ unsafe fn sig_single_maker_tx(
         call,
         HandlerParams::new()
             .with_assets(assets)
-            .with_tx_status(TxType::OfflineSwap),
+            .with_tx_status(jade_mng::TxType::OfflineSwap),
     )
     .map_err(|e| anyhow!("creating swap failed: {}", e))?;
 
@@ -2215,26 +2211,22 @@ unsafe fn reconnect_hint(data: &mut GdkSesImpl, hint: gdk_json::ReconnectHint) {
 }
 
 pub unsafe fn select_network(info: &gdk_ses::LoginInfo) -> String {
-    let network = match (info.env.data().network, info.single_sig) {
-        (Network::Mainnet, false) => "liquid",
-        (Network::Testnet, false) => "testnet-liquid",
-        (Network::Mainnet, true) => "electrum-liquid",
-        (Network::Testnet, true) => "electrum-testnet-liquid",
-        _ => panic!("Unknown network: {:?}", info.env.data().network),
+    let network = match (info.env.d().network, info.single_sig) {
+        (Network::Liquid, false) => "liquid",
+        (Network::LiquidTestnet, false) => "testnet-liquid",
+        (Network::Liquid, true) => "electrum-liquid",
+        (Network::LiquidTestnet, true) => "electrum-testnet-liquid",
     };
 
     let custom_electrum = match &info.electrum_server {
         ElectrumServer::Blockstream => None,
         ElectrumServer::SideSwap => match info.env {
-            Env::Prod | Env::Staging | Env::LocalLiquid => {
-                Some(("electrs.sideswap.io", 12001, true))
-            }
+            Env::Prod | Env::LocalLiquid => Some(("electrs.sideswap.io", 12001, true)),
             Env::Testnet | Env::LocalTestnet => Some(("electrs.sideswap.io", 12002, true)),
-            Env::Regtest | Env::Local => panic!("Unsupported network {:?}", info.env),
         },
         ElectrumServer::SideSwapCn => match info.env {
-            Env::Prod | Env::Staging | Env::LocalLiquid => Some(("cn.sideswap.io", 12001, true)),
-            Env::Testnet | Env::LocalTestnet | Env::Regtest | Env::Local => None,
+            Env::Prod | Env::LocalLiquid => Some(("cn.sideswap.io", 12001, true)),
+            Env::Testnet | Env::LocalTestnet => None,
         },
         ElectrumServer::Custom {
             host,
@@ -2312,7 +2304,7 @@ pub unsafe fn start_processing_impl(
     }
 
     let network = select_network(&info);
-    let policy_asset = AssetId::from_str(info.env.data().policy_asset).unwrap();
+    let policy_asset = info.env.nd().policy_asset.asset_id();
     let connect_config = gdk_json::ConnectConfig {
         name: network,
         proxy: info.proxy.clone(),

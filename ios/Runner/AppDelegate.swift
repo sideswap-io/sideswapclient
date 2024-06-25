@@ -35,6 +35,8 @@ public func dummyMethodToEnforceBundling() {
         // Fix for crash when using POSIX sockets
         signal(SIGPIPE, SIG_IGN)
 
+        startBle()
+        
         let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
         let encryptionChannel = FlutterMethodChannel(name: "app.sideswap.io/encryption",
                                                      binaryMessenger: controller.binaryMessenger)

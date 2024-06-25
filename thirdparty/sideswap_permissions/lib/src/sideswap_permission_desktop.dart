@@ -21,4 +21,24 @@ class SideswapPermissionDesktopPlugin
   Future<bool> requestCameraPermission() async {
     return false;
   }
+
+  @override
+  Future<bool> hasBluetoothScanPermission() async {
+    return true;
+  }
+
+  @override
+  Future<bool> requestBluetoothScanPermission() async {
+    return true;
+  }
+
+  @override
+  Future<bool> hasBluetoothConnectPermission() async {
+    return true;
+  }
+
+  @override
+  Future<bool> requestBluetoothConnectPermission() async {
+    return true;
+  }
 }

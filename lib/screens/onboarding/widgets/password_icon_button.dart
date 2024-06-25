@@ -20,8 +20,8 @@ class PasswordIconButton extends StatelessWidget {
 
     return IconButton(
       onPressed: enabled ? onPressed : null,
-      style: ButtonStyle(
-        backgroundColor: MaterialStateProperty.all<Color?>(Colors.transparent),
+      style: const ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(Colors.transparent),
       ),
       icon: Icon(
         obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,

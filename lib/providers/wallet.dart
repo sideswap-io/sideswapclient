@@ -92,10 +92,8 @@ List<int> envValues() {
     return [
       SIDESWAP_ENV_PROD,
       SIDESWAP_ENV_TESTNET,
-      SIDESWAP_ENV_REGTEST,
       SIDESWAP_ENV_LOCAL_LIQUID,
       SIDESWAP_ENV_LOCAL_TESTNET,
-      SIDESWAP_ENV_LOCAL,
     ];
   }
   return [
@@ -110,14 +108,10 @@ String envName(int env) {
       return 'Liquid';
     case SIDESWAP_ENV_TESTNET:
       return 'Testnet';
-    case SIDESWAP_ENV_REGTEST:
-      return 'Regtest';
     case SIDESWAP_ENV_LOCAL_LIQUID:
       return 'Local Liquid';
     case SIDESWAP_ENV_LOCAL_TESTNET:
       return 'Local Testnet';
-    case SIDESWAP_ENV_LOCAL:
-      return 'Local Regtest';
   }
   throw Exception('unexpected env value');
 }
@@ -147,11 +141,11 @@ MarketType getMarketType(Asset? asset) {
 }
 
 class PinDecryptedData {
-  final String error;
+  final From_DecryptPin_Error? error;
   final bool success;
   final String mnemonic;
 
-  PinDecryptedData(this.success, {this.mnemonic = '', this.error = ''});
+  PinDecryptedData(this.success, {this.mnemonic = '', this.error});
 
   @override
   String toString() =>
@@ -401,8 +395,9 @@ class WalletChangeNotifier with ChangeNotifier {
 
       case From_Msg.swapFailed:
         logger.w('Swap failed: ${from.swapFailed}');
-        ref.read(swapNetworkErrorStateProvider.notifier).state =
-            from.swapFailed;
+        ref
+            .read(swapNetworkErrorNotifierProvider.notifier)
+            .setState(from.swapFailed);
         notifyListeners();
         await ref.read(utilsProvider).showErrorDialog(from.swapFailed);
         final status = ref.read(pageStatusNotifierProvider);
@@ -536,7 +531,7 @@ class WalletChangeNotifier with ChangeNotifier {
         // Refresh peg-out amounts
         logger.d('Server status: $_serverStatus');
         ref
-            .read(priceStreamSubscribeChangeNotifierProvider)
+            .read(priceStreamSubscribeNotifierProvider.notifier)
             .subscribeToPriceStream();
         break;
 
@@ -631,7 +626,8 @@ class WalletChangeNotifier with ChangeNotifier {
           final pinData = PinDataStateData(
               salt: data.salt,
               encryptedData: data.encryptedData,
-              pinIdentifier: data.pinIdentifier);
+              pinIdentifier: data.pinIdentifier,
+              hmac: data.hmac);
           ref.read(configurationProvider.notifier).setPinData(pinData);
           ref.read(pinHelperProvider).onPinData(pinData);
         }
@@ -1035,25 +1031,59 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.login:
         logger.d(from.login);
-        switch (from.login.whichResult()) {
-          case From_Login_Result.errorMsg:
-            ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
-                ServerLoginStateError(message: from.login.errorMsg));
-            break;
-          case From_Login_Result.success:
-            ref
-                .read(serverLoginNotifierProvider.notifier)
-                .setServerLoginState(const ServerLoginStateLogin());
-            ref
-                .read(firstLaunchStateNotifierProvider.notifier)
-                .setFirstLaunchState(const FirstLaunchStateEmpty());
-            break;
-          case From_Login_Result.notSet:
-            ref
-                .read(serverLoginNotifierProvider.notifier)
-                .setServerLoginState(const ServerLoginStateError());
-            break;
-        }
+        (switch (from.login.whichResult()) {
+          From_Login_Result.errorMsg
+              when from.login.errorMsg == 'please initialize Jade first' ||
+                  from.login.errorMsg == 'write failed' ||
+                  from.login.errorMsg == 'open failed' ||
+                  from.login.errorMsg ==
+                      'Jade error: Network type inconsistent with prior usage' =>
+            () {
+              ref.read(configurationProvider.notifier).setJadeId('');
+              ref
+                  .read(serverLoginNotifierProvider.notifier)
+                  .setServerLoginState(
+                      ServerLoginStateError(message: from.login.errorMsg));
+            }(),
+          From_Login_Result.errorMsg => () {
+              ref
+                  .read(serverLoginNotifierProvider.notifier)
+                  .setServerLoginState(
+                      ServerLoginStateError(message: from.login.errorMsg));
+            }(),
+          From_Login_Result.success => () {
+              ref
+                  .read(serverLoginNotifierProvider.notifier)
+                  .setServerLoginState(const ServerLoginStateLogin());
+              ref
+                  .read(firstLaunchStateNotifierProvider.notifier)
+                  .setFirstLaunchState(const FirstLaunchStateEmpty());
+            }(),
+          From_Login_Result.notSet => () {
+              ref
+                  .read(serverLoginNotifierProvider.notifier)
+                  .setServerLoginState(const ServerLoginStateError());
+            }(),
+        });
+        // switch (from.login.whichResult()) {
+        //   case From_Login_Result.errorMsg:
+        //     ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
+        //         ServerLoginStateError(message: from.login.errorMsg));
+        //     break;
+        //   case From_Login_Result.success:
+        //     ref
+        //         .read(serverLoginNotifierProvider.notifier)
+        //         .setServerLoginState(const ServerLoginStateLogin());
+        //     ref
+        //         .read(firstLaunchStateNotifierProvider.notifier)
+        //         .setFirstLaunchState(const FirstLaunchStateEmpty());
+        //     break;
+        //   case From_Login_Result.notSet:
+        //     ref
+        //         .read(serverLoginNotifierProvider.notifier)
+        //         .setServerLoginState(const ServerLoginStateError());
+        //     break;
+        // }
         break;
       case From_Msg.createPayjoinResult:
         // TODO: Handle this case.
@@ -1396,157 +1426,187 @@ class WalletChangeNotifier with ChangeNotifier {
 
   bool goBack() {
     var status = ref.read(pageStatusNotifierProvider);
-    switch (status) {
-      case Status.newWalletBackupCheck:
-        status = Status.newWalletBackupView;
-        break;
-      case Status.newWalletBackupCheckFailed:
-      case Status.newWalletBackupCheckSucceed:
-        status = Status.newWalletBackupView;
-        break;
-      case Status.importWalletError:
-        status = Status.importWallet;
-        break;
-      case Status.importWalletSuccess:
-      case Status.importWallet:
-      case Status.selectEnv:
-      case Status.importAvatar:
-      case Status.associatePhoneWelcome:
-      case Status.reviewLicense:
-      case Status.newWalletBackupPrompt:
-      case Status.jadeImport:
-      case Status.networkAccessOnboarding:
-        status = Status.noWallet;
-        break;
-      // pages without back
-      case Status.confirmPhoneSuccess:
-      case Status.importAvatarSuccess:
-      case Status.importContacts:
-      case Status.importContactsSuccess:
-      case Status.pinWelcome:
-      case Status.newWalletPinWelcome:
-      case Status.pinSetup:
-      case Status.pinSuccess:
-      case Status.createOrderSuccess:
-        return false;
 
-      case Status.confirmPhone:
-        status = Status.associatePhoneWelcome;
-        break;
-      case Status.assetsSelect:
-        status = Status.registered;
-        break;
-      case Status.assetDetails:
-        status = Status.registered;
-        ref.read(uiStateArgsNotifierProvider.notifier).clear();
-        break;
-      case Status.txDetails:
-        status = Status.transactions;
-        break;
-      case Status.txEditMemo:
-        _applyTxMemoChange();
-        status = Status.txDetails;
-        break;
-      case Status.assetReceive:
-        status = Status.assetDetails;
-        ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
-              WalletMainArguments(
-                currentIndex: 1,
-                navigationItemEnum: WalletMainNavigationItemEnum.assetDetails,
-              ),
-            );
-        break;
-      case Status.transactions:
-      case Status.orderFilers:
-        status = Status.registered;
-        break;
-      case Status.swapTxDetails:
-      case Status.assetReceiveFromWalletMain:
-      case Status.orderSuccess:
-      case Status.orderResponseSuccess:
-        status = Status.registered;
-        ref.read(uiStateArgsNotifierProvider.notifier).clear();
-        break;
-      case Status.orderPopup:
-      case Status.swapPrompt:
-        status = Status.registered;
-        break;
-      case Status.swapWaitPegTx:
-        ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
-              WalletMainArguments(
-                currentIndex: 4,
-                navigationItemEnum: WalletMainNavigationItemEnum.pegs,
-              ),
-            );
-        ref.read(swapProvider).pegStop();
-        status = Status.registered;
-        break;
-      case Status.settingsBackup:
-      case Status.settingsSecurity:
-      case Status.settingsAboutUs:
-      case Status.settingsUserDetails:
-      case Status.settingsNetwork:
-      case Status.settingsLogs:
-      case Status.settingsCurrency:
-        status = Status.settingsPage;
-        break;
-      case Status.settingsPage:
-        status = Status.registered;
-        break;
-      case Status.newWalletBackupView:
-        status = Status.newWalletBackupPrompt;
-        break;
-      case Status.newWalletBiometricPrompt:
-      case Status.importWalletBiometricPrompt:
-        // don't use Status.importWallet here as it breaks text fields
-        // user will need to start over
-        status = Status.noWallet;
-        break;
-      case Status.registered:
-        status = Status.registered;
-        break;
-      case Status.walletLoading:
-      case Status.noWallet:
-      case Status.lockedWalet:
-        return true;
-      case Status.paymentPage:
-        status = Status.assetDetails;
-        break;
-      case Status.paymentAmountPage:
-        status = Status.paymentPage;
-        break;
-      case Status.paymentSend:
-        status = Status.paymentAmountPage;
-        break;
-      case Status.createOrderEntry:
-      case Status.orderRequestView:
-        status = Status.registered;
-        break;
-      case Status.createOrder:
-        status = Status.createOrderEntry;
-        break;
-      case Status.ampRegister:
-        return false;
-      case Status.stokrLogin:
-      case Status.pegxRegister:
-      case Status.pegxSubmitAmp:
-      case Status.pegxSubmitFinish:
-        status = Status.ampRegister;
-        break;
-      case Status.generateWalletAddress:
-        status = Status.registered;
-        break;
-      case Status.walletAddressDetail:
-        status = Status.generateWalletAddress;
-        break;
-      case Status.stokrRestrictionsInfo:
-      case Status.stokrNeedRegister:
-        status = Status.registered;
-        break;
-    }
-
-    ref.read(pageStatusNotifierProvider.notifier).setStatus(status);
-    return false;
+    return switch (status) {
+      Status.newWalletBackupCheck ||
+      Status.newWalletBackupCheckFailed ||
+      Status.newWalletBackupCheckSucceed =>
+        () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.newWalletBackupView);
+          return false;
+        }(),
+      Status.importWalletError => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.importWallet);
+          return false;
+        }(),
+      Status.importWalletSuccess ||
+      Status.importWallet ||
+      Status.selectEnv ||
+      Status.importAvatar ||
+      Status.associatePhoneWelcome ||
+      Status.reviewLicense ||
+      Status.jadeImport ||
+      Status.jadeBluetoothPermission ||
+      Status.networkAccessOnboarding ||
+      Status.newWalletBiometricPrompt ||
+      Status.importWalletBiometricPrompt =>
+        () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.noWallet);
+          return false;
+        }(),
+      Status.confirmPhone => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.associatePhoneWelcome);
+          return false;
+        }(),
+      Status.assetsSelect ||
+      Status.transactions ||
+      Status.orderFilers ||
+      Status.orderPopup ||
+      Status.swapPrompt ||
+      Status.settingsPage ||
+      Status.registered ||
+      Status.generateWalletAddress ||
+      Status.stokrRestrictionsInfo ||
+      Status.stokrNeedRegister =>
+        () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.registered);
+          return false;
+        }(),
+      Status.paymentSend => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.paymentAmountPage);
+          return false;
+        }(),
+      Status.paymentAmountPage => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.paymentPage);
+          return false;
+        }(),
+      Status.paymentPage => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.assetDetails);
+          return false;
+        }(),
+      Status.swapTxDetails ||
+      Status.assetReceiveFromWalletMain ||
+      Status.orderSuccess ||
+      Status.orderResponseSuccess ||
+      Status.createOrderEntry ||
+      Status.orderRequestView ||
+      Status.assetDetails =>
+        () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.registered);
+          ref.read(uiStateArgsNotifierProvider.notifier).clear();
+          return false;
+        }(),
+      Status.txDetails => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.transactions);
+          return false;
+        }(),
+      Status.txEditMemo => () {
+          _applyTxMemoChange();
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.txDetails);
+          return false;
+        }(),
+      Status.assetReceive => () {
+          ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
+                WalletMainArguments(
+                  currentIndex: 1,
+                  navigationItemEnum: WalletMainNavigationItemEnum.assetDetails,
+                ),
+              );
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.assetDetails);
+          return false;
+        }(),
+      Status.swapWaitPegTx => () {
+          ref.read(uiStateArgsNotifierProvider.notifier).setWalletMainArguments(
+                WalletMainArguments(
+                  currentIndex: 4,
+                  navigationItemEnum: WalletMainNavigationItemEnum.pegs,
+                ),
+              );
+          ref.read(swapProvider).pegStop();
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.registered);
+          return false;
+        }(),
+      Status.settingsBackup ||
+      Status.settingsSecurity ||
+      Status.settingsAboutUs ||
+      Status.settingsUserDetails ||
+      Status.settingsNetwork ||
+      Status.settingsLogs ||
+      Status.settingsCurrency =>
+        () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.settingsPage);
+          return false;
+        }(),
+      Status.newWalletBackupView => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.newWalletBackupPrompt);
+          return false;
+        }(),
+      Status.walletLoading || Status.noWallet || Status.lockedWalet => true,
+      Status.createOrder => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.createOrderEntry);
+          return false;
+        }(),
+      Status.stokrLogin ||
+      Status.pegxRegister ||
+      Status.pegxSubmitAmp ||
+      Status.pegxSubmitFinish =>
+        () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.ampRegister);
+          return false;
+        }(),
+      Status.walletAddressDetail => () {
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.generateWalletAddress);
+          return false;
+        }(),
+      Status.jadeDevices => () {
+          ref.invalidate(jadeDeviceNotifierProvider);
+          ref
+              .read(pageStatusNotifierProvider.notifier)
+              .setStatus(Status.jadeBluetoothPermission);
+          return false;
+        }(),
+      Status.ampRegister => false,
+      _ => () {
+          logger.w('Unhandled goBack status $status');
+          return false;
+        }(),
+    };
   }
 
   void _login({String mnemonic = '', String jadeId = ''}) {
@@ -2244,6 +2304,9 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.decryptPin.salt = pinData.salt;
     msg.decryptPin.encryptedData = pinData.encryptedData;
     msg.decryptPin.pinIdentifier = pinData.pinIdentifier;
+    if (pinData.hmac != null) {
+      msg.decryptPin.hmac = pinData.hmac!;
+    }
     sendMsg(msg);
   }
 

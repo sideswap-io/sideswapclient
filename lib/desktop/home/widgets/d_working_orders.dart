@@ -21,37 +21,31 @@ class DWorkingOrders extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: SizedBox(
-            height: 43,
-            child: DefaultTextStyle(
-              style: const TextStyle().merge(
-                Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: SideSwapColors.glacier),
-              ),
-              child: DWorkingOrdersRow(children: [
-                DWorkingOrdersHeader(text: 'Trading pair'.tr()),
-                DWorkingOrdersHeader(text: 'Amount'.tr()),
-                DWorkingOrdersHeader(text: 'Price per unit'.tr()),
-                DWorkingOrdersHeader(text: 'Total'.tr()),
-                DWorkingOrdersHeader(text: 'Side'.tr()),
-                DWorkingOrdersHeader(text: 'Limit/Tracking'.tr()),
-                DWorkingOrdersHeader(text: 'Order type'.tr()),
-                DWorkingOrdersHeader(text: 'TTL'.tr()),
-              ]),
+        SizedBox(
+          height: 43,
+          child: DefaultTextStyle(
+            style: const TextStyle().merge(
+              Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(color: SideSwapColors.glacier),
             ),
+            child: DWorkingOrdersRow(children: [
+              DWorkingOrdersHeader(text: 'Trading pair'.tr()),
+              DWorkingOrdersHeader(text: 'Amount'.tr()),
+              DWorkingOrdersHeader(text: 'Price per unit'.tr()),
+              DWorkingOrdersHeader(text: 'Total'.tr()),
+              DWorkingOrdersHeader(text: 'Side'.tr()),
+              DWorkingOrdersHeader(text: 'Limit/Tracking'.tr()),
+              DWorkingOrdersHeader(text: 'Order type'.tr()),
+              DWorkingOrdersHeader(text: 'TTL'.tr()),
+            ]),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.only(right: 20),
-          child: Divider(
-            height: 1,
-            thickness: 0,
-            color: SideSwapColors.jellyBean,
-          ),
+        const Divider(
+          height: 1,
+          thickness: 0,
+          color: SideSwapColors.jellyBean,
         ),
         Flexible(
           child: Consumer(

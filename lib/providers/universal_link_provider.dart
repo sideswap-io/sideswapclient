@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fixnum/fixnum.dart';
@@ -14,7 +15,6 @@ import 'package:sideswap/providers/wallet_page_status_provider.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
 import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
-import 'package:uni_links/uni_links.dart';
 import 'package:sideswap/providers/wallet.dart';
 
 final universalLinkProvider = ChangeNotifierProvider<UniversalLinkProvider>(
@@ -36,11 +36,12 @@ String getSendLinkUrl(String address) {
 
 class UniversalLinkProvider with ChangeNotifier {
   final Ref ref;
+  final _appLinks = AppLinks();
 
   UniversalLinkProvider(this.ref);
 
   bool _initialUriIsHandled = false;
-  StreamSubscription<Uri?>? uriLinkSubscription;
+  StreamSubscription<Uri>? uriLinkSubscription;
   Uri? initialUri;
   Uri? latestUri;
 
@@ -51,7 +52,8 @@ class UniversalLinkProvider with ChangeNotifier {
     if (!kIsWeb) {
       // It will handle app links while the app is already started - be it in
       // the foreground or in the background.
-      uriLinkSubscription = uriLinkStream.listen((Uri? uri) {
+      uriLinkSubscription?.cancel();
+      uriLinkSubscription = _appLinks.uriLinkStream.listen((Uri? uri) {
         logger.d('got uri: $uri');
         latestUri = uri;
         if (uri != null) {
@@ -72,7 +74,7 @@ class UniversalLinkProvider with ChangeNotifier {
       _initialUriIsHandled = true;
 
       try {
-        final uri = await getInitialUri();
+        final uri = await _appLinks.getInitialLink();
         if (uri == null) {
           logger.d('no initial uri');
           return;

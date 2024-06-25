@@ -75,7 +75,7 @@ final sendPopupParseAddressProvider =
 typedef SendPopupParseAddressRef
     = AutoDisposeProviderRef<Either<Exception, SendPopupAddressResult>>;
 String _$sendPopupAmountNotifierHash() =>
-    r'6c132a490cfe10c9469b86711ca2da3fbe72d724';
+    r'fc04a7624f668ec6ee35f8e2a75e6fb4095489e7';
 
 /// See also [SendPopupAmountNotifier].
 @ProviderFor(SendPopupAmountNotifier)

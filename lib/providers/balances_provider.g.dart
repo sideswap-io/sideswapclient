@@ -1169,7 +1169,7 @@ class _MaxAvailableBalanceForAccountAssetProviderElement
 }
 
 String _$amountUsdInDefaultCurrencyHash() =>
-    r'3b48fd8f54871a087cf6a4f182d444ee41a4e0b8';
+    r'a132f6345d23227ba706dddd5cf386a07985e7aa';
 
 /// See also [amountUsdInDefaultCurrency].
 @ProviderFor(amountUsdInDefaultCurrency)

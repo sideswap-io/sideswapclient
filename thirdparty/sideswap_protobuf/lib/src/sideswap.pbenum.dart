@@ -13,6 +13,23 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
+class From_DecryptPin_ErrorCode extends $pb.ProtobufEnum {
+  static const From_DecryptPin_ErrorCode WRONG_PIN = From_DecryptPin_ErrorCode._(1, _omitEnumNames ? '' : 'WRONG_PIN');
+  static const From_DecryptPin_ErrorCode NETWORK_ERROR = From_DecryptPin_ErrorCode._(2, _omitEnumNames ? '' : 'NETWORK_ERROR');
+  static const From_DecryptPin_ErrorCode INVALID_DATA = From_DecryptPin_ErrorCode._(3, _omitEnumNames ? '' : 'INVALID_DATA');
+
+  static const $core.List<From_DecryptPin_ErrorCode> values = <From_DecryptPin_ErrorCode> [
+    WRONG_PIN,
+    NETWORK_ERROR,
+    INVALID_DATA,
+  ];
+
+  static final $core.Map<$core.int, From_DecryptPin_ErrorCode> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static From_DecryptPin_ErrorCode? valueOf($core.int value) => _byValue[value];
+
+  const From_DecryptPin_ErrorCode._($core.int v, $core.String n) : super(v, n);
+}
+
 class From_SubmitReview_Step extends $pb.ProtobufEnum {
   static const From_SubmitReview_Step SUBMIT = From_SubmitReview_Step._(1, _omitEnumNames ? '' : 'SUBMIT');
   static const From_SubmitReview_Step QUOTE = From_SubmitReview_Step._(2, _omitEnumNames ? '' : 'QUOTE');
@@ -31,6 +48,7 @@ class From_SubmitReview_Step extends $pb.ProtobufEnum {
 }
 
 class From_JadeStatus_Status extends $pb.ProtobufEnum {
+  static const From_JadeStatus_Status CONNECTING = From_JadeStatus_Status._(9, _omitEnumNames ? '' : 'CONNECTING');
   static const From_JadeStatus_Status IDLE = From_JadeStatus_Status._(1, _omitEnumNames ? '' : 'IDLE');
   static const From_JadeStatus_Status READ_STATUS = From_JadeStatus_Status._(2, _omitEnumNames ? '' : 'READ_STATUS');
   static const From_JadeStatus_Status AUTH_USER = From_JadeStatus_Status._(3, _omitEnumNames ? '' : 'AUTH_USER');
@@ -41,6 +59,7 @@ class From_JadeStatus_Status extends $pb.ProtobufEnum {
   static const From_JadeStatus_Status SIGN_OFFLINE_SWAP = From_JadeStatus_Status._(7, _omitEnumNames ? '' : 'SIGN_OFFLINE_SWAP');
 
   static const $core.List<From_JadeStatus_Status> values = <From_JadeStatus_Status> [
+    CONNECTING,
     IDLE,
     READ_STATUS,
     AUTH_USER,

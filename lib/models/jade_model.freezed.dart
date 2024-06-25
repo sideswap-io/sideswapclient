@@ -452,6 +452,7 @@ mixin _$JadeStatus {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -464,6 +465,7 @@ mixin _$JadeStatus {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -476,6 +478,7 @@ mixin _$JadeStatus {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -490,6 +493,7 @@ mixin _$JadeStatus {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -502,6 +506,7 @@ mixin _$JadeStatus {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -514,6 +519,7 @@ mixin _$JadeStatus {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -583,6 +589,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return idle();
   }
@@ -598,6 +605,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return idle?.call();
   }
@@ -613,6 +621,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (idle != null) {
@@ -633,6 +642,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return idle(this);
   }
@@ -648,6 +658,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return idle?.call(this);
   }
@@ -663,6 +674,7 @@ class _$JadeStatusIdleImpl extends JadeStatusIdle {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (idle != null) {
@@ -724,6 +736,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return readStatus();
   }
@@ -739,6 +752,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return readStatus?.call();
   }
@@ -754,6 +768,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (readStatus != null) {
@@ -774,6 +789,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return readStatus(this);
   }
@@ -789,6 +805,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return readStatus?.call(this);
   }
@@ -804,6 +821,7 @@ class _$JadeStatusReadStatusImpl extends JadeStatusReadStatus {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (readStatus != null) {
@@ -864,6 +882,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return authUser();
   }
@@ -879,6 +898,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return authUser?.call();
   }
@@ -894,6 +914,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (authUser != null) {
@@ -914,6 +935,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return authUser(this);
   }
@@ -929,6 +951,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return authUser?.call(this);
   }
@@ -944,6 +967,7 @@ class _$JadeStatusAuthUserImpl extends JadeStatusAuthUser {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (authUser != null) {
@@ -1004,6 +1028,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return signTx();
   }
@@ -1019,6 +1044,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return signTx?.call();
   }
@@ -1034,6 +1060,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (signTx != null) {
@@ -1054,6 +1081,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return signTx(this);
   }
@@ -1069,6 +1097,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return signTx?.call(this);
   }
@@ -1084,6 +1113,7 @@ class _$JadeStatusSignTxImpl extends JadeStatusSignTx {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (signTx != null) {
@@ -1147,6 +1177,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return masterBlindingKey();
   }
@@ -1162,6 +1193,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return masterBlindingKey?.call();
   }
@@ -1177,6 +1209,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (masterBlindingKey != null) {
@@ -1197,6 +1230,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return masterBlindingKey(this);
   }
@@ -1212,6 +1246,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return masterBlindingKey?.call(this);
   }
@@ -1227,6 +1262,7 @@ class _$JadeStatusMasterBlindingKeyImpl extends JadeStatusMasterBlindingKey {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (masterBlindingKey != null) {
@@ -1291,6 +1327,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return signOfflineSwap();
   }
@@ -1306,6 +1343,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return signOfflineSwap?.call();
   }
@@ -1321,6 +1359,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (signOfflineSwap != null) {
@@ -1341,6 +1380,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return signOfflineSwap(this);
   }
@@ -1356,6 +1396,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return signOfflineSwap?.call(this);
   }
@@ -1371,6 +1412,7 @@ class _$JadeStatusSignOfflineSwapImpl extends JadeStatusSignOfflineSwap {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (signOfflineSwap != null) {
@@ -1431,6 +1473,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return signSwap();
   }
@@ -1446,6 +1489,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return signSwap?.call();
   }
@@ -1461,6 +1505,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (signSwap != null) {
@@ -1481,6 +1526,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return signSwap(this);
   }
@@ -1496,6 +1542,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return signSwap?.call(this);
   }
@@ -1511,6 +1558,7 @@ class _$JadeStatusSignSwapImpl extends JadeStatusSignSwap {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (signSwap != null) {
@@ -1574,6 +1622,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     required TResult Function() signOfflineSwap,
     required TResult Function() signSwap,
     required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
   }) {
     return signSwapOutput();
   }
@@ -1589,6 +1638,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult? Function()? signOfflineSwap,
     TResult? Function()? signSwap,
     TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
   }) {
     return signSwapOutput?.call();
   }
@@ -1604,6 +1654,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult Function()? signOfflineSwap,
     TResult Function()? signSwap,
     TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
     required TResult orElse(),
   }) {
     if (signSwapOutput != null) {
@@ -1624,6 +1675,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
     required TResult Function(JadeStatusSignSwap value) signSwap,
     required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
   }) {
     return signSwapOutput(this);
   }
@@ -1639,6 +1691,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult? Function(JadeStatusSignSwap value)? signSwap,
     TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
   }) {
     return signSwapOutput?.call(this);
   }
@@ -1654,6 +1707,7 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
     TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
     TResult Function(JadeStatusSignSwap value)? signSwap,
     TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
     required TResult orElse(),
   }) {
     if (signSwapOutput != null) {
@@ -1666,6 +1720,153 @@ class _$JadeStatusSignSwapOutputImpl extends JadeStatusSignSwapOutput {
 abstract class JadeStatusSignSwapOutput extends JadeStatus {
   const factory JadeStatusSignSwapOutput() = _$JadeStatusSignSwapOutputImpl;
   const JadeStatusSignSwapOutput._() : super._();
+}
+
+/// @nodoc
+abstract class _$$JadeStatusConnectingImplCopyWith<$Res> {
+  factory _$$JadeStatusConnectingImplCopyWith(_$JadeStatusConnectingImpl value,
+          $Res Function(_$JadeStatusConnectingImpl) then) =
+      __$$JadeStatusConnectingImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$JadeStatusConnectingImplCopyWithImpl<$Res>
+    extends _$JadeStatusCopyWithImpl<$Res, _$JadeStatusConnectingImpl>
+    implements _$$JadeStatusConnectingImplCopyWith<$Res> {
+  __$$JadeStatusConnectingImplCopyWithImpl(_$JadeStatusConnectingImpl _value,
+      $Res Function(_$JadeStatusConnectingImpl) _then)
+      : super(_value, _then);
+}
+
+/// @nodoc
+
+class _$JadeStatusConnectingImpl extends JadeStatusConnecting {
+  const _$JadeStatusConnectingImpl() : super._();
+
+  @override
+  String toString() {
+    return 'JadeStatus.connecting()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$JadeStatusConnectingImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() idle,
+    required TResult Function() readStatus,
+    required TResult Function() authUser,
+    required TResult Function() signTx,
+    required TResult Function() masterBlindingKey,
+    required TResult Function() signOfflineSwap,
+    required TResult Function() signSwap,
+    required TResult Function() signSwapOutput,
+    required TResult Function() connecting,
+  }) {
+    return connecting();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? idle,
+    TResult? Function()? readStatus,
+    TResult? Function()? authUser,
+    TResult? Function()? signTx,
+    TResult? Function()? masterBlindingKey,
+    TResult? Function()? signOfflineSwap,
+    TResult? Function()? signSwap,
+    TResult? Function()? signSwapOutput,
+    TResult? Function()? connecting,
+  }) {
+    return connecting?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? idle,
+    TResult Function()? readStatus,
+    TResult Function()? authUser,
+    TResult Function()? signTx,
+    TResult Function()? masterBlindingKey,
+    TResult Function()? signOfflineSwap,
+    TResult Function()? signSwap,
+    TResult Function()? signSwapOutput,
+    TResult Function()? connecting,
+    required TResult orElse(),
+  }) {
+    if (connecting != null) {
+      return connecting();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(JadeStatusIdle value) idle,
+    required TResult Function(JadeStatusReadStatus value) readStatus,
+    required TResult Function(JadeStatusAuthUser value) authUser,
+    required TResult Function(JadeStatusSignTx value) signTx,
+    required TResult Function(JadeStatusMasterBlindingKey value)
+        masterBlindingKey,
+    required TResult Function(JadeStatusSignOfflineSwap value) signOfflineSwap,
+    required TResult Function(JadeStatusSignSwap value) signSwap,
+    required TResult Function(JadeStatusSignSwapOutput value) signSwapOutput,
+    required TResult Function(JadeStatusConnecting value) connecting,
+  }) {
+    return connecting(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(JadeStatusIdle value)? idle,
+    TResult? Function(JadeStatusReadStatus value)? readStatus,
+    TResult? Function(JadeStatusAuthUser value)? authUser,
+    TResult? Function(JadeStatusSignTx value)? signTx,
+    TResult? Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
+    TResult? Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
+    TResult? Function(JadeStatusSignSwap value)? signSwap,
+    TResult? Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult? Function(JadeStatusConnecting value)? connecting,
+  }) {
+    return connecting?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(JadeStatusIdle value)? idle,
+    TResult Function(JadeStatusReadStatus value)? readStatus,
+    TResult Function(JadeStatusAuthUser value)? authUser,
+    TResult Function(JadeStatusSignTx value)? signTx,
+    TResult Function(JadeStatusMasterBlindingKey value)? masterBlindingKey,
+    TResult Function(JadeStatusSignOfflineSwap value)? signOfflineSwap,
+    TResult Function(JadeStatusSignSwap value)? signSwap,
+    TResult Function(JadeStatusSignSwapOutput value)? signSwapOutput,
+    TResult Function(JadeStatusConnecting value)? connecting,
+    required TResult orElse(),
+  }) {
+    if (connecting != null) {
+      return connecting(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class JadeStatusConnecting extends JadeStatus {
+  const factory JadeStatusConnecting() = _$JadeStatusConnectingImpl;
+  const JadeStatusConnecting._() : super._();
 }
 
 /// @nodoc

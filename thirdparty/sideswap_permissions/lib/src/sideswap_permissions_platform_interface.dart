@@ -35,4 +35,24 @@ abstract class SideswapPermissionPlatformInterface extends PlatformInterface {
     throw UnimplementedError(
         'requestCameraPermission() has not been implemented');
   }
+
+  Future<bool> hasBluetoothScanPermission() async {
+    throw UnimplementedError(
+        'hasBluetoothScanPermission() has not been implemented');
+  }
+
+  Future<bool> requestBluetoothScanPermission() async {
+    throw UnimplementedError(
+        'requestBluetoothScanPermission() has not been implemented');
+  }
+
+  Future<bool> hasBluetoothConnectPermission() async {
+    throw UnimplementedError(
+        'hasBluetoothConnectPermission() has not been implemented');
+  }
+
+  Future<bool> requestBluetoothConnectPermission() async {
+    throw UnimplementedError(
+        'requestBluetoothConnectPermission() has not been implemented');
+  }
 }

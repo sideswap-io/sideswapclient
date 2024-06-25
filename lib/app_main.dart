@@ -8,6 +8,7 @@ import 'package:sideswap/common/theme.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 import 'package:sideswap/desktop/home/listeners/conversion_rates_listener.dart';
 import 'package:sideswap/desktop/home/listeners/portfolio_prices_listener.dart';
+import 'package:sideswap/listeners/jade_status_listener.dart';
 import 'package:sideswap/listeners/pin_listener.dart';
 import 'package:sideswap/listeners/sideswap_notification_listener.dart';
 import 'package:sideswap/listeners/ui_states_listener.dart';
@@ -212,6 +213,7 @@ class RootWidget extends HookConsumerWidget {
         const PinListener(),
         const UiStatesListener(),
         const SideswapNotificationListener(),
+        const JadeStatusListener(),
         const WarmupAppListener(),
         PopScope(
           canPop: false,

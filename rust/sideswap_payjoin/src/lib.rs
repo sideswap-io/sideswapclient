@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{collections::BTreeSet, time::Duration};
 
 use anyhow::{bail, ensure};
 use base64::Engine;
@@ -26,11 +26,13 @@ pub struct CreatePayjoin {
     pub subtract_fee_from_amount: bool,
     pub change_address: elements::Address,
     pub utxos: Vec<server_api::Utxo>,
+    pub multisig: bool,
 }
 
 pub struct CreatedPayjoin {
     pub pset: PartiallySignedTransaction,
     pub asset_fee: u64,
+    pub blinding_nonces: Vec<String>,
 }
 
 pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Error> {
@@ -43,6 +45,7 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
         subtract_fee_from_amount,
         change_address: client_change_address,
         utxos: client_utxos,
+        multisig: multisig_wallet,
     } = req;
 
     ensure!(!client_utxos.is_empty());
@@ -53,6 +56,18 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     ensure!(client_change_address.is_blinded());
     ensure!(send_address.params == client_change_address.params);
     ensure!(send_amount > 0);
+
+    let multisig_inputs = if multisig_wallet {
+        client_utxos
+            .iter()
+            .map(|utxo| elements::OutPoint {
+                txid: utxo.txid,
+                vout: utxo.vout,
+            })
+            .collect()
+    } else {
+        BTreeSet::new()
+    };
 
     let agent: ureq::Agent = ureq::AgentBuilder::new()
         .timeout(Duration::from_secs(30))
@@ -85,11 +100,17 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     ensure!(server_change_address.is_blinded());
     ensure!(!server_utxos.is_empty());
 
-    let max_input_count = client_utxos.len() + server_utxos.len();
+    let (max_input_count_singlesig, max_input_count_multisig) = if multisig_wallet {
+        (server_utxos.len(), client_utxos.len())
+    } else {
+        (client_utxos.len() + server_utxos.len(), 0)
+    };
     let max_output_count = 4; // asset output, asset change, asset fee output, server change
-
-    // FIXME: Separate between single-sig and multi-sig inputs
-    let max_network_fee = expected_network_fee(max_input_count, 0, max_output_count);
+    let max_network_fee = expected_network_fee(
+        max_input_count_singlesig,
+        max_input_count_multisig,
+        max_output_count,
+    );
     println!("max_network_fee: {max_network_fee}");
 
     let max_asset_fee = fixed_fee + (price * max_network_fee as f64).round() as u64;
@@ -126,7 +147,10 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     ensure!(utxo_asset_amount >= send_amount + max_asset_fee);
     ensure!(utxo_lbtc_amount >= max_network_fee);
 
-    let ConstructedPset { blinded_pset } = construct_pset(ConstructPsetArgs {
+    let ConstructedPset {
+        blinded_pset,
+        blinding_nonces,
+    } = construct_pset(ConstructPsetArgs {
         selected_utxos,
         send_address,
         send_asset_id,
@@ -139,9 +163,11 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
         utxo_lbtc_amount,
         server_change_address,
         lbtc_asset_id,
+        multisig_inputs,
     })?;
 
-    let server_pset = pset::remove_explicit_values(blinded_pset.clone());
+    let mut server_pset = blinded_pset.clone();
+    sideswap_common::pset_blind::remove_explicit_values(&mut server_pset);
     let server_pset = elements::encode::serialize(&server_pset);
 
     let req = server_api::Request::Sign(server_api::SignRequest {
@@ -164,6 +190,7 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     Ok(CreatedPayjoin {
         pset,
         asset_fee: max_asset_fee,
+        blinding_nonces,
     })
 }
 
@@ -215,10 +242,12 @@ struct ConstructPsetArgs {
     utxo_lbtc_amount: u64,
     server_change_address: elements::Address,
     lbtc_asset_id: elements::AssetId,
+    multisig_inputs: BTreeSet<elements::OutPoint>,
 }
 
 struct ConstructedPset {
     blinded_pset: PartiallySignedTransaction,
+    blinding_nonces: Vec<String>,
 }
 
 fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Error> {
@@ -235,6 +264,7 @@ fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Er
         utxo_lbtc_amount,
         server_change_address,
         lbtc_asset_id,
+        multisig_inputs,
     } = args;
 
     let mut pset = PartiallySignedTransaction::new_v2();
@@ -265,8 +295,19 @@ fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Er
         amount: send_amount,
     })?);
 
-    // FIXME: Separate between single-sig and multi-sig inputs
-    let network_fee = expected_network_fee(pset.inputs().len(), 0, 4);
+    let input_count_total = pset.inputs().len();
+    let input_count_multisig = pset
+        .inputs()
+        .iter()
+        .filter(|input| {
+            multisig_inputs.contains(&elements::OutPoint {
+                txid: input.previous_txid,
+                vout: input.previous_output_index,
+            })
+        })
+        .count();
+    let input_count_singlesig = input_count_total - input_count_multisig;
+    let network_fee = expected_network_fee(input_count_multisig, input_count_singlesig, 4);
 
     let asset_fee = fixed_fee + (price * network_fee as f64).round() as u64;
 
@@ -296,7 +337,10 @@ fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Er
 
     pset.add_output(crate::pset::pset_network_fee(lbtc_asset_id, network_fee));
 
-    let pset = crate::pset::randomize_and_blind_pset(pset, &input_secrets)?;
+    let blinding_nonces = sideswap_common::pset_blind::blind_pset(&mut pset, &input_secrets)?;
 
-    Ok(ConstructedPset { blinded_pset: pset })
+    Ok(ConstructedPset {
+        blinded_pset: pset,
+        blinding_nonces,
+    })
 }

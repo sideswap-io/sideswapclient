@@ -34,10 +34,10 @@ class SwapReceiveAmount extends HookConsumerWidget {
     final swapState = ref.watch(swapStateProvider);
 
     // Show error in one place only
-    final subscribe = ref.watch(swapPriceSubscribeStateNotifierProvider);
+    final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
     final serverError = subscribe != const SwapPriceSubscribeStateRecv()
         ? ''
-        : ref.watch(swapNetworkErrorStateProvider);
+        : ref.watch(swapNetworkErrorNotifierProvider);
     final feeRates = ref.watch(bitcoinFeeRatesProvider).feeRates;
     final addressErrorText = ref.watch(swapAddressErrorStateProvider);
     final showAddressLabel = ref.watch(showAddressLabelStateProvider);
@@ -104,11 +104,9 @@ class SwapReceiveAmount extends HookConsumerWidget {
                 .read(swapRecvAmountChangeNotifierProvider.notifier)
                 .setAmount(value);
 
+            ref.read(swapPriceSubscribeNotifierProvider.notifier).setRecv();
             ref
-                .read(swapPriceSubscribeStateNotifierProvider.notifier)
-                .setRecv();
-            ref
-                .read(priceStreamSubscribeChangeNotifierProvider)
+                .read(priceStreamSubscribeNotifierProvider.notifier)
                 .subscribeToPriceStream();
           },
           onAddressEditingCompleted: () async {

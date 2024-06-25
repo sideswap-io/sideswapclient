@@ -11,6 +11,7 @@ import 'package:sideswap/models/pin_models.dart';
 import 'package:sideswap/providers/pin_keyboard_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'pin_protection_provider.g.dart';
 
@@ -211,20 +212,23 @@ class PinProtectionHelper {
 
     ref.invalidate(pinCodeProtectionNotifierProvider);
 
-    wrongCount += 1;
+    if (pinDecryptedData.error?.errorCode ==
+        From_DecryptPin_ErrorCode.WRONG_PIN) {
+      wrongCount += 1;
+    }
 
     if (wrongCount >= 3) {
       await ref.read(walletProvider).settingsDeletePromptConfirm();
       return;
     }
 
-    final errorMessage = switch (pinDecryptedData.error) {
-      'Failed handshake with PIN server' => 'Connection failed'.tr(),
-      'Couldn\'t decrypt data: BlockModeError' when wrongCount == 1 =>
+    final errorMessage = switch (pinDecryptedData.error?.errorCode) {
+      From_DecryptPin_ErrorCode.NETWORK_ERROR => 'Connection failed'.tr(),
+      From_DecryptPin_ErrorCode.WRONG_PIN when wrongCount == 1 =>
         'Wrong PIN code. Two attempts left.'.tr(),
-      'Couldn\'t decrypt data: BlockModeError' when wrongCount == 2 =>
+      From_DecryptPin_ErrorCode.WRONG_PIN when wrongCount == 2 =>
         'Wrong PIN code. Last attempt left.'.tr(),
-      _ => 'Unknown error'.tr(args: [pinDecryptedData.error]),
+      _ => 'Unknown error'.tr(args: [pinDecryptedData.error?.errorMsg ?? '']),
     };
 
     ref

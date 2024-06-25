@@ -587,5 +587,22 @@
   "Unblinded": "不设盲",
   "Tx": "Tx",
   "Conf.": "Conf.",
-  "New app release": "新应用程序发布"
+  "New app release": "新应用程序发布",
+  "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "SideSwap 需要访问蓝牙才能连接到硬件钱包。SideSwap 不会使用或保留位置数据。",
+  "More info": "更多信息",
+  "Step 1": "步骤1",
+  "Step 2": "第2步",
+  "Power on Jade": "打开 JADE",
+  "Hold the green button in the bottom of Jade until it boots up": "按住 JADE 底部的绿色按钮，直到其启动",
+  "Follow the instructions on Jade": "按照 JADE 上的说明进行操作",
+  "Select initialize and choose to create a New wallet": "选择初始化并选择创建一个新钱包",
+  "GIVE BLUETOOTH PERMISSIONS": "授予蓝牙权限",
+  "Enter PIN on JADE": "在 JADE 上输入 PIN 码",
+  "JADE {}": "JADE {}",
+  "Logging in...": "在登录...",
+  "SideSwap needs the master blinding key from Jade": "SideSwap 需要 JADE 的万能盲密钥",
+  "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.": "为了在每次登录时以高达 10 倍的速度显示 Liquid 账户上的余额和交易，有必要使用 Liquid 单签名账户。",
+  "Learn more": "了解更多",
+  "Connecting to JADE": "连接到 JADE",
+  "Sign transaction on JADE": "在 JADE 上签署交易"
 }

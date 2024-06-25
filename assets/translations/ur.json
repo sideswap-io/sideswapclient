@@ -560,5 +560,22 @@
   "Unblinded": "اندھا",
   "Tx": "Tx",
   "Conf.": "Conf.",
-  "New app release": "نئی ایپ ریلیز"
+  "New app release": "نئی ایپ ریلیز",
+  "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "SideSwap کو ہارڈویئر والیٹس سے منسلک کرنے کے لیے بلوٹوتھ تک رسائی کی ضرورت ہے۔ مقام کا ڈیٹا سائیڈ سویپ کے ذریعے استعمال یا محفوظ نہیں کیا جاتا ہے۔",
+  "More info": "مزید معلومات",
+  "Step 1": "مرحلہ نمبر 1",
+  "Step 2": "مرحلہ 2",
+  "Power on Jade": "JADE پر پاور",
+  "Hold the green button in the bottom of Jade until it boots up": "JADE کے نچلے حصے میں سبز بٹن کو اس وقت تک پکڑے رکھیں جب تک کہ یہ شروع نہ ہو جائے۔",
+  "Follow the instructions on Jade": "JADE پر دی گئی ہدایات پر عمل کریں۔",
+  "Select initialize and choose to create a New wallet": "شروع کریں کو منتخب کریں اور نیا پرس بنانے کا انتخاب کریں۔",
+  "GIVE BLUETOOTH PERMISSIONS": "بلوٹوتھ کی اجازت دیں۔",
+  "Enter PIN on JADE": "JADE پر پن درج کریں۔",
+  "JADE {}": "JADE {}",
+  "Logging in...": "لاگ ان ہو رہا ہے...",
+  "SideSwap needs the master blinding key from Jade": "SideSwap کو JADE سے ماسٹر بلائنڈنگ کلید کی ضرورت ہے۔",
+  "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.": "لیکوڈ اکاؤنٹس پر بیلنس اور لین دین کو ہر لاگ ان پر 10x تیزی سے دکھانے کے لیے، اور Liquid singlesig اکاؤنٹس کا استعمال کرنا ضروری ہے۔",
+  "Learn more": "اورجانیے",
+  "Connecting to JADE": "JADE سے منسلک ہو رہا ہے۔",
+  "Sign transaction on JADE": "JADE پر لین دین پر دستخط کریں۔"
 }

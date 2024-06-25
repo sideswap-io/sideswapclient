@@ -35,6 +35,7 @@ _$PinDataStateDataImpl _$$PinDataStateDataImplFromJson(Map json) =>
       salt: json['salt'] as String,
       encryptedData: json['encryptedData'] as String,
       pinIdentifier: json['pinIdentifier'] as String,
+      hmac: json['hmac'] as String?,
       $type: json['runtimeType'] as String?,
     );
 
@@ -44,5 +45,6 @@ Map<String, dynamic> _$$PinDataStateDataImplToJson(
       'salt': instance.salt,
       'encryptedData': instance.encryptedData,
       'pinIdentifier': instance.pinIdentifier,
+      'hmac': instance.hmac,
       'runtimeType': instance.$type,
     };

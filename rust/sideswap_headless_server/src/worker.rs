@@ -1,12 +1,9 @@
-use std::{
-    collections::{BTreeMap, HashSet},
-    str::FromStr,
-};
+use std::collections::{BTreeMap, HashSet};
 
 use rand::seq::SliceRandom;
 use sideswap_api::RequestId;
 use sideswap_common::{env::Env, ws::manual as ws};
-use tokio::sync::oneshot;
+use tokio::sync::{mpsc::UnboundedSender, oneshot};
 
 use crate::{
     api_server::{self, NewOrder, RecvAddressResponse, SendRequest, SendResponse},
@@ -34,7 +31,7 @@ struct Data {
     policy_asset: sideswap_api::AssetId,
     ws_connected: bool,
     async_requests: BTreeMap<RequestId, AsyncRequest>,
-    ws_sender: crossbeam_channel::Sender<ws::WrappedRequest>,
+    ws_sender: UnboundedSender<ws::WrappedRequest>,
     wallet: wallet::Wallet,
     orders: BTreeMap<sideswap_api::OrderId, OrderState>,
     swap_inputs: Option<wallet::SwapInputs>,
@@ -45,7 +42,7 @@ struct Data {
 }
 
 fn request_ws_connect(data: &mut Data) {
-    let env_data = data.env.data();
+    let env_data = data.env.d();
     let ws_connect = ws::WrappedRequest::Connect {
         host: env_data.host.to_owned(),
         port: env_data.port,
@@ -529,11 +526,11 @@ fn process_ws(data: &mut Data, resp: ws::WrappedResponse) {
 pub fn run(
     env: Env,
     req_receiver: crossbeam_channel::Receiver<Req>,
-    ws_sender: crossbeam_channel::Sender<ws::WrappedRequest>,
+    ws_sender: UnboundedSender<ws::WrappedRequest>,
     wallet: wallet::Wallet,
     db: Db,
 ) {
-    let policy_asset = sideswap_api::AssetId::from_str(env.data().policy_asset).unwrap();
+    let policy_asset = env.nd().policy_asset.asset_id();
 
     let mut data = Data {
         env,

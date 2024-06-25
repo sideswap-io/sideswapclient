@@ -115,12 +115,11 @@ class DOrderAmountEnter extends ConsumerWidget {
                     borderSide: BorderSide.none,
                   ),
                   hintText: hintText,
-                  hintStyle: MaterialStateTextStyle.resolveWith((states) {
+                  hintStyle: WidgetStateTextStyle.resolveWith((states) {
                     return TextStyle(
-                        color:
-                            states.contains(MaterialState.focused) && !readonly
-                                ? Colors.transparent
-                                : const Color(0x7FFFFFFF));
+                        color: states.contains(WidgetState.focused) && !readonly
+                            ? Colors.transparent
+                            : const Color(0x7FFFFFFF));
                   }),
                 ),
                 keyboardType:

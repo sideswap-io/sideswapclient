@@ -55,11 +55,11 @@ class MobileThemeData {
   }
 
   ScrollbarThemeData _scrollbarTheme = const ScrollbarThemeData(
-    thickness: MaterialStatePropertyAll(3),
+    thickness: WidgetStatePropertyAll(3),
     radius: Radius.circular(2),
-    thumbVisibility: MaterialStatePropertyAll(true),
-    thumbColor: MaterialStatePropertyAll(SideSwapColors.ceruleanFrost),
-    trackColor: MaterialStatePropertyAll(SideSwapColors.jellyBean),
+    thumbVisibility: WidgetStatePropertyAll(true),
+    thumbColor: WidgetStatePropertyAll(SideSwapColors.ceruleanFrost),
+    trackColor: WidgetStatePropertyAll(SideSwapColors.jellyBean),
   );
 
   ScrollbarThemeData get scrollbarTheme => _scrollbarTheme;
@@ -101,7 +101,14 @@ class MobileThemeData {
         ),
         titleMedium: TextStyle(
           fontSize: 17,
+          fontFamily: 'Roboto',
           fontWeight: FontWeight.normal,
+        ),
+        labelLarge: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.normal,
+          fontFamily: 'Roboto',
+          color: Colors.white,
         ),
         labelMedium: TextStyle(
           fontSize: 12,
@@ -140,17 +147,17 @@ class MobileThemeData {
   TextButtonThemeData firstLaunchNetworkSettingsButtonTheme =
       TextButtonThemeData(
     style: ButtonStyle(
-      side: const MaterialStatePropertyAll(
+      side: const WidgetStatePropertyAll(
         BorderSide(color: SideSwapColors.brightTurquoise),
       ),
-      shape: MaterialStatePropertyAll(
+      shape: WidgetStatePropertyAll(
         RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
           side: const BorderSide(color: SideSwapColors.brightTurquoise),
         ),
       ),
-      foregroundColor: const MaterialStatePropertyAll(Colors.white),
-      textStyle: const MaterialStatePropertyAll(
+      foregroundColor: const WidgetStatePropertyAll(Colors.white),
+      textStyle: const WidgetStatePropertyAll(
         TextStyle(fontSize: 16),
       ),
     ),

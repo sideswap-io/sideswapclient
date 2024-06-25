@@ -590,5 +590,22 @@
   "Unblinded": "Unblinded",
   "Tx": "Tx",
   "Conf.": "Conf.",
-  "New app release": "New app release"
+  "New app release": "New app release",
+  "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.",
+  "More info": "More info",
+  "Step 1": "Step 1",
+  "Step 2": "Step 2",
+  "Power on Jade": "Power on Jade",
+  "Hold the green button in the bottom of Jade until it boots up": "Hold the green button in the bottom of Jade until it boots up",
+  "Follow the instructions on Jade": "Follow the instructions on Jade",
+  "Select initialize and choose to create a New wallet": "Select initialize and choose to create a New wallet",
+  "GIVE BLUETOOTH PERMISSIONS": "GIVE BLUETOOTH PERMISSIONS",
+  "Enter PIN on JADE": "Enter PIN on JADE",
+  "JADE {}": "JADE {}",
+  "Logging in...": "Logging in...",
+  "SideSwap needs the master blinding key from Jade": "SideSwap needs the master blinding key from Jade",
+  "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.": "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.",
+  "Learn more": "Learn more",
+  "Connecting to JADE": "Connecting to JADE",
+  "Sign transaction on JADE": "Sign transaction on JADE"
 }

@@ -24,7 +24,8 @@ class SendPopupAmountNotifier extends _$SendPopupAmountNotifier {
     return '';
   }
 
-  void setAmount(String amount) {
+  void setAmount(String value) {
+    final amount = value.replaceAll(' ', '');
     state = amount;
   }
 }

@@ -8,7 +8,6 @@ pub mod gdk_ses;
 pub mod gdk_ses_impl;
 mod gdk_ses_jade;
 mod models;
-mod pin;
 mod settings;
 pub mod swaps;
 pub mod worker;

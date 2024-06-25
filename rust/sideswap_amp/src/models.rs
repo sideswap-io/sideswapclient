@@ -17,6 +17,8 @@ pub struct AuthenticateResult {
     pub gait_path: String,
     pub receiving_id: String,
     pub subaccounts: Vec<Subaccount>,
+    pub block_height: u32,
+    pub block_hash: String,
 }
 
 #[derive(Deserialize)]
@@ -50,6 +52,62 @@ pub struct Utxo {
     pub surj_proof: Option<Box<secp256k1_zkp::SurjectionProof>>,
     #[serde(deserialize_with = "helpers::deserialize_with_optional_empty_string")]
     pub range_proof: Option<Box<secp256k1_zkp::RangeProof>>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct TransactionEp {
+    // pub address: String, // Examples: "", "8srqhMFdtuV9xLn2MDe7nFVibkUUyxRFhg"
+    pub is_output: bool,
+    pub is_relevant: bool,
+    pub pt_idx: u32,
+    pub is_spent: bool,
+    // pub value: String, // Examples: "553", "None"
+    pub script_type: u32, // Examples: 14
+    pub subtype: u32,     // Examples: 0
+    pub pointer: u32,
+    pub subaccount: u32,
+
+    // Set for inputs
+    pub prevtxhash: Option<elements::Txid>,
+    pub previdx: Option<u32>,
+    pub prevsubaccount: Option<u32>,
+    pub prevpointer: Option<u32>,
+
+    // Set for outputs and own inputs
+    #[serde(default)]
+    #[serde(deserialize_with = "helpers::deserialize_hex")]
+    pub asset_tag: elements::confidential::Asset,
+    #[serde(default)]
+    pub script: elements::Script,
+    #[serde(default)]
+    #[serde(deserialize_with = "helpers::deserialize_hex")]
+    pub commitment: elements::confidential::Value,
+    #[serde(default)]
+    #[serde(deserialize_with = "helpers::deserialize_nonce")]
+    pub nonce_commitment: elements::confidential::Nonce,
+    #[serde(default)]
+    #[serde(deserialize_with = "helpers::deserialize_with_optional_empty_string")]
+    pub surj_proof: Option<Box<secp256k1_zkp::SurjectionProof>>,
+    #[serde(default)]
+    #[serde(deserialize_with = "helpers::deserialize_with_optional_empty_string")]
+    pub range_proof: Option<Box<secp256k1_zkp::RangeProof>>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Transaction {
+    pub eps: Vec<TransactionEp>,
+    pub block_height: u32,
+    pub created_at_ts: u64,
+    pub txhash: elements::Txid,
+    pub transaction_vsize: u32,
+    pub fee: u64,
+    pub rbf_optin: bool,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Transactions {
+    pub list: Vec<Transaction>,
+    pub more: bool,
 }
 
 #[derive(Deserialize, Debug)]

@@ -9,7 +9,7 @@ part of 'outputs_providers.dart';
 _$OutputsDataImpl _$$OutputsDataImplFromJson(Map json) => _$OutputsDataImpl(
       type: json['type'] as String?,
       version: json['version'] as String?,
-      timestamp: json['timestamp'] as int?,
+      timestamp: (json['timestamp'] as num?)?.toInt(),
       receivers: (json['receivers'] as List<dynamic>?)
           ?.map((e) =>
               OutputsReceiver.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -37,9 +37,9 @@ _$OutputsReceiverImpl _$$OutputsReceiverImplFromJson(Map json) =>
     _$OutputsReceiverImpl(
       address: json['address'] as String?,
       assetId: json['asset_id'] as String?,
-      satoshi: json['satoshi'] as int?,
+      satoshi: (json['satoshi'] as num?)?.toInt(),
       comment: json['comment'] as String?,
-      account: json['account'] as int?,
+      account: (json['account'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$OutputsReceiverImplToJson(

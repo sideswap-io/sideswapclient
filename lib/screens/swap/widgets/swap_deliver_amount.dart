@@ -33,10 +33,10 @@ class SwapDeliverAmount extends HookConsumerWidget {
         ref.watch(swapProvider.select((p) => p.swapSendWallet));
     final swapState = ref.watch(swapStateProvider);
     final swapType = ref.watch(swapProvider).swapType();
-    final subscribe = ref.watch(swapPriceSubscribeStateNotifierProvider);
+    final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
     final serverError = subscribe == const SwapPriceSubscribeState.recv()
         ? ''
-        : ref.watch(swapNetworkErrorStateProvider);
+        : ref.watch(swapNetworkErrorNotifierProvider);
     final showInsufficientFunds = ref.watch(showInsufficientFundsProvider);
 
     final swapSendAmountController = useTextEditingController();
@@ -93,11 +93,9 @@ class SwapDeliverAmount extends HookConsumerWidget {
                 .read(swapSendAmountChangeNotifierProvider.notifier)
                 .setAmount(value);
 
+            ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
             ref
-                .read(swapPriceSubscribeStateNotifierProvider.notifier)
-                .setSend();
-            ref
-                .read(priceStreamSubscribeChangeNotifierProvider)
+                .read(priceStreamSubscribeNotifierProvider.notifier)
                 .subscribeToPriceStream();
           },
           onMaxPressed: ref.read(swapProvider).onMaxSendPressed,

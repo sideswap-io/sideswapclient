@@ -57,6 +57,9 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.debug
+
+            minifyEnabled false
+            shrinkResources false
         }
         debug {}
     }
@@ -88,6 +91,7 @@ configurations {
 dependencies {
     implementation 'androidx.biometric:biometric:1.1.0'
     implementation 'androidx.fragment:fragment-ktx:1.6.2'
+    implementation "net.java.dev.jna:jna:5.14.0@aar"
 
     if (getGradle().getStartParameter().getTaskRequests().toString().contains("Full")) {
         fullImplementation 'com.google.firebase:firebase-messaging:23.4.1'

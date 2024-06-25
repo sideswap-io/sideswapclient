@@ -8,33 +8,14 @@ use crate::{ffi, models};
 use bitcoin::bip32;
 use sideswap_api::{Asset, AssetId};
 use sideswap_common::env::Env;
-use sideswap_jade::jade_mng;
+use sideswap_jade::jade_mng::{self, JadeStatus};
 use sideswap_jade::models::JadeNetwork;
-
-#[derive(Copy, Clone)]
-pub enum TxType {
-    Normal,
-    Swap,
-    OfflineSwapOutput,
-    OfflineSwap,
-}
-
-pub enum JadeStatus {
-    Idle,
-    ReadStatus,
-    AuthUser,
-    MasterBlindingKey,
-    SignTx(TxType),
-}
-
-pub type JadeStatusCallback = std::sync::Arc<Box<dyn Fn(JadeStatus)>>;
 
 #[derive(Clone)]
 pub struct HwData {
     pub env: Env,
     pub name: String,
     pub jade: std::sync::Arc<jade_mng::ManagedJade>,
-    pub status_callback: JadeStatusCallback,
     pub master_blinding_key: String,
     pub xpubs: BTreeMap<Vec<u32>, bip32::Xpub>,
 }
@@ -102,7 +83,7 @@ impl HwData {
     }
 
     pub fn set_status(&self, status: JadeStatus) {
-        (self.status_callback)(status);
+        self.jade.set_status(status);
     }
 }
 

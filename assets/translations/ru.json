@@ -589,5 +589,22 @@
   "Unblinded": "Неослепленный",
   "Tx": "Tx",
   "Conf.": "Conf.",
-  "New app release": "Новая версия приложения"
+  "New app release": "Новая версия приложения",
+  "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "SideSwap необходим доступ к Bluetooth для подключения к аппаратным кошелькам. Данные о местоположении не используются и не сохраняются SideSwap.",
+  "More info": "Больше информации",
+  "Step 1": "Шаг 1",
+  "Step 2": "Шаг 2",
+  "Power on Jade": "Включите Jade",
+  "Hold the green button in the bottom of Jade until it boots up": "Удерживайте зеленую кнопку в нижней части Jade, пока он не загрузится.",
+  "Follow the instructions on Jade": "Следуйте инструкциям на Jade.",
+  "Select initialize and choose to create a New wallet": "Выберите «Инициализировать» и выберите «Создать новый кошелек».",
+  "GIVE BLUETOOTH PERMISSIONS": "ПРЕДОСТАВИТЬ РАЗРЕШЕНИЯ BLUETOOTH",
+  "Enter PIN on JADE": "Введите PIN-код на JADE",
+  "JADE {}": "JADE {}",
+  "Logging in...": "Вход в систему...",
+  "SideSwap needs the master blinding key from Jade": "SideSwap нужен master blinding key от Jade",
+  "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.": "Чтобы отображать балансы и транзакции на учетных записях Liquid до 10 раз быстрее при каждом входе в систему, необходимо использовать учетные записи Liquid с одинарной подписью.",
+  "Learn more": "Узнать больше",
+  "Connecting to JADE": "Подключение к JADE",
+  "Sign transaction on JADE": "Подписать транзакцию на JADE"
 }

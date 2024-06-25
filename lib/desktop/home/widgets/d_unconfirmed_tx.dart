@@ -26,39 +26,33 @@ class DUnconfirmedTx extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: SizedBox(
-            height: 43,
-            child: DefaultTextStyle(
-              style: const TextStyle().merge(
-                Theme.of(context)
-                    .textTheme
-                    .labelMedium
-                    ?.copyWith(color: SideSwapColors.glacier),
-              ),
-              child: DFlexesRow(
-                flexes: const [183, 97, 137, 205, 205, 125, 26],
-                children: [
-                  DTxHistoryHeader(text: 'Date'.tr()),
-                  DTxHistoryHeader(text: 'Wallet'.tr()),
-                  DTxHistoryHeader(text: 'Type'.tr()),
-                  DTxHistoryHeader(text: 'Sent'.tr()),
-                  DTxHistoryHeader(text: 'Received'.tr()),
-                  DTxHistoryHeader(text: 'Confirmations'.tr()),
-                  DTxHistoryHeader(text: 'Link'.tr()),
-                ],
-              ),
+        SizedBox(
+          height: 43,
+          child: DefaultTextStyle(
+            style: const TextStyle().merge(
+              Theme.of(context)
+                  .textTheme
+                  .labelMedium
+                  ?.copyWith(color: SideSwapColors.glacier),
+            ),
+            child: DFlexesRow(
+              flexes: const [183, 97, 137, 205, 205, 125, 26],
+              children: [
+                DTxHistoryHeader(text: 'Date'.tr()),
+                DTxHistoryHeader(text: 'Wallet'.tr()),
+                DTxHistoryHeader(text: 'Type'.tr()),
+                DTxHistoryHeader(text: 'Sent'.tr()),
+                DTxHistoryHeader(text: 'Received'.tr()),
+                DTxHistoryHeader(text: 'Confirmations'.tr()),
+                DTxHistoryHeader(text: 'Link'.tr()),
+              ],
             ),
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.only(right: 20),
-          child: Divider(
-            height: 1,
-            thickness: 0,
-            color: SideSwapColors.jellyBean,
-          ),
+        const Divider(
+          height: 1,
+          thickness: 0,
+          color: SideSwapColors.jellyBean,
         ),
         Consumer(
           builder: (context, ref, _) {

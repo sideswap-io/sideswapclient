@@ -10,7 +10,6 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 
 [dependencies]
 gdk-common = { path = "../gdk_rust/gdk_common" }
-gdk-pin-client = { path = "../gdk_rust/gdk_pin_client" }
 gdk-registry = { path = "../gdk_rust/gdk_registry" }
 sideswap_api = { path = "../sideswap_api" }
 sideswap_common = { path = "../sideswap_common" }

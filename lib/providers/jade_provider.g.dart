@@ -34,8 +34,27 @@ final isJadeWalletProvider = AutoDisposeProvider<bool>.internal(
 );
 
 typedef IsJadeWalletRef = AutoDisposeProviderRef<bool>;
+String _$jadeBluetoothPermissionStateNotifierHash() =>
+    r'98c161e160010420edc2841205786f6887807ca2';
+
+/// See also [JadeBluetoothPermissionStateNotifier].
+@ProviderFor(JadeBluetoothPermissionStateNotifier)
+final jadeBluetoothPermissionStateNotifierProvider =
+    AutoDisposeNotifierProvider<JadeBluetoothPermissionStateNotifier,
+        JadeBluetoothPermissionState>.internal(
+  JadeBluetoothPermissionStateNotifier.new,
+  name: r'jadeBluetoothPermissionStateNotifierProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$jadeBluetoothPermissionStateNotifierHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$JadeBluetoothPermissionStateNotifier
+    = AutoDisposeNotifier<JadeBluetoothPermissionState>;
 String _$jadeDeviceNotifierHash() =>
-    r'815de26e047c013824f9a4b0cabac4f05b5d1ffa';
+    r'98bb679f6e0f9884f580c23e6952aa57ce4dff30';
 
 /// See also [JadeDeviceNotifier].
 @ProviderFor(JadeDeviceNotifier)
@@ -121,5 +140,22 @@ final jadeOrderIdTimerNotifierProvider =
 );
 
 typedef _$JadeOrderIdTimerNotifier = AutoDisposeNotifier<String>;
+String _$jadeSelectedDeviceHash() =>
+    r'516c0840d06f45f78a903fc43c47e7719492b30f';
+
+/// See also [JadeSelectedDevice].
+@ProviderFor(JadeSelectedDevice)
+final jadeSelectedDeviceProvider =
+    NotifierProvider<JadeSelectedDevice, From_JadePorts_Port?>.internal(
+  JadeSelectedDevice.new,
+  name: r'jadeSelectedDeviceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$jadeSelectedDeviceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef _$JadeSelectedDevice = Notifier<From_JadePorts_Port?>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

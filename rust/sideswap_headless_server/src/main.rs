@@ -33,7 +33,7 @@ async fn main() {
         api_server,
     } = conf.try_into().expect("invalid config");
 
-    sideswap_client::ffi::init_log(&work_dir);
+    sideswap_common::log_init::init_log(&work_dir);
 
     let db_path = std::path::Path::new(&work_dir).join("data.sqlite");
     let db = db::Db::open(&db_path).expect("must not fail");
@@ -68,11 +68,11 @@ async fn main() {
         }
     });
 
-    let (ws_sender, ws_receiver, _hint) = sideswap_common::ws::manual::start();
+    let (ws_sender, mut ws_receiver, _hint) = sideswap_common::ws::manual::start();
 
     let worker_sender_copy = worker_sender.clone();
     std::thread::spawn(move || loop {
-        let ws_req = ws_receiver.recv().unwrap();
+        let ws_req = ws_receiver.blocking_recv().unwrap();
         worker_sender_copy.send(worker::Req::Ws(ws_req)).unwrap();
     });
 

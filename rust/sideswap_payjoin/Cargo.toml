@@ -4,6 +4,8 @@ version = "0.1.2"
 edition = "2021"
 
 [dependencies]
+sideswap_common = { path = "../sideswap_common" }
+
 anyhow.workspace = true
 base64.workspace = true
 elements.workspace = true

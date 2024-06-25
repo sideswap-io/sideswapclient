@@ -11,9 +11,9 @@ _$NetworkSettingsModelEmptyImpl _$$NetworkSettingsModelEmptyImplFromJson(
     _$NetworkSettingsModelEmptyImpl(
       settingsNetworkType: $enumDecodeNullable(
           _$SettingsNetworkTypeEnumMap, json['settingsNetworkType']),
-      env: json['env'] as int?,
+      env: (json['env'] as num?)?.toInt(),
       host: json['host'] as String?,
-      port: json['port'] as int?,
+      port: (json['port'] as num?)?.toInt(),
       useTls: json['useTls'] as bool?,
       $type: json['runtimeType'] as String?,
     );
@@ -42,9 +42,9 @@ _$NetworkSettingsModelApplyImpl _$$NetworkSettingsModelApplyImplFromJson(
     _$NetworkSettingsModelApplyImpl(
       settingsNetworkType: $enumDecodeNullable(
           _$SettingsNetworkTypeEnumMap, json['settingsNetworkType']),
-      env: json['env'] as int?,
+      env: (json['env'] as num?)?.toInt(),
       host: json['host'] as String?,
-      port: json['port'] as int?,
+      port: (json['port'] as num?)?.toInt(),
       useTls: json['useTls'] as bool?,
       $type: json['runtimeType'] as String?,
     );

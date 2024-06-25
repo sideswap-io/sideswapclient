@@ -1,14 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, ensure};
-use elements::{
-    pset::{
-        raw::{ProprietaryKey, ProprietaryType},
-        PartiallySignedTransaction,
-    },
-    AssetId, TxOutSecrets, Txid,
-};
-use rand::seq::SliceRandom;
+use elements::{pset::PartiallySignedTransaction, AssetId, Txid};
 
 pub struct PsetInput {
     pub txid: Txid,
@@ -23,11 +16,6 @@ pub struct PsetOutput {
     pub asset: AssetId,
     pub amount: u64,
 }
-
-const PSET_IN_EXPLICIT_VALUE: ProprietaryType = 0x11; // 8 bytes
-const PSET_IN_VALUE_PROOF: ProprietaryType = 0x12; // 73 bytes
-const PSET_IN_EXPLICIT_ASSET: ProprietaryType = 0x13; // 2 bytes
-const PSET_IN_ASSET_PROOF: ProprietaryType = 0x14; // 67 bytes
 
 // Copied from GDK
 pub fn p2pkh_script(pk: &elements::bitcoin::PublicKey) -> elements::Script {
@@ -90,100 +78,6 @@ pub fn pset_network_fee(asset: AssetId, amount: u64) -> elements::pset::Output {
     elements::pset::Output::from_txout(network_fee_output)
 }
 
-fn add_input_explicit_proofs(
-    mut input: elements::pset::Input,
-    secret: &TxOutSecrets,
-) -> Result<elements::pset::Input, anyhow::Error> {
-    let mut rng = rand::thread_rng();
-    let asset_gen_unblinded = elements::secp256k1_zkp::Generator::new_unblinded(
-        elements::secp256k1_zkp::global::SECP256K1,
-        secret.asset.into_tag(),
-    );
-    let asset_gen_blinded = input
-        .witness_utxo
-        .as_ref()
-        .unwrap()
-        .asset
-        .into_asset_gen(elements::secp256k1_zkp::global::SECP256K1)
-        .unwrap();
-
-    let blind_asset_proof = elements::secp256k1_zkp::SurjectionProof::new(
-        elements::secp256k1_zkp::global::SECP256K1,
-        &mut rng,
-        secret.asset.into_tag(),
-        secret.asset_bf.into_inner(),
-        &[(
-            asset_gen_unblinded,
-            secret.asset.into_tag(),
-            elements::secp256k1_zkp::ZERO_TWEAK,
-        )],
-    )
-    .unwrap();
-
-    let blind_value_proof = elements::secp256k1_zkp::RangeProof::new(
-        elements::secp256k1_zkp::global::SECP256K1,
-        secret.value,
-        input
-            .witness_utxo
-            .as_ref()
-            .unwrap()
-            .value
-            .commitment()
-            .unwrap(),
-        secret.value,
-        secret.value_bf.into_inner(),
-        &[],
-        &[],
-        elements::secp256k1_zkp::SecretKey::new(&mut rng),
-        -1,
-        0,
-        asset_gen_blinded,
-    )?;
-
-    input.proprietary.insert(
-        ProprietaryKey::from_pset_pair(PSET_IN_EXPLICIT_VALUE, Vec::new()),
-        elements::encode::serialize(&secret.value),
-    );
-
-    input.proprietary.insert(
-        ProprietaryKey::from_pset_pair(PSET_IN_EXPLICIT_ASSET, Vec::new()),
-        elements::encode::serialize(&secret.asset),
-    );
-
-    let mut blind_value_proof = elements::encode::serialize(&blind_value_proof);
-    blind_value_proof.remove(0);
-    let mut blind_asset_proof = elements::encode::serialize(&blind_asset_proof);
-    blind_asset_proof.remove(0);
-
-    input.proprietary.insert(
-        ProprietaryKey::from_pset_pair(PSET_IN_VALUE_PROOF, Vec::new()),
-        blind_value_proof,
-    );
-
-    input.proprietary.insert(
-        ProprietaryKey::from_pset_pair(PSET_IN_ASSET_PROOF, Vec::new()),
-        blind_asset_proof,
-    );
-
-    Ok(input)
-}
-
-pub fn remove_explicit_values(mut pset: PartiallySignedTransaction) -> PartiallySignedTransaction {
-    for input in pset.inputs_mut() {
-        for subtype in [
-            PSET_IN_EXPLICIT_VALUE,
-            PSET_IN_EXPLICIT_ASSET,
-            PSET_IN_VALUE_PROOF,
-            PSET_IN_ASSET_PROOF,
-        ] {
-            input
-                .proprietary
-                .remove(&ProprietaryKey::from_pset_pair(subtype, Vec::new()));
-        }
-    }
-    pset
-}
-
 pub fn copy_signatures(
     mut dst: PartiallySignedTransaction,
     src: PartiallySignedTransaction,
@@ -197,57 +91,4 @@ pub fn copy_signatures(
         }
     }
     Ok(dst)
-}
-
-pub fn randomize_and_blind_pset(
-    mut pset: PartiallySignedTransaction,
-    input_secrets: &[TxOutSecrets],
-) -> Result<PartiallySignedTransaction, anyhow::Error> {
-    let mut rng = rand::thread_rng();
-
-    ensure!(pset.inputs().len() == input_secrets.len());
-
-    let mut inputs = pset
-        .inputs()
-        .iter()
-        .cloned()
-        .zip(input_secrets)
-        .collect::<Vec<_>>();
-    let outputs = pset.outputs_mut();
-
-    inputs.shuffle(&mut rng);
-    outputs.shuffle(&mut rng);
-
-    let fee_output = outputs
-        .iter()
-        .position(|output| output.blinding_key.is_none())
-        .ok_or_else(|| anyhow!("can't find network fee output"))?;
-    let output_count = outputs.len();
-    outputs.swap(fee_output, output_count - 1);
-
-    let mut pset = PartiallySignedTransaction::new_v2();
-
-    for (input, secret) in inputs.iter() {
-        // Add explicit asset/amount proofs for inputs (required by GDK)
-        let input = add_input_explicit_proofs(input.clone(), secret)?;
-        pset.add_input(input);
-    }
-
-    for output in outputs {
-        pset.add_output(output.clone());
-    }
-
-    let inp_txout_sec = inputs
-        .iter()
-        .enumerate()
-        .map(|(index, (_input, secret))| (index, **secret))
-        .collect();
-
-    pset.blind_last(
-        &mut rng,
-        elements::secp256k1_zkp::global::SECP256K1,
-        &inp_txout_sec,
-    )?;
-
-    Ok(pset)
 }

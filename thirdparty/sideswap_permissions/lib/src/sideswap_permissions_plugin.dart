@@ -41,4 +41,24 @@ class SideswapPermissionsPlugin {
     return SideswapPermissionPlatformInterface.instance
         .requestCameraPermission();
   }
+
+  Future<bool> hasBluetoothScanPermission() async {
+    return SideswapPermissionPlatformInterface.instance
+        .hasBluetoothScanPermission();
+  }
+
+  Future<bool> requestBluetoothScanPermission() async {
+    return SideswapPermissionPlatformInterface.instance
+        .requestBluetoothScanPermission();
+  }
+
+  Future<bool> hasBluetoothConnectPermission() async {
+    return SideswapPermissionPlatformInterface.instance
+        .hasBluetoothConnectPermission();
+  }
+
+  Future<bool> requestBluetoothConnectPermission() async {
+    return SideswapPermissionPlatformInterface.instance
+        .requestBluetoothConnectPermission();
+  }
 }

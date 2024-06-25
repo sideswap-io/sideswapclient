@@ -27,19 +27,18 @@ class SwapMain extends HookConsumerWidget {
     ref.listen(swapRecvAmountChangeNotifierProvider, (_, __) {});
     ref.listen(satoshiSendAmountStateNotifierProvider, (_, __) {});
     ref.listen(satoshiRecvAmountStateNotifierProvider, (_, __) {});
-    ref.listen<String>(swapNetworkErrorStateProvider, (_, next) {
+    ref.listen<String>(swapNetworkErrorNotifierProvider, (_, next) {
       if (next.isNotEmpty) {
         ref.read(swapStateProvider.notifier).state = SwapState.idle;
       }
     });
-    ref.listen<PriceStreamSubscribeProvider>(
-        priceStreamSubscribeChangeNotifierProvider, (_, next) {
-      if (next.msg.hasPrice()) {
+    ref.listen(priceStreamSubscribeNotifierProvider, (_, next) {
+      if (next.hasPrice()) {
         final swapState = ref.read(swapStateProvider);
         if (swapState == SwapState.idle) {
           ref
               .read(swapPriceStateNotifierProvider.notifier)
-              .setPrice(next.msg.price);
+              .setPrice(next.price);
         }
       }
     });
@@ -87,7 +86,7 @@ class SwapMain extends HookConsumerWidget {
 
     useEffect(() {
       ref
-          .read(priceStreamSubscribeChangeNotifierProvider)
+          .read(priceStreamSubscribeNotifierProvider.notifier)
           .subscribeToPriceStream();
 
       return;

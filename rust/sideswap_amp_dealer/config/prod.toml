@@ -1,0 +1,13 @@
+# SideSwap prod server for the Liquid network
+env = "Prod"
+
+# Work dir to store temporary files
+work_dir = "/tmp/work_dir"
+
+# Mnemonic that has existing CMSTR balance and will receive L-BTC balance
+mnemonic = "<YOUR_MNEMONIC>"
+
+[[sell_assets]]
+asset_id = "e8305bb5c1794b256a858a01e5d8af7a5817d257fbfbc2c9d49620f13ff401a9" # CMSTR
+amount = 0.0001
+interest = 0.01 # Should not exceed 0.1 (10%)

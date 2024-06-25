@@ -237,6 +237,7 @@ message To {
     required string salt = 2;
     required string encrypted_data = 3;
     required string pin_identifier = 4;
+    optional string hmac = 5;
   }
 
   message AppState {
@@ -447,6 +448,7 @@ message From {
       required string salt = 2;
       required string encrypted_data = 3;
       required string pin_identifier = 4;
+      optional string hmac = 5;
     }
     oneof result {
       string error = 1;
@@ -455,8 +457,19 @@ message From {
   }
 
   message DecryptPin {
+    enum ErrorCode {
+      WRONG_PIN = 1;
+      NETWORK_ERROR = 2;
+      INVALID_DATA = 3;
+    }
+
+    message Error {
+      required string error_msg = 1;
+      required ErrorCode error_code = 2;
+    }
+
     oneof result {
-      string error = 1;
+      Error error = 1;
       string mnemonic = 2;
     }
   }
@@ -745,6 +758,7 @@ message From {
 
   message JadeStatus {
     enum Status {
+      CONNECTING = 9;
       IDLE = 1;
       READ_STATUS = 2;
       AUTH_USER = 3;

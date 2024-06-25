@@ -79,7 +79,7 @@ class OrderPriceTextField extends ConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 17),
+                padding: const EdgeInsets.only(bottom: 20),
                 child: SizedBox(
                   height: 29,
                   child: Row(
@@ -111,7 +111,7 @@ class OrderPriceTextField extends ConsumerWidget {
                         ),
                       ),
                       SizedBox(
-                        width: 160,
+                        width: 157,
                         child: Padding(
                           padding: const EdgeInsets.only(left: 14),
                           child: TextField(

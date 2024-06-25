@@ -1,9 +1,11 @@
+use crate::retry_delay::RetryDelay;
+
 use super::*;
 
 use futures::prelude::*;
-use rand::distributions::Distribution;
 use sideswap_api::*;
 use std::time::Instant;
+use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 #[derive(Debug)]
 pub enum WrappedRequest {
@@ -67,9 +69,7 @@ async fn connect_with_error_delay(
     match connect_result {
         Ok(Ok(stream)) => Ok(stream),
         Ok(Err(err)) => {
-            let dist = rand::distributions::Uniform::from(0.0..2.0);
-            let jitter = dist.sample(&mut rand::thread_rng());
-            tokio::time::sleep(error_delay.mul_f64(jitter)).await;
+            tokio::time::sleep(error_delay).await;
             Err(err)
         }
         Err(_timeout) => {
@@ -80,22 +80,13 @@ async fn connect_with_error_delay(
 }
 
 async fn run(
-    req_rx: crossbeam_channel::Receiver<WrappedRequest>,
-    resp_tx: crossbeam_channel::Sender<WrappedResponse>,
-    mut hint_rx: tokio::sync::mpsc::UnboundedReceiver<()>,
+    mut req_rx: UnboundedReceiver<WrappedRequest>,
+    resp_tx: UnboundedSender<WrappedResponse>,
+    mut hint_rx: UnboundedReceiver<()>,
 ) {
-    let (req_tx_async, mut req_rx_async) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
-    std::thread::spawn(move || {
-        while let Ok(req) = req_rx.recv() {
-            if let Err(e) = req_tx_async.send(req) {
-                error!("unexpected sending error: {}", e);
-            }
-        }
-    });
-
     loop {
         let (host, port, use_tls, proxy) = loop {
-            let req = req_rx_async.recv().await;
+            let req = req_rx.recv().await;
             match req {
                 Some(WrappedRequest::Connect {
                     host,
@@ -119,34 +110,29 @@ async fn run(
         let protocol = if use_tls { "wss" } else { "ws" };
         let url = format!("{}://{}:{}/{}", protocol, &host, port, PATH_JSON_RUST_WS);
 
-        let mut reconnect_count = 0;
-        let mut ws_stream = None;
+        let mut retry_delay = RetryDelay::default();
 
-        while ws_stream.is_none() {
+        let mut ws_stream = loop {
             debug!("try ws connection to {url}...");
-            let error_delay = *RECONNECT_WAIT_PERIODS
-                .get(reconnect_count)
-                .unwrap_or(&RECONNECT_WAIT_MAX_PERIOD);
             tokio::select! {
-                connect_result = connect_with_error_delay(&url, proxy.as_ref(), &host, port, error_delay) => {
+                connect_result = connect_with_error_delay(&url, proxy.as_ref(), &host, port, retry_delay.next_delay()) => {
                     match connect_result {
-                        Ok((v, _)) => ws_stream = Some(v),
+                        Ok((ws_stream, _response)) => break ws_stream,
                         Err(e) => {
                             error!("ws connection to the server failed: {}", e);
-                            reconnect_count += 1;
                         }
                     };
                 }
+
                 reconnect = hint_rx.recv() => {
                     if reconnect.is_none() {
                         return;
                     }
                     debug!("reconnect hint received");
-                    reconnect_count = 0;
+                    retry_delay = RetryDelay::default();
                 }
             }
-        }
-        let mut ws_stream = ws_stream.unwrap();
+        };
 
         debug!("ws connected");
         resp_tx.send(WrappedResponse::Connected).unwrap();
@@ -157,8 +143,7 @@ async fn run(
 
         loop {
             tokio::select! {
-                server_msg = ws_stream.next() => {
-                    let server_msg = server_msg.unwrap();
+                server_msg = ws_stream.select_next_some() => {
                     let server_msg = match server_msg {
                         Ok(v) => v,
                         Err(v) => {
@@ -186,7 +171,7 @@ async fn run(
                     }
                 }
 
-                client_result = req_rx_async.recv() => {
+                client_result = req_rx.recv() => {
                     let client_result = match client_result {
                         Some(v) => v,
                         None => {
@@ -228,12 +213,12 @@ async fn run(
 }
 
 pub fn start() -> (
-    crossbeam_channel::Sender<WrappedRequest>,
-    crossbeam_channel::Receiver<WrappedResponse>,
-    tokio::sync::mpsc::UnboundedSender<()>,
+    UnboundedSender<WrappedRequest>,
+    UnboundedReceiver<WrappedResponse>,
+    UnboundedSender<()>,
 ) {
-    let (req_tx, req_rx) = crossbeam_channel::unbounded::<WrappedRequest>();
-    let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<WrappedResponse>();
+    let (req_tx, req_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
+    let (resp_tx, resp_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedResponse>();
     let (hint_tx, hint_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
     std::thread::spawn(move || {
         let rt = tokio::runtime::Builder::new_current_thread()

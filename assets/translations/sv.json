@@ -569,5 +569,22 @@
   "Unblinded": "Oblindad",
   "Tx": "Tx",
   "Conf.": "Conf.",
-  "New app release": "Ny appversion"
+  "New app release": "Ny appversion",
+  "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "SideSwap behöver tillgång till Bluetooth för att kunna ansluta till hårdvaruplånböcker. Platsdata används eller behålls inte av SideSwap.",
+  "More info": "Mer information",
+  "Step 1": "Steg 1",
+  "Step 2": "Steg 2",
+  "Power on Jade": "Slå på Jade",
+  "Hold the green button in the bottom of Jade until it boots up": "Håll den gröna knappen i botten av Jade tills den startar upp",
+  "Follow the instructions on Jade": "Följ instruktionerna på Jade",
+  "Select initialize and choose to create a New wallet": "Välj initiera och välj att skapa en ny plånbok",
+  "GIVE BLUETOOTH PERMISSIONS": "GE BLUETOOTH TILLSTÅND",
+  "Enter PIN on JADE": "Ange PIN-kod på JADE",
+  "JADE {}": "JADE {}",
+  "Logging in...": "Loggar in...",
+  "SideSwap needs the master blinding key from Jade": "SideSwap behöver huvudblindnyckeln från Jade",
+  "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.": "För att visa saldon och transaktioner på Liquid-konton upp till 10 gånger snabbare vid varje inloggning, och det är nödvändigt att använda Liquid singlesig-konton.",
+  "Learn more": "Läs mer",
+  "Connecting to JADE": "Ansluter till JADE",
+  "Sign transaction on JADE": "Signera transaktion på JADE"
 }

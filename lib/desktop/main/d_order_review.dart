@@ -122,7 +122,9 @@ class DOrderReview extends HookConsumerWidget {
         : null;
     final ttlValue = getTtlDescription(ttlSeconds);
     final shareUrl = ref.watch(addressToShareByOrderIdProvider(order.orderId));
-    final isSell = order.sellBitcoin == asset?.swapMarket;
+    final pricedInLiquid =
+        ref.watch(assetUtilsProvider).isPricedInLiquid(asset: asset);
+    final isSell = order.sellBitcoin == pricedInLiquid;
     final defaultCurrencyPrice = priceInLiquid
         ? ref.watch(amountUsdInDefaultCurrencyProvider(
             liquidAssetId, order.priceAmount))
@@ -135,7 +137,9 @@ class DOrderReview extends HookConsumerWidget {
     final autoSignPrev = useState(true);
     final isTracking = useState(order.isTracking);
     final controllerPrice = useTextEditingController();
-    final priceTrackerValue = useState(.0);
+
+    final priceTrackerValue =
+        useState(indexPriceToTrackerValue(order.indexPrice));
 
     useEffect(() {
       if (screen == ReviewScreen.edit) {
@@ -372,34 +376,27 @@ class DOrderReview extends HookConsumerWidget {
                     builder: (context, ref, child) {
                       final isJadeWallet = ref.watch(isJadeWalletProvider);
 
-                      if (screen == ReviewScreen.edit) {
-                        return const DOrderReviewSignTypeControls(
-                          onTwoStepChanged: null,
-                        );
-                      }
+                      return switch (screen) {
+                        ReviewScreen.edit ||
+                        ReviewScreen.submitStart
+                            when (isJadeWallet || isTracking.value) =>
+                          const DOrderReviewSignTypeControls(
+                            onTwoStepChanged: null,
+                          ),
+                        ReviewScreen.submitStart =>
+                          DOrderReviewSignTypeControls(
+                            onTwoStepChanged: (bool value) {
+                              ref
+                                  .read(orderReviewTwoStepProvider.notifier)
+                                  .setTwoStep(value);
 
-                      // turn off online for jade wallet
-                      if (isJadeWallet && screen == ReviewScreen.submitStart) {
-                        return const DOrderReviewSignTypeControls(
-                          onTwoStepChanged: null,
-                        );
-                      }
-
-                      if (screen == ReviewScreen.submitStart) {
-                        return DOrderReviewSignTypeControls(
-                          onTwoStepChanged: (bool value) {
-                            ref
-                                .read(orderReviewTwoStepProvider.notifier)
-                                .setTwoStep(value);
-
-                            if (value) {
-                              autoSign.value = true;
-                            }
-                          },
-                        );
-                      }
-
-                      return const SizedBox();
+                              if (value) {
+                                autoSign.value = true;
+                              }
+                            },
+                          ),
+                        _ => const SizedBox(),
+                      };
                     },
                   ),
                   if (screen == ReviewScreen.submitStart ||
@@ -482,8 +479,7 @@ class DOrderReview extends HookConsumerWidget {
             ),
           if (screen == ReviewScreen.submitStart ||
               screen == ReviewScreen.quote ||
-              screen == ReviewScreen.sign ||
-              screen == ReviewScreen.edit)
+              screen == ReviewScreen.sign)
             Padding(
               padding: const EdgeInsets.only(bottom: 40),
               child: DCustomFilledBigButton(
@@ -498,6 +494,35 @@ class DOrderReview extends HookConsumerWidget {
                     .toUpperCase()),
               ),
             ),
+          if (screen == ReviewScreen.edit) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: DCustomFilledBigButton(
+                width: 500,
+                height: 44,
+                onPressed: (reviewState.value == ReviewState.idle)
+                    ? handleSubmitCallback
+                    : null,
+                autofocus: screen != ReviewScreen.edit,
+                child: Text(getButtonTitle(screen, reviewState.value,
+                        order.twoStep, isTracking.value)
+                    .toUpperCase()),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: DCustomFilledBigButton(
+                width: 500,
+                height: 44,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text(
+                  'CLOSE'.tr(),
+                ),
+              ),
+            )
+          ],
           if (screen == ReviewScreen.submitSucceed && !order.private)
             Container(
               padding: const EdgeInsets.only(top: 40, bottom: 40),

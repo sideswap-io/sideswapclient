@@ -887,14 +887,8 @@ const int SIDESWAP_ELEMENTS = 2;
 
 const int SIDESWAP_ENV_PROD = 0;
 
-const int SIDESWAP_ENV_STAGING = 1;
-
-const int SIDESWAP_ENV_REGTEST = 2;
-
-const int SIDESWAP_ENV_LOCAL = 3;
+const int SIDESWAP_ENV_TESTNET = 5;
 
 const int SIDESWAP_ENV_LOCAL_LIQUID = 4;
-
-const int SIDESWAP_ENV_TESTNET = 5;
 
 const int SIDESWAP_ENV_LOCAL_TESTNET = 6;

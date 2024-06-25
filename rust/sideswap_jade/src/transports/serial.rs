@@ -1,6 +1,6 @@
 use crate::JadeId;
 
-use super::{Connection, Port, Transport};
+use super::{Connection, Port, Transport, TransportType};
 
 pub struct SerialTransport {}
 
@@ -27,6 +27,10 @@ pub fn get_jade_id(usb_port: &serialport::UsbPortInfo) -> JadeId {
 }
 
 impl Transport for SerialTransport {
+    fn transport_type(&self) -> TransportType {
+        TransportType::Serial
+    }
+
     fn ports(&self) -> Result<Vec<Port>, anyhow::Error> {
         Ok(serialport::available_ports()?
             .into_iter()

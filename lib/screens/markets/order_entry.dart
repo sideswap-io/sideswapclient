@@ -125,7 +125,7 @@ class OrderEntryHeaderTickerDropdown extends ConsumerWidget {
 
     return TextButton(
       style: const ButtonStyle(
-        padding: MaterialStatePropertyAll(EdgeInsets.zero),
+        padding: WidgetStatePropertyAll(EdgeInsets.zero),
       ),
       onPressed: () {
         Navigator.of(context, rootNavigator: true).push<void>(
@@ -228,7 +228,7 @@ class OrderEntryCloseButton extends ConsumerWidget {
       height: 24,
       child: TextButton(
         style: const ButtonStyle(
-          padding: MaterialStatePropertyAll(EdgeInsets.zero),
+          padding: WidgetStatePropertyAll(EdgeInsets.zero),
         ),
         onPressed: () {
           ref.read(walletProvider).goBack();
@@ -282,9 +282,9 @@ class OrderEntryIndexPrice extends ConsumerWidget {
       ),
       child: TextButton(
         style: ButtonStyle(
-          padding: const MaterialStatePropertyAll<EdgeInsetsGeometry>(
-              EdgeInsets.zero),
-          shape: MaterialStatePropertyAll<RoundedRectangleBorder>(
+          padding:
+              const WidgetStatePropertyAll<EdgeInsetsGeometry>(EdgeInsets.zero),
+          shape: WidgetStatePropertyAll<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(6),
             ),

@@ -12,13 +12,15 @@ import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
 import 'package:sideswap/models/jade_model.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
+import 'package:sideswap/screens/onboarding/jade/jade_rescan_listener.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class DJadeImport extends ConsumerWidget {
   const DJadeImport({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(jadeRescanProvider, (_, __) {});
+    final jadeDevicesState = ref.watch(jadeDeviceNotifierProvider);
 
     final desktopAppTheme = ref.watch(desktopAppThemeNotifierProvider);
 
@@ -27,6 +29,14 @@ class DJadeImport extends ConsumerWidget {
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
+            ...switch (jadeDevicesState) {
+              JadeDevicesStateAvailable(
+                devices: List<From_JadePorts_Port> devices
+              )
+                  when devices.isNotEmpty =>
+                [const SizedBox()],
+              _ => [const JadeRescanListener()],
+            },
             Row(
               children: [
                 DCustomTextBigButton(

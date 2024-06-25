@@ -210,9 +210,9 @@ class DesktopAppTheme {
   }
 
   ScrollbarThemeData? _scrollbarTheme = const ScrollbarThemeData(
-    thickness: MaterialStatePropertyAll(4),
-    thumbColor: MaterialStatePropertyAll(SideSwapColors.ceruleanFrost),
-    trackColor: MaterialStatePropertyAll(SideSwapColors.jellyBean),
+    thickness: WidgetStatePropertyAll(4),
+    thumbColor: WidgetStatePropertyAll(SideSwapColors.ceruleanFrost),
+    trackColor: WidgetStatePropertyAll(SideSwapColors.jellyBean),
   );
 
   ScrollbarThemeData? get scrollbarTheme => _scrollbarTheme;

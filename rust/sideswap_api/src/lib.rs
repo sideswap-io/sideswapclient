@@ -419,122 +419,6 @@ pub struct UpdatePushTokenRequest {
     pub push_token: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RegisterPhoneRequest {
-    pub country_code: String,
-    pub phone_number: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct RegisterPhoneResponse {
-    pub register_id: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct VerifyPhoneRequest {
-    pub register_id: String,
-    pub code: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct VerifyPhoneResponse {
-    pub phone_key: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UnregisterPhoneRequest {
-    pub phone_key: PhoneKey,
-}
-
-pub type UnregisterPhoneResponse = Empty;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UploadAvatarRequest {
-    pub phone_key: PhoneKey,
-    pub image: String,
-}
-pub type UploadAvatarResponse = Empty;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UploadContact {
-    pub identifier: String,
-    pub name: String,
-    pub phones: Vec<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct UploadContactsRequest {
-    pub phone_key: PhoneKey,
-    pub contacts: Vec<UploadContact>,
-}
-pub type UploadContactsResponse = Empty;
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Contact {
-    pub contact_key: ContactKey,
-    pub name: String,
-    pub phone: String,
-    pub avatar: Option<AvatarId>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactTransaction {
-    pub contact_key: ContactKey,
-    pub txid: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DownloadContactsRequest {
-    pub phone_key: PhoneKey,
-}
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct DownloadContactsResponse {
-    pub registered: bool,
-    pub contacts: Vec<Contact>,
-    pub transactions: Vec<ContactTransaction>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactCreatedNotification {
-    pub contact: Contact,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactRemovedNotification {
-    pub contact_key: ContactKey,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactTransactionCreatedNotification {
-    pub tx: ContactTransaction,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct AccountStatusNotification {
-    pub registered: bool,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactAddrRequest {
-    pub phone_key: PhoneKey,
-    pub contact_key: ContactKey,
-}
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactAddrResponse {
-    pub addr: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactBroadcastRequest {
-    pub raw_tx: String,
-    pub phone_key: PhoneKey,
-    pub contact_key: ContactKey,
-}
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ContactBroadcastResponse {
-    pub txid: String,
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -556,7 +440,7 @@ pub enum OrderType {
     Asset,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Details {
     pub asset: AssetId,
     pub bitcoin_amount: i64,
@@ -682,6 +566,7 @@ pub struct OrderCreatedNotification {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OrderRemovedNotification {
+    pub asset_id: AssetId,
     pub order_id: OrderId,
 }
 
@@ -737,7 +622,7 @@ pub struct PsetTakerRequest {
 }
 pub type PsetTakerResponse = Empty;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SignNotification {
     pub order_id: OrderId,
     pub pset: String,
@@ -931,6 +816,7 @@ pub type StartSwapDealerResponse = Empty;
 pub struct BlindedSwapClientNotification {
     pub order_id: OrderId,
     pub pset: String,
+    pub nonces: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -963,7 +849,7 @@ pub enum SwapDoneStatus {
     ServerError,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SwapDoneNotification {
     pub order_id: OrderId,
     pub status: SwapDoneStatus,
@@ -1089,15 +975,6 @@ pub enum Request {
     RegisterAddresses(RegisterAddressesRequest),
     UpdatePushToken(UpdatePushTokenRequest),
 
-    RegisterPhone(RegisterPhoneRequest),
-    VerifyPhone(VerifyPhoneRequest),
-    UnregisterPhone(UnregisterPhoneRequest),
-    UploadAvatar(UploadAvatarRequest),
-    UploadContacts(UploadContactsRequest),
-    DownloadContacts(DownloadContactsRequest),
-    ContactAddr(ContactAddrRequest),
-    ContactBroadcast(ContactBroadcastRequest),
-
     LoadPrices(LoadPricesRequest),
     CancelPrices(CancelPricesRequest),
     PortfolioPrices(PortfolioPricesRequest),
@@ -1152,15 +1029,6 @@ pub enum Response {
     RegisterAddresses(Empty),
     UpdatePushToken(Empty),
 
-    RegisterPhone(RegisterPhoneResponse),
-    VerifyPhone(VerifyPhoneResponse),
-    UnregisterPhone(UnregisterPhoneResponse),
-    UploadAvatar(UploadAvatarResponse),
-    UploadContacts(UploadContactsResponse),
-    DownloadContacts(DownloadContactsResponse),
-    ContactAddr(ContactAddrResponse),
-    ContactBroadcast(ContactBroadcastResponse),
-
     LoadPrices(LoadPricesResponse),
     CancelPrices(CancelPricesResponse),
     PortfolioPrices(PortfolioPricesResponse),
@@ -1206,11 +1074,6 @@ pub enum Notification {
     OrderRemoved(OrderRemovedNotification),
     Sign(SignNotification),
     Complete(CompleteNotification),
-
-    ContactCreated(ContactCreatedNotification),
-    ContactRemoved(ContactRemovedNotification),
-    ContactTransaction(ContactTransactionCreatedNotification),
-    AccountStatus(AccountStatusNotification),
 
     UpdatePriceStream(SubscribePriceStreamResponse),
     StartSwapDealer(StartSwapDealerNotification),

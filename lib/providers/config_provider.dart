@@ -95,6 +95,7 @@ class SideswapSettings with _$SideswapSettings {
   static const pinSaltField = 'pinSalt';
   static const pinEncryptedDataField = 'pinEncryptedData';
   static const pinIdentifierField = 'pinIdentifierField';
+  static const pinHmacField = 'pinHmac';
   static const settingsNetworkTypeField = 'settingsNetworkTypeFieldNew';
   static const settingsHostField = 'settingsHostFieldNew';
   static const settingsPortField = 'settingsPortFieldNew';
@@ -404,11 +405,13 @@ class Configuration extends _$Configuration {
     final encryptedData =
         prefs.getString(SideswapSettings.pinEncryptedDataField);
     final pinIdentifier = prefs.getString(SideswapSettings.pinIdentifierField);
+    final pinHmac = prefs.getString(SideswapSettings.pinHmacField);
 
     final pinData = PinDataStateData(
       salt: salt ?? '',
       encryptedData: encryptedData ?? '',
       pinIdentifier: pinIdentifier ?? '',
+      hmac: pinHmac,
     );
 
     return switch (pinData) {
@@ -440,7 +443,8 @@ class Configuration extends _$Configuration {
       PinDataStateData(
         salt: final salt,
         encryptedData: final encryptedData,
-        pinIdentifier: final pinIdentifier
+        pinIdentifier: final pinIdentifier,
+        hmac: final pinHmac,
       )
           when salt.isNotEmpty &&
               encryptedData.isNotEmpty &&
@@ -451,11 +455,15 @@ class Configuration extends _$Configuration {
               SideswapSettings.pinEncryptedDataField, encryptedData);
           await prefs.setString(
               SideswapSettings.pinIdentifierField, pinIdentifier);
+          if (pinHmac != null) {
+            await prefs.setString(SideswapSettings.pinHmacField, pinHmac);
+          }
         }(),
       _ => () async {
           await prefs.remove(SideswapSettings.pinEncryptedDataField);
           await prefs.remove(SideswapSettings.pinIdentifierField);
           await prefs.remove(SideswapSettings.pinSaltField);
+          await prefs.remove(SideswapSettings.pinHmacField);
         }(),
     };
   }

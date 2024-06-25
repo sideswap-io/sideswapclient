@@ -2952,6 +2952,7 @@ class To_DecryptPin extends $pb.GeneratedMessage {
     $core.String? salt,
     $core.String? encryptedData,
     $core.String? pinIdentifier,
+    $core.String? hmac,
   }) {
     final $result = create();
     if (pin != null) {
@@ -2966,6 +2967,9 @@ class To_DecryptPin extends $pb.GeneratedMessage {
     if (pinIdentifier != null) {
       $result.pinIdentifier = pinIdentifier;
     }
+    if (hmac != null) {
+      $result.hmac = hmac;
+    }
     return $result;
   }
   To_DecryptPin._() : super();
@@ -2977,6 +2981,7 @@ class To_DecryptPin extends $pb.GeneratedMessage {
     ..aQS(2, _omitFieldNames ? '' : 'salt')
     ..aQS(3, _omitFieldNames ? '' : 'encryptedData')
     ..aQS(4, _omitFieldNames ? '' : 'pinIdentifier')
+    ..aOS(5, _omitFieldNames ? '' : 'hmac')
   ;
 
   @$core.Deprecated(
@@ -3035,6 +3040,15 @@ class To_DecryptPin extends $pb.GeneratedMessage {
   $core.bool hasPinIdentifier() => $_has(3);
   @$pb.TagNumber(4)
   void clearPinIdentifier() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get hmac => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set hmac($core.String v) { $_setString(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHmac() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearHmac() => clearField(5);
 }
 
 class To_AppState extends $pb.GeneratedMessage {
@@ -5746,6 +5760,7 @@ class From_EncryptPin_Data extends $pb.GeneratedMessage {
     $core.String? salt,
     $core.String? encryptedData,
     $core.String? pinIdentifier,
+    $core.String? hmac,
   }) {
     final $result = create();
     if (salt != null) {
@@ -5757,6 +5772,9 @@ class From_EncryptPin_Data extends $pb.GeneratedMessage {
     if (pinIdentifier != null) {
       $result.pinIdentifier = pinIdentifier;
     }
+    if (hmac != null) {
+      $result.hmac = hmac;
+    }
     return $result;
   }
   From_EncryptPin_Data._() : super();
@@ -5767,6 +5785,7 @@ class From_EncryptPin_Data extends $pb.GeneratedMessage {
     ..aQS(2, _omitFieldNames ? '' : 'salt')
     ..aQS(3, _omitFieldNames ? '' : 'encryptedData')
     ..aQS(4, _omitFieldNames ? '' : 'pinIdentifier')
+    ..aOS(5, _omitFieldNames ? '' : 'hmac')
   ;
 
   @$core.Deprecated(
@@ -5816,6 +5835,15 @@ class From_EncryptPin_Data extends $pb.GeneratedMessage {
   $core.bool hasPinIdentifier() => $_has(2);
   @$pb.TagNumber(4)
   void clearPinIdentifier() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get hmac => $_getSZ(3);
+  @$pb.TagNumber(5)
+  set hmac($core.String v) { $_setString(3, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasHmac() => $_has(3);
+  @$pb.TagNumber(5)
+  void clearHmac() => clearField(5);
 }
 
 enum From_EncryptPin_Result {
@@ -5898,6 +5926,69 @@ class From_EncryptPin extends $pb.GeneratedMessage {
   From_EncryptPin_Data ensureData() => $_ensure(1);
 }
 
+class From_DecryptPin_Error extends $pb.GeneratedMessage {
+  factory From_DecryptPin_Error({
+    $core.String? errorMsg,
+    From_DecryptPin_ErrorCode? errorCode,
+  }) {
+    final $result = create();
+    if (errorMsg != null) {
+      $result.errorMsg = errorMsg;
+    }
+    if (errorCode != null) {
+      $result.errorCode = errorCode;
+    }
+    return $result;
+  }
+  From_DecryptPin_Error._() : super();
+  factory From_DecryptPin_Error.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_DecryptPin_Error.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.DecryptPin.Error', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'errorMsg')
+    ..e<From_DecryptPin_ErrorCode>(2, _omitFieldNames ? '' : 'errorCode', $pb.PbFieldType.QE, defaultOrMaker: From_DecryptPin_ErrorCode.WRONG_PIN, valueOf: From_DecryptPin_ErrorCode.valueOf, enumValues: From_DecryptPin_ErrorCode.values)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_DecryptPin_Error clone() => From_DecryptPin_Error()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_DecryptPin_Error copyWith(void Function(From_DecryptPin_Error) updates) => super.copyWith((message) => updates(message as From_DecryptPin_Error)) as From_DecryptPin_Error;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_DecryptPin_Error create() => From_DecryptPin_Error._();
+  From_DecryptPin_Error createEmptyInstance() => create();
+  static $pb.PbList<From_DecryptPin_Error> createRepeated() => $pb.PbList<From_DecryptPin_Error>();
+  @$core.pragma('dart2js:noInline')
+  static From_DecryptPin_Error getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_DecryptPin_Error>(create);
+  static From_DecryptPin_Error? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get errorMsg => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set errorMsg($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasErrorMsg() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearErrorMsg() => clearField(1);
+
+  @$pb.TagNumber(2)
+  From_DecryptPin_ErrorCode get errorCode => $_getN(1);
+  @$pb.TagNumber(2)
+  set errorCode(From_DecryptPin_ErrorCode v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasErrorCode() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearErrorCode() => clearField(2);
+}
+
 enum From_DecryptPin_Result {
   error, 
   mnemonic, 
@@ -5906,7 +5997,7 @@ enum From_DecryptPin_Result {
 
 class From_DecryptPin extends $pb.GeneratedMessage {
   factory From_DecryptPin({
-    $core.String? error,
+    From_DecryptPin_Error? error,
     $core.String? mnemonic,
   }) {
     final $result = create();
@@ -5929,9 +6020,8 @@ class From_DecryptPin extends $pb.GeneratedMessage {
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.DecryptPin', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..oo(0, [1, 2])
-    ..aOS(1, _omitFieldNames ? '' : 'error')
+    ..aOM<From_DecryptPin_Error>(1, _omitFieldNames ? '' : 'error', subBuilder: From_DecryptPin_Error.create)
     ..aOS(2, _omitFieldNames ? '' : 'mnemonic')
-    ..hasRequiredFields = false
   ;
 
   @$core.Deprecated(
@@ -5959,13 +6049,15 @@ class From_DecryptPin extends $pb.GeneratedMessage {
   void clearResult() => clearField($_whichOneof(0));
 
   @$pb.TagNumber(1)
-  $core.String get error => $_getSZ(0);
+  From_DecryptPin_Error get error => $_getN(0);
   @$pb.TagNumber(1)
-  set error($core.String v) { $_setString(0, v); }
+  set error(From_DecryptPin_Error v) { setField(1, v); }
   @$pb.TagNumber(1)
   $core.bool hasError() => $_has(0);
   @$pb.TagNumber(1)
   void clearError() => clearField(1);
+  @$pb.TagNumber(1)
+  From_DecryptPin_Error ensureError() => $_ensure(0);
 
   @$pb.TagNumber(2)
   $core.String get mnemonic => $_getSZ(1);
@@ -9424,7 +9516,7 @@ class From_JadeStatus extends $pb.GeneratedMessage {
   factory From_JadeStatus.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.JadeStatus', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..e<From_JadeStatus_Status>(1, _omitFieldNames ? '' : 'status', $pb.PbFieldType.QE, defaultOrMaker: From_JadeStatus_Status.IDLE, valueOf: From_JadeStatus_Status.valueOf, enumValues: From_JadeStatus_Status.values)
+    ..e<From_JadeStatus_Status>(1, _omitFieldNames ? '' : 'status', $pb.PbFieldType.QE, defaultOrMaker: From_JadeStatus_Status.CONNECTING, valueOf: From_JadeStatus_Status.valueOf, enumValues: From_JadeStatus_Status.values)
   ;
 
   @$core.Deprecated(

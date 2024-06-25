@@ -9,7 +9,7 @@ part of 'app_releases.dart';
 _$AppReleasesDesktopImpl _$$AppReleasesDesktopImplFromJson(Map json) =>
     _$AppReleasesDesktopImpl(
       version: json['version'] as String?,
-      build: json['build'] as int?,
+      build: (json['build'] as num?)?.toInt(),
       changes: json['changes'] as String?,
     );
 

@@ -83,12 +83,12 @@ class StokrLoginPanels extends HookConsumerWidget {
         ),
         TextButton(
           style: ButtonStyle(
-            padding: const MaterialStatePropertyAll(EdgeInsets.zero),
-            backgroundColor: MaterialStateColor.resolveWith(
+            padding: const WidgetStatePropertyAll(EdgeInsets.zero),
+            backgroundColor: WidgetStateColor.resolveWith(
                 (states) => SideSwapColors.chathamsBlue),
-            overlayColor: MaterialStateColor.resolveWith((states) =>
+            overlayColor: WidgetStateColor.resolveWith((states) =>
                 SideSwapColors.chathamsBlue.lerpWith(Colors.white, 0.2)),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               const RoundedRectangleBorder(
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(8),
@@ -96,7 +96,7 @@ class StokrLoginPanels extends HookConsumerWidget {
                 ),
               ),
             ),
-            mouseCursor: MaterialStateMouseCursor.clickable,
+            mouseCursor: WidgetStateMouseCursor.clickable,
           ),
           onPressed: () async {
             await copyToClipboard(

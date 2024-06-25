@@ -128,7 +128,7 @@ Future<void> startApp(List<String> args, {bool isFdroid = false}) async {
       values: FlavorValues(
         enableOnboardingUserFeatures: false,
         enableNetworkSettings: true,
-        enableJade: false,
+        enableJade: true,
         enableLocalEndpoint: false,
         isFdroid: isFdroid,
       ),

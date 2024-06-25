@@ -203,9 +203,7 @@ pub fn process_balancing(
                     && bitcoin_balance > 0.0
                     && module_connected
                 {
-                    let usdt_asset_id =
-                        sideswap_api::AssetId::from_str(args.env.data().network.usdt_asset_id())
-                            .unwrap();
+                    let usdt_asset_id = args.env.d().network.d().known_assets.usdt.asset_id();
 
                     let result = rpc::make_rpc_call(
                         rpc_http_client,
@@ -244,7 +242,7 @@ pub fn process_balancing(
                     .get(bitfinex_currency_usdt)
                     .cloned()
                     .unwrap_or_default();
-                if (usdt_balance >= balancing.amount.to_bitcoin() || !args.env.data().mainnet)
+                if (usdt_balance >= balancing.amount.to_bitcoin() || !args.env.d().mainnet)
                     && module_connected
                 {
                     bf_sender
@@ -272,7 +270,7 @@ pub fn process_balancing(
                     .cloned()
                     .unwrap_or_default();
                 if bitcoin_balance >= balancing.amount.to_bitcoin() && module_connected {
-                    let bitcoin_asset = AssetId::from_str(args.env.data().policy_asset).unwrap();
+                    let bitcoin_asset = args.env.nd().policy_asset.asset_id();
                     let result = rpc::make_rpc_call(
                         rpc_http_client,
                         &args.rpc,
@@ -350,7 +348,7 @@ pub fn process_balancing(
                     .get(bitfinex_currency_btc)
                     .cloned()
                     .unwrap_or_default();
-                if (btc_balance >= balancing.amount.to_bitcoin() || !args.env.data().mainnet)
+                if (btc_balance >= balancing.amount.to_bitcoin() || !args.env.d().mainnet)
                     && module_connected
                 {
                     bf_sender

@@ -1687,8 +1687,8 @@ mixin _$PinDataState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(
-            String salt, String encryptedData, String pinIdentifier)
+    required TResult Function(String salt, String encryptedData,
+            String pinIdentifier, String? hmac)
         data,
   }) =>
       throw _privateConstructorUsedError;
@@ -1696,7 +1696,8 @@ mixin _$PinDataState {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult? Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
   }) =>
       throw _privateConstructorUsedError;
@@ -1704,7 +1705,8 @@ mixin _$PinDataState {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
     required TResult orElse(),
   }) =>
@@ -1800,8 +1802,8 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(
-            String salt, String encryptedData, String pinIdentifier)
+    required TResult Function(String salt, String encryptedData,
+            String pinIdentifier, String? hmac)
         data,
   }) {
     return empty();
@@ -1812,7 +1814,8 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult? Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
   }) {
     return empty?.call();
@@ -1823,7 +1826,8 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
     required TResult orElse(),
   }) {
@@ -1957,8 +1961,8 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(
-            String salt, String encryptedData, String pinIdentifier)
+    required TResult Function(String salt, String encryptedData,
+            String pinIdentifier, String? hmac)
         data,
   }) {
     return error(message);
@@ -1969,7 +1973,8 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult? Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
   }) {
     return error?.call(message);
@@ -1980,7 +1985,8 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
     required TResult orElse(),
   }) {
@@ -2051,7 +2057,8 @@ abstract class _$$PinDataStateDataImplCopyWith<$Res> {
           $Res Function(_$PinDataStateDataImpl) then) =
       __$$PinDataStateDataImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String salt, String encryptedData, String pinIdentifier});
+  $Res call(
+      {String salt, String encryptedData, String pinIdentifier, String? hmac});
 }
 
 /// @nodoc
@@ -2068,6 +2075,7 @@ class __$$PinDataStateDataImplCopyWithImpl<$Res>
     Object? salt = null,
     Object? encryptedData = null,
     Object? pinIdentifier = null,
+    Object? hmac = freezed,
   }) {
     return _then(_$PinDataStateDataImpl(
       salt: null == salt
@@ -2082,6 +2090,10 @@ class __$$PinDataStateDataImplCopyWithImpl<$Res>
           ? _value.pinIdentifier
           : pinIdentifier // ignore: cast_nullable_to_non_nullable
               as String,
+      hmac: freezed == hmac
+          ? _value.hmac
+          : hmac // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -2093,6 +2105,7 @@ class _$PinDataStateDataImpl implements PinDataStateData {
       {required this.salt,
       required this.encryptedData,
       required this.pinIdentifier,
+      required this.hmac,
       final String? $type})
       : $type = $type ?? 'data';
 
@@ -2105,13 +2118,15 @@ class _$PinDataStateDataImpl implements PinDataStateData {
   final String encryptedData;
   @override
   final String pinIdentifier;
+  @override
+  final String? hmac;
 
   @JsonKey(name: 'runtimeType')
   final String $type;
 
   @override
   String toString() {
-    return 'PinDataState.data(salt: $salt, encryptedData: $encryptedData, pinIdentifier: $pinIdentifier)';
+    return 'PinDataState.data(salt: $salt, encryptedData: $encryptedData, pinIdentifier: $pinIdentifier, hmac: $hmac)';
   }
 
   @override
@@ -2123,13 +2138,14 @@ class _$PinDataStateDataImpl implements PinDataStateData {
             (identical(other.encryptedData, encryptedData) ||
                 other.encryptedData == encryptedData) &&
             (identical(other.pinIdentifier, pinIdentifier) ||
-                other.pinIdentifier == pinIdentifier));
+                other.pinIdentifier == pinIdentifier) &&
+            (identical(other.hmac, hmac) || other.hmac == hmac));
   }
 
   @JsonKey(ignore: true)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, salt, encryptedData, pinIdentifier);
+      Object.hash(runtimeType, salt, encryptedData, pinIdentifier, hmac);
 
   @JsonKey(ignore: true)
   @override
@@ -2143,11 +2159,11 @@ class _$PinDataStateDataImpl implements PinDataStateData {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function(String message) error,
-    required TResult Function(
-            String salt, String encryptedData, String pinIdentifier)
+    required TResult Function(String salt, String encryptedData,
+            String pinIdentifier, String? hmac)
         data,
   }) {
-    return data(salt, encryptedData, pinIdentifier);
+    return data(salt, encryptedData, pinIdentifier, hmac);
   }
 
   @override
@@ -2155,10 +2171,11 @@ class _$PinDataStateDataImpl implements PinDataStateData {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function(String message)? error,
-    TResult? Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult? Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
   }) {
-    return data?.call(salt, encryptedData, pinIdentifier);
+    return data?.call(salt, encryptedData, pinIdentifier, hmac);
   }
 
   @override
@@ -2166,12 +2183,13 @@ class _$PinDataStateDataImpl implements PinDataStateData {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function(String message)? error,
-    TResult Function(String salt, String encryptedData, String pinIdentifier)?
+    TResult Function(String salt, String encryptedData, String pinIdentifier,
+            String? hmac)?
         data,
     required TResult orElse(),
   }) {
     if (data != null) {
-      return data(salt, encryptedData, pinIdentifier);
+      return data(salt, encryptedData, pinIdentifier, hmac);
     }
     return orElse();
   }
@@ -2222,7 +2240,8 @@ abstract class PinDataStateData implements PinDataState {
   const factory PinDataStateData(
       {required final String salt,
       required final String encryptedData,
-      required final String pinIdentifier}) = _$PinDataStateDataImpl;
+      required final String pinIdentifier,
+      required final String? hmac}) = _$PinDataStateDataImpl;
 
   factory PinDataStateData.fromJson(Map<String, dynamic> json) =
       _$PinDataStateDataImpl.fromJson;
@@ -2230,6 +2249,7 @@ abstract class PinDataStateData implements PinDataState {
   String get salt;
   String get encryptedData;
   String get pinIdentifier;
+  String? get hmac;
   @JsonKey(ignore: true)
   _$$PinDataStateDataImplCopyWith<_$PinDataStateDataImpl> get copyWith =>
       throw _privateConstructorUsedError;

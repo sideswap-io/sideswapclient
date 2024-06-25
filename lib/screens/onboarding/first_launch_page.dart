@@ -18,6 +18,7 @@ import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/select_env_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
+import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap/screens/settings/settings_network.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
 
@@ -179,7 +180,7 @@ class FirstLaunchPage extends HookConsumerWidget {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 23),
+                            padding: const EdgeInsets.only(bottom: 15),
                             child: CustomBigButton(
                               width: double.infinity,
                               height: 54,
@@ -191,7 +192,10 @@ class FirstLaunchPage extends HookConsumerWidget {
                                 fontWeight: FontWeight.bold,
                               ),
                               backgroundColor: Colors.transparent,
-                              textColor: SideSwapColors.brightTurquoise,
+                              side: const BorderSide(
+                                color: SideSwapColors.brightTurquoise,
+                                width: 1,
+                              ),
                               onPressed: () {
                                 ref
                                     .read(firstLaunchStateNotifierProvider
@@ -204,6 +208,55 @@ class FirstLaunchPage extends HookConsumerWidget {
                               },
                             ),
                           ),
+                          if (FlavorConfig.enableJade) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 23),
+                              child: CustomBigButton(
+                                width: double.infinity,
+                                height: 54,
+                                enabled:
+                                    serverLoginState is! ServerLoginStateError,
+                                backgroundColor: Colors.transparent,
+                                side: const BorderSide(
+                                  color: SideSwapColors.brightTurquoise,
+                                  width: 1,
+                                ),
+                                onPressed: () async {
+                                  ref
+                                      .read(pageStatusNotifierProvider.notifier)
+                                      .setStatus(
+                                          Status.jadeBluetoothPermission);
+                                },
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          const Spacer(),
+                                          SvgPicture.asset(
+                                            'assets/jade.svg',
+                                            width: 24,
+                                            height: 24,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    const Text(
+                                      'JADE',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
