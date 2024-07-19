@@ -1,43 +1,36 @@
-#![recursion_limit = "1024"]
+#[macro_use]
+extern crate log;
+#[macro_use]
+extern crate anyhow;
 
+mod balancing;
+mod bfx_ws_api;
 mod bitfinex_api;
 mod bitfinex_worker;
-mod module;
-
-pub mod proto {
-    #![allow(non_snake_case)]
-    include!(concat!(
-        env!("OUT_DIR"),
-        "/sideswap.proxy.bitfinex.proto.rs"
-    ));
-}
+mod external_prices;
+mod storage;
 
 use axum::extract::State;
 use axum::routing::get;
-
-#[allow(non_snake_case)]
-extern "C" {
-    fn cgoStartApp(port: u16, logFilePort: *const libc::c_char);
-}
-
-pub mod balancing;
-mod slack;
-mod storage;
-
 use balancing::*;
-use clap::{App, Arg};
-use prost::Message;
+use bitfinex_api::movements::Movements;
 use serde::{Deserialize, Serialize};
 use sideswap_api::*;
-use sideswap_common::*;
+use sideswap_common::channel_helpers::UncheckedUnboundedSender;
+use sideswap_common::pset;
+use sideswap_common::types::timestamp_now;
+use sideswap_common::types::Amount;
+use sideswap_common::web_notif::send_many;
 use sideswap_dealer::dealer;
 use sideswap_dealer::dealer::*;
 use sideswap_dealer::rpc;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::net::TcpListener;
+use std::sync::Arc;
 use storage::*;
-use types::Amount;
+use tokio::sync::mpsc::unbounded_channel;
+use tokio::sync::mpsc::UnboundedSender;
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
 pub struct ExchangeTicker(String);
@@ -56,15 +49,6 @@ const MIN_BALANCE_TETHER: f64 = 2500.;
 
 const BF_RESERVE: f64 = 0.99;
 
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate anyhow;
-#[macro_use]
-extern crate futures;
-
-const PRICE_EXPIRED: std::time::Duration = std::time::Duration::from_secs(300);
-
 const INTEREST_SUBMIT_USDT: f64 = 1.0075 - pset::INSTANT_SWAPS_SERVER_FEE;
 const INTEREST_SUBMIT_EURX: f64 = 1.0040 - pset::INSTANT_SWAPS_SERVER_FEE;
 
@@ -79,7 +63,8 @@ pub struct NotificationSettings {
 }
 
 type ExchangeBalances = BTreeMap<ExchangeTicker, f64>;
-type ModulePrices = BTreeMap<DealerTicker, Price>;
+type BfxPrices = BTreeMap<DealerTicker, Price>;
+type ExternalPrices = BTreeMap<DealerTicker, f64>;
 type PendingOrders = BTreeMap<i64, std::time::Instant>;
 
 #[derive(Debug, Deserialize)]
@@ -91,9 +76,6 @@ pub struct Args {
     bitcoin_amount_submit: f64,
     bitcoin_amount_min: f64,
     bitcoin_amount_max: f64,
-
-    proxy_log_file: String,
-    proxy_port: u16,
 
     server_url: String,
 
@@ -124,41 +106,39 @@ pub struct Args {
 
     storage_path: String,
     balancing_enabled: bool,
+
+    external_prices: Option<external_prices::Settings>,
+}
+
+#[derive(Clone)]
+struct BfSettings {
+    bitfinex_key: String,
+    bitfinex_secret: String,
 }
 
 enum Msg {
     Timer,
-    ModuleConnected,
-    ModuleDisconnected,
-    ModuleMessage(proto::from::Msg),
     BfWorker(bitfinex_worker::Response),
+    BfxEvent(bfx_ws_api::Event),
     Cli(CliRequestData),
     Exit,
     CheckExchange,
     Dealer(From),
+    External(DealerTicker, Result<f64, anyhow::Error>),
 }
 
 #[derive(Clone, Copy)]
 struct Price {
     pub bid: f64,
     pub ask: f64,
-    pub timestamp: std::time::Instant,
-}
-
-fn send_msg(tx: &module::Sender, msg: proto::to::Msg) {
-    let msg = proto::To { msg: Some(msg) };
-    let mut buf = Vec::new();
-    msg.encode(&mut buf).expect("encoding message failed");
-    tx.send(module::WrappedRequest::Data(buf))
-        .expect("sending must succeed");
 }
 
 fn send_notification(msg: &str, slack_url: &Option<String>) {
     info!("send notification: {}", msg);
     if let Some(url) = slack_url.clone() {
         let msg = msg.to_owned();
-        std::thread::spawn(move || {
-            let result = slack::send_slack(&msg, &url, 3, std::time::Duration::from_secs(15));
+        tokio::spawn(async move {
+            let result = send_many(&msg, &url, 3, std::time::Duration::from_secs(15)).await;
             if let Err(e) = result {
                 error!("sending slack notification failed: {}", &e);
             }
@@ -188,17 +168,17 @@ enum CliResponse {
 
 struct CliRequestData {
     req: CliRequest,
-    resp_tx: Option<crossbeam_channel::Sender<CliResponse>>,
+    resp_tx: Option<UnboundedSender<CliResponse>>,
 }
 
-fn send_cli_request(msg_tx: &crossbeam_channel::Sender<Msg>, req: CliRequest) {
+fn send_cli_request(msg_tx: &UnboundedSender<Msg>, req: CliRequest) {
     msg_tx
         .send(Msg::Cli(CliRequestData { req, resp_tx: None }))
         .unwrap();
 }
 
 fn process_cli_client(
-    msg_tx: crossbeam_channel::Sender<Msg>,
+    msg_tx: UnboundedSender<Msg>,
     stream: std::net::TcpStream,
 ) -> Result<(), anyhow::Error> {
     let mut websocket = tungstenite::accept(stream)?;
@@ -210,7 +190,7 @@ fn process_cli_client(
         if msg.is_text() || msg.is_binary() {
             let req = msg.to_text()?.to_owned();
             let req = serde_json::from_str::<CliRequest>(&req);
-            let (resp_tx, resp_rx) = crossbeam_channel::unbounded::<CliResponse>();
+            let (resp_tx, mut resp_rx) = unbounded_channel::<CliResponse>();
             match req {
                 Ok(v) => msg_tx
                     .send(Msg::Cli(CliRequestData {
@@ -220,14 +200,14 @@ fn process_cli_client(
                     .unwrap(),
                 Err(v) => resp_tx.send(CliResponse::Error(v.to_string())).unwrap(),
             };
-            let resp = resp_rx.recv().unwrap();
+            let resp = resp_rx.blocking_recv().unwrap();
             let resp = serde_json::to_string(&resp).unwrap();
             websocket.write(tungstenite::protocol::Message::Text(resp))?;
         }
     }
 }
 
-fn start_cli(msg_tx: crossbeam_channel::Sender<Msg>) {
+fn start_cli(msg_tx: UnboundedSender<Msg>) {
     let server = TcpListener::bind("127.0.0.1:9001").unwrap();
     for stream in server.incoming() {
         let msg_tx_copy = msg_tx.clone();
@@ -259,7 +239,7 @@ fn load_storage(path: &str) -> Option<Storage> {
     Some(storage)
 }
 
-type HealthStatus = std::sync::Arc<std::sync::Mutex<Option<String>>>;
+type HealthStatus = Arc<std::sync::Mutex<Option<String>>>;
 
 async fn health(State(status): State<HealthStatus>) -> String {
     status
@@ -269,19 +249,17 @@ async fn health(State(status): State<HealthStatus>) -> String {
         .unwrap_or("NoError".to_owned())
 }
 
-pub async fn start_webserver(
-    status_port: u16,
-    status: HealthStatus,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+pub async fn start_webserver(status_port: u16, status: HealthStatus) {
     let app = axum::Router::new()
         .route("/health", get(health))
         .with_state(status);
 
     let addr: std::net::SocketAddr = ([0, 0, 0, 0], status_port).into();
-    let listener = tokio::net::TcpListener::bind(addr).await?;
-    axum::serve(listener, app).await?;
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .expect("must not fail");
 
-    Ok(())
+    axum::serve(listener, app).await.expect("must not fail");
 }
 
 struct ProfitsReport {
@@ -298,7 +276,7 @@ fn hedge_order(
     wallet_balances: &WalletBalances,
     exchange_balances: &ExchangeBalances,
     book_names: &BTreeMap<DealerTicker, String>,
-    bf_sender: &crossbeam_channel::Sender<bitfinex_worker::Request>,
+    bf_sender: &UnboundedSender<bitfinex_worker::Request>,
     pending_orders: &mut PendingOrders,
 ) {
     info!(
@@ -325,7 +303,7 @@ fn hedge_order(
             exchange_balances: exchange_balances.clone(),
             created_at: std::time::Instant::now(),
         });
-        let cid = types::timestamp_now();
+        let cid = timestamp_now();
         let bookname = book_names.get(&swap.ticker).expect("bookname must be know");
         info!(
             "swap succeed, txid: {}, send order request, amount: {}, bookname: {}, cid: {}",
@@ -353,7 +331,7 @@ fn hedge_order(
 struct DealerState {
     network: sideswap_common::network::Network,
     server_connected: bool,
-    module_connected: bool,
+    bfx_connected: bool,
     wallet_balances: WalletBalances,
     wallet_balances_confirmed: WalletBalances,
     exchange_balances: ExchangeBalances,
@@ -362,13 +340,47 @@ struct DealerState {
     pending_orders: PendingOrders,
     failed_orders_count: u32,
     failed_orders_total: f64,
+    bfx_prices: BfxPrices,
+    external_prices: ExternalPrices,
 }
 
-fn main() {
-    let matches = App::new("sideswap_dealer")
-        .arg(Arg::with_name("config").required(true))
-        .get_matches();
-    let config_path = matches.value_of("config").unwrap();
+fn get_bfx_price(state: &DealerState, ticker: DealerTicker) -> Option<Price> {
+    // How much difference can we tolerate
+    const MAX_DIFF: f64 = 0.015;
+
+    let bfx = state.bfx_prices.get(&ticker).copied();
+    let external = state.external_prices.get(&ticker).copied();
+
+    match (&bfx, &external) {
+        // Compare against external price source
+        (Some(bfx_price), Some(external)) => {
+            let ask_diff = f64::abs((bfx_price.ask - external) / external);
+            let bid_diff = f64::abs((bfx_price.bid - external) / external);
+            // Normal difference is around 0.0002
+            if ask_diff <= MAX_DIFF && bid_diff <= MAX_DIFF {
+                bfx
+            } else {
+                log::warn!(
+                    "price discrepancy: bid: {}, ask: {}, external: {}",
+                    bfx_price.bid,
+                    bfx_price.ask,
+                    external
+                );
+                None
+            }
+        }
+        _ => bfx,
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    let args = std::env::args().collect::<Vec<_>>();
+    assert!(
+        args.len() == 2,
+        "Specify a single argument for the path to the config file"
+    );
+    let config_path = &args[1];
 
     let mut conf = config::Config::new();
     conf.merge(config::File::with_name(config_path))
@@ -396,89 +408,74 @@ fn main() {
 
     sideswap_common::panic_handler::install_panic_handler();
 
-    info!("starting proxy...");
-    unsafe {
-        let proxy_port = args.proxy_port;
-        let proxy_log_file = std::ffi::CString::new(args.proxy_log_file.clone()).unwrap();
-        std::thread::spawn(move || {
-            cgoStartApp(proxy_port, proxy_log_file.as_ptr());
-        });
-    }
-
     let mut storage = load_storage(&args.storage_path).unwrap_or_default();
     let storage_path = args.storage_path.clone();
     save_storage(&storage, &storage_path);
 
-    let mut movements: Option<proto::from::Movements> = None;
+    let mut movements: Option<Movements> = None;
 
-    let (msg_tx, msg_rx) = crossbeam_channel::unbounded::<Msg>();
+    let (msg_tx, mut msg_rx) = unbounded_channel::<Msg>();
 
-    let msg_tx_copy = msg_tx.clone();
-    let (mod_tx, mod_rx) = module::start(args.proxy_port);
-    std::thread::spawn(move || {
-        for msg in mod_rx {
-            match msg {
-                module::WrappedResponse::Connected => {
-                    msg_tx_copy.send(Msg::ModuleConnected).unwrap();
-                }
-                module::WrappedResponse::Disconnected => {
-                    msg_tx_copy.send(Msg::ModuleDisconnected).unwrap();
-                }
-                module::WrappedResponse::Data(data) => {
-                    let from = proto::From::decode(data.as_slice()).expect("message decode failed");
-                    let data = from.msg.unwrap();
-                    msg_tx_copy.send(Msg::ModuleMessage(data)).unwrap();
-                }
-            }
-        }
-    });
-
-    let (bf_sender, bf_receiver) = crossbeam_channel::unbounded::<bitfinex_worker::Request>();
-    let bf_settings = bitfinex_worker::Settings {
+    let bf_settings = BfSettings {
         bitfinex_key: args.bitfinex_key.clone(),
         bitfinex_secret: args.bitfinex_secret.clone(),
     };
-    let msg_tx_copy = msg_tx.clone();
+
+    let (bf_sender, bf_receiver) = unbounded_channel::<bitfinex_worker::Request>();
+    let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
+    let bf_settings_copy = bf_settings.clone();
     std::thread::spawn(move || {
-        bitfinex_worker::run(bf_settings, bf_receiver, |resp| {
-            msg_tx_copy.send(Msg::BfWorker(resp)).unwrap();
+        bitfinex_worker::run(bf_settings_copy, bf_receiver, |resp| {
+            msg_tx_copy.send(Msg::BfWorker(resp));
         });
     });
 
     let mut balancing_blocked = std::time::Instant::now();
 
-    let msg_tx_copy = msg_tx.clone();
+    let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
     std::thread::spawn(move || loop {
-        msg_tx_copy.send(Msg::Timer).unwrap();
+        msg_tx_copy.send(Msg::Timer);
         std::thread::sleep(std::time::Duration::from_secs(1));
     });
 
-    let msg_tx_copy = msg_tx.clone();
-    #[cfg(target_os = "linux")]
-    std::thread::spawn(move || loop {
-        const SIGNALS: &[libc::c_int] = &[
-            signal_hook::consts::signal::SIGTERM,
-            signal_hook::consts::signal::SIGINT,
-        ];
-        let mut sigs = signal_hook::iterator::Signals::new(SIGNALS).unwrap();
-        for _ in &mut sigs {
-            debug!("received term signal");
-            msg_tx_copy.send(Msg::Exit).unwrap();
-        }
-    });
+    if let Some(settings) = args.external_prices.clone() {
+        tokio::spawn(external_prices::reload(
+            settings,
+            UncheckedUnboundedSender::from(msg_tx.clone()),
+        ));
+    }
 
-    let (dealer_tx, dealer_rx) = start(params.clone());
-    let msg_tx_copy = msg_tx.clone();
+    #[cfg(target_os = "linux")]
+    {
+        let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
+        tokio::spawn(async move {
+            let mut sig_terminate =
+                tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+                    .expect("must not fail");
+            let mut sig_interrupt =
+                tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())
+                    .expect("must not fail");
+            tokio::select! {
+                _ = sig_terminate.recv() => {},
+                _ = sig_interrupt.recv() => {},
+            }
+            debug!("received term signal");
+            msg_tx_copy.send(Msg::Exit);
+        });
+    }
+
+    let (dealer_tx, mut dealer_rx) = spawn_async(params.clone());
+    let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
     std::thread::spawn(move || {
-        for msg in dealer_rx {
-            msg_tx_copy.send(Msg::Dealer(msg)).unwrap();
+        while let Some(msg) = dealer_rx.blocking_recv() {
+            msg_tx_copy.send(Msg::Dealer(msg));
         }
     });
 
     let mut state = DealerState {
         network: args.env.d().network,
         server_connected: false,
-        module_connected: false,
+        bfx_connected: false,
         wallet_balances: WalletBalances::new(),
         wallet_balances_confirmed: WalletBalances::new(),
         exchange_balances: ExchangeBalances::new(),
@@ -487,6 +484,8 @@ fn main() {
         pending_orders: PendingOrders::new(),
         failed_orders_count: 0,
         failed_orders_total: 0.0,
+        bfx_prices: BfxPrices::new(),
+        external_prices: ExternalPrices::new(),
     };
 
     let bitfinex_currency_btc = &args.bitfinex_currency_btc;
@@ -509,7 +508,23 @@ fn main() {
         .timeout(std::time::Duration::from_secs(20))
         .build();
 
-    let mut module_prices = ModulePrices::new();
+    let (_bfx_command_sender, bfx_command_receiver) = unbounded_channel::<bfx_ws_api::Command>();
+    let (bfx_event_sender, mut bfx_event_receiver) = unbounded_channel::<bfx_ws_api::Event>();
+    let book_names_copy = book_names.values().cloned().collect();
+    tokio::spawn(bfx_ws_api::run(
+        book_names_copy,
+        bf_settings.clone(),
+        bfx_command_receiver,
+        bfx_event_sender,
+    ));
+
+    let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
+    std::thread::spawn(move || {
+        while let Some(event) = bfx_event_receiver.blocking_recv() {
+            msg_tx_copy.send(Msg::BfxEvent(event));
+        }
+    });
+
     let mut latest_check_exchange = std::time::Instant::now();
 
     let msg_tx_copy = msg_tx.clone();
@@ -519,125 +534,20 @@ fn main() {
 
     send_notification("dealer started", &args.notifications.url);
 
-    let status_port = args.status_port;
-    let health_text = std::sync::Arc::new(std::sync::Mutex::new(None));
-    let health_text_copy = health_text.clone();
-    std::thread::spawn(move || {
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        rt.block_on(start_webserver(status_port, health_text_copy))
-            .unwrap();
-    });
+    let health_text = Arc::new(std::sync::Mutex::new(None));
+    tokio::task::spawn(start_webserver(args.status_port, Arc::clone(&health_text)));
 
     loop {
-        let msg = msg_rx.recv().unwrap();
+        let msg = msg_rx.recv().await.unwrap();
         let now = std::time::Instant::now();
 
         match msg {
-            Msg::ModuleConnected => {
-                state.module_connected = true;
-                info!("connected to module");
-                send_notification("module connection online", &args.notifications.url);
-
-                send_msg(
-                    &mod_tx,
-                    proto::to::Msg::Login(proto::to::Login {
-                        key: args.bitfinex_key.clone(),
-                        secret: args.bitfinex_secret.clone(),
-                    }),
-                );
-
-                for book_name in book_names.values() {
-                    send_msg(
-                        &mod_tx,
-                        proto::to::Msg::Subscribe(proto::to::Subscribe {
-                            book_name: book_name.clone(),
-                        }),
-                    );
-                }
-
-                msg_tx.send(Msg::CheckExchange).unwrap();
-            }
-            Msg::ModuleDisconnected => {
-                state.module_connected = false;
-                info!("disconnected from module");
-                send_notification("module connection offline", &args.notifications.url);
-                module_prices.clear();
-                msg_tx.send(Msg::Timer).unwrap();
-            }
-            Msg::ModuleMessage(msg) => {
-                match msg {
-                    proto::from::Msg::BookUpdate(book_update) => {
-                        let price = Price {
-                            bid: book_update.price.bid,
-                            ask: book_update.price.ask,
-                            timestamp: now,
-                        };
-                        //debug!("updated price, bid: {}, ask: {}", price.bid, price.ask);
-                        let ticker = *book_tickers
-                            .get(&book_update.book_name)
-                            .expect("book ticker must be known");
-                        let old_module_price = module_prices.insert(ticker, price);
-                        if old_module_price.is_none() {
-                            info!("received price");
-                            send_notification(
-                                &format!(
-                                    "module price refreshed: {}/{} for {}",
-                                    price.ask, price.bid, ticker,
-                                ),
-                                &args.notifications.url,
-                            );
-                        }
-                    }
-                    proto::from::Msg::OrderConfirm(msg) => {
-                        info!(
-                            "order created, cid: {}, id: {}, amount: {}, price: {}",
-                            msg.cid, msg.id, msg.amount, msg.price
-                        );
-                        let pending_order = state.pending_orders.remove(&msg.cid);
-                        match pending_order {
-                            Some(v) => debug!(
-                                "order created: {}, {} seconds",
-                                msg.cid,
-                                std::time::Instant::now().duration_since(v).as_secs_f64()
-                            ),
-                            None => debug!("unexpected order: {}", msg.cid),
-                        }
-                    }
-                    proto::from::Msg::WalletUpdate(msg) => {
-                        let currency = ExchangeTicker(msg.currency);
-                        let old_balance = state.exchange_balances.get(&currency);
-                        if old_balance != Some(&msg.balance) {
-                            info!("exchange balance updated: {}: {}", &currency.0, msg.balance);
-                            let old_value = state.exchange_balances.insert(currency, msg.balance);
-                            if old_value.is_some() {
-                                msg_tx.send(Msg::CheckExchange).unwrap();
-                            }
-                        }
-                    }
-                    proto::from::Msg::Withdraw(_)
-                    | proto::from::Msg::Movements(_)
-                    | proto::from::Msg::Transfer(_) => {
-                        unreachable!()
-                    }
-
-                    proto::from::Msg::Error(msg) => {
-                        send_notification(
-                            &format!("module failed: {}", msg.error),
-                            &args.notifications.url,
-                        );
-                    }
-                }
-            }
-
             Msg::BfWorker(resp) => match resp {
-                bitfinex_worker::Response::Withdraw(msg) => {
-                    balancing::process_withdraw(&mut storage, msg, &args);
+                bitfinex_worker::Response::Withdraw { withdraw_id } => {
+                    balancing::process_withdraw(&mut storage, withdraw_id, &args);
                 }
-                bitfinex_worker::Response::Transfer(msg) => {
-                    balancing::process_transfer(&mut storage, msg, &args);
+                bitfinex_worker::Response::Transfer { success } => {
+                    balancing::process_transfer(&mut storage, success, &args);
                 }
                 bitfinex_worker::Response::Movements(msg) => {
                     balancing::process_movements(&mut storage, msg, &args, &mut movements);
@@ -662,9 +572,89 @@ fn main() {
                 },
             },
 
+            Msg::BfxEvent(event) => match event {
+                bfx_ws_api::Event::Connected => {
+                    state.bfx_connected = true;
+                    info!("connected to bfx ws");
+                    send_notification("bfx ws connection online", &args.notifications.url);
+
+                    msg_tx.send(Msg::CheckExchange).unwrap();
+                }
+
+                bfx_ws_api::Event::Disconnected { reason } => {
+                    state.bfx_connected = false;
+                    info!("disconnected from bfx ws: {reason}");
+                    send_notification(
+                        &format!("bfx ws connection offline: {reason}"),
+                        &args.notifications.url,
+                    );
+                    state.bfx_prices.clear();
+                    msg_tx.send(Msg::Timer).unwrap();
+                }
+
+                bfx_ws_api::Event::WalletBalance {
+                    wallet_type,
+                    currency,
+                    balance,
+                } => {
+                    if wallet_type == bfx_ws_api::WalletType::Exchange {
+                        let currency = ExchangeTicker(currency);
+                        let old_balance = state.exchange_balances.get(&currency);
+                        if old_balance != Some(&balance) {
+                            info!("exchange balance updated: {}: {}", &currency.0, balance);
+                            let old_value = state.exchange_balances.insert(currency, balance);
+                            if old_value.is_some() {
+                                msg_tx.send(Msg::CheckExchange).unwrap();
+                            }
+                        }
+                    }
+                }
+
+                bfx_ws_api::Event::OrderCancel {
+                    symbol,
+                    cid,
+                    id,
+                    amount_orig,
+                    price_avg,
+                } => {
+                    info!(
+                        "order created, cid: {}, id: {}, amount: {}, price: {}, symbol: {}",
+                        cid, id, amount_orig, price_avg, symbol
+                    );
+                    let pending_order = state.pending_orders.remove(&cid);
+                    match pending_order {
+                        Some(v) => debug!(
+                            "order created: {}, {} seconds",
+                            cid,
+                            std::time::Instant::now().duration_since(v).as_secs_f64()
+                        ),
+                        None => debug!("unexpected order: {}", cid),
+                    }
+                }
+
+                bfx_ws_api::Event::BookUpdate { symbol, bid, ask } => {
+                    let price = Price { bid, ask };
+                    // debug!("updated price, bid: {}, ask: {}", price.bid, price.ask);
+                    let ticker = *book_tickers
+                        .get(&symbol)
+                        .expect("book ticker must be known");
+                    let old_bfx_price = state.bfx_prices.insert(ticker, price);
+                    if old_bfx_price.is_none() {
+                        info!("received price");
+                        send_notification(
+                            &format!(
+                                "bfx price refreshed: {}/{} for {}",
+                                price.ask, price.bid, ticker,
+                            ),
+                            &args.notifications.url,
+                        );
+                    }
+                }
+            },
+
             Msg::Timer => {
                 for &ticker in params.tickers.iter() {
-                    let price = module_prices.get(&ticker).map(|module_price| {
+                    let price = get_bfx_price(&state, ticker).map(|bfx_price| {
                         let submit_interest = if ticker == DealerTicker::USDt {
                             INTEREST_SUBMIT_USDT
                         } else if ticker == DealerTicker::EURx {
@@ -674,8 +664,8 @@ fn main() {
                         };
 
                         let base_price = PricePair {
-                            bid: module_price.bid,
-                            ask: module_price.ask,
+                            bid: bfx_price.bid,
+                            ask: bfx_price.ask,
                         };
                         let submit_price = apply_interest(&base_price, submit_interest);
 
@@ -690,7 +680,7 @@ fn main() {
                         };
                         // Show that the dealer will buy any amount of EURx as needed
                         let exchange_asset_amount = if ticker == DealerTicker::EURx {
-                            10.0 * module_price.ask
+                            10.0 * bfx_price.ask
                         } else {
                             get_exchange_balance(&state.exchange_balances, exchange_asset_currency)
                         };
@@ -707,7 +697,7 @@ fn main() {
                         .send(To::Price(ToPrice { ticker, price }))
                         .unwrap();
 
-                    if let Some(price) = module_prices.get(&ticker) {
+                    if let Some(price) = state.bfx_prices.get(&ticker) {
                         dealer_tx
                             .send(To::IndexPriceUpdate(PriceUpdateBroadcast {
                                 asset: get_dealer_asset_id(state.network, ticker),
@@ -762,9 +752,9 @@ fn main() {
                     .unwrap_or_default();
 
                 let status = [
-                    (!state.module_connected).then_some("ModuleOffline"),
+                    (!state.bfx_connected).then_some("BfxOffline"),
                     (!state.server_connected).then_some("ServerOffline"),
-                    (module_prices.len() != DEALER_TICKERS.len()).then_some("PriceExpired"),
+                    (state.bfx_prices.len() != DEALER_TICKERS.len()).then_some("PriceExpired"),
                     (balance_wallet_bitcoin < MIN_BALANCE_BITCOIN).then_some("WalletBitcoinLow"),
                     (balance_exchange_bitcoin < MIN_BALANCE_BITCOIN)
                         .then_some("ExchangeBitcoinLow"),
@@ -783,7 +773,7 @@ fn main() {
                     Some(status.join(","))
                 };
 
-                let usdt_price = module_prices.get(&DealerTicker::USDt).cloned();
+                let usdt_price = state.bfx_prices.get(&DealerTicker::USDt).cloned();
                 if storage.balancing.is_none()
                     && args.env.d().mainnet
                     && now.duration_since(balancing_blocked) > std::time::Duration::from_secs(60)
@@ -817,27 +807,6 @@ fn main() {
                     };
                 }
 
-                for ticker in DEALER_TICKERS.iter() {
-                    let module_price = module_prices.get(ticker);
-                    if let Some(module_price) = module_price {
-                        let price_age = now.duration_since(module_price.timestamp);
-                        if price_age > PRICE_EXPIRED && args.env.d().mainnet {
-                            warn!("price expired");
-                            send_notification(
-                                &format!("module price expired for {}", ticker),
-                                &args.notifications.url,
-                            );
-                            module_prices.remove(ticker);
-                            dealer_tx
-                                .send(To::Price(ToPrice {
-                                    ticker: *ticker,
-                                    price: None,
-                                }))
-                                .unwrap();
-                        }
-                    }
-                }
-
                 if state.exchange_balances_reported != state.exchange_balances {
                     state.exchange_balances_reported = state.exchange_balances.clone();
                     let balances = state
@@ -854,10 +823,9 @@ fn main() {
                     &mut storage,
                     &state.wallet_balances_confirmed,
                     &state.exchange_balances,
-                    state.module_connected,
+                    state.bfx_connected,
                     &rpc_http_client,
                     &args,
-                    &mod_tx,
                     &bf_sender,
                 );
 
@@ -986,13 +954,16 @@ fn main() {
                     CliResponse::Success("success".to_owned())
                 };
                 if let Some(resp_tx) = data.resp_tx {
-                    let _ = resp_tx.send(resp);
+                    let res = resp_tx.send(resp);
+                    if res.is_err() {
+                        log::debug!("cli channel is closed");
+                    }
                 }
             }
 
             Msg::CheckExchange => {
                 if let Some(balancing) = storage.balancing.as_ref() {
-                    if state.module_connected {
+                    if state.bfx_connected {
                         let start = balancing
                             .created_at
                             .checked_sub(std::time::Duration::from_secs(10))
@@ -1001,13 +972,11 @@ fn main() {
                             .unwrap()
                             .as_millis() as i64;
                         bf_sender
-                            .send(bitfinex_worker::Request::Movements(proto::to::Movements {
-                                key: args.bitfinex_key.clone(),
-                                secret: args.bitfinex_secret.clone(),
+                            .send(bitfinex_worker::Request::Movements {
                                 start: Some(start),
                                 end: None,
                                 limit: None,
-                            }))
+                            })
                             .unwrap();
                     }
                 }
@@ -1085,6 +1054,18 @@ fn main() {
                     }
                 }
             },
+
+            Msg::External(ticker, price_res) => match price_res {
+                Ok(price) => {
+                    state.external_prices.insert(ticker, price);
+                    get_bfx_price(&state, ticker);
+                }
+                Err(err) => {
+                    log::warn!("external price loading failed: {err}");
+                    state.external_prices.remove(&ticker);
+                }
+            },
+
             Msg::Exit => {
                 return;
             }

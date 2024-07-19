@@ -158,22 +158,14 @@ pub trait GdkSes {
 
     fn get_change_address(&self) -> Result<AddressInfo, anyhow::Error>;
 
-    fn create_tx(&mut self, tx: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error>;
+    fn create_tx(
+        &mut self,
+        tx: ffi::proto::CreateTx,
+    ) -> Result<ffi::proto::CreatedTx, anyhow::Error>;
 
     fn send_tx(
         &mut self,
-        tx: &serde_json::Value,
-        assets: &BTreeMap<AssetId, Asset>,
-    ) -> Result<elements::Txid, anyhow::Error>;
-
-    fn create_payjoin(
-        &mut self,
-        req: ffi::proto::CreatePayjoin,
-    ) -> Result<ffi::proto::CreatedPayjoin, anyhow::Error>;
-
-    fn send_payjoin(
-        &mut self,
-        req: &ffi::proto::CreatedPayjoin,
+        id: &str,
         assets: &BTreeMap<AssetId, Asset>,
     ) -> Result<elements::Txid, anyhow::Error>;
 

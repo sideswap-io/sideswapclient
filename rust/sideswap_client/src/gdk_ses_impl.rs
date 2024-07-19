@@ -5,6 +5,7 @@ use crate::gdk_json::AddressInfo;
 use crate::gdk_json::UtxoStrategy;
 use crate::gdk_ses;
 use crate::gdk_ses::ElectrumServer;
+use crate::gdk_ses::GdkSes;
 use crate::gdk_ses::NotifCallback;
 use crate::models;
 use crate::models::Transaction;
@@ -15,6 +16,7 @@ use crate::worker::AccountId;
 use base64::Engine;
 use elements::encode::Encodable;
 use elements::hashes::Hash;
+use elements::pset::PartiallySignedTransaction;
 use elements::secp256k1_zkp::global::SECP256K1;
 use gdk_ses::HwData;
 use serde_bytes::ByteBuf;
@@ -22,6 +24,7 @@ use sideswap_api::Asset;
 use sideswap_api::AssetId;
 use sideswap_common::env::Env;
 use sideswap_common::network::Network;
+use sideswap_common::pset::p2pkh_script;
 use sideswap_jade::jade_mng;
 use sideswap_jade::jade_mng::JadeStatus;
 use std::collections::BTreeMap;
@@ -36,6 +39,20 @@ const SUBACCOUNT_TYPE_REG: &str = "p2sh-p2wpkh";
 const SUBACCOUNT_NAME_AMP: &str = "AMP";
 const SUBACCOUNT_TYPE_AMP: &str = "2of2_no_recovery";
 
+struct CreatedTxNormal {
+    tx: serde_json::Value,
+}
+
+struct CreatedTxPayjoin {
+    pset: PartiallySignedTransaction,
+    blinding_nonces: Vec<String>,
+}
+
+enum CreatedTx {
+    Normal(CreatedTxNormal),
+    Payjoin(CreatedTxPayjoin),
+}
+
 pub struct GdkSesImpl {
     login_info: gdk_ses::LoginInfo,
     hw_data: Option<HwData>,
@@ -44,6 +61,8 @@ pub struct GdkSesImpl {
     subaccount: Option<i32>,
     receiving_id: Option<String>,
     policy_asset: AssetId,
+
+    created_txs: BTreeMap<String, CreatedTx>,
 }
 
 impl gdk_ses::GdkSes for GdkSesImpl {
@@ -105,31 +124,39 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         unsafe { try_get_addr_info(self, true) }
     }
 
-    fn create_tx(&mut self, tx: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error> {
-        unsafe { try_create_tx(self, tx) }
+    fn create_tx(
+        &mut self,
+        tx: ffi::proto::CreateTx,
+    ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+        if let Some(fee_asset) = tx.fee_asset_id.as_ref() {
+            let fee_asset = AssetId::from_str(&fee_asset)?;
+            unsafe { try_create_payjoin(self, tx, fee_asset) }
+        } else {
+            unsafe { try_create_tx(self, tx) }
+        }
     }
 
     fn send_tx(
         &mut self,
-        tx: &serde_json::Value,
+        id: &str,
         assets: &BTreeMap<AssetId, Asset>,
     ) -> Result<elements::Txid, anyhow::Error> {
-        unsafe { try_send_tx(self, tx, assets) }
-    }
+        let tx = self
+            .created_txs
+            .remove(id)
+            .ok_or_else(|| anyhow!("can't find created tx"))?;
 
-    fn create_payjoin(
-        &mut self,
-        req: ffi::proto::CreatePayjoin,
-    ) -> Result<ffi::proto::CreatedPayjoin, anyhow::Error> {
-        unsafe { try_create_payjoin(self, req) }
-    }
+        let res = match &tx {
+            CreatedTx::Normal(tx) => unsafe { try_send_tx(self, tx, assets) },
+            CreatedTx::Payjoin(tx) => unsafe { try_send_payjoin(self, tx, assets) },
+        };
 
-    fn send_payjoin(
-        &mut self,
-        req: &ffi::proto::CreatedPayjoin,
-        assets: &BTreeMap<AssetId, Asset>,
-    ) -> Result<elements::Txid, anyhow::Error> {
-        unsafe { try_send_payjoin(self, req, assets) }
+        if res.is_err() {
+            // Allow retrying
+            self.created_txs.insert(id.to_owned(), tx);
+        }
+
+        res
     }
 
     fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {
@@ -311,6 +338,7 @@ pub fn unlock_hw(env: Env, jade: &jade_mng::ManagedJade) -> Result<(), anyhow::E
 struct HandlerParams<'a> {
     assets: Option<&'a BTreeMap<AssetId, Asset>>,
     tx_type: jade_mng::TxType,
+    nonces: Option<Vec<String>>,
 }
 
 impl<'a> HandlerParams<'a> {
@@ -318,6 +346,7 @@ impl<'a> HandlerParams<'a> {
         HandlerParams {
             assets: None,
             tx_type: jade_mng::TxType::Normal,
+            nonces: None,
         }
     }
 
@@ -326,8 +355,13 @@ impl<'a> HandlerParams<'a> {
         self
     }
 
-    fn with_tx_status(mut self, status: jade_mng::TxType) -> Self {
-        self.tx_type = status;
+    fn with_tx_type(mut self, tx_type: jade_mng::TxType) -> Self {
+        self.tx_type = tx_type;
+        self
+    }
+
+    fn with_blinding_nonces(mut self, nonces: Vec<String>) -> Self {
+        self.nonces = Some(nonces);
         self
     }
 }
@@ -386,6 +420,47 @@ fn get_jade_asset_info(
             txid: issuance_prevout.txid.to_string(),
             vout: issuance_prevout.vout,
         },
+    })
+}
+
+pub fn unblind(
+    txout: &elements::TxOut,
+    shared_secret: secp256k1::SecretKey,
+) -> Result<elements::TxOutSecrets, elements::UnblindError> {
+    let (commitment, additional_generator) = match (txout.value, txout.asset) {
+        (
+            elements::confidential::Value::Confidential(com),
+            elements::confidential::Asset::Confidential(gen),
+        ) => (com, gen),
+        _ => return Err(elements::UnblindError::NotConfidential),
+    };
+
+    let rangeproof = txout
+        .witness
+        .rangeproof
+        .as_ref()
+        .ok_or(elements::UnblindError::MissingRangeproof)?;
+
+    let (opening, _) = rangeproof.rewind(
+        SECP256K1,
+        commitment,
+        shared_secret,
+        txout.script_pubkey.as_bytes(),
+        additional_generator,
+    )?;
+
+    let (asset, asset_bf) = opening.message.as_ref().split_at(32);
+    let asset = AssetId::from_slice(asset)?;
+    let asset_bf = sideswap_api::AssetBlindingFactor::from_slice(&asset_bf[..32])?;
+
+    let value = opening.value;
+    let value_bf = sideswap_api::ValueBlindingFactor::from_slice(opening.blinding_factor.as_ref())?;
+
+    Ok(elements::TxOutSecrets {
+        asset,
+        asset_bf,
+        value,
+        value_bf,
     })
 }
 
@@ -512,6 +587,8 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 hw_data.set_status(JadeStatus::SignTx(params.tx_type));
 
                 let transaction = required_data.transaction.unwrap();
+                let tx = hex::decode(&transaction)?;
+                let tx = elements::encode::deserialize::<elements::Transaction>(&tx)?;
                 let transaction_inputs = required_data.transaction_inputs.unwrap();
                 let transaction_outputs = required_data.transaction_outputs.unwrap();
                 let use_ae_protocol = required_data.use_ae_protocol.unwrap_or_default();
@@ -535,12 +612,45 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     transaction_outputs.len(),
                 );
 
-                let mut commitments =
+                let mut trusted_commitments =
                     Vec::<Option<sideswap_jade::models::TrustedCommitment>>::new();
                 let mut change = Vec::<Option<sideswap_jade::models::Output>>::new();
 
-                for output in transaction_outputs.iter() {
-                    if output.amountblinder.is_some() && output.assetblinder.is_some() {
+                for (index, (output, txout)) in
+                    transaction_outputs.iter().zip(tx.output.iter()).enumerate()
+                {
+                    let commitment1 = if let Some(nonces) = params.nonces.as_ref() {
+                        let nonce = &nonces[index];
+                        if !nonce.is_empty() {
+                            let blinding_key = secp256k1::SecretKey::from_str(nonce).unwrap();
+                            let secret = unblind(txout, blinding_key).unwrap();
+                            Some(sideswap_jade::models::TrustedCommitment {
+                                asset_id: output.asset_id.into(),
+                                value: output.satoshi,
+                                asset_generator: ByteBuf::from(
+                                    hex::decode(&txout.asset.commitment().unwrap().to_string())
+                                        .unwrap(),
+                                ),
+                                blinding_key: ByteBuf::from(
+                                    hex::decode(&txout.nonce.commitment().unwrap().to_string())
+                                        .unwrap(),
+                                ),
+                                abf: secret.asset_bf,
+                                vbf: secret.value_bf,
+                                value_commitment: ByteBuf::from(
+                                    hex::decode(&txout.value.commitment().unwrap().to_string())
+                                        .unwrap(),
+                                ),
+                            })
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    };
+                    let commitment2 = if output.amountblinder.is_some()
+                        && output.assetblinder.is_some()
+                    {
                         let asset_commitment = elements::confidential::Asset::new_confidential(
                             SECP256K1,
                             output.asset_id,
@@ -552,7 +662,8 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                             asset_commitment.commitment().unwrap(),
                             output.amountblinder.unwrap(),
                         );
-                        commitments.push(Some(sideswap_jade::models::TrustedCommitment {
+
+                        Some(sideswap_jade::models::TrustedCommitment {
                             asset_id: output.asset_id.into(),
                             value: output.satoshi,
                             asset_generator: ByteBuf::from(
@@ -568,28 +679,32 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                                 hex::decode(&value_commitment.commitment().unwrap().to_string())
                                     .unwrap(),
                             ),
-                        }));
+                        })
                     } else {
-                        commitments.push(None);
-                    }
+                        None
+                    };
 
-                    if let Some(user_path) = output.user_path.as_ref() {
+                    trusted_commitments.push(commitment1.or(commitment2));
+
+                    let change_output = if let Some(user_path) = output.user_path.as_ref() {
                         let variant = match output.address_type.unwrap() {
                             gdk_json::AddressType::P2shP2wpkh => {
                                 Some(sideswap_jade::models::OutputVariant::P2wpkhP2sh)
                             }
                             gdk_json::AddressType::P2wsh => None,
                         };
-                        change.push(Some(sideswap_jade::models::Output {
+                        Some(sideswap_jade::models::Output {
                             path: user_path.clone(),
                             recovery_xpub: None,
                             is_change: output.is_change.unwrap_or_default()
                                 || output.is_internal.unwrap_or_default(),
                             variant,
-                        }));
+                        })
                     } else {
-                        change.push(None);
-                    }
+                        None
+                    };
+
+                    change.push(change_output);
                 }
 
                 let network = if hw_data.env.d().mainnet {
@@ -598,60 +713,63 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     sideswap_jade::models::JadeNetwork::TestnetLiquid
                 };
 
-                let additional_info = if required_data.is_partial == Some(true) {
-                    let mut input_sum = BTreeMap::<AssetId, u64>::new();
-                    for input in transaction_inputs.iter() {
-                        if input.user_path.is_some() {
-                            *input_sum.entry(input.asset_id).or_default() += input.satoshi;
-                        }
-                    }
-                    ensure!(input_sum.len() == 1);
-                    let send_asset = *input_sum.keys().next().unwrap();
-
-                    let mut output_sum = BTreeMap::<AssetId, u64>::new();
-                    for output in transaction_outputs.iter() {
-                        if output.user_path.is_some() {
-                            if output.asset_id == send_asset {
-                                *input_sum.entry(output.asset_id).or_default() -= output.satoshi;
-                            } else {
-                                *output_sum.entry(output.asset_id).or_default() += output.satoshi;
+                let additional_info = match params.tx_type {
+                    jade_mng::TxType::Normal | jade_mng::TxType::MakerUtxo => None,
+                    jade_mng::TxType::Swap | jade_mng::TxType::OfflineSwap => {
+                        let mut input_sum = BTreeMap::<AssetId, u64>::new();
+                        for input in transaction_inputs.iter() {
+                            if input.user_path.is_some() {
+                                *input_sum.entry(input.asset_id).or_default() += input.satoshi;
                             }
                         }
+                        ensure!(input_sum.len() == 1);
+                        let send_asset = *input_sum.keys().next().unwrap();
+
+                        let mut output_sum = BTreeMap::<AssetId, u64>::new();
+                        for output in transaction_outputs.iter() {
+                            if output.user_path.is_some() {
+                                if output.asset_id == send_asset {
+                                    *input_sum.entry(output.asset_id).or_default() -=
+                                        output.satoshi;
+                                } else {
+                                    *output_sum.entry(output.asset_id).or_default() +=
+                                        output.satoshi;
+                                }
+                            }
+                        }
+                        ensure!(output_sum.len() == 1);
+                        let _recv_asset = *output_sum.keys().next().unwrap();
+
+                        let wallet_input_summary = input_sum
+                            .into_iter()
+                            .map(|(asset_id, amount)| {
+                                sideswap_jade::models::AdditionalInfoSummary {
+                                    asset_id: asset_id.into(),
+                                    satoshi: amount,
+                                }
+                            })
+                            .collect();
+
+                        let wallet_output_summary = output_sum
+                            .into_iter()
+                            .map(|(asset_id, amount)| {
+                                sideswap_jade::models::AdditionalInfoSummary {
+                                    asset_id: asset_id.into(),
+                                    satoshi: amount,
+                                }
+                            })
+                            .collect();
+                        // Should be true only for offline maker transactions
+                        let is_partial =
+                            transaction_inputs.len() == 1 && transaction_outputs.len() == 1;
+
+                        Some(sideswap_jade::models::ReqSignTxAdditionalInfo {
+                            is_partial,
+                            tx_type: sideswap_jade::models::TxType::Swap,
+                            wallet_input_summary,
+                            wallet_output_summary,
+                        })
                     }
-                    ensure!(output_sum.len() == 1);
-                    let _recv_asset = *output_sum.keys().next().unwrap();
-
-                    let wallet_input_summary = input_sum
-                        .into_iter()
-                        .map(
-                            |(asset_id, amount)| sideswap_jade::models::AdditionalInfoSummary {
-                                asset_id: asset_id.into(),
-                                satoshi: amount,
-                            },
-                        )
-                        .collect();
-
-                    let wallet_output_summary = output_sum
-                        .into_iter()
-                        .map(
-                            |(asset_id, amount)| sideswap_jade::models::AdditionalInfoSummary {
-                                asset_id: asset_id.into(),
-                                satoshi: amount,
-                            },
-                        )
-                        .collect();
-                    // Should be true only for the maker side
-                    let is_partial =
-                        transaction_inputs.len() == 1 && transaction_outputs.len() == 1;
-
-                    Some(sideswap_jade::models::ReqSignTxAdditionalInfo {
-                        is_partial,
-                        tx_type: sideswap_jade::models::TxType::Swap,
-                        wallet_input_summary,
-                        wallet_output_summary,
-                    })
-                } else {
-                    None
                 };
 
                 let mut asset_info = Vec::new();
@@ -674,7 +792,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     use_ae_signatures: true,
                     txn: ByteBuf::from(hex::decode(&transaction).unwrap()),
                     num_inputs: transaction_inputs.len() as u32,
-                    trusted_commitments: commitments.clone(),
+                    trusted_commitments: trusted_commitments.clone(),
                     change,
                     asset_info,
                     additional_info,
@@ -736,19 +854,19 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     signatures,
                     signer_commitments,
 
-                    asset_commitments: commitments
+                    asset_commitments: trusted_commitments
                         .iter()
                         .map(|v| v.as_ref().map(|v| hex::encode(&v.asset_generator)))
                         .collect(),
-                    value_commitments: commitments
+                    value_commitments: trusted_commitments
                         .iter()
                         .map(|v| v.as_ref().map(|v| hex::encode(&v.value_commitment)))
                         .collect(),
-                    assetblinders: commitments
+                    assetblinders: trusted_commitments
                         .iter()
                         .map(|v| v.as_ref().map(|v| v.abf))
                         .collect(),
-                    amountblinders: commitments
+                    amountblinders: trusted_commitments
                         .iter()
                         .map(|v| v.as_ref().map(|v| v.vbf))
                         .collect(),
@@ -1057,33 +1175,109 @@ unsafe fn try_get_unspent_outputs(
     Ok(unspent_outputs)
 }
 
+pub fn get_created_tx(
+    req: &ffi::proto::CreateTx,
+    unsigned_tx: &serde_json::Value,
+) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+    let unsigned_tx =
+        serde_json::from_value::<gdk_json::CreateTransactionResult>(unsigned_tx.clone())?;
+    let tx = unsigned_tx
+        .transaction
+        .ok_or_else(|| anyhow!("no transaction"))?
+        .into_inner();
+
+    let network_fee = unsigned_tx.fee.unwrap_or_default();
+    let vsize = unsigned_tx.transaction_vsize.unwrap_or_default();
+    let fee_per_byte = unsigned_tx.fee_rate.unwrap_or_default() as f64 / 1000.0;
+
+    let addressees = unsigned_tx
+        .addressees
+        .iter()
+        .filter(|addr| addr.user_path.is_none())
+        .map(|addr| {
+            // Take satoshi value from transaction_outputs field,
+            // because addressees filed does not exclude network fee when sending all in GDK c++
+            let output = unsigned_tx
+                .transaction_outputs
+                .iter()
+                .filter(|txout| txout.address.as_ref() == Some(&addr.address))
+                .collect::<Vec<_>>();
+            ensure!(output.len() == 1);
+            let amount = output[0].satoshi;
+            Ok(ffi::proto::AddressAmount {
+                address: addr.address.clone(),
+                amount: amount as i64,
+                asset_id: addr.asset_id.to_string(),
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(ffi::proto::CreatedTx {
+        id: tx.txid().to_string(),
+        req: req.clone(),
+        input_count: tx.input.len() as i32,
+        output_count: tx.output.len() as i32,
+        size: tx.size() as i64,
+        vsize: vsize as i64,
+        network_fee: network_fee as i64,
+        server_fee: None,
+        fee_per_byte,
+        addressees,
+    })
+}
+
+unsafe fn get_selected_utxos(
+    unspent_outputs: std::collections::BTreeMap<AssetId, Vec<gdk_json::UnspentOutput>>,
+    utxos: &[ffi::proto::OutPoint],
+) -> Result<Vec<gdk_json::UnspentOutput>, anyhow::Error> {
+    let selected_outpoints = utxos
+        .iter()
+        .map(|outpoint| -> Result<elements::OutPoint, anyhow::Error> {
+            Ok(elements::OutPoint {
+                txid: outpoint.txid.parse()?,
+                vout: outpoint.vout,
+            })
+        })
+        .collect::<Result<BTreeSet<_>, _>>()?;
+    ensure!(selected_outpoints.len() == utxos.len());
+
+    let mut inputs = Vec::new();
+    for unspent_outputs in unspent_outputs.into_values() {
+        for utxo in unspent_outputs.into_iter() {
+            if selected_outpoints.contains(&elements::OutPoint {
+                txid: utxo.txhash,
+                vout: utxo.vout,
+            }) {
+                inputs.push(utxo);
+            }
+        }
+    }
+    ensure!(
+        utxos.len() == inputs.len(),
+        "Not all UTXOs found, please try again"
+    );
+
+    Ok(inputs)
+}
+
 unsafe fn try_create_tx(
     data: &mut GdkSesImpl,
     tx: ffi::proto::CreateTx,
-) -> Result<serde_json::Value, anyhow::Error> {
+) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
     let session = data.session;
     let subaccount = data.get_subaccount()?;
-
     let unspent_outputs = try_get_unspent_outputs(data)?.unspent_outputs;
 
     // There should be no more than one is_greedy recepient
-    let greedy_count = tx
-        .addressees
-        .iter()
-        .map(|addresse| u32::from(addresse.is_greedy.unwrap_or_default()))
-        .sum::<u32>();
-    ensure!(greedy_count == 0 || greedy_count == 1);
-
-    // Find addresse with is_greedy (only consider L-BTC because is_greedy is not very useful for other assets)
-    let greedy_index = tx
-        .addressees
-        .iter()
-        .enumerate()
-        .find(|(_index, addresse)| {
-            addresse.is_greedy.unwrap_or_default()
-                && addresse.asset_id == data.policy_asset.to_string()
-        })
-        .map(|(index, _addresse)| index);
+    if let Some(index) = tx.deduct_fee_output {
+        let index = index as usize;
+        let addresse = tx
+            .addressees
+            .get(index)
+            .ok_or_else(|| anyhow!("invalid deduct_fee_output value: out of range"))?;
+        let asset_id = AssetId::from_str(&addresse.asset_id)?;
+        ensure!(asset_id == data.policy_asset);
+    }
 
     let mut addressees = tx
         .addressees
@@ -1098,63 +1292,34 @@ unsafe fn try_create_tx(
                     address_info: None,
                     satoshi: addresse.amount as u64,
                     asset_id,
-                    // Use sanitized greedy_index value to prevent setting it for non-LBTC assets
-                    is_greedy: greedy_index.map(|greedy_index| greedy_index == index),
+                    is_greedy: tx
+                        .deduct_fee_output
+                        .map(|greedy_index| greedy_index as usize == index),
                 })
             },
         )
         .collect::<Result<Vec<_>, _>>()?;
 
-    let (utxos, transaction_inputs, utxo_strategy) = if tx.utxos.is_empty() {
+    let (utxos, transaction_inputs, utxo_strategy, bitcoin_balance) = if tx.utxos.is_empty() {
         let bitcoin_balance = unspent_outputs
             .get(&data.policy_asset)
             .map(|inputs| inputs.iter().map(|input| input.satoshi).sum::<u64>())
             .unwrap_or_default();
-        ensure!(bitcoin_balance > 0, "Insufficient L-BTC to pay network fee");
 
-        if greedy_index.is_some() {
-            // Ensure that L-BTC send balance is equal to whole L-BTC balance.
-            // We don't want to send more than expected.
-            let total_bitcoin_send = tx
-                .addressees
-                .iter()
-                .filter_map(|addresse| {
-                    (addresse.asset_id == data.policy_asset.to_string()).then_some(addresse.amount)
-                })
-                .sum::<i64>();
-            ensure!(total_bitcoin_send == bitcoin_balance as i64);
-        }
-
-        (unspent_outputs, None, UtxoStrategy::Default)
+        (
+            unspent_outputs,
+            None,
+            UtxoStrategy::Default,
+            bitcoin_balance,
+        )
     } else {
-        let selected_outpoints = tx
-            .utxos
-            .iter()
-            .map(|outpoint| -> Result<elements::OutPoint, anyhow::Error> {
-                Ok(elements::OutPoint {
-                    txid: outpoint.txid.parse()?,
-                    vout: outpoint.vout,
-                })
-            })
-            .collect::<Result<BTreeSet<_>, _>>()?;
-        ensure!(selected_outpoints.len() == tx.utxos.len());
+        let transaction_inputs = get_selected_utxos(unspent_outputs, &tx.utxos)?;
 
-        let mut transaction_inputs = Vec::new();
-        for unspent_outputs in unspent_outputs.into_values() {
-            for utxo in unspent_outputs.into_iter() {
-                if selected_outpoints.contains(&elements::OutPoint {
-                    txid: utxo.txhash,
-                    vout: utxo.vout,
-                }) {
-                    transaction_inputs.push(utxo);
-                }
-            }
-        }
-        ensure!(
-            tx.utxos.len() == transaction_inputs.len(),
-            "Not all UTXOs found, please try again"
-        );
-        ensure!(greedy_index.is_none());
+        let bitcoin_balance = transaction_inputs
+            .iter()
+            .filter(|input| input.asset_id == data.policy_asset)
+            .map(|input| input.satoshi)
+            .sum::<u64>();
 
         let input_assets = transaction_inputs
             .iter()
@@ -1166,13 +1331,13 @@ unsafe fn try_create_tx(
             .collect::<BTreeSet<_>>();
         for asset_id in input_assets.into_iter() {
             if asset_id != data.policy_asset && !output_assets.contains(&asset_id) {
-                // GDK expectes outputs for all input assets, add change outputs as needed
+                // GDK expects outputs for all input assets, add change outputs as needed
                 let satoshi = transaction_inputs
                     .iter()
                     .filter(|input| input.asset_id == asset_id)
                     .map(|input| input.satoshi)
                     .sum::<u64>();
-                // GDK does not allow internal addresses here, use external wallet address here
+                // GDK does not allow internal addresses here, use external wallet address
                 let address_info = try_get_addr_info(data, false)?;
                 addressees.push(gdk_json::TxCreateAddressee {
                     address_info: Some(address_info),
@@ -1188,8 +1353,24 @@ unsafe fn try_create_tx(
             BTreeMap::new(),
             Some(transaction_inputs),
             UtxoStrategy::Manual,
+            bitcoin_balance,
         )
     };
+
+    ensure!(bitcoin_balance > 0, "Insufficient L-BTC to pay network fee");
+
+    if tx.deduct_fee_output.is_some() {
+        // Ensure that L-BTC send balance is equal to whole L-BTC balance.
+        // We don't want to send more than expected.
+        let total_bitcoin_send = tx
+            .addressees
+            .iter()
+            .filter_map(|addresse| {
+                (addresse.asset_id == data.policy_asset.to_string()).then_some(addresse.amount)
+            })
+            .sum::<i64>();
+        ensure!(total_bitcoin_send == bitcoin_balance as i64);
+    }
 
     let create_tx = gdk_json::CreateTransactionOpt {
         subaccount,
@@ -1228,18 +1409,140 @@ unsafe fn try_create_tx(
             .map_err(|e| anyhow!("blinding transaction failed: {}", e))?;
     debug!("blinded tx: {:?}", &blinded_tx_json);
 
-    Ok(blinded_tx_json)
+    let created_tx = get_created_tx(&tx, &blinded_tx_json)?;
+
+    data.created_txs.insert(
+        created_tx.id.clone(),
+        CreatedTx::Normal(CreatedTxNormal {
+            tx: blinded_tx_json,
+        }),
+    );
+
+    Ok(created_tx)
+}
+
+unsafe fn try_create_payjoin(
+    data: &mut GdkSesImpl,
+    req: ffi::proto::CreateTx,
+    fee_asset: AssetId,
+) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+    let utxos = try_get_unspent_outputs(data)?.unspent_outputs;
+    let utxos = if req.utxos.is_empty() {
+        utxos
+            .into_values()
+            .map(|utxos| utxos.into_iter())
+            .flatten()
+            .collect::<Vec<_>>()
+    } else {
+        get_selected_utxos(utxos, &req.utxos)?
+    };
+
+    ensure!(utxos
+        .iter()
+        .all(|utxo| utxo.asset_tag.clone().into_inner().is_confidential()
+            && utxo.commitment.clone().into_inner().is_confidential()
+            && utxo.amountblinder != elements::confidential::ValueBlindingFactor::zero()
+            && utxo.assetblinder != elements::confidential::AssetBlindingFactor::zero()));
+    ensure!(utxos
+        .iter()
+        .all(|utxo| utxo.public_key.is_some() || utxo.script.is_some()));
+
+    let utxos = utxos
+        .into_iter()
+        .map(|utxo| {
+            let script_pub_key = utxo
+                .script
+                .unwrap_or_else(|| p2pkh_script(&utxo.public_key.unwrap()));
+            sideswap_payjoin::server_api::Utxo {
+                txid: utxo.txhash,
+                vout: utxo.vout,
+                script_pub_key,
+                asset_id: utxo.asset_id,
+                value: utxo.satoshi,
+                asset_bf: utxo.assetblinder,
+                value_bf: utxo.amountblinder,
+                asset_commitment: utxo
+                    .asset_tag
+                    .into_inner()
+                    .into_asset_gen(SECP256K1)
+                    .expect("only confidential inputs expected here"),
+                value_commitment: utxo
+                    .commitment
+                    .into_inner()
+                    .commitment()
+                    .expect("only confidential inputs expected here"),
+            }
+        })
+        .collect::<Vec<_>>();
+
+    let recipients = req
+        .addressees
+        .iter()
+        .map(
+            |addr| -> Result<sideswap_payjoin::Recipient, anyhow::Error> {
+                Ok(sideswap_payjoin::Recipient {
+                    asset_id: AssetId::from_str(&addr.asset_id)?,
+                    amount: addr.amount.try_into()?,
+                    address: elements::Address::from_str(&addr.address)?,
+                })
+            },
+        )
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let resp = sideswap_payjoin::create_payjoin(
+        data,
+        sideswap_payjoin::CreatePayjoin {
+            network: data.login_info.env.d().network,
+            base_url: data.login_info.env.base_server_http_url(),
+            user_agent: worker::USER_AGENT.to_owned(),
+            utxos,
+            multisig_wallet: !data.login_info.single_sig,
+            use_all_utxos: !req.utxos.is_empty(),
+            recipients,
+            deduct_fee: None,
+            fee_asset,
+        },
+    )?;
+
+    let tx = resp.pset.extract_tx()?;
+    let id = tx.txid().to_string();
+
+    data.created_txs.insert(
+        id.clone(),
+        CreatedTx::Payjoin(CreatedTxPayjoin {
+            pset: resp.pset,
+            blinding_nonces: resp.blinding_nonces,
+        }),
+    );
+
+    let mut addressees = req.addressees.clone();
+    if let Some(index) = req.deduct_fee_output {
+        addressees[index as usize].amount -= resp.asset_fee as i64;
+    }
+
+    Ok(ffi::proto::CreatedTx {
+        id,
+        req,
+        input_count: tx.input.len() as i32,
+        output_count: tx.output.len() as i32,
+        size: tx.size() as i64,
+        vsize: tx.vsize() as i64,
+        network_fee: resp.network_fee as i64,
+        server_fee: Some(resp.asset_fee as i64),
+        fee_per_byte: resp.network_fee as f64 / tx.size() as f64,
+        addressees,
+    })
 }
 
 unsafe fn try_send_tx(
     data: &mut GdkSesImpl,
-    tx: &serde_json::Value,
+    tx: &CreatedTxNormal,
     assets: &BTreeMap<AssetId, Asset>,
 ) -> Result<elements::Txid, anyhow::Error> {
     let session = data.session;
 
     let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_sign_transaction(session, GdkJson::new(&tx).as_ptr(), &mut call);
+    let rc = gdk::GA_sign_transaction(session, GdkJson::new(&tx.tx).as_ptr(), &mut call);
     ensure!(
         rc == 0,
         "GA_sign_transaction failed: {}",
@@ -1280,109 +1583,33 @@ unsafe fn try_send_tx(
     Ok(send_result.txhash)
 }
 
-unsafe fn try_create_payjoin(
-    data: &mut GdkSesImpl,
-    req: ffi::proto::CreatePayjoin,
-) -> Result<ffi::proto::CreatedPayjoin, anyhow::Error> {
-    ensure!(req.balance.amount > 0);
-    let send_amount = req.balance.amount as u64;
-    let send_asset = AssetId::from_str(&req.balance.asset_id).unwrap();
-    let address = elements::Address::from_str(&req.addr)?;
-
-    let unspent_outputs = try_get_unspent_outputs(data)?
-        .unspent_outputs
-        .remove(&send_asset)
-        .unwrap_or_default();
-
-    let balance = unspent_outputs
-        .iter()
-        .map(|input| input.satoshi)
-        .sum::<u64>();
-    ensure!(send_amount <= balance, "Insufficient funds");
-
-    ensure!(unspent_outputs.iter().all(|utxo| utxo
-        .asset_tag
-        .clone()
-        .into_inner()
-        .is_confidential()
-        && utxo.commitment.clone().into_inner().is_confidential()
-        && utxo.amountblinder != elements::confidential::ValueBlindingFactor::zero()
-        && utxo.assetblinder != elements::confidential::AssetBlindingFactor::zero()));
-    ensure!(unspent_outputs
-        .iter()
-        .all(|utxo| utxo.public_key.is_some() || utxo.script.is_some()));
-
-    let subtract_fee_from_amount = balance == send_amount;
-
-    let change_address = try_get_addr_info(data, true)?.address;
-
-    let utxos = unspent_outputs
-        .into_iter()
-        .map(|utxo| {
-            let script_pub_key = utxo
-                .script
-                .unwrap_or_else(|| sideswap_payjoin::pset::p2pkh_script(&utxo.public_key.unwrap()));
-            sideswap_payjoin::server_api::Utxo {
-                txid: utxo.txhash,
-                vout: utxo.vout,
-                script_pub_key,
-                asset_id: utxo.asset_id,
-                value: utxo.satoshi,
-                asset_bf: utxo.assetblinder,
-                value_bf: utxo.amountblinder,
-                asset_commitment: utxo
-                    .asset_tag
-                    .into_inner()
-                    .into_asset_gen(SECP256K1)
-                    .expect("only confidential inputs expected here"),
-                value_commitment: utxo
-                    .commitment
-                    .into_inner()
-                    .commitment()
-                    .expect("only confidential inputs expected here"),
-            }
-        })
-        .collect::<Vec<_>>();
-
-    let resp = sideswap_payjoin::create_payjoin(sideswap_payjoin::CreatePayjoin {
-        base_url: data.login_info.env.base_server_http_url(),
-        user_agent: worker::USER_AGENT.to_owned(),
-        asset_id: send_asset,
-        amount: send_amount,
-        subtract_fee_from_amount,
-        address,
-        change_address,
-        utxos,
-        multisig: !data.login_info.single_sig,
-    })?;
-
-    let pset =
-        base64::engine::general_purpose::STANDARD.encode(elements::encode::serialize(&resp.pset));
-
-    Ok(ffi::proto::CreatedPayjoin {
-        req,
-        pset,
-        asset_fee: resp.asset_fee as i64,
-    })
+impl sideswap_payjoin::Wallet for GdkSesImpl {
+    fn change_address(&mut self) -> Result<elements::Address, anyhow::Error> {
+        self.get_change_address().map(|info| info.address)
+    }
 }
 
 unsafe fn try_send_payjoin(
     data: &mut GdkSesImpl,
-    req: &ffi::proto::CreatedPayjoin,
+    tx: &CreatedTxPayjoin,
     assets: &BTreeMap<AssetId, Asset>,
 ) -> Result<elements::Txid, anyhow::Error> {
     let session = data.session;
-    let send_asset = AssetId::from_str(&req.req.balance.asset_id).unwrap();
 
-    let utxos = try_get_unspent_outputs(data)?
-        .unspent_outputs
-        .remove(&send_asset)
-        .unwrap_or_default();
+    let utxos = try_get_unspent_outputs(data)?.unspent_outputs;
+    let utxos = utxos
+        .into_values()
+        .map(|utxos| utxos.into_iter())
+        .flatten()
+        .collect();
+
+    let pset =
+        base64::engine::general_purpose::STANDARD.encode(elements::encode::serialize(&tx.pset));
 
     let sign_pset = gdk_json::SignPsetOpt {
         utxos,
-        psbt: req.pset.clone(),
-        blinding_nonces: Vec::new(), // FIXME: Get nonces for AMP accounts
+        psbt: pset,
+        blinding_nonces: tx.blinding_nonces.clone(),
     };
     let mut call = std::ptr::null_mut();
     let rc = gdk::GA_psbt_sign(session, GdkJson::new(&sign_pset).as_ptr(), &mut call);
@@ -1394,14 +1621,14 @@ unsafe fn try_send_payjoin(
     let mut signed_pset_json = run_auth_handler::<serde_json::Value>(
         data.hw_data.as_ref(),
         call,
-        HandlerParams::new().with_assets(assets),
+        HandlerParams::new()
+            .with_assets(assets)
+            .with_blinding_nonces(tx.blinding_nonces.clone()),
     )
     .map_err(|e| anyhow!("signing pset failed: {}", e))?;
     let signed_pset = serde_json::from_value::<gdk_json::SignPsetResult>(signed_pset_json.clone())?;
 
-    let pset_server = elements::encode::deserialize::<elements::pset::PartiallySignedTransaction>(
-        &base64::engine::general_purpose::STANDARD.decode(&req.pset)?,
-    )?;
+    let pset_server = tx.pset.clone();
     let pset_client = elements::encode::deserialize::<elements::pset::PartiallySignedTransaction>(
         &base64::engine::general_purpose::STANDARD.decode(signed_pset.psbt)?,
     )?;
@@ -1509,7 +1736,7 @@ unsafe fn verify_and_sign_pset(
         call,
         HandlerParams::new()
             .with_assets(assets)
-            .with_tx_status(jade_mng::TxType::Swap),
+            .with_tx_type(jade_mng::TxType::Swap),
     )
     .map_err(|e| anyhow!("signing pset failed: {}", e))?;
     Ok(signed_pset.psbt)
@@ -1610,7 +1837,7 @@ unsafe fn sig_single_maker_utxo(
         call,
         HandlerParams::new()
             .with_assets(assets)
-            .with_tx_status(jade_mng::TxType::OfflineSwapOutput),
+            .with_tx_type(jade_mng::TxType::MakerUtxo),
     )
     .map_err(|e| anyhow!("signing tx failed: {}", e))?;
     debug!("signed tx: {:?}", &signed_tx);
@@ -1735,7 +1962,7 @@ unsafe fn sig_single_maker_tx(
         call,
         HandlerParams::new()
             .with_assets(assets)
-            .with_tx_status(jade_mng::TxType::OfflineSwap),
+            .with_tx_type(jade_mng::TxType::OfflineSwap),
     )
     .map_err(|e| anyhow!("creating swap failed: {}", e))?;
 
@@ -2326,6 +2553,7 @@ pub unsafe fn start_processing_impl(
         login_info: info,
         subaccount: None,
         receiving_id: None,
+        created_txs: BTreeMap::new(),
     };
 
     Ok(Box::new(data))

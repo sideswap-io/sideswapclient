@@ -457,6 +457,9 @@ class DesktopRoutePage {
                 RouteName.pinSetup, (route) => route.isFirst);
             return;
           }
+
+          await navigator.pushNamedAndRemoveUntil(
+              RouteName.pinSetup, (route) => false);
         }(),
       Status.pinSuccess => () async {
           if (firstLaunchState != const FirstLaunchStateEmpty()) {

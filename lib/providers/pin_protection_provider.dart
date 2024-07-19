@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -14,6 +13,7 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'pin_protection_provider.g.dart';
+part 'pin_protection_provider.freezed.dart';
 
 enum PinKeyboardAcceptType {
   icon,
@@ -59,6 +59,26 @@ class PinDecryptedDataNotifier extends _$PinDecryptedDataNotifier {
   }
 }
 
+@freezed
+sealed class PinUnlockState with _$PinUnlockState {
+  const factory PinUnlockState.empty() = PinUnlockStateEmpty;
+  const factory PinUnlockState.success() = PinUnlockStateSuccess;
+  const factory PinUnlockState.wrong() = PinUnlockStateWrong;
+  const factory PinUnlockState.failed() = PinUnlockStateFailed;
+}
+
+@riverpod
+class PinUnlockStateNotifier extends _$PinUnlockStateNotifier {
+  @override
+  PinUnlockState build() {
+    return const PinUnlockStateEmpty();
+  }
+
+  void setPinUnlockState(PinUnlockState value) {
+    state = value;
+  }
+}
+
 @Riverpod(keepAlive: true)
 PinProtectionHelper pinProtectionHelper(PinProtectionHelperRef ref) {
   return PinProtectionHelper(ref: ref);
@@ -71,8 +91,6 @@ class PinProtectionHelper {
 
   Future<bool> Function(String?, bool, PinKeyboardAcceptType)?
       onPinBlockadeCallback;
-  VoidCallback? onUnlock;
-  VoidCallback? onUnlockFailed;
   int wrongCount = 0;
 
   Future<bool> pinBlockadeUnlocked({
@@ -86,14 +104,9 @@ class PinProtectionHelper {
     return false;
   }
 
-  void init({
-    required VoidCallback onUnlockCallback,
-    VoidCallback? onUnlockFailedCallback,
-  }) {
+  void init() {
     ref.invalidate(pinCodeProtectionNotifierProvider);
     ref.invalidate(pinProtectionStateNotifierProvider);
-    onUnlock = onUnlockCallback;
-    onUnlockFailed = onUnlockFailedCallback;
   }
 
   void deinit() {
@@ -204,9 +217,9 @@ class PinProtectionHelper {
 
     if (pinDecryptedData.success) {
       wrongCount = 0;
-      if (onUnlock != null) {
-        onUnlock!();
-      }
+      ref
+          .read(pinUnlockStateNotifierProvider.notifier)
+          .setPinUnlockState(const PinUnlockState.success());
       return;
     }
 
@@ -218,6 +231,9 @@ class PinProtectionHelper {
     }
 
     if (wrongCount >= 3) {
+      ref
+          .read(pinUnlockStateNotifierProvider.notifier)
+          .setPinUnlockState(const PinUnlockState.failed());
       await ref.read(walletProvider).settingsDeletePromptConfirm();
       return;
     }
@@ -235,8 +251,8 @@ class PinProtectionHelper {
         .read(pinProtectionStateNotifierProvider.notifier)
         .setPinProtectionState(PinProtectionStateError(message: errorMessage));
 
-    if (onUnlockFailed != null) {
-      onUnlockFailed!();
-    }
+    ref
+        .read(pinUnlockStateNotifierProvider.notifier)
+        .setPinUnlockState(const PinUnlockState.wrong());
   }
 }

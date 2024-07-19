@@ -411,7 +411,7 @@ class Configuration extends _$Configuration {
       salt: salt ?? '',
       encryptedData: encryptedData ?? '',
       pinIdentifier: pinIdentifier ?? '',
-      hmac: pinHmac,
+      hmac: pinHmac ?? '',
     );
 
     return switch (pinData) {
@@ -455,9 +455,7 @@ class Configuration extends _$Configuration {
               SideswapSettings.pinEncryptedDataField, encryptedData);
           await prefs.setString(
               SideswapSettings.pinIdentifierField, pinIdentifier);
-          if (pinHmac != null) {
-            await prefs.setString(SideswapSettings.pinHmacField, pinHmac);
-          }
+          await prefs.setString(SideswapSettings.pinHmacField, pinHmac);
         }(),
       _ => () async {
           await prefs.remove(SideswapSettings.pinEncryptedDataField);

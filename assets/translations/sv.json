@@ -568,7 +568,6 @@
   "Blinded": "Förblindad",
   "Unblinded": "Oblindad",
   "Tx": "Tx",
-  "Conf.": "Conf.",
   "New app release": "Ny appversion",
   "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "SideSwap behöver tillgång till Bluetooth för att kunna ansluta till hårdvaruplånböcker. Platsdata används eller behålls inte av SideSwap.",
   "More info": "Mer information",

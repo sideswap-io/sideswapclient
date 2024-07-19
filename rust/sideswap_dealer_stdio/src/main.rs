@@ -1,4 +1,3 @@
-use clap::{App, Arg};
 use serde::Deserialize;
 use sideswap_common::*;
 use sideswap_dealer::{dealer, rpc::RpcServer};
@@ -40,11 +39,14 @@ fn send_resp(resp: dealer::From) {
     println!("{}", resp);
 }
 
-fn main() {
-    let matches = App::new("sideswap_dealer")
-        .arg(Arg::with_name("config").required(true))
-        .get_matches();
-    let config_path = matches.value_of("config").unwrap();
+#[tokio::main]
+async fn main() {
+    let args = std::env::args().collect::<Vec<_>>();
+    assert!(
+        args.len() == 2,
+        "Specify a single argument for the path to the config file"
+    );
+    let config_path = &args[1];
 
     let mut conf = config::Config::new();
     conf.merge(config::File::with_name(config_path))
@@ -72,7 +74,7 @@ fn main() {
         api_key: settings.api_key,
     };
 
-    let (dealer_tx, dealer_rx) = dealer::start(params);
+    let (dealer_tx, mut dealer_rx) = dealer::spawn_async(params);
 
     std::thread::spawn(move || loop {
         let req = get_req();
@@ -80,7 +82,7 @@ fn main() {
     });
 
     loop {
-        let resp = dealer_rx.recv().unwrap();
+        let resp = dealer_rx.recv().await.unwrap();
         if !ignore_resp(&resp) {
             send_resp(resp);
         }

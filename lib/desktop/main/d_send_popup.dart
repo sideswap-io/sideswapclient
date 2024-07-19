@@ -264,9 +264,11 @@ class DSendPopupCreate extends HookConsumerWidget {
                 isMaxPressed.value = false;
               },
               onSubmitted: (_) async {
-                final errorMessage = ref
-                    .read(paymentHelperProvider)
-                    .outputsPaymentSend(selectedInputs: selectedInputs);
+                final errorMessage =
+                    ref.read(paymentHelperProvider).outputsPaymentSend(
+                          selectedInputs: selectedInputs,
+                          isMaxSelected: isMaxPressed.value,
+                        );
                 if (errorMessage != null) {
                   final flushbar = Flushbar<void>(
                     messageText: Text(errorMessage),
@@ -324,9 +326,11 @@ class DSendPopupCreate extends HookConsumerWidget {
                         amountController.text = '';
                         addressController.text = '';
 
-                        final errorMessage = ref
-                            .read(paymentHelperProvider)
-                            .outputsPaymentSend(selectedInputs: selectedInputs);
+                        final errorMessage =
+                            ref.read(paymentHelperProvider).outputsPaymentSend(
+                                  selectedInputs: selectedInputs,
+                                  isMaxSelected: isMaxPressed.value,
+                                );
                         if (errorMessage != null) {
                           final flushbar = Flushbar<void>(
                             messageText: Text(errorMessage),

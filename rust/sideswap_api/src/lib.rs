@@ -1,6 +1,7 @@
 pub mod fcm_models;
 pub mod gdk;
 pub mod http_rpc;
+pub mod pegx;
 
 pub use elements::{
     confidential::{AssetBlindingFactor, ValueBlindingFactor},
@@ -144,15 +145,22 @@ pub struct Asset {
     pub icon_url: Option<String>,
     pub instant_swaps: Option<bool>,
     pub domain: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub domain_agent: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub domain_agent_link: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub always_show: Option<bool>,
     pub issuance_prevout: Option<IssuancePrevout>,
     pub issuer_pubkey: Option<String>,
     pub contract: Option<serde_json::Value>,
     pub market_type: Option<MarketType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub server_fee: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub amp_asset_restrictions: Option<AmpAssetRestrictions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payjoin: Option<bool>,
 }
 
 impl Asset {

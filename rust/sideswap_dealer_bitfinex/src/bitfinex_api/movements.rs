@@ -1,3 +1,5 @@
+use crate::bitfinex_worker::Movement;
+
 use super::*;
 
 #[derive(Serialize)]
@@ -10,19 +12,10 @@ pub struct MovementsRequest {
     pub limit: Option<i32>,
 }
 
-#[derive(Debug)]
-pub struct Movement {
-    pub id: i64,
-    pub currency: String,
-    pub currency_name: String,
-    pub mts_started: i64,
-    pub mts_updated: i64,
-    pub status: String,
-    pub amount: f64,
-    pub fees: f64,
-    pub destination_address: String,
-    pub transaction_id: String,
-    pub withdraw_transaction_note: String,
+#[derive(Debug, Clone, PartialEq)]
+pub struct Movements {
+    pub success: bool,
+    pub movements: Vec<Movement>,
 }
 
 pub type MovementsResponse = Vec<Movement>;

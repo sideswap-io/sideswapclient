@@ -9,6 +9,7 @@ pub struct WithdrawRequest {
 }
 
 #[derive(Debug)]
+#[allow(unused)]
 pub struct WithdrawResponse {
     pub mts: i64,
     pub type_: String,

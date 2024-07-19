@@ -43,7 +43,7 @@ sealed class PinDataState with _$PinDataState {
       {required String salt,
       required String encryptedData,
       required String pinIdentifier,
-      required String? hmac}) = PinDataStateData;
+      required String hmac}) = PinDataStateData;
 
   factory PinDataState.fromJson(Map<String, dynamic> json) =>
       _$PinDataStateFromJson(json);

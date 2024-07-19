@@ -64,12 +64,31 @@ class BitmapHelper {
 
   static Future<Uint8List> getSizedSvgImageBytes(
       PictureInfo pictureInfo, double width, double height) async {
+    /// (malcolmpl): not working on ubuntu 24.04 - crash in nvidia drivers 535.171.04
+    /// issue solved by: https://github.com/flutter/flutter/issues/148364
+    /// not cherry picked to next release fix :|
     final image = await pictureInfo.picture.toImage(
         pictureInfo.size.width.round(), pictureInfo.size.height.round());
     final imageBytes = await image.toByteData(format: ui.ImageByteFormat.png);
 
     final byteData = imageBytes?.buffer.asUint8List() ?? Uint8List(0);
     return byteData;
+
+    /// (malcolmpl): paint svg picture in resized canvas and return png image bytes
+    // final ui.Picture picture = pictureInfo.picture;
+    // final ui.PictureRecorder recorder = ui.PictureRecorder();
+    // final ui.Canvas canvas =
+    //     Canvas(recorder, Rect.fromPoints(Offset.zero, Offset(width, height)));
+    // canvas.scale(
+    //     width / pictureInfo.size.width, height / pictureInfo.size.height);
+    // canvas.drawPicture(picture);
+    // final ui.Image imgByteData =
+    //     await recorder.endRecording().toImage(width.ceil(), height.ceil());
+    // final ByteData? bytesData =
+    //     await imgByteData.toByteData(format: ui.ImageByteFormat.png);
+    // final Uint8List imageData = bytesData?.buffer.asUint8List() ?? Uint8List(0);
+    // pictureInfo.picture.dispose();
+    // return imageData;
   }
 
   static Future<Uint8List> getResizedImageFromBase64OrAssetName(
@@ -99,14 +118,18 @@ class BitmapHelper {
           interpolation: image.Interpolation.cubic,
         );
       }
-      ui.Codec codec =
-          await ui.instantiateImageCodec(image.encodePng(newImage));
-      ui.FrameInfo frameInfo = await codec.getNextFrame();
-      final resizedBytes =
-          await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
-      final byteData = resizedBytes?.buffer.asUint8List() ?? Uint8List(0);
-      return byteData;
-      // return imageBytes;
+      return image.encodePng(newImage);
+
+      /// (malcolmpl) Code below for some reason stopped working on linux since flutter 3.22
+      // final pngFile = image.encodePng(newImage);
+      // ui.Codec codec = await ui.instantiateImageCodec(pngFile);
+      // ui.FrameInfo frameInfo = await codec.getNextFrame();
+      // final resizedBytes =
+      //     await frameInfo.image.toByteData(format: ui.ImageByteFormat.png);
+      // final byteData = resizedBytes?.buffer.asUint8List() ?? Uint8List(0);
+      // frameInfo.image.dispose();
+      // codec.dispose();
+      // return byteData;
     } else if (assetSvg != null && assetSvg.isNotEmpty) {
       return BitmapHelper.getPngBufferFromSvgAsset(assetSvg, width, height);
     }

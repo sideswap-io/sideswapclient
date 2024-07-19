@@ -586,7 +586,6 @@
   "Blinded": "致盲",
   "Unblinded": "不设盲",
   "Tx": "Tx",
-  "Conf.": "Conf.",
   "New app release": "新应用程序发布",
   "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "SideSwap 需要访问蓝牙才能连接到硬件钱包。SideSwap 不会使用或保留位置数据。",
   "More info": "更多信息",

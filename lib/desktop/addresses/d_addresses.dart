@@ -519,7 +519,7 @@ class DAddressDetailsColumn extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const flexes = [540, 40, 110, 40, 80, 50, 70];
+    const flexes = [580, 60, 120, 80, 55, 65];
 
     final addressDetailsState = ref.watch(addressDetailsDialogNotifierProvider);
     final buttonStyle = ref
@@ -544,7 +544,6 @@ class DAddressDetailsColumn extends HookConsumerWidget {
                 Text('Tx'.tr()),
                 Text('Asset'.tr()),
                 Text('Amount'.tr()),
-                Text('Conf.'.tr()),
                 Text('Type'.tr()),
                 Text('Blinded'.tr()),
                 Text('Unblinded'.tr()),
@@ -608,11 +607,6 @@ class DAddressDetailsColumn extends HookConsumerWidget {
                                         child: assetIcon,
                                       ),
                                       SelectableText(amountStr,
-                                          textAlign: TextAlign.left),
-                                      Text(
-                                          utxo.isConfidential == true
-                                              ? 'Yes'.tr()
-                                              : 'No'.tr(),
                                           textAlign: TextAlign.left),
                                       Text(
                                           utxo.isInternal == true

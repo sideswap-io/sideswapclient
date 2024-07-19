@@ -151,16 +151,17 @@ fn run(
                             address: receiver.address.to_string(),
                             amount: receiver.amount,
                             asset_id: receiver.asset_id.to_string(),
-                            is_greedy: None,
                         })
                         .collect(),
                     account: Default::default(),
                     utxos: Vec::new(),
+                    fee_asset_id: None,
+                    deduct_fee_output: None,
                 };
 
                 let send_res = wallet
                     .create_tx(req)
-                    .and_then(|created| wallet.send_tx(&created, &BTreeMap::new()));
+                    .and_then(|created| wallet.send_tx(&created.id, &BTreeMap::new()));
 
                 match send_res {
                     Ok(txid) => {

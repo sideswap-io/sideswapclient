@@ -66,6 +66,7 @@ pub fn get_assets(
                     market_type: Some(sideswap_api::MarketType::Token),
                     server_fee: None,
                     amp_asset_restrictions: None,
+                    payjoin: None,
                 }
             })
         })

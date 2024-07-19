@@ -1,4 +1,4 @@
-use futures_util::{SinkExt, StreamExt};
+use futures::{SinkExt, StreamExt};
 use log::*;
 use prost::Message;
 use sideswap_common::env::Env;

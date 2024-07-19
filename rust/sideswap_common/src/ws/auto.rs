@@ -116,21 +116,3 @@ pub async fn run(
         resp_tx.send(WrappedResponse::Disconnected);
     }
 }
-
-pub fn start(
-    base_url: String,
-) -> (
-    UnboundedSender<WrappedRequest>,
-    UnboundedReceiver<WrappedResponse>,
-) {
-    let (req_tx, req_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
-    let (resp_tx, resp_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedResponse>();
-    std::thread::spawn(move || {
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .expect("must not fail");
-        rt.block_on(run(base_url, req_rx, resp_tx));
-    });
-    (req_tx, resp_rx)
-}

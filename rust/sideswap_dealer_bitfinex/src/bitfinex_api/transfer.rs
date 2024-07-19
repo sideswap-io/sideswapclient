@@ -10,6 +10,7 @@ pub struct TransferRequest {
 }
 
 #[derive(Debug)]
+#[allow(unused)]
 pub struct TransferResponse {
     pub mts: i64,
     pub type_: String,

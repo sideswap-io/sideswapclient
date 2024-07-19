@@ -16,7 +16,6 @@ message AddressAmount {
   required string address = 1;
   required int64 amount = 2;
   required string asset_id = 3;
-  optional bool is_greedy = 4;
 }
 
 message Balance {
@@ -42,6 +41,7 @@ message Asset {
   optional string domain_agent = 10;
   optional string domain_agent_link = 13;
   optional bool always_show = 12;
+  optional bool payjoin = 15;
   optional AmpAssetRestrictions amp_asset_restrictions = 14;
 }
 
@@ -158,29 +158,21 @@ message CreateTx {
   repeated AddressAmount addressees = 1;
   required Account account = 2;
   repeated OutPoint utxos = 3;
+  optional string fee_asset_id = 4;
+  optional uint32 deduct_fee_output = 5;
 }
 
 message CreatedTx {
+  required string id = 9;
   required CreateTx req = 1;
   required int32 input_count = 2;
   required int32 output_count = 3;
   required int64 size = 4;
   required int64 vsize = 7;
   required int64 network_fee = 5;
+  optional int64 server_fee = 10;
   required double fee_per_byte = 6;
   repeated AddressAmount addressees = 8;
-}
-
-message CreatePayjoin {
-  required Account account = 1;
-  required string addr = 2;
-  required Balance balance = 3;
-}
-
-message CreatedPayjoin {
-  required CreatePayjoin req = 1;
-  required string pset = 2;
-  required int64 asset_fee = 3;
 }
 
 message ChartPoint {
@@ -280,6 +272,7 @@ message To {
 
   message SendTx {
     required Account account = 1;
+    required string id = 2;
   }
 
   message BlindedValues {
@@ -388,8 +381,6 @@ message To {
     Account get_recv_address = 11;
     CreateTx create_tx = 12;
     SendTx send_tx = 13;
-    CreatePayjoin create_payjoin = 15;
-    CreatedPayjoin send_payjoin = 16;
     BlindedValues blinded_values = 14;
     Account load_utxos = 17;
     Account load_addresses = 18;
@@ -576,13 +567,6 @@ message From {
     oneof result {
       string error_msg = 1;
       CreatedTx created_tx = 2;
-    }
-  }
-
-  message CreatePayjoinResult {
-    oneof result {
-      string error_msg = 1;
-      CreatedPayjoin created_payjoin = 2;
     }
   }
 
@@ -806,7 +790,6 @@ message From {
 
     RecvAddress recv_address = 30;
     CreateTxResult create_tx_result = 31;
-    CreatePayjoinResult create_payjoin_result = 34;
     SendResult send_result = 32;
     BlindedValues blinded_values = 33;
     LoadUtxos load_utxos = 35;

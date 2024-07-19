@@ -15,8 +15,10 @@ import 'package:sideswap/desktop/common/button/d_custom_filled_big_button.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
 import 'package:sideswap/desktop/onboarding/d_network_access_onboarding.dart';
 import 'package:sideswap/desktop/widgets/sideswap_scaffold_page.dart';
+import 'package:sideswap/listeners/launch_page_delete_wallet_listener.dart';
 import 'package:sideswap/models/connection_models.dart';
 import 'package:sideswap/providers/connection_state_providers.dart';
+import 'package:sideswap/providers/delete_wallet_providers.dart';
 import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/locales_provider.dart';
@@ -134,6 +136,7 @@ class DFirstLaunch extends HookConsumerWidget {
     return Stack(
       key: ValueKey(lang),
       children: [
+        const LaunchPageDeleteWalletListener(),
         SideSwapScaffoldPage(
           content: Column(
             children: [
@@ -256,21 +259,57 @@ class DFirstLaunch extends HookConsumerWidget {
             ],
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.all(24.0),
+        Padding(
+          padding: const EdgeInsets.all(24.0),
           child: Directionality(
             textDirection: ui.TextDirection.ltr,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                LangSelector(),
-                SizedBox(width: 8),
-                DFirstLaunchNetworkSettingsButton(),
+                ...switch (serverLoginState) {
+                  ServerLoginStateError() => [
+                      const DeleteWalletButton(),
+                    ],
+                  _ => [const SizedBox()],
+                },
+                const SizedBox(width: 8),
+                const LangSelector(),
+                const SizedBox(width: 8),
+                const DFirstLaunchNetworkSettingsButton(),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class DeleteWalletButton extends ConsumerWidget {
+  const DeleteWalletButton({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      width: 170,
+      height: 39,
+      child: DCustomTextBigButton(
+          child: Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: SvgPicture.asset('assets/delete.svg'),
+              ),
+              const SizedBox(width: 10),
+              Text('Delete wallet'.tr()),
+            ],
+          ),
+          onPressed: () {
+            ref
+                .read(launchPageDeleteWalletNotifierProvider.notifier)
+                .setState(const LaunchPageDeleteWalletStateDelete());
+          }),
     );
   }
 }

@@ -562,7 +562,6 @@
   "Blinded": "أعمى",
   "Unblinded": "غير معماة",
   "Tx": "Tx",
-  "Conf.": "Conf.",
   "New app release": "إصدار التطبيق الجديد",
   "SideSwap needs access to Bluetooth in order to connect to hardware wallets. Location data is not used or keep by SideSwap.": "يحتاج SideSwap إلى الوصول إلى Bluetooth للاتصال بمحافظ الأجهزة. لا يتم استخدام بيانات الموقع أو الاحتفاظ بها بواسطة SideSwap.",
   "More info": "مزيد من المعلومات",

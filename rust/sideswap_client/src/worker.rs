@@ -127,7 +127,6 @@ pub struct Data {
     ws_hint: UnboundedSender<()>,
     resp_receiver: crossbeam_channel::Receiver<ServerResp>,
     params: ffi::StartParams,
-    unsigned_tx: Option<serde_json::Value>,
 
     agent: ureq::Agent,
     sync_complete: bool,
@@ -263,62 +262,6 @@ fn redact_from_msg(mut msg: ffi::proto::from::Msg) -> ffi::proto::from::Msg {
 
 pub fn get_account(id: AccountId) -> ffi::proto::Account {
     ffi::proto::Account { id }
-}
-
-pub fn get_created_tx(
-    req: &ffi::proto::CreateTx,
-    unsigned_tx: &serde_json::Value,
-) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
-    let unsigned_tx =
-        serde_json::from_value::<gdk_json::CreateTransactionResult>(unsigned_tx.clone())?;
-    let tx = unsigned_tx
-        .transaction
-        .ok_or_else(|| anyhow!("no transaction"))?
-        .into_inner();
-
-    let network_fee = unsigned_tx.fee.unwrap_or_default();
-    let vsize = unsigned_tx.transaction_vsize.unwrap_or_default();
-    let fee_per_byte = unsigned_tx.fee_rate.unwrap_or_default() as f64 / 1000.0;
-
-    let addressees = unsigned_tx
-        .addressees
-        .iter()
-        .filter(|addr| addr.user_path.is_none())
-        .map(|addr| {
-            let amount = if req.account.id == ACCOUNT_ID_REG {
-                addr.satoshi
-            } else if req.account.id == ACCOUNT_ID_AMP {
-                // Take satoshi value from transaction_outputs field,
-                // because addressees filed does not exclude network fee when sending all in GDK c++
-                let output = unsigned_tx
-                    .transaction_outputs
-                    .iter()
-                    .filter(|txout| txout.address.as_ref() == Some(&addr.address))
-                    .collect::<Vec<_>>();
-                ensure!(output.len() == 1);
-                output[0].satoshi
-            } else {
-                bail!("unknown account id");
-            };
-            Ok(ffi::proto::AddressAmount {
-                address: addr.address.clone(),
-                amount: amount as i64,
-                asset_id: addr.asset_id.to_string(),
-                is_greedy: None,
-            })
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-
-    Ok(ffi::proto::CreatedTx {
-        req: req.clone(),
-        input_count: tx.input.len() as i32,
-        output_count: tx.output.len() as i32,
-        size: tx.size() as i64,
-        vsize: vsize as i64,
-        network_fee: network_fee as i64,
-        fee_per_byte,
-        addressees,
-    })
 }
 
 fn convert_chart_point(point: ChartPoint) -> ffi::proto::ChartPoint {
@@ -714,6 +657,7 @@ impl Data {
                             market_type: None,
                             server_fee: None,
                             amp_asset_restrictions: None,
+                            payjoin: None,
                         }
                     }
                 };
@@ -1602,20 +1546,15 @@ impl Data {
     fn try_process_create_tx(
         &mut self,
         req: ffi::proto::CreateTx,
-    ) -> Result<(serde_json::Value, ffi::proto::CreatedTx), anyhow::Error> {
-        let unsigned_tx =
-            Self::get_wallet_mut(&mut self.wallets, req.account.id)?.create_tx(req.clone())?;
-        let info = get_created_tx(&req, &unsigned_tx)?;
-        Ok((unsigned_tx, info))
+    ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
+        let created_tx = Self::get_wallet_mut(&mut self.wallets, req.account.id)?.create_tx(req)?;
+        Ok(created_tx)
     }
 
     fn process_create_tx(&mut self, req: ffi::proto::CreateTx) {
         let result = self.try_process_create_tx(req);
         let result = match result {
-            Ok((unsigned_tx, info)) => {
-                self.unsigned_tx = Some(unsigned_tx);
-                ffi::proto::from::create_tx_result::Result::CreatedTx(info)
-            }
+            Ok(created_tx) => ffi::proto::from::create_tx_result::Result::CreatedTx(created_tx),
             Err(e) => ffi::proto::from::create_tx_result::Result::ErrorMsg(e.to_string()),
         };
         self.ui.send(ffi::proto::from::Msg::CreateTxResult(
@@ -1629,70 +1568,11 @@ impl Data {
         &mut self,
         req: ffi::proto::to::SendTx,
     ) -> Result<elements::Txid, anyhow::Error> {
-        let unsigned_tx = self
-            .unsigned_tx
-            .take()
-            .ok_or_else(|| anyhow!("transaction not found"))?;
-
-        let result = Self::get_wallet_mut(&mut self.wallets, req.account.id)?
-            .send_tx(&unsigned_tx, &self.assets);
-
-        if result.is_err() {
-            // Allow retry (if Jade is offline for example)
-            self.unsigned_tx = Some(unsigned_tx);
-        }
-
-        result
+        Self::get_wallet_mut(&mut self.wallets, req.account.id)?.send_tx(&req.id, &self.assets)
     }
 
     fn process_send_tx(&mut self, req: ffi::proto::to::SendTx) {
         let result = self.try_process_send_tx(req);
-
-        match result {
-            Ok(txid) => {
-                self.sent_txhash = Some(txid);
-                self.update_sync_interval();
-            }
-            Err(e) => self.ui.send(ffi::proto::from::Msg::SendResult(
-                ffi::proto::from::SendResult {
-                    result: Some(ffi::proto::from::send_result::Result::ErrorMsg(
-                        e.to_string(),
-                    )),
-                },
-            )),
-        }
-    }
-
-    fn try_process_create_payjoin(
-        &mut self,
-        req: ffi::proto::CreatePayjoin,
-    ) -> Result<ffi::proto::CreatedPayjoin, anyhow::Error> {
-        Self::get_wallet_mut(&mut self.wallets, req.account.id)?.create_payjoin(req)
-    }
-
-    fn process_create_payjoin(&mut self, req: ffi::proto::CreatePayjoin) {
-        let result = self.try_process_create_payjoin(req);
-        let result = match result {
-            Ok(created) => ffi::proto::from::create_payjoin_result::Result::CreatedPayjoin(created),
-            Err(err) => ffi::proto::from::create_payjoin_result::Result::ErrorMsg(err.to_string()),
-        };
-        self.ui.send(ffi::proto::from::Msg::CreatePayjoinResult(
-            ffi::proto::from::CreatePayjoinResult {
-                result: Some(result),
-            },
-        ));
-    }
-
-    fn try_process_send_payjoin(
-        &mut self,
-        req: ffi::proto::CreatedPayjoin,
-    ) -> Result<elements::Txid, anyhow::Error> {
-        Self::get_wallet_mut(&mut self.wallets, req.req.account.id)?
-            .send_payjoin(&req, &self.assets)
-    }
-
-    fn process_send_payjoin(&mut self, req: ffi::proto::CreatedPayjoin) {
-        let result = self.try_process_send_payjoin(req);
 
         match result {
             Ok(txid) => {
@@ -4022,8 +3902,6 @@ impl Data {
             ffi::proto::to::Msg::GetRecvAddress(req) => self.process_get_recv_address(req),
             ffi::proto::to::Msg::CreateTx(req) => self.process_create_tx(req),
             ffi::proto::to::Msg::SendTx(req) => self.process_send_tx(req),
-            ffi::proto::to::Msg::CreatePayjoin(req) => self.process_create_payjoin(req),
-            ffi::proto::to::Msg::SendPayjoin(req) => self.process_send_payjoin(req),
             ffi::proto::to::Msg::BlindedValues(req) => self.process_blinded_values(req),
             ffi::proto::to::Msg::SetMemo(req) => self.process_set_memo(req),
             ffi::proto::to::Msg::LoadUtxos(req) => self.process_load_utxos(req),
@@ -4128,6 +4006,7 @@ impl Data {
             instant_swaps: asset.instant_swaps.unwrap_or(false),
             always_show: asset.always_show,
             amp_asset_restrictions,
+            payjoin: asset.payjoin,
         };
 
         self.assets.insert(asset_id, asset);
@@ -4476,7 +4355,7 @@ pub fn start_processing(
                 JadeStatus::SignTx(tx_type) => match tx_type {
                     jade_mng::TxType::Normal => ffi::proto::from::jade_status::Status::SignTx,
                     jade_mng::TxType::Swap => ffi::proto::from::jade_status::Status::SignSwap,
-                    jade_mng::TxType::OfflineSwapOutput => {
+                    jade_mng::TxType::MakerUtxo => {
                         ffi::proto::from::jade_status::Status::SignSwapOutput
                     }
                     jade_mng::TxType::OfflineSwap => {
@@ -4606,7 +4485,6 @@ pub fn start_processing(
         ws_hint,
         resp_receiver,
         params,
-        unsigned_tx: None,
         agent: ureq::agent(),
         sync_complete: false,
         wallet_loaded_sent: false,

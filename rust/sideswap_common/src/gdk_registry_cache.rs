@@ -30,8 +30,17 @@ pub struct GdkAsset {
 }
 
 pub struct GdkRegistryCache {
+    policy_asset_id: AssetId,
     assets: Updater<AssetRegistry>,
     icons: Updater<IconRegistry>,
+}
+
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
+pub struct ShortAssetInfo {
+    pub asset_id: AssetId,
+    pub name: String,
+    pub ticker: Option<sideswap_api::Ticker>,
+    pub precision: u8,
 }
 
 impl GdkRegistryCache {
@@ -39,12 +48,18 @@ impl GdkRegistryCache {
         let cache_dir = cache_dir.join(network.d().name);
         std::fs::create_dir_all(&cache_dir).expect("can't create cache directory");
 
+        let policy_asset_id = network.d().policy_asset.asset_id();
         let assets = Updater::new(network, cache_dir.clone()).await;
         let icons = Updater::new(network, cache_dir).await;
 
-        GdkRegistryCache { assets, icons }
+        GdkRegistryCache {
+            policy_asset_id,
+            assets,
+            icons,
+        }
     }
 
+    // NOTE: Does not include LBTC
     pub fn get_all_assets(&self) -> Arc<BTreeMap<AssetId, GdkAsset>> {
         self.assets.data.load_full()
     }
@@ -53,14 +68,39 @@ impl GdkRegistryCache {
         self.icons.data.load_full()
     }
 
+    // NOTE: Does not include LBTC
     pub fn get_asset(&self, asset_id: &AssetId) -> Option<GdkAsset> {
         self.assets.data.load().get(asset_id).cloned()
+    }
+
+    // NOTE: Does include LBTC
+    pub fn get_short_asset(&self, asset_id: &AssetId) -> Option<ShortAssetInfo> {
+        if *asset_id == self.policy_asset_id {
+            Some(ShortAssetInfo {
+                asset_id: *asset_id,
+                name: "Liquid Bitcoin".to_owned(),
+                ticker: Some(sideswap_api::Ticker("L-BTC".to_owned())),
+                precision: 8,
+            })
+        } else {
+            self.assets
+                .data
+                .load()
+                .get(asset_id)
+                .map(|asset| ShortAssetInfo {
+                    asset_id: *asset_id,
+                    name: asset.name.clone(),
+                    ticker: asset.ticker.clone(),
+                    precision: asset.precision,
+                })
+        }
     }
 
     pub fn get_icon(&self, asset_id: &AssetId) -> Option<Vec<u8>> {
         self.icons.data.load().get(asset_id).cloned()
     }
 
+    // NOTE: Does not include LBTC
     pub fn has_asset(&self, asset_id: &AssetId) -> bool {
         self.assets.data.load().contains_key(asset_id)
     }

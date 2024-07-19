@@ -1688,7 +1688,7 @@ mixin _$PinDataState {
     required TResult Function() empty,
     required TResult Function(String message) error,
     required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String? hmac)
+            String pinIdentifier, String hmac)
         data,
   }) =>
       throw _privateConstructorUsedError;
@@ -1697,7 +1697,7 @@ mixin _$PinDataState {
     TResult? Function()? empty,
     TResult? Function(String message)? error,
     TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
   }) =>
       throw _privateConstructorUsedError;
@@ -1706,7 +1706,7 @@ mixin _$PinDataState {
     TResult Function()? empty,
     TResult Function(String message)? error,
     TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
     required TResult orElse(),
   }) =>
@@ -1803,7 +1803,7 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
     required TResult Function() empty,
     required TResult Function(String message) error,
     required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String? hmac)
+            String pinIdentifier, String hmac)
         data,
   }) {
     return empty();
@@ -1815,7 +1815,7 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
     TResult? Function()? empty,
     TResult? Function(String message)? error,
     TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
   }) {
     return empty?.call();
@@ -1827,7 +1827,7 @@ class _$PinDataStateEmptyImpl implements PinDataStateEmpty {
     TResult Function()? empty,
     TResult Function(String message)? error,
     TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
     required TResult orElse(),
   }) {
@@ -1962,7 +1962,7 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
     required TResult Function() empty,
     required TResult Function(String message) error,
     required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String? hmac)
+            String pinIdentifier, String hmac)
         data,
   }) {
     return error(message);
@@ -1974,7 +1974,7 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
     TResult? Function()? empty,
     TResult? Function(String message)? error,
     TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
   }) {
     return error?.call(message);
@@ -1986,7 +1986,7 @@ class _$PinDataStateErrorImpl implements PinDataStateError {
     TResult Function()? empty,
     TResult Function(String message)? error,
     TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
     required TResult orElse(),
   }) {
@@ -2058,7 +2058,7 @@ abstract class _$$PinDataStateDataImplCopyWith<$Res> {
       __$$PinDataStateDataImplCopyWithImpl<$Res>;
   @useResult
   $Res call(
-      {String salt, String encryptedData, String pinIdentifier, String? hmac});
+      {String salt, String encryptedData, String pinIdentifier, String hmac});
 }
 
 /// @nodoc
@@ -2075,7 +2075,7 @@ class __$$PinDataStateDataImplCopyWithImpl<$Res>
     Object? salt = null,
     Object? encryptedData = null,
     Object? pinIdentifier = null,
-    Object? hmac = freezed,
+    Object? hmac = null,
   }) {
     return _then(_$PinDataStateDataImpl(
       salt: null == salt
@@ -2090,10 +2090,10 @@ class __$$PinDataStateDataImplCopyWithImpl<$Res>
           ? _value.pinIdentifier
           : pinIdentifier // ignore: cast_nullable_to_non_nullable
               as String,
-      hmac: freezed == hmac
+      hmac: null == hmac
           ? _value.hmac
           : hmac // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as String,
     ));
   }
 }
@@ -2119,7 +2119,7 @@ class _$PinDataStateDataImpl implements PinDataStateData {
   @override
   final String pinIdentifier;
   @override
-  final String? hmac;
+  final String hmac;
 
   @JsonKey(name: 'runtimeType')
   final String $type;
@@ -2160,7 +2160,7 @@ class _$PinDataStateDataImpl implements PinDataStateData {
     required TResult Function() empty,
     required TResult Function(String message) error,
     required TResult Function(String salt, String encryptedData,
-            String pinIdentifier, String? hmac)
+            String pinIdentifier, String hmac)
         data,
   }) {
     return data(salt, encryptedData, pinIdentifier, hmac);
@@ -2172,7 +2172,7 @@ class _$PinDataStateDataImpl implements PinDataStateData {
     TResult? Function()? empty,
     TResult? Function(String message)? error,
     TResult? Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
   }) {
     return data?.call(salt, encryptedData, pinIdentifier, hmac);
@@ -2184,7 +2184,7 @@ class _$PinDataStateDataImpl implements PinDataStateData {
     TResult Function()? empty,
     TResult Function(String message)? error,
     TResult Function(String salt, String encryptedData, String pinIdentifier,
-            String? hmac)?
+            String hmac)?
         data,
     required TResult orElse(),
   }) {
@@ -2241,7 +2241,7 @@ abstract class PinDataStateData implements PinDataState {
       {required final String salt,
       required final String encryptedData,
       required final String pinIdentifier,
-      required final String? hmac}) = _$PinDataStateDataImpl;
+      required final String hmac}) = _$PinDataStateDataImpl;
 
   factory PinDataStateData.fromJson(Map<String, dynamic> json) =
       _$PinDataStateDataImpl.fromJson;
@@ -2249,7 +2249,7 @@ abstract class PinDataStateData implements PinDataState {
   String get salt;
   String get encryptedData;
   String get pinIdentifier;
-  String? get hmac;
+  String get hmac;
   @JsonKey(ignore: true)
   _$$PinDataStateDataImplCopyWith<_$PinDataStateDataImpl> get copyWith =>
       throw _privateConstructorUsedError;

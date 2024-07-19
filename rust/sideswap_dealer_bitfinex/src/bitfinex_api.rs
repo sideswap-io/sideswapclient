@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use crate::BfSettings;
+
 pub mod movements;
 pub mod order_history;
 pub mod submit;
@@ -7,8 +9,7 @@ pub mod transfer;
 pub mod withdraw;
 
 pub struct Bitfinex {
-    bitfinex_key: String,
-    bitfinex_secret: String,
+    settings: BfSettings,
 }
 
 pub trait ApiCall: Serialize {
@@ -38,24 +39,28 @@ fn get_f64(list: &[serde_json::Value], index: usize) -> f64 {
         .unwrap_or_default()
 }
 
+pub fn new_nonce() -> String {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_micros()
+        .to_string()
+}
+
 impl Bitfinex {
-    pub fn new(bitfinex_key: String, bitfinex_secret: String) -> Self {
-        Self {
-            bitfinex_key,
-            bitfinex_secret,
-        }
+    pub fn new(settings: BfSettings) -> Self {
+        Self { settings }
     }
 
     pub fn make_request<T: ApiCall>(&self, request: T) -> Result<T::Response, anyhow::Error> {
         let body = serde_json::to_string(&request).expect("should not fail");
-        let nonce = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_micros()
-            .to_string();
         let api_path = T::api_path();
+        let nonce = new_nonce();
         let signature_payload = format!("/api/{api_path}{nonce}{body}");
-        let key = ring::hmac::Key::new(ring::hmac::HMAC_SHA384, self.bitfinex_secret.as_bytes());
+        let key = ring::hmac::Key::new(
+            ring::hmac::HMAC_SHA384,
+            self.settings.bitfinex_secret.as_bytes(),
+        );
         let tag = ring::hmac::sign(&key, signature_payload.as_bytes());
         let endpoint = format!("https://api.bitfinex.com/{api_path}");
         let signature = hex::encode(tag.as_ref());
@@ -65,7 +70,7 @@ impl Bitfinex {
             .set("Content-Type", "application/json")
             .set("accept", "application/json")
             .set("bfx-nonce", &nonce)
-            .set("bfx-apikey", &self.bitfinex_key)
+            .set("bfx-apikey", &self.settings.bitfinex_key)
             .set("bfx-signature", &signature)
             .send_bytes(body.as_bytes());
 

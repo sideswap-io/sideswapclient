@@ -1,73 +1,100 @@
-use std::{collections::BTreeSet, time::Duration};
+use std::time::Duration;
 
 use anyhow::{bail, ensure};
 use base64::Engine;
-use elements::{pset::PartiallySignedTransaction, TxOutSecrets};
-use network_fee::expected_network_fee;
-
-use crate::{
-    pset::{PsetInput, PsetOutput},
-    server_api::{SignResponse, StartResponse},
+use elements::{pset::PartiallySignedTransaction, Address, AssetId, TxOutSecrets};
+use sideswap_common::{
+    network::Network,
+    send_tx::{
+        coin_select::{self, InOut},
+        pset::{construct_pset, ConstructPsetArgs, ConstructedPset, PsetInput, PsetOutput},
+    },
 };
 
-pub mod network_fee;
-pub mod pset;
+use crate::server_api::{SignResponse, StartResponse};
+
 pub mod server_api;
 
 pub const BASE_URL_PROD: &str = "https://api.sideswap.io";
 pub const BASE_URL_TESTNET: &str = "https://api-testnet.sideswap.io";
 
+pub struct Recipient {
+    pub asset_id: AssetId,
+    pub amount: u64,
+    pub address: Address,
+}
+
 pub struct CreatePayjoin {
+    pub network: Network,
     pub base_url: String,
     pub user_agent: String,
-    pub asset_id: elements::AssetId,
-    pub amount: u64,
-    pub address: elements::Address,
-    pub subtract_fee_from_amount: bool,
-    pub change_address: elements::Address,
     pub utxos: Vec<server_api::Utxo>,
-    pub multisig: bool,
+    pub multisig_wallet: bool,
+    pub use_all_utxos: bool,
+    pub recipients: Vec<Recipient>,
+    pub deduct_fee: Option<usize>,
+    pub fee_asset: AssetId,
 }
 
 pub struct CreatedPayjoin {
     pub pset: PartiallySignedTransaction,
-    pub asset_fee: u64,
     pub blinding_nonces: Vec<String>,
+    pub asset_fee: u64,
+    pub network_fee: u64,
 }
 
-pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Error> {
+pub trait Wallet {
+    fn change_address(&mut self) -> Result<elements::Address, anyhow::Error>;
+}
+
+fn take_utxos<'a>(
+    mut utxos: Vec<server_api::Utxo>,
+    required: impl Iterator<Item = &'a InOut>,
+) -> Vec<(PsetInput, TxOutSecrets)> {
+    let mut selected = Vec::new();
+    for required in required {
+        let index = utxos
+            .iter()
+            .position(|utxo| utxo.asset_id == required.asset_id && utxo.value == required.value)
+            .expect("must exists");
+        let utxo = utxos.remove(index);
+        let input = PsetInput {
+            txid: utxo.txid,
+            vout: utxo.vout,
+            script_pub_key: utxo.script_pub_key,
+            asset_commitment: utxo.asset_commitment.into(),
+            value_commitment: utxo.value_commitment.into(),
+        };
+        let secret = TxOutSecrets {
+            asset: utxo.asset_id,
+            asset_bf: utxo.asset_bf,
+            value: utxo.value,
+            value_bf: utxo.value_bf,
+        };
+        selected.push((input, secret));
+    }
+    selected
+}
+
+pub fn create_payjoin(
+    wallet: &mut impl Wallet,
+    req: CreatePayjoin,
+) -> Result<CreatedPayjoin, anyhow::Error> {
     let CreatePayjoin {
+        network,
         base_url,
         user_agent,
-        asset_id: send_asset_id,
-        amount: send_amount,
-        address: send_address,
-        subtract_fee_from_amount,
-        change_address: client_change_address,
         utxos: client_utxos,
-        multisig: multisig_wallet,
+        multisig_wallet,
+        use_all_utxos,
+        recipients,
+        deduct_fee,
+        fee_asset,
     } = req;
 
     ensure!(!client_utxos.is_empty());
-    ensure!(client_utxos
-        .iter()
-        .all(|utxo| utxo.asset_id == req.asset_id));
-    ensure!(send_address.is_blinded());
-    ensure!(client_change_address.is_blinded());
-    ensure!(send_address.params == client_change_address.params);
-    ensure!(send_amount > 0);
-
-    let multisig_inputs = if multisig_wallet {
-        client_utxos
-            .iter()
-            .map(|utxo| elements::OutPoint {
-                txid: utxo.txid,
-                vout: utxo.vout,
-            })
-            .collect()
-    } else {
-        BTreeSet::new()
-    };
+    ensure!(recipients.iter().all(|r| r.address.is_blinded()));
+    ensure!(recipients.iter().all(|r| r.amount > 0));
 
     let agent: ureq::Agent = ureq::AgentBuilder::new()
         .timeout(Duration::from_secs(30))
@@ -76,7 +103,7 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     let url = format!("{base_url}/payjoin");
 
     let req = server_api::Request::Start(server_api::StartRequest {
-        asset_id: send_asset_id,
+        asset_id: fee_asset,
         user_agent,
         api_key: None,
     });
@@ -84,7 +111,7 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
     let StartResponse {
         order_id,
         expires_at: _,
-        fee_address,
+        fee_address: server_fee_address,
         change_address: server_change_address,
         utxos: server_utxos,
         price,
@@ -94,76 +121,102 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
         _ => bail!("unexpected response {resp:?}"),
     };
 
-    ensure!(send_address.params == fee_address.params);
-    ensure!(send_address.params == server_change_address.params);
-    ensure!(fee_address.is_blinded());
+    ensure!(server_fee_address.is_blinded());
     ensure!(server_change_address.is_blinded());
     ensure!(!server_utxos.is_empty());
 
-    let (max_input_count_singlesig, max_input_count_multisig) = if multisig_wallet {
-        (server_utxos.len(), client_utxos.len())
-    } else {
-        (client_utxos.len() + server_utxos.len(), 0)
-    };
-    let max_output_count = 4; // asset output, asset change, asset fee output, server change
-    let max_network_fee = expected_network_fee(
-        max_input_count_singlesig,
-        max_input_count_multisig,
-        max_output_count,
-    );
-    println!("max_network_fee: {max_network_fee}");
+    let policy_asset = network.d().policy_asset.asset_id();
+    let coin_select::payjoin::Res {
+        user_inputs,
+        client_inputs,
+        server_inputs,
+        user_outputs,
+        change_outputs,
+        server_fee,
+        server_change,
+        fee_change,
+        network_fee,
+        cost: _,
+    } = coin_select::payjoin::try_coin_select(coin_select::payjoin::Args {
+        multisig_wallet,
+        policy_asset,
+        fee_asset,
+        price,
+        fixed_fee,
+        use_all_utxos,
+        wallet_utxos: client_utxos
+            .iter()
+            .map(|utxo| InOut {
+                asset_id: utxo.asset_id,
+                value: utxo.value,
+            })
+            .collect(),
+        server_utxos: server_utxos
+            .iter()
+            .map(|utxo| InOut {
+                asset_id: utxo.asset_id,
+                value: utxo.value,
+            })
+            .collect(),
+        user_outputs: recipients
+            .iter()
+            .map(|r| InOut {
+                asset_id: r.asset_id,
+                value: r.amount,
+            })
+            .collect(),
+        deduct_fee,
+    })?;
 
-    let max_asset_fee = fixed_fee + (price * max_network_fee as f64).round() as u64;
+    let mut inputs = Vec::new();
+    let mut outputs = Vec::new();
 
-    let send_amount = if subtract_fee_from_amount {
-        ensure!(send_amount > max_asset_fee);
-        send_amount - max_asset_fee
-    } else {
-        send_amount
-    };
+    inputs.append(&mut take_utxos(
+        client_utxos,
+        user_inputs.iter().chain(client_inputs.iter()),
+    ));
+    inputs.append(&mut take_utxos(server_utxos, server_inputs.iter()));
 
-    let lbtc_asset_id = server_utxos.first().unwrap().asset_id;
-
-    let mut selected_utxos = Vec::new();
-
-    let mut utxo_asset_amount = 0;
-    for utxo in client_utxos.into_iter() {
-        utxo_asset_amount += utxo.value;
-        selected_utxos.push(utxo);
-        if utxo_asset_amount >= send_amount + max_asset_fee {
-            break;
-        }
+    for (output, recipient) in user_outputs.iter().zip(recipients.into_iter()) {
+        // Use corrected amount if deduct_fee was set
+        outputs.push(PsetOutput {
+            asset_id: output.asset_id,
+            amount: output.value,
+            address: recipient.address,
+        });
     }
 
-    let mut utxo_lbtc_amount = 0;
-    for utxo in server_utxos.into_iter() {
-        utxo_lbtc_amount += utxo.value;
-        selected_utxos.push(utxo);
-        if utxo_lbtc_amount >= max_network_fee {
-            break;
-        }
+    for output in change_outputs.iter().chain(fee_change.iter()) {
+        let address = wallet.change_address()?;
+        outputs.push(PsetOutput {
+            asset_id: output.asset_id,
+            amount: output.value,
+            address,
+        });
     }
 
-    ensure!(utxo_asset_amount >= send_amount + max_asset_fee);
-    ensure!(utxo_lbtc_amount >= max_network_fee);
+    outputs.push(PsetOutput {
+        asset_id: server_fee.asset_id,
+        amount: server_fee.value,
+        address: server_fee_address,
+    });
+
+    if let Some(output) = server_change {
+        outputs.push(PsetOutput {
+            asset_id: output.asset_id,
+            amount: output.value,
+            address: server_change_address,
+        });
+    }
 
     let ConstructedPset {
         blinded_pset,
         blinding_nonces,
     } = construct_pset(ConstructPsetArgs {
-        selected_utxos,
-        send_address,
-        send_asset_id,
-        send_amount,
-        fee_address,
-        fixed_fee,
-        price,
-        client_change_address,
-        utxo_asset_amount,
-        utxo_lbtc_amount,
-        server_change_address,
-        lbtc_asset_id,
-        multisig_inputs,
+        policy_asset,
+        inputs,
+        outputs,
+        network_fee: network_fee.value,
     })?;
 
     let mut server_pset = blinded_pset.clone();
@@ -185,20 +238,36 @@ pub fn create_payjoin(req: CreatePayjoin) -> Result<CreatedPayjoin, anyhow::Erro
         &base64::engine::general_purpose::STANDARD.decode(server_signed_pset)?,
     )?;
 
-    let pset = pset::copy_signatures(blinded_pset, server_signed_pset)?;
+    let pset = copy_signatures(blinded_pset, server_signed_pset)?;
 
     Ok(CreatedPayjoin {
         pset,
-        asset_fee: max_asset_fee,
         blinding_nonces,
+        asset_fee: server_fee.value,
+        network_fee: network_fee.value,
     })
+}
+
+fn copy_signatures(
+    mut dst: PartiallySignedTransaction,
+    src: PartiallySignedTransaction,
+) -> Result<PartiallySignedTransaction, anyhow::Error> {
+    ensure!(dst.inputs().len() == src.inputs().len());
+    ensure!(dst.outputs().len() == src.outputs().len());
+    for (dst, src) in dst.inputs_mut().iter_mut().zip(src.inputs().iter()) {
+        if src.final_script_witness.is_some() {
+            dst.final_script_sig = src.final_script_sig.clone();
+            dst.final_script_witness = src.final_script_witness.clone();
+        }
+    }
+    Ok(dst)
 }
 
 pub fn final_tx(
     pset_client: PartiallySignedTransaction,
     pset_server: PartiallySignedTransaction,
 ) -> Result<elements::Transaction, anyhow::Error> {
-    let pset = pset::copy_signatures(pset_client, pset_server)?;
+    let pset = copy_signatures(pset_client, pset_server)?;
     let tx = pset.extract_tx()?;
     Ok(tx)
 }
@@ -227,120 +296,4 @@ fn make_server_request(
             bail!("unexpected HTTP status: {status}: {err}");
         }
     }
-}
-
-struct ConstructPsetArgs {
-    selected_utxos: Vec<server_api::Utxo>,
-    send_address: elements::Address,
-    send_asset_id: elements::AssetId,
-    send_amount: u64,
-    fee_address: elements::Address,
-    fixed_fee: u64,
-    price: f64,
-    client_change_address: elements::Address,
-    utxo_asset_amount: u64,
-    utxo_lbtc_amount: u64,
-    server_change_address: elements::Address,
-    lbtc_asset_id: elements::AssetId,
-    multisig_inputs: BTreeSet<elements::OutPoint>,
-}
-
-struct ConstructedPset {
-    blinded_pset: PartiallySignedTransaction,
-    blinding_nonces: Vec<String>,
-}
-
-fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow::Error> {
-    let ConstructPsetArgs {
-        selected_utxos,
-        send_address,
-        send_asset_id,
-        send_amount,
-        fee_address,
-        fixed_fee,
-        price,
-        client_change_address,
-        utxo_asset_amount,
-        utxo_lbtc_amount,
-        server_change_address,
-        lbtc_asset_id,
-        multisig_inputs,
-    } = args;
-
-    let mut pset = PartiallySignedTransaction::new_v2();
-    let mut input_secrets = Vec::new();
-
-    for utxo in selected_utxos.into_iter() {
-        let input = crate::pset::pset_input(PsetInput {
-            txid: utxo.txid,
-            vout: utxo.vout,
-            script_pub_key: utxo.script_pub_key.clone(),
-            asset_commitment: utxo.asset_commitment.into(),
-            value_commitment: utxo.value_commitment.into(),
-        });
-
-        pset.add_input(input);
-
-        input_secrets.push(TxOutSecrets {
-            asset: utxo.asset_id,
-            asset_bf: utxo.asset_bf,
-            value: utxo.value,
-            value_bf: utxo.value_bf,
-        });
-    }
-
-    pset.add_output(crate::pset::pset_output(PsetOutput {
-        address: send_address,
-        asset: send_asset_id,
-        amount: send_amount,
-    })?);
-
-    let input_count_total = pset.inputs().len();
-    let input_count_multisig = pset
-        .inputs()
-        .iter()
-        .filter(|input| {
-            multisig_inputs.contains(&elements::OutPoint {
-                txid: input.previous_txid,
-                vout: input.previous_output_index,
-            })
-        })
-        .count();
-    let input_count_singlesig = input_count_total - input_count_multisig;
-    let network_fee = expected_network_fee(input_count_multisig, input_count_singlesig, 4);
-
-    let asset_fee = fixed_fee + (price * network_fee as f64).round() as u64;
-
-    pset.add_output(crate::pset::pset_output(PsetOutput {
-        address: fee_address,
-        asset: send_asset_id,
-        amount: asset_fee,
-    })?);
-
-    let asset_change_amount = utxo_asset_amount - send_amount - asset_fee;
-    if asset_change_amount > 0 {
-        pset.add_output(crate::pset::pset_output(PsetOutput {
-            address: client_change_address,
-            asset: send_asset_id,
-            amount: asset_change_amount,
-        })?);
-    }
-
-    let lbtc_change_amount = utxo_lbtc_amount - network_fee;
-    if lbtc_change_amount > 0 {
-        pset.add_output(crate::pset::pset_output(PsetOutput {
-            address: server_change_address,
-            asset: lbtc_asset_id,
-            amount: lbtc_change_amount,
-        })?);
-    }
-
-    pset.add_output(crate::pset::pset_network_fee(lbtc_asset_id, network_fee));
-
-    let blinding_nonces = sideswap_common::pset_blind::blind_pset(&mut pset, &input_secrets)?;
-
-    Ok(ConstructedPset {
-        blinded_pset: pset,
-        blinding_nonces,
-    })
 }

@@ -176,24 +176,27 @@ class PaymentHelper {
 
   PaymentHelper(this.ref, this.outputsData, this.accountAsset);
 
-  String? outputsPaymentSend({List<UtxosItem>? selectedInputs}) {
+  String? outputsPaymentSend({
+    List<UtxosItem>? selectedInputs,
+    bool isMaxSelected = false,
+  }) {
     return switch (outputsData) {
       Left(value: final l) => l.message,
       Right(value: final r) => () {
           final addressAmounts = r.receivers?.map((e) {
-            // set greedy flag only when outputs contains only one item (first one is always entered by user in ui)
+            // set greedy flag only when outputs contains only one item (first one is always entered by user in ui) and max is pressed
             final greedyFlag = switch (r.receivers?.length) {
               1 => () {
                   if (selectedInputs?.isNotEmpty == true) {
                     final maxAssetBalance = ref.read(
                         maxAvailableBalanceWithInputsForAccountAssetProvider(
                             accountAsset));
-                    return maxAssetBalance == e.satoshi;
+                    return (maxAssetBalance == e.satoshi && isMaxSelected);
                   }
 
                   final maxAssetBalance = ref.read(
                       maxAvailableBalanceForAccountAssetProvider(accountAsset));
-                  return maxAssetBalance == e.satoshi;
+                  return (maxAssetBalance == e.satoshi && isMaxSelected);
                 }(),
               _ => false,
             };

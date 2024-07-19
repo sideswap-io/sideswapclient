@@ -2,7 +2,7 @@ use super::*;
 
 use serde::{Deserialize, Serialize};
 
-pub type Id = Option<String>;
+pub type Id = Option<serde_json::Value>;
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct SubmitId(pub String);

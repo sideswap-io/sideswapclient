@@ -40,6 +40,7 @@ import 'package:sideswap/providers/market_data_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/order_details_provider.dart';
+import 'package:sideswap/providers/payjoin_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
@@ -1065,25 +1066,6 @@ class WalletChangeNotifier with ChangeNotifier {
                   .setServerLoginState(const ServerLoginStateError());
             }(),
         });
-        // switch (from.login.whichResult()) {
-        //   case From_Login_Result.errorMsg:
-        //     ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
-        //         ServerLoginStateError(message: from.login.errorMsg));
-        //     break;
-        //   case From_Login_Result.success:
-        //     ref
-        //         .read(serverLoginNotifierProvider.notifier)
-        //         .setServerLoginState(const ServerLoginStateLogin());
-        //     ref
-        //         .read(firstLaunchStateNotifierProvider.notifier)
-        //         .setFirstLaunchState(const FirstLaunchStateEmpty());
-        //     break;
-        //   case From_Login_Result.notSet:
-        //     ref
-        //         .read(serverLoginNotifierProvider.notifier)
-        //         .setServerLoginState(const ServerLoginStateError());
-        //     break;
-        // }
         break;
       case From_Msg.createPayjoinResult:
         // TODO: Handle this case.
@@ -1116,6 +1098,9 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.loadUtxos:
         _handleLoadUtxos(from.loadUtxos);
+        break;
+      case From_Msg.createPayjoinResult:
+        _handlePayjoinResult(from.createPayjoinResult);
         break;
     }
   }
@@ -2304,9 +2289,7 @@ class WalletChangeNotifier with ChangeNotifier {
     msg.decryptPin.salt = pinData.salt;
     msg.decryptPin.encryptedData = pinData.encryptedData;
     msg.decryptPin.pinIdentifier = pinData.pinIdentifier;
-    if (pinData.hmac != null) {
-      msg.decryptPin.hmac = pinData.hmac!;
-    }
+    msg.decryptPin.hmac = pinData.hmac;
     sendMsg(msg);
   }
 
@@ -2765,6 +2748,38 @@ class WalletChangeNotifier with ChangeNotifier {
     ref
         .read(loadUtxosStateNotifierProvider.notifier)
         .setLoadUtxosState(LoadUtxosState.data(loadUtxos));
+  }
+
+  void sendCreatePayjoin(CreatePayjoin payjoin) {
+    final msg = To();
+    msg.createPayjoin = payjoin;
+    sendMsg(msg);
+    ref
+        .read(payjoinStateNotifierProvider.notifier)
+        .setPayjoinState(const PayjoinStateWaitingCreatedPayjoin());
+  }
+
+  void _handlePayjoinResult(From_CreatePayjoinResult result) {
+    (switch (result.whichResult()) {
+      From_CreatePayjoinResult_Result.errorMsg => ref
+          .read(payjoinStateNotifierProvider.notifier)
+          .setPayjoinState(PayjoinStateError(result.errorMsg)),
+      From_CreatePayjoinResult_Result.createdPayjoin => ref
+          .read(payjoinStateNotifierProvider.notifier)
+          .setPayjoinState(PayjoinStateCreatedPayjoin(result.createdPayjoin)),
+      _ => ref
+          .read(payjoinStateNotifierProvider.notifier)
+          .setPayjoinState(const PayjoinStateError()),
+    });
+  }
+
+  void sendCreatedPayjoin(CreatedPayjoin createdPayjoin) {
+    final msg = To();
+    msg.sendPayjoin = createdPayjoin;
+    sendMsg(msg);
+    ref
+        .read(payjoinStateNotifierProvider.notifier)
+        .setPayjoinState(const PayjoinStateWaitingSendPayjoin());
   }
 }
 

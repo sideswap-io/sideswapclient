@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
 import 'package:sideswap/desktop/pin/d_pin_keyboard.dart';
 import 'package:sideswap/desktop/pin/widgets/d_pin_text_field.dart';
 import 'package:sideswap/desktop/common/button/d_custom_text_big_button.dart';
@@ -30,18 +31,26 @@ class DPinProtection extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final focusNode = useFocusNode();
 
+    final pinUnlockState = ref.watch(pinUnlockStateNotifierProvider);
+
+    useAsyncEffect(() async {
+      return switch (pinUnlockState) {
+        PinUnlockStateEmpty() => () {}(),
+        PinUnlockStateSuccess() => () {
+            Navigator.of(context).pop(true);
+          }(),
+        PinUnlockStateFailed() => () {
+            Navigator.of(context).pop(false);
+          }(),
+        PinUnlockStateWrong() => () {
+            focusNode.requestFocus();
+          }(),
+      };
+    }, [pinUnlockState]);
+
     useEffect(() {
       focusNode.requestFocus();
-      ref.read(pinProtectionHelperProvider).init(
-        onUnlockCallback: () {
-          Navigator.of(context).pop(true);
-        },
-        onUnlockFailedCallback: () {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            focusNode.requestFocus();
-          });
-        },
-      );
+      ref.read(pinProtectionHelperProvider).init();
       return;
     }, [focusNode]);
 

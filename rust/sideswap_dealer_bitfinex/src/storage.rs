@@ -1,5 +1,5 @@
-use super::types::Amount;
 use serde::{Deserialize, Serialize};
+use sideswap_common::types::Amount;
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone, Copy)]
 pub enum TransferState {

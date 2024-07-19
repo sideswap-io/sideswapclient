@@ -58,22 +58,14 @@ class DesktopRootWidget extends HookConsumerWidget {
       return;
     }, const []);
 
-    final serverLoginState = ref.watch(serverLoginNotifierProvider);
-
-    useEffect(() {
-      (switch (serverLoginState) {
-        ServerLoginStateError(message: String msg) =>
-          Future.microtask(() async {
-            await ref.read(utilsProvider).showErrorDialog(msg);
-            ref
-                .read(pageStatusNotifierProvider.notifier)
-                .setStatus(Status.noWallet);
-          }),
-        _ => () {}(),
-      });
-
-      return;
-    }, [serverLoginState]);
+    ref.listen(serverLoginNotifierProvider, (_, next) async {
+      if (next is ServerLoginStateError) {
+        await ref.read(utilsProvider).showErrorDialog(next.message ?? '');
+        ref
+            .read(pageStatusNotifierProvider.notifier)
+            .setStatus(Status.noWallet);
+      }
+    });
 
     return Stack(
       children: [

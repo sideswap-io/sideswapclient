@@ -11,6 +11,7 @@ pub struct OrderHistoryRequest {
 }
 
 #[derive(Debug)]
+#[allow(unused)]
 pub struct Order {
     pub id: i64,
     pub cid: i64,

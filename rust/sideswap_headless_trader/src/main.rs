@@ -36,10 +36,12 @@ pub struct SellAssetData {
 }
 
 fn main() {
-    let matches = clap::App::new("sideswap_dealer")
-        .arg(clap::Arg::with_name("config").required(true))
-        .get_matches();
-    let config_path = matches.value_of("config").unwrap();
+    let args = std::env::args().collect::<Vec<_>>();
+    assert!(
+        args.len() == 2,
+        "Specify a single argument for the path to the config file"
+    );
+    let config_path = &args[1];
 
     let mut conf = config::Config::new();
     conf.merge(config::File::with_name(config_path))

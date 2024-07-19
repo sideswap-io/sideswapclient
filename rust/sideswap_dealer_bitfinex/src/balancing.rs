@@ -1,4 +1,5 @@
 use super::*;
+use bitfinex_api::movements::Movements;
 use storage::TransferState;
 
 struct Ratio {
@@ -181,8 +182,7 @@ pub fn process_balancing(
     module_connected: bool,
     rpc_http_client: &ureq::Agent,
     args: &Args,
-    _mod_tx: &module::Sender,
-    bf_sender: &crossbeam_channel::Sender<bitfinex_worker::Request>,
+    bf_sender: &UnboundedSender<bitfinex_worker::Request>,
 ) {
     let bitfinex_currency_btc = &args.bitfinex_currency_btc;
     let bitfinex_currency_lbtc = &args.bitfinex_currency_lbtc;
@@ -246,14 +246,12 @@ pub fn process_balancing(
                     && module_connected
                 {
                     bf_sender
-                        .send(bitfinex_worker::Request::Withdraw(proto::to::Withdraw {
-                            key: args.bitfinex_key.clone(),
-                            secret: args.bitfinex_secret.clone(),
+                        .send(bitfinex_worker::Request::Withdraw {
                             wallet: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             method: BITFINEX_METHOD_USDT.to_owned(),
                             amount: balancing.amount.to_bitcoin(),
                             address: args.bitfinex_withdraw_address.to_string(),
-                        }))
+                        })
                         .unwrap();
                     update_balancing_state(
                         storage,
@@ -311,15 +309,13 @@ pub fn process_balancing(
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {
                     bf_sender
-                        .send(bitfinex_worker::Request::Transfer(proto::to::Transfer {
-                            key: args.bitfinex_key.clone(),
-                            secret: args.bitfinex_secret.clone(),
+                        .send(bitfinex_worker::Request::Transfer {
                             from: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             to: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             currency: bitfinex_currency_lbtc.0.clone(),
                             currency_to: bitfinex_currency_btc.0.clone(),
                             amount: balancing.amount.to_bitcoin(),
-                        }))
+                        })
                         .unwrap();
                     update_balancing_state(
                         storage,
@@ -352,15 +348,13 @@ pub fn process_balancing(
                     && module_connected
                 {
                     bf_sender
-                        .send(bitfinex_worker::Request::Transfer(proto::to::Transfer {
-                            key: args.bitfinex_key.clone(),
-                            secret: args.bitfinex_secret.clone(),
+                        .send(bitfinex_worker::Request::Transfer {
                             from: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             to: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             currency: bitfinex_currency_btc.0.clone(),
                             currency_to: bitfinex_currency_lbtc.0.clone(),
                             amount: balancing.amount.to_bitcoin(),
-                        }))
+                        })
                         .unwrap();
                     update_balancing_state(
                         storage,
@@ -377,14 +371,12 @@ pub fn process_balancing(
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {
                     bf_sender
-                        .send(bitfinex_worker::Request::Withdraw(proto::to::Withdraw {
-                            key: args.bitfinex_key.clone(),
-                            secret: args.bitfinex_secret.clone(),
+                        .send(bitfinex_worker::Request::Withdraw {
                             wallet: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             method: BITFINEX_METHOD_LBTC.to_owned(),
                             amount: balancing.amount.to_bitcoin(),
                             address: args.bitfinex_withdraw_address.to_string(),
-                        }))
+                        })
                         .unwrap();
                     update_balancing_state(
                         storage,
@@ -404,15 +396,15 @@ pub fn process_balancing(
     }
 }
 
-pub fn process_withdraw(storage: &mut Storage, msg: proto::from::Withdraw, args: &Args) {
-    info!("withdraw result received, withdraw_id: {}", msg.withdraw_id);
+pub fn process_withdraw(storage: &mut Storage, withdraw_id: i64, args: &Args) {
+    info!("withdraw result received, withdraw_id: {}", withdraw_id);
     if let Some(balancing) = storage.balancing.as_mut() {
         match balancing.state {
             TransferState::RecvUsdtWaitWithdrawId
-                if msg.withdraw_id > 0 && balancing.withdraw_id.is_none() =>
+                if withdraw_id > 0 && balancing.withdraw_id.is_none() =>
             {
                 info!("withdraw_id updated");
-                balancing.withdraw_id = Some(msg.withdraw_id);
+                balancing.withdraw_id = Some(withdraw_id);
                 update_balancing_state(
                     storage,
                     &args.storage_path,
@@ -421,10 +413,10 @@ pub fn process_withdraw(storage: &mut Storage, msg: proto::from::Withdraw, args:
                 );
             }
             TransferState::RecvBtcWaitWithdrawId
-                if msg.withdraw_id > 0 && balancing.withdraw_id.is_none() =>
+                if withdraw_id > 0 && balancing.withdraw_id.is_none() =>
             {
                 info!("withdraw_id updated");
-                balancing.withdraw_id = Some(msg.withdraw_id);
+                balancing.withdraw_id = Some(withdraw_id);
                 update_balancing_state(
                     storage,
                     &args.storage_path,
@@ -433,7 +425,7 @@ pub fn process_withdraw(storage: &mut Storage, msg: proto::from::Withdraw, args:
                 );
             }
             _ => {
-                error!("withdraw failed or unexpected: {:?}", &msg);
+                error!("withdraw failed or unexpected: {:?}", &withdraw_id);
                 update_balancing_state(
                     storage,
                     &args.storage_path,
@@ -449,19 +441,21 @@ pub fn process_withdraw(storage: &mut Storage, msg: proto::from::Withdraw, args:
 
 pub fn process_movements(
     storage: &mut Storage,
-    msg: proto::from::Movements,
+    msg: Movements,
     args: &Args,
-    movements: &mut Option<proto::from::Movements>,
+    movements: &mut Option<Movements>,
 ) {
     if !msg.success {
         error!("loading movements failed");
         return;
     }
+
     if Some(&msg) != movements.as_ref() {
         *movements = Some(msg.clone());
         debug!("movements updated: {:?}", &msg);
         return;
     }
+
     if let Some(balancing) = storage.balancing.as_mut() {
         match balancing.state {
             TransferState::SendUsdtWaitConfirm => {
@@ -514,10 +508,10 @@ pub fn process_movements(
     }
 }
 
-pub fn process_transfer(storage: &mut Storage, msg: proto::from::Transfer, args: &Args) {
-    debug!("transfer result: {:?}", &msg);
+pub fn process_transfer(storage: &mut Storage, success: bool, args: &Args) {
+    debug!("transfer result: {:?}", &success);
     if storage.balancing.is_some() {
-        if !msg.success {
+        if !success {
             update_balancing_state(
                 storage,
                 &args.storage_path,
@@ -531,69 +525,4 @@ pub fn process_transfer(storage: &mut Storage, msg: proto::from::Transfer, args:
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_balancing() {
-        // Bitcoin is smaller
-        assert_eq!(
-            get_balancing(0.5, 0.5, 27500.0, 27500.0, 50000.0),
-            AssetBalancing::None
-        );
-        assert_eq!(
-            get_balancing(0.2, 0.8, 27500.0, 27500.0, 50000.0),
-            AssetBalancing::RecvBtc(0.3)
-        );
-        assert_eq!(
-            get_balancing(0.8, 0.2, 27500.0, 27500.0, 50000.0),
-            AssetBalancing::SendBtc(0.3)
-        );
-        assert_eq!(
-            get_balancing(0.3, 0.7, 10000.0, 45000.0, 50000.0),
-            AssetBalancing::RecvUsdt(25000.0)
-        );
-        assert_eq!(
-            get_balancing(0.7, 0.3, 10000.0, 45000.0, 50000.0),
-            AssetBalancing::RecvUsdt(5000.0)
-        );
-        assert_eq!(
-            get_balancing(0.3, 0.7, 34500.0, 15500.0, 50000.0),
-            AssetBalancing::None
-        );
-        assert_eq!(
-            get_balancing(0.7, 0.3, 15000.0, 35000.0, 50000.0),
-            AssetBalancing::None
-        );
-
-        // USDt is smaller
-        assert_eq!(
-            get_balancing(0.5, 0.5, 22500.0, 22500.0, 50000.0),
-            AssetBalancing::None
-        );
-        assert_eq!(
-            get_balancing(0.5, 0.5, 5000.0, 40000.0, 50000.0),
-            AssetBalancing::RecvUsdt(17500.0)
-        );
-        assert_eq!(
-            get_balancing(0.5, 0.5, 40000.0, 5000.0, 50000.0),
-            AssetBalancing::SendUsdt(17500.0)
-        );
-        assert_eq!(
-            get_balancing(0.2, 0.8, 13500.0, 31500.0, 50000.0),
-            AssetBalancing::RecvBtc(0.43)
-        );
-        assert_eq!(
-            get_balancing(0.8, 0.2, 13500.0, 31500.0, 50000.0),
-            AssetBalancing::SendBtc(0.07)
-        );
-        assert_eq!(
-            get_balancing(0.7, 0.3, 13500.0, 31500.0, 50000.0),
-            AssetBalancing::None
-        );
-        assert_eq!(
-            get_balancing(0.3, 0.7, 31500.0, 13500.0, 50000.0),
-            AssetBalancing::None
-        );
-    }
-}
+mod tests;

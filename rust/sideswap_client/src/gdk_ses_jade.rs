@@ -73,33 +73,20 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
         self.watch_only.get_change_address()
     }
 
-    fn create_tx(&mut self, req: ffi::proto::CreateTx) -> Result<serde_json::Value, anyhow::Error> {
+    fn create_tx(
+        &mut self,
+        req: ffi::proto::CreateTx,
+    ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
         self.watch_only.create_tx(req)
     }
 
     fn send_tx(
         &mut self,
-        tx: &serde_json::Value,
+        id: &str,
         assets: &BTreeMap<AssetId, Asset>,
     ) -> Result<elements::Txid, anyhow::Error> {
         self.check_jade()?;
-        self.jade.send_tx(tx, assets)
-    }
-
-    fn create_payjoin(
-        &mut self,
-        req: ffi::proto::CreatePayjoin,
-    ) -> Result<ffi::proto::CreatedPayjoin, anyhow::Error> {
-        self.watch_only.create_payjoin(req)
-    }
-
-    fn send_payjoin(
-        &mut self,
-        req: &ffi::proto::CreatedPayjoin,
-        assets: &BTreeMap<AssetId, Asset>,
-    ) -> Result<elements::Txid, anyhow::Error> {
-        self.check_jade()?;
-        self.jade.send_payjoin(req, assets)
+        self.jade.send_tx(id, assets)
     }
 
     fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {

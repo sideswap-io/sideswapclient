@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/use_async_effect.dart';
 
 import 'package:sideswap/common/widgets/custom_app_bar.dart';
 import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
@@ -73,11 +74,23 @@ class PinProtectionBody extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pinFocusNode = useFocusNode();
 
+    final pinUnlockState = ref.watch(pinUnlockStateNotifierProvider);
+
+    useAsyncEffect(() async {
+      return switch (pinUnlockState) {
+        PinUnlockStateEmpty() ||
+        PinUnlockStateWrong() ||
+        PinUnlockStateFailed() =>
+          () {}(),
+        PinUnlockStateSuccess() => () {
+            Navigator.of(context).pop(true);
+          }(),
+      };
+    }, [pinUnlockState]);
+
     useEffect(() {
       pinFocusNode.requestFocus();
-      ref.read(pinProtectionHelperProvider).init(onUnlockCallback: () {
-        Navigator.of(context).pop(true);
-      });
+      ref.read(pinProtectionHelperProvider).init();
 
       return;
     }, const []);

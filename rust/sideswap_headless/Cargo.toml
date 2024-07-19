@@ -8,7 +8,7 @@ sideswap_client = { path = "../sideswap_client" }
 sideswap_common = { path = "../sideswap_common" }
 
 clap.workspace = true
-futures-util.workspace = true
+futures.workspace = true
 log.workspace = true
 prost.workspace = true
 serde_json.workspace = true

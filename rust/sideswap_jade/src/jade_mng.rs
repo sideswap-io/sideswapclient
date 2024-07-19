@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Copy, Clone)]
 pub enum TxType {
     Normal,
+    MakerUtxo,
     Swap,
-    OfflineSwapOutput,
     OfflineSwap,
 }
 

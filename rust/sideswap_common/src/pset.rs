@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use bitcoin::hashes::Hash;
 
 /// Server fee that clients pay to the server for each swap.
@@ -80,8 +78,7 @@ pub fn get_output(
         witness: elements::TxOutWitness::default(),
     };
     let mut output = elements::pset::Output::from_txout(txout);
-    output.blinding_key =
-        Some(elements::bitcoin::PublicKey::from_str(&blinding_pubkey.to_string()).unwrap());
+    output.blinding_key = Some(bitcoin::PublicKey::new(blinding_pubkey));
     output.blinder_index = Some(blinder_index);
     Ok(output)
 }

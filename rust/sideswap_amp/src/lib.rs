@@ -14,9 +14,16 @@ use elements::{
 };
 use elements_miniscript::slip77::MasterBlindingKey;
 use futures::{SinkExt, StreamExt};
+use rand::seq::SliceRandom;
 use secp256k1::global::SECP256K1 as secp1;
 use secp256k1_zkp::global::SECP256K1 as secp2;
-use sideswap_common::{abort, network::Network, retry_delay::RetryDelay, verify};
+use sideswap_common::{
+    abort,
+    network::Network,
+    retry_delay::RetryDelay,
+    send_tx::coin_select::{self, InOut},
+    verify,
+};
 use tokio::sync::{
     mpsc::{UnboundedReceiver, UnboundedSender},
     oneshot,
@@ -30,6 +37,7 @@ use crate::wamp::{
     message::Msg,
 };
 
+#[allow(unused)]
 mod models;
 mod tx_cache;
 mod wamp;
@@ -102,6 +110,8 @@ pub enum Error {
     RequestTimeout,
     #[error("HTTP connection error: {0}")]
     HttpConnectionError(#[from] tungstenite::http::Error),
+    #[error("Coin select error: {0}")]
+    CoinSelect(#[from] coin_select::CoinSelectError),
 }
 
 impl<T> From<tokio::sync::mpsc::error::SendError<T>> for Error {
@@ -129,10 +139,6 @@ enum Command {
     ),
     LoadTxs(u64, ResSender<models::Transactions>),
     BlockHeight(ResSender<u32>),
-}
-
-fn convert_pubkey(pk: elements::secp256k1_zkp::PublicKey) -> bitcoin::PublicKey {
-    bitcoin::PublicKey::new(pk)
 }
 
 #[derive(Debug)]
@@ -248,6 +254,14 @@ impl Wallet {
         res_receiver.await?
     }
 
+    // TODO: Remove when is not used
+    pub fn receive_address_blocking(&self) -> Result<elements::Address, Error> {
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.command_sender
+            .send(Command::ReceiveAddress(res_sender))?;
+        res_receiver.blocking_recv()?
+    }
+
     pub async fn unspent_outputs(&self) -> Result<Vec<Utxo>, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
@@ -259,103 +273,63 @@ impl Wallet {
     pub async fn create_tx(&self, mut recipients: Vec<Recipient>) -> Result<CreatedTx, Error> {
         let all_utxos = self.unspent_outputs().await?;
 
+        let deduct_fee = None;
+        let coin_select::normal_tx::Res {
+            asset_inputs,
+            bitcoin_inputs,
+            user_outputs,
+            change_outputs,
+            fee_change,
+            network_fee,
+        } = coin_select::normal_tx::try_coin_select(coin_select::normal_tx::Args {
+            multisig_wallet: true,
+            policy_asset: self.policy_asset,
+            use_all_utxos: false,
+            wallet_utxos: all_utxos
+                .iter()
+                .map(|utxo| InOut {
+                    asset_id: utxo.tx_out_sec.asset,
+                    value: utxo.tx_out_sec.value,
+                })
+                .collect(),
+            user_outputs: recipients
+                .iter()
+                .map(|recipient| InOut {
+                    asset_id: recipient.asset_id,
+                    value: recipient.amount,
+                })
+                .collect(),
+            deduct_fee,
+        })?;
+
         let mut pset = pset::PartiallySignedTransaction::new_v2();
 
-        let mut output_amounts = BTreeMap::<AssetId, u64>::new();
-        for recipient in recipients.iter() {
-            verify!(recipient.amount > 0, Error::ZeroSendAmount);
-            let output_amount = output_amounts.entry(recipient.asset_id).or_default();
-            *output_amount = output_amount
-                .checked_add(recipient.amount)
-                .ok_or(Error::AmountOverflow)?;
+        let mut used_utxos =
+            take_utxos(all_utxos, asset_inputs.iter().chain(bitcoin_inputs.iter()));
+
+        assert!(recipients.len() == user_outputs.len());
+        if let Some(index) = deduct_fee {
+            recipients[index].amount = user_outputs[index].value;
         }
 
-        let mut input_amounts = BTreeMap::<AssetId, u64>::new();
-        let mut used_utxos = Vec::new();
-        for utxo in all_utxos.into_iter() {
-            let add_input = if utxo.tx_out_sec.asset == self.policy_asset {
-                // TODO: Add only required LBTC inputs
-                true
-            } else {
-                let input_amount = input_amounts
-                    .get(&utxo.tx_out_sec.asset)
-                    .copied()
-                    .unwrap_or_default();
-                let output_amount = output_amounts
-                    .get(&utxo.tx_out_sec.asset)
-                    .copied()
-                    .unwrap_or_default();
-                output_amount > input_amount
-            };
-            if add_input {
-                let mut input = pset::Input::from_prevout(utxo.outpoint);
-                input.redeem_script = Some(get_redeem_script(&utxo.prevout_script));
-                input.witness_utxo = Some(utxo.txout.clone());
-                pset.add_input(input);
-
-                *input_amounts.entry(utxo.tx_out_sec.asset).or_default() += utxo.tx_out_sec.value;
-
-                used_utxos.push(utxo);
-            }
-        }
-
-        for (&asset_id, &output_amount) in output_amounts.iter() {
-            if asset_id != self.policy_asset {
-                let input_amount = input_amounts.get(&asset_id).copied().unwrap_or_default();
-                verify!(
-                    input_amount >= output_amount,
-                    Error::NotEnoughAmount {
-                        asset_id,
-                        required: output_amount,
-                        available: input_amount
-                    }
-                );
-                let change_amount = input_amount - output_amount;
-                if change_amount > 0 {
-                    let change_address = self.receive_address().await?;
-                    recipients.push(Recipient {
-                        address: change_address,
-                        asset_id,
-                        amount: change_amount,
-                    });
-                }
-            }
-        }
-
-        // TODO: Load addresses from backend only after all checks succeed
-        // TODO: Load addresses from backend concurrently
-
-        // FIXME: Use correct network fee
-        let network_fee = sideswap_payjoin::network_fee::expected_network_fee(
-            0,
-            pset.n_inputs(),
-            recipients.len() + 1, // 1 change outputs for LBTC
-        );
-        let policy_asset_input = input_amounts
-            .get(&self.policy_asset)
-            .copied()
-            .unwrap_or_default();
-        let policy_asset_output = output_amounts
-            .get(&self.policy_asset)
-            .copied()
-            .unwrap_or_default();
-        verify!(
-            policy_asset_input >= policy_asset_output + network_fee,
-            Error::NotEnoughAmount {
-                asset_id: self.policy_asset,
-                required: policy_asset_output + network_fee,
-                available: policy_asset_input
-            }
-        );
-        let policy_asset_change = policy_asset_input - policy_asset_output - network_fee;
-
-        if policy_asset_change > 0 {
+        for change_output in change_outputs.iter().chain(fee_change.iter()) {
             let change_address = self.receive_address().await?;
             recipients.push(Recipient {
                 address: change_address,
-                asset_id: self.policy_asset,
-                amount: policy_asset_change,
+                asset_id: change_output.asset_id,
+                amount: change_output.value,
             });
+        }
+
+        let mut rng = rand::thread_rng();
+        used_utxos.shuffle(&mut rng);
+        recipients.shuffle(&mut rng);
+
+        for utxo in used_utxos.iter() {
+            let mut input = pset::Input::from_prevout(utxo.outpoint);
+            input.redeem_script = Some(get_redeem_script(&utxo.prevout_script));
+            input.witness_utxo = Some(utxo.txout.clone());
+            pset.add_input(input);
         }
 
         for recipient in recipients {
@@ -363,33 +337,35 @@ impl Wallet {
                 script_pubkey: recipient.address.script_pubkey(),
                 amount: Some(recipient.amount),
                 asset: Some(recipient.asset_id),
-                blinding_key: recipient.address.blinding_pubkey.map(convert_pubkey),
+                blinding_key: recipient
+                    .address
+                    .blinding_pubkey
+                    .map(bitcoin::PublicKey::new),
                 blinder_index: Some(0),
                 ..Default::default()
             };
             pset.add_output(output);
         }
 
-        let fee_output = pset::Output::new_explicit(
+        pset.add_output(pset::Output::new_explicit(
             elements::Script::default(),
-            network_fee,
-            self.policy_asset,
+            network_fee.value,
+            network_fee.asset_id,
             None,
-        );
-
-        pset.add_output(fee_output);
+        ));
 
         let inp_txout_sec = used_utxos
             .iter()
             .map(|utxo| utxo.tx_out_sec)
             .collect::<Vec<_>>();
+
         let blinding_nonces = sideswap_common::pset_blind::blind_pset(&mut pset, &inp_txout_sec)?;
 
         Ok(CreatedTx {
             pset,
             blinding_nonces,
             used_utxos,
-            network_fee,
+            network_fee: network_fee.value,
         })
     }
 
@@ -1957,6 +1933,22 @@ async fn run(
             return;
         }
     }
+}
+
+fn take_utxos<'a>(mut utxos: Vec<Utxo>, required: impl Iterator<Item = &'a InOut>) -> Vec<Utxo> {
+    let mut selected = Vec::new();
+    for required in required {
+        let index = utxos
+            .iter()
+            .position(|utxo| {
+                utxo.tx_out_sec.asset == required.asset_id
+                    && utxo.tx_out_sec.value == required.value
+            })
+            .expect("must exists");
+        let utxo = utxos.remove(index);
+        selected.push(utxo);
+    }
+    selected
 }
 
 #[cfg(test)]

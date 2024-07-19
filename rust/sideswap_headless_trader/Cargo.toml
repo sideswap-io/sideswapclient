@@ -8,7 +8,6 @@ sideswap_api = { path = "../sideswap_api" }
 sideswap_client = { path = "../sideswap_client" }
 sideswap_common = { path = "../sideswap_common" }
 
-clap.workspace = true
 config.workspace = true
 log.workspace = true
 prost.workspace = true

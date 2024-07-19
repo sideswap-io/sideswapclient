@@ -1,6 +1,5 @@
 use std::collections::BTreeSet;
 
-use clap::{App, Arg};
 use serde::Deserialize;
 use sideswap_api::PricePair;
 use sideswap_common::types::Amount;
@@ -26,11 +25,14 @@ pub struct Settings {
     api_key: Option<String>,
 }
 
-fn main() {
-    let matches = App::new("sideswap_dealer")
-        .arg(Arg::with_name("config").required(true))
-        .get_matches();
-    let config_path = matches.value_of("config").unwrap();
+#[tokio::main]
+async fn main() {
+    let args = std::env::args().collect::<Vec<_>>();
+    assert!(
+        args.len() == 2,
+        "Specify a single argument for the path to the config file"
+    );
+    let config_path = &args[1];
 
     let mut conf = config::Config::new();
     conf.merge(config::File::with_name(config_path))
@@ -58,7 +60,7 @@ fn main() {
         api_key: settings.api_key.clone(),
     };
 
-    let (dealer_tx, dealer_rx) = start(params);
+    let (dealer_tx, mut dealer_rx) = spawn_async(params);
 
     let dealer_tx_copy = dealer_tx;
     std::thread::spawn(move || {
@@ -98,7 +100,7 @@ fn main() {
     });
 
     loop {
-        let msg = dealer_rx.recv().unwrap();
+        let msg = dealer_rx.recv().await.unwrap();
 
         match msg {
             From::Swap(swap) => {
