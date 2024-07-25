@@ -13,6 +13,7 @@ import 'package:sideswap/common/widgets/side_swap_scaffold.dart';
 import 'package:sideswap/desktop/widgets/amp_id_panel.dart';
 import 'package:sideswap/providers/amp_id_provider.dart';
 import 'package:sideswap/providers/biometric_available_provider.dart';
+import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/pin_available_provider.dart';
 import 'package:sideswap/providers/pin_setup_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -75,13 +76,17 @@ class Settings extends ConsumerWidget {
                       padding: const EdgeInsets.only(top: 24),
                       child: Consumer(
                         builder: (context, ref, _) {
-                          return SettingsButton(
-                            type: SettingsButtonType.recovery,
-                            text: 'View my recovery phrase'.tr(),
-                            onPressed: () {
-                              ref.read(walletProvider).settingsViewBackup();
-                            },
-                          );
+                          final isJadeWallet = ref.watch(isJadeWalletProvider);
+                          return switch (isJadeWallet) {
+                            false => SettingsButton(
+                                type: SettingsButtonType.recovery,
+                                text: 'View my recovery phrase'.tr(),
+                                onPressed: () {
+                                  ref.read(walletProvider).settingsViewBackup();
+                                },
+                              ),
+                            _ => const SizedBox(),
+                          };
                         },
                       ),
                     ),

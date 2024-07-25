@@ -20,7 +20,7 @@ final jadeRescanProvider = AutoDisposeProvider<void>.internal(
 );
 
 typedef JadeRescanRef = AutoDisposeProviderRef<void>;
-String _$isJadeWalletHash() => r'e0cc808fc09722aedafde9ed1b9315bad3b70ddf';
+String _$isJadeWalletHash() => r'f480338be73f7344427fce9521707393d9c71437';
 
 /// See also [isJadeWallet].
 @ProviderFor(isJadeWallet)
@@ -54,12 +54,12 @@ final jadeBluetoothPermissionStateNotifierProvider =
 typedef _$JadeBluetoothPermissionStateNotifier
     = AutoDisposeNotifier<JadeBluetoothPermissionState>;
 String _$jadeDeviceNotifierHash() =>
-    r'98bb679f6e0f9884f580c23e6952aa57ce4dff30';
+    r'96e9030a83954991084b5909d6e79d4683e8c14c';
 
 /// See also [JadeDeviceNotifier].
 @ProviderFor(JadeDeviceNotifier)
 final jadeDeviceNotifierProvider =
-    AutoDisposeNotifierProvider<JadeDeviceNotifier, JadeDevicesState>.internal(
+    NotifierProvider<JadeDeviceNotifier, JadeDevicesState>.internal(
   JadeDeviceNotifier.new,
   name: r'jadeDeviceNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -69,7 +69,7 @@ final jadeDeviceNotifierProvider =
   allTransitiveDependencies: null,
 );
 
-typedef _$JadeDeviceNotifier = AutoDisposeNotifier<JadeDevicesState>;
+typedef _$JadeDeviceNotifier = Notifier<JadeDevicesState>;
 String _$jadeStatusNotifierHash() =>
     r'53dd502508f72064853c1fdab5b5b92fe5fd205d';
 

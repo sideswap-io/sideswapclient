@@ -9,12 +9,14 @@ import 'notification_service.dart';
 class SideswapNotificationsAndroidPlugin
     extends SideswapNotificationsPlatformInterface {
   NotificationService? notificationService;
+  FirebaseApp? firebaseApp;
 
   @override
   Future<void> firebaseInitializeApp() async {
     logger.d('Initialize firebase app');
-    await Firebase.initializeApp(
+    firebaseApp = await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
+    logger.d('FirebaseApp: $firebaseApp');
   }
 
   @override

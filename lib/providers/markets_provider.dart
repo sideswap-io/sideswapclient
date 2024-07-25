@@ -508,13 +508,13 @@ String lastStringIndexPriceForAsset(
 }
 
 @riverpod
-class IndexPriceButtonStreamNotifier extends _$IndexPriceButtonStreamNotifier {
+class IndexPriceButtonAsyncNotifier extends _$IndexPriceButtonAsyncNotifier {
   @override
-  Stream<String> build() {
-    return Stream.value('');
+  AsyncValue<String> build() {
+    return const AsyncValue<String>.loading();
   }
 
-  void setIndexPrice(String value) {
+  void setIndexPrice(String value) async {
     state = AsyncValue.data(value);
   }
 }
@@ -1012,7 +1012,7 @@ class OrderEntryCallbackHandlers {
           indexPrice: indexPrice,
           account: account.account,
         );
-    ref.invalidate(indexPriceButtonStreamNotifierProvider);
+    ref.invalidate(indexPriceButtonAsyncNotifierProvider);
     reset(controllerAmount, controllerPrice, trackingValue, trackingToggled);
   }
 
@@ -1058,7 +1058,7 @@ class OrderEntryCallbackHandlers {
 
       if (price.amount == Decimal.zero) {
         ref
-            .read(indexPriceButtonStreamNotifierProvider.notifier)
+            .read(indexPriceButtonAsyncNotifierProvider.notifier)
             .setIndexPrice(targetIndexPriceStr);
       }
 

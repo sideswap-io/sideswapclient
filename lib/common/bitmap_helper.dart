@@ -66,7 +66,7 @@ class BitmapHelper {
       PictureInfo pictureInfo, double width, double height) async {
     /// (malcolmpl): not working on ubuntu 24.04 - crash in nvidia drivers 535.171.04
     /// issue solved by: https://github.com/flutter/flutter/issues/148364
-    /// not cherry picked to next release fix :|
+    /// fix released in 3.22.3
     final image = await pictureInfo.picture.toImage(
         pictureInfo.size.width.round(), pictureInfo.size.height.round());
     final imageBytes = await image.toByteData(format: ui.ImageByteFormat.png);

@@ -1262,7 +1262,7 @@ unsafe fn get_selected_utxos(
 
 unsafe fn try_create_tx(
     data: &mut GdkSesImpl,
-    tx: ffi::proto::CreateTx,
+    mut tx: ffi::proto::CreateTx,
 ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
     let session = data.session;
     let subaccount = data.get_subaccount()?;
@@ -1276,7 +1276,10 @@ unsafe fn try_create_tx(
             .get(index)
             .ok_or_else(|| anyhow!("invalid deduct_fee_output value: out of range"))?;
         let asset_id = AssetId::from_str(&addresse.asset_id)?;
-        ensure!(asset_id == data.policy_asset);
+        if asset_id != data.policy_asset {
+            // UI sometimes can set `deduct_fee_output` for a wrong asset.
+            tx.deduct_fee_output = None;
+        }
     }
 
     let mut addressees = tx

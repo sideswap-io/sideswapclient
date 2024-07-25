@@ -28,11 +28,8 @@ class RowTxReceiver extends ConsumerWidget {
         .watch(assetImageProvider)
         .getCustomImage(assetId, width: 24, height: 24);
     final amountProvider = ref.watch(amountToStringProvider);
-    final amountStr = amountProvider.amountToStringNamed(
-        AmountToStringNamedParameters(
-            amount: amount,
-            ticker: asset?.ticker ?? '',
-            precision: asset?.precision ?? 8));
+    final amountStr = amountProvider.amountToString(AmountToStringParameters(
+        amount: amount, precision: asset?.precision ?? 8));
 
     final isMobile = (!FlavorConfig.isDesktop);
 

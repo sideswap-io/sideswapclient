@@ -16,7 +16,7 @@ echo "Build number: $BUILD_NUMBER"
 sed -i "66 c #define VERSION_AS_NUMBER $VERSION_SHORT_COMMAS" windows/runner/Runner.rc
 sed -i "72 c #define VERSION_AS_STRING \"$VERSION_SHORT\"" windows/runner/Runner.rc
 
-sed -i "6 c version: $VERSION" pubspec.yaml
+sed -i "3 c version: $VERSION" pubspec.yaml
 
 sed -i "1 c const appVersion = '$VERSION_SHORT';" lib/app_version.dart
 sed -i "2 c const appBuildNumber = $BUILD_NUMBER;" lib/app_version.dart

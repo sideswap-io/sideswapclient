@@ -49,18 +49,18 @@ class DOpenTxImport extends HookConsumerWidget {
           return;
         }
 
-        final handleResult = ref
+        final linkResultState = ref
             .read(universalLinkProvider)
             .handleAppUrlStr(textController.text);
 
-        return switch (handleResult) {
-          HandleResult.unknownScheme => () {
+        return switch (linkResultState) {
+          LinkResultState.unknownScheme => () {
               // maybe it's only order id?
               if (textController.text.length == 64) {
                 ref.read(walletProvider).linkOrder(textController.text);
               }
             }(),
-          HandleResult.success => () {
+          LinkResultState.success => () {
               continueEnabled.value = true;
             }(),
           _ => () {
@@ -76,10 +76,10 @@ class DOpenTxImport extends HookConsumerWidget {
     final onPasteCallback = useCallback(() async {
       final navigatorContext = Navigator.of(context);
       await handlePasteSingleLine(textController);
-      final handleResult =
+      final linkResultState =
           ref.read(universalLinkProvider).handleAppUrlStr(textController.text);
 
-      if (handleResult == HandleResult.success) {
+      if (linkResultState == const LinkResultState.success()) {
         navigatorContext.pop();
         return;
       }

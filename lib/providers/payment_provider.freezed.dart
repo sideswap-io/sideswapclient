@@ -20,18 +20,24 @@ mixin _$CreateTxState {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() creating,
+    required TResult Function(CreatedTx createdTx) created,
+    required TResult Function(String? errorMsg) error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? creating,
+    TResult? Function(CreatedTx createdTx)? created,
+    TResult? Function(String? errorMsg)? error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? creating,
+    TResult Function(CreatedTx createdTx)? created,
+    TResult Function(String? errorMsg)? error,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -39,18 +45,24 @@ mixin _$CreateTxState {
   TResult map<TResult extends Object?>({
     required TResult Function(CreateTxStateEmpty value) empty,
     required TResult Function(CreateTxStateCreating value) creating,
+    required TResult Function(CreateTxStateCreated value) created,
+    required TResult Function(CreateTxStateError value) error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(CreateTxStateEmpty value)? empty,
     TResult? Function(CreateTxStateCreating value)? creating,
+    TResult? Function(CreateTxStateCreated value)? created,
+    TResult? Function(CreateTxStateError value)? error,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(CreateTxStateEmpty value)? empty,
     TResult Function(CreateTxStateCreating value)? creating,
+    TResult Function(CreateTxStateCreated value)? created,
+    TResult Function(CreateTxStateError value)? error,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -114,6 +126,8 @@ class _$CreateTxStateEmptyImpl implements CreateTxStateEmpty {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() creating,
+    required TResult Function(CreatedTx createdTx) created,
+    required TResult Function(String? errorMsg) error,
   }) {
     return empty();
   }
@@ -123,6 +137,8 @@ class _$CreateTxStateEmptyImpl implements CreateTxStateEmpty {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? creating,
+    TResult? Function(CreatedTx createdTx)? created,
+    TResult? Function(String? errorMsg)? error,
   }) {
     return empty?.call();
   }
@@ -132,6 +148,8 @@ class _$CreateTxStateEmptyImpl implements CreateTxStateEmpty {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? creating,
+    TResult Function(CreatedTx createdTx)? created,
+    TResult Function(String? errorMsg)? error,
     required TResult orElse(),
   }) {
     if (empty != null) {
@@ -145,6 +163,8 @@ class _$CreateTxStateEmptyImpl implements CreateTxStateEmpty {
   TResult map<TResult extends Object?>({
     required TResult Function(CreateTxStateEmpty value) empty,
     required TResult Function(CreateTxStateCreating value) creating,
+    required TResult Function(CreateTxStateCreated value) created,
+    required TResult Function(CreateTxStateError value) error,
   }) {
     return empty(this);
   }
@@ -154,6 +174,8 @@ class _$CreateTxStateEmptyImpl implements CreateTxStateEmpty {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(CreateTxStateEmpty value)? empty,
     TResult? Function(CreateTxStateCreating value)? creating,
+    TResult? Function(CreateTxStateCreated value)? created,
+    TResult? Function(CreateTxStateError value)? error,
   }) {
     return empty?.call(this);
   }
@@ -163,6 +185,8 @@ class _$CreateTxStateEmptyImpl implements CreateTxStateEmpty {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(CreateTxStateEmpty value)? empty,
     TResult Function(CreateTxStateCreating value)? creating,
+    TResult Function(CreateTxStateCreated value)? created,
+    TResult Function(CreateTxStateError value)? error,
     required TResult orElse(),
   }) {
     if (empty != null) {
@@ -218,6 +242,8 @@ class _$CreateTxStateCreatingImpl implements CreateTxStateCreating {
   TResult when<TResult extends Object?>({
     required TResult Function() empty,
     required TResult Function() creating,
+    required TResult Function(CreatedTx createdTx) created,
+    required TResult Function(String? errorMsg) error,
   }) {
     return creating();
   }
@@ -227,6 +253,8 @@ class _$CreateTxStateCreatingImpl implements CreateTxStateCreating {
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? empty,
     TResult? Function()? creating,
+    TResult? Function(CreatedTx createdTx)? created,
+    TResult? Function(String? errorMsg)? error,
   }) {
     return creating?.call();
   }
@@ -236,6 +264,8 @@ class _$CreateTxStateCreatingImpl implements CreateTxStateCreating {
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? empty,
     TResult Function()? creating,
+    TResult Function(CreatedTx createdTx)? created,
+    TResult Function(String? errorMsg)? error,
     required TResult orElse(),
   }) {
     if (creating != null) {
@@ -249,6 +279,8 @@ class _$CreateTxStateCreatingImpl implements CreateTxStateCreating {
   TResult map<TResult extends Object?>({
     required TResult Function(CreateTxStateEmpty value) empty,
     required TResult Function(CreateTxStateCreating value) creating,
+    required TResult Function(CreateTxStateCreated value) created,
+    required TResult Function(CreateTxStateError value) error,
   }) {
     return creating(this);
   }
@@ -258,6 +290,8 @@ class _$CreateTxStateCreatingImpl implements CreateTxStateCreating {
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(CreateTxStateEmpty value)? empty,
     TResult? Function(CreateTxStateCreating value)? creating,
+    TResult? Function(CreateTxStateCreated value)? created,
+    TResult? Function(CreateTxStateError value)? error,
   }) {
     return creating?.call(this);
   }
@@ -267,6 +301,8 @@ class _$CreateTxStateCreatingImpl implements CreateTxStateCreating {
   TResult maybeMap<TResult extends Object?>({
     TResult Function(CreateTxStateEmpty value)? empty,
     TResult Function(CreateTxStateCreating value)? creating,
+    TResult Function(CreateTxStateCreated value)? created,
+    TResult Function(CreateTxStateError value)? error,
     required TResult orElse(),
   }) {
     if (creating != null) {
@@ -278,6 +314,303 @@ class _$CreateTxStateCreatingImpl implements CreateTxStateCreating {
 
 abstract class CreateTxStateCreating implements CreateTxState {
   const factory CreateTxStateCreating() = _$CreateTxStateCreatingImpl;
+}
+
+/// @nodoc
+abstract class _$$CreateTxStateCreatedImplCopyWith<$Res> {
+  factory _$$CreateTxStateCreatedImplCopyWith(_$CreateTxStateCreatedImpl value,
+          $Res Function(_$CreateTxStateCreatedImpl) then) =
+      __$$CreateTxStateCreatedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({CreatedTx createdTx});
+}
+
+/// @nodoc
+class __$$CreateTxStateCreatedImplCopyWithImpl<$Res>
+    extends _$CreateTxStateCopyWithImpl<$Res, _$CreateTxStateCreatedImpl>
+    implements _$$CreateTxStateCreatedImplCopyWith<$Res> {
+  __$$CreateTxStateCreatedImplCopyWithImpl(_$CreateTxStateCreatedImpl _value,
+      $Res Function(_$CreateTxStateCreatedImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? createdTx = null,
+  }) {
+    return _then(_$CreateTxStateCreatedImpl(
+      null == createdTx
+          ? _value.createdTx
+          : createdTx // ignore: cast_nullable_to_non_nullable
+              as CreatedTx,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$CreateTxStateCreatedImpl implements CreateTxStateCreated {
+  const _$CreateTxStateCreatedImpl(this.createdTx);
+
+  @override
+  final CreatedTx createdTx;
+
+  @override
+  String toString() {
+    return 'CreateTxState.created(createdTx: $createdTx)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CreateTxStateCreatedImpl &&
+            (identical(other.createdTx, createdTx) ||
+                other.createdTx == createdTx));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, createdTx);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CreateTxStateCreatedImplCopyWith<_$CreateTxStateCreatedImpl>
+      get copyWith =>
+          __$$CreateTxStateCreatedImplCopyWithImpl<_$CreateTxStateCreatedImpl>(
+              this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() empty,
+    required TResult Function() creating,
+    required TResult Function(CreatedTx createdTx) created,
+    required TResult Function(String? errorMsg) error,
+  }) {
+    return created(createdTx);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? empty,
+    TResult? Function()? creating,
+    TResult? Function(CreatedTx createdTx)? created,
+    TResult? Function(String? errorMsg)? error,
+  }) {
+    return created?.call(createdTx);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function()? creating,
+    TResult Function(CreatedTx createdTx)? created,
+    TResult Function(String? errorMsg)? error,
+    required TResult orElse(),
+  }) {
+    if (created != null) {
+      return created(createdTx);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(CreateTxStateEmpty value) empty,
+    required TResult Function(CreateTxStateCreating value) creating,
+    required TResult Function(CreateTxStateCreated value) created,
+    required TResult Function(CreateTxStateError value) error,
+  }) {
+    return created(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(CreateTxStateEmpty value)? empty,
+    TResult? Function(CreateTxStateCreating value)? creating,
+    TResult? Function(CreateTxStateCreated value)? created,
+    TResult? Function(CreateTxStateError value)? error,
+  }) {
+    return created?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(CreateTxStateEmpty value)? empty,
+    TResult Function(CreateTxStateCreating value)? creating,
+    TResult Function(CreateTxStateCreated value)? created,
+    TResult Function(CreateTxStateError value)? error,
+    required TResult orElse(),
+  }) {
+    if (created != null) {
+      return created(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class CreateTxStateCreated implements CreateTxState {
+  const factory CreateTxStateCreated(final CreatedTx createdTx) =
+      _$CreateTxStateCreatedImpl;
+
+  CreatedTx get createdTx;
+  @JsonKey(ignore: true)
+  _$$CreateTxStateCreatedImplCopyWith<_$CreateTxStateCreatedImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$CreateTxStateErrorImplCopyWith<$Res> {
+  factory _$$CreateTxStateErrorImplCopyWith(_$CreateTxStateErrorImpl value,
+          $Res Function(_$CreateTxStateErrorImpl) then) =
+      __$$CreateTxStateErrorImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String? errorMsg});
+}
+
+/// @nodoc
+class __$$CreateTxStateErrorImplCopyWithImpl<$Res>
+    extends _$CreateTxStateCopyWithImpl<$Res, _$CreateTxStateErrorImpl>
+    implements _$$CreateTxStateErrorImplCopyWith<$Res> {
+  __$$CreateTxStateErrorImplCopyWithImpl(_$CreateTxStateErrorImpl _value,
+      $Res Function(_$CreateTxStateErrorImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? errorMsg = freezed,
+  }) {
+    return _then(_$CreateTxStateErrorImpl(
+      errorMsg: freezed == errorMsg
+          ? _value.errorMsg
+          : errorMsg // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$CreateTxStateErrorImpl implements CreateTxStateError {
+  const _$CreateTxStateErrorImpl({this.errorMsg});
+
+  @override
+  final String? errorMsg;
+
+  @override
+  String toString() {
+    return 'CreateTxState.error(errorMsg: $errorMsg)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$CreateTxStateErrorImpl &&
+            (identical(other.errorMsg, errorMsg) ||
+                other.errorMsg == errorMsg));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, errorMsg);
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$CreateTxStateErrorImplCopyWith<_$CreateTxStateErrorImpl> get copyWith =>
+      __$$CreateTxStateErrorImplCopyWithImpl<_$CreateTxStateErrorImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() empty,
+    required TResult Function() creating,
+    required TResult Function(CreatedTx createdTx) created,
+    required TResult Function(String? errorMsg) error,
+  }) {
+    return error(errorMsg);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? empty,
+    TResult? Function()? creating,
+    TResult? Function(CreatedTx createdTx)? created,
+    TResult? Function(String? errorMsg)? error,
+  }) {
+    return error?.call(errorMsg);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? empty,
+    TResult Function()? creating,
+    TResult Function(CreatedTx createdTx)? created,
+    TResult Function(String? errorMsg)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(errorMsg);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(CreateTxStateEmpty value) empty,
+    required TResult Function(CreateTxStateCreating value) creating,
+    required TResult Function(CreateTxStateCreated value) created,
+    required TResult Function(CreateTxStateError value) error,
+  }) {
+    return error(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(CreateTxStateEmpty value)? empty,
+    TResult? Function(CreateTxStateCreating value)? creating,
+    TResult? Function(CreateTxStateCreated value)? created,
+    TResult? Function(CreateTxStateError value)? error,
+  }) {
+    return error?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(CreateTxStateEmpty value)? empty,
+    TResult Function(CreateTxStateCreating value)? creating,
+    TResult Function(CreateTxStateCreated value)? created,
+    TResult Function(CreateTxStateError value)? error,
+    required TResult orElse(),
+  }) {
+    if (error != null) {
+      return error(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class CreateTxStateError implements CreateTxState {
+  const factory CreateTxStateError({final String? errorMsg}) =
+      _$CreateTxStateErrorImpl;
+
+  String? get errorMsg;
+  @JsonKey(ignore: true)
+  _$$CreateTxStateErrorImplCopyWith<_$CreateTxStateErrorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc

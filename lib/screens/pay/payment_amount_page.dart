@@ -16,6 +16,7 @@ import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
+import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/providers/wallet_page_status_provider.dart';
@@ -128,6 +129,25 @@ class PaymentAmountPageBody extends HookConsumerWidget {
       fontWeight: FontWeight.normal,
       color: SideSwapColors.airSuperiorityBlue,
     );
+
+    ref.listen(createTxStateNotifierProvider, (_, next) {
+      (switch (next) {
+        CreateTxStateCreated() => Future.microtask(() {
+            ref
+                .read(pageStatusNotifierProvider.notifier)
+                .setStatus(Status.paymentSend);
+          }),
+        CreateTxStateError(errorMsg: final errorMsg) => () {
+            if (errorMsg != null) {
+              Future.microtask(() async {
+                await ref.read(utilsProvider).showErrorDialog(errorMsg);
+              });
+            }
+            return null;
+          }(),
+        _ => () {}(),
+      });
+    });
 
     final amount = useState('0');
     final tickerAmountController = useTextEditingController();

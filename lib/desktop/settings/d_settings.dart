@@ -51,7 +51,6 @@ class DSettings extends ConsumerWidget {
             child: Column(
               children: [
                 switch (isJade) {
-                  true => const SizedBox(),
                   false => DSettingsButton(
                       title: 'View my recovery phrase'.tr(),
                       onPressed: () {
@@ -59,6 +58,7 @@ class DSettings extends ConsumerWidget {
                       },
                       icon: DSettingsButtonIcon.recovery,
                     ),
+                  _ => const SizedBox(),
                 },
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
@@ -71,7 +71,6 @@ class DSettings extends ConsumerWidget {
                   ),
                 ),
                 switch (isJade) {
-                  true => const SizedBox(),
                   false => Column(
                       children: [
                         Padding(
@@ -118,6 +117,7 @@ class DSettings extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  _ => const SizedBox(),
                 },
                 Padding(
                   padding: const EdgeInsets.only(top: 10),

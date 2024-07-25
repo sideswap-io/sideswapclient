@@ -38,6 +38,11 @@ fn add_input_explicit_proofs(
     input: &mut elements::pset::Input,
     secret: &elements::TxOutSecrets,
 ) -> Result<(), Error> {
+    if secret.asset_bf == elements::confidential::AssetBlindingFactor::zero()
+        && secret.value_bf == elements::confidential::ValueBlindingFactor::zero()
+    {
+        return Ok(());
+    }
     let mut rng = rand::thread_rng();
     let asset_gen_unblinded = elements::secp256k1_zkp::Generator::new_unblinded(
         elements::secp256k1_zkp::global::SECP256K1,

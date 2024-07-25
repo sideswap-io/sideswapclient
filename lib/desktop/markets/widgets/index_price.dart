@@ -99,7 +99,7 @@ class IndexPrice extends ConsumerWidget {
               ),
               onPressed: () {
                 ref
-                    .read(indexPriceButtonStreamNotifierProvider.notifier)
+                    .read(indexPriceButtonAsyncNotifierProvider.notifier)
                     .setIndexPrice(
                         indexPrice != 0 ? indexPriceStr : lastPriceStr);
               },

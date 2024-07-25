@@ -4,7 +4,9 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:fixnum/fixnum.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/utils/enum_as_string.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
@@ -17,28 +19,34 @@ import 'package:sideswap/common/utils/build_config.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 import 'package:sideswap/providers/wallet.dart';
 
-final universalLinkProvider = ChangeNotifierProvider<UniversalLinkProvider>(
-    (ref) => UniversalLinkProvider(ref));
+part 'universal_link_provider.g.dart';
+part 'universal_link_provider.freezed.dart';
 
-enum HandleResult {
-  unknown,
-  unknownUri,
-  unknownScheme,
-  unknownHost,
-  failed,
-  failedUriPath,
-  success,
+@freezed
+sealed class LinkResultState with _$LinkResultState {
+  const factory LinkResultState.unknown() = LinkResultStateUnknown;
+  const factory LinkResultState.unknownUri() = LinkResultStateUnknownUri;
+  const factory LinkResultState.unknownScheme() = LinkResultStateUnknownScheme;
+  const factory LinkResultState.unknownHost() = LinkResultStateUnknownHost;
+  const factory LinkResultState.failed() = LinkResultStateFailed;
+  const factory LinkResultState.failedUriPath() = LinkResultStateFailedUriPath;
+  const factory LinkResultState.success() = LinkResultStateSuccess;
+}
+
+@Riverpod(keepAlive: true)
+UniversalLink universalLink(UniversalLinkRef ref) {
+  return UniversalLink(ref);
 }
 
 String getSendLinkUrl(String address) {
   return 'https://app.sideswap.io/send/?address=$address';
 }
 
-class UniversalLinkProvider with ChangeNotifier {
+class UniversalLink {
   final Ref ref;
   final _appLinks = AppLinks();
 
-  UniversalLinkProvider(this.ref);
+  UniversalLink(this.ref);
 
   bool _initialUriIsHandled = false;
   StreamSubscription<Uri>? uriLinkSubscription;
@@ -95,22 +103,22 @@ class UniversalLinkProvider with ChangeNotifier {
     return double.tryParse(uri.queryParameters[name] ?? '');
   }
 
-  HandleResult handleAppUrlStr(String uri) {
+  LinkResultState handleAppUrlStr(String uri) {
     final parsedUri = Uri.tryParse(uri);
     if (parsedUri == null) {
-      return HandleResult.unknownUri;
+      return const LinkResultState.unknownUri();
     }
 
     if (parsedUri.scheme != 'https') {
-      return HandleResult.unknownScheme;
+      return const LinkResultState.unknownScheme();
     }
 
     return handleAppUri(parsedUri);
   }
 
-  HandleResult handleAppUri(Uri uri) {
+  LinkResultState handleAppUri(Uri uri) {
     if (uri.host != 'app.sideswap.io') {
-      return HandleResult.unknownHost;
+      return const LinkResultState.unknownHost();
     }
 
     return switch (uri.path) {
@@ -118,26 +126,26 @@ class UniversalLinkProvider with ChangeNotifier {
       '/app2app/' => handleApp2App(uri),
       '/swap/' => handleSwapPrompt(uri),
       '/send/' => handleSendLink(uri),
-      _ => HandleResult.failedUriPath,
+      _ => const LinkResultState.failedUriPath(),
     };
   }
 
-  HandleResult handleSubmitOrder(Uri uri) {
+  LinkResultState handleSubmitOrder(Uri uri) {
     final orderId = uri.queryParameters['order_id'];
     if (orderId != null && orderId.length == 64) {
       ref.read(walletProvider).linkOrder(orderId);
-      return HandleResult.success;
+      return const LinkResultState.success();
     }
 
-    return HandleResult.failed;
+    return const LinkResultState.failed();
   }
 
-  HandleResult handleSwapPrompt(Uri uri) {
+  LinkResultState handleSwapPrompt(Uri uri) {
     final market = uri.queryParameters['market'];
     final orderId = uri.queryParameters['order_id'];
     if (orderId is String && orderId.isNotEmpty && market == 'p2p') {
       ref.read(walletProvider).linkOrder(orderId);
-      return HandleResult.success;
+      return const LinkResultState.success();
     }
 
     try {
@@ -150,14 +158,14 @@ class UniversalLinkProvider with ChangeNotifier {
       swap.uploadUrl = uri.queryParameters['upload_url']!;
 
       ref.read(walletProvider).startSwapPrompt(swap);
-      return HandleResult.success;
+      return const LinkResultState.success();
     } on Exception catch (e) {
       logger.w('swap prompt URL parse error: $e');
-      return HandleResult.failed;
+      return const LinkResultState.failed();
     }
   }
 
-  HandleResult handleSendLink(Uri uri) {
+  LinkResultState handleSendLink(Uri uri) {
     final address = uri.queryParameters['address'];
     if (address != null) {
       ref
@@ -169,18 +177,18 @@ class UniversalLinkProvider with ChangeNotifier {
           .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.paymentAmountPage);
 
-      return HandleResult.success;
+      return const LinkResultState.success();
     }
 
-    return HandleResult.failed;
+    return const LinkResultState.failed();
   }
 
   // use qr scanner parser here to keep parseBIP21 code in one place
-  HandleResult handleApp2App(Uri uri) {
+  LinkResultState handleApp2App(Uri uri) {
     final addressTypeParameter = uri.queryParameters['addressType'];
     if (addressTypeParameter == null) {
       logger.w('uri address type is wrong');
-      return HandleResult.failed;
+      return const LinkResultState.failed();
     }
 
     final addressType =
@@ -188,7 +196,7 @@ class UniversalLinkProvider with ChangeNotifier {
 
     if (addressType == null) {
       logger.w('cannot convert uri address type');
-      return HandleResult.failed;
+      return const LinkResultState.failed();
     }
 
     final query = uri.queryParameters;
@@ -196,7 +204,7 @@ class UniversalLinkProvider with ChangeNotifier {
     final address = query['address'];
     if (address == null) {
       logger.w('uri address is empty');
-      return HandleResult.failed;
+      return const LinkResultState.failed();
     }
 
     var fakeAddress = '${addressType.asString()}:$address?';
@@ -211,7 +219,7 @@ class UniversalLinkProvider with ChangeNotifier {
 
     final result = ref.read(parseBIP21Provider(fakeAddress, addressType));
 
-    return result.match((l) => HandleResult.unknownScheme, (r) {
+    return result.match((l) => const LinkResultState.unknownScheme(), (r) {
       ref
           .read(paymentAmountPageArgumentsNotifierProvider.notifier)
           .setPaymentAmountPageArguments(PaymentAmountPageArguments(
@@ -229,7 +237,7 @@ class UniversalLinkProvider with ChangeNotifier {
           .read(pageStatusNotifierProvider.notifier)
           .setStatus(Status.paymentAmountPage);
 
-      return HandleResult.success;
+      return const LinkResultState.success();
     });
   }
 }

@@ -23,13 +23,20 @@ class PaymentSendPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const headerStyle = TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-      color: SideSwapColors.brightTurquoise,
-    );
+    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createdTx = switch (createTxState) {
+      CreateTxStateCreated(createdTx: final createdTx) => createdTx,
+      _ => null,
+    };
 
-    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+    final feePerByteStr =
+        '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
+    final txSizeStr =
+        '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
+    final amountProvider = ref.watch(amountToStringProvider);
+    final feeStr = amountProvider.amountToStringNamed(
+        AmountToStringNamedParameters(
+            amount: createdTx?.networkFee.toInt() ?? 0, ticker: 'L-BTC'));
 
     return SideSwapPopup(
       onClose: () {
@@ -40,7 +47,7 @@ class PaymentSendPopup extends ConsumerWidget {
           ref.invalidate(selectedWalletAccountAssetNotifierProvider);
           ref.invalidate(paymentSendAmountParsedNotifierProvider);
           ref.invalidate(defaultCurrencyTickerProvider);
-          ref.invalidate(paymentCreatedTxNotifierProvider);
+          ref.invalidate(createTxStateNotifierProvider);
           ref.invalidate(sendTxStateNotifierProvider);
           ref
               .read(pageStatusNotifierProvider.notifier)
@@ -62,52 +69,37 @@ class PaymentSendPopup extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Address'.tr(), style: headerStyle),
-              Text('Amount'.tr(), style: headerStyle),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Consumer(
-            builder: (context, ref, child) {
-              final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
-
-              return switch (createdTx) {
-                CreatedTx(addressees: final addresses) => () {
-                    final listHeight = (addresses.length * 44.0);
-                    final containerHeight =
-                        listHeight > 180 ? 180.0 : listHeight;
-                    return Container(
-                      height: containerHeight,
-                      constraints:
-                          const BoxConstraints(minHeight: 44, maxHeight: 180),
-                      decoration: const BoxDecoration(
-                        color: SideSwapColors.prussianBlue,
-                        borderRadius: BorderRadius.all(Radius.circular(8)),
-                      ),
-                      child: CustomScrollView(
-                        slivers: [
-                          SliverList.builder(
-                            itemBuilder: (context, index) {
-                              return RowTxReceiver(
-                                address: addresses[index].address,
-                                assetId: addresses[index].assetId,
-                                amount: addresses[index].amount.toInt(),
-                                index: index,
-                              );
-                            },
-                            itemCount: addresses.length,
-                          )
-                        ],
-                      ),
-                    );
-                  }(),
-                _ => const SizedBox(),
-              };
-            },
-          ),
+          switch (createdTx) {
+            CreatedTx(addressees: final addresses) => () {
+                final listHeight = (addresses.length * 79.0);
+                final containerHeight = listHeight > 180 ? 180.0 : listHeight;
+                return Container(
+                  height: containerHeight,
+                  constraints:
+                      const BoxConstraints(minHeight: 44, maxHeight: 180),
+                  decoration: const BoxDecoration(
+                    color: SideSwapColors.prussianBlue,
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                  ),
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverList.builder(
+                        itemBuilder: (context, index) {
+                          return RowTxReceiver(
+                            address: addresses[index].address,
+                            assetId: addresses[index].assetId,
+                            amount: addresses[index].amount.toInt(),
+                            index: index,
+                          );
+                        },
+                        itemCount: addresses.length,
+                      )
+                    ],
+                  ),
+                );
+              }(),
+            _ => const SizedBox(),
+          },
           const Padding(
             padding: EdgeInsets.only(top: 16),
             child: DottedLine(
@@ -118,46 +110,28 @@ class PaymentSendPopup extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Consumer(
-            builder: (context, ref, child) {
-              final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
-
-              final feePerByteStr =
-                  '${createdTx?.feePerByte.toStringAsFixed(3) ?? 0} s/b';
-              final txSizeStr =
-                  '${createdTx?.size.toString() ?? 0} Bytes / ${createdTx?.vsize.toString() ?? 0} VBytes';
-              final amountProvider = ref.watch(amountToStringProvider);
-              final feeStr = amountProvider.amountToStringNamed(
-                  AmountToStringNamedParameters(
-                      amount: createdTx?.networkFee.toInt() ?? 0,
-                      ticker: 'L-BTC'));
-
-              return Container(
-                decoration: const BoxDecoration(
-                  color: SideSwapColors.chathamsBlue,
-                  borderRadius: BorderRadius.all(Radius.circular(8)),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                      left: 8, right: 8, bottom: 10, top: 10),
-                  child: Column(
-                    children: [
-                      RowTxDetail(
-                          name: 'Fee per byte'.tr(), value: feePerByteStr),
-                      RowTxDetail(
-                          name: 'Transaction size'.tr(), value: txSizeStr),
-                      RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
-                      RowTxDetail(
-                          name: 'Number of inputs'.tr(),
-                          value: createdTx?.inputCount.toString() ?? ''),
-                      RowTxDetail(
-                          name: 'Number of outputs'.tr(),
-                          value: createdTx?.outputCount.toString() ?? ''),
-                    ],
-                  ),
-                ),
-              );
-            },
+          Container(
+            decoration: const BoxDecoration(
+              color: SideSwapColors.chathamsBlue,
+              borderRadius: BorderRadius.all(Radius.circular(8)),
+            ),
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 8, right: 8, bottom: 10, top: 10),
+              child: Column(
+                children: [
+                  RowTxDetail(name: 'Fee per byte'.tr(), value: feePerByteStr),
+                  RowTxDetail(name: 'Transaction size'.tr(), value: txSizeStr),
+                  RowTxDetail(name: 'Network Fee'.tr(), value: feeStr),
+                  RowTxDetail(
+                      name: 'Number of inputs'.tr(),
+                      value: createdTx?.inputCount.toString() ?? ''),
+                  RowTxDetail(
+                      name: 'Number of outputs'.tr(),
+                      value: createdTx?.outputCount.toString() ?? ''),
+                ],
+              ),
+            ),
           ),
           Expanded(
             child: Container(),
@@ -165,9 +139,9 @@ class PaymentSendPopup extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 40, bottom: 40),
             child: Consumer(builder: (context, ref, _) {
-              final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
               final sendTxState = ref.watch(sendTxStateNotifierProvider);
-              final buttonEnabled = sendTxState == const SendTxStateEmpty();
+              final buttonEnabled = (sendTxState == const SendTxStateEmpty() &&
+                  createdTx != null);
 
               return CustomBigButton(
                 width: MediaQuery.of(context).size.width,
@@ -178,11 +152,9 @@ class PaymentSendPopup extends ConsumerWidget {
                 onPressed: buttonEnabled
                     ? () async {
                         if (await ref.read(walletProvider).isAuthenticated()) {
-                          if (createdTx != null) {
-                            ref
-                                .read(walletProvider)
-                                .assetSendConfirmCommon(createdTx.req.account);
-                          }
+                          ref
+                              .read(walletProvider)
+                              .assetSendConfirmCommon(createdTx);
                         }
                       }
                     : null,

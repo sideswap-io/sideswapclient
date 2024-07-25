@@ -157,30 +157,35 @@ class LocalNotificationService {
     );
 
     // initialise the plugin.
-    await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        if (FlavorConfig.isDesktop) {
-          logger.d('Desktop notification received');
-          WindowManager.instance.show();
-          return;
-        }
+    try {
+      await _flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse:
+            (NotificationResponse response) async {
+          if (FlavorConfig.isDesktop) {
+            logger.d('Desktop notification received');
+            WindowManager.instance.show();
+            return;
+          }
 
-        if (response.payload == null) {
-          logger.w('Empty notification payload');
-          return;
-        }
+          if (response.payload == null) {
+            logger.w('Empty notification payload');
+            return;
+          }
 
-        try {
-          _selectedNotificationPayload = response.payload!;
-          final json = jsonDecode(response.payload!) as Map<String, dynamic>;
-          final fcmPayload = FCMPayload.fromJson(json);
-          selectNotificationSubject.add(fcmPayload);
-        } catch (e) {
-          logger.e('Cannot parse payload: $e');
-        }
-      },
-    );
+          try {
+            _selectedNotificationPayload = response.payload!;
+            final json = jsonDecode(response.payload!) as Map<String, dynamic>;
+            final fcmPayload = FCMPayload.fromJson(json);
+            selectNotificationSubject.add(fcmPayload);
+          } catch (e) {
+            logger.e('Cannot parse payload: $e');
+          }
+        },
+      );
+    } catch (e) {
+      logger.w('Flutter local notification plugin isn\'t initialized: $e');
+    }
   }
 
   Future<void> showNotification(

@@ -555,14 +555,14 @@ pub struct UnsubscribeResponse {
     pub asset: Option<AssetId>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Own {
     pub index_price: Option<f64>,
     pub private: bool,
     pub two_step: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct OrderCreatedNotification {
     pub order_id: OrderId,
     pub details: Details,

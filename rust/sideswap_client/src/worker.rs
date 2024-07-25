@@ -2020,11 +2020,15 @@ impl Data {
     }
 
     fn process_decrypt_pin(&self, req: ffi::proto::to::DecryptPin) {
+        // Workaround when UI sends an empty string
+        let hmac = req.hmac.unwrap_or_default();
+        let hmac = (!hmac.is_empty()).then_some(hmac);
+
         let details = pin::PinData {
             salt: req.salt,
             encrypted_data: req.encrypted_data,
             pin_identifier: req.pin_identifier,
-            hmac: req.hmac,
+            hmac,
         };
         let data = serde_json::to_string(&details).expect("must not fail");
         let result = match pin::decrypt_pin(&data, &req.pin, self.proxy().as_ref()) {

@@ -152,3 +152,17 @@ pub fn no_change(target: u64, coins: &[u64]) -> Option<Vec<u64>> {
 pub fn no_change_or_naive(target: u64, coins: &[u64]) -> Option<Vec<u64>> {
     no_change(target, coins).or_else(|| naive(target, coins))
 }
+
+pub trait Utxo {
+    fn value(&self) -> u64;
+}
+
+pub fn take_utxos<T: Utxo>(mut utxos: Vec<T>, coins: &[u64]) -> Option<Vec<T>> {
+    let mut selected = Vec::new();
+    for coin in coins {
+        let index = utxos.iter().position(|utxo| utxo.value() == *coin)?;
+        let utxo = utxos.remove(index);
+        selected.push(utxo);
+    }
+    Some(selected)
+}

@@ -16,7 +16,11 @@ class DViewTxPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createdTx = switch (createTxState) {
+      CreateTxStateCreated(createdTx: final createdTx) => createdTx,
+      _ => null,
+    };
 
     return DPopupWithClose(
       width: 580,

@@ -32,5 +32,7 @@
 	<string>public.app-category.finance</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>This application requires access to Bluetooth to scan and connect to hardware wallets</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>This application requires access to Bluetooth to scan and connect to hardware wallets</string>
 </dict>
 </plist>

@@ -126,7 +126,7 @@ class TopToolbar extends ConsumerWidget {
             name: 'Send'.tr(),
             icon: 'assets/toolbar/send.svg',
             onPressed: () {
-              ref.invalidate(paymentCreatedTxNotifierProvider);
+              ref.invalidate(createTxStateNotifierProvider);
               ref.invalidate(outputsReaderNotifierProvider);
               ref.invalidate(outputsCreatorProvider);
 

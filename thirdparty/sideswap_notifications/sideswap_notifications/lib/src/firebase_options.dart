@@ -60,7 +60,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '283004570085',
     projectId: 'sideswap-1268b',
     storageBucket: 'sideswap-1268b.appspot.com',
-    iosClientId: '283004570085-37d87n3icqmoosgnkurgu2o0lnti494n.apps.googleusercontent.com',
+    iosClientId:
+        '283004570085-37d87n3icqmoosgnkurgu2o0lnti494n.apps.googleusercontent.com',
     iosBundleId: 'io.sideswap.app',
   );
 
@@ -70,7 +71,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '283004570085',
     projectId: 'sideswap-1268b',
     storageBucket: 'sideswap-1268b.appspot.com',
-    iosClientId: '283004570085-37d87n3icqmoosgnkurgu2o0lnti494n.apps.googleusercontent.com',
+    iosClientId:
+        '283004570085-37d87n3icqmoosgnkurgu2o0lnti494n.apps.googleusercontent.com',
     iosBundleId: 'io.sideswap.app',
   );
 }

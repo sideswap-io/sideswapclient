@@ -692,6 +692,12 @@ pub struct Utxo {
     pub prevout_script: elements::Script,
 }
 
+impl sideswap_common::coin_select::Utxo for Utxo {
+    fn value(&self) -> u64 {
+        self.tx_out_sec.value
+    }
+}
+
 // Example: 0020953851a48d22e33a16eb11e9fb89ce1a410db6f0f681ec5b834b036fb84264c9
 pub fn get_redeem_script(prevout_script: &elements::Script) -> elements::Script {
     elements::script::Builder::new()

@@ -39,14 +39,15 @@ class AddressQrScanner extends HookConsumerWidget {
 
     final navigator = Navigator.of(context);
 
-    final handleResult = ref.read(universalLinkProvider).handleAppUrlStr(code);
+    final linkResultState =
+        ref.read(universalLinkProvider).handleAppUrlStr(code);
 
-    return switch (handleResult) {
-      HandleResult.success => () {
+    return switch (linkResultState) {
+      LinkResultState.success => () {
           Navigator.of(context).pop();
           return;
         }(),
-      HandleResult.failed || HandleResult.failedUriPath => () {
+      LinkResultState.failed || LinkResultState.failedUriPath => () {
           errorCallback('Invalid QR code'.tr());
           return;
         }(),

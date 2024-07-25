@@ -1,4 +1,4 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:sideswap_notifications_platform_interface/models/notification_model.dart';
 
 enum IncomingNotificationType {
   message,
@@ -21,9 +21,9 @@ class ReceivedNotification {
 }
 
 typedef TNotificationBackgroundHandler = Future<void> Function(
-    RemoteMessage message);
+    FCMRemoteMessage message);
 
 typedef THandleIncomingNotification = void Function(
-    IncomingNotificationType type, RemoteMessage message);
+    IncomingNotificationType type, FCMRemoteMessage message);
 
 typedef TRefreshTokenCallback = void Function(String? token);

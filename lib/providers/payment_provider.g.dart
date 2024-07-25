@@ -417,23 +417,6 @@ final paymentSendAmountParsedNotifierProvider =
 );
 
 typedef _$PaymentSendAmountParsedNotifier = Notifier<int>;
-String _$paymentCreatedTxNotifierHash() =>
-    r'57b87635ba9f0abd6634636fbc07e3007fe4e889';
-
-/// See also [PaymentCreatedTxNotifier].
-@ProviderFor(PaymentCreatedTxNotifier)
-final paymentCreatedTxNotifierProvider =
-    NotifierProvider<PaymentCreatedTxNotifier, CreatedTx?>.internal(
-  PaymentCreatedTxNotifier.new,
-  name: r'paymentCreatedTxNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$paymentCreatedTxNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
-
-typedef _$PaymentCreatedTxNotifier = Notifier<CreatedTx?>;
 String _$paymentAmountPageArgumentsNotifierHash() =>
     r'99532cee5f9d8d3be6192e57450df28e2809a3b7';
 

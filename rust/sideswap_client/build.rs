@@ -13,6 +13,8 @@ fn main() {
     let gdk_dir = env::var(gdk_env_name).unwrap();
     println!("cargo:rerun-if-env-changed={}", gdk_env_name);
 
+    println!("cargo:rerun-if-changed={}/libgreenaddress_full.a", gdk_dir);
+
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     match target_os.as_str() {
         "android" => {

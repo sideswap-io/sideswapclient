@@ -101,10 +101,10 @@ _$FCMPegImpl _$$FCMPegImplFromJson(Map json) => _$FCMPegImpl(
       orderId: json['order_id'] as String?,
       pegIn: json['peg_in'] as bool?,
       txHash: json['tx_hash'] as String?,
-      vout: json['vout'] as int?,
-      createdAt: json['created_at'] as int?,
+      vout: (json['vout'] as num?)?.toInt(),
+      createdAt: (json['created_at'] as num?)?.toInt(),
       payoutTxId: json['payout_txid'] as String?,
-      payout: json['payout'] as int?,
+      payout: (json['payout'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$$FCMPegImplToJson(_$FCMPegImpl instance) =>
@@ -142,5 +142,24 @@ _$FCMMessageImpl _$$FCMMessageImplFromJson(Map json) => _$FCMMessageImpl(
 Map<String, dynamic> _$$FCMMessageImplToJson(_$FCMMessageImpl instance) =>
     <String, dynamic>{
       'notification': instance.notification,
+      'data': instance.data,
+    };
+
+_$FCMRemoteMessageImpl _$$FCMRemoteMessageImplFromJson(Map json) =>
+    _$FCMRemoteMessageImpl(
+      details: json['details'],
+      body: json['body'] as String?,
+      title: json['title'] as String?,
+      data: (json['data'] as Map?)?.map(
+        (k, e) => MapEntry(k as String, e),
+      ),
+    );
+
+Map<String, dynamic> _$$FCMRemoteMessageImplToJson(
+        _$FCMRemoteMessageImpl instance) =>
+    <String, dynamic>{
+      'details': instance.details,
+      'body': instance.body,
+      'title': instance.title,
       'data': instance.data,
     };

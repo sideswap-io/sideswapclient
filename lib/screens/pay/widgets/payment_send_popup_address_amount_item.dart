@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
@@ -9,7 +10,6 @@ class PaymentSendPopupAddressAmountItem extends StatelessWidget {
     required this.amount,
     this.icon,
     required this.ticker,
-    this.onPressed,
     required this.index,
   });
 
@@ -17,13 +17,12 @@ class PaymentSendPopupAddressAmountItem extends StatelessWidget {
   final String amount;
   final Widget? icon;
   final String ticker;
-  final void Function()? onPressed;
   final int index;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 44,
+      height: 79,
       child: Padding(
         padding: const EdgeInsets.only(left: 8, right: 8),
         child: Column(
@@ -38,62 +37,81 @@ class PaymentSendPopupAddressAmountItem extends StatelessWidget {
                 ),
             },
             const SizedBox(height: 8),
-            Row(
+            Column(
               children: [
-                SizedBox(
-                  width: 110,
-                  child: ExtendedText(
-                    address,
-                    style: Theme.of(context).textTheme.titleSmall,
-                    maxLines: 1,
-                    overflowWidget: TextOverflowWidget(
-                      position: TextOverflowPosition.middle,
-                      align: TextOverflowAlign.center,
+                Row(
+                  children: [
+                    Text(
+                      'Amount'.tr(),
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelLarge
+                          ?.copyWith(color: SideSwapColors.brightTurquoise),
+                    ),
+                    const Spacer(),
+                    Text(
+                      amount,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: SideSwapColors.bitterSweet),
+                    ),
+                    const SizedBox(width: 8),
+                    ...switch (icon) {
+                      final icon? => [
+                          icon,
+                          const SizedBox(width: 8),
+                        ],
+                      _ => [
+                          const SizedBox(),
+                        ],
+                    },
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(minWidth: 40),
                       child: Text(
-                        '...',
-                        style: Theme.of(context).textTheme.titleSmall,
+                        ticker,
+                        textAlign: TextAlign.right,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontSize: 14, fontWeight: FontWeight.w400),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                const Spacer(),
-                Text(
-                  amount,
-                  style: Theme.of(context).textTheme.titleSmall,
-                ),
-                const SizedBox(width: 8),
-                ...switch (icon) {
-                  final icon? => [
-                      icon,
-                      const SizedBox(width: 8),
-                    ],
-                  _ => [
-                      const SizedBox(),
-                    ],
-                },
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: 40),
-                  child: Text(
-                    ticker,
-                    textAlign: TextAlign.right,
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
-                ),
-                ...switch (onPressed) {
-                  final onPressed? => [
-                      const SizedBox(width: 8),
-                      IconButton(
-                          icon: const Icon(
-                            Icons.close,
-                            color: SideSwapColors.brightTurquoise,
-                            size: 16,
+                const SizedBox(height: 13),
+                Row(
+                  children: [
+                    Text(
+                      'Address'.tr(),
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelLarge
+                          ?.copyWith(color: SideSwapColors.brightTurquoise),
+                    ),
+                    const Spacer(),
+                    SizedBox(
+                      width: 180,
+                      child: ExtendedText(
+                        address,
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            fontSize: 14, fontWeight: FontWeight.w400),
+                        textAlign: TextAlign.end,
+                        maxLines: 1,
+                        overflowWidget: TextOverflowWidget(
+                          position: TextOverflowPosition.middle,
+                          align: TextOverflowAlign.center,
+                          child: Text(
+                            '...',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge
+                                ?.copyWith(
+                                    fontSize: 14, fontWeight: FontWeight.w400),
                           ),
-                          onPressed: onPressed),
-                    ],
-                  _ => [
-                      const SizedBox(),
-                    ],
-                },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ],

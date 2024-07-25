@@ -876,24 +876,24 @@ final marketsLastIndexPriceNotifierProvider = NotifierProvider<
 );
 
 typedef _$MarketsLastIndexPriceNotifier = Notifier<Map<String, double>>;
-String _$indexPriceButtonStreamNotifierHash() =>
-    r'fb66822555e37894b93d54a7cdb66f6621d324a9';
+String _$indexPriceButtonAsyncNotifierHash() =>
+    r'8a87ac6b0417c993de1de12a561a770f91fc93bd';
 
-/// See also [IndexPriceButtonStreamNotifier].
-@ProviderFor(IndexPriceButtonStreamNotifier)
-final indexPriceButtonStreamNotifierProvider =
-    AutoDisposeStreamNotifierProvider<IndexPriceButtonStreamNotifier,
-        String>.internal(
-  IndexPriceButtonStreamNotifier.new,
-  name: r'indexPriceButtonStreamNotifierProvider',
+/// See also [IndexPriceButtonAsyncNotifier].
+@ProviderFor(IndexPriceButtonAsyncNotifier)
+final indexPriceButtonAsyncNotifierProvider = AutoDisposeNotifierProvider<
+    IndexPriceButtonAsyncNotifier, AsyncValue<String>>.internal(
+  IndexPriceButtonAsyncNotifier.new,
+  name: r'indexPriceButtonAsyncNotifierProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$indexPriceButtonStreamNotifierHash,
+      : _$indexPriceButtonAsyncNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$IndexPriceButtonStreamNotifier = AutoDisposeStreamNotifier<String>;
+typedef _$IndexPriceButtonAsyncNotifier
+    = AutoDisposeNotifier<AsyncValue<String>>;
 String _$marketsRequestOrdersNotifierHash() =>
     r'5cf905504096e64c117a499c8671102440bb95f2';
 

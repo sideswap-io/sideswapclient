@@ -352,33 +352,21 @@ class BleApiImpl(private var mActivity: Activity): BleApi {
         scanner.stopScan(mScanCallback)
     }
 
-    @SuppressLint("MissingPermission")
     override fun deviceNames(): List<String> {
-        val adapter = getBluetoothAdapter()
-        log("bonded devices: ${adapter.bondedDevices.size}, found devices: ${mFoundDevices.size}")
+        // Do not look for bonded devices here.
+        // Old bonded connection can cause a connection problem.
 
+        log("found devices: ${mFoundDevices.size}")
         val list: MutableSet<String> = LinkedHashSet()
-        for (device in adapter.bondedDevices) {
-            if (device.name != null && device.name.startsWith("Jade ")) {
-                list.add(device.name)
-            }
-        }
-
         for (name in mFoundDevices.keys) {
             list.add(name)
         }
-
         return list.toList()
     }
 
     @SuppressLint("MissingPermission")
     fun getDevice(deviceName: String): BluetoothDevice {
-        val adapter = getBluetoothAdapter()
-        var device = adapter.bondedDevices.find { it.name == deviceName }
-        if (device != null) {
-            return device
-        }
-        device = mFoundDevices[deviceName]
+        val device = mFoundDevices[deviceName]
         if (device != null) {
             return device
         }

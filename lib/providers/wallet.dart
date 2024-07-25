@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:sideswap/app_version.dart';
 import 'package:sideswap/common/enums.dart';
@@ -36,11 +37,11 @@ import 'package:sideswap/providers/env_provider.dart';
 import 'package:sideswap/providers/first_launch_providers.dart';
 import 'package:sideswap/providers/jade_provider.dart';
 import 'package:sideswap/providers/local_notifications_service.dart';
+import 'package:sideswap/providers/login_provider.dart';
 import 'package:sideswap/providers/market_data_provider.dart';
 import 'package:sideswap/providers/markets_provider.dart';
 import 'package:sideswap/providers/network_settings_providers.dart';
 import 'package:sideswap/providers/order_details_provider.dart';
-import 'package:sideswap/providers/payjoin_providers.dart';
 import 'package:sideswap/providers/pegs_provider.dart';
 import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
@@ -74,6 +75,20 @@ import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/models/client_ffi.dart';
 import 'package:sideswap/screens/order/widgets/order_details.dart';
 import 'package:sideswap/side_swap_client_ffi.dart';
+
+part 'wallet.g.dart';
+
+@Riverpod(keepAlive: true)
+class SyncCompleteState extends _$SyncCompleteState {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setState(bool value) {
+    state = value;
+  }
+}
 
 class SideSwapException implements Exception {
   final String message;
@@ -444,31 +459,20 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.createTxResult:
-        ref
-            .read(createTxStateNotifierProvider.notifier)
-            .setCreateTxState(const CreateTxStateEmpty());
-        switch (from.createTxResult.whichResult()) {
-          case From_CreateTxResult_Result.errorMsg:
-            logger.e(from.createTxResult.errorMsg);
-            await ref
-                .read(utilsProvider)
-                .showErrorDialog(from.createTxResult.errorMsg);
-            break;
-          case From_CreateTxResult_Result.createdTx:
-            ref
-                .read(paymentCreatedTxNotifierProvider.notifier)
-                .setCreatedTx(from.createTxResult.createdTx);
-
-            if (!FlavorConfig.isDesktop) {
-              ref
-                  .read(pageStatusNotifierProvider.notifier)
-                  .setStatus(Status.paymentSend);
-            }
-            break;
-          case From_CreateTxResult_Result.notSet:
-            throw Exception('invalid send result message');
-        }
-        notifyListeners();
+        (switch (from.createTxResult.whichResult()) {
+          From_CreateTxResult_Result.errorMsg => () async {
+              logger.e(from.createTxResult.errorMsg);
+              ref.read(createTxStateNotifierProvider.notifier).setCreateTxState(
+                  CreateTxStateError(errorMsg: from.createTxResult.errorMsg));
+            }(),
+          From_CreateTxResult_Result.createdTx => ref
+              .read(createTxStateNotifierProvider.notifier)
+              .setCreateTxState(
+                  CreateTxStateCreated(from.createTxResult.createdTx)),
+          From_CreateTxResult_Result.notSet => () {
+              throw Exception('invalid send result message');
+            }(),
+        });
         break;
 
       case From_Msg.sendResult:
@@ -803,7 +807,7 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
 
       case From_Msg.syncComplete:
-        ref.read(syncCompleteStateProvider.notifier).state = true;
+        ref.read(syncCompleteStateProvider.notifier).setState(true);
         break;
 
       case From_Msg.contactCreated:
@@ -1031,44 +1035,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
         break;
       case From_Msg.login:
-        logger.d(from.login);
-        (switch (from.login.whichResult()) {
-          From_Login_Result.errorMsg
-              when from.login.errorMsg == 'please initialize Jade first' ||
-                  from.login.errorMsg == 'write failed' ||
-                  from.login.errorMsg == 'open failed' ||
-                  from.login.errorMsg ==
-                      'Jade error: Network type inconsistent with prior usage' =>
-            () {
-              ref.read(configurationProvider.notifier).setJadeId('');
-              ref
-                  .read(serverLoginNotifierProvider.notifier)
-                  .setServerLoginState(
-                      ServerLoginStateError(message: from.login.errorMsg));
-            }(),
-          From_Login_Result.errorMsg => () {
-              ref
-                  .read(serverLoginNotifierProvider.notifier)
-                  .setServerLoginState(
-                      ServerLoginStateError(message: from.login.errorMsg));
-            }(),
-          From_Login_Result.success => () {
-              ref
-                  .read(serverLoginNotifierProvider.notifier)
-                  .setServerLoginState(const ServerLoginStateLogin());
-              ref
-                  .read(firstLaunchStateNotifierProvider.notifier)
-                  .setFirstLaunchState(const FirstLaunchStateEmpty());
-            }(),
-          From_Login_Result.notSet => () {
-              ref
-                  .read(serverLoginNotifierProvider.notifier)
-                  .setServerLoginState(const ServerLoginStateError());
-            }(),
-        });
-        break;
-      case From_Msg.createPayjoinResult:
-        // TODO: Handle this case.
+        _handleLogin(from.login);
         break;
       case From_Msg.startTimer:
         if (from.startTimer.hasOrderId()) {
@@ -1098,9 +1065,6 @@ class WalletChangeNotifier with ChangeNotifier {
         break;
       case From_Msg.loadUtxos:
         _handleLoadUtxos(from.loadUtxos);
-        break;
-      case From_Msg.createPayjoinResult:
-        _handlePayjoinResult(from.createPayjoinResult);
         break;
     }
   }
@@ -1616,7 +1580,10 @@ class WalletChangeNotifier with ChangeNotifier {
 
     sendMsg(msg);
 
-    ref.read(configurationProvider.notifier).setJadeId(jadeId);
+    ref.read(loginStateNotifierProvider.notifier).setState(LoginState.login(
+          mnemonic: mnemonic.isEmpty ? null : mnemonic,
+          jadeId: jadeId.isEmpty ? null : jadeId,
+        ));
 
     notifyListeners();
   }
@@ -1725,10 +1692,11 @@ class WalletChangeNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  void assetSendConfirmCommon(Account account) {
+  void assetSendConfirmCommon(CreatedTx createdTx) {
     final msg = To();
     msg.sendTx = To_SendTx();
-    msg.sendTx.account = account;
+    msg.sendTx.account = createdTx.req.account;
+    msg.sendTx.id = createdTx.id;
     sendMsg(msg);
     ref
         .read(sendTxStateNotifierProvider.notifier)
@@ -2750,40 +2718,48 @@ class WalletChangeNotifier with ChangeNotifier {
         .setLoadUtxosState(LoadUtxosState.data(loadUtxos));
   }
 
-  void sendCreatePayjoin(CreatePayjoin payjoin) {
-    final msg = To();
-    msg.createPayjoin = payjoin;
-    sendMsg(msg);
-    ref
-        .read(payjoinStateNotifierProvider.notifier)
-        .setPayjoinState(const PayjoinStateWaitingCreatedPayjoin());
-  }
+  void _handleLogin(From_Login login) {
+    logger.d(login);
+    (switch (login.whichResult()) {
+      From_Login_Result.errorMsg
+          when login.errorMsg == 'please initialize Jade first' ||
+              login.errorMsg == 'write failed' ||
+              login.errorMsg == 'open failed' ||
+              login.errorMsg ==
+                  'Jade error: Network type inconsistent with prior usage' =>
+        () {
+          ref.read(configurationProvider.notifier).setJadeId('');
+          ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
+              ServerLoginStateError(message: login.errorMsg));
+        }(),
+      From_Login_Result.errorMsg => () {
+          ref.read(serverLoginNotifierProvider.notifier).setServerLoginState(
+              ServerLoginStateError(message: login.errorMsg));
+        }(),
+      From_Login_Result.success => () {
+          // save jadeId once, when logged in
+          final loginState = ref.read(loginStateNotifierProvider);
+          (switch (loginState) {
+            LoginStateLogin(:final jadeId)
+                when jadeId != null &&
+                    jadeId.isNotEmpty &&
+                    ref.read(configurationProvider).jadeId.isEmpty =>
+              ref.read(configurationProvider.notifier).setJadeId(jadeId),
+            _ => () {}(),
+          });
 
-  void _handlePayjoinResult(From_CreatePayjoinResult result) {
-    (switch (result.whichResult()) {
-      From_CreatePayjoinResult_Result.errorMsg => ref
-          .read(payjoinStateNotifierProvider.notifier)
-          .setPayjoinState(PayjoinStateError(result.errorMsg)),
-      From_CreatePayjoinResult_Result.createdPayjoin => ref
-          .read(payjoinStateNotifierProvider.notifier)
-          .setPayjoinState(PayjoinStateCreatedPayjoin(result.createdPayjoin)),
-      _ => ref
-          .read(payjoinStateNotifierProvider.notifier)
-          .setPayjoinState(const PayjoinStateError()),
+          ref
+              .read(serverLoginNotifierProvider.notifier)
+              .setServerLoginState(const ServerLoginStateLogin());
+          ref
+              .read(firstLaunchStateNotifierProvider.notifier)
+              .setFirstLaunchState(const FirstLaunchStateEmpty());
+        }(),
+      From_Login_Result.notSet => () {
+          ref
+              .read(serverLoginNotifierProvider.notifier)
+              .setServerLoginState(const ServerLoginStateError());
+        }(),
     });
   }
-
-  void sendCreatedPayjoin(CreatedPayjoin createdPayjoin) {
-    final msg = To();
-    msg.sendPayjoin = createdPayjoin;
-    sendMsg(msg);
-    ref
-        .read(payjoinStateNotifierProvider.notifier)
-        .setPayjoinState(const PayjoinStateWaitingSendPayjoin());
-  }
 }
-
-final syncCompleteStateProvider = AutoDisposeStateProvider<bool>((ref) {
-  ref.keepAlive();
-  return false;
-});

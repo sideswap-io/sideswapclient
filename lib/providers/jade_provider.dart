@@ -46,11 +46,10 @@ void jadeRescan(JadeRescanRef ref) {
   });
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class JadeDeviceNotifier extends _$JadeDeviceNotifier {
   @override
   JadeDevicesState build() {
-    ref.keepAlive();
     return const JadeDevicesStateUnavailable();
   }
 
@@ -110,11 +109,7 @@ class JadeOnboardingRegistrationNotifier
 bool isJadeWallet(IsJadeWalletRef ref) {
   final jadeId = ref.watch(configurationProvider).jadeId;
 
-  if (jadeId.isNotEmpty) {
-    return true;
-  }
-
-  return false;
+  return jadeId.isNotEmpty;
 }
 
 @riverpod

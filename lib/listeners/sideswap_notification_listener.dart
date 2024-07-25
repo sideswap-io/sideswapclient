@@ -11,13 +11,13 @@ import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 import 'package:sideswap_notifications/sideswap_notifications.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:sideswap_notifications_platform_interface/sideswap_notifications_platform_interface.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+Future<void> _firebaseMessagingBackgroundHandler(
+    FCMRemoteMessage message) async {
   logger.d('onBackground: $message');
-  dynamic details = message.data['details'];
+  dynamic details = message.details;
   if (details is String) {
     Lib.lib.sideswap_process_background(details.toNativeUtf8().cast());
   }
@@ -58,16 +58,16 @@ class SideswapNotificationProvider {
   final _delayedNotifications = <FCMPayload>[];
 
   void _handleIncomingNotification(
-      IncomingNotificationType type, RemoteMessage message) {
-    dynamic details = message.data['details'];
+      IncomingNotificationType type, FCMRemoteMessage message) {
+    dynamic details = message.details;
     if (details is String) {
       ref.read(walletProvider).gotPushMessage(details);
     }
 
     final messageJson = {
       'notification': {
-        'body': message.notification?.body,
-        'title': message.notification?.title,
+        'body': message.body,
+        'title': message.title,
       },
       'data': message.data,
     };

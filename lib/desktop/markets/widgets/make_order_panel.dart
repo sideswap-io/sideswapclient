@@ -107,7 +107,7 @@ class MakeOrderPanel extends HookConsumerWidget {
         ref.watch(marketSelectedAccountAssetStateProvider);
     final selectedAsset =
         ref.watch(assetsStateProvider)[selectedAccountAsset.assetId];
-    final buttonIndexPrice = ref.watch(indexPriceButtonStreamNotifierProvider);
+    final buttonIndexPrice = ref.watch(indexPriceButtonAsyncNotifierProvider);
 
     final assetType = assetMarketType(selectedAsset);
     final trackingAvailable = assetType != MarketType.token;
@@ -118,9 +118,7 @@ class MakeOrderPanel extends HookConsumerWidget {
           () {
             controllerPrice.text = data;
           }(),
-        _ => () {
-            controllerPrice.clear();
-          }(),
+        _ => () {}(),
       });
 
       return;
@@ -245,7 +243,7 @@ class MakeOrderPanel extends HookConsumerWidget {
                                   .setSide(MakeOrderSide.buy);
                             }
                             ref.invalidate(
-                                indexPriceButtonStreamNotifierProvider);
+                                indexPriceButtonAsyncNotifierProvider);
                           },
                         ),
                       ],
@@ -289,6 +287,10 @@ class MakeOrderPanel extends HookConsumerWidget {
                             },
                             trackingToggled: trackingToggled,
                             trackingValue: trackingValue,
+                            onChanged: (value) {
+                              ref.invalidate(
+                                  indexPriceButtonAsyncNotifierProvider);
+                            },
                           ),
                           if (trackingAvailable)
                             Padding(
@@ -346,7 +348,7 @@ class MakeOrderPanel extends HookConsumerWidget {
                             onAssetSelected: () {
                               expanded.value = !expanded.value;
                               ref.invalidate(
-                                  indexPriceButtonStreamNotifierProvider);
+                                  indexPriceButtonAsyncNotifierProvider);
                             },
                           ),
                         );
@@ -372,12 +374,14 @@ class MakeOrderPanelAmountSide extends ConsumerWidget {
     this.focusNode,
     this.onEditingComplete,
     super.key,
+    this.onChanged,
   });
 
   final void Function()? onMaxPressed;
   final TextEditingController controller;
   final FocusNode? focusNode;
   final void Function()? onEditingComplete;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -390,6 +394,7 @@ class MakeOrderPanelAmountSide extends ConsumerWidget {
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final liquidAccountAsset =
         AccountAsset(selectedAccountAsset.account, liquidAssetId);
+    ref.watch(marketOrderAmountNotifierProvider);
 
     return Column(
       children: [
@@ -401,6 +406,7 @@ class MakeOrderPanelAmountSide extends ConsumerWidget {
           autofocus: true,
           focusNode: focusNode,
           onEditingComplete: onEditingComplete,
+          onChanged: onChanged,
         ),
         FocusTraversalGroup(
           descendantsAreFocusable: false,
@@ -422,6 +428,7 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
     this.focusNode,
     this.onEditingComplete,
     super.key,
+    this.onChanged,
   });
 
   final ValueNotifier<bool> trackingToggled;
@@ -429,6 +436,7 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
   final void Function()? onEditingComplete;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -451,6 +459,7 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
     final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
     final liquidAccountAsset =
         AccountAsset(selectedAccountAsset.account, liquidAssetId);
+    ref.watch(marketOrderPriceNotifierProvider);
 
     return Column(
       children: [
@@ -465,7 +474,7 @@ class MakeOrderPanelValueSide extends ConsumerWidget {
           onEditingComplete: onEditingComplete,
           readonly: trackingToggled.value,
           hintText: priceHint,
-          onChanged: (value) {},
+          onChanged: onChanged,
         ),
         const BalanceLine(
           onMaxPressed: null,

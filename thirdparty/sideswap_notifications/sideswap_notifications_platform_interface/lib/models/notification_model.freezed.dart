@@ -12,7 +12,7 @@ part of 'notification_model.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#custom-getters-and-methods');
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
 FCMPayload _$FCMPayloadFromJson(Map<String, dynamic> json) {
   return _FCMPayload.fromJson(json);
@@ -124,7 +124,7 @@ class _$FCMPayloadImpl extends _FCMPayload {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMPayloadImpl &&
@@ -278,7 +278,7 @@ class _$FCMNotificationImpl implements _FCMNotification {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMNotificationImpl &&
@@ -433,7 +433,7 @@ class _$FCMDataImpl implements _FCMData {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMDataImpl &&
@@ -687,7 +687,7 @@ class _$FCMDetailsImpl implements _FCMDetails {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMDetailsImpl &&
@@ -864,7 +864,7 @@ class _$FCMTxImpl implements _FCMTx {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMTxImpl &&
@@ -1112,7 +1112,7 @@ class _$FCMPegImpl implements _FCMPeg {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMPegImpl &&
@@ -1282,7 +1282,7 @@ class _$FCMOrderCancelledImpl implements _FCMOrderCancelled {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMOrderCancelledImpl &&
@@ -1467,7 +1467,7 @@ class _$FCMMessageImpl implements _FCMMessage {
   }
 
   @override
-  bool operator ==(dynamic other) {
+  bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FCMMessageImpl &&
@@ -1509,5 +1509,216 @@ abstract class _FCMMessage implements FCMMessage {
   @override
   @JsonKey(ignore: true)
   _$$FCMMessageImplCopyWith<_$FCMMessageImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+FCMRemoteMessage _$FCMRemoteMessageFromJson(Map<String, dynamic> json) {
+  return _FCMRemoteMessage.fromJson(json);
+}
+
+/// @nodoc
+mixin _$FCMRemoteMessage {
+  dynamic get details => throw _privateConstructorUsedError;
+  String? get body => throw _privateConstructorUsedError;
+  String? get title => throw _privateConstructorUsedError;
+  Map<String, dynamic>? get data => throw _privateConstructorUsedError;
+
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  @JsonKey(ignore: true)
+  $FCMRemoteMessageCopyWith<FCMRemoteMessage> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $FCMRemoteMessageCopyWith<$Res> {
+  factory $FCMRemoteMessageCopyWith(
+          FCMRemoteMessage value, $Res Function(FCMRemoteMessage) then) =
+      _$FCMRemoteMessageCopyWithImpl<$Res, FCMRemoteMessage>;
+  @useResult
+  $Res call(
+      {dynamic details,
+      String? body,
+      String? title,
+      Map<String, dynamic>? data});
+}
+
+/// @nodoc
+class _$FCMRemoteMessageCopyWithImpl<$Res, $Val extends FCMRemoteMessage>
+    implements $FCMRemoteMessageCopyWith<$Res> {
+  _$FCMRemoteMessageCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? details = freezed,
+    Object? body = freezed,
+    Object? title = freezed,
+    Object? data = freezed,
+  }) {
+    return _then(_value.copyWith(
+      details: freezed == details
+          ? _value.details
+          : details // ignore: cast_nullable_to_non_nullable
+              as dynamic,
+      body: freezed == body
+          ? _value.body
+          : body // ignore: cast_nullable_to_non_nullable
+              as String?,
+      title: freezed == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      data: freezed == data
+          ? _value.data
+          : data // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$FCMRemoteMessageImplCopyWith<$Res>
+    implements $FCMRemoteMessageCopyWith<$Res> {
+  factory _$$FCMRemoteMessageImplCopyWith(_$FCMRemoteMessageImpl value,
+          $Res Function(_$FCMRemoteMessageImpl) then) =
+      __$$FCMRemoteMessageImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {dynamic details,
+      String? body,
+      String? title,
+      Map<String, dynamic>? data});
+}
+
+/// @nodoc
+class __$$FCMRemoteMessageImplCopyWithImpl<$Res>
+    extends _$FCMRemoteMessageCopyWithImpl<$Res, _$FCMRemoteMessageImpl>
+    implements _$$FCMRemoteMessageImplCopyWith<$Res> {
+  __$$FCMRemoteMessageImplCopyWithImpl(_$FCMRemoteMessageImpl _value,
+      $Res Function(_$FCMRemoteMessageImpl) _then)
+      : super(_value, _then);
+
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? details = freezed,
+    Object? body = freezed,
+    Object? title = freezed,
+    Object? data = freezed,
+  }) {
+    return _then(_$FCMRemoteMessageImpl(
+      details: freezed == details
+          ? _value.details
+          : details // ignore: cast_nullable_to_non_nullable
+              as dynamic,
+      body: freezed == body
+          ? _value.body
+          : body // ignore: cast_nullable_to_non_nullable
+              as String?,
+      title: freezed == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      data: freezed == data
+          ? _value._data
+          : data // ignore: cast_nullable_to_non_nullable
+              as Map<String, dynamic>?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$FCMRemoteMessageImpl implements _FCMRemoteMessage {
+  const _$FCMRemoteMessageImpl(
+      {this.details, this.body, this.title, final Map<String, dynamic>? data})
+      : _data = data;
+
+  factory _$FCMRemoteMessageImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FCMRemoteMessageImplFromJson(json);
+
+  @override
+  final dynamic details;
+  @override
+  final String? body;
+  @override
+  final String? title;
+  final Map<String, dynamic>? _data;
+  @override
+  Map<String, dynamic>? get data {
+    final value = _data;
+    if (value == null) return null;
+    if (_data is EqualUnmodifiableMapView) return _data;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
+
+  @override
+  String toString() {
+    return 'FCMRemoteMessage(details: $details, body: $body, title: $title, data: $data)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FCMRemoteMessageImpl &&
+            const DeepCollectionEquality().equals(other.details, details) &&
+            (identical(other.body, body) || other.body == body) &&
+            (identical(other.title, title) || other.title == title) &&
+            const DeepCollectionEquality().equals(other._data, _data));
+  }
+
+  @JsonKey(ignore: true)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(details),
+      body,
+      title,
+      const DeepCollectionEquality().hash(_data));
+
+  @JsonKey(ignore: true)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FCMRemoteMessageImplCopyWith<_$FCMRemoteMessageImpl> get copyWith =>
+      __$$FCMRemoteMessageImplCopyWithImpl<_$FCMRemoteMessageImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$FCMRemoteMessageImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _FCMRemoteMessage implements FCMRemoteMessage {
+  const factory _FCMRemoteMessage(
+      {final dynamic details,
+      final String? body,
+      final String? title,
+      final Map<String, dynamic>? data}) = _$FCMRemoteMessageImpl;
+
+  factory _FCMRemoteMessage.fromJson(Map<String, dynamic> json) =
+      _$FCMRemoteMessageImpl.fromJson;
+
+  @override
+  dynamic get details;
+  @override
+  String? get body;
+  @override
+  String? get title;
+  @override
+  Map<String, dynamic>? get data;
+  @override
+  @JsonKey(ignore: true)
+  _$$FCMRemoteMessageImplCopyWith<_$FCMRemoteMessageImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

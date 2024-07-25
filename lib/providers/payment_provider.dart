@@ -28,6 +28,9 @@ part 'payment_provider.g.dart';
 class CreateTxState with _$CreateTxState {
   const factory CreateTxState.empty() = CreateTxStateEmpty;
   const factory CreateTxState.creating() = CreateTxStateCreating;
+  const factory CreateTxState.created(CreatedTx createdTx) =
+      CreateTxStateCreated;
+  const factory CreateTxState.error({String? errorMsg}) = CreateTxStateError;
 }
 
 @freezed
@@ -135,20 +138,6 @@ class PaymentSendAmountParsedNotifier
 }
 
 @Riverpod(keepAlive: true)
-class PaymentCreatedTxNotifier extends _$PaymentCreatedTxNotifier {
-  @override
-  CreatedTx? build() {
-    return null;
-  }
-
-  void setCreatedTx(CreatedTx? createdTx) {
-    state = createdTx;
-  }
-
-  int sendNetworkFee() => state?.networkFee.toInt() ?? 0;
-}
-
-@Riverpod(keepAlive: true)
 class PaymentAmountPageArgumentsNotifier
     extends _$PaymentAmountPageArgumentsNotifier {
   @override
@@ -183,9 +172,12 @@ class PaymentHelper {
     return switch (outputsData) {
       Left(value: final l) => l.message,
       Right(value: final r) => () {
+          bool shouldDeductFeeOutput = false;
+          int deductFeeOutputIndex = 0;
+
           final addressAmounts = r.receivers?.map((e) {
             // set greedy flag only when outputs contains only one item (first one is always entered by user in ui) and max is pressed
-            final greedyFlag = switch (r.receivers?.length) {
+            shouldDeductFeeOutput = switch (r.receivers?.length) {
               1 => () {
                   if (selectedInputs?.isNotEmpty == true) {
                     final maxAssetBalance = ref.read(
@@ -205,7 +197,6 @@ class PaymentHelper {
               address: e.address,
               amount: Int64(e.satoshi ?? 0),
               assetId: e.assetId,
-              isGreedy: greedyFlag,
             );
           }).toList();
 
@@ -216,6 +207,8 @@ class PaymentHelper {
             addressees: addressAmounts,
             account: getAccount(accountAsset.account),
             utxos: utxos,
+            deductFeeOutput:
+                shouldDeductFeeOutput ? deductFeeOutputIndex : null,
           );
 
           ref.read(walletProvider).createTx(createTx);
@@ -271,10 +264,13 @@ class PaymentHelper {
     addressAmount.address = address;
     addressAmount.amount = Int64(internalAmount);
     addressAmount.assetId = accountAsset.assetId ?? '';
-    addressAmount.isGreedy = isGreedy && internalAmount == balance;
+    final shouldDeductFeeOutput = isGreedy && internalAmount == balance;
 
     final createTx = CreateTx(
-        addressees: [addressAmount], account: getAccount(accountAsset.account));
+      addressees: [addressAmount],
+      account: getAccount(accountAsset.account),
+      deductFeeOutput: shouldDeductFeeOutput ? 0 : null,
+    );
 
     ref.read(walletProvider).createTx(createTx);
   }

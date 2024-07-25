@@ -29,6 +29,7 @@ import 'package:sideswap/providers/outputs_providers.dart';
 import 'package:sideswap/providers/payment_provider.dart';
 import 'package:sideswap/providers/send_asset_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
+import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
@@ -40,7 +41,19 @@ class DSendPopup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createdTx = switch (createTxState) {
+      CreateTxStateCreated(createdTx: final createdTx) => createdTx,
+      CreateTxStateError(errorMsg: final errorMsg) => () {
+          if (errorMsg != null) {
+            Future.microtask(() async {
+              await ref.read(utilsProvider).showErrorDialog(errorMsg);
+            });
+          }
+          return null;
+        }(),
+      _ => null,
+    };
     ref.listen(selectedInputsHelperProvider, (previous, next) {});
 
     return switch (createdTx) {
@@ -357,7 +370,11 @@ class DSendPopupReview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final createdTx = ref.watch(paymentCreatedTxNotifierProvider);
+    final createTxState = ref.watch(createTxStateNotifierProvider);
+    final createdTx = switch (createTxState) {
+      CreateTxStateCreated(createdTx: final createdTx) => createdTx,
+      _ => null,
+    };
     final sendTxState = ref.watch(sendTxStateNotifierProvider);
 
     final feePerByteStr =
@@ -376,7 +393,7 @@ class DSendPopupReview extends ConsumerWidget {
     );
 
     void cleanupOnBack() {
-      ref.invalidate(paymentCreatedTxNotifierProvider);
+      ref.invalidate(createTxStateNotifierProvider);
     }
 
     void cleanupOnClose() {
@@ -538,7 +555,7 @@ class DSendPopupReview extends ConsumerWidget {
                                     ref
                                         .read(walletProvider)
                                         .assetSendConfirmCommon(
-                                            createdTx.req.account);
+                                            createdTx);
                                   }
                                 }
                               }

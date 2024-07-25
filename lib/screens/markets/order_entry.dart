@@ -53,7 +53,7 @@ class OrderEntry extends ConsumerWidget {
                             SizedBox(height: 16),
                             OrderEntryIndexPrice(),
                             Expanded(
-                              child: OrderEntryAmount(),
+                              child: OrderEntryAmountWidget(),
                             ),
                           ],
                         ),
@@ -209,7 +209,7 @@ class OrderEntryHeaderBuySellButtons extends HookConsumerWidget {
                 .read(makeOrderSideStateProvider.notifier)
                 .setSide(MakeOrderSide.buy);
           }
-          ref.invalidate(indexPriceButtonStreamNotifierProvider);
+          ref.invalidate(indexPriceButtonAsyncNotifierProvider);
         },
       ),
     );
@@ -292,7 +292,7 @@ class OrderEntryIndexPrice extends ConsumerWidget {
         ),
         onPressed: () {
           ref
-              .read(indexPriceButtonStreamNotifierProvider.notifier)
+              .read(indexPriceButtonAsyncNotifierProvider.notifier)
               .setIndexPrice(targetIndexPrice);
         },
         child: Row(
@@ -353,8 +353,8 @@ class OrderEntryIndexPrice extends ConsumerWidget {
   }
 }
 
-class OrderEntryAmount extends HookConsumerWidget {
-  const OrderEntryAmount({super.key});
+class OrderEntryAmountWidget extends HookConsumerWidget {
+  const OrderEntryAmountWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -401,7 +401,7 @@ class OrderEntryAmount extends HookConsumerWidget {
       return;
     }, [isSell]);
 
-    final buttonIndexPrice = ref.watch(indexPriceButtonStreamNotifierProvider);
+    final buttonIndexPrice = ref.watch(indexPriceButtonAsyncNotifierProvider);
 
     useEffect(() {
       (switch (buttonIndexPrice) {

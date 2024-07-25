@@ -143,3 +143,16 @@ class FCMMessage with _$FCMMessage {
   factory FCMMessage.fromJson(Map<String, dynamic> json) =>
       _$FCMMessageFromJson(json);
 }
+
+@freezed
+sealed class FCMRemoteMessage with _$FCMRemoteMessage {
+  const factory FCMRemoteMessage({
+    dynamic details,
+    String? body,
+    String? title,
+    Map<String, dynamic>? data,
+  }) = _FCMRemoteMessage;
+
+  factory FCMRemoteMessage.fromJson(Map<String, dynamic> json) =>
+      _$FCMRemoteMessageFromJson(json);
+}

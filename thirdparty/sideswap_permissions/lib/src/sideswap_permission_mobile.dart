@@ -10,7 +10,7 @@ class SideswapPermissionMobilePlugin
 
   @override
   Future<bool> requestContactPermission() async {
-    return PermissionHandler.requestCameraPermission();
+    return PermissionHandler.requestContactPermission();
   }
 
   @override

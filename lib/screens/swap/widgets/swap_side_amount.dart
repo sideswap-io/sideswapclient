@@ -304,40 +304,45 @@ class SwapSideAmount extends HookConsumerWidget {
                     !isMaxVisible &&
                     !isAddressLabelVisible &&
                     labelGroupValue == SwapWallet.extern) ...[
-                  ShareCopyScanTextFormField(
-                    focusNode: receiveAddressFocusNode ?? FocusNode(),
-                    errorText: addressErrorText,
-                    controller: addressController ?? TextEditingController(),
-                    onChanged: onAddressChanged,
-                    onPasteTap:
-                        FlavorConfig.isDesktop && addressController != null
-                            ? () async {
-                                await handlePasteSingleLine(addressController!);
-                              }
-                            : null,
-                    onScanTap: FlavorConfig.isDesktop
-                        ? null
-                        : () async {
-                            FocusManager.instance.primaryFocus?.unfocus();
-                            await Navigator.of(context, rootNavigator: true)
-                                .push<void>(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    getAddressQrScanner(bitcoinAddress: true),
-                              ),
-                            );
-                            logger.d('Scanner Done');
-                          },
-                    onEditingCompleted: onAddressEditingCompleted,
-                    addrType: AddrType.bitcoin,
+                  Flexible(
+                    child: ShareCopyScanTextFormField(
+                      focusNode: receiveAddressFocusNode ?? FocusNode(),
+                      errorText: addressErrorText,
+                      controller: addressController ?? TextEditingController(),
+                      onChanged: onAddressChanged,
+                      onPasteTap: FlavorConfig.isDesktop &&
+                              addressController != null
+                          ? () async {
+                              await handlePasteSingleLine(addressController!);
+                              onAddressChanged?.call(addressController!.text);
+                            }
+                          : null,
+                      onScanTap: FlavorConfig.isDesktop
+                          ? null
+                          : () async {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                              await Navigator.of(context, rootNavigator: true)
+                                  .push<void>(
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      getAddressQrScanner(bitcoinAddress: true),
+                                ),
+                              );
+                              logger.d('Scanner Done');
+                            },
+                      onEditingCompleted: onAddressEditingCompleted,
+                      addrType: AddrType.bitcoin,
+                    ),
                   ),
                 ],
                 if (swapType == SwapType.pegOut &&
                     labelGroupValue == SwapWallet.extern &&
                     isAddressLabelVisible) ...[
-                  SwapSideAmountPegOutAddressLabel(
-                      addressController: addressController,
-                      onAddressLabelClose: onAddressLabelClose),
+                  Flexible(
+                    child: SwapSideAmountPegOutAddressLabel(
+                        addressController: addressController,
+                        onAddressLabelClose: onAddressLabelClose),
+                  ),
                 ],
                 if (labelGroupValue == SwapWallet.extern &&
                     swapType == SwapType.atomic) ...[
@@ -356,11 +361,11 @@ class SwapSideAmount extends HookConsumerWidget {
                 ],
                 if (labelGroupValue == SwapWallet.extern &&
                     swapType == SwapType.pegIn) ...[
-                  const SwapSideAmountExternPegInDescription(),
+                  const Flexible(child: SwapSideAmountExternPegInDescription()),
                 ],
                 if (labelGroupValue == SwapWallet.local &&
                     swapType == SwapType.pegIn) ...[
-                  const SwapSideAmountLocalPegInDescription(),
+                  const Flexible(child: SwapSideAmountLocalPegInDescription()),
                 ],
                 Column(
                   children: [
@@ -472,7 +477,6 @@ class SwapSideAmountLocalPegInDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 538,
       height: 36,
       child: Text(
         'Your SideSwap wallet will auto-generate a L-BTC address with which to receive the Peg-In amount'
@@ -495,7 +499,6 @@ class SwapSideAmountExternPegInDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 538,
       height: 36,
       child: Text(
         'SideSwap will generate a Peg-In address for you to deliver BTC into'
