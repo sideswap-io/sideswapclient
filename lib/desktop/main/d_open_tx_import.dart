@@ -181,63 +181,68 @@ class DOpenTxImport extends HookConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                DCustomButton(
-                  width: 245,
-                  height: 44,
-                  onPressed: () async {
-                    final navigator = Navigator.of(context);
-                    const XTypeGroup typeGroup = XTypeGroup(
-                      label: 'Outputs json',
-                      extensions: <String>['json'],
-                    );
-                    final XFile? file = await openFile(
-                        acceptedTypeGroups: <XTypeGroup>[typeGroup]);
-                    final result = await ref
-                        .read(outputsReaderNotifierProvider.notifier)
-                        .setXFile(file);
+                Consumer(
+                  builder: (context, ref, child) {
+                    final paymentHelper = ref.watch(paymentHelperProvider);
 
-                    return switch (result) {
-                      true => () async {
-                          final errorMessage = ref
-                              .read(paymentHelperProvider)
-                              .outputsPaymentSend();
-                          if (errorMessage != null) {
-                            final flushbar = Flushbar<void>(
-                              messageText: Text(errorMessage),
-                              duration: const Duration(seconds: 5),
-                              backgroundColor: SideSwapColors.chathamsBlue,
-                            );
+                    return DCustomButton(
+                      width: 245,
+                      height: 44,
+                      onPressed: () async {
+                        final navigator = Navigator.of(context);
+                        const XTypeGroup typeGroup = XTypeGroup(
+                          label: 'Outputs json',
+                          extensions: <String>['json'],
+                        );
+                        final XFile? file = await openFile(
+                            acceptedTypeGroups: <XTypeGroup>[typeGroup]);
+                        final result = await ref
+                            .read(outputsReaderNotifierProvider.notifier)
+                            .setXFile(file);
 
-                            if (context.mounted) {
-                              await flushbar.show(context);
-                            }
-                            return;
-                          }
+                        return switch (result) {
+                          true => () async {
+                              final errorMessage =
+                                  paymentHelper.outputsPaymentSend();
+                              if (errorMessage != null) {
+                                final flushbar = Flushbar<void>(
+                                  messageText: Text(errorMessage),
+                                  duration: const Duration(seconds: 5),
+                                  backgroundColor: SideSwapColors.chathamsBlue,
+                                );
 
-                          navigator.pop();
-                          ref.read(desktopDialogProvider).showSendTx();
-                        }(),
-                      _ => () {
-                          final outputsData =
-                              ref.read(outputsReaderNotifierProvider);
-                          return switch (outputsData) {
-                            Left(value: final l) => () async {
-                                if (l.message != null) {
-                                  final flushbar = Flushbar<void>(
-                                    messageText: Text(l.message!),
-                                    duration: const Duration(seconds: 5),
-                                    backgroundColor:
-                                        SideSwapColors.chathamsBlue,
-                                  );
+                                if (context.mounted) {
                                   await flushbar.show(context);
                                 }
-                              }(),
-                            _ => () {}(),
-                          };
-                        }(),
-                    };
+                                return;
+                              }
+
+                              navigator.pop();
+                              ref.read(desktopDialogProvider).showSendTx();
+                            }(),
+                          _ => () {
+                              final outputsData =
+                                  ref.read(outputsReaderNotifierProvider);
+                              return switch (outputsData) {
+                                Left(value: final l) => () async {
+                                    if (l.message != null) {
+                                      final flushbar = Flushbar<void>(
+                                        messageText: Text(l.message!),
+                                        duration: const Duration(seconds: 5),
+                                        backgroundColor:
+                                            SideSwapColors.chathamsBlue,
+                                      );
+                                      await flushbar.show(context);
+                                    }
+                                  }(),
+                                _ => () {}(),
+                              };
+                            }(),
+                        };
+                      },
+                      child: Text('IMPORT FILE'.tr()),
+                    );
                   },
-                  child: Text('IMPORT FILE'.tr()),
                 ),
                 DCustomButton(
                   width: 245,

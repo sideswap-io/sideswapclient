@@ -73,35 +73,6 @@
   },
   {
     "always_show": true,
-    "asset_id": "11f91cb5edd5d0822997ad81f068ed35002daec33986da173461a8427ac857e1",
-    "contract": {
-      "entity": {
-        "domain": "blockstream.com"
-      },
-      "issuer_pubkey": "02a1ff5fd5d6f17febe5cd2d6b9e45b6775a1e416b56fa8414e337e2589c2e9bd5",
-      "name": "BMN Series 1",
-      "precision": 2,
-      "ticker": "BMN1",
-      "version": 0
-    },
-    "domain": "blockstream.com",
-    "domain_agent": "stokr.io",
-    "domain_agent_link": "https://stokr.io",
-    "icon": null,
-    "icon_url": "https://api.sideswap.io/assets/icons/11f91cb5edd5d0822997ad81f068ed35002daec33986da173461a8427ac857e1.png",
-    "instant_swaps": false,
-    "issuance_prevout": {
-      "txid": "ed790fac247b5dfff4c0529d9b562d0f76757f7c08256b41fc2469b9a85bb3f9",
-      "vout": 3
-    },
-    "issuer_pubkey": "02a1ff5fd5d6f17febe5cd2d6b9e45b6775a1e416b56fa8414e337e2589c2e9bd5",
-    "market_type": "Amp",
-    "name": "BMN Series 1",
-    "precision": 2,
-    "ticker": "BMN1"
-  },
-  {
-    "always_show": true,
     "asset_id": "06d1085d6a3a1328fb8189d106c7a8afbef3d327e34504828c4cac2c74ac0802",
     "contract": {
       "entity": {
@@ -128,5 +99,34 @@
     "name": "SSWP Series B shares",
     "precision": 0,
     "ticker": "SSWP"
+  },
+  {
+    "always_show": true,
+    "asset_id": "aa909f1b77451e409fe95fe1d3638ad017ab3325c6d4f00301af6d582d0f2034",
+    "contract": {
+      "entity": {
+        "domain": "blockstream-mining2.stokr.io"
+      },
+      "issuer_pubkey": "0206eb0dd95be6ace6d83e5e865815d73bed9e553a1a829fe8c2de74189ee2289b",
+      "name": "BMN Series 2",
+      "precision": 4,
+      "ticker": "BMN2",
+      "version": 0
+    },
+    "domain": "blockstream-mining2.stokr.io",
+    "domain_agent": "stokr.io",
+    "domain_agent_link": "https://stokr.io",
+    "icon": null,
+    "icon_url": "https://api.sideswap.io/assets/icons/aa909f1b77451e409fe95fe1d3638ad017ab3325c6d4f00301af6d582d0f2034.png",
+    "instant_swaps": false,
+    "issuance_prevout": {
+      "txid": "b9317d00e44ab9f4ce435677b9b3f915e09d12b2be648da6bd12cd790d12658d",
+      "vout": 3
+    },
+    "issuer_pubkey": "0206eb0dd95be6ace6d83e5e865815d73bed9e553a1a829fe8c2de74189ee2289b",
+    "market_type": "Amp",
+    "name": "BMN Series 2",
+    "precision": 4,
+    "ticker": "BMN2"
   }
 ]

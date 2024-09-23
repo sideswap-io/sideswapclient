@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/common/helpers.dart';
+import 'package:sideswap/common/utils/trimming_input_formatter.dart';
 import 'package:sideswap/desktop/common/d_text_icon_container.dart';
 import 'package:sideswap/desktop/common/decorations/d_side_swap_paste_icon_input_decoration.dart';
 import 'package:sideswap/desktop/main/providers/d_send_popup_providers.dart';
@@ -52,6 +53,9 @@ class DAddrTextField extends ConsumerWidget {
       ),
       autofocus: autofocus,
       style: const TextStyle(color: Colors.black),
+      inputFormatters: [
+        TrimmingTextInputFormatter(),
+      ],
     );
   }
 }

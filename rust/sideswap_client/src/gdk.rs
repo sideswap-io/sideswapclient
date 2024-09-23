@@ -26,6 +26,10 @@ extern "C" {
     pub fn GA_init(config: *const GA_json) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = " Completely shut down the library, releasing all resources.\n\n No further GDK calls should be made after this call."]
+    pub fn GA_shutdown() -> ::std::os::raw::c_int;
+}
+extern "C" {
     #[doc = " Get any error details associated with the last error on the current thread.\n\n :param output: Destination for the output :ref:`error-details` JSON.\n|     Returned GA_json should be freed using `GA_destroy_json`."]
     pub fn GA_get_thread_error_details(output: *mut *mut GA_json) -> ::std::os::raw::c_int;
 }
@@ -75,6 +79,14 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
+    #[doc = " Operate on cached session data.\n\n :param session: The session to use.\n :param details: The :ref:`cache-control-request` giving the operation to perform.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`cache-control-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`."]
+    pub fn GA_cache_control(
+        session: *mut GA_session,
+        details: *mut GA_json,
+        call: *mut *mut GA_auth_handler,
+    ) -> ::std::os::raw::c_int;
+}
+extern "C" {
     #[doc = " Make a request to an http server.\n\n :param session: The session to use.\n :param params: the :ref:`http-params` of the server to connect to.\n :param output: Destination for the output JSON.\n|     Returned GA_json should be freed using `GA_destroy_json`."]
     pub fn GA_http_request(
         session: *mut GA_session,
@@ -114,7 +126,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Create a new user wallet.\n\n :param session: The session to use.\n :param hw_device: :ref:`hw-device` or empty JSON for software wallet registration.\n :param details: The :ref:`login-credentials` for software wallet registration.\n :param call: Destination for the resulting GA_auth_handler to perform the registration.\n|     The call handlers result is :ref:`login-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When calling from C/C++, the parameters ``hw_device`` and ``details`` will be emptied when the call\ncompletes."]
+    #[doc = " Create a new user wallet or watch only session.\n\n :param session: The session to use.\n :param hw_device: :ref:`hw-device` or empty JSON for software wallet/watch only registration.\n :param details: The :ref:`login-credentials` for software wallet/watch only registration.\n :param call: Destination for the resulting GA_auth_handler to perform the registration.\n|     The call handlers result is :ref:`login-result`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n .. note:: When registering a watch only session, the calling session must be logged in.\n .. note:: When calling from C/C++, the parameters ``hw_device`` and ``details`` will be emptied when the call\ncompletes."]
     pub fn GA_register_user(
         session: *mut GA_session,
         hw_device: *mut GA_json,
@@ -129,14 +141,6 @@ extern "C" {
         hw_device: *mut GA_json,
         details: *mut GA_json,
         call: *mut *mut GA_auth_handler,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    #[doc = " Set or disable a watch-only login for a logged-in user wallet.\n\n :param session: The session to use.\n :param username: The watch-only username to login with, or a blank string to disable.\n :param password: The watch-only password to login with, or a blank string to disable."]
-    pub fn GA_set_watch_only(
-        session: *mut GA_session,
-        username: *const ::std::os::raw::c_char,
-        password: *const ::std::os::raw::c_char,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
@@ -175,14 +179,6 @@ extern "C" {
         session: *mut GA_session,
         subaccount: u32,
         call: *mut *mut GA_auth_handler,
-    ) -> ::std::os::raw::c_int;
-}
-extern "C" {
-    #[doc = " Rename a subaccount.\n\n :param session: The session to use.\n :param subaccount: The value of ``\"pointer\"`` from :ref:`subaccount-list` or\n|                   :ref:`subaccount-detail` for the subaccount to rename.\n :param new_name: New name for the subaccount.\n\n .. note:: This call is deprecated and will be removed in a future release. Use\n|          `GA_update_subaccount` to rename subaccounts."]
-    pub fn GA_rename_subaccount(
-        session: *mut GA_session,
-        subaccount: u32,
-        new_name: *const ::std::os::raw::c_char,
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
@@ -590,7 +586,7 @@ extern "C" {
     ) -> ::std::os::raw::c_int;
 }
 extern "C" {
-    #[doc = " Decode (potentially multi-part) UR-encoded data to CBOR.\n\n :param session: The session to use.\n :param details: :ref:`bcur-decode` containing the the first URI to decode.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`bcur-decoded`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n For multi-part data, the call hander will request further parts using\n ``\"request_code\"`` with a method of ``\"data\"``. see: `auth-handler-status`.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
+    #[doc = " Decode (potentially multi-part) UR-encoded data to CBOR.\n\n :param session: The session to use.\n :param details: :ref:`bcur-decode` containing the the first URI to decode.\n :param call: Destination for the resulting GA_auth_handler to complete the action.\n|     The call handlers result is :ref:`bcur-decoded`.\n|     Returned GA_auth_handler should be freed using `GA_destroy_auth_handler`.\n\n For multi-part data, the call hander will request further parts using\n ``\"request_code\"`` with a method of ``\"data\"``. see: `auth-handler-status` for\n details on the general mechanism and `bcur-decode-auth-handler-status` for\n details on the data passed to and expected from the auth handler.\n\n .. note:: When calling from C/C++, the parameter ``details`` will be emptied when the call completes."]
     pub fn GA_bcur_decode(
         session: *mut GA_session,
         details: *mut GA_json,

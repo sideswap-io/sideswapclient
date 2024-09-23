@@ -212,7 +212,11 @@ class OutputsCreator extends _$OutputsCreator {
               timestamp: DateTime.now().millisecondsSinceEpoch,
               receivers: [
                 OutputsReceiver(
-                    address: address, assetId: assetId, satoshi: satoshi)
+                  address: address,
+                  assetId: assetId,
+                  satoshi: satoshi,
+                  account: selectedAccountAsset.account.id,
+                ),
               ]));
         }(),
       Right(value: final value) => () {
@@ -281,4 +285,11 @@ sealed class OutputsError with _$OutputsError {
       OutputsErrorRequiredDataIsEmpty;
   const factory OutputsError.outputsDataIsEmpty([String? message]) =
       OutputsErrorOutputsDataIsEmpty;
+}
+
+@riverpod
+int outputsDataLength(OutputsDataLengthRef ref) {
+  final eitherOutputsData = ref.watch(outputsCreatorProvider);
+  final outputsData = eitherOutputsData.toOption().toNullable();
+  return outputsData?.receivers?.length ?? 0;
 }

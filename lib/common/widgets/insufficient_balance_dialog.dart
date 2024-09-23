@@ -93,7 +93,7 @@ void showInsufficientBalanceDialog(
                   onPressed: () {
                     Navigator.of(context, rootNavigator: true).pop();
 
-                    ref.read(swapProvider).selectSwap();
+                    ref.read(swapHelperProvider).selectSwap();
                   },
                 ),
                 Padding(

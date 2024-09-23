@@ -82,7 +82,7 @@ class WalletMain extends HookConsumerWidget {
           ),
           bottomNavigationBar: MainBottomNavigationBar(
             onTap: (index) {
-              ref.read(swapProvider).swapReset();
+              ref.read(swapHelperProvider).swapReset();
 
               final newWalletMainArguments =
                   walletMainArguments.fromIndex(index);
@@ -94,9 +94,9 @@ class WalletMain extends HookConsumerWidget {
                   newWalletMainArguments.navigationItemEnum;
               (switch (navigationItemEnum) {
                 WalletMainNavigationItemEnum.pegs =>
-                  ref.read(swapProvider).switchToPegs(),
+                  ref.read(swapHelperProvider).switchToPegs(),
                 WalletMainNavigationItemEnum.swap =>
-                  ref.read(swapProvider).switchToSwaps(),
+                  ref.read(swapHelperProvider).switchToSwaps(),
                 WalletMainNavigationItemEnum.markets => ref
                     .read(selectedMarketTypeButtonNotifierProvider.notifier)
                     .setSelectedMarketType(SelectedMarketTypeButtonEnum.swap),

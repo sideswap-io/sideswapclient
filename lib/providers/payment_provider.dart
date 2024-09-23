@@ -16,6 +16,7 @@ import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/friends_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/outputs_providers.dart';
+import 'package:sideswap/providers/payjoin_providers.dart';
 import 'package:sideswap/providers/wallet.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/pay/payment_amount_page.dart';
@@ -155,44 +156,52 @@ PaymentHelper paymentHelper(PaymentHelperRef ref) {
   final outputsData = ref.watch(outputsCreatorProvider);
   final selectedAccountAsset =
       ref.watch(sendPopupSelectedAccountAssetNotifierProvider);
-  return PaymentHelper(ref, outputsData, selectedAccountAsset);
+  final deductFeeFromOutput = ref.watch(deductFeeFromOutputNotifierProvider);
+  final deductIndex = ref.watch(payjoinRadioButtonIndexNotifierProvider);
+  final feeAsset = ref.watch(payjoinFeeAssetNotifierProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+
+  return PaymentHelper(
+    ref,
+    outputsData: outputsData,
+    accountAsset: selectedAccountAsset,
+    deductFeeFromOutput: deductFeeFromOutput,
+    deductIndex: deductIndex,
+    feeAsset: feeAsset,
+    liquidAssetId: liquidAssetId,
+  );
 }
 
 class PaymentHelper {
   final Ref ref;
   final Either<OutputsError, OutputsData> outputsData;
   final AccountAsset accountAsset;
+  final bool deductFeeFromOutput;
+  final int deductIndex;
+  final Asset? feeAsset;
+  final String liquidAssetId;
 
-  PaymentHelper(this.ref, this.outputsData, this.accountAsset);
+  PaymentHelper(
+    this.ref, {
+    required this.outputsData,
+    required this.accountAsset,
+    required this.deductFeeFromOutput,
+    required this.deductIndex,
+    this.feeAsset,
+    required this.liquidAssetId,
+  });
 
   String? outputsPaymentSend({
     List<UtxosItem>? selectedInputs,
-    bool isMaxSelected = false,
   }) {
     return switch (outputsData) {
       Left(value: final l) => l.message,
       Right(value: final r) => () {
-          bool shouldDeductFeeOutput = false;
-          int deductFeeOutputIndex = 0;
+          if (r.receivers == null) {
+            return;
+          }
 
-          final addressAmounts = r.receivers?.map((e) {
-            // set greedy flag only when outputs contains only one item (first one is always entered by user in ui) and max is pressed
-            shouldDeductFeeOutput = switch (r.receivers?.length) {
-              1 => () {
-                  if (selectedInputs?.isNotEmpty == true) {
-                    final maxAssetBalance = ref.read(
-                        maxAvailableBalanceWithInputsForAccountAssetProvider(
-                            accountAsset));
-                    return (maxAssetBalance == e.satoshi && isMaxSelected);
-                  }
-
-                  final maxAssetBalance = ref.read(
-                      maxAvailableBalanceForAccountAssetProvider(accountAsset));
-                  return (maxAssetBalance == e.satoshi && isMaxSelected);
-                }(),
-              _ => false,
-            };
-
+          final addressAmounts = r.receivers!.map((e) {
             return AddressAmount(
               address: e.address,
               amount: Int64(e.satoshi ?? 0),
@@ -200,15 +209,22 @@ class PaymentHelper {
             );
           }).toList();
 
-          final utxos =
-              selectedInputs?.map((e) => OutPoint(txid: e.txid, vout: e.vout));
+          final utxos = selectedInputs?.map((selectedInput) =>
+              OutPoint(txid: selectedInput.txid, vout: selectedInput.vout));
+
+          final account = Account();
+          account.id = ((selectedInputs?.length ?? 0) > 0
+                  ? selectedInputs?.first.account
+                  : accountAsset.account.id) ??
+              0;
 
           final createTx = CreateTx(
             addressees: addressAmounts,
-            account: getAccount(accountAsset.account),
+            account: account,
             utxos: utxos,
-            deductFeeOutput:
-                shouldDeductFeeOutput ? deductFeeOutputIndex : null,
+            deductFeeOutput: deductFeeFromOutput ? deductIndex : null,
+            feeAssetId:
+                feeAsset?.assetId != liquidAssetId ? feeAsset?.assetId : null,
           );
 
           ref.read(walletProvider).createTx(createTx);
@@ -260,11 +276,15 @@ class PaymentHelper {
         .read(paymentSendAmountParsedNotifierProvider.notifier)
         .setSendAmountParsed(internalAmount);
 
+    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
+
     final addressAmount = AddressAmount();
     addressAmount.address = address;
     addressAmount.amount = Int64(internalAmount);
     addressAmount.assetId = accountAsset.assetId ?? '';
-    final shouldDeductFeeOutput = isGreedy && internalAmount == balance;
+    final shouldDeductFeeOutput = isGreedy &&
+        internalAmount == balance &&
+        liquidAssetId == accountAsset.assetId;
 
     final createTx = CreateTx(
       addressees: [addressAmount],

@@ -1,4 +1,6 @@
-use crate::network::Network;
+use rand::Rng;
+
+use crate::{network::Network, test_utils::test_rng};
 
 use super::*;
 
@@ -217,4 +219,38 @@ fn deduct_fee() {
         ],
         deduct_fee: Some(1),
     });
+}
+
+#[test]
+fn coin_selection_bug() {
+    let mut rng = test_rng();
+
+    for _ in 0..1000 {
+        let network = Network::Liquid;
+        let policy_asset = network.d().policy_asset.asset_id();
+
+        let target = 100000;
+        let mut wallet_utxos = Vec::new();
+        let mut sum: u64 = 0;
+        while sum < target {
+            let new = rng.gen_range(1..(2 * target));
+            sum += new;
+            wallet_utxos.push(InOut {
+                asset_id: policy_asset,
+                value: new,
+            });
+        }
+
+        run(Args {
+            multisig_wallet: false,
+            policy_asset,
+            use_all_utxos: false,
+            wallet_utxos,
+            user_outputs: vec![InOut {
+                asset_id: policy_asset,
+                value: 100000,
+            }],
+            deduct_fee: Some(0),
+        });
+    }
 }

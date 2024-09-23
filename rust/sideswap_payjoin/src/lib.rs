@@ -2,9 +2,10 @@ use std::time::Duration;
 
 use anyhow::{bail, ensure};
 use base64::Engine;
-use elements::{pset::PartiallySignedTransaction, Address, AssetId, TxOutSecrets};
+use elements::{pset::PartiallySignedTransaction, secp256k1_zkp::SECP256K1, AssetId, TxOutSecrets};
 use sideswap_common::{
     network::Network,
+    recipient::Recipient,
     send_tx::{
         coin_select::{self, InOut},
         pset::{construct_pset, ConstructPsetArgs, ConstructedPset, PsetInput, PsetOutput},
@@ -18,17 +19,21 @@ pub mod server_api;
 pub const BASE_URL_PROD: &str = "https://api.sideswap.io";
 pub const BASE_URL_TESTNET: &str = "https://api-testnet.sideswap.io";
 
-pub struct Recipient {
-    pub asset_id: AssetId,
-    pub amount: u64,
-    pub address: Address,
+pub struct Utxo {
+    pub txid: elements::Txid,
+    pub vout: u32,
+    pub asset_id: elements::AssetId,
+    pub value: u64,
+    pub asset_bf: elements::confidential::AssetBlindingFactor,
+    pub value_bf: elements::confidential::ValueBlindingFactor,
+    pub script_pub_key: elements::script::Script,
 }
 
 pub struct CreatePayjoin {
     pub network: Network,
     pub base_url: String,
     pub user_agent: String,
-    pub utxos: Vec<server_api::Utxo>,
+    pub utxos: Vec<Utxo>,
     pub multisig_wallet: bool,
     pub use_all_utxos: bool,
     pub recipients: Vec<Recipient>,
@@ -36,6 +41,7 @@ pub struct CreatePayjoin {
     pub fee_asset: AssetId,
 }
 
+#[derive(Clone)]
 pub struct CreatedPayjoin {
     pub pset: PartiallySignedTransaction,
     pub blinding_nonces: Vec<String>,
@@ -48,7 +54,7 @@ pub trait Wallet {
 }
 
 fn take_utxos<'a>(
-    mut utxos: Vec<server_api::Utxo>,
+    mut utxos: Vec<Utxo>,
     required: impl Iterator<Item = &'a InOut>,
 ) -> Vec<(PsetInput, TxOutSecrets)> {
     let mut selected = Vec::new();
@@ -58,12 +64,38 @@ fn take_utxos<'a>(
             .position(|utxo| utxo.asset_id == required.asset_id && utxo.value == required.value)
             .expect("must exists");
         let utxo = utxos.remove(index);
+
+        let (asset_commitment, value_commitment) = if utxo.asset_bf
+            == elements::confidential::AssetBlindingFactor::zero()
+            || utxo.value_bf == elements::confidential::ValueBlindingFactor::zero()
+        {
+            (
+                elements::confidential::Asset::Explicit(utxo.asset_id),
+                elements::confidential::Value::Explicit(utxo.value),
+            )
+        } else {
+            let gen = elements::secp256k1_zkp::Generator::new_blinded(
+                SECP256K1,
+                utxo.asset_id.into_tag(),
+                utxo.asset_bf.into_inner(),
+            );
+            (
+                elements::confidential::Asset::Confidential(gen),
+                elements::confidential::Value::new_confidential(
+                    &SECP256K1,
+                    utxo.value,
+                    gen,
+                    utxo.value_bf,
+                ),
+            )
+        };
+
         let input = PsetInput {
             txid: utxo.txid,
             vout: utxo.vout,
             script_pub_key: utxo.script_pub_key,
-            asset_commitment: utxo.asset_commitment.into(),
-            value_commitment: utxo.value_commitment.into(),
+            asset_commitment,
+            value_commitment,
         };
         let secret = TxOutSecrets {
             asset: utxo.asset_id,
@@ -170,6 +202,19 @@ pub fn create_payjoin(
 
     let mut inputs = Vec::new();
     let mut outputs = Vec::new();
+
+    let server_utxos = server_utxos
+        .into_iter()
+        .map(|utxo| Utxo {
+            txid: utxo.txid,
+            vout: utxo.vout,
+            asset_id: utxo.asset_id,
+            value: utxo.value,
+            asset_bf: utxo.asset_bf,
+            value_bf: utxo.value_bf,
+            script_pub_key: utxo.script_pub_key,
+        })
+        .collect::<Vec<_>>();
 
     inputs.append(&mut take_utxos(
         client_utxos,

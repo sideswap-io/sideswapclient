@@ -64,6 +64,21 @@ Map<String, dynamic> _$$OutputsReceiverImplToJson(
 // RiverpodGenerator
 // **************************************************************************
 
+String _$outputsDataLengthHash() => r'dcd525acce25a4efc15d144be238df1382b82ff8';
+
+/// See also [outputsDataLength].
+@ProviderFor(outputsDataLength)
+final outputsDataLengthProvider = AutoDisposeProvider<int>.internal(
+  outputsDataLength,
+  name: r'outputsDataLengthProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$outputsDataLengthHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef OutputsDataLengthRef = AutoDisposeProviderRef<int>;
 String _$outputsReaderNotifierHash() =>
     r'075221eb374fdf681a678714f1efd1c2edd7ee62';
 

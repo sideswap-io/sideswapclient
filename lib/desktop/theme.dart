@@ -311,6 +311,89 @@ class DesktopAppTheme {
     ref.notifyListeners();
   }
 
+  DRadioButtonThemeData get outputsRadioButtonTheme => _radioButtonTheme.merge(
+        DRadioButtonThemeData(
+          checkedDecoration: ButtonState.resolveWith(
+            (states) {
+              return switch (states) {
+                Set<ButtonStates>() when states.isDisabled => BoxDecoration(
+                    color:
+                        SideSwapColors.ataneoBlue.lerpWith(Colors.black, 0.3),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: SideSwapColors.brightTurquoise
+                          .lerpWith(Colors.black, 0.3),
+                      width: 2.0,
+                    ),
+                  ),
+                Set<ButtonStates>() when states.isHovering => BoxDecoration(
+                    color: SideSwapColors.ataneoBlue,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: SideSwapColors.brightTurquoise,
+                      width: 1.4,
+                    ),
+                  ),
+                Set<ButtonStates>() when states.isPressing => BoxDecoration(
+                    color: SideSwapColors.ataneoBlue,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: SideSwapColors.brightTurquoise,
+                      width: 3.0,
+                    ),
+                  ),
+                _ => BoxDecoration(
+                    color: SideSwapColors.ataneoBlue,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: SideSwapColors.brightTurquoise,
+                      width: 3.0,
+                    ),
+                  ),
+              };
+            },
+          ),
+          uncheckedDecoration: ButtonState.resolveWith(
+            (states) {
+              return switch (states) {
+                Set<ButtonStates>() when states.isDisabled => BoxDecoration(
+                    color: SideSwapColors.charlestonGreen.withOpacity(0.0),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      width: 1,
+                      color: const Color.fromRGBO(0, 0, 0, 0.2169),
+                    ),
+                  ),
+                Set<ButtonStates>() when states.isPressing => BoxDecoration(
+                    color: SideSwapColors.charlestonGreen,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      width: 2.5,
+                      color: const Color.fromRGBO(255, 255, 255, 0.5442),
+                    ),
+                  ),
+                Set<ButtonStates>() when states.isPressing => BoxDecoration(
+                    color: SideSwapColors.charlestonGreen.withOpacity(0.8),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      width: 1,
+                      color: const Color.fromRGBO(255, 255, 255, 0.5442),
+                    ),
+                  ),
+                _ => BoxDecoration(
+                    color: SideSwapColors.charlestonGreen.withOpacity(0.0),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      width: 1,
+                      color: const Color.fromRGBO(255, 255, 255, 0.5442),
+                    ),
+                  ),
+              };
+            },
+          ),
+        ),
+      );
+
   DButtonStyle? get mainBottomNavigationBarButtonStyle =>
       _buttonThemeData.defaultButtonStyle?.merge(
         DButtonStyle(
@@ -440,6 +523,27 @@ class DesktopAppTheme {
               Colors.transparent.lerpWith(Colors.black, .1),
             _ when value => SideSwapColors.steelBlue,
             _ => Colors.transparent
+          };
+        }),
+      ),
+    );
+  }
+
+  DButtonStyle? payjoinFeeAssetButtonStyle(bool value) {
+    return _buttonThemeData.defaultButtonStyle?.merge(
+      DButtonStyle(
+        border: ButtonState.resolveWith((states) {
+          return BorderSide.none;
+        }),
+        backgroundColor: ButtonState.resolveWith((states) {
+          return switch (states) {
+            Set<ButtonStates>() when states.isDisabled =>
+              SideSwapColors.blumine.lerpWith(Colors.black, 0.1),
+            Set<ButtonStates>() when states.isPressing =>
+              SideSwapColors.blumine.lerpWith(Colors.black, 0.15),
+            Set<ButtonStates>() when states.isHovering =>
+              SideSwapColors.blumine.lerpWith(Colors.black, 0.1),
+            _ => SideSwapColors.blumine,
           };
         }),
       ),

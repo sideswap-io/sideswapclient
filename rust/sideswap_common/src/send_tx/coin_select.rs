@@ -24,4 +24,6 @@ pub enum CoinSelectError {
     InvalidParams(&'static str),
     #[error("Can't select inputs with required amount")]
     SelectionFailed,
+    #[error("Insufficient L-BTC to pay network fee")]
+    NotEnoughLbtc,
 }

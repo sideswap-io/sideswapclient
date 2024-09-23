@@ -557,7 +557,6 @@
   "Transaction inputs:": "مدخلات المعاملة:",
   "Total amounts:": "إجمالي المبالغ:",
   "Error loading inputs": "حدث خطأ أثناء تحميل المدخلات",
-  "You need to select enough L-BTC to cover network fees.": "تحتاج إلى تحديد كمية كافية من L-BTC لتغطية رسوم الشبكة.",
   "Network fees will be visible on the transaction review screen.": "ستظهر رسوم الشبكة على شاشة مراجعة المعاملة.",
   "Blinded": "أعمى",
   "Unblinded": "غير معماة",

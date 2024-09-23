@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 
 use sideswap_api::AssetId;
 
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum TxType {
     Received,
     Sent,

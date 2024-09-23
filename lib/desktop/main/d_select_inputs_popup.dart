@@ -79,29 +79,13 @@ class DSelectInputsPopup extends HookConsumerWidget {
             const SizedBox(height: 16),
             Consumer(
               builder: (context, ref, child) {
-                final selectedInputsHelper =
-                    ref.watch(selectedInputsHelperProvider);
-                final containsLbtc = selectedInputsHelper.containsLbtc();
-                final containsAny = selectedInputsHelper.count() > 0;
-                final textColor = switch (containsAny) {
-                  true when containsLbtc => SideSwapColors.turquoise,
-                  true when !containsLbtc => SideSwapColors.bitterSweet,
-                  _ => SideSwapColors.cornFlower,
-                };
+                const textColor = SideSwapColors.turquoise;
 
                 return Row(
                   children: [
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'You need to select enough L-BTC to cover network fees.'
-                              .tr(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(color: textColor),
-                        ),
                         Text(
                           'Network fees will be visible on the transaction review screen.'
                               .tr(),
@@ -117,11 +101,9 @@ class DSelectInputsPopup extends HookConsumerWidget {
                       width: 245,
                       height: 44,
                       isFilled: true,
-                      onPressed: containsLbtc
-                          ? () {
-                              Navigator.of(context).pop();
-                            }
-                          : null,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
                       child: Text('CONTINUE'.tr()),
                     ),
                   ],

@@ -1,6 +1,6 @@
 name: sideswap
 description: Sideswap Client.
-version: 1.6.0+107
+version: 1.6.1+115
 publish_to: none
 
 environment:

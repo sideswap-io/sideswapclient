@@ -47,6 +47,7 @@ import 'package:sideswap/providers/pegx_provider.dart';
 import 'package:sideswap/providers/portfolio_prices_providers.dart';
 import 'package:sideswap/providers/receive_address_providers.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
+import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/token_market_provider.dart';
 import 'package:sideswap/providers/tx_provider.dart';
 import 'package:sideswap/providers/wallet_account_providers.dart';
@@ -248,7 +249,6 @@ class WalletChangeNotifier with ChangeNotifier {
 
     ref.invalidate(defaultAccountsStateProvider);
     ref.invalidate(assetsStateProvider);
-    ref.invalidate(swapProvider);
 
     ref
         .read(pageStatusNotifierProvider.notifier)
@@ -427,19 +427,22 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.swapSucceed:
         var txItem = from.swapSucceed;
         showSwapTxDetails(txItem);
-        ref.read(swapProvider).swapReset();
-        ref.read(swapProvider).clearAmounts();
+        ref.read(swapHelperProvider).swapReset();
+        ref.read(swapHelperProvider).clearAmounts();
         break;
 
       case From_Msg.pegOutAmount:
-        ref.read(swapProvider).onPegOutAmountReceived(from.pegOutAmount);
+        ref.read(swapHelperProvider).onPegOutAmountReceived(from.pegOutAmount);
         break;
 
       case From_Msg.peginWaitTx:
-        ref.read(swapProvider).swapPegAddressServer = from.peginWaitTx.pegAddr;
-        ref.read(swapProvider).swapRecvAddressExternal =
-            from.peginWaitTx.recvAddr;
-        ref.read(swapStateProvider.notifier).state = SwapState.idle;
+        ref
+            .read(swapPegAddressServerNotifierProvider.notifier)
+            .setState(from.peginWaitTx.pegAddr);
+        ref
+            .read(swapRecvAddressExternalNotifierProvider.notifier)
+            .setState(from.peginWaitTx.recvAddr);
+        ref.invalidate(swapStateNotifierProvider);
         if (!FlavorConfig.isDesktop) {
           ref
               .read(pageStatusNotifierProvider.notifier)
@@ -536,23 +539,16 @@ class WalletChangeNotifier with ChangeNotifier {
         // Refresh peg-out amounts
         logger.d('Server status: $_serverStatus');
         ref
-            .read(priceStreamSubscribeNotifierProvider.notifier)
+            .read(subscribePriceStreamNotifierProvider.notifier)
             .subscribeToPriceStream();
         break;
 
       case From_Msg.priceUpdate:
         logger.d('from.priceupdate: ${from.priceUpdate}');
 
-        final oldPrice =
-            ref.read(walletAssetPricesNotifierProvider)[from.priceUpdate.asset];
-        final newPrice = from.priceUpdate;
-        if (oldPrice == null ||
-            oldPrice.ask != newPrice.ask ||
-            oldPrice.bid != newPrice.bid) {
-          ref
-              .read(walletAssetPricesNotifierProvider.notifier)
-              .updatePrices(from.priceUpdate);
-        }
+        ref
+            .read(indexPriceSubscriberNotifierProvider.notifier)
+            .onPriceUpdate(from.priceUpdate);
         break;
 
       case From_Msg.registerPhone:
@@ -949,7 +945,9 @@ class WalletChangeNotifier with ChangeNotifier {
             .insertAssetDetails(assetDetailsData);
         break;
       case From_Msg.updatePriceStream:
-        _processSubscribeUpdate(from.updatePriceStream);
+        ref
+            .read(subscribePriceStreamNotifierProvider.notifier)
+            .onUpdatePriceStreamChanged(from.updatePriceStream);
         break;
       case From_Msg.registerAmp:
         _processRegisterAmpResult(from.registerAmp);
@@ -1112,8 +1110,8 @@ class WalletChangeNotifier with ChangeNotifier {
     // Always update asset here as they might change
     // (amp_market could be set if server is down when app is started).
     ref.read(assetsStateProvider.notifier).addAsset(asset.assetId, asset);
-    ref.read(swapProvider).checkSelectedAsset();
-    notifyListeners();
+    // ref.read(swapHelperProvider).checkSelectedAsset();
+    // notifyListeners();
   }
 
   void registerPhone(String number) {
@@ -1293,7 +1291,7 @@ class WalletChangeNotifier with ChangeNotifier {
 
   void loginAndLoadMainPage() {
     _login(mnemonic: _mnemonic);
-    ref.read(swapProvider).checkSelectedAsset();
+    // ref.read(swapProvider).checkSelectedAsset();
   }
 
   void login() {
@@ -1495,7 +1493,7 @@ class WalletChangeNotifier with ChangeNotifier {
                   navigationItemEnum: WalletMainNavigationItemEnum.pegs,
                 ),
               );
-          ref.read(swapProvider).pegStop();
+          ref.read(swapHelperProvider).pegStop();
           ref
               .read(pageStatusNotifierProvider.notifier)
               .setStatus(Status.registered);
@@ -1876,7 +1874,9 @@ class WalletChangeNotifier with ChangeNotifier {
   }
 
   Future<void> deleteWalletAndCleanup() async {
-    unsubscribeFromPriceStream();
+    ref
+        .read(subscribePriceStreamNotifierProvider.notifier)
+        .unsubscribeFromPriceStream();
     await ref.read(configurationProvider.notifier).deleteConfig();
     await _logout();
     cleanupConnectionStates();
@@ -2441,81 +2441,6 @@ class WalletChangeNotifier with ChangeNotifier {
     ref
         .read(pageStatusNotifierProvider.notifier)
         .setStatus(Status.orderRequestView);
-  }
-
-  String? subscribedAsset;
-  bool? subscribedSendBitcoins;
-  int? subscribedSendAmount;
-  int? subscribedRecvAmount;
-
-  final updatePriceStream = PublishSubject<From_UpdatePriceStream>();
-
-  void _resetSubscribedData() {
-    subscribedAsset = null;
-    subscribedSendBitcoins = null;
-    subscribedSendAmount = null;
-    subscribedRecvAmount = null;
-  }
-
-  void _processSubscribeUpdate(From_UpdatePriceStream msg) {
-    // Ignore old updates
-    final subscribedSendAmountCopy = subscribedSendAmount;
-    final subscribedRecvAmountCopy = subscribedRecvAmount;
-    if (msg.assetId != subscribedAsset ||
-        msg.sendBitcoins != subscribedSendBitcoins) {
-      return;
-    }
-
-    // Ignore old updates
-    final expectedPriceMsg = subscribedSendAmount == null &&
-        subscribedRecvAmount == null &&
-        !msg.hasSendAmount() &&
-        !msg.hasRecvAmount();
-    final expectedSendAmountMsg = subscribedSendAmountCopy != null &&
-        subscribedSendAmountCopy.toInt() == msg.sendAmount.toInt();
-    final expectedRecvAmountMsg = subscribedRecvAmountCopy != null &&
-        subscribedRecvAmountCopy.toInt() == msg.recvAmount.toInt();
-
-    if (expectedPriceMsg || expectedSendAmountMsg || expectedRecvAmountMsg) {
-      updatePriceStream.add(msg);
-    }
-  }
-
-  void subscribeToPriceStream(
-    String asset,
-    bool sendBitcoins,
-    int? sendAmount,
-    int? recvAmount,
-  ) {
-    assert(asset.isNotEmpty);
-    _resetSubscribedData();
-
-    subscribedAsset = asset;
-    subscribedSendBitcoins = sendBitcoins;
-    subscribedSendAmount = sendAmount;
-    subscribedRecvAmount = recvAmount;
-
-    final msg = To();
-    msg.subscribePriceStream = To_SubscribePriceStream();
-    msg.subscribePriceStream.assetId = asset;
-    msg.subscribePriceStream.sendBitcoins = sendBitcoins;
-    if (sendAmount != null && sendAmount != 0) {
-      msg.subscribePriceStream.sendAmount = Int64(sendAmount);
-    }
-    if (recvAmount != null && recvAmount != 0) {
-      msg.subscribePriceStream.recvAmount = Int64(recvAmount);
-    }
-    sendMsg(msg);
-  }
-
-  void unsubscribeFromPriceStream() {
-    if (subscribedAsset != null) {
-      final msg = To();
-      msg.unsubscribePriceStream = Empty();
-      sendMsg(msg);
-
-      _resetSubscribedData();
-    }
   }
 
   void verifySwap(SwapDetails swap) {

@@ -1,6 +1,7 @@
 use hex_encoded::HexEncoded;
 
 pub mod bitcoin_amount;
+pub mod fee_rate;
 pub mod hex_encoded;
 pub mod timestamp;
 

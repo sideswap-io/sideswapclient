@@ -584,7 +584,6 @@
   "Transaction inputs:": "Transaction inputs:",
   "Total amounts:": "Total amounts:",
   "Error loading inputs": "Error loading inputs",
-  "You need to select enough L-BTC to cover network fees.": "You need to select enough L-BTC to cover network fees.",
   "Network fees will be visible on the transaction review screen.": "Network fees will be visible on the transaction review screen.",
   "Blinded": "Blinded",
   "Unblinded": "Unblinded",
@@ -606,5 +605,9 @@
   "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.": "To show balances and transactions on Liquid accounts up to 10x faster at every login, and it’s necessary to use Liquid singlesig accounts.",
   "Learn more": "Learn more",
   "Connecting to JADE": "Connecting to JADE",
-  "Sign transaction on JADE": "Sign transaction on JADE"
+  "Sign transaction on JADE": "Sign transaction on JADE",
+  "Deduct fee from output": "Deduct fee from output",
+  "Fee asset": "Fee asset",
+  "Server fee": "Server fee",
+  "Wallet:": "Wallet:"
 }

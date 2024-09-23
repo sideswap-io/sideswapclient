@@ -184,9 +184,9 @@ class AssetDetailsHeader extends ConsumerWidget {
 
                         if (instantSwapVisible) {
                           ref
-                              .read(swapProvider)
+                              .read(swapHelperProvider)
                               .setSelectedLeftAsset(selectedWalletAccountAsset);
-                          ref.read(swapProvider).selectSwap();
+                          ref.read(swapHelperProvider).selectSwap();
                         } else {
                           if (selectedWalletAccountAsset.account.isAmp) {
                             ref

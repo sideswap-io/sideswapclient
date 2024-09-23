@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:sideswap/providers/markets_provider.dart';
+import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
-import 'package:sideswap/providers/wallet.dart';
 
 class UiStatesListener extends ConsumerWidget {
   const UiStatesListener({super.key});
@@ -28,7 +28,9 @@ class UiStatesListener extends ConsumerWidget {
       }
 
       if (navigationItemEnum != WalletMainNavigationItemEnum.swap) {
-        ref.read(walletProvider).unsubscribeFromPriceStream();
+        ref
+            .read(subscribePriceStreamNotifierProvider.notifier)
+            .unsubscribeFromPriceStream();
       }
     })));
 

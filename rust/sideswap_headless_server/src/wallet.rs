@@ -4,7 +4,11 @@ use std::{
 };
 
 use sideswap_api::AssetId;
-use sideswap_client::{gdk_json, gdk_ses, gdk_ses_impl, worker};
+use sideswap_client::{
+    gdk_json, gdk_ses,
+    gdk_ses_impl::{self, CreatedTxCache},
+    worker,
+};
 use sideswap_common::env::Env;
 use tokio::sync::oneshot;
 
@@ -159,9 +163,10 @@ fn run(
                     deduct_fee_output: None,
                 };
 
-                let send_res = wallet
-                    .create_tx(req)
-                    .and_then(|created| wallet.send_tx(&created.id, &BTreeMap::new()));
+                let mut tx_cache = CreatedTxCache::new();
+                let send_res = wallet.create_tx(&mut tx_cache, req).and_then(|created| {
+                    wallet.send_tx(&mut tx_cache, &created.id, &BTreeMap::new())
+                });
 
                 match send_res {
                     Ok(txid) => {

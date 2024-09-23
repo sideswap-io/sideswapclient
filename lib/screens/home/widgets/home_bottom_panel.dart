@@ -20,13 +20,15 @@ class HomeBottomPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final paymentHelper = ref.watch(paymentHelperProvider);
+
     ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
       next.when(
           empty: () {},
           data: (result) {
             if (result?.outputsData != null) {
               // go to the confirm transaction page directly
-              ref.read(paymentHelperProvider).outputsPaymentSend();
+              paymentHelper.outputsPaymentSend();
               return;
             }
 

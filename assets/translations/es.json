@@ -582,7 +582,6 @@
   "Transaction inputs:": "Entradas de transacciones:",
   "Total amounts:": "Montos totales:",
   "Error loading inputs": "Error al cargar entradas",
-  "You need to select enough L-BTC to cover network fees.": "Necesita seleccionar suficientes L-BTC para cubrir las tarifas de red.",
   "Network fees will be visible on the transaction review screen.": "Las tarifas de red se mostrarán en la pantalla de revisión de transacciones.",
   "Blinded": "Cegado",
   "Unblinded": "Sin cegar",

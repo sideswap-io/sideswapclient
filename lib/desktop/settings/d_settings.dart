@@ -103,22 +103,22 @@ class DSettings extends ConsumerWidget {
                             icon: DSettingsButtonIcon.password,
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: DSettingsButton(
-                            title: 'Network access'.tr(),
-                            onPressed: () {
-                              ref
-                                  .read(pageStatusNotifierProvider.notifier)
-                                  .setStatus(Status.settingsNetwork);
-                            },
-                            icon: DSettingsButtonIcon.network,
-                          ),
-                        ),
                       ],
                     ),
                   _ => const SizedBox(),
                 },
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: DSettingsButton(
+                    title: 'Network access'.tr(),
+                    onPressed: () {
+                      ref
+                          .read(pageStatusNotifierProvider.notifier)
+                          .setStatus(Status.settingsNetwork);
+                    },
+                    icon: DSettingsButtonIcon.network,
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: DSettingsButton(

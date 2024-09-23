@@ -219,11 +219,6 @@ impl ManagedJade {
             None,
         )?;
 
-        // Version check
-        let req = semver::VersionReq::parse(">=0.1.48").expect("must be valid");
-        let version = semver::Version::parse(&resp.jade_version)?;
-        ensure!(req.matches(&version), "Please upgrade your Jade firmware to 0.1.48 or higher to use SideSwap with your Jade device");
-
         Ok(resp)
     }
 

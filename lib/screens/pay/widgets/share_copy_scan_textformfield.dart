@@ -8,6 +8,7 @@ import 'package:sideswap/common/decorations/side_swap_input_decoration.dart';
 import 'package:sideswap/common/enums.dart';
 import 'package:sideswap/common/helpers.dart';
 import 'package:sideswap/common/sideswap_colors.dart';
+import 'package:sideswap/common/utils/trimming_input_formatter.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/screens/flavor_config.dart';
 
@@ -158,7 +159,10 @@ class ShareCopyScanTextFormFieldState
                         buttonItems: editableTextState.contextMenuButtonItems,
                       ),
                       onEditingComplete: widget.onEditingCompleted,
-                      inputFormatters: [alphaNumFormatter],
+                      inputFormatters: [
+                        alphaNumFormatter,
+                        TrimmingTextInputFormatter(),
+                      ],
                       decoration: SideSwapInputDecoration(
                         hintStyle: widget.hintStyle,
                         hintText: widget.hintText,

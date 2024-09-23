@@ -450,6 +450,12 @@ class BleApiImpl(private var mActivity: Activity): BleApi {
             }
         }
 
+        // Without the delay BLE, next write often fails with the 133 error:
+        // "onCharacteristicWrite failed: 133".
+        // Adding the delay seems to fix the problem.
+        // Green Android also adds the delay when connecting to BLE Jade.
+        Thread.sleep(1000)
+
         log("device opened successfully")
     }
 

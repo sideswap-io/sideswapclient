@@ -762,6 +762,7 @@ async fn main() {
                     (balance_exchange_usdt < MIN_BALANCE_TETHER).then_some("ExchangeTetherLow"),
                     balancing_expired.then_some("BalancingStuck"),
                     (state.failed_orders_count != 0).then_some("FailedOrderSubmit"),
+                    (state.external_prices.len() != 2).then_some("ExternalPrices"),
                 ]
                 .iter()
                 .flatten()

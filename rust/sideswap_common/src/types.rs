@@ -1,4 +1,5 @@
 use sideswap_api::ServerFee;
+use sideswap_types::fee_rate::FeeRateSats;
 
 #[derive(
     Eq,
@@ -184,10 +185,10 @@ pub fn asset_int_amount(asset_amount: f64, asset_precision: u8) -> i64 {
 pub struct PegOutAmountReq {
     pub amount: i64,
     pub is_send_entered: bool,
-    pub fee_rate: f64,
+    pub fee_rate: FeeRateSats,
     pub min_peg_out_amount: i64,
     pub server_fee_percent_peg_out: f64,
-    pub peg_out_bitcoin_tx_vsize: i32,
+    pub peg_out_bitcoin_tx_vsize: usize,
 }
 
 pub struct PegOutAmountResp {
@@ -198,7 +199,7 @@ pub struct PegOutAmountResp {
 pub fn peg_out_amount(req: PegOutAmountReq) -> Result<PegOutAmountResp, anyhow::Error> {
     ensure!(req.amount > 0);
     let peg_out_rate = 1.0 - req.server_fee_percent_peg_out / 100.0;
-    let fixed_fee = (req.peg_out_bitcoin_tx_vsize as f64 * req.fee_rate).round() as i64;
+    let fixed_fee = (req.peg_out_bitcoin_tx_vsize as f64 * req.fee_rate.raw()).round() as i64;
     let (send_amount, recv_amount) = if req.is_send_entered {
         let recv_amount = (req.amount as f64 * peg_out_rate).round() as i64 - fixed_fee;
         (req.amount, recv_amount)

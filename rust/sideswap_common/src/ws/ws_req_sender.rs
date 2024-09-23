@@ -1,4 +1,7 @@
-use std::{collections::VecDeque, time::Duration};
+use std::{
+    collections::{BTreeMap, VecDeque},
+    time::Duration,
+};
 
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
@@ -21,11 +24,14 @@ pub enum Error {
     UnexpectedResponse,
 }
 
+pub type Callback = Box<dyn FnOnce(Result<&sideswap_api::Response, Error>) + Send + Sync>;
+
 pub struct WsReqSender {
     connected: bool,
     req_sender: UnboundedSender<WrappedRequest>,
     resp_receiver: UnboundedReceiver<WrappedResponse>,
     received: VecDeque<WrappedResponse>,
+    callbacks: BTreeMap<sideswap_api::RequestId, Callback>,
 }
 
 impl WsReqSender {
@@ -38,6 +44,7 @@ impl WsReqSender {
             req_sender,
             resp_receiver,
             received: Default::default(),
+            callbacks: Default::default(),
         }
     }
 
@@ -151,11 +158,43 @@ impl WsReqSender {
         .await?
     }
 
+    pub fn callback_request(&mut self, req: sideswap_api::Request, callback: Callback) {
+        if !self.connected {
+            callback(Err(Error::Disconnected));
+        } else {
+            let request_id = next_request_id();
+            self.req_sender
+                .send(WrappedRequest::Request(
+                    sideswap_api::RequestMessage::Request(request_id.clone(), req),
+                ))
+                .expect("must be open");
+            self.callbacks.insert(request_id, callback);
+        }
+    }
+
     fn on_received(&mut self, msg: &WrappedResponse) {
         match msg {
             WrappedResponse::Connected => self.connected = true,
-            WrappedResponse::Disconnected => self.connected = false,
-            WrappedResponse::Response(_) => {}
+
+            WrappedResponse::Disconnected => {
+                self.connected = false;
+
+                let callbacks = std::mem::take(&mut self.callbacks);
+                for callback in callbacks.into_values() {
+                    callback(Err(Error::Disconnected));
+                }
+            }
+
+            WrappedResponse::Response(resp) => match resp {
+                sideswap_api::ResponseMessage::Response(Some(request_id), res) => {
+                    self.callbacks.remove(request_id).map(|callback| match res {
+                        Ok(resp) => callback(Ok(resp)),
+                        Err(err) => callback(Err(Error::BackendError(err.message.clone()))),
+                    });
+                }
+                sideswap_api::ResponseMessage::Response(None, _) => {}
+                sideswap_api::ResponseMessage::Notification(_) => {}
+            },
         }
     }
 }

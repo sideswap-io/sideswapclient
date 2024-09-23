@@ -1,31 +1,35 @@
 use std::collections::BTreeSet;
 
 use elements::{OutPoint, TxOutSecrets};
+use serde::{Deserialize, Serialize};
 
 use super::*;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransactionInput {
     pub prevtxid: elements::Txid,
     pub previdx: u32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TransactionOutput {
     pub pt_idx: u32,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     pub txid: elements::Txid,
     pub created_at: u64,
+    /// 0 for unconfirmed transactions
     pub block_height: u32,
+    /// Amount is always non-zero
     pub amounts: BTreeMap<AssetId, i64>,
     pub network_fee: u64,
     pub inputs: Vec<TransactionInput>,
     pub outputs: Vec<TransactionOutput>,
 }
 
+#[derive(Default, Serialize, Deserialize)]
 pub struct TxCache {
     txs: Vec<Transaction>,
 
@@ -56,7 +60,7 @@ impl TxCache {
         0
     }
 
-    pub fn add_txs(&mut self, mut new_txs: Vec<Transaction>) {
+    pub fn update_latest_txs(&mut self, mut new_txs: Vec<Transaction>) {
         if new_txs.is_empty() {
             return;
         }

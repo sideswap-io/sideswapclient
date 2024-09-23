@@ -37,7 +37,8 @@ class TopSwapButtons extends StatelessWidget {
       child: Consumer(
         builder: (context, ref, _) {
           final swapPegOut =
-              ref.watch(swapProvider).swapType() == SwapType.pegOut;
+              ref.watch(swapTypeProvider) == const SwapType.pegOut();
+
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

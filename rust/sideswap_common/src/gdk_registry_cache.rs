@@ -185,19 +185,19 @@ fn read_cache_file<R: Registry>(
     Ok((items, cache.last_modified))
 }
 
-fn load_url<R: Registry>(
+async fn load_url<R: Registry>(
     network: Network,
     last_modified: &Option<String>,
 ) -> Result<Option<(String, Option<String>)>, anyhow::Error> {
     let base_url = network.d().asset_registry_url;
     let url = format!("{}/{}", base_url, R::file_name());
-    let agent = ureq::Agent::new();
-    let mut request = agent.get(&url).timeout(std::time::Duration::from_secs(60));
+    let mut request = reqwest::Client::new()
+        .get(&url)
+        .timeout(Duration::from_secs(60));
     if let Some(last_modified) = last_modified {
-        request = request.set("If-Modified-Since", last_modified);
+        request = request.header("If-Modified-Since", last_modified);
     }
-    // Use ureq to not introduce another dependency
-    let assets_response = tokio::task::block_in_place(|| request.call())?;
+    let assets_response = request.send().await?;
     let status = assets_response.status();
     debug!("call_assets {} returns {}", url, status);
     if status == 304 {
@@ -206,12 +206,11 @@ fn load_url<R: Registry>(
         return Ok(None);
     }
     let last_modified = assets_response
-        .header("Last-Modified")
-        .map(|v| v.to_owned());
-    let mut buf: Vec<u8> = Vec::new();
-    use std::io::Read;
-    assets_response.into_reader().read_to_end(&mut buf)?;
-    let data = String::from_utf8(buf)?;
+        .headers()
+        .get("Last-Modified")
+        .map(|value| value.to_str().map(|value| value.to_owned()))
+        .transpose()?;
+    let data = assets_response.text().await?;
     serde_json::from_str::<serde_json::Value>(&data)?;
 
     Ok(Some((data, last_modified)))
@@ -228,12 +227,12 @@ fn convert_items<R: Registry>(
     Ok(items)
 }
 
-fn load_from_network<R: Registry>(
+async fn load_from_network<R: Registry>(
     network: Network,
     last_modified: &Option<String>,
     file_path: &Path,
 ) -> Result<Option<(BTreeMap<AssetId, R::Item>, Option<String>)>, anyhow::Error> {
-    let load_result = load_url::<R>(network, last_modified)?;
+    let load_result = load_url::<R>(network, last_modified).await?;
     let (data, last_modified) = match load_result {
         Some(v) => v,
         None => return Ok(None),
@@ -263,7 +262,7 @@ impl<R: Registry + 'static> Updater<R> {
             Err(err) => {
                 log::warn!("loading cache file {file_path:?} failed: {err}");
                 loop {
-                    let res = load_from_network::<R>(network, &None, &file_path);
+                    let res = load_from_network::<R>(network, &None, &file_path).await;
                     match res {
                         Ok(Some(output)) =>
                             break output,
@@ -306,7 +305,7 @@ async fn run<R: Registry + 'static>(
     data: Arc<ArcSwap<BTreeMap<AssetId, R::Item>>>,
 ) {
     loop {
-        let res = load_from_network::<R>(network, &last_modified, &file_path);
+        let res = load_from_network::<R>(network, &last_modified, &file_path).await;
 
         match res {
             Ok(Some((items, last_modified_new))) => {

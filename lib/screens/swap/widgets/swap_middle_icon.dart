@@ -30,16 +30,13 @@ class SwapMiddleIcon extends ConsumerWidget {
             padding: const EdgeInsets.only(left: 8),
             child: Consumer(
               builder: (context, ref, _) {
-                final price = ref.watch(swapPriceStateNotifierProvider);
-                return Visibility(
-                  visible: price != null,
-                  child: RoundedTextLabel(
-                    text: ref
-                            .read(swapPriceStateNotifierProvider.notifier)
-                            .getPriceText() ??
-                        '',
-                  ),
-                );
+                final swapPriceText = ref.watch(swapPriceTextProvider);
+                return switch (swapPriceText) {
+                  final swapPriceText? => RoundedTextLabel(
+                      text: swapPriceText,
+                    ),
+                  _ => const SizedBox(),
+                };
               },
             ),
           ),

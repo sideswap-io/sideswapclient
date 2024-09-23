@@ -594,7 +594,6 @@
   "Transaction inputs:": "Wejścia transakcji:",
   "Total amounts:": "Suma kwot:",
   "Error loading inputs": "Błąd ładowania wejść",
-  "You need to select enough L-BTC to cover network fees.": "Musisz wybrać wystarczającą ilość L-BTC, aby pokryć opłaty sieciowe.",
   "Network fees will be visible on the transaction review screen.": "Wysokość opłat sieciowych będzie widoczna na ekranie przeglądu transakcji.",
   "Blinded": "Ukryty",
   "Unblinded": "Odkryty",

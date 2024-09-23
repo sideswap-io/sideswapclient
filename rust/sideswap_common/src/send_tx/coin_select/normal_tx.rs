@@ -66,7 +66,7 @@ fn try_coin_select_impl(
         .map(|utxo| utxo.value)
         .collect::<Vec<_>>();
 
-    verify!(!bitcoin_utxos.is_empty(), CoinSelectError::SelectionFailed);
+    verify!(!bitcoin_utxos.is_empty(), CoinSelectError::NotEnoughLbtc);
     let bitcoin_utxos_total = bitcoin_utxos.iter().sum::<u64>();
 
     let asset_outputs::Res {
@@ -89,6 +89,15 @@ fn try_coin_select_impl(
     let mut best: Option<Res> = None;
 
     'outer: for with_fee_change in [true, false] {
+        if use_all_utxos
+            && !with_fee_change
+            && bitcoin_user_output != bitcoin_utxos_total
+            && deduct_fee.is_some()
+        {
+            // Nothing can be done in this case
+            continue;
+        }
+
         let bitcoin_inputs = if use_all_utxos || bitcoin_user_output == bitcoin_utxos_total {
             bitcoin_utxos.clone()
         } else if with_fee_change {
@@ -120,6 +129,14 @@ fn try_coin_select_impl(
             }
 
             bitcoin_utxos.iter().copied().take(input_count).collect()
+        } else if deduct_fee.is_some() {
+            // The branch here without change and with deducted fee output.
+            // We need to find exact amount in this case.
+            let selected = coin_select::no_change(bitcoin_user_output, &bitcoin_utxos);
+            match selected {
+                Some(selected) => selected,
+                None => continue,
+            }
         } else {
             let base_network_fee = network_fee::expected_network_fee_single_wallet(
                 asset_inputs.len(),
@@ -138,11 +155,7 @@ fn try_coin_select_impl(
                 .filter_map(|value| value.checked_sub(fee_rate_per_input))
                 .collect::<Vec<_>>();
 
-            let target = if deduct_fee.is_some() {
-                bitcoin_user_output
-            } else {
-                bitcoin_user_output + base_network_fee
-            };
+            let target = bitcoin_user_output + base_network_fee;
 
             let upper_bound_delta = network_fee::weight_to_network_fee(network_fee::WEIGHT_VOUT);
 
@@ -162,7 +175,7 @@ fn try_coin_select_impl(
 
         let bitcoin_input_total = bitcoin_inputs.iter().sum::<u64>();
 
-        let network_fee = if with_fee_change {
+        let network_fee = if with_fee_change || deduct_fee.is_some() {
             network_fee::expected_network_fee_single_wallet(
                 asset_inputs.len() + bitcoin_inputs.len(),
                 multisig_wallet,

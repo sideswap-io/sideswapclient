@@ -269,14 +269,14 @@ class DAssetInfoState extends ConsumerState<DAssetInfo> {
                       label: 'Swap'.tr(),
                       onTap: () {
                         Navigator.pop(context);
-                        ref.read(swapProvider).swapReset();
+                        ref.read(swapHelperProvider).swapReset();
                         final walletMainArguments =
                             ref.watch(uiStateArgsNotifierProvider);
                         ref
                             .read(uiStateArgsNotifierProvider.notifier)
                             .setWalletMainArguments(
                                 walletMainArguments.fromIndexDesktop(1));
-                        ref.read(swapProvider).switchToSwaps();
+                        ref.read(swapHelperProvider).switchToSwaps();
                       },
                       icon: 'assets/asset_swap_arrows.svg',
                     ),

@@ -10,8 +10,11 @@ use base64::Engine;
 use bitcoin::bip32;
 use bitcoin::secp256k1::global::SECP256K1;
 use elements::bitcoin::bip32::ChildNumber;
+use ffi::GIT_COMMIT_HASH;
+use gdk_ses_impl::CreatedTxCache;
 use rand::Rng;
 use secp256k1::hashes::Hash;
+use serde::{Deserialize, Serialize};
 use settings::{Peg, PegDir};
 use sideswap_api::*;
 use sideswap_common::env::Env;
@@ -20,6 +23,7 @@ use sideswap_common::types::*;
 use sideswap_common::ws::{next_request_id, next_request_id_str};
 use sideswap_common::*;
 use sideswap_jade::jade_mng::{self, JadeStatus, JadeStatusCallback};
+use sideswap_types::fee_rate::FeeRateSats;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::{
@@ -168,6 +172,7 @@ pub struct Data {
     last_connection_check: std::time::Instant,
     last_blocks: BTreeMap<AccountId, gdk_json::NotificationBlock>,
     used_addresses: UsedAddresses,
+    price_subscribes: BTreeSet<AssetId>,
 
     jade_mng: jade_mng::JadeMng,
     jade_status_callback: JadeStatusCallback,
@@ -176,6 +181,8 @@ pub struct Data {
 
     network_settings: proto::to::NetworkSettings,
     proxy_settings: proto::to::ProxySettings,
+
+    created_tx_cache: CreatedTxCache,
 }
 
 pub struct ActiveSwap {
@@ -493,6 +500,12 @@ impl UiData {
                 .store(true, std::sync::atomic::Ordering::Relaxed);
         }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+struct AssetsCache {
+    git_commit_hash: String,
+    assets: Vec<Asset>,
 }
 
 impl Data {
@@ -828,6 +841,12 @@ impl Data {
     fn cookie_path(&self) -> std::path::PathBuf {
         self.get_data_path().join("sideswap.cookie")
     }
+    fn assets_cache_path(&self) -> std::path::PathBuf {
+        self.get_data_path().join("assets_cache.json")
+    }
+    fn assets_cache_path_tmp(&self) -> std::path::PathBuf {
+        self.get_data_path().join("assets_cache.json.tmp")
+    }
     fn cache_path(&self) -> std::path::PathBuf {
         self.get_data_path().join("cache")
     }
@@ -869,6 +888,10 @@ impl Data {
             })
         )?
         .assets;
+        let res = self.save_assets_cache(&assets);
+        if let Err(err) = res {
+            log::error!("saving assets cache failed: {err}");
+        }
 
         for asset in assets
             .iter()
@@ -994,6 +1017,10 @@ impl Data {
 
         self.ui
             .send(ffi::proto::from::Msg::ServerConnected(ffi::proto::Empty {}));
+
+        for asset_id in self.price_subscribes.iter() {
+            self.send_request_msg(Request::LoadPrices(LoadPricesRequest { asset: *asset_id }));
+        }
     }
 
     fn process_ws_disconnected(&mut self) {
@@ -1029,7 +1056,7 @@ impl Data {
             .iter()
             .map(|item| ffi::proto::FeeRate {
                 blocks: item.blocks,
-                value: item.value,
+                value: item.value.raw(),
             })
             .collect();
         let status_copy = ffi::proto::ServerStatus {
@@ -1153,6 +1180,11 @@ impl Data {
             .collect::<Vec<_>>();
         let balance = utxos.iter().map(|utxo| utxo.satoshi).sum::<u64>() as i64;
 
+        let server_status = self
+            .server_status
+            .as_ref()
+            .ok_or(anyhow!("server_status is not known"))?;
+
         let amount = if req.is_send_entered && balance == req.amount {
             let fake_addr = swaps::generate_fake_p2sh_address(self.env).to_string();
             let liquid_asset_id = self.liquid_asset_id;
@@ -1160,20 +1192,25 @@ impl Data {
             let network_fee = wallet
                 .get_tx_fee(liquid_asset_id, req.amount, &fake_addr)?
                 .fee;
-            req.amount - network_fee as i64
+            let amount = req.amount - network_fee as i64;
+            ensure!(
+                amount >= server_status.min_peg_out_amount,
+                "Amount is low: {}, min: {}",
+                Amount::from_sat(amount).to_bitcoin(),
+                Amount::from_sat(server_status.min_peg_out_amount).to_bitcoin(),
+            );
+
+            amount
         } else {
             req.amount
         };
 
-        let server_status = self
-            .server_status
-            .as_ref()
-            .ok_or(anyhow!("server_status is not known"))?;
+        let fee_rate = FeeRateSats::from_raw(req.fee_rate);
 
         let amounts = peg_out_amount(types::PegOutAmountReq {
             amount,
             is_send_entered: req.is_send_entered,
-            fee_rate: req.fee_rate,
+            fee_rate,
             min_peg_out_amount: server_status.min_peg_out_amount,
             server_fee_percent_peg_out: server_status.server_fee_percent_peg_out,
             peg_out_bitcoin_tx_vsize: server_status.peg_out_bitcoin_tx_vsize,
@@ -1183,7 +1220,7 @@ impl Data {
             send_amount: amounts.send_amount,
             recv_amount: amounts.recv_amount,
             is_send_entered: req.is_send_entered,
-            fee_rate: req.fee_rate,
+            fee_rate,
         });
 
         Ok(ffi::proto::from::peg_out_amount::Amounts {
@@ -1547,7 +1584,8 @@ impl Data {
         &mut self,
         req: ffi::proto::CreateTx,
     ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
-        let created_tx = Self::get_wallet_mut(&mut self.wallets, req.account.id)?.create_tx(req)?;
+        let created_tx = Self::get_wallet_mut(&mut self.wallets, req.account.id)?
+            .create_tx(&mut self.created_tx_cache, req)?;
         Ok(created_tx)
     }
 
@@ -1568,7 +1606,11 @@ impl Data {
         &mut self,
         req: ffi::proto::to::SendTx,
     ) -> Result<elements::Txid, anyhow::Error> {
-        Self::get_wallet_mut(&mut self.wallets, req.account.id)?.send_tx(&req.id, &self.assets)
+        Self::get_wallet_mut(&mut self.wallets, req.account.id)?.send_tx(
+            &mut self.created_tx_cache,
+            &req.id,
+            &self.assets,
+        )
     }
 
     fn process_send_tx(&mut self, req: ffi::proto::to::SendTx) {
@@ -3223,11 +3265,13 @@ impl Data {
     fn process_subscribe_price(&mut self, req: ffi::proto::AssetId) {
         let asset = AssetId::from_str(&req.asset_id).unwrap();
         self.send_request_msg(Request::LoadPrices(LoadPricesRequest { asset }));
+        self.price_subscribes.insert(asset);
     }
 
     fn process_unsubscribe_price(&mut self, req: ffi::proto::AssetId) {
         let asset = AssetId::from_str(&req.asset_id).unwrap();
         self.send_request_msg(Request::CancelPrices(CancelPricesRequest { asset }));
+        self.price_subscribes.remove(&asset);
     }
 
     fn process_subscribe_price_stream(&mut self, req: ffi::proto::to::SubscribePriceStream) {
@@ -4038,12 +4082,41 @@ impl Data {
         }
     }
 
-    pub fn load_default_assets(&mut self) {
-        let data = match self.env.d().network {
-            Network::Liquid => include_str!("../data/assets.json"),
-            Network::LiquidTestnet => include_str!("../data/assets-testnet.json"),
+    pub fn save_assets_cache(&self, assets: &[Asset]) -> Result<(), anyhow::Error> {
+        // Save asset cache so that deleting default assets work without releasing new app version
+        let cache = AssetsCache {
+            git_commit_hash: GIT_COMMIT_HASH.to_owned(),
+            assets: assets
+                .iter()
+                .filter(|asset| asset.always_show.unwrap_or_default())
+                .cloned()
+                .collect(),
         };
-        let assets = serde_json::from_str::<Assets>(data).unwrap();
+        let data = serde_json::to_string(&cache).expect("must not fail");
+        std::fs::write(self.assets_cache_path_tmp(), data)?;
+        std::fs::rename(self.assets_cache_path_tmp(), self.assets_cache_path())?;
+        log::debug!("saved {} to assets cache", cache.assets.len());
+        Ok(())
+    }
+
+    pub fn load_assets_cache(&self) -> Result<Vec<Asset>, anyhow::Error> {
+        let data = std::fs::read(self.assets_cache_path())?;
+        let cache = serde_json::from_slice::<AssetsCache>(&data)?;
+        // Ignore asset cache from older builds, it can contain outdated data
+        ensure!(cache.git_commit_hash == GIT_COMMIT_HASH);
+        log::debug!("loaded {} from assets cache", cache.assets.len());
+        Ok(cache.assets)
+    }
+
+    pub fn load_default_assets(&mut self) {
+        let assets = self.load_assets_cache().unwrap_or_else(|err| {
+            log::debug!("loading assets cache failed: {err}, use default cache instead");
+            let data = match self.env.d().network {
+                Network::Liquid => include_str!("../data/assets.json"),
+                Network::LiquidTestnet => include_str!("../data/assets-testnet.json"),
+            };
+            serde_json::from_str::<Assets>(data).expect("must not fail")
+        });
         self.register_assets_with_gdk_icons(assets);
     }
 
@@ -4527,11 +4600,13 @@ pub fn start_processing(
         last_connection_check: std::time::Instant::now(),
         last_blocks: BTreeMap::new(),
         used_addresses: Default::default(),
+        price_subscribes: Default::default(),
         jade_mng: jade_mng::JadeMng::new(Arc::clone(&jade_status_callback)),
         jade_status_callback,
         async_requests: BTreeMap::new(),
         network_settings: Default::default(),
         proxy_settings: Default::default(),
+        created_tx_cache: CreatedTxCache::new(),
     };
 
     debug!("proxy: {:?}", state.proxy());

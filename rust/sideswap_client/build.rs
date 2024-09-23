@@ -13,21 +13,21 @@ fn main() {
     let gdk_dir = env::var(gdk_env_name).unwrap();
     println!("cargo:rerun-if-env-changed={}", gdk_env_name);
 
-    println!("cargo:rerun-if-changed={}/libgreenaddress_full.a", gdk_dir);
+    println!("cargo:rerun-if-changed={}/libgreen_gdk_full.a", gdk_dir);
 
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     match target_os.as_str() {
         "android" => {
-            println!("cargo:rustc-link-lib=dylib=greenaddress");
+            println!("cargo:rustc-link-lib=dylib=green_gdk_java");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         "linux" => {
-            println!("cargo:rustc-link-lib=static=greenaddress_full");
+            println!("cargo:rustc-link-lib=static=green_gdk_full");
             println!("cargo:rustc-link-lib=dylib=stdc++");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         "windows" => {
-            println!("cargo:rustc-link-lib=static=greenaddress_full");
+            println!("cargo:rustc-link-lib=static=green_gdk_full");
             println!("cargo:rustc-link-lib=dylib=stdc++.dll");
             println!("cargo:rustc-link-lib=dylib=ssp.dll");
             println!("cargo:rustc-link-lib=dylib=crypt32");
@@ -37,13 +37,13 @@ fn main() {
             println!("cargo:rustc-link-search=native=/usr/lib/gcc/x86_64-w64-mingw32/10-posix");
         }
         "ios" => {
-            println!("cargo:rustc-link-lib=static=greenaddress_full");
+            println!("cargo:rustc-link-lib=static=green_gdk_full");
             println!("cargo:rustc-link-lib=dylib=c++");
             println!("cargo:rustc-link-lib=framework=Security");
             println!("cargo:rustc-link-search=native={}", gdk_dir);
         }
         "macos" => {
-            println!("cargo:rustc-link-lib=static=greenaddress_full");
+            println!("cargo:rustc-link-lib=static=green_gdk_full");
             println!("cargo:rustc-link-lib=dylib=c++");
             println!("cargo:rustc-link-lib=framework=Security");
             println!("cargo:rustc-link-search=native={}", gdk_dir);

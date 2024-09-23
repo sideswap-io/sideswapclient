@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use serde::Deserialize;
-use sideswap_common::channel_helpers::UncheckedUnboundedSender;
+use sideswap_common::{channel_helpers::UncheckedUnboundedSender, http_client::HttpClient};
 use sideswap_dealer::dealer::DealerTicker;
 
 use crate::Msg;
@@ -17,14 +17,14 @@ struct TickerPrice {
     price: String,
 }
 
-async fn current_price(client: &reqwest::Client, url: &str) -> Result<f64, anyhow::Error> {
-    let resp = client.get(url).send().await?.json::<TickerPrice>().await?;
+async fn current_price(client: &HttpClient, url: &str) -> Result<f64, anyhow::Error> {
+    let resp = client.get_json::<TickerPrice>(url).await?;
     let price = resp.price.parse()?;
     Ok(price)
 }
 
 async fn try_load(
-    client: &reqwest::Client,
+    client: &HttpClient,
     url: &str,
     ticker: DealerTicker,
     msg_tx: &UncheckedUnboundedSender<Msg>,
@@ -34,7 +34,7 @@ async fn try_load(
 }
 
 pub async fn reload(settings: Settings, msg_tx: UncheckedUnboundedSender<Msg>) {
-    let client = reqwest::Client::new();
+    let client = HttpClient::new();
     loop {
         try_load(&client, &settings.usdt_url, DealerTicker::USDt, &msg_tx).await;
         try_load(&client, &settings.eurx_url, DealerTicker::EURx, &msg_tx).await;

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sideswap/common/enums.dart';
@@ -15,6 +16,7 @@ import 'package:sideswap/models/swap_models.dart';
 import 'package:sideswap/providers/common_providers.dart';
 import 'package:sideswap/providers/config_provider.dart';
 import 'package:sideswap/providers/payment_provider.dart';
+import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/ui_state_args_provider.dart';
 import 'package:sideswap/providers/utils_provider.dart';
 import 'package:sideswap/providers/wallet.dart';
@@ -24,188 +26,713 @@ import 'package:sideswap/providers/warmup_app_provider.dart';
 import 'package:sideswap_protobuf/sideswap_api.dart';
 
 part 'swap_provider.g.dart';
+part 'swap_provider.freezed.dart';
 
-final swapProvider = ChangeNotifierProvider<SwapChangeNotifierProvider>(
-    (ref) => SwapChangeNotifierProvider(ref));
-
-enum SwapType {
-  atomic,
-  pegIn,
-  pegOut,
+@freezed
+sealed class SwapType with _$SwapType {
+  const factory SwapType.atomic() = SwapTypeAtomic;
+  const factory SwapType.pegIn() = SwapTypePegIn;
+  const factory SwapType.pegOut() = SwapTypePegOut;
 }
 
-enum SwapWallet {
-  local,
-  extern,
+@freezed
+sealed class SwapWallet with _$SwapWallet {
+  const factory SwapWallet.local() = SwapWalletLocal;
+  const factory SwapWallet.extern() = SwapWalletExtern;
 }
 
-enum SwapState {
-  idle,
-  sent,
+@freezed
+sealed class SwapState with _$SwapState {
+  const factory SwapState.idle() = SwapStateIdle;
+  const factory SwapState.sent() = SwapStateSent;
 }
 
-class SwapChangeNotifierProvider with ChangeNotifier {
+@freezed
+sealed class SwapAsset with _$SwapAsset {
+  const factory SwapAsset({
+    required AccountAsset asset,
+    required List<AccountAsset> assetList,
+  }) = _SwapAsset;
+}
+
+@riverpod
+SwapType swapType(SwapTypeRef ref) {
+  final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+  final swapReceiveAsset = ref.watch(swapReceiveAssetProvider);
+
+  if (swapDeliverAsset.asset.assetId == bitcoinAssetId &&
+      swapReceiveAsset.asset.assetId == liquidAssetId) {
+    return const SwapType.pegIn();
+  }
+  if (swapDeliverAsset.asset.assetId == liquidAssetId &&
+      swapReceiveAsset.asset.assetId == bitcoinAssetId) {
+    return const SwapType.pegOut();
+  }
+  return const SwapType.atomic();
+}
+
+@riverpod
+String swapTypeString(SwapTypeStringRef ref) {
+  final swapType = ref.watch(swapTypeProvider);
+
+  return switch (swapType) {
+    SwapTypeAtomic() => 'Swap'.tr(),
+    SwapTypePegIn() => 'Peg-In'.tr(),
+    SwapTypePegOut() => 'Peg-Out'.tr(),
+  };
+}
+
+@riverpod
+AddrType swapAddrType(SwapAddrTypeRef ref) {
+  final swapType = ref.watch(swapTypeProvider);
+
+  return switch (swapType) {
+    SwapTypePegOut() => AddrType.bitcoin,
+    _ => AddrType.elements,
+  };
+}
+
+@riverpod
+String addrTypeString(AddrTypeStringRef ref) {
+  final addrType = ref.watch(swapAddrTypeProvider);
+
+  return switch (addrType) {
+    AddrType.bitcoin => 'Bitcoin',
+    _ => 'Liquid',
+  };
+}
+
+@Riverpod(keepAlive: true)
+class SwapSendAssetNotifier extends _$SwapSendAssetNotifier {
+  @override
+  AccountAsset build() {
+    final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+    return AccountAsset(AccountType.reg, liquidAssetId);
+  }
+
+  void setState(AccountAsset value) {
+    state = value;
+  }
+}
+
+@riverpod
+List<AccountAsset> swapDeliverAccountAssetList(
+    SwapDeliverAccountAssetListRef ref) {
+  final swapPeg = ref.watch(swapPegNotifierProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+
+  if (swapPeg) {
+    final swapPegList = <AccountAsset>[];
+    final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
+
+    swapPegList.add(AccountAsset(AccountType.reg, bitcoinAssetId));
+    swapPegList.add(AccountAsset(AccountType.reg, liquidAssetId));
+    swapPegList.add(AccountAsset(AccountType.amp, liquidAssetId));
+    return swapPegList;
+  }
+
+  final assets = ref.watch(assetsStateProvider);
+
+  final assetList = assets.entries
+      .where((e) => e.key == liquidAssetId || e.value.instantSwaps)
+      .map((e) => AccountAsset(AccountType.reg, e.key))
+      .toList();
+
+  return assetList;
+}
+
+@riverpod
+SwapAsset swapDeliverAsset(SwapDeliverAssetRef ref) {
+  final swapSendAsset = ref.watch(swapSendAssetNotifierProvider);
+  final assetList = ref.watch(swapDeliverAccountAssetListProvider);
+
+  return SwapAsset(
+    asset: swapSendAsset,
+    assetList: assetList,
+  );
+}
+
+@riverpod
+List<AccountAsset> swapReceiveAccountAssetList(
+    SwapReceiveAccountAssetListRef ref) {
+  final swapPeg = ref.watch(swapPegNotifierProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final swapSendAsset = ref.watch(swapSendAssetNotifierProvider);
+
+  if (swapPeg) {
+    if (swapSendAsset.assetId == liquidAssetId) {
+      final bitcoinAssetId = ref.watch(bitcoinAssetIdProvider);
+      final assetList = [AccountAsset(AccountType.reg, bitcoinAssetId)];
+      return assetList;
+    }
+
+    final assetList = [AccountAsset(AccountType.reg, liquidAssetId)];
+    return assetList;
+  }
+
+  if (swapSendAsset.assetId != liquidAssetId) {
+    final assetList = [AccountAsset(AccountType.reg, liquidAssetId)];
+    return assetList;
+  }
+
+  final assets = ref.watch(assetsStateProvider);
+
+  final assetList = assets.entries
+      .where((e) => e.value.instantSwaps)
+      .map((e) => AccountAsset(AccountType.reg, e.key))
+      .toList();
+
+  return assetList;
+}
+
+@riverpod
+SwapAsset swapReceiveAsset(SwapReceiveAssetRef ref) {
+  final swapPeg = ref.watch(swapPegNotifierProvider);
+  final liquidAssetId = ref.watch(liquidAssetIdStateProvider);
+  final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+  final assetList = ref.watch(swapReceiveAccountAssetListProvider);
+
+  if (swapPeg || swapDeliverAsset.asset.assetId != liquidAssetId) {
+    return SwapAsset(asset: assetList.first, assetList: assetList);
+  }
+
+  final swapRecvAsset = ref.watch(swapRecvAssetNotifierProvider);
+  return SwapAsset(asset: swapRecvAsset, assetList: assetList);
+}
+
+@riverpod
+class SwapRecvAssetNotifier extends _$SwapRecvAssetNotifier {
+  @override
+  AccountAsset build() {
+    final tetherAssetId = ref.watch(tetherAssetIdStateProvider);
+    return AccountAsset(AccountType.reg, tetherAssetId);
+  }
+
+  void setState(AccountAsset value) {
+    state = value;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class SwapPegNotifier extends _$SwapPegNotifier {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setState(bool value) {
+    state = value;
+  }
+}
+
+@riverpod
+SwapWallet swapSendWallet(SwapSendWalletRef ref) {
+  final swapType = ref.watch(swapTypeProvider);
+  return switch (swapType) {
+    SwapTypeAtomic() || SwapTypePegOut() => const SwapWallet.local(),
+    SwapTypePegIn() => const SwapWallet.extern(),
+  };
+}
+
+@riverpod
+SwapWallet swapRecvWallet(SwapRecvWalletRef ref) {
+  final swapType = ref.watch(swapTypeProvider);
+  return switch (swapType) {
+    SwapTypeAtomic() || SwapTypePegIn() => const SwapWallet.local(),
+    SwapTypePegOut() => const SwapWallet.extern(),
+  };
+}
+
+@riverpod
+class SwapRecvAddressExternalNotifier
+    extends _$SwapRecvAddressExternalNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setState(String value) {
+    state = value;
+  }
+}
+
+@Riverpod(keepAlive: true)
+class SwapPegAddressServerNotifier extends _$SwapPegAddressServerNotifier {
+  @override
+  String? build() {
+    return null;
+  }
+
+  void setState(String? value) {
+    state = value;
+  }
+}
+
+@riverpod
+String swapPriceString(SwapPriceStringRef ref) {
+  final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+  final swapReceiveAsset = ref.watch(swapReceiveAssetProvider);
+  final sendAsset =
+      ref.watch(assetsStateProvider)[swapDeliverAsset.asset.assetId];
+  final recvAsset =
+      ref.watch(assetsStateProvider)[swapReceiveAsset.asset.assetId];
+
+  Asset? nonBtcAsset;
+  int btcAmount;
+  int nonBtcAmount;
+  if (sendAsset?.ticker == kLiquidBitcoinTicker) {
+    nonBtcAsset = recvAsset;
+    nonBtcAmount = ref.read(satoshiRecvAmountStateNotifierProvider);
+    btcAmount = ref.read(satoshiSendAmountStateNotifierProvider);
+  } else {
+    nonBtcAsset = sendAsset;
+    nonBtcAmount = ref.read(satoshiSendAmountStateNotifierProvider);
+    btcAmount = ref.read(satoshiRecvAmountStateNotifierProvider);
+  }
+
+  var priceStr = '-';
+  if (btcAmount != 0) {
+    final price = nonBtcAmount.toDouble() / btcAmount.toDouble();
+    priceStr = price.toStringAsFixed(nonBtcAsset?.precision.toInt() ?? 0);
+  }
+  return '1 $kLiquidBitcoinTicker = $priceStr ${nonBtcAsset?.ticker ?? ''}';
+}
+
+@riverpod
+class SwapPriceSubscribeNotifier extends _$SwapPriceSubscribeNotifier {
+  @override
+  SwapPriceSubscribeState build() {
+    return const SwapPriceSubscribeStateEmpty();
+  }
+
+  void setEmpty() => state = const SwapPriceSubscribeStateEmpty();
+  void setSend() => state = const SwapPriceSubscribeStateSend();
+  void setRecv() => state = const SwapPriceSubscribeStateRecv();
+}
+
+// TODO (malcolmpl): move this to riverpod_generator
+final bitcoinCurrentFeeRateStateNotifierProvider =
+    StateNotifierProvider.autoDispose<
+        BitcoinCurrentFeeRateStateNotifierProvider, SwapCurrentFeeRate>(
+  (ref) {
+    final provider = BitcoinCurrentFeeRateStateNotifierProvider(
+        ref, const SwapCurrentFeeRate.empty());
+    ref.listen(bitcoinFeeRatesProvider, (previous, next) {
+      provider.updateFeeRate(next);
+    });
+    return provider;
+  },
+);
+
+class BitcoinCurrentFeeRateStateNotifierProvider
+    extends StateNotifier<SwapCurrentFeeRate> {
   final Ref ref;
 
-  SwapChangeNotifierProvider(this.ref);
-
-  AccountAsset? _swapSendAsset;
-  AccountAsset? get swapSendAsset => _swapSendAsset;
-  set swapSendAsset(AccountAsset? value) {
-    _swapSendAsset = value;
-    notifyListeners();
+  BitcoinCurrentFeeRateStateNotifierProvider(
+      this.ref, SwapCurrentFeeRate feeRate)
+      : super(feeRate) {
+    final feeRates = ref.read(walletProvider).serverStatus?.bitcoinFeeRates;
+    if (feeRates != null && feeRates.isNotEmpty) {
+      state = SwapCurrentFeeRate.data(feeRate: feeRates.first);
+    }
   }
 
-  AccountAsset? _swapRecvAsset;
-  AccountAsset? get swapRecvAsset => _swapRecvAsset;
-  set swapRecvAsset(AccountAsset? value) {
-    _swapRecvAsset = value;
-    notifyListeners();
-  }
-
-  bool _swapPeg = false;
-  bool get swapPeg => _swapPeg;
-  set swapPeg(bool value) {
-    _swapPeg = value;
-    notifyListeners();
-  }
-
-  SwapWallet _swapSendWallet = SwapWallet.local;
-  SwapWallet get swapSendWallet => _swapSendWallet;
-  set swapSendWallet(SwapWallet swapSendWallet) {
-    _swapSendWallet = swapSendWallet;
-    notifyListeners();
-  }
-
-  SwapWallet _swapRecvWallet = SwapWallet.local;
-  SwapWallet get swapRecvWallet => _swapRecvWallet;
-  set swapRecvWallet(SwapWallet swapRecvWallet) {
-    _swapRecvWallet = swapRecvWallet;
-    notifyListeners();
-  }
-
-  String _swapRecvAddressExternal = '';
-  String get swapRecvAddressExternal => _swapRecvAddressExternal;
-  set swapRecvAddressExternal(String swapRecvAddressExternal) {
-    _swapRecvAddressExternal = swapRecvAddressExternal;
-    validateAddress(_swapRecvAddressExternal);
-    notifyListeners();
-  }
-
-  String? _swapPegAddressServer;
-  String? get swapPegAddressServer => _swapPegAddressServer;
-  set swapPegAddressServer(String? swapPegAddressServer) {
-    _swapPegAddressServer = swapPegAddressServer;
-    notifyListeners();
-  }
-
-  // Functions //
-  void validateAddress(String text) {
-    if (text.isEmpty) {
-      ref.read(swapAddressErrorStateProvider.notifier).state = null;
-      ref.read(showAddressLabelStateProvider.notifier).state = false;
+  void updateFeeRate(List<FeeRate> feeRates) {
+    if (feeRates.isEmpty) {
       return;
     }
-
-    if (ref.read(isAddrTypeValidProvider(text, AddrType.bitcoin))) {
-      ref.read(swapAddressErrorStateProvider.notifier).state = null;
-      ref.read(showAddressLabelStateProvider.notifier).state = true;
-    } else {
-      ref.read(swapAddressErrorStateProvider.notifier).state =
-          'Wrong address'.tr();
-      ref.read(showAddressLabelStateProvider.notifier).state = false;
-    }
+    state.when(empty: () {
+      state = SwapCurrentFeeRate.data(feeRate: feeRates.first);
+    }, data: (feeRate) {
+      final updatedFeeRate =
+          feeRates.firstWhere((e) => e.blocks == feeRate.blocks);
+      state = SwapCurrentFeeRate.data(feeRate: updatedFeeRate);
+    });
   }
 
-  List<AccountAsset> swapSendAssets() {
-    if (swapPeg) {
-      final swapPegList = <AccountAsset>[];
-
-      swapPegList
-          .add(AccountAsset(AccountType.reg, ref.read(bitcoinAssetIdProvider)));
-      swapPegList.add(
-          AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider)));
-      swapPegList.add(
-          AccountAsset(AccountType.amp, ref.read(liquidAssetIdStateProvider)));
-
-      return swapPegList;
-    }
-    final assets = ref.read(assetsStateProvider);
-    return assets.entries
-        .where((e) =>
-            e.key == ref.read(liquidAssetIdStateProvider) ||
-            e.value.instantSwaps)
-        .map((e) => AccountAsset(AccountType.reg, e.key))
-        .toList();
+  void setFeeRate(FeeRate feeRate) {
+    state = SwapCurrentFeeRate.data(feeRate: feeRate);
+    ref
+        .read(subscribePriceStreamNotifierProvider.notifier)
+        .subscribeToPriceStream();
   }
 
-  List<AccountAsset> swapRecvAssets() {
-    if (swapPeg) {
-      if (swapSendAsset?.assetId == ref.read(liquidAssetIdStateProvider)) {
-        return [
-          AccountAsset(AccountType.reg, ref.read(bitcoinAssetIdProvider))
-        ];
-      }
-      return [
-        AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider))
-      ];
-    }
+  void setEmpty() {
+    state = const SwapCurrentFeeRate.empty();
+  }
+}
 
-    if (swapSendAsset?.assetId != ref.read(liquidAssetIdStateProvider)) {
-      return [
-        AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider))
-      ];
-    }
+@riverpod
+List<FeeRate> bitcoinFeeRates(BitcoinFeeRatesRef ref) {
+  final swapType = ref.watch(swapTypeProvider);
+  final swapRecvWallet = ref.watch(swapRecvWalletProvider);
+  final serverStatus = ref.watch(walletProvider.select((p) => p.serverStatus));
 
-    final assets = ref.read(assetsStateProvider);
-    return assets.entries
-        .where((e) => e.value.instantSwaps)
-        .map((e) => AccountAsset(AccountType.reg, e.key))
-        .toList();
+  final feeRates = (swapType == const SwapType.pegOut() &&
+          swapRecvWallet == const SwapWallet.extern() &&
+          serverStatus != null)
+      ? serverStatus.bitcoinFeeRates
+      : <FeeRate>[];
+
+  return feeRates;
+}
+
+@riverpod
+String bitcoinFeeRateDescription(
+    BitcoinFeeRateDescriptionRef ref, FeeRate feeRate) {
+  final blocks = feeRate.blocks;
+  final value = feeRate.value;
+  final duration = Duration(minutes: blocks * 10);
+  if (duration.inMinutes <= 60) {
+    return 'BLOCKS_MINUTES'
+        .plural(blocks, args: ['$blocks', '${duration.inMinutes}', '$value']);
+  } else {
+    return 'BLOCKS_HOURS'
+        .plural(blocks, args: ['$blocks', '${duration.inHours}', '$value']);
+  }
+}
+
+@riverpod
+class SwapSendTextAmountNotifier extends _$SwapSendTextAmountNotifier {
+  @override
+  String build() {
+    return '';
   }
 
-  void checkSelectedAsset() {
-    final assets = ref.read(assetsStateProvider);
-    if (assets.length < 3) {
-      return;
-    }
-    if (swapSendAsset == null) {
-      _swapPeg = false;
-      _swapSendAsset =
-          AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider));
-      _swapRecvAsset =
-          AccountAsset(AccountType.reg, ref.read(tetherAssetIdStateProvider));
-    }
-    final sendAssetsAllowed = swapSendAssets();
-    if (!sendAssetsAllowed.contains(swapSendAsset)) {
-      _swapSendAsset = sendAssetsAllowed.first;
-    }
-    final recvAssetsAllowed = swapRecvAssets();
-    if (!recvAssetsAllowed.contains(swapRecvAsset)) {
-      _swapRecvAsset = recvAssetsAllowed.first;
-    }
-    final allowedSendList = allowedSendWallets();
-    if (!allowedSendList.contains(swapSendWallet)) {
-      swapSendWallet = allowedSendList.first;
-    }
-    final allowedRecvList = allowedRecvWallets();
-    if (!allowedRecvList.contains(swapRecvWallet)) {
-      swapRecvWallet = allowedRecvList.first;
-    }
+  void setAmount(String value) {
+    state = value;
   }
+}
+
+@riverpod
+int swapSendSatoshiAmount(SwapSendSatoshiAmountRef ref) {
+  final sendAmount = ref.watch(swapSendTextAmountNotifierProvider);
+
+  if (sendAmount.isEmpty) {
+    return 0;
+  }
+
+  final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+  final satoshiAmount = ref.watch(satoshiForAmountProvider(
+      assetId: swapDeliverAsset.asset.assetId ?? '', amount: sendAmount));
+
+  return satoshiAmount;
+}
+
+@riverpod
+class SwapRecvTextAmountNotifier extends _$SwapRecvTextAmountNotifier {
+  @override
+  String build() {
+    return '';
+  }
+
+  void setAmount(String value) {
+    state = value;
+  }
+}
+
+@riverpod
+int swapRecvSatoshiAmount(SwapRecvSatoshiAmountRef ref) {
+  final recvAmount = ref.watch(swapRecvTextAmountNotifierProvider);
+  if (recvAmount.isEmpty) {
+    return 0;
+  }
+
+  final swapReceiveAsset = ref.watch(swapReceiveAssetProvider);
+  final satoshiAmount = ref.watch(satoshiForAmountProvider(
+      assetId: swapReceiveAsset.asset.assetId ?? '', amount: recvAmount));
+
+  return satoshiAmount;
+}
+
+@riverpod
+bool showInsufficientFunds(ShowInsufficientFundsRef ref) {
+  final serverError = ref.watch(swapNetworkErrorNotifierProvider);
+  if (serverError.isNotEmpty) {
+    return false;
+  }
+
+  final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+  final balance =
+      ref.watch(balancesNotifierProvider)[swapDeliverAsset.asset] ?? 0;
+  final satoshiAmount = ref.watch(swapSendSatoshiAmountProvider);
+  return satoshiAmount > 0 && satoshiAmount > balance;
+}
+
+@riverpod
+class SatoshiRecvAmountStateNotifier extends _$SatoshiRecvAmountStateNotifier {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setSatoshiAmount(int value) {
+    state = value;
+  }
+}
+
+@riverpod
+class SatoshiSendAmountStateNotifier extends _$SatoshiSendAmountStateNotifier {
+  @override
+  int build() {
+    return 0;
+  }
+
+  void setSatoshiAmount(int value) {
+    state = value;
+  }
+}
+
+@riverpod
+SwapRecvAmountPriceStream recvAmountPriceStreamWatcher(
+    RecvAmountPriceStreamWatcherRef ref) {
+  final authInProgress = ref.watch(authInProgressStateNotifierProvider);
+  final swapState = ref.watch(swapStateNotifierProvider);
+
+  if (swapState != const SwapState.idle() || authInProgress) {
+    return const SwapRecvAmountPriceStream.empty();
+  }
+
+  final subscribeState = ref.watch(swapPriceSubscribeNotifierProvider);
+
+  if (subscribeState != const SwapPriceSubscribeState.send()) {
+    return const SwapRecvAmountPriceStream.empty();
+  }
+
+  final swapReceiveAsset = ref.watch(swapReceiveAssetProvider);
+  final recvAmount = ref.watch(satoshiRecvAmountStateNotifierProvider);
+  final recvPrecision = ref
+      .read(assetUtilsProvider)
+      .getPrecisionForAssetId(assetId: swapReceiveAsset.asset.assetId);
+
+  final amountProvider = ref.watch(amountToStringProvider);
+  final recvAmountStr = amountProvider.amountToString(
+      AmountToStringParameters(amount: recvAmount, precision: recvPrecision));
+  final recvValue = replaceCharacterOnPosition(
+    input: recvAmount != 0 ? recvAmountStr : '',
+  );
+  return SwapRecvAmountPriceStream.data(value: recvValue);
+}
+
+@riverpod
+SwapSendAmountPriceStream sendAmountPriceStreamWatcher(
+    SendAmountPriceStreamWatcherRef ref) {
+  final authInProgress = ref.watch(authInProgressStateNotifierProvider);
+  final swapState = ref.watch(swapStateNotifierProvider);
+
+  if (swapState != const SwapState.idle() || authInProgress) {
+    return const SwapSendAmountPriceStream.empty();
+  }
+
+  final subscribeState = ref.watch(swapPriceSubscribeNotifierProvider);
+
+  if (subscribeState != const SwapPriceSubscribeState.recv()) {
+    return const SwapSendAmountPriceStream.empty();
+  }
+
+  final asyncPriceStream = ref.watch(subscribePriceStreamNotifierProvider);
+
+  return switch (asyncPriceStream) {
+    AsyncValue(hasValue: true, value: From_UpdatePriceStream priceStream)
+        when !priceStream.hasSendAmount() =>
+      () {
+        return const SwapSendAmountPriceStream.empty();
+      },
+    _ => () {
+        final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+        final sendAmount = ref.watch(satoshiSendAmountStateNotifierProvider);
+        final sendPrecision = ref
+            .watch(assetUtilsProvider)
+            .getPrecisionForAssetId(assetId: swapDeliverAsset.asset.assetId);
+        final amountProvider = ref.watch(amountToStringProvider);
+        final sendAmountStr = amountProvider.amountToString(
+            AmountToStringParameters(
+                amount: sendAmount, precision: sendPrecision));
+        final sendValue = replaceCharacterOnPosition(
+          input: sendAmount != 0 ? sendAmountStr : '',
+        );
+
+        return SwapSendAmountPriceStream.data(value: sendValue);
+      },
+  }();
+}
+
+@riverpod
+class AuthInProgressStateNotifier extends _$AuthInProgressStateNotifier {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void setState(bool value) {
+    state = value;
+  }
+}
+
+@riverpod
+class SwapStateNotifier extends _$SwapStateNotifier {
+  @override
+  SwapState build() {
+    return const SwapState.idle();
+  }
+
+  void setState(SwapState value) {
+    state = value;
+  }
+}
+
+@riverpod
+class SwapNetworkErrorNotifier extends _$SwapNetworkErrorNotifier {
+  @override
+  String build() {
+    final asyncPriceStream = ref.watch(subscribePriceStreamNotifierProvider);
+
+    return switch (asyncPriceStream) {
+      AsyncValue(hasValue: true, value: From_UpdatePriceStream priceStream)
+          when priceStream.hasErrorMsg() =>
+        priceStream.errorMsg,
+      _ => '',
+    };
+  }
+
+  void setState(String value) {
+    state = value;
+  }
+}
+
+@riverpod
+class SwapPriceStateNotifier extends _$SwapPriceStateNotifier {
+  @override
+  double? build() {
+    return null;
+  }
+
+  void setPrice(double? value) {
+    state = value;
+  }
+}
+
+@riverpod
+String? swapPriceText(SwapPriceTextRef ref) {
+  final swapPrice = ref.watch(swapPriceStateNotifierProvider);
+  if (swapPrice == null) {
+    return null;
+  }
+
+  final swapType = ref.watch(swapTypeProvider);
+
+  if (swapType == const SwapType.atomic()) {
+    final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+    final swapReceiveAsset = ref.watch(swapReceiveAssetProvider);
+
+    final sendLiquid =
+        swapDeliverAsset.asset.assetId == ref.watch(liquidAssetIdStateProvider);
+    final asset = sendLiquid ? swapReceiveAsset : swapDeliverAsset;
+
+    final priceString = priceStr(swapPrice, false);
+    var assetTicker =
+        ref.watch(assetUtilsProvider).tickerForAssetId(asset.asset.assetId);
+    assetTicker = assetTicker.isEmpty ? kUnknownTicker : assetTicker;
+    final swapText = '1 $kLiquidBitcoinTicker = $priceString $assetTicker';
+    return swapText;
+  }
+
+  final serverStatus = ref.watch(walletProvider).serverStatus;
+  if (serverStatus == null) {
+    return null;
+  }
+
+  final serverPercent = swapType == const SwapType.pegIn()
+      ? serverStatus.serverFeePercentPegIn
+      : serverStatus.serverFeePercentPegOut;
+  final percentConversion = 100 - serverPercent;
+  final conversionStr = percentConversion.toStringAsFixed(2);
+  final conversionText = 'Conversion rate $conversionStr%';
+  return conversionText;
+}
+
+@riverpod
+String? swapAddressError(SwapAddressErrorRef ref) {
+  final swapRecvAddressExternal =
+      ref.watch(swapRecvAddressExternalNotifierProvider);
+  if (swapRecvAddressExternal.isEmpty) {
+    return null;
+  }
+
+  final isValidAddress = ref
+      .read(isAddrTypeValidProvider(swapRecvAddressExternal, AddrType.bitcoin));
+  if (isValidAddress) {
+    return null;
+  }
+
+  return 'Wrong address'.tr();
+}
+
+@riverpod
+bool showAddressLabel(ShowAddressLabelRef ref) {
+  final swapRecvAddressExternal =
+      ref.watch(swapRecvAddressExternalNotifierProvider);
+  if (swapRecvAddressExternal.isEmpty) {
+    return false;
+  }
+
+  bool isValid = ref.watch(
+      isAddrTypeValidProvider(swapRecvAddressExternal, AddrType.bitcoin));
+
+  if (isValid) {
+    return true;
+  }
+
+  return false;
+}
+
+@riverpod
+bool swapEnabledState(SwapEnabledStateRef ref) {
+  final swapState = ref.watch(swapStateNotifierProvider);
+
+  if (swapState != const SwapState.idle()) {
+    return false;
+  }
+
+  final swapType = ref.watch(swapTypeProvider);
+  final sendSatoshiAmount = ref.watch(swapSendSatoshiAmountProvider);
+  final recvSatoshiAmount = ref.watch(swapRecvSatoshiAmountProvider);
+  final insufficientFunds = ref.watch(showInsufficientFundsProvider);
+  final addressErrorText = ref.watch(swapAddressErrorProvider);
+  final addressRecvExternal =
+      ref.watch(swapRecvAddressExternalNotifierProvider);
+
+  return switch (swapType) {
+    SwapTypeAtomic() =>
+      sendSatoshiAmount > 0 && recvSatoshiAmount > 0 && !insufficientFunds,
+    SwapTypePegIn() => true,
+    SwapTypePegOut() => sendSatoshiAmount > 0 &&
+        !insufficientFunds &&
+        addressRecvExternal.isNotEmpty &&
+        addressErrorText == null,
+  };
+}
+
+@riverpod
+SwapHelper swapHelper(SwapHelperRef ref) {
+  return SwapHelper(ref);
+}
+
+class SwapHelper {
+  final Ref ref;
+
+  SwapHelper(this.ref);
 
   void setSelectedLeftAsset(AccountAsset asset) {
     swapReset();
-    _swapSendAsset = asset;
-    checkSelectedAsset();
-    notifyListeners();
+    ref.read(swapSendAssetNotifierProvider.notifier).setState(asset);
   }
 
   void setSelectedRightAsset(AccountAsset asset) {
     swapReset();
-    _swapRecvAsset = asset;
-    checkSelectedAsset();
-    notifyListeners();
+    ref.read(swapRecvAssetNotifierProvider.notifier).setState(asset);
   }
 
   void clearNetworkStates() {
@@ -223,141 +750,25 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   void swapReset() {
     Future.microtask(() {
       clearNetworkStates();
-      ref.read(swapStateProvider.notifier).state = SwapState.idle;
+      ref.invalidate(swapStateNotifierProvider);
     });
   }
 
   void clearAmounts() {
     Future.microtask(() {
       clearNetworkStates();
-      ref.invalidate(swapSendAmountChangeNotifierProvider);
-      ref.invalidate(swapRecvAmountChangeNotifierProvider);
+      ref.invalidate(swapSendTextAmountNotifierProvider);
+      ref.invalidate(swapRecvTextAmountNotifierProvider);
       ref.invalidate(swapPriceSubscribeNotifierProvider);
       ref
-          .read(priceStreamSubscribeNotifierProvider.notifier)
+          .read(subscribePriceStreamNotifierProvider.notifier)
           .subscribeToPriceStream();
     });
-  }
-
-  String swapPriceStr() {
-    final sendAsset = ref.read(assetsStateProvider)[swapSendAsset?.assetId];
-    final recvAsset = ref.read(assetsStateProvider)[swapRecvAsset?.assetId];
-
-    Asset? nonBtcAsset;
-    int btcAmount;
-    int nonBtcAmount;
-    if (sendAsset?.ticker == kLiquidBitcoinTicker) {
-      nonBtcAsset = recvAsset;
-      nonBtcAmount = ref.read(satoshiRecvAmountStateNotifierProvider);
-      btcAmount = ref.read(satoshiSendAmountStateNotifierProvider);
-    } else {
-      nonBtcAsset = sendAsset;
-      nonBtcAmount = ref.read(satoshiSendAmountStateNotifierProvider);
-      btcAmount = ref.read(satoshiRecvAmountStateNotifierProvider);
-    }
-    var priceStr = '-';
-    if (btcAmount != 0) {
-      final price = nonBtcAmount.toDouble() / btcAmount.toDouble();
-      priceStr = price.toStringAsFixed(nonBtcAsset?.precision.toInt() ?? 0);
-    }
-    return '1 $kLiquidBitcoinTicker = $priceStr ${nonBtcAsset?.ticker ?? ''}';
-  }
-
-  SwapType swapType() {
-    final bitcoinAssetId = ref.read(bitcoinAssetIdProvider);
-    final liquidAssetId = ref.read(liquidAssetIdStateProvider);
-    if (swapSendAsset?.assetId == bitcoinAssetId &&
-        swapRecvAsset?.assetId == liquidAssetId) {
-      return SwapType.pegIn;
-    }
-    if (swapSendAsset?.assetId == liquidAssetId &&
-        swapRecvAsset?.assetId == bitcoinAssetId) {
-      return SwapType.pegOut;
-    }
-    return SwapType.atomic;
-  }
-
-  List<SwapWallet> allowedSendWallets() {
-    switch (swapType()) {
-      case SwapType.atomic:
-        return [SwapWallet.local];
-      case SwapType.pegIn:
-        return [SwapWallet.extern];
-      case SwapType.pegOut:
-        return [SwapWallet.local];
-    }
-  }
-
-  List<SwapWallet> allowedRecvWallets() {
-    switch (swapType()) {
-      case SwapType.atomic:
-        return [SwapWallet.local];
-      case SwapType.pegIn:
-        return [SwapWallet.local];
-      case SwapType.pegOut:
-        return [SwapWallet.extern];
-    }
-  }
-
-  void setSendRadioCb(SwapWallet v) {
-    final list = allowedSendWallets();
-    if (!list.contains(v)) {
-      return;
-    }
-
-    swapSendWallet = v;
-    checkSelectedAsset();
-    notifyListeners();
-  }
-
-  void setRecvRadioCb(SwapWallet v) {
-    final list = allowedRecvWallets();
-    if (!list.contains(v)) {
-      return;
-    }
-    swapRecvWallet = v;
-    checkSelectedAsset();
-    notifyListeners();
   }
 
   void pegStop() {
     swapReset();
     ref.read(pageStatusNotifierProvider.notifier).setStatus(Status.registered);
-  }
-
-  void setSwapPeg(bool value) {
-    if (swapPeg != value) {
-      _swapPeg = value;
-      checkSelectedAsset();
-      notifyListeners();
-    }
-  }
-
-  AddrType swapAddrType(SwapType swapType) {
-    if (swapType == SwapType.pegOut) {
-      return AddrType.bitcoin;
-    }
-    return AddrType.elements;
-  }
-
-  String addrTypeStr(AddrType addrType) {
-    switch (addrType) {
-      case AddrType.bitcoin:
-        return 'Bitcoin';
-      case AddrType.elements:
-        return 'Liquid';
-    }
-  }
-
-  String swapTypeStr(SwapType swapType) {
-    switch (swapType) {
-      case SwapType.atomic:
-        return 'Swap'.tr();
-      case SwapType.pegIn:
-        return 'Peg-In'.tr();
-      case SwapType.pegOut:
-        return 'Peg-Out'.tr();
-    }
   }
 
   void onPegOutAmountReceived(From_PegOutAmount value) {
@@ -372,12 +783,16 @@ class SwapChangeNotifierProvider with ChangeNotifier {
           final amountStr = ref.read(amountToStringProvider).amountToString(
               AmountToStringParameters(
                   amount: value.amounts.recvAmount.toInt()));
-          ref.read(swapRecvAmountChangeNotifierProvider).setAmount(amountStr);
+          ref
+              .read(swapRecvTextAmountNotifierProvider.notifier)
+              .setAmount(amountStr);
         } else {
           final amountStr = ref.read(amountToStringProvider).amountToString(
               AmountToStringParameters(
                   amount: value.amounts.sendAmount.toInt()));
-          ref.read(swapSendAmountChangeNotifierProvider).setAmount(amountStr);
+          ref
+              .read(swapSendTextAmountNotifierProvider.notifier)
+              .setAmount(amountStr);
         }
         break;
       case From_PegOutAmount_Result.notSet:
@@ -452,20 +867,20 @@ class SwapChangeNotifierProvider with ChangeNotifier {
   }
 
   void onMaxSendPressed() {
-    final swapSendAccount = swapSendAsset;
+    final swapDeliverAsset = ref.read(swapDeliverAssetProvider);
     final precision = ref
         .read(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: swapSendAsset?.assetId);
-    final balance = ref.read(balancesNotifierProvider)[swapSendAccount];
+        .getPrecisionForAssetId(assetId: swapDeliverAsset.asset.assetId);
+    final balance = ref.read(balancesNotifierProvider)[swapDeliverAsset.asset];
     final balanceStr = ref.read(amountToStringProvider).amountToString(
         AmountToStringParameters(amount: balance ?? 0, precision: precision));
 
     var amount = balanceStr;
     ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
 
-    ref.read(swapSendAmountChangeNotifierProvider).setAmount(amount);
+    ref.read(swapSendTextAmountNotifierProvider.notifier).setAmount(amount);
     ref
-        .read(priceStreamSubscribeNotifierProvider.notifier)
+        .read(subscribePriceStreamNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -473,7 +888,7 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     clearAmounts();
     setSelectedLeftAsset(accountAsset);
     ref
-        .read(priceStreamSubscribeNotifierProvider.notifier)
+        .read(subscribePriceStreamNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
@@ -481,58 +896,61 @@ class SwapChangeNotifierProvider with ChangeNotifier {
     clearAmounts();
     setSelectedRightAsset(accountAsset);
     ref
-        .read(priceStreamSubscribeNotifierProvider.notifier)
+        .read(subscribePriceStreamNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
   void toggleAssets() {
-    setSelectedLeftAsset(swapRecvAsset!);
-    setSelectedRightAsset(swapSendAsset!);
-    swapRecvAddressExternal = '';
+    final swapDeliverAsset = ref.read(swapDeliverAssetProvider);
+    final swapReceiveAsset = ref.read(swapReceiveAssetProvider);
+
+    setSelectedLeftAsset(swapReceiveAsset.asset);
+    setSelectedRightAsset(swapDeliverAsset.asset);
+    ref.invalidate(swapRecvAddressExternalNotifierProvider);
     clearAmounts();
     ref
-        .read(priceStreamSubscribeNotifierProvider.notifier)
+        .read(subscribePriceStreamNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
   void switchToSwaps() {
-    setSwapPeg(false);
-    swapRecvAddressExternal = '';
+    ref.invalidate(swapPegNotifierProvider);
+    ref.invalidate(swapSendAssetNotifierProvider);
+    ref.invalidate(swapRecvAssetNotifierProvider);
+    ref.invalidate(swapRecvAddressExternalNotifierProvider);
     clearAmounts();
     swapReset();
     ref
-        .read(priceStreamSubscribeNotifierProvider.notifier)
+        .read(subscribePriceStreamNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
   void switchToPegs() {
-    setSwapPeg(true);
+    ref.read(swapPegNotifierProvider.notifier).setState(true);
     setSelectedLeftAsset(
         AccountAsset(AccountType.reg, ref.read(bitcoinAssetIdProvider)));
-    setSelectedRightAsset(
-        AccountAsset(AccountType.reg, ref.read(liquidAssetIdStateProvider)));
-    swapRecvAddressExternal = '';
+    ref.invalidate(swapRecvAddressExternalNotifierProvider);
     clearAmounts();
     swapReset();
     ref
-        .read(priceStreamSubscribeNotifierProvider.notifier)
+        .read(subscribePriceStreamNotifierProvider.notifier)
         .subscribeToPriceStream();
   }
 
   void swapAccept() async {
-    final wallet = ref.read(walletProvider);
     // Remember amounts before calling async functions
-    final sendAmount =
-        ref.read(swapSendAmountChangeNotifierProvider).satoshiAmount;
-    final recvAmount =
-        ref.read(swapRecvAmountChangeNotifierProvider).satoshiAmount;
-    final price = ref.read(swapPriceStateNotifierProvider);
-    final type = swapType();
+    final sendAmount = ref.read(swapSendSatoshiAmountProvider);
+    final recvAmount = ref.read(swapRecvSatoshiAmountProvider);
 
-    final maxBalance = swapSendWallet == SwapWallet.local
-        ? ref.read(balancesNotifierProvider)[swapSendAsset] ?? 0
+    final swapDeliverAsset = ref.read(swapDeliverAssetProvider);
+    final price = ref.read(swapPriceStateNotifierProvider);
+    final swapType = ref.read(swapTypeProvider);
+    final swapSendWallet = ref.read(swapSendWalletProvider);
+
+    final maxBalance = swapSendWallet == const SwapWallet.local()
+        ? ref.read(balancesNotifierProvider)[swapDeliverAsset.asset] ?? 0
         : kMaxCoins;
-    if (type != SwapType.pegIn) {
+    if (swapType != const SwapType.pegIn()) {
       if (sendAmount <= 0 || sendAmount > maxBalance) {
         await ref
             .read(utilsProvider)
@@ -541,36 +959,44 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       }
     }
 
-    if (type == SwapType.pegOut) {
-      final addrType = swapAddrType(type);
+    if (swapType == const SwapType.pegOut()) {
+      final addrType = ref.read(swapAddrTypeProvider);
+      final swapRecvAddressExternal =
+          ref.read(swapRecvAddressExternalNotifierProvider);
+      final addrTypeString = ref.read(addrTypeStringProvider);
+
       if (!ref
           .read(isAddrTypeValidProvider(swapRecvAddressExternal, addrType))) {
         await ref.read(utilsProvider).showErrorDialog(
-            'PLEASE_ENTER_CORRECT_ADDRESS'.tr(args: [(addrTypeStr(addrType))]));
+            'PLEASE_ENTER_CORRECT_ADDRESS'.tr(args: [addrTypeString]));
         return;
       }
     }
 
-    ref.read(authInProgressStateProvider.notifier).state = true;
-    final authSucceed = await wallet.isAuthenticated();
-    ref.read(authInProgressStateProvider.notifier).state = false;
+    ref.read(authInProgressStateNotifierProvider.notifier).setState(true);
+    final authSucceed = await ref.read(walletProvider).isAuthenticated();
+    ref.invalidate(authInProgressStateNotifierProvider);
     if (!authSucceed) {
       return;
     }
 
-    if (type == SwapType.pegIn) {
+    if (swapType == const SwapType.pegIn()) {
       final msg = To();
       msg.pegInRequest = To_PegInRequest();
-      wallet.sendMsg(msg);
-      ref.read(swapStateProvider.notifier).state = SwapState.sent;
-      ref.read(authInProgressStateProvider.notifier).state = false;
+      ref.read(walletProvider).sendMsg(msg);
+      ref
+          .read(swapStateNotifierProvider.notifier)
+          .setState(const SwapState.sent());
+      ref.invalidate(authInProgressStateNotifierProvider);
       return;
     }
 
-    if (type == SwapType.pegOut) {
+    if (swapType == const SwapType.pegOut()) {
       final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider)
           as SwapCurrentFeeRateData;
       final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
+      final swapRecvAddressExternal =
+          ref.read(swapRecvAddressExternalNotifierProvider);
 
       final msg = To();
       msg.pegOutRequest = To_PegOutRequest();
@@ -581,475 +1007,30 @@ class SwapChangeNotifierProvider with ChangeNotifier {
       msg.pegOutRequest.recvAddr = swapRecvAddressExternal;
       msg.pegOutRequest.blocks = feeRate.feeRate.blocks;
       msg.pegOutRequest.feeRate = feeRate.feeRate.value;
-      msg.pegOutRequest.account = getAccount(swapSendAsset!.account);
-      wallet.sendMsg(msg);
-      ref.read(swapStateProvider.notifier).state = SwapState.sent;
+      msg.pegOutRequest.account = getAccount(swapDeliverAsset.asset.account);
+      ref.read(walletProvider).sendMsg(msg);
+      ref
+          .read(swapStateNotifierProvider.notifier)
+          .setState(const SwapState.sent());
     }
 
-    if (type == SwapType.atomic) {
+    if (swapType == const SwapType.atomic()) {
       final msg = To();
       msg.swapRequest = To_SwapRequest();
-      final sendBitcoins =
-          swapSendAsset?.assetId == ref.read(liquidAssetIdStateProvider);
-      final asset = sendBitcoins ? swapRecvAsset : swapSendAsset;
+      final sendBitcoins = swapDeliverAsset.asset.assetId ==
+          ref.read(liquidAssetIdStateProvider);
+      final swapRecvAsset = ref.read(swapReceiveAssetProvider);
+
+      final asset = sendBitcoins ? swapRecvAsset : swapDeliverAsset;
       msg.swapRequest.sendBitcoins = sendBitcoins;
-      msg.swapRequest.asset = asset?.assetId ?? '';
+      msg.swapRequest.asset = asset.asset.assetId ?? '';
       msg.swapRequest.sendAmount = Int64(sendAmount);
       msg.swapRequest.recvAmount = Int64(recvAmount);
       msg.swapRequest.price = price ?? 0.0;
-      wallet.sendMsg(msg);
-      ref.read(swapStateProvider.notifier).state = SwapState.sent;
-    }
-  }
-}
-
-@riverpod
-class SwapPriceSubscribeNotifier extends _$SwapPriceSubscribeNotifier {
-  @override
-  SwapPriceSubscribeState build() {
-    return const SwapPriceSubscribeStateEmpty();
-  }
-
-  void setEmpty() => state = const SwapPriceSubscribeStateEmpty();
-  void setSend() => state = const SwapPriceSubscribeStateSend();
-  void setRecv() => state = const SwapPriceSubscribeStateRecv();
-}
-
-final bitcoinCurrentFeeRateStateNotifierProvider =
-    StateNotifierProvider.autoDispose<
-        BitcoinCurrentFeeRateStateNotifierProvider, SwapCurrentFeeRate>(
-  (ref) {
-    final provider = BitcoinCurrentFeeRateStateNotifierProvider(
-        ref, const SwapCurrentFeeRate.empty());
-    ref.listen<BitcoinFeeRatesProvider>(bitcoinFeeRatesProvider,
-        (previous, next) {
-      provider.updateFeeRate(next.feeRates);
-    });
-    return provider;
-  },
-);
-
-class BitcoinCurrentFeeRateStateNotifierProvider
-    extends StateNotifier<SwapCurrentFeeRate> {
-  final Ref ref;
-
-  BitcoinCurrentFeeRateStateNotifierProvider(
-      this.ref, SwapCurrentFeeRate feeRate)
-      : super(feeRate) {
-    final feeRates = ref.read(walletProvider).serverStatus?.bitcoinFeeRates;
-    if (feeRates != null && feeRates.isNotEmpty) {
-      state = SwapCurrentFeeRate.data(feeRate: feeRates.first);
-    }
-  }
-
-  void updateFeeRate(List<FeeRate> feeRates) {
-    if (feeRates.isEmpty) {
-      return;
-    }
-    state.when(empty: () {
-      state = SwapCurrentFeeRate.data(feeRate: feeRates.first);
-    }, data: (feeRate) {
-      final updatedFeeRate =
-          feeRates.firstWhere((e) => e.blocks == feeRate.blocks);
-      state = SwapCurrentFeeRate.data(feeRate: updatedFeeRate);
-    });
-  }
-
-  void setFeeRate(FeeRate feeRate) {
-    state = SwapCurrentFeeRate.data(feeRate: feeRate);
-    ref
-        .read(priceStreamSubscribeNotifierProvider.notifier)
-        .subscribeToPriceStream();
-  }
-
-  void setEmpty() {
-    state = const SwapCurrentFeeRate.empty();
-  }
-}
-
-final bitcoinFeeRatesProvider =
-    Provider.autoDispose<BitcoinFeeRatesProvider>((ref) {
-  final swapType = ref.read(swapProvider).swapType();
-  final swapRecvWallet =
-      ref.watch(swapProvider.select((p) => p.swapRecvWallet));
-  final serverStatus = ref.watch(walletProvider.select((p) => p.serverStatus));
-
-  final feeRates = (swapType == SwapType.pegOut &&
-          swapRecvWallet == SwapWallet.extern &&
-          serverStatus != null)
-      ? serverStatus.bitcoinFeeRates
-      : <FeeRate>[];
-
-  return BitcoinFeeRatesProvider(ref, feeRates);
-});
-
-class BitcoinFeeRatesProvider {
-  final Ref ref;
-  final List<FeeRate> feeRates;
-
-  BitcoinFeeRatesProvider(this.ref, this.feeRates);
-
-  String feeRateDescription(FeeRate feeRate) {
-    final blocks = feeRate.blocks;
-    final value = feeRate.value;
-    final duration = Duration(minutes: blocks * 10);
-    if (duration.inMinutes <= 60) {
-      return 'BLOCKS_MINUTES'
-          .plural(blocks, args: ['$blocks', '${duration.inMinutes}', '$value']);
-    } else {
-      return 'BLOCKS_HOURS'
-          .plural(blocks, args: ['$blocks', '${duration.inHours}', '$value']);
-    }
-  }
-}
-
-final swapSendAmountChangeNotifierProvider =
-    ChangeNotifierProvider.autoDispose<SwapSendAmountProvider>((ref) {
-  return SwapSendAmountProvider(ref);
-});
-
-class SwapSendAmountProvider extends ChangeNotifier {
-  final Ref ref;
-  String amount = '';
-  int satoshiAmount = 0;
-
-  SwapSendAmountProvider(this.ref);
-
-  void setAmount(String value) {
-    amount = value;
-
-    if (amount.isEmpty) {
-      satoshiAmount = 0;
-    } else {
-      final sendAsset = ref.read(swapProvider).swapSendAsset;
-      satoshiAmount = ref.read(satoshiForAmountProvider(
-          assetId: sendAsset?.assetId ?? '', amount: amount));
-    }
-
-    notifyListeners();
-  }
-}
-
-final swapRecvAmountChangeNotifierProvider =
-    ChangeNotifierProvider.autoDispose<SwapRecvAmountProvider>((ref) {
-  return SwapRecvAmountProvider(ref);
-});
-
-class SwapRecvAmountProvider extends ChangeNotifier {
-  final Ref ref;
-  String amount = '';
-  int satoshiAmount = 0;
-
-  SwapRecvAmountProvider(this.ref);
-
-  void setAmount(String value) {
-    amount = value;
-
-    if (amount.isEmpty) {
-      satoshiAmount = 0;
-    } else {
-      final recvAsset = ref.read(swapProvider).swapRecvAsset;
-      satoshiAmount = ref.read(satoshiForAmountProvider(
-          assetId: recvAsset?.assetId ?? '', amount: amount));
-    }
-
-    notifyListeners();
-  }
-}
-
-final showInsufficientFundsProvider = Provider.autoDispose<bool>((ref) {
-  final serverError = ref.watch(swapNetworkErrorNotifierProvider);
-  if (serverError.isNotEmpty) {
-    return false;
-  }
-
-  final swapSendAsset = ref.watch(swapProvider.select((p) => p.swapSendAsset));
-  final balance = ref.watch(balancesNotifierProvider)[swapSendAsset] ?? 0;
-  final satoshiAmount = ref.watch(
-      swapSendAmountChangeNotifierProvider.select((p) => p.satoshiAmount));
-  return satoshiAmount > 0 && satoshiAmount > balance;
-});
-
-@riverpod
-class PriceStreamSubscribeNotifier extends _$PriceStreamSubscribeNotifier {
-  @override
-  From_UpdatePriceStream build() {
-    final subscription = ref
-        .watch(walletProvider)
-        .updatePriceStream
-        .listen(onUpdatePriceStreamChanged);
-
-    ref.onDispose(() {
-      subscription.cancel();
-    });
-    return From_UpdatePriceStream();
-  }
-
-  void onUpdatePriceStreamChanged(From_UpdatePriceStream value) {
-    state = value;
-
-    if (value.hasRecvAmount()) {
+      ref.read(walletProvider).sendMsg(msg);
       ref
-          .read(satoshiRecvAmountStateNotifierProvider.notifier)
-          .setSatoshiAmount(value.recvAmount.toInt());
-    }
-
-    if (value.hasSendAmount()) {
-      ref
-          .read(satoshiSendAmountStateNotifierProvider.notifier)
-          .setSatoshiAmount(value.sendAmount.toInt());
-    }
-  }
-
-  Future<void> subscribeToPriceStream() async {
-    Future.microtask(() async {
-      ref.read(swapProvider).swapReset();
-    });
-    final type = ref.read(swapProvider).swapType();
-
-    ref.read(walletProvider).unsubscribeFromPriceStream();
-
-    if (type == SwapType.atomic) {
-      final swapSendAsset = ref.read(swapProvider).swapSendAsset;
-      final swapRecvAsset = ref.read(swapProvider).swapRecvAsset;
-      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
-      final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
-          ? ref.read(swapSendAmountChangeNotifierProvider).satoshiAmount
-          : null;
-      final recvAmount = (subscribe == const SwapPriceSubscribeState.recv())
-          ? ref.read(swapRecvAmountChangeNotifierProvider).satoshiAmount
-          : null;
-      final sendBitcoins =
-          swapSendAsset?.assetId == ref.read(liquidAssetIdStateProvider);
-      final asset = sendBitcoins ? swapRecvAsset : swapSendAsset;
-      ref.read(walletProvider).subscribeToPriceStream(
-            asset?.assetId ?? '',
-            sendBitcoins,
-            sendAmount,
-            recvAmount,
-          );
-    } else if (type == SwapType.pegOut) {
-      final subscribe = ref.read(swapPriceSubscribeNotifierProvider);
-      final swapSendAsset = ref.read(swapProvider).swapSendAsset;
-      final feeRate = ref.read(bitcoinCurrentFeeRateStateNotifierProvider);
-      final sendAmount = (subscribe == const SwapPriceSubscribeState.send())
-          ? ref.read(swapSendAmountChangeNotifierProvider).satoshiAmount
-          : null;
-      final recvAmount = (subscribe == const SwapPriceSubscribeState.recv())
-          ? ref.read(swapRecvAmountChangeNotifierProvider).satoshiAmount
-          : null;
-      if (((sendAmount ?? 0) > 0 || (recvAmount ?? 0) > 0) &&
-          feeRate is SwapCurrentFeeRateData) {
-        ref.read(walletProvider).getPegOutAmount(sendAmount, recvAmount,
-            feeRate.feeRate.value, swapSendAsset!.account);
-      }
+          .read(swapStateNotifierProvider.notifier)
+          .setState(const SwapState.sent());
     }
   }
 }
-
-final satoshiRecvAmountStateNotifierProvider =
-    StateNotifierProvider.autoDispose<SatoshiRecvAmountProvider, int>((ref) {
-  return SatoshiRecvAmountProvider(ref);
-});
-
-class SatoshiRecvAmountProvider extends StateNotifier<int> {
-  final Ref ref;
-
-  SatoshiRecvAmountProvider(this.ref) : super(0);
-
-  void setSatoshiAmount(int value) {
-    state = value;
-  }
-}
-
-final satoshiSendAmountStateNotifierProvider =
-    StateNotifierProvider.autoDispose<SatoshiSendAmountProvider, int>((ref) {
-  return SatoshiSendAmountProvider(ref);
-});
-
-class SatoshiSendAmountProvider extends StateNotifier<int> {
-  final Ref ref;
-
-  SatoshiSendAmountProvider(this.ref) : super(0);
-
-  void setSatoshiAmount(int value) {
-    state = value;
-  }
-}
-
-final recvAmountPriceStreamWatcherProvider =
-    Provider.autoDispose<SwapRecvAmountPriceStream>((ref) {
-  final authInProgress = ref.watch(authInProgressStateProvider);
-  final swapState = ref.watch(swapStateProvider);
-
-  if (swapState != SwapState.idle || authInProgress) {
-    return const SwapRecvAmountPriceStream.empty();
-  }
-
-  final subscribeState = ref.watch(swapPriceSubscribeNotifierProvider);
-
-  if (subscribeState != const SwapPriceSubscribeState.send()) {
-    return const SwapRecvAmountPriceStream.empty();
-  }
-
-  final recvAsset = ref.watch(swapProvider.select((p) => p.swapRecvAsset));
-  final recvAmount = ref.watch(satoshiRecvAmountStateNotifierProvider);
-  final recvPrecision = ref
-      .read(assetUtilsProvider)
-      .getPrecisionForAssetId(assetId: recvAsset?.assetId);
-
-  final amountProvider = ref.watch(amountToStringProvider);
-  final recvAmountStr = amountProvider.amountToString(
-      AmountToStringParameters(amount: recvAmount, precision: recvPrecision));
-  final recvValue = replaceCharacterOnPosition(
-    input: recvAmount != 0 ? recvAmountStr : '',
-  );
-  return SwapRecvAmountPriceStream.data(value: recvValue);
-});
-
-final sendAmountPriceStreamWatcherProvider =
-    Provider.autoDispose<SwapSendAmountPriceStream>((ref) {
-  final authInProgress = ref.watch(authInProgressStateProvider);
-  final swapState = ref.watch(swapStateProvider);
-
-  if (swapState != SwapState.idle || authInProgress) {
-    return const SwapSendAmountPriceStream.empty();
-  }
-
-  final subscribeState = ref.watch(swapPriceSubscribeNotifierProvider);
-
-  if (subscribeState != const SwapPriceSubscribeState.recv()) {
-    return const SwapSendAmountPriceStream.empty();
-  }
-
-  final msg = ref.watch(priceStreamSubscribeNotifierProvider);
-  if (!msg.hasSendAmount()) {
-    return const SwapSendAmountPriceStream.empty();
-  }
-
-  final sendAsset = ref.watch(swapProvider.select((p) => p.swapSendAsset));
-  final sendAmount = ref.watch(satoshiSendAmountStateNotifierProvider);
-  final sendPrecision = ref
-      .read(assetUtilsProvider)
-      .getPrecisionForAssetId(assetId: sendAsset?.assetId);
-  final amountProvider = ref.watch(amountToStringProvider);
-  final sendAmountStr = amountProvider.amountToString(
-      AmountToStringParameters(amount: sendAmount, precision: sendPrecision));
-  final sendValue = replaceCharacterOnPosition(
-    input: sendAmount != 0 ? sendAmountStr : '',
-  );
-
-  return SwapSendAmountPriceStream.data(value: sendValue);
-});
-
-final authInProgressStateProvider =
-    StateProvider.autoDispose<bool>((ref) => false);
-
-final swapStateProvider =
-    StateProvider.autoDispose<SwapState>((ref) => SwapState.idle);
-
-@riverpod
-class SwapNetworkErrorNotifier extends _$SwapNetworkErrorNotifier {
-  @override
-  String build() {
-    final msg = ref.watch(priceStreamSubscribeNotifierProvider);
-    if (msg.hasErrorMsg()) {
-      return msg.errorMsg;
-    }
-
-    return '';
-  }
-
-  void setState(String value) {
-    state = value;
-  }
-}
-
-final swapPriceStateNotifierProvider =
-    StateNotifierProvider.autoDispose<SwapPriceProvider, double?>((ref) {
-  return SwapPriceProvider(ref, null);
-});
-
-class SwapPriceProvider extends StateNotifier<double?> {
-  final Ref ref;
-
-  SwapPriceProvider(this.ref, double? price) : super(price);
-
-  void setPrice(double? value) {
-    state = value;
-  }
-
-  String? getPriceText() {
-    final swapType = ref.read(swapProvider).swapType();
-
-    if (swapType == SwapType.atomic) {
-      final assetSend = ref.read(swapProvider).swapSendAsset;
-      final assetRecv = ref.read(swapProvider).swapRecvAsset;
-      final price = state;
-      if (assetSend == null || assetRecv == null || price == null) {
-        return null;
-      }
-      final sendLiquid =
-          assetSend.assetId == ref.read(liquidAssetIdStateProvider);
-      final asset = sendLiquid ? assetRecv : assetSend;
-
-      final priceString = priceStr(price, false);
-      var assetTicker =
-          ref.read(assetUtilsProvider).tickerForAssetId(asset.assetId);
-      assetTicker = assetTicker.isEmpty ? kUnknownTicker : assetTicker;
-      final swapText = '1 $kLiquidBitcoinTicker = $priceString $assetTicker';
-      return swapText;
-    }
-
-    final serverStatus = ref.read(walletProvider).serverStatus;
-    if (serverStatus == null) {
-      return null;
-    }
-
-    final serverPercent = swapType == SwapType.pegIn
-        ? serverStatus.serverFeePercentPegIn
-        : serverStatus.serverFeePercentPegOut;
-    final percentConversion = 100 - serverPercent;
-    final conversionStr = percentConversion.toStringAsFixed(2);
-    final conversionText = 'Conversion rate $conversionStr%';
-    return conversionText;
-  }
-}
-
-final swapAddressErrorStateProvider =
-    StateProvider.autoDispose<String?>((ref) => null);
-
-final showAddressLabelStateProvider =
-    StateProvider.autoDispose<bool>((ref) => false);
-
-final swapEnabledStateProvider = StateProvider.autoDispose<bool>((ref) {
-  final swapType = ref.watch(swapProvider).swapType();
-  final sendSatoshiAmount =
-      ref.watch(swapSendAmountChangeNotifierProvider).satoshiAmount;
-  final recvSatoshiAmount =
-      ref.watch(swapRecvAmountChangeNotifierProvider).satoshiAmount;
-  final insufficientFunds = ref.watch(showInsufficientFundsProvider);
-  final addressErrorText = ref.watch(swapAddressErrorStateProvider);
-  final addressRecvExternal = ref.watch(swapProvider).swapRecvAddressExternal;
-  final swapState = ref.watch(swapStateProvider);
-
-  bool enabled;
-  switch (swapType) {
-    case SwapType.atomic:
-      enabled =
-          sendSatoshiAmount > 0 && recvSatoshiAmount > 0 && !insufficientFunds;
-      break;
-    case SwapType.pegIn:
-      enabled = true;
-      break;
-    case SwapType.pegOut:
-      enabled = sendSatoshiAmount > 0 &&
-          !insufficientFunds &&
-          addressRecvExternal.isNotEmpty &&
-          addressErrorText == null;
-      break;
-  }
-
-  enabled = enabled && swapState == SwapState.idle;
-  return enabled;
-});

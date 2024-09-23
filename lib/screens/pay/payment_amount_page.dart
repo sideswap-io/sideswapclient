@@ -504,6 +504,8 @@ class PaymentAmountPageBody extends HookConsumerWidget {
           padding:
               const EdgeInsets.only(top: 36, bottom: 24, left: 16, right: 16),
           child: Consumer(builder: (context, ref, _) {
+            final paymentHelper = ref.watch(paymentHelperProvider);
+
             return CustomBigButton(
               width: double.infinity,
               height: 54,
@@ -514,13 +516,13 @@ class PaymentAmountPageBody extends HookConsumerWidget {
                   ? () {
                       final paymentAmountPageArguments =
                           ref.read(paymentAmountPageArgumentsNotifierProvider);
-                      ref.read(paymentHelperProvider).selectPaymentSend(
-                            amount.value,
-                            accountAsset,
-                            address: paymentAmountPageArguments.result?.address,
-                            friend: friend.value,
-                            isGreedy: isMaxPressed.value,
-                          );
+                      paymentHelper.selectPaymentSend(
+                        amount.value,
+                        accountAsset,
+                        address: paymentAmountPageArguments.result?.address,
+                        friend: friend.value,
+                        isGreedy: isMaxPressed.value,
+                      );
                     }
                   : null,
             );

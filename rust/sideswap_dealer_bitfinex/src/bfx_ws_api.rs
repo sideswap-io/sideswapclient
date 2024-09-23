@@ -402,11 +402,16 @@ fn process_book_msg(
     chan_id: i64,
     orig_msg: &str,
 ) -> Result<Vec<Event>, anyhow::Error> {
-    let book = state
-        .books
-        .iter_mut()
-        .find(|book| book.chan_id == chan_id)
-        .ok_or_else(|| anyhow!("can't find book with chan_id {chan_id}"))?;
+    let book = match state.books.iter_mut().find(|book| book.chan_id == chan_id) {
+        Some(book) => book,
+        None => {
+            if list.get(1).and_then(|value| value.as_str()) == Some("hb") {
+                log::debug!("ignore unexpected hb messages to {chan_id}");
+                return Ok(Vec::new());
+            }
+            bail!("can't find book with chan_id {chan_id}")
+        }
+    };
 
     if let Some(new_points) = list.get(1).and_then(|list| list.as_array()) {
         process_book_update(book, new_points)

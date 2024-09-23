@@ -26,8 +26,8 @@ class FeeRates extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.only(top: 32, left: 16, right: 16),
           child: Consumer(builder: (context, ref, _) {
-            final feeRates =
-                ref.watch(bitcoinFeeRatesProvider.select((p) => p.feeRates));
+            final feeRates = ref.watch(bitcoinFeeRatesProvider);
+
             return ListView.builder(
               itemCount: feeRates.length,
               itemBuilder: (context, index) {
@@ -62,9 +62,8 @@ class FeeRates extends StatelessWidget {
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                ref
-                                    .read(bitcoinFeeRatesProvider)
-                                    .feeRateDescription(feeRates[index]),
+                                ref.read(bitcoinFeeRateDescriptionProvider(
+                                    feeRates[index])),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.normal,

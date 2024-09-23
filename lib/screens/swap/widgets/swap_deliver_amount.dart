@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:sideswap/models/account_asset.dart';
 import 'package:sideswap/models/amount_to_string_model.dart';
 import 'package:sideswap/providers/amount_to_string_provider.dart';
 import 'package:sideswap/providers/balances_provider.dart';
 import 'package:sideswap/providers/request_order_provider.dart';
 import 'package:sideswap/models/swap_models.dart';
+import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/providers/wallet_assets_providers.dart';
 import 'package:sideswap/screens/swap/widgets/swap_side_amount.dart';
@@ -19,20 +19,19 @@ class SwapDeliverAmount extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final swapSendAsset =
-        ref.watch(swapProvider.select((p) => p.swapSendAsset));
-    final balance = ref.watch(balancesNotifierProvider)[swapSendAsset] ?? 0;
+    final swapDeliverAsset = ref.watch(swapDeliverAssetProvider);
+
+    final balance =
+        ref.watch(balancesNotifierProvider)[swapDeliverAsset.asset] ?? 0;
     final precision = ref
         .watch(assetUtilsProvider)
-        .getPrecisionForAssetId(assetId: swapSendAsset?.assetId);
+        .getPrecisionForAssetId(assetId: swapDeliverAsset.asset.assetId);
     final amountProvider = ref.watch(amountToStringProvider);
     final balanceStr = amountProvider.amountToString(
         AmountToStringParameters(amount: balance, precision: precision));
-    final swapSendAssets = ref.watch(swapProvider).swapSendAssets().toList();
-    final swapSendWallet =
-        ref.watch(swapProvider.select((p) => p.swapSendWallet));
-    final swapState = ref.watch(swapStateProvider);
-    final swapType = ref.watch(swapProvider).swapType();
+    final swapSendWallet = ref.watch(swapSendWalletProvider);
+    final swapState = ref.watch(swapStateNotifierProvider);
+    final swapType = ref.watch(swapTypeProvider);
     final subscribe = ref.watch(swapPriceSubscribeNotifierProvider);
     final serverError = subscribe == const SwapPriceSubscribeState.recv()
         ? ''
@@ -41,67 +40,56 @@ class SwapDeliverAmount extends HookConsumerWidget {
 
     final swapSendAmountController = useTextEditingController();
 
-    ref.listen<SwapSendAmountProvider>(swapSendAmountChangeNotifierProvider,
-        (previous, next) {
-      swapSendAmountController.text = next.amount;
+    ref.listen(swapSendTextAmountNotifierProvider, (previous, next) {
+      swapSendAmountController.text = next;
     });
 
-    final showDeliverDefaultCurrencyConversion = swapType == SwapType.pegOut;
+    final showDeliverDefaultCurrencyConversion =
+        swapType == const SwapType.pegOut();
 
     final defaultCurrencyConversion2 = showDeliverDefaultCurrencyConversion
         ? ref.watch(defaultCurrencyConversionFromStringProvider(
-            swapSendAsset?.assetId, swapSendAmountController.text))
+            swapDeliverAsset.asset.assetId, swapSendAmountController.text))
         : null;
 
-    return switch (swapSendAsset) {
-      AccountAsset() => SwapSideAmount(
-          text: 'Deliver'.tr(),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          controller: swapSendAmountController,
-          focusNode: deliverFocusNode,
-          isMaxVisible: true,
-          balance: balanceStr,
-          readOnly: swapSendWallet == SwapWallet.extern ||
-              swapState != SwapState.idle,
-          onEditingCompleted: () {
-            if (ref.read(swapEnabledStateProvider)) {
-              ref.read(swapProvider).swapAccept();
-            }
-          },
-          hintText: '0.0',
-          showHintText: true,
-          visibleToggles: false,
-          dropdownValue: swapSendAsset,
-          availableAssets: swapSendAssets,
-          labelGroupValue: swapSendWallet,
-          defaultCurrencyConversion2: defaultCurrencyConversion2,
-          swapType: swapType,
-          showInsufficientFunds: showInsufficientFunds,
-          errorDescription: serverError,
-          localLabelOnChanged: (value) =>
-              ref.read(swapProvider).setSendRadioCb(SwapWallet.local),
-          externalLabelOnChanged: (value) =>
-              ref.read(swapProvider).setSendRadioCb(SwapWallet.extern),
-          onDropdownChanged: ref.read(swapProvider).setDeliverAsset,
-          onChanged: (value) {
-            ref.read(swapStateProvider.notifier).state = SwapState.idle;
-            ref
-                .read(swapRecvAmountChangeNotifierProvider.notifier)
-                .setAmount('0');
+    return SwapSideAmount(
+      text: 'Deliver'.tr(),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      controller: swapSendAmountController,
+      focusNode: deliverFocusNode,
+      isMaxVisible: true,
+      balance: balanceStr,
+      readOnly: swapSendWallet == const SwapWallet.extern() ||
+          swapState != const SwapState.idle(),
+      onEditingCompleted: () {
+        if (ref.read(swapEnabledStateProvider)) {
+          ref.read(swapHelperProvider).swapAccept();
+        }
+      },
+      hintText: '0.0',
+      showHintText: true,
+      visibleToggles: false,
+      dropdownValue: swapDeliverAsset.asset,
+      availableAssets: swapDeliverAsset.assetList,
+      labelGroupValue: swapSendWallet,
+      defaultCurrencyConversion2: defaultCurrencyConversion2,
+      swapType: swapType,
+      showInsufficientFunds: showInsufficientFunds,
+      errorDescription: serverError,
+      onDropdownChanged: ref.read(swapHelperProvider).setDeliverAsset,
+      onChanged: (value) {
+        ref.invalidate(swapStateNotifierProvider);
+        ref.read(swapRecvTextAmountNotifierProvider.notifier).setAmount('0');
 
-            ref
-                .read(swapSendAmountChangeNotifierProvider.notifier)
-                .setAmount(value);
+        ref.read(swapSendTextAmountNotifierProvider.notifier).setAmount(value);
 
-            ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
-            ref
-                .read(priceStreamSubscribeNotifierProvider.notifier)
-                .subscribeToPriceStream();
-          },
-          onMaxPressed: ref.read(swapProvider).onMaxSendPressed,
-          showAccountsInPopup: true,
-        ),
-      _ => const SizedBox(),
-    };
+        ref.read(swapPriceSubscribeNotifierProvider.notifier).setSend();
+        ref
+            .read(subscribePriceStreamNotifierProvider.notifier)
+            .subscribeToPriceStream();
+      },
+      onMaxPressed: ref.read(swapHelperProvider).onMaxSendPressed,
+      showAccountsInPopup: true,
+    );
   }
 }

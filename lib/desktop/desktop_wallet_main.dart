@@ -56,7 +56,7 @@ class DesktopWalletMain extends HookConsumerWidget {
       bottomBar: DesktopMainBottomNavigationBar(
         currentIndex: walletMainArguments.currentIndex,
         onTap: (index) {
-          ref.read(swapProvider).swapReset();
+          ref.read(swapHelperProvider).swapReset();
           final newWalletMainArguments =
               walletMainArguments.fromIndexDesktop(index);
           ref
@@ -64,12 +64,12 @@ class DesktopWalletMain extends HookConsumerWidget {
               .setWalletMainArguments(newWalletMainArguments);
           if (newWalletMainArguments.navigationItemEnum ==
               WalletMainNavigationItemEnum.pegs) {
-            ref.read(swapProvider).switchToPegs();
+            ref.read(swapHelperProvider).switchToPegs();
           }
 
           if (newWalletMainArguments.navigationItemEnum ==
               WalletMainNavigationItemEnum.swap) {
-            ref.read(swapProvider).switchToSwaps();
+            ref.read(swapHelperProvider).switchToSwaps();
           }
         },
       ),

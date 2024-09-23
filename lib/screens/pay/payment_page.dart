@@ -76,6 +76,8 @@ class PaymentPage extends HookConsumerWidget {
       return;
     }, [addressText]);
 
+    final paymentHelper = ref.watch(paymentHelperProvider);
+
     ref.listen<QrCodeResultModel>(qrCodeResultModelNotifierProvider, (_, next) {
       next.when(
           empty: () {},
@@ -83,7 +85,7 @@ class PaymentPage extends HookConsumerWidget {
             if (result?.outputsData != null) {
               // go to the confirm transaction page directly
               ref.invalidate(paymentAmountPageArgumentsNotifierProvider);
-              ref.read(paymentHelperProvider).outputsPaymentSend();
+              paymentHelper.outputsPaymentSend();
               return;
             }
             addressController.text = result?.address ?? '';

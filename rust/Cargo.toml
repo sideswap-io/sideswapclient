@@ -23,6 +23,7 @@ members = [
 ]
 
 [workspace.dependencies]
+aes-gcm-siv = { version = "0.11.1", features = ["std"] }
 allo-isolate = "0.1"
 anyhow = "1.0"
 arc-swap = "1.7.1"
@@ -32,6 +33,7 @@ base64 = "0.21"
 bip39 = "2.0.0"
 bitcoin = { version = "0.31", features = [ "serde" ] }
 bitcoin_hashes = "0.14.0"
+blake3 = { version = "1.5" }
 block-modes = "0.8.0"
 btleplug = { version = "0.11.5" }
 bytes = "1.5"
@@ -50,6 +52,7 @@ futures = "0.3"
 git2 = { version = "0.18", default-features = false }
 hex = "0.4"
 hex-literal = "0.4.1"
+hkdf = "0.12"
 hmac = "0.12.1"
 jni = "0.21.1"
 libc = "0.2"
@@ -65,13 +68,12 @@ rmp-serde = "1.2"
 rusqlite = { version = "0.30.0", features = ["bundled"] }
 secp256k1 = { version = "0.28", features = ["global-context", "rand"] }
 secp256k1-zkp = { version = "0.10.0", features = ["global-context"] }
-semver = { version = "1.0.22" }
 serde = { version = "1.0", features = ["derive"] }
 serde_bytes = "0.11"
 serde_json = { version = "1.0", features = ["arbitrary_precision"] }
 serde_with = "1.10"
 serialport = "4.2"
-sha2 = "0.10.8"
+sha2 = "0.10"
 thiserror = "1.0"
 time = { version = "0.3", features = ["local-offset", "formatting", "macros", "parsing"] }
 tokio = { version = "1.15", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time"] }
@@ -81,5 +83,5 @@ tungstenite = { version = "0.20", default-features = false }
 uniffi = { version = "0.27.2" }
 ureq = { version = "2.9", features = ["json", "socks-proxy"] }
 url = "2.3"
-uuid = { version = "1.8.0" }
+uuid = { version = "1.8" }
 vergen = { version = "5.1", default-features = false, features = ["build", "rustc", "git"] }

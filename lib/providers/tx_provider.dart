@@ -472,9 +472,9 @@ class TransItemHelper {
     final liquidAssetId = ref.read(liquidAssetIdStateProvider);
     final txFee = transItem.tx.networkFee;
     final tempBalances = [...transItem.tx.balances];
-    tempBalances.removeWhere((element) => element.assetId != liquidAssetId);
-    return (tempBalances.any((element) => element.amount != -txFee) &&
-        transItem.tx.balances.length > 1);
+    tempBalances.removeWhere((element) =>
+        element.assetId == liquidAssetId && element.amount == -txFee);
+    return tempBalances.length > 1;
   }
 
   List<({String assetId, String ticker, String amount})> getBalancesAll() {

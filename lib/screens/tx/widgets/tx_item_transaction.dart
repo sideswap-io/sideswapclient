@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -285,6 +286,7 @@ class TxItemSendBalance extends ConsumerWidget {
     final balanceStr = transItemHelper.txSendBalance();
     final balanceColor =
         balanceStr.contains('+') ? SideSwapColors.menthol : Colors.white;
+    final isMultipleOutput = transItemHelper.getSentMultipleOutputs();
 
     return Column(
       children: [
@@ -302,13 +304,23 @@ class TxItemSendBalance extends ConsumerWidget {
         ),
         Row(
           children: [
-            Text(
-              balanceStr,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyLarge
-                  ?.copyWith(color: balanceColor),
-            ),
+            ...switch (isMultipleOutput) {
+              true => [const SizedBox(width: 9), const MultipleOutputsIcon()],
+              _ => [const SizedBox()],
+            },
+            const SizedBox(width: 6),
+            isMultipleOutput
+                ? Text(
+                    'Multiple outputs'.tr(),
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  )
+                : Text(
+                    balanceStr,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(color: balanceColor),
+                  ),
           ],
         ),
       ],

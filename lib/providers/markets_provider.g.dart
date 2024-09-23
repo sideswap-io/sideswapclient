@@ -803,7 +803,7 @@ final orderEntryCallbackHandlersProvider =
 typedef OrderEntryCallbackHandlersRef
     = AutoDisposeProviderRef<OrderEntryCallbackHandlers>;
 String _$indexPriceSubscriberNotifierHash() =>
-    r'599c5c73c7f18c29f779fe2cade92afc071e9875';
+    r'4bca985c863b963e7e19859b55b0a32f00fc6c77';
 
 /// See also [IndexPriceSubscriberNotifier].
 @ProviderFor(IndexPriceSubscriberNotifier)

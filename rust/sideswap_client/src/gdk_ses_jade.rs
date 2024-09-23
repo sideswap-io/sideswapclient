@@ -6,6 +6,7 @@ use crate::{
     ffi,
     gdk_json::{self, AddressInfo},
     gdk_ses::{self, NotifCallback, WalletInfo},
+    gdk_ses_impl::CreatedTxCache,
     settings::WatchOnly,
 };
 
@@ -75,18 +76,20 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
 
     fn create_tx(
         &mut self,
+        cache: &mut CreatedTxCache,
         req: ffi::proto::CreateTx,
     ) -> Result<ffi::proto::CreatedTx, anyhow::Error> {
-        self.watch_only.create_tx(req)
+        self.watch_only.create_tx(cache, req)
     }
 
     fn send_tx(
         &mut self,
+        cache: &mut CreatedTxCache,
         id: &str,
         assets: &BTreeMap<AssetId, Asset>,
     ) -> Result<elements::Txid, anyhow::Error> {
         self.check_jade()?;
-        self.jade.send_tx(id, assets)
+        self.jade.send_tx(cache, id, assets)
     }
 
     fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {

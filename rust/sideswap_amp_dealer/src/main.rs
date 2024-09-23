@@ -241,15 +241,24 @@ async fn create_order(
     Ok(())
 }
 
-async fn edit_order_price(data: &mut Data, order_data: &OrderData) -> Result<(), anyhow::Error> {
-    let order = match order_data.order.as_ref() {
+fn price_diff(old: f64, new: f64) -> f64 {
+    (new - old).abs() / old
+}
+
+async fn edit_order_price(
+    data: &mut Data,
+    order_data: &mut OrderData,
+) -> Result<(), anyhow::Error> {
+    let order = match order_data.order.as_mut() {
         Some(order) => order,
         None => return Ok(()),
     };
 
     let new_price = get_bitcoin_price(data, &order_data.amount)?;
 
-    if order.price != new_price {
+    let price_diff = price_diff(order.price, new_price);
+
+    if price_diff > 0.005 {
         make_request!(
             data.ws,
             Edit,
@@ -259,6 +268,8 @@ async fn edit_order_price(data: &mut Data, order_data: &OrderData) -> Result<(),
                 index_price: None,
             }
         )?;
+
+        order.price = new_price;
     }
 
     Ok(())

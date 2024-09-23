@@ -581,7 +581,6 @@
   "Transaction inputs:": "交易输入:",
   "Total amounts:": "总金额:",
   "Error loading inputs": "加载输入时出错",
-  "You need to select enough L-BTC to cover network fees.": "您需要选择足够的 L-BTC 来支付网络费用。",
   "Network fees will be visible on the transaction review screen.": "网络费用将显示在交易审查屏幕上。",
   "Blinded": "致盲",
   "Unblinded": "不设盲",

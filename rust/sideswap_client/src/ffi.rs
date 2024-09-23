@@ -16,6 +16,8 @@ pub mod proto {
 pub type ToMsg = proto::to::Msg;
 pub type FromMsg = proto::from::Msg;
 
+pub const GIT_COMMIT_HASH: &'static str = env!("VERGEN_GIT_SHA");
+
 static INIT_LOGGER_FLAG: Once = Once::new();
 
 pub struct StartParams {
@@ -113,7 +115,7 @@ pub fn sideswap_client_start_impl(env: Env, start_params: StartParams, dart_port
 
     info!(
         "started: {} ({}/{})",
-        env!("VERGEN_GIT_SHA"),
+        GIT_COMMIT_HASH,
         std::env::consts::OS,
         std::env::consts::ARCH,
     );

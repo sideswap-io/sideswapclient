@@ -19,15 +19,14 @@ class SwapBottomButton extends HookConsumerWidget {
         height: 54,
         enabled: enabled,
         backgroundColor: SideSwapColors.brightTurquoise,
-        onPressed: enabled ? () => ref.read(swapProvider).swapAccept() : null,
+        onPressed:
+            enabled ? () => ref.read(swapHelperProvider).swapAccept() : null,
         child: Stack(
           alignment: Alignment.center,
           children: [
             Consumer(
               builder: (context, ref, _) {
-                final swapType = ref.watch(swapProvider).swapType();
-                final swapTypeStr =
-                    ref.watch(swapProvider).swapTypeStr(swapType).toUpperCase();
+                final swapTypeStr = ref.watch(swapTypeStringProvider);
 
                 return Text(
                   swapTypeStr,
@@ -41,8 +40,8 @@ class SwapBottomButton extends HookConsumerWidget {
             ),
             Consumer(
               builder: (context, ref, _) {
-                final swapState = ref.watch(swapStateProvider);
-                if (swapState == SwapState.sent) {
+                final swapState = ref.watch(swapStateNotifierProvider);
+                if (swapState == const SwapState.sent()) {
                   return const Padding(
                     padding: EdgeInsets.only(left: 84),
                     child: SizedBox(

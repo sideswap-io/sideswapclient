@@ -583,7 +583,6 @@
   "Transaction inputs:": "Входные данные транзакции:",
   "Total amounts:": "Общие суммы:",
   "Error loading inputs": "Ошибка загрузки входных данных.",
-  "You need to select enough L-BTC to cover network fees.": "Вам нужно выбрать достаточно L-BTC, чтобы покрыть комиссии сети.",
   "Network fees will be visible on the transaction review screen.": "Комиссии сети будут отображаться на экране проверки транзакции.",
   "Blinded": "Ослепленный",
   "Unblinded": "Неослепленный",

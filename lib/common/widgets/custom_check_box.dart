@@ -18,6 +18,7 @@ class CustomCheckBox extends HookConsumerWidget {
     this.backgroundChecked = SideSwapColors.brightTurquoise,
     this.backgroundUnchecked = SideSwapColors.blumine,
     this.value = false,
+    this.enabled = true,
   });
 
   final ValueChanged<bool>? onChecked;
@@ -30,6 +31,7 @@ class CustomCheckBox extends HookConsumerWidget {
   final Color backgroundChecked;
   final Color backgroundUnchecked;
   final bool value;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -77,21 +79,27 @@ class CustomCheckBox extends HookConsumerWidget {
 
     return DButton(
       style: buttonStyle,
-      onPressed: () {
-        onChecked?.call(!value);
-      },
+      onPressed: enabled
+          ? () {
+              onChecked?.call(!value);
+            }
+          : null,
       child: Center(
         child: Container(
           width: size ?? 18,
           height: size ?? 18,
           decoration: BoxDecoration(
             border: Border.all(
-              color: frameColorAnimation ?? Colors.transparent,
+              color: enabled
+                  ? frameColorAnimation ?? Colors.transparent
+                  : SideSwapColors.cornFlower,
             ),
             borderRadius: BorderRadius.all(
               radius ?? const Radius.circular(6),
             ),
-            color: backgroundColorAnimation ?? Colors.transparent,
+            color: enabled
+                ? backgroundColorAnimation ?? Colors.transparent
+                : Colors.transparent,
           ),
           child: Center(
             child: Opacity(
@@ -100,7 +108,7 @@ class CustomCheckBox extends HookConsumerWidget {
                   Icon(
                     Icons.check,
                     size: iconSize ?? 13,
-                    color: Colors.white,
+                    color: enabled ? Colors.white : SideSwapColors.cornFlower,
                   ),
             ),
           ),

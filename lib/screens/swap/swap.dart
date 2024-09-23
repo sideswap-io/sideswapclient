@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:sideswap/models/swap_models.dart';
+import 'package:sideswap/providers/subscribe_price_providers.dart';
 import 'package:sideswap/providers/swap_provider.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_background.dart';
 import 'package:sideswap/screens/swap/widgets/swap_bottom_button.dart';
@@ -11,43 +12,48 @@ import 'package:sideswap/screens/swap/widgets/swap_deliver_amount.dart';
 import 'package:sideswap/screens/swap/widgets/swap_middle_icon.dart';
 import 'package:sideswap/screens/swap/widgets/swap_receive_amount.dart';
 import 'package:sideswap/screens/swap/widgets/top_swap_buttons.dart';
+import 'package:sideswap_protobuf/sideswap_api.dart';
 
 class SwapMain extends HookConsumerWidget {
   const SwapMain({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<bool>(showAddressLabelStateProvider, (_, next) {
-      final errorText = ref.read(swapAddressErrorStateProvider);
+    ref.listen<bool>(showAddressLabelProvider, (_, next) {
+      final errorText = ref.read(swapAddressErrorProvider);
       if (next && errorText == null) {
         FocusManager.instance.primaryFocus?.unfocus();
       }
     });
-    ref.listen(swapSendAmountChangeNotifierProvider, (_, __) {});
-    ref.listen(swapRecvAmountChangeNotifierProvider, (_, __) {});
+    ref.listen(swapSendTextAmountNotifierProvider, (_, __) {});
+    ref.listen(swapRecvTextAmountNotifierProvider, (_, __) {});
     ref.listen(satoshiSendAmountStateNotifierProvider, (_, __) {});
     ref.listen(satoshiRecvAmountStateNotifierProvider, (_, __) {});
     ref.listen<String>(swapNetworkErrorNotifierProvider, (_, next) {
       if (next.isNotEmpty) {
-        ref.read(swapStateProvider.notifier).state = SwapState.idle;
+        ref.invalidate(swapStateNotifierProvider);
       }
     });
-    ref.listen(priceStreamSubscribeNotifierProvider, (_, next) {
-      if (next.hasPrice()) {
-        final swapState = ref.read(swapStateProvider);
-        if (swapState == SwapState.idle) {
-          ref
-              .read(swapPriceStateNotifierProvider.notifier)
-              .setPrice(next.price);
-        }
-      }
+    ref.listen(subscribePriceStreamNotifierProvider, (_, next) {
+      next.maybeWhen(
+          data: (From_UpdatePriceStream priceStream) {
+            if (priceStream.hasPrice()) {
+              final swapState = ref.read(swapStateNotifierProvider);
+              if (swapState == const SwapState.idle()) {
+                ref
+                    .read(swapPriceStateNotifierProvider.notifier)
+                    .setPrice(priceStream.price);
+              }
+            }
+          },
+          orElse: () {});
     });
 
     ref.listen<SwapRecvAmountPriceStream>(recvAmountPriceStreamWatcherProvider,
         (_, next) {
       if (next is SwapRecvAmountPriceStreamData) {
         ref
-            .read(swapRecvAmountChangeNotifierProvider.notifier)
+            .read(swapRecvTextAmountNotifierProvider.notifier)
             .setAmount(next.value);
       }
     });
@@ -55,28 +61,28 @@ class SwapMain extends HookConsumerWidget {
         (_, next) {
       if (next is SwapSendAmountPriceStreamData) {
         ref
-            .read(swapSendAmountChangeNotifierProvider.notifier)
+            .read(swapSendTextAmountNotifierProvider.notifier)
             .setAmount(next.value);
       }
     });
 
-    final swapType = ref.watch(swapProvider).swapType();
+    final swapType = ref.watch(swapTypeProvider);
 
     // Popups disabled for now
     final pegInInfoDisplayed = useState(true);
     final pegOutInfoDisplayed = useState(true);
 
     useEffect(() {
-      if (swapType == SwapType.pegIn && !pegInInfoDisplayed.value) {
+      if (swapType == const SwapType.pegIn() && !pegInInfoDisplayed.value) {
         Future.microtask(() {
-          ref.read(swapProvider).showPegInInformation();
+          ref.read(swapHelperProvider).showPegInInformation();
           pegInInfoDisplayed.value = true;
         });
       }
 
-      if (swapType == SwapType.pegOut && !pegOutInfoDisplayed.value) {
+      if (swapType == const SwapType.pegOut() && !pegOutInfoDisplayed.value) {
         Future.microtask(() {
-          ref.read(swapProvider).showPegOutInformation();
+          ref.read(swapHelperProvider).showPegOutInformation();
           pegOutInfoDisplayed.value = true;
         });
       }
@@ -86,7 +92,7 @@ class SwapMain extends HookConsumerWidget {
 
     useEffect(() {
       ref
-          .read(priceStreamSubscribeNotifierProvider.notifier)
+          .read(subscribePriceStreamNotifierProvider.notifier)
           .subscribeToPriceStream();
 
       return;
@@ -106,7 +112,7 @@ class SwapMain extends HookConsumerWidget {
       },
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final middle = swapType == SwapType.atomic ? 191.0 : 191.0;
+          final middle = swapType == const SwapType.atomic() ? 191.0 : 191.0;
 
           return SingleChildScrollView(
             child: ConstrainedBox(
@@ -127,21 +133,21 @@ class SwapMain extends HookConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Visibility(
-                              visible: swapType != SwapType.atomic,
+                              visible: swapType != const SwapType.atomic(),
                               child: TopSwapButtons(
                                 onPegInPressed: () {
-                                  ref.read(swapProvider).switchToPegs();
+                                  ref.read(swapHelperProvider).switchToPegs();
                                   deliverFocusNode.unfocus();
                                 },
                                 onPegOutPressed: () {
-                                  ref.read(swapProvider).switchToPegs();
-                                  ref.read(swapProvider).toggleAssets();
+                                  ref.read(swapHelperProvider).switchToPegs();
+                                  ref.read(swapHelperProvider).toggleAssets();
                                   deliverFocusNode.requestFocus();
                                 },
                               ),
                             ),
                           ),
-                          if (swapType == SwapType.atomic) ...[
+                          if (swapType == const SwapType.atomic()) ...[
                             SizedBox(
                               height: 36,
                               child: Text(
@@ -165,7 +171,7 @@ class SwapMain extends HookConsumerWidget {
                           ),
                           SwapMiddleIcon(
                             visibleToggles: false,
-                            onTap: ref.read(swapProvider).toggleAssets,
+                            onTap: ref.read(swapHelperProvider).toggleAssets,
                           ),
                           const SizedBox(
                             height: 6,

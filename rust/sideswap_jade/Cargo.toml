@@ -13,7 +13,6 @@ elements.workspace = true
 futures.workspace = true
 hex.workspace = true
 log.workspace = true
-semver.workspace = true
 serde_bytes.workspace = true
 serde_json.workspace = true
 serde.workspace = true

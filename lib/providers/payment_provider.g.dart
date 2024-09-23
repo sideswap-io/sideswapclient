@@ -317,7 +317,7 @@ class _SatoshiForAmountProviderElement extends AutoDisposeProviderElement<int>
   String get amount => (origin as SatoshiForAmountProvider).amount;
 }
 
-String _$paymentHelperHash() => r'5b3ef574b9c22c3b56325aecbb49eadcfe6c788d';
+String _$paymentHelperHash() => r'863c887ebb45387e7c3028b87e3c40df04d7cc1d';
 
 /// See also [paymentHelper].
 @ProviderFor(paymentHelper)

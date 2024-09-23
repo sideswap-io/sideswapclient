@@ -196,10 +196,10 @@ class IndexPriceSubscriberNotifier extends _$IndexPriceSubscriberNotifier {
       return;
     }
 
-    _subscribe(assetId);
-
     subscribedAssets.add(assetId);
     state = subscribedAssets;
+
+    _subscribe(assetId);
   }
 
   void subscribeOne(String assetId) {
@@ -209,14 +209,13 @@ class IndexPriceSubscriberNotifier extends _$IndexPriceSubscriberNotifier {
       unsubscribe(subscribedAssetId);
     }
 
-    if (isSubscribed(assetId)) {
-      return;
-    }
-
     subscribe(assetId);
   }
 
   void _subscribe(String assetId) {
+    logger.d('Index price subscribe to: $assetId');
+    logger.d('Index price subscribed assets: $state');
+
     final msg = To();
     msg.subscribePrice = AssetId();
     msg.subscribePrice.assetId = assetId;
@@ -230,17 +229,16 @@ class IndexPriceSubscriberNotifier extends _$IndexPriceSubscriberNotifier {
 
     final subscribedAssets = {...state};
 
-    if (!isSubscribed(assetId)) {
-      return;
-    }
-
-    _unsubscribe(assetId);
-
     subscribedAssets.remove(assetId);
     state = subscribedAssets;
+
+    _unsubscribe(assetId);
   }
 
   void _unsubscribe(String assetId) {
+    logger.d('Index price unsubscribe: $assetId');
+    logger.d('Index price subscribed assets: $state');
+
     final msg = To();
     msg.unsubscribePrice = AssetId();
     msg.unsubscribePrice.assetId = assetId;
@@ -257,6 +255,25 @@ class IndexPriceSubscriberNotifier extends _$IndexPriceSubscriberNotifier {
 
   bool isSubscribed(String assetId) {
     return state.contains(assetId);
+  }
+
+  void onPriceUpdate(From_PriceUpdate value) {
+    // (malcolmpl): when app receive price update for asset which isn't subscribed (except usdt & eurx) then unsubscribe it
+    // to make sure that only needed assets are subscribed
+    final tetherAssetId = ref.read(tetherAssetIdStateProvider);
+    final eurxAssetId = ref.read(eurxAssetIdStateProvider);
+    if (!isSubscribed(value.asset) &&
+        (value.asset != tetherAssetId && value.asset != eurxAssetId)) {
+      unsubscribe(value.asset);
+    }
+
+    final oldPrice = ref.read(walletAssetPricesNotifierProvider)[value.asset];
+    final newPrice = value;
+    if (oldPrice == null ||
+        oldPrice.ask != newPrice.ask ||
+        oldPrice.bid != newPrice.bid) {
+      ref.read(walletAssetPricesNotifierProvider.notifier).updatePrices(value);
+    }
   }
 }
 
@@ -1018,9 +1035,11 @@ class OrderEntryCallbackHandlers {
 
   bool stokrAssetRestrictedPopup() {
     // is stokr asset
-    final assetNeedCheck =
+    final isStokrAsset =
         stokrSecurities.any((element) => element.assetId == asset?.assetId);
-    if (!assetNeedCheck) {
+    final hasAssetRestrictions = asset?.hasAmpAssetRestrictions() ?? false;
+
+    if (!isStokrAsset || !hasAssetRestrictions) {
       return false;
     }
 

@@ -46,9 +46,8 @@ class FeeRatesDropdown extends StatelessWidget {
                       ref.watch(bitcoinCurrentFeeRateStateNotifierProvider);
                   if (currentFeeRate is SwapCurrentFeeRateData) {
                     return Text(
-                      ref
-                          .read(bitcoinFeeRatesProvider)
-                          .feeRateDescription(currentFeeRate.feeRate),
+                      ref.read(bitcoinFeeRateDescriptionProvider(
+                          currentFeeRate.feeRate)),
                       overflow: TextOverflow.clip,
                       maxLines: 1,
                       style: const TextStyle(

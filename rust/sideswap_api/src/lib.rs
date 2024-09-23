@@ -8,6 +8,7 @@ pub use elements::{
     Address, Txid,
 };
 use serde::{Deserialize, Serialize};
+use sideswap_types::fee_rate::FeeRateSats;
 use std::{collections::BTreeMap, vec::Vec};
 
 pub const TICKER_LBTC: &str = "L-BTC";
@@ -207,7 +208,7 @@ pub struct PegOutAmounts {
     pub send_amount: i64,
     pub recv_amount: i64,
     pub is_send_entered: bool,
-    pub fee_rate: f64,
+    pub fee_rate: FeeRateSats,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -354,7 +355,7 @@ pub enum RequestId {
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct FeeRate {
     pub blocks: i32,
-    pub value: f64,
+    pub value: FeeRateSats,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -365,11 +366,11 @@ pub struct ServerStatus {
     pub server_fee_percent_peg_out: f64,
     pub min_submit_amount: i64,
     pub price_band: f64,
-    pub elements_fee_rate: f64,
+    pub elements_fee_rate: FeeRateSats,
     pub bitcoin_fee_rates: Vec<FeeRate>,
     pub upload_url: String,
     pub policy_asset: AssetId,
-    pub peg_out_bitcoin_tx_vsize: i32,
+    pub peg_out_bitcoin_tx_vsize: usize,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

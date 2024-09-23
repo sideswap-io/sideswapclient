@@ -19,7 +19,9 @@ use secp256k1::global::SECP256K1 as secp1;
 use secp256k1_zkp::global::SECP256K1 as secp2;
 use sideswap_common::{
     abort,
+    channel_helpers::UncheckedOneshotSender,
     network::Network,
+    recipient::Recipient,
     retry_delay::RetryDelay,
     send_tx::coin_select::{self, InOut},
     verify,
@@ -29,7 +31,7 @@ use tokio::sync::{
     oneshot,
 };
 use tokio_tungstenite::tungstenite;
-pub use tx_cache::TxCache;
+use tx_cache::TxCache;
 use wamp::common::{WampArgs, WampString};
 
 use crate::wamp::{
@@ -39,8 +41,9 @@ use crate::wamp::{
 
 #[allow(unused)]
 mod models;
-mod tx_cache;
 mod wamp;
+
+pub mod tx_cache;
 
 const DEFAULT_AGENT_STR: &str = "sideswap_amp";
 
@@ -126,11 +129,11 @@ impl From<tokio::sync::oneshot::error::RecvError> for Error {
     }
 }
 
-type ResSender<T> = oneshot::Sender<Result<T, Error>>;
+type ResSender<T> = UncheckedOneshotSender<Result<T, Error>>;
 
 enum Command {
     ReceiveAddress(ResSender<elements::Address>),
-    UnspentOutputs(oneshot::Sender<Vec<Utxo>>),
+    UnspentOutputs(UncheckedOneshotSender<Vec<Utxo>>),
     SignOrSendTx(
         elements::Transaction,
         Vec<String>,
@@ -139,13 +142,7 @@ enum Command {
     ),
     LoadTxs(u64, ResSender<models::Transactions>),
     BlockHeight(ResSender<u32>),
-}
-
-#[derive(Debug)]
-pub struct Recipient {
-    pub address: elements::Address,
-    pub asset_id: AssetId,
-    pub amount: u64,
+    UploadCaAddresses(u32, ResSender<()>),
 }
 
 fn parse_args1<T1: serde::de::DeserializeOwned>(mut args: WampArgs) -> Result<T1, Error> {
@@ -239,6 +236,10 @@ impl Wallet {
         (wallet, event_receiver)
     }
 
+    pub fn master_blinding_key(&self) -> &MasterBlindingKey {
+        &self.master_blinding_key
+    }
+
     pub fn policy_asset(&self) -> AssetId {
         self.policy_asset
     }
@@ -250,7 +251,14 @@ impl Wallet {
     pub async fn receive_address(&self) -> Result<elements::Address, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
-            .send(Command::ReceiveAddress(res_sender))?;
+            .send(Command::ReceiveAddress(res_sender.into()))?;
+        res_receiver.await?
+    }
+
+    pub async fn upload_ca_addresses(&self, count: u32) -> Result<(), Error> {
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.command_sender
+            .send(Command::UploadCaAddresses(count, res_sender.into()))?;
         res_receiver.await?
     }
 
@@ -258,22 +266,25 @@ impl Wallet {
     pub fn receive_address_blocking(&self) -> Result<elements::Address, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
-            .send(Command::ReceiveAddress(res_sender))?;
+            .send(Command::ReceiveAddress(res_sender.into()))?;
         res_receiver.blocking_recv()?
     }
 
     pub async fn unspent_outputs(&self) -> Result<Vec<Utxo>, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
-            .send(Command::UnspentOutputs(res_sender))?;
+            .send(Command::UnspentOutputs(res_sender.into()))?;
         let utxos = res_receiver.await?;
         Ok(utxos)
     }
 
-    pub async fn create_tx(&self, mut recipients: Vec<Recipient>) -> Result<CreatedTx, Error> {
+    pub async fn create_tx(
+        &self,
+        mut recipients: Vec<Recipient>,
+        deduct_fee: Option<usize>,
+    ) -> Result<CreatedTx, Error> {
         let all_utxos = self.unspent_outputs().await?;
 
-        let deduct_fee = None;
         let coin_select::normal_tx::Res {
             asset_inputs,
             bitcoin_inputs,
@@ -441,7 +452,7 @@ impl Wallet {
             tx,
             blinding_nonces,
             sign_action,
-            res_sender,
+            res_sender.into(),
         ))?;
         let val = res_receiver.await??;
 
@@ -578,7 +589,8 @@ impl Wallet {
 
     pub async fn block_height(&self) -> Result<u32, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
-        self.command_sender.send(Command::BlockHeight(res_sender))?;
+        self.command_sender
+            .send(Command::BlockHeight(res_sender.into()))?;
         let resp = res_receiver.await??;
         Ok(resp)
     }
@@ -589,7 +601,7 @@ impl Wallet {
 
             let (res_sender, res_receiver) = oneshot::channel();
             self.command_sender
-                .send(Command::LoadTxs(sync_timestamp, res_sender))?;
+                .send(Command::LoadTxs(sync_timestamp, res_sender.into()))?;
             let resp = res_receiver.await??;
 
             let new_txs = resp
@@ -597,7 +609,7 @@ impl Wallet {
                 .into_iter()
                 .map(|tx| self.convert_tx(cache, tx))
                 .collect();
-            cache.add_txs(new_txs);
+            cache.update_latest_txs(new_txs);
 
             if !resp.more {
                 break;
@@ -1183,7 +1195,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
                         let address = data.derive_address(address.pointer);
                         Ok(address)
                     });
-                    let _ = res_channel.send(res);
+                    res_channel.send(res);
                     Ok(())
                 }),
             )
@@ -1191,7 +1203,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
         }
 
         Command::UnspentOutputs(res_channel) => {
-            let _ = res_channel.send(data.utxos.clone());
+            res_channel.send(data.utxos.clone());
             Ok(())
         }
 
@@ -1233,7 +1245,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
                             .map_err(|_| Error::ProtocolError("can't deserialize tx"))?;
                         Ok(transaction)
                     });
-                    let _ = res_channel.send(res);
+                    res_channel.send(res);
                     Ok(())
                 }),
             )
@@ -1250,7 +1262,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
                         let transactions = parse_args1::<models::Transactions>(args)?;
                         Ok(transactions)
                     });
-                    let _ = res_channel.send(res);
+                    res_channel.send(res);
                     Ok(())
                 }),
             )
@@ -1258,7 +1270,13 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
         }
 
         Command::BlockHeight(res_channel) => {
-            let _ = res_channel.send(Ok(data.block_height));
+            res_channel.send(Ok(data.block_height));
+            Ok(())
+        }
+
+        Command::UploadCaAddresses(count, res_channel) => {
+            let res = upload_ca_addresses(data, count).await;
+            res_channel.send(res);
             Ok(())
         }
     }
@@ -1710,9 +1728,6 @@ async fn connection_check(data: &mut Data) -> Result<(), Error> {
     Ok(())
 }
 
-// TODO: Upload 20 CA addresses when AMP account is created
-// TODO: Upload CA addresses periodically?
-// TODO: Upload CA addresses if the server can't resolve our gaid?
 async fn upload_ca_addresses(data: &mut Data, num: u32) -> Result<(), Error> {
     log::debug!("upload {num} ca addresses");
     for _ in 0..num {
@@ -1737,7 +1752,8 @@ async fn send_ca_addresses(data: &mut Data) -> Result<(), Error> {
         .map(|a| serde_json::Value::String(a.to_string()))
         .collect::<Vec<_>>();
     if !addresses.is_empty() {
-        log::debug!("send {} ca addresses", addresses.len());
+        let count = addresses.len();
+        log::debug!("send {count} ca addresses...");
         make_request(
             data,
             "com.greenaddress.txs.upload_authorized_assets_confidential_address",
@@ -1748,6 +1764,7 @@ async fn send_ca_addresses(data: &mut Data) -> Result<(), Error> {
                     success,
                     Error::ProtocolError("uploading ca addresses failed")
                 );
+                log::debug!("uploading {count} ca addresses succeed");
                 Ok(())
             }),
         )
@@ -1950,7 +1967,7 @@ fn take_utxos<'a>(mut utxos: Vec<Utxo>, required: impl Iterator<Item = &'a InOut
                 utxo.tx_out_sec.asset == required.asset_id
                     && utxo.tx_out_sec.value == required.value
             })
-            .expect("must exists");
+            .expect("must exist");
         let utxo = utxos.remove(index);
         selected.push(utxo);
     }

@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import 'package:easy_localization/easy_localization.dart';
+import 'package:extended_text/extended_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,6 +13,7 @@ import 'package:sideswap/common/sideswap_colors.dart';
 import 'package:sideswap/common/utils/sideswap_logger.dart';
 
 import 'package:sideswap/models/account_asset.dart';
+import 'package:sideswap/models/qrcode_models.dart';
 import 'package:sideswap/providers/addresses_providers.dart';
 import 'package:sideswap/providers/qrcode_provider.dart';
 import 'package:sideswap/providers/swap_provider.dart';
@@ -36,7 +38,7 @@ class SwapSideAmount extends HookConsumerWidget {
     required this.dropdownValue,
     required this.availableAssets,
     this.disabledAssets = const <AccountAsset>[],
-    this.labelGroupValue = SwapWallet.local,
+    this.labelGroupValue = const SwapWallet.local(),
     this.localLabelOnChanged,
     this.externalLabelOnChanged,
     this.isMaxVisible = false,
@@ -126,6 +128,12 @@ class SwapSideAmount extends HookConsumerWidget {
     result.maybeWhen(
       data: (result) {
         addressController?.text = result?.address ?? '';
+        Future.microtask(() {
+          onAddressChanged?.call(addressController?.text ?? '');
+          ref
+              .read(qrCodeResultModelNotifierProvider.notifier)
+              .setModel(const QrCodeResultModel.empty());
+        });
       },
       orElse: () {},
     );
@@ -268,7 +276,7 @@ class SwapSideAmount extends HookConsumerWidget {
             ),
           ),
         ),
-        if (swapType != SwapType.atomic && visibleToggles) ...[
+        if (swapType != const SwapType.atomic() && visibleToggles) ...[
           Padding(
             padding: const EdgeInsets.only(top: 14),
             child: SizedBox(
@@ -277,13 +285,13 @@ class SwapSideAmount extends HookConsumerWidget {
                 children: [
                   LabeledRadio<SwapWallet>(
                     label: 'Local wallet'.tr(),
-                    value: SwapWallet.local,
+                    value: const SwapWallet.local(),
                     groupValue: labelGroupValue,
                     onChanged: localLabelOnChanged,
                   ),
                   LabeledRadio<SwapWallet>(
                     label: 'External wallet'.tr(),
-                    value: SwapWallet.extern,
+                    value: const SwapWallet.extern(),
                     groupValue: labelGroupValue,
                     onChanged: externalLabelOnChanged,
                   ),
@@ -300,10 +308,10 @@ class SwapSideAmount extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (swapType != SwapType.atomic &&
+                if (swapType != const SwapType.atomic() &&
                     !isMaxVisible &&
                     !isAddressLabelVisible &&
-                    labelGroupValue == SwapWallet.extern) ...[
+                    labelGroupValue == const SwapWallet.extern()) ...[
                   Flexible(
                     child: ShareCopyScanTextFormField(
                       focusNode: receiveAddressFocusNode ?? FocusNode(),
@@ -335,8 +343,8 @@ class SwapSideAmount extends HookConsumerWidget {
                     ),
                   ),
                 ],
-                if (swapType == SwapType.pegOut &&
-                    labelGroupValue == SwapWallet.extern &&
+                if (swapType == const SwapType.pegOut() &&
+                    labelGroupValue == const SwapWallet.extern() &&
                     isAddressLabelVisible) ...[
                   Flexible(
                     child: SwapSideAmountPegOutAddressLabel(
@@ -344,27 +352,27 @@ class SwapSideAmount extends HookConsumerWidget {
                         onAddressLabelClose: onAddressLabelClose),
                   ),
                 ],
-                if (labelGroupValue == SwapWallet.extern &&
-                    swapType == SwapType.atomic) ...[
+                if (labelGroupValue == const SwapWallet.extern() &&
+                    swapType == const SwapType.atomic()) ...[
                   Text(
                     'Balance: unknown'.tr(),
                     style: balanceStyle,
                   ).tr(),
                 ],
-                if (labelGroupValue == SwapWallet.local &&
-                    (swapType == SwapType.atomic ||
-                        swapType == SwapType.pegOut)) ...[
+                if (labelGroupValue == const SwapWallet.local() &&
+                    (swapType == const SwapType.atomic() ||
+                        swapType == const SwapType.pegOut())) ...[
                   Text(
                     'Balance: {}'.tr(args: [balance]),
                     style: balanceStyle,
                   ),
                 ],
-                if (labelGroupValue == SwapWallet.extern &&
-                    swapType == SwapType.pegIn) ...[
+                if (labelGroupValue == const SwapWallet.extern() &&
+                    swapType == const SwapType.pegIn()) ...[
                   const Flexible(child: SwapSideAmountExternPegInDescription()),
                 ],
-                if (labelGroupValue == SwapWallet.local &&
-                    swapType == SwapType.pegIn) ...[
+                if (labelGroupValue == const SwapWallet.local() &&
+                    swapType == const SwapType.pegIn()) ...[
                   const Flexible(child: SwapSideAmountLocalPegInDescription()),
                 ],
                 Column(
@@ -372,12 +380,12 @@ class SwapSideAmount extends HookConsumerWidget {
                     Row(
                       children: [
                         if (isInputsVisible &&
-                            labelGroupValue != SwapWallet.extern) ...[
+                            labelGroupValue != const SwapWallet.extern()) ...[
                           SwapSideAmountSelectInputsButton(
                               onInputsSelected: onSelectInputs),
                         ],
                         if (isMaxVisible &&
-                            labelGroupValue != SwapWallet.extern) ...[
+                            labelGroupValue != const SwapWallet.extern()) ...[
                           SwapSideAmountMaxButton(onMaxPressed: onMaxPressed),
                         ],
                       ],
@@ -397,7 +405,8 @@ class SwapSideAmount extends HookConsumerWidget {
             ),
           ),
         ),
-        if (swapType == SwapType.pegOut && labelGroupValue == SwapWallet.extern)
+        if (swapType == const SwapType.pegOut() &&
+            labelGroupValue == const SwapWallet.extern())
           SwapSideAmountFeeSuggestionsDropdown(padding: padding),
       ],
     );
@@ -417,8 +426,7 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 538,
-      height: 54,
+      height: 74,
       decoration: const BoxDecoration(
         color: Color(0xFF226F99),
         borderRadius: BorderRadius.all(
@@ -426,21 +434,31 @@ class SwapSideAmountPegOutAddressLabel extends StatelessWidget {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              addressController?.text ?? '',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: Colors.white,
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: ExtendedText(
+                addressController?.text ?? '',
+                softWrap: true,
+                maxLines: 2,
+                overflowWidget: const TextOverflowWidget(
+                  position: TextOverflowPosition.middle,
+                  align: TextOverflowAlign.center,
+                  child: Text(
+                    '...',
+                  ),
+                ),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                ),
               ),
             ),
           ),
-          const Spacer(),
           Material(
             color: const Color(0xFF226F99),
             child: InkWell(
