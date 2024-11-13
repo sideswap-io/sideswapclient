@@ -238,11 +238,11 @@ fn try_coin_select_impl(
                                 asset_id: fee_asset,
                                 value: server_fee,
                             },
-                            server_change: with_server_change.then(|| InOut {
+                            server_change: with_server_change.then_some(InOut {
                                 asset_id: policy_asset,
                                 value: server_change,
                             }),
-                            fee_change: with_fee_change.then(|| InOut {
+                            fee_change: with_fee_change.then_some(InOut {
                                 asset_id: fee_asset,
                                 value: fee_change,
                             }),

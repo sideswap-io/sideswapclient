@@ -29,11 +29,15 @@ impl ApiCall for MovementsRequest {
 
     fn parse(value: serde_json::Value) -> Result<Self::Response, anyhow::Error> {
         // https://docs.bitfinex.com/reference/rest-auth-movements
-        let values = value.as_array().ok_or_else(|| anyhow!("array expected"))?;
+        let values = value
+            .as_array()
+            .ok_or_else(|| anyhow::anyhow!("array expected"))?;
         values
             .iter()
             .map(|item| -> Result<Movement, anyhow::Error> {
-                let list = item.as_array().ok_or_else(|| anyhow!("array expected"))?;
+                let list = item
+                    .as_array()
+                    .ok_or_else(|| anyhow::anyhow!("array expected"))?;
                 Ok(Movement {
                     id: get_i64(list, 0),
                     currency: get_string(list, 1),

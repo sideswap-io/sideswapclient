@@ -3,18 +3,14 @@ resolver = "2"
 
 members = [
     "sideswap_amp",
-    "sideswap_amp_dealer",
     "sideswap_api",
     "sideswap_client",
     "sideswap_common",
     "sideswap_dealer",
+    "sideswap_dealer_amp",
     "sideswap_dealer_bitfinex",
-    "sideswap_dealer_example",
-    "sideswap_dealer_stdio",
-    "sideswap_headless",
-    "sideswap_headless_server",
-    "sideswap_headless_trader",
-    "sideswap_headless_wallet",
+    "sideswap_dealer_elements",
+    "sideswap_dealer_lwk",
     "sideswap_jade",
     "sideswap_monitoring",
     "sideswap_payjoin",
@@ -23,19 +19,19 @@ members = [
 ]
 
 [workspace.dependencies]
-aes-gcm-siv = { version = "0.11.1", features = ["std"] }
+aes-gcm-siv = { version = "0.11", features = ["std"] }
 allo-isolate = "0.1"
 anyhow = "1.0"
-arc-swap = "1.7.1"
+arc-swap = "1.7"
 async-trait = "0.1"
 axum = { version = "0.7", default-features = false, features = ["form", "http1", "json", "matched-path", "query", "tokio"] }
 base64 = "0.21"
-bip39 = "2.0.0"
-bitcoin = { version = "0.31", features = [ "serde" ] }
-bitcoin_hashes = "0.14.0"
+bip39 = "2.0"
+bitcoin = { version = "0.32", features = [ "serde" ] }
+bitcoin_hashes = "0.14"
 blake3 = { version = "1.5" }
-block-modes = "0.8.0"
-btleplug = { version = "0.11.5" }
+block-modes = "0.8"
+btleplug = { version = "0.11" }
 bytes = "1.5"
 chrono = "0.4"
 ciborium = "0.2"
@@ -45,8 +41,8 @@ config = "0.11"
 crc32fast = "1.4"
 crossbeam-channel = "0.5"
 derive_more = "0.99"
-elements = { version = "0.24.1", features = ["serde"] }
-elements-miniscript = "0.3.0"
+elements = { version = "0.25", features = ["serde"] }
+elements-miniscript = "0.4"
 flexi_logger = "0.27"
 futures = "0.3"
 git2 = { version = "0.18", default-features = false }
@@ -57,7 +53,10 @@ hmac = "0.12.1"
 jni = "0.21.1"
 libc = "0.2"
 log = "0.4"
-log4rs = { version = "1.2", features = ["gzip"] }
+log4rs = { version = "1.2", features = ["gzip", "toml_format"] }
+lwk_common = { version = "0.8" }
+lwk_signer = { version = "0.8" }
+lwk_wollet = { version = "0.8" }
 once_cell = "1.18"
 prost = "0.12"
 prost-build = "0.12"
@@ -65,9 +64,9 @@ rand = "0.8"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls-webpki-roots"] }
 ring = { version = "0.17.7" }
 rmp-serde = "1.2"
-rusqlite = { version = "0.30.0", features = ["bundled"] }
-secp256k1 = { version = "0.28", features = ["global-context", "rand"] }
-secp256k1-zkp = { version = "0.10.0", features = ["global-context"] }
+rusqlite = { version = "0.30", features = ["bundled"] }
+secp256k1 = { version = "0.29", features = ["global-context", "rand"] }
+secp256k1-zkp = { version = "0.11", features = ["global-context"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_bytes = "0.11"
 serde_json = { version = "1.0", features = ["arbitrary_precision"] }
@@ -80,7 +79,7 @@ tokio = { version = "1.15", features = ["macros", "net", "rt", "rt-multi-thread"
 tokio-socks = "0.5"
 tokio-tungstenite = { version = "0.20", features = ["stream", "rustls-tls-webpki-roots"] }
 tungstenite = { version = "0.20", default-features = false }
-uniffi = { version = "0.27.2" }
+uniffi = { version = "0.27" }
 ureq = { version = "2.9", features = ["json", "socks-proxy"] }
 url = "2.3"
 uuid = { version = "1.8" }

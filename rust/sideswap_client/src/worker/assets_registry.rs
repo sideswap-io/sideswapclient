@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use sideswap_api::{Asset, AssetId, IssuancePrevout, Ticker};
 use sideswap_common::env::Env;
+use sideswap_types::asset_precision::AssetPrecision;
 
 pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::Xpub) {
     if let Err(error) = gdk_registry::init(registry_path) {
@@ -50,7 +51,7 @@ pub fn get_assets(
                     name: v.name.clone(),
                     ticker: Ticker(v.ticker.clone().unwrap_or_else(default_ticker)),
                     icon,
-                    precision: v.precision,
+                    precision: AssetPrecision::new(v.precision).expect("must be valid"), // TODO: Remove unwrap here
                     icon_url: None,
                     instant_swaps: Some(false),
                     domain: v.entity["domain"].as_str().map(|s| s.to_owned()),

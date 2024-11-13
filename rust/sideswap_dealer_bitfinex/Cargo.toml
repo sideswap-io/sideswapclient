@@ -7,6 +7,7 @@ edition = "2021"
 sideswap_api = { path = "../sideswap_api" }
 sideswap_common = { path = "../sideswap_common" }
 sideswap_dealer = { path = "../sideswap_dealer" }
+sideswap_types = { path = "../sideswap_types" }
 
 anyhow.workspace = true
 axum.workspace = true
@@ -26,7 +27,6 @@ serde.workspace = true
 tokio-tungstenite.workspace = true
 tokio.workspace = true
 tungstenite.workspace = true
-ureq.workspace = true
 url.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]

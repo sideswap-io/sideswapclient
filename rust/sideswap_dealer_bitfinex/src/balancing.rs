@@ -1,6 +1,6 @@
 use super::*;
 use bitfinex_api::movements::Movements;
-use storage::TransferState;
+use storage::{Storage, TransferState};
 
 struct Ratio {
     min: f64,
@@ -175,18 +175,18 @@ pub fn get_balancing(
     }
 }
 
-pub fn process_balancing(
+pub async fn process_balancing(
     storage: &mut Storage,
     wallet_balances_confirmed: &WalletBalances,
     exchange_balances: &ExchangeBalances,
     module_connected: bool,
-    rpc_http_client: &ureq::Agent,
     args: &Args,
     bf_sender: &UnboundedSender<bitfinex_worker::Request>,
 ) {
-    let bitfinex_currency_btc = &args.bitfinex_currency_btc;
-    let bitfinex_currency_lbtc = &args.bitfinex_currency_lbtc;
-    let bitfinex_currency_usdt = &args.bitfinex_currency_usdt;
+    let network = args.env.d().network;
+    let bitfinex_currency_btc = ExchangeTicker::BTC;
+    let bitfinex_currency_lbtc = ExchangeTicker::LBTC;
+    let bitfinex_currency_usdt = ExchangeTicker::USDt;
 
     if let Some(balancing) = storage.balancing.as_mut() {
         match balancing.state {
@@ -203,17 +203,17 @@ pub fn process_balancing(
                     && bitcoin_balance > 0.0
                     && module_connected
                 {
-                    let usdt_asset_id = args.env.d().network.d().known_assets.usdt.asset_id();
+                    let usdt_asset_id = network.d().known_assets.usdt.asset_id();
 
                     let result = rpc::make_rpc_call(
-                        rpc_http_client,
                         &args.rpc,
                         rpc::SendToAddressCall {
                             address: args.bitfinex_fund_address.clone(),
                             amount: balancing.amount.to_bitcoin(),
                             asset_id: usdt_asset_id,
                         },
-                    );
+                    )
+                    .await;
                     match result {
                         Ok(txid) => {
                             info!("sending to bitfinex succeed");
@@ -239,7 +239,7 @@ pub fn process_balancing(
             }
             TransferState::RecvUsdtNew => {
                 let usdt_balance = exchange_balances
-                    .get(bitfinex_currency_usdt)
+                    .get(&bitfinex_currency_usdt)
                     .cloned()
                     .unwrap_or_default();
                 if (usdt_balance >= balancing.amount.to_bitcoin() || !args.env.d().mainnet)
@@ -270,14 +270,14 @@ pub fn process_balancing(
                 if bitcoin_balance >= balancing.amount.to_bitcoin() && module_connected {
                     let bitcoin_asset = args.env.nd().policy_asset.asset_id();
                     let result = rpc::make_rpc_call(
-                        rpc_http_client,
                         &args.rpc,
                         rpc::SendToAddressCall {
                             address: args.bitfinex_fund_address.clone(),
                             amount: balancing.amount.to_bitcoin(),
                             asset_id: bitcoin_asset,
                         },
-                    );
+                    )
+                    .await;
                     match result {
                         Ok(txid) => {
                             info!("sending to bitfinex succeed");
@@ -304,7 +304,7 @@ pub fn process_balancing(
 
             TransferState::SendBtcWaitLbtcBalance => {
                 let lbtc_balance = exchange_balances
-                    .get(bitfinex_currency_lbtc)
+                    .get(&bitfinex_currency_lbtc)
                     .cloned()
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {
@@ -312,8 +312,8 @@ pub fn process_balancing(
                         .send(bitfinex_worker::Request::Transfer {
                             from: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             to: BITFINEX_WALLET_EXCHANGE.to_owned(),
-                            currency: bitfinex_currency_lbtc.0.clone(),
-                            currency_to: bitfinex_currency_btc.0.clone(),
+                            currency: bitfinex_currency_lbtc.bfx_name(network).to_owned(),
+                            currency_to: bitfinex_currency_btc.bfx_name(network).to_owned(),
                             amount: balancing.amount.to_bitcoin(),
                         })
                         .unwrap();
@@ -327,7 +327,7 @@ pub fn process_balancing(
             }
 
             TransferState::SendBtcWaitConfirm => {
-                let lbtc_balance = exchange_balances.get(bitfinex_currency_lbtc).cloned();
+                let lbtc_balance = exchange_balances.get(&bitfinex_currency_lbtc).cloned();
                 // TODO: Use more elaborate check
                 if lbtc_balance == Some(0.0) {
                     update_balancing_state(
@@ -341,7 +341,7 @@ pub fn process_balancing(
 
             TransferState::RecvBtcNew => {
                 let btc_balance = exchange_balances
-                    .get(bitfinex_currency_btc)
+                    .get(&bitfinex_currency_btc)
                     .cloned()
                     .unwrap_or_default();
                 if (btc_balance >= balancing.amount.to_bitcoin() || !args.env.d().mainnet)
@@ -351,8 +351,8 @@ pub fn process_balancing(
                         .send(bitfinex_worker::Request::Transfer {
                             from: BITFINEX_WALLET_EXCHANGE.to_owned(),
                             to: BITFINEX_WALLET_EXCHANGE.to_owned(),
-                            currency: bitfinex_currency_btc.0.clone(),
-                            currency_to: bitfinex_currency_lbtc.0.clone(),
+                            currency: bitfinex_currency_btc.bfx_name(network).to_owned(),
+                            currency_to: bitfinex_currency_lbtc.bfx_name(network).to_owned(),
                             amount: balancing.amount.to_bitcoin(),
                         })
                         .unwrap();
@@ -366,7 +366,7 @@ pub fn process_balancing(
             }
             TransferState::RecvBtcWaitLbtcBalance => {
                 let lbtc_balance = exchange_balances
-                    .get(bitfinex_currency_lbtc)
+                    .get(&bitfinex_currency_lbtc)
                     .cloned()
                     .unwrap_or_default();
                 if lbtc_balance == balancing.amount.to_bitcoin() && module_connected {

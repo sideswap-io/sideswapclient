@@ -1,40 +1,14 @@
-use elements::bitcoin::{self, amount::serde::SerdeAmount};
+use elements::bitcoin::{self};
 
-/// Bitcoin amount serialized as a floating point number
-#[derive(Debug, Clone, Copy)]
-pub struct SignedBtcAmount(i64);
-
-/// Bitcoin amount serialized as a floating point number
+/// Bitcoin amount deserialized from a floating point number.
+/// Used with Bitcoin Core/Elements RPC.
 #[derive(Debug, Clone, Copy)]
 pub struct BtcAmount(u64);
 
-impl serde::Serialize for SignedBtcAmount {
-    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        bitcoin::amount::SignedAmount::from_sat(self.0).ser_btc(s)
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for SignedBtcAmount {
-    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
-        bitcoin::amount::SignedAmount::des_btc(d).map(|amount| SignedBtcAmount(amount.to_sat()))
-    }
-}
-
-impl SignedBtcAmount {
-    pub fn to_sat(&self) -> i64 {
-        self.0
-    }
-}
-
-impl serde::Serialize for BtcAmount {
-    fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        bitcoin::amount::Amount::from_sat(self.0).ser_btc(s)
-    }
-}
-
 impl<'de> serde::Deserialize<'de> for BtcAmount {
     fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
-        bitcoin::amount::Amount::des_btc(d).map(|amount| BtcAmount(amount.to_sat()))
+        bitcoin::amount::serde::as_btc::deserialize(d)
+            .map(|amount: bitcoin::amount::Amount| BtcAmount(amount.to_sat()))
     }
 }
 
@@ -42,4 +16,17 @@ impl BtcAmount {
     pub fn to_sat(&self) -> u64 {
         self.0
     }
+
+    pub fn to_btc(&self) -> f64 {
+        bitcoin::amount::Amount::from_sat(self.0).to_btc()
+    }
 }
+
+impl std::fmt::Display for BtcAmount {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        bitcoin::amount::Amount::from_sat(self.0).fmt(f)
+    }
+}
+
+#[cfg(test)]
+mod tests;

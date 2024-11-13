@@ -64,7 +64,7 @@ fn load<D: DeserializeOwned>(
     file_path: &Path,
     cipher: &mut impl Cipher,
 ) -> Result<(D, Hash), Error> {
-    let encrypted = std::fs::read(&file_path)?;
+    let encrypted = std::fs::read(file_path)?;
     let decrypted = cipher
         .decrypt(&encrypted)
         .map_err(|err| Error::Cipher(Box::new(err)))?;

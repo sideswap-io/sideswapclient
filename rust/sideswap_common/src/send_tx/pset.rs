@@ -1,6 +1,7 @@
 use anyhow::{anyhow, ensure};
 use elements::{pset::PartiallySignedTransaction, AssetId, TxOutSecrets, Txid};
 use rand::seq::SliceRandom;
+use sideswap_api::{AssetBlindingFactor, ValueBlindingFactor};
 
 pub struct PsetInput {
     pub txid: Txid,
@@ -8,6 +9,7 @@ pub struct PsetInput {
     pub script_pub_key: elements::script::Script,
     pub asset_commitment: elements::confidential::Asset,
     pub value_commitment: elements::confidential::Value,
+    pub tx_out_sec: TxOutSecrets,
 }
 
 pub struct PsetOutput {
@@ -16,9 +18,20 @@ pub struct PsetOutput {
     pub amount: u64,
 }
 
+pub struct Offline {
+    pub input: PsetInput,
+
+    pub output: PsetOutput,
+
+    pub output_asset_bf: AssetBlindingFactor,
+    pub output_value_bf: ValueBlindingFactor,
+    pub output_ephemeral_sk: elements::secp256k1_zkp::SecretKey,
+}
+
 pub struct ConstructPsetArgs {
     pub policy_asset: AssetId,
-    pub inputs: Vec<(PsetInput, TxOutSecrets)>,
+    pub offlines: Vec<Offline>,
+    pub inputs: Vec<PsetInput>,
     pub outputs: Vec<PsetOutput>,
     pub network_fee: u64,
 }
@@ -35,6 +48,7 @@ fn pset_input(input: PsetInput) -> elements::pset::Input {
         script_pub_key,
         asset_commitment,
         value_commitment,
+        tx_out_sec: _,
     } = input;
 
     let mut pset_input = elements::pset::Input::from_prevout(elements::OutPoint { txid, vout });
@@ -88,19 +102,36 @@ pub fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow
         policy_asset,
         mut inputs,
         mut outputs,
+        offlines,
         network_fee,
     } = args;
 
     let mut pset = PartiallySignedTransaction::new_v2();
     let mut input_secrets = Vec::new();
+    let mut blinding_factors = Vec::new();
 
     let mut rng = rand::thread_rng();
     inputs.shuffle(&mut rng);
     outputs.shuffle(&mut rng);
 
-    for (input, secret) in inputs.into_iter() {
+    for offline in offlines {
+        blinding_factors.push((
+            offline.output_asset_bf,
+            offline.output_value_bf,
+            offline.output_ephemeral_sk,
+        ));
+
+        input_secrets.push(offline.input.tx_out_sec);
+
+        pset.add_input(pset_input(offline.input));
+
+        pset.add_output(pset_output(offline.output)?);
+    }
+
+    for input in inputs.into_iter() {
+        input_secrets.push(input.tx_out_sec);
+
         pset.add_input(pset_input(input));
-        input_secrets.push(secret);
     }
 
     for output in outputs {
@@ -109,7 +140,8 @@ pub fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow
 
     pset.add_output(pset_network_fee(policy_asset, network_fee));
 
-    let blinding_nonces = crate::pset_blind::blind_pset(&mut pset, &input_secrets)?;
+    let blinding_nonces =
+        crate::pset_blind::blind_pset(&mut pset, &input_secrets, &blinding_factors)?;
 
     Ok(ConstructedPset {
         blinded_pset: pset,

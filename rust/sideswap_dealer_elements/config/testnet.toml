@@ -1,0 +1,38 @@
+work_dir = "/path/to/work_dir"
+env = "Testnet"
+#api_key =
+
+bitcoin_amount_submit = 0.0001
+bitcoin_amount_min = 0.0001
+bitcoin_amount_max = 0.001
+
+[rpc]
+host = "localhost"
+port = 7041
+login = "dealer"
+password = "<YOUR_RPC_PASSWORD>"
+#wallet = ""
+
+[[markets]]
+base = "L-BTC"
+quote = "DePix"
+interest = 1.01
+source = "BitPreco"
+
+[[markets]]
+base = "L-BTC"
+quote = "USDt"
+interest = 1.01
+source = "Binance"
+
+#[[markets]]
+#base = "L-BTC"
+#quote = "EURx"
+#interest = 1.01
+#source = "Binance"
+
+#[[markets]]
+#base = "EURx"
+#quote = "USDt"
+#interest = 1.01
+#source = "Binance"

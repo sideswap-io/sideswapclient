@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use sideswap_types::timestamp_us::TimestampUs;
 
 mod helpers;
 
@@ -97,7 +98,7 @@ pub struct TransactionEp {
 pub struct Transaction {
     pub eps: Vec<TransactionEp>,
     pub block_height: u32,
-    pub created_at_ts: u64,
+    pub created_at_ts: TimestampUs,
     pub txhash: elements::Txid,
     pub transaction_vsize: u32,
     pub fee: u64,

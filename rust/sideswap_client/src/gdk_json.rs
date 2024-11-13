@@ -411,7 +411,7 @@ pub struct CreatedTransactionOutput {
     pub is_change: Option<bool>,
     pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
     pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
-    pub eph_private_key: Option<secp256k1::SecretKey>,
+    // pub eph_private_key: Option<secp256k1::SecretKey>,
     pub scriptpubkey: String,
 }
 

@@ -67,7 +67,7 @@ fn wallet_snapshot() {
             Event::WalletBalance {
                 wallet_type: WalletType::Exchange,
                 currency: "TESTUSDT".to_owned(),
-                balance: 56789.01234567890,
+                balance: 56_789.012_345_678_9,
             },
             Event::WalletBalance {
                 wallet_type: WalletType::Exchange,

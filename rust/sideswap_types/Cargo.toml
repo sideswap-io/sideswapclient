@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 elements.workspace = true
+serde_json.workspace = true
 serde.workspace = true

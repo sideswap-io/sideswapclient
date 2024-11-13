@@ -9,8 +9,10 @@ use bitcoin::{
     hashes::Hash,
 };
 use elements::{
+    confidential::{AssetBlindingFactor, ValueBlindingFactor},
     pset::{self, PartiallySignedTransaction},
-    AssetId, Transaction,
+    secp256k1_zkp::global::SECP256K1,
+    Address, AssetId, Transaction, TxOutSecrets, Txid,
 };
 use elements_miniscript::slip77::MasterBlindingKey;
 use futures::{SinkExt, StreamExt};
@@ -20,12 +22,14 @@ use secp256k1_zkp::global::SECP256K1 as secp2;
 use sideswap_common::{
     abort,
     channel_helpers::UncheckedOneshotSender,
+    green_backend::GREEN_DUMMY_SIG,
     network::Network,
     recipient::Recipient,
     retry_delay::RetryDelay,
     send_tx::coin_select::{self, InOut},
     verify,
 };
+use sideswap_types::{timestamp_us::TimestampUs, utxo_ext::UtxoExt};
 use tokio::sync::{
     mpsc::{UnboundedReceiver, UnboundedSender},
     oneshot,
@@ -57,7 +61,7 @@ pub enum Event {
     Disconnected,
     BalanceUpdated { balances: BTreeMap<AssetId, u64> },
     NewBlock { block_height: u32 },
-    NewTx { txid: elements::Txid },
+    NewTx { txid: Txid },
 }
 
 pub struct Wallet {
@@ -106,7 +110,7 @@ pub enum Error {
         error: String,
     },
     #[error("script_sig or redeem_script for {0}:{1}")]
-    NoRedeem(elements::Txid, u32),
+    NoRedeem(Txid, u32),
     #[error("PSET error: {0}")]
     PsetError(#[from] elements::pset::Error),
     #[error("Request timeout")]
@@ -132,7 +136,7 @@ impl From<tokio::sync::oneshot::error::RecvError> for Error {
 type ResSender<T> = UncheckedOneshotSender<Result<T, Error>>;
 
 enum Command {
-    ReceiveAddress(ResSender<elements::Address>),
+    ReceiveAddress(ResSender<Address>),
     UnspentOutputs(UncheckedOneshotSender<Vec<Utxo>>),
     SignOrSendTx(
         elements::Transaction,
@@ -140,7 +144,7 @@ enum Command {
         SignAction,
         ResSender<elements::Transaction>,
     ),
-    LoadTxs(u64, ResSender<models::Transactions>),
+    LoadTxs(TimestampUs, ResSender<models::Transactions>),
     BlockHeight(ResSender<u32>),
     UploadCaAddresses(u32, ResSender<()>),
 }
@@ -186,6 +190,17 @@ pub struct SignPset {
     pub used_utxos: Vec<Utxo>,
 }
 
+pub struct SignOffline {
+    pub input_utxo: Utxo,
+    pub output_address: Address,
+    pub output_sec: TxOutSecrets,
+    pub output_ephemeral_sk: secp256k1::SecretKey,
+}
+
+pub struct OfflineTx {
+    pub tx: Transaction,
+}
+
 impl From<CreatedTx> for SignPset {
     fn from(
         CreatedTx {
@@ -213,7 +228,7 @@ impl Wallet {
         let seed = mnemonic.to_seed("");
         let master_blinding_key = MasterBlindingKey::from_seed(&seed);
         let master_key = Xpriv::new_master(bitcoin_network, &seed).expect("must not fail");
-        let master_xpub = Xpub::from_priv(secp1, &master_key);
+        let master_xpub = Xpub::from_priv(SECP256K1, &master_key);
 
         let (command_sender, command_receiver) = tokio::sync::mpsc::unbounded_channel();
         let (event_sender, event_receiver) = tokio::sync::mpsc::unbounded_channel();
@@ -248,7 +263,7 @@ impl Wallet {
         &self.master_xpub
     }
 
-    pub async fn receive_address(&self) -> Result<elements::Address, Error> {
+    pub async fn receive_address(&self) -> Result<Address, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
             .send(Command::ReceiveAddress(res_sender.into()))?;
@@ -263,7 +278,7 @@ impl Wallet {
     }
 
     // TODO: Remove when is not used
-    pub fn receive_address_blocking(&self) -> Result<elements::Address, Error> {
+    pub fn receive_address_blocking(&self) -> Result<Address, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
             .send(Command::ReceiveAddress(res_sender.into()))?;
@@ -338,7 +353,7 @@ impl Wallet {
 
         for utxo in used_utxos.iter() {
             let mut input = pset::Input::from_prevout(utxo.outpoint);
-            input.redeem_script = Some(get_redeem_script(&utxo.prevout_script));
+            input.redeem_script = Some(utxo.redeem_script.clone());
             input.witness_utxo = Some(utxo.txout.clone());
             pset.add_input(input);
         }
@@ -370,7 +385,8 @@ impl Wallet {
             .map(|utxo| utxo.tx_out_sec)
             .collect::<Vec<_>>();
 
-        let blinding_nonces = sideswap_common::pset_blind::blind_pset(&mut pset, &inp_txout_sec)?;
+        let blinding_nonces =
+            sideswap_common::pset_blind::blind_pset(&mut pset, &inp_txout_sec, &[])?;
 
         Ok(CreatedTx {
             pset,
@@ -398,7 +414,7 @@ impl Wallet {
             let redeem_script = used_utxos
                 .iter()
                 .find(|utxo| utxo.outpoint == tx_input.previous_output)
-                .map(|utxo| get_redeem_script(&utxo.prevout_script))
+                .map(|utxo| utxo.redeem_script.clone())
                 .or_else(|| pset_input.redeem_script.clone());
 
             if let Some(redeem_script) = redeem_script {
@@ -408,7 +424,8 @@ impl Wallet {
             } else if let Some(final_script) = pset_input.final_script_sig.clone() {
                 tx_input.script_sig = final_script;
             } else {
-                // Green backend won't sign without script_sig
+                // Green backend won't sign without script_sig (it returns "Partial signing of pre-segwit transactions is not supported")
+                // FIXME: Make sure this works as expected with native segwit (the check might return false positive error).
                 abort!(Error::NoRedeem(
                     pset_input.previous_txid,
                     pset_input.previous_output_index
@@ -422,8 +439,6 @@ impl Wallet {
                 .iter()
                 .find(|utxo| utxo.outpoint == tx_input.previous_output)
             {
-                let green_dummy_sig = hex::decode("304402207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f02207f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f01").unwrap();
-
                 let hash_ty = elements_miniscript::elements::EcdsaSighashType::All;
                 let sighash = sighash_cache.segwitv0_sighash(
                     index,
@@ -440,7 +455,7 @@ impl Wallet {
 
                 tx_input.witness.script_witness = vec![
                     vec![],
-                    green_dummy_sig,
+                    GREEN_DUMMY_SIG.to_vec(),
                     user_sig,
                     utxo.prevout_script.to_bytes(),
                 ];
@@ -454,9 +469,9 @@ impl Wallet {
             sign_action,
             res_sender.into(),
         ))?;
-        let val = res_receiver.await??;
+        let tx = res_receiver.await??;
 
-        Ok(val)
+        Ok(tx)
     }
 
     pub async fn sign_swap_pset(
@@ -484,10 +499,94 @@ impl Wallet {
             .await
     }
 
+    pub fn sign_offline(
+        &self,
+        SignOffline {
+            input_utxo,
+            output_address,
+            output_sec,
+            output_ephemeral_sk,
+        }: SignOffline,
+    ) -> Result<OfflineTx, Error> {
+        let output_script_pubkey = output_address.script_pubkey();
+
+        let output_blinding_pk = output_address.blinding_pubkey.ok_or(Error::ProtocolError(
+            "address does not include a blinding key",
+        ))?;
+
+        let output_gen = secp256k1_zkp::Generator::new_blinded(
+            SECP256K1,
+            output_sec.asset.into_tag(),
+            output_sec.asset_bf.into_inner(),
+        );
+
+        let output_asset = elements::confidential::Asset::Confidential(output_gen);
+
+        let output_value = elements::confidential::Value::new_confidential(
+            SECP256K1,
+            output_sec.value,
+            output_gen,
+            output_sec.value_bf,
+        );
+
+        let (output_nonce, _secret_key) = elements::confidential::Nonce::with_ephemeral_sk(
+            SECP256K1,
+            output_ephemeral_sk,
+            &output_blinding_pk,
+        );
+
+        let txout = elements::TxOut {
+            asset: output_asset,
+            value: output_value,
+            nonce: output_nonce,
+            script_pubkey: output_script_pubkey,
+            witness: Default::default(),
+        };
+
+        let mut tx = Transaction {
+            version: 2,
+            lock_time: elements::LockTime::ZERO,
+            input: vec![elements::TxIn {
+                previous_output: input_utxo.outpoint,
+                is_pegin: false,
+                script_sig: elements::script::Builder::new()
+                    .push_slice(input_utxo.redeem_script.as_bytes())
+                    .into_script(),
+                sequence: Default::default(),
+                asset_issuance: Default::default(),
+                witness: Default::default(),
+            }],
+            output: vec![txout],
+        };
+
+        let mut sighash_cache = elements::sighash::SighashCache::new(&tx);
+
+        let hash_ty = elements_miniscript::elements::EcdsaSighashType::SinglePlusAnyoneCanPay;
+        let sighash = sighash_cache.segwitv0_sighash(
+            0,
+            &input_utxo.prevout_script,
+            input_utxo.txout.value,
+            hash_ty,
+        );
+
+        let msg = elements::secp256k1_zkp::Message::from_digest_slice(&sighash[..]).unwrap();
+        let user_sig = secp1.sign_ecdsa_low_r(&msg, &input_utxo.priv_key_user.inner);
+        let user_sig = elements_miniscript::elementssig_to_rawsig(&(user_sig, hash_ty));
+
+        tx.input[0].witness.script_witness = vec![
+            vec![],
+            GREEN_DUMMY_SIG.to_vec(),
+            user_sig,
+            input_utxo.prevout_script.to_bytes(),
+        ];
+
+        Ok(OfflineTx { tx })
+    }
+
     fn unblind_ep(
         &self,
         cache: &mut TxCache,
-        txid: &elements::Txid,
+        txid: &Txid,
         ep: models::TransactionEp,
     ) -> Option<(AssetId, u64)> {
         if !ep.is_relevant {
@@ -618,7 +717,7 @@ impl Wallet {
         Ok(())
     }
 
-    pub fn tx_blinded_values(&self, txid: &elements::Txid, cache: &TxCache) -> Option<String> {
+    pub fn tx_blinded_values(&self, txid: &Txid, cache: &TxCache) -> Option<String> {
         let tx = cache.txs().iter().find(|tx| tx.txid == *txid)?;
 
         let mut secrets = Vec::new();
@@ -645,7 +744,7 @@ impl Wallet {
 
         let blinded_values = secrets
             .iter()
-            .map(|secret| {
+            .flat_map(|secret| {
                 [
                     secret.value.to_string(),
                     secret.asset.to_string(),
@@ -653,7 +752,6 @@ impl Wallet {
                     secret.asset_bf.to_string(),
                 ]
             })
-            .flatten()
             .collect::<Vec<_>>();
 
         Some(blinded_values.join(","))
@@ -689,29 +787,42 @@ struct Data {
     active_subscribe: HashMap<WampId, SubscribeCallback>,
     utxos: Vec<Utxo>,
     reload_utxos: bool,
-    ca_addresses: Vec<elements::Address>,
+    ca_addresses: Vec<Address>,
     block_height: u32,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Utxo {
     pub pointer: u32,
     pub txout: elements::TxOut,
     pub outpoint: elements::OutPoint,
-    pub tx_out_sec: elements::TxOutSecrets,
+    pub tx_out_sec: TxOutSecrets,
     pub priv_key_user: bitcoin::PrivateKey,
     // Example: 522103cab1a2a707d13ff3fcc9d08f888724e01c37d54ad8e8d9b274cb33eaebe3461321037888f798b59ff4e1122bdf52ad4c541be32ca755311746b67af2bc5e58df188b52ae
     pub prevout_script: elements::Script,
+    pub redeem_script: elements::Script,
 }
 
-impl sideswap_common::coin_select::Utxo for Utxo {
+impl UtxoExt for Utxo {
     fn value(&self) -> u64 {
         self.tx_out_sec.value
+    }
+
+    fn txid(&self) -> Txid {
+        self.outpoint.txid
+    }
+
+    fn vout(&self) -> u32 {
+        self.outpoint.vout
+    }
+
+    fn redeem_script(&self) -> Option<&elements::Script> {
+        Some(&self.redeem_script)
     }
 }
 
 // Example: 0020953851a48d22e33a16eb11e9fb89ce1a410db6f0f681ec5b834b036fb84264c9
-pub fn get_redeem_script(prevout_script: &elements::Script) -> elements::Script {
+fn redeem_script(prevout_script: &elements::Script) -> elements::Script {
     elements::script::Builder::new()
         .push_int(0)
         .push_slice(&elements::WScriptHash::hash(prevout_script.as_bytes())[..])
@@ -720,13 +831,10 @@ pub fn get_redeem_script(prevout_script: &elements::Script) -> elements::Script 
 
 fn derive_ga_path(master_key: &Xpriv) -> Vec<u8> {
     let register_key = master_key
-        .derive_priv(&secp2, &[ChildNumber::Hardened { index: 0x4741 }])
+        .derive_priv(secp2, &[ChildNumber::Hardened { index: 0x4741 }])
         .expect("must not fail");
 
-    let pub_key = register_key
-        .private_key
-        .public_key(&elements::secp256k1_zkp::global::SECP256K1)
-        .serialize();
+    let pub_key = register_key.private_key.public_key(SECP256K1).serialize();
 
     let ga_key = "GreenAddress.it HD wallet path";
 
@@ -741,7 +849,7 @@ fn derive_ga_path(master_key: &Xpriv) -> Vec<u8> {
 }
 
 impl Data {
-    fn derive_address(&self, pointer: u32) -> elements::Address {
+    fn derive_address(&self, pointer: u32) -> Address {
         get_address(
             &self.user_xpriv,
             &self.service_xpub,
@@ -777,11 +885,11 @@ impl Data {
                     (
                         elements::confidential::Asset::Explicit(asset_id),
                         elements::confidential::Value::Explicit(value),
-                    ) => elements::TxOutSecrets {
+                    ) => TxOutSecrets {
                         asset: *asset_id,
-                        asset_bf: elements::confidential::AssetBlindingFactor::zero(),
+                        asset_bf: AssetBlindingFactor::zero(),
                         value: *value,
-                        value_bf: elements::confidential::ValueBlindingFactor::zero(),
+                        value_bf: ValueBlindingFactor::zero(),
                     },
                     (
                         elements::confidential::Asset::Confidential(_),
@@ -807,8 +915,10 @@ impl Data {
 
                 let DerivedKeys {
                     priv_key_user,
-                    redeem_script,
+                    prevout_script,
                 } = derive_keys(&self.user_xpriv, &self.service_xpub, utxo.pointer);
+
+                let redeem_script = redeem_script(&prevout_script);
 
                 Some(Utxo {
                     txout,
@@ -816,7 +926,8 @@ impl Data {
                     outpoint: out_point,
                     pointer: utxo.pointer,
                     priv_key_user,
-                    prevout_script: redeem_script,
+                    prevout_script,
+                    redeem_script,
                 })
             })
             .collect()
@@ -825,7 +936,7 @@ impl Data {
 
 struct DerivedKeys {
     priv_key_user: bitcoin::PrivateKey,
-    redeem_script: elements::Script,
+    prevout_script: elements::Script,
 }
 
 fn derive_keys(user_xpriv: &Xpriv, service_xpub: &Xpub, pointer: u32) -> DerivedKeys {
@@ -840,7 +951,7 @@ fn derive_keys(user_xpriv: &Xpriv, service_xpub: &Xpub, pointer: u32) -> Derived
 
     let pub_key_user = priv_key_user.public_key(secp1);
 
-    let redeem_script = elements::script::Builder::new()
+    let prevout_script = elements::script::Builder::new()
         .push_opcode(elements::opcodes::all::OP_PUSHNUM_2)
         .push_slice(&pub_key_green.to_bytes())
         .push_slice(&pub_key_user.to_bytes())
@@ -850,7 +961,7 @@ fn derive_keys(user_xpriv: &Xpriv, service_xpub: &Xpub, pointer: u32) -> Derived
 
     DerivedKeys {
         priv_key_user,
-        redeem_script,
+        prevout_script,
     }
 }
 
@@ -860,20 +971,20 @@ fn get_address(
     master_blinding_key: &MasterBlindingKey,
     network: Network,
     pointer: u32,
-) -> elements::Address {
+) -> Address {
     let DerivedKeys {
         priv_key_user: _,
-        redeem_script,
+        prevout_script,
     } = derive_keys(user_xpriv, service_xpub, pointer);
 
     let script = elements::script::Builder::new()
         .push_int(0)
-        .push_slice(&elements::WScriptHash::hash(redeem_script.as_bytes())[..])
+        .push_slice(&elements::WScriptHash::hash(prevout_script.as_bytes())[..])
         .into_script();
 
     let script_hash = elements::ScriptHash::hash(script.as_bytes());
 
-    let address = elements::Address {
+    let address = Address {
         params: network.d().elements_params,
         payload: elements::address::Payload::ScriptHash(script_hash),
         blinding_pubkey: None,
@@ -925,7 +1036,7 @@ fn derive_service_xpub(network: Network, gait_path: &str, subaccount: u32) -> Re
     let gait_path = parse_gait_path(gait_path)?;
 
     let root_xpub = Xpub {
-        network: bitcoin::Network::Testnet,
+        network: bitcoin::NetworkKind::Test,
         depth: 0,
         parent_fingerprint: Default::default(),
         child_number: 0.into(),
@@ -952,9 +1063,9 @@ fn derive_service_xpub(network: Network, gait_path: &str, subaccount: u32) -> Re
     Ok(subaccount_xpub)
 }
 
-fn get_challenge_address(master_key: &Xpriv, network: Network) -> elements::Address {
+fn get_challenge_address(master_key: &Xpriv, network: Network) -> Address {
     let pk = master_key.to_keypair(secp1).public_key();
-    elements::Address::p2pkh(&pk.into(), None, network.d().elements_params)
+    Address::p2pkh(&pk.into(), None, network.d().elements_params)
 }
 
 async fn send(connection: &mut Connection, msg: Msg) -> Result<(), Error> {
@@ -1190,7 +1301,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
             recv_addr_request(
                 data,
                 Box::new(move |data, res| {
-                    let res = res.and_then(|args| -> Result<elements::Address, Error> {
+                    let res = res.and_then(|args| -> Result<Address, Error> {
                         let address = parse_args1::<models::ReceiveAddress>(args)?;
                         let address = data.derive_address(address.pointer);
                         Ok(address)
@@ -1256,7 +1367,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
             make_request(
                 data,
                 "com.greenaddress.txs.get_list_v3",
-                vec![data.subaccount.into(), timestamp.into()],
+                vec![data.subaccount.into(), timestamp.as_micros().into()],
                 Box::new(move |_data, res| {
                     let res = res.and_then(|args| -> Result<models::Transactions, Error> {
                         let transactions = parse_args1::<models::Transactions>(args)?;
@@ -1411,7 +1522,7 @@ struct AuthenticateResp {
     next_subaccount: u32,
 }
 
-const USER_AGENT_CAPS: &'static str = "[v2,sw,csv,csv_opt] sideswap_amp";
+const USER_AGENT_CAPS: &str = "[v2,sw,csv,csv_opt] sideswap_amp";
 
 async fn authenticate(
     connection: &mut Connection,
@@ -1421,7 +1532,7 @@ async fn authenticate(
     let login_path = vec![ChildNumber::from(0x4741b11e)];
 
     let login_xpriv = master_key
-        .derive_priv(&secp1, &login_path)
+        .derive_priv(secp1, &login_path)
         .expect("should not fail");
     let login_keypair = login_xpriv.to_keypair(secp1);
     let message = format!("greenaddress.it      login {}", challenge);
@@ -1465,7 +1576,7 @@ async fn authenticate(
             );
             let args = arguments.ok_or(Error::ProtocolError("empty response"))?;
 
-            if args.get(0).and_then(|resp| resp.as_bool()) == Some(false) {
+            if args.first().and_then(|resp| resp.as_bool()) == Some(false) {
                 log::debug!("login failed, not account found");
                 return Ok(None);
             }
@@ -1571,8 +1682,8 @@ async fn create_subaccount(
 }
 
 async fn register(connection: &mut Connection, master_key: &Xpriv) -> Result<(), Error> {
-    let pubkey = hex::encode(&master_key.private_key.public_key(secp2).serialize());
-    let chaincode = hex::encode(&master_key.chain_code.as_bytes());
+    let pubkey = hex::encode(master_key.private_key.public_key(secp2).serialize());
+    let chaincode = hex::encode(master_key.chain_code.as_bytes());
     let ga_path = hex::encode(derive_ga_path(master_key));
 
     let args = vec![
@@ -1832,10 +1943,10 @@ async fn connect(
 
     login(&mut connection).await?;
 
-    let challenge = get_challenge(&mut connection, &master_key, network).await?;
+    let challenge = get_challenge(&mut connection, master_key, network).await?;
     log::debug!("got challenge: {challenge}");
 
-    let auth_res = authenticate(&mut connection, &master_key, &challenge).await?;
+    let auth_res = authenticate(&mut connection, master_key, &challenge).await?;
     let AuthenticateResp {
         gait_path,
         wallet_id,
@@ -1851,9 +1962,9 @@ async fn connect(
             log::debug!("authentication failed, try register...");
             register(&mut connection, master_key).await?;
 
-            let challenge = get_challenge(&mut connection, &master_key, network).await?;
+            let challenge = get_challenge(&mut connection, master_key, network).await?;
             log::debug!("got challenge: {challenge}");
-            let auth_res = authenticate(&mut connection, &master_key, &challenge).await?;
+            let auth_res = authenticate(&mut connection, master_key, &challenge).await?;
 
             auth_res.ok_or(Error::ProtocolError(
                 "login after registration failed unexpectedly",
@@ -1873,7 +1984,7 @@ async fn connect(
         }
     };
 
-    let user_xpriv = derive_user_xpriv(&master_key, subaccount);
+    let user_xpriv = derive_user_xpriv(master_key, subaccount);
 
     let service_xpub = derive_service_xpub(network, &gait_path, subaccount)?;
 
@@ -1881,7 +1992,7 @@ async fn connect(
         connection,
         pending_requests: BTreeMap::new(),
         network,
-        master_blinding_key: master_blinding_key.clone(),
+        master_blinding_key: *master_blinding_key,
         subaccount,
         user_xpriv,
         service_xpub,

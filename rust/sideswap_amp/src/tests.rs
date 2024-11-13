@@ -50,7 +50,7 @@ fn test_challenge_address() {
 #[test]
 fn test_xpub() {
     let xpub = Xpub {
-        network: bitcoin::Network::Testnet,
+        network: bitcoin::NetworkKind::Test,
         depth: 0,
         parent_fingerprint: Default::default(),
         child_number: 0.into(),

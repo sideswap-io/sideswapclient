@@ -1,3 +1,5 @@
+use anyhow::{anyhow, ensure};
+
 use super::*;
 
 #[derive(Serialize)]
@@ -32,7 +34,7 @@ impl ApiCall for SubmitRequest {
             .as_array()
             .ok_or_else(|| anyhow!("expected order list vector"))?;
         let first_order = order_list
-            .get(0)
+            .first()
             .ok_or_else(|| anyhow!("empty order list"))?
             .as_array()
             .ok_or_else(|| anyhow!("expected subarray"))?;

@@ -1,3 +1,5 @@
+use anyhow::bail;
+use log::debug;
 use serde::Serialize;
 
 use crate::BfSettings;
@@ -52,7 +54,7 @@ impl Bitfinex {
         Self { settings }
     }
 
-    pub fn make_request<T: ApiCall>(&self, request: T) -> Result<T::Response, anyhow::Error> {
+    pub async fn make_request<T: ApiCall>(&self, request: T) -> Result<T::Response, anyhow::Error> {
         let body = serde_json::to_string(&request).expect("should not fail");
         let api_path = T::api_path();
         let nonce = new_nonce();
@@ -66,17 +68,28 @@ impl Bitfinex {
         let signature = hex::encode(tag.as_ref());
 
         debug!("bf request: {body}, nonce: {nonce}, path: {api_path}");
-        let res = ureq::request("POST", &endpoint)
-            .set("Content-Type", "application/json")
-            .set("accept", "application/json")
-            .set("bfx-nonce", &nonce)
-            .set("bfx-apikey", &self.settings.bitfinex_key)
-            .set("bfx-signature", &signature)
-            .send_bytes(body.as_bytes());
+
+        let http_client = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
+            .expect("http client construction failed");
+
+        let res = http_client
+            .post(&endpoint)
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .header("bfx-nonce", &nonce)
+            .header("bfx-apikey", &self.settings.bitfinex_key)
+            .header("bfx-signature", &signature)
+            .body(body)
+            .send()
+            .await?
+            .text()
+            .await;
 
         match res {
             Ok(resp) => {
-                let resp: serde_json::Value = resp.into_json()?;
+                let resp: serde_json::Value = serde_json::from_str(&resp)?;
                 debug!(
                     "bf response: {}, api_path: {api_path}",
                     serde_json::to_string(&resp).unwrap()
@@ -84,15 +97,10 @@ impl Bitfinex {
                 let resp = T::parse(resp)?;
                 Ok(resp)
             }
-            Err(err) => match err {
-                ureq::Error::Status(status, resp) => {
-                    let err_text = resp.into_string()?;
-                    bail!("bf error: {err_text}, http_status: {status}")
-                }
-                ureq::Error::Transport(err) => {
-                    bail!("bf error (transport): {err}")
-                }
-            },
+            Err(err) => {
+                let status = err.status();
+                bail!("bf error: {err}, http_status: {status:?}")
+            }
         }
     }
 }

@@ -1,4 +1,12 @@
-use elements::pset::raw::{ProprietaryKey, ProprietaryType};
+use bitcoin::secp256k1::SecretKey;
+use elements::{
+    confidential::{AssetBlindingFactor, ValueBlindingFactor},
+    pset::{
+        raw::{ProprietaryKey, ProprietaryType},
+        PartiallySignedTransaction,
+    },
+    TxOutSecrets,
+};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -19,7 +27,7 @@ const PSET_IN_VALUE_PROOF: ProprietaryType = 0x12; // 73 bytes
 const PSET_IN_EXPLICIT_ASSET: ProprietaryType = 0x13; // 2 bytes
 const PSET_IN_ASSET_PROOF: ProprietaryType = 0x14; // 67 bytes
 
-pub fn remove_explicit_values(pset: &mut elements::pset::PartiallySignedTransaction) {
+pub fn remove_explicit_values(pset: &mut PartiallySignedTransaction) {
     for input in pset.inputs_mut() {
         for subtype in [
             PSET_IN_EXPLICIT_VALUE,
@@ -36,10 +44,10 @@ pub fn remove_explicit_values(pset: &mut elements::pset::PartiallySignedTransact
 
 fn add_input_explicit_proofs(
     input: &mut elements::pset::Input,
-    secret: &elements::TxOutSecrets,
+    secret: &TxOutSecrets,
 ) -> Result<(), Error> {
-    if secret.asset_bf == elements::confidential::AssetBlindingFactor::zero()
-        && secret.value_bf == elements::confidential::ValueBlindingFactor::zero()
+    if secret.asset_bf == AssetBlindingFactor::zero()
+        && secret.value_bf == ValueBlindingFactor::zero()
     {
         return Ok(());
     }
@@ -116,10 +124,13 @@ fn add_input_explicit_proofs(
     Ok(())
 }
 
-/// Blind PSET and return blinding nonces (they are required by the Green backend for AMP accounts)
+/// Blind PSET and return blinding nonces (they are required by the Green backend for AMP accounts).
+///
+/// blinding_factors - zero or more pre-generated blinding factors for the outputs.
 pub fn blind_pset(
-    pset: &mut elements::pset::PartiallySignedTransaction,
-    inp_txout_sec: &[elements::TxOutSecrets],
+    pset: &mut PartiallySignedTransaction,
+    inp_txout_sec: &[TxOutSecrets],
+    blinding_factors: &[(AssetBlindingFactor, ValueBlindingFactor, SecretKey)],
 ) -> Result<Vec<String>, Error> {
     let secp = elements::secp256k1_zkp::global::SECP256K1;
 
@@ -129,37 +140,17 @@ pub fn blind_pset(
         add_input_explicit_proofs(input, secret)?;
     }
 
-    // ensure!(pset.inputs().len() == input_secrets.len());
-
-    // let mut inputs = pset
-    //     .inputs()
-    //     .iter()
-    //     .cloned()
-    //     .zip(input_secrets)
-    //     .collect::<Vec<_>>();
-    // let outputs = pset.outputs_mut();
-
-    // inputs.shuffle(&mut rng);
-    // outputs.shuffle(&mut rng);
-
-    // let fee_output = outputs
-    //     .iter()
-    //     .position(|output| output.blinding_key.is_none())
-    //     .ok_or_else(|| anyhow!("can't find network fee output"))?;
-    // let output_count = outputs.len();
-    // outputs.swap(fee_output, output_count - 1);
-
     let mut last_blinded_index = None;
 
     let mut exp_out_secrets = Vec::new();
     let mut blinding_nonces = Vec::new();
     for (index, out) in pset.outputs().iter().enumerate() {
         if out.blinding_key.is_none() {
-            let value = out.amount.ok_or_else(|| Error::UnknownOutputValue(index))?;
+            let value = out.amount.ok_or(Error::UnknownOutputValue(index))?;
             exp_out_secrets.push((
                 value,
-                elements::confidential::AssetBlindingFactor::zero(),
-                elements::confidential::ValueBlindingFactor::zero(),
+                AssetBlindingFactor::zero(),
+                ValueBlindingFactor::zero(),
             ));
         } else {
             last_blinded_index = Some(index);
@@ -181,14 +172,21 @@ pub fn blind_pset(
     for (index, output) in pset.outputs_mut().iter_mut().enumerate() {
         let asset_id = output
             .asset
-            .ok_or_else(|| Error::UnknownOutputAsset(index))?;
+            .ok_or(Error::UnknownOutputAsset(index))?;
         let value = output
             .amount
-            .ok_or_else(|| Error::UnknownOutputValue(index))?;
+            .ok_or(Error::UnknownOutputValue(index))?;
         if let Some(receiver_blinding_pk) = output.blinding_key {
             let is_last = index == last_blinded_index;
 
-            let out_abf = elements::confidential::AssetBlindingFactor::new(rng);
+            let blinding_factor = blinding_factors.get(index);
+
+            let out_abf = if let Some(blinding_factor) = blinding_factor {
+                blinding_factor.0
+            } else {
+                AssetBlindingFactor::new(rng)
+            };
+
             let out_asset_commitment = elements::secp256k1_zkp::Generator::new_blinded(
                 secp,
                 asset_id.into_tag(),
@@ -201,15 +199,11 @@ pub fn blind_pset(
                     .map(|o| (o.value, o.asset_bf, o.value_bf))
                     .collect::<Vec<_>>();
 
-                elements::confidential::ValueBlindingFactor::last(
-                    secp,
-                    value,
-                    out_abf,
-                    &inp_secrets,
-                    &exp_out_secrets,
-                )
+                ValueBlindingFactor::last(secp, value, out_abf, &inp_secrets, &exp_out_secrets)
+            } else if let Some(blinding_factor) = blinding_factor {
+                blinding_factor.1
             } else {
-                elements::confidential::ValueBlindingFactor::new(rng)
+                ValueBlindingFactor::new(rng)
             };
 
             let value_commitment = elements::secp256k1_zkp::PedersenCommitment::new(
@@ -219,9 +213,15 @@ pub fn blind_pset(
                 out_asset_commitment,
             );
 
-            let (nonce, shared_secret) = elements::confidential::Nonce::new_confidential(
-                rng,
+            let ephemeral_sk = if let Some(blinding_factor) = blinding_factor {
+                blinding_factor.2
+            } else {
+                SecretKey::new(rng)
+            };
+
+            let (nonce, shared_secret) = elements::confidential::Nonce::with_ephemeral_sk(
                 secp,
+                ephemeral_sk,
                 &receiver_blinding_pk.inner,
             );
             blinding_nonces.push(shared_secret.display_secret().to_string());

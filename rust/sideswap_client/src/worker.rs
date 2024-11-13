@@ -8,12 +8,12 @@ use crate::settings::{RegInfo, WatchOnly};
 use super::*;
 use base64::Engine;
 use bitcoin::bip32;
+use bitcoin::hashes::Hash;
 use bitcoin::secp256k1::global::SECP256K1;
 use elements::bitcoin::bip32::ChildNumber;
 use ffi::GIT_COMMIT_HASH;
 use gdk_ses_impl::CreatedTxCache;
 use rand::Rng;
-use secp256k1::hashes::Hash;
 use serde::{Deserialize, Serialize};
 use settings::{Peg, PegDir};
 use sideswap_api::*;
@@ -23,6 +23,7 @@ use sideswap_common::types::*;
 use sideswap_common::ws::{next_request_id, next_request_id_str};
 use sideswap_common::*;
 use sideswap_jade::jade_mng::{self, JadeStatus, JadeStatusCallback};
+use sideswap_types::asset_precision::AssetPrecision;
 use sideswap_types::fee_rate::FeeRateSats;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -75,7 +76,7 @@ struct SubmitData {
     order_id: OrderId,
     side: OrderSide,
     asset: AssetId,
-    asset_precision: u8,
+    asset_precision: AssetPrecision,
     order_type: OrderType,
     bitcoin_amount: Amount,
     asset_amount: Amount,
@@ -372,6 +373,7 @@ fn derive_single_sig_address(
         )
         .unwrap()
         .to_pub();
+    let pub_key = elements::bitcoin::PublicKey::new(pub_key.0);
     elements::Address::p2shwpkh(&pub_key, None, network.d().elements_params)
 }
 
@@ -475,8 +477,8 @@ fn convert_to_proto_utxo(utxo: gdk_json::UnspentOutput) -> ffi::proto::from::utx
     }
 }
 
-pub fn convert_to_swap_utxo(utxo: gdk_json::UnspentOutput) -> sideswap_api::PsetInput {
-    PsetInput {
+pub fn convert_to_swap_utxo(utxo: gdk_json::UnspentOutput) -> sideswap_api::Utxo {
+    sideswap_api::Utxo {
         txid: utxo.txhash,
         vout: utxo.vout,
         asset: utxo.asset_id,
@@ -518,7 +520,7 @@ impl Data {
             let seed = rand::Rng::gen::<[u8; 32]>(&mut rand::thread_rng());
             let master_priv_key =
                 bip32::Xpriv::new_master(bitcoin::Network::Bitcoin, &seed).unwrap();
-            let master_pub_key = bitcoin::bip32::Xpub::from_priv(swaps::secp(), &master_priv_key);
+            let master_pub_key = bitcoin::bip32::Xpub::from_priv(SECP256K1, &master_priv_key);
             self.settings.master_pub_key = Some(master_pub_key);
             self.save_settings();
         }
@@ -657,7 +659,7 @@ impl Data {
                             name: format!("{:0.8}...", &asset_id.to_string()),
                             ticker: Ticker(format!("{:0.4}", &asset_id.to_string())),
                             icon: None,
-                            precision: 8,
+                            precision: AssetPrecision::BITCOIN_PRECISION,
                             icon_url: None,
                             instant_swaps: Some(false),
                             domain: None,
@@ -922,9 +924,8 @@ impl Data {
 
         let token_market_order_asset_ids = assets
             .iter()
-            .filter_map(|asset| {
-                (asset.market_type == Some(MarketType::Token)).then(|| asset.asset_id.to_string())
-            })
+            .filter(|&asset| (asset.market_type == Some(MarketType::Token)))
+            .map(|asset| asset.asset_id.to_string())
             .collect::<Vec<_>>();
 
         self.register_assets_with_gdk_icons(assets);
@@ -2548,12 +2549,11 @@ impl Data {
             .assets
             .get(&details.asset)
             .ok_or(anyhow!("unknown asset"))?;
-        ensure!(asset.precision <= 8);
         // Verify price
         match details.order_type {
             OrderType::Bitcoin => {
                 // Allow only assets with precision 8 when bitcoin_amount is fixed
-                ensure!(asset.precision == 8);
+                ensure!(asset.precision == AssetPrecision::BITCOIN_PRECISION);
                 let expected_asset_amount = types::asset_amount(
                     details.bitcoin_amount,
                     details.price,
@@ -2884,7 +2884,7 @@ impl Data {
                 ffi::proto::from::submit_result::Result::SubmitSucceed(ffi::proto::Empty {})
             }
             Ok(false) => {
-                self.waiting_submit = std::mem::replace(&mut self.visible_submit, None);
+                self.waiting_submit = self.visible_submit.take();
                 self.process_pending_sign_prompts();
                 self.process_pending_succeed();
                 return;
@@ -3335,11 +3335,7 @@ impl Data {
     fn process_conversion_rates(&mut self) {
         self.make_async_request(Request::ConversionRates(None), move |data, res| {
             if let Ok(Response::ConversionRates(resp)) = res {
-                let usd_conversion_rates = resp
-                    .usd_conversion_rates
-                    .into_iter()
-                    .map(|(name, price)| (name, price))
-                    .collect();
+                let usd_conversion_rates = resp.usd_conversion_rates.into_iter().collect();
                 data.ui.send(ffi::proto::from::Msg::ConversionRates(
                     ffi::proto::from::ConversionRates {
                         usd_conversion_rates,
@@ -4044,7 +4040,7 @@ impl Data {
                 .icon
                 .clone()
                 .unwrap_or_else(|| base64::engine::general_purpose::STANDARD.encode(DEFAULT_ICON)),
-            precision: asset.precision as u32,
+            precision: u32::from(asset.precision.value()),
             swap_market: asset.market_type == Some(MarketType::Stablecoin),
             amp_market: asset.market_type == Some(MarketType::Amp),
             domain: asset.domain.clone(),

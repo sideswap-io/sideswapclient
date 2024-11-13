@@ -16,7 +16,7 @@ pub mod proto {
 pub type ToMsg = proto::to::Msg;
 pub type FromMsg = proto::from::Msg;
 
-pub const GIT_COMMIT_HASH: &'static str = env!("VERGEN_GIT_SHA");
+pub const GIT_COMMIT_HASH: &str = env!("VERGEN_GIT_SHA");
 
 static INIT_LOGGER_FLAG: Once = Once::new();
 
@@ -278,7 +278,7 @@ fn generate_mnemonic12_from_rng<R: rand::RngCore + rand::CryptoRng>(rng: &mut R)
 #[no_mangle]
 pub extern "C" fn sideswap_generate_mnemonic12() -> *mut c_char {
     log::debug!("generate new mnemonic...");
-    let mut rng = rand::rngs::OsRng::default();
+    let mut rng = rand::rngs::OsRng;
     let str = generate_mnemonic12_from_rng(&mut rng);
     let value = CString::new(str).unwrap();
     value.into_raw()
@@ -305,16 +305,10 @@ fn check_bitcoin_address(env: Env, addr: &str) -> bool {
         Ok(a) => a,
         Err(_) => return false,
     };
+
     match env {
-        Env::Prod | Env::LocalLiquid => *addr.network() == bitcoin::Network::Bitcoin,
-        Env::Testnet | Env::LocalTestnet => {
-            let script_hash = match addr.payload() {
-                bitcoin::address::Payload::ScriptHash(_) => true,
-                _ => false,
-            };
-            *addr.network() == bitcoin::Network::Regtest
-                || *addr.network() == bitcoin::Network::Testnet && script_hash
-        }
+        Env::Prod | Env::LocalLiquid => addr.is_valid_for_network(bitcoin::Network::Bitcoin),
+        Env::Testnet | Env::LocalTestnet => addr.is_valid_for_network(bitcoin::Network::Testnet),
     }
 }
 

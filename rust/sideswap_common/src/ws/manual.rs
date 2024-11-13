@@ -63,7 +63,7 @@ async fn connect_with_error_delay(
 ) -> Result<WsStream, anyhow::Error> {
     let connect_result = tokio::time::timeout(
         Duration::from_secs(30),
-        connect_async(&url, proxy, host, port),
+        connect_async(url, proxy, host, port),
     )
     .await;
     match connect_result {

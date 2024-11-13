@@ -33,11 +33,15 @@ impl ApiCall for OrderHistoryRequest {
 
     fn parse(value: serde_json::Value) -> Result<Self::Response, anyhow::Error> {
         // https://docs.bitfinex.com/reference/rest-auth-orders-history
-        let values = value.as_array().ok_or_else(|| anyhow!("array expected"))?;
+        let values = value
+            .as_array()
+            .ok_or_else(|| anyhow::anyhow!("array expected"))?;
         values
             .iter()
             .map(|item| -> Result<Order, anyhow::Error> {
-                let list = item.as_array().ok_or_else(|| anyhow!("array expected"))?;
+                let list = item
+                    .as_array()
+                    .ok_or_else(|| anyhow::anyhow!("array expected"))?;
                 Ok(Order {
                     id: get_i64(list, 0),
                     cid: get_i64(list, 2),

@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use anyhow::{bail, ensure};
+use log::{debug, error, info};
 use tokio::sync::mpsc::UnboundedReceiver;
 
 use crate::{
@@ -74,19 +76,20 @@ pub enum Response {
     OrderSubmit(OrderSubmit, Result<Order, anyhow::Error>),
 }
 
-fn order_submit_with_retry(
+async fn order_submit_with_retry(
     bf_api: &bitfinex_api::Bitfinex,
     req: &OrderSubmit,
 ) -> Result<bitfinex_api::submit::SubmitResponse, anyhow::Error> {
     for index in 0..5 {
         // Do not check history for the first time, cid must be unique
         if index != 0 {
-            let history_res =
-                bf_api.make_request(bitfinex_api::order_history::OrderHistoryRequest {
+            let history_res = bf_api
+                .make_request(bitfinex_api::order_history::OrderHistoryRequest {
                     start: None,
                     end: None,
                     limit: None,
-                });
+                })
+                .await;
 
             match history_res {
                 Ok(history) => {
@@ -99,18 +102,20 @@ fn order_submit_with_retry(
                 }
                 Err(err) => {
                     error!("loading order history failed: {err}");
-                    std::thread::sleep(Duration::from_secs(3));
+                    tokio::time::sleep(Duration::from_secs(3)).await;
                     continue;
                 }
             }
         }
 
-        let submit_res = bf_api.make_request(bitfinex_api::submit::SubmitRequest {
-            type_: req.market_type.to_string(),
-            cid: req.cid,
-            symbol: req.symbol.clone(),
-            amount: req.amount.to_string(),
-        });
+        let submit_res = bf_api
+            .make_request(bitfinex_api::submit::SubmitRequest {
+                type_: req.market_type.to_string(),
+                cid: req.cid,
+                symbol: req.symbol.clone(),
+                amount: req.amount.to_string(),
+            })
+            .await;
         match submit_res {
             Ok(order) => {
                 info!("order submit succeed");
@@ -118,7 +123,7 @@ fn order_submit_with_retry(
             }
             Err(err) => {
                 error!("order submit failed: {err}");
-                std::thread::sleep(Duration::from_secs(3));
+                tokio::time::sleep(Duration::from_secs(3)).await;
                 continue;
             }
         }
@@ -127,13 +132,13 @@ fn order_submit_with_retry(
     bail!("all order submit retries failed");
 }
 
-pub fn run(
+pub async fn run(
     settings: BfSettings,
     mut req_receiver: UnboundedReceiver<Request>,
     resp_callback: impl Fn(Response),
 ) {
     let bf_api = bitfinex_api::Bitfinex::new(settings.clone());
-    while let Some(req) = req_receiver.blocking_recv() {
+    while let Some(req) = req_receiver.recv().await {
         match req {
             Request::Transfer {
                 from,
@@ -142,13 +147,15 @@ pub fn run(
                 currency_to,
                 amount,
             } => {
-                let res = bf_api.make_request(bitfinex_api::transfer::TransferRequest {
-                    from,
-                    to,
-                    currency,
-                    currency_to,
-                    amount: amount.to_string(),
-                });
+                let res = bf_api
+                    .make_request(bitfinex_api::transfer::TransferRequest {
+                        from,
+                        to,
+                        currency,
+                        currency_to,
+                        amount: amount.to_string(),
+                    })
+                    .await;
                 match res {
                     Ok(resp) if resp.status == "SUCCESS" => {
                         resp_callback(Response::Transfer { success: true })
@@ -165,19 +172,21 @@ pub fn run(
             } => {
                 let mut retry_count = 0;
                 let res = loop {
-                    let res = bf_api.make_request(bitfinex_api::withdraw::WithdrawRequest {
-                        wallet: wallet.clone(),
-                        method: method.clone(),
-                        amount: amount.to_string(),
-                        address: address.clone(),
-                    });
+                    let res = bf_api
+                        .make_request(bitfinex_api::withdraw::WithdrawRequest {
+                            wallet: wallet.clone(),
+                            method: method.clone(),
+                            amount: amount.to_string(),
+                            address: address.clone(),
+                        })
+                        .await;
                     debug!("withdraw result: {res:?}");
                     if let Ok(success) = res.as_ref() {
                         if success.withdrawal_id == 0 && success.status == "SUCCESS" && success.text == "Settlement / Transfer in progress, please try again in few seconds"  {
                             retry_count += 1;
                             if retry_count < 5 {
                                 debug!("wait and retry withdraw...");
-                                std::thread::sleep(Duration::from_secs(10));
+                                tokio::time::sleep(Duration::from_secs(10)).await;
                                 continue;
                             }
                         }
@@ -193,11 +202,9 @@ pub fn run(
             }
 
             Request::Movements { start, end, limit } => {
-                let res = bf_api.make_request(bitfinex_api::movements::MovementsRequest {
-                    start,
-                    end,
-                    limit,
-                });
+                let res = bf_api
+                    .make_request(bitfinex_api::movements::MovementsRequest { start, end, limit })
+                    .await;
                 match res {
                     Ok(resp) => resp_callback(Response::Movements(Movements {
                         success: true,
@@ -226,7 +233,7 @@ pub fn run(
             }
 
             Request::OrderSubmit(req) => {
-                let res = order_submit_with_retry(&bf_api, &req);
+                let res = order_submit_with_retry(&bf_api, &req).await;
                 resp_callback(Response::OrderSubmit(
                     req,
                     res.map(|resp| Order {

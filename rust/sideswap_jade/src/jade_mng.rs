@@ -448,7 +448,7 @@ impl JadeMng {
             jade_id: jade_id.clone(),
             data: Arc::new(Mutex::new(jade_data)),
             agent: ureq::Agent::new(), // FIXME: Use proxy
-            transport: Arc::clone(&transport),
+            transport: Arc::clone(transport),
             status_callback: Arc::clone(&self.status_callback),
         })
     }

@@ -10,7 +10,7 @@ pub struct SubmitId(pub String);
 #[derive(Serialize, Deserialize)]
 pub struct SwapStartRequest {
     pub order_id: OrderId,
-    pub inputs: Vec<PsetInput>,
+    pub inputs: Vec<Utxo>,
     pub recv_addr: elements::Address,
     pub change_addr: elements::Address,
     pub send_asset: AssetId,

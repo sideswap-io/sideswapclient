@@ -1,5 +1,5 @@
 use sideswap_api::ServerFee;
-use sideswap_types::fee_rate::FeeRateSats;
+use sideswap_types::{asset_precision::AssetPrecision, fee_rate::FeeRateSats};
 
 #[derive(
     Eq,
@@ -18,10 +18,20 @@ use sideswap_types::fee_rate::FeeRateSats;
 )]
 pub struct Amount(pub i64);
 
+pub const MAX_BTC_AMOUNT: f64 = 21_000_000.0;
+
 pub const COIN: i64 = 100_000_000;
 
 pub const ELEMENTS_CONFIRMED_BLOCKS: i32 = 2;
 pub const BITCOIN_CONFIRMED_BLOCKS: i32 = 6;
+
+pub fn btc_to_sat(amount: f64) -> u64 {
+    (amount * COIN as f64).round() as u64
+}
+
+pub fn sat_to_btc(amount: u64) -> f64 {
+    amount as f64 / COIN as f64
+}
 
 impl Amount {
     pub fn from_sat(value: i64) -> Self {
@@ -139,14 +149,14 @@ pub fn get_max_bitcoin_amount(
     }
 }
 
-pub fn asset_scale(asset_precision: u8) -> f64 {
-    10i64.checked_pow(asset_precision as u32).unwrap() as f64
+pub fn asset_scale(asset_precision: AssetPrecision) -> f64 {
+    10u32.pow(u32::from(asset_precision.value())) as f64
 }
 
 pub fn asset_amount(
     bitcoin_amount: i64,
     price: f64,
-    asset_precision: u8,
+    asset_precision: AssetPrecision,
     market: sideswap_api::MarketType,
 ) -> i64 {
     let scale = asset_scale(asset_precision);
@@ -162,7 +172,7 @@ pub fn asset_amount(
 pub fn bitcoin_amount(
     asset_amount: i64,
     price: f64,
-    asset_precision: u8,
+    asset_precision: AssetPrecision,
     market: sideswap_api::MarketType,
 ) -> i64 {
     let asset_amount = asset_float_amount(asset_amount, asset_precision);
@@ -174,12 +184,20 @@ pub fn bitcoin_amount(
     Amount::from_bitcoin(bitcoin_amount).to_sat()
 }
 
-pub fn asset_float_amount(asset_amount: i64, asset_precision: u8) -> f64 {
+pub fn asset_float_amount(asset_amount: i64, asset_precision: AssetPrecision) -> f64 {
     asset_amount as f64 / asset_scale(asset_precision)
 }
 
-pub fn asset_int_amount(asset_amount: f64, asset_precision: u8) -> i64 {
+pub fn asset_float_amount_(asset_amount: u64, asset_precision: AssetPrecision) -> f64 {
+    asset_amount as f64 / asset_scale(asset_precision)
+}
+
+pub fn asset_int_amount(asset_amount: f64, asset_precision: AssetPrecision) -> i64 {
     f64::round(asset_amount * asset_scale(asset_precision)) as i64
+}
+
+pub fn asset_int_amount_(asset_amount: f64, asset_precision: AssetPrecision) -> u64 {
+    f64::round(asset_amount * asset_scale(asset_precision)) as u64
 }
 
 pub struct PegOutAmountReq {

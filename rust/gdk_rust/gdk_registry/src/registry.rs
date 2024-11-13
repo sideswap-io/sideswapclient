@@ -245,3 +245,22 @@ fn set_last_modified(new: String, network: ElementsNetwork, what: AssetsOrIcons)
         crate::file::write(&last_modified, &mut *file)
     })
 }
+
+#[cfg(test)]
+pub(crate) mod tests {
+    use super::*;
+    use gdk_common::rand::Rng;
+    use std::io::{Seek, Write};
+
+    /// Writes 16 random bytes to the beginning of the file specified by
+    /// `network` and `what`.
+    pub(crate) fn corrupt_file(network: ElementsNetwork, what: AssetsOrIcons) -> Result<()> {
+        let mut file = get_registry_file(network, what)?;
+
+        let mut noise = [0u8; 16];
+        gdk_common::rand::thread_rng().fill(&mut noise);
+
+        file.seek(std::io::SeekFrom::Start(0))?;
+        file.write_all(&noise).map_err(Into::into)
+    }
+}

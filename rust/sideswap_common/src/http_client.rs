@@ -9,6 +9,12 @@ pub struct HttpClient {
     reqwest: reqwest::Client,
 }
 
+impl Default for HttpClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HttpClient {
     pub fn new() -> Self {
         let timeout = Duration::from_secs(30);

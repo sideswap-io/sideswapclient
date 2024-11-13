@@ -1,14 +1,21 @@
+//! Old instant swaps and swap API (deprecated)
+
+use crate::rpc::ListUnspent;
+use crate::types::{dealer_ticker_from_asset, dealer_ticker_to_asset_ticker, DealerTicker};
+use crate::utxo_data::{self, UtxoData, UtxoWithKey};
+
 use super::rpc;
-use base64::Engine;
-use elements::secp256k1_zkp::SECP256K1;
+use anyhow::{anyhow, ensure};
+use elements::pset::PartiallySignedTransaction;
+use elements::OutPoint;
+use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use sideswap_api::{Asset, *};
-use sideswap_common::types::{Amount, TxOut};
+use sideswap_common::types::Amount;
 use sideswap_common::ws::auto::WrappedResponse;
 use sideswap_common::ws::ws_req_sender::WsReqSender;
-use sideswap_common::{make_request, types, ws};
+use sideswap_common::{b64, make_request, types, ws};
 use std::collections::{BTreeMap, BTreeSet};
-use std::str::FromStr;
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
@@ -56,34 +63,28 @@ pub struct DealerPrice {
     pub balancing: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
 pub struct ToPrice {
     pub ticker: DealerTicker,
     pub price: Option<DealerPrice>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
 pub struct ToLimitBalance {
     pub ticker: DealerTicker,
     pub recv_limit: bool,
     pub balance: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
 pub enum To {
     Price(ToPrice),
     ResetPrices(Empty),
     IndexPriceUpdate(PriceUpdateBroadcast),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
 pub enum From {
     Swap(SwapSucceed),
     ServerConnected(Empty),
     ServerDisconnected(Empty),
-    Utxos(rpc::ListUnspent),
+    Utxos(UtxoData, ListUnspent),
 }
 
 enum Internal {
@@ -91,7 +92,7 @@ enum Internal {
     ReloadUtxo,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Debug)]
 pub struct SwapSucceed {
     pub txid: elements::Txid,
     pub ticker: DealerTicker,
@@ -105,7 +106,7 @@ pub struct Utxo {
     pub amount: i64,
 }
 
-pub type Utxos = BTreeMap<TxOut, Utxo>;
+pub type Utxos = BTreeMap<OutPoint, Utxo>;
 
 pub type WalletBalances = BTreeMap<DealerTicker, f64>;
 pub type DealerPrices = BTreeMap<DealerTicker, DealerPriceTimestamp>;
@@ -126,70 +127,6 @@ pub struct OwnOrder {
 struct OwnOrderKey {
     ticker: DealerTicker,
     send_bitcoins: bool,
-}
-
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-pub enum DealerTicker {
-    LBTC,
-    USDt,
-    EURx,
-    MEX,
-    DePIX,
-}
-
-pub fn get_dealer_asset_id(
-    network: sideswap_common::network::Network,
-    ticker: DealerTicker,
-) -> elements::AssetId {
-    match ticker {
-        DealerTicker::LBTC => network.d().policy_asset.asset_id(),
-        DealerTicker::USDt => network.d().known_assets.usdt.asset_id(),
-        DealerTicker::EURx => network.d().known_assets.eurx.asset_id(),
-        DealerTicker::MEX => network.d().known_assets.mex.asset_id(),
-        DealerTicker::DePIX => network.d().known_assets.depix.asset_id(),
-    }
-}
-
-impl std::fmt::Display for DealerTicker {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        dealer_ticker_to_asset_ticker(*self).fmt(f)
-    }
-}
-
-pub fn dealer_ticker_to_asset_ticker(dealer_ticker: DealerTicker) -> &'static str {
-    match dealer_ticker {
-        DealerTicker::LBTC => TICKER_LBTC,
-        DealerTicker::USDt => TICKER_USDT,
-        DealerTicker::EURx => TICKER_EURX,
-        DealerTicker::MEX => TICKER_MEX,
-        DealerTicker::DePIX => TICKER_DEPIX,
-    }
-}
-
-pub fn dealer_ticker_from_asset_ticker(ticker: &str) -> Option<DealerTicker> {
-    let ticker = match ticker {
-        TICKER_LBTC => DealerTicker::LBTC,
-        TICKER_USDT => DealerTicker::USDt,
-        TICKER_EURX => DealerTicker::EURx,
-        TICKER_DEPIX => DealerTicker::DePIX,
-        _ => return None,
-    };
-    Some(ticker)
-}
-
-pub fn dealer_ticker_from_asset(asset: &Asset) -> Option<DealerTicker> {
-    dealer_ticker_from_asset_ticker(&asset.ticker.0)
-}
-
-impl<'de> Deserialize<'de> for DealerTicker {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let name = String::deserialize(deserializer)?;
-        dealer_ticker_from_asset_ticker(&name)
-            .ok_or_else(|| serde::de::Error::custom(anyhow!("unknown ticker {name}")))
-    }
 }
 
 pub fn apply_interest(price: &PricePair, interest: f64) -> PricePair {
@@ -269,12 +206,11 @@ fn take_order(
     Ok(())
 }
 
-fn get_pset(
+async fn get_pset(
     order_id: &OrderId,
     details: &Details,
     utxos: &Utxos,
     params: &Params,
-    http_client: &ureq::Agent,
     extra_asset_utxo: bool,
 ) -> Result<PsetMakerRequest, anyhow::Error> {
     let bitcoin_asset = params.env.nd().policy_asset.asset_id();
@@ -288,8 +224,8 @@ fn get_pset(
         .values()
         .filter(|utxo| {
             utxo.item.asset == send_asset
-                && utxo.item.amountblinder.is_some()
-                && utxo.item.assetblinder.is_some()
+                && utxo.item.amountblinder != ValueBlindingFactor::zero()
+                && utxo.item.assetblinder != AssetBlindingFactor::zero()
         })
         .collect();
     let utxos_amounts: Vec<i64> = asset_utxos.iter().map(|utxo| utxo.amount).collect();
@@ -305,7 +241,7 @@ fn get_pset(
     };
     let selected = types::select_utxo(utxos_amounts, utxo_amount);
 
-    let mut inputs = Vec::<PsetInput>::new();
+    let mut inputs = Vec::<sideswap_api::Utxo>::new();
 
     for amount in selected {
         let index = asset_utxos
@@ -314,22 +250,22 @@ fn get_pset(
             .expect("utxo must exists");
         let utxo = asset_utxos.swap_remove(index);
 
-        let asset_bf = utxo.item.assetblinder.unwrap();
-        let value_bf = utxo.item.amountblinder.unwrap();
-        inputs.push(PsetInput {
+        inputs.push(sideswap_api::Utxo {
             txid: utxo.item.txid,
             vout: utxo.item.vout,
             asset: send_asset,
-            asset_bf,
+            asset_bf: utxo.item.assetblinder,
             value: amount as u64,
-            value_bf,
+            value_bf: utxo.item.amountblinder,
             redeem_script: utxo.item.redeem_script.clone(),
         });
     }
 
-    let recv_addr = rpc::make_rpc_call(http_client, &params.rpc, rpc::GetNewAddressCall {})
+    let recv_addr = rpc::make_rpc_call(&params.rpc, rpc::GetNewAddressCall {})
+        .await
         .expect("getting new address failed");
-    let change_addr = rpc::make_rpc_call(http_client, &params.rpc, rpc::GetNewAddressCall {})
+    let change_addr = rpc::make_rpc_call(&params.rpc, rpc::GetNewAddressCall {})
+        .await
         .expect("getting new address failed");
 
     let addr_request = PsetMakerRequest {
@@ -345,58 +281,20 @@ fn get_pset(
     Ok(addr_request)
 }
 
-fn sign_pset(
-    data: &SignNotification,
-    params: &Params,
-    utxos: &Utxos,
-    http_client: &ureq::Agent,
-) -> Result<SignRequest, anyhow::Error> {
-    let mut pset = elements::encode::deserialize::<elements::pset::PartiallySignedTransaction>(
-        &base64::engine::general_purpose::STANDARD.decode(&data.pset)?,
-    )?;
-    let tx = pset.extract_tx()?;
+fn sign_pset(data: &Data, notif: &SignNotification) -> Result<SignRequest, anyhow::Error> {
+    let pset = b64::decode(&notif.pset)?;
+    let pset = elements::encode::deserialize::<PartiallySignedTransaction>(&pset)?;
 
-    for (index, input) in tx.input.iter().enumerate() {
-        let tx_out = TxOut {
-            txid: elements::Txid::from_str(&input.previous_output.txid.to_string()).unwrap(),
-            vout: input.previous_output.vout,
-        };
-        if let Some(utxo) = utxos.get(&tx_out) {
-            let private_key = rpc::make_rpc_call(
-                http_client,
-                &params.rpc,
-                rpc::DumpPrivKeyCall {
-                    address: utxo.item.address.clone(),
-                },
-            )?;
-
-            let value_commitment = utxo.item.amountcommitment.clone().unwrap().into_inner();
-
-            let input_sign = sideswap_common::pset::internal_sign_elements(
-                SECP256K1,
-                &tx,
-                index,
-                &private_key,
-                value_commitment,
-                elements::EcdsaSighashType::All,
-            );
-            let public_key = private_key.public_key(SECP256K1);
-            let pset_input = pset.inputs_mut().get_mut(index).unwrap();
-            pset_input.final_script_sig = utxo.item.redeem_script.as_ref().map(|script| {
-                elements::script::Builder::new()
-                    .push_slice(script.as_bytes())
-                    .into_script()
-            });
-            pset_input.final_script_witness = Some(vec![input_sign, public_key.to_bytes()]);
-        }
-    }
+    let pset = data.utxo_data.sign_pset(pset);
 
     let pset = elements::encode::serialize(&pset);
+
     let sign_request = SignRequest {
-        order_id: data.order_id,
-        signed_pset: base64::engine::general_purpose::STANDARD.encode(pset),
-        side: data.details.side,
+        order_id: notif.order_id,
+        signed_pset: b64::encode(&pset),
+        side: notif.details.side,
     };
+
     Ok(sign_request)
 }
 
@@ -442,7 +340,6 @@ async fn update_price(
     wallet_balances: &WalletBalances,
     utxos: &Utxos,
     params: &Params,
-    http_client: &ureq::Agent,
     ws: &mut WsReqSender,
 ) {
     let dealer_ticker = dealer_ticker_to_asset_ticker(ticker);
@@ -506,9 +403,9 @@ async fn update_price(
                     &submit_resp.details,
                     utxos,
                     params,
-                    http_client,
                     true,
-                );
+                )
+                .await;
                 match pset {
                     Ok(pset_maker_req) => {
                         let addr_result = make_request!(ws, PsetMaker, pset_maker_req);
@@ -575,13 +472,12 @@ async fn update_price(
 }
 
 struct InstantSwap {
-    send_asset: AssetId,
+    _send_asset: AssetId,
 }
 
 struct Data {
     bitcoin_asset: AssetId,
     params: Params,
-    rpc_http_client: ureq::Agent,
     ws: WsReqSender,
     assets: Vec<Asset>,
     server_connected: bool,
@@ -597,6 +493,7 @@ struct Data {
     instant_swaps: BTreeMap<OrderId, InstantSwap>,
     from_tx: UnboundedSender<From>,
     internal_tx: UnboundedSender<Internal>,
+    utxo_data: UtxoData,
 }
 
 async fn process_timer(data: &mut Data) {
@@ -612,7 +509,6 @@ async fn process_timer(data: &mut Data) {
                 &data.wallet_balances,
                 &data.utxos,
                 &data.params,
-                &data.rpc_http_client,
                 &mut data.ws,
             )
             .await;
@@ -639,9 +535,9 @@ async fn process_timer(data: &mut Data) {
                 &order.details,
                 &data.utxos,
                 &data.params,
-                &data.rpc_http_client,
                 false,
-            );
+            )
+            .await;
             match result {
                 Ok(pset_req) => {
                     let taker_pset_req = PsetTakerRequest {
@@ -706,7 +602,8 @@ async fn process_timer(data: &mut Data) {
                 max_send_amount: Amount::from_bitcoin(max_send_bitcoin_amount).to_sat(),
             });
         }
-        if data.server_connected {
+
+        if data.server_connected && data.params.api_key.is_some() {
             let ticker = dealer_ticker_to_asset_ticker(*ticker);
             let asset = data
                 .assets
@@ -726,11 +623,7 @@ async fn process_timer(data: &mut Data) {
         }
     }
 
-    let wallet_result = rpc::make_rpc_call(
-        &data.rpc_http_client,
-        &data.params.rpc,
-        rpc::GetWalletInfoCall {},
-    );
+    let wallet_result = rpc::make_rpc_call(&data.params.rpc, rpc::GetWalletInfoCall {}).await;
     match wallet_result {
         Ok(v) => {
             if data.wallet_balance.as_ref() != Some(&v) {
@@ -765,15 +658,14 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
             data.orders.remove(&order.order_id);
         }
 
-        Notification::Sign(order) => {
-            debug!("sign notification received, order_id: {}", &order.order_id);
+        Notification::Sign(notif) => {
+            debug!("sign notification received, order_id: {}", &notif.order_id);
 
             // TODO: Verify PSET
 
-            let result =
-                sign_pset(&order, &data.params, &data.utxos, &data.rpc_http_client).unwrap();
+            let result = sign_pset(data, &notif).unwrap();
             make_request!(data.ws, Sign, result).expect("sending signed PSBT failed");
-            data.pending_signs.insert(order.order_id, order.details);
+            data.pending_signs.insert(notif.order_id, notif.details);
         }
 
         Notification::Complete(msg) => {
@@ -819,32 +711,26 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
                 .values()
                 .filter(|utxo| {
                     utxo.item.asset == swap_notif.send_asset
-                        && utxo.item.amountblinder.is_some()
-                        && utxo.item.assetblinder.is_some()
+                        && utxo.item.amountblinder != ValueBlindingFactor::zero()
+                        && utxo.item.assetblinder != AssetBlindingFactor::zero()
                 })
-                .map(|utxo| PsetInput {
+                .map(|utxo| sideswap_api::Utxo {
                     txid: utxo.item.txid,
                     vout: utxo.item.vout,
                     asset: utxo.item.asset,
-                    asset_bf: utxo.item.assetblinder.unwrap(),
-                    value: Amount::from_rpc(&utxo.item.amount).to_sat() as u64,
-                    value_bf: utxo.item.amountblinder.unwrap(),
+                    asset_bf: utxo.item.assetblinder,
+                    value: utxo.item.amount.to_sat(),
+                    value_bf: utxo.item.amountblinder,
                     redeem_script: utxo.item.redeem_script.clone(),
                 })
                 .collect();
 
-            let recv_addr = rpc::make_rpc_call(
-                &data.rpc_http_client,
-                &data.params.rpc,
-                rpc::GetNewAddressCall {},
-            )
-            .expect("getting new address failed");
-            let change_addr = rpc::make_rpc_call(
-                &data.rpc_http_client,
-                &data.params.rpc,
-                rpc::GetNewAddressCall {},
-            )
-            .expect("getting new address failed");
+            let recv_addr = rpc::make_rpc_call(&data.params.rpc, rpc::GetNewAddressCall {})
+                .await
+                .expect("getting new address failed");
+            let change_addr = rpc::make_rpc_call(&data.params.rpc, rpc::GetNewAddressCall {})
+                .await
+                .expect("getting new address failed");
 
             let start_swap_dealer_resp = make_request!(
                 data.ws,
@@ -863,47 +749,18 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
             data.instant_swaps.insert(
                 swap_notif.order_id,
                 InstantSwap {
-                    send_asset: swap_notif.send_asset,
+                    _send_asset: swap_notif.send_asset,
                 },
             );
         }
 
         Notification::BlindedSwapDealer(swap_notif) => {
             info!("got blinded pset, order_id: {}", swap_notif.order_id);
-            let mut pset =
-                elements::encode::deserialize::<elements::pset::PartiallySignedTransaction>(
-                    &base64::engine::general_purpose::STANDARD
-                        .decode(&swap_notif.pset)
-                        .unwrap(),
-                )
+            let pset = b64::decode(&swap_notif.pset).expect("must not fail");
+            let pset = elements::encode::deserialize::<PartiallySignedTransaction>(&pset)
                 .expect("parsing pset failed");
-            let swap = data
-                .instant_swaps
-                .get(&swap_notif.order_id)
-                .expect("order not found");
 
-            let tx = pset.extract_tx().unwrap();
-
-            let own_inputs: BTreeMap<_, _> = data
-                .utxos
-                .values()
-                .filter(|utxo| {
-                    utxo.item.asset == swap.send_asset
-                        && utxo.item.amountblinder.is_some()
-                        && utxo.item.assetblinder.is_some()
-                })
-                .map(|utxo| {
-                    (
-                        TxOut {
-                            txid: utxo.item.txid,
-                            vout: utxo.item.vout,
-                        },
-                        utxo,
-                    )
-                })
-                .collect();
-
-            // FIXME: Verify recv output
+            // TODO: Verify amounts
             // let recv_output = tx
             //     .output
             //     .iter()
@@ -927,40 +784,7 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
             // }
             //assert!(recv_output.is_some());
 
-            for (index, input) in tx.input.iter().enumerate() {
-                let tx_out = TxOut {
-                    txid: input.previous_output.txid,
-                    vout: input.previous_output.vout,
-                };
-                if let Some(utxo) = own_inputs.get(&tx_out) {
-                    let private_key = rpc::make_rpc_call(
-                        &data.rpc_http_client,
-                        &data.params.rpc,
-                        rpc::DumpPrivKeyCall {
-                            address: utxo.item.address.clone(),
-                        },
-                    )
-                    .expect("loading priv key failed");
-
-                    let value_commitment = utxo.item.amountcommitment.clone().unwrap().into_inner();
-                    let input_sign = sideswap_common::pset::internal_sign_elements(
-                        SECP256K1,
-                        &tx,
-                        index,
-                        &private_key,
-                        value_commitment,
-                        elements::EcdsaSighashType::All,
-                    );
-                    let public_key = private_key.public_key(&SECP256K1);
-                    let pset_input = pset.inputs_mut().get_mut(index).unwrap();
-                    pset_input.final_script_sig = utxo.item.redeem_script.as_ref().map(|script| {
-                        elements::script::Builder::new()
-                            .push_slice(script.as_bytes())
-                            .into_script()
-                    });
-                    pset_input.final_script_witness = Some(vec![input_sign, public_key.to_bytes()]);
-                }
-            }
+            let pset = data.utxo_data.sign_pset(pset);
 
             let pset = elements::encode::serialize(&pset);
             let signed_swap_resp = make_request!(
@@ -968,7 +792,7 @@ async fn process_ws_notif(data: &mut Data, msg: Notification) {
                 SignedSwapDealer,
                 SignedSwapDealerRequest {
                     order_id: swap_notif.order_id,
-                    pset: base64::engine::general_purpose::STANDARD.encode(&pset),
+                    pset: b64::encode(&pset),
                 }
             );
             if let Err(e) = signed_swap_resp {
@@ -1120,21 +944,44 @@ async fn process_internal_msg(data: &mut Data, internal: Internal) {
         Internal::Timer => process_timer(data).await,
 
         Internal::ReloadUtxo => {
-            let unspent_with_zc = rpc::make_rpc_call(
-                &data.rpc_http_client,
-                &data.params.rpc,
-                rpc::ListUnspentCall { minconf: 0 },
-            )
-            .expect("list_unspent failed");
+            let unspent = rpc::make_rpc_call(&data.params.rpc, rpc::ListUnspentCall { minconf: 0 })
+                .await
+                .expect("list_unspent failed");
+
+            let mut utxos_with_key = Vec::new();
+            for unspent in unspent.iter() {
+                let utxo = sideswap_api::Utxo {
+                    txid: unspent.txid,
+                    vout: unspent.vout,
+                    asset: unspent.asset,
+                    asset_bf: unspent.assetblinder,
+                    value: unspent.amount.to_sat(),
+                    value_bf: unspent.amountblinder,
+                    redeem_script: unspent.redeem_script.clone(),
+                };
+                let priv_key = match data.utxo_data.get_priv_key(&utxo.outpoint()) {
+                    Some(priv_key) => priv_key,
+                    None => rpc::make_rpc_call(
+                        &data.params.rpc,
+                        rpc::DumpPrivKeyCall {
+                            address: unspent.address.clone(),
+                        },
+                    )
+                    .await
+                    .expect("must not fail"),
+                };
+                utxos_with_key.push(UtxoWithKey { utxo, priv_key });
+            }
+            data.utxo_data.reset(utxos_with_key);
 
             data.from_tx
-                .send(From::Utxos(unspent_with_zc.clone()))
-                .unwrap();
+                .send(From::Utxos(data.utxo_data.clone(), unspent.clone()))
+                .expect("channel must be open");
 
             let mut asset_amounts = BTreeMap::<AssetId, f64>::new();
-            for item in unspent_with_zc.iter() {
+            for item in unspent.iter() {
                 let asset_amount = asset_amounts.entry(item.asset).or_default();
-                *asset_amount += Amount::from_rpc(&item.amount).to_bitcoin();
+                *asset_amount += item.amount.to_btc();
             }
 
             let wallet_balances_new = data
@@ -1155,16 +1002,17 @@ async fn process_internal_msg(data: &mut Data, internal: Internal) {
             }
 
             let old_keys: BTreeSet<_> = data.utxos.keys().cloned().collect();
-            let new_keys: BTreeSet<_> = unspent_with_zc.iter().map(|item| item.tx_out()).collect();
-            for item in unspent_with_zc {
-                data.utxos.entry(item.tx_out()).or_insert_with(|| {
+            use sideswap_types::utxo_ext::UtxoExt;
+            let new_keys: BTreeSet<_> = unspent.iter().map(|item| item.outpoint()).collect();
+            for item in unspent.iter() {
+                data.utxos.entry(item.outpoint()).or_insert_with(|| {
                     debug!(
                         "add new utxo: {}/{}, asset: {}, amount: {}",
                         &item.txid, item.vout, item.asset, item.amount
                     );
                     Utxo {
-                        amount: Amount::from_rpc(&item.amount).to_sat(),
-                        item,
+                        amount: item.amount.to_sat() as i64,
+                        item: item.clone(),
                     }
                 });
             }
@@ -1196,10 +1044,6 @@ async fn worker(params: Params, mut to_rx: UnboundedReceiver<To>, from_tx: Unbou
     ));
     let ws = WsReqSender::new(req_sender, resp_receiver);
 
-    let rpc_http_client = ureq::AgentBuilder::new()
-        .timeout(std::time::Duration::from_secs(20))
-        .build();
-
     let bitcoin_asset = params.env.nd().policy_asset.asset_id();
 
     let (internal_tx, mut internal_rx) = unbounded_channel::<Internal>();
@@ -1207,7 +1051,6 @@ async fn worker(params: Params, mut to_rx: UnboundedReceiver<To>, from_tx: Unbou
     let mut data = Data {
         bitcoin_asset,
         params,
-        rpc_http_client,
         ws,
         assets: Vec::new(),
         server_connected: false,
@@ -1223,6 +1066,9 @@ async fn worker(params: Params, mut to_rx: UnboundedReceiver<To>, from_tx: Unbou
         instant_swaps: BTreeMap::new(),
         from_tx,
         internal_tx,
+        utxo_data: UtxoData::new(utxo_data::Params {
+            confifential_only: true,
+        }),
     };
 
     for &ticker in data.params.tickers.iter() {

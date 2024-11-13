@@ -61,9 +61,9 @@ pub fn select(
             verify!(
                 available >= target,
                 CoinSelectError::NotEnough {
-                    asset_id: asset_id,
+                    asset_id,
                     required: target,
-                    available: available,
+                    available,
                 }
             );
 

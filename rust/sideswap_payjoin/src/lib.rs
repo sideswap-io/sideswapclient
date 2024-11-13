@@ -56,7 +56,7 @@ pub trait Wallet {
 fn take_utxos<'a>(
     mut utxos: Vec<Utxo>,
     required: impl Iterator<Item = &'a InOut>,
-) -> Vec<(PsetInput, TxOutSecrets)> {
+) -> Vec<PsetInput> {
     let mut selected = Vec::new();
     for required in required {
         let index = utxos
@@ -82,7 +82,7 @@ fn take_utxos<'a>(
             (
                 elements::confidential::Asset::Confidential(gen),
                 elements::confidential::Value::new_confidential(
-                    &SECP256K1,
+                    SECP256K1,
                     utxo.value,
                     gen,
                     utxo.value_bf,
@@ -96,14 +96,14 @@ fn take_utxos<'a>(
             script_pub_key: utxo.script_pub_key,
             asset_commitment,
             value_commitment,
+            tx_out_sec: TxOutSecrets {
+                asset: utxo.asset_id,
+                asset_bf: utxo.asset_bf,
+                value: utxo.value,
+                value_bf: utxo.value_bf,
+            },
         };
-        let secret = TxOutSecrets {
-            asset: utxo.asset_id,
-            asset_bf: utxo.asset_bf,
-            value: utxo.value,
-            value_bf: utxo.value_bf,
-        };
-        selected.push((input, secret));
+        selected.push(input);
     }
     selected
 }
@@ -259,6 +259,7 @@ pub fn create_payjoin(
         blinding_nonces,
     } = construct_pset(ConstructPsetArgs {
         policy_asset,
+        offlines: Vec::new(),
         inputs,
         outputs,
         network_fee: network_fee.value,

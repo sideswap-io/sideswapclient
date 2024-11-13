@@ -3,6 +3,7 @@ use std::{
     time::Duration,
 };
 
+use sideswap_api::ErrorCode;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 
 use crate::verify;
@@ -16,12 +17,23 @@ use super::{
 pub enum Error {
     #[error("Disconnected")]
     Disconnected,
-    #[error("Backend error: {0}")]
-    BackendError(String),
+    #[error("Backend error: {0}: {1:?}")]
+    BackendError(String, ErrorCode),
     #[error("Request timeout")]
     Timeout(#[from] tokio::time::error::Elapsed),
     #[error("Unexpected response")]
     UnexpectedResponse,
+}
+
+impl Error {
+    pub fn error_code(&self) -> sideswap_api::ErrorCode {
+        match self {
+            Error::BackendError(_, code) => *code,
+            Error::Disconnected | Error::Timeout(_) | Error::UnexpectedResponse => {
+                sideswap_api::ErrorCode::ServerError
+            }
+        }
+    }
 }
 
 pub type Callback = Box<dyn FnOnce(Result<&sideswap_api::Response, Error>) + Send + Sync>;
@@ -31,6 +43,7 @@ pub struct WsReqSender {
     req_sender: UnboundedSender<WrappedRequest>,
     resp_receiver: UnboundedReceiver<WrappedResponse>,
     received: VecDeque<WrappedResponse>,
+    // TODO: Implement timeouts for callbacks (can be done inside WsReqSender::recv)
     callbacks: BTreeMap<sideswap_api::RequestId, Callback>,
 }
 
@@ -71,7 +84,7 @@ impl WsReqSender {
             if let WrappedResponse::Response(sideswap_api::ResponseMessage::Notification(notif)) =
                 &received
             {
-                if let Some(value) = f(&notif) {
+                if let Some(value) = f(notif) {
                     self.received.remove(index);
                     return Ok(value);
                 }
@@ -89,7 +102,7 @@ impl WsReqSender {
                     notif,
                 )) = &event
                 {
-                    if let Some(value) = f(&notif) {
+                    if let Some(value) = f(notif) {
                         return Result::<T, Error>::Ok(value);
                     }
                 };
@@ -130,7 +143,7 @@ impl WsReqSender {
         }
 
         tokio::time::timeout(Duration::from_secs(60), async move {
-            let res = loop {
+            loop {
                 let event = self.resp_receiver.recv().await.expect("must be open");
                 self.on_received(&event);
 
@@ -139,7 +152,7 @@ impl WsReqSender {
                         Some(id),
                         res,
                     )) if id == expected_id => {
-                        break res.map_err(|err| Error::BackendError(err.message));
+                        break res.map_err(|err| Error::BackendError(err.message, err.code));
                     }
                     other => {
                         let failed = match &other {
@@ -152,8 +165,7 @@ impl WsReqSender {
                         }
                     }
                 }
-            };
-            res
+            }
         })
         .await?
     }
@@ -189,7 +201,9 @@ impl WsReqSender {
                 sideswap_api::ResponseMessage::Response(Some(request_id), res) => {
                     self.callbacks.remove(request_id).map(|callback| match res {
                         Ok(resp) => callback(Ok(resp)),
-                        Err(err) => callback(Err(Error::BackendError(err.message.clone()))),
+                        Err(err) => {
+                            callback(Err(Error::BackendError(err.message.clone(), err.code)))
+                        }
                     });
                 }
                 sideswap_api::ResponseMessage::Response(None, _) => {}
@@ -207,6 +221,24 @@ macro_rules! make_request {
             .await;
         match res {
             Ok(::sideswap_api::Response::$typ(resp)) => Ok(resp),
+            Ok(_) => Err(::sideswap_common::ws::ws_req_sender::Error::UnexpectedResponse),
+            Err(err) => Err(err),
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! make_market_request {
+    ($ws:expr, $typ:ident, $value:expr) => {{
+        let res = $ws
+            .make_request(::sideswap_api::Request::Market(
+                ::sideswap_api::market::Request::$typ($value),
+            ))
+            .await;
+        match res {
+            Ok(::sideswap_api::Response::Market(::sideswap_api::market::Response::$typ(resp))) => {
+                Ok(resp)
+            }
             Ok(_) => Err(::sideswap_common::ws::ws_req_sender::Error::UnexpectedResponse),
             Err(err) => Err(err),
         }

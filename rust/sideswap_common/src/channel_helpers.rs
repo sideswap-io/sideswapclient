@@ -31,3 +31,9 @@ impl<T> From<tokio::sync::oneshot::Sender<T>> for UncheckedOneshotSender<T> {
         Self(value)
     }
 }
+
+impl<T> Clone for UncheckedUnboundedSender<T> {
+    fn clone(&self) -> Self {
+        UncheckedUnboundedSender(self.0.clone())
+    }
+}

@@ -227,7 +227,7 @@ fn try_coin_select_impl(
                     .collect(),
                 user_outputs,
                 change_outputs: change_outputs.clone(),
-                fee_change: (with_fee_change && fee_change > 0).then(|| InOut {
+                fee_change: (with_fee_change && fee_change > 0).then_some(InOut {
                     asset_id: policy_asset,
                     value: fee_change,
                 }),

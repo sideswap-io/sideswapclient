@@ -185,3 +185,438 @@ pub fn refresh_assets(params: RefreshAssetsParams) -> Result<RegistrySource> {
 
     Ok(RegistrySource::merge(assets_source, icons_source))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::assets_or_icons::AssetsOrIcons;
+    use crate::hard_coded;
+    use crate::params::GetAssetsBuilder;
+    use crate::params::{AssetCategory, ElementsNetwork};
+    use gdk_common::bitcoin::bip32::Xpub;
+    use gdk_common::elements::AssetId;
+    use gdk_common::log::info;
+    use httptest::{matchers::*, responders::*, Expectation, Server};
+    use rusty_fork::rusty_fork_test;
+    use serde_json::Value;
+    use std::collections::{HashMap, HashSet};
+    use std::path::Path;
+    use std::str::FromStr;
+
+    use tempfile::TempDir;
+
+    /// Shadows `crate::init`, mapping `Error::AlreadyInitialized` to
+    /// `Ok(())` to avoid having a test fail only because some other test has
+    /// already initialized.
+    fn init(dir: impl AsRef<Path>) -> Result<()> {
+        match super::init(dir) {
+            Err(Error::AlreadyInitialized) => Ok(()),
+            other => other,
+        }
+    }
+
+    fn local_server_config(server: &Server, assets: bool, icons: bool) -> Config {
+        let test_endpoint = |what: AssetsOrIcons| {
+            let (body, last_modified) = what.liquid_data();
+
+            server.expect(
+                Expectation::matching(all_of![
+                    request::method_path("GET", what.endpoint()),
+                    request::headers(contains(("if-modified-since", last_modified.clone()))),
+                    request::headers(not(contains(("emptify_icons", "true")))),
+                ])
+                .times(0..=1)
+                .respond_with({
+                    status_code(304)
+                        .body(body.clone())
+                        .append_header("last-modified", last_modified.clone())
+                }),
+            );
+
+            server.expect(
+                Expectation::matching(all_of![
+                    request::method_path("GET", what.endpoint()),
+                    request::headers(not(contains(("if-modified-since", last_modified.clone())))),
+                    request::headers(not(contains(("emptify_icons", "true")))),
+                ])
+                .times(0..=1)
+                .respond_with({
+                    status_code(200).body(body).append_header("last-modified", last_modified)
+                }),
+            );
+
+            let (body, last_modified) = what.emptify_icons();
+            server.expect(
+                Expectation::matching(all_of![
+                    request::method_path("GET", what.endpoint()),
+                    request::headers(contains(("emptify_icons", "true"))),
+                ])
+                .times(0..=1)
+                .respond_with({
+                    status_code(200)
+                        .body(body.clone())
+                        .append_header("last-modified", last_modified.clone())
+                }),
+            );
+        };
+
+        if assets {
+            test_endpoint(AssetsOrIcons::Assets);
+        }
+
+        if icons {
+            test_endpoint(AssetsOrIcons::Icons);
+        }
+
+        Config {
+            url: format!("http://localhost:{}", server.addr().port()),
+            ..Default::default()
+        }
+    }
+
+    fn test_refresh_assets(
+        assets: bool,
+        icons: bool,
+        emptify_icons: bool,
+    ) -> Result<RegistrySource> {
+        let server = Server::run();
+
+        let mut config = local_server_config(&server, assets, icons);
+        if emptify_icons {
+            config.custom_headers.insert("emptify_icons".to_string(), "true".to_string());
+        }
+        let xpub = Xpub::from_str(DEFAULT_XPUB)?;
+        let params = RefreshAssetsParams::new(assets, icons, config, Some(xpub));
+
+        super::refresh_assets(params)
+    }
+
+    fn get_full_registry() -> RegistryInfos {
+        registry::get_full(ElementsNetwork::Liquid).unwrap()
+    }
+
+    const DEFAULT_ASSETS: [&str; 2] = [
+        "6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d",
+        "144c654344aa716d6f3abcc1ca90e5641e4e2a7f633bc09fe3baf64585819a49",
+    ];
+
+    const DEFAULT_XPUB: &str = "tpubD97UxEEcrMpkE8yG3NQveraWveHzTAJx3KwPsUycx9ABfxRjMtiwfm6BtrY5yhF9yF2eyMg2hyDtGDYXx6gVLBox1m2Mq4u8zB2NXFhUZmm";
+
+    fn get_assets(assets: Option<&[&str]>, xpub: Option<&str>) -> Result<RegistryInfos> {
+        let assets_id =
+            assets.unwrap_or(&DEFAULT_ASSETS).into_iter().flat_map(|s| AssetId::from_str(*s));
+
+        let xpub = Xpub::from_str(xpub.unwrap_or(DEFAULT_XPUB))?;
+
+        let params = GetAssetsBuilder::new().assets_id(assets_id, xpub).build();
+
+        super::get_assets(params)
+    }
+
+    rusty_fork_test! {
+        #[test]
+        fn test_registry_prod() {
+            let _ = env_logger::try_init();
+
+            let temp_dir = TempDir::new().unwrap();
+            info!("{:?}", temp_dir);
+            init(&temp_dir).unwrap();
+
+            let policy_asset = policy_asset_id(ElementsNetwork::Liquid);
+
+            let hard_coded_values =
+                match hard_coded::value(ElementsNetwork::Liquid, AssetsOrIcons::Assets) {
+                    Value::Object(h) => h,
+                    _ => panic!("must be value object"),
+                };
+
+            let hard_coded_icons =
+                match hard_coded::value(ElementsNetwork::Liquid, AssetsOrIcons::Icons) {
+                    Value::Object(h) => h,
+                    _ => panic!("must be value object"),
+                };
+
+            // Either assets or icons must be requested
+            assert!(test_refresh_assets(false, false, false).is_err());
+
+            // asset true (no cache), icons true (no cache)
+            let value = get_full_registry();
+            assert_eq!(value.assets.len(), hard_coded_values.len());
+            assert_eq!(value.icons.len(), hard_coded_icons.len());
+
+            // refresh assets but not icons
+            let source = test_refresh_assets(true, false, false).unwrap();
+            assert_eq!(source, RegistrySource::Downloaded);
+
+            // refresh icons but not assets
+            let source = test_refresh_assets(false, true, false).unwrap();
+            assert_eq!(source, RegistrySource::Downloaded);
+
+            let value = get_full_registry();
+            assert!(value.assets.get(&policy_asset).is_some());
+
+            // check 304
+            let now = std::time::Instant::now();
+            let source = test_refresh_assets(true, true, false).unwrap();
+            assert_eq!(source, RegistrySource::NotModified);
+            println!("not modified took {:?}", now.elapsed());
+
+            let value = get_full_registry();
+
+            // concurrent access
+            // TODO: interleaved write
+            let mut handles = vec![];
+            for _ in 0..5 {
+                let handle = std::thread::spawn(move || get_full_registry());
+                handles.push(handle);
+            }
+            while let Some(handle) = handles.pop() {
+                assert_eq!(handle.join().unwrap(), value);
+            }
+        }
+
+        #[test]
+        fn test_get_assets() {
+            let _ = env_logger::try_init();
+
+            let temp_dir = TempDir::new().unwrap();
+            info!("{:?}", temp_dir);
+            init(&temp_dir).unwrap();
+
+            // empty query
+            let res = get_assets(Some(&[]), None).unwrap();
+            assert!(res.assets.is_empty());
+            assert!(res.icons.is_empty());
+            assert_eq!(res.source, Some(RegistrySource::Cache));
+
+            // invalid query
+            let res = get_assets(Some(&["foo"]), None).unwrap();
+            assert!(res.assets.is_empty());
+            assert!(res.icons.is_empty());
+            assert_eq!(res.source, Some(RegistrySource::Cache));
+
+            // invalid xpub
+            let res = get_assets(None, Some("foo"));
+            assert!(res.is_err(), "{:?}", res);
+
+            // asset id not present in registry
+            let res = get_assets(
+                Some(&["144c654344aa716d6f3abcc1ca90e5641e4e2a7f633bc09fe3baf64585819a49"]),
+                None,
+                )
+                .unwrap();
+            assert!(res.assets.is_empty());
+            assert!(res.icons.is_empty());
+            assert_eq!(res.source, Some(RegistrySource::Cache));
+
+            // default query, 2 assets queried, only 1 is present in registry
+            let now = std::time::Instant::now();
+            let res = get_assets(None, None).unwrap();
+            assert_eq!(1, res.assets.len());
+            assert_eq!(1, res.icons.len());
+            assert_eq!(res.source, Some(RegistrySource::LocalRegistry));
+            println!("cache read took {:?}", now.elapsed());
+
+            // same query, now infos should come from cache.
+            let res = get_assets(None, None).unwrap();
+            assert_eq!(1, res.assets.len());
+            assert_eq!(1, res.icons.len());
+            assert_eq!(res.source, Some(RegistrySource::Cache));
+        }
+
+        #[test]
+        fn test_corrupted_registry() {
+            let _ = env_logger::try_init();
+
+            let temp_dir = TempDir::new().unwrap();
+            info!("{:?}", temp_dir);
+            init(&temp_dir).unwrap();
+
+            let hard_coded_assets = hard_coded::assets(ElementsNetwork::Liquid);
+            let hard_coded_icons = hard_coded::icons(ElementsNetwork::Liquid);
+
+            let source = test_refresh_assets(true, true, false).unwrap();
+            assert_eq!(source, RegistrySource::Downloaded);
+
+            // Corrupt local assets and icons files after downloading updated
+            // registry infos. With `refresh` set to `false` they should both get
+            // reset to the hard coded values.
+            registry::tests::corrupt_file(ElementsNetwork::Liquid, AssetsOrIcons::Assets).unwrap();
+            registry::tests::corrupt_file(ElementsNetwork::Liquid, AssetsOrIcons::Icons).unwrap();
+
+            let res = get_full_registry();
+            assert_eq!(res.assets.len(), hard_coded_assets.len());
+            assert_eq!(res.icons.len(), hard_coded_icons.len());
+
+            registry::tests::corrupt_file(ElementsNetwork::Liquid, AssetsOrIcons::Assets).unwrap();
+            registry::tests::corrupt_file(ElementsNetwork::Liquid, AssetsOrIcons::Icons).unwrap();
+
+            let source = test_refresh_assets(true, true, false).unwrap();
+            assert_eq!(source, RegistrySource::Downloaded);
+
+            let res = test_refresh_assets(true, true, false).unwrap();
+            assert_eq!(res, RegistrySource::NotModified);
+        }
+
+        #[test]
+        fn test_update_missing_and_updated() {
+            let _ = env_logger::try_init();
+
+            let temp_dir = TempDir::new().unwrap();
+            info!("{:?}", temp_dir);
+            init(&temp_dir).unwrap();
+
+            // both assets not present in the hard coded values
+            let res = get_assets(Some(&["123465c803ae336c62180e52d94ee80d80828db54df9bedbb9860060f49de2eb", "4d4354944366ea1e33f27c37fec97504025d6062c551208f68597d1ed40ec53e"]), None).unwrap();
+            assert_eq!(res.assets.len(), 0);
+
+            // updating the local registry, now those assets should be added to
+            // the cache.
+             test_refresh_assets(true, true, false).unwrap();
+
+            let res = get_assets(Some(&["123465c803ae336c62180e52d94ee80d80828db54df9bedbb9860060f49de2eb", "4d4354944366ea1e33f27c37fec97504025d6062c551208f68597d1ed40ec53e"]), None).unwrap();
+            assert_eq!(res.assets.len(), 2);
+            assert_eq!(res.source, Some(RegistrySource::Cache));
+
+            // now we make the server response to return updated icons (all become empty) and
+            // verify the local cache it's different
+            let asset_id_hex = "11f91cb5edd5d0822997ad81f068ed35002daec33986da173461a8427ac857e1";
+            let asset_id = AssetId::from_str(asset_id_hex).unwrap();
+            let before = get_assets(Some(&[asset_id_hex]), None).unwrap();
+            let before = before.icons.get(&asset_id).unwrap();
+            test_refresh_assets(true, true, true).unwrap();
+            let after = get_assets(Some(&[asset_id_hex]), None).unwrap();
+            let after = after.icons.get(&asset_id).unwrap();
+            assert_ne!(before, after);
+        }
+
+        #[test]
+        fn update_icons_server_side() {
+            let _ = env_logger::try_init();
+
+            let temp_dir = TempDir::new().unwrap();
+            info!("{:?}", temp_dir);
+            init(&temp_dir).unwrap();
+
+            test_refresh_assets(true, true, false).unwrap();
+            let icons = get_full_registry().icons;
+
+            assets_or_icons::test::update_liquid_data();
+
+            test_refresh_assets(true, true, false).unwrap();
+            let new_icons = get_full_registry().icons;
+
+            assert!(new_icons.len() > icons.len(), "{} vs {}", new_icons.len(), icons.len());
+
+            let asset_id = AssetId::from_str("6f0279e9ed041c3d710a9f57d0c02928416460c4b722ae3457a11eec381c526d").unwrap();
+            assert_eq!(icons.get(&asset_id), new_icons.get(&asset_id), "hard coded icon should not get updated");
+
+            let asset_id = AssetId::from_str("de091c998b83c78bb71a632313ba3760f1763d9cfcffae02258ffa9865a37bd2").unwrap();
+            assert_ne!(icons.get(&asset_id), new_icons.get(&asset_id), "non hard coded icon should get updated");
+        }
+
+        #[test]
+        fn update_missing_icons() {
+            let _ = env_logger::try_init();
+
+            let temp_dir = TempDir::new().unwrap();
+            info!("{:?}", temp_dir);
+            init(&temp_dir).unwrap();
+
+            /// The first asset id in `data/test/extra_icons.json`.
+            const ID: &str = "223465c803ae336c62180e52d94ee80d80828db54df9bedbb9860060f49de2eb";
+
+            // ID icon is not present in the hard coded icons
+            let res = get_assets(Some(&[ID]), None).unwrap();
+            assert_eq!(res.icons.len(), 0);
+
+            assets_or_icons::test::update_liquid_data();
+
+            // Not updating the icons.
+            test_refresh_assets(true, false, false).unwrap();
+            let res = get_assets(Some(&[ID]), None).unwrap();
+            assert_eq!(res.icons.len(), 0);
+
+            // Now updating the icons.
+            test_refresh_assets(false, true, false).unwrap();
+            let res = get_assets(Some(&[ID]), None).unwrap();
+            assert_eq!(res.icons.len(), 1);
+        }
+
+        #[test]
+        fn get_assets_extended() {
+            let _ = env_logger::try_init();
+
+            let temp_dir = TempDir::new().unwrap();
+            info!("{:?}", temp_dir);
+            init(&temp_dir).unwrap();
+
+            let xpub = Xpub::from_str(DEFAULT_XPUB).unwrap();
+
+            let hard_coded_values =
+                match hard_coded::value(ElementsNetwork::Liquid, AssetsOrIcons::Assets) {
+                    Value::Object(h) => h,
+                    _ => panic!("must be value object"),
+                };
+
+            let hard_coded_icons =
+                match hard_coded::value(ElementsNetwork::Liquid, AssetsOrIcons::Icons) {
+                    Value::Object(h) => h,
+                    _ => panic!("must be value object"),
+                };
+
+            // Not setting any field -> should error.
+            let params = GetAssetsBuilder::new().build();
+            assert!(matches!(super::get_assets(params), Err(Error::GetAssetsNoFields)));
+
+            // Setting both `assets_id` and another field -> should error.
+            let params = GetAssetsBuilder::new().assets_id([], xpub).names(Vec::<String>::new()).build();
+            assert!(matches!(super::get_assets(params), Err(Error::GetAssetsIdNotAlone)));
+
+            // Fetching the whole registry before doing any updates.
+            let params = GetAssetsBuilder::new().category(AssetCategory::All).build();
+            let res = super::get_assets(params.clone()).unwrap();
+            assert_eq!(res.assets.len(), hard_coded_values.len());
+            assert_eq!(res.icons.len(), hard_coded_icons.len());
+
+            // Update assets and redo same query -> we should get new assets.
+            test_refresh_assets(true, false, false).unwrap();
+            let new = super::get_assets(params.clone()).unwrap();
+            assert!(new.assets.len() > res.assets.len());
+
+            // Update icons and redo same query -> we should get new icons.
+            test_refresh_assets(false, true, false).unwrap();
+            let new = super::get_assets(params).unwrap();
+            assert!(new.assets.len() > res.assets.len());
+
+            let params = GetAssetsBuilder::new().category(AssetCategory::WithIcons).build();
+            let with_icons = super::get_assets(params).unwrap();
+            assert!(with_icons.assets.len() > 0);
+            // We should get the same number of assets and icons..
+            assert_eq!(with_icons.assets.len(), with_icons.icons.len());
+            // ..and the asset ids should match.
+            assert_eq!(with_icons.assets.keys().collect::<HashSet<_>>(), with_icons.icons.keys().collect::<HashSet<_>>());
+
+            // Manually filter all the assets with icons with ticker `LCAD`.
+            let icons_and_lcad = with_icons.assets
+                .iter()
+                .filter_map(|(id, asset)| {
+                    matches!(asset.ticker.as_deref(), Some("LCAD"))
+                        .then(|| (id.clone(), asset.clone()))
+                })
+                .collect::<HashMap<_, _>>();
+
+            // This should be the same as the following query.
+            let params = GetAssetsBuilder::new().category(AssetCategory::WithIcons).tickers(["LCAD"]).build();
+            let also_icons_and_lcad = super::get_assets(params).unwrap().assets;
+
+            assert_eq!(icons_and_lcad, also_icons_and_lcad);
+
+            // Get hard coded assets
+            let params = GetAssetsBuilder::new().category(AssetCategory::HardCoded).build();
+            let res = super::get_assets(params).unwrap();
+            assert_eq!(res.assets, hard_coded::assets(ElementsNetwork::Liquid));
+            assert_eq!(res.icons, hard_coded::icons(ElementsNetwork::Liquid));
+        }
+    }
+}

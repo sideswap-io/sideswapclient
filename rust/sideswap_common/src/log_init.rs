@@ -26,14 +26,17 @@ fn log_format(
     write!(w, "{}", &text.as_str()[..len])
 }
 
-pub fn init_log(work_dir: impl AsRef<Path>) {
-    let path = work_dir.as_ref().join("sideswap.log");
+pub fn init_log_with_name(work_dir: impl AsRef<Path>, name: &str) {
+    let log_name = format!("{name}.log");
+    let prev_log_name = format!("{name}_prev.log");
+
+    let path = work_dir.as_ref().join(log_name);
 
     let file_size = std::fs::metadata(&path)
         .map(|metadata| metadata.len())
         .unwrap_or_default();
     if file_size > 50 * 1024 * 1024 {
-        let path_old = work_dir.as_ref().join("sideswap_prev.log");
+        let path_old = work_dir.as_ref().join(prev_log_name);
         let _ = std::fs::rename(&path, path_old);
     }
 
@@ -51,4 +54,8 @@ pub fn init_log(work_dir: impl AsRef<Path>) {
         .append()
         .duplicate_to_stderr(stdout_level)
         .start();
+}
+
+pub fn init_log(work_dir: impl AsRef<Path>) {
+    init_log_with_name(work_dir, "sideswap")
 }

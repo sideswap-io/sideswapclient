@@ -1,3 +1,5 @@
+use sideswap_types::utxo_ext::UtxoExt;
+
 /// Try to select coins so that their sum is in the range [target..targe + upper_bound_delta].
 /// Set `upper_bound_delta` to 0 if you want to find coins without change.
 /// All the values must be "sane" so their sum does not overflow.
@@ -67,7 +69,7 @@ pub fn in_range(
             backtrack = true;
 
             let waste = value - target;
-            current_waste = current_waste + waste;
+            current_waste += waste;
 
             // Check if index_selection is better than the previous known best, and
             // update best_selection accordingly.
@@ -78,7 +80,7 @@ pub fn in_range(
                 best_waste = current_waste;
             }
 
-            current_waste = current_waste - waste;
+            current_waste -= waste;
         }
 
         if target_count != 0 && index_selection.len() >= target_count {
@@ -104,7 +106,7 @@ pub fn in_range(
 
             assert_eq!(index, *index_selection.last().unwrap());
             let utxo_value = coins[index];
-            value = value - utxo_value;
+            value -= utxo_value;
             index_selection.pop().unwrap();
         }
         // * Add next node to the inclusion branch.
@@ -113,9 +115,9 @@ pub fn in_range(
 
             index_selection.push(index);
 
-            value = value + utxo_value;
+            value += utxo_value;
 
-            available_value = available_value - utxo_value;
+            available_value -= utxo_value;
         }
 
         // no overflow is possible since the iteration count is bounded.
@@ -153,11 +155,7 @@ pub fn no_change_or_naive(target: u64, coins: &[u64]) -> Option<Vec<u64>> {
     no_change(target, coins).or_else(|| naive(target, coins))
 }
 
-pub trait Utxo {
-    fn value(&self) -> u64;
-}
-
-pub fn take_utxos<T: Utxo>(mut utxos: Vec<T>, coins: &[u64]) -> Option<Vec<T>> {
+pub fn take_utxos<T: UtxoExt>(mut utxos: Vec<T>, coins: &[u64]) -> Option<Vec<T>> {
     let mut selected = Vec::new();
     for coin in coins {
         let index = utxos.iter().position(|utxo| utxo.value() == *coin)?;

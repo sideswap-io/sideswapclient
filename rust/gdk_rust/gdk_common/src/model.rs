@@ -77,10 +77,21 @@ pub type ExchangeRateRes = Result<ExchangeRateOk, ExchangeRateError>;
 
 // =========== ^ exchange rate stuff ^ ===========
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AccountXpub {
+    #[serde(rename = "pointer")]
+    pub account_num: u32,
+    pub xpub: Xpub,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct LoginData {
     pub wallet_hash_id: String,
     pub xpub_hash_id: String,
+    pub master_xpub_fingerprint: Fingerprint,
+    pub xpubs: Vec<AccountXpub>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub master_blinding_key: Option<MasterBlindingKey>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -110,8 +121,17 @@ pub struct GetUnspentOpt {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct LoadStoreOpt {
-    pub master_xpub: Xpub,
+    /// Master xpub. If provided, the store filename and encryption key
+    /// are derived from it.
+    pub master_xpub: Option<Xpub>,
+    /// Master xpub fingerprint. If not provided, the user must call
+    /// set_fingerprint before the store can be used.
     pub master_xpub_fingerprint: Option<Fingerprint>,
+    /// If master_xpub is not provided, the caller must provide
+    /// filename and encryption_key_hex.
+    /// Used for rich watch only sessions.
+    pub filename: Option<String>,
+    pub encryption_key_hex: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -138,12 +158,12 @@ pub struct GetAddressOpt {
     pub ignore_gap_limit: Option<bool>, // true = allow to return addresses beyond the gap limit
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateAccountOpt {
     pub subaccount: u32,
     pub name: String,
-    // The account xpub if passed by the caller
-    pub xpub: Option<Xpub>,
+    // The account xpub
+    pub xpub: Xpub,
     #[serde(default)]
     pub discovered: bool,
     #[serde(default)]
@@ -398,6 +418,7 @@ pub struct TxListItem {
     pub transaction_size: usize,
     pub transaction_vsize: usize,
     pub transaction_weight: usize,
+    pub discount_weight: usize,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -476,10 +497,7 @@ fn from_descriptor(
     };
     let (script_type, xpub, bip32_account, master_xpub_fingerprint, master_blinding_key) =
         parse_single_sig_descriptor(s, coin_type, is_liquid)?;
-    let is_mainnet = match xpub.network {
-        Network::Bitcoin => true,
-        _ => false,
-    };
+    let is_mainnet = xpub.network.is_mainnet();
     if is_mainnet != expected_is_mainnet {
         return Err(Error::MismatchingNetwork);
     }
@@ -952,8 +970,8 @@ mod test {
 
     #[test]
     fn test_path() {
-        let path_external: DerivationPath = "m/44'/1'/0'/0/0".parse().unwrap();
-        let path_internal: DerivationPath = "m/44'/1'/0'/1/0".parse().unwrap();
+        let path_external: DerivationPath = "44'/1'/0'/0/0".parse().unwrap();
+        let path_internal: DerivationPath = "44'/1'/0'/1/0".parse().unwrap();
         assert_eq!(parse_path(&path_external).unwrap(), (false, 0u32));
         assert_eq!(parse_path(&path_internal).unwrap(), (true, 0u32));
     }

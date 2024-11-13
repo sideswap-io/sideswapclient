@@ -6,7 +6,7 @@ pub struct AesCipher(Aes256GcmSiv);
 
 impl AesCipher {
     pub fn new(ikm: &[u8]) -> Self {
-        let hk = hkdf::Hkdf::<sha2::Sha256>::new(None, &ikm);
+        let hk = hkdf::Hkdf::<sha2::Sha256>::new(None, ikm);
         let mut okm = [0u8; 32];
         let info = b"AesCipher(sideswap_amp)";
         hk.expand(info.as_slice(), &mut okm).expect("must not fail");

@@ -1,6 +1,7 @@
 pub mod fcm_models;
 pub mod gdk;
 pub mod http_rpc;
+pub mod market;
 pub mod pegx;
 
 pub use elements::{
@@ -8,7 +9,7 @@ pub use elements::{
     Address, Txid,
 };
 use serde::{Deserialize, Serialize};
-use sideswap_types::fee_rate::FeeRateSats;
+use sideswap_types::{asset_precision::AssetPrecision, fee_rate::FeeRateSats, utxo_ext::UtxoExt};
 use std::{collections::BTreeMap, vec::Vec};
 
 pub const TICKER_LBTC: &str = "L-BTC";
@@ -16,6 +17,7 @@ pub const TICKER_USDT: &str = "USDt";
 pub const TICKER_EURX: &str = "EURx";
 pub const TICKER_MEX: &str = "MEX";
 pub const TICKER_DEPIX: &str = "DePix";
+pub const TICKER_SSWP: &str = "SSWP";
 
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";
@@ -142,7 +144,7 @@ pub struct Asset {
     pub name: String,
     pub ticker: Ticker,
     pub icon: Option<String>, // PNG in base64
-    pub precision: u8,
+    pub precision: AssetPrecision,
     pub icon_url: Option<String>,
     pub instant_swaps: Option<bool>,
     pub domain: Option<String>,
@@ -592,7 +594,7 @@ pub struct LinkResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PsetInput {
+pub struct Utxo {
     pub txid: elements::Txid,
     pub vout: u32,
     pub asset: AssetId,
@@ -600,6 +602,24 @@ pub struct PsetInput {
     pub value: u64,
     pub value_bf: ValueBlindingFactor,
     pub redeem_script: Option<elements::Script>,
+}
+
+impl UtxoExt for Utxo {
+    fn value(&self) -> u64 {
+        self.value
+    }
+
+    fn txid(&self) -> elements::Txid {
+        self.txid
+    }
+
+    fn vout(&self) -> u32 {
+        self.vout
+    }
+
+    fn redeem_script(&self) -> Option<&elements::Script> {
+        self.redeem_script.as_ref()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -614,7 +634,7 @@ pub struct PsetMakerRequest {
     pub price: f64,
     pub private: bool,
     pub ttl_seconds: Option<u64>,
-    pub inputs: Vec<PsetInput>,
+    pub inputs: Vec<Utxo>,
     pub recv_addr: elements::Address,
     pub change_addr: elements::Address,
     pub signed_half: Option<MakerSignedHalf>,
@@ -625,7 +645,7 @@ pub type PsetMakerResponse = Empty;
 pub struct PsetTakerRequest {
     pub order_id: OrderId,
     pub price: f64,
-    pub inputs: Vec<PsetInput>,
+    pub inputs: Vec<Utxo>,
     pub recv_addr: elements::Address,
     pub change_addr: elements::Address,
 }
@@ -706,7 +726,7 @@ pub struct AssetDetailsResponse {
     pub asset_id: AssetId,
     pub name: String,
     pub ticker: Ticker,
-    pub precision: u8,
+    pub precision: AssetPrecision,
     pub icon_url: String,
     pub domain: String,
     pub domain_agent: Option<String>,
@@ -795,7 +815,7 @@ pub struct StartSwapClientRequest {
     pub send_bitcoins: bool,
     pub send_amount: i64,
     pub recv_amount: i64,
-    pub inputs: Vec<PsetInput>,
+    pub inputs: Vec<Utxo>,
     pub recv_addr: elements::Address,
     pub change_addr: elements::Address,
 }
@@ -814,7 +834,7 @@ pub struct StartSwapDealerNotification {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StartSwapDealerRequest {
     pub order_id: OrderId,
-    pub inputs: Vec<PsetInput>,
+    pub inputs: Vec<Utxo>,
     pub recv_addr: elements::Address,
     pub change_addr: elements::Address,
 }
@@ -1015,6 +1035,8 @@ pub enum Request {
     MarketDataSubscribe(MarketDataSubscribeRequest),
     MarketDataUnsubscribe(MarketDataUnsubscribeRequest),
     SwapPrices(SwapPricesRequest),
+
+    Market(market::Request),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1069,6 +1091,8 @@ pub enum Response {
     MarketDataSubscribe(MarketDataSubscribeResponse),
     MarketDataUnsubscribe(MarketDataUnsubscribeResponse),
     SwapPrices(SwapPricesResponse),
+
+    Market(market::Response),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1093,9 +1117,11 @@ pub enum Notification {
     NewAsset(NewAssetNotification),
     MarketDataUpdate(MarketDataUpdateNotification),
     NewSwapPrice(NewSwapPriceNotification),
+
+    Market(market::Notification),
 }
 
-#[derive(Serialize, Deserialize, Debug, Copy, Clone)]
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ErrorCode {
     ParseError,
     InvalidRequest,
@@ -1103,6 +1129,11 @@ pub enum ErrorCode {
     InvalidParams,
     InternalError,
     ServerError,
+
+    UnknownToken,
+
+    #[serde(other)]
+    Unknown,
 }
 
 pub fn error_code(code: ErrorCode) -> i32 {
@@ -1113,6 +1144,8 @@ pub fn error_code(code: ErrorCode) -> i32 {
         ErrorCode::InvalidParams => -32602,
         ErrorCode::InternalError => -32603,
         ErrorCode::ServerError => -32000,
+        ErrorCode::Unknown => 0,
+        ErrorCode::UnknownToken => 1,
     }
 }
 

@@ -1,12 +1,8 @@
-#[macro_use]
-extern crate log;
-#[macro_use]
-extern crate anyhow;
-
 mod balancing;
 mod bfx_ws_api;
 mod bitfinex_api;
 mod bitfinex_worker;
+mod cli;
 mod external_prices;
 mod storage;
 
@@ -14,26 +10,104 @@ use axum::extract::State;
 use axum::routing::get;
 use balancing::*;
 use bitfinex_api::movements::Movements;
-use serde::{Deserialize, Serialize};
-use sideswap_api::*;
+use elements::AssetId;
+use log::{debug, error, info, warn};
+use serde::Deserialize;
+use sideswap_api::market::AssetPair;
+use sideswap_api::market::TradeDir;
+use sideswap_api::PricePair;
+use sideswap_api::PriceUpdateBroadcast;
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
-use sideswap_common::pset;
+use sideswap_common::network::Network;
+use sideswap_common::types::btc_to_sat;
+use sideswap_common::types::sat_to_btc;
 use sideswap_common::types::timestamp_now;
 use sideswap_common::types::Amount;
+use sideswap_common::types::MAX_BTC_AMOUNT;
 use sideswap_common::web_notif::send_many;
 use sideswap_dealer::dealer;
 use sideswap_dealer::dealer::*;
+use sideswap_dealer::market;
 use sideswap_dealer::rpc;
+use sideswap_dealer::types::get_dealer_asset_id;
+use sideswap_dealer::types::DealerTicker;
+use sideswap_dealer::utxo_data;
+use sideswap_dealer::utxo_data::UtxoData;
+use sideswap_types::normal_float::NormalFloat;
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
-use std::net::TcpListener;
 use std::sync::Arc;
-use storage::*;
+use std::time::Duration;
+use std::time::Instant;
+use storage::Transfer;
+use storage::TransferState;
 use tokio::sync::mpsc::unbounded_channel;
 use tokio::sync::mpsc::UnboundedSender;
+use tokio::sync::oneshot;
 
-#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
-pub struct ExchangeTicker(String);
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ExchangeTicker {
+    BTC,
+    LBTC,
+    USDt,
+    EUR,
+}
+
+impl ExchangeTicker {
+    const ALL: [ExchangeTicker; 4] = [
+        ExchangeTicker::BTC,
+        ExchangeTicker::LBTC,
+        ExchangeTicker::USDt,
+        ExchangeTicker::EUR,
+    ];
+
+    fn name(self) -> &'static str {
+        match self {
+            ExchangeTicker::BTC => "BTC",
+            ExchangeTicker::LBTC => "L-BTC",
+            ExchangeTicker::USDt => "USDt",
+            ExchangeTicker::EUR => "EUR",
+        }
+    }
+
+    fn bfx_name_prod(self) -> &'static str {
+        match self {
+            ExchangeTicker::BTC => "BTC",
+            ExchangeTicker::LBTC => "LBT",
+            ExchangeTicker::USDt => "UST",
+            ExchangeTicker::EUR => "EUR",
+        }
+    }
+
+    fn bfx_name_test(self) -> &'static str {
+        match self {
+            ExchangeTicker::BTC => "TESTBTC",
+            ExchangeTicker::LBTC => "TESTLBT",
+            ExchangeTicker::USDt => "TESTUSDT",
+            ExchangeTicker::EUR => "TESTEUR",
+        }
+    }
+
+    fn bfx_name(self, network: Network) -> &'static str {
+        match network {
+            Network::Liquid => self.bfx_name_prod(),
+            Network::LiquidTestnet => self.bfx_name_test(),
+        }
+    }
+
+    fn find_bfx_name(network: Network, name: &str) -> Option<ExchangeTicker> {
+        ExchangeTicker::ALL
+            .iter()
+            .find(|item| item.bfx_name(network) == name)
+            .copied()
+    }
+}
+
+impl std::fmt::Display for ExchangeTicker {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.name().fmt(f)
+    }
+}
 
 const DEALER_TICKERS: [DealerTicker; 2] = [DealerTicker::USDt, DealerTicker::EURx];
 
@@ -49,8 +123,9 @@ const MIN_BALANCE_TETHER: f64 = 2500.;
 
 const BF_RESERVE: f64 = 0.99;
 
-const INTEREST_SUBMIT_USDT: f64 = 1.0075 - pset::INSTANT_SWAPS_SERVER_FEE;
-const INTEREST_SUBMIT_EURX: f64 = 1.0040 - pset::INSTANT_SWAPS_SERVER_FEE;
+const INTEREST_BTC_USDT: f64 = 1.0055;
+const INTEREST_BTC_EURX: f64 = 1.002;
+const INTEREST_EURX_USDT: f64 = 1.002;
 
 const MIN_HEDGE_AMOUNT: f64 = 0.0002;
 
@@ -63,14 +138,13 @@ pub struct NotificationSettings {
 }
 
 type ExchangeBalances = BTreeMap<ExchangeTicker, f64>;
-type BfxPrices = BTreeMap<DealerTicker, Price>;
-type ExternalPrices = BTreeMap<DealerTicker, f64>;
-type PendingOrders = BTreeMap<i64, std::time::Instant>;
+type AllExchangeBalances = BTreeMap<String, f64>;
+type BfxPrices = BTreeMap<ExchangePair, Price>;
+type ExternalPrices = BTreeMap<ExchangePair, f64>;
+type PendingOrders = BTreeMap<i64, Instant>;
 
 #[derive(Debug, Deserialize)]
 pub struct Args {
-    log_settings: String,
-
     env: sideswap_common::env::Env,
 
     bitcoin_amount_submit: f64,
@@ -93,21 +167,73 @@ pub struct Args {
     #[serde(rename = "bitfinexsecret")]
     bitfinex_secret: String,
 
-    bitfinex_bookname_usdt: String,
-    bitfinex_bookname_eurx: String,
-
     bitfinex_withdraw_address: elements::Address,
     bitfinex_fund_address: elements::Address,
 
-    bitfinex_currency_btc: ExchangeTicker,
-    bitfinex_currency_lbtc: ExchangeTicker,
-    bitfinex_currency_usdt: ExchangeTicker,
-    bitfinex_currency_eur: ExchangeTicker,
-
+    work_dir: String,
     storage_path: String,
     balancing_enabled: bool,
 
     external_prices: Option<external_prices::Settings>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum ExchangePair {
+    BtcUsdt,
+    BtcEur,
+    EurUsdt,
+}
+
+impl std::fmt::Display for ExchangePair {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.name().fmt(f)
+    }
+}
+
+impl ExchangePair {
+    const ALL: [ExchangePair; 3] = [
+        ExchangePair::BtcUsdt,
+        ExchangePair::BtcEur,
+        ExchangePair::EurUsdt,
+    ];
+
+    fn name(self) -> &'static str {
+        match self {
+            ExchangePair::BtcUsdt => "L-BTC/USDt",
+            ExchangePair::BtcEur => "L-BTC/EURx",
+            ExchangePair::EurUsdt => "EURx/USDt",
+        }
+    }
+
+    fn bfx_bookname(self) -> &'static str {
+        match self {
+            ExchangePair::BtcUsdt => "tBTCUST",
+            ExchangePair::BtcEur => "tBTCEUR",
+            ExchangePair::EurUsdt => "tEURUST",
+        }
+    }
+
+    fn dealer_ticker(self) -> Option<DealerTicker> {
+        match self {
+            ExchangePair::BtcUsdt => Some(DealerTicker::USDt),
+            ExchangePair::BtcEur => Some(DealerTicker::EURx),
+            ExchangePair::EurUsdt => None,
+        }
+    }
+
+    fn find_ticker(ticker: DealerTicker) -> Option<ExchangePair> {
+        ExchangePair::ALL
+            .iter()
+            .find(|item| item.dealer_ticker() == Some(ticker))
+            .copied()
+    }
+
+    fn find_bookname(bookname: &str) -> Option<ExchangePair> {
+        ExchangePair::ALL
+            .iter()
+            .find(|item| item.bfx_bookname() == bookname)
+            .copied()
+    }
 }
 
 #[derive(Clone)]
@@ -117,20 +243,53 @@ struct BfSettings {
 }
 
 enum Msg {
-    Timer,
     BfWorker(bitfinex_worker::Response),
-    BfxEvent(bfx_ws_api::Event),
-    Cli(CliRequestData),
-    Exit,
+    Cli(cli::RequestData),
     CheckExchange,
-    Dealer(From),
-    External(DealerTicker, Result<f64, anyhow::Error>),
+    External(ExchangePair, Result<f64, anyhow::Error>),
 }
 
 #[derive(Clone, Copy)]
 struct Price {
-    pub bid: f64,
-    pub ask: f64,
+    bid: f64,
+    ask: f64,
+}
+
+struct ProfitsReport {
+    wallet_balances: WalletBalances,
+    exchange_balances: ExchangeBalances,
+    created_at: Instant,
+}
+
+type HealthStatus = Arc<std::sync::Mutex<Option<String>>>;
+
+struct Data {
+    args: Args,
+    network: sideswap_common::network::Network,
+    policy_asset: AssetId,
+    server_connected: bool,
+    bfx_connected: bool,
+    wallet_balances: WalletBalances,
+    wallet_balances_confirmed: WalletBalances,
+    exchange_balances: ExchangeBalances,
+    all_exchange_balances: AllExchangeBalances,
+    all_exchange_balances_reported: AllExchangeBalances,
+    profit_reports: Option<ProfitsReport>,
+    pending_orders: PendingOrders,
+    failed_orders_count: u32,
+    failed_orders_total: f64,
+    bfx_prices: BfxPrices,
+    external_prices: ExternalPrices,
+    health_text: HealthStatus,
+    storage: storage::Storage,
+    balancing_blocked: Instant,
+    latest_check_exchange: Instant,
+    movements: Option<Movements>,
+    msg_tx: UnboundedSender<Msg>,
+    dealer_tx: UnboundedSender<dealer::To>,
+    bf_sender: UnboundedSender<bitfinex_worker::Request>,
+    market_command_sender: UncheckedUnboundedSender<market::Command>,
+    utxo_data: UtxoData,
 }
 
 fn send_notification(msg: &str, slack_url: &Option<String>) {
@@ -150,77 +309,7 @@ fn get_exchange_balance(exchange_balances: &ExchangeBalances, name: &ExchangeTic
     exchange_balances.get(name).cloned().unwrap_or_default() * BF_RESERVE
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum CliRequest {
-    TestSendUsdt(f64),
-    TestRecvUsdt(f64),
-    TestSendBtc(f64),
-    TestRecvBtc(f64),
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum CliResponse {
-    Success(String),
-    Error(String),
-}
-
-struct CliRequestData {
-    req: CliRequest,
-    resp_tx: Option<UnboundedSender<CliResponse>>,
-}
-
-fn send_cli_request(msg_tx: &UnboundedSender<Msg>, req: CliRequest) {
-    msg_tx
-        .send(Msg::Cli(CliRequestData { req, resp_tx: None }))
-        .unwrap();
-}
-
-fn process_cli_client(
-    msg_tx: UnboundedSender<Msg>,
-    stream: std::net::TcpStream,
-) -> Result<(), anyhow::Error> {
-    let mut websocket = tungstenite::accept(stream)?;
-    loop {
-        let msg = match websocket.read() {
-            Ok(v) => v,
-            Err(_) => return Ok(()),
-        };
-        if msg.is_text() || msg.is_binary() {
-            let req = msg.to_text()?.to_owned();
-            let req = serde_json::from_str::<CliRequest>(&req);
-            let (resp_tx, mut resp_rx) = unbounded_channel::<CliResponse>();
-            match req {
-                Ok(v) => msg_tx
-                    .send(Msg::Cli(CliRequestData {
-                        req: v,
-                        resp_tx: Some(resp_tx),
-                    }))
-                    .unwrap(),
-                Err(v) => resp_tx.send(CliResponse::Error(v.to_string())).unwrap(),
-            };
-            let resp = resp_rx.blocking_recv().unwrap();
-            let resp = serde_json::to_string(&resp).unwrap();
-            websocket.write(tungstenite::protocol::Message::Text(resp))?;
-        }
-    }
-}
-
-fn start_cli(msg_tx: UnboundedSender<Msg>) {
-    let server = TcpListener::bind("127.0.0.1:9001").unwrap();
-    for stream in server.incoming() {
-        let msg_tx_copy = msg_tx.clone();
-        std::thread::spawn(move || {
-            let result = process_cli_client(msg_tx_copy, stream.unwrap());
-            if let Err(e) = result {
-                error!("processing client failed: {}", &e);
-            }
-        });
-    }
-}
-
-fn save_storage(storage: &Storage, path: &str) {
+fn save_storage(storage: &storage::Storage, path: &str) {
     let path_tmp = format!("{}.tmp", path);
     use std::io::prelude::*;
     let data = serde_json::to_vec(storage).unwrap();
@@ -230,7 +319,7 @@ fn save_storage(storage: &Storage, path: &str) {
     std::fs::rename(path_tmp, path).expect("renaming new file failed");
 }
 
-fn load_storage(path: &str) -> Option<Storage> {
+fn load_storage(path: &str) -> Option<storage::Storage> {
     if !std::path::Path::new(path).exists() {
         return None;
     }
@@ -238,8 +327,6 @@ fn load_storage(path: &str) -> Option<Storage> {
     let storage = serde_json::from_str(&data).expect("parsing storage failed");
     Some(storage)
 }
-
-type HealthStatus = Arc<std::sync::Mutex<Option<String>>>;
 
 async fn health(State(status): State<HealthStatus>) -> String {
     status
@@ -262,23 +349,7 @@ pub async fn start_webserver(status_port: u16, status: HealthStatus) {
     axum::serve(listener, app).await.expect("must not fail");
 }
 
-struct ProfitsReport {
-    wallet_balances: WalletBalances,
-    exchange_balances: ExchangeBalances,
-    created_at: std::time::Instant,
-}
-
-fn hedge_order(
-    args: &Args,
-    swap: SwapSucceed,
-    balancing_blocked: &mut std::time::Instant,
-    profit_reports: &mut Option<ProfitsReport>,
-    wallet_balances: &WalletBalances,
-    exchange_balances: &ExchangeBalances,
-    book_names: &BTreeMap<DealerTicker, String>,
-    bf_sender: &UnboundedSender<bitfinex_worker::Request>,
-    pending_orders: &mut PendingOrders,
-) {
+fn hedge_order(data: &mut Data, swap: SwapSucceed) {
     info!(
         "hedge swap, txid: {}, ticker: {}, send_bitcoins: {}, bitcoin_amount: {}",
         &swap.txid,
@@ -286,8 +357,8 @@ fn hedge_order(
         swap.dealer_send_bitcoins,
         swap.bitcoin_amount.to_bitcoin()
     );
-    *balancing_blocked = std::time::Instant::now();
-    let bf_fee = if args.env.d().mainnet {
+    data.balancing_blocked = Instant::now();
+    let bf_fee = if data.args.env.d().mainnet {
         BITFINEX_FEE_PROD
     } else {
         BITFINEX_FEE_TEST
@@ -297,29 +368,32 @@ fn hedge_order(
     } else {
         -swap.bitcoin_amount.to_bitcoin()
     };
+
     if swap.bitcoin_amount.to_bitcoin() >= MIN_HEDGE_AMOUNT {
-        *profit_reports = Some(ProfitsReport {
-            wallet_balances: wallet_balances.clone(),
-            exchange_balances: exchange_balances.clone(),
-            created_at: std::time::Instant::now(),
+        data.profit_reports = Some(ProfitsReport {
+            wallet_balances: data.wallet_balances.clone(),
+            exchange_balances: data.exchange_balances.clone(),
+            created_at: Instant::now(),
         });
         let cid = timestamp_now();
-        let bookname = book_names.get(&swap.ticker).expect("bookname must be know");
+        let bookname = ExchangePair::find_ticker(swap.ticker)
+            .expect("bookname must be know")
+            .bfx_bookname();
         info!(
             "swap succeed, txid: {}, send order request, amount: {}, bookname: {}, cid: {}",
             swap.txid, signed_bitcoin_amount, bookname, cid
         );
-        bf_sender
+        data.bf_sender
             .send(bitfinex_worker::Request::OrderSubmit(
                 bitfinex_worker::OrderSubmit {
                     market_type: bitfinex_worker::MarketType::ExchangeMarket,
-                    symbol: bookname.clone(),
+                    symbol: bookname.to_owned(),
                     cid,
                     amount: signed_bitcoin_amount,
                 },
             ))
             .unwrap();
-        pending_orders.insert(cid, std::time::Instant::now());
+        data.pending_orders.insert(cid, Instant::now());
     } else {
         debug!(
             "skip hedging as amount is too low: {}",
@@ -328,28 +402,12 @@ fn hedge_order(
     }
 }
 
-struct DealerState {
-    network: sideswap_common::network::Network,
-    server_connected: bool,
-    bfx_connected: bool,
-    wallet_balances: WalletBalances,
-    wallet_balances_confirmed: WalletBalances,
-    exchange_balances: ExchangeBalances,
-    exchange_balances_reported: ExchangeBalances,
-    profit_reports: Option<ProfitsReport>,
-    pending_orders: PendingOrders,
-    failed_orders_count: u32,
-    failed_orders_total: f64,
-    bfx_prices: BfxPrices,
-    external_prices: ExternalPrices,
-}
-
-fn get_bfx_price(state: &DealerState, ticker: DealerTicker) -> Option<Price> {
+fn get_bfx_price(data: &Data, exchange_pair: ExchangePair) -> Option<Price> {
     // How much difference can we tolerate
     const MAX_DIFF: f64 = 0.015;
 
-    let bfx = state.bfx_prices.get(&ticker).copied();
-    let external = state.external_prices.get(&ticker).copied();
+    let bfx = data.bfx_prices.get(&exchange_pair).copied();
+    let external = data.external_prices.get(&exchange_pair).copied();
 
     match (&bfx, &external) {
         // Compare against external price source
@@ -373,6 +431,707 @@ fn get_bfx_price(state: &DealerState, ticker: DealerTicker) -> Option<Price> {
     }
 }
 
+async fn process_dealer(data: &mut Data, from: From) {
+    match from {
+        From::Swap(swap) => {
+            hedge_order(data, swap);
+        }
+
+        From::ServerConnected(_) => {
+            info!("connected to server");
+            send_notification("connected to the server", &data.args.notifications.url);
+
+            data.server_connected = true;
+        }
+
+        From::ServerDisconnected(_) => {
+            warn!("disconnected from server");
+            send_notification("disconnected from the server", &data.args.notifications.url);
+            data.server_connected = false;
+        }
+
+        From::Utxos(utxo_data, unspent) => {
+            data.utxo_data = utxo_data;
+
+            data.market_command_sender.send(market::Command::Utxos {
+                utxos: data.utxo_data.utxos().to_vec(),
+            });
+
+            let convert_balances = |amounts: &BTreeMap<AssetId, f64>| {
+                let get_balance = |ticker: DealerTicker| -> (DealerTicker, f64) {
+                    let asset_id = get_dealer_asset_id(data.network, ticker);
+                    let amount = amounts.get(&asset_id).copied().unwrap_or_default();
+                    (ticker, amount)
+                };
+
+                BTreeMap::from([
+                    get_balance(DealerTicker::LBTC),
+                    get_balance(DealerTicker::USDt),
+                    get_balance(DealerTicker::EURx),
+                ])
+            };
+
+            let mut asset_amounts = BTreeMap::<AssetId, f64>::new();
+            let mut asset_amounts_confirmed = BTreeMap::<AssetId, f64>::new();
+            for item in unspent.iter() {
+                let asset_amount = asset_amounts.entry(item.asset).or_default();
+                let asset_amount_confirmed = asset_amounts_confirmed.entry(item.asset).or_default();
+                let amount = item.amount.to_btc();
+                *asset_amount += amount;
+                if item.confirmations > 0 {
+                    *asset_amount_confirmed += amount;
+                }
+            }
+
+            let wallet_balances_new = convert_balances(&asset_amounts);
+            data.wallet_balances_confirmed = convert_balances(&asset_amounts_confirmed);
+
+            if data.wallet_balances != wallet_balances_new {
+                data.wallet_balances = wallet_balances_new;
+                let balances = data
+                    .wallet_balances
+                    .iter()
+                    .map(|(ticker, balance)| format!("{}: {:.8}", ticker, balance))
+                    .collect::<Vec<_>>();
+                let balance_str = balances.join(", ");
+                let message = format!("ss: {}", &balance_str);
+                send_notification(&message, &data.args.notifications.url);
+            }
+        }
+    }
+}
+
+fn submit_dealer_prices(data: &mut Data) {
+    for ticker in [DealerTicker::USDt, DealerTicker::EURx] {
+        let exchange_pair = ExchangePair::find_ticker(ticker).expect("must exist");
+        let price = get_bfx_price(&data, exchange_pair).map(|bfx_price| {
+            let submit_interest = if ticker == DealerTicker::USDt {
+                INTEREST_BTC_USDT
+            } else if ticker == DealerTicker::EURx {
+                INTEREST_BTC_EURX
+            } else {
+                panic!("unexpected asset");
+            };
+
+            let base_price = PricePair {
+                bid: bfx_price.bid,
+                ask: bfx_price.ask,
+            };
+            let submit_price = apply_interest(&base_price, submit_interest);
+
+            let exchange_btc_amount =
+                get_exchange_balance(&data.exchange_balances, &ExchangeTicker::BTC);
+            let exchange_asset_currency = match ticker {
+                DealerTicker::USDt => &ExchangeTicker::USDt,
+                DealerTicker::EURx => &ExchangeTicker::EUR,
+                _ => panic!(),
+            };
+            // Show that the dealer will buy any amount of EURx as needed
+            let exchange_asset_amount = if ticker == DealerTicker::EURx {
+                10.0 * bfx_price.ask
+            } else {
+                get_exchange_balance(&data.exchange_balances, exchange_asset_currency)
+            };
+
+            dealer::DealerPrice {
+                submit_price,
+                limit_btc_dealer_send: exchange_asset_amount / submit_price.ask,
+                limit_btc_dealer_recv: exchange_btc_amount,
+                balancing: data.storage.balancing.is_some(),
+            }
+        });
+
+        data.dealer_tx
+            .send(To::Price(ToPrice { ticker, price }))
+            .unwrap();
+
+        if let Some(price) = data.bfx_prices.get(&exchange_pair) {
+            data.dealer_tx
+                .send(To::IndexPriceUpdate(PriceUpdateBroadcast {
+                    asset: get_dealer_asset_id(data.network, ticker),
+                    price: PricePair {
+                        bid: price.bid,
+                        ask: price.ask,
+                    },
+                }))
+                .unwrap();
+        }
+    }
+}
+
+fn submit_market_prices(data: &mut Data) {
+    let assets = &data.args.env.nd().known_assets;
+
+    let mut orders = Vec::new();
+
+    for &exchange_pair in ExchangePair::ALL.iter() {
+        let (asset_pair, interest) = match exchange_pair {
+            ExchangePair::BtcUsdt => (
+                AssetPair {
+                    base: data.policy_asset,
+                    quote: assets.usdt.asset_id(),
+                },
+                INTEREST_BTC_USDT,
+            ),
+            ExchangePair::BtcEur => (
+                AssetPair {
+                    base: data.policy_asset,
+                    quote: assets.eurx.asset_id(),
+                },
+                INTEREST_BTC_EURX,
+            ),
+            ExchangePair::EurUsdt => (
+                AssetPair {
+                    base: assets.eurx.asset_id(),
+                    quote: assets.usdt.asset_id(),
+                },
+                INTEREST_EURX_USDT,
+            ),
+        };
+
+        let bfx_price = match get_bfx_price(&data, exchange_pair) {
+            Some(price) => price,
+            None => continue,
+        };
+
+        let base_price = PricePair {
+            bid: bfx_price.bid,
+            ask: bfx_price.ask,
+        };
+
+        let submit_price = apply_interest(&base_price, interest);
+
+        let (base_amount_buy, base_amount_sell) = match exchange_pair {
+            ExchangePair::BtcUsdt => {
+                let btc_amount =
+                    get_exchange_balance(&data.exchange_balances, &ExchangeTicker::BTC);
+                let usdt_amount =
+                    get_exchange_balance(&data.exchange_balances, &ExchangeTicker::USDt);
+                (btc_amount, usdt_amount / submit_price.ask)
+            }
+            // Show that the dealer will buy or sell any amount of EURx as needed
+            ExchangePair::EurUsdt | ExchangePair::BtcEur => (MAX_BTC_AMOUNT, MAX_BTC_AMOUNT),
+        };
+
+        orders.push(market::Order {
+            asset_pair,
+            trade_dir: TradeDir::Buy,
+            base_amount: btc_to_sat(base_amount_buy),
+            price: NormalFloat::new(submit_price.bid).expect("must be valid"),
+        });
+
+        orders.push(market::Order {
+            asset_pair,
+            trade_dir: TradeDir::Sell,
+            base_amount: btc_to_sat(base_amount_sell),
+            price: NormalFloat::new(submit_price.ask).expect("must be valid"),
+        });
+    }
+
+    data.market_command_sender
+        .send(market::Command::Orders { orders });
+}
+
+async fn process_timer(data: &mut Data) {
+    submit_dealer_prices(data);
+
+    submit_market_prices(data);
+
+    let now = Instant::now();
+
+    let balance_wallet_bitcoin = data
+        .wallet_balances
+        .get(&DealerTicker::LBTC)
+        .cloned()
+        .unwrap_or_default();
+    let balance_wallet_usdt = data
+        .wallet_balances
+        .get(&DealerTicker::USDt)
+        .cloned()
+        .unwrap_or_default();
+    let balance_wallet_eurx = data
+        .wallet_balances
+        .get(&DealerTicker::EURx)
+        .cloned()
+        .unwrap_or_default();
+    let balance_exchange_bitcoin = data
+        .exchange_balances
+        .get(&ExchangeTicker::BTC)
+        .cloned()
+        .unwrap_or_default();
+    let balance_exchange_usdt = data
+        .exchange_balances
+        .get(&ExchangeTicker::USDt)
+        .cloned()
+        .unwrap_or_default();
+    let balance_exchange_eur = data
+        .exchange_balances
+        .get(&ExchangeTicker::EUR)
+        .cloned()
+        .unwrap_or_default();
+    let balancing_expired = data
+        .storage
+        .balancing
+        .as_ref()
+        .map(|balancing| {
+            std::time::SystemTime::now()
+                .duration_since(balancing.created_at)
+                .expect("must succeed")
+                > std::time::Duration::from_secs(30 * 60)
+        })
+        .unwrap_or_default();
+
+    let status = [
+        (!data.bfx_connected).then_some("BfxOffline"),
+        (!data.server_connected).then_some("ServerOffline"),
+        (data.bfx_prices.len() != ExchangePair::ALL.len()).then_some("PriceExpired"),
+        (balance_wallet_bitcoin < MIN_BALANCE_BITCOIN).then_some("WalletBitcoinLow"),
+        (balance_exchange_bitcoin < MIN_BALANCE_BITCOIN).then_some("ExchangeBitcoinLow"),
+        (balance_wallet_usdt < MIN_BALANCE_TETHER).then_some("WalletTetherLow"),
+        (balance_exchange_usdt < MIN_BALANCE_TETHER).then_some("ExchangeTetherLow"),
+        balancing_expired.then_some("BalancingStuck"),
+        (data.failed_orders_count != 0).then_some("FailedOrderSubmit"),
+        (data.external_prices.len() != 2).then_some("ExternalPrices"),
+    ]
+    .iter()
+    .flatten()
+    .map(|v| v.to_owned())
+    .collect::<Vec<_>>();
+    *data.health_text.lock().unwrap() = if status.is_empty() {
+        None
+    } else {
+        Some(status.join(","))
+    };
+
+    let usdt_price = data.bfx_prices.get(&ExchangePair::BtcUsdt).cloned();
+    if data.storage.balancing.is_none()
+        && data.args.env.d().mainnet
+        && now.duration_since(data.balancing_blocked) > std::time::Duration::from_secs(60)
+        && data.args.balancing_enabled
+        && usdt_price.is_some()
+    {
+        let usdt_price = usdt_price.unwrap();
+        let usdt_price = (usdt_price.bid + usdt_price.ask) / 2.0;
+        let balancing = get_balancing(
+            balance_wallet_bitcoin,
+            balance_exchange_bitcoin,
+            balance_wallet_usdt,
+            balance_exchange_usdt,
+            usdt_price,
+        );
+
+        match balancing {
+            AssetBalancing::None => {}
+            AssetBalancing::RecvBtc(amount) => {
+                cli::send_request(&data.msg_tx, cli::Request::TestRecvBtc(amount))
+            }
+            AssetBalancing::SendBtc(amount) => {
+                cli::send_request(&data.msg_tx, cli::Request::TestSendBtc(amount))
+            }
+            AssetBalancing::RecvUsdt(amount) => {
+                cli::send_request(&data.msg_tx, cli::Request::TestRecvUsdt(amount))
+            }
+            AssetBalancing::SendUsdt(amount) => {
+                cli::send_request(&data.msg_tx, cli::Request::TestSendUsdt(amount))
+            }
+        };
+    }
+
+    if data.all_exchange_balances_reported != data.all_exchange_balances {
+        data.all_exchange_balances_reported = data.all_exchange_balances.clone();
+        let balances = data
+            .all_exchange_balances_reported
+            .iter()
+            .map(|(curr, amount)| format!("{}: {:.8}", curr, amount))
+            .collect::<Vec<_>>();
+        let balance_str = balances.join(", ");
+        let message = format!("bfx: {}", &balance_str);
+        send_notification(&message, &data.args.notifications.url);
+    }
+
+    balancing::process_balancing(
+        &mut data.storage,
+        &data.wallet_balances_confirmed,
+        &data.exchange_balances,
+        data.bfx_connected,
+        &data.args,
+        &data.bf_sender,
+    )
+    .await;
+
+    let check_exchange_age = now.duration_since(data.latest_check_exchange);
+    if check_exchange_age > std::time::Duration::from_secs(60) {
+        data.msg_tx.send(Msg::CheckExchange).unwrap();
+        data.latest_check_exchange = now;
+    }
+
+    if let Some(profits) = data.profit_reports.as_mut() {
+        if Instant::now().duration_since(profits.created_at) > std::time::Duration::from_secs(60) {
+            error!("profit reporting timeout");
+            data.profit_reports = None;
+        }
+    }
+
+    if let Some(profits) = data.profit_reports.as_mut() {
+        let balance_wallet_bitcoin_old = profits
+            .wallet_balances
+            .get(&DealerTicker::LBTC)
+            .cloned()
+            .unwrap_or_default();
+        let balance_wallet_usdt_old = profits
+            .wallet_balances
+            .get(&DealerTicker::USDt)
+            .cloned()
+            .unwrap_or_default();
+        let balance_wallet_eurx_old = profits
+            .wallet_balances
+            .get(&DealerTicker::EURx)
+            .cloned()
+            .unwrap_or_default();
+        let balance_exchange_bitcoin_old = profits
+            .exchange_balances
+            .get(&ExchangeTicker::BTC)
+            .cloned()
+            .unwrap_or_default();
+        let balance_exchange_usdt_old = profits
+            .exchange_balances
+            .get(&ExchangeTicker::USDt)
+            .cloned()
+            .unwrap_or_default();
+        let balance_exchange_eur_old = profits
+            .exchange_balances
+            .get(&ExchangeTicker::EUR)
+            .cloned()
+            .unwrap_or_default();
+        let bitcoins_updated = balance_wallet_bitcoin != balance_wallet_bitcoin_old
+            && balance_exchange_bitcoin != balance_exchange_bitcoin_old;
+        let usdt_updated = balance_wallet_usdt != balance_wallet_usdt_old
+            && balance_exchange_usdt != balance_exchange_usdt_old;
+        let eur_updated = balance_wallet_eurx != balance_wallet_eurx_old
+            && balance_exchange_eur != balance_exchange_eur_old;
+        if bitcoins_updated && (usdt_updated || eur_updated) {
+            let bitcoin_change = balance_wallet_bitcoin + balance_exchange_bitcoin
+                - balance_wallet_bitcoin_old
+                - balance_exchange_bitcoin_old;
+            let usdt_change = balance_wallet_usdt + balance_exchange_usdt
+                - balance_wallet_usdt_old
+                - balance_exchange_usdt_old;
+            let eur_change = balance_wallet_eurx + balance_exchange_eur
+                - balance_wallet_eurx_old
+                - balance_exchange_eur_old;
+            send_notification(
+                &format!(
+                    "swap complete, balance change: bitcoin: {:0.8}, usdt: {:0.8}, eurx: {:0.8}",
+                    bitcoin_change, usdt_change, eur_change
+                ),
+                &data.args.notifications.url,
+            );
+            data.profit_reports = None;
+        }
+    }
+
+    let expired_orders = data
+        .pending_orders
+        .iter()
+        .filter(|(_, timestamp)| {
+            now.duration_since(**timestamp) > std::time::Duration::from_secs(30)
+        })
+        .map(|(cid, _)| *cid)
+        .collect::<Vec<_>>();
+    for cid in expired_orders {
+        send_notification(
+            &format!(":fire: bf order {} timeout", cid),
+            &data.args.notifications.url,
+        );
+        data.pending_orders.remove(&cid);
+    }
+}
+
+fn process_bf_worker(data: &mut Data, resp: bitfinex_worker::Response) {
+    match resp {
+        bitfinex_worker::Response::Withdraw { withdraw_id } => {
+            balancing::process_withdraw(&mut data.storage, withdraw_id, &data.args);
+        }
+        bitfinex_worker::Response::Transfer { success } => {
+            balancing::process_transfer(&mut data.storage, success, &data.args);
+        }
+        bitfinex_worker::Response::Movements(msg) => {
+            balancing::process_movements(&mut data.storage, msg, &data.args, &mut data.movements);
+        }
+        bitfinex_worker::Response::OrderSubmit(req, res) => match res {
+            Ok(order) => {
+                info!("order submit succeed, order_id: {}", order.order_id);
+            }
+            Err(err) => {
+                error!("order submit failed: {}", err);
+                data.failed_orders_count += 1;
+                data.failed_orders_total += req.amount;
+
+                send_notification(
+                    &format!(
+                        "bfx order(s) submit failed, count: {}, total: {} btc",
+                        data.failed_orders_count, data.failed_orders_total,
+                    ),
+                    &data.args.notifications.url,
+                );
+            }
+        },
+    }
+}
+
+async fn process_bf_event(data: &mut Data, event: bfx_ws_api::Event) {
+    match event {
+        bfx_ws_api::Event::Connected => {
+            data.bfx_connected = true;
+            info!("connected to bfx ws");
+            send_notification("bfx ws connection online", &data.args.notifications.url);
+
+            data.msg_tx.send(Msg::CheckExchange).unwrap();
+        }
+
+        bfx_ws_api::Event::Disconnected { reason } => {
+            data.bfx_connected = false;
+            info!("disconnected from bfx ws: {reason}");
+            send_notification(
+                &format!("bfx ws connection offline: {reason}"),
+                &data.args.notifications.url,
+            );
+            data.bfx_prices.clear();
+            process_timer(data).await;
+        }
+
+        bfx_ws_api::Event::WalletBalance {
+            wallet_type,
+            currency,
+            balance,
+        } => {
+            if wallet_type == bfx_ws_api::WalletType::Exchange {
+                info!("exchange balance updated: {}: {}", &currency, balance);
+                data.all_exchange_balances.insert(currency.clone(), balance);
+
+                let exchange_ticker = ExchangeTicker::find_bfx_name(data.network, &currency);
+
+                // Some exchange balances are ignored (i.e. USD)
+                if let Some(exchange_ticker) = exchange_ticker {
+                    let old_balance = data.exchange_balances.get(&exchange_ticker);
+                    if old_balance != Some(&balance) {
+                        let old_value = data.exchange_balances.insert(exchange_ticker, balance);
+                        if old_value.is_some() {
+                            data.msg_tx.send(Msg::CheckExchange).unwrap();
+                        }
+                    }
+                }
+            }
+        }
+
+        bfx_ws_api::Event::OrderCancel {
+            symbol,
+            cid,
+            id,
+            amount_orig,
+            price_avg,
+        } => {
+            info!(
+                "order created, cid: {}, id: {}, amount: {}, price: {}, symbol: {}",
+                cid, id, amount_orig, price_avg, symbol
+            );
+            let pending_order = data.pending_orders.remove(&cid);
+            match pending_order {
+                Some(v) => debug!(
+                    "order created: {}, {} seconds",
+                    cid,
+                    std::time::Instant::now().duration_since(v).as_secs_f64()
+                ),
+                None => debug!("unexpected order: {}", cid),
+            }
+        }
+
+        bfx_ws_api::Event::BookUpdate { symbol, bid, ask } => {
+            let price = Price { bid, ask };
+            // debug!("updated price, bid: {}, ask: {}", price.bid, price.ask);
+            let exchange_pair =
+                ExchangePair::find_bookname(&symbol).expect("book ticker must be known");
+            let old_bfx_price = data.bfx_prices.insert(exchange_pair, price);
+            if old_bfx_price.is_none() {
+                info!("received price");
+                send_notification(
+                    &format!(
+                        "bfx price refreshed: {}/{} for {}",
+                        price.ask, price.bid, exchange_pair,
+                    ),
+                    &data.args.notifications.url,
+                );
+            }
+        }
+    }
+}
+
+fn process_msg(data: &mut Data, msg: Msg) {
+    match msg {
+        Msg::BfWorker(resp) => {
+            process_bf_worker(data, resp);
+        }
+
+        Msg::Cli(req) => {
+            let (new_state, amount, name) = match req.req {
+                cli::Request::TestSendUsdt(amount) => {
+                    (TransferState::SendUsdtNew, amount, "send usdt")
+                }
+                cli::Request::TestRecvUsdt(amount) => {
+                    (TransferState::RecvUsdtNew, amount, "recv usdt")
+                }
+                cli::Request::TestSendBtc(amount) => {
+                    (TransferState::SendBtcNew, amount, "send btc")
+                }
+                cli::Request::TestRecvBtc(amount) => {
+                    (TransferState::RecvBtcNew, amount, "recv btc")
+                }
+            };
+            let resp = if data.storage.balancing.is_some() {
+                cli::Response::Error("already started".to_owned())
+            } else {
+                data.movements = None;
+                data.storage.balancing = Some(Transfer {
+                    amount: Amount::from_bitcoin(amount),
+                    created_at: std::time::SystemTime::now(),
+                    updated_at: std::time::SystemTime::now(),
+                    state: new_state,
+                    txid: None,
+                    withdraw_id: None,
+                });
+                save_storage(&data.storage, &data.args.storage_path);
+                send_notification(
+                    &format!("start balancing, {}, amount: {}", name, amount),
+                    &data.args.notifications.url,
+                );
+                cli::Response::Success("success".to_owned())
+            };
+            if let Some(resp_tx) = req.resp_tx {
+                let res = resp_tx.send(resp);
+                if res.is_err() {
+                    log::debug!("cli channel is closed");
+                }
+            }
+        }
+
+        Msg::CheckExchange => {
+            if let Some(balancing) = data.storage.balancing.as_ref() {
+                if data.bfx_connected {
+                    let start = balancing
+                        .created_at
+                        .checked_sub(std::time::Duration::from_secs(10))
+                        .unwrap()
+                        .duration_since(std::time::UNIX_EPOCH)
+                        .unwrap()
+                        .as_millis() as i64;
+                    data.bf_sender
+                        .send(bitfinex_worker::Request::Movements {
+                            start: Some(start),
+                            end: None,
+                            limit: None,
+                        })
+                        .unwrap();
+                }
+            }
+        }
+
+        Msg::External(ticker, price_res) => match price_res {
+            Ok(price) => {
+                data.external_prices.insert(ticker, price);
+                get_bfx_price(&data, ticker);
+            }
+            Err(err) => {
+                log::warn!("external price loading failed: {err}");
+                data.external_prices.remove(&ticker);
+            }
+        },
+    }
+}
+
+fn process_market_event(data: &mut Data, event: market::Event) {
+    match event {
+        market::Event::SignSwap {
+            quote_id,
+            pset,
+            blinding_nonces: _,
+        } => {
+            let pset = data.utxo_data.sign_pset(pset);
+            data.market_command_sender
+                .send(market::Command::SignedSwap { quote_id, pset });
+        }
+
+        market::Event::GetNewAddress => {
+            let rpc_server = data.args.rpc.clone();
+            let command_sender = data.market_command_sender.clone();
+            tokio::spawn(async move {
+                let address = rpc::make_rpc_call(&rpc_server, rpc::GetNewAddressCall {})
+                    .await
+                    .expect("getting new address failed");
+                command_sender.send(market::Command::NewAddress { address });
+            });
+        }
+
+        market::Event::SwapSucceed {
+            asset_pair: AssetPair { base, quote },
+            trade_dir,
+            base_amount,
+            quote_amount,
+            price,
+            txid,
+        } => {
+            let usdt_asset = data.network.d().known_assets.usdt.asset_id();
+            let eurx_asset = data.network.d().known_assets.eurx.asset_id();
+            let exchange_pair = if base == data.policy_asset && quote == usdt_asset {
+                ExchangePair::BtcUsdt
+            } else if base == data.policy_asset && quote == eurx_asset {
+                ExchangePair::BtcEur
+            } else if base == eurx_asset && quote == usdt_asset {
+                ExchangePair::EurUsdt
+            } else {
+                panic!("unknown asset pair: base: {base}, quote: {quote}");
+            };
+            let base_amount_float = sat_to_btc(base_amount);
+            let quote_amount_float = sat_to_btc(quote_amount);
+
+            send_notification(
+                &format!(
+                    "market swap, {exchange_pair}, base amount: {base_amount_float}, quote amount: {quote_amount_float}, price: {price}, txid: {txid}",
+                ),
+                &data.args.notifications.url,
+            );
+
+            match exchange_pair {
+                ExchangePair::BtcUsdt | ExchangePair::BtcEur => {
+                    info!("start hedging for {exchange_pair}");
+
+                    let bitcoin_amount =
+                        sideswap_common::types::Amount::from_bitcoin(base_amount_float);
+
+                    let dealer_send_bitcoins = match trade_dir {
+                        TradeDir::Sell => true,
+                        TradeDir::Buy => false,
+                    };
+
+                    let ticker = exchange_pair.dealer_ticker().expect("must be set");
+
+                    hedge_order(
+                        data,
+                        SwapSucceed {
+                            txid,
+                            ticker,
+                            bitcoin_amount,
+                            dealer_send_bitcoins,
+                        },
+                    );
+                }
+                ExchangePair::EurUsdt => {
+                    info!("skip hedging for {exchange_pair}");
+                }
+            }
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let args = std::env::args().collect::<Vec<_>>();
@@ -389,30 +1148,26 @@ async fn main() {
         .expect("reading env failed");
     let args: Args = conf.try_into().expect("invalid config");
 
-    let tickers = BTreeSet::from([DealerTicker::USDt, DealerTicker::EURx]);
-
     let params = Params {
         env: args.env,
         server_url: args.server_url.clone(),
         rpc: args.rpc.clone(),
-        tickers,
+        tickers: BTreeSet::from(DEALER_TICKERS),
         bitcoin_amount_submit: Amount::from_bitcoin(args.bitcoin_amount_submit),
         bitcoin_amount_min: Amount::from_bitcoin(args.bitcoin_amount_min),
         bitcoin_amount_max: Amount::from_bitcoin(args.bitcoin_amount_max),
         api_key: args.api_key.clone(),
     };
 
-    log4rs::init_file(&args.log_settings, Default::default()).expect("can't open log settings");
+    sideswap_dealer::logs::init(&args.work_dir);
 
     info!("starting up");
 
     sideswap_common::panic_handler::install_panic_handler();
 
-    let mut storage = load_storage(&args.storage_path).unwrap_or_default();
+    let storage = load_storage(&args.storage_path).unwrap_or_default();
     let storage_path = args.storage_path.clone();
     save_storage(&storage, &storage_path);
-
-    let mut movements: Option<Movements> = None;
 
     let (msg_tx, mut msg_rx) = unbounded_channel::<Msg>();
 
@@ -424,19 +1179,13 @@ async fn main() {
     let (bf_sender, bf_receiver) = unbounded_channel::<bitfinex_worker::Request>();
     let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
     let bf_settings_copy = bf_settings.clone();
-    std::thread::spawn(move || {
-        bitfinex_worker::run(bf_settings_copy, bf_receiver, |resp| {
+    tokio::task::spawn(bitfinex_worker::run(
+        bf_settings_copy,
+        bf_receiver,
+        move |resp| {
             msg_tx_copy.send(Msg::BfWorker(resp));
-        });
-    });
-
-    let mut balancing_blocked = std::time::Instant::now();
-
-    let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
-    std::thread::spawn(move || loop {
-        msg_tx_copy.send(Msg::Timer);
-        std::thread::sleep(std::time::Duration::from_secs(1));
-    });
+        },
+    ));
 
     if let Some(settings) = args.external_prices.clone() {
         tokio::spawn(external_prices::reload(
@@ -445,9 +1194,9 @@ async fn main() {
         ));
     }
 
+    let (exit_sender, mut exit_receiver) = oneshot::channel::<()>();
     #[cfg(target_os = "linux")]
     {
-        let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
         tokio::spawn(async move {
             let mut sig_terminate =
                 tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
@@ -460,616 +1209,106 @@ async fn main() {
                 _ = sig_interrupt.recv() => {},
             }
             debug!("received term signal");
-            msg_tx_copy.send(Msg::Exit);
+            exit_sender.send(()).expect("must be open");
         });
     }
 
     let (dealer_tx, mut dealer_rx) = spawn_async(params.clone());
-    let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
-    std::thread::spawn(move || {
-        while let Some(msg) = dealer_rx.blocking_recv() {
-            msg_tx_copy.send(Msg::Dealer(msg));
-        }
-    });
 
-    let mut state = DealerState {
-        network: args.env.d().network,
+    let health_text = HealthStatus::default();
+    tokio::task::spawn(start_webserver(args.status_port, Arc::clone(&health_text)));
+
+    let (market_command_sender, market_command_receiver) = unbounded_channel::<market::Command>();
+    let (market_event_sender, mut market_event_receiver) = unbounded_channel::<market::Event>();
+    let market_params = market::Params {
+        env: args.env,
+        server_url: args.server_url.clone(),
+        work_dir: args.work_dir.clone(),
+    };
+    tokio::spawn(market::run(
+        market_params,
+        market_command_receiver,
+        market_event_sender,
+    ));
+
+    let network = args.env.d().network;
+    let mut data = Data {
+        args,
+        network,
+        policy_asset: network.d().policy_asset.asset_id(),
         server_connected: false,
         bfx_connected: false,
         wallet_balances: WalletBalances::new(),
         wallet_balances_confirmed: WalletBalances::new(),
         exchange_balances: ExchangeBalances::new(),
-        exchange_balances_reported: ExchangeBalances::new(),
+        all_exchange_balances: AllExchangeBalances::new(),
+        all_exchange_balances_reported: AllExchangeBalances::new(),
         profit_reports: None,
         pending_orders: PendingOrders::new(),
         failed_orders_count: 0,
         failed_orders_total: 0.0,
         bfx_prices: BfxPrices::new(),
         external_prices: ExternalPrices::new(),
+        health_text,
+        storage,
+        balancing_blocked: Instant::now(),
+        latest_check_exchange: Instant::now(),
+        movements: None,
+        msg_tx,
+        dealer_tx,
+        bf_sender,
+        market_command_sender: market_command_sender.into(),
+        utxo_data: UtxoData::new(utxo_data::Params {
+            confifential_only: true,
+        }),
     };
-
-    let bitfinex_currency_btc = &args.bitfinex_currency_btc;
-    let bitfinex_currency_usdt = &args.bitfinex_currency_usdt;
-    let bitfinex_currency_eur = &args.bitfinex_currency_eur;
-
-    let book_names = [
-        (DealerTicker::USDt, args.bitfinex_bookname_usdt.clone()),
-        (DealerTicker::EURx, args.bitfinex_bookname_eurx.clone()),
-    ]
-    .iter()
-    .cloned()
-    .collect::<BTreeMap<_, _>>();
-    let book_tickers = book_names
-        .iter()
-        .map(|(ticker, book)| (book.clone(), *ticker))
-        .collect::<BTreeMap<_, _>>();
-
-    let rpc_http_client = ureq::AgentBuilder::new()
-        .timeout(std::time::Duration::from_secs(20))
-        .build();
 
     let (_bfx_command_sender, bfx_command_receiver) = unbounded_channel::<bfx_ws_api::Command>();
     let (bfx_event_sender, mut bfx_event_receiver) = unbounded_channel::<bfx_ws_api::Event>();
-    let book_names_copy = book_names.values().cloned().collect();
     tokio::spawn(bfx_ws_api::run(
-        book_names_copy,
         bf_settings.clone(),
         bfx_command_receiver,
         bfx_event_sender,
     ));
 
-    let msg_tx_copy = UncheckedUnboundedSender::from(msg_tx.clone());
-    std::thread::spawn(move || {
-        while let Some(event) = bfx_event_receiver.blocking_recv() {
-            msg_tx_copy.send(Msg::BfxEvent(event));
-        }
-    });
-
-    let mut latest_check_exchange = std::time::Instant::now();
-
-    let msg_tx_copy = msg_tx.clone();
+    let msg_tx_copy = data.msg_tx.clone();
     std::thread::spawn(|| {
-        start_cli(msg_tx_copy);
+        cli::start(msg_tx_copy);
     });
 
-    send_notification("dealer started", &args.notifications.url);
+    send_notification("dealer started", &data.args.notifications.url);
 
-    let health_text = Arc::new(std::sync::Mutex::new(None));
-    tokio::task::spawn(start_webserver(args.status_port, Arc::clone(&health_text)));
+    let mut interval = tokio::time::interval(Duration::from_secs(1));
 
     loop {
-        let msg = msg_rx.recv().await.unwrap();
-        let now = std::time::Instant::now();
-
-        match msg {
-            Msg::BfWorker(resp) => match resp {
-                bitfinex_worker::Response::Withdraw { withdraw_id } => {
-                    balancing::process_withdraw(&mut storage, withdraw_id, &args);
-                }
-                bitfinex_worker::Response::Transfer { success } => {
-                    balancing::process_transfer(&mut storage, success, &args);
-                }
-                bitfinex_worker::Response::Movements(msg) => {
-                    balancing::process_movements(&mut storage, msg, &args, &mut movements);
-                }
-                bitfinex_worker::Response::OrderSubmit(req, res) => match res {
-                    Ok(order) => {
-                        info!("order submit succeed, order_id: {}", order.order_id);
-                    }
-                    Err(err) => {
-                        error!("order submit failed: {}", err);
-                        state.failed_orders_count += 1;
-                        state.failed_orders_total += req.amount;
-
-                        send_notification(
-                            &format!(
-                                "bfx order(s) submit failed, count: {}, total: {} btc",
-                                state.failed_orders_count, state.failed_orders_total,
-                            ),
-                            &args.notifications.url,
-                        );
-                    }
-                },
+        tokio::select! {
+            msg = msg_rx.recv() => {
+                let msg = msg.expect("channel must be open");
+                process_msg(&mut data, msg);
             },
 
-            Msg::BfxEvent(event) => match event {
-                bfx_ws_api::Event::Connected => {
-                    state.bfx_connected = true;
-                    info!("connected to bfx ws");
-                    send_notification("bfx ws connection online", &args.notifications.url);
-
-                    msg_tx.send(Msg::CheckExchange).unwrap();
-                }
-
-                bfx_ws_api::Event::Disconnected { reason } => {
-                    state.bfx_connected = false;
-                    info!("disconnected from bfx ws: {reason}");
-                    send_notification(
-                        &format!("bfx ws connection offline: {reason}"),
-                        &args.notifications.url,
-                    );
-                    state.bfx_prices.clear();
-                    msg_tx.send(Msg::Timer).unwrap();
-                }
-
-                bfx_ws_api::Event::WalletBalance {
-                    wallet_type,
-                    currency,
-                    balance,
-                } => {
-                    if wallet_type == bfx_ws_api::WalletType::Exchange {
-                        let currency = ExchangeTicker(currency);
-                        let old_balance = state.exchange_balances.get(&currency);
-                        if old_balance != Some(&balance) {
-                            info!("exchange balance updated: {}: {}", &currency.0, balance);
-                            let old_value = state.exchange_balances.insert(currency, balance);
-                            if old_value.is_some() {
-                                msg_tx.send(Msg::CheckExchange).unwrap();
-                            }
-                        }
-                    }
-                }
-
-                bfx_ws_api::Event::OrderCancel {
-                    symbol,
-                    cid,
-                    id,
-                    amount_orig,
-                    price_avg,
-                } => {
-                    info!(
-                        "order created, cid: {}, id: {}, amount: {}, price: {}, symbol: {}",
-                        cid, id, amount_orig, price_avg, symbol
-                    );
-                    let pending_order = state.pending_orders.remove(&cid);
-                    match pending_order {
-                        Some(v) => debug!(
-                            "order created: {}, {} seconds",
-                            cid,
-                            std::time::Instant::now().duration_since(v).as_secs_f64()
-                        ),
-                        None => debug!("unexpected order: {}", cid),
-                    }
-                }
-
-                bfx_ws_api::Event::BookUpdate { symbol, bid, ask } => {
-                    let price = Price { bid, ask };
-                    // debug!("updated price, bid: {}, ask: {}", price.bid, price.ask);
-                    let ticker = *book_tickers
-                        .get(&symbol)
-                        .expect("book ticker must be known");
-                    let old_bfx_price = state.bfx_prices.insert(ticker, price);
-                    if old_bfx_price.is_none() {
-                        info!("received price");
-                        send_notification(
-                            &format!(
-                                "bfx price refreshed: {}/{} for {}",
-                                price.ask, price.bid, ticker,
-                            ),
-                            &args.notifications.url,
-                        );
-                    }
-                }
+            msg = dealer_rx.recv() => {
+                let msg = msg.expect("channel must be open");
+                process_dealer(&mut data, msg).await;
             },
 
-            Msg::Timer => {
-                for &ticker in params.tickers.iter() {
-                    let price = get_bfx_price(&state, ticker).map(|bfx_price| {
-                        let submit_interest = if ticker == DealerTicker::USDt {
-                            INTEREST_SUBMIT_USDT
-                        } else if ticker == DealerTicker::EURx {
-                            INTEREST_SUBMIT_EURX
-                        } else {
-                            panic!("unexpected asset");
-                        };
-
-                        let base_price = PricePair {
-                            bid: bfx_price.bid,
-                            ask: bfx_price.ask,
-                        };
-                        let submit_price = apply_interest(&base_price, submit_interest);
-
-                        let exchange_btc_amount = get_exchange_balance(
-                            &state.exchange_balances,
-                            &args.bitfinex_currency_btc,
-                        );
-                        let exchange_asset_currency = match ticker {
-                            DealerTicker::USDt => &args.bitfinex_currency_usdt,
-                            DealerTicker::EURx => &args.bitfinex_currency_eur,
-                            _ => panic!(),
-                        };
-                        // Show that the dealer will buy any amount of EURx as needed
-                        let exchange_asset_amount = if ticker == DealerTicker::EURx {
-                            10.0 * bfx_price.ask
-                        } else {
-                            get_exchange_balance(&state.exchange_balances, exchange_asset_currency)
-                        };
-
-                        dealer::DealerPrice {
-                            submit_price,
-                            limit_btc_dealer_send: exchange_asset_amount / submit_price.ask,
-                            limit_btc_dealer_recv: exchange_btc_amount,
-                            balancing: storage.balancing.is_some(),
-                        }
-                    });
-
-                    dealer_tx
-                        .send(To::Price(ToPrice { ticker, price }))
-                        .unwrap();
-
-                    if let Some(price) = state.bfx_prices.get(&ticker) {
-                        dealer_tx
-                            .send(To::IndexPriceUpdate(PriceUpdateBroadcast {
-                                asset: get_dealer_asset_id(state.network, ticker),
-                                price: PricePair {
-                                    bid: price.bid,
-                                    ask: price.ask,
-                                },
-                            }))
-                            .unwrap();
-                    }
-                }
-
-                let balance_wallet_bitcoin = state
-                    .wallet_balances
-                    .get(&DealerTicker::LBTC)
-                    .cloned()
-                    .unwrap_or_default();
-                let balance_wallet_usdt = state
-                    .wallet_balances
-                    .get(&DealerTicker::USDt)
-                    .cloned()
-                    .unwrap_or_default();
-                let balance_wallet_eurx = state
-                    .wallet_balances
-                    .get(&DealerTicker::EURx)
-                    .cloned()
-                    .unwrap_or_default();
-                let balance_exchange_bitcoin = state
-                    .exchange_balances
-                    .get(bitfinex_currency_btc)
-                    .cloned()
-                    .unwrap_or_default();
-                let balance_exchange_usdt = state
-                    .exchange_balances
-                    .get(bitfinex_currency_usdt)
-                    .cloned()
-                    .unwrap_or_default();
-                let balance_exchange_eur = state
-                    .exchange_balances
-                    .get(bitfinex_currency_eur)
-                    .cloned()
-                    .unwrap_or_default();
-                let balancing_expired = storage
-                    .balancing
-                    .as_ref()
-                    .map(|balancing| {
-                        std::time::SystemTime::now()
-                            .duration_since(balancing.created_at)
-                            .expect("must succeed")
-                            > std::time::Duration::from_secs(30 * 60)
-                    })
-                    .unwrap_or_default();
-
-                let status = [
-                    (!state.bfx_connected).then_some("BfxOffline"),
-                    (!state.server_connected).then_some("ServerOffline"),
-                    (state.bfx_prices.len() != DEALER_TICKERS.len()).then_some("PriceExpired"),
-                    (balance_wallet_bitcoin < MIN_BALANCE_BITCOIN).then_some("WalletBitcoinLow"),
-                    (balance_exchange_bitcoin < MIN_BALANCE_BITCOIN)
-                        .then_some("ExchangeBitcoinLow"),
-                    (balance_wallet_usdt < MIN_BALANCE_TETHER).then_some("WalletTetherLow"),
-                    (balance_exchange_usdt < MIN_BALANCE_TETHER).then_some("ExchangeTetherLow"),
-                    balancing_expired.then_some("BalancingStuck"),
-                    (state.failed_orders_count != 0).then_some("FailedOrderSubmit"),
-                    (state.external_prices.len() != 2).then_some("ExternalPrices"),
-                ]
-                .iter()
-                .flatten()
-                .map(|v| v.to_owned())
-                .collect::<Vec<_>>();
-                *health_text.lock().unwrap() = if status.is_empty() {
-                    None
-                } else {
-                    Some(status.join(","))
-                };
-
-                let usdt_price = state.bfx_prices.get(&DealerTicker::USDt).cloned();
-                if storage.balancing.is_none()
-                    && args.env.d().mainnet
-                    && now.duration_since(balancing_blocked) > std::time::Duration::from_secs(60)
-                    && args.balancing_enabled
-                    && usdt_price.is_some()
-                {
-                    let usdt_price = usdt_price.unwrap();
-                    let usdt_price = (usdt_price.bid + usdt_price.ask) / 2.0;
-                    let balancing = get_balancing(
-                        balance_wallet_bitcoin,
-                        balance_exchange_bitcoin,
-                        balance_wallet_usdt,
-                        balance_exchange_usdt,
-                        usdt_price,
-                    );
-
-                    match balancing {
-                        AssetBalancing::None => {}
-                        AssetBalancing::RecvBtc(amount) => {
-                            send_cli_request(&msg_tx, CliRequest::TestRecvBtc(amount))
-                        }
-                        AssetBalancing::SendBtc(amount) => {
-                            send_cli_request(&msg_tx, CliRequest::TestSendBtc(amount))
-                        }
-                        AssetBalancing::RecvUsdt(amount) => {
-                            send_cli_request(&msg_tx, CliRequest::TestRecvUsdt(amount))
-                        }
-                        AssetBalancing::SendUsdt(amount) => {
-                            send_cli_request(&msg_tx, CliRequest::TestSendUsdt(amount))
-                        }
-                    };
-                }
-
-                if state.exchange_balances_reported != state.exchange_balances {
-                    state.exchange_balances_reported = state.exchange_balances.clone();
-                    let balances = state
-                        .exchange_balances_reported
-                        .iter()
-                        .map(|(curr, amount)| format!("{}: {:.8}", curr.0, amount))
-                        .collect::<Vec<_>>();
-                    let balance_str = balances.join(", ");
-                    let message = format!("bf: {}", &balance_str);
-                    send_notification(&message, &args.notifications.url);
-                }
-
-                balancing::process_balancing(
-                    &mut storage,
-                    &state.wallet_balances_confirmed,
-                    &state.exchange_balances,
-                    state.bfx_connected,
-                    &rpc_http_client,
-                    &args,
-                    &bf_sender,
-                );
-
-                let check_exchange_age = now.duration_since(latest_check_exchange);
-                if check_exchange_age > std::time::Duration::from_secs(60) {
-                    msg_tx.send(Msg::CheckExchange).unwrap();
-                    latest_check_exchange = now;
-                }
-
-                if let Some(data) = state.profit_reports.as_mut() {
-                    if std::time::Instant::now().duration_since(data.created_at)
-                        > std::time::Duration::from_secs(60)
-                    {
-                        error!("profit reporting timeout");
-                        state.profit_reports = None;
-                    }
-                }
-
-                if let Some(data) = state.profit_reports.as_mut() {
-                    let balance_wallet_bitcoin_old = data
-                        .wallet_balances
-                        .get(&DealerTicker::LBTC)
-                        .cloned()
-                        .unwrap_or_default();
-                    let balance_wallet_usdt_old = data
-                        .wallet_balances
-                        .get(&DealerTicker::USDt)
-                        .cloned()
-                        .unwrap_or_default();
-                    let balance_wallet_eurx_old = data
-                        .wallet_balances
-                        .get(&DealerTicker::EURx)
-                        .cloned()
-                        .unwrap_or_default();
-                    let balance_exchange_bitcoin_old = data
-                        .exchange_balances
-                        .get(bitfinex_currency_btc)
-                        .cloned()
-                        .unwrap_or_default();
-                    let balance_exchange_usdt_old = data
-                        .exchange_balances
-                        .get(bitfinex_currency_usdt)
-                        .cloned()
-                        .unwrap_or_default();
-                    let balance_exchange_eur_old = data
-                        .exchange_balances
-                        .get(bitfinex_currency_eur)
-                        .cloned()
-                        .unwrap_or_default();
-                    let bitcoins_updated = balance_wallet_bitcoin != balance_wallet_bitcoin_old
-                        && balance_exchange_bitcoin != balance_exchange_bitcoin_old;
-                    let usdt_updated = balance_wallet_usdt != balance_wallet_usdt_old
-                        && balance_exchange_usdt != balance_exchange_usdt_old;
-                    let eur_updated = balance_wallet_eurx != balance_wallet_eurx_old
-                        && balance_exchange_eur != balance_exchange_eur_old;
-                    if bitcoins_updated && (usdt_updated || eur_updated) {
-                        let bitcoin_change = balance_wallet_bitcoin + balance_exchange_bitcoin
-                            - balance_wallet_bitcoin_old
-                            - balance_exchange_bitcoin_old;
-                        let usdt_change = balance_wallet_usdt + balance_exchange_usdt
-                            - balance_wallet_usdt_old
-                            - balance_exchange_usdt_old;
-                        let eur_change = balance_wallet_eurx + balance_exchange_eur
-                            - balance_wallet_eurx_old
-                            - balance_exchange_eur_old;
-                        send_notification(
-                            &format!(
-                                "swap complete, balance change: bitcoin: {:0.8}, usdt: {:0.8}, eurx: {:0.8}",
-                                bitcoin_change, usdt_change, eur_change
-                            ),
-                            &args.notifications.url,
-                        );
-                        state.profit_reports = None;
-                    }
-                }
-
-                let expired_orders = state
-                    .pending_orders
-                    .iter()
-                    .filter(|(_, timestamp)| {
-                        now.duration_since(**timestamp) > std::time::Duration::from_secs(30)
-                    })
-                    .map(|(cid, _)| *cid)
-                    .collect::<Vec<_>>();
-                for cid in expired_orders {
-                    send_notification(
-                        &format!(":fire: bf order {} timeout", cid),
-                        &args.notifications.url,
-                    );
-                    state.pending_orders.remove(&cid);
-                }
-            }
-
-            Msg::Cli(data) => {
-                let (new_state, amount, name) = match data.req {
-                    CliRequest::TestSendUsdt(amount) => {
-                        (TransferState::SendUsdtNew, amount, "send usdt")
-                    }
-                    CliRequest::TestRecvUsdt(amount) => {
-                        (TransferState::RecvUsdtNew, amount, "recv usdt")
-                    }
-                    CliRequest::TestSendBtc(amount) => {
-                        (TransferState::SendBtcNew, amount, "send btc")
-                    }
-                    CliRequest::TestRecvBtc(amount) => {
-                        (TransferState::RecvBtcNew, amount, "recv btc")
-                    }
-                };
-                let resp = if storage.balancing.is_some() {
-                    CliResponse::Error("already started".to_owned())
-                } else {
-                    movements = None;
-                    storage.balancing = Some(Transfer {
-                        amount: Amount::from_bitcoin(amount),
-                        created_at: std::time::SystemTime::now(),
-                        updated_at: std::time::SystemTime::now(),
-                        state: new_state,
-                        txid: None,
-                        withdraw_id: None,
-                    });
-                    save_storage(&storage, &storage_path);
-                    send_notification(
-                        &format!("start balancing, {}, amount: {}", name, amount),
-                        &args.notifications.url,
-                    );
-                    CliResponse::Success("success".to_owned())
-                };
-                if let Some(resp_tx) = data.resp_tx {
-                    let res = resp_tx.send(resp);
-                    if res.is_err() {
-                        log::debug!("cli channel is closed");
-                    }
-                }
-            }
-
-            Msg::CheckExchange => {
-                if let Some(balancing) = storage.balancing.as_ref() {
-                    if state.bfx_connected {
-                        let start = balancing
-                            .created_at
-                            .checked_sub(std::time::Duration::from_secs(10))
-                            .unwrap()
-                            .duration_since(std::time::UNIX_EPOCH)
-                            .unwrap()
-                            .as_millis() as i64;
-                        bf_sender
-                            .send(bitfinex_worker::Request::Movements {
-                                start: Some(start),
-                                end: None,
-                                limit: None,
-                            })
-                            .unwrap();
-                    }
-                }
-            }
-
-            Msg::Dealer(msg) => match msg {
-                From::Swap(swap) => {
-                    hedge_order(
-                        &args,
-                        swap,
-                        &mut balancing_blocked,
-                        &mut state.profit_reports,
-                        &state.wallet_balances,
-                        &state.exchange_balances,
-                        &book_names,
-                        &bf_sender,
-                        &mut state.pending_orders,
-                    );
-                }
-
-                From::ServerConnected(_) => {
-                    info!("connected to server");
-                    send_notification("connected to the server", &args.notifications.url);
-
-                    state.server_connected = true;
-                }
-
-                From::ServerDisconnected(_) => {
-                    warn!("disconnected from server");
-                    send_notification("disconnected from the server", &args.notifications.url);
-                    state.server_connected = false;
-                }
-
-                From::Utxos(unspent_with_zc) => {
-                    let convert_balances = |amounts: &BTreeMap<AssetId, f64>| {
-                        let get_balance = |ticker: DealerTicker| -> (DealerTicker, f64) {
-                            let asset_id = get_dealer_asset_id(state.network, ticker);
-                            let amount = amounts.get(&asset_id).copied().unwrap_or_default();
-                            (ticker, amount)
-                        };
-
-                        BTreeMap::from([
-                            get_balance(DealerTicker::LBTC),
-                            get_balance(DealerTicker::USDt),
-                            get_balance(DealerTicker::EURx),
-                        ])
-                    };
-
-                    let mut asset_amounts = BTreeMap::<AssetId, f64>::new();
-                    let mut asset_amounts_confirmed = BTreeMap::<AssetId, f64>::new();
-                    for item in unspent_with_zc.iter() {
-                        let asset_amount = asset_amounts.entry(item.asset).or_default();
-                        let asset_amount_confirmed =
-                            asset_amounts_confirmed.entry(item.asset).or_default();
-                        let amount = Amount::from_rpc(&item.amount).to_bitcoin();
-                        *asset_amount += amount;
-                        if item.confirmations > 0 {
-                            *asset_amount_confirmed += amount;
-                        }
-                    }
-
-                    let wallet_balances_new = convert_balances(&asset_amounts);
-                    state.wallet_balances_confirmed = convert_balances(&asset_amounts_confirmed);
-
-                    if state.wallet_balances != wallet_balances_new {
-                        state.wallet_balances = wallet_balances_new;
-                        let balances = state
-                            .wallet_balances
-                            .iter()
-                            .map(|(ticker, balance)| format!("{}: {:.8}", ticker, balance))
-                            .collect::<Vec<_>>();
-                        let balance_str = balances.join(", ");
-                        let message = format!("ss: {}", &balance_str);
-                        send_notification(&message, &args.notifications.url);
-                    }
-                }
+            event = bfx_event_receiver.recv() => {
+                let event = event.expect("channel must be open");
+                process_bf_event(&mut data, event).await;
             },
 
-            Msg::External(ticker, price_res) => match price_res {
-                Ok(price) => {
-                    state.external_prices.insert(ticker, price);
-                    get_bfx_price(&state, ticker);
-                }
-                Err(err) => {
-                    log::warn!("external price loading failed: {err}");
-                    state.external_prices.remove(&ticker);
-                }
+            event = market_event_receiver.recv() => {
+                let event = event.expect("channel must be open");
+                process_market_event(&mut data, event);
             },
 
-            Msg::Exit => {
-                return;
-            }
+            _ = interval.tick() => {
+                process_timer(&mut data).await;
+            },
+
+            _ = &mut exit_receiver => {
+                break;
+            },
         }
     }
 }

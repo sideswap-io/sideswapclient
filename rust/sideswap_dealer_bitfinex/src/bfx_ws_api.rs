@@ -1,12 +1,13 @@
 use std::time::{Duration, Instant};
 
+use anyhow::{anyhow, bail, ensure};
 use futures::prelude::*;
 use serde::{Deserialize, Serialize};
 use sideswap_common::{channel_helpers::UncheckedUnboundedSender, retry_delay::RetryDelay};
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
 use tokio_tungstenite::connect_async;
 
-use crate::{bitfinex_api::new_nonce, BfSettings};
+use crate::{bitfinex_api::new_nonce, BfSettings, ExchangePair};
 
 #[derive(Debug, PartialEq, Deserialize)]
 pub enum WalletType {
@@ -184,7 +185,7 @@ fn get_event_from_wallet_array(wallet_array: &serde_json::Value) -> Result<Event
         .as_array()
         .ok_or_else(|| anyhow!("WALLET_ARRAY must be array"))?;
     let wallet_type = wallet_array
-        .get(0)
+        .first()
         .ok_or_else(|| anyhow!("no WALLET_TYPE"))?
         .as_str()
         .ok_or_else(|| anyhow!("WALLET_TYPE must be string"))?;
@@ -220,7 +221,7 @@ fn get_event_from_order_array(order_array: &serde_json::Value) -> Result<Event, 
         .ok_or_else(|| anyhow!("ORDER_ARRAY must be array"))?;
 
     let id = order_array
-        .get(0)
+        .first()
         .ok_or_else(|| anyhow!("no ID"))?
         .as_number()
         .ok_or_else(|| anyhow!("ID must be number"))?
@@ -280,9 +281,9 @@ fn get_checksum(points: &[PricePoint]) -> u32 {
         let mut try_append = |bids_asks: &[&PricePoint]| {
             if let Some(point) = bids_asks.get(index) {
                 list.extend_from_slice(point.price_orig.as_bytes());
-                list.push(':' as u8);
+                list.push(b':');
                 list.extend_from_slice(point.amount_orig.as_bytes());
-                list.push(':' as u8);
+                list.push(b':');
             }
         };
         try_append(&bids);
@@ -302,7 +303,7 @@ fn process_book_update(
             .ok_or_else(|| anyhow!("array is expected"))?;
 
         let price_orig = new_point
-            .get(0)
+            .first()
             .ok_or_else(|| anyhow!("can't find PRICE"))?
             .as_number()
             .ok_or_else(|| anyhow!("PRICE must be number"))?;
@@ -439,7 +440,7 @@ fn get_events_from_array(
     orig_msg: &str,
 ) -> Result<Vec<Event>, anyhow::Error> {
     let chan_id = list
-        .get(0)
+        .first()
         .ok_or_else(|| anyhow!("no CHAN_ID"))?
         .as_number()
         .ok_or_else(|| anyhow!("CHAN_ID must be number"))?
@@ -527,7 +528,7 @@ fn process_object_msg(
 
             // Stop connection to keep things simple.
             // The dealer won't start until platform.status is 1 so it's enough.
-            bail!("info message recieved, code: {code}, msg: {msg}");
+            bail!("info message received, code: {code}, msg: {msg}");
         }
     }
 
@@ -580,7 +581,7 @@ async fn process_command(_req: Command) -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-pub async fn connect(settings: &BfSettings, book_names: &[String]) -> Result<Conn, anyhow::Error> {
+pub async fn connect(settings: &BfSettings) -> Result<Conn, anyhow::Error> {
     let url = "wss://api.bitfinex.com/ws/2";
 
     let (mut conn, _resp) = connect_async(url).await?;
@@ -615,10 +616,10 @@ pub async fn connect(settings: &BfSettings, book_names: &[String]) -> Result<Con
     let conf_req = serde_json::to_string(&conf_req).expect("must not fail");
     conn.send(tungstenite::Message::Text(conf_req)).await?;
 
-    for book_name in book_names {
+    for exchange_pair in ExchangePair::ALL {
         let sub_req = Req::Subscribe {
             channel: "book".to_owned(),
-            symbol: book_name.clone(),
+            symbol: exchange_pair.bfx_bookname().to_owned(),
         };
         let sub_req = serde_json::to_string(&sub_req).expect("must not fail");
         conn.send(tungstenite::Message::Text(sub_req)).await?;
@@ -649,7 +650,7 @@ pub async fn run_once(
         tokio::select! {
             msg = conn.next() => {
                 let msg = msg.ok_or_else(|| anyhow!("ws connection closed"))??;
-                process_ws_message(&mut state, conn, &event_sender, msg).await?;
+                process_ws_message(&mut state, conn, event_sender, msg).await?;
             },
 
             req = command_receiver.recv() => {
@@ -665,7 +666,6 @@ pub async fn run_once(
 }
 
 pub async fn run(
-    book_names: Vec<String>,
     settings: BfSettings,
     mut command_receiver: UnboundedReceiver<Command>,
     event_sender: UnboundedSender<Event>,
@@ -674,8 +674,7 @@ pub async fn run(
     let mut reconnect_delay = RetryDelay::default();
 
     while !command_receiver.is_closed() {
-        let res =
-            tokio::time::timeout(Duration::from_secs(60), connect(&settings, &book_names)).await;
+        let res = tokio::time::timeout(Duration::from_secs(60), connect(&settings)).await;
 
         let res = match res {
             Ok(Ok(conn)) => Ok(conn),

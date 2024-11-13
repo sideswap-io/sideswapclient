@@ -2,6 +2,7 @@ use std::collections::BTreeSet;
 
 use elements::{OutPoint, TxOutSecrets};
 use serde::{Deserialize, Serialize};
+use sideswap_types::timestamp_us::TimestampUs;
 
 use super::*;
 
@@ -19,7 +20,7 @@ pub struct TransactionOutput {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     pub txid: elements::Txid,
-    pub created_at: u64,
+    pub created_at: TimestampUs,
     /// 0 for unconfirmed transactions
     pub block_height: u32,
     /// Amount is always non-zero
@@ -47,7 +48,7 @@ impl TxCache {
         }
     }
 
-    pub fn start_sync_timestamp(&self) -> u64 {
+    pub fn start_sync_timestamp(&self) -> TimestampUs {
         let mut top_block_height = 0;
         for tx in self.txs.iter().rev() {
             if tx.block_height != 0 && top_block_height == 0 {
@@ -57,7 +58,7 @@ impl TxCache {
                 return tx.created_at;
             }
         }
-        0
+        TimestampUs::from_micros(0)
     }
 
     pub fn update_latest_txs(&mut self, mut new_txs: Vec<Transaction>) {

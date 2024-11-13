@@ -1,7 +1,6 @@
-use base64::Engine;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use sideswap_types::hex_encoded::HexEncoded;
+use sideswap_types::bitcoin_amount::BtcAmount;
 use std::collections::BTreeMap;
 use std::vec::Vec;
 
@@ -37,38 +36,47 @@ struct RpcResult<T> {
     error: Option<RpcError>,
 }
 
-pub fn make_rpc_call<T: RpcCall>(
-    http_client: &ureq::Agent,
+pub async fn make_rpc_call<T: RpcCall>(
     rpc_server: &RpcServer,
     req: T,
 ) -> Result<T::Response, anyhow::Error> {
+    static HTTP_CLIENT: once_cell::sync::OnceCell<reqwest::Client> =
+        once_cell::sync::OnceCell::new();
+    let http_client = HTTP_CLIENT.get_or_init(|| {
+        reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(30))
+            .build()
+            .expect("http client construction failed")
+    });
+
     let req = req.get_request();
-    let req = serde_json::to_string(&req).expect("should not fail");
-    trace!("make rpc request: {req}");
+    log::trace!(
+        "make rpc request: {}",
+        serde_json::to_string(&req).expect("should not fail")
+    );
 
     // If two or more wallets are loaded, most RPC calls must include the wallet name in the URL path
-    let wallet_name = rpc_server.wallet.as_ref().map(String::as_str).unwrap_or("");
+    let wallet_name = rpc_server.wallet.as_deref().unwrap_or("");
     let endpoint = format!(
         "http://{}:{}/wallet/{}",
         &rpc_server.host, rpc_server.port, wallet_name
     );
 
-    let encoded_credentials = base64::engine::general_purpose::STANDARD
-        .encode(format!("{}:{}", rpc_server.login, rpc_server.password));
-    let auth_header_value = format!("Basic {}", encoded_credentials);
-    let res = http_client
+    let resp = http_client
         .post(&endpoint)
-        .set("Authorization", &auth_header_value)
-        .set("Content-Type", "application/json")
-        .send_string(&req)?;
-    let _status = res.status();
-    let data = res.into_string()?;
-    trace!("got rpc response: {}", data);
+        .basic_auth(&rpc_server.login, Some(&rpc_server.password))
+        .json(&req)
+        .send()
+        .await?
+        .text()
+        .await?;
 
-    let response = serde_json::from_str::<RpcResult<T::Response>>(&data)?;
+    log::trace!("got rpc response: {resp}");
+
+    let response = serde_json::from_str::<RpcResult<T::Response>>(&resp)?;
 
     if let Some(error) = response.error {
-        bail!("RPC request failed: {}", error.message);
+        anyhow::bail!("RPC request failed: {}", error.message);
     }
     let resp = match response.result {
         Some(v) => v,
@@ -96,6 +104,7 @@ pub struct GetWalletInfo {
     pub unconfirmed_balance: BTreeMap<String, f64>,
     pub immature_balance: BTreeMap<String, f64>,
     pub private_keys_enabled: bool,
+    pub txcount: u32,
 }
 
 pub struct GetNewAddressCall {}
@@ -149,33 +158,34 @@ impl RpcCall for ListUnspentCall {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct UnspentItem {
     pub txid: elements::Txid,
     pub vout: u32,
     pub address: elements::Address,
-    pub amount: serde_json::Number,
+    pub amount: BtcAmount,
     pub confirmations: i32,
     pub asset: sideswap_api::AssetId,
     #[serde(rename = "scriptPubKey")]
     pub script_pub_key: elements::Script,
     #[serde(rename = "redeemScript")]
     pub redeem_script: Option<elements::Script>, // Not present for native segwit
-    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
-    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
-    pub assetcommitment: Option<HexEncoded<elements::confidential::Asset>>,
-    pub amountcommitment: Option<HexEncoded<elements::confidential::Value>>,
+    pub assetblinder: elements::confidential::AssetBlindingFactor, // 0000000000000000000000000000000000000000000000000000000000000000 for unblinded
+    pub amountblinder: elements::confidential::ValueBlindingFactor, // 0000000000000000000000000000000000000000000000000000000000000000 for unblinded
+    pub assetcommitment: Option<elements::secp256k1_zkp::Generator>, // Not present if unblinded
+    pub amountcommitment: Option<elements::secp256k1_zkp::PedersenCommitment>, // Not present if unblinded
 }
-pub type ListUnspent = Vec<UnspentItem>;
 
 impl UnspentItem {
-    pub fn tx_out(&self) -> sideswap_common::types::TxOut {
-        sideswap_common::types::TxOut {
+    pub fn outpoint(&self) -> elements::OutPoint {
+        elements::OutPoint {
             txid: self.txid,
             vout: self.vout,
         }
     }
 }
+
+pub type ListUnspent = Vec<UnspentItem>;
 
 pub struct SendToAddressCall {
     pub address: elements::Address,

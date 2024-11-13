@@ -9,6 +9,7 @@ name = "sideswap_amp"
 [dependencies]
 sideswap_common = { path = "../sideswap_common" }
 sideswap_payjoin = { path = "../sideswap_payjoin" }
+sideswap_types = { path = "../sideswap_types" }
 
 async-trait.workspace = true
 base64.workspace = true

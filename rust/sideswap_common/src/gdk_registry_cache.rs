@@ -9,6 +9,7 @@ use arc_swap::ArcSwap;
 use base64::Engine;
 use elements::AssetId;
 use serde::{Deserialize, Serialize};
+use sideswap_types::asset_precision::AssetPrecision;
 
 use crate::network::Network;
 
@@ -21,7 +22,7 @@ pub struct GdkAssetEntity {
 pub struct GdkAsset {
     pub asset_id: AssetId,
     pub name: String,
-    pub precision: u8,
+    pub precision: AssetPrecision,
     pub ticker: Option<sideswap_api::Ticker>, // Can be null for some assets
     pub entity: GdkAssetEntity,
     pub issuance_prevout: sideswap_api::IssuancePrevout,
@@ -40,7 +41,20 @@ pub struct ShortAssetInfo {
     pub asset_id: AssetId,
     pub name: String,
     pub ticker: Option<sideswap_api::Ticker>,
-    pub precision: u8,
+    pub precision: AssetPrecision,
+}
+
+pub type AllGdkAssets = Arc<BTreeMap<AssetId, GdkAsset>>;
+
+pub type AllGdkIcons = Arc<BTreeMap<AssetId, Vec<u8>>>;
+
+pub fn get_policy_asset_short_info(policy_asset: &AssetId) -> ShortAssetInfo {
+    ShortAssetInfo {
+        asset_id: *policy_asset,
+        name: "Liquid Bitcoin".to_owned(),
+        ticker: Some(sideswap_api::Ticker("L-BTC".to_owned())),
+        precision: AssetPrecision::BITCOIN_PRECISION,
+    }
 }
 
 impl GdkRegistryCache {
@@ -59,29 +73,24 @@ impl GdkRegistryCache {
         }
     }
 
-    // NOTE: Does not include LBTC
-    pub fn get_all_assets(&self) -> Arc<BTreeMap<AssetId, GdkAsset>> {
+    // NOTE: Does not include L-BTC
+    pub fn get_all_assets(&self) -> AllGdkAssets {
         self.assets.data.load_full()
     }
 
-    pub fn get_all_icons(&self) -> Arc<BTreeMap<AssetId, Vec<u8>>> {
+    pub fn get_all_icons(&self) -> AllGdkIcons {
         self.icons.data.load_full()
     }
 
-    // NOTE: Does not include LBTC
+    // NOTE: Does not include L-BTC
     pub fn get_asset(&self, asset_id: &AssetId) -> Option<GdkAsset> {
         self.assets.data.load().get(asset_id).cloned()
     }
 
-    // NOTE: Does include LBTC
+    // NOTE: Does include L-BTC
     pub fn get_short_asset(&self, asset_id: &AssetId) -> Option<ShortAssetInfo> {
         if *asset_id == self.policy_asset_id {
-            Some(ShortAssetInfo {
-                asset_id: *asset_id,
-                name: "Liquid Bitcoin".to_owned(),
-                ticker: Some(sideswap_api::Ticker("L-BTC".to_owned())),
-                precision: 8,
-            })
+            Some(get_policy_asset_short_info(&self.policy_asset_id))
         } else {
             self.assets
                 .data
@@ -100,7 +109,7 @@ impl GdkRegistryCache {
         self.icons.data.load().get(asset_id).cloned()
     }
 
-    // NOTE: Does not include LBTC
+    // NOTE: Does not include L-BTC
     pub fn has_asset(&self, asset_id: &AssetId) -> bool {
         self.assets.data.load().contains_key(asset_id)
     }
@@ -247,7 +256,7 @@ async fn load_from_network<R: Registry>(
     let file_path_tmp = file_path.with_extension("tmp");
     let cache_data = serde_json::to_string(&cache).expect("should not fail");
     std::fs::write(&file_path_tmp, &cache_data)?;
-    std::fs::rename(&file_path_tmp, &file_path)?;
+    std::fs::rename(&file_path_tmp, file_path)?;
 
     let items = convert_items::<R>(cache.raw_items)?;
     Ok(Some((items, cache.last_modified)))
