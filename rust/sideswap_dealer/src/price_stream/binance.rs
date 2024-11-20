@@ -1,9 +1,10 @@
 use serde::Deserialize;
 use sideswap_api::PricePair;
 use sideswap_common::http_client::HttpClient;
-use sideswap_dealer::types::DealerTicker;
 
-use crate::{ExchangePair, PriceCallback};
+use crate::types::{DealerTicker, ExchangePair};
+
+use super::PriceCallback;
 
 #[derive(Deserialize)]
 struct TickerPrice {
@@ -16,7 +17,7 @@ async fn current_price(client: &HttpClient, url: &str) -> Result<f64, anyhow::Er
     Ok(price)
 }
 
-pub async fn run(url: String, callback: PriceCallback) {
+async fn run(url: String, callback: PriceCallback) {
     let client = HttpClient::new();
 
     loop {
@@ -31,8 +32,8 @@ pub async fn run(url: String, callback: PriceCallback) {
                 callback(Some(base_price));
                 tokio::time::sleep(std::time::Duration::from_secs(15)).await;
             }
-            Err(e) => {
-                log::error!("binance price download failed: {}", e);
+            Err(err) => {
+                log::error!("binance price download failed: {}", err);
                 callback(None);
                 tokio::time::sleep(std::time::Duration::from_secs(60)).await;
             }

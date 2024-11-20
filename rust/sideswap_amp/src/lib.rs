@@ -73,7 +73,7 @@ pub struct Wallet {
 
 enum SignAction {
     SignOnly,
-    SignAndSend,
+    SignAndBroadcast,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -183,13 +183,6 @@ pub struct CreatedTx {
     pub network_fee: u64,
 }
 
-#[derive(Clone)]
-pub struct SignPset {
-    pub pset: PartiallySignedTransaction,
-    pub blinding_nonces: Vec<String>,
-    pub used_utxos: Vec<Utxo>,
-}
-
 pub struct SignOffline {
     pub input_utxo: Utxo,
     pub output_address: Address,
@@ -199,23 +192,6 @@ pub struct SignOffline {
 
 pub struct OfflineTx {
     pub tx: Transaction,
-}
-
-impl From<CreatedTx> for SignPset {
-    fn from(
-        CreatedTx {
-            pset,
-            blinding_nonces,
-            used_utxos,
-            network_fee: _,
-        }: CreatedTx,
-    ) -> Self {
-        SignPset {
-            pset,
-            blinding_nonces,
-            used_utxos,
-        }
-    }
 }
 
 impl Wallet {
@@ -396,17 +372,11 @@ impl Wallet {
         })
     }
 
-    async fn sign_or_send_pset(
+    fn user_signatures(
         &self,
-        created_tx: SignPset,
-        sign_action: SignAction,
+        pset: PartiallySignedTransaction,
+        used_utxos: Vec<Utxo>,
     ) -> Result<Transaction, Error> {
-        let SignPset {
-            pset,
-            blinding_nonces,
-            used_utxos,
-        } = created_tx;
-
         let mut tx = pset.extract_tx()?;
         let tx_copy = tx.clone();
 
@@ -462,6 +432,18 @@ impl Wallet {
             }
         }
 
+        Ok(tx)
+    }
+
+    async fn sign_or_broadcast_pset(
+        &self,
+        pset: PartiallySignedTransaction,
+        blinding_nonces: Vec<String>,
+        used_utxos: Vec<Utxo>,
+        sign_action: SignAction,
+    ) -> Result<Transaction, Error> {
+        let tx = self.user_signatures(pset, used_utxos)?;
+
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender.send(Command::SignOrSendTx(
             tx,
@@ -474,29 +456,57 @@ impl Wallet {
         Ok(tx)
     }
 
-    pub async fn sign_swap_pset(
+    /// Get user signature
+    pub fn user_sign_swap_pset(
         &self,
-        created_tx: SignPset,
+        pset: PartiallySignedTransaction,
+        used_utxos: Vec<Utxo>,
     ) -> Result<PartiallySignedTransaction, Error> {
         // TODO: Verify PSET
 
-        let mut pset = created_tx.pset.clone();
+        let mut pset_copy = pset.clone();
 
-        let tx = self
-            .sign_or_send_pset(created_tx, SignAction::SignOnly)
-            .await?;
+        let tx = self.user_signatures(pset, used_utxos)?;
 
-        sideswap_common::pset::copy_tx_signatures(&tx, &mut pset);
+        sideswap_common::pset::copy_tx_signatures(&tx, &mut pset_copy);
 
-        Ok(pset)
+        Ok(pset_copy)
     }
 
+    /// Get user signaturs and call Green backend for signatures
+    pub async fn fully_sign_swap_pset(
+        &self,
+        pset: PartiallySignedTransaction,
+        blinding_nonces: Vec<String>,
+        used_utxos: Vec<Utxo>,
+    ) -> Result<PartiallySignedTransaction, Error> {
+        // TODO: Verify PSET
+
+        let mut pset_copy = pset.clone();
+
+        let tx = self
+            .sign_or_broadcast_pset(pset, blinding_nonces, used_utxos, SignAction::SignOnly)
+            .await?;
+
+        sideswap_common::pset::copy_tx_signatures(&tx, &mut pset_copy);
+
+        Ok(pset_copy)
+    }
+
+    /// Make user signatures and call Green backend to broadcast the tx
     pub async fn sign_and_broadcast_pset(
         &self,
-        created_tx: SignPset,
+        pset: PartiallySignedTransaction,
+        blinding_nonces: Vec<String>,
+        used_utxos: Vec<Utxo>,
     ) -> Result<Transaction, Error> {
-        self.sign_or_send_pset(created_tx, SignAction::SignAndSend)
-            .await
+        self.sign_or_broadcast_pset(
+            pset,
+            blinding_nonces,
+            used_utxos,
+            SignAction::SignAndBroadcast,
+        )
+        .await
     }
 
     pub fn sign_offline(
@@ -1341,7 +1351,7 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
 
             let procedure = match sign_action {
                 SignAction::SignOnly => "com.greenaddress.vault.sign_raw_tx",
-                SignAction::SignAndSend => "com.greenaddress.vault.send_raw_tx",
+                SignAction::SignAndBroadcast => "com.greenaddress.vault.send_raw_tx",
             };
             make_request(
                 data,

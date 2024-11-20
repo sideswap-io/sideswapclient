@@ -25,17 +25,16 @@ use sideswap_common::types::timestamp_now;
 use sideswap_common::types::Amount;
 use sideswap_common::types::MAX_BTC_AMOUNT;
 use sideswap_common::web_notif::send_many;
-use sideswap_dealer::dealer;
-use sideswap_dealer::dealer::*;
+use sideswap_dealer::dealer_rpc;
+use sideswap_dealer::dealer_rpc::*;
 use sideswap_dealer::market;
 use sideswap_dealer::rpc;
-use sideswap_dealer::types::get_dealer_asset_id;
+use sideswap_dealer::types::dealer_ticker_to_asset_id;
 use sideswap_dealer::types::DealerTicker;
 use sideswap_dealer::utxo_data;
 use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_types::normal_float::NormalFloat;
 use std::collections::BTreeMap;
-use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
@@ -109,8 +108,6 @@ impl std::fmt::Display for ExchangeTicker {
     }
 }
 
-const DEALER_TICKERS: [DealerTicker; 2] = [DealerTicker::USDt, DealerTicker::EURx];
-
 const BITFINEX_WALLET_EXCHANGE: &str = "exchange";
 
 const BITFINEX_METHOD_USDT: &str = "tetherusl";
@@ -146,10 +143,6 @@ type PendingOrders = BTreeMap<i64, Instant>;
 #[derive(Debug, Deserialize)]
 pub struct Args {
     env: sideswap_common::env::Env,
-
-    bitcoin_amount_submit: f64,
-    bitcoin_amount_min: f64,
-    bitcoin_amount_max: f64,
 
     server_url: String,
 
@@ -286,7 +279,7 @@ struct Data {
     latest_check_exchange: Instant,
     movements: Option<Movements>,
     msg_tx: UnboundedSender<Msg>,
-    dealer_tx: UnboundedSender<dealer::To>,
+    dealer_command_sender: UnboundedSender<dealer_rpc::Command>,
     bf_sender: UnboundedSender<bitfinex_worker::Request>,
     market_command_sender: UncheckedUnboundedSender<market::Command>,
     utxo_data: UtxoData,
@@ -431,26 +424,26 @@ fn get_bfx_price(data: &Data, exchange_pair: ExchangePair) -> Option<Price> {
     }
 }
 
-async fn process_dealer(data: &mut Data, from: From) {
-    match from {
-        From::Swap(swap) => {
+async fn process_dealer_event(data: &mut Data, event: Event) {
+    match event {
+        Event::Swap(swap) => {
             hedge_order(data, swap);
         }
 
-        From::ServerConnected(_) => {
+        Event::ServerConnected(_) => {
             info!("connected to server");
             send_notification("connected to the server", &data.args.notifications.url);
 
             data.server_connected = true;
         }
 
-        From::ServerDisconnected(_) => {
+        Event::ServerDisconnected(_) => {
             warn!("disconnected from server");
             send_notification("disconnected from the server", &data.args.notifications.url);
             data.server_connected = false;
         }
 
-        From::Utxos(utxo_data, unspent) => {
+        Event::Utxos(utxo_data, unspent) => {
             data.utxo_data = utxo_data;
 
             data.market_command_sender.send(market::Command::Utxos {
@@ -459,7 +452,7 @@ async fn process_dealer(data: &mut Data, from: From) {
 
             let convert_balances = |amounts: &BTreeMap<AssetId, f64>| {
                 let get_balance = |ticker: DealerTicker| -> (DealerTicker, f64) {
-                    let asset_id = get_dealer_asset_id(data.network, ticker);
+                    let asset_id = dealer_ticker_to_asset_id(data.network, ticker);
                     let amount = amounts.get(&asset_id).copied().unwrap_or_default();
                     (ticker, amount)
                 };
@@ -533,7 +526,7 @@ fn submit_dealer_prices(data: &mut Data) {
                 get_exchange_balance(&data.exchange_balances, exchange_asset_currency)
             };
 
-            dealer::DealerPrice {
+            dealer_rpc::DealerPrice {
                 submit_price,
                 limit_btc_dealer_send: exchange_asset_amount / submit_price.ask,
                 limit_btc_dealer_recv: exchange_btc_amount,
@@ -541,14 +534,14 @@ fn submit_dealer_prices(data: &mut Data) {
             }
         });
 
-        data.dealer_tx
-            .send(To::Price(ToPrice { ticker, price }))
+        data.dealer_command_sender
+            .send(Command::Price(UpdatePrice { ticker, price }))
             .unwrap();
 
         if let Some(price) = data.bfx_prices.get(&exchange_pair) {
-            data.dealer_tx
-                .send(To::IndexPriceUpdate(PriceUpdateBroadcast {
-                    asset: get_dealer_asset_id(data.network, ticker),
+            data.dealer_command_sender
+                .send(Command::IndexPriceUpdate(PriceUpdateBroadcast {
+                    asset: dealer_ticker_to_asset_id(data.network, ticker),
                     price: PricePair {
                         bid: price.bid,
                         ask: price.ask,
@@ -613,14 +606,14 @@ fn submit_market_prices(data: &mut Data) {
             ExchangePair::EurUsdt | ExchangePair::BtcEur => (MAX_BTC_AMOUNT, MAX_BTC_AMOUNT),
         };
 
-        orders.push(market::Order {
+        orders.push(market::AutomaticOrder {
             asset_pair,
             trade_dir: TradeDir::Buy,
             base_amount: btc_to_sat(base_amount_buy),
             price: NormalFloat::new(submit_price.bid).expect("must be valid"),
         });
 
-        orders.push(market::Order {
+        orders.push(market::AutomaticOrder {
             asset_pair,
             trade_dir: TradeDir::Sell,
             base_amount: btc_to_sat(base_amount_sell),
@@ -629,7 +622,7 @@ fn submit_market_prices(data: &mut Data) {
     }
 
     data.market_command_sender
-        .send(market::Command::Orders { orders });
+        .send(market::Command::AutomaticOrders { orders });
 }
 
 async fn process_timer(data: &mut Data) {
@@ -1050,11 +1043,7 @@ fn process_msg(data: &mut Data, msg: Msg) {
 
 fn process_market_event(data: &mut Data, event: market::Event) {
     match event {
-        market::Event::SignSwap {
-            quote_id,
-            pset,
-            blinding_nonces: _,
-        } => {
+        market::Event::SignSwap { quote_id, pset } => {
             let pset = data.utxo_data.sign_pset(pset);
             data.market_command_sender
                 .send(market::Command::SignedSwap { quote_id, pset });
@@ -1152,10 +1141,6 @@ async fn main() {
         env: args.env,
         server_url: args.server_url.clone(),
         rpc: args.rpc.clone(),
-        tickers: BTreeSet::from(DEALER_TICKERS),
-        bitcoin_amount_submit: Amount::from_bitcoin(args.bitcoin_amount_submit),
-        bitcoin_amount_min: Amount::from_bitcoin(args.bitcoin_amount_min),
-        bitcoin_amount_max: Amount::from_bitcoin(args.bitcoin_amount_max),
         api_key: args.api_key.clone(),
     };
 
@@ -1213,23 +1198,18 @@ async fn main() {
         });
     }
 
-    let (dealer_tx, mut dealer_rx) = spawn_async(params.clone());
+    let (dealer_command_sender, mut dealer_event_receiver) = spawn_async(params.clone());
 
     let health_text = HealthStatus::default();
     tokio::task::spawn(start_webserver(args.status_port, Arc::clone(&health_text)));
 
-    let (market_command_sender, market_command_receiver) = unbounded_channel::<market::Command>();
-    let (market_event_sender, mut market_event_receiver) = unbounded_channel::<market::Event>();
     let market_params = market::Params {
         env: args.env,
         server_url: args.server_url.clone(),
         work_dir: args.work_dir.clone(),
+        web_server: None,
     };
-    tokio::spawn(market::run(
-        market_params,
-        market_command_receiver,
-        market_event_sender,
-    ));
+    let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 
     let network = args.env.d().network;
     let mut data = Data {
@@ -1255,7 +1235,7 @@ async fn main() {
         latest_check_exchange: Instant::now(),
         movements: None,
         msg_tx,
-        dealer_tx,
+        dealer_command_sender,
         bf_sender,
         market_command_sender: market_command_sender.into(),
         utxo_data: UtxoData::new(utxo_data::Params {
@@ -1287,9 +1267,9 @@ async fn main() {
                 process_msg(&mut data, msg);
             },
 
-            msg = dealer_rx.recv() => {
-                let msg = msg.expect("channel must be open");
-                process_dealer(&mut data, msg).await;
+            event = dealer_event_receiver.recv() => {
+                let event = event.expect("channel must be open");
+                process_dealer_event(&mut data, event).await;
             },
 
             event = bfx_event_receiver.recv() => {

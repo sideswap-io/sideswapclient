@@ -1,7 +1,4 @@
 env = "Testnet"
-bitcoin_amount_submit = 0.005
-bitcoin_amount_min = 0.0001
-bitcoin_amount_max = 1.0
 apikey = ""
 
 server_url = "wss://api-testnet.sideswap.io"

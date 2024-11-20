@@ -153,11 +153,13 @@ pub struct UnspentOutput {
 
 #[derive(Deserialize)]
 pub struct UnspentOutputsResult {
+    // TODO: AssetId will the "error" string if unblinding fails (which prevents JSON parsing)
     pub unspent_outputs: std::collections::BTreeMap<AssetId, Vec<UnspentOutput>>,
 }
 
 #[derive(Deserialize)]
 pub struct UnspentOutputsResultJson {
+    // TODO: AssetId will the "error" string if unblinding fails (which prevents JSON parsing)
     pub unspent_outputs: std::collections::BTreeMap<AssetId, Vec<serde_json::Value>>,
 }
 

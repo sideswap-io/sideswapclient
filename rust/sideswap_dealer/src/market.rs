@@ -8,45 +8,100 @@ use std::{
 use elements::{pset::PartiallySignedTransaction, Address, AssetId, OutPoint, Txid};
 use sideswap_api::{
     market::{
-        AddOrderRequest, AddUtxosRequest, AssetPair, CancelOrderRequest, EditOrderRequest,
-        LoginRequest, LoginResponse, MakerSignNotif, MakerSignRequest, Notification, OrdId,
-        OwnOrder, QuoteId, RegisterRequest, RegisterResponse, RemoveUtxosRequest, Request,
-        ResolveGaidRequest, TradeDir,
+        self, AddOrderRequest, AddUtxosRequest, AssetPair, CancelOrderRequest, EditOrderRequest,
+        ListMarketsRequest, LoginRequest, LoginResponse, MakerSignNotif, MakerSignRequest,
+        MarketInfo, Notification, OrdId, OwnOrder, QuoteId, RegisterRequest, RegisterResponse,
+        RemoveUtxosRequest, Request, ResolveGaidRequest, TradeDir,
     },
-    AssetBlindingFactor, AssetsRequestParam, ErrorCode, MarketType, ResponseMessage, Utxo,
+    Asset, AssetBlindingFactor, AssetsRequestParam, ErrorCode, MarketType, ResponseMessage, Utxo,
     ValueBlindingFactor,
 };
 use sideswap_common::{
     b64,
-    channel_helpers::UncheckedUnboundedSender,
+    channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
     make_market_request, make_request,
+    network::Network,
+    types::{asset_float_amount_, asset_int_amount_},
     ws::{
         auto::{WrappedRequest, WrappedResponse},
         ws_req_sender::WsReqSender,
     },
 };
-use sideswap_types::{normal_float::NormalFloat, utxo_ext::UtxoExt};
+use sideswap_types::{
+    asset_precision::AssetPrecision, normal_float::NormalFloat, timestamp_ms::TimestampMs,
+    utxo_ext::UtxoExt,
+};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
+
+mod web_server;
+
+pub use web_server::Config as WebServerConfig;
+
+use crate::types::{
+    dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker, ExchangePair,
+};
 
 #[derive(Debug, Clone)]
 pub struct Params {
     pub env: sideswap_common::env::Env,
-
     pub server_url: String,
-
     pub work_dir: String,
+    pub web_server: Option<web_server::Config>,
 }
 
-pub struct Order {
+pub struct AutomaticOrder {
     pub asset_pair: AssetPair,
     pub trade_dir: TradeDir,
     pub base_amount: u64,
     pub price: NormalFloat,
 }
 
+pub struct Market {
+    pub base: DealerTicker,
+    pub quote: DealerTicker,
+}
+
+pub struct Metadata {
+    pub server_connected: bool,
+    pub assets: Vec<Asset>,
+    pub markets: Vec<Market>,
+}
+
+pub type Balance = BTreeMap<DealerTicker, f64>;
+
+pub struct Balances {
+    pub wallet: Balance,
+    pub server: Balance,
+}
+
+pub struct PublicOrder_ {
+    pub order_id: OrdId,
+    pub trade_dir: TradeDir,
+    pub amount: f64,
+    pub price: NormalFloat,
+}
+
+pub struct OrderBook {
+    pub orders: Vec<PublicOrder_>,
+    pub timestamp: TimestampMs,
+}
+
+pub struct OwnOrders {
+    pub orders: Vec<OwnOrder_>,
+}
+
+pub struct OwnOrder_ {
+    pub exchange_pair: ExchangePair,
+    pub order_id: OrdId,
+    pub trade_dir: TradeDir,
+    pub orig_amount: f64,
+    pub active_amount: f64,
+    pub price: NormalFloat,
+}
+
 pub enum Command {
-    Orders {
-        orders: Vec<Order>,
+    AutomaticOrders {
+        orders: Vec<AutomaticOrder>,
     },
     Utxos {
         utxos: Vec<Utxo>,
@@ -61,13 +116,36 @@ pub enum Command {
         quote_id: QuoteId,
         pset: PartiallySignedTransaction,
     },
+    Metadata {
+        res_sender: UncheckedOneshotSender<Metadata>,
+    },
+    Balances {
+        res_sender: UncheckedOneshotSender<Balances>,
+    },
+    OrderBook {
+        exchange_pair: ExchangePair,
+        res_sender: UncheckedOneshotSender<OrderBook>,
+    },
+    OwnOrders {
+        res_sender: UncheckedOneshotSender<OwnOrders>,
+    },
+    SubmitOrder {
+        exchange_pair: ExchangePair,
+        base_amount: f64,
+        price: NormalFloat,
+        trade_dir: TradeDir,
+        res_sender: UncheckedOneshotSender<OwnOrder_>,
+    },
+    CancelOrder {
+        order_id: OrdId,
+        res_sender: UncheckedOneshotSender<()>,
+    },
 }
 
 pub enum Event {
     SignSwap {
         quote_id: QuoteId,
         pset: PartiallySignedTransaction,
-        blinding_nonces: Vec<String>,
     },
     GetNewAddress,
     SwapSucceed {
@@ -84,12 +162,32 @@ pub enum Event {
 const ADDRESS_POOL_COUNT: usize = 2;
 
 #[derive(Default)]
-struct MarketData {
-    dealer_orders: Vec<Order>,
+struct OrderData {
+    dealer_orders: Vec<AutomaticOrder>,
     server_orders: BTreeMap<OrdId, OwnOrder>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Mode {
+    PriceStream,
+    WebServer,
+}
+
+impl Mode {
+    fn check_ws_edit_allowed(self) {
+        match self {
+            Mode::PriceStream => {
+                panic!("Web server is not allowed to control orders");
+            }
+            Mode::WebServer => {}
+        }
+    }
+}
+
 struct Data {
+    network: Network,
+    mode: Mode,
+
     ws: WsReqSender,
 
     wallet_utxos: Vec<Utxo>, // Only confidential UTXOs here
@@ -97,12 +195,42 @@ struct Data {
 
     addresses: VecDeque<Address>,
     gaid: Option<String>,
+    assets: Vec<Asset>,
     amp_assets: BTreeSet<AssetId>,
 
-    markets: BTreeMap<(AssetPair, TradeDir), MarketData>,
+    dealer_orders: BTreeMap<(AssetPair, TradeDir), OrderData>,
 
     token: Option<String>,
     event_sender: UncheckedUnboundedSender<Event>,
+
+    markets: BTreeMap<AssetPair, MarketInfo>,
+}
+
+fn convert_public_order(
+    order: &market::PublicOrder,
+    base_precision: AssetPrecision,
+) -> PublicOrder_ {
+    PublicOrder_ {
+        order_id: order.order_id,
+        trade_dir: order.trade_dir,
+        amount: asset_float_amount_(order.amount, base_precision),
+        price: order.price,
+    }
+}
+
+fn convert_own_order(order: &market::OwnOrder, network: Network) -> Option<OwnOrder_> {
+    let base = dealer_ticker_from_asset_id(network, &order.asset_pair.base)?;
+    let quote = dealer_ticker_from_asset_id(network, &order.asset_pair.quote)?;
+    let base_precision = base.asset_precision();
+
+    Some(OwnOrder_ {
+        exchange_pair: ExchangePair { base, quote },
+        order_id: order.order_id,
+        trade_dir: order.trade_dir,
+        orig_amount: asset_float_amount_(order.orig_amount, base_precision),
+        active_amount: asset_float_amount_(order.active_amount, base_precision),
+        price: order.price,
+    })
 }
 
 async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
@@ -116,10 +244,31 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
         })
     )?;
 
+    for asset in assets.assets.iter() {
+        let ticker = dealer_ticker_from_asset_id(data.network, &asset.asset_id);
+        if let Some(ticker) = ticker {
+            let expected = ticker.asset_precision();
+            let actual = asset.precision;
+            assert_eq!(
+                expected, actual,
+                "invalid asset precision: {actual}, expected: {expected}, ticker: {ticker}"
+            );
+        }
+    }
+
     data.amp_assets = assets
         .assets
         .iter()
         .filter_map(|asset| (asset.market_type == Some(MarketType::Amp)).then_some(asset.asset_id))
+        .collect();
+
+    data.assets = assets.assets;
+
+    let resp = make_market_request!(data.ws, ListMarkets, ListMarketsRequest {})?;
+    data.markets = resp
+        .markets
+        .into_iter()
+        .map(|market| (market.asset_pair, market))
         .collect();
 
     if let Some(token) = &data.token {
@@ -165,8 +314,12 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
 async fn process_ws_connected(data: &mut Data) {
     let LoginResponse { orders, utxos } = try_login(data).await.expect("login failed unexpectedly");
 
+    for orders in data.dealer_orders.values_mut() {
+        orders.server_orders.clear();
+    }
+
     for order in orders {
-        data.markets
+        data.dealer_orders
             .entry((order.asset_pair, order.trade_dir))
             .or_default()
             .server_orders
@@ -177,7 +330,7 @@ async fn process_ws_connected(data: &mut Data) {
 }
 
 fn process_ws_disconnected(data: &mut Data) {
-    for market in data.markets.values_mut() {
+    for market in data.dealer_orders.values_mut() {
         market.server_orders.clear();
     }
 }
@@ -192,24 +345,27 @@ fn process_sign_notif(data: &mut Data, notif: MakerSignNotif) {
     data.event_sender.send(Event::SignSwap {
         quote_id: notif.quote_id,
         pset,
-        blinding_nonces: notif.blinding_nonces,
     });
 }
 
-async fn process_market_notif(data: &mut Data, notif: Notification) {
+fn process_market_notif(data: &mut Data, notif: Notification) {
     match notif {
-        Notification::MarketAdded(_) => {}
-        Notification::MarketRemoved(_) => {}
+        Notification::MarketAdded(notif) => {
+            data.markets.insert(notif.market.asset_pair, notif.market);
+        }
+        Notification::MarketRemoved(notif) => {
+            data.markets.remove(&notif.asset_pair);
+        }
 
         Notification::OwnOrderCreated(notif) => {
-            data.markets
+            data.dealer_orders
                 .entry((notif.order.asset_pair, notif.order.trade_dir))
                 .or_default()
                 .server_orders
                 .insert(notif.order.order_id, notif.order);
         }
         Notification::OwnOrderRemoved(notif) => {
-            for market in data.markets.values_mut() {
+            for market in data.dealer_orders.values_mut() {
                 market.server_orders.remove(&notif.order_id);
             }
         }
@@ -261,22 +417,29 @@ async fn process_ws_event(data: &mut Data, event: WrappedResponse) {
         WrappedResponse::Response(ResponseMessage::Notification(
             sideswap_api::Notification::Market(notif),
         )) => {
-            process_market_notif(data, notif).await;
+            process_market_notif(data, notif);
         }
 
         WrappedResponse::Response(_) => {}
     }
 }
 
-fn process_to_message(data: &mut Data, to: Command) {
-    match to {
-        Command::Orders { orders } => {
-            for market in data.markets.values_mut() {
+fn process_command(data: &mut Data, command: Command) {
+    match command {
+        Command::AutomaticOrders { orders } => {
+            match data.mode {
+                Mode::PriceStream => {}
+                Mode::WebServer => {
+                    assert!(orders.is_empty(), "Please disable automatic price streaming as the web server is used to control orders");
+                }
+            }
+
+            for market in data.dealer_orders.values_mut() {
                 market.dealer_orders.clear();
             }
 
             for order in orders {
-                data.markets
+                data.dealer_orders
                     .entry((order.asset_pair, order.trade_dir))
                     .or_default()
                     .dealer_orders
@@ -314,6 +477,175 @@ fn process_to_message(data: &mut Data, to: Command) {
                 Box::new(|res| {
                     if let Err(err) = res {
                         log::error!("MakerSign failed: {err}");
+                    }
+                }),
+            );
+        }
+
+        Command::Metadata { res_sender } => {
+            res_sender.send(Metadata {
+                server_connected: data.ws.connected(),
+                assets: data
+                    .assets
+                    .iter()
+                    .filter(|asset| {
+                        dealer_ticker_from_asset_id(data.network, &asset.asset_id).is_some()
+                    })
+                    .cloned()
+                    .collect(),
+                markets: data
+                    .markets
+                    .values()
+                    .filter_map(|market| -> Option<Market> {
+                        let base =
+                            dealer_ticker_from_asset_id(data.network, &market.asset_pair.base)?;
+                        let quote =
+                            dealer_ticker_from_asset_id(data.network, &market.asset_pair.quote)?;
+                        Some(Market { base, quote })
+                    })
+                    .collect(),
+            });
+        }
+
+        Command::Balances { res_sender } => {
+            if !data.assets.is_empty() {
+                let mut wallet = BTreeMap::<AssetId, u64>::new();
+                let mut server = BTreeMap::<AssetId, u64>::new();
+
+                for utxo in data.wallet_utxos.iter() {
+                    *wallet.entry(utxo.asset).or_default() += utxo.value;
+                    if data.server_utxos.contains(&utxo.outpoint()) {
+                        *server.entry(utxo.asset).or_default() += utxo.value;
+                    }
+                }
+
+                let convert_balances = |balances: BTreeMap<AssetId, u64>| {
+                    balances
+                        .into_iter()
+                        .filter_map(|(asset_id, balance)| -> Option<(DealerTicker, f64)> {
+                            let ticker = dealer_ticker_from_asset_id(data.network, &asset_id)?;
+                            let asset = data
+                                .assets
+                                .iter()
+                                .find(|asset| asset.asset_id == asset_id)?;
+                            let value = asset_float_amount_(balance, asset.precision);
+                            Some((ticker, value))
+                        })
+                        .collect()
+                };
+
+                res_sender.send(Balances {
+                    wallet: convert_balances(wallet),
+                    server: convert_balances(server),
+                });
+            }
+        }
+
+        Command::OrderBook {
+            exchange_pair,
+            res_sender,
+        } => {
+            let base_precision = exchange_pair.base.asset_precision();
+
+            let asset_pair = AssetPair {
+                base: dealer_ticker_to_asset_id(data.network, exchange_pair.base),
+                quote: dealer_ticker_to_asset_id(data.network, exchange_pair.quote),
+            };
+            data.ws.callback_request(
+                sideswap_api::Request::Market(Request::Subscribe(market::SubscribeRequest {
+                    asset_pair,
+                })),
+                Box::new(move |res| {
+                    if let Ok(sideswap_api::Response::Market(market::Response::Subscribe(resp))) =
+                        res
+                    {
+                        let orders = resp
+                            .orders
+                            .iter()
+                            .map(|order| convert_public_order(order, base_precision))
+                            .collect();
+                        res_sender.send(OrderBook {
+                            orders,
+                            timestamp: resp.timestamp,
+                        });
+                    }
+                }),
+            );
+        }
+
+        Command::OwnOrders { res_sender } => {
+            let mut orders = Vec::new();
+            for market in data.dealer_orders.values() {
+                for order in market.server_orders.values() {
+                    let order = convert_own_order(order, data.network).expect("");
+                    orders.push(order);
+                }
+            }
+            res_sender.send(OwnOrders { orders })
+        }
+
+        Command::SubmitOrder {
+            exchange_pair,
+            base_amount,
+            price,
+            trade_dir,
+            res_sender,
+        } => {
+            data.mode.check_ws_edit_allowed();
+
+            let base_precision = exchange_pair.base.asset_precision();
+            let base_amount = asset_int_amount_(base_amount, base_precision);
+
+            let asset_pair = AssetPair {
+                base: dealer_ticker_to_asset_id(data.network, exchange_pair.base),
+                quote: dealer_ticker_to_asset_id(data.network, exchange_pair.quote),
+            };
+
+            // FIXME: Return error or wait until addresses are available received
+            // FIXME: Resolve GAID for AMP buy requests
+            if data.addresses.len() >= 2 {
+                let network = data.network;
+                data.ws.callback_request(
+                    sideswap_api::Request::Market(Request::AddOrder(market::AddOrderRequest {
+                        asset_pair,
+                        base_amount,
+                        price,
+                        trade_dir,
+                        ttl: None,
+                        receive_address: data.addresses.pop_front().expect("must not fail"),
+                        change_address: data.addresses.pop_front().expect("must not fail"),
+                        private: false,
+                    })),
+                    Box::new(move |res| {
+                        if let Ok(sideswap_api::Response::Market(market::Response::AddOrder(
+                            resp,
+                        ))) = res
+                        {
+                            let order =
+                                convert_own_order(&resp.order, network).expect("must not fail");
+                            res_sender.send(order);
+                        }
+                    }),
+                );
+            }
+        }
+
+        Command::CancelOrder {
+            order_id,
+            res_sender,
+        } => {
+            data.mode.check_ws_edit_allowed();
+
+            data.ws.callback_request(
+                sideswap_api::Request::Market(Request::CancelOrder(market::CancelOrderRequest {
+                    order_id,
+                })),
+                Box::new(move |res| {
+                    if let Ok(sideswap_api::Response::Market(market::Response::CancelOrder(
+                        _resp,
+                    ))) = res
+                    {
+                        res_sender.send(());
                     }
                 }),
             );
@@ -362,7 +694,7 @@ async fn try_sync_utxos(data: &mut Data) -> Result<(), anyhow::Error> {
 
 async fn try_sync_market(
     ws: &mut WsReqSender,
-    market: &mut MarketData,
+    market: &mut OrderData,
     addresses: &mut VecDeque<Address>,
     gaid: &Option<String>,
     amp_assets: &BTreeSet<AssetId>,
@@ -461,38 +793,42 @@ async fn try_sync_market(
 }
 
 async fn process_timer(data: &mut Data) {
-    if !data.ws.connected() {
-        return;
-    }
-
-    let res = try_sync_utxos(data).await;
-    if let Err(err) = res {
-        log::warn!("utxo sync failed: {err}");
-    }
-
-    data.markets
-        .retain(|_, market| !market.dealer_orders.is_empty() || !market.server_orders.is_empty());
-
-    for market in data.markets.values_mut() {
-        let res = try_sync_market(
-            &mut data.ws,
-            market,
-            &mut data.addresses,
-            &data.gaid,
-            &data.amp_assets,
-        )
-        .await;
-        if let Err(err) = res {
-            log::error!("market sync failed: {err}");
-        }
-    }
-
     if data.addresses.len() < ADDRESS_POOL_COUNT {
         data.event_sender.send(Event::GetNewAddress);
     }
+
+    if data.ws.connected() {
+        let res = try_sync_utxos(data).await;
+        if let Err(err) = res {
+            log::warn!("utxo sync failed: {err}");
+        }
+
+        match data.mode {
+            Mode::PriceStream => {
+                // Sync orders
+                for market in data.dealer_orders.values_mut() {
+                    let res = try_sync_market(
+                        &mut data.ws,
+                        market,
+                        &mut data.addresses,
+                        &data.gaid,
+                        &data.amp_assets,
+                    )
+                    .await;
+                    if let Err(err) = res {
+                        log::error!("market sync failed: {err}");
+                    }
+                }
+            }
+
+            Mode::WebServer => {
+                // Do nothing, web server is used to manage the orders
+            }
+        }
+    }
 }
 
-pub async fn run(
+async fn run(
     params: Params,
     mut command_receiver: UnboundedReceiver<Command>,
     event_sender: UnboundedSender<Event>,
@@ -506,17 +842,27 @@ pub async fn run(
     ));
     let ws = WsReqSender::new(req_sender, resp_receiver);
 
+    let mode = if params.web_server.is_some() {
+        Mode::WebServer
+    } else {
+        Mode::PriceStream
+    };
+
     let mut data = Data {
+        network: params.env.d().network,
+        mode,
         ws,
         wallet_utxos: Vec::new(),
         server_utxos: BTreeSet::new(),
         addresses: VecDeque::new(),
         gaid: None,
+        assets: Vec::new(),
         amp_assets: BTreeSet::new(),
+        dealer_orders: BTreeMap::new(),
         // FIXME: Load from the work dir
-        markets: BTreeMap::new(),
         token: None,
         event_sender: event_sender.into(),
+        markets: BTreeMap::new(),
     };
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));
@@ -527,10 +873,10 @@ pub async fn run(
                 process_ws_event(&mut data, event).await;
             },
 
-            to = command_receiver.recv() => {
-                match to {
-                    Some(to) => {
-                        process_to_message(&mut data, to);
+            command = command_receiver.recv() => {
+                match command {
+                    Some(command) => {
+                        process_command(&mut data, command);
                     },
                     None => {
                         log::debug!("stop worker thread");
@@ -544,4 +890,17 @@ pub async fn run(
             },
         }
     }
+}
+
+pub fn start(params: Params) -> (UnboundedSender<Command>, UnboundedReceiver<Event>) {
+    let (command_sender, command_receiver) = unbounded_channel::<Command>();
+    let (event_sender, event_receiver) = unbounded_channel::<Event>();
+
+    if let Some(config) = params.web_server.clone() {
+        web_server::start(config, &command_sender);
+    }
+
+    tokio::spawn(run(params, command_receiver, event_sender));
+
+    (command_sender, event_receiver)
 }

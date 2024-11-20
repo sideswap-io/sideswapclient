@@ -3,7 +3,9 @@ use elements::{
     Address, AssetId, OutPoint, Txid,
 };
 use serde::{Deserialize, Serialize};
-use sideswap_types::{duration_ms::DurationMs, normal_float::NormalFloat};
+use sideswap_types::{
+    duration_ms::DurationMs, normal_float::NormalFloat, timestamp_ms::TimestampMs,
+};
 
 use crate::{ChartPoint, MarketType, Utxo};
 
@@ -99,7 +101,7 @@ impl TradeDir {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MarketInfo {
     pub asset_pair: AssetPair,
     pub fee_asset: AssetType,
@@ -107,7 +109,7 @@ pub struct MarketInfo {
     pub type_: MarketType,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OwnOrder {
     pub order_id: OrdId,
     pub asset_pair: AssetPair,
@@ -220,6 +222,7 @@ pub struct SubscribeRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SubscribeResponse {
     pub orders: Vec<PublicOrder>,
+    pub timestamp: TimestampMs,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -357,7 +360,6 @@ pub struct GetQuoteRequest {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetQuoteResponse {
     pub pset: String,
-    pub blinding_nonces: Vec<String>,
     pub ttl: DurationMs,
 }
 
@@ -458,7 +460,6 @@ pub struct MakerSignNotif {
     pub quote_id: QuoteId,
     pub orders: Vec<MakerSwapInfo>,
     pub pset: String,
-    pub blinding_nonces: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

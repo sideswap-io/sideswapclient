@@ -1,7 +1,4 @@
 env = "Prod"
-bitcoin_amount_submit = 0.025
-bitcoin_amount_min = 0.0001
-bitcoin_amount_max = 1.0
 apikey = ""
 
 server_url = "wss://api.sideswap.io"

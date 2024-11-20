@@ -1,5 +1,8 @@
+use elements::AssetId;
 use serde::{Deserialize, Serialize};
 use sideswap_api::{TICKER_DEPIX, TICKER_EURX, TICKER_LBTC, TICKER_MEX, TICKER_SSWP, TICKER_USDT};
+use sideswap_common::network::Network;
+use sideswap_types::asset_precision::AssetPrecision;
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum DealerTicker {
@@ -20,6 +23,17 @@ impl DealerTicker {
         DealerTicker::DePix,
         DealerTicker::SSWP,
     ];
+
+    pub fn asset_precision(&self) -> AssetPrecision {
+        match self {
+            DealerTicker::LBTC
+            | DealerTicker::USDt
+            | DealerTicker::EURx
+            | DealerTicker::MEX
+            | DealerTicker::DePix => AssetPrecision::BITCOIN_PRECISION,
+            DealerTicker::SSWP => AssetPrecision::ZERO,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -40,10 +54,7 @@ impl std::fmt::Display for ExchangePair {
     }
 }
 
-pub fn get_dealer_asset_id(
-    network: sideswap_common::network::Network,
-    ticker: DealerTicker,
-) -> elements::AssetId {
+pub fn dealer_ticker_to_asset_id(network: Network, ticker: DealerTicker) -> elements::AssetId {
     match ticker {
         DealerTicker::LBTC => network.d().policy_asset.asset_id(),
         DealerTicker::USDt => network.d().known_assets.usdt.asset_id(),
@@ -54,7 +65,14 @@ pub fn get_dealer_asset_id(
     }
 }
 
-pub fn dealer_ticker_to_asset_ticker(dealer_ticker: DealerTicker) -> &'static str {
+pub fn dealer_ticker_from_asset_id(network: Network, asset_id: &AssetId) -> Option<DealerTicker> {
+    DealerTicker::ALL
+        .iter()
+        .find(|ticker| dealer_ticker_to_asset_id(network, **ticker) == *asset_id)
+        .copied()
+}
+
+fn dealer_ticker_to_asset_ticker(dealer_ticker: DealerTicker) -> &'static str {
     match dealer_ticker {
         DealerTicker::LBTC => TICKER_LBTC,
         DealerTicker::USDt => TICKER_USDT,
@@ -76,10 +94,6 @@ pub fn dealer_ticker_from_asset_ticker(ticker: &str) -> Option<DealerTicker> {
         _ => return None,
     };
     Some(ticker)
-}
-
-pub fn dealer_ticker_from_asset(asset: &sideswap_api::Asset) -> Option<DealerTicker> {
-    dealer_ticker_from_asset_ticker(&asset.ticker.0)
 }
 
 impl Serialize for DealerTicker {
