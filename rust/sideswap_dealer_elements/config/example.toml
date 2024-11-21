@@ -1,0 +1,26 @@
+env = "Testnet" # SideSwap testnet server (Liquid Testnet network)
+#env = "Prod" # SideSwap prod server (Liquid network)
+
+# Work dir to store temporary files
+work_dir = "/tmp/work_dir"
+
+#api_key =
+
+price_stream = []
+
+[web_server]
+listen_on = "127.0.0.1:3101"
+server_url = "http://127.0.0.1:3101/api"
+
+[rpc]
+host = "localhost"
+port = 7041
+login = "dealer"
+password = "<YOUR_RPC_PASSWORD>"
+#wallet = ""
+
+#[[price_stream]]
+#base = "L-BTC"
+#quote = "USDt"
+#interest = 1.01
+#source = "Binance"

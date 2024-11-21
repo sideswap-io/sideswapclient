@@ -40,7 +40,7 @@ For example, for 0.5% profit taking, set it to `1.005`.
 
 5. Start the dealer:
 ```
-cargo run -- config/testnet.toml
+cargo run -- config/example.toml
 ```
 It may crash if some RPC or server request timeouts or fails.
 The operating system should be configured to automatically restart the process.

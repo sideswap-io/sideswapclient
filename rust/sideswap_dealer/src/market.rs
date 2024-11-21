@@ -24,7 +24,7 @@ use sideswap_common::{
     types::{asset_float_amount_, asset_int_amount_},
     ws::{
         auto::{WrappedRequest, WrappedResponse},
-        ws_req_sender::WsReqSender,
+        ws_req_sender::{self, WsReqSender},
     },
 };
 use sideswap_types::{
@@ -33,6 +33,7 @@ use sideswap_types::{
 };
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
+mod persistent_state;
 mod web_server;
 
 pub use web_server::Config as WebServerConfig;
@@ -99,6 +100,16 @@ pub struct OwnOrder_ {
     pub price: NormalFloat,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("WS request error: {0}")]
+    WsRequestError(#[from] ws_req_sender::Error),
+    #[error("Unexpected response, expected: {0}")]
+    UnexpectedResponse(&'static str),
+    #[error("Try again")]
+    TryAgain,
+}
+
 pub enum Command {
     AutomaticOrders {
         orders: Vec<AutomaticOrder>,
@@ -124,21 +135,21 @@ pub enum Command {
     },
     OrderBook {
         exchange_pair: ExchangePair,
-        res_sender: UncheckedOneshotSender<OrderBook>,
+        res_sender: UncheckedOneshotSender<Result<OrderBook, Error>>,
     },
     OwnOrders {
-        res_sender: UncheckedOneshotSender<OwnOrders>,
+        res_sender: UncheckedOneshotSender<Result<OwnOrders, Error>>,
     },
     SubmitOrder {
         exchange_pair: ExchangePair,
         base_amount: f64,
         price: NormalFloat,
         trade_dir: TradeDir,
-        res_sender: UncheckedOneshotSender<OwnOrder_>,
+        res_sender: UncheckedOneshotSender<Result<OwnOrder_, Error>>,
     },
     CancelOrder {
         order_id: OrdId,
-        res_sender: UncheckedOneshotSender<()>,
+        res_sender: UncheckedOneshotSender<Result<(), Error>>,
     },
 }
 
@@ -188,6 +199,9 @@ struct Data {
     network: Network,
     mode: Mode,
 
+    work_dir: String,
+    state: persistent_state::Data,
+
     ws: WsReqSender,
 
     wallet_utxos: Vec<Utxo>, // Only confidential UTXOs here
@@ -200,7 +214,6 @@ struct Data {
 
     dealer_orders: BTreeMap<(AssetPair, TradeDir), OrderData>,
 
-    token: Option<String>,
     event_sender: UncheckedUnboundedSender<Event>,
 
     markets: BTreeMap<AssetPair, MarketInfo>,
@@ -231,6 +244,10 @@ fn convert_own_order(order: &market::OwnOrder, network: Network) -> Option<OwnOr
         active_amount: asset_float_amount_(order.active_amount, base_precision),
         price: order.price,
     })
+}
+
+fn save_state(data: &Data) {
+    persistent_state::save(&data.work_dir, &data.state);
 }
 
 async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
@@ -271,7 +288,7 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
         .map(|market| (market.asset_pair, market))
         .collect();
 
-    if let Some(token) = &data.token {
+    if let Some(token) = &data.state.token {
         let res = make_market_request!(
             data.ws,
             Login,
@@ -284,7 +301,7 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
             Ok(resp) => return Ok(resp),
             Err(err) if err.error_code() == ErrorCode::UnknownToken => {
                 log::warn!("token not found: {err}");
-                data.token = None;
+                data.state.token = None;
             }
             Err(err) => {
                 anyhow::bail!("unexpected login error: {err}");
@@ -304,9 +321,8 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
         }
     )?;
 
-    data.token = Some(token);
-
-    // FIXME: Save settings
+    data.state.token = Some(token);
+    save_state(data);
 
     Ok(resp)
 }
@@ -508,37 +524,31 @@ fn process_command(data: &mut Data, command: Command) {
         }
 
         Command::Balances { res_sender } => {
-            if !data.assets.is_empty() {
-                let mut wallet = BTreeMap::<AssetId, u64>::new();
-                let mut server = BTreeMap::<AssetId, u64>::new();
+            let mut wallet = BTreeMap::<AssetId, u64>::new();
+            let mut server = BTreeMap::<AssetId, u64>::new();
 
-                for utxo in data.wallet_utxos.iter() {
-                    *wallet.entry(utxo.asset).or_default() += utxo.value;
-                    if data.server_utxos.contains(&utxo.outpoint()) {
-                        *server.entry(utxo.asset).or_default() += utxo.value;
-                    }
+            for utxo in data.wallet_utxos.iter() {
+                *wallet.entry(utxo.asset).or_default() += utxo.value;
+                if data.server_utxos.contains(&utxo.outpoint()) {
+                    *server.entry(utxo.asset).or_default() += utxo.value;
                 }
-
-                let convert_balances = |balances: BTreeMap<AssetId, u64>| {
-                    balances
-                        .into_iter()
-                        .filter_map(|(asset_id, balance)| -> Option<(DealerTicker, f64)> {
-                            let ticker = dealer_ticker_from_asset_id(data.network, &asset_id)?;
-                            let asset = data
-                                .assets
-                                .iter()
-                                .find(|asset| asset.asset_id == asset_id)?;
-                            let value = asset_float_amount_(balance, asset.precision);
-                            Some((ticker, value))
-                        })
-                        .collect()
-                };
-
-                res_sender.send(Balances {
-                    wallet: convert_balances(wallet),
-                    server: convert_balances(server),
-                });
             }
+
+            let convert_balances = |balances: BTreeMap<AssetId, u64>| {
+                balances
+                    .into_iter()
+                    .filter_map(|(asset_id, balance)| -> Option<(DealerTicker, f64)> {
+                        let ticker = dealer_ticker_from_asset_id(data.network, &asset_id)?;
+                        let value = asset_float_amount_(balance, ticker.asset_precision());
+                        Some((ticker, value))
+                    })
+                    .collect()
+            };
+
+            res_sender.send(Balances {
+                wallet: convert_balances(wallet),
+                server: convert_balances(server),
+            });
         }
 
         Command::OrderBook {
@@ -556,32 +566,40 @@ fn process_command(data: &mut Data, command: Command) {
                     asset_pair,
                 })),
                 Box::new(move |res| {
-                    if let Ok(sideswap_api::Response::Market(market::Response::Subscribe(resp))) =
-                        res
-                    {
-                        let orders = resp
-                            .orders
-                            .iter()
-                            .map(|order| convert_public_order(order, base_precision))
-                            .collect();
-                        res_sender.send(OrderBook {
-                            orders,
-                            timestamp: resp.timestamp,
-                        });
-                    }
+                    let res = match res {
+                        Ok(sideswap_api::Response::Market(market::Response::Subscribe(resp))) => {
+                            let orders = resp
+                                .orders
+                                .iter()
+                                .map(|order| convert_public_order(order, base_precision))
+                                .collect();
+                            Ok(OrderBook {
+                                orders,
+                                timestamp: resp.timestamp,
+                            })
+                        }
+                        Ok(_) => Err(Error::UnexpectedResponse("Subscribe")),
+                        Err(err) => Err(Error::WsRequestError(err)),
+                    };
+                    res_sender.send(res);
                 }),
             );
         }
 
         Command::OwnOrders { res_sender } => {
-            let mut orders = Vec::new();
-            for market in data.dealer_orders.values() {
-                for order in market.server_orders.values() {
-                    let order = convert_own_order(order, data.network).expect("");
-                    orders.push(order);
+            let res = if data.ws.connected() {
+                let mut orders = Vec::new();
+                for market in data.dealer_orders.values() {
+                    for order in market.server_orders.values() {
+                        let order = convert_own_order(order, data.network).expect("must not fail");
+                        orders.push(order);
+                    }
                 }
-            }
-            res_sender.send(OwnOrders { orders })
+                Ok(OwnOrders { orders })
+            } else {
+                Err(Error::TryAgain)
+            };
+            res_sender.send(res);
         }
 
         Command::SubmitOrder {
@@ -617,16 +635,21 @@ fn process_command(data: &mut Data, command: Command) {
                         private: false,
                     })),
                     Box::new(move |res| {
-                        if let Ok(sideswap_api::Response::Market(market::Response::AddOrder(
-                            resp,
-                        ))) = res
-                        {
-                            let order =
-                                convert_own_order(&resp.order, network).expect("must not fail");
-                            res_sender.send(order);
-                        }
+                        let res = match res {
+                            Ok(sideswap_api::Response::Market(market::Response::AddOrder(
+                                resp,
+                            ))) => {
+                                Ok(convert_own_order(&resp.order, network).expect("must not fail"))
+                            }
+                            Ok(_) => Err(Error::UnexpectedResponse("AddOrder")),
+                            Err(err) => Err(Error::WsRequestError(err)),
+                        };
+                        res_sender.send(res);
                     }),
                 );
+            } else {
+                // FIXME: Do something better here
+                res_sender.send(Err(Error::TryAgain));
             }
         }
 
@@ -641,12 +664,14 @@ fn process_command(data: &mut Data, command: Command) {
                     order_id,
                 })),
                 Box::new(move |res| {
-                    if let Ok(sideswap_api::Response::Market(market::Response::CancelOrder(
-                        _resp,
-                    ))) = res
-                    {
-                        res_sender.send(());
-                    }
+                    let res = match res {
+                        Ok(sideswap_api::Response::Market(market::Response::CancelOrder(
+                            _resp,
+                        ))) => Ok(()),
+                        Ok(_) => Err(Error::UnexpectedResponse("CancelOrder")),
+                        Err(err) => Err(Error::WsRequestError(err)),
+                    };
+                    res_sender.send(res);
                 }),
             );
         }
@@ -848,9 +873,13 @@ async fn run(
         Mode::PriceStream
     };
 
+    let state = persistent_state::load(&params.work_dir);
+
     let mut data = Data {
         network: params.env.d().network,
         mode,
+        work_dir: params.work_dir,
+        state,
         ws,
         wallet_utxos: Vec::new(),
         server_utxos: BTreeSet::new(),
@@ -859,8 +888,6 @@ async fn run(
         assets: Vec::new(),
         amp_assets: BTreeSet::new(),
         dealer_orders: BTreeMap::new(),
-        // FIXME: Load from the work dir
-        token: None,
         event_sender: event_sender.into(),
         markets: BTreeMap::new(),
     };
