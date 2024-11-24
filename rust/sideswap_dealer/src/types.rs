@@ -36,7 +36,7 @@ impl DealerTicker {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct ExchangePair {
     pub base: DealerTicker,
     pub quote: DealerTicker,

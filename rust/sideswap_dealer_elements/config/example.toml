@@ -12,6 +12,9 @@ price_stream = []
 listen_on = "127.0.0.1:3101"
 server_url = "http://127.0.0.1:3101/api"
 
+[ws_server]
+listen_on = "127.0.0.1:3102"
+
 [rpc]
 host = "localhost"
 port = 7041

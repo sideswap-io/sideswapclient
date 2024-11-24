@@ -443,6 +443,7 @@ pub struct PublicOrderCreatedNotif {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PublicOrderRemovedNotif {
+    pub asset_pair: AssetPair,
     pub order_id: OrdId,
 }
 

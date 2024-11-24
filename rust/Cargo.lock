@@ -4061,6 +4061,7 @@ dependencies = [
  "anyhow",
  "base64 0.21.7",
  "elements",
+ "futures",
  "hex",
  "log",
  "log4rs",
@@ -4076,6 +4077,7 @@ dependencies = [
  "sideswap_types",
  "thiserror",
  "tokio",
+ "tokio-tungstenite",
 ]
 
 [[package]]

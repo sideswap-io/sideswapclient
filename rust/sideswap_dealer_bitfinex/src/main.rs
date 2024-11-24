@@ -1208,6 +1208,7 @@ async fn main() {
         server_url: args.server_url.clone(),
         work_dir: args.work_dir.clone(),
         web_server: None,
+        ws_server: None,
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 

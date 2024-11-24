@@ -4,15 +4,16 @@ env = "Testnet" # SideSwap testnet server (Liquid Testnet network)
 # Work dir to store temporary files
 work_dir = "/tmp/work_dir"
 
-#api_key =
+mnemonic = "<YOUR_MNEMONIC>"
 
 price_stream = []
-
-mnemonic = "<YOUR_MNEMONIC>"
 
 [web_server]
 listen_on = "127.0.0.1:3101"
 server_url = "http://127.0.0.1:3101/api"
+
+[ws_server]
+listen_on = "127.0.0.1:3102"
 
 #[[price_stream]]
 #base = "L-BTC"

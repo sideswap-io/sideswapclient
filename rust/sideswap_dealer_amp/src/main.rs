@@ -12,6 +12,7 @@ struct Settings {
     work_dir: String,
     mnemonic: bip39::Mnemonic,
     web_server: Option<market::WebServerConfig>,
+    ws_server: Option<market::WsServerConfig>,
     price_stream: price_stream::Config,
 }
 
@@ -126,9 +127,10 @@ async fn sync_utxos(data: &mut Data) -> Result<(), anyhow::Error> {
 }
 
 async fn process_timer(data: &mut Data) {
-    data.market_command_sender.send(market::Command::AutomaticOrders {
-        orders: data.price_stream.market_prices(),
-    });
+    data.market_command_sender
+        .send(market::Command::AutomaticOrders {
+            orders: data.price_stream.market_prices(),
+        });
 
     if data.sync_utxos {
         let res = sync_utxos(data).await;
@@ -176,6 +178,7 @@ async fn main() {
         server_url: settings.env.base_server_ws_url(),
         work_dir: settings.work_dir.clone(),
         web_server: settings.web_server.clone(),
+        ws_server: settings.ws_server.clone(),
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 

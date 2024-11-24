@@ -16,6 +16,7 @@ struct Settings {
     rpc: RpcServer,
     api_key: Option<String>,
     web_server: Option<market::WebServerConfig>,
+    ws_server: Option<market::WsServerConfig>,
     price_stream: price_stream::Config,
 }
 
@@ -127,6 +128,7 @@ async fn main() {
         server_url,
         work_dir: settings.work_dir.clone(),
         web_server: settings.web_server.clone(),
+        ws_server: settings.ws_server.clone(),
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 

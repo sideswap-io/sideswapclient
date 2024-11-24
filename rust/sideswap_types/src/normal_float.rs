@@ -28,7 +28,7 @@ impl std::fmt::Display for NotNormalError {
 impl std::error::Error for NotNormalError {}
 
 impl NormalFloat {
-    pub fn value(&self) -> f64 {
+    pub fn value(self) -> f64 {
         self.0
     }
 

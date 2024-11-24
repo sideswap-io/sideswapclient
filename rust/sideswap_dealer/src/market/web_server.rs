@@ -6,11 +6,8 @@ use poem_openapi::{
 };
 use serde::{Deserialize, Serialize};
 use sideswap_api::market::{self, OrdId};
-use sideswap_types::normal_float::{NormalFloat, NotNormalError};
-use tokio::sync::{
-    mpsc::{self, UnboundedSender, WeakUnboundedSender},
-    oneshot,
-};
+use sideswap_types::normal_float::NormalFloat;
+use tokio::sync::{mpsc::UnboundedSender, oneshot};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -20,34 +17,10 @@ pub struct Config {
 
 use crate::types::{dealer_ticker_from_asset_ticker, DealerTicker, ExchangePair};
 
-use super::Command;
+use super::{ClientCommand, Error};
 
 struct Api {
-    command_sender: WeakUnboundedSender<Command>,
-}
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("Channel closed, please report bug")]
-    ChannelClosed,
-    #[error("Unknown ticker: {0}")]
-    UnknownTicker(String),
-    #[error("Invalid float: {0}")]
-    InvalidFloat(NotNormalError),
-    #[error("{0}")]
-    SuperError(#[from] super::Error),
-}
-
-impl From<oneshot::error::RecvError> for Error {
-    fn from(_value: oneshot::error::RecvError) -> Self {
-        Error::ChannelClosed
-    }
-}
-
-impl<T> From<mpsc::error::SendError<T>> for Error {
-    fn from(_value: mpsc::error::SendError<T>) -> Self {
-        Error::ChannelClosed
-    }
+    command_sender: UnboundedSender<ClientCommand>,
 }
 
 #[derive(Debug, Serialize, Object)]
@@ -72,9 +45,11 @@ impl From<Error> for ErrorResponseServer {
             Error::InvalidFloat(_) | Error::UnknownTicker(_) => {
                 unreachable!()
             }
-            Error::ChannelClosed | Error::SuperError(_) => {
-                ErrorResponseServer::InternalServerError(error_msg)
-            }
+            Error::WsRequestError(_)
+            | Error::UnexpectedResponse(_)
+            | Error::TryAgain
+            | Error::ServerDisconnected
+            | Error::ChannelClosed => ErrorResponseServer::InternalServerError(error_msg),
         }
     }
 }
@@ -98,9 +73,12 @@ impl From<Error> for ErrorResponseFull {
             Error::InvalidFloat(_) | Error::UnknownTicker(_) => {
                 ErrorResponseFull::BadRequest(error_msg)
             }
-            Error::ChannelClosed | Error::SuperError(_) => {
-                ErrorResponseFull::InternalServerError(error_msg)
-            }
+
+            Error::WsRequestError(_)
+            | Error::UnexpectedResponse(_)
+            | Error::TryAgain
+            | Error::ServerDisconnected
+            | Error::ChannelClosed => ErrorResponseFull::InternalServerError(error_msg),
         }
     }
 }
@@ -333,9 +311,8 @@ fn parse_normal_float(value: f64) -> Result<NormalFloat, Error> {
 
 #[OpenApi]
 impl Api {
-    fn send_request(&self, command: Command) -> Result<(), Error> {
-        let sender = self.command_sender.upgrade().ok_or(Error::ChannelClosed)?;
-        sender.send(command)?;
+    fn send_request(&self, command: ClientCommand) -> Result<(), Error> {
+        self.command_sender.send(command)?;
         Ok(())
     }
 
@@ -343,7 +320,7 @@ impl Api {
     #[oai(path = "/metadata", method = "get")]
     async fn metadata(&self) -> Result<Json<Metadata>, ErrorResponseServer> {
         let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(Command::Metadata {
+        self.send_request(ClientCommand::Metadata {
             res_sender: res_sender.into(),
         })?;
         let resp = recv(res_receiver).await?;
@@ -363,7 +340,7 @@ impl Api {
         let quote = parse_dealer_ticker(&quote.0)?;
         let exchange_pair = ExchangePair { base, quote };
         let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(Command::OrderBook {
+        self.send_request(ClientCommand::OrderBook {
             exchange_pair,
             res_sender: res_sender.into(),
         })?;
@@ -376,7 +353,7 @@ impl Api {
     #[oai(path = "/own_orders", method = "get")]
     async fn own_orders(&self) -> Result<Json<OwnOrders>, ErrorResponseServer> {
         let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(Command::OwnOrders {
+        self.send_request(ClientCommand::OwnOrders {
             res_sender: res_sender.into(),
         })?;
         let resp = recv_res(res_receiver).await?;
@@ -408,7 +385,7 @@ impl Api {
         let price = parse_normal_float(price.0)?;
 
         let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(Command::SubmitOrder {
+        self.send_request(ClientCommand::SubmitOrder {
             exchange_pair,
             base_amount: base_amount.0,
             price,
@@ -429,7 +406,7 @@ impl Api {
     ) -> Result<(), ErrorResponseFull> {
         let order_id = OrdId::new(order_id.0);
         let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(Command::CancelOrder {
+        self.send_request(ClientCommand::CancelOrder {
             order_id,
             res_sender: res_sender.into(),
         })?;
@@ -442,7 +419,7 @@ impl Api {
     #[oai(path = "/balances", method = "get")]
     async fn balances(&self) -> Result<Json<Balances>, ErrorResponseServer> {
         let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(Command::Balances {
+        self.send_request(ClientCommand::Balances {
             res_sender: res_sender.into(),
         })?;
         let resp = recv(res_receiver).await?;
@@ -450,7 +427,7 @@ impl Api {
     }
 }
 
-async fn run(config: Config, command_sender: WeakUnboundedSender<Command>) {
+async fn run(config: Config, command_sender: UnboundedSender<ClientCommand>) {
     let api = Api { command_sender };
 
     let mut api = OpenApiService::new(api, "SideSwap Dealer API", "1.0");
@@ -473,6 +450,6 @@ async fn run(config: Config, command_sender: WeakUnboundedSender<Command>) {
         .expect("must not fail");
 }
 
-pub fn start(config: Config, command_sender: &UnboundedSender<Command>) {
-    tokio::task::spawn(run(config, command_sender.downgrade()));
+pub fn start(config: Config, command_sender: UnboundedSender<ClientCommand>) {
+    tokio::task::spawn(run(config, command_sender));
 }
