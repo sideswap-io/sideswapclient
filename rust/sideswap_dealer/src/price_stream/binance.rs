@@ -46,6 +46,7 @@ pub fn start(exchange_pair: ExchangePair, callback: PriceCallback) {
         (DealerTicker::LBTC, DealerTicker::USDt) => "BTCUSDT",
         (DealerTicker::LBTC, DealerTicker::EURx) => "BTCEUR",
         (DealerTicker::EURx, DealerTicker::USDt) => "EURUSDT",
+        (DealerTicker::LBTC, DealerTicker::MEX) => "BTCMXN",
         _ => panic!("unsupported exchange_pair: {exchange_pair:?}"),
     };
 

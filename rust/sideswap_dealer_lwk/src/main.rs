@@ -12,6 +12,8 @@ mod wallet;
 #[derive(Debug, serde::Deserialize)]
 struct Settings {
     env: sideswap_common::env::Env,
+    #[serde(default)]
+    disable_new_swaps: bool,
     work_dir: String,
     mnemonic: bip39::Mnemonic,
     web_server: Option<market::WebServerConfig>,
@@ -103,6 +105,7 @@ async fn main() {
 
     let market_params = market::Params {
         env: settings.env,
+        disable_new_swaps: settings.disable_new_swaps,
         server_url: settings.env.base_server_ws_url(),
         work_dir: settings.work_dir.clone(),
         web_server: settings.web_server.clone(),

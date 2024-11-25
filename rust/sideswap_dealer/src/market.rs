@@ -50,6 +50,7 @@ use crate::types::{
 #[derive(Debug, Clone)]
 pub struct Params {
     pub env: sideswap_common::env::Env,
+    pub disable_new_swaps: bool,
     pub server_url: String,
     pub work_dir: String,
     pub web_server: Option<WebServerConfig>,
@@ -1152,11 +1153,22 @@ async fn run(
     }
 }
 
+async fn run_disabled(
+    mut command_receiver: UnboundedReceiver<Command>,
+    _event_sender: UnboundedSender<Event>,
+) {
+    while let Some(_command) = command_receiver.recv().await {}
+}
+
 pub fn start(params: Params) -> (UnboundedSender<Command>, UnboundedReceiver<Event>) {
     let (command_sender, command_receiver) = unbounded_channel::<Command>();
     let (event_sender, event_receiver) = unbounded_channel::<Event>();
 
-    tokio::spawn(run(params, command_receiver, event_sender));
+    if !params.disable_new_swaps {
+        tokio::spawn(run(params, command_receiver, event_sender));
+    } else {
+        tokio::spawn(run_disabled(command_receiver, event_sender));
+    }
 
     (command_sender, event_receiver)
 }

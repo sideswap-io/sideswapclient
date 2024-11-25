@@ -1205,6 +1205,7 @@ async fn main() {
 
     let market_params = market::Params {
         env: args.env,
+        disable_new_swaps: false,
         server_url: args.server_url.clone(),
         work_dir: args.work_dir.clone(),
         web_server: None,
