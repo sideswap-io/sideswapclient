@@ -35,6 +35,7 @@ use sideswap_dealer::utxo_data;
 use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_types::normal_float::NormalFloat;
 use std::collections::BTreeMap;
+use std::collections::BTreeSet;
 use std::sync::Arc;
 use std::time::Duration;
 use std::time::Instant;
@@ -108,6 +109,8 @@ impl std::fmt::Display for ExchangeTicker {
     }
 }
 
+const DEALER_TICKERS: [DealerTicker; 2] = [DealerTicker::USDt, DealerTicker::EURx];
+
 const BITFINEX_WALLET_EXCHANGE: &str = "exchange";
 
 const BITFINEX_METHOD_USDT: &str = "tetherusl";
@@ -143,6 +146,10 @@ type PendingOrders = BTreeMap<i64, Instant>;
 #[derive(Debug, Deserialize)]
 pub struct Args {
     env: sideswap_common::env::Env,
+
+    bitcoin_amount_submit: f64,
+    bitcoin_amount_min: f64,
+    bitcoin_amount_max: f64,
 
     server_url: String,
 
@@ -1141,6 +1148,10 @@ async fn main() {
         env: args.env,
         server_url: args.server_url.clone(),
         rpc: args.rpc.clone(),
+        tickers: BTreeSet::from(DEALER_TICKERS),
+        bitcoin_amount_submit: Amount::from_bitcoin(args.bitcoin_amount_submit),
+        bitcoin_amount_min: Amount::from_bitcoin(args.bitcoin_amount_min),
+        bitcoin_amount_max: Amount::from_bitcoin(args.bitcoin_amount_max),
         api_key: args.api_key.clone(),
     };
 
@@ -1203,9 +1214,16 @@ async fn main() {
     let health_text = HealthStatus::default();
     tokio::task::spawn(start_webserver(args.status_port, Arc::clone(&health_text)));
 
+    let disable_new_swaps = match args.env {
+        sideswap_common::env::Env::Prod => true,
+        sideswap_common::env::Env::Testnet
+        | sideswap_common::env::Env::LocalLiquid
+        | sideswap_common::env::Env::LocalTestnet => false,
+    };
+
     let market_params = market::Params {
         env: args.env,
-        disable_new_swaps: false,
+        disable_new_swaps,
         server_url: args.server_url.clone(),
         work_dir: args.work_dir.clone(),
         web_server: None,

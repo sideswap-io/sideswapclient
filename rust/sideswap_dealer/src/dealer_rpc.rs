@@ -1,10 +1,11 @@
-//! Old instant swaps API (deprecated)
+//! Old instant swaps and swap API (deprecated)
 
 use crate::rpc::ListUnspent;
 use crate::types::{dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker};
 use crate::utxo_data::{self, UtxoData, UtxoWithKey};
 
 use super::rpc;
+use anyhow::{anyhow, ensure};
 use elements::pset::PartiallySignedTransaction;
 use elements::OutPoint;
 use log::{debug, error, info, warn};
@@ -14,15 +15,22 @@ use sideswap_common::network::Network;
 use sideswap_common::types::Amount;
 use sideswap_common::ws::auto::WrappedResponse;
 use sideswap_common::ws::ws_req_sender::WsReqSender;
-use sideswap_common::{b64, make_request, ws};
+use sideswap_common::{b64, make_request, types, ws};
 use std::collections::{BTreeMap, BTreeSet};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 // Keep some extra amount in the wallet for the various fees (server, network, external exchange)
 const INSTANT_SWAP_WORK_AMOUNT: f64 = 0.995;
 
+// Extra asset UTXO amount to cover future price edits
+const EXTRA_ASSET_UTXO_FRACTION: f64 = 0.03;
+
+const MIN_BITCOIN_AMOUNT: f64 = 0.0001;
+
 const PRICE_EXPIRATON_TIME: std::time::Duration = std::time::Duration::from_secs(60);
+
+const PRICE_EDIT_MIN_DELAY: std::time::Duration = std::time::Duration::from_secs(5);
 
 #[derive(Debug, Clone)]
 pub struct Params {
@@ -31,6 +39,12 @@ pub struct Params {
     pub server_url: String,
 
     pub rpc: rpc::RpcServer,
+
+    pub tickers: BTreeSet<DealerTicker>,
+
+    pub bitcoin_amount_submit: Amount,
+    pub bitcoin_amount_min: Amount,
+    pub bitcoin_amount_max: Amount,
 
     pub api_key: Option<String>,
 }
@@ -104,6 +118,18 @@ pub struct DealerPriceTimestamp {
     pub timestamp: std::time::Instant,
 }
 
+pub struct OwnOrder {
+    pub order_id: OrderId,
+    pub bitcoin_amount: Amount,
+    pub price: f64,
+}
+
+#[derive(Debug, Hash, PartialEq, Eq, Ord, PartialOrd, Clone, Copy)]
+struct OwnOrderKey {
+    ticker: DealerTicker,
+    send_bitcoins: bool,
+}
+
 pub fn apply_interest(price: &PricePair, interest: f64) -> PricePair {
     // Limit to 10% as sanity check
     assert!((1.0..=1.1).contains(&interest));
@@ -121,6 +147,331 @@ pub fn pick_price(price: &PricePair, send_bitcoins: bool) -> f64 {
     }
 }
 
+fn take_order(
+    network: Network,
+    params: &Params,
+    assets: &Assets,
+    details: &Details,
+    wallet_balances: &WalletBalances,
+    dealer_prices: &DealerPrices,
+) -> Result<(), anyhow::Error> {
+    ensure!(details.bitcoin_amount >= params.bitcoin_amount_min.to_sat());
+    ensure!(details.bitcoin_amount <= params.bitcoin_amount_max.to_sat());
+    let asset = assets
+        .iter()
+        .find(|asset| asset.asset_id == details.asset)
+        .unwrap();
+    let ticker = dealer_ticker_from_asset_id(network, &details.asset)
+        .ok_or_else(|| anyhow!("unknown asset {}", asset.name))?;
+    let dealer_price = dealer_prices
+        .get(&ticker)
+        .cloned()
+        .ok_or(anyhow!("dealer price for {ticker:?} is not known"))?;
+    let actual_bitcoin_amount = Amount::from_sat(if details.send_bitcoins {
+        details.bitcoin_amount + details.server_fee
+    } else {
+        details.bitcoin_amount - details.server_fee
+    });
+    let asset_amount = types::asset_float_amount(details.asset_amount, asset.precision);
+    let actual_price = asset_amount / actual_bitcoin_amount.to_bitcoin();
+    assert!(actual_price > 0.0);
+    let bitcoin_amount_max = get_bitcoin_amount(
+        asset,
+        wallet_balances,
+        ticker,
+        actual_price,
+        details.send_bitcoins,
+    );
+    if details.send_bitcoins {
+        ensure!(
+            actual_price >= dealer_price.dealer.submit_price.ask,
+            "actual_price: {}, dealer_price.ask: {}",
+            actual_price,
+            dealer_price.dealer.submit_price.ask
+        );
+        ensure!(actual_bitcoin_amount.to_bitcoin() <= dealer_price.dealer.limit_btc_dealer_send);
+    } else {
+        ensure!(
+            actual_price <= dealer_price.dealer.submit_price.bid,
+            "actual_price: {}, dealer_price.bid: {}",
+            actual_price,
+            dealer_price.dealer.submit_price.bid
+        );
+        ensure!(actual_bitcoin_amount.to_bitcoin() <= dealer_price.dealer.limit_btc_dealer_recv);
+    }
+    ensure!(
+        details.bitcoin_amount <= bitcoin_amount_max.to_sat(),
+        "bitcoin amount: {}, max bitcoin amount: {}",
+        details.bitcoin_amount,
+        bitcoin_amount_max
+    );
+    Ok(())
+}
+
+async fn get_pset(
+    order_id: &OrderId,
+    details: &Details,
+    utxos: &Utxos,
+    params: &Params,
+    extra_asset_utxo: bool,
+) -> Result<PsetMakerRequest, anyhow::Error> {
+    let bitcoin_asset = params.env.nd().policy_asset.asset_id();
+    let (send_asset, send_amount) = if details.send_bitcoins {
+        (bitcoin_asset, details.bitcoin_amount + details.server_fee)
+    } else {
+        (details.asset, details.asset_amount)
+    };
+
+    let mut asset_utxos: Vec<_> = utxos
+        .values()
+        .filter(|utxo| {
+            utxo.item.asset == send_asset
+                && utxo.item.amountblinder != ValueBlindingFactor::zero()
+                && utxo.item.assetblinder != AssetBlindingFactor::zero()
+        })
+        .collect();
+    let utxos_amounts: Vec<i64> = asset_utxos.iter().map(|utxo| utxo.amount).collect();
+    let total: i64 = utxos_amounts.iter().sum();
+    ensure!(send_amount <= total);
+    let utxo_amount = if extra_asset_utxo && !details.send_bitcoins {
+        i64::min(
+            total,
+            f64::round(send_amount as f64 * (1.0 + EXTRA_ASSET_UTXO_FRACTION)) as i64,
+        )
+    } else {
+        send_amount
+    };
+    let selected = types::select_utxo(utxos_amounts, utxo_amount);
+
+    let mut inputs = Vec::<sideswap_api::Utxo>::new();
+
+    for amount in selected {
+        let index = asset_utxos
+            .iter()
+            .position(|v| v.amount == amount)
+            .expect("utxo must exists");
+        let utxo = asset_utxos.swap_remove(index);
+
+        inputs.push(sideswap_api::Utxo {
+            txid: utxo.item.txid,
+            vout: utxo.item.vout,
+            asset: send_asset,
+            asset_bf: utxo.item.assetblinder,
+            value: amount as u64,
+            value_bf: utxo.item.amountblinder,
+            redeem_script: utxo.item.redeem_script.clone(),
+        });
+    }
+
+    let recv_addr = rpc::make_rpc_call(&params.rpc, rpc::GetNewAddressCall {})
+        .await
+        .expect("getting new address failed");
+    let change_addr = rpc::make_rpc_call(&params.rpc, rpc::GetNewAddressCall {})
+        .await
+        .expect("getting new address failed");
+
+    let addr_request = PsetMakerRequest {
+        order_id: *order_id,
+        price: details.price,
+        private: false,
+        ttl_seconds: None,
+        inputs,
+        recv_addr,
+        change_addr,
+        signed_half: None,
+    };
+    Ok(addr_request)
+}
+
+fn sign_pset(data: &Data, notif: &SignNotification) -> Result<SignRequest, anyhow::Error> {
+    let pset = b64::decode(&notif.pset)?;
+    let pset = elements::encode::deserialize::<PartiallySignedTransaction>(&pset)?;
+
+    let pset = data.utxo_data.sign_pset(pset);
+
+    let pset = elements::encode::serialize(&pset);
+
+    let sign_request = SignRequest {
+        order_id: notif.order_id,
+        signed_pset: b64::encode(&pset),
+        side: notif.details.side,
+    };
+
+    Ok(sign_request)
+}
+
+fn get_bitcoin_amount(
+    asset: &Asset,
+    wallet_balances: &WalletBalances,
+    ticker: DealerTicker,
+    price: f64,
+    send_bitcoins: bool,
+) -> Amount {
+    let wallet_asset = wallet_balances.get(&ticker).cloned().unwrap_or_default();
+    let wallet_bitcoin = wallet_balances
+        .get(&DealerTicker::LBTC)
+        .cloned()
+        .unwrap_or_default()
+        / (1.0 + asset.server_fee().value());
+    if send_bitcoins {
+        Amount::from_bitcoin(wallet_bitcoin)
+    } else {
+        Amount::from_bitcoin(wallet_asset / price)
+    }
+}
+
+async fn cancel_order(ws: &mut WsReqSender, order_id: &OrderId) {
+    let cancel_result = make_request!(
+        ws,
+        Cancel,
+        CancelRequest {
+            order_id: *order_id,
+        }
+    );
+    if let Err(e) = cancel_result {
+        error!("cancelling order failed: {}", e);
+    }
+}
+
+async fn update_price(
+    own: &mut Option<OwnOrder>,
+    send_bitcoins: bool,
+    assets: &Assets,
+    ticker: DealerTicker,
+    index_prices: &DealerPrices,
+    wallet_balances: &WalletBalances,
+    utxos: &Utxos,
+    params: &Params,
+    ws: &mut WsReqSender,
+) {
+    let asset = assets
+        .iter()
+        .find(|asset| asset.ticker.0 == ticker.to_string())
+        .unwrap();
+    let price_with_limits = index_prices.get(&ticker).cloned();
+    let server_fee = Amount::from_bitcoin(f64::max(
+        asset.server_fee().value() * params.bitcoin_amount_submit.to_bitcoin(),
+        types::SWAP_MARKETS_MIN_SERVER_FEE.to_bitcoin(),
+    ));
+    let server_fee_interest =
+        1.0 + server_fee.to_bitcoin() / params.bitcoin_amount_submit.to_bitcoin();
+
+    let price = price_with_limits.map(|price| {
+        pick_price(
+            &apply_interest(&price.dealer.submit_price, server_fee_interest),
+            send_bitcoins,
+        )
+    });
+
+    let bitcoin_amount_limit_external = price_with_limits
+        .map(|price| {
+            if send_bitcoins {
+                price.dealer.limit_btc_dealer_send
+            } else {
+                price.dealer.limit_btc_dealer_recv
+            }
+        })
+        .unwrap_or_default();
+    let bitcoin_amount_limit_wallet = price
+        .map(|price| get_bitcoin_amount(asset, wallet_balances, ticker, price, send_bitcoins))
+        .unwrap_or_default()
+        .to_bitcoin();
+    let bitcoin_amount_limit = bitcoin_amount_limit_wallet.min(bitcoin_amount_limit_external);
+    let order_allowed = params.bitcoin_amount_submit.to_bitcoin() <= bitcoin_amount_limit;
+
+    match (own.as_mut(), price) {
+        (None, Some(price)) if order_allowed => {
+            let submit_result = make_request!(
+                ws,
+                Submit,
+                SubmitRequest {
+                    order: PriceOrder {
+                        asset: asset.asset_id,
+                        bitcoin_amount: Some(if send_bitcoins {
+                            -params.bitcoin_amount_submit.to_bitcoin()
+                        } else {
+                            params.bitcoin_amount_submit.to_bitcoin()
+                        }),
+                        asset_amount: None,
+                        price: Some(price),
+                        index_price: None,
+                    },
+                }
+            );
+            if let Ok(submit_resp) = submit_result {
+                let pset = get_pset(
+                    &submit_resp.order_id,
+                    &submit_resp.details,
+                    utxos,
+                    params,
+                    true,
+                )
+                .await;
+                match pset {
+                    Ok(pset_maker_req) => {
+                        let addr_result = make_request!(ws, PsetMaker, pset_maker_req);
+                        match addr_result {
+                            Ok(_) => {
+                                *own = Some(OwnOrder {
+                                    order_id: submit_resp.order_id,
+                                    bitcoin_amount: params.bitcoin_amount_submit,
+                                    price,
+                                });
+                            }
+                            Err(e) => error!("sending Addr request failed: {}", e),
+                        }
+                    }
+                    Err(e) => error!("creating PSET failed: {}", e),
+                }
+            }
+        }
+        // Amount is not enough or index price is not known, do nothing
+        (None, _) => {}
+
+        (Some(data), _) if !order_allowed => {
+            info!("cancel order {}, submit is not allowed", data.order_id);
+            cancel_order(ws, &data.order_id).await;
+        }
+        (Some(data), None) => {
+            info!("cancel order {} because index price expired", data.order_id);
+            cancel_order(ws, &data.order_id).await;
+        }
+
+        (Some(data), Some(price)) => {
+            if data.price != price {
+                let edit_result = make_request!(
+                    ws,
+                    Edit,
+                    EditRequest {
+                        order_id: data.order_id,
+                        price: Some(price),
+                        index_price: None,
+                    }
+                );
+                match edit_result {
+                    Ok(_) => {
+                        data.price = price;
+                    }
+                    Err(e) => {
+                        error!("price update failed: {}", e);
+                        let cancel_result = make_request!(
+                            ws,
+                            Cancel,
+                            CancelRequest {
+                                order_id: data.order_id,
+                            }
+                        );
+                        if let Err(e) = cancel_result {
+                            error!("cancelling request failed: {}", e);
+                        }
+                        *own = None;
+                    }
+                }
+            }
+        }
+    }
+}
+
 struct InstantSwap {
     _send_asset: AssetId,
 }
@@ -133,9 +484,14 @@ struct Data {
     assets: Vec<Asset>,
     server_connected: bool,
     utxos: Utxos,
+    orders: BTreeMap<OrderId, OrderCreatedNotification>,
+    taken_orders: BTreeSet<OrderId>,
     wallet_balances: WalletBalances,
     dealer_prices: DealerPrices,
+    pending_signs: BTreeMap<OrderId, Details>,
+    own_orders: BTreeMap<OwnOrderKey, Option<OwnOrder>>,
     wallet_balance: Option<rpc::GetWalletInfo>,
+    last_price_edit: Instant,
     instant_swaps: BTreeMap<OrderId, InstantSwap>,
     event_sender: UnboundedSender<Event>,
     internal_sender: UnboundedSender<Internal>,
@@ -143,6 +499,69 @@ struct Data {
 }
 
 async fn process_timer(data: &mut Data) {
+    let now = std::time::Instant::now();
+    if data.server_connected && now.duration_since(data.last_price_edit) >= PRICE_EDIT_MIN_DELAY {
+        for (key, own) in data.own_orders.iter_mut() {
+            update_price(
+                own,
+                key.send_bitcoins,
+                &data.assets,
+                key.ticker,
+                &data.dealer_prices,
+                &data.wallet_balances,
+                &data.utxos,
+                &data.params,
+                &mut data.ws,
+            )
+            .await;
+        }
+        data.last_price_edit = now;
+    }
+
+    for order in data.orders.values() {
+        if data.taken_orders.get(&order.order_id).is_some() {
+            continue;
+        }
+
+        let result = take_order(
+            data.network,
+            &data.params,
+            &data.assets,
+            &order.details,
+            &data.wallet_balances,
+            &data.dealer_prices,
+        );
+        if result.is_ok() {
+            info!("take order: {:?}", order);
+            let result = get_pset(
+                &order.order_id,
+                &order.details,
+                &data.utxos,
+                &data.params,
+                false,
+            )
+            .await;
+            match result {
+                Ok(pset_req) => {
+                    let taker_pset_req = PsetTakerRequest {
+                        order_id: pset_req.order_id,
+                        price: pset_req.price,
+                        inputs: pset_req.inputs,
+                        recv_addr: pset_req.recv_addr,
+                        change_addr: pset_req.change_addr,
+                    };
+                    let addr_result = make_request!(data.ws, PsetTaker, taker_pset_req);
+                    if let Err(e) = addr_result {
+                        error!("sending addr details failed: {}", e);
+                    } else {
+                        data.taken_orders.insert(order.order_id);
+                    }
+                }
+                Err(e) => error!("sending quote failed: {}", e),
+            }
+        }
+    }
+
     for (ticker, dealer_price) in data.dealer_prices.iter() {
         let base_price = dealer_price.dealer.submit_price;
 
@@ -227,6 +646,56 @@ async fn process_timer(data: &mut Data) {
 
 async fn process_ws_notif(data: &mut Data, msg: Notification) {
     match msg {
+        Notification::OrderCreated(order) if order.own.is_none() => {
+            data.orders.insert(order.order_id, order);
+            data.internal_sender.send(Internal::Timer).unwrap();
+        }
+
+        Notification::OrderRemoved(order) => {
+            data.orders.remove(&order.order_id);
+        }
+
+        Notification::Sign(notif) => {
+            debug!("sign notification received, order_id: {}", &notif.order_id);
+
+            // TODO: Verify PSET
+
+            let result = sign_pset(data, &notif).unwrap();
+            make_request!(data.ws, Sign, result).expect("sending signed PSBT failed");
+            data.pending_signs.insert(notif.order_id, notif.details);
+        }
+
+        Notification::Complete(msg) => {
+            for own in data.own_orders.values_mut() {
+                if own.as_ref().map(|own| &own.order_id) == Some(&msg.order_id) {
+                    *own = None;
+                }
+            }
+
+            let details = data.pending_signs.remove(&msg.order_id);
+            match msg.txid {
+                Some(txid) => {
+                    info!("order {} complete succesfully", msg.order_id);
+                    let details = details.expect("details must exists");
+                    let ticker = dealer_ticker_from_asset_id(data.network, &details.asset).unwrap();
+                    let send_bitcoins = details.send_bitcoins;
+                    let bitcoin_amount = Amount::from_sat(if send_bitcoins {
+                        details.bitcoin_amount + details.server_fee
+                    } else {
+                        details.bitcoin_amount - details.server_fee
+                    });
+                    let swap_succeed = SwapSucceed {
+                        txid,
+                        ticker,
+                        bitcoin_amount,
+                        dealer_send_bitcoins: send_bitcoins,
+                    };
+                    data.event_sender.send(Event::Swap(swap_succeed)).unwrap();
+                }
+                None => info!("order {} complete unsuccesfully", msg.order_id),
+            };
+        }
+
         Notification::StartSwapDealer(swap_notif) => {
             info!("start instant swap, order_id: {}", swap_notif.order_id);
             let inputs: Vec<_> = data
@@ -375,6 +844,27 @@ async fn process_ws_msg(data: &mut Data, msg: WrappedResponse) {
                 .send(Event::ServerConnected(None))
                 .unwrap();
 
+            let login_resp = make_request!(data.ws, Login, LoginRequest { session_id: None })
+                .expect("subscribing to order list failed");
+            assert!(login_resp.orders.is_empty());
+            for asset in data.assets.iter().filter(|asset| {
+                dealer_ticker_from_asset_id(data.network, &asset.asset_id)
+                    .map(|ticker| data.params.tickers.contains(&ticker))
+                    .unwrap_or(false)
+            }) {
+                let subscribe_resp = make_request!(
+                    data.ws,
+                    Subscribe,
+                    SubscribeRequest {
+                        asset: Some(asset.asset_id),
+                    }
+                )
+                .expect("subscribing to order list failed");
+                for order in subscribe_resp.orders {
+                    data.orders.insert(order.order_id, order);
+                }
+            }
+
             if let Some(api_key) = &data.params.api_key {
                 make_request!(
                     data.ws,
@@ -396,6 +886,11 @@ async fn process_ws_msg(data: &mut Data, msg: WrappedResponse) {
             data.event_sender
                 .send(Event::ServerDisconnected(None))
                 .unwrap();
+            data.orders.clear();
+            data.taken_orders.clear();
+            for own_order in data.own_orders.values_mut() {
+                *own_order = None;
+            }
         }
 
         WrappedResponse::Response(ResponseMessage::Notification(notif)) => {
@@ -528,6 +1023,14 @@ async fn worker(
     mut command_receiver: UnboundedReceiver<Command>,
     event_sender: UnboundedSender<Event>,
 ) {
+    assert!(
+        params.bitcoin_amount_min.to_bitcoin() >= MIN_BITCOIN_AMOUNT,
+        "bitcoin_amount_min can't be less than {}",
+        MIN_BITCOIN_AMOUNT
+    );
+    assert!(params.bitcoin_amount_submit >= params.bitcoin_amount_min);
+    assert!(params.bitcoin_amount_submit <= params.bitcoin_amount_max);
+
     let (req_sender, req_receiver) =
         tokio::sync::mpsc::unbounded_channel::<ws::auto::WrappedRequest>();
     let (resp_sender, resp_receiver) =
@@ -551,9 +1054,14 @@ async fn worker(
         assets: Vec::new(),
         server_connected: false,
         utxos: Utxos::new(),
+        orders: BTreeMap::new(),
+        taken_orders: BTreeSet::<OrderId>::new(),
         wallet_balances: WalletBalances::default(),
         dealer_prices: DealerPrices::new(),
+        pending_signs: BTreeMap::<OrderId, Details>::new(),
+        own_orders: BTreeMap::<OwnOrderKey, Option<OwnOrder>>::new(),
         wallet_balance: None,
+        last_price_edit: Instant::now(),
         instant_swaps: BTreeMap::new(),
         event_sender,
         internal_sender,
@@ -561,6 +1069,16 @@ async fn worker(
             confifential_only: true,
         }),
     };
+
+    for &ticker in data.params.tickers.iter() {
+        for &send_bitcoins in [false, true].iter() {
+            let key = OwnOrderKey {
+                ticker,
+                send_bitcoins,
+            };
+            data.own_orders.insert(key, None);
+        }
+    }
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));
 

@@ -2,10 +2,11 @@ use std::time::Duration;
 
 use serde::Deserialize;
 use sideswap_api::market::AssetPair;
-use sideswap_common::channel_helpers::UncheckedUnboundedSender;
+use sideswap_common::{channel_helpers::UncheckedUnboundedSender, types::Amount};
 use sideswap_dealer::{
     dealer_rpc, market, price_stream,
     rpc::{self, RpcServer},
+    types::DealerTicker,
     utxo_data::{self, UtxoData},
 };
 
@@ -16,6 +17,11 @@ struct Settings {
     disable_new_swaps: bool,
     work_dir: String,
     rpc: RpcServer,
+
+    bitcoin_amount_submit: f64,
+    bitcoin_amount_max: f64,
+    bitcoin_amount_min: f64,
+
     api_key: Option<String>,
     web_server: Option<market::WebServerConfig>,
     ws_server: Option<market::WsServerConfig>,
@@ -117,10 +123,21 @@ async fn main() {
 
     let server_url = settings.env.base_server_ws_url();
 
+    let tickers = settings
+        .price_stream
+        .iter()
+        .filter_map(|market| (market.base == DealerTicker::LBTC).then_some(market.quote))
+        .collect();
+    log::debug!("tickers: {tickers:?}");
+
     let params = dealer_rpc::Params {
         env: settings.env,
         server_url: server_url.clone(),
         rpc: settings.rpc.clone(),
+        tickers,
+        bitcoin_amount_submit: Amount::from_bitcoin(settings.bitcoin_amount_submit),
+        bitcoin_amount_min: Amount::from_bitcoin(settings.bitcoin_amount_min),
+        bitcoin_amount_max: Amount::from_bitcoin(settings.bitcoin_amount_max),
         api_key: settings.api_key.clone(),
     };
     let (dealer_sender, mut dealer_receiver) = dealer_rpc::spawn_async(params);
