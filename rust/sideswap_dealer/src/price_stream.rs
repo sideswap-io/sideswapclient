@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 use sideswap_api::{
-    market::{AssetPair, TradeDir},
+    mkt::{AssetPair, TradeDir},
     PricePair,
 };
 use sideswap_common::{

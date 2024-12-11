@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use crate::gdk_json::{self, AddressInfo};
 
 pub struct Amounts {
@@ -20,29 +18,9 @@ pub struct SigSingleOutput {
     pub address_info: AddressInfo,
 }
 
+#[allow(dead_code)]
 pub struct SigSingleMaker {
     pub proposal: sideswap_api::LiquidexProposal,
-    pub chaining_tx: Option<MakerChainingTx>,
+    pub funding_tx: Option<elements::Transaction>,
     pub unspent_output: gdk_json::UnspentOutput,
-}
-
-pub struct MakerChainingTx {
-    pub input: sideswap_api::Utxo,
-    pub tx: elements::Transaction,
-}
-
-pub fn generate_fake_p2sh_address(env: sideswap_common::env::Env) -> elements::Address {
-    let pk_hex = "020000000000000000000000000000000000000000000000000000000000000001";
-    let pk = elements::bitcoin::PublicKey::from_str(pk_hex).unwrap();
-    let blinder = elements::secp256k1_zkp::PublicKey::from_str(pk_hex).unwrap();
-    elements::Address::p2shwpkh(&pk, Some(blinder), env.elements_params())
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-    #[test]
-    fn test_generate_fake_p2sh_address() {
-        generate_fake_p2sh_address(sideswap_common::env::Env::Prod);
-    }
 }

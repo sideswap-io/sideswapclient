@@ -1,7 +1,7 @@
 pub mod fcm_models;
 pub mod gdk;
 pub mod http_rpc;
-pub mod market;
+pub mod mkt;
 pub mod pegx;
 
 pub use elements::{
@@ -9,7 +9,9 @@ pub use elements::{
     Address, Txid,
 };
 use serde::{Deserialize, Serialize};
-use sideswap_types::{asset_precision::AssetPrecision, fee_rate::FeeRateSats, utxo_ext::UtxoExt};
+use sideswap_types::{
+    asset_precision::AssetPrecision, fee_rate::FeeRateSats, utxo_ext::UtxoExt, TransactionHex,
+};
 use std::{collections::BTreeMap, vec::Vec};
 
 pub const TICKER_LBTC: &str = "L-BTC";
@@ -624,7 +626,7 @@ impl UtxoExt for Utxo {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MakerSignedHalf {
-    pub chaining_tx: Option<sideswap_types::Transaction>,
+    pub chaining_tx: Option<TransactionHex>,
     pub proposal: LiquidexProposal,
 }
 
@@ -977,7 +979,7 @@ pub struct LiquidexProposal {
     pub inputs: [LiquidexInput; 1],
     pub outputs: [LiquidexOutput; 1],
     pub scalars: [elements::secp256k1_zkp::Tweak; 1],
-    pub transaction: sideswap_types::Transaction,
+    pub transaction: TransactionHex,
     pub version: u32,
 }
 
@@ -1036,7 +1038,7 @@ pub enum Request {
     MarketDataUnsubscribe(MarketDataUnsubscribeRequest),
     SwapPrices(SwapPricesRequest),
 
-    Market(market::Request),
+    Market(mkt::Request),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1092,7 +1094,7 @@ pub enum Response {
     MarketDataUnsubscribe(MarketDataUnsubscribeResponse),
     SwapPrices(SwapPricesResponse),
 
-    Market(market::Response),
+    Market(mkt::Response),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -1118,7 +1120,7 @@ pub enum Notification {
     MarketDataUpdate(MarketDataUpdateNotification),
     NewSwapPrice(NewSwapPriceNotification),
 
-    Market(market::Notification),
+    Market(mkt::Notification),
 }
 
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
@@ -1131,6 +1133,9 @@ pub enum ErrorCode {
     ServerError,
 
     UnknownToken,
+
+    // GAID is not allowed for trading the requested AMP asset
+    UnregisteredGaid,
 
     #[serde(other)]
     Unknown,
@@ -1146,6 +1151,7 @@ pub fn error_code(code: ErrorCode) -> i32 {
         ErrorCode::ServerError => -32000,
         ErrorCode::Unknown => 0,
         ErrorCode::UnknownToken => 1,
+        ErrorCode::UnregisteredGaid => 2,
     }
 }
 

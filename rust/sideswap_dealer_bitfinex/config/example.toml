@@ -1,8 +1,13 @@
-env = "Prod"
-apikey = ""
+env = "Testnet"
+#env = "Prod"
 
-server_url = "wss://api.sideswap.io"
+bitcoin_amount_submit = 0.025
+bitcoin_amount_min = 0.0001
+bitcoin_amount_max = 1.0
+
 status_port = 4002
+
+#apikey = "<API_KEY>" # Optional API key for instant swaps
 
 bitfinexkey = "<YOUR_BITFINEX_KEY>"
 bitfinexsecret = "<YOUR_BITFINEX_SECRET>"
@@ -21,4 +26,4 @@ login = "<YOUR_ELEMENTS_LOGIN>"
 password = "<YOUR_ELEMENTS_PASSWORD>"
 
 [notifications]
-url = "" # optional slack notifications url
+#url = "<SLACK_URL>" # optional notifications url

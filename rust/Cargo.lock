@@ -3980,16 +3980,15 @@ version = "0.1.2"
 dependencies = [
  "allo-isolate",
  "anyhow",
- "base64 0.21.7",
  "bip39",
  "bitcoin",
  "block-modes",
  "bytes",
  "chrono",
  "ciborium",
- "crossbeam-channel",
  "derive_more 0.99.18",
  "elements",
+ "elements-miniscript",
  "flexi_logger",
  "gdk-common",
  "gdk-registry",
@@ -4078,6 +4077,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-tungstenite",
+ "vergen",
 ]
 
 [[package]]
@@ -4156,6 +4156,7 @@ dependencies = [
  "bip39",
  "config",
  "elements",
+ "hex",
  "log",
  "lwk_common",
  "lwk_signer",
@@ -4176,7 +4177,6 @@ dependencies = [
  "base64 0.21.7",
  "ciborium",
  "ciborium-io",
- "crossbeam-channel",
  "elements",
  "futures",
  "hex",

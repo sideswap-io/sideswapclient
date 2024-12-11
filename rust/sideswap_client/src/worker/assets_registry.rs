@@ -83,7 +83,7 @@ fn get_registry_config(env: Env) -> gdk_registry::Config {
         }
     };
     gdk_registry::Config {
-        // FIXME: Use correct proxy value
+        // FIXME: Use correct proxy value (socks5://{ip}:{port})
         proxy: None,
         url: env.nd().asset_registry_url.to_owned(),
         network,

@@ -10,8 +10,7 @@ pub mod timestamp_ms;
 pub mod timestamp_us;
 pub mod utxo_ext;
 
-pub type AssetCommitment = HexEncoded<elements::confidential::Asset>;
-pub type ValueCommitment = HexEncoded<elements::confidential::Value>;
-pub type NonceCommitment = HexEncoded<elements::confidential::Nonce>;
+pub type AssetHex = HexEncoded<elements::confidential::Asset>;
+pub type ValueHex = HexEncoded<elements::confidential::Value>;
 
-pub type Transaction = HexEncoded<elements::Transaction>;
+pub type TransactionHex = HexEncoded<elements::Transaction>;

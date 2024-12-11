@@ -5,6 +5,7 @@ use base64::Engine;
 use elements::{pset::PartiallySignedTransaction, secp256k1_zkp::SECP256K1, AssetId, TxOutSecrets};
 use sideswap_common::{
     network::Network,
+    pset_blind::get_blinding_nonces,
     recipient::Recipient,
     send_tx::{
         coin_select::{self, InOut},
@@ -256,7 +257,7 @@ pub fn create_payjoin(
 
     let ConstructedPset {
         blinded_pset,
-        blinding_nonces,
+        blinded_outputs,
     } = construct_pset(ConstructPsetArgs {
         policy_asset,
         offlines: Vec::new(),
@@ -288,7 +289,7 @@ pub fn create_payjoin(
 
     Ok(CreatedPayjoin {
         pset,
-        blinding_nonces,
+        blinding_nonces: get_blinding_nonces(&blinded_outputs),
         asset_fee: server_fee.value,
         network_fee: network_fee.value,
     })

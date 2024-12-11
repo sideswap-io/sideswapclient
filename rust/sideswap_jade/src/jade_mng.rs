@@ -26,6 +26,7 @@ pub enum JadeStatus {
 pub type JadeStatusCallback = std::sync::Arc<Box<dyn Fn(JadeStatus)>>;
 
 use crate::{
+    byte_array::ByteArray32,
     http_request::handle_http_request,
     models,
     transports::{self, Connection, Transport},
@@ -113,6 +114,7 @@ impl ManagedJade {
             let connecting_status = match self.transport.transport_type() {
                 transports::TransportType::Serial => JadeStatus::Idle,
                 transports::TransportType::Ble => JadeStatus::Connecting,
+                transports::TransportType::Tcp => JadeStatus::Idle,
             };
             self.set_status(connecting_status);
             let open_res = self.transport.open(&self.jade_id);
@@ -228,9 +230,7 @@ impl ManagedJade {
         let resp = self.make_request::<models::ReqAuthUser, models::RespAuthUser>(
             "auth_user",
             std::time::Duration::from_secs(300),
-            models::ReqAuthUser {
-                network: network.name().to_owned(),
-            },
+            models::ReqAuthUser { network },
         )?;
         let http_resp = handle_http_request(&self.agent, &resp)?;
 
@@ -268,7 +268,7 @@ impl ManagedJade {
             "get_xpub",
             std::time::Duration::from_secs(300),
             models::ReqGetXPub {
-                network: network.name().to_owned(),
+                network,
                 path: path.to_owned(),
             },
         )?;
@@ -340,7 +340,7 @@ impl ManagedJade {
 
     pub fn get_signature(
         &self,
-        req: Option<serde_bytes::ByteBuf>,
+        req: Option<ByteArray32>,
     ) -> Result<Option<Vec<u8>>, anyhow::Error> {
         let resp = self.make_request::<models::ReqGetSignature, models::RespGetSignature>(
             "get_signature",
@@ -367,7 +367,7 @@ impl ManagedJade {
             models::ReqSignMessage {
                 path: req.path,
                 message: req.message,
-                ae_host_commitment: serde_bytes::ByteBuf::from(req.ae_host_commitment),
+                ae_host_commitment: req.ae_host_commitment,
             },
         )?;
         Ok(resp.into_vec())
@@ -398,6 +398,8 @@ impl JadeMng {
 
         #[cfg(any(target_os = "android", target_os = "ios"))]
         transports.push(Arc::new(transports::ble::BleTransport::new()));
+
+        transports.push(Arc::new(transports::tcp::TcpTransport::new()));
 
         JadeMng {
             transports,

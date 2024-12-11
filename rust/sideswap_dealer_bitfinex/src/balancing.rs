@@ -180,7 +180,7 @@ pub async fn process_balancing(
     wallet_balances_confirmed: &WalletBalances,
     exchange_balances: &ExchangeBalances,
     module_connected: bool,
-    args: &Args,
+    args: &Settings,
     bf_sender: &UnboundedSender<bitfinex_worker::Request>,
 ) {
     let network = args.env.d().network;
@@ -396,7 +396,7 @@ pub async fn process_balancing(
     }
 }
 
-pub fn process_withdraw(storage: &mut Storage, withdraw_id: i64, args: &Args) {
+pub fn process_withdraw(storage: &mut Storage, withdraw_id: i64, args: &Settings) {
     info!("withdraw result received, withdraw_id: {}", withdraw_id);
     if let Some(balancing) = storage.balancing.as_mut() {
         match balancing.state {
@@ -442,7 +442,7 @@ pub fn process_withdraw(storage: &mut Storage, withdraw_id: i64, args: &Args) {
 pub fn process_movements(
     storage: &mut Storage,
     msg: Movements,
-    args: &Args,
+    args: &Settings,
     movements: &mut Option<Movements>,
 ) {
     if !msg.success {
@@ -508,7 +508,7 @@ pub fn process_movements(
     }
 }
 
-pub fn process_transfer(storage: &mut Storage, success: bool, args: &Args) {
+pub fn process_transfer(storage: &mut Storage, success: bool, args: &Settings) {
     debug!("transfer result: {:?}", &success);
     if storage.balancing.is_some() {
         if !success {

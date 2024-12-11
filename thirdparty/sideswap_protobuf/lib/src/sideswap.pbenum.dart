@@ -13,6 +13,80 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
+class AssetType extends $pb.ProtobufEnum {
+  static const AssetType BASE = AssetType._(1, _omitEnumNames ? '' : 'BASE');
+  static const AssetType QUOTE = AssetType._(2, _omitEnumNames ? '' : 'QUOTE');
+
+  static const $core.List<AssetType> values = <AssetType> [
+    BASE,
+    QUOTE,
+  ];
+
+  static final $core.Map<$core.int, AssetType> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static AssetType? valueOf($core.int value) => _byValue[value];
+
+  const AssetType._($core.int v, $core.String n) : super(v, n);
+}
+
+class MarketType_ extends $pb.ProtobufEnum {
+  static const MarketType_ STABLECOIN = MarketType_._(1, _omitEnumNames ? '' : 'STABLECOIN');
+  static const MarketType_ AMP = MarketType_._(2, _omitEnumNames ? '' : 'AMP');
+  static const MarketType_ TOKEN = MarketType_._(3, _omitEnumNames ? '' : 'TOKEN');
+
+  static const $core.List<MarketType_> values = <MarketType_> [
+    STABLECOIN,
+    AMP,
+    TOKEN,
+  ];
+
+  static final $core.Map<$core.int, MarketType_> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static MarketType_? valueOf($core.int value) => _byValue[value];
+
+  const MarketType_._($core.int v, $core.String n) : super(v, n);
+}
+
+class TradeDir extends $pb.ProtobufEnum {
+  static const TradeDir SELL = TradeDir._(1, _omitEnumNames ? '' : 'SELL');
+  static const TradeDir BUY = TradeDir._(2, _omitEnumNames ? '' : 'BUY');
+
+  static const $core.List<TradeDir> values = <TradeDir> [
+    SELL,
+    BUY,
+  ];
+
+  static final $core.Map<$core.int, TradeDir> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static TradeDir? valueOf($core.int value) => _byValue[value];
+
+  const TradeDir._($core.int v, $core.String n) : super(v, n);
+}
+
+class HistStatus extends $pb.ProtobufEnum {
+  static const HistStatus MEMPOOL = HistStatus._(1, _omitEnumNames ? '' : 'MEMPOOL');
+  static const HistStatus CONFIRMED = HistStatus._(2, _omitEnumNames ? '' : 'CONFIRMED');
+  static const HistStatus TX_CONFLICT = HistStatus._(3, _omitEnumNames ? '' : 'TX_CONFLICT');
+  static const HistStatus TX_NOT_FOUND = HistStatus._(4, _omitEnumNames ? '' : 'TX_NOT_FOUND');
+  static const HistStatus ELAPSED = HistStatus._(5, _omitEnumNames ? '' : 'ELAPSED');
+  static const HistStatus CANCELLED = HistStatus._(6, _omitEnumNames ? '' : 'CANCELLED');
+  static const HistStatus UTXO_INVALIDATED = HistStatus._(7, _omitEnumNames ? '' : 'UTXO_INVALIDATED');
+  static const HistStatus REPLACED = HistStatus._(8, _omitEnumNames ? '' : 'REPLACED');
+
+  static const $core.List<HistStatus> values = <HistStatus> [
+    MEMPOOL,
+    CONFIRMED,
+    TX_CONFLICT,
+    TX_NOT_FOUND,
+    ELAPSED,
+    CANCELLED,
+    UTXO_INVALIDATED,
+    REPLACED,
+  ];
+
+  static final $core.Map<$core.int, HistStatus> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static HistStatus? valueOf($core.int value) => _byValue[value];
+
+  const HistStatus._($core.int v, $core.String n) : super(v, n);
+}
+
 class From_DecryptPin_ErrorCode extends $pb.ProtobufEnum {
   static const From_DecryptPin_ErrorCode WRONG_PIN = From_DecryptPin_ErrorCode._(1, _omitEnumNames ? '' : 'WRONG_PIN');
   static const From_DecryptPin_ErrorCode NETWORK_ERROR = From_DecryptPin_ErrorCode._(2, _omitEnumNames ? '' : 'NETWORK_ERROR');

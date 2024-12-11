@@ -5,16 +5,11 @@ use serde::Deserialize;
 use sideswap_types::normal_float::NormalFloat;
 use tokio::{
     net::{TcpListener, TcpStream},
-    sync::{
-        mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
-        oneshot,
-    },
+    sync::mpsc::{unbounded_channel, UnboundedReceiver},
 };
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 
-use super::{ClientCommand, ClientEvent, ClientId, Error};
-
-mod api;
+use super::{api, controller::Controller, ClientEvent, ClientId, Error};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -22,43 +17,9 @@ pub struct Config {
 }
 
 struct Data {
+    controller: Controller,
     client_id: ClientId,
     ws_stream: WebSocketStream<TcpStream>,
-    command_sender: UnboundedSender<ClientCommand>,
-}
-
-impl Error {
-    fn code(&self) -> api::ErrorCode {
-        match self {
-            Error::ChannelClosed
-            | Error::WsRequestError(_)
-            | Error::UnexpectedResponse(_)
-            | Error::TryAgain
-            | Error::ServerDisconnected => api::ErrorCode::ServerError,
-            Error::UnknownTicker(_) | Error::InvalidFloat(_) => api::ErrorCode::InvalidRequest,
-        }
-    }
-
-    fn details(&self) -> Option<api::ErrorDetails> {
-        match self {
-            Error::ChannelClosed
-            | Error::WsRequestError(_)
-            | Error::UnexpectedResponse(_)
-            | Error::TryAgain
-            | Error::ServerDisconnected
-            | Error::UnknownTicker(_)
-            | Error::InvalidFloat(_) => None,
-        }
-    }
-}
-
-fn convert_order(order: &super::PublicOrder_) -> api::PubOrder {
-    api::PubOrder {
-        order_id: order.order_id,
-        trade_dir: order.trade_dir,
-        amount: order.amount,
-        price: order.price.value(),
-    }
 }
 
 async fn send_msg(data: &mut Data, msg: Message) {
@@ -77,27 +38,14 @@ async fn send_notif(data: &mut Data, notif: api::Notif) {
     send_from(data, api::From::Notif { notif }).await;
 }
 
-fn send_command(data: &Data, command: ClientCommand) {
-    let res = data.command_sender.send(command);
-    if let Err(err) = res {
-        log::debug!("command sending failed: {err}");
-    }
-}
-
 async fn process_ws_req(data: &mut Data, req: api::Req) -> Result<api::Resp, Error> {
     match req {
         api::Req::Subscribe(req) => {
-            let (res_sender, res_receiver) = oneshot::channel();
-            send_command(
-                data,
-                ClientCommand::WsSubscribe {
-                    client_id: data.client_id,
-                    exchange_pair: req.exchange_pair,
-                    res_sender: res_sender.into(),
-                },
-            );
-            let resp = res_receiver.await??;
-            let orders = resp.orders.iter().map(convert_order).collect();
+            let resp = data
+                .controller
+                .client_subscribe(data.client_id, req.exchange_pair)
+                .await?;
+            let orders = resp.orders.into_iter().map(Into::into).collect();
             Ok(api::Resp::Subscribe(api::SubscribeResp { orders }))
         }
     }
@@ -114,11 +62,7 @@ async fn process_to_msg(data: &mut Data, to: api::To) {
                         data,
                         api::From::Error {
                             id,
-                            err: api::Error {
-                                code: err.code(),
-                                text: err.to_string(),
-                                details: err.details(),
-                            },
+                            err: err.into(),
                         },
                     )
                     .await
@@ -196,7 +140,7 @@ async fn process_client_event(data: &mut Data, event: ClientEvent) {
                 data,
                 api::Notif::OrderCreated(api::OrderCreatedNotif {
                     exchange_pair,
-                    order: convert_order(&order),
+                    order: order.into(),
                 }),
             )
             .await;
@@ -227,6 +171,17 @@ async fn process_client_event(data: &mut Data, event: ClientEvent) {
                     exchange_pair,
                     ind_price: ind_price.map(NormalFloat::value),
                     last_price: last_price.map(NormalFloat::value),
+                }),
+            )
+            .await;
+        }
+
+        ClientEvent::HistoryUpdated { order, is_new } => {
+            send_notif(
+                data,
+                api::Notif::HistoryUpdated(api::HistoryUpdatedNotif {
+                    order: order.into(),
+                    is_new,
                 }),
             )
             .await;
@@ -273,11 +228,7 @@ async fn client_loop(
     Ok(())
 }
 
-async fn client_run(
-    client_id: ClientId,
-    command_sender: UnboundedSender<ClientCommand>,
-    tcp_stream: TcpStream,
-) {
+async fn client_run(controller: Controller, client_id: ClientId, tcp_stream: TcpStream) {
     let ws_stream = match tokio_tungstenite::accept_async(tcp_stream).await {
         Ok(ws_stream) => ws_stream,
         Err(err) => {
@@ -287,20 +238,15 @@ async fn client_run(
     };
 
     let mut data = Data {
+        controller,
         client_id,
         ws_stream,
-        command_sender,
     };
 
     let (event_sender, event_receiver) = unbounded_channel();
 
-    send_command(
-        &data,
-        ClientCommand::ClientConnected {
-            client_id,
-            event_sender: event_sender.into(),
-        },
-    );
+    data.controller
+        .client_connected(client_id, event_sender.into());
 
     let result = client_loop(&mut data, event_receiver).await;
 
@@ -308,10 +254,10 @@ async fn client_run(
         log::debug!("ws connection stopped: {err}");
     }
 
-    send_command(&data, ClientCommand::ClientDisconnected { client_id });
+    data.controller.client_disconnected(client_id);
 }
 
-async fn run(config: Config, command_sender: UnboundedSender<ClientCommand>) {
+async fn run(config: Config, controller: Controller) {
     let listener = TcpListener::bind(&config.listen_on)
         .await
         .expect("port must be open");
@@ -324,10 +270,10 @@ async fn run(config: Config, command_sender: UnboundedSender<ClientCommand>) {
         last_id += 1;
         let client_id = ClientId(last_id);
 
-        tokio::spawn(client_run(client_id, command_sender.clone(), tcp_stream));
+        tokio::spawn(client_run(controller.clone(), client_id, tcp_stream));
     }
 }
 
-pub fn start(config: Config, command_sender: UnboundedSender<ClientCommand>) {
-    tokio::task::spawn(run(config, command_sender));
+pub fn start(config: Config, controller: Controller) {
+    tokio::task::spawn(run(config, controller));
 }

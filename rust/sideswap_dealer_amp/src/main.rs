@@ -1,7 +1,8 @@
+use std::sync::Arc;
 use std::time::Duration;
 
 use elements::pset::PartiallySignedTransaction;
-use sideswap_api::market::AssetPair;
+use sideswap_api::mkt::AssetPair;
 use sideswap_api::{AssetBlindingFactor, ValueBlindingFactor};
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
 use sideswap_dealer::{market, price_stream};
@@ -19,18 +20,18 @@ struct Settings {
 }
 
 struct Data {
-    wallet: sideswap_amp::Wallet,
+    wallet: Arc<sideswap_amp::Wallet>,
     market_command_sender: UncheckedUnboundedSender<market::Command>,
     sync_utxos: bool,
     price_stream: price_stream::Data,
 }
 
 async fn sign_swap(
-    data: &mut Data,
+    wallet: &sideswap_amp::Wallet,
     pset: PartiallySignedTransaction,
 ) -> Result<PartiallySignedTransaction, anyhow::Error> {
-    let all_utxos = data.wallet.unspent_outputs().await?;
-    let pset = data.wallet.user_sign_swap_pset(pset, all_utxos)?;
+    let all_utxos = wallet.unspent_outputs().await?;
+    let pset = wallet.user_sign_swap_pset(pset, all_utxos)?;
     Ok(pset)
 }
 
@@ -62,31 +63,32 @@ async fn process_market_event(data: &mut Data, event: market::Event) {
         market::Event::SignSwap { quote_id, pset } => {
             log::info!("sign swap, quote_id: {}", quote_id.value());
 
-            let res = sign_swap(data, pset).await;
+            let wallet = Arc::clone(&data.wallet);
+            let market_command_sender = data.market_command_sender.clone();
 
-            match res {
-                Ok(pset) => {
-                    data.market_command_sender
-                        .send(market::Command::SignedSwap { quote_id, pset });
+            tokio::spawn(async move {
+                let res = sign_swap(&wallet, pset).await;
+
+                match res {
+                    Ok(pset) => {
+                        market_command_sender.send(market::Command::SignedSwap { quote_id, pset });
+                    }
+                    Err(err) => {
+                        log::error!("swap sign failed: {err}");
+                    }
                 }
-                Err(err) => {
-                    log::error!("pset sign failed: {err}");
-                }
-            }
+            });
         }
 
-        market::Event::GetNewAddress => {
-            let res = data.wallet.receive_address().await;
-
-            match res {
-                Ok(address) => {
-                    data.market_command_sender
-                        .send(market::Command::NewAddress { address });
-                }
-                Err(err) => {
-                    log::error!("loading address failed: {err}");
-                }
-            }
+        market::Event::NewAddress { res_sender } => {
+            let wallet = Arc::clone(&data.wallet);
+            tokio::spawn(async move {
+                let res = wallet
+                    .receive_address()
+                    .await
+                    .map_err(|err| anyhow::anyhow!("loading address failed: {err}"));
+                res_sender.send(res);
+            });
         }
 
         market::Event::SwapSucceed {
@@ -98,6 +100,17 @@ async fn process_market_event(data: &mut Data, event: market::Event) {
             txid,
         } => {
             log::info!("market swap, base: {base}, quote: {quote}, base amount: {base_amount}, quote amount: {quote_amount}, price: {price}, txid: {txid}, trade_dir: {trade_dir:?}");
+        }
+
+        market::Event::BroadcastTx { tx } => {
+            let wallet = Arc::clone(&data.wallet);
+            tokio::spawn(async move {
+                let res = wallet.broadcast_tx(tx).await;
+                match res {
+                    Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
+                    Err(err) => log::error!("tx broadcast failed: {err}"),
+                }
+            });
         }
     }
 }
@@ -167,8 +180,6 @@ async fn main() {
 
     sideswap_dealer::logs::init(&settings.work_dir);
 
-    log::info!("started");
-
     sideswap_common::panic_handler::install_panic_handler();
 
     let network = settings.env.d().network;
@@ -188,7 +199,7 @@ async fn main() {
     let price_stream = price_stream::Data::new(settings.env, settings.price_stream.clone());
 
     let mut data = Data {
-        wallet,
+        wallet: Arc::new(wallet),
         market_command_sender: market_command_sender.into(),
         sync_utxos: false,
         price_stream,

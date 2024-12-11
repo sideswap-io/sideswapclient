@@ -1,11 +1,13 @@
 use std::collections::BTreeMap;
 
+use anyhow::bail;
 use sideswap_api::{Asset, AssetId};
+use sideswap_jade::jade_mng;
 
 use crate::{
     ffi,
     gdk_json::{self, AddressInfo},
-    gdk_ses::{self, NotifCallback, WalletInfo},
+    gdk_ses::{self, Balances, NotifCallback, SignWith, WalletInfo},
     gdk_ses_impl::CreatedTxCache,
     settings::WatchOnly,
 };
@@ -18,8 +20,8 @@ enum GdkState {
 }
 
 struct GdkSesMng {
-    watch_only: Box<dyn crate::gdk_ses::GdkSes>,
-    jade: Box<dyn crate::gdk_ses::GdkSes>,
+    watch_only: Box<dyn crate::gdk_ses::GdkSes + Send>,
+    jade: Box<dyn crate::gdk_ses::GdkSes + Send>,
     jade_state: std::sync::Arc<std::sync::Mutex<GdkState>>,
 }
 
@@ -58,11 +60,11 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
 
     fn update_sync_interval(&self, _time: u32) {}
 
-    fn get_balances(&self) -> Result<std::collections::BTreeMap<AssetId, i64>, anyhow::Error> {
+    fn get_balances(&self) -> Result<Balances, anyhow::Error> {
         self.watch_only.get_balances()
     }
 
-    fn get_transactions_impl(&self) -> Result<Vec<crate::gdk_json::Transaction>, anyhow::Error> {
+    fn get_transactions_impl(&self) -> Result<Vec<gdk_json::Transaction>, anyhow::Error> {
         self.watch_only.get_transactions_impl()
     }
 
@@ -92,31 +94,16 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
         self.jade.send_tx(cache, id, assets)
     }
 
-    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {
+    fn broadcast_tx(&mut self, tx: &str) -> Result<(), anyhow::Error> {
+        self.check_jade()?;
+        self.jade.broadcast_tx(tx)
+    }
+
+    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputs, anyhow::Error> {
         self.watch_only.get_utxos()
     }
 
-    fn get_tx_fee(
-        &mut self,
-        asset_id: sideswap_api::AssetId,
-        send_amount: i64,
-        addr: &str,
-    ) -> Result<gdk_ses::TxFeeInfo, anyhow::Error> {
-        self.watch_only.get_tx_fee(asset_id, send_amount, addr)
-    }
-
-    fn make_pegout_payment(
-        &mut self,
-        send_amount: i64,
-        peg_addr: &str,
-        send_amount_exact: i64,
-    ) -> Result<crate::worker::PegPayment, anyhow::Error> {
-        self.check_jade()?;
-        self.jade
-            .make_pegout_payment(send_amount, peg_addr, send_amount_exact)
-    }
-
-    fn get_blinded_values(&self, txid: &str) -> Result<Vec<String>, anyhow::Error> {
+    fn get_blinded_values(&self, txid: &elements::Txid) -> Result<Vec<String>, anyhow::Error> {
         self.watch_only.get_blinded_values(txid)
     }
 
@@ -128,7 +115,7 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
         if last_pointer.is_none() && self.get_jade_state() == GdkState::LoggedIn {
             let check_result = self.jade.get_previous_addresses(None, is_internal);
             if let Err(e) = check_result {
-                debug!("GDK jade connection check failed: {}", e);
+                log::debug!("GDK jade connection check failed: {}", e);
                 self.jade.disconnect();
                 self.jade.connect();
                 self.set_jade_state(GdkState::Disconnected);
@@ -161,6 +148,20 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
             .verify_and_sign_pset(amounts, pset, nonces, assets)
     }
 
+    fn sign_pset(
+        &mut self,
+        utxos: &gdk_json::UnspentOutputs,
+        pset: &str,
+        nonces: &[String],
+        assets: &BTreeMap<AssetId, Asset>,
+        tx_type: jade_mng::TxType,
+        sign_with: SignWith,
+    ) -> Result<String, anyhow::Error> {
+        self.check_jade()?;
+        self.jade
+            .sign_pset(utxos, pset, nonces, assets, tx_type, sign_with)
+    }
+
     fn set_memo(&mut self, txid: &str, memo: &str) -> Result<(), anyhow::Error> {
         self.watch_only.set_memo(txid, memo)
     }
@@ -181,7 +182,7 @@ impl GdkSesMng {
                 bail!("GDK jade is disconnected");
             }
             GdkState::Connected => {
-                debug!("try login GDK jade");
+                log::debug!("try login GDK jade");
                 self.jade.login()?;
                 self.set_jade_state(GdkState::LoggedIn);
             }
@@ -195,7 +196,7 @@ pub fn start_processing(
     info_jade: gdk_ses::LoginInfo,
     notif_callback: NotifCallback,
     watch_only: WatchOnly,
-) -> Result<Box<dyn crate::gdk_ses::GdkSes>, anyhow::Error> {
+) -> Result<Box<dyn crate::gdk_ses::GdkSes + Send>, anyhow::Error> {
     let mut info_watch_only = info_jade.clone();
     info_watch_only.wallet_info = WalletInfo::WatchOnly(watch_only);
 
@@ -213,7 +214,7 @@ pub fn start_processing(
             wait_ms: _,
         }) = &notif.network
         {
-            debug!("GDK jade connected");
+            log::debug!("GDK jade connected");
             *jade_state_copy.lock().unwrap() = GdkState::Connected;
         }
 
@@ -223,7 +224,7 @@ pub fn start_processing(
             wait_ms: _,
         }) = &notif.network
         {
-            debug!("GDK jade disconnected");
+            log::debug!("GDK jade disconnected");
             *jade_state_copy.lock().unwrap() = GdkState::Disconnected;
         }
     });

@@ -60,20 +60,6 @@ class NativeLibrary {
   late final _sideswap_send_request = _sideswap_send_requestPtr
       .asFunction<void Function(int, ffi.Pointer<ffi.Uint8>, int)>();
 
-  int sideswap_recv_request(
-    int client,
-  ) {
-    return _sideswap_recv_request(
-      client,
-    );
-  }
-
-  late final _sideswap_recv_requestPtr =
-      _lookup<ffi.NativeFunction<ffi.Uint64 Function(IntPtr)>>(
-          'sideswap_recv_request');
-  late final _sideswap_recv_request =
-      _sideswap_recv_requestPtr.asFunction<int Function(int)>();
-
   void sideswap_process_background(
     ffi.Pointer<ffi.Char> data,
   ) {
@@ -878,8 +864,6 @@ const int __PTHREAD_RWLOCK_ELISION_EXTRA = 0;
 const int __have_pthread_attr_t = 1;
 
 const int _ALLOCA_H = 1;
-
-const int SIDESWAP_DART_PORT_DISABLED = -1;
 
 const int SIDESWAP_BITCOIN = 1;
 

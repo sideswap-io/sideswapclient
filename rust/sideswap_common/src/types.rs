@@ -19,6 +19,7 @@ use sideswap_types::{asset_precision::AssetPrecision, fee_rate::FeeRateSats};
 pub struct Amount(pub i64);
 
 pub const MAX_BTC_AMOUNT: f64 = 21_000_000.0;
+pub const MAX_SAT_AMOUNT: u64 = 21_000_000 * 100_000_000;
 
 pub const COIN: i64 = 100_000_000;
 

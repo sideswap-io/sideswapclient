@@ -54,7 +54,7 @@ dependencies:
   easy_logger: ^0.0.2
   enum_to_string: ^2.0.1
   equatable: ^2.0.5
-  extended_text: ^13.0.2
+  extended_text: ^14.0.1
   faker: ^2.1.0
   ffi: ^2.1.2
   file_selector: ^1.0.3

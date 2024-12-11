@@ -13,8 +13,8 @@ use bitfinex_api::movements::Movements;
 use elements::AssetId;
 use log::{debug, error, info, warn};
 use serde::Deserialize;
-use sideswap_api::market::AssetPair;
-use sideswap_api::market::TradeDir;
+use sideswap_api::mkt::AssetPair;
+use sideswap_api::mkt::TradeDir;
 use sideswap_api::PricePair;
 use sideswap_api::PriceUpdateBroadcast;
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
@@ -144,23 +144,19 @@ type ExternalPrices = BTreeMap<ExchangePair, f64>;
 type PendingOrders = BTreeMap<i64, Instant>;
 
 #[derive(Debug, Deserialize)]
-pub struct Args {
+pub struct Settings {
     env: sideswap_common::env::Env,
 
     bitcoin_amount_submit: f64,
     bitcoin_amount_min: f64,
     bitcoin_amount_max: f64,
 
-    server_url: String,
+    server_url: Option<String>,
 
     status_port: u16,
 
-    rpc: rpc::RpcServer,
-
     #[serde(rename = "apikey")]
     api_key: Option<String>,
-
-    notifications: NotificationSettings,
 
     #[serde(rename = "bitfinexkey")]
     bitfinex_key: String,
@@ -173,6 +169,10 @@ pub struct Args {
     work_dir: String,
     storage_path: String,
     balancing_enabled: bool,
+
+    rpc: rpc::RpcServer,
+
+    notifications: NotificationSettings,
 
     external_prices: Option<external_prices::Settings>,
 }
@@ -264,7 +264,7 @@ struct ProfitsReport {
 type HealthStatus = Arc<std::sync::Mutex<Option<String>>>;
 
 struct Data {
-    args: Args,
+    settings: Settings,
     network: sideswap_common::network::Network,
     policy_asset: AssetId,
     server_connected: bool,
@@ -358,7 +358,7 @@ fn hedge_order(data: &mut Data, swap: SwapSucceed) {
         swap.bitcoin_amount.to_bitcoin()
     );
     data.balancing_blocked = Instant::now();
-    let bf_fee = if data.args.env.d().mainnet {
+    let bf_fee = if data.settings.env.d().mainnet {
         BITFINEX_FEE_PROD
     } else {
         BITFINEX_FEE_TEST
@@ -439,14 +439,17 @@ async fn process_dealer_event(data: &mut Data, event: Event) {
 
         Event::ServerConnected(_) => {
             info!("connected to server");
-            send_notification("connected to the server", &data.args.notifications.url);
+            send_notification("connected to the server", &data.settings.notifications.url);
 
             data.server_connected = true;
         }
 
         Event::ServerDisconnected(_) => {
             warn!("disconnected from server");
-            send_notification("disconnected from the server", &data.args.notifications.url);
+            send_notification(
+                "disconnected from the server",
+                &data.settings.notifications.url,
+            );
             data.server_connected = false;
         }
 
@@ -495,7 +498,7 @@ async fn process_dealer_event(data: &mut Data, event: Event) {
                     .collect::<Vec<_>>();
                 let balance_str = balances.join(", ");
                 let message = format!("ss: {}", &balance_str);
-                send_notification(&message, &data.args.notifications.url);
+                send_notification(&message, &data.settings.notifications.url);
             }
         }
     }
@@ -560,7 +563,7 @@ fn submit_dealer_prices(data: &mut Data) {
 }
 
 fn submit_market_prices(data: &mut Data) {
-    let assets = &data.args.env.nd().known_assets;
+    let assets = &data.settings.env.nd().known_assets;
 
     let mut orders = Vec::new();
 
@@ -691,7 +694,7 @@ async fn process_timer(data: &mut Data) {
         (balance_exchange_usdt < MIN_BALANCE_TETHER).then_some("ExchangeTetherLow"),
         balancing_expired.then_some("BalancingStuck"),
         (data.failed_orders_count != 0).then_some("FailedOrderSubmit"),
-        (data.external_prices.len() != 2).then_some("ExternalPrices"),
+        (data.external_prices.len() != 3).then_some("ExternalPrices"),
     ]
     .iter()
     .flatten()
@@ -705,9 +708,9 @@ async fn process_timer(data: &mut Data) {
 
     let usdt_price = data.bfx_prices.get(&ExchangePair::BtcUsdt).cloned();
     if data.storage.balancing.is_none()
-        && data.args.env.d().mainnet
+        && data.settings.env.d().mainnet
         && now.duration_since(data.balancing_blocked) > std::time::Duration::from_secs(60)
-        && data.args.balancing_enabled
+        && data.settings.balancing_enabled
         && usdt_price.is_some()
     {
         let usdt_price = usdt_price.unwrap();
@@ -746,7 +749,7 @@ async fn process_timer(data: &mut Data) {
             .collect::<Vec<_>>();
         let balance_str = balances.join(", ");
         let message = format!("bfx: {}", &balance_str);
-        send_notification(&message, &data.args.notifications.url);
+        send_notification(&message, &data.settings.notifications.url);
     }
 
     balancing::process_balancing(
@@ -754,7 +757,7 @@ async fn process_timer(data: &mut Data) {
         &data.wallet_balances_confirmed,
         &data.exchange_balances,
         data.bfx_connected,
-        &data.args,
+        &data.settings,
         &data.bf_sender,
     )
     .await;
@@ -824,7 +827,7 @@ async fn process_timer(data: &mut Data) {
                     "swap complete, balance change: bitcoin: {:0.8}, usdt: {:0.8}, eurx: {:0.8}",
                     bitcoin_change, usdt_change, eur_change
                 ),
-                &data.args.notifications.url,
+                &data.settings.notifications.url,
             );
             data.profit_reports = None;
         }
@@ -841,7 +844,7 @@ async fn process_timer(data: &mut Data) {
     for cid in expired_orders {
         send_notification(
             &format!(":fire: bf order {} timeout", cid),
-            &data.args.notifications.url,
+            &data.settings.notifications.url,
         );
         data.pending_orders.remove(&cid);
     }
@@ -850,13 +853,18 @@ async fn process_timer(data: &mut Data) {
 fn process_bf_worker(data: &mut Data, resp: bitfinex_worker::Response) {
     match resp {
         bitfinex_worker::Response::Withdraw { withdraw_id } => {
-            balancing::process_withdraw(&mut data.storage, withdraw_id, &data.args);
+            balancing::process_withdraw(&mut data.storage, withdraw_id, &data.settings);
         }
         bitfinex_worker::Response::Transfer { success } => {
-            balancing::process_transfer(&mut data.storage, success, &data.args);
+            balancing::process_transfer(&mut data.storage, success, &data.settings);
         }
         bitfinex_worker::Response::Movements(msg) => {
-            balancing::process_movements(&mut data.storage, msg, &data.args, &mut data.movements);
+            balancing::process_movements(
+                &mut data.storage,
+                msg,
+                &data.settings,
+                &mut data.movements,
+            );
         }
         bitfinex_worker::Response::OrderSubmit(req, res) => match res {
             Ok(order) => {
@@ -872,7 +880,7 @@ fn process_bf_worker(data: &mut Data, resp: bitfinex_worker::Response) {
                         "bfx order(s) submit failed, count: {}, total: {} btc",
                         data.failed_orders_count, data.failed_orders_total,
                     ),
-                    &data.args.notifications.url,
+                    &data.settings.notifications.url,
                 );
             }
         },
@@ -884,7 +892,7 @@ async fn process_bf_event(data: &mut Data, event: bfx_ws_api::Event) {
         bfx_ws_api::Event::Connected => {
             data.bfx_connected = true;
             info!("connected to bfx ws");
-            send_notification("bfx ws connection online", &data.args.notifications.url);
+            send_notification("bfx ws connection online", &data.settings.notifications.url);
 
             data.msg_tx.send(Msg::CheckExchange).unwrap();
         }
@@ -894,7 +902,7 @@ async fn process_bf_event(data: &mut Data, event: bfx_ws_api::Event) {
             info!("disconnected from bfx ws: {reason}");
             send_notification(
                 &format!("bfx ws connection offline: {reason}"),
-                &data.args.notifications.url,
+                &data.settings.notifications.url,
             );
             data.bfx_prices.clear();
             process_timer(data).await;
@@ -959,7 +967,7 @@ async fn process_bf_event(data: &mut Data, event: bfx_ws_api::Event) {
                         "bfx price refreshed: {}/{} for {}",
                         price.ask, price.bid, exchange_pair,
                     ),
-                    &data.args.notifications.url,
+                    &data.settings.notifications.url,
                 );
             }
         }
@@ -999,10 +1007,10 @@ fn process_msg(data: &mut Data, msg: Msg) {
                     txid: None,
                     withdraw_id: None,
                 });
-                save_storage(&data.storage, &data.args.storage_path);
+                save_storage(&data.storage, &data.settings.storage_path);
                 send_notification(
                     &format!("start balancing, {}, amount: {}", name, amount),
-                    &data.args.notifications.url,
+                    &data.settings.notifications.url,
                 );
                 cli::Response::Success("success".to_owned())
             };
@@ -1056,14 +1064,13 @@ fn process_market_event(data: &mut Data, event: market::Event) {
                 .send(market::Command::SignedSwap { quote_id, pset });
         }
 
-        market::Event::GetNewAddress => {
-            let rpc_server = data.args.rpc.clone();
-            let command_sender = data.market_command_sender.clone();
+        market::Event::NewAddress { res_sender } => {
+            let rpc_server = data.settings.rpc.clone();
             tokio::spawn(async move {
-                let address = rpc::make_rpc_call(&rpc_server, rpc::GetNewAddressCall {})
+                let res = rpc::make_rpc_call(&rpc_server, rpc::GetNewAddressCall {})
                     .await
-                    .expect("getting new address failed");
-                command_sender.send(market::Command::NewAddress { address });
+                    .map_err(|err| anyhow::anyhow!("address loading failed: {err}"));
+                res_sender.send(res);
             });
         }
 
@@ -1093,7 +1100,7 @@ fn process_market_event(data: &mut Data, event: market::Event) {
                 &format!(
                     "market swap, {exchange_pair}, base amount: {base_amount_float}, quote amount: {quote_amount_float}, price: {price}, txid: {txid}",
                 ),
-                &data.args.notifications.url,
+                &data.settings.notifications.url,
             );
 
             match exchange_pair {
@@ -1125,6 +1132,17 @@ fn process_market_event(data: &mut Data, event: market::Event) {
                 }
             }
         }
+
+        market::Event::BroadcastTx { tx } => {
+            let rpc_server = data.settings.rpc.clone();
+            tokio::spawn(async move {
+                let res = rpc::make_rpc_call(&rpc_server, rpc::SendRawTransactionCall { tx }).await;
+                match res {
+                    Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
+                    Err(err) => log::error!("tx broadcast failed: {err}"),
+                }
+            });
+        }
     }
 }
 
@@ -1142,34 +1160,37 @@ async fn main() {
         .expect("can't load config");
     conf.merge(config::Environment::with_prefix("app").separator("_"))
         .expect("reading env failed");
-    let args: Args = conf.try_into().expect("invalid config");
+    let settings: Settings = conf.try_into().expect("invalid config");
+
+    let server_url = settings
+        .server_url
+        .clone()
+        .unwrap_or_else(|| settings.env.base_server_ws_url());
 
     let params = Params {
-        env: args.env,
-        server_url: args.server_url.clone(),
-        rpc: args.rpc.clone(),
+        env: settings.env,
+        server_url: server_url.clone(),
+        rpc: settings.rpc.clone(),
         tickers: BTreeSet::from(DEALER_TICKERS),
-        bitcoin_amount_submit: Amount::from_bitcoin(args.bitcoin_amount_submit),
-        bitcoin_amount_min: Amount::from_bitcoin(args.bitcoin_amount_min),
-        bitcoin_amount_max: Amount::from_bitcoin(args.bitcoin_amount_max),
-        api_key: args.api_key.clone(),
+        bitcoin_amount_submit: Amount::from_bitcoin(settings.bitcoin_amount_submit),
+        bitcoin_amount_min: Amount::from_bitcoin(settings.bitcoin_amount_min),
+        bitcoin_amount_max: Amount::from_bitcoin(settings.bitcoin_amount_max),
+        api_key: settings.api_key.clone(),
     };
 
-    sideswap_dealer::logs::init(&args.work_dir);
-
-    info!("starting up");
+    sideswap_dealer::logs::init(&settings.work_dir);
 
     sideswap_common::panic_handler::install_panic_handler();
 
-    let storage = load_storage(&args.storage_path).unwrap_or_default();
-    let storage_path = args.storage_path.clone();
+    let storage = load_storage(&settings.storage_path).unwrap_or_default();
+    let storage_path = settings.storage_path.clone();
     save_storage(&storage, &storage_path);
 
     let (msg_tx, mut msg_rx) = unbounded_channel::<Msg>();
 
     let bf_settings = BfSettings {
-        bitfinex_key: args.bitfinex_key.clone(),
-        bitfinex_secret: args.bitfinex_secret.clone(),
+        bitfinex_key: settings.bitfinex_key.clone(),
+        bitfinex_secret: settings.bitfinex_secret.clone(),
     };
 
     let (bf_sender, bf_receiver) = unbounded_channel::<bitfinex_worker::Request>();
@@ -1183,7 +1204,7 @@ async fn main() {
         },
     ));
 
-    if let Some(settings) = args.external_prices.clone() {
+    if let Some(settings) = settings.external_prices.clone() {
         tokio::spawn(external_prices::reload(
             settings,
             UncheckedUnboundedSender::from(msg_tx.clone()),
@@ -1212,9 +1233,12 @@ async fn main() {
     let (dealer_command_sender, mut dealer_event_receiver) = spawn_async(params.clone());
 
     let health_text = HealthStatus::default();
-    tokio::task::spawn(start_webserver(args.status_port, Arc::clone(&health_text)));
+    tokio::task::spawn(start_webserver(
+        settings.status_port,
+        Arc::clone(&health_text),
+    ));
 
-    let disable_new_swaps = match args.env {
+    let disable_new_swaps = match settings.env {
         sideswap_common::env::Env::Prod => true,
         sideswap_common::env::Env::Testnet
         | sideswap_common::env::Env::LocalLiquid
@@ -1222,18 +1246,18 @@ async fn main() {
     };
 
     let market_params = market::Params {
-        env: args.env,
+        env: settings.env,
         disable_new_swaps,
-        server_url: args.server_url.clone(),
-        work_dir: args.work_dir.clone(),
+        server_url: server_url.clone(),
+        work_dir: settings.work_dir.clone(),
         web_server: None,
         ws_server: None,
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 
-    let network = args.env.d().network;
+    let network = settings.env.d().network;
     let mut data = Data {
-        args,
+        settings,
         network,
         policy_asset: network.d().policy_asset.asset_id(),
         server_connected: false,
@@ -1276,7 +1300,7 @@ async fn main() {
         cli::start(msg_tx_copy);
     });
 
-    send_notification("dealer started", &data.args.notifications.url);
+    send_notification("dealer started", &data.settings.notifications.url);
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));
 

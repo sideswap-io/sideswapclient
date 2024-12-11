@@ -32,15 +32,24 @@ impl Transport for SerialTransport {
     }
 
     fn ports(&self) -> Result<Vec<Port>, anyhow::Error> {
+        // From https://github.com/Blockstream/lwk/blob/master/lwk_jade/src/lib.rs#L62
+        pub const JADE_DEVICE_IDS: [(u16, u16); 6] = [
+            (0x10c4, 0xea60),
+            (0x1a86, 0x55d4),
+            (0x0403, 0x6001),
+            (0x1a86, 0x7523),
+            // new
+            (0x303a, 0x4001),
+            (0x303a, 0x1001),
+        ];
+
         Ok(serialport::available_ports()?
             .into_iter()
             .filter_map(|port| match port.port_type {
                 serialport::SerialPortType::UsbPort(usb_port)
-                    // From https://github.com/Blockstream/Jade/tree/master/diy
-                    if (usb_port.vid == 0x10C4 && usb_port.pid == 0xEA60)
-                        || (usb_port.vid == 0x1A86 && usb_port.pid == 0x55D4)
-                        || (usb_port.vid == 0x0403 && usb_port.pid == 0x6001)
-                        || (usb_port.vid == 0x1A86 && usb_port.pid == 0x7523) =>
+                    if JADE_DEVICE_IDS
+                        .iter()
+                        .any(|&(vid, pid)| usb_port.vid == vid && usb_port.pid == pid) =>
                 {
                     Some(Port {
                         jade_id: get_jade_id(&usb_port),

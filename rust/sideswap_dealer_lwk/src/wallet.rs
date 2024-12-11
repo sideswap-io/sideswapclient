@@ -6,12 +6,16 @@ use std::{
 use elements::{
     bitcoin::bip32,
     confidential::{AssetBlindingFactor, ValueBlindingFactor},
+    Txid,
 };
 use lwk_common::singlesig_desc;
 use lwk_wollet::{
     elements_miniscript, secp256k1::SECP256K1, BlockchainBackend, ElementsNetwork, WolletDescriptor,
 };
-use sideswap_common::{channel_helpers::UncheckedUnboundedSender, network::Network};
+use sideswap_common::{
+    channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
+    network::Network,
+};
 use sideswap_dealer::utxo_data::{self, UtxoData, UtxoWithKey};
 use tokio::sync::mpsc::UnboundedSender;
 
@@ -22,12 +26,26 @@ pub struct Params {
 }
 
 pub enum Command {
-    NewAdddress,
+    NewAdddress {
+        res_sender: UncheckedOneshotSender<Result<elements::Address, anyhow::Error>>,
+    },
+    BroadcastTx {
+        tx: String,
+    },
 }
 
 pub enum Event {
     Utxos { utxo_data: UtxoData },
-    Address { address: elements::Address },
+}
+
+fn broadcast_tx(
+    electrum_client: &lwk_wollet::ElectrumClient,
+    tx: &str,
+) -> Result<Txid, anyhow::Error> {
+    let tx = hex::decode(&tx)?;
+    let tx = elements::encode::deserialize::<elements::Transaction>(&tx)?;
+    let txid = electrum_client.broadcast(&tx)?;
+    Ok(txid)
 }
 
 fn run(
@@ -88,7 +106,17 @@ fn run(
     });
 
     'outer: loop {
-        let update = electrum_client.full_scan(&wallet).expect("must not fail");
+        let res = electrum_client.full_scan(&wallet);
+
+        let update = match res {
+            Ok(update) => update,
+            Err(err) => {
+                log::error!("full_scan failed: {err}");
+                std::thread::sleep(Duration::from_secs(5));
+                continue;
+            }
+        };
+
         if let Some(update) = update {
             wallet.apply_update(update).expect("must not fail");
 
@@ -154,19 +182,20 @@ fn run(
             let res = command_receiver.recv_timeout(timeout);
             match res {
                 Ok(command) => match command {
-                    Command::NewAdddress => {
-                        // FIXME: This returns same address, pass updated index
-                        let res = wallet.address(None);
+                    Command::NewAdddress { res_sender } => {
+                        // FIXME: This returns the same address, pass updated index
+                        let res = wallet
+                            .address(None)
+                            .map(|addr| addr.address().clone())
+                            .map_err(|err| anyhow::anyhow!("address loading failed: {err}"));
+                        res_sender.send(res);
+                    }
+
+                    Command::BroadcastTx { tx } => {
+                        let res = broadcast_tx(&electrum_client, &tx);
                         match res {
-                            Ok(addr) => {
-                                log::debug!("new address: {}", addr.address());
-                                event_sender.send(Event::Address {
-                                    address: addr.address().clone(),
-                                });
-                            }
-                            Err(err) => {
-                                log::error!("loading address failed: {err}");
-                            }
+                            Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
+                            Err(err) => log::error!("tx broadcast failed: {err}"),
                         }
                     }
                 },

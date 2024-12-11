@@ -2,6 +2,8 @@ use std::path::Path;
 
 const DEFAULT: &str = include_str!("../config/log_config.toml");
 
+pub const GIT_COMMIT_HASH: &str = env!("VERGEN_GIT_SHA");
+
 pub fn init(work_dir: impl AsRef<Path>) {
     std::fs::create_dir_all(&work_dir).expect("must not fail");
     std::env::set_current_dir(work_dir).expect("must not fail");
@@ -26,4 +28,6 @@ pub fn init(work_dir: impl AsRef<Path>) {
     if !can_update_config {
         log::warn!("custom config file is used");
     }
+
+    log::info!("started, commit {GIT_COMMIT_HASH}");
 }

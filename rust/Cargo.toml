@@ -39,7 +39,6 @@ ciborium-io = "0.2"
 clap = "3.2"
 config = "0.11"
 crc32fast = "1.4"
-crossbeam-channel = "0.5"
 derive_more = "0.99"
 elements = { version = "0.25", features = ["serde"] }
 elements-miniscript = "0.4"

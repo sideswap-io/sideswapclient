@@ -24,6 +24,7 @@ use sideswap_common::{
     channel_helpers::UncheckedOneshotSender,
     green_backend::GREEN_DUMMY_SIG,
     network::Network,
+    pset_blind::get_blinding_nonces,
     recipient::Recipient,
     retry_delay::RetryDelay,
     send_tx::coin_select::{self, InOut},
@@ -147,6 +148,7 @@ enum Command {
     LoadTxs(TimestampUs, ResSender<models::Transactions>),
     BlockHeight(ResSender<u32>),
     UploadCaAddresses(u32, ResSender<()>),
+    BroadcastTx(String, ResSender<Txid>),
 }
 
 fn parse_args1<T1: serde::de::DeserializeOwned>(mut args: WampArgs) -> Result<T1, Error> {
@@ -242,7 +244,8 @@ impl Wallet {
     pub async fn receive_address(&self) -> Result<Address, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.command_sender
-            .send(Command::ReceiveAddress(res_sender.into()))?;
+            .send(Command::ReceiveAddress(res_sender.into()))
+            .expect("must not fail");
         res_receiver.await?
     }
 
@@ -361,12 +364,12 @@ impl Wallet {
             .map(|utxo| utxo.tx_out_sec)
             .collect::<Vec<_>>();
 
-        let blinding_nonces =
+        let blinded_outputs =
             sideswap_common::pset_blind::blind_pset(&mut pset, &inp_txout_sec, &[])?;
 
         Ok(CreatedTx {
             pset,
-            blinding_nonces,
+            blinding_nonces: get_blinding_nonces(&blinded_outputs),
             used_utxos,
             network_fee: network_fee.value,
         })
@@ -395,11 +398,11 @@ impl Wallet {
                 tx_input.script_sig = final_script;
             } else {
                 // Green backend won't sign without script_sig (it returns "Partial signing of pre-segwit transactions is not supported")
-                // FIXME: Make sure this works as expected with native segwit (the check might return false positive error).
-                abort!(Error::NoRedeem(
-                    pset_input.previous_txid,
-                    pset_input.previous_output_index
-                ))
+                // Make sure this works as expected with native segwit (the check will return false positive error).
+                // abort!(Error::NoRedeem(
+                //     pset_input.previous_txid,
+                //     pset_input.previous_output_index
+                // ))
             }
         }
 
@@ -507,6 +510,14 @@ impl Wallet {
             SignAction::SignAndBroadcast,
         )
         .await
+    }
+
+    pub async fn broadcast_tx(&self, tx: String) -> Result<Txid, Error> {
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.command_sender
+            .send(Command::BroadcastTx(tx, res_sender.into()))?;
+        let txid = res_receiver.await??;
+        Ok(txid)
     }
 
     pub fn sign_offline(
@@ -1399,6 +1410,23 @@ async fn process_command(data: &mut Data, command: Command) -> Result<(), Error>
             let res = upload_ca_addresses(data, count).await;
             res_channel.send(res);
             Ok(())
+        }
+
+        Command::BroadcastTx(tx, res_channel) => {
+            make_request(
+                data,
+                "com.greenaddress.vault.broadcast_raw_tx",
+                vec![tx.into()],
+                Box::new(move |_data, res| {
+                    let res = res.and_then(|args| -> Result<Txid, Error> {
+                        let txid = parse_args1::<Txid>(args)?;
+                        Ok(txid)
+                    });
+                    res_channel.send(res);
+                    Ok(())
+                }),
+            )
+            .await
         }
     }
 }

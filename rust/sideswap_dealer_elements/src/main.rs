@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use serde::Deserialize;
-use sideswap_api::market::AssetPair;
+use sideswap_api::mkt::AssetPair;
 use sideswap_common::{channel_helpers::UncheckedUnboundedSender, types::Amount};
 use sideswap_dealer::{
     dealer_rpc, market, price_stream,
@@ -64,14 +64,13 @@ fn process_market_event(data: &mut Data, event: market::Event) {
                 .send(market::Command::SignedSwap { quote_id, pset });
         }
 
-        market::Event::GetNewAddress => {
+        market::Event::NewAddress { res_sender } => {
             let rpc_server = data.settings.rpc.clone();
-            let command_sender = data.market_command_sender.clone();
             tokio::spawn(async move {
-                let address = rpc::make_rpc_call(&rpc_server, rpc::GetNewAddressCall {})
+                let res = rpc::make_rpc_call(&rpc_server, rpc::GetNewAddressCall {})
                     .await
-                    .expect("getting new address failed");
-                command_sender.send(market::Command::NewAddress { address });
+                    .map_err(|err| anyhow::anyhow!("address loading failed: {err}"));
+                res_sender.send(res);
             });
         }
 
@@ -84,6 +83,17 @@ fn process_market_event(data: &mut Data, event: market::Event) {
             txid,
         } => {
             log::info!("market swap, base: {base}, quote: {quote}, base amount: {base_amount}, quote amount: {quote_amount}, price: {price}, txid: {txid}, trade_dir: {trade_dir:?}");
+        }
+
+        market::Event::BroadcastTx { tx } => {
+            let rpc_server = data.settings.rpc.clone();
+            tokio::spawn(async move {
+                let res = rpc::make_rpc_call(&rpc_server, rpc::SendRawTransactionCall { tx }).await;
+                match res {
+                    Ok(txid) => log::debug!("tx broadcast succeed: {txid}"),
+                    Err(err) => log::error!("tx broadcast failed: {err}"),
+                }
+            });
         }
     }
 }
@@ -116,8 +126,6 @@ async fn main() {
     let settings: Settings = conf.try_into().expect("invalid config");
 
     sideswap_dealer::logs::init(&settings.work_dir);
-
-    log::info!("started");
 
     sideswap_common::panic_handler::install_panic_handler();
 

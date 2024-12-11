@@ -232,11 +232,11 @@ macro_rules! make_market_request {
     ($ws:expr, $typ:ident, $value:expr) => {{
         let res = $ws
             .make_request(::sideswap_api::Request::Market(
-                ::sideswap_api::market::Request::$typ($value),
+                ::sideswap_api::mkt::Request::$typ($value),
             ))
             .await;
         match res {
-            Ok(::sideswap_api::Response::Market(::sideswap_api::market::Response::$typ(resp))) => {
+            Ok(::sideswap_api::Response::Market(::sideswap_api::mkt::Response::$typ(resp))) => {
                 Ok(resp)
             }
             Ok(_) => Err(::sideswap_common::ws::ws_req_sender::Error::UnexpectedResponse),

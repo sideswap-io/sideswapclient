@@ -1,39 +1,33 @@
-use crate::ffi;
-use crate::gdk;
-use crate::gdk_json;
-use crate::gdk_json::AddressInfo;
-use crate::gdk_ses;
-use crate::gdk_ses::ElectrumServer;
-use crate::gdk_ses::GdkSes;
-use crate::gdk_ses::NotifCallback;
-use crate::models;
-use crate::models::Transaction;
-use crate::swaps;
-use crate::swaps::MakerChainingTx;
-use crate::worker;
-use crate::worker::AccountId;
-use base64::Engine;
-use elements::encode::Encodable;
-use elements::hashes::Hash;
-use elements::pset::PartiallySignedTransaction;
-use elements::secp256k1_zkp::global::SECP256K1;
-use elements::TxOutSecrets;
+use crate::{
+    ffi, gdk, gdk_json,
+    gdk_ses::{self, Balances, ElectrumServer, GdkSes, NotifCallback, SignWith},
+    models, swaps,
+    worker::{self, AccountId},
+};
+use anyhow::{anyhow, bail, ensure};
+use elements::{
+    hashes::Hash, pset::PartiallySignedTransaction, secp256k1_zkp::global::SECP256K1, TxOutSecrets,
+};
+use elements::{AssetId, Transaction};
 use gdk_ses::HwData;
+use log::{debug, info, warn};
 use serde_bytes::ByteBuf;
-use sideswap_api::Asset;
-use sideswap_api::AssetId;
-use sideswap_common::env::Env;
-use sideswap_common::network::Network;
-use sideswap_common::pset::p2pkh_script;
-use sideswap_common::recipient::Recipient;
-use sideswap_common::send_tx;
-use sideswap_common::send_tx::coin_select::InOut;
-use sideswap_jade::jade_mng;
-use sideswap_jade::jade_mng::JadeStatus;
+use sideswap_api::{Asset, AssetBlindingFactor, ValueBlindingFactor};
+use sideswap_common::{
+    b64,
+    env::Env,
+    network::Network,
+    pset::p2pkh_script,
+    pset_blind::get_blinding_nonces,
+    recipient::Recipient,
+    send_tx::{self, coin_select::InOut},
+};
+use sideswap_jade::{
+    jade_mng::{self, JadeStatus},
+    models::JadeNetwork,
+};
 use sideswap_payjoin::Wallet;
-use std::collections::BTreeMap;
-use std::collections::BTreeSet;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::ffi::{CStr, CString};
 use std::str::FromStr;
 
@@ -74,6 +68,19 @@ pub struct GdkSesImpl {
     subaccount: Option<i32>,
     receiving_id: Option<String>,
     policy_asset: AssetId,
+}
+
+unsafe impl Send for GdkSesImpl {}
+
+pub fn encode_pset(pset: &PartiallySignedTransaction) -> String {
+    let pset = elements::encode::serialize(pset);
+    b64::encode(&pset)
+}
+
+pub fn decode_pset(pset: &str) -> Result<PartiallySignedTransaction, anyhow::Error> {
+    let pset = b64::decode(pset)?;
+    let pset = elements::encode::deserialize(&pset)?;
+    Ok(pset)
 }
 
 impl gdk_ses::GdkSes for GdkSesImpl {
@@ -119,7 +126,7 @@ impl gdk_ses::GdkSes for GdkSesImpl {
 
     fn update_sync_interval(&self, _time: u32) {}
 
-    fn get_balances(&self) -> Result<std::collections::BTreeMap<AssetId, i64>, anyhow::Error> {
+    fn get_balances(&self) -> Result<Balances, anyhow::Error> {
         unsafe { get_balances(self) }
     }
 
@@ -127,11 +134,11 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         unsafe { load_transactions(self) }
     }
 
-    fn get_receive_address(&self) -> Result<AddressInfo, anyhow::Error> {
+    fn get_receive_address(&self) -> Result<gdk_json::AddressInfo, anyhow::Error> {
         unsafe { try_get_addr_info(self, false) }
     }
 
-    fn get_change_address(&self) -> Result<AddressInfo, anyhow::Error> {
+    fn get_change_address(&self) -> Result<gdk_json::AddressInfo, anyhow::Error> {
         unsafe { try_get_addr_info(self, true) }
     }
 
@@ -169,29 +176,15 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         res
     }
 
-    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {
+    fn broadcast_tx(&mut self, tx: &str) -> Result<(), anyhow::Error> {
+        unsafe { broadcast_tx(self, tx) }
+    }
+
+    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputs, anyhow::Error> {
         unsafe { try_get_unspent_outputs(self) }
     }
 
-    fn get_tx_fee(
-        &mut self,
-        asset_id: AssetId,
-        send_amount: i64,
-        addr: &str,
-    ) -> Result<gdk_ses::TxFeeInfo, anyhow::Error> {
-        unsafe { get_tx_fee(self, asset_id, send_amount, addr) }
-    }
-
-    fn make_pegout_payment(
-        &mut self,
-        send_amount: i64,
-        peg_addr: &str,
-        send_amount_exact: i64,
-    ) -> Result<worker::PegPayment, anyhow::Error> {
-        unsafe { make_pegout_payment(self, send_amount, peg_addr, send_amount_exact) }
-    }
-
-    fn get_blinded_values(&self, txid: &str) -> Result<Vec<String>, anyhow::Error> {
+    fn get_blinded_values(&self, txid: &elements::Txid) -> Result<Vec<String>, anyhow::Error> {
         unsafe { get_blinded_values(self, txid) }
     }
 
@@ -220,6 +213,18 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         assets: &BTreeMap<AssetId, Asset>,
     ) -> Result<String, anyhow::Error> {
         unsafe { verify_and_sign_pset(self, amounts, pset, nonces, assets) }
+    }
+
+    fn sign_pset(
+        &mut self,
+        utxos: &gdk_json::UnspentOutputs,
+        pset: &str,
+        nonces: &[String],
+        assets: &BTreeMap<AssetId, Asset>,
+        tx_type: jade_mng::TxType,
+        sign_with: SignWith,
+    ) -> Result<String, anyhow::Error> {
+        unsafe { sign_pset(self, utxos, pset, nonces, assets, tx_type, sign_with) }
     }
 
     fn set_memo(&mut self, txid: &str, memo: &str) -> Result<(), anyhow::Error> {
@@ -322,11 +327,7 @@ pub fn unlock_hw(env: Env, jade: &jade_mng::ManagedJade) -> Result<(), anyhow::E
             debug!("jade already unlocked");
         }
         sideswap_jade::models::State::Locked => {
-            let network = if env.d().mainnet {
-                sideswap_jade::models::JadeNetwork::Liquid
-            } else {
-                sideswap_jade::models::JadeNetwork::TestnetLiquid
-            };
+            let network = get_jade_network(env);
             jade.set_status(JadeStatus::AuthUser);
             let res = jade.auth_user(network);
             jade.set_status(JadeStatus::Idle);
@@ -412,25 +413,37 @@ fn convert_value(value: &serde_json::Value) -> ciborium::Value {
     }
 }
 
-fn get_jade_asset_info(
-    asset_id: &AssetId,
-    assets: &BTreeMap<AssetId, Asset>,
-) -> Option<sideswap_jade::models::AssetInfo> {
-    let asset = assets.get(asset_id)?;
-    let issuance_prevout = asset.issuance_prevout.as_ref()?;
-    let contract = asset.contract.as_ref()?;
-    let contract = convert_value(contract);
-    if contract.is_null() {
-        return None;
+pub fn get_jade_asset_info(
+    all_assets: &BTreeMap<AssetId, Asset>,
+    required: BTreeSet<AssetId>,
+) -> Vec<sideswap_jade::models::AssetInfo> {
+    required
+        .into_iter()
+        .filter_map(|asset_id| {
+            let asset = all_assets.get(&asset_id)?;
+            let issuance_prevout = asset.issuance_prevout.as_ref()?;
+            let contract = asset.contract.as_ref()?;
+            let contract = convert_value(contract);
+            if contract.is_null() {
+                return None;
+            }
+            Some(sideswap_jade::models::AssetInfo {
+                asset_id: asset_id.to_string(),
+                contract,
+                issuance_prevout: sideswap_jade::models::Prevout {
+                    txid: issuance_prevout.txid.to_string(),
+                    vout: issuance_prevout.vout,
+                },
+            })
+        })
+        .collect()
+}
+
+pub fn get_jade_network(env: Env) -> JadeNetwork {
+    match env.d().network {
+        Network::Liquid => JadeNetwork::Liquid,
+        Network::LiquidTestnet => JadeNetwork::TestnetLiquid,
     }
-    Some(sideswap_jade::models::AssetInfo {
-        asset_id: asset_id.to_string(),
-        contract,
-        issuance_prevout: sideswap_jade::models::Prevout {
-            txid: issuance_prevout.txid.to_string(),
-            vout: issuance_prevout.vout,
-        },
-    })
 }
 
 pub fn unblind(
@@ -527,11 +540,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     let xpub = if let Some(xpub) = hw_data.xpubs.get(&path) {
                         *xpub
                     } else {
-                        let network = if hw_data.env.d().mainnet {
-                            sideswap_jade::models::JadeNetwork::Liquid
-                        } else {
-                            sideswap_jade::models::JadeNetwork::TestnetLiquid
-                        };
+                        let network = get_jade_network(hw_data.env);
                         hw_data.resolve_xpub(network, &path)?
                     };
                     xpubs.push(xpub);
@@ -604,12 +613,6 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 let use_ae_protocol = required_data.use_ae_protocol.unwrap_or_default();
                 ensure!(use_ae_protocol);
 
-                let mut prevout_enc = elements::hashes::sha256d::Hash::engine();
-                for input in transaction_inputs.iter() {
-                    let txid = elements::Txid::from_str(&input.txhash).unwrap();
-                    let prevout = elements::OutPoint::new(txid, input.pt_idx);
-                    prevout.consensus_encode(&mut prevout_enc).unwrap();
-                }
                 let last_blinded_index = transaction_outputs
                     .iter()
                     .enumerate()
@@ -637,20 +640,11 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                             Some(sideswap_jade::models::TrustedCommitment {
                                 asset_id: output.asset_id.into(),
                                 value: output.satoshi,
-                                asset_generator: ByteBuf::from(
-                                    hex::decode(txout.asset.commitment().unwrap().to_string())
-                                        .unwrap(),
-                                ),
-                                blinding_key: ByteBuf::from(
-                                    hex::decode(txout.nonce.commitment().unwrap().to_string())
-                                        .unwrap(),
-                                ),
+                                asset_generator: txout.asset.commitment().unwrap().into(),
+                                blinding_key: txout.nonce.commitment().unwrap().into(),
                                 abf: secret.asset_bf,
                                 vbf: secret.value_bf,
-                                value_commitment: ByteBuf::from(
-                                    hex::decode(txout.value.commitment().unwrap().to_string())
-                                        .unwrap(),
-                                ),
+                                value_commitment: txout.value.commitment().unwrap().into(),
                             })
                         } else {
                             None
@@ -658,41 +652,32 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     } else {
                         None
                     };
-                    let commitment2 = if output.amountblinder.is_some()
-                        && output.assetblinder.is_some()
-                    {
-                        let asset_commitment = elements::confidential::Asset::new_confidential(
-                            SECP256K1,
-                            output.asset_id,
-                            output.assetblinder.unwrap(),
-                        );
-                        let value_commitment = elements::confidential::Value::new_confidential(
-                            SECP256K1,
-                            output.satoshi,
-                            asset_commitment.commitment().unwrap(),
-                            output.amountblinder.unwrap(),
-                        );
+                    let commitment2 =
+                        if output.amountblinder.is_some() && output.assetblinder.is_some() {
+                            let asset_commitment = elements::confidential::Asset::new_confidential(
+                                SECP256K1,
+                                output.asset_id,
+                                output.assetblinder.unwrap(),
+                            );
+                            let value_commitment = elements::confidential::Value::new_confidential(
+                                SECP256K1,
+                                output.satoshi,
+                                asset_commitment.commitment().unwrap(),
+                                output.amountblinder.unwrap(),
+                            );
 
-                        Some(sideswap_jade::models::TrustedCommitment {
-                            asset_id: output.asset_id.into(),
-                            value: output.satoshi,
-                            asset_generator: ByteBuf::from(
-                                hex::decode(asset_commitment.commitment().unwrap().to_string())
-                                    .unwrap(),
-                            ),
-                            blinding_key: ByteBuf::from(
-                                hex::decode(output.blinding_key.clone().unwrap()).unwrap(),
-                            ),
-                            abf: output.assetblinder.unwrap(),
-                            vbf: output.amountblinder.unwrap(),
-                            value_commitment: ByteBuf::from(
-                                hex::decode(value_commitment.commitment().unwrap().to_string())
-                                    .unwrap(),
-                            ),
-                        })
-                    } else {
-                        None
-                    };
+                            Some(sideswap_jade::models::TrustedCommitment {
+                                asset_id: output.asset_id.into(),
+                                value: output.satoshi,
+                                asset_generator: asset_commitment.commitment().unwrap().into(),
+                                blinding_key: output.blinding_key.clone().unwrap().into(),
+                                abf: output.assetblinder.unwrap(),
+                                vbf: output.amountblinder.unwrap(),
+                                value_commitment: value_commitment.commitment().unwrap().into(),
+                            })
+                        } else {
+                            None
+                        };
 
                     trusted_commitments.push(commitment1.or(commitment2));
 
@@ -717,11 +702,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     change.push(change_output);
                 }
 
-                let network = if hw_data.env.d().mainnet {
-                    sideswap_jade::models::JadeNetwork::Liquid
-                } else {
-                    sideswap_jade::models::JadeNetwork::TestnetLiquid
-                };
+                let network = get_jade_network(hw_data.env);
 
                 let additional_info = match params.tx_type {
                     jade_mng::TxType::Normal | jade_mng::TxType::MakerUtxo => None,
@@ -782,22 +763,21 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                     }
                 };
 
-                let mut asset_info = Vec::new();
-                let asset_ids = transaction_inputs
-                    .iter()
-                    .map(|input| input.asset_id)
-                    .chain(transaction_outputs.iter().map(|output| output.asset_id))
-                    .collect::<BTreeSet<_>>();
-                if let Some(assets) = params.assets {
-                    for asset_id in asset_ids {
-                        if let Some(info) = get_jade_asset_info(&asset_id, assets) {
-                            asset_info.push(info);
-                        } 
-                    }
-                }
+                let asset_info = params
+                    .assets
+                    .map(|all_assets| {
+                        let asset_ids = transaction_inputs
+                            .iter()
+                            .map(|input| input.asset_id)
+                            .chain(transaction_outputs.iter().map(|output| output.asset_id))
+                            .collect::<BTreeSet<_>>();
+
+                        get_jade_asset_info(all_assets, asset_ids)
+                    })
+                    .unwrap_or_default();
 
                 let sign_tx = sideswap_jade::models::ReqSignTx {
-                    network: network.name().to_owned(),
+                    network,
                     use_ae_signatures: true,
                     txn: ByteBuf::from(hex::decode(&transaction).unwrap()),
                     num_inputs: transaction_inputs.len() as u32,
@@ -816,28 +796,28 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                         Some(sideswap_jade::models::ReqTxInput {
                             is_witness: true,
                             path: input.user_path.clone().unwrap().clone(),
-                            script: ByteBuf::from(
-                                hex::decode(input.prevout_script.clone().unwrap()).unwrap(),
-                            ),
+                            script: ByteBuf::from(input.prevout_script.clone().unwrap().as_bytes()),
                             sighash: input.user_sighash,
                             asset_id: input.asset_id.into(),
                             value: input.satoshi,
-
-                            value_commitment: ByteBuf::from(
-                                hex::decode(input.commitment.clone().unwrap()).unwrap(),
-                            ),
-                            ae_host_commitment: ByteBuf::from(
-                                hex::decode(input.ae_host_commitment.clone().unwrap()).unwrap(),
-                            ),
-                            ae_host_entropy: ByteBuf::from(
-                                hex::decode(input.ae_host_entropy.clone().unwrap()).unwrap(),
-                            ),
-
                             abf: input.assetblinder.unwrap(),
                             vbf: input.amountblinder.unwrap(),
-                            asset_generator: ByteBuf::from(
-                                hex::decode(input.asset_tag.as_ref().unwrap()).unwrap(),
-                            ),
+                            value_commitment: input
+                                .commitment
+                                .as_ref()
+                                .unwrap()
+                                .as_ref()
+                                .commitment()
+                                .unwrap(),
+                            asset_generator: input
+                                .asset_tag
+                                .as_ref()
+                                .unwrap()
+                                .as_ref()
+                                .commitment()
+                                .unwrap(),
+                            ae_host_commitment: input.ae_host_commitment.clone().unwrap(),
+                            ae_host_entropy: input.ae_host_entropy.clone().unwrap(),
                         })
                     } else {
                         None
@@ -849,9 +829,7 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 let mut signatures = Vec::new();
                 for input in transaction_inputs.iter() {
                     let req = if !input.skip_signing.unwrap_or_default() {
-                        Some(ByteBuf::from(
-                            hex::decode(input.ae_host_entropy.as_ref().unwrap()).unwrap(),
-                        ))
+                        Some(input.ae_host_entropy.unwrap())
                     } else {
                         None
                     };
@@ -865,11 +843,11 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
 
                     asset_commitments: trusted_commitments
                         .iter()
-                        .map(|v| v.as_ref().map(|v| hex::encode(&v.asset_generator)))
+                        .map(|v| v.as_ref().map(|v| v.asset_generator))
                         .collect(),
                     value_commitments: trusted_commitments
                         .iter()
-                        .map(|v| v.as_ref().map(|v| hex::encode(&v.value_commitment)))
+                        .map(|v| v.as_ref().map(|v| v.value_commitment))
                         .collect(),
                     assetblinders: trusted_commitments
                         .iter()
@@ -890,10 +868,8 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
                 let message = required_data.message.unwrap();
                 let use_ae_protocol = required_data.use_ae_protocol.unwrap_or_default();
                 ensure!(use_ae_protocol);
-                let ae_host_commitment =
-                    hex::decode(required_data.ae_host_commitment.unwrap()).unwrap();
-                let ae_host_entropy =
-                    ByteBuf::from(hex::decode(required_data.ae_host_entropy.unwrap()).unwrap());
+                let ae_host_commitment = required_data.ae_host_commitment.unwrap();
+                let ae_host_entropy = required_data.ae_host_entropy.unwrap();
 
                 let signer_commitment =
                     hw_data
@@ -1011,7 +987,7 @@ fn convert_output(output: &gdk_json::TransactionOutput) -> Option<models::Balanc
     }
 }
 
-pub fn convert_tx(tx: &gdk_json::Transaction) -> Transaction {
+pub fn convert_tx(tx: &gdk_json::Transaction) -> models::Transaction {
     let created_at = tx.created_at_ts / 1000;
     let mut balances = std::collections::BTreeMap::<AssetId, i64>::new();
     for input in tx.inputs.iter() {
@@ -1056,11 +1032,10 @@ pub fn convert_tx(tx: &gdk_json::Transaction) -> Transaction {
         .max()
         .unwrap_or_default();
 
-    Transaction {
+    models::Transaction {
         txid: tx.txhash,
         network_fee: tx.fee,
         vsize: tx.transaction_vsize,
-        size: 0, // FIXME: GDK now only provides `transaction_vsize` and `transaction_weight`
         memo: tx.memo.clone(),
         balances,
         created_at,
@@ -1157,7 +1132,7 @@ unsafe fn try_get_addr_info(
 
 unsafe fn try_get_unspent_outputs(
     data: &GdkSesImpl,
-) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error> {
+) -> Result<gdk_json::UnspentOutputs, anyhow::Error> {
     let session = data.session;
     let subaccount = data.get_subaccount()?;
     let mut call = std::ptr::null_mut();
@@ -1172,13 +1147,30 @@ unsafe fn try_get_unspent_outputs(
         "GA_get_unspent_outputs failed: {}",
         last_gdk_error_details().unwrap_or_default()
     );
-    let unspent_outputs = run_auth_handler::<gdk_json::UnspentOutputsResult>(
+    let unspent_outputs = run_auth_handler::<gdk_json::UnspentOutputsRaw>(
         data.hw_data.as_ref(),
         call,
         HandlerParams::new(),
     )
     .map_err(|e| anyhow!("loading unspent outputs failed: {}", e))?;
-    Ok(unspent_outputs)
+
+    let utxos = unspent_outputs
+        .unspent_outputs
+        .into_iter()
+        .filter(|(asset, _list)| asset != "error")
+        .map(|(asset_id, list)| -> Result<_, anyhow::Error> {
+            let asset_id = AssetId::from_str(&asset_id).map_err(|_err| {
+                anyhow::anyhow!("loading unspent outputs failed, invalid asset id: {asset_id}")
+            })?;
+            let list = serde_json::from_value::<Vec<gdk_json::UnspentOutput>>(list)
+                .map_err(|err| anyhow::anyhow!("parsing gdk_json::UnspentOutput failed: {err}"))?;
+            Ok((asset_id, list))
+        })
+        .collect::<Result<BTreeMap<_, _>, _>>()?;
+
+    Ok(gdk_json::UnspentOutputs {
+        unspent_outputs: utxos,
+    })
 }
 
 unsafe fn get_selected_utxos(
@@ -1334,7 +1326,7 @@ unsafe fn try_create_tx(
     let network_fee = network_fee.value;
     let send_tx::pset::ConstructedPset {
         blinded_pset: pset,
-        blinding_nonces,
+        blinded_outputs,
     } = send_tx::pset::construct_pset(send_tx::pset::ConstructPsetArgs {
         policy_asset: data.policy_asset,
         offlines: Vec::new(),
@@ -1350,7 +1342,7 @@ unsafe fn try_create_tx(
         id.clone(),
         CreatedTx {
             pset,
-            blinding_nonces,
+            blinding_nonces: get_blinding_nonces(&blinded_outputs),
         },
     );
 
@@ -1501,13 +1493,13 @@ unsafe fn try_send_tx(
         .flat_map(|utxos| utxos.into_iter())
         .collect();
 
-    let pset =
-        base64::engine::general_purpose::STANDARD.encode(elements::encode::serialize(&tx.pset));
+    let pset = b64::encode(&elements::encode::serialize(&tx.pset));
 
     let sign_pset = gdk_json::SignPsetOpt {
         utxos,
         psbt: pset,
         blinding_nonces: tx.blinding_nonces.clone(),
+        sign_with: Vec::new(),
     };
     let mut call = std::ptr::null_mut();
     let rc = gdk::GA_psbt_sign(session, GdkJson::new(&sign_pset).as_ptr(), &mut call);
@@ -1528,7 +1520,7 @@ unsafe fn try_send_tx(
 
     let pset_server = tx.pset.clone();
     let pset_client = elements::encode::deserialize::<elements::pset::PartiallySignedTransaction>(
-        &base64::engine::general_purpose::STANDARD.decode(signed_pset.psbt)?,
+        &b64::decode(&signed_pset.psbt)?,
     )?;
 
     let tx = sideswap_payjoin::final_tx(pset_client, pset_server)?;
@@ -1557,6 +1549,32 @@ unsafe fn try_send_tx(
     Ok(send_result.txhash)
 }
 
+unsafe fn broadcast_tx(data: &mut GdkSesImpl, tx: &str) -> Result<(), anyhow::Error> {
+    let session = data.session;
+    let broadcast_tx = gdk_json::BroadcastTxOpt {
+        transaction: tx.to_owned(),
+        memo: None,
+        simulate_only: None,
+    };
+    let mut call = std::ptr::null_mut();
+    let rc =
+        gdk::GA_broadcast_transaction(session, GdkJson::new(&broadcast_tx).as_ptr(), &mut call);
+    ensure!(
+        rc == 0,
+        "GA_broadcast_transaction failed: {}",
+        last_gdk_error_details().unwrap_or_default()
+    );
+
+    let _broadcast_res = run_auth_handler::<gdk_json::BroadcastTxRes>(
+        data.hw_data.as_ref(),
+        call,
+        HandlerParams::new(),
+    )
+    .map_err(|err| anyhow!("tx broadcast failed: {err}"))?;
+
+    Ok(())
+}
+
 unsafe fn verify_and_sign_pset(
     data: &GdkSesImpl,
     amounts: &crate::swaps::Amounts,
@@ -1566,11 +1584,11 @@ unsafe fn verify_and_sign_pset(
 ) -> Result<String, anyhow::Error> {
     let session = data.session;
 
-    let unspent_outputs = try_get_unspent_outputs(data)?.unspent_outputs;
+    let unspent_outputs = try_get_unspent_outputs(data)?;
 
     let mut utxos = Vec::<gdk_json::UnspentOutput>::new();
-    for (_asset_id, list) in unspent_outputs.into_iter() {
-        utxos.extend(list.into_iter());
+    for (_asset_id, list) in unspent_outputs.unspent_outputs.iter() {
+        utxos.extend(list.iter().cloned());
     }
 
     let verify_pset = gdk_json::PsetDetailsOpt {
@@ -1617,10 +1635,41 @@ unsafe fn verify_and_sign_pset(
         return Ok(pset.to_owned());
     }
 
+    sign_pset(
+        data,
+        &unspent_outputs,
+        pset,
+        nonces,
+        assets,
+        jade_mng::TxType::Swap,
+        SignWith::User,
+    )
+}
+
+unsafe fn sign_pset(
+    data: &GdkSesImpl,
+    utxos: &gdk_json::UnspentOutputs,
+    pset: &str,
+    nonces: &[String],
+    assets: &BTreeMap<AssetId, Asset>,
+    tx_type: jade_mng::TxType,
+    sign_with: SignWith,
+) -> Result<String, anyhow::Error> {
+    let session = data.session;
+
+    let utxos = utxos
+        .unspent_outputs
+        .values()
+        .map(|utxo| utxo.iter())
+        .flatten()
+        .cloned()
+        .collect::<Vec<_>>();
+
     let sign_pset = gdk_json::SignPsetOpt {
         utxos,
         psbt: pset.to_owned(),
         blinding_nonces: nonces.to_owned(),
+        sign_with: sign_with.to_json(),
     };
     let mut call = std::ptr::null_mut();
     let rc = gdk::GA_psbt_sign(session, GdkJson::new(&sign_pset).as_ptr(), &mut call);
@@ -1629,34 +1678,41 @@ unsafe fn verify_and_sign_pset(
         "GA_sign_psbt failed: {}",
         last_gdk_error_details().unwrap_or_default()
     );
+
     let signed_pset = run_auth_handler::<gdk_json::SignPsetResult>(
         data.hw_data.as_ref(),
         call,
         HandlerParams::new()
             .with_assets(assets)
-            .with_tx_type(jade_mng::TxType::Swap),
+            .with_tx_type(tx_type),
     )
     .map_err(|e| anyhow!("signing pset failed: {}", e))?;
+
     Ok(signed_pset.psbt)
 }
 
+#[allow(dead_code)]
 unsafe fn sig_single_maker_utxo(
     data: &GdkSesImpl,
     input: &crate::swaps::SigSingleInput,
     assets: &BTreeMap<AssetId, Asset>,
-) -> Result<(gdk_json::UnspentOutput, Option<MakerChainingTx>), anyhow::Error> {
+) -> Result<(gdk_json::UnspentOutput, Option<Transaction>), anyhow::Error> {
     let send_asset = input.asset;
 
     let unspent_outputs = try_get_unspent_outputs(data)?.unspent_outputs;
 
     if let Some(unspent_output) = unspent_outputs
         .get(&send_asset)
-        .cloned()
-        .unwrap_or_default()
-        .into_iter()
-        .find(|utxo| utxo.satoshi == input.value)
+        .unwrap_or(&Vec::new())
+        .iter()
+        .find(|utxo| {
+            utxo.asset_id == send_asset
+                && utxo.satoshi == input.value
+                && utxo.assetblinder != AssetBlindingFactor::zero()
+                && utxo.amountblinder != ValueBlindingFactor::zero()
+        })
     {
-        return Ok((unspent_output, None));
+        return Ok((unspent_output.clone(), None));
     }
 
     let subaccount = data.get_subaccount()?;
@@ -1805,29 +1861,17 @@ unsafe fn sig_single_maker_utxo(
     };
     debug!("chained utxo: {}", serde_json::to_string(&utxo).unwrap());
 
-    let chaining_tx = MakerChainingTx {
-        input: sideswap_api::Utxo {
-            txid: tx.txid(),
-            vout: pt_idx as u32,
-            asset: send_asset,
-            asset_bf: output.assetblinder.unwrap(),
-            value: output.satoshi,
-            value_bf: output.amountblinder.unwrap(),
-            redeem_script: Some(get_redeem_script(&utxo)),
-        },
-        tx,
-    };
-
-    Ok((utxo, Some(chaining_tx)))
+    Ok((utxo, Some(tx)))
 }
 
+#[allow(dead_code)]
 unsafe fn sig_single_maker_tx(
     data: &GdkSesImpl,
     input: &crate::swaps::SigSingleInput,
     output: &crate::swaps::SigSingleOutput,
     assets: &BTreeMap<AssetId, Asset>,
 ) -> Result<crate::swaps::SigSingleMaker, anyhow::Error> {
-    let (unspent_output, chaining_tx) = sig_single_maker_utxo(data, input, assets)?;
+    let (unspent_output, funding_tx) = sig_single_maker_utxo(data, input, assets)?;
 
     let session = data.session;
 
@@ -1866,7 +1910,7 @@ unsafe fn sig_single_maker_tx(
 
     Ok(crate::swaps::SigSingleMaker {
         proposal: created_swap.liquidex_v1.proposal,
-        chaining_tx,
+        funding_tx,
         unspent_output,
     })
 }
@@ -1909,12 +1953,14 @@ fn get_blinded_value(
     .join(",")
 }
 
-unsafe fn get_blinded_values(data: &GdkSesImpl, txid: &str) -> Result<Vec<String>, anyhow::Error> {
-    let txid = elements::Txid::from_str(txid)?;
+unsafe fn get_blinded_values(
+    data: &GdkSesImpl,
+    txid: &elements::Txid,
+) -> Result<Vec<String>, anyhow::Error> {
     let transaction_list = load_transactions(data)?;
     let tx = transaction_list
         .iter()
-        .find(|tx| tx.txhash == txid)
+        .find(|tx| tx.txhash == *txid)
         .ok_or_else(|| anyhow!("tx not found"))?;
     let mut result = Vec::new();
     for input in tx.inputs.iter() {
@@ -1938,183 +1984,6 @@ unsafe fn get_blinded_values(data: &GdkSesImpl, txid: &str) -> Result<Vec<String
         }
     }
     Ok(result)
-}
-
-unsafe fn make_pegout_payment(
-    data: &GdkSesImpl,
-    send_amount: i64,
-    peg_addr: &str,
-    send_amount_exact: i64,
-) -> Result<worker::PegPayment, anyhow::Error> {
-    let subaccount = data.get_subaccount()?;
-    let session = data.session;
-    let send_asset = data.policy_asset;
-
-    let unspent_outputs = try_get_unspent_outputs(data)?.unspent_outputs;
-
-    let inputs = unspent_outputs.get(&send_asset);
-    let total = inputs
-        .iter()
-        .flat_map(|inputs| inputs.iter())
-        .map(|input| input.satoshi)
-        .sum::<u64>() as i64;
-    ensure!(send_amount <= total, "Insufficient funds");
-    let send_all = send_amount == total;
-    let peg_address = elements::Address::from_str(peg_addr)?;
-
-    let tx_addressee = gdk_json::TxCreateAddressee {
-        address: Some(peg_address),
-        address_info: None,
-        satoshi: send_amount as u64,
-        asset_id: send_asset,
-        is_greedy: Some(send_all),
-    };
-    let create_tx = gdk_json::CreateTransactionOpt {
-        subaccount,
-        addressees: vec![tx_addressee],
-        utxos: unspent_outputs,
-        transaction_inputs: None,
-        utxo_strategy: None,
-        is_partial: None,
-    };
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_create_transaction(session, GdkJson::new(&create_tx).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_create_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let created_tx_json =
-        run_auth_handler::<serde_json::Value>(data.hw_data.as_ref(), call, HandlerParams::new())
-            .map_err(|e| anyhow!("creating transaction failed: {}", e))?;
-    let created_tx =
-        serde_json::from_value::<gdk_json::CreateTransactionResult>(created_tx_json.clone())
-            .map_err(|e| anyhow!("parsing created transaction JSON failed: {}", e))?;
-    debug!("created tx: {:?}", &created_tx);
-    ensure!(created_tx.error.is_empty(), "{}", created_tx.error);
-    ensure!(created_tx.fee.unwrap_or_default() > 0, "network fee is 0");
-
-    let sent_amount = if send_all {
-        send_amount - created_tx.fee.unwrap() as i64
-    } else {
-        send_amount
-    };
-    ensure!(send_amount_exact == sent_amount);
-
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_blind_transaction(session, GdkJson::new(&created_tx_json).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_blind_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let blinded_tx_json =
-        run_auth_handler::<serde_json::Value>(data.hw_data.as_ref(), call, HandlerParams::new())
-            .map_err(|e| anyhow!("blinding transaction failed: {}", e))?;
-    debug!("blinded tx: {:?}", &blinded_tx_json);
-
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_sign_transaction(session, GdkJson::new(&blinded_tx_json).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_sign_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let signed_tx_json =
-        run_auth_handler::<serde_json::Value>(data.hw_data.as_ref(), call, HandlerParams::new())
-            .map_err(|e| anyhow!("signing tx failed: {}", e))?;
-
-    let signed_tx =
-        serde_json::from_value::<gdk_json::SignTransactionResult>(signed_tx_json.clone())?;
-    ensure!(signed_tx.error.is_empty(), "{}", signed_tx.error);
-
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_send_transaction(session, GdkJson::new(&signed_tx_json).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_send_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let send_result = run_auth_handler::<gdk_json::SendTransactionResult>(
-        data.hw_data.as_ref(),
-        call,
-        HandlerParams::new(),
-    )
-    .map_err(|e| anyhow!("sending tx failed: {}", e))?;
-    info!("send succeed, waiting for txhash: {}", &send_result.txhash);
-    let transaction = signed_tx
-        .transaction
-        .ok_or_else(|| anyhow!("transaction is empty"))?
-        .into_inner();
-
-    Ok(worker::PegPayment {
-        sent_amount,
-        sent_txid: send_result.txhash,
-        signed_tx: elements::encode::serialize_hex(&transaction),
-    })
-}
-
-unsafe fn get_tx_fee(
-    data: &GdkSesImpl,
-    asset_id: AssetId,
-    send_amount: i64,
-    addr: &str,
-) -> Result<gdk_ses::TxFeeInfo, anyhow::Error> {
-    let subaccount = data.get_subaccount()?;
-    let session = data.session;
-
-    let unspent_outputs = try_get_unspent_outputs(data)?.unspent_outputs;
-
-    let inputs = unspent_outputs.get(&asset_id);
-    let total = inputs
-        .iter()
-        .flat_map(|inputs| inputs.iter())
-        .map(|input| input.satoshi)
-        .sum::<u64>() as i64;
-    ensure!(send_amount <= total, "Insufficient funds");
-    let send_all = send_amount == total && asset_id == data.policy_asset;
-    let addr = addr.parse()?;
-
-    let tx_addressee = gdk_json::TxCreateAddressee {
-        address: Some(addr),
-        address_info: None,
-        satoshi: send_amount as u64,
-        asset_id,
-        is_greedy: Some(send_all),
-    };
-    let create_tx = gdk_json::CreateTransactionOpt {
-        subaccount,
-        addressees: vec![tx_addressee],
-        utxos: unspent_outputs,
-        transaction_inputs: None,
-        utxo_strategy: None,
-        is_partial: None,
-    };
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_create_transaction(session, GdkJson::new(&create_tx).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_create_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let created_tx = run_auth_handler::<gdk_json::CreateTransactionResult>(
-        data.hw_data.as_ref(),
-        call,
-        HandlerParams::new(),
-    )
-    .map_err(|e| anyhow!("creating transaction failed: {}", e))?;
-    debug!("created tx: {:?}", &created_tx);
-    ensure!(created_tx.error.is_empty(), "{}", created_tx.error);
-    ensure!(created_tx.fee.unwrap_or_default() > 0, "network fee is 0");
-    let transaction = created_tx
-        .transaction
-        .ok_or_else(|| anyhow!("transaction is empty"))?
-        .into_inner();
-    let input_count = transaction.input.len();
-    let fee = created_tx.fee.unwrap_or_default();
-    ensure!(fee > 0);
-
-    Ok(gdk_ses::TxFeeInfo { input_count, fee })
 }
 
 unsafe fn get_previous_addresses(
@@ -2416,12 +2285,13 @@ pub unsafe fn select_network(info: &gdk_ses::LoginInfo) -> String {
 pub unsafe fn start_processing_impl(
     info: gdk_ses::LoginInfo,
     notif_callback: Option<NotifCallback>,
-) -> Result<Box<dyn gdk_ses::GdkSes>, anyhow::Error> {
+) -> Result<Box<dyn gdk_ses::GdkSes + Send>, anyhow::Error> {
     debug!("start processing, single_sig: {}", info.single_sig);
     let datadir = info.cache_dir.to_owned();
     GDK_INITIALIZED.call_once(move || {
         let config = gdk_json::InitConfig {
             datadir,
+            // log_level: Some("trace".to_owned()),
             log_level: None,
         };
         let rc = gdk::GA_init(GdkJson::new(&config).as_ptr());
@@ -2478,7 +2348,7 @@ pub unsafe fn start_processing_impl(
 pub fn start_processing(
     info: gdk_ses::LoginInfo,
     notif_callback: Option<NotifCallback>,
-) -> Result<Box<dyn gdk_ses::GdkSes>, anyhow::Error> {
+) -> Result<Box<dyn gdk_ses::GdkSes + Send>, anyhow::Error> {
     unsafe { start_processing_impl(info, notif_callback) }
 }
 

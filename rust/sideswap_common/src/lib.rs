@@ -26,6 +26,7 @@ pub mod random_id;
 pub mod recipient;
 pub mod retry_delay;
 pub mod send_tx;
+pub mod target_os;
 pub mod tx_type;
 pub mod types;
 pub mod web_notif;

@@ -25,3 +25,6 @@ serde.workspace = true
 thiserror.workspace = true
 tokio-tungstenite.workspace = true
 tokio.workspace = true
+
+[build-dependencies]
+vergen.workspace = true

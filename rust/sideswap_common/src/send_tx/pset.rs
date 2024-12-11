@@ -3,6 +3,8 @@ use elements::{pset::PartiallySignedTransaction, AssetId, TxOutSecrets, Txid};
 use rand::seq::SliceRandom;
 use sideswap_api::{AssetBlindingFactor, ValueBlindingFactor};
 
+use crate::pset_blind::OptBlindedOutputs;
+
 pub struct PsetInput {
     pub txid: Txid,
     pub vout: u32,
@@ -38,7 +40,7 @@ pub struct ConstructPsetArgs {
 
 pub struct ConstructedPset {
     pub blinded_pset: PartiallySignedTransaction,
-    pub blinding_nonces: Vec<String>,
+    pub blinded_outputs: OptBlindedOutputs,
 }
 
 fn pset_input(input: PsetInput) -> elements::pset::Input {
@@ -140,11 +142,11 @@ pub fn construct_pset(args: ConstructPsetArgs) -> Result<ConstructedPset, anyhow
 
     pset.add_output(pset_network_fee(policy_asset, network_fee));
 
-    let blinding_nonces =
+    let blinded_outputs =
         crate::pset_blind::blind_pset(&mut pset, &input_secrets, &blinding_factors)?;
 
     Ok(ConstructedPset {
         blinded_pset: pset,
-        blinding_nonces,
+        blinded_outputs,
     })
 }

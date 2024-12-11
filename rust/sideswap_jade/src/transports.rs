@@ -11,6 +11,7 @@ pub struct Port {
 pub enum TransportType {
     Serial,
     Ble,
+    Tcp,
 }
 
 pub trait Transport {
@@ -29,3 +30,5 @@ pub trait Connection: Send + std::fmt::Debug {
 pub mod serial;
 
 pub mod ble;
+
+pub mod tcp;

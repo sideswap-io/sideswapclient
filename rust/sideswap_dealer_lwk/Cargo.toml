@@ -14,6 +14,7 @@ base64.workspace = true
 bip39.workspace = true
 config.workspace = true
 elements.workspace = true
+hex.workspace = true
 log.workspace = true
 lwk_common.workspace = true
 lwk_signer.workspace = true

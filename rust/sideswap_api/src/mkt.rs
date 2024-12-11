@@ -4,7 +4,7 @@ use elements::{
 };
 use serde::{Deserialize, Serialize};
 use sideswap_types::{
-    duration_ms::DurationMs, normal_float::NormalFloat, timestamp_ms::TimestampMs,
+    duration_ms::DurationMs, normal_float::NormalFloat, timestamp_ms::TimestampMs, TransactionHex,
 };
 
 use crate::{ChartPoint, MarketType, Utxo};
@@ -112,12 +112,14 @@ pub struct MarketInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OwnOrder {
     pub order_id: OrdId,
+    pub client_order_id: Option<Box<String>>,
     pub asset_pair: AssetPair,
     pub price: NormalFloat,
     pub orig_amount: u64,
     pub active_amount: u64,
     pub trade_dir: TradeDir,
     pub private_id: Option<Box<String>>,
+    pub online: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -176,6 +178,7 @@ pub enum HistStatus {
 pub struct HistoryOrder {
     pub id: HistId,
     pub order_id: OrdId,
+    pub client_order_id: Option<Box<String>>,
     pub asset_pair: AssetPair,
     pub trade_dir: TradeDir,
     pub base_amount: u64,
@@ -239,7 +242,10 @@ pub struct AddUtxosRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AddUtxosResponse {}
+pub struct AddUtxosResponse {
+    // The list of known UTXOs
+    pub utxos: Vec<OutPoint>,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RemoveUtxosRequest {
@@ -259,6 +265,7 @@ pub struct AddOrderRequest {
     pub receive_address: Address,
     pub change_address: Address,
     pub private: bool,
+    pub client_order_id: Option<Box<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -284,8 +291,9 @@ pub struct EditOrderResponse {
 pub struct AddOfflineRequest {
     pub asset_pair: AssetPair,
     pub ttl: Option<DurationMs>,
-    pub funding_tx: Option<sideswap_types::Transaction>,
+    pub funding_tx: Option<TransactionHex>,
     pub private: bool,
+    pub client_order_id: Option<Box<String>>,
 
     pub input_utxo: Utxo,
     pub input_witness: InputWitness,
@@ -404,6 +412,16 @@ pub struct LoadHistoryResponse {
     pub total: usize,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetTransactionRequest {
+    pub txid: Txid,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetTransactionResponse {
+    pub tx: String,
+}
+
 // Notifications
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -507,6 +525,7 @@ pub enum Request {
     ChartSub(ChartSubRequest),
     ChartUnsub(ChartUnsubRequest),
     LoadHistory(LoadHistoryRequest),
+    GetTransaction(GetTransactionRequest),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -532,6 +551,7 @@ pub enum Response {
     ChartSub(ChartSubResponse),
     ChartUnsub(ChartUnsubResponse),
     LoadHistory(LoadHistoryResponse),
+    GetTransaction(GetTransactionResponse),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

@@ -1,27 +1,40 @@
+use elements::{
+    confidential::{AssetBlindingFactor, ValueBlindingFactor},
+    secp256k1_zkp,
+};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
+
+use crate::byte_array::{ByteArray, ByteArray32, ByteArray33};
 
 #[derive(serde::Serialize)]
 pub enum Never {}
 
 pub type EmptyRequest = Option<Never>;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct AssetId(serde_bytes::ByteBuf);
+#[derive(Debug, Clone, Deserialize)]
+pub struct AssetId([u8; 32]);
 
 impl From<elements::AssetId> for AssetId {
     fn from(value: elements::AssetId) -> Self {
-        let mut arr: [u8; 32] = value.into_inner().as_ref().try_into().unwrap();
+        let mut arr: [u8; 32] = value.into_inner().0;
         arr.reverse();
-        Self(serde_bytes::ByteBuf::from(arr))
+        Self(arr)
     }
 }
 
-impl From<AssetId> for elements::AssetId {
-    fn from(value: AssetId) -> Self {
-        let mut arr = value.0;
-        arr.reverse();
-        elements::AssetId::from_slice(&arr).unwrap()
+impl Serialize for AssetId {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_bytes(&self.0)
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PublicKey(ByteArray33);
+
+impl From<secp256k1_zkp::PublicKey> for PublicKey {
+    fn from(value: secp256k1_zkp::PublicKey) -> Self {
+        Self(ByteArray::<33>(value.serialize()))
     }
 }
 
@@ -33,7 +46,7 @@ pub enum StatusNetwork {
     Test,
 }
 
-#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum State {
     Ready,
@@ -43,30 +56,30 @@ pub enum State {
     Uninit,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum JadeNetwork {
-    // Mainnet,       // Bitcoin mainnet
-    // Testnet,       // Bitcoin testnet
-    Liquid,        // Liquid mainnet
-    TestnetLiquid, // Liquid testnet
-}
+    // Bitcoin mainnet
+    #[serde(rename = "mainnet")]
+    Mainnet,
 
-impl JadeNetwork {
-    pub fn name(&self) -> &'static str {
-        match self {
-            // JadeNetwork::Mainnet => "mainnet",
-            // JadeNetwork::Testnet => "testnet",
-            JadeNetwork::Liquid => "liquid",
-            JadeNetwork::TestnetLiquid => "testnet-liquid",
-        }
-    }
+    // Bitcoin testnet
+    #[serde(rename = "testnet")]
+    Testnet,
+
+    // Liquid mainnet
+    #[serde(rename = "liquid")]
+    Liquid,
+
+    // Liquid testnet
+    #[serde(rename = "testnet-liquid")]
+    TestnetLiquid,
 }
 
 #[derive(Debug)]
 pub struct SignMessageReq {
     pub path: Vec<u32>,
     pub message: String,
-    pub ae_host_commitment: Vec<u8>,
+    pub ae_host_commitment: ByteArray32,
 }
 
 // Other fields:
@@ -90,7 +103,7 @@ pub struct RespVersionInfo {
 
 #[derive(Debug, Serialize)]
 pub struct ReqAuthUser {
-    pub network: String,
+    pub network: JadeNetwork,
 }
 
 #[derive(Debug, Deserialize)]
@@ -117,7 +130,7 @@ pub type RespAuthComplete = bool;
 
 #[derive(Debug, Serialize)]
 pub struct ReqGetXPub {
-    pub network: String,
+    pub network: JadeNetwork,
     pub path: Vec<u32>,
 }
 pub type RespGetXPub = String;
@@ -130,13 +143,13 @@ pub type RespGetMasterBlindingKey = Vec<u8>;
 pub struct ReqSignMessage {
     pub path: Vec<u32>,
     pub message: String,
-    pub ae_host_commitment: ByteBuf,
+    pub ae_host_commitment: ByteArray32,
 }
 pub type RespSignMessage = ByteBuf;
 
 #[derive(Debug, Serialize)]
 pub struct ReqGetSignature {
-    pub ae_host_entropy: Option<ByteBuf>,
+    pub ae_host_entropy: Option<ByteArray32>,
 }
 pub type RespGetSignature = ciborium::value::Value;
 
@@ -173,8 +186,8 @@ pub struct ReqGetCommitments {
 }
 #[derive(Debug, Deserialize)]
 pub struct RespGetCommitments {
-    pub abf: ByteBuf,
-    pub vbf: ByteBuf,
+    pub abf: AssetBlindingFactor,
+    pub vbf: ValueBlindingFactor,
     pub asset_generator: ByteBuf,
     pub value_commitment: ByteBuf,
     pub asset_id: AssetId,
@@ -222,7 +235,7 @@ pub struct AssetInfo {
 
 #[derive(Debug, Serialize)]
 pub struct ReqSignTx {
-    pub network: String,
+    pub network: JadeNetwork,
     pub use_ae_signatures: bool,
     pub txn: ByteBuf,
     pub num_inputs: u32,
@@ -238,11 +251,11 @@ pub type RespSignTx = bool;
 pub struct TrustedCommitment {
     pub asset_id: AssetId,
     pub value: u64,
-    pub asset_generator: ByteBuf,
-    pub value_commitment: ByteBuf,
-    pub blinding_key: ByteBuf,
-    pub abf: elements::confidential::AssetBlindingFactor,
-    pub vbf: elements::confidential::ValueBlindingFactor,
+    pub asset_generator: secp256k1_zkp::Generator,
+    pub value_commitment: secp256k1_zkp::PedersenCommitment,
+    pub blinding_key: PublicKey,
+    pub abf: AssetBlindingFactor,
+    pub vbf: ValueBlindingFactor,
 }
 
 #[derive(Debug, Serialize)]
@@ -275,16 +288,16 @@ pub struct ReqTxInput {
     pub path: Vec<u32>,
     pub script: ByteBuf,
     pub sighash: Option<u8>,
-    pub value_commitment: ByteBuf,
 
-    pub ae_host_commitment: ByteBuf,
-    pub ae_host_entropy: ByteBuf,
+    pub ae_host_commitment: ByteArray32,
+    pub ae_host_entropy: ByteArray32,
 
-    pub value: u64,
-    pub abf: elements::confidential::AssetBlindingFactor,
-    pub vbf: elements::confidential::ValueBlindingFactor,
     pub asset_id: AssetId,
-    pub asset_generator: ByteBuf,
+    pub value: u64,
+    pub abf: AssetBlindingFactor,
+    pub vbf: ValueBlindingFactor,
+    pub asset_generator: secp256k1_zkp::Generator,
+    pub value_commitment: secp256k1_zkp::PedersenCommitment,
 }
 
 #[derive(Debug, Serialize)]

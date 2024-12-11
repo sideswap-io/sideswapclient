@@ -585,7 +585,6 @@ class Tx extends $pb.GeneratedMessage {
     $core.String? txid,
     $fixnum.Int64? networkFee,
     $core.String? memo,
-    $fixnum.Int64? size,
     $fixnum.Int64? vsize,
     $core.Iterable<Balance>? balancesAll,
   }) {
@@ -601,9 +600,6 @@ class Tx extends $pb.GeneratedMessage {
     }
     if (memo != null) {
       $result.memo = memo;
-    }
-    if (size != null) {
-      $result.size = size;
     }
     if (vsize != null) {
       $result.vsize = vsize;
@@ -622,7 +618,6 @@ class Tx extends $pb.GeneratedMessage {
     ..aQS(2, _omitFieldNames ? '' : 'txid')
     ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'networkFee', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..aQS(4, _omitFieldNames ? '' : 'memo')
-    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'size', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'vsize', $pb.PbFieldType.Q6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..pc<Balance>(7, _omitFieldNames ? '' : 'balancesAll', $pb.PbFieldType.PM, subBuilder: Balance.create)
   ;
@@ -678,26 +673,17 @@ class Tx extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   void clearMemo() => clearField(4);
 
-  @$pb.TagNumber(5)
-  $fixnum.Int64 get size => $_getI64(4);
-  @$pb.TagNumber(5)
-  set size($fixnum.Int64 v) { $_setInt64(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasSize() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearSize() => clearField(5);
-
   @$pb.TagNumber(6)
-  $fixnum.Int64 get vsize => $_getI64(5);
+  $fixnum.Int64 get vsize => $_getI64(4);
   @$pb.TagNumber(6)
-  set vsize($fixnum.Int64 v) { $_setInt64(5, v); }
+  set vsize($fixnum.Int64 v) { $_setInt64(4, v); }
   @$pb.TagNumber(6)
-  $core.bool hasVsize() => $_has(5);
+  $core.bool hasVsize() => $_has(4);
   @$pb.TagNumber(6)
   void clearVsize() => clearField(6);
 
   @$pb.TagNumber(7)
-  $core.List<Balance> get balancesAll => $_getList(6);
+  $core.List<Balance> get balancesAll => $_getList(5);
 }
 
 class Peg extends $pb.GeneratedMessage {
@@ -2349,6 +2335,596 @@ class ChartPoint extends $pb.GeneratedMessage {
   void clearVolume() => clearField(6);
 }
 
+class AssetPair extends $pb.GeneratedMessage {
+  factory AssetPair({
+    $core.String? base,
+    $core.String? quote,
+  }) {
+    final $result = create();
+    if (base != null) {
+      $result.base = base;
+    }
+    if (quote != null) {
+      $result.quote = quote;
+    }
+    return $result;
+  }
+  AssetPair._() : super();
+  factory AssetPair.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory AssetPair.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AssetPair', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'base')
+    ..aQS(2, _omitFieldNames ? '' : 'quote')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  AssetPair clone() => AssetPair()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AssetPair copyWith(void Function(AssetPair) updates) => super.copyWith((message) => updates(message as AssetPair)) as AssetPair;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AssetPair create() => AssetPair._();
+  AssetPair createEmptyInstance() => create();
+  static $pb.PbList<AssetPair> createRepeated() => $pb.PbList<AssetPair>();
+  @$core.pragma('dart2js:noInline')
+  static AssetPair getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AssetPair>(create);
+  static AssetPair? _defaultInstance;
+
+  /// Base asset id
+  @$pb.TagNumber(1)
+  $core.String get base => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set base($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasBase() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearBase() => clearField(1);
+
+  /// Quote asset id
+  @$pb.TagNumber(2)
+  $core.String get quote => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set quote($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasQuote() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearQuote() => clearField(2);
+}
+
+class MarketInfo extends $pb.GeneratedMessage {
+  factory MarketInfo({
+    AssetPair? assetPair,
+    AssetType? feeAsset,
+    MarketType_? type,
+  }) {
+    final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (feeAsset != null) {
+      $result.feeAsset = feeAsset;
+    }
+    if (type != null) {
+      $result.type = type;
+    }
+    return $result;
+  }
+  MarketInfo._() : super();
+  factory MarketInfo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory MarketInfo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'MarketInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..e<AssetType>(2, _omitFieldNames ? '' : 'feeAsset', $pb.PbFieldType.QE, defaultOrMaker: AssetType.BASE, valueOf: AssetType.valueOf, enumValues: AssetType.values)
+    ..e<MarketType_>(3, _omitFieldNames ? '' : 'type', $pb.PbFieldType.QE, defaultOrMaker: MarketType_.STABLECOIN, valueOf: MarketType_.valueOf, enumValues: MarketType_.values)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  MarketInfo clone() => MarketInfo()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  MarketInfo copyWith(void Function(MarketInfo) updates) => super.copyWith((message) => updates(message as MarketInfo)) as MarketInfo;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarketInfo create() => MarketInfo._();
+  MarketInfo createEmptyInstance() => create();
+  static $pb.PbList<MarketInfo> createRepeated() => $pb.PbList<MarketInfo>();
+  @$core.pragma('dart2js:noInline')
+  static MarketInfo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<MarketInfo>(create);
+  static MarketInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  AssetPair get assetPair => $_getN(0);
+  @$pb.TagNumber(1)
+  set assetPair(AssetPair v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetPair() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetPair() => clearField(1);
+  @$pb.TagNumber(1)
+  AssetPair ensureAssetPair() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  AssetType get feeAsset => $_getN(1);
+  @$pb.TagNumber(2)
+  set feeAsset(AssetType v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasFeeAsset() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearFeeAsset() => clearField(2);
+
+  @$pb.TagNumber(3)
+  MarketType_ get type => $_getN(2);
+  @$pb.TagNumber(3)
+  set type(MarketType_ v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearType() => clearField(3);
+}
+
+class OrderId extends $pb.GeneratedMessage {
+  factory OrderId({
+    $fixnum.Int64? id,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    return $result;
+  }
+  OrderId._() : super();
+  factory OrderId.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory OrderId.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'OrderId', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  OrderId clone() => OrderId()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  OrderId copyWith(void Function(OrderId) updates) => super.copyWith((message) => updates(message as OrderId)) as OrderId;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OrderId create() => OrderId._();
+  OrderId createEmptyInstance() => create();
+  static $pb.PbList<OrderId> createRepeated() => $pb.PbList<OrderId>();
+  @$core.pragma('dart2js:noInline')
+  static OrderId getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OrderId>(create);
+  static OrderId? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get id => $_getI64(0);
+  @$pb.TagNumber(1)
+  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+}
+
+class PublicOrder extends $pb.GeneratedMessage {
+  factory PublicOrder({
+    OrderId? orderId,
+    AssetPair? assetPair,
+    TradeDir? tradeDir,
+    $fixnum.Int64? amount,
+    $core.double? price,
+    $core.bool? twoStep,
+  }) {
+    final $result = create();
+    if (orderId != null) {
+      $result.orderId = orderId;
+    }
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (tradeDir != null) {
+      $result.tradeDir = tradeDir;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (price != null) {
+      $result.price = price;
+    }
+    if (twoStep != null) {
+      $result.twoStep = twoStep;
+    }
+    return $result;
+  }
+  PublicOrder._() : super();
+  factory PublicOrder.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PublicOrder.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'PublicOrder', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<OrderId>(1, _omitFieldNames ? '' : 'orderId', subBuilder: OrderId.create)
+    ..aQM<AssetPair>(2, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..e<TradeDir>(3, _omitFieldNames ? '' : 'tradeDir', $pb.PbFieldType.QE, defaultOrMaker: TradeDir.SELL, valueOf: TradeDir.valueOf, enumValues: TradeDir.values)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'price', $pb.PbFieldType.QD)
+    ..a<$core.bool>(6, _omitFieldNames ? '' : 'twoStep', $pb.PbFieldType.QB)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  PublicOrder clone() => PublicOrder()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PublicOrder copyWith(void Function(PublicOrder) updates) => super.copyWith((message) => updates(message as PublicOrder)) as PublicOrder;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static PublicOrder create() => PublicOrder._();
+  PublicOrder createEmptyInstance() => create();
+  static $pb.PbList<PublicOrder> createRepeated() => $pb.PbList<PublicOrder>();
+  @$core.pragma('dart2js:noInline')
+  static PublicOrder getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PublicOrder>(create);
+  static PublicOrder? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  OrderId get orderId => $_getN(0);
+  @$pb.TagNumber(1)
+  set orderId(OrderId v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+  @$pb.TagNumber(1)
+  OrderId ensureOrderId() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  AssetPair get assetPair => $_getN(1);
+  @$pb.TagNumber(2)
+  set assetPair(AssetPair v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAssetPair() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAssetPair() => clearField(2);
+  @$pb.TagNumber(2)
+  AssetPair ensureAssetPair() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  TradeDir get tradeDir => $_getN(2);
+  @$pb.TagNumber(3)
+  set tradeDir(TradeDir v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTradeDir() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTradeDir() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get amount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set amount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get price => $_getN(4);
+  @$pb.TagNumber(5)
+  set price($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPrice() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPrice() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get twoStep => $_getBF(5);
+  @$pb.TagNumber(6)
+  set twoStep($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTwoStep() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTwoStep() => clearField(6);
+}
+
+class OwnOrder extends $pb.GeneratedMessage {
+  factory OwnOrder({
+    OrderId? orderId,
+    AssetPair? assetPair,
+    TradeDir? tradeDir,
+    $fixnum.Int64? origAmount,
+    $core.double? price,
+  }) {
+    final $result = create();
+    if (orderId != null) {
+      $result.orderId = orderId;
+    }
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (tradeDir != null) {
+      $result.tradeDir = tradeDir;
+    }
+    if (origAmount != null) {
+      $result.origAmount = origAmount;
+    }
+    if (price != null) {
+      $result.price = price;
+    }
+    return $result;
+  }
+  OwnOrder._() : super();
+  factory OwnOrder.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory OwnOrder.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'OwnOrder', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<OrderId>(1, _omitFieldNames ? '' : 'orderId', subBuilder: OrderId.create)
+    ..aQM<AssetPair>(2, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..e<TradeDir>(3, _omitFieldNames ? '' : 'tradeDir', $pb.PbFieldType.QE, defaultOrMaker: TradeDir.SELL, valueOf: TradeDir.valueOf, enumValues: TradeDir.values)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'origAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(5, _omitFieldNames ? '' : 'price', $pb.PbFieldType.QD)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  OwnOrder clone() => OwnOrder()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  OwnOrder copyWith(void Function(OwnOrder) updates) => super.copyWith((message) => updates(message as OwnOrder)) as OwnOrder;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OwnOrder create() => OwnOrder._();
+  OwnOrder createEmptyInstance() => create();
+  static $pb.PbList<OwnOrder> createRepeated() => $pb.PbList<OwnOrder>();
+  @$core.pragma('dart2js:noInline')
+  static OwnOrder getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<OwnOrder>(create);
+  static OwnOrder? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  OrderId get orderId => $_getN(0);
+  @$pb.TagNumber(1)
+  set orderId(OrderId v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+  @$pb.TagNumber(1)
+  OrderId ensureOrderId() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  AssetPair get assetPair => $_getN(1);
+  @$pb.TagNumber(2)
+  set assetPair(AssetPair v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAssetPair() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAssetPair() => clearField(2);
+  @$pb.TagNumber(2)
+  AssetPair ensureAssetPair() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  TradeDir get tradeDir => $_getN(2);
+  @$pb.TagNumber(3)
+  set tradeDir(TradeDir v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasTradeDir() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearTradeDir() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get origAmount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set origAmount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasOrigAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOrigAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get price => $_getN(4);
+  @$pb.TagNumber(5)
+  set price($core.double v) { $_setDouble(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasPrice() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPrice() => clearField(5);
+}
+
+class HistoryOrder extends $pb.GeneratedMessage {
+  factory HistoryOrder({
+    $fixnum.Int64? id,
+    OrderId? orderId,
+    AssetPair? assetPair,
+    TradeDir? tradeDir,
+    $fixnum.Int64? baseAmount,
+    $fixnum.Int64? quoteAmount,
+    $core.double? price,
+    HistStatus? status,
+    $core.String? txid,
+  }) {
+    final $result = create();
+    if (id != null) {
+      $result.id = id;
+    }
+    if (orderId != null) {
+      $result.orderId = orderId;
+    }
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (tradeDir != null) {
+      $result.tradeDir = tradeDir;
+    }
+    if (baseAmount != null) {
+      $result.baseAmount = baseAmount;
+    }
+    if (quoteAmount != null) {
+      $result.quoteAmount = quoteAmount;
+    }
+    if (price != null) {
+      $result.price = price;
+    }
+    if (status != null) {
+      $result.status = status;
+    }
+    if (txid != null) {
+      $result.txid = txid;
+    }
+    return $result;
+  }
+  HistoryOrder._() : super();
+  factory HistoryOrder.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory HistoryOrder.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'HistoryOrder', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aQM<OrderId>(2, _omitFieldNames ? '' : 'orderId', subBuilder: OrderId.create)
+    ..aQM<AssetPair>(3, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..e<TradeDir>(4, _omitFieldNames ? '' : 'tradeDir', $pb.PbFieldType.QE, defaultOrMaker: TradeDir.SELL, valueOf: TradeDir.valueOf, enumValues: TradeDir.values)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'baseAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'quoteAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(7, _omitFieldNames ? '' : 'price', $pb.PbFieldType.QD)
+    ..e<HistStatus>(8, _omitFieldNames ? '' : 'status', $pb.PbFieldType.QE, defaultOrMaker: HistStatus.MEMPOOL, valueOf: HistStatus.valueOf, enumValues: HistStatus.values)
+    ..aOS(9, _omitFieldNames ? '' : 'txid')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  HistoryOrder clone() => HistoryOrder()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  HistoryOrder copyWith(void Function(HistoryOrder) updates) => super.copyWith((message) => updates(message as HistoryOrder)) as HistoryOrder;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static HistoryOrder create() => HistoryOrder._();
+  HistoryOrder createEmptyInstance() => create();
+  static $pb.PbList<HistoryOrder> createRepeated() => $pb.PbList<HistoryOrder>();
+  @$core.pragma('dart2js:noInline')
+  static HistoryOrder getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<HistoryOrder>(create);
+  static HistoryOrder? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get id => $_getI64(0);
+  @$pb.TagNumber(1)
+  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  OrderId get orderId => $_getN(1);
+  @$pb.TagNumber(2)
+  set orderId(OrderId v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasOrderId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOrderId() => clearField(2);
+  @$pb.TagNumber(2)
+  OrderId ensureOrderId() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  AssetPair get assetPair => $_getN(2);
+  @$pb.TagNumber(3)
+  set assetPair(AssetPair v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAssetPair() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAssetPair() => clearField(3);
+  @$pb.TagNumber(3)
+  AssetPair ensureAssetPair() => $_ensure(2);
+
+  @$pb.TagNumber(4)
+  TradeDir get tradeDir => $_getN(3);
+  @$pb.TagNumber(4)
+  set tradeDir(TradeDir v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTradeDir() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTradeDir() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get baseAmount => $_getI64(4);
+  @$pb.TagNumber(5)
+  set baseAmount($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasBaseAmount() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearBaseAmount() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get quoteAmount => $_getI64(5);
+  @$pb.TagNumber(6)
+  set quoteAmount($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasQuoteAmount() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearQuoteAmount() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get price => $_getN(6);
+  @$pb.TagNumber(7)
+  set price($core.double v) { $_setDouble(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasPrice() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPrice() => clearField(7);
+
+  @$pb.TagNumber(8)
+  HistStatus get status => $_getN(7);
+  @$pb.TagNumber(8)
+  set status(HistStatus v) { setField(8, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasStatus() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearStatus() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get txid => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set txid($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTxid() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTxid() => clearField(9);
+}
+
 enum To_Login_Wallet {
   mnemonic, 
   jadeId, 
@@ -2359,9 +2935,7 @@ class To_Login extends $pb.GeneratedMessage {
   factory To_Login({
     $core.String? mnemonic,
     $core.String? phoneKey,
-    $core.bool? sendUtxoUpdates,
     $core.String? jadeId,
-    $core.bool? forceAutoSignMaker,
   }) {
     final $result = create();
     if (mnemonic != null) {
@@ -2370,14 +2944,8 @@ class To_Login extends $pb.GeneratedMessage {
     if (phoneKey != null) {
       $result.phoneKey = phoneKey;
     }
-    if (sendUtxoUpdates != null) {
-      $result.sendUtxoUpdates = sendUtxoUpdates;
-    }
     if (jadeId != null) {
       $result.jadeId = jadeId;
-    }
-    if (forceAutoSignMaker != null) {
-      $result.forceAutoSignMaker = forceAutoSignMaker;
     }
     return $result;
   }
@@ -2394,9 +2962,7 @@ class To_Login extends $pb.GeneratedMessage {
     ..oo(0, [1, 7])
     ..aOS(1, _omitFieldNames ? '' : 'mnemonic')
     ..aOS(2, _omitFieldNames ? '' : 'phoneKey')
-    ..aOB(6, _omitFieldNames ? '' : 'sendUtxoUpdates')
     ..aOS(7, _omitFieldNames ? '' : 'jadeId')
-    ..aOB(8, _omitFieldNames ? '' : 'forceAutoSignMaker')
     ..hasRequiredFields = false
   ;
 
@@ -2442,32 +3008,14 @@ class To_Login extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   void clearPhoneKey() => clearField(2);
 
-  @$pb.TagNumber(6)
-  $core.bool get sendUtxoUpdates => $_getBF(2);
-  @$pb.TagNumber(6)
-  set sendUtxoUpdates($core.bool v) { $_setBool(2, v); }
-  @$pb.TagNumber(6)
-  $core.bool hasSendUtxoUpdates() => $_has(2);
-  @$pb.TagNumber(6)
-  void clearSendUtxoUpdates() => clearField(6);
-
   @$pb.TagNumber(7)
-  $core.String get jadeId => $_getSZ(3);
+  $core.String get jadeId => $_getSZ(2);
   @$pb.TagNumber(7)
-  set jadeId($core.String v) { $_setString(3, v); }
+  set jadeId($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(7)
-  $core.bool hasJadeId() => $_has(3);
+  $core.bool hasJadeId() => $_has(2);
   @$pb.TagNumber(7)
   void clearJadeId() => clearField(7);
-
-  @$pb.TagNumber(8)
-  $core.bool get forceAutoSignMaker => $_getBF(4);
-  @$pb.TagNumber(8)
-  set forceAutoSignMaker($core.bool v) { $_setBool(4, v); }
-  @$pb.TagNumber(8)
-  $core.bool hasForceAutoSignMaker() => $_has(4);
-  @$pb.TagNumber(8)
-  void clearForceAutoSignMaker() => clearField(8);
 }
 
 class To_NetworkSettings_Custom extends $pb.GeneratedMessage {
@@ -4653,6 +5201,490 @@ class To_GaidStatus extends $pb.GeneratedMessage {
   void clearAssetId() => clearField(2);
 }
 
+class To_OrderSubmit extends $pb.GeneratedMessage {
+  factory To_OrderSubmit({
+    AssetPair? assetPair,
+    $fixnum.Int64? baseAmount,
+    $core.double? price,
+    TradeDir? tradeDir,
+    $fixnum.Int64? ttlSeconds,
+    $core.bool? twoStep,
+    $core.bool? txChainingAllowed,
+    $core.bool? private,
+  }) {
+    final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (baseAmount != null) {
+      $result.baseAmount = baseAmount;
+    }
+    if (price != null) {
+      $result.price = price;
+    }
+    if (tradeDir != null) {
+      $result.tradeDir = tradeDir;
+    }
+    if (ttlSeconds != null) {
+      $result.ttlSeconds = ttlSeconds;
+    }
+    if (twoStep != null) {
+      $result.twoStep = twoStep;
+    }
+    if (txChainingAllowed != null) {
+      $result.txChainingAllowed = txChainingAllowed;
+    }
+    if (private != null) {
+      $result.private = private;
+    }
+    return $result;
+  }
+  To_OrderSubmit._() : super();
+  factory To_OrderSubmit.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_OrderSubmit.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.OrderSubmit', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'baseAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'price', $pb.PbFieldType.QD)
+    ..e<TradeDir>(4, _omitFieldNames ? '' : 'tradeDir', $pb.PbFieldType.QE, defaultOrMaker: TradeDir.SELL, valueOf: TradeDir.valueOf, enumValues: TradeDir.values)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'ttlSeconds', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.bool>(6, _omitFieldNames ? '' : 'twoStep', $pb.PbFieldType.QB)
+    ..aOB(7, _omitFieldNames ? '' : 'txChainingAllowed')
+    ..a<$core.bool>(8, _omitFieldNames ? '' : 'private', $pb.PbFieldType.QB)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_OrderSubmit clone() => To_OrderSubmit()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_OrderSubmit copyWith(void Function(To_OrderSubmit) updates) => super.copyWith((message) => updates(message as To_OrderSubmit)) as To_OrderSubmit;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_OrderSubmit create() => To_OrderSubmit._();
+  To_OrderSubmit createEmptyInstance() => create();
+  static $pb.PbList<To_OrderSubmit> createRepeated() => $pb.PbList<To_OrderSubmit>();
+  @$core.pragma('dart2js:noInline')
+  static To_OrderSubmit getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_OrderSubmit>(create);
+  static To_OrderSubmit? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  AssetPair get assetPair => $_getN(0);
+  @$pb.TagNumber(1)
+  set assetPair(AssetPair v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetPair() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetPair() => clearField(1);
+  @$pb.TagNumber(1)
+  AssetPair ensureAssetPair() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get baseAmount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set baseAmount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBaseAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBaseAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get price => $_getN(2);
+  @$pb.TagNumber(3)
+  set price($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPrice() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPrice() => clearField(3);
+
+  @$pb.TagNumber(4)
+  TradeDir get tradeDir => $_getN(3);
+  @$pb.TagNumber(4)
+  set tradeDir(TradeDir v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTradeDir() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTradeDir() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get ttlSeconds => $_getI64(4);
+  @$pb.TagNumber(5)
+  set ttlSeconds($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasTtlSeconds() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTtlSeconds() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get twoStep => $_getBF(5);
+  @$pb.TagNumber(6)
+  set twoStep($core.bool v) { $_setBool(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasTwoStep() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearTwoStep() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get txChainingAllowed => $_getBF(6);
+  @$pb.TagNumber(7)
+  set txChainingAllowed($core.bool v) { $_setBool(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasTxChainingAllowed() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTxChainingAllowed() => clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get private => $_getBF(7);
+  @$pb.TagNumber(8)
+  set private($core.bool v) { $_setBool(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasPrivate() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPrivate() => clearField(8);
+}
+
+class To_OrderEdit extends $pb.GeneratedMessage {
+  factory To_OrderEdit({
+    OrderId? orderId,
+    $fixnum.Int64? baseAmount,
+    $core.double? price,
+  }) {
+    final $result = create();
+    if (orderId != null) {
+      $result.orderId = orderId;
+    }
+    if (baseAmount != null) {
+      $result.baseAmount = baseAmount;
+    }
+    if (price != null) {
+      $result.price = price;
+    }
+    return $result;
+  }
+  To_OrderEdit._() : super();
+  factory To_OrderEdit.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_OrderEdit.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.OrderEdit', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<OrderId>(1, _omitFieldNames ? '' : 'orderId', subBuilder: OrderId.create)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'baseAmount', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'price', $pb.PbFieldType.OD)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_OrderEdit clone() => To_OrderEdit()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_OrderEdit copyWith(void Function(To_OrderEdit) updates) => super.copyWith((message) => updates(message as To_OrderEdit)) as To_OrderEdit;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_OrderEdit create() => To_OrderEdit._();
+  To_OrderEdit createEmptyInstance() => create();
+  static $pb.PbList<To_OrderEdit> createRepeated() => $pb.PbList<To_OrderEdit>();
+  @$core.pragma('dart2js:noInline')
+  static To_OrderEdit getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_OrderEdit>(create);
+  static To_OrderEdit? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  OrderId get orderId => $_getN(0);
+  @$pb.TagNumber(1)
+  set orderId(OrderId v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+  @$pb.TagNumber(1)
+  OrderId ensureOrderId() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get baseAmount => $_getI64(1);
+  @$pb.TagNumber(2)
+  set baseAmount($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasBaseAmount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearBaseAmount() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get price => $_getN(2);
+  @$pb.TagNumber(3)
+  set price($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasPrice() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPrice() => clearField(3);
+}
+
+class To_OrderCancel extends $pb.GeneratedMessage {
+  factory To_OrderCancel({
+    OrderId? orderId,
+  }) {
+    final $result = create();
+    if (orderId != null) {
+      $result.orderId = orderId;
+    }
+    return $result;
+  }
+  To_OrderCancel._() : super();
+  factory To_OrderCancel.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_OrderCancel.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.OrderCancel', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<OrderId>(1, _omitFieldNames ? '' : 'orderId', subBuilder: OrderId.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_OrderCancel clone() => To_OrderCancel()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_OrderCancel copyWith(void Function(To_OrderCancel) updates) => super.copyWith((message) => updates(message as To_OrderCancel)) as To_OrderCancel;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_OrderCancel create() => To_OrderCancel._();
+  To_OrderCancel createEmptyInstance() => create();
+  static $pb.PbList<To_OrderCancel> createRepeated() => $pb.PbList<To_OrderCancel>();
+  @$core.pragma('dart2js:noInline')
+  static To_OrderCancel getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_OrderCancel>(create);
+  static To_OrderCancel? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  OrderId get orderId => $_getN(0);
+  @$pb.TagNumber(1)
+  set orderId(OrderId v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrderId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrderId() => clearField(1);
+  @$pb.TagNumber(1)
+  OrderId ensureOrderId() => $_ensure(0);
+}
+
+class To_StartQuotes extends $pb.GeneratedMessage {
+  factory To_StartQuotes({
+    AssetPair? assetPair,
+    AssetType? assetType,
+    $fixnum.Int64? amount,
+    TradeDir? tradeDir,
+  }) {
+    final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (assetType != null) {
+      $result.assetType = assetType;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (tradeDir != null) {
+      $result.tradeDir = tradeDir;
+    }
+    return $result;
+  }
+  To_StartQuotes._() : super();
+  factory To_StartQuotes.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_StartQuotes.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.StartQuotes', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..e<AssetType>(2, _omitFieldNames ? '' : 'assetType', $pb.PbFieldType.QE, defaultOrMaker: AssetType.BASE, valueOf: AssetType.valueOf, enumValues: AssetType.values)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..e<TradeDir>(4, _omitFieldNames ? '' : 'tradeDir', $pb.PbFieldType.QE, defaultOrMaker: TradeDir.SELL, valueOf: TradeDir.valueOf, enumValues: TradeDir.values)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_StartQuotes clone() => To_StartQuotes()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_StartQuotes copyWith(void Function(To_StartQuotes) updates) => super.copyWith((message) => updates(message as To_StartQuotes)) as To_StartQuotes;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_StartQuotes create() => To_StartQuotes._();
+  To_StartQuotes createEmptyInstance() => create();
+  static $pb.PbList<To_StartQuotes> createRepeated() => $pb.PbList<To_StartQuotes>();
+  @$core.pragma('dart2js:noInline')
+  static To_StartQuotes getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_StartQuotes>(create);
+  static To_StartQuotes? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  AssetPair get assetPair => $_getN(0);
+  @$pb.TagNumber(1)
+  set assetPair(AssetPair v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetPair() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetPair() => clearField(1);
+  @$pb.TagNumber(1)
+  AssetPair ensureAssetPair() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  AssetType get assetType => $_getN(1);
+  @$pb.TagNumber(2)
+  set assetType(AssetType v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAssetType() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAssetType() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get amount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  TradeDir get tradeDir => $_getN(3);
+  @$pb.TagNumber(4)
+  set tradeDir(TradeDir v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasTradeDir() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTradeDir() => clearField(4);
+}
+
+class To_AcceptQuote extends $pb.GeneratedMessage {
+  factory To_AcceptQuote({
+    $fixnum.Int64? quoteId,
+  }) {
+    final $result = create();
+    if (quoteId != null) {
+      $result.quoteId = quoteId;
+    }
+    return $result;
+  }
+  To_AcceptQuote._() : super();
+  factory To_AcceptQuote.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_AcceptQuote.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.AcceptQuote', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'quoteId', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_AcceptQuote clone() => To_AcceptQuote()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_AcceptQuote copyWith(void Function(To_AcceptQuote) updates) => super.copyWith((message) => updates(message as To_AcceptQuote)) as To_AcceptQuote;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_AcceptQuote create() => To_AcceptQuote._();
+  To_AcceptQuote createEmptyInstance() => create();
+  static $pb.PbList<To_AcceptQuote> createRepeated() => $pb.PbList<To_AcceptQuote>();
+  @$core.pragma('dart2js:noInline')
+  static To_AcceptQuote getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_AcceptQuote>(create);
+  static To_AcceptQuote? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get quoteId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set quoteId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasQuoteId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearQuoteId() => clearField(1);
+}
+
+class To_LoadHistory extends $pb.GeneratedMessage {
+  factory To_LoadHistory({
+    $core.int? skip,
+    $core.int? count,
+  }) {
+    final $result = create();
+    if (skip != null) {
+      $result.skip = skip;
+    }
+    if (count != null) {
+      $result.count = count;
+    }
+    return $result;
+  }
+  To_LoadHistory._() : super();
+  factory To_LoadHistory.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory To_LoadHistory.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To.LoadHistory', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..a<$core.int>(1, _omitFieldNames ? '' : 'skip', $pb.PbFieldType.QU3)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'count', $pb.PbFieldType.QU3)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  To_LoadHistory clone() => To_LoadHistory()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  To_LoadHistory copyWith(void Function(To_LoadHistory) updates) => super.copyWith((message) => updates(message as To_LoadHistory)) as To_LoadHistory;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static To_LoadHistory create() => To_LoadHistory._();
+  To_LoadHistory createEmptyInstance() => create();
+  static $pb.PbList<To_LoadHistory> createRepeated() => $pb.PbList<To_LoadHistory>();
+  @$core.pragma('dart2js:noInline')
+  static To_LoadHistory getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<To_LoadHistory>(create);
+  static To_LoadHistory? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get skip => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set skip($core.int v) { $_setUnsignedInt32(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSkip() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSkip() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.int get count => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set count($core.int v) { $_setUnsignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasCount() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCount() => clearField(2);
+}
+
 enum To_Msg {
   login, 
   logout, 
@@ -4697,6 +5729,17 @@ enum To_Msg {
   conversionRates, 
   jadeRescan, 
   gaidStatus, 
+  marketSubscribe, 
+  marketUnsubscribe, 
+  orderSubmit, 
+  orderEdit, 
+  orderCancel, 
+  startQuotes, 
+  stopQuotes, 
+  acceptQuote, 
+  chartsSubscribe, 
+  chartsUnsubscribe, 
+  loadHistory, 
   notSet
 }
 
@@ -4745,6 +5788,17 @@ class To extends $pb.GeneratedMessage {
     Empty? conversionRates,
     Empty? jadeRescan,
     To_GaidStatus? gaidStatus,
+    AssetPair? marketSubscribe,
+    Empty? marketUnsubscribe,
+    To_OrderSubmit? orderSubmit,
+    To_OrderEdit? orderEdit,
+    To_OrderCancel? orderCancel,
+    To_StartQuotes? startQuotes,
+    Empty? stopQuotes,
+    To_AcceptQuote? acceptQuote,
+    AssetPair? chartsSubscribe,
+    Empty? chartsUnsubscribe,
+    To_LoadHistory? loadHistory,
   }) {
     final $result = create();
     if (login != null) {
@@ -4876,6 +5930,39 @@ class To extends $pb.GeneratedMessage {
     if (gaidStatus != null) {
       $result.gaidStatus = gaidStatus;
     }
+    if (marketSubscribe != null) {
+      $result.marketSubscribe = marketSubscribe;
+    }
+    if (marketUnsubscribe != null) {
+      $result.marketUnsubscribe = marketUnsubscribe;
+    }
+    if (orderSubmit != null) {
+      $result.orderSubmit = orderSubmit;
+    }
+    if (orderEdit != null) {
+      $result.orderEdit = orderEdit;
+    }
+    if (orderCancel != null) {
+      $result.orderCancel = orderCancel;
+    }
+    if (startQuotes != null) {
+      $result.startQuotes = startQuotes;
+    }
+    if (stopQuotes != null) {
+      $result.stopQuotes = stopQuotes;
+    }
+    if (acceptQuote != null) {
+      $result.acceptQuote = acceptQuote;
+    }
+    if (chartsSubscribe != null) {
+      $result.chartsSubscribe = chartsSubscribe;
+    }
+    if (chartsUnsubscribe != null) {
+      $result.chartsUnsubscribe = chartsUnsubscribe;
+    }
+    if (loadHistory != null) {
+      $result.loadHistory = loadHistory;
+    }
     return $result;
   }
   To._() : super();
@@ -4926,10 +6013,21 @@ class To extends $pb.GeneratedMessage {
     63 : To_Msg.conversionRates,
     71 : To_Msg.jadeRescan,
     81 : To_Msg.gaidStatus,
+    100 : To_Msg.marketSubscribe,
+    101 : To_Msg.marketUnsubscribe,
+    102 : To_Msg.orderSubmit,
+    103 : To_Msg.orderEdit,
+    104 : To_Msg.orderCancel,
+    110 : To_Msg.startQuotes,
+    111 : To_Msg.stopQuotes,
+    112 : To_Msg.acceptQuote,
+    120 : To_Msg.chartsSubscribe,
+    121 : To_Msg.chartsUnsubscribe,
+    130 : To_Msg.loadHistory,
     0 : To_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'To', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 71, 81])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17, 18, 20, 21, 22, 23, 24, 40, 41, 42, 43, 44, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 71, 81, 100, 101, 102, 103, 104, 110, 111, 112, 120, 121, 130])
     ..aOM<To_Login>(1, _omitFieldNames ? '' : 'login', subBuilder: To_Login.create)
     ..aOM<Empty>(2, _omitFieldNames ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<To_UpdatePushToken>(3, _omitFieldNames ? '' : 'updatePushToken', subBuilder: To_UpdatePushToken.create)
@@ -4973,6 +6071,17 @@ class To extends $pb.GeneratedMessage {
     ..aOM<Empty>(63, _omitFieldNames ? '' : 'conversionRates', subBuilder: Empty.create)
     ..aOM<Empty>(71, _omitFieldNames ? '' : 'jadeRescan', subBuilder: Empty.create)
     ..aOM<To_GaidStatus>(81, _omitFieldNames ? '' : 'gaidStatus', subBuilder: To_GaidStatus.create)
+    ..aOM<AssetPair>(100, _omitFieldNames ? '' : 'marketSubscribe', subBuilder: AssetPair.create)
+    ..aOM<Empty>(101, _omitFieldNames ? '' : 'marketUnsubscribe', subBuilder: Empty.create)
+    ..aOM<To_OrderSubmit>(102, _omitFieldNames ? '' : 'orderSubmit', subBuilder: To_OrderSubmit.create)
+    ..aOM<To_OrderEdit>(103, _omitFieldNames ? '' : 'orderEdit', subBuilder: To_OrderEdit.create)
+    ..aOM<To_OrderCancel>(104, _omitFieldNames ? '' : 'orderCancel', subBuilder: To_OrderCancel.create)
+    ..aOM<To_StartQuotes>(110, _omitFieldNames ? '' : 'startQuotes', subBuilder: To_StartQuotes.create)
+    ..aOM<Empty>(111, _omitFieldNames ? '' : 'stopQuotes', subBuilder: Empty.create)
+    ..aOM<To_AcceptQuote>(112, _omitFieldNames ? '' : 'acceptQuote', subBuilder: To_AcceptQuote.create)
+    ..aOM<AssetPair>(120, _omitFieldNames ? '' : 'chartsSubscribe', subBuilder: AssetPair.create)
+    ..aOM<Empty>(121, _omitFieldNames ? '' : 'chartsUnsubscribe', subBuilder: Empty.create)
+    ..aOM<To_LoadHistory>(130, _omitFieldNames ? '' : 'loadHistory', subBuilder: To_LoadHistory.create)
   ;
 
   @$core.Deprecated(
@@ -5469,6 +6578,127 @@ class To extends $pb.GeneratedMessage {
   void clearGaidStatus() => clearField(81);
   @$pb.TagNumber(81)
   To_GaidStatus ensureGaidStatus() => $_ensure(42);
+
+  @$pb.TagNumber(100)
+  AssetPair get marketSubscribe => $_getN(43);
+  @$pb.TagNumber(100)
+  set marketSubscribe(AssetPair v) { setField(100, v); }
+  @$pb.TagNumber(100)
+  $core.bool hasMarketSubscribe() => $_has(43);
+  @$pb.TagNumber(100)
+  void clearMarketSubscribe() => clearField(100);
+  @$pb.TagNumber(100)
+  AssetPair ensureMarketSubscribe() => $_ensure(43);
+
+  @$pb.TagNumber(101)
+  Empty get marketUnsubscribe => $_getN(44);
+  @$pb.TagNumber(101)
+  set marketUnsubscribe(Empty v) { setField(101, v); }
+  @$pb.TagNumber(101)
+  $core.bool hasMarketUnsubscribe() => $_has(44);
+  @$pb.TagNumber(101)
+  void clearMarketUnsubscribe() => clearField(101);
+  @$pb.TagNumber(101)
+  Empty ensureMarketUnsubscribe() => $_ensure(44);
+
+  @$pb.TagNumber(102)
+  To_OrderSubmit get orderSubmit => $_getN(45);
+  @$pb.TagNumber(102)
+  set orderSubmit(To_OrderSubmit v) { setField(102, v); }
+  @$pb.TagNumber(102)
+  $core.bool hasOrderSubmit() => $_has(45);
+  @$pb.TagNumber(102)
+  void clearOrderSubmit() => clearField(102);
+  @$pb.TagNumber(102)
+  To_OrderSubmit ensureOrderSubmit() => $_ensure(45);
+
+  @$pb.TagNumber(103)
+  To_OrderEdit get orderEdit => $_getN(46);
+  @$pb.TagNumber(103)
+  set orderEdit(To_OrderEdit v) { setField(103, v); }
+  @$pb.TagNumber(103)
+  $core.bool hasOrderEdit() => $_has(46);
+  @$pb.TagNumber(103)
+  void clearOrderEdit() => clearField(103);
+  @$pb.TagNumber(103)
+  To_OrderEdit ensureOrderEdit() => $_ensure(46);
+
+  @$pb.TagNumber(104)
+  To_OrderCancel get orderCancel => $_getN(47);
+  @$pb.TagNumber(104)
+  set orderCancel(To_OrderCancel v) { setField(104, v); }
+  @$pb.TagNumber(104)
+  $core.bool hasOrderCancel() => $_has(47);
+  @$pb.TagNumber(104)
+  void clearOrderCancel() => clearField(104);
+  @$pb.TagNumber(104)
+  To_OrderCancel ensureOrderCancel() => $_ensure(47);
+
+  @$pb.TagNumber(110)
+  To_StartQuotes get startQuotes => $_getN(48);
+  @$pb.TagNumber(110)
+  set startQuotes(To_StartQuotes v) { setField(110, v); }
+  @$pb.TagNumber(110)
+  $core.bool hasStartQuotes() => $_has(48);
+  @$pb.TagNumber(110)
+  void clearStartQuotes() => clearField(110);
+  @$pb.TagNumber(110)
+  To_StartQuotes ensureStartQuotes() => $_ensure(48);
+
+  @$pb.TagNumber(111)
+  Empty get stopQuotes => $_getN(49);
+  @$pb.TagNumber(111)
+  set stopQuotes(Empty v) { setField(111, v); }
+  @$pb.TagNumber(111)
+  $core.bool hasStopQuotes() => $_has(49);
+  @$pb.TagNumber(111)
+  void clearStopQuotes() => clearField(111);
+  @$pb.TagNumber(111)
+  Empty ensureStopQuotes() => $_ensure(49);
+
+  @$pb.TagNumber(112)
+  To_AcceptQuote get acceptQuote => $_getN(50);
+  @$pb.TagNumber(112)
+  set acceptQuote(To_AcceptQuote v) { setField(112, v); }
+  @$pb.TagNumber(112)
+  $core.bool hasAcceptQuote() => $_has(50);
+  @$pb.TagNumber(112)
+  void clearAcceptQuote() => clearField(112);
+  @$pb.TagNumber(112)
+  To_AcceptQuote ensureAcceptQuote() => $_ensure(50);
+
+  @$pb.TagNumber(120)
+  AssetPair get chartsSubscribe => $_getN(51);
+  @$pb.TagNumber(120)
+  set chartsSubscribe(AssetPair v) { setField(120, v); }
+  @$pb.TagNumber(120)
+  $core.bool hasChartsSubscribe() => $_has(51);
+  @$pb.TagNumber(120)
+  void clearChartsSubscribe() => clearField(120);
+  @$pb.TagNumber(120)
+  AssetPair ensureChartsSubscribe() => $_ensure(51);
+
+  @$pb.TagNumber(121)
+  Empty get chartsUnsubscribe => $_getN(52);
+  @$pb.TagNumber(121)
+  set chartsUnsubscribe(Empty v) { setField(121, v); }
+  @$pb.TagNumber(121)
+  $core.bool hasChartsUnsubscribe() => $_has(52);
+  @$pb.TagNumber(121)
+  void clearChartsUnsubscribe() => clearField(121);
+  @$pb.TagNumber(121)
+  Empty ensureChartsUnsubscribe() => $_ensure(52);
+
+  @$pb.TagNumber(130)
+  To_LoadHistory get loadHistory => $_getN(53);
+  @$pb.TagNumber(130)
+  set loadHistory(To_LoadHistory v) { setField(130, v); }
+  @$pb.TagNumber(130)
+  $core.bool hasLoadHistory() => $_has(53);
+  @$pb.TagNumber(130)
+  void clearLoadHistory() => clearField(130);
+  @$pb.TagNumber(130)
+  To_LoadHistory ensureLoadHistory() => $_ensure(53);
 }
 
 enum From_Login_Result {
@@ -6066,6 +7296,7 @@ class From_AmpAssets extends $pb.GeneratedMessage {
   $core.List<$core.String> get assets => $_getList(0);
 }
 
+/// TODO: Remove
 class From_TokenMarketOrder extends $pb.GeneratedMessage {
   factory From_TokenMarketOrder({
     $core.Iterable<$core.String>? assetIds,
@@ -6311,156 +7542,6 @@ class From_BalanceUpdate extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(2)
   $core.List<Balance> get balances => $_getList(1);
-}
-
-class From_UtxoUpdate_Utxo extends $pb.GeneratedMessage {
-  factory From_UtxoUpdate_Utxo({
-    $core.String? txid,
-    $core.int? vout,
-    $core.String? assetId,
-    $fixnum.Int64? amount,
-  }) {
-    final $result = create();
-    if (txid != null) {
-      $result.txid = txid;
-    }
-    if (vout != null) {
-      $result.vout = vout;
-    }
-    if (assetId != null) {
-      $result.assetId = assetId;
-    }
-    if (amount != null) {
-      $result.amount = amount;
-    }
-    return $result;
-  }
-  From_UtxoUpdate_Utxo._() : super();
-  factory From_UtxoUpdate_Utxo.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory From_UtxoUpdate_Utxo.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.UtxoUpdate.Utxo', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQS(1, _omitFieldNames ? '' : 'txid')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'vout', $pb.PbFieldType.QU3)
-    ..aQS(3, _omitFieldNames ? '' : 'assetId')
-    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  From_UtxoUpdate_Utxo clone() => From_UtxoUpdate_Utxo()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  From_UtxoUpdate_Utxo copyWith(void Function(From_UtxoUpdate_Utxo) updates) => super.copyWith((message) => updates(message as From_UtxoUpdate_Utxo)) as From_UtxoUpdate_Utxo;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static From_UtxoUpdate_Utxo create() => From_UtxoUpdate_Utxo._();
-  From_UtxoUpdate_Utxo createEmptyInstance() => create();
-  static $pb.PbList<From_UtxoUpdate_Utxo> createRepeated() => $pb.PbList<From_UtxoUpdate_Utxo>();
-  @$core.pragma('dart2js:noInline')
-  static From_UtxoUpdate_Utxo getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_UtxoUpdate_Utxo>(create);
-  static From_UtxoUpdate_Utxo? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  $core.String get txid => $_getSZ(0);
-  @$pb.TagNumber(1)
-  set txid($core.String v) { $_setString(0, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasTxid() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearTxid() => clearField(1);
-
-  @$pb.TagNumber(2)
-  $core.int get vout => $_getIZ(1);
-  @$pb.TagNumber(2)
-  set vout($core.int v) { $_setUnsignedInt32(1, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasVout() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearVout() => clearField(2);
-
-  @$pb.TagNumber(3)
-  $core.String get assetId => $_getSZ(2);
-  @$pb.TagNumber(3)
-  set assetId($core.String v) { $_setString(2, v); }
-  @$pb.TagNumber(3)
-  $core.bool hasAssetId() => $_has(2);
-  @$pb.TagNumber(3)
-  void clearAssetId() => clearField(3);
-
-  @$pb.TagNumber(4)
-  $fixnum.Int64 get amount => $_getI64(3);
-  @$pb.TagNumber(4)
-  set amount($fixnum.Int64 v) { $_setInt64(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasAmount() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearAmount() => clearField(4);
-}
-
-class From_UtxoUpdate extends $pb.GeneratedMessage {
-  factory From_UtxoUpdate({
-    Account? account,
-    $core.Iterable<From_UtxoUpdate_Utxo>? utxos,
-  }) {
-    final $result = create();
-    if (account != null) {
-      $result.account = account;
-    }
-    if (utxos != null) {
-      $result.utxos.addAll(utxos);
-    }
-    return $result;
-  }
-  From_UtxoUpdate._() : super();
-  factory From_UtxoUpdate.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory From_UtxoUpdate.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
-
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.UtxoUpdate', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..aQM<Account>(1, _omitFieldNames ? '' : 'account', subBuilder: Account.create)
-    ..pc<From_UtxoUpdate_Utxo>(2, _omitFieldNames ? '' : 'utxos', $pb.PbFieldType.PM, subBuilder: From_UtxoUpdate_Utxo.create)
-  ;
-
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  From_UtxoUpdate clone() => From_UtxoUpdate()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  From_UtxoUpdate copyWith(void Function(From_UtxoUpdate) updates) => super.copyWith((message) => updates(message as From_UtxoUpdate)) as From_UtxoUpdate;
-
-  $pb.BuilderInfo get info_ => _i;
-
-  @$core.pragma('dart2js:noInline')
-  static From_UtxoUpdate create() => From_UtxoUpdate._();
-  From_UtxoUpdate createEmptyInstance() => create();
-  static $pb.PbList<From_UtxoUpdate> createRepeated() => $pb.PbList<From_UtxoUpdate>();
-  @$core.pragma('dart2js:noInline')
-  static From_UtxoUpdate getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_UtxoUpdate>(create);
-  static From_UtxoUpdate? _defaultInstance;
-
-  @$pb.TagNumber(1)
-  Account get account => $_getN(0);
-  @$pb.TagNumber(1)
-  set account(Account v) { setField(1, v); }
-  @$pb.TagNumber(1)
-  $core.bool hasAccount() => $_has(0);
-  @$pb.TagNumber(1)
-  void clearAccount() => clearField(1);
-  @$pb.TagNumber(1)
-  Account ensureAccount() => $_ensure(0);
-
-  @$pb.TagNumber(2)
-  $core.List<From_UtxoUpdate_Utxo> get utxos => $_getList(1);
 }
 
 class From_PeginWaitTx extends $pb.GeneratedMessage {
@@ -9421,6 +10502,1131 @@ class From_GaidStatus extends $pb.GeneratedMessage {
   void clearError() => clearField(3);
 }
 
+class From_MarketList extends $pb.GeneratedMessage {
+  factory From_MarketList({
+    $core.Iterable<MarketInfo>? markets,
+  }) {
+    final $result = create();
+    if (markets != null) {
+      $result.markets.addAll(markets);
+    }
+    return $result;
+  }
+  From_MarketList._() : super();
+  factory From_MarketList.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_MarketList.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.MarketList', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..pc<MarketInfo>(1, _omitFieldNames ? '' : 'markets', $pb.PbFieldType.PM, subBuilder: MarketInfo.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_MarketList clone() => From_MarketList()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_MarketList copyWith(void Function(From_MarketList) updates) => super.copyWith((message) => updates(message as From_MarketList)) as From_MarketList;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_MarketList create() => From_MarketList._();
+  From_MarketList createEmptyInstance() => create();
+  static $pb.PbList<From_MarketList> createRepeated() => $pb.PbList<From_MarketList>();
+  @$core.pragma('dart2js:noInline')
+  static From_MarketList getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_MarketList>(create);
+  static From_MarketList? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<MarketInfo> get markets => $_getList(0);
+}
+
+class From_PublicOrders extends $pb.GeneratedMessage {
+  factory From_PublicOrders({
+    AssetPair? assetPair,
+    $core.Iterable<PublicOrder>? list,
+  }) {
+    final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (list != null) {
+      $result.list.addAll(list);
+    }
+    return $result;
+  }
+  From_PublicOrders._() : super();
+  factory From_PublicOrders.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_PublicOrders.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.PublicOrders', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..pc<PublicOrder>(2, _omitFieldNames ? '' : 'list', $pb.PbFieldType.PM, subBuilder: PublicOrder.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_PublicOrders clone() => From_PublicOrders()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_PublicOrders copyWith(void Function(From_PublicOrders) updates) => super.copyWith((message) => updates(message as From_PublicOrders)) as From_PublicOrders;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_PublicOrders create() => From_PublicOrders._();
+  From_PublicOrders createEmptyInstance() => create();
+  static $pb.PbList<From_PublicOrders> createRepeated() => $pb.PbList<From_PublicOrders>();
+  @$core.pragma('dart2js:noInline')
+  static From_PublicOrders getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_PublicOrders>(create);
+  static From_PublicOrders? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  AssetPair get assetPair => $_getN(0);
+  @$pb.TagNumber(1)
+  set assetPair(AssetPair v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetPair() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetPair() => clearField(1);
+  @$pb.TagNumber(1)
+  AssetPair ensureAssetPair() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.List<PublicOrder> get list => $_getList(1);
+}
+
+class From_OwnOrders extends $pb.GeneratedMessage {
+  factory From_OwnOrders({
+    $core.Iterable<OwnOrder>? list,
+  }) {
+    final $result = create();
+    if (list != null) {
+      $result.list.addAll(list);
+    }
+    return $result;
+  }
+  From_OwnOrders._() : super();
+  factory From_OwnOrders.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_OwnOrders.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.OwnOrders', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..pc<OwnOrder>(1, _omitFieldNames ? '' : 'list', $pb.PbFieldType.PM, subBuilder: OwnOrder.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_OwnOrders clone() => From_OwnOrders()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_OwnOrders copyWith(void Function(From_OwnOrders) updates) => super.copyWith((message) => updates(message as From_OwnOrders)) as From_OwnOrders;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_OwnOrders create() => From_OwnOrders._();
+  From_OwnOrders createEmptyInstance() => create();
+  static $pb.PbList<From_OwnOrders> createRepeated() => $pb.PbList<From_OwnOrders>();
+  @$core.pragma('dart2js:noInline')
+  static From_OwnOrders getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_OwnOrders>(create);
+  static From_OwnOrders? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<OwnOrder> get list => $_getList(0);
+}
+
+class From_MarketPrice extends $pb.GeneratedMessage {
+  factory From_MarketPrice({
+    AssetPair? assetPair,
+    $core.double? indPrice,
+    $core.double? lastPrice,
+  }) {
+    final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (indPrice != null) {
+      $result.indPrice = indPrice;
+    }
+    if (lastPrice != null) {
+      $result.lastPrice = lastPrice;
+    }
+    return $result;
+  }
+  From_MarketPrice._() : super();
+  factory From_MarketPrice.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_MarketPrice.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.MarketPrice', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..a<$core.double>(2, _omitFieldNames ? '' : 'indPrice', $pb.PbFieldType.OD)
+    ..a<$core.double>(3, _omitFieldNames ? '' : 'lastPrice', $pb.PbFieldType.OD)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_MarketPrice clone() => From_MarketPrice()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_MarketPrice copyWith(void Function(From_MarketPrice) updates) => super.copyWith((message) => updates(message as From_MarketPrice)) as From_MarketPrice;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_MarketPrice create() => From_MarketPrice._();
+  From_MarketPrice createEmptyInstance() => create();
+  static $pb.PbList<From_MarketPrice> createRepeated() => $pb.PbList<From_MarketPrice>();
+  @$core.pragma('dart2js:noInline')
+  static From_MarketPrice getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_MarketPrice>(create);
+  static From_MarketPrice? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  AssetPair get assetPair => $_getN(0);
+  @$pb.TagNumber(1)
+  set assetPair(AssetPair v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetPair() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetPair() => clearField(1);
+  @$pb.TagNumber(1)
+  AssetPair ensureAssetPair() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.double get indPrice => $_getN(1);
+  @$pb.TagNumber(2)
+  set indPrice($core.double v) { $_setDouble(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIndPrice() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIndPrice() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get lastPrice => $_getN(2);
+  @$pb.TagNumber(3)
+  set lastPrice($core.double v) { $_setDouble(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasLastPrice() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLastPrice() => clearField(3);
+}
+
+class From_OrderSubmit_UnregisteredGaid extends $pb.GeneratedMessage {
+  factory From_OrderSubmit_UnregisteredGaid({
+    $core.String? domainAgent,
+  }) {
+    final $result = create();
+    if (domainAgent != null) {
+      $result.domainAgent = domainAgent;
+    }
+    return $result;
+  }
+  From_OrderSubmit_UnregisteredGaid._() : super();
+  factory From_OrderSubmit_UnregisteredGaid.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_OrderSubmit_UnregisteredGaid.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.OrderSubmit.UnregisteredGaid', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'domainAgent')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_OrderSubmit_UnregisteredGaid clone() => From_OrderSubmit_UnregisteredGaid()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_OrderSubmit_UnregisteredGaid copyWith(void Function(From_OrderSubmit_UnregisteredGaid) updates) => super.copyWith((message) => updates(message as From_OrderSubmit_UnregisteredGaid)) as From_OrderSubmit_UnregisteredGaid;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_OrderSubmit_UnregisteredGaid create() => From_OrderSubmit_UnregisteredGaid._();
+  From_OrderSubmit_UnregisteredGaid createEmptyInstance() => create();
+  static $pb.PbList<From_OrderSubmit_UnregisteredGaid> createRepeated() => $pb.PbList<From_OrderSubmit_UnregisteredGaid>();
+  @$core.pragma('dart2js:noInline')
+  static From_OrderSubmit_UnregisteredGaid getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_OrderSubmit_UnregisteredGaid>(create);
+  static From_OrderSubmit_UnregisteredGaid? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get domainAgent => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set domainAgent($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDomainAgent() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDomainAgent() => clearField(1);
+}
+
+enum From_OrderSubmit_Result {
+  submitSucceed, 
+  error, 
+  unregisteredGaid, 
+  notSet
+}
+
+class From_OrderSubmit extends $pb.GeneratedMessage {
+  factory From_OrderSubmit({
+    OwnOrder? submitSucceed,
+    $core.String? error,
+    From_OrderSubmit_UnregisteredGaid? unregisteredGaid,
+  }) {
+    final $result = create();
+    if (submitSucceed != null) {
+      $result.submitSucceed = submitSucceed;
+    }
+    if (error != null) {
+      $result.error = error;
+    }
+    if (unregisteredGaid != null) {
+      $result.unregisteredGaid = unregisteredGaid;
+    }
+    return $result;
+  }
+  From_OrderSubmit._() : super();
+  factory From_OrderSubmit.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_OrderSubmit.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static const $core.Map<$core.int, From_OrderSubmit_Result> _From_OrderSubmit_ResultByTag = {
+    1 : From_OrderSubmit_Result.submitSucceed,
+    2 : From_OrderSubmit_Result.error,
+    3 : From_OrderSubmit_Result.unregisteredGaid,
+    0 : From_OrderSubmit_Result.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.OrderSubmit', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2, 3])
+    ..aOM<OwnOrder>(1, _omitFieldNames ? '' : 'submitSucceed', subBuilder: OwnOrder.create)
+    ..aOS(2, _omitFieldNames ? '' : 'error')
+    ..aOM<From_OrderSubmit_UnregisteredGaid>(3, _omitFieldNames ? '' : 'unregisteredGaid', subBuilder: From_OrderSubmit_UnregisteredGaid.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_OrderSubmit clone() => From_OrderSubmit()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_OrderSubmit copyWith(void Function(From_OrderSubmit) updates) => super.copyWith((message) => updates(message as From_OrderSubmit)) as From_OrderSubmit;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_OrderSubmit create() => From_OrderSubmit._();
+  From_OrderSubmit createEmptyInstance() => create();
+  static $pb.PbList<From_OrderSubmit> createRepeated() => $pb.PbList<From_OrderSubmit>();
+  @$core.pragma('dart2js:noInline')
+  static From_OrderSubmit getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_OrderSubmit>(create);
+  static From_OrderSubmit? _defaultInstance;
+
+  From_OrderSubmit_Result whichResult() => _From_OrderSubmit_ResultByTag[$_whichOneof(0)]!;
+  void clearResult() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  OwnOrder get submitSucceed => $_getN(0);
+  @$pb.TagNumber(1)
+  set submitSucceed(OwnOrder v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSubmitSucceed() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSubmitSucceed() => clearField(1);
+  @$pb.TagNumber(1)
+  OwnOrder ensureSubmitSucceed() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get error => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set error($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasError() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearError() => clearField(2);
+
+  @$pb.TagNumber(3)
+  From_OrderSubmit_UnregisteredGaid get unregisteredGaid => $_getN(2);
+  @$pb.TagNumber(3)
+  set unregisteredGaid(From_OrderSubmit_UnregisteredGaid v) { setField(3, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasUnregisteredGaid() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearUnregisteredGaid() => clearField(3);
+  @$pb.TagNumber(3)
+  From_OrderSubmit_UnregisteredGaid ensureUnregisteredGaid() => $_ensure(2);
+}
+
+class From_Quote_Success extends $pb.GeneratedMessage {
+  factory From_Quote_Success({
+    $fixnum.Int64? quoteId,
+    AssetPair? assetPair,
+    $fixnum.Int64? baseAmount,
+    $fixnum.Int64? quoteAmount,
+    $fixnum.Int64? serverFee,
+    $fixnum.Int64? fixedFee,
+    $fixnum.Int64? ttlMilliseconds,
+  }) {
+    final $result = create();
+    if (quoteId != null) {
+      $result.quoteId = quoteId;
+    }
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (baseAmount != null) {
+      $result.baseAmount = baseAmount;
+    }
+    if (quoteAmount != null) {
+      $result.quoteAmount = quoteAmount;
+    }
+    if (serverFee != null) {
+      $result.serverFee = serverFee;
+    }
+    if (fixedFee != null) {
+      $result.fixedFee = fixedFee;
+    }
+    if (ttlMilliseconds != null) {
+      $result.ttlMilliseconds = ttlMilliseconds;
+    }
+    return $result;
+  }
+  From_Quote_Success._() : super();
+  factory From_Quote_Success.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_Quote_Success.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.Quote.Success', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'quoteId', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aQM<AssetPair>(2, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'baseAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'quoteAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'serverFee', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'fixedFee', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'ttlMilliseconds', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_Quote_Success clone() => From_Quote_Success()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_Quote_Success copyWith(void Function(From_Quote_Success) updates) => super.copyWith((message) => updates(message as From_Quote_Success)) as From_Quote_Success;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_Quote_Success create() => From_Quote_Success._();
+  From_Quote_Success createEmptyInstance() => create();
+  static $pb.PbList<From_Quote_Success> createRepeated() => $pb.PbList<From_Quote_Success>();
+  @$core.pragma('dart2js:noInline')
+  static From_Quote_Success getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_Quote_Success>(create);
+  static From_Quote_Success? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get quoteId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set quoteId($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasQuoteId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearQuoteId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  AssetPair get assetPair => $_getN(1);
+  @$pb.TagNumber(2)
+  set assetPair(AssetPair v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasAssetPair() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearAssetPair() => clearField(2);
+  @$pb.TagNumber(2)
+  AssetPair ensureAssetPair() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get baseAmount => $_getI64(2);
+  @$pb.TagNumber(3)
+  set baseAmount($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasBaseAmount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearBaseAmount() => clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get quoteAmount => $_getI64(3);
+  @$pb.TagNumber(4)
+  set quoteAmount($fixnum.Int64 v) { $_setInt64(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasQuoteAmount() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearQuoteAmount() => clearField(4);
+
+  @$pb.TagNumber(5)
+  $fixnum.Int64 get serverFee => $_getI64(4);
+  @$pb.TagNumber(5)
+  set serverFee($fixnum.Int64 v) { $_setInt64(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasServerFee() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearServerFee() => clearField(5);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get fixedFee => $_getI64(5);
+  @$pb.TagNumber(6)
+  set fixedFee($fixnum.Int64 v) { $_setInt64(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasFixedFee() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearFixedFee() => clearField(6);
+
+  @$pb.TagNumber(7)
+  $fixnum.Int64 get ttlMilliseconds => $_getI64(6);
+  @$pb.TagNumber(7)
+  set ttlMilliseconds($fixnum.Int64 v) { $_setInt64(6, v); }
+  @$pb.TagNumber(7)
+  $core.bool hasTtlMilliseconds() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearTtlMilliseconds() => clearField(7);
+}
+
+class From_Quote_LowBalance extends $pb.GeneratedMessage {
+  factory From_Quote_LowBalance({
+    $core.String? assetId,
+    $fixnum.Int64? required,
+    $fixnum.Int64? available,
+  }) {
+    final $result = create();
+    if (assetId != null) {
+      $result.assetId = assetId;
+    }
+    if (required != null) {
+      $result.required = required;
+    }
+    if (available != null) {
+      $result.available = available;
+    }
+    return $result;
+  }
+  From_Quote_LowBalance._() : super();
+  factory From_Quote_LowBalance.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_Quote_LowBalance.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.Quote.LowBalance', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'assetId')
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'required', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'available', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_Quote_LowBalance clone() => From_Quote_LowBalance()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_Quote_LowBalance copyWith(void Function(From_Quote_LowBalance) updates) => super.copyWith((message) => updates(message as From_Quote_LowBalance)) as From_Quote_LowBalance;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_Quote_LowBalance create() => From_Quote_LowBalance._();
+  From_Quote_LowBalance createEmptyInstance() => create();
+  static $pb.PbList<From_Quote_LowBalance> createRepeated() => $pb.PbList<From_Quote_LowBalance>();
+  @$core.pragma('dart2js:noInline')
+  static From_Quote_LowBalance getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_Quote_LowBalance>(create);
+  static From_Quote_LowBalance? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get assetId => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set assetId($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetId() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get required => $_getI64(1);
+  @$pb.TagNumber(2)
+  set required($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasRequired() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRequired() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get available => $_getI64(2);
+  @$pb.TagNumber(3)
+  set available($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasAvailable() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearAvailable() => clearField(3);
+}
+
+class From_Quote_UnregisteredGaid extends $pb.GeneratedMessage {
+  factory From_Quote_UnregisteredGaid({
+    $core.String? domainAgent,
+  }) {
+    final $result = create();
+    if (domainAgent != null) {
+      $result.domainAgent = domainAgent;
+    }
+    return $result;
+  }
+  From_Quote_UnregisteredGaid._() : super();
+  factory From_Quote_UnregisteredGaid.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_Quote_UnregisteredGaid.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.Quote.UnregisteredGaid', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'domainAgent')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_Quote_UnregisteredGaid clone() => From_Quote_UnregisteredGaid()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_Quote_UnregisteredGaid copyWith(void Function(From_Quote_UnregisteredGaid) updates) => super.copyWith((message) => updates(message as From_Quote_UnregisteredGaid)) as From_Quote_UnregisteredGaid;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_Quote_UnregisteredGaid create() => From_Quote_UnregisteredGaid._();
+  From_Quote_UnregisteredGaid createEmptyInstance() => create();
+  static $pb.PbList<From_Quote_UnregisteredGaid> createRepeated() => $pb.PbList<From_Quote_UnregisteredGaid>();
+  @$core.pragma('dart2js:noInline')
+  static From_Quote_UnregisteredGaid getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_Quote_UnregisteredGaid>(create);
+  static From_Quote_UnregisteredGaid? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get domainAgent => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set domainAgent($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasDomainAgent() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearDomainAgent() => clearField(1);
+}
+
+enum From_Quote_Result {
+  success, 
+  lowBalance, 
+  error, 
+  unregisteredGaid, 
+  notSet
+}
+
+class From_Quote extends $pb.GeneratedMessage {
+  factory From_Quote({
+    From_Quote_Success? success,
+    From_Quote_LowBalance? lowBalance,
+    $core.String? error,
+    From_Quote_UnregisteredGaid? unregisteredGaid,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (lowBalance != null) {
+      $result.lowBalance = lowBalance;
+    }
+    if (error != null) {
+      $result.error = error;
+    }
+    if (unregisteredGaid != null) {
+      $result.unregisteredGaid = unregisteredGaid;
+    }
+    return $result;
+  }
+  From_Quote._() : super();
+  factory From_Quote.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_Quote.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static const $core.Map<$core.int, From_Quote_Result> _From_Quote_ResultByTag = {
+    1 : From_Quote_Result.success,
+    2 : From_Quote_Result.lowBalance,
+    3 : From_Quote_Result.error,
+    4 : From_Quote_Result.unregisteredGaid,
+    0 : From_Quote_Result.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.Quote', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2, 3, 4])
+    ..aOM<From_Quote_Success>(1, _omitFieldNames ? '' : 'success', subBuilder: From_Quote_Success.create)
+    ..aOM<From_Quote_LowBalance>(2, _omitFieldNames ? '' : 'lowBalance', subBuilder: From_Quote_LowBalance.create)
+    ..aOS(3, _omitFieldNames ? '' : 'error')
+    ..aOM<From_Quote_UnregisteredGaid>(4, _omitFieldNames ? '' : 'unregisteredGaid', subBuilder: From_Quote_UnregisteredGaid.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_Quote clone() => From_Quote()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_Quote copyWith(void Function(From_Quote) updates) => super.copyWith((message) => updates(message as From_Quote)) as From_Quote;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_Quote create() => From_Quote._();
+  From_Quote createEmptyInstance() => create();
+  static $pb.PbList<From_Quote> createRepeated() => $pb.PbList<From_Quote>();
+  @$core.pragma('dart2js:noInline')
+  static From_Quote getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_Quote>(create);
+  static From_Quote? _defaultInstance;
+
+  From_Quote_Result whichResult() => _From_Quote_ResultByTag[$_whichOneof(0)]!;
+  void clearResult() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  From_Quote_Success get success => $_getN(0);
+  @$pb.TagNumber(1)
+  set success(From_Quote_Success v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+  @$pb.TagNumber(1)
+  From_Quote_Success ensureSuccess() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  From_Quote_LowBalance get lowBalance => $_getN(1);
+  @$pb.TagNumber(2)
+  set lowBalance(From_Quote_LowBalance v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasLowBalance() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLowBalance() => clearField(2);
+  @$pb.TagNumber(2)
+  From_Quote_LowBalance ensureLowBalance() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get error => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set error($core.String v) { $_setString(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasError() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearError() => clearField(3);
+
+  @$pb.TagNumber(4)
+  From_Quote_UnregisteredGaid get unregisteredGaid => $_getN(3);
+  @$pb.TagNumber(4)
+  set unregisteredGaid(From_Quote_UnregisteredGaid v) { setField(4, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasUnregisteredGaid() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearUnregisteredGaid() => clearField(4);
+  @$pb.TagNumber(4)
+  From_Quote_UnregisteredGaid ensureUnregisteredGaid() => $_ensure(3);
+}
+
+class From_AcceptQuote_Success extends $pb.GeneratedMessage {
+  factory From_AcceptQuote_Success({
+    $core.String? txid,
+  }) {
+    final $result = create();
+    if (txid != null) {
+      $result.txid = txid;
+    }
+    return $result;
+  }
+  From_AcceptQuote_Success._() : super();
+  factory From_AcceptQuote_Success.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_AcceptQuote_Success.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.AcceptQuote.Success', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQS(1, _omitFieldNames ? '' : 'txid')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_AcceptQuote_Success clone() => From_AcceptQuote_Success()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_AcceptQuote_Success copyWith(void Function(From_AcceptQuote_Success) updates) => super.copyWith((message) => updates(message as From_AcceptQuote_Success)) as From_AcceptQuote_Success;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_AcceptQuote_Success create() => From_AcceptQuote_Success._();
+  From_AcceptQuote_Success createEmptyInstance() => create();
+  static $pb.PbList<From_AcceptQuote_Success> createRepeated() => $pb.PbList<From_AcceptQuote_Success>();
+  @$core.pragma('dart2js:noInline')
+  static From_AcceptQuote_Success getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_AcceptQuote_Success>(create);
+  static From_AcceptQuote_Success? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.String get txid => $_getSZ(0);
+  @$pb.TagNumber(1)
+  set txid($core.String v) { $_setString(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasTxid() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearTxid() => clearField(1);
+}
+
+enum From_AcceptQuote_Result {
+  success, 
+  error, 
+  notSet
+}
+
+class From_AcceptQuote extends $pb.GeneratedMessage {
+  factory From_AcceptQuote({
+    From_AcceptQuote_Success? success,
+    $core.String? error,
+  }) {
+    final $result = create();
+    if (success != null) {
+      $result.success = success;
+    }
+    if (error != null) {
+      $result.error = error;
+    }
+    return $result;
+  }
+  From_AcceptQuote._() : super();
+  factory From_AcceptQuote.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_AcceptQuote.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static const $core.Map<$core.int, From_AcceptQuote_Result> _From_AcceptQuote_ResultByTag = {
+    1 : From_AcceptQuote_Result.success,
+    2 : From_AcceptQuote_Result.error,
+    0 : From_AcceptQuote_Result.notSet
+  };
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.AcceptQuote', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..oo(0, [1, 2])
+    ..aOM<From_AcceptQuote_Success>(1, _omitFieldNames ? '' : 'success', subBuilder: From_AcceptQuote_Success.create)
+    ..aOS(2, _omitFieldNames ? '' : 'error')
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_AcceptQuote clone() => From_AcceptQuote()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_AcceptQuote copyWith(void Function(From_AcceptQuote) updates) => super.copyWith((message) => updates(message as From_AcceptQuote)) as From_AcceptQuote;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_AcceptQuote create() => From_AcceptQuote._();
+  From_AcceptQuote createEmptyInstance() => create();
+  static $pb.PbList<From_AcceptQuote> createRepeated() => $pb.PbList<From_AcceptQuote>();
+  @$core.pragma('dart2js:noInline')
+  static From_AcceptQuote getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_AcceptQuote>(create);
+  static From_AcceptQuote? _defaultInstance;
+
+  From_AcceptQuote_Result whichResult() => _From_AcceptQuote_ResultByTag[$_whichOneof(0)]!;
+  void clearResult() => clearField($_whichOneof(0));
+
+  @$pb.TagNumber(1)
+  From_AcceptQuote_Success get success => $_getN(0);
+  @$pb.TagNumber(1)
+  set success(From_AcceptQuote_Success v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => clearField(1);
+  @$pb.TagNumber(1)
+  From_AcceptQuote_Success ensureSuccess() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.String get error => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set error($core.String v) { $_setString(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasError() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearError() => clearField(2);
+}
+
+class From_ChartsSubscribe extends $pb.GeneratedMessage {
+  factory From_ChartsSubscribe({
+    AssetPair? assetPair,
+    $core.Iterable<ChartPoint>? data,
+  }) {
+    final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (data != null) {
+      $result.data.addAll(data);
+    }
+    return $result;
+  }
+  From_ChartsSubscribe._() : super();
+  factory From_ChartsSubscribe.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_ChartsSubscribe.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.ChartsSubscribe', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..pc<ChartPoint>(2, _omitFieldNames ? '' : 'data', $pb.PbFieldType.PM, subBuilder: ChartPoint.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_ChartsSubscribe clone() => From_ChartsSubscribe()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_ChartsSubscribe copyWith(void Function(From_ChartsSubscribe) updates) => super.copyWith((message) => updates(message as From_ChartsSubscribe)) as From_ChartsSubscribe;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_ChartsSubscribe create() => From_ChartsSubscribe._();
+  From_ChartsSubscribe createEmptyInstance() => create();
+  static $pb.PbList<From_ChartsSubscribe> createRepeated() => $pb.PbList<From_ChartsSubscribe>();
+  @$core.pragma('dart2js:noInline')
+  static From_ChartsSubscribe getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_ChartsSubscribe>(create);
+  static From_ChartsSubscribe? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  AssetPair get assetPair => $_getN(0);
+  @$pb.TagNumber(1)
+  set assetPair(AssetPair v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetPair() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetPair() => clearField(1);
+  @$pb.TagNumber(1)
+  AssetPair ensureAssetPair() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.List<ChartPoint> get data => $_getList(1);
+}
+
+class From_ChartsUpdate extends $pb.GeneratedMessage {
+  factory From_ChartsUpdate({
+    AssetPair? assetPair,
+    ChartPoint? update,
+  }) {
+    final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (update != null) {
+      $result.update = update;
+    }
+    return $result;
+  }
+  From_ChartsUpdate._() : super();
+  factory From_ChartsUpdate.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_ChartsUpdate.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.ChartsUpdate', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..aQM<ChartPoint>(2, _omitFieldNames ? '' : 'update', subBuilder: ChartPoint.create)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_ChartsUpdate clone() => From_ChartsUpdate()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_ChartsUpdate copyWith(void Function(From_ChartsUpdate) updates) => super.copyWith((message) => updates(message as From_ChartsUpdate)) as From_ChartsUpdate;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_ChartsUpdate create() => From_ChartsUpdate._();
+  From_ChartsUpdate createEmptyInstance() => create();
+  static $pb.PbList<From_ChartsUpdate> createRepeated() => $pb.PbList<From_ChartsUpdate>();
+  @$core.pragma('dart2js:noInline')
+  static From_ChartsUpdate getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_ChartsUpdate>(create);
+  static From_ChartsUpdate? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  AssetPair get assetPair => $_getN(0);
+  @$pb.TagNumber(1)
+  set assetPair(AssetPair v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasAssetPair() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearAssetPair() => clearField(1);
+  @$pb.TagNumber(1)
+  AssetPair ensureAssetPair() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  ChartPoint get update => $_getN(1);
+  @$pb.TagNumber(2)
+  set update(ChartPoint v) { setField(2, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUpdate() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUpdate() => clearField(2);
+  @$pb.TagNumber(2)
+  ChartPoint ensureUpdate() => $_ensure(1);
+}
+
+class From_LoadHistory extends $pb.GeneratedMessage {
+  factory From_LoadHistory({
+    $core.Iterable<HistoryOrder>? list,
+    $core.int? total,
+  }) {
+    final $result = create();
+    if (list != null) {
+      $result.list.addAll(list);
+    }
+    if (total != null) {
+      $result.total = total;
+    }
+    return $result;
+  }
+  From_LoadHistory._() : super();
+  factory From_LoadHistory.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_LoadHistory.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.LoadHistory', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..pc<HistoryOrder>(1, _omitFieldNames ? '' : 'list', $pb.PbFieldType.PM, subBuilder: HistoryOrder.create)
+    ..a<$core.int>(2, _omitFieldNames ? '' : 'total', $pb.PbFieldType.QU3)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_LoadHistory clone() => From_LoadHistory()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_LoadHistory copyWith(void Function(From_LoadHistory) updates) => super.copyWith((message) => updates(message as From_LoadHistory)) as From_LoadHistory;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_LoadHistory create() => From_LoadHistory._();
+  From_LoadHistory createEmptyInstance() => create();
+  static $pb.PbList<From_LoadHistory> createRepeated() => $pb.PbList<From_LoadHistory>();
+  @$core.pragma('dart2js:noInline')
+  static From_LoadHistory getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_LoadHistory>(create);
+  static From_LoadHistory? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<HistoryOrder> get list => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $core.int get total => $_getIZ(1);
+  @$pb.TagNumber(2)
+  set total($core.int v) { $_setUnsignedInt32(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasTotal() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearTotal() => clearField(2);
+}
+
+class From_HistoryUpdated extends $pb.GeneratedMessage {
+  factory From_HistoryUpdated({
+    HistoryOrder? order,
+    $core.bool? isNew,
+  }) {
+    final $result = create();
+    if (order != null) {
+      $result.order = order;
+    }
+    if (isNew != null) {
+      $result.isNew = isNew;
+    }
+    return $result;
+  }
+  From_HistoryUpdated._() : super();
+  factory From_HistoryUpdated.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_HistoryUpdated.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.HistoryUpdated', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..aQM<HistoryOrder>(1, _omitFieldNames ? '' : 'order', subBuilder: HistoryOrder.create)
+    ..a<$core.bool>(2, _omitFieldNames ? '' : 'isNew', $pb.PbFieldType.QB)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_HistoryUpdated clone() => From_HistoryUpdated()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_HistoryUpdated copyWith(void Function(From_HistoryUpdated) updates) => super.copyWith((message) => updates(message as From_HistoryUpdated)) as From_HistoryUpdated;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_HistoryUpdated create() => From_HistoryUpdated._();
+  From_HistoryUpdated createEmptyInstance() => create();
+  static $pb.PbList<From_HistoryUpdated> createRepeated() => $pb.PbList<From_HistoryUpdated>();
+  @$core.pragma('dart2js:noInline')
+  static From_HistoryUpdated getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_HistoryUpdated>(create);
+  static From_HistoryUpdated? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  HistoryOrder get order => $_getN(0);
+  @$pb.TagNumber(1)
+  set order(HistoryOrder v) { setField(1, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasOrder() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearOrder() => clearField(1);
+  @$pb.TagNumber(1)
+  HistoryOrder ensureOrder() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $core.bool get isNew => $_getBF(1);
+  @$pb.TagNumber(2)
+  set isNew($core.bool v) { $_setBool(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasIsNew() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearIsNew() => clearField(2);
+}
+
 enum From_Msg {
   updatedTxs, 
   updatedPegs, 
@@ -9436,7 +11642,6 @@ enum From_Msg {
   removedTxs, 
   envSettings, 
   syncComplete, 
-  utxoUpdate, 
   logout, 
   login, 
   tokenMarketOrder, 
@@ -9481,6 +11686,25 @@ enum From_Msg {
   jadePorts, 
   jadeStatus, 
   gaidStatus, 
+  marketList, 
+  marketAdded, 
+  marketRemoved, 
+  publicOrders, 
+  publicOrderCreated, 
+  publicOrderRemoved, 
+  marketPrice, 
+  ownOrders, 
+  ownOrderCreated, 
+  ownOrderRemoved, 
+  orderSubmit, 
+  orderEdit, 
+  orderCancel, 
+  quote, 
+  acceptQuote, 
+  chartsSubscribe, 
+  chartsUpdate, 
+  loadHistory, 
+  historyUpdated, 
   notSet
 }
 
@@ -9500,7 +11724,6 @@ class From extends $pb.GeneratedMessage {
     From_RemovedTxs? removedTxs,
     From_EnvSettings? envSettings,
     Empty? syncComplete,
-    From_UtxoUpdate? utxoUpdate,
     Empty? logout,
     From_Login? login,
     From_TokenMarketOrder? tokenMarketOrder,
@@ -9545,6 +11768,25 @@ class From extends $pb.GeneratedMessage {
     From_JadePorts? jadePorts,
     From_JadeStatus? jadeStatus,
     From_GaidStatus? gaidStatus,
+    From_MarketList? marketList,
+    MarketInfo? marketAdded,
+    AssetPair? marketRemoved,
+    From_PublicOrders? publicOrders,
+    PublicOrder? publicOrderCreated,
+    OrderId? publicOrderRemoved,
+    From_MarketPrice? marketPrice,
+    From_OwnOrders? ownOrders,
+    OwnOrder? ownOrderCreated,
+    OrderId? ownOrderRemoved,
+    From_OrderSubmit? orderSubmit,
+    GenericResponse? orderEdit,
+    GenericResponse? orderCancel,
+    From_Quote? quote,
+    From_AcceptQuote? acceptQuote,
+    From_ChartsSubscribe? chartsSubscribe,
+    From_ChartsUpdate? chartsUpdate,
+    From_LoadHistory? loadHistory,
+    From_HistoryUpdated? historyUpdated,
   }) {
     final $result = create();
     if (updatedTxs != null) {
@@ -9588,9 +11830,6 @@ class From extends $pb.GeneratedMessage {
     }
     if (syncComplete != null) {
       $result.syncComplete = syncComplete;
-    }
-    if (utxoUpdate != null) {
-      $result.utxoUpdate = utxoUpdate;
     }
     if (logout != null) {
       $result.logout = logout;
@@ -9724,6 +11963,63 @@ class From extends $pb.GeneratedMessage {
     if (gaidStatus != null) {
       $result.gaidStatus = gaidStatus;
     }
+    if (marketList != null) {
+      $result.marketList = marketList;
+    }
+    if (marketAdded != null) {
+      $result.marketAdded = marketAdded;
+    }
+    if (marketRemoved != null) {
+      $result.marketRemoved = marketRemoved;
+    }
+    if (publicOrders != null) {
+      $result.publicOrders = publicOrders;
+    }
+    if (publicOrderCreated != null) {
+      $result.publicOrderCreated = publicOrderCreated;
+    }
+    if (publicOrderRemoved != null) {
+      $result.publicOrderRemoved = publicOrderRemoved;
+    }
+    if (marketPrice != null) {
+      $result.marketPrice = marketPrice;
+    }
+    if (ownOrders != null) {
+      $result.ownOrders = ownOrders;
+    }
+    if (ownOrderCreated != null) {
+      $result.ownOrderCreated = ownOrderCreated;
+    }
+    if (ownOrderRemoved != null) {
+      $result.ownOrderRemoved = ownOrderRemoved;
+    }
+    if (orderSubmit != null) {
+      $result.orderSubmit = orderSubmit;
+    }
+    if (orderEdit != null) {
+      $result.orderEdit = orderEdit;
+    }
+    if (orderCancel != null) {
+      $result.orderCancel = orderCancel;
+    }
+    if (quote != null) {
+      $result.quote = quote;
+    }
+    if (acceptQuote != null) {
+      $result.acceptQuote = acceptQuote;
+    }
+    if (chartsSubscribe != null) {
+      $result.chartsSubscribe = chartsSubscribe;
+    }
+    if (chartsUpdate != null) {
+      $result.chartsUpdate = chartsUpdate;
+    }
+    if (loadHistory != null) {
+      $result.loadHistory = loadHistory;
+    }
+    if (historyUpdated != null) {
+      $result.historyUpdated = historyUpdated;
+    }
     return $result;
   }
   From._() : super();
@@ -9745,7 +12041,6 @@ class From extends $pb.GeneratedMessage {
     12 : From_Msg.removedTxs,
     13 : From_Msg.envSettings,
     14 : From_Msg.syncComplete,
-    15 : From_Msg.utxoUpdate,
     16 : From_Msg.logout,
     17 : From_Msg.login,
     18 : From_Msg.tokenMarketOrder,
@@ -9790,10 +12085,29 @@ class From extends $pb.GeneratedMessage {
     80 : From_Msg.jadePorts,
     83 : From_Msg.jadeStatus,
     91 : From_Msg.gaidStatus,
+    100 : From_Msg.marketList,
+    101 : From_Msg.marketAdded,
+    102 : From_Msg.marketRemoved,
+    105 : From_Msg.publicOrders,
+    106 : From_Msg.publicOrderCreated,
+    107 : From_Msg.publicOrderRemoved,
+    110 : From_Msg.marketPrice,
+    120 : From_Msg.ownOrders,
+    121 : From_Msg.ownOrderCreated,
+    122 : From_Msg.ownOrderRemoved,
+    130 : From_Msg.orderSubmit,
+    131 : From_Msg.orderEdit,
+    132 : From_Msg.orderCancel,
+    140 : From_Msg.quote,
+    141 : From_Msg.acceptQuote,
+    150 : From_Msg.chartsSubscribe,
+    151 : From_Msg.chartsUpdate,
+    160 : From_Msg.loadHistory,
+    161 : From_Msg.historyUpdated,
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 22, 23, 24, 30, 31, 32, 33, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 80, 83, 91])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 21, 22, 23, 24, 30, 31, 32, 33, 35, 36, 40, 41, 42, 43, 44, 45, 46, 47, 50, 51, 52, 53, 54, 55, 56, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 80, 83, 91, 100, 101, 102, 105, 106, 107, 110, 120, 121, 122, 130, 131, 132, 140, 141, 150, 151, 160, 161])
     ..aOM<From_UpdatedTxs>(1, _omitFieldNames ? '' : 'updatedTxs', subBuilder: From_UpdatedTxs.create)
     ..aOM<From_UpdatedPegs>(2, _omitFieldNames ? '' : 'updatedPegs', subBuilder: From_UpdatedPegs.create)
     ..aOM<Asset>(3, _omitFieldNames ? '' : 'newAsset', subBuilder: Asset.create)
@@ -9808,7 +12122,6 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_RemovedTxs>(12, _omitFieldNames ? '' : 'removedTxs', subBuilder: From_RemovedTxs.create)
     ..aOM<From_EnvSettings>(13, _omitFieldNames ? '' : 'envSettings', subBuilder: From_EnvSettings.create)
     ..aOM<Empty>(14, _omitFieldNames ? '' : 'syncComplete', subBuilder: Empty.create)
-    ..aOM<From_UtxoUpdate>(15, _omitFieldNames ? '' : 'utxoUpdate', subBuilder: From_UtxoUpdate.create)
     ..aOM<Empty>(16, _omitFieldNames ? '' : 'logout', subBuilder: Empty.create)
     ..aOM<From_Login>(17, _omitFieldNames ? '' : 'login', subBuilder: From_Login.create)
     ..aOM<From_TokenMarketOrder>(18, _omitFieldNames ? '' : 'tokenMarketOrder', subBuilder: From_TokenMarketOrder.create)
@@ -9853,6 +12166,25 @@ class From extends $pb.GeneratedMessage {
     ..aOM<From_JadePorts>(80, _omitFieldNames ? '' : 'jadePorts', subBuilder: From_JadePorts.create)
     ..aOM<From_JadeStatus>(83, _omitFieldNames ? '' : 'jadeStatus', subBuilder: From_JadeStatus.create)
     ..aOM<From_GaidStatus>(91, _omitFieldNames ? '' : 'gaidStatus', subBuilder: From_GaidStatus.create)
+    ..aOM<From_MarketList>(100, _omitFieldNames ? '' : 'marketList', subBuilder: From_MarketList.create)
+    ..aOM<MarketInfo>(101, _omitFieldNames ? '' : 'marketAdded', subBuilder: MarketInfo.create)
+    ..aOM<AssetPair>(102, _omitFieldNames ? '' : 'marketRemoved', subBuilder: AssetPair.create)
+    ..aOM<From_PublicOrders>(105, _omitFieldNames ? '' : 'publicOrders', subBuilder: From_PublicOrders.create)
+    ..aOM<PublicOrder>(106, _omitFieldNames ? '' : 'publicOrderCreated', subBuilder: PublicOrder.create)
+    ..aOM<OrderId>(107, _omitFieldNames ? '' : 'publicOrderRemoved', subBuilder: OrderId.create)
+    ..aOM<From_MarketPrice>(110, _omitFieldNames ? '' : 'marketPrice', subBuilder: From_MarketPrice.create)
+    ..aOM<From_OwnOrders>(120, _omitFieldNames ? '' : 'ownOrders', subBuilder: From_OwnOrders.create)
+    ..aOM<OwnOrder>(121, _omitFieldNames ? '' : 'ownOrderCreated', subBuilder: OwnOrder.create)
+    ..aOM<OrderId>(122, _omitFieldNames ? '' : 'ownOrderRemoved', subBuilder: OrderId.create)
+    ..aOM<From_OrderSubmit>(130, _omitFieldNames ? '' : 'orderSubmit', subBuilder: From_OrderSubmit.create)
+    ..aOM<GenericResponse>(131, _omitFieldNames ? '' : 'orderEdit', subBuilder: GenericResponse.create)
+    ..aOM<GenericResponse>(132, _omitFieldNames ? '' : 'orderCancel', subBuilder: GenericResponse.create)
+    ..aOM<From_Quote>(140, _omitFieldNames ? '' : 'quote', subBuilder: From_Quote.create)
+    ..aOM<From_AcceptQuote>(141, _omitFieldNames ? '' : 'acceptQuote', subBuilder: From_AcceptQuote.create)
+    ..aOM<From_ChartsSubscribe>(150, _omitFieldNames ? '' : 'chartsSubscribe', subBuilder: From_ChartsSubscribe.create)
+    ..aOM<From_ChartsUpdate>(151, _omitFieldNames ? '' : 'chartsUpdate', subBuilder: From_ChartsUpdate.create)
+    ..aOM<From_LoadHistory>(160, _omitFieldNames ? '' : 'loadHistory', subBuilder: From_LoadHistory.create)
+    ..aOM<From_HistoryUpdated>(161, _omitFieldNames ? '' : 'historyUpdated', subBuilder: From_HistoryUpdated.create)
   ;
 
   @$core.Deprecated(
@@ -10033,498 +12365,696 @@ class From extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   Empty ensureSyncComplete() => $_ensure(13);
 
-  @$pb.TagNumber(15)
-  From_UtxoUpdate get utxoUpdate => $_getN(14);
-  @$pb.TagNumber(15)
-  set utxoUpdate(From_UtxoUpdate v) { setField(15, v); }
-  @$pb.TagNumber(15)
-  $core.bool hasUtxoUpdate() => $_has(14);
-  @$pb.TagNumber(15)
-  void clearUtxoUpdate() => clearField(15);
-  @$pb.TagNumber(15)
-  From_UtxoUpdate ensureUtxoUpdate() => $_ensure(14);
-
   @$pb.TagNumber(16)
-  Empty get logout => $_getN(15);
+  Empty get logout => $_getN(14);
   @$pb.TagNumber(16)
   set logout(Empty v) { setField(16, v); }
   @$pb.TagNumber(16)
-  $core.bool hasLogout() => $_has(15);
+  $core.bool hasLogout() => $_has(14);
   @$pb.TagNumber(16)
   void clearLogout() => clearField(16);
   @$pb.TagNumber(16)
-  Empty ensureLogout() => $_ensure(15);
+  Empty ensureLogout() => $_ensure(14);
 
   @$pb.TagNumber(17)
-  From_Login get login => $_getN(16);
+  From_Login get login => $_getN(15);
   @$pb.TagNumber(17)
   set login(From_Login v) { setField(17, v); }
   @$pb.TagNumber(17)
-  $core.bool hasLogin() => $_has(16);
+  $core.bool hasLogin() => $_has(15);
   @$pb.TagNumber(17)
   void clearLogin() => clearField(17);
   @$pb.TagNumber(17)
-  From_Login ensureLogin() => $_ensure(16);
+  From_Login ensureLogin() => $_ensure(15);
 
   @$pb.TagNumber(18)
-  From_TokenMarketOrder get tokenMarketOrder => $_getN(17);
+  From_TokenMarketOrder get tokenMarketOrder => $_getN(16);
   @$pb.TagNumber(18)
   set tokenMarketOrder(From_TokenMarketOrder v) { setField(18, v); }
   @$pb.TagNumber(18)
-  $core.bool hasTokenMarketOrder() => $_has(17);
+  $core.bool hasTokenMarketOrder() => $_has(16);
   @$pb.TagNumber(18)
   void clearTokenMarketOrder() => clearField(18);
   @$pb.TagNumber(18)
-  From_TokenMarketOrder ensureTokenMarketOrder() => $_ensure(17);
+  From_TokenMarketOrder ensureTokenMarketOrder() => $_ensure(16);
 
   @$pb.TagNumber(21)
-  From_PeginWaitTx get peginWaitTx => $_getN(18);
+  From_PeginWaitTx get peginWaitTx => $_getN(17);
   @$pb.TagNumber(21)
   set peginWaitTx(From_PeginWaitTx v) { setField(21, v); }
   @$pb.TagNumber(21)
-  $core.bool hasPeginWaitTx() => $_has(18);
+  $core.bool hasPeginWaitTx() => $_has(17);
   @$pb.TagNumber(21)
   void clearPeginWaitTx() => clearField(21);
   @$pb.TagNumber(21)
-  From_PeginWaitTx ensurePeginWaitTx() => $_ensure(18);
+  From_PeginWaitTx ensurePeginWaitTx() => $_ensure(17);
 
   @$pb.TagNumber(22)
-  TransItem get swapSucceed => $_getN(19);
+  TransItem get swapSucceed => $_getN(18);
   @$pb.TagNumber(22)
   set swapSucceed(TransItem v) { setField(22, v); }
   @$pb.TagNumber(22)
-  $core.bool hasSwapSucceed() => $_has(19);
+  $core.bool hasSwapSucceed() => $_has(18);
   @$pb.TagNumber(22)
   void clearSwapSucceed() => clearField(22);
   @$pb.TagNumber(22)
-  TransItem ensureSwapSucceed() => $_ensure(19);
+  TransItem ensureSwapSucceed() => $_ensure(18);
 
   @$pb.TagNumber(23)
-  $core.String get swapFailed => $_getSZ(20);
+  $core.String get swapFailed => $_getSZ(19);
   @$pb.TagNumber(23)
-  set swapFailed($core.String v) { $_setString(20, v); }
+  set swapFailed($core.String v) { $_setString(19, v); }
   @$pb.TagNumber(23)
-  $core.bool hasSwapFailed() => $_has(20);
+  $core.bool hasSwapFailed() => $_has(19);
   @$pb.TagNumber(23)
   void clearSwapFailed() => clearField(23);
 
   @$pb.TagNumber(24)
-  From_PegOutAmount get pegOutAmount => $_getN(21);
+  From_PegOutAmount get pegOutAmount => $_getN(20);
   @$pb.TagNumber(24)
   set pegOutAmount(From_PegOutAmount v) { setField(24, v); }
   @$pb.TagNumber(24)
-  $core.bool hasPegOutAmount() => $_has(21);
+  $core.bool hasPegOutAmount() => $_has(20);
   @$pb.TagNumber(24)
   void clearPegOutAmount() => clearField(24);
   @$pb.TagNumber(24)
-  From_PegOutAmount ensurePegOutAmount() => $_ensure(21);
+  From_PegOutAmount ensurePegOutAmount() => $_ensure(20);
 
   @$pb.TagNumber(30)
-  From_RecvAddress get recvAddress => $_getN(22);
+  From_RecvAddress get recvAddress => $_getN(21);
   @$pb.TagNumber(30)
   set recvAddress(From_RecvAddress v) { setField(30, v); }
   @$pb.TagNumber(30)
-  $core.bool hasRecvAddress() => $_has(22);
+  $core.bool hasRecvAddress() => $_has(21);
   @$pb.TagNumber(30)
   void clearRecvAddress() => clearField(30);
   @$pb.TagNumber(30)
-  From_RecvAddress ensureRecvAddress() => $_ensure(22);
+  From_RecvAddress ensureRecvAddress() => $_ensure(21);
 
   @$pb.TagNumber(31)
-  From_CreateTxResult get createTxResult => $_getN(23);
+  From_CreateTxResult get createTxResult => $_getN(22);
   @$pb.TagNumber(31)
   set createTxResult(From_CreateTxResult v) { setField(31, v); }
   @$pb.TagNumber(31)
-  $core.bool hasCreateTxResult() => $_has(23);
+  $core.bool hasCreateTxResult() => $_has(22);
   @$pb.TagNumber(31)
   void clearCreateTxResult() => clearField(31);
   @$pb.TagNumber(31)
-  From_CreateTxResult ensureCreateTxResult() => $_ensure(23);
+  From_CreateTxResult ensureCreateTxResult() => $_ensure(22);
 
   @$pb.TagNumber(32)
-  From_SendResult get sendResult => $_getN(24);
+  From_SendResult get sendResult => $_getN(23);
   @$pb.TagNumber(32)
   set sendResult(From_SendResult v) { setField(32, v); }
   @$pb.TagNumber(32)
-  $core.bool hasSendResult() => $_has(24);
+  $core.bool hasSendResult() => $_has(23);
   @$pb.TagNumber(32)
   void clearSendResult() => clearField(32);
   @$pb.TagNumber(32)
-  From_SendResult ensureSendResult() => $_ensure(24);
+  From_SendResult ensureSendResult() => $_ensure(23);
 
   @$pb.TagNumber(33)
-  From_BlindedValues get blindedValues => $_getN(25);
+  From_BlindedValues get blindedValues => $_getN(24);
   @$pb.TagNumber(33)
   set blindedValues(From_BlindedValues v) { setField(33, v); }
   @$pb.TagNumber(33)
-  $core.bool hasBlindedValues() => $_has(25);
+  $core.bool hasBlindedValues() => $_has(24);
   @$pb.TagNumber(33)
   void clearBlindedValues() => clearField(33);
   @$pb.TagNumber(33)
-  From_BlindedValues ensureBlindedValues() => $_ensure(25);
+  From_BlindedValues ensureBlindedValues() => $_ensure(24);
 
   @$pb.TagNumber(35)
-  From_LoadUtxos get loadUtxos => $_getN(26);
+  From_LoadUtxos get loadUtxos => $_getN(25);
   @$pb.TagNumber(35)
   set loadUtxos(From_LoadUtxos v) { setField(35, v); }
   @$pb.TagNumber(35)
-  $core.bool hasLoadUtxos() => $_has(26);
+  $core.bool hasLoadUtxos() => $_has(25);
   @$pb.TagNumber(35)
   void clearLoadUtxos() => clearField(35);
   @$pb.TagNumber(35)
-  From_LoadUtxos ensureLoadUtxos() => $_ensure(26);
+  From_LoadUtxos ensureLoadUtxos() => $_ensure(25);
 
   @$pb.TagNumber(36)
-  From_LoadAddresses get loadAddresses => $_getN(27);
+  From_LoadAddresses get loadAddresses => $_getN(26);
   @$pb.TagNumber(36)
   set loadAddresses(From_LoadAddresses v) { setField(36, v); }
   @$pb.TagNumber(36)
-  $core.bool hasLoadAddresses() => $_has(27);
+  $core.bool hasLoadAddresses() => $_has(26);
   @$pb.TagNumber(36)
   void clearLoadAddresses() => clearField(36);
   @$pb.TagNumber(36)
-  From_LoadAddresses ensureLoadAddresses() => $_ensure(27);
+  From_LoadAddresses ensureLoadAddresses() => $_ensure(26);
 
   @$pb.TagNumber(40)
-  From_RegisterPhone get registerPhone => $_getN(28);
+  From_RegisterPhone get registerPhone => $_getN(27);
   @$pb.TagNumber(40)
   set registerPhone(From_RegisterPhone v) { setField(40, v); }
   @$pb.TagNumber(40)
-  $core.bool hasRegisterPhone() => $_has(28);
+  $core.bool hasRegisterPhone() => $_has(27);
   @$pb.TagNumber(40)
   void clearRegisterPhone() => clearField(40);
   @$pb.TagNumber(40)
-  From_RegisterPhone ensureRegisterPhone() => $_ensure(28);
+  From_RegisterPhone ensureRegisterPhone() => $_ensure(27);
 
   @$pb.TagNumber(41)
-  From_VerifyPhone get verifyPhone => $_getN(29);
+  From_VerifyPhone get verifyPhone => $_getN(28);
   @$pb.TagNumber(41)
   set verifyPhone(From_VerifyPhone v) { setField(41, v); }
   @$pb.TagNumber(41)
-  $core.bool hasVerifyPhone() => $_has(29);
+  $core.bool hasVerifyPhone() => $_has(28);
   @$pb.TagNumber(41)
   void clearVerifyPhone() => clearField(41);
   @$pb.TagNumber(41)
-  From_VerifyPhone ensureVerifyPhone() => $_ensure(29);
+  From_VerifyPhone ensureVerifyPhone() => $_ensure(28);
 
   @$pb.TagNumber(42)
-  GenericResponse get uploadAvatar => $_getN(30);
+  GenericResponse get uploadAvatar => $_getN(29);
   @$pb.TagNumber(42)
   set uploadAvatar(GenericResponse v) { setField(42, v); }
   @$pb.TagNumber(42)
-  $core.bool hasUploadAvatar() => $_has(30);
+  $core.bool hasUploadAvatar() => $_has(29);
   @$pb.TagNumber(42)
   void clearUploadAvatar() => clearField(42);
   @$pb.TagNumber(42)
-  GenericResponse ensureUploadAvatar() => $_ensure(30);
+  GenericResponse ensureUploadAvatar() => $_ensure(29);
 
   @$pb.TagNumber(43)
-  GenericResponse get uploadContacts => $_getN(31);
+  GenericResponse get uploadContacts => $_getN(30);
   @$pb.TagNumber(43)
   set uploadContacts(GenericResponse v) { setField(43, v); }
   @$pb.TagNumber(43)
-  $core.bool hasUploadContacts() => $_has(31);
+  $core.bool hasUploadContacts() => $_has(30);
   @$pb.TagNumber(43)
   void clearUploadContacts() => clearField(43);
   @$pb.TagNumber(43)
-  GenericResponse ensureUploadContacts() => $_ensure(31);
+  GenericResponse ensureUploadContacts() => $_ensure(30);
 
   @$pb.TagNumber(44)
-  Contact get contactCreated => $_getN(32);
+  Contact get contactCreated => $_getN(31);
   @$pb.TagNumber(44)
   set contactCreated(Contact v) { setField(44, v); }
   @$pb.TagNumber(44)
-  $core.bool hasContactCreated() => $_has(32);
+  $core.bool hasContactCreated() => $_has(31);
   @$pb.TagNumber(44)
   void clearContactCreated() => clearField(44);
   @$pb.TagNumber(44)
-  Contact ensureContactCreated() => $_ensure(32);
+  Contact ensureContactCreated() => $_ensure(31);
 
   @$pb.TagNumber(45)
-  From_ContactRemoved get contactRemoved => $_getN(33);
+  From_ContactRemoved get contactRemoved => $_getN(32);
   @$pb.TagNumber(45)
   set contactRemoved(From_ContactRemoved v) { setField(45, v); }
   @$pb.TagNumber(45)
-  $core.bool hasContactRemoved() => $_has(33);
+  $core.bool hasContactRemoved() => $_has(32);
   @$pb.TagNumber(45)
   void clearContactRemoved() => clearField(45);
   @$pb.TagNumber(45)
-  From_ContactRemoved ensureContactRemoved() => $_ensure(33);
+  From_ContactRemoved ensureContactRemoved() => $_ensure(32);
 
   @$pb.TagNumber(46)
-  ContactTransaction get contactTransaction => $_getN(34);
+  ContactTransaction get contactTransaction => $_getN(33);
   @$pb.TagNumber(46)
   set contactTransaction(ContactTransaction v) { setField(46, v); }
   @$pb.TagNumber(46)
-  $core.bool hasContactTransaction() => $_has(34);
+  $core.bool hasContactTransaction() => $_has(33);
   @$pb.TagNumber(46)
   void clearContactTransaction() => clearField(46);
   @$pb.TagNumber(46)
-  ContactTransaction ensureContactTransaction() => $_ensure(34);
+  ContactTransaction ensureContactTransaction() => $_ensure(33);
 
   @$pb.TagNumber(47)
-  From_AccountStatus get accountStatus => $_getN(35);
+  From_AccountStatus get accountStatus => $_getN(34);
   @$pb.TagNumber(47)
   set accountStatus(From_AccountStatus v) { setField(47, v); }
   @$pb.TagNumber(47)
-  $core.bool hasAccountStatus() => $_has(35);
+  $core.bool hasAccountStatus() => $_has(34);
   @$pb.TagNumber(47)
   void clearAccountStatus() => clearField(47);
   @$pb.TagNumber(47)
-  From_AccountStatus ensureAccountStatus() => $_ensure(35);
+  From_AccountStatus ensureAccountStatus() => $_ensure(34);
 
   @$pb.TagNumber(50)
-  From_ShowMessage get showMessage => $_getN(36);
+  From_ShowMessage get showMessage => $_getN(35);
   @$pb.TagNumber(50)
   set showMessage(From_ShowMessage v) { setField(50, v); }
   @$pb.TagNumber(50)
-  $core.bool hasShowMessage() => $_has(36);
+  $core.bool hasShowMessage() => $_has(35);
   @$pb.TagNumber(50)
   void clearShowMessage() => clearField(50);
   @$pb.TagNumber(50)
-  From_ShowMessage ensureShowMessage() => $_ensure(36);
+  From_ShowMessage ensureShowMessage() => $_ensure(35);
 
   @$pb.TagNumber(51)
-  From_SubmitReview get submitReview => $_getN(37);
+  From_SubmitReview get submitReview => $_getN(36);
   @$pb.TagNumber(51)
   set submitReview(From_SubmitReview v) { setField(51, v); }
   @$pb.TagNumber(51)
-  $core.bool hasSubmitReview() => $_has(37);
+  $core.bool hasSubmitReview() => $_has(36);
   @$pb.TagNumber(51)
   void clearSubmitReview() => clearField(51);
   @$pb.TagNumber(51)
-  From_SubmitReview ensureSubmitReview() => $_ensure(37);
+  From_SubmitReview ensureSubmitReview() => $_ensure(36);
 
   @$pb.TagNumber(52)
-  From_SubmitResult get submitResult => $_getN(38);
+  From_SubmitResult get submitResult => $_getN(37);
   @$pb.TagNumber(52)
   set submitResult(From_SubmitResult v) { setField(52, v); }
   @$pb.TagNumber(52)
-  $core.bool hasSubmitResult() => $_has(38);
+  $core.bool hasSubmitResult() => $_has(37);
   @$pb.TagNumber(52)
   void clearSubmitResult() => clearField(52);
   @$pb.TagNumber(52)
-  From_SubmitResult ensureSubmitResult() => $_ensure(38);
+  From_SubmitResult ensureSubmitResult() => $_ensure(37);
 
   @$pb.TagNumber(53)
-  GenericResponse get editOrder => $_getN(39);
+  GenericResponse get editOrder => $_getN(38);
   @$pb.TagNumber(53)
   set editOrder(GenericResponse v) { setField(53, v); }
   @$pb.TagNumber(53)
-  $core.bool hasEditOrder() => $_has(39);
+  $core.bool hasEditOrder() => $_has(38);
   @$pb.TagNumber(53)
   void clearEditOrder() => clearField(53);
   @$pb.TagNumber(53)
-  GenericResponse ensureEditOrder() => $_ensure(39);
+  GenericResponse ensureEditOrder() => $_ensure(38);
 
   @$pb.TagNumber(54)
-  GenericResponse get cancelOrder => $_getN(40);
+  GenericResponse get cancelOrder => $_getN(39);
   @$pb.TagNumber(54)
   set cancelOrder(GenericResponse v) { setField(54, v); }
   @$pb.TagNumber(54)
-  $core.bool hasCancelOrder() => $_has(40);
+  $core.bool hasCancelOrder() => $_has(39);
   @$pb.TagNumber(54)
   void clearCancelOrder() => clearField(54);
   @$pb.TagNumber(54)
-  GenericResponse ensureCancelOrder() => $_ensure(40);
+  GenericResponse ensureCancelOrder() => $_ensure(39);
 
   @$pb.TagNumber(55)
-  From_ShowInsufficientFunds get insufficientFunds => $_getN(41);
+  From_ShowInsufficientFunds get insufficientFunds => $_getN(40);
   @$pb.TagNumber(55)
   set insufficientFunds(From_ShowInsufficientFunds v) { setField(55, v); }
   @$pb.TagNumber(55)
-  $core.bool hasInsufficientFunds() => $_has(41);
+  $core.bool hasInsufficientFunds() => $_has(40);
   @$pb.TagNumber(55)
   void clearInsufficientFunds() => clearField(55);
   @$pb.TagNumber(55)
-  From_ShowInsufficientFunds ensureInsufficientFunds() => $_ensure(41);
+  From_ShowInsufficientFunds ensureInsufficientFunds() => $_ensure(40);
 
   @$pb.TagNumber(56)
-  From_StartTimer get startTimer => $_getN(42);
+  From_StartTimer get startTimer => $_getN(41);
   @$pb.TagNumber(56)
   set startTimer(From_StartTimer v) { setField(56, v); }
   @$pb.TagNumber(56)
-  $core.bool hasStartTimer() => $_has(42);
+  $core.bool hasStartTimer() => $_has(41);
   @$pb.TagNumber(56)
   void clearStartTimer() => clearField(56);
   @$pb.TagNumber(56)
-  From_StartTimer ensureStartTimer() => $_ensure(42);
+  From_StartTimer ensureStartTimer() => $_ensure(41);
 
   @$pb.TagNumber(60)
-  Empty get serverConnected => $_getN(43);
+  Empty get serverConnected => $_getN(42);
   @$pb.TagNumber(60)
   set serverConnected(Empty v) { setField(60, v); }
   @$pb.TagNumber(60)
-  $core.bool hasServerConnected() => $_has(43);
+  $core.bool hasServerConnected() => $_has(42);
   @$pb.TagNumber(60)
   void clearServerConnected() => clearField(60);
   @$pb.TagNumber(60)
-  Empty ensureServerConnected() => $_ensure(43);
+  Empty ensureServerConnected() => $_ensure(42);
 
   @$pb.TagNumber(61)
-  Empty get serverDisconnected => $_getN(44);
+  Empty get serverDisconnected => $_getN(43);
   @$pb.TagNumber(61)
   set serverDisconnected(Empty v) { setField(61, v); }
   @$pb.TagNumber(61)
-  $core.bool hasServerDisconnected() => $_has(44);
+  $core.bool hasServerDisconnected() => $_has(43);
   @$pb.TagNumber(61)
   void clearServerDisconnected() => clearField(61);
   @$pb.TagNumber(61)
-  Empty ensureServerDisconnected() => $_ensure(44);
+  Empty ensureServerDisconnected() => $_ensure(43);
 
   @$pb.TagNumber(62)
-  From_OrderCreated get orderCreated => $_getN(45);
+  From_OrderCreated get orderCreated => $_getN(44);
   @$pb.TagNumber(62)
   set orderCreated(From_OrderCreated v) { setField(62, v); }
   @$pb.TagNumber(62)
-  $core.bool hasOrderCreated() => $_has(45);
+  $core.bool hasOrderCreated() => $_has(44);
   @$pb.TagNumber(62)
   void clearOrderCreated() => clearField(62);
   @$pb.TagNumber(62)
-  From_OrderCreated ensureOrderCreated() => $_ensure(45);
+  From_OrderCreated ensureOrderCreated() => $_ensure(44);
 
   @$pb.TagNumber(63)
-  From_OrderRemoved get orderRemoved => $_getN(46);
+  From_OrderRemoved get orderRemoved => $_getN(45);
   @$pb.TagNumber(63)
   set orderRemoved(From_OrderRemoved v) { setField(63, v); }
   @$pb.TagNumber(63)
-  $core.bool hasOrderRemoved() => $_has(46);
+  $core.bool hasOrderRemoved() => $_has(45);
   @$pb.TagNumber(63)
   void clearOrderRemoved() => clearField(63);
   @$pb.TagNumber(63)
-  From_OrderRemoved ensureOrderRemoved() => $_ensure(46);
+  From_OrderRemoved ensureOrderRemoved() => $_ensure(45);
 
   @$pb.TagNumber(64)
-  From_IndexPrice get indexPrice => $_getN(47);
+  From_IndexPrice get indexPrice => $_getN(46);
   @$pb.TagNumber(64)
   set indexPrice(From_IndexPrice v) { setField(64, v); }
   @$pb.TagNumber(64)
-  $core.bool hasIndexPrice() => $_has(47);
+  $core.bool hasIndexPrice() => $_has(46);
   @$pb.TagNumber(64)
   void clearIndexPrice() => clearField(64);
   @$pb.TagNumber(64)
-  From_IndexPrice ensureIndexPrice() => $_ensure(47);
+  From_IndexPrice ensureIndexPrice() => $_ensure(46);
 
   @$pb.TagNumber(65)
-  From_AssetDetails get assetDetails => $_getN(48);
+  From_AssetDetails get assetDetails => $_getN(47);
   @$pb.TagNumber(65)
   set assetDetails(From_AssetDetails v) { setField(65, v); }
   @$pb.TagNumber(65)
-  $core.bool hasAssetDetails() => $_has(48);
+  $core.bool hasAssetDetails() => $_has(47);
   @$pb.TagNumber(65)
   void clearAssetDetails() => clearField(65);
   @$pb.TagNumber(65)
-  From_AssetDetails ensureAssetDetails() => $_ensure(48);
+  From_AssetDetails ensureAssetDetails() => $_ensure(47);
 
   @$pb.TagNumber(66)
-  From_UpdatePriceStream get updatePriceStream => $_getN(49);
+  From_UpdatePriceStream get updatePriceStream => $_getN(48);
   @$pb.TagNumber(66)
   set updatePriceStream(From_UpdatePriceStream v) { setField(66, v); }
   @$pb.TagNumber(66)
-  $core.bool hasUpdatePriceStream() => $_has(49);
+  $core.bool hasUpdatePriceStream() => $_has(48);
   @$pb.TagNumber(66)
   void clearUpdatePriceStream() => clearField(66);
   @$pb.TagNumber(66)
-  From_UpdatePriceStream ensureUpdatePriceStream() => $_ensure(49);
+  From_UpdatePriceStream ensureUpdatePriceStream() => $_ensure(48);
 
   @$pb.TagNumber(67)
-  From_OrderComplete get orderComplete => $_getN(50);
+  From_OrderComplete get orderComplete => $_getN(49);
   @$pb.TagNumber(67)
   set orderComplete(From_OrderComplete v) { setField(67, v); }
   @$pb.TagNumber(67)
-  $core.bool hasOrderComplete() => $_has(50);
+  $core.bool hasOrderComplete() => $_has(49);
   @$pb.TagNumber(67)
   void clearOrderComplete() => clearField(67);
   @$pb.TagNumber(67)
-  From_OrderComplete ensureOrderComplete() => $_ensure(50);
+  From_OrderComplete ensureOrderComplete() => $_ensure(49);
 
   @$pb.TagNumber(68)
-  From_LocalMessage get localMessage => $_getN(51);
+  From_LocalMessage get localMessage => $_getN(50);
   @$pb.TagNumber(68)
   set localMessage(From_LocalMessage v) { setField(68, v); }
   @$pb.TagNumber(68)
-  $core.bool hasLocalMessage() => $_has(51);
+  $core.bool hasLocalMessage() => $_has(50);
   @$pb.TagNumber(68)
   void clearLocalMessage() => clearField(68);
   @$pb.TagNumber(68)
-  From_LocalMessage ensureLocalMessage() => $_ensure(51);
+  From_LocalMessage ensureLocalMessage() => $_ensure(50);
 
   @$pb.TagNumber(70)
-  From_MarketDataSubscribe get marketDataSubscribe => $_getN(52);
+  From_MarketDataSubscribe get marketDataSubscribe => $_getN(51);
   @$pb.TagNumber(70)
   set marketDataSubscribe(From_MarketDataSubscribe v) { setField(70, v); }
   @$pb.TagNumber(70)
-  $core.bool hasMarketDataSubscribe() => $_has(52);
+  $core.bool hasMarketDataSubscribe() => $_has(51);
   @$pb.TagNumber(70)
   void clearMarketDataSubscribe() => clearField(70);
   @$pb.TagNumber(70)
-  From_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(52);
+  From_MarketDataSubscribe ensureMarketDataSubscribe() => $_ensure(51);
 
   @$pb.TagNumber(71)
-  From_MarketDataUpdate get marketDataUpdate => $_getN(53);
+  From_MarketDataUpdate get marketDataUpdate => $_getN(52);
   @$pb.TagNumber(71)
   set marketDataUpdate(From_MarketDataUpdate v) { setField(71, v); }
   @$pb.TagNumber(71)
-  $core.bool hasMarketDataUpdate() => $_has(53);
+  $core.bool hasMarketDataUpdate() => $_has(52);
   @$pb.TagNumber(71)
   void clearMarketDataUpdate() => clearField(71);
   @$pb.TagNumber(71)
-  From_MarketDataUpdate ensureMarketDataUpdate() => $_ensure(53);
+  From_MarketDataUpdate ensureMarketDataUpdate() => $_ensure(52);
 
   @$pb.TagNumber(72)
-  From_PortfolioPrices get portfolioPrices => $_getN(54);
+  From_PortfolioPrices get portfolioPrices => $_getN(53);
   @$pb.TagNumber(72)
   set portfolioPrices(From_PortfolioPrices v) { setField(72, v); }
   @$pb.TagNumber(72)
-  $core.bool hasPortfolioPrices() => $_has(54);
+  $core.bool hasPortfolioPrices() => $_has(53);
   @$pb.TagNumber(72)
   void clearPortfolioPrices() => clearField(72);
   @$pb.TagNumber(72)
-  From_PortfolioPrices ensurePortfolioPrices() => $_ensure(54);
+  From_PortfolioPrices ensurePortfolioPrices() => $_ensure(53);
 
   @$pb.TagNumber(73)
-  From_ConversionRates get conversionRates => $_getN(55);
+  From_ConversionRates get conversionRates => $_getN(54);
   @$pb.TagNumber(73)
   set conversionRates(From_ConversionRates v) { setField(73, v); }
   @$pb.TagNumber(73)
-  $core.bool hasConversionRates() => $_has(55);
+  $core.bool hasConversionRates() => $_has(54);
   @$pb.TagNumber(73)
   void clearConversionRates() => clearField(73);
   @$pb.TagNumber(73)
-  From_ConversionRates ensureConversionRates() => $_ensure(55);
+  From_ConversionRates ensureConversionRates() => $_ensure(54);
 
   @$pb.TagNumber(80)
-  From_JadePorts get jadePorts => $_getN(56);
+  From_JadePorts get jadePorts => $_getN(55);
   @$pb.TagNumber(80)
   set jadePorts(From_JadePorts v) { setField(80, v); }
   @$pb.TagNumber(80)
-  $core.bool hasJadePorts() => $_has(56);
+  $core.bool hasJadePorts() => $_has(55);
   @$pb.TagNumber(80)
   void clearJadePorts() => clearField(80);
   @$pb.TagNumber(80)
-  From_JadePorts ensureJadePorts() => $_ensure(56);
+  From_JadePorts ensureJadePorts() => $_ensure(55);
 
   @$pb.TagNumber(83)
-  From_JadeStatus get jadeStatus => $_getN(57);
+  From_JadeStatus get jadeStatus => $_getN(56);
   @$pb.TagNumber(83)
   set jadeStatus(From_JadeStatus v) { setField(83, v); }
   @$pb.TagNumber(83)
-  $core.bool hasJadeStatus() => $_has(57);
+  $core.bool hasJadeStatus() => $_has(56);
   @$pb.TagNumber(83)
   void clearJadeStatus() => clearField(83);
   @$pb.TagNumber(83)
-  From_JadeStatus ensureJadeStatus() => $_ensure(57);
+  From_JadeStatus ensureJadeStatus() => $_ensure(56);
 
   @$pb.TagNumber(91)
-  From_GaidStatus get gaidStatus => $_getN(58);
+  From_GaidStatus get gaidStatus => $_getN(57);
   @$pb.TagNumber(91)
   set gaidStatus(From_GaidStatus v) { setField(91, v); }
   @$pb.TagNumber(91)
-  $core.bool hasGaidStatus() => $_has(58);
+  $core.bool hasGaidStatus() => $_has(57);
   @$pb.TagNumber(91)
   void clearGaidStatus() => clearField(91);
   @$pb.TagNumber(91)
-  From_GaidStatus ensureGaidStatus() => $_ensure(58);
+  From_GaidStatus ensureGaidStatus() => $_ensure(57);
+
+  @$pb.TagNumber(100)
+  From_MarketList get marketList => $_getN(58);
+  @$pb.TagNumber(100)
+  set marketList(From_MarketList v) { setField(100, v); }
+  @$pb.TagNumber(100)
+  $core.bool hasMarketList() => $_has(58);
+  @$pb.TagNumber(100)
+  void clearMarketList() => clearField(100);
+  @$pb.TagNumber(100)
+  From_MarketList ensureMarketList() => $_ensure(58);
+
+  @$pb.TagNumber(101)
+  MarketInfo get marketAdded => $_getN(59);
+  @$pb.TagNumber(101)
+  set marketAdded(MarketInfo v) { setField(101, v); }
+  @$pb.TagNumber(101)
+  $core.bool hasMarketAdded() => $_has(59);
+  @$pb.TagNumber(101)
+  void clearMarketAdded() => clearField(101);
+  @$pb.TagNumber(101)
+  MarketInfo ensureMarketAdded() => $_ensure(59);
+
+  @$pb.TagNumber(102)
+  AssetPair get marketRemoved => $_getN(60);
+  @$pb.TagNumber(102)
+  set marketRemoved(AssetPair v) { setField(102, v); }
+  @$pb.TagNumber(102)
+  $core.bool hasMarketRemoved() => $_has(60);
+  @$pb.TagNumber(102)
+  void clearMarketRemoved() => clearField(102);
+  @$pb.TagNumber(102)
+  AssetPair ensureMarketRemoved() => $_ensure(60);
+
+  @$pb.TagNumber(105)
+  From_PublicOrders get publicOrders => $_getN(61);
+  @$pb.TagNumber(105)
+  set publicOrders(From_PublicOrders v) { setField(105, v); }
+  @$pb.TagNumber(105)
+  $core.bool hasPublicOrders() => $_has(61);
+  @$pb.TagNumber(105)
+  void clearPublicOrders() => clearField(105);
+  @$pb.TagNumber(105)
+  From_PublicOrders ensurePublicOrders() => $_ensure(61);
+
+  @$pb.TagNumber(106)
+  PublicOrder get publicOrderCreated => $_getN(62);
+  @$pb.TagNumber(106)
+  set publicOrderCreated(PublicOrder v) { setField(106, v); }
+  @$pb.TagNumber(106)
+  $core.bool hasPublicOrderCreated() => $_has(62);
+  @$pb.TagNumber(106)
+  void clearPublicOrderCreated() => clearField(106);
+  @$pb.TagNumber(106)
+  PublicOrder ensurePublicOrderCreated() => $_ensure(62);
+
+  @$pb.TagNumber(107)
+  OrderId get publicOrderRemoved => $_getN(63);
+  @$pb.TagNumber(107)
+  set publicOrderRemoved(OrderId v) { setField(107, v); }
+  @$pb.TagNumber(107)
+  $core.bool hasPublicOrderRemoved() => $_has(63);
+  @$pb.TagNumber(107)
+  void clearPublicOrderRemoved() => clearField(107);
+  @$pb.TagNumber(107)
+  OrderId ensurePublicOrderRemoved() => $_ensure(63);
+
+  @$pb.TagNumber(110)
+  From_MarketPrice get marketPrice => $_getN(64);
+  @$pb.TagNumber(110)
+  set marketPrice(From_MarketPrice v) { setField(110, v); }
+  @$pb.TagNumber(110)
+  $core.bool hasMarketPrice() => $_has(64);
+  @$pb.TagNumber(110)
+  void clearMarketPrice() => clearField(110);
+  @$pb.TagNumber(110)
+  From_MarketPrice ensureMarketPrice() => $_ensure(64);
+
+  @$pb.TagNumber(120)
+  From_OwnOrders get ownOrders => $_getN(65);
+  @$pb.TagNumber(120)
+  set ownOrders(From_OwnOrders v) { setField(120, v); }
+  @$pb.TagNumber(120)
+  $core.bool hasOwnOrders() => $_has(65);
+  @$pb.TagNumber(120)
+  void clearOwnOrders() => clearField(120);
+  @$pb.TagNumber(120)
+  From_OwnOrders ensureOwnOrders() => $_ensure(65);
+
+  @$pb.TagNumber(121)
+  OwnOrder get ownOrderCreated => $_getN(66);
+  @$pb.TagNumber(121)
+  set ownOrderCreated(OwnOrder v) { setField(121, v); }
+  @$pb.TagNumber(121)
+  $core.bool hasOwnOrderCreated() => $_has(66);
+  @$pb.TagNumber(121)
+  void clearOwnOrderCreated() => clearField(121);
+  @$pb.TagNumber(121)
+  OwnOrder ensureOwnOrderCreated() => $_ensure(66);
+
+  @$pb.TagNumber(122)
+  OrderId get ownOrderRemoved => $_getN(67);
+  @$pb.TagNumber(122)
+  set ownOrderRemoved(OrderId v) { setField(122, v); }
+  @$pb.TagNumber(122)
+  $core.bool hasOwnOrderRemoved() => $_has(67);
+  @$pb.TagNumber(122)
+  void clearOwnOrderRemoved() => clearField(122);
+  @$pb.TagNumber(122)
+  OrderId ensureOwnOrderRemoved() => $_ensure(67);
+
+  @$pb.TagNumber(130)
+  From_OrderSubmit get orderSubmit => $_getN(68);
+  @$pb.TagNumber(130)
+  set orderSubmit(From_OrderSubmit v) { setField(130, v); }
+  @$pb.TagNumber(130)
+  $core.bool hasOrderSubmit() => $_has(68);
+  @$pb.TagNumber(130)
+  void clearOrderSubmit() => clearField(130);
+  @$pb.TagNumber(130)
+  From_OrderSubmit ensureOrderSubmit() => $_ensure(68);
+
+  @$pb.TagNumber(131)
+  GenericResponse get orderEdit => $_getN(69);
+  @$pb.TagNumber(131)
+  set orderEdit(GenericResponse v) { setField(131, v); }
+  @$pb.TagNumber(131)
+  $core.bool hasOrderEdit() => $_has(69);
+  @$pb.TagNumber(131)
+  void clearOrderEdit() => clearField(131);
+  @$pb.TagNumber(131)
+  GenericResponse ensureOrderEdit() => $_ensure(69);
+
+  @$pb.TagNumber(132)
+  GenericResponse get orderCancel => $_getN(70);
+  @$pb.TagNumber(132)
+  set orderCancel(GenericResponse v) { setField(132, v); }
+  @$pb.TagNumber(132)
+  $core.bool hasOrderCancel() => $_has(70);
+  @$pb.TagNumber(132)
+  void clearOrderCancel() => clearField(132);
+  @$pb.TagNumber(132)
+  GenericResponse ensureOrderCancel() => $_ensure(70);
+
+  @$pb.TagNumber(140)
+  From_Quote get quote => $_getN(71);
+  @$pb.TagNumber(140)
+  set quote(From_Quote v) { setField(140, v); }
+  @$pb.TagNumber(140)
+  $core.bool hasQuote() => $_has(71);
+  @$pb.TagNumber(140)
+  void clearQuote() => clearField(140);
+  @$pb.TagNumber(140)
+  From_Quote ensureQuote() => $_ensure(71);
+
+  @$pb.TagNumber(141)
+  From_AcceptQuote get acceptQuote => $_getN(72);
+  @$pb.TagNumber(141)
+  set acceptQuote(From_AcceptQuote v) { setField(141, v); }
+  @$pb.TagNumber(141)
+  $core.bool hasAcceptQuote() => $_has(72);
+  @$pb.TagNumber(141)
+  void clearAcceptQuote() => clearField(141);
+  @$pb.TagNumber(141)
+  From_AcceptQuote ensureAcceptQuote() => $_ensure(72);
+
+  @$pb.TagNumber(150)
+  From_ChartsSubscribe get chartsSubscribe => $_getN(73);
+  @$pb.TagNumber(150)
+  set chartsSubscribe(From_ChartsSubscribe v) { setField(150, v); }
+  @$pb.TagNumber(150)
+  $core.bool hasChartsSubscribe() => $_has(73);
+  @$pb.TagNumber(150)
+  void clearChartsSubscribe() => clearField(150);
+  @$pb.TagNumber(150)
+  From_ChartsSubscribe ensureChartsSubscribe() => $_ensure(73);
+
+  @$pb.TagNumber(151)
+  From_ChartsUpdate get chartsUpdate => $_getN(74);
+  @$pb.TagNumber(151)
+  set chartsUpdate(From_ChartsUpdate v) { setField(151, v); }
+  @$pb.TagNumber(151)
+  $core.bool hasChartsUpdate() => $_has(74);
+  @$pb.TagNumber(151)
+  void clearChartsUpdate() => clearField(151);
+  @$pb.TagNumber(151)
+  From_ChartsUpdate ensureChartsUpdate() => $_ensure(74);
+
+  @$pb.TagNumber(160)
+  From_LoadHistory get loadHistory => $_getN(75);
+  @$pb.TagNumber(160)
+  set loadHistory(From_LoadHistory v) { setField(160, v); }
+  @$pb.TagNumber(160)
+  $core.bool hasLoadHistory() => $_has(75);
+  @$pb.TagNumber(160)
+  void clearLoadHistory() => clearField(160);
+  @$pb.TagNumber(160)
+  From_LoadHistory ensureLoadHistory() => $_ensure(75);
+
+  @$pb.TagNumber(161)
+  From_HistoryUpdated get historyUpdated => $_getN(76);
+  @$pb.TagNumber(161)
+  set historyUpdated(From_HistoryUpdated v) { setField(161, v); }
+  @$pb.TagNumber(161)
+  $core.bool hasHistoryUpdated() => $_has(76);
+  @$pb.TagNumber(161)
+  void clearHistoryUpdated() => clearField(161);
+  @$pb.TagNumber(161)
+  From_HistoryUpdated ensureHistoryUpdated() => $_ensure(76);
 }
 
 class Settings_AccountAsset extends $pb.GeneratedMessage {

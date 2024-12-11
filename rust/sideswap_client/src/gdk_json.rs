@@ -1,5 +1,8 @@
 use bitcoin::bip32;
+use elements::confidential::{AssetBlindingFactor, ValueBlindingFactor};
 use sideswap_api::AssetId;
+use sideswap_jade::byte_array::ByteArray32;
+use sideswap_types::{AssetHex, TransactionHex, ValueHex};
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -116,6 +119,10 @@ pub struct UnspentOutput {
     pub vout: u32,
     pub pointer: u32,
 
+    pub is_internal: bool,
+    pub is_blinded: bool,
+    pub is_confidential: Option<bool>, // Not set for unblinded multi-sig outputs
+
     /// Example:
     /// Single-sig: a9146e9cd3e71b8f0af32068e2fd33c433ac4da5ebaa87
     /// AMP: 522103cab1a2a707d13ff3fcc9d08f888724e01c37d54ad8e8d9b274cb33eaebe3461321037888f798b59ff4e1122bdf52ad4c541be32ca755311746b67af2bc5e58df188b52ae
@@ -123,14 +130,12 @@ pub struct UnspentOutput {
 
     pub asset_id: elements::AssetId,
     pub satoshi: u64,
-    pub is_internal: bool,
-    pub is_blinded: bool,
-    pub is_confidential: Option<bool>, // Not set for unblinded multi-sig outputs
 
-    pub asset_tag: sideswap_types::AssetCommitment,
-    pub commitment: sideswap_types::ValueCommitment,
-    pub amountblinder: elements::confidential::ValueBlindingFactor,
-    pub assetblinder: elements::confidential::AssetBlindingFactor,
+    pub asset_tag: AssetHex,
+    pub commitment: ValueHex,
+
+    pub amountblinder: ValueBlindingFactor,
+    pub assetblinder: AssetBlindingFactor,
     // Use string because for unblinded single-sig output it's "00"
     // while for multi-sig it's "000000000000000000000000000000000000000000000000000000000000000000".
     pub nonce_commitment: String,
@@ -151,16 +156,15 @@ pub struct UnspentOutput {
     pub user_sighash: Option<u8>, // Not present normally
 }
 
-#[derive(Deserialize)]
-pub struct UnspentOutputsResult {
-    // TODO: AssetId will the "error" string if unblinding fails (which prevents JSON parsing)
-    pub unspent_outputs: std::collections::BTreeMap<AssetId, Vec<UnspentOutput>>,
+#[derive(Debug, Deserialize)]
+pub struct UnspentOutputsRaw {
+    // Asset id will be the "error" string if unblinding fails, use String instead of AssetId here
+    pub unspent_outputs: BTreeMap<String, serde_json::Value>,
 }
 
-#[derive(Deserialize)]
-pub struct UnspentOutputsResultJson {
-    // TODO: AssetId will the "error" string if unblinding fails (which prevents JSON parsing)
-    pub unspent_outputs: std::collections::BTreeMap<AssetId, Vec<serde_json::Value>>,
+#[derive(Debug, Deserialize)]
+pub struct UnspentOutputs {
+    pub unspent_outputs: BTreeMap<AssetId, Vec<UnspentOutput>>,
 }
 
 #[derive(Deserialize, Debug, PartialEq, Eq)]
@@ -204,8 +208,8 @@ pub struct RequiredData {
     pub path: Option<Vec<u32>>,
     pub message: Option<String>,
     pub use_ae_protocol: Option<bool>,
-    pub ae_host_commitment: Option<String>,
-    pub ae_host_entropy: Option<String>,
+    pub ae_host_commitment: Option<ByteArray32>,
+    pub ae_host_entropy: Option<ByteArray32>,
 
     // GetBlindingNonces
     pub blinding_keys_required: Option<bool>,
@@ -223,7 +227,7 @@ pub struct RequiredData {
 #[derive(Deserialize, Debug)]
 pub struct SignTxSigningInput {
     // Set for all
-    pub txhash: String,
+    pub txhash: elements::Txid,
     pub pt_idx: u32,
     pub asset_id: AssetId,
     pub satoshi: u64,
@@ -232,15 +236,16 @@ pub struct SignTxSigningInput {
 
     // Set for own inputs only
     pub address_type: Option<AddressType>,
-    pub ae_host_commitment: Option<String>,
-    pub ae_host_entropy: Option<String>,
-    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
-    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
-    pub asset_tag: Option<String>,
+
+    pub ae_host_commitment: Option<ByteArray32>,
+    pub ae_host_entropy: Option<ByteArray32>,
+    pub assetblinder: Option<AssetBlindingFactor>,
+    pub amountblinder: Option<ValueBlindingFactor>,
+    pub asset_tag: Option<AssetHex>,
+    pub commitment: Option<ValueHex>,
     pub user_path: Option<Vec<u32>>,
     pub public_key: Option<elements::bitcoin::PublicKey>,
-    pub prevout_script: Option<String>,
-    pub commitment: Option<String>,
+    pub prevout_script: Option<elements::Script>,
     pub user_sighash: Option<u8>,
 
     // Set for non-own inputs only
@@ -270,9 +275,9 @@ pub struct SignTxOutput {
     pub asset_id: AssetId,
     pub satoshi: u64,
 
-    pub blinding_key: Option<String>,
-    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
-    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
+    pub blinding_key: Option<elements::secp256k1_zkp::PublicKey>,
+    pub assetblinder: Option<AssetBlindingFactor>,
+    pub amountblinder: Option<ValueBlindingFactor>,
     pub user_path: Option<Vec<u32>>,
 }
 
@@ -280,8 +285,8 @@ pub struct SignTxOutput {
 pub struct TransactionInput {
     pub asset_id: Option<AssetId>,
     pub satoshi: Option<u64>,
-    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
-    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
+    pub assetblinder: Option<AssetBlindingFactor>,
+    pub amountblinder: Option<ValueBlindingFactor>,
     pub is_relevant: bool,
 }
 
@@ -290,8 +295,8 @@ pub struct TransactionOutput {
     pub address: Option<String>,
     pub asset_id: Option<AssetId>,
     pub satoshi: Option<u64>,
-    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
-    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
+    pub assetblinder: Option<AssetBlindingFactor>,
+    pub amountblinder: Option<ValueBlindingFactor>,
     pub is_relevant: bool,
     pub is_internal: bool,
     pub pointer: Option<u32>,
@@ -333,7 +338,7 @@ pub struct AddressInfo {
     pub unconfidential_address: elements::Address,
     pub blinding_key: String,
     pub is_confidential: bool,
-    pub scriptpubkey: String, // Same format for all nested segwit addresses, for example: a9145c35160c7cbe5a5a7daec0b2e4dff056991ce4d087
+    pub scriptpubkey: elements::Script, // Same format for all nested segwit addresses, for example: a9145c35160c7cbe5a5a7daec0b2e4dff056991ce4d087
 
     // Single-sig only:
     pub is_internal: Option<bool>,
@@ -397,7 +402,7 @@ pub struct CreateTransactionOpt {
 pub struct CreateTransactionResult {
     pub addressees: Vec<TxResultAddressee>,
     pub transaction_outputs: Vec<CreatedTransactionOutput>,
-    pub transaction: Option<sideswap_types::Transaction>,
+    pub transaction: Option<TransactionHex>,
     pub fee: Option<u64>,
     pub fee_rate: Option<u64>,
     pub transaction_vsize: Option<u64>,
@@ -411,8 +416,8 @@ pub struct CreatedTransactionOutput {
     pub asset_id: Option<elements::AssetId>, // Mandatory in GDK c++, missing in GDK rust
     pub satoshi: u64,
     pub is_change: Option<bool>,
-    pub amountblinder: Option<elements::confidential::ValueBlindingFactor>,
-    pub assetblinder: Option<elements::confidential::AssetBlindingFactor>,
+    pub amountblinder: Option<ValueBlindingFactor>,
+    pub assetblinder: Option<AssetBlindingFactor>,
     // pub eph_private_key: Option<secp256k1::SecretKey>,
     pub scriptpubkey: String,
 }
@@ -421,7 +426,7 @@ pub struct CreatedTransactionOutput {
 pub struct SignTransactionResult {
     pub transaction_inputs: Vec<UnspentOutput>,
     pub transaction_outputs: Vec<CreatedTransactionOutput>,
-    pub transaction: Option<sideswap_types::Transaction>,
+    pub transaction: Option<TransactionHex>,
     pub fee: Option<u64>,
     pub error: String,
 }
@@ -448,20 +453,46 @@ pub struct PsetDetailsResult {
 }
 
 #[derive(Serialize, Debug)]
+pub enum SignWith {
+    #[serde(rename = "user")]
+    User,
+    #[serde(rename = "green-backend")]
+    GreenBackend,
+}
+
+#[derive(Serialize, Debug)]
 pub struct SignPsetOpt {
     pub psbt: String,
     pub utxos: Vec<UnspentOutput>, // TODO: Switch to BTreeMap (GDK 0.70)
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub blinding_nonces: Vec<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub sign_with: Vec<SignWith>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SignPsetResult {
     pub psbt: String,
+    pub transaction: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SendTransactionResult {
     pub txhash: elements::Txid,
+}
+
+#[derive(Serialize, Debug)]
+pub struct BroadcastTxOpt {
+    pub transaction: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub memo: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub simulate_only: Option<bool>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct BroadcastTxRes {
+    pub txhash: Option<String>,
 }
 
 #[derive(Serialize, Debug)]
@@ -603,10 +634,10 @@ pub struct SignTx {
     pub signer_commitments: Vec<String>,
 
     // Outputs
-    pub asset_commitments: Vec<Option<String>>,
-    pub value_commitments: Vec<Option<String>>,
-    pub assetblinders: Vec<Option<elements::confidential::AssetBlindingFactor>>,
-    pub amountblinders: Vec<Option<elements::confidential::ValueBlindingFactor>>,
+    pub asset_commitments: Vec<Option<elements::secp256k1_zkp::Generator>>,
+    pub value_commitments: Vec<Option<elements::secp256k1_zkp::PedersenCommitment>>,
+    pub assetblinders: Vec<Option<AssetBlindingFactor>>,
+    pub amountblinders: Vec<Option<ValueBlindingFactor>>,
 }
 
 #[derive(Serialize)]

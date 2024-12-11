@@ -1,22 +1,45 @@
-use std::collections::BTreeMap;
 use std::str::FromStr;
+use std::{collections::BTreeMap, sync::Arc};
 
-use crate::gdk_json::{self, AddressInfo};
-use crate::gdk_ses_impl::CreatedTxCache;
-use crate::settings::WatchOnly;
-use crate::worker;
-use crate::{ffi, models};
+use crate::{
+    ffi::proto,
+    gdk_json::{self, AddressInfo},
+    gdk_ses_impl::CreatedTxCache,
+    models,
+    settings::WatchOnly,
+    worker,
+};
 use bitcoin::bip32;
 use sideswap_api::{Asset, AssetId};
 use sideswap_common::env::Env;
-use sideswap_jade::jade_mng::{self, JadeStatus};
-use sideswap_jade::models::JadeNetwork;
+use sideswap_jade::{
+    jade_mng::{self, JadeStatus},
+    models::JadeNetwork,
+};
+
+#[derive(Debug, Copy, Clone)]
+pub enum SignWith {
+    User,
+    GreenBackend,
+    #[allow(dead_code)]
+    All,
+}
+
+impl SignWith {
+    pub fn to_json(self) -> Vec<gdk_json::SignWith> {
+        match self {
+            SignWith::User => vec![gdk_json::SignWith::User],
+            SignWith::GreenBackend => vec![gdk_json::SignWith::GreenBackend],
+            SignWith::All => vec![gdk_json::SignWith::User, gdk_json::SignWith::GreenBackend],
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct HwData {
     pub env: Env,
     pub name: String,
-    pub jade: std::sync::Arc<jade_mng::ManagedJade>,
+    pub jade: Arc<jade_mng::ManagedJade>,
     pub master_blinding_key: String,
     pub xpubs: BTreeMap<Vec<u32>, bip32::Xpub>,
 }
@@ -57,12 +80,12 @@ pub struct LoginInfo {
     pub proxy: Option<String>,
 }
 
-pub type NotifCallback = Box<dyn Fn(worker::AccountId, crate::gdk_json::Notification)>;
+pub type NotifCallback = Box<dyn Fn(worker::AccountId, gdk_json::Notification)>;
 
 impl HwData {
-    pub fn get_hw_device(hw_data: Option<&Self>) -> crate::gdk_json::HwDevice {
-        crate::gdk_json::HwDevice {
-            device: hw_data.map(|hw_data| crate::gdk_json::HwDeviceDetails {
+    pub fn get_hw_device(hw_data: Option<&Self>) -> gdk_json::HwDevice {
+        gdk_json::HwDevice {
+            device: hw_data.map(|hw_data| gdk_json::HwDeviceDetails {
                 name: hw_data.name.clone(),
                 supports_ae_protocol: 1,
                 supports_arbitrary_scripts: true,
@@ -111,10 +134,7 @@ impl WalletInfo {
     }
 }
 
-pub struct TxFeeInfo {
-    pub input_count: usize,
-    pub fee: u64,
-}
+pub type Balances = BTreeMap<AssetId, i64>;
 
 pub trait GdkSes {
     fn login(&mut self) -> Result<(), anyhow::Error>;
@@ -131,18 +151,13 @@ pub trait GdkSes {
 
     fn get_gaid(&self) -> Result<String, anyhow::Error>;
 
+    #[allow(dead_code)]
     fn unlock_hww(&self) -> Result<(), anyhow::Error>;
 
+    #[allow(dead_code)]
     fn update_sync_interval(&self, time: u32);
 
-    fn get_balances(&self) -> Result<std::collections::BTreeMap<AssetId, i64>, anyhow::Error>;
-
-    fn get_balance(&self, asset_id: &AssetId) -> i64 {
-        self.get_balances()
-            .ok()
-            .and_then(|balances| balances.get(asset_id).copied())
-            .unwrap_or_default()
-    }
+    fn get_balances(&self) -> Result<Balances, anyhow::Error>;
 
     fn get_transactions_impl(&self) -> Result<Vec<gdk_json::Transaction>, anyhow::Error>;
 
@@ -162,8 +177,8 @@ pub trait GdkSes {
     fn create_tx(
         &mut self,
         cache: &mut CreatedTxCache,
-        tx: ffi::proto::CreateTx,
-    ) -> Result<ffi::proto::CreatedTx, anyhow::Error>;
+        tx: proto::CreateTx,
+    ) -> Result<proto::CreatedTx, anyhow::Error>;
 
     fn send_tx(
         &mut self,
@@ -172,30 +187,19 @@ pub trait GdkSes {
         assets: &BTreeMap<AssetId, Asset>,
     ) -> Result<elements::Txid, anyhow::Error>;
 
-    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputsResult, anyhow::Error>;
+    fn broadcast_tx(&mut self, tx: &str) -> Result<(), anyhow::Error>;
 
-    fn get_tx_fee(
-        &mut self,
-        asset_id: AssetId,
-        send_amount: i64,
-        addr: &str,
-    ) -> Result<TxFeeInfo, anyhow::Error>;
+    fn get_utxos(&self) -> Result<gdk_json::UnspentOutputs, anyhow::Error>;
 
-    fn make_pegout_payment(
-        &mut self,
-        send_amount: i64,
-        peg_addr: &str,
-        send_amount_exact: i64,
-    ) -> Result<worker::PegPayment, anyhow::Error>;
-
-    fn get_blinded_values(&self, txid: &str) -> Result<Vec<String>, anyhow::Error>;
+    fn get_blinded_values(&self, txid: &elements::Txid) -> Result<Vec<String>, anyhow::Error>;
 
     fn get_previous_addresses(
         &mut self,
         last_pointer: Option<u32>,
         is_internal: bool,
-    ) -> Result<crate::gdk_json::PreviousAddresses, anyhow::Error>;
+    ) -> Result<gdk_json::PreviousAddresses, anyhow::Error>;
 
+    #[allow(dead_code)]
     fn sig_single_maker_tx(
         &mut self,
         input: &crate::swaps::SigSingleInput,
@@ -209,6 +213,16 @@ pub trait GdkSes {
         pset: &str,
         nonces: &[String],
         assets: &BTreeMap<AssetId, Asset>,
+    ) -> Result<String, anyhow::Error>;
+
+    fn sign_pset(
+        &mut self,
+        utxos: &gdk_json::UnspentOutputs,
+        pset: &str,
+        nonces: &[String],
+        assets: &BTreeMap<AssetId, Asset>,
+        tx_type: jade_mng::TxType,
+        sign_with: SignWith,
     ) -> Result<String, anyhow::Error>;
 
     fn set_memo(&mut self, txid: &str, memo: &str) -> Result<(), anyhow::Error>;

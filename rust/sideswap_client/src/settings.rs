@@ -48,6 +48,7 @@ pub struct RegInfo {
 pub struct Settings {
     pub pegs: Option<Vec<Peg>>,
     pub device_key: Option<String>,
+    pub market_token: Option<String>,
 
     #[serde(default)]
     pub single_sig_registered: [u32; 2],

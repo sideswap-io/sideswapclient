@@ -10,7 +10,6 @@ pub struct Balance {
 pub struct Transaction {
     pub txid: elements::Txid,
     pub network_fee: u32,
-    pub size: u32,
     pub vsize: u32,
     pub memo: String,
     pub balances: Vec<Balance>,

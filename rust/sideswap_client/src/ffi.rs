@@ -1,9 +1,12 @@
+use std::{
+    ffi::{CStr, CString},
+    os::raw::c_char,
+    str::FromStr,
+    sync::{mpsc, Arc, Once},
+};
+
 use prost::Message;
 use sideswap_common::env::Env;
-use std::ffi::{CStr, CString};
-use std::os::raw::c_char;
-use std::str::FromStr;
-use std::sync::Once;
 
 use crate::worker;
 
@@ -20,15 +23,8 @@ pub const GIT_COMMIT_HASH: &str = env!("VERGEN_GIT_SHA");
 
 static INIT_LOGGER_FLAG: Once = Once::new();
 
-pub struct StartParams {
-    pub work_dir: String,
-    pub version: String,
-    pub disable_device_key: Option<bool>,
-}
-
 pub struct Client {
-    msg_sender: crossbeam_channel::Sender<worker::Message>,
-    from_receiver_ffi: Option<crossbeam_channel::Receiver<FromMsg>>,
+    msg_sender: mpsc::Sender<worker::Message>,
     env: Env,
 }
 
@@ -67,23 +63,6 @@ pub fn get_ffi_from_env(env: i32) -> Option<Env> {
     }
 }
 
-pub fn send_msg(client: IntPtr, msg: proto::to::Msg) {
-    let msg = proto::To { msg: Some(msg) };
-    let mut buf = Vec::new();
-    msg.encode(&mut buf).expect("encoding message failed");
-    sideswap_send_request(client, buf.as_ptr(), buf.len() as u64);
-}
-
-pub fn blocking_recv_msg(client: IntPtr) -> proto::from::Msg {
-    let msg = sideswap_recv_request(client);
-    let ptr = sideswap_msg_ptr(msg);
-    let size = sideswap_msg_len(msg);
-    let msg_copy = unsafe { std::slice::from_raw_parts(ptr, size as usize) }.to_owned();
-    sideswap_msg_free(msg);
-    let msg = proto::From::decode(msg_copy.as_slice()).expect("message decode failed");
-    msg.msg.unwrap()
-}
-
 #[no_mangle]
 pub extern "C" fn sideswap_client_start(
     env: i32,
@@ -95,66 +74,48 @@ pub extern "C" fn sideswap_client_start(
     let work_dir = get_string(work_dir);
     let version = get_string(version);
 
-    let start_params = StartParams {
-        work_dir,
-        version,
-        disable_device_key: None,
-    };
+    let start_params = worker::StartParams { work_dir, version };
 
     sideswap_client_start_impl(env, start_params, dart_port)
 }
 
-pub fn sideswap_client_start_impl(env: Env, start_params: StartParams, dart_port: i64) -> IntPtr {
-    let enable_dart = dart_port != SIDESWAP_DART_PORT_DISABLED;
-
+pub fn sideswap_client_start_impl(
+    env: Env,
+    start_params: worker::StartParams,
+    dart_port: i64,
+) -> IntPtr {
     INIT_LOGGER_FLAG.call_once(|| {
         sideswap_common::log_init::init_log(&start_params.work_dir);
     });
 
     sideswap_common::panic_handler::install_panic_handler();
 
-    info!(
+    log::info!(
         "started: {} ({}/{})",
         GIT_COMMIT_HASH,
         std::env::consts::OS,
         std::env::consts::ARCH,
     );
 
-    let (msg_sender, msg_receiver) = crossbeam_channel::unbounded::<worker::Message>();
-    let (from_sender, from_receiver) = crossbeam_channel::unbounded::<FromMsg>();
-
-    let from_receiver_ffi = if enable_dart {
-        None
-    } else {
-        Some(from_receiver.clone())
-    };
+    let (msg_sender, msg_receiver) = mpsc::channel::<worker::Message>();
 
     let client = Box::new(Client {
         env,
         msg_sender: msg_sender.clone(),
-        from_receiver_ffi,
+    });
+
+    let port = allo_isolate::Isolate::new(dart_port);
+    let from_callback = Arc::new(move |msg| {
+        let msg_ptr = convert_from_msg(msg);
+        port.post(msg_ptr)
     });
 
     std::thread::Builder::new()
         .name("worker_rust".to_owned())
         .spawn(move || {
-            worker::start_processing(env, msg_sender, msg_receiver, from_sender, start_params);
+            worker::start_processing(env, msg_sender, msg_receiver, from_callback, start_params);
         })
         .unwrap();
-
-    if enable_dart {
-        std::thread::spawn(move || {
-            let port = allo_isolate::Isolate::new(dart_port);
-            for msg in from_receiver {
-                let msg_ptr = convert_from_msg(msg);
-                let result = port.post(msg_ptr);
-                if !result {
-                    warn!("posting message to dart failed, exit");
-                    break;
-                }
-            }
-        });
-    }
 
     let client = Box::into_raw(client) as IntPtr;
     GLOBAL_CLIENT.store(client, std::sync::atomic::Ordering::Relaxed);
@@ -176,17 +137,6 @@ pub extern "C" fn sideswap_send_request(client: IntPtr, data: *const u8, len: u6
 }
 
 #[no_mangle]
-pub extern "C" fn sideswap_recv_request(client: IntPtr) -> u64 {
-    assert!(client != 0);
-    let client = unsafe { &mut *(client as *mut Client) };
-    let from_receiver_ffi = client
-        .from_receiver_ffi
-        .as_ref()
-        .expect("sideswap_recv_request can't be used with dart");
-    convert_from_msg(from_receiver_ffi.recv().unwrap())
-}
-
-#[no_mangle]
 pub extern "C" fn sideswap_process_background(data: *const c_char) {
     let data = unsafe { CStr::from_ptr(data) }
         .to_str()
@@ -194,15 +144,16 @@ pub extern "C" fn sideswap_process_background(data: *const c_char) {
         .to_owned();
 
     let client = GLOBAL_CLIENT.load(std::sync::atomic::Ordering::Relaxed);
-    info!(
+    log::info!(
         "background message received, client: {}, data: {}",
-        client, data
+        client,
+        data
     );
     if client == 0 {
         return;
     }
     let client = unsafe { &mut *(client as *mut Client) };
-    let (sender, receiver) = crossbeam_channel::unbounded();
+    let (sender, receiver) = mpsc::channel();
     let started = std::time::Instant::now();
     client
         .msg_sender
@@ -211,15 +162,13 @@ pub extern "C" fn sideswap_process_background(data: *const c_char) {
     let wait_result = receiver.recv_timeout(std::time::Duration::from_secs(25));
     let time = std::time::Instant::now().duration_since(started);
     match wait_result {
-        Ok(_) => info!(
+        Ok(_) => log::info!(
             "background message processing done ({} seconds)",
             time.as_secs()
         ),
-        Err(_) => warn!("wait timeout"),
+        Err(_) => log::warn!("wait timeout"),
     }
 }
-
-pub const SIDESWAP_DART_PORT_DISABLED: i64 = -1;
 
 pub const SIDESWAP_BITCOIN: i32 = 1;
 pub const SIDESWAP_ELEMENTS: i32 = 2;
@@ -327,15 +276,4 @@ fn check_elements_address(env: Env, addr: &str) -> bool {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_address_check() {
-        // P2TR
-        assert!(check_bitcoin_address(
-            Env::Prod,
-            "bc1p5cyxnuxmeuwuvkwfem96lqzszd02n6xdcjrs20cac6yqjjwudpxqkedrcr"
-        ));
-    }
-}
+mod tests;

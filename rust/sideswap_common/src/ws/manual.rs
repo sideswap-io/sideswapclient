@@ -31,6 +31,8 @@ type WsStream = (
     tokio_tungstenite::tungstenite::handshake::client::Response,
 );
 
+pub type ResponseCallback = Box<dyn Fn(WrappedResponse) + Send>;
+
 async fn connect_async(
     url: &str,
     proxy: Option<&String>,
@@ -80,13 +82,13 @@ async fn connect_with_error_delay(
 }
 
 async fn run(
-    mut req_rx: UnboundedReceiver<WrappedRequest>,
-    resp_tx: UnboundedSender<WrappedResponse>,
-    mut hint_rx: UnboundedReceiver<()>,
+    mut req_receiver: UnboundedReceiver<WrappedRequest>,
+    resp_callback: ResponseCallback,
+    mut hint_receiver: UnboundedReceiver<()>,
 ) {
     loop {
         let (host, port, use_tls, proxy) = loop {
-            let req = req_rx.recv().await;
+            let req = req_receiver.recv().await;
             match req {
                 Some(WrappedRequest::Connect {
                     host,
@@ -124,7 +126,7 @@ async fn run(
                     };
                 }
 
-                reconnect = hint_rx.recv() => {
+                reconnect = hint_receiver.recv() => {
                     if reconnect.is_none() {
                         return;
                     }
@@ -135,7 +137,7 @@ async fn run(
         };
 
         debug!("ws connected");
-        resp_tx.send(WrappedResponse::Connected).unwrap();
+        resp_callback(WrappedResponse::Connected);
 
         let mut last_recv_timestamp = Instant::now();
         let mut interval =
@@ -157,7 +159,7 @@ async fn run(
                             let server_msg = serde_json::from_str::<ResponseMessage>(&text);
                             match server_msg {
                                 Ok(v) => {
-                                    resp_tx.send(WrappedResponse::Response(v)).unwrap();
+                                    resp_callback(WrappedResponse::Response(v));
                                 }
                                 Err(e) => {
                                     error!("parsing response failed: {}: {}", e, &text);
@@ -171,7 +173,7 @@ async fn run(
                     }
                 }
 
-                client_result = req_rx.recv() => {
+                client_result = req_receiver.recv() => {
                     let client_result = match client_result {
                         Some(v) => v,
                         None => {
@@ -208,24 +210,21 @@ async fn run(
         }
 
         debug!("ws disconnected");
-        resp_tx.send(WrappedResponse::Disconnected).unwrap();
+        resp_callback(WrappedResponse::Disconnected);
     }
 }
 
-pub fn start() -> (
-    UnboundedSender<WrappedRequest>,
-    UnboundedReceiver<WrappedResponse>,
-    UnboundedSender<()>,
-) {
-    let (req_tx, req_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
-    let (resp_tx, resp_rx) = tokio::sync::mpsc::unbounded_channel::<WrappedResponse>();
-    let (hint_tx, hint_rx) = tokio::sync::mpsc::unbounded_channel::<()>();
+pub fn start(
+    resp_callback: ResponseCallback,
+) -> (UnboundedSender<WrappedRequest>, UnboundedSender<()>) {
+    let (req_sender, req_receiver) = tokio::sync::mpsc::unbounded_channel::<WrappedRequest>();
+    let (hint_sender, hint_receiver) = tokio::sync::mpsc::unbounded_channel::<()>();
     std::thread::spawn(move || {
         let rt = tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(run(req_rx, resp_tx, hint_rx));
+        rt.block_on(run(req_receiver, resp_callback, hint_receiver));
     });
-    (req_tx, resp_rx, hint_tx)
+    (req_sender, hint_sender)
 }

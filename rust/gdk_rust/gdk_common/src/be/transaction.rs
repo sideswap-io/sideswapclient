@@ -95,7 +95,7 @@ impl BETransaction {
                 .filter(|i| !i.previous_output.is_null())
                 .map(|i| i.previous_output.txid.into())
                 .collect(),
-            // FIXME: use elements::OutPoint::is_null once available upstream
+            // use elements::OutPoint::is_null once available upstream
             Self::Elements(tx) => tx
                 .input
                 .iter()

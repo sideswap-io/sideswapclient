@@ -1,7 +1,7 @@
 use std::sync::mpsc::{channel, Sender};
 use std::time::Duration;
 
-use sideswap_api::market::AssetPair;
+use sideswap_api::mkt::AssetPair;
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
 use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_dealer::{market, price_stream, utxo_data};
@@ -36,9 +36,6 @@ fn process_wallet_event(data: &mut Data, event: wallet::Event) {
             });
             data.utxo_data = utxo_data;
         }
-        wallet::Event::Address { address } => data
-            .market_command_sender
-            .send(market::Command::NewAddress { address }),
     }
 }
 
@@ -53,9 +50,9 @@ fn process_market_event(data: &mut Data, event: market::Event) {
                 .send(market::Command::SignedSwap { quote_id, pset });
         }
 
-        market::Event::GetNewAddress => {
+        market::Event::NewAddress { res_sender } => {
             data.wallet_command_sender
-                .send(wallet::Command::NewAdddress)
+                .send(wallet::Command::NewAdddress { res_sender })
                 .expect("must be open");
         }
 
@@ -68,6 +65,12 @@ fn process_market_event(data: &mut Data, event: market::Event) {
             txid,
         } => {
             log::info!("market swap, base: {base}, quote: {quote}, base amount: {base_amount}, quote amount: {quote_amount}, price: {price}, txid: {txid}, trade_dir: {trade_dir:?}");
+        }
+
+        market::Event::BroadcastTx { tx } => {
+            data.wallet_command_sender
+                .send(wallet::Command::BroadcastTx { tx })
+                .expect("must be open");
         }
     }
 }
@@ -96,8 +99,6 @@ async fn main() {
     let settings: Settings = conf.try_into().expect("invalid config");
 
     sideswap_dealer::logs::init(&settings.work_dir);
-
-    log::info!("started");
 
     sideswap_common::panic_handler::install_panic_handler();
 

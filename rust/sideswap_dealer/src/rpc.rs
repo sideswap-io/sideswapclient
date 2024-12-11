@@ -224,3 +224,18 @@ impl RpcCall for DumpPrivKeyCall {
         }
     }
 }
+
+pub struct SendRawTransactionCall {
+    pub tx: String,
+}
+
+impl RpcCall for SendRawTransactionCall {
+    type Response = elements::Txid;
+
+    fn get_request(self) -> RpcRequest {
+        RpcRequest {
+            method: "sendrawtransaction".to_owned(),
+            params: vec![json!(self.tx)].into(),
+        }
+    }
+}

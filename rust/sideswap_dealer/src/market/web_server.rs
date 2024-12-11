@@ -1,13 +1,10 @@
-use std::{collections::BTreeMap, net::SocketAddr};
+use std::net::SocketAddr;
 
 use poem::{listener::TcpListener, Route, Server};
-use poem_openapi::{
-    param::Query, payload::Json, ApiResponse, Enum, Object, OpenApi, OpenApiService,
-};
-use serde::{Deserialize, Serialize};
-use sideswap_api::market::{self, OrdId};
+use poem_openapi::{param::Query, payload::Json, ApiResponse, OpenApi, OpenApiService};
+use serde::Deserialize;
+use sideswap_api::mkt::OrdId;
 use sideswap_types::normal_float::NormalFloat;
-use tokio::sync::{mpsc::UnboundedSender, oneshot};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -17,288 +14,23 @@ pub struct Config {
 
 use crate::types::{dealer_ticker_from_asset_ticker, DealerTicker, ExchangePair};
 
-use super::{ClientCommand, Error};
+use super::{api, controller::Controller, Error};
 
 struct Api {
-    command_sender: UnboundedSender<ClientCommand>,
-}
-
-#[derive(Debug, Serialize, Object)]
-struct ErrorMessage {
-    /// Error message text
-    error: String,
+    controller: Controller,
 }
 
 #[derive(Debug, ApiResponse)]
-enum ErrorResponseServer {
-    /// Server error
-    #[oai(status = 500)]
-    InternalServerError(Json<ErrorMessage>),
-}
-
-impl From<Error> for ErrorResponseServer {
-    fn from(err: Error) -> Self {
-        let error_msg = Json(ErrorMessage {
-            error: err.to_string(),
-        });
-        match err {
-            Error::InvalidFloat(_) | Error::UnknownTicker(_) => {
-                unreachable!()
-            }
-            Error::WsRequestError(_)
-            | Error::UnexpectedResponse(_)
-            | Error::TryAgain
-            | Error::ServerDisconnected
-            | Error::ChannelClosed => ErrorResponseServer::InternalServerError(error_msg),
-        }
-    }
-}
-
-#[derive(Debug, ApiResponse)]
-enum ErrorResponseFull {
-    /// Client error
+enum ErrorResponse {
+    /// Request failed
     #[oai(status = 400)]
-    BadRequest(Json<ErrorMessage>),
-    /// Server error
-    #[oai(status = 500)]
-    InternalServerError(Json<ErrorMessage>),
+    BadRequest(Json<api::Error>),
 }
 
-impl From<Error> for ErrorResponseFull {
+impl From<Error> for ErrorResponse {
     fn from(err: Error) -> Self {
-        let error_msg = Json(ErrorMessage {
-            error: err.to_string(),
-        });
-        match err {
-            Error::InvalidFloat(_) | Error::UnknownTicker(_) => {
-                ErrorResponseFull::BadRequest(error_msg)
-            }
-
-            Error::WsRequestError(_)
-            | Error::UnexpectedResponse(_)
-            | Error::TryAgain
-            | Error::ServerDisconnected
-            | Error::ChannelClosed => ErrorResponseFull::InternalServerError(error_msg),
-        }
+        ErrorResponse::BadRequest(Json(err.into()))
     }
-}
-
-/// Trade direction of the base asset
-#[derive(Debug, Enum)]
-enum TradeDir {
-    Sell,
-    Buy,
-}
-
-impl From<market::TradeDir> for TradeDir {
-    fn from(value: market::TradeDir) -> Self {
-        match value {
-            market::TradeDir::Sell => TradeDir::Sell,
-            market::TradeDir::Buy => TradeDir::Buy,
-        }
-    }
-}
-
-impl Into<market::TradeDir> for TradeDir {
-    fn into(self) -> market::TradeDir {
-        match self {
-            TradeDir::Sell => market::TradeDir::Sell,
-            TradeDir::Buy => market::TradeDir::Buy,
-        }
-    }
-}
-
-/// Available market
-#[derive(Debug, Object)]
-struct Market {
-    /// Base asset ticker (for example L-BTC or USDt).
-    base: String,
-    /// Quote asset ticker (for example USDt or MEX).
-    quote: String,
-}
-
-impl From<super::Market> for Market {
-    fn from(value: super::Market) -> Self {
-        Market {
-            base: value.base.to_string(),
-            quote: value.quote.to_string(),
-        }
-    }
-}
-
-#[derive(Debug, Object)]
-struct Asset {
-    /// Asset ID
-    asset_id: String,
-    /// Asset name (from the GDK registry)
-    name: String,
-    /// Asset ticker (from the GDK registry)
-    ticker: String,
-    /// Asset precision (in the [0..8] range)
-    precision: u8,
-}
-
-impl From<sideswap_api::Asset> for Asset {
-    fn from(value: sideswap_api::Asset) -> Self {
-        Asset {
-            asset_id: value.asset_id.to_string(),
-            name: value.name,
-            ticker: value.ticker.0,
-            precision: value.precision.value(),
-        }
-    }
-}
-
-/// Get market metadata
-#[derive(Debug, Object)]
-struct Metadata {
-    /// Whether the upstream connection to the server is active or not.
-    /// Without it most API requests will fail.
-    server_connected: bool,
-    /// Hard-coded list of some known assets (L-BTC, USDt, MEX etc) with their details.
-    assets: Vec<Asset>,
-    /// List of the stablecoin and AMP markets (but only where both base and quote assets are known).
-    markets: Vec<Market>,
-}
-
-impl From<super::Metadata> for Metadata {
-    fn from(value: super::Metadata) -> Self {
-        Metadata {
-            server_connected: value.server_connected,
-            assets: value.assets.into_iter().map(Into::into).collect(),
-            markets: value.markets.into_iter().map(Into::into).collect(),
-        }
-    }
-}
-
-/// Wallet balances
-#[derive(Debug, Object)]
-struct Balances {
-    /// Wallet balances as seen by the wallet (including unconfirmed transactions).
-    wallet: BTreeMap<String, f64>,
-    /// Wallet balances as seen by the server (including unconfirmed transactions).
-    /// Because it takes time for transactions to propagate through the network, the local wallet and the server may not agree on what is actually available.
-    /// The server balances can't be more than the wallet balances.
-    server: BTreeMap<String, f64>,
-}
-
-impl From<super::Balances> for Balances {
-    fn from(value: super::Balances) -> Self {
-        Balances {
-            wallet: value
-                .wallet
-                .into_iter()
-                .map(|(ticker, value)| (ticker.to_string(), value))
-                .collect(),
-            server: value
-                .server
-                .into_iter()
-                .map(|(ticker, value)| (ticker.to_string(), value))
-                .collect(),
-        }
-    }
-}
-
-/// Public order
-#[derive(Debug, Object)]
-struct PublicOrder {
-    /// Order ID (based on timestamp, globally unique for all orders)
-    order_id: u64,
-    /// Trade direction
-    trade_dir: TradeDir,
-    /// Base asset active order amount (same as `active_amount` in OwnOrder)
-    amount: f64,
-    /// Price
-    price: f64,
-}
-
-impl From<super::PublicOrder_> for PublicOrder {
-    fn from(value: super::PublicOrder_) -> Self {
-        PublicOrder {
-            order_id: value.order_id.value(),
-            trade_dir: value.trade_dir.into(),
-            amount: value.amount,
-            price: value.price.value(),
-        }
-    }
-}
-
-#[derive(Debug, Object)]
-struct OwnOrder {
-    /// Order ID (based on timestamp, globally unique for all orders)
-    order_id: u64,
-    /// Base asset ticker
-    base: String,
-    /// Quote asset ticker
-    quote: String,
-    /// Trade direction
-    trade_dir: TradeDir,
-    /// Base asset amount specified when the order was created.
-    /// If the order is partially matched, the matched amount is deducted from the `orig_amount` and the order remains active.
-    /// If the order is fully matched, it is removed.
-    /// Can be larger than the available wallet balance.
-    orig_amount: f64,
-    /// Active order amount.
-    /// All submitted orders are sorted by price and then UTXOs amounts are checked, starting from the top orders.
-    /// For sell orders the base asset UTXOs are checked and for buy orders the quote asset.
-    /// If zero, the order will not be listed in the public book.
-    active_amount: f64,
-    /// Order price (must be positive)
-    price: f64,
-}
-
-impl From<super::OwnOrder_> for OwnOrder {
-    fn from(value: super::OwnOrder_) -> Self {
-        OwnOrder {
-            order_id: value.order_id.value(),
-            base: value.exchange_pair.base.to_string(),
-            quote: value.exchange_pair.quote.to_string(),
-            trade_dir: value.trade_dir.into(),
-            orig_amount: value.orig_amount,
-            active_amount: value.active_amount,
-            price: value.price.value(),
-        }
-    }
-}
-
-#[derive(Debug, Object)]
-struct OrderBook {
-    /// List of the public orders
-    orders: Vec<PublicOrder>,
-    /// Timestamp in milliseconds since UNIX epoch (set by the server)
-    timestamp: u64,
-}
-
-impl From<super::OrderBook> for OrderBook {
-    fn from(value: super::OrderBook) -> Self {
-        OrderBook {
-            orders: value.orders.into_iter().map(Into::into).collect(),
-            timestamp: value.timestamp.as_millis(),
-        }
-    }
-}
-
-#[derive(Debug, Object)]
-struct OwnOrders {
-    /// List of all active own orders, from all markets
-    orders: Vec<OwnOrder>,
-}
-
-impl From<super::OwnOrders> for OwnOrders {
-    fn from(value: super::OwnOrders) -> Self {
-        OwnOrders {
-            orders: value.orders.into_iter().map(Into::into).collect(),
-        }
-    }
-}
-
-async fn recv<T>(receiver: oneshot::Receiver<T>) -> Result<T, Error> {
-    receiver.await.map_err(Into::into)
-}
-
-async fn recv_res<T>(receiver: oneshot::Receiver<Result<T, super::Error>>) -> Result<T, Error> {
-    let resp = receiver.await??;
-    Ok(resp)
 }
 
 fn parse_dealer_ticker(value: &str) -> Result<DealerTicker, Error> {
@@ -311,19 +43,10 @@ fn parse_normal_float(value: f64) -> Result<NormalFloat, Error> {
 
 #[OpenApi]
 impl Api {
-    fn send_request(&self, command: ClientCommand) -> Result<(), Error> {
-        self.command_sender.send(command)?;
-        Ok(())
-    }
-
     /// Metadata API call, list all available markets
     #[oai(path = "/metadata", method = "get")]
-    async fn metadata(&self) -> Result<Json<Metadata>, ErrorResponseServer> {
-        let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(ClientCommand::Metadata {
-            res_sender: res_sender.into(),
-        })?;
-        let resp = recv(res_receiver).await?;
+    async fn metadata(&self) -> Result<Json<api::Metadata>, ErrorResponse> {
+        let resp = self.controller.metadata().await?;
         Ok(Json(resp.into()))
     }
 
@@ -335,28 +58,19 @@ impl Api {
         base: Query<String>,
         /// Quote asset ticker, must be from a known market
         quote: Query<String>,
-    ) -> Result<Json<OrderBook>, ErrorResponseFull> {
+    ) -> Result<Json<api::OrderBook>, ErrorResponse> {
         let base = parse_dealer_ticker(&base.0)?;
         let quote = parse_dealer_ticker(&quote.0)?;
         let exchange_pair = ExchangePair { base, quote };
-        let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(ClientCommand::OrderBook {
-            exchange_pair,
-            res_sender: res_sender.into(),
-        })?;
-        let resp = recv_res(res_receiver).await?;
+        let resp = self.controller.order_book(exchange_pair).await?;
         Ok(Json(resp.into()))
     }
 
     /// List of all active orders.
     /// Returns an error if the upstream server connection is down.
     #[oai(path = "/own_orders", method = "get")]
-    async fn own_orders(&self) -> Result<Json<OwnOrders>, ErrorResponseServer> {
-        let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(ClientCommand::OwnOrders {
-            res_sender: res_sender.into(),
-        })?;
-        let resp = recv_res(res_receiver).await?;
+    async fn own_orders(&self) -> Result<Json<api::OwnOrders>, ErrorResponse> {
+        let resp = self.controller.own_orders().await?;
         Ok(Json(resp.into()))
     }
 
@@ -377,22 +91,47 @@ impl Api {
         /// Quote amount = Base amount * Price.
         price: Query<f64>,
         /// Order trade direction
-        trade_dir: Query<TradeDir>,
-    ) -> Result<Json<OwnOrder>, ErrorResponseFull> {
+        trade_dir: Query<api::TradeDir>,
+        /// Client order id. If set, must be unique among all active and recent history orders.
+        client_order_id: Query<Option<Box<String>>>,
+    ) -> Result<Json<api::OwnOrder>, ErrorResponse> {
         let base = parse_dealer_ticker(&base.0)?;
         let quote = parse_dealer_ticker(&quote.0)?;
         let exchange_pair = ExchangePair { base, quote };
         let price = parse_normal_float(price.0)?;
+        let resp = self
+            .controller
+            .submit_order(
+                exchange_pair,
+                base_amount.0,
+                price,
+                trade_dir.0.into(),
+                client_order_id.0,
+            )
+            .await?;
+        Ok(Json(resp.into()))
+    }
 
-        let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(ClientCommand::SubmitOrder {
-            exchange_pair,
-            base_amount: base_amount.0,
-            price,
-            trade_dir: trade_dir.0.into(),
-            res_sender: res_sender.into(),
-        })?;
-        let resp = recv_res(res_receiver).await?;
+    /// Edit own order
+    #[oai(path = "/edit_order", method = "post")]
+    async fn edit_order(
+        &self,
+        /// Order ID
+        order_id: Query<u64>,
+        /// Base asset amount as a float (must be positive)
+        base_amount: Query<Option<f64>>,
+        /// Order price (must be positive).
+        /// Quote amount = Base amount * Price.
+        price: Query<Option<f64>>,
+    ) -> Result<Json<api::OwnOrder>, ErrorResponse> {
+        let resp = self
+            .controller
+            .edit_order(
+                OrdId::new(order_id.0),
+                base_amount.0,
+                price.0.map(parse_normal_float).transpose()?,
+            )
+            .await?;
         Ok(Json(resp.into()))
     }
 
@@ -403,32 +142,32 @@ impl Api {
         &self,
         /// Order ID
         order_id: Query<u64>,
-    ) -> Result<(), ErrorResponseFull> {
-        let order_id = OrdId::new(order_id.0);
-        let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(ClientCommand::CancelOrder {
-            order_id,
-            res_sender: res_sender.into(),
-        })?;
-        recv_res(res_receiver).await?;
+    ) -> Result<(), ErrorResponse> {
+        self.controller.cancel_order(OrdId::new(order_id.0)).await?;
         Ok(())
     }
 
-    /// Load wallet and server balances.
-    /// If the upstream server connection is down, the reported server balances will be zero.
+    /// Load wallet balances
     #[oai(path = "/balances", method = "get")]
-    async fn balances(&self) -> Result<Json<Balances>, ErrorResponseServer> {
-        let (res_sender, res_receiver) = oneshot::channel();
-        self.send_request(ClientCommand::Balances {
-            res_sender: res_sender.into(),
-        })?;
-        let resp = recv(res_receiver).await?;
+    async fn balances(&self) -> Result<Json<api::Balances>, ErrorResponse> {
+        let resp = self.controller.balances().await?;
+        Ok(Json(resp.into()))
+    }
+
+    /// Load order history
+    #[oai(path = "/load_history", method = "get")]
+    async fn load_history(
+        &self,
+        skip: Query<usize>,
+        count: Query<usize>,
+    ) -> Result<Json<api::HistoryOrders>, ErrorResponse> {
+        let resp = self.controller.get_history_orders(skip.0, count.0).await?;
         Ok(Json(resp.into()))
     }
 }
 
-async fn run(config: Config, command_sender: UnboundedSender<ClientCommand>) {
-    let api = Api { command_sender };
+async fn run(config: Config, controller: Controller) {
+    let api = Api { controller };
 
     let mut api = OpenApiService::new(api, "SideSwap Dealer API", "1.0");
     if let Some(url) = config.server_url.as_ref() {
@@ -450,6 +189,6 @@ async fn run(config: Config, command_sender: UnboundedSender<ClientCommand>) {
         .expect("must not fail");
 }
 
-pub fn start(config: Config, command_sender: UnboundedSender<ClientCommand>) {
-    tokio::task::spawn(run(config, command_sender));
+pub fn start(config: Config, controller: Controller) {
+    tokio::task::spawn(run(config, controller));
 }

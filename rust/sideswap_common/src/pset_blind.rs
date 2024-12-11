@@ -124,6 +124,26 @@ fn add_input_explicit_proofs(
     Ok(())
 }
 
+pub struct BlindedOutput {
+    pub abf: AssetBlindingFactor,
+    pub vbf: ValueBlindingFactor,
+    pub blinding_nonce: SecretKey,
+}
+
+pub type OptBlindedOutputs = Vec<Option<BlindedOutput>>;
+
+pub fn get_blinding_nonces(blinded_outputs: &OptBlindedOutputs) -> Vec<String> {
+    blinded_outputs
+        .iter()
+        .map(|output| {
+            output
+                .as_ref()
+                .map(|output| output.blinding_nonce.display_secret().to_string())
+                .unwrap_or_default()
+        })
+        .collect()
+}
+
 /// Blind PSET and return blinding nonces (they are required by the Green backend for AMP accounts).
 ///
 /// blinding_factors - zero or more pre-generated blinding factors for the outputs.
@@ -131,7 +151,7 @@ pub fn blind_pset(
     pset: &mut PartiallySignedTransaction,
     inp_txout_sec: &[TxOutSecrets],
     blinding_factors: &[(AssetBlindingFactor, ValueBlindingFactor, SecretKey)],
-) -> Result<Vec<String>, Error> {
+) -> Result<OptBlindedOutputs, Error> {
     let secp = elements::secp256k1_zkp::global::SECP256K1;
 
     let rng = &mut rand::thread_rng();
@@ -143,7 +163,7 @@ pub fn blind_pset(
     let mut last_blinded_index = None;
 
     let mut exp_out_secrets = Vec::new();
-    let mut blinding_nonces = Vec::new();
+    let mut blinding_nonces = Vec::<Option<BlindedOutput>>::new();
     for (index, out) in pset.outputs().iter().enumerate() {
         if out.blinding_key.is_none() {
             let value = out.amount.ok_or(Error::UnknownOutputValue(index))?;
@@ -170,12 +190,8 @@ pub fn blind_pset(
         .collect::<Vec<_>>();
 
     for (index, output) in pset.outputs_mut().iter_mut().enumerate() {
-        let asset_id = output
-            .asset
-            .ok_or(Error::UnknownOutputAsset(index))?;
-        let value = output
-            .amount
-            .ok_or(Error::UnknownOutputValue(index))?;
+        let asset_id = output.asset.ok_or(Error::UnknownOutputAsset(index))?;
+        let value = output.amount.ok_or(Error::UnknownOutputValue(index))?;
         if let Some(receiver_blinding_pk) = output.blinding_key {
             let is_last = index == last_blinded_index;
 
@@ -224,7 +240,11 @@ pub fn blind_pset(
                 ephemeral_sk,
                 &receiver_blinding_pk.inner,
             );
-            blinding_nonces.push(shared_secret.display_secret().to_string());
+            blinding_nonces.push(Some(BlindedOutput {
+                abf: out_abf,
+                vbf: out_vbf,
+                blinding_nonce: shared_secret,
+            }));
 
             let mut message = [0u8; 64];
             message[..32].copy_from_slice(asset_id.into_tag().as_ref());
@@ -291,7 +311,7 @@ pub fn blind_pset(
 
             exp_out_secrets.push((value, out_abf, out_vbf));
         } else {
-            blinding_nonces.push(String::new());
+            blinding_nonces.push(None);
         }
     }
 

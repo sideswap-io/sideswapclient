@@ -1,6 +1,6 @@
 use elements::hex::FromHex;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct HexEncoded<T>(T);
 
 impl<T> HexEncoded<T> {

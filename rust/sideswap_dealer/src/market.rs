@@ -1,20 +1,19 @@
 //! New market swap API (replaces both old swap API and instant swaps)
 
 use std::{
-    collections::{BTreeMap, BTreeSet, VecDeque},
+    collections::{BTreeMap, BTreeSet},
     time::Duration,
 };
 
-use elements::{pset::PartiallySignedTransaction, Address, AssetId, OutPoint, Txid};
+use controller::Controller;
+use elements::{
+    confidential::{AssetBlindingFactor, ValueBlindingFactor},
+    pset::PartiallySignedTransaction,
+    Address, AssetId, OutPoint, Txid,
+};
 use sideswap_api::{
-    market::{
-        self, AddOrderRequest, AddUtxosRequest, AssetPair, CancelOrderRequest, EditOrderRequest,
-        ListMarketsRequest, LoginRequest, LoginResponse, MakerSignNotif, MakerSignRequest,
-        MarketInfo, Notification, OrdId, OwnOrder, QuoteId, RegisterRequest, RegisterResponse,
-        RemoveUtxosRequest, Request, ResolveGaidRequest, TradeDir,
-    },
-    Asset, AssetBlindingFactor, AssetsRequestParam, ErrorCode, MarketType, ResponseMessage, Utxo,
-    ValueBlindingFactor,
+    mkt::{self, AssetPair, HistId, MarketInfo, Notification, OrdId, QuoteId, Request, TradeDir},
+    Asset, AssetsRequestParam, MarketType, ResponseMessage, Utxo,
 };
 use sideswap_common::{
     b64,
@@ -31,11 +30,16 @@ use sideswap_common::{
 use sideswap_types::{
     asset_precision::AssetPrecision,
     normal_float::{NormalFloat, NotNormalError},
-    timestamp_ms::TimestampMs,
     utxo_ext::UtxoExt,
 };
-use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
+use tokio::sync::{
+    mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender},
+    oneshot,
+};
 
+mod api;
+mod api_helpers;
+mod controller;
 mod persistent_state;
 mod web_server;
 mod ws_server;
@@ -73,9 +77,6 @@ pub enum Command {
     Utxos {
         utxos: Vec<Utxo>,
     },
-    NewAddress {
-        address: Address,
-    },
     Gaid {
         gaid: String,
     },
@@ -90,7 +91,9 @@ pub enum Event {
         quote_id: QuoteId,
         pset: PartiallySignedTransaction,
     },
-    GetNewAddress,
+    NewAddress {
+        res_sender: UncheckedOneshotSender<Result<Address, anyhow::Error>>,
+    },
     SwapSucceed {
         asset_pair: AssetPair,
         trade_dir: TradeDir,
@@ -98,6 +101,9 @@ pub enum Event {
         quote_amount: u64,
         price: NormalFloat,
         txid: Txid,
+    },
+    BroadcastTx {
+        tx: String,
     },
 }
 
@@ -117,12 +123,11 @@ struct Metadata {
 type Balance = BTreeMap<DealerTicker, f64>;
 
 struct Balances {
-    wallet: Balance,
-    server: Balance,
+    balance: Balance,
 }
 
 #[derive(Clone)]
-struct PublicOrder_ {
+struct PublicOrder {
     order_id: OrdId,
     trade_dir: TradeDir,
     amount: f64,
@@ -131,21 +136,40 @@ struct PublicOrder_ {
 
 #[derive(Clone)]
 struct OrderBook {
-    orders: Vec<PublicOrder_>,
-    timestamp: TimestampMs,
+    orders: Vec<PublicOrder>,
 }
 
 struct OwnOrders {
-    orders: Vec<OwnOrder_>,
+    orders: Vec<OwnOrder>,
 }
 
-struct OwnOrder_ {
+struct OwnOrder {
     exchange_pair: ExchangePair,
     order_id: OrdId,
+    client_order_id: Option<Box<String>>,
     trade_dir: TradeDir,
     orig_amount: f64,
     active_amount: f64,
     price: NormalFloat,
+}
+
+struct HistoryOrders {
+    orders: Vec<HistoryOrder>,
+    total: usize,
+}
+
+#[derive(Clone)]
+struct HistoryOrder {
+    id: HistId,
+    order_id: OrdId,
+    client_order_id: Option<Box<String>>,
+    exchange_pair: ExchangePair,
+    trade_dir: TradeDir,
+    base_amount: f64,
+    quote_amount: f64,
+    price: NormalFloat,
+    txid: Option<Txid>,
+    status: mkt::HistStatus,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -154,8 +178,6 @@ enum Error {
     WsRequestError(#[from] ws_req_sender::Error),
     #[error("Unexpected response, expected: {0}")]
     UnexpectedResponse(&'static str),
-    #[error("Try again")]
-    TryAgain,
     #[error("Server connection is down")]
     ServerDisconnected,
     #[error("Channel closed, please report bug")]
@@ -164,6 +186,76 @@ enum Error {
     UnknownTicker(String),
     #[error("Invalid float: {0}")]
     InvalidFloat(NotNormalError),
+    #[error("No gaid")]
+    NoGaid,
+    #[error("Wallet error: {0}")]
+    WalletError(anyhow::Error),
+    #[error("Unknown order id")]
+    UnknownOrderId,
+    #[error("Unknown asset id: {0}")]
+    UnknownAssetId(AssetId),
+}
+
+impl Error {
+    fn text(&self) -> String {
+        self.to_string()
+    }
+
+    fn code(&self) -> api::ErrorCode {
+        match self {
+            Error::ChannelClosed
+            | Error::WsRequestError(_)
+            | Error::UnexpectedResponse(_)
+            | Error::NoGaid
+            | Error::WalletError(_)
+            | Error::ServerDisconnected => api::ErrorCode::ServerError,
+            Error::UnknownTicker(_)
+            | Error::InvalidFloat(_)
+            | Error::UnknownOrderId
+            | Error::UnknownAssetId(_) => api::ErrorCode::InvalidRequest,
+        }
+    }
+
+    fn details(&self) -> Option<api::ErrorDetails> {
+        match self {
+            Error::ChannelClosed
+            | Error::WsRequestError(_)
+            | Error::UnexpectedResponse(_)
+            | Error::NoGaid
+            | Error::WalletError(_)
+            | Error::ServerDisconnected
+            | Error::UnknownTicker(_)
+            | Error::InvalidFloat(_)
+            | Error::UnknownOrderId
+            | Error::UnknownAssetId(_) => None,
+        }
+    }
+}
+
+impl From<mkt::HistStatus> for api::HistOrderStatus {
+    fn from(value: mkt::HistStatus) -> Self {
+        match value {
+            mkt::HistStatus::Mempool => api::HistOrderStatus::Mempool,
+            mkt::HistStatus::Confirmed => api::HistOrderStatus::Confirmed,
+            mkt::HistStatus::TxConflict => api::HistOrderStatus::TxConflict,
+            mkt::HistStatus::TxNotFound => api::HistOrderStatus::TxNotFound,
+            mkt::HistStatus::Elapsed => api::HistOrderStatus::Elapsed,
+            mkt::HistStatus::Cancelled => api::HistOrderStatus::Cancelled,
+            mkt::HistStatus::UtxoInvalidated => api::HistOrderStatus::UtxoInvalidated,
+            mkt::HistStatus::Replaced => api::HistOrderStatus::Replaced,
+        }
+    }
+}
+
+impl From<sideswap_api::Asset> for api::Asset {
+    fn from(value: sideswap_api::Asset) -> Self {
+        api::Asset {
+            asset_id: value.asset_id.to_string(),
+            name: value.name,
+            ticker: value.ticker.0,
+            precision: value.precision.value(),
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -171,7 +263,7 @@ enum ClientEvent {
     ServerConnected,
     OrderAdded {
         exchange_pair: ExchangePair,
-        order: PublicOrder_,
+        order: PublicOrder,
     },
     OrderRemoved {
         exchange_pair: ExchangePair,
@@ -182,11 +274,25 @@ enum ClientEvent {
         ind_price: Option<NormalFloat>,
         last_price: Option<NormalFloat>,
     },
+    HistoryUpdated {
+        order: HistoryOrder,
+        is_new: bool,
+    },
 }
 
 enum ClientCommand {
     Metadata {
         res_sender: UncheckedOneshotSender<Metadata>,
+    },
+    GetAsset {
+        asset_id: AssetId,
+        res_sender: UncheckedOneshotSender<Result<Asset, Error>>,
+    },
+    GetGaid {
+        res_sender: UncheckedOneshotSender<Result<String, Error>>,
+    },
+    NewAddress {
+        res_sender: UncheckedOneshotSender<Result<Address, anyhow::Error>>,
     },
     Balances {
         res_sender: UncheckedOneshotSender<Balances>,
@@ -195,15 +301,40 @@ enum ClientCommand {
         exchange_pair: ExchangePair,
         res_sender: UncheckedOneshotSender<Result<OrderBook, Error>>,
     },
-    OwnOrders {
+    GetOwnOrder {
+        order_id: OrdId,
+        res_sender: UncheckedOneshotSender<Result<OwnOrder, Error>>,
+    },
+    GetOwnOrders {
         res_sender: UncheckedOneshotSender<Result<OwnOrders, Error>>,
     },
+    GetHistory {
+        skip: usize,
+        count: usize,
+        res_sender: UncheckedOneshotSender<Result<HistoryOrders, Error>>,
+    },
+
+    ResolveGaid {
+        asset_id: AssetId,
+        gaid: String,
+        res_sender: UncheckedOneshotSender<Result<Address, Error>>,
+    },
+
     SubmitOrder {
         exchange_pair: ExchangePair,
         base_amount: f64,
         price: NormalFloat,
         trade_dir: TradeDir,
-        res_sender: UncheckedOneshotSender<Result<OwnOrder_, Error>>,
+        client_order_id: Option<Box<String>>,
+        receive_address: Address,
+        change_address: Address,
+        res_sender: UncheckedOneshotSender<Result<OwnOrder, Error>>,
+    },
+    EditOrder {
+        order_id: OrdId,
+        base_amount: Option<u64>,
+        price: Option<NormalFloat>,
+        res_sender: UncheckedOneshotSender<Result<OwnOrder, Error>>,
     },
     CancelOrder {
         order_id: OrdId,
@@ -227,13 +358,10 @@ enum ClientCommand {
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct ClientId(u64);
 
-/// How many free addresses are available
-const ADDRESS_POOL_COUNT: usize = 2;
-
 #[derive(Default)]
 struct OrderData {
     dealer_orders: Vec<AutomaticOrder>,
-    server_orders: BTreeMap<OrdId, OwnOrder>,
+    server_orders: BTreeMap<OrdId, mkt::OwnOrder>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -256,11 +384,13 @@ impl Mode {
 type ClientSender = UncheckedUnboundedSender<ClientEvent>;
 
 struct PublicSubscribe {
-    orders: BTreeMap<OrdId, PublicOrder_>,
+    orders: BTreeMap<OrdId, PublicOrder>,
     clients: BTreeMap<ClientId, ClientSender>,
     last_price: Option<NormalFloat>,
     ind_price: Option<NormalFloat>,
 }
+
+type OrderGroupKey = (AssetPair, TradeDir);
 
 struct Data {
     network: Network,
@@ -274,12 +404,11 @@ struct Data {
     wallet_utxos: Vec<Utxo>, // Only confidential UTXOs here
     server_utxos: BTreeSet<OutPoint>,
 
-    addresses: VecDeque<Address>,
     gaid: Option<String>,
     assets: Vec<Asset>,
     amp_assets: BTreeSet<AssetId>,
 
-    dealer_orders: BTreeMap<(AssetPair, TradeDir), OrderData>,
+    orders: BTreeMap<OrderGroupKey, OrderData>,
 
     event_sender: UncheckedUnboundedSender<Event>,
 
@@ -308,11 +437,8 @@ fn get_exchange_pair(asset_pair: &AssetPair, network: Network) -> Option<Exchang
     Some(ExchangePair { base, quote })
 }
 
-fn convert_public_order(
-    order: &market::PublicOrder,
-    base_precision: AssetPrecision,
-) -> PublicOrder_ {
-    PublicOrder_ {
+fn convert_public_order(order: &mkt::PublicOrder, base_precision: AssetPrecision) -> PublicOrder {
+    PublicOrder {
         order_id: order.order_id,
         trade_dir: order.trade_dir,
         amount: asset_float_amount_(order.amount, base_precision),
@@ -320,13 +446,14 @@ fn convert_public_order(
     }
 }
 
-fn convert_own_order(order: &market::OwnOrder, network: Network) -> Option<OwnOrder_> {
+fn convert_own_order(order: &mkt::OwnOrder, network: Network) -> Option<OwnOrder> {
     let exchange_pair = get_exchange_pair(&order.asset_pair, network)?;
     let base_precision = exchange_pair.base.asset_precision();
 
-    Some(OwnOrder_ {
+    Some(OwnOrder {
         exchange_pair,
         order_id: order.order_id,
+        client_order_id: order.client_order_id.clone(),
         trade_dir: order.trade_dir,
         orig_amount: asset_float_amount_(order.orig_amount, base_precision),
         active_amount: asset_float_amount_(order.active_amount, base_precision),
@@ -334,11 +461,30 @@ fn convert_own_order(order: &market::OwnOrder, network: Network) -> Option<OwnOr
     })
 }
 
+fn convert_history_order(order: &mkt::HistoryOrder, network: Network) -> Option<HistoryOrder> {
+    let exchange_pair = get_exchange_pair(&order.asset_pair, network)?;
+    let base_precision = exchange_pair.base.asset_precision();
+    let quote_precision = exchange_pair.quote.asset_precision();
+
+    Some(HistoryOrder {
+        id: order.id,
+        order_id: order.order_id,
+        client_order_id: order.client_order_id.clone(),
+        exchange_pair,
+        trade_dir: order.trade_dir,
+        base_amount: asset_float_amount_(order.base_amount, base_precision),
+        quote_amount: asset_float_amount_(order.quote_amount, quote_precision),
+        price: order.price,
+        txid: order.txid,
+        status: order.status,
+    })
+}
+
 fn save_state(data: &Data) {
     persistent_state::save(&data.work_dir, &data.state);
 }
 
-async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
+async fn try_login(data: &mut Data) -> Result<mkt::LoginResponse, anyhow::Error> {
     let assets = make_request!(
         data.ws,
         Assets,
@@ -369,7 +515,7 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
 
     data.assets = assets.assets;
 
-    let resp = make_market_request!(data.ws, ListMarkets, ListMarketsRequest {})?;
+    let resp = make_market_request!(data.ws, ListMarkets, mkt::ListMarketsRequest {})?;
     data.markets = resp
         .markets
         .into_iter()
@@ -380,14 +526,14 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
         let res = make_market_request!(
             data.ws,
             Login,
-            LoginRequest {
+            mkt::LoginRequest {
                 token: token.clone()
             }
         );
 
         match res {
             Ok(resp) => return Ok(resp),
-            Err(err) if err.error_code() == ErrorCode::UnknownToken => {
+            Err(err) if err.error_code() == sideswap_api::ErrorCode::UnknownToken => {
                 log::warn!("token not found: {err}");
                 data.state.token = None;
             }
@@ -399,12 +545,13 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
 
     log::debug!("register...");
 
-    let RegisterResponse { token } = make_market_request!(data.ws, Register, RegisterRequest {})?;
+    let mkt::RegisterResponse { token } =
+        make_market_request!(data.ws, Register, mkt::RegisterRequest {})?;
 
     let resp = make_market_request!(
         data.ws,
         Login,
-        LoginRequest {
+        mkt::LoginRequest {
             token: token.clone()
         }
     )?;
@@ -416,14 +563,15 @@ async fn try_login(data: &mut Data) -> Result<LoginResponse, anyhow::Error> {
 }
 
 async fn process_ws_connected(data: &mut Data) {
-    let LoginResponse { orders, utxos } = try_login(data).await.expect("login failed unexpectedly");
+    let mkt::LoginResponse { orders, utxos } =
+        try_login(data).await.expect("login failed unexpectedly");
 
-    for orders in data.dealer_orders.values_mut() {
+    for orders in data.orders.values_mut() {
         orders.server_orders.clear();
     }
 
     for order in orders {
-        data.dealer_orders
+        data.orders
             .entry((order.asset_pair, order.trade_dir))
             .or_default()
             .server_orders
@@ -438,7 +586,7 @@ async fn process_ws_connected(data: &mut Data) {
 }
 
 fn process_ws_disconnected(data: &mut Data) {
-    for market in data.dealer_orders.values_mut() {
+    for market in data.orders.values_mut() {
         market.server_orders.clear();
     }
 
@@ -447,7 +595,7 @@ fn process_ws_disconnected(data: &mut Data) {
     data.subscribed.clear();
 }
 
-fn process_sign_notif(data: &mut Data, notif: MakerSignNotif) {
+fn process_sign_notif(data: &mut Data, notif: mkt::MakerSignNotif) {
     let pset = b64::decode(&notif.pset).expect("invalid base64 pset");
     let pset =
         elements::encode::deserialize::<PartiallySignedTransaction>(&pset).expect("invalid pset");
@@ -460,24 +608,46 @@ fn process_sign_notif(data: &mut Data, notif: MakerSignNotif) {
     });
 }
 
+fn broadcast_tx(data: &mut Data, txid: Txid) {
+    let event_sender = data.event_sender.clone();
+    data.ws.callback_request(
+        sideswap_api::Request::Market(Request::GetTransaction(mkt::GetTransactionRequest { txid })),
+        Box::new(move |res| {
+            let res = match res {
+                Ok(sideswap_api::Response::Market(mkt::Response::GetTransaction(resp))) => {
+                    Ok(resp.tx.clone())
+                }
+                Ok(_) => Err(Error::UnexpectedResponse("GetTransaction")),
+                Err(err) => Err(Error::WsRequestError(err)),
+            };
+            match res {
+                Ok(tx) => event_sender.send(Event::BroadcastTx { tx }),
+                Err(err) => log::error!("GetTransaction failed: {err}"),
+            }
+        }),
+    );
+}
+
 fn process_market_notif(data: &mut Data, notif: Notification) {
     match notif {
         Notification::MarketAdded(notif) => {
             data.markets.insert(notif.market.asset_pair, notif.market);
         }
+
         Notification::MarketRemoved(notif) => {
             data.markets.remove(&notif.asset_pair);
         }
 
         Notification::OwnOrderCreated(notif) => {
-            data.dealer_orders
+            data.orders
                 .entry((notif.order.asset_pair, notif.order.trade_dir))
                 .or_default()
                 .server_orders
                 .insert(notif.order.order_id, notif.order);
         }
+
         Notification::OwnOrderRemoved(notif) => {
-            for market in data.dealer_orders.values_mut() {
+            for market in data.orders.values_mut() {
                 market.server_orders.remove(&notif.order_id);
             }
         }
@@ -485,6 +655,7 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
         Notification::UtxoAdded(notif) => {
             data.server_utxos.insert(notif.utxo);
         }
+
         Notification::UtxoRemoved(notif) => {
             data.server_utxos.remove(&notif.utxo);
         }
@@ -509,6 +680,7 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
 
             subscribed.orders.insert(order.order_id, order);
         }
+
         Notification::PublicOrderRemoved(notif) => {
             let exchange_pair =
                 get_exchange_pair(&notif.asset_pair, data.network).expect("must be known");
@@ -566,6 +738,18 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
                         price: notif.order.price,
                         txid,
                     });
+
+                    broadcast_tx(data, txid);
+                }
+
+                let order =
+                    convert_history_order(&notif.order, data.network).expect("must not fail");
+
+                for event_sender in data.clients.values() {
+                    event_sender.send(ClientEvent::HistoryUpdated {
+                        order: order.clone(),
+                        is_new: notif.is_new,
+                    });
                 }
             }
         }
@@ -607,8 +791,7 @@ async fn subscribe(
             quote: dealer_ticker_to_asset_id(data.network, exchange_pair.quote),
         };
 
-        let resp =
-            make_market_request!(data.ws, Subscribe, market::SubscribeRequest { asset_pair })?;
+        let resp = make_market_request!(data.ws, Subscribe, mkt::SubscribeRequest { asset_pair })?;
         let base_precision = exchange_pair.base.asset_precision();
         let orders = resp
             .orders
@@ -631,7 +814,6 @@ async fn subscribe(
 
     let order_book = OrderBook {
         orders: subscribed.orders.values().cloned().collect(),
-        timestamp: TimestampMs::now(),
     };
 
     if let Some(client_id) = client_id {
@@ -648,6 +830,52 @@ async fn subscribe(
     }
 
     Ok(order_book)
+}
+
+async fn new_address(event_sender: &UncheckedUnboundedSender<Event>) -> Result<Address, Error> {
+    let (res_sender, res_receiver) = oneshot::channel();
+    event_sender.send(Event::NewAddress {
+        res_sender: res_sender.into(),
+    });
+    let address = res_receiver.await?.map_err(Error::WalletError)?;
+    Ok(address)
+}
+
+fn get_own_order(data: &Data, order_id: OrdId) -> Result<OwnOrder, Error> {
+    verify!(data.ws.connected(), Error::ServerDisconnected);
+    let order = data
+        .orders
+        .values()
+        .find_map(|orders| orders.server_orders.get(&order_id))
+        .ok_or(Error::UnknownOrderId)?;
+    let order = convert_own_order(order, data.network).expect("must not fail");
+    Ok(order)
+}
+
+fn get_own_orders(data: &Data) -> Result<OwnOrders, Error> {
+    verify!(data.ws.connected(), Error::ServerDisconnected);
+    let orders = data
+        .orders
+        .values()
+        .flat_map(|orders| orders.server_orders.values())
+        .map(|order| convert_own_order(order, data.network).expect("must not fail"))
+        .collect::<Vec<_>>();
+    Ok(OwnOrders { orders })
+}
+
+fn get_asset(data: &Data, asset_id: &AssetId) -> Result<Asset, Error> {
+    verify!(data.ws.connected(), Error::ServerDisconnected);
+    let asset = data
+        .assets
+        .iter()
+        .find(|asset| asset.asset_id == *asset_id)
+        .cloned()
+        .ok_or(Error::UnknownAssetId(*asset_id))?;
+    Ok(asset)
+}
+
+fn get_gaid(data: &Data) -> Result<String, Error> {
+    data.gaid.clone().ok_or(Error::NoGaid)
 }
 
 async fn process_client_command(data: &mut Data, command: ClientCommand) {
@@ -677,15 +905,30 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             });
         }
 
+        ClientCommand::GetAsset {
+            asset_id,
+            res_sender,
+        } => {
+            let res = get_asset(data, &asset_id);
+            res_sender.send(res);
+        }
+
+        ClientCommand::GetGaid { res_sender } => {
+            let res = get_gaid(data);
+            res_sender.send(res);
+        }
+
+        ClientCommand::NewAddress { res_sender } => {
+            data.event_sender.send(Event::NewAddress {
+                res_sender: res_sender.into(),
+            });
+        }
+
         ClientCommand::Balances { res_sender } => {
             let mut wallet = BTreeMap::<AssetId, u64>::new();
-            let mut server = BTreeMap::<AssetId, u64>::new();
 
             for utxo in data.wallet_utxos.iter() {
                 *wallet.entry(utxo.asset).or_default() += utxo.value;
-                if data.server_utxos.contains(&utxo.outpoint()) {
-                    *server.entry(utxo.asset).or_default() += utxo.value;
-                }
             }
 
             let convert_balances = |balances: BTreeMap<AssetId, u64>| {
@@ -700,8 +943,7 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             };
 
             res_sender.send(Balances {
-                wallet: convert_balances(wallet),
-                server: convert_balances(server),
+                balance: convert_balances(wallet),
             });
         }
 
@@ -714,20 +956,74 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             res_sender.send(res);
         }
 
-        ClientCommand::OwnOrders { res_sender } => {
-            let res = if data.ws.connected() {
-                let mut orders = Vec::new();
-                for market in data.dealer_orders.values() {
-                    for order in market.server_orders.values() {
-                        let order = convert_own_order(order, data.network).expect("must not fail");
-                        orders.push(order);
-                    }
-                }
-                Ok(OwnOrders { orders })
-            } else {
-                Err(Error::TryAgain)
-            };
+        ClientCommand::GetOwnOrder {
+            order_id,
+            res_sender,
+        } => {
+            let res = get_own_order(data, order_id);
             res_sender.send(res);
+        }
+
+        ClientCommand::GetOwnOrders { res_sender } => {
+            let res = get_own_orders(data);
+            res_sender.send(res);
+        }
+
+        ClientCommand::GetHistory {
+            skip,
+            count,
+            res_sender,
+        } => {
+            let network = data.network;
+            data.ws.callback_request(
+                sideswap_api::Request::Market(Request::LoadHistory(mkt::LoadHistoryRequest {
+                    skip,
+                    count,
+                })),
+                Box::new(move |res| {
+                    let res = match res {
+                        Ok(sideswap_api::Response::Market(mkt::Response::LoadHistory(resp))) => {
+                            Ok(HistoryOrders {
+                                orders: resp
+                                    .list
+                                    .iter()
+                                    .map(|order| {
+                                        convert_history_order(order, network)
+                                            .expect("must not fail")
+                                    })
+                                    .collect(),
+                                total: resp.total,
+                            })
+                        }
+                        Ok(_) => Err(Error::UnexpectedResponse("LoadHistory")),
+                        Err(err) => Err(Error::WsRequestError(err)),
+                    };
+                    res_sender.send(res);
+                }),
+            );
+        }
+
+        ClientCommand::ResolveGaid {
+            asset_id,
+            gaid,
+            res_sender,
+        } => {
+            data.ws.callback_request(
+                sideswap_api::Request::Market(Request::ResolveGaid(mkt::ResolveGaidRequest {
+                    asset_id,
+                    gaid,
+                })),
+                Box::new(move |res| {
+                    let res = match res {
+                        Ok(sideswap_api::Response::Market(mkt::Response::ResolveGaid(resp))) => {
+                            Ok(resp.address.clone())
+                        }
+                        Ok(_) => Err(Error::UnexpectedResponse("ResolveGaid")),
+                        Err(err) => Err(Error::WsRequestError(err)),
+                    };
+                    res_sender.send(res);
+                }),
+            );
         }
 
         ClientCommand::SubmitOrder {
@@ -735,50 +1031,79 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             base_amount,
             price,
             trade_dir,
+            client_order_id,
             res_sender,
+            receive_address,
+            change_address,
         } => {
             data.mode.check_ws_edit_allowed();
 
             let base_precision = exchange_pair.base.asset_precision();
             let base_amount = asset_int_amount_(base_amount, base_precision);
+            let network = data.network;
 
             let asset_pair = AssetPair {
                 base: dealer_ticker_to_asset_id(data.network, exchange_pair.base),
                 quote: dealer_ticker_to_asset_id(data.network, exchange_pair.quote),
             };
 
-            // FIXME: Return error or wait until addresses are available received
-            // FIXME: Resolve GAID for AMP buy requests
-            if data.addresses.len() >= 2 {
-                let network = data.network;
-                data.ws.callback_request(
-                    sideswap_api::Request::Market(Request::AddOrder(market::AddOrderRequest {
-                        asset_pair,
-                        base_amount,
-                        price,
-                        trade_dir,
-                        ttl: None,
-                        receive_address: data.addresses.pop_front().expect("must not fail"),
-                        change_address: data.addresses.pop_front().expect("must not fail"),
-                        private: false,
-                    })),
-                    Box::new(move |res| {
-                        let res = match res {
-                            Ok(sideswap_api::Response::Market(market::Response::AddOrder(
-                                resp,
-                            ))) => {
-                                Ok(convert_own_order(&resp.order, network).expect("must not fail"))
-                            }
-                            Ok(_) => Err(Error::UnexpectedResponse("AddOrder")),
-                            Err(err) => Err(Error::WsRequestError(err)),
-                        };
-                        res_sender.send(res);
-                    }),
-                );
-            } else {
-                // FIXME: Do something better here
-                res_sender.send(Err(Error::TryAgain));
-            }
+            data.ws.callback_request(
+                sideswap_api::Request::Market(Request::AddOrder(mkt::AddOrderRequest {
+                    asset_pair,
+                    base_amount,
+                    price,
+                    trade_dir,
+                    ttl: None,
+                    receive_address,
+                    change_address,
+                    private: false,
+                    client_order_id,
+                })),
+                Box::new(move |res| {
+                    let res = match res {
+                        Ok(sideswap_api::Response::Market(mkt::Response::AddOrder(resp))) => {
+                            let order =
+                                convert_own_order(&resp.order, network).expect("must not fail");
+                            Ok(order)
+                        }
+                        Ok(_) => Err(Error::UnexpectedResponse("AddOrder")),
+                        Err(err) => Err(Error::WsRequestError(err)),
+                    };
+                    res_sender.send(res);
+                }),
+            );
+        }
+
+        ClientCommand::EditOrder {
+            order_id,
+            base_amount,
+            price,
+            res_sender,
+        } => {
+            data.mode.check_ws_edit_allowed();
+
+            let network = data.network;
+            data.ws.callback_request(
+                sideswap_api::Request::Market(Request::EditOrder(mkt::EditOrderRequest {
+                    order_id,
+                    base_amount,
+                    price,
+                    receive_address: None,
+                    change_address: None,
+                })),
+                Box::new(move |res| {
+                    let res = match res {
+                        Ok(sideswap_api::Response::Market(mkt::Response::EditOrder(resp))) => {
+                            let order =
+                                convert_own_order(&resp.order, network).expect("must not fail");
+                            Ok(order)
+                        }
+                        Ok(_) => Err(Error::UnexpectedResponse("EditOrder")),
+                        Err(err) => Err(Error::WsRequestError(err)),
+                    };
+                    res_sender.send(res);
+                }),
+            );
         }
 
         ClientCommand::CancelOrder {
@@ -788,14 +1113,14 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             data.mode.check_ws_edit_allowed();
 
             data.ws.callback_request(
-                sideswap_api::Request::Market(Request::CancelOrder(market::CancelOrderRequest {
+                sideswap_api::Request::Market(Request::CancelOrder(mkt::CancelOrderRequest {
                     order_id,
                 })),
                 Box::new(move |res| {
                     let res = match res {
-                        Ok(sideswap_api::Response::Market(market::Response::CancelOrder(
-                            _resp,
-                        ))) => Ok(()),
+                        Ok(sideswap_api::Response::Market(mkt::Response::CancelOrder(_resp))) => {
+                            Ok(())
+                        }
                         Ok(_) => Err(Error::UnexpectedResponse("CancelOrder")),
                         Err(err) => Err(Error::WsRequestError(err)),
                     };
@@ -845,12 +1170,12 @@ fn process_command(data: &mut Data, command: Command) {
                 }
             }
 
-            for market in data.dealer_orders.values_mut() {
+            for market in data.orders.values_mut() {
                 market.dealer_orders.clear();
             }
 
             for order in orders {
-                data.dealer_orders
+                data.orders
                     .entry((order.asset_pair, order.trade_dir))
                     .or_default()
                     .dealer_orders
@@ -868,10 +1193,6 @@ fn process_command(data: &mut Data, command: Command) {
                 .collect();
         }
 
-        Command::NewAddress { address } => {
-            data.addresses.push_back(address);
-        }
-
         Command::Gaid { gaid } => {
             data.gaid = Some(gaid);
         }
@@ -881,7 +1202,7 @@ fn process_command(data: &mut Data, command: Command) {
             let pset = b64::encode(&pset);
 
             data.ws.callback_request(
-                sideswap_api::Request::Market(Request::MakerSign(MakerSignRequest {
+                sideswap_api::Request::Market(Request::MakerSign(mkt::MakerSignRequest {
                     quote_id,
                     pset,
                 })),
@@ -913,7 +1234,11 @@ async fn try_sync_utxos(data: &mut Data) -> Result<(), anyhow::Error> {
         for utxo in removed.iter() {
             log::debug!("try to remove utxo: {utxo}");
         }
-        make_market_request!(data.ws, RemoveUtxos, RemoveUtxosRequest { utxos: removed })?;
+        make_market_request!(
+            data.ws,
+            RemoveUtxos,
+            mkt::RemoveUtxosRequest { utxos: removed }
+        )?;
         log::debug!("removed {count} utxos");
     }
 
@@ -927,28 +1252,27 @@ async fn try_sync_utxos(data: &mut Data) -> Result<(), anyhow::Error> {
 
     if !added.is_empty() {
         let count = added.len();
-        make_market_request!(data.ws, AddUtxos, AddUtxosRequest { utxos: added })?;
+        make_market_request!(data.ws, AddUtxos, mkt::AddUtxosRequest { utxos: added })?;
         log::debug!("added {count} utxos");
     }
 
     Ok(())
 }
 
-async fn try_sync_market(
-    ws: &mut WsReqSender,
-    market: &mut OrderData,
-    addresses: &mut VecDeque<Address>,
-    gaid: &Option<String>,
-    amp_assets: &BTreeSet<AssetId>,
-) -> Result<(), anyhow::Error> {
+async fn try_sync_market(data: &mut Data, key: &OrderGroupKey) -> Result<(), anyhow::Error> {
+    let market = data
+        .orders
+        .get_mut(key)
+        .ok_or_else(|| anyhow::anyhow!("can't find group {key:?}"))?;
+
     // Drop removed orders
     while market.server_orders.len() > market.dealer_orders.len() {
         let order = market.server_orders.last_key_value().expect("must exist").1;
 
         make_market_request!(
-            ws,
+            data.ws,
             CancelOrder,
-            CancelOrderRequest {
+            mkt::CancelOrderRequest {
                 order_id: order.order_id
             }
         )?;
@@ -966,9 +1290,9 @@ async fn try_sync_market(
             || dealer_order.price != server_order.price
         {
             let resp = make_market_request!(
-                ws,
+                data.ws,
                 EditOrder,
-                EditOrderRequest {
+                mkt::EditOrderRequest {
                     order_id: server_order.order_id,
                     base_amount: Some(dealer_order.base_amount),
                     price: Some(dealer_order.price),
@@ -982,9 +1306,7 @@ async fn try_sync_market(
     }
 
     // Add new orders
-    while market.dealer_orders.len() > market.server_orders.len()
-        && addresses.len() >= ADDRESS_POOL_COUNT
-    {
+    while market.dealer_orders.len() > market.server_orders.len() {
         let dealer_order = &market.dealer_orders[market.server_orders.len()];
 
         // TODO: Reuse addresses?
@@ -994,13 +1316,16 @@ async fn try_sync_market(
             TradeDir::Buy => dealer_order.asset_pair.base,
         };
 
-        let receive_address = if amp_assets.contains(&recv_asset) {
-            let gaid = gaid.as_ref().ok_or_else(|| anyhow::anyhow!("no gaid"))?;
+        let receive_address = if data.amp_assets.contains(&recv_asset) {
+            let gaid = data
+                .gaid
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("no gaid"))?;
 
             let resp = make_market_request!(
-                ws,
+                data.ws,
                 ResolveGaid,
-                ResolveGaidRequest {
+                mkt::ResolveGaidRequest {
                     asset_id: recv_asset,
                     gaid: gaid.clone(),
                 }
@@ -1008,15 +1333,15 @@ async fn try_sync_market(
 
             resp.address
         } else {
-            addresses.pop_front().expect("must exist")
+            new_address(&data.event_sender).await?
         };
 
-        let change_address = addresses.pop_front().expect("must exist");
+        let change_address = new_address(&data.event_sender).await?;
 
         let resp = make_market_request!(
-            ws,
+            data.ws,
             AddOrder,
-            AddOrderRequest {
+            mkt::AddOrderRequest {
                 asset_pair: dealer_order.asset_pair,
                 base_amount: dealer_order.base_amount,
                 price: dealer_order.price,
@@ -1025,6 +1350,7 @@ async fn try_sync_market(
                 receive_address,
                 change_address,
                 private: false,
+                client_order_id: None,
             }
         )?;
 
@@ -1035,10 +1361,6 @@ async fn try_sync_market(
 }
 
 async fn process_timer(data: &mut Data) {
-    if data.addresses.len() < ADDRESS_POOL_COUNT {
-        data.event_sender.send(Event::GetNewAddress);
-    }
-
     if data.ws.connected() {
         let res = try_sync_utxos(data).await;
         if let Err(err) = res {
@@ -1048,15 +1370,9 @@ async fn process_timer(data: &mut Data) {
         match data.mode {
             Mode::PriceStream => {
                 // Sync orders
-                for market in data.dealer_orders.values_mut() {
-                    let res = try_sync_market(
-                        &mut data.ws,
-                        market,
-                        &mut data.addresses,
-                        &data.gaid,
-                        &data.amp_assets,
-                    )
-                    .await;
+                let keys = data.orders.keys().copied().collect::<Vec<_>>();
+                for key in keys.iter() {
+                    let res = try_sync_market(data, key).await;
                     if let Err(err) = res {
                         log::error!("market sync failed: {err}");
                     }
@@ -1086,13 +1402,19 @@ async fn run(
 
     let (client_sender, mut client_receiver) = unbounded_channel::<ClientCommand>();
 
+    let network = params.env.d().network;
+
+    let controller = Controller::new(network, client_sender.clone());
+
     if let Some(config) = params.web_server.clone() {
-        web_server::start(config, client_sender.clone());
+        web_server::start(config, controller.clone());
     }
 
     if let Some(config) = params.ws_server.clone() {
-        ws_server::start(config, client_sender);
+        ws_server::start(config, controller);
     }
+
+    // FIXME: Allow using web server with automatic price streaming
 
     let mode = if params.web_server.is_some() {
         Mode::WebServer
@@ -1103,18 +1425,17 @@ async fn run(
     let state = persistent_state::load(&params.work_dir);
 
     let mut data = Data {
-        network: params.env.d().network,
+        network,
         mode,
         work_dir: params.work_dir,
         state,
         ws,
         wallet_utxos: Vec::new(),
         server_utxos: BTreeSet::new(),
-        addresses: VecDeque::new(),
         gaid: None,
         assets: Vec::new(),
         amp_assets: BTreeSet::new(),
-        dealer_orders: BTreeMap::new(),
+        orders: BTreeMap::new(),
         event_sender: event_sender.into(),
         markets: BTreeMap::new(),
         clients: BTreeMap::new(),

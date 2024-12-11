@@ -965,9 +965,6 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.marketDataUpdate:
         ref.read(marketDataProvider).marketDataUpdate(from.marketDataUpdate);
         break;
-      case From_Msg.utxoUpdate:
-        // Not used.
-        break;
 
       case From_Msg.jadePorts:
         final jadePorts = from.jadePorts.ports.toList();
@@ -1064,6 +1061,10 @@ class WalletChangeNotifier with ChangeNotifier {
       case From_Msg.loadUtxos:
         _handleLoadUtxos(from.loadUtxos);
         break;
+      case From_Msg.marketAdded:
+      // TODO: Handle this case.
+      case From_Msg.marketRemoved:
+      // TODO: Handle this case.
     }
   }
 
