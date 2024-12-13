@@ -469,8 +469,10 @@ message To {
   }
 
   message LoadHistory {
-    required uint32 skip = 1;
-    required uint32 count = 2;
+    optional uint64 start_time = 1;
+    optional uint64 end_time = 2;
+    optional uint32 skip = 3;
+    optional uint32 count = 4;
   }
 
   oneof msg {
@@ -909,12 +911,11 @@ message From {
   message Quote {
     message Success {
       required uint64 quote_id = 1;
-      required AssetPair asset_pair = 2;
-      required uint64 base_amount = 3;
-      required uint64 quote_amount = 4;
-      required uint64 server_fee = 5;
-      required uint64 fixed_fee = 6;
-      required uint64 ttl_milliseconds = 7;
+      required uint64 base_amount = 2;
+      required uint64 quote_amount = 3;
+      required uint64 server_fee = 4;
+      required uint64 fixed_fee = 5;
+      required uint64 ttl_milliseconds = 6;
     }
 
     message LowBalance {
@@ -927,11 +928,16 @@ message From {
       required string domain_agent = 1;
     }
 
+    required AssetPair asset_pair = 1;
+    required AssetType asset_type = 2;
+    required uint64 amount = 3;
+    required TradeDir trade_dir = 4;
+
     oneof result {
-      Success success = 1;
-      LowBalance low_balance = 2;
-      string error = 3;
-      UnregisteredGaid unregistered_gaid = 4;
+      Success success = 10;
+      LowBalance low_balance = 11;
+      string error = 12;
+      UnregisteredGaid unregistered_gaid = 13;
     }
   }
 

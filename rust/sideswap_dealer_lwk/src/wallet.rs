@@ -15,6 +15,7 @@ use lwk_wollet::{
 use sideswap_common::{
     channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
     network::Network,
+    retry_delay::RetryDelay,
 };
 use sideswap_dealer::utxo_data::{self, UtxoData, UtxoWithKey};
 use tokio::sync::mpsc::UnboundedSender;
@@ -98,8 +99,23 @@ fn run(
     };
     let electrum_url =
         lwk_wollet::ElectrumUrl::new(electrum_url, true, true).expect("must not fail");
-    let mut electrum_client =
-        lwk_wollet::ElectrumClient::new(&electrum_url).expect("must not fail");
+
+    let mut retry = RetryDelay::default();
+    let mut error_count = 0;
+    let mut electrum_client = loop {
+        let res = lwk_wollet::ElectrumClient::new(&electrum_url);
+        match res {
+            Ok(client) => break client,
+            Err(err) => {
+                log::error!("electrum connection failed: {err}");
+                error_count += 1;
+                if error_count > 20 {
+                    panic!("connection failed");
+                }
+                std::thread::sleep(retry.next_delay());
+            }
+        }
+    };
 
     let mut utxo_data = UtxoData::new(utxo_data::Params {
         confifential_only: true,

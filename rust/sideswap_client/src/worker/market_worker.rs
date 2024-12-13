@@ -17,7 +17,7 @@ use sideswap_api::{
     self as api,
     mkt::{
         self, AssetPair, AssetType, HistStatus, HistoryOrder, MarketInfo, Notification, OrdId,
-        OwnOrder, PublicOrder, QuoteId, Request, Response, TradeDir,
+        OwnOrder, PublicOrder, QuoteId, QuoteSubId, Request, Response, TradeDir,
     },
     AssetBlindingFactor, MarketType, ValueBlindingFactor,
 };
@@ -36,7 +36,10 @@ use sideswap_jade::{
     byte_array::{ByteArray, ByteArray32},
     jade_mng,
 };
-use sideswap_types::{duration_ms::DurationMs, hex_encoded::HexEncoded, normal_float::NormalFloat};
+use sideswap_types::{
+    duration_ms::DurationMs, hex_encoded::HexEncoded, normal_float::NormalFloat,
+    timestamp_ms::TimestampMs,
+};
 
 use crate::{
     ffi::proto,
@@ -51,8 +54,10 @@ use crate::{
 use super::{convert_chart_point, AccountId, CallError, ACCOUNT_ID_AMP, ACCOUNT_ID_REG};
 
 struct StartedQuote {
+    quote_sub_id: QuoteSubId,
     asset_pair: AssetPair,
     asset_type: AssetType,
+    amount: u64,
     trade_dir: TradeDir,
     fee_asset: AssetType,
 
@@ -509,7 +514,7 @@ pub fn sync_utxos(worker: &mut super::Data) {
         );
     }
 }
-pub fn process_resp(worker: &mut super::Data, resp: Response) {
+pub fn process_resp(_worker: &mut super::Data, resp: Response) {
     match resp {
         Response::ListMarkets(_) => {}
         Response::Register(_) => {}
@@ -524,9 +529,7 @@ pub fn process_resp(worker: &mut super::Data, resp: Response) {
         Response::CancelOrder(_) => {}
         Response::ResolveGaid(_) => {}
         Response::StartQuotes(_) => {}
-        Response::StopQuotes(_) => {
-            worker.market.received_quotes.clear();
-        }
+        Response::StopQuotes(_) => {}
         Response::MakerSign(_) => {}
         Response::GetQuote(_) => {}
         Response::TakerSign(_) => {}
@@ -603,6 +606,10 @@ fn process_ws_quote(worker: &mut super::Data, notif: mkt::QuoteNotif) {
         None => return,
     };
 
+    if started_quote.quote_sub_id != notif.quote_sub_id {
+        return;
+    }
+
     let res = match notif.status {
         mkt::QuoteStatus::Success {
             quote_id,
@@ -623,7 +630,6 @@ fn process_ws_quote(worker: &mut super::Data, notif: mkt::QuoteNotif) {
             );
             proto::from::quote::Result::Success(proto::from::quote::Success {
                 quote_id: quote_id.value(),
-                asset_pair: started_quote.asset_pair.into(),
                 base_amount,
                 quote_amount,
                 server_fee,
@@ -644,6 +650,10 @@ fn process_ws_quote(worker: &mut super::Data, notif: mkt::QuoteNotif) {
     };
 
     worker.ui.send(proto::from::Msg::Quote(proto::from::Quote {
+        asset_pair: started_quote.asset_pair.into(),
+        asset_type: proto::AssetType::from(started_quote.asset_type).into(),
+        amount: started_quote.amount,
+        trade_dir: proto::TradeDir::from(started_quote.trade_dir).into(),
         result: Some(res),
     }));
 }
@@ -1772,7 +1782,7 @@ pub fn order_cancel(worker: &mut super::Data, msg: proto::to::OrderCancel) {
 
 fn try_start_quotes(
     worker: &mut super::Data,
-    msg: proto::to::StartQuotes,
+    msg: &proto::to::StartQuotes,
     swap_info: SwapInfo,
     receive_address: gdk_json::AddressInfo,
 ) -> Result<StartedQuote, anyhow::Error> {
@@ -1810,8 +1820,10 @@ fn try_start_quotes(
     )?;
 
     Ok(StartedQuote {
+        quote_sub_id: resp.quote_sub_id,
         asset_pair,
         asset_type,
+        amount: msg.amount,
         trade_dir,
         fee_asset: resp.fee_asset,
         utxos,
@@ -1887,13 +1899,17 @@ pub fn start_quotes(worker: &mut super::Data, msg: proto::to::StartQuotes) {
         Ok(recv_address) => recv_address,
         Err(resp) => {
             worker.ui.send(proto::from::Msg::Quote(proto::from::Quote {
+                asset_pair: msg.asset_pair,
+                asset_type: msg.asset_type,
+                amount: msg.amount,
+                trade_dir: msg.trade_dir,
                 result: Some(resp),
             }));
             return;
         }
     };
 
-    let res = try_start_quotes(worker, msg, swap_info, receive_address);
+    let res = try_start_quotes(worker, &msg, swap_info, receive_address);
 
     match res {
         Ok(started_quote) => {
@@ -1901,6 +1917,10 @@ pub fn start_quotes(worker: &mut super::Data, msg: proto::to::StartQuotes) {
         }
         Err(err) => {
             worker.ui.send(proto::from::Msg::Quote(proto::from::Quote {
+                asset_pair: msg.asset_pair,
+                asset_type: msg.asset_type,
+                amount: msg.amount,
+                trade_dir: msg.trade_dir,
                 result: Some(proto::from::quote::Result::Error(err.to_string())),
             }));
         }
@@ -2081,8 +2101,10 @@ pub fn charts_unsubscribe(worker: &mut super::Data, _msg: proto::Empty) {
 pub fn load_history(worker: &mut super::Data, msg: proto::to::LoadHistory) {
     worker.make_async_request(
         api::Request::Market(Request::LoadHistory(mkt::LoadHistoryRequest {
-            skip: msg.skip as usize,
-            count: msg.count as usize,
+            start_time: msg.start_time.map(|value| TimestampMs::from_millis(value)),
+            end_time: msg.end_time.map(|value| TimestampMs::from_millis(value)),
+            skip: msg.skip.map(|value| value as usize),
+            count: msg.count.map(|value| value as usize),
         })),
         move |worker, res| {
             match res {

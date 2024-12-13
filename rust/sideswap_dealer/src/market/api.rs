@@ -68,13 +68,6 @@ pub struct Market {
     pub quote: String,
 }
 
-/// Wallet balances
-#[derive(Debug, Object)]
-pub struct Balances {
-    /// Total wallet balances (unconfirmed and confirmed transactions).
-    pub balance: BTreeMap<String, f64>,
-}
-
 #[derive(Debug, Object)]
 pub struct Asset {
     /// Asset ID
@@ -110,9 +103,11 @@ pub struct PublicOrder {
     pub amount: f64,
     /// Price
     pub price: f64,
+    /// Online/offline order
+    pub online: bool,
 }
 
-#[derive(Debug, Object)]
+#[derive(Debug, Serialize, Object)]
 pub struct OwnOrder {
     /// Order ID (based on timestamp, globally unique for all orders)
     pub order_id: u64,
@@ -178,9 +173,9 @@ pub struct OwnOrders {
 
 #[derive(Debug, Object)]
 pub struct HistoryOrders {
-    /// List of history orders
+    /// List of history orders (newest to oldest)
     pub orders: Vec<HistoryOrder>,
-    /// Total
+    /// Total number of orders after filtering (in the start_time..end_time range)
     pub total: usize,
 }
 
@@ -198,8 +193,17 @@ pub struct SubscribeResp {
 
 // Notifications
 
+/// Wallet balances
+#[derive(Debug, Serialize, Object)]
+pub struct BalancesNotif {
+    /// Total wallet balances (unconfirmed and confirmed transactions).
+    pub balance: BTreeMap<String, f64>,
+}
+
 #[derive(Serialize)]
-pub struct ServerConnectedNotif {}
+pub struct ServerConnectedNotif {
+    pub own_orders: Vec<OwnOrder>,
+}
 
 #[derive(Serialize)]
 pub struct OrderCreatedNotif {
@@ -218,6 +222,16 @@ pub struct MarketPriceNotif {
     pub exchange_pair: ExchangePair,
     pub ind_price: Option<f64>,
     pub last_price: Option<f64>,
+}
+
+#[derive(Serialize)]
+pub struct OwnOrderCreatedNotif {
+    pub order: OwnOrder,
+}
+
+#[derive(Serialize)]
+pub struct OwnOrderRemovedNotif {
+    pub order_id: OrdId,
 }
 
 #[derive(Serialize)]
@@ -240,9 +254,12 @@ pub enum Resp {
 
 #[derive(Serialize)]
 pub enum Notif {
+    Balances(BalancesNotif),
     ServerConnected(ServerConnectedNotif),
     OrderCreated(OrderCreatedNotif),
     OrderRemoved(OrderRemovedNotif),
+    OwnOrderCreated(OwnOrderCreatedNotif),
+    OwnOrderRemoved(OwnOrderRemovedNotif),
     MarketPrice(MarketPriceNotif),
     HistoryUpdated(HistoryUpdatedNotif),
 }

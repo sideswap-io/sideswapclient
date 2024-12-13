@@ -30,6 +30,7 @@ use sideswap_common::{
 use sideswap_types::{
     asset_precision::AssetPrecision,
     normal_float::{NormalFloat, NotNormalError},
+    timestamp_ms::TimestampMs,
     utxo_ext::UtxoExt,
 };
 use tokio::sync::{
@@ -122,6 +123,7 @@ struct Metadata {
 
 type Balance = BTreeMap<DealerTicker, f64>;
 
+#[derive(Clone, Default, PartialEq)]
 struct Balances {
     balance: Balance,
 }
@@ -132,6 +134,7 @@ struct PublicOrder {
     trade_dir: TradeDir,
     amount: f64,
     price: NormalFloat,
+    online: bool,
 }
 
 #[derive(Clone)]
@@ -139,10 +142,12 @@ struct OrderBook {
     orders: Vec<PublicOrder>,
 }
 
+#[derive(Clone)]
 struct OwnOrders {
     orders: Vec<OwnOrder>,
 }
 
+#[derive(Clone)]
 struct OwnOrder {
     exchange_pair: ExchangePair,
     order_id: OrdId,
@@ -260,13 +265,24 @@ impl From<sideswap_api::Asset> for api::Asset {
 
 #[derive(Clone)]
 enum ClientEvent {
-    ServerConnected,
+    Balances {
+        balances: Balances,
+    },
+    ServerConnected {
+        own_orders: OwnOrders,
+    },
     OrderAdded {
         exchange_pair: ExchangePair,
         order: PublicOrder,
     },
     OrderRemoved {
         exchange_pair: ExchangePair,
+        order_id: OrdId,
+    },
+    OwnOrderAdded {
+        order: OwnOrder,
+    },
+    OwnOrderRemoved {
         order_id: OrdId,
     },
     MarketPrice {
@@ -309,8 +325,10 @@ enum ClientCommand {
         res_sender: UncheckedOneshotSender<Result<OwnOrders, Error>>,
     },
     GetHistory {
-        skip: usize,
-        count: usize,
+        start_time: Option<TimestampMs>,
+        end_time: Option<TimestampMs>,
+        skip: Option<usize>,
+        count: Option<usize>,
         res_sender: UncheckedOneshotSender<Result<HistoryOrders, Error>>,
     },
 
@@ -404,6 +422,9 @@ struct Data {
     wallet_utxos: Vec<Utxo>, // Only confidential UTXOs here
     server_utxos: BTreeSet<OutPoint>,
 
+    // Kept in sync with wallet_utxos
+    balances: Balances,
+
     gaid: Option<String>,
     assets: Vec<Asset>,
     amp_assets: BTreeSet<AssetId>,
@@ -443,6 +464,7 @@ fn convert_public_order(order: &mkt::PublicOrder, base_precision: AssetPrecision
         trade_dir: order.trade_dir,
         amount: asset_float_amount_(order.amount, base_precision),
         price: order.price,
+        online: order.online,
     }
 }
 
@@ -581,7 +603,9 @@ async fn process_ws_connected(data: &mut Data) {
     data.server_utxos = utxos.into_iter().collect();
 
     for event_sender in data.clients.values() {
-        event_sender.send(ClientEvent::ServerConnected);
+        event_sender.send(ClientEvent::ServerConnected {
+            own_orders: get_own_orders(data).expect("must not fail"),
+        });
     }
 }
 
@@ -639,16 +663,30 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
         }
 
         Notification::OwnOrderCreated(notif) => {
+            let order = convert_own_order(&notif.order, data.network).expect("must not fail");
+
             data.orders
                 .entry((notif.order.asset_pair, notif.order.trade_dir))
                 .or_default()
                 .server_orders
                 .insert(notif.order.order_id, notif.order);
+
+            for event_sender in data.clients.values() {
+                event_sender.send(ClientEvent::OwnOrderAdded {
+                    order: order.clone(),
+                });
+            }
         }
 
         Notification::OwnOrderRemoved(notif) => {
             for market in data.orders.values_mut() {
                 market.server_orders.remove(&notif.order_id);
+            }
+
+            for event_sender in data.clients.values() {
+                event_sender.send(ClientEvent::OwnOrderRemoved {
+                    order_id: notif.order_id,
+                });
             }
         }
 
@@ -925,26 +963,7 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
         }
 
         ClientCommand::Balances { res_sender } => {
-            let mut wallet = BTreeMap::<AssetId, u64>::new();
-
-            for utxo in data.wallet_utxos.iter() {
-                *wallet.entry(utxo.asset).or_default() += utxo.value;
-            }
-
-            let convert_balances = |balances: BTreeMap<AssetId, u64>| {
-                balances
-                    .into_iter()
-                    .filter_map(|(asset_id, balance)| -> Option<(DealerTicker, f64)> {
-                        let ticker = dealer_ticker_from_asset_id(data.network, &asset_id)?;
-                        let value = asset_float_amount_(balance, ticker.asset_precision());
-                        Some((ticker, value))
-                    })
-                    .collect()
-            };
-
-            res_sender.send(Balances {
-                balance: convert_balances(wallet),
-            });
+            res_sender.send(data.balances.clone());
         }
 
         ClientCommand::OrderBook {
@@ -970,6 +989,8 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
         }
 
         ClientCommand::GetHistory {
+            start_time,
+            end_time,
             skip,
             count,
             res_sender,
@@ -977,6 +998,8 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             let network = data.network;
             data.ws.callback_request(
                 sideswap_api::Request::Market(Request::LoadHistory(mkt::LoadHistoryRequest {
+                    start_time,
+                    end_time,
                     skip,
                     count,
                 })),
@@ -1134,8 +1157,15 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             event_sender,
         } => {
             if data.ws.connected() {
-                event_sender.send(ClientEvent::ServerConnected);
+                event_sender.send(ClientEvent::ServerConnected {
+                    own_orders: get_own_orders(data).expect("must not fail"),
+                });
             }
+
+            event_sender.send(ClientEvent::Balances {
+                balances: data.balances.clone(),
+            });
+
             let prev_data = data.clients.insert(client_id, event_sender);
             assert!(prev_data.is_none());
         }
@@ -1191,6 +1221,32 @@ fn process_command(data: &mut Data, command: Command) {
                         && utxo.value_bf != ValueBlindingFactor::zero()
                 })
                 .collect();
+
+            let mut balance = BTreeMap::<AssetId, u64>::new();
+            for utxo in data.wallet_utxos.iter() {
+                *balance.entry(utxo.asset).or_default() += utxo.value;
+            }
+
+            let balance = balance
+                .into_iter()
+                .filter_map(|(asset_id, balance)| -> Option<(DealerTicker, f64)> {
+                    let ticker = dealer_ticker_from_asset_id(data.network, &asset_id)?;
+                    let value = asset_float_amount_(balance, ticker.asset_precision());
+                    Some((ticker, value))
+                })
+                .collect::<BTreeMap<_, _>>();
+
+            let new_balances = Balances { balance };
+
+            if new_balances != data.balances {
+                for event_sender in data.clients.values() {
+                    event_sender.send(ClientEvent::Balances {
+                        balances: new_balances.clone(),
+                    });
+                }
+            }
+
+            data.balances = new_balances;
         }
 
         Command::Gaid { gaid } => {
@@ -1432,6 +1488,7 @@ async fn run(
         ws,
         wallet_utxos: Vec::new(),
         server_utxos: BTreeSet::new(),
+        balances: Balances::default(),
         gaid: None,
         assets: Vec::new(),
         amp_assets: BTreeSet::new(),

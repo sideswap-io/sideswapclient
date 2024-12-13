@@ -1932,10 +1932,14 @@ const From_OrderSubmit_UnregisteredGaid$json = {
 const From_Quote$json = {
   '1': 'Quote',
   '2': [
-    {'1': 'success', '3': 1, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.Success', '9': 0, '10': 'success'},
-    {'1': 'low_balance', '3': 2, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.LowBalance', '9': 0, '10': 'lowBalance'},
-    {'1': 'error', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'error'},
-    {'1': 'unregistered_gaid', '3': 4, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.UnregisteredGaid', '9': 0, '10': 'unregisteredGaid'},
+    {'1': 'asset_pair', '3': 1, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
+    {'1': 'asset_type', '3': 2, '4': 2, '5': 14, '6': '.sideswap.proto.AssetType', '10': 'assetType'},
+    {'1': 'amount', '3': 3, '4': 2, '5': 4, '10': 'amount'},
+    {'1': 'trade_dir', '3': 4, '4': 2, '5': 14, '6': '.sideswap.proto.TradeDir', '10': 'tradeDir'},
+    {'1': 'success', '3': 10, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.Success', '9': 0, '10': 'success'},
+    {'1': 'low_balance', '3': 11, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.LowBalance', '9': 0, '10': 'lowBalance'},
+    {'1': 'error', '3': 12, '4': 1, '5': 9, '9': 0, '10': 'error'},
+    {'1': 'unregistered_gaid', '3': 13, '4': 1, '5': 11, '6': '.sideswap.proto.From.Quote.UnregisteredGaid', '9': 0, '10': 'unregisteredGaid'},
   ],
   '3': [From_Quote_Success$json, From_Quote_LowBalance$json, From_Quote_UnregisteredGaid$json],
   '8': [
@@ -1948,12 +1952,11 @@ const From_Quote_Success$json = {
   '1': 'Success',
   '2': [
     {'1': 'quote_id', '3': 1, '4': 2, '5': 4, '10': 'quoteId'},
-    {'1': 'asset_pair', '3': 2, '4': 2, '5': 11, '6': '.sideswap.proto.AssetPair', '10': 'assetPair'},
-    {'1': 'base_amount', '3': 3, '4': 2, '5': 4, '10': 'baseAmount'},
-    {'1': 'quote_amount', '3': 4, '4': 2, '5': 4, '10': 'quoteAmount'},
-    {'1': 'server_fee', '3': 5, '4': 2, '5': 4, '10': 'serverFee'},
-    {'1': 'fixed_fee', '3': 6, '4': 2, '5': 4, '10': 'fixedFee'},
-    {'1': 'ttl_milliseconds', '3': 7, '4': 2, '5': 4, '10': 'ttlMilliseconds'},
+    {'1': 'base_amount', '3': 2, '4': 2, '5': 4, '10': 'baseAmount'},
+    {'1': 'quote_amount', '3': 3, '4': 2, '5': 4, '10': 'quoteAmount'},
+    {'1': 'server_fee', '3': 4, '4': 2, '5': 4, '10': 'serverFee'},
+    {'1': 'fixed_fee', '3': 5, '4': 2, '5': 4, '10': 'fixedFee'},
+    {'1': 'ttl_milliseconds', '3': 6, '4': 2, '5': 4, '10': 'ttlMilliseconds'},
   ],
 };
 
@@ -2255,30 +2258,33 @@ final $typed_data.Uint8List fromDescriptor = $convert.base64Decode(
     'T3duT3JkZXJIAFINc3VibWl0U3VjY2VlZBIWCgVlcnJvchgCIAEoCUgAUgVlcnJvchJgChF1bn'
     'JlZ2lzdGVyZWRfZ2FpZBgDIAEoCzIxLnNpZGVzd2FwLnByb3RvLkZyb20uT3JkZXJTdWJtaXQu'
     'VW5yZWdpc3RlcmVkR2FpZEgAUhB1bnJlZ2lzdGVyZWRHYWlkGjUKEFVucmVnaXN0ZXJlZEdhaW'
-    'QSIQoMZG9tYWluX2FnZW50GAEgAigJUgtkb21haW5BZ2VudEIICgZyZXN1bHQatQUKBVF1b3Rl'
-    'Ej4KB3N1Y2Nlc3MYASABKAsyIi5zaWRlc3dhcC5wcm90by5Gcm9tLlF1b3RlLlN1Y2Nlc3NIAF'
-    'IHc3VjY2VzcxJICgtsb3dfYmFsYW5jZRgCIAEoCzIlLnNpZGVzd2FwLnByb3RvLkZyb20uUXVv'
-    'dGUuTG93QmFsYW5jZUgAUgpsb3dCYWxhbmNlEhYKBWVycm9yGAMgASgJSABSBWVycm9yEloKEX'
-    'VucmVnaXN0ZXJlZF9nYWlkGAQgASgLMisuc2lkZXN3YXAucHJvdG8uRnJvbS5RdW90ZS5VbnJl'
-    'Z2lzdGVyZWRHYWlkSABSEHVucmVnaXN0ZXJlZEdhaWQaiQIKB1N1Y2Nlc3MSGQoIcXVvdGVfaW'
-    'QYASACKARSB3F1b3RlSWQSOAoKYXNzZXRfcGFpchgCIAIoCzIZLnNpZGVzd2FwLnByb3RvLkFz'
-    'c2V0UGFpclIJYXNzZXRQYWlyEh8KC2Jhc2VfYW1vdW50GAMgAigEUgpiYXNlQW1vdW50EiEKDH'
-    'F1b3RlX2Ftb3VudBgEIAIoBFILcXVvdGVBbW91bnQSHQoKc2VydmVyX2ZlZRgFIAIoBFIJc2Vy'
-    'dmVyRmVlEhsKCWZpeGVkX2ZlZRgGIAIoBFIIZml4ZWRGZWUSKQoQdHRsX21pbGxpc2Vjb25kcx'
-    'gHIAIoBFIPdHRsTWlsbGlzZWNvbmRzGmEKCkxvd0JhbGFuY2USGQoIYXNzZXRfaWQYASACKAlS'
-    'B2Fzc2V0SWQSGgoIcmVxdWlyZWQYAiACKARSCHJlcXVpcmVkEhwKCWF2YWlsYWJsZRgDIAIoBF'
-    'IJYXZhaWxhYmxlGjUKEFVucmVnaXN0ZXJlZEdhaWQSIQoMZG9tYWluX2FnZW50GAEgAigJUgtk'
-    'b21haW5BZ2VudEIICgZyZXN1bHQalAEKC0FjY2VwdFF1b3RlEkQKB3N1Y2Nlc3MYASABKAsyKC'
-    '5zaWRlc3dhcC5wcm90by5Gcm9tLkFjY2VwdFF1b3RlLlN1Y2Nlc3NIAFIHc3VjY2VzcxIWCgVl'
-    'cnJvchgCIAEoCUgAUgVlcnJvchodCgdTdWNjZXNzEhIKBHR4aWQYASACKAlSBHR4aWRCCAoGcm'
-    'VzdWx0GnsKD0NoYXJ0c1N1YnNjcmliZRI4Cgphc3NldF9wYWlyGAEgAigLMhkuc2lkZXN3YXAu'
-    'cHJvdG8uQXNzZXRQYWlyUglhc3NldFBhaXISLgoEZGF0YRgCIAMoCzIaLnNpZGVzd2FwLnByb3'
-    'RvLkNoYXJ0UG9pbnRSBGRhdGEafAoMQ2hhcnRzVXBkYXRlEjgKCmFzc2V0X3BhaXIYASACKAsy'
-    'GS5zaWRlc3dhcC5wcm90by5Bc3NldFBhaXJSCWFzc2V0UGFpchIyCgZ1cGRhdGUYAiACKAsyGi'
-    '5zaWRlc3dhcC5wcm90by5DaGFydFBvaW50UgZ1cGRhdGUaVQoLTG9hZEhpc3RvcnkSMAoEbGlz'
-    'dBgBIAMoCzIcLnNpZGVzd2FwLnByb3RvLkhpc3RvcnlPcmRlclIEbGlzdBIUCgV0b3RhbBgCIA'
-    'IoDVIFdG90YWwaWwoOSGlzdG9yeVVwZGF0ZWQSMgoFb3JkZXIYASACKAsyHC5zaWRlc3dhcC5w'
-    'cm90by5IaXN0b3J5T3JkZXJSBW9yZGVyEhUKBmlzX25ldxgCIAIoCFIFaXNOZXdCBQoDbXNn');
+    'QSIQoMZG9tYWluX2FnZW50GAEgAigJUgtkb21haW5BZ2VudEIICgZyZXN1bHQavgYKBVF1b3Rl'
+    'EjgKCmFzc2V0X3BhaXIYASACKAsyGS5zaWRlc3dhcC5wcm90by5Bc3NldFBhaXJSCWFzc2V0UG'
+    'FpchI4Cgphc3NldF90eXBlGAIgAigOMhkuc2lkZXN3YXAucHJvdG8uQXNzZXRUeXBlUglhc3Nl'
+    'dFR5cGUSFgoGYW1vdW50GAMgAigEUgZhbW91bnQSNQoJdHJhZGVfZGlyGAQgAigOMhguc2lkZX'
+    'N3YXAucHJvdG8uVHJhZGVEaXJSCHRyYWRlRGlyEj4KB3N1Y2Nlc3MYCiABKAsyIi5zaWRlc3dh'
+    'cC5wcm90by5Gcm9tLlF1b3RlLlN1Y2Nlc3NIAFIHc3VjY2VzcxJICgtsb3dfYmFsYW5jZRgLIA'
+    'EoCzIlLnNpZGVzd2FwLnByb3RvLkZyb20uUXVvdGUuTG93QmFsYW5jZUgAUgpsb3dCYWxhbmNl'
+    'EhYKBWVycm9yGAwgASgJSABSBWVycm9yEloKEXVucmVnaXN0ZXJlZF9nYWlkGA0gASgLMisuc2'
+    'lkZXN3YXAucHJvdG8uRnJvbS5RdW90ZS5VbnJlZ2lzdGVyZWRHYWlkSABSEHVucmVnaXN0ZXJl'
+    'ZEdhaWQazwEKB1N1Y2Nlc3MSGQoIcXVvdGVfaWQYASACKARSB3F1b3RlSWQSHwoLYmFzZV9hbW'
+    '91bnQYAiACKARSCmJhc2VBbW91bnQSIQoMcXVvdGVfYW1vdW50GAMgAigEUgtxdW90ZUFtb3Vu'
+    'dBIdCgpzZXJ2ZXJfZmVlGAQgAigEUglzZXJ2ZXJGZWUSGwoJZml4ZWRfZmVlGAUgAigEUghmaX'
+    'hlZEZlZRIpChB0dGxfbWlsbGlzZWNvbmRzGAYgAigEUg90dGxNaWxsaXNlY29uZHMaYQoKTG93'
+    'QmFsYW5jZRIZCghhc3NldF9pZBgBIAIoCVIHYXNzZXRJZBIaCghyZXF1aXJlZBgCIAIoBFIIcm'
+    'VxdWlyZWQSHAoJYXZhaWxhYmxlGAMgAigEUglhdmFpbGFibGUaNQoQVW5yZWdpc3RlcmVkR2Fp'
+    'ZBIhCgxkb21haW5fYWdlbnQYASACKAlSC2RvbWFpbkFnZW50QggKBnJlc3VsdBqUAQoLQWNjZX'
+    'B0UXVvdGUSRAoHc3VjY2VzcxgBIAEoCzIoLnNpZGVzd2FwLnByb3RvLkZyb20uQWNjZXB0UXVv'
+    'dGUuU3VjY2Vzc0gAUgdzdWNjZXNzEhYKBWVycm9yGAIgASgJSABSBWVycm9yGh0KB1N1Y2Nlc3'
+    'MSEgoEdHhpZBgBIAIoCVIEdHhpZEIICgZyZXN1bHQaewoPQ2hhcnRzU3Vic2NyaWJlEjgKCmFz'
+    'c2V0X3BhaXIYASACKAsyGS5zaWRlc3dhcC5wcm90by5Bc3NldFBhaXJSCWFzc2V0UGFpchIuCg'
+    'RkYXRhGAIgAygLMhouc2lkZXN3YXAucHJvdG8uQ2hhcnRQb2ludFIEZGF0YRp8CgxDaGFydHNV'
+    'cGRhdGUSOAoKYXNzZXRfcGFpchgBIAIoCzIZLnNpZGVzd2FwLnByb3RvLkFzc2V0UGFpclIJYX'
+    'NzZXRQYWlyEjIKBnVwZGF0ZRgCIAIoCzIaLnNpZGVzd2FwLnByb3RvLkNoYXJ0UG9pbnRSBnVw'
+    'ZGF0ZRpVCgtMb2FkSGlzdG9yeRIwCgRsaXN0GAEgAygLMhwuc2lkZXN3YXAucHJvdG8uSGlzdG'
+    '9yeU9yZGVyUgRsaXN0EhQKBXRvdGFsGAIgAigNUgV0b3RhbBpbCg5IaXN0b3J5VXBkYXRlZBIy'
+    'CgVvcmRlchgBIAIoCzIcLnNpZGVzd2FwLnByb3RvLkhpc3RvcnlPcmRlclIFb3JkZXISFQoGaX'
+    'NfbmV3GAIgAigIUgVpc05ld0IFCgNtc2c=');
 
 @$core.Deprecated('Use settingsDescriptor instead')
 const Settings$json = {

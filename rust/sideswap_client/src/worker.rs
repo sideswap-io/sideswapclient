@@ -208,6 +208,7 @@ pub enum Message {
     WalletEvent(AccountId, wallet::Event),
     WalletNotif(AccountId, gdk_json::Notification),
     BackgroundMessage(String, mpsc::Sender<()>),
+    Quit,
 }
 
 const XPUB_PATH_ROOT: [u32; 0] = [];
@@ -3419,6 +3420,10 @@ pub fn start_processing(
             Message::WalletEvent(account_id, event) => data.process_wallet_event(account_id, event),
             Message::WalletNotif(account_id, msg) => data.process_wallet_notif(account_id, msg),
             Message::BackgroundMessage(msg, sender) => data.process_background_message(msg, sender),
+            Message::Quit => {
+                warn!("quit message received, exit");
+                break;
+            }
         }
 
         let stopped = std::time::Instant::now();

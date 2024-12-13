@@ -49,9 +49,9 @@ impl From<super::Metadata> for api::Metadata {
     }
 }
 
-impl From<super::Balances> for api::Balances {
+impl From<super::Balances> for api::BalancesNotif {
     fn from(value: super::Balances) -> Self {
-        api::Balances {
+        api::BalancesNotif {
             balance: value
                 .balance
                 .into_iter()
@@ -68,6 +68,7 @@ impl From<super::PublicOrder> for api::PublicOrder {
             trade_dir: value.trade_dir.into(),
             amount: value.amount,
             price: value.price.value(),
+            online: value.online,
         }
     }
 }

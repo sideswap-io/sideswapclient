@@ -71,6 +71,19 @@ impl HistId {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq, Hash)]
+pub struct QuoteSubId(u64);
+
+impl QuoteSubId {
+    pub fn new(value: u64) -> QuoteSubId {
+        QuoteSubId(value)
+    }
+
+    pub fn value(self) -> u64 {
+        self.0
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub enum AssetType {
     Base,
@@ -342,6 +355,7 @@ pub struct StartQuotesRequest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StartQuotesResponse {
+    pub quote_sub_id: QuoteSubId,
     pub fee_asset: AssetType,
 }
 
@@ -402,8 +416,10 @@ pub struct ChartUnsubResponse {}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LoadHistoryRequest {
-    pub skip: usize,
-    pub count: usize,
+    pub start_time: Option<TimestampMs>,
+    pub end_time: Option<TimestampMs>,
+    pub skip: Option<usize>,
+    pub count: Option<usize>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -467,6 +483,7 @@ pub struct PublicOrderRemovedNotif {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct QuoteNotif {
+    pub quote_sub_id: QuoteSubId,
     pub asset_pair: AssetPair,
     pub asset_type: AssetType,
     pub amount: u64,

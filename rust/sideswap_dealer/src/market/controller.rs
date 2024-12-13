@@ -6,7 +6,7 @@ use sideswap_api::{
 use sideswap_common::{
     channel_helpers::UncheckedUnboundedSender, network::Network, types::asset_int_amount_,
 };
-use sideswap_types::normal_float::NormalFloat;
+use sideswap_types::{normal_float::NormalFloat, timestamp_ms::TimestampMs};
 use tokio::sync::{mpsc::UnboundedSender, oneshot};
 
 use crate::types::{dealer_ticker_to_asset_id, ExchangePair};
@@ -210,11 +210,15 @@ impl Controller {
 
     pub async fn get_history_orders(
         &self,
-        skip: usize,
-        count: usize,
+        start_time: Option<TimestampMs>,
+        end_time: Option<TimestampMs>,
+        skip: Option<usize>,
+        count: Option<usize>,
     ) -> Result<HistoryOrders, Error> {
         let (res_sender, res_receiver) = oneshot::channel();
         self.make_request(ClientCommand::GetHistory {
+            start_time,
+            end_time,
             skip,
             count,
             res_sender: res_sender.into(),

@@ -3,6 +3,7 @@ use std::{
     os::raw::c_char,
     str::FromStr,
     sync::{mpsc, Arc, Once},
+    time::Duration,
 };
 
 use prost::Message;
@@ -79,6 +80,9 @@ pub extern "C" fn sideswap_client_start(
     sideswap_client_start_impl(env, start_params, dart_port)
 }
 
+static PREV_MSG_SENDER: std::sync::Mutex<Option<mpsc::Sender<worker::Message>>> =
+    std::sync::Mutex::new(None);
+
 pub fn sideswap_client_start_impl(
     env: Env,
     start_params: worker::StartParams,
@@ -99,13 +103,31 @@ pub fn sideswap_client_start_impl(
 
     let (msg_sender, msg_receiver) = mpsc::channel::<worker::Message>();
 
+    {
+        let mut prev_sender = PREV_MSG_SENDER.lock().expect("must not fail");
+        if let Some(sender) = prev_sender.take() {
+            loop {
+                log::debug!("try to stop a previous worker thread...");
+                let res = sender.send(worker::Message::Quit);
+                if res.is_err() {
+                    log::debug!("the previous worker thread has been stopped");
+                    break;
+                }
+                log::debug!("wait for the worker thread to stop...");
+                std::thread::sleep(Duration::from_millis(100));
+            }
+        }
+        *prev_sender = Some(msg_sender.clone());
+    }
+
     let client = Box::new(Client {
         env,
         msg_sender: msg_sender.clone(),
     });
 
     let port = allo_isolate::Isolate::new(dart_port);
-    let from_callback = Arc::new(move |msg| {
+    log::debug!("dart_port: {dart_port}");
+    let from_callback = Arc::new(move |msg| -> bool {
         let msg_ptr = convert_from_msg(msg);
         port.post(msg_ptr)
     });

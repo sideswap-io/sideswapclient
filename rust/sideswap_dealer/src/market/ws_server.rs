@@ -124,10 +124,16 @@ async fn process_ws_msg(data: &mut Data, msg: Message) {
 
 async fn process_client_event(data: &mut Data, event: ClientEvent) {
     match event {
-        ClientEvent::ServerConnected => {
+        ClientEvent::Balances { balances } => {
+            send_notif(data, api::Notif::Balances(balances.into())).await;
+        }
+
+        ClientEvent::ServerConnected { own_orders } => {
             send_notif(
                 data,
-                api::Notif::ServerConnected(api::ServerConnectedNotif {}),
+                api::Notif::ServerConnected(api::ServerConnectedNotif {
+                    own_orders: own_orders.orders.into_iter().map(Into::into).collect(),
+                }),
             )
             .await;
         }
@@ -156,6 +162,24 @@ async fn process_client_event(data: &mut Data, event: ClientEvent) {
                     exchange_pair,
                     order_id,
                 }),
+            )
+            .await;
+        }
+
+        ClientEvent::OwnOrderAdded { order } => {
+            send_notif(
+                data,
+                api::Notif::OwnOrderCreated(api::OwnOrderCreatedNotif {
+                    order: order.into(),
+                }),
+            )
+            .await;
+        }
+
+        ClientEvent::OwnOrderRemoved { order_id } => {
+            send_notif(
+                data,
+                api::Notif::OwnOrderRemoved(api::OwnOrderRemovedNotif { order_id }),
             )
             .await;
         }

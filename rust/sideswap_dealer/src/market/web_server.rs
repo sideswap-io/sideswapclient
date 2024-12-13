@@ -4,7 +4,7 @@ use poem::{listener::TcpListener, Route, Server};
 use poem_openapi::{param::Query, payload::Json, ApiResponse, OpenApi, OpenApiService};
 use serde::Deserialize;
 use sideswap_api::mkt::OrdId;
-use sideswap_types::normal_float::NormalFloat;
+use sideswap_types::{normal_float::NormalFloat, timestamp_ms::TimestampMs};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -149,19 +149,34 @@ impl Api {
 
     /// Load wallet balances
     #[oai(path = "/balances", method = "get")]
-    async fn balances(&self) -> Result<Json<api::Balances>, ErrorResponse> {
+    async fn balances(&self) -> Result<Json<api::BalancesNotif>, ErrorResponse> {
         let resp = self.controller.balances().await?;
         Ok(Json(resp.into()))
     }
 
-    /// Load order history
+    /// Load order history.
+    /// History is returned in reverse order (newest to oldest).
     #[oai(path = "/load_history", method = "get")]
     async fn load_history(
         &self,
-        skip: Query<usize>,
-        count: Query<usize>,
+        /// If set, only includes orders with id >= start_time.
+        start_time: Query<Option<u64>>,
+        /// If set, only includes orders with id < end_time.
+        end_time: Query<Option<u64>>,
+        /// If set, skips the specified number of orders from the beginning.
+        skip: Query<Option<usize>>,
+        /// If set, limits the number of returned orders in the response.
+        count: Query<Option<usize>>,
     ) -> Result<Json<api::HistoryOrders>, ErrorResponse> {
-        let resp = self.controller.get_history_orders(skip.0, count.0).await?;
+        let resp = self
+            .controller
+            .get_history_orders(
+                start_time.0.map(TimestampMs::from_millis),
+                end_time.0.map(TimestampMs::from_millis),
+                skip.0,
+                count.0,
+            )
+            .await?;
         Ok(Json(resp.into()))
     }
 }

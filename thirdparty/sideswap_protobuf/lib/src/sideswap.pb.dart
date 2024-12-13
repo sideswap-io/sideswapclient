@@ -10876,7 +10876,6 @@ class From_OrderSubmit extends $pb.GeneratedMessage {
 class From_Quote_Success extends $pb.GeneratedMessage {
   factory From_Quote_Success({
     $fixnum.Int64? quoteId,
-    AssetPair? assetPair,
     $fixnum.Int64? baseAmount,
     $fixnum.Int64? quoteAmount,
     $fixnum.Int64? serverFee,
@@ -10886,9 +10885,6 @@ class From_Quote_Success extends $pb.GeneratedMessage {
     final $result = create();
     if (quoteId != null) {
       $result.quoteId = quoteId;
-    }
-    if (assetPair != null) {
-      $result.assetPair = assetPair;
     }
     if (baseAmount != null) {
       $result.baseAmount = baseAmount;
@@ -10913,12 +10909,11 @@ class From_Quote_Success extends $pb.GeneratedMessage {
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.Quote.Success', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
     ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'quoteId', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..aQM<AssetPair>(2, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'baseAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'quoteAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'serverFee', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'fixedFee', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'ttlMilliseconds', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'baseAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'quoteAmount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'serverFee', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(5, _omitFieldNames ? '' : 'fixedFee', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(6, _omitFieldNames ? '' : 'ttlMilliseconds', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
   ;
 
   @$core.Deprecated(
@@ -10952,60 +10947,49 @@ class From_Quote_Success extends $pb.GeneratedMessage {
   void clearQuoteId() => clearField(1);
 
   @$pb.TagNumber(2)
-  AssetPair get assetPair => $_getN(1);
+  $fixnum.Int64 get baseAmount => $_getI64(1);
   @$pb.TagNumber(2)
-  set assetPair(AssetPair v) { setField(2, v); }
+  set baseAmount($fixnum.Int64 v) { $_setInt64(1, v); }
   @$pb.TagNumber(2)
-  $core.bool hasAssetPair() => $_has(1);
+  $core.bool hasBaseAmount() => $_has(1);
   @$pb.TagNumber(2)
-  void clearAssetPair() => clearField(2);
-  @$pb.TagNumber(2)
-  AssetPair ensureAssetPair() => $_ensure(1);
+  void clearBaseAmount() => clearField(2);
 
   @$pb.TagNumber(3)
-  $fixnum.Int64 get baseAmount => $_getI64(2);
+  $fixnum.Int64 get quoteAmount => $_getI64(2);
   @$pb.TagNumber(3)
-  set baseAmount($fixnum.Int64 v) { $_setInt64(2, v); }
+  set quoteAmount($fixnum.Int64 v) { $_setInt64(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasBaseAmount() => $_has(2);
+  $core.bool hasQuoteAmount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearBaseAmount() => clearField(3);
+  void clearQuoteAmount() => clearField(3);
 
   @$pb.TagNumber(4)
-  $fixnum.Int64 get quoteAmount => $_getI64(3);
+  $fixnum.Int64 get serverFee => $_getI64(3);
   @$pb.TagNumber(4)
-  set quoteAmount($fixnum.Int64 v) { $_setInt64(3, v); }
+  set serverFee($fixnum.Int64 v) { $_setInt64(3, v); }
   @$pb.TagNumber(4)
-  $core.bool hasQuoteAmount() => $_has(3);
+  $core.bool hasServerFee() => $_has(3);
   @$pb.TagNumber(4)
-  void clearQuoteAmount() => clearField(4);
+  void clearServerFee() => clearField(4);
 
   @$pb.TagNumber(5)
-  $fixnum.Int64 get serverFee => $_getI64(4);
+  $fixnum.Int64 get fixedFee => $_getI64(4);
   @$pb.TagNumber(5)
-  set serverFee($fixnum.Int64 v) { $_setInt64(4, v); }
+  set fixedFee($fixnum.Int64 v) { $_setInt64(4, v); }
   @$pb.TagNumber(5)
-  $core.bool hasServerFee() => $_has(4);
+  $core.bool hasFixedFee() => $_has(4);
   @$pb.TagNumber(5)
-  void clearServerFee() => clearField(5);
+  void clearFixedFee() => clearField(5);
 
   @$pb.TagNumber(6)
-  $fixnum.Int64 get fixedFee => $_getI64(5);
+  $fixnum.Int64 get ttlMilliseconds => $_getI64(5);
   @$pb.TagNumber(6)
-  set fixedFee($fixnum.Int64 v) { $_setInt64(5, v); }
+  set ttlMilliseconds($fixnum.Int64 v) { $_setInt64(5, v); }
   @$pb.TagNumber(6)
-  $core.bool hasFixedFee() => $_has(5);
+  $core.bool hasTtlMilliseconds() => $_has(5);
   @$pb.TagNumber(6)
-  void clearFixedFee() => clearField(6);
-
-  @$pb.TagNumber(7)
-  $fixnum.Int64 get ttlMilliseconds => $_getI64(6);
-  @$pb.TagNumber(7)
-  set ttlMilliseconds($fixnum.Int64 v) { $_setInt64(6, v); }
-  @$pb.TagNumber(7)
-  $core.bool hasTtlMilliseconds() => $_has(6);
-  @$pb.TagNumber(7)
-  void clearTtlMilliseconds() => clearField(7);
+  void clearTtlMilliseconds() => clearField(6);
 }
 
 class From_Quote_LowBalance extends $pb.GeneratedMessage {
@@ -11144,12 +11128,28 @@ enum From_Quote_Result {
 
 class From_Quote extends $pb.GeneratedMessage {
   factory From_Quote({
+    AssetPair? assetPair,
+    AssetType? assetType,
+    $fixnum.Int64? amount,
+    TradeDir? tradeDir,
     From_Quote_Success? success,
     From_Quote_LowBalance? lowBalance,
     $core.String? error,
     From_Quote_UnregisteredGaid? unregisteredGaid,
   }) {
     final $result = create();
+    if (assetPair != null) {
+      $result.assetPair = assetPair;
+    }
+    if (assetType != null) {
+      $result.assetType = assetType;
+    }
+    if (amount != null) {
+      $result.amount = amount;
+    }
+    if (tradeDir != null) {
+      $result.tradeDir = tradeDir;
+    }
     if (success != null) {
       $result.success = success;
     }
@@ -11169,18 +11169,22 @@ class From_Quote extends $pb.GeneratedMessage {
   factory From_Quote.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
 
   static const $core.Map<$core.int, From_Quote_Result> _From_Quote_ResultByTag = {
-    1 : From_Quote_Result.success,
-    2 : From_Quote_Result.lowBalance,
-    3 : From_Quote_Result.error,
-    4 : From_Quote_Result.unregisteredGaid,
+    10 : From_Quote_Result.success,
+    11 : From_Quote_Result.lowBalance,
+    12 : From_Quote_Result.error,
+    13 : From_Quote_Result.unregisteredGaid,
     0 : From_Quote_Result.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.Quote', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4])
-    ..aOM<From_Quote_Success>(1, _omitFieldNames ? '' : 'success', subBuilder: From_Quote_Success.create)
-    ..aOM<From_Quote_LowBalance>(2, _omitFieldNames ? '' : 'lowBalance', subBuilder: From_Quote_LowBalance.create)
-    ..aOS(3, _omitFieldNames ? '' : 'error')
-    ..aOM<From_Quote_UnregisteredGaid>(4, _omitFieldNames ? '' : 'unregisteredGaid', subBuilder: From_Quote_UnregisteredGaid.create)
+    ..oo(0, [10, 11, 12, 13])
+    ..aQM<AssetPair>(1, _omitFieldNames ? '' : 'assetPair', subBuilder: AssetPair.create)
+    ..e<AssetType>(2, _omitFieldNames ? '' : 'assetType', $pb.PbFieldType.QE, defaultOrMaker: AssetType.BASE, valueOf: AssetType.valueOf, enumValues: AssetType.values)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'amount', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..e<TradeDir>(4, _omitFieldNames ? '' : 'tradeDir', $pb.PbFieldType.QE, defaultOrMaker: TradeDir.SELL, valueOf: TradeDir.valueOf, enumValues: TradeDir.values)
+    ..aOM<From_Quote_Success>(10, _omitFieldNames ? '' : 'success', subBuilder: From_Quote_Success.create)
+    ..aOM<From_Quote_LowBalance>(11, _omitFieldNames ? '' : 'lowBalance', subBuilder: From_Quote_LowBalance.create)
+    ..aOS(12, _omitFieldNames ? '' : 'error')
+    ..aOM<From_Quote_UnregisteredGaid>(13, _omitFieldNames ? '' : 'unregisteredGaid', subBuilder: From_Quote_UnregisteredGaid.create)
   ;
 
   @$core.Deprecated(
@@ -11208,46 +11212,84 @@ class From_Quote extends $pb.GeneratedMessage {
   void clearResult() => clearField($_whichOneof(0));
 
   @$pb.TagNumber(1)
-  From_Quote_Success get success => $_getN(0);
+  AssetPair get assetPair => $_getN(0);
   @$pb.TagNumber(1)
-  set success(From_Quote_Success v) { setField(1, v); }
+  set assetPair(AssetPair v) { setField(1, v); }
   @$pb.TagNumber(1)
-  $core.bool hasSuccess() => $_has(0);
+  $core.bool hasAssetPair() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSuccess() => clearField(1);
+  void clearAssetPair() => clearField(1);
   @$pb.TagNumber(1)
-  From_Quote_Success ensureSuccess() => $_ensure(0);
+  AssetPair ensureAssetPair() => $_ensure(0);
 
   @$pb.TagNumber(2)
-  From_Quote_LowBalance get lowBalance => $_getN(1);
+  AssetType get assetType => $_getN(1);
   @$pb.TagNumber(2)
-  set lowBalance(From_Quote_LowBalance v) { setField(2, v); }
+  set assetType(AssetType v) { setField(2, v); }
   @$pb.TagNumber(2)
-  $core.bool hasLowBalance() => $_has(1);
+  $core.bool hasAssetType() => $_has(1);
   @$pb.TagNumber(2)
-  void clearLowBalance() => clearField(2);
-  @$pb.TagNumber(2)
-  From_Quote_LowBalance ensureLowBalance() => $_ensure(1);
+  void clearAssetType() => clearField(2);
 
   @$pb.TagNumber(3)
-  $core.String get error => $_getSZ(2);
+  $fixnum.Int64 get amount => $_getI64(2);
   @$pb.TagNumber(3)
-  set error($core.String v) { $_setString(2, v); }
+  set amount($fixnum.Int64 v) { $_setInt64(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasError() => $_has(2);
+  $core.bool hasAmount() => $_has(2);
   @$pb.TagNumber(3)
-  void clearError() => clearField(3);
+  void clearAmount() => clearField(3);
 
   @$pb.TagNumber(4)
-  From_Quote_UnregisteredGaid get unregisteredGaid => $_getN(3);
+  TradeDir get tradeDir => $_getN(3);
   @$pb.TagNumber(4)
-  set unregisteredGaid(From_Quote_UnregisteredGaid v) { setField(4, v); }
+  set tradeDir(TradeDir v) { setField(4, v); }
   @$pb.TagNumber(4)
-  $core.bool hasUnregisteredGaid() => $_has(3);
+  $core.bool hasTradeDir() => $_has(3);
   @$pb.TagNumber(4)
-  void clearUnregisteredGaid() => clearField(4);
-  @$pb.TagNumber(4)
-  From_Quote_UnregisteredGaid ensureUnregisteredGaid() => $_ensure(3);
+  void clearTradeDir() => clearField(4);
+
+  @$pb.TagNumber(10)
+  From_Quote_Success get success => $_getN(4);
+  @$pb.TagNumber(10)
+  set success(From_Quote_Success v) { setField(10, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasSuccess() => $_has(4);
+  @$pb.TagNumber(10)
+  void clearSuccess() => clearField(10);
+  @$pb.TagNumber(10)
+  From_Quote_Success ensureSuccess() => $_ensure(4);
+
+  @$pb.TagNumber(11)
+  From_Quote_LowBalance get lowBalance => $_getN(5);
+  @$pb.TagNumber(11)
+  set lowBalance(From_Quote_LowBalance v) { setField(11, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasLowBalance() => $_has(5);
+  @$pb.TagNumber(11)
+  void clearLowBalance() => clearField(11);
+  @$pb.TagNumber(11)
+  From_Quote_LowBalance ensureLowBalance() => $_ensure(5);
+
+  @$pb.TagNumber(12)
+  $core.String get error => $_getSZ(6);
+  @$pb.TagNumber(12)
+  set error($core.String v) { $_setString(6, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasError() => $_has(6);
+  @$pb.TagNumber(12)
+  void clearError() => clearField(12);
+
+  @$pb.TagNumber(13)
+  From_Quote_UnregisteredGaid get unregisteredGaid => $_getN(7);
+  @$pb.TagNumber(13)
+  set unregisteredGaid(From_Quote_UnregisteredGaid v) { setField(13, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasUnregisteredGaid() => $_has(7);
+  @$pb.TagNumber(13)
+  void clearUnregisteredGaid() => clearField(13);
+  @$pb.TagNumber(13)
+  From_Quote_UnregisteredGaid ensureUnregisteredGaid() => $_ensure(7);
 }
 
 class From_AcceptQuote_Success extends $pb.GeneratedMessage {
