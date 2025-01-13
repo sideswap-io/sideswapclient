@@ -2,9 +2,10 @@ use std::collections::BTreeMap;
 
 use poem_openapi::{Enum, Object};
 use serde::{Deserialize, Serialize};
-use sideswap_api::mkt::OrdId;
+use sideswap_api::mkt::{AssetType, OrdId, QuoteId, QuoteSubId};
+use sideswap_types::duration_ms::DurationMs;
 
-use crate::types::ExchangePair;
+use crate::types::{DealerTicker, ExchangePair};
 
 #[derive(Debug, Serialize, Enum)]
 pub enum ErrorCode {
@@ -53,7 +54,7 @@ pub enum HistOrderStatus {
 pub type ReqId = i64;
 
 /// Trade direction of the base asset
-#[derive(Debug, Serialize, Enum)]
+#[derive(Debug, Serialize, Deserialize, Enum)]
 pub enum TradeDir {
     Sell,
     Buy,
@@ -179,6 +180,36 @@ pub struct HistoryOrders {
     pub total: usize,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum QuoteStatus {
+    Success {
+        quote_id: QuoteId,
+        base_amount: f64,
+        quote_amount: f64,
+        server_fee: f64,
+        fixed_fee: f64,
+        deliver_asset: DealerTicker,
+        receive_asset: DealerTicker,
+        deliver_amount: f64,
+        receive_amount: f64,
+        ttl: DurationMs,
+    },
+    LowBalance {
+        base_amount: f64,
+        quote_amount: f64,
+        server_fee: f64,
+        fixed_fee: f64,
+        deliver_asset: DealerTicker,
+        receive_asset: DealerTicker,
+        deliver_amount: f64,
+        receive_amount: f64,
+        available: f64,
+    },
+    Error {
+        error_msg: String,
+    },
+}
+
 // Requests
 
 #[derive(Deserialize)]
@@ -189,6 +220,38 @@ pub struct SubscribeReq {
 #[derive(Serialize)]
 pub struct SubscribeResp {
     pub orders: Vec<PublicOrder>,
+}
+
+#[derive(Deserialize)]
+pub struct StartQuotesReq {
+    pub exchange_pair: ExchangePair,
+    pub asset_type: AssetType,
+    pub amount: f64,
+    pub trade_dir: TradeDir,
+    pub order_id: Option<OrdId>,
+    pub private_id: Option<Box<String>>,
+}
+
+#[derive(Serialize)]
+pub struct StartQuotesResp {
+    pub quote_sub_id: QuoteSubId,
+    pub fee_asset: AssetType,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StopQuotesReq {}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct StopQuotesResp {}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AcceptQuoteReq {
+    pub quote_id: QuoteId,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AcceptQuoteResp {
+    pub txid: elements::Txid,
 }
 
 // Notifications
@@ -240,16 +303,28 @@ pub struct HistoryUpdatedNotif {
     pub is_new: bool,
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+pub struct QuoteNotif {
+    pub quote_sub_id: QuoteSubId,
+    pub status: QuoteStatus,
+}
+
 // Top level WS messages
 
 #[derive(Deserialize)]
 pub enum Req {
     Subscribe(SubscribeReq),
+    StartQuotes(StartQuotesReq),
+    StopQuotes(StopQuotesReq),
+    AcceptQuote(AcceptQuoteReq),
 }
 
 #[derive(Serialize)]
 pub enum Resp {
     Subscribe(SubscribeResp),
+    StartQuotes(StartQuotesResp),
+    StopQuotes(StopQuotesResp),
+    AcceptQuote(AcceptQuoteResp),
 }
 
 #[derive(Serialize)]
@@ -262,6 +337,7 @@ pub enum Notif {
     OwnOrderRemoved(OwnOrderRemovedNotif),
     MarketPrice(MarketPriceNotif),
     HistoryUpdated(HistoryUpdatedNotif),
+    Quote(QuoteNotif),
 }
 
 #[derive(Deserialize)]

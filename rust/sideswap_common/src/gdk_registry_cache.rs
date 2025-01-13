@@ -5,6 +5,7 @@ use std::{
     time::Duration,
 };
 
+use anyhow::ensure;
 use arc_swap::ArcSwap;
 use base64::Engine;
 use elements::AssetId;
@@ -208,7 +209,7 @@ async fn load_url<R: Registry>(
     }
     let assets_response = request.send().await?;
     let status = assets_response.status();
-    debug!("call_assets {} returns {}", url, status);
+    log::debug!("call_assets {} returns {}", url, status);
     if status == 304 {
         // The server should not return 304 if last_modified was not set
         ensure!(last_modified.is_some());
@@ -318,7 +319,7 @@ async fn run<R: Registry + 'static>(
 
         match res {
             Ok(Some((items, last_modified_new))) => {
-                info!(
+                log::info!(
                     "gdk registry updated ({}), new count: {}",
                     R::file_name(),
                     items.len()
@@ -328,7 +329,7 @@ async fn run<R: Registry + 'static>(
                 tokio::time::sleep(Duration::from_secs(600)).await;
             }
             Ok(None) => {
-                info!("gdk registry was not updated ({})", R::file_name(),);
+                log::info!("gdk registry was not updated ({})", R::file_name(),);
                 tokio::time::sleep(Duration::from_secs(3600)).await;
             }
             Err(err) => {

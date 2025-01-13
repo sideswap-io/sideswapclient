@@ -1,6 +1,6 @@
 use elements::{Address, AssetId};
 use sideswap_api::{
-    mkt::{OrdId, TradeDir},
+    mkt::{AssetPair, AssetType, OrdId, QuoteId, TradeDir},
     Asset,
 };
 use sideswap_common::{
@@ -12,8 +12,8 @@ use tokio::sync::{mpsc::UnboundedSender, oneshot};
 use crate::types::{dealer_ticker_to_asset_id, ExchangePair};
 
 use super::{
-    Balances, ClientCommand, ClientEvent, ClientId, Error, HistoryOrders, Metadata, OrderBook,
-    OwnOrder, OwnOrders,
+    try_convert_asset_amount, Balances, ClientCommand, ClientEvent, ClientId, Error, HistoryOrders,
+    Metadata, OrderBook, OwnOrder, OwnOrders, StartQuotesResp,
 };
 
 #[derive(Clone)]
@@ -128,6 +128,19 @@ impl Controller {
         Ok(address)
     }
 
+    async fn resolve_recv_address(&self, recv_asset_id: AssetId) -> Result<Address, Error> {
+        let recv_asset = self.get_asset(&recv_asset_id).await?;
+        let recv_amp = recv_asset.market_type == Some(sideswap_api::MarketType::Amp);
+
+        let receive_address = if recv_amp {
+            let gaid = self.get_gaid().await?;
+            self.resolve_gaid(recv_asset_id, gaid).await?
+        } else {
+            self.new_address().await?
+        };
+        Ok(receive_address)
+    }
+
     pub async fn submit_order(
         &self,
         exchange_pair: ExchangePair,
@@ -141,16 +154,8 @@ impl Controller {
             TradeDir::Buy => exchange_pair.base,
         };
         let recv_asset_id = dealer_ticker_to_asset_id(self.network, recv_asset);
-        let recv_asset = self.get_asset(&recv_asset_id).await?;
-        let recv_amp = recv_asset.market_type == Some(sideswap_api::MarketType::Amp);
 
-        let receive_address = if recv_amp {
-            let gaid = self.get_gaid().await?;
-            self.resolve_gaid(recv_asset_id, gaid).await?
-        } else {
-            self.new_address().await?
-        };
-
+        let receive_address = self.resolve_recv_address(recv_asset_id).await?;
         let change_address = self.new_address().await?;
 
         let (res_sender, res_receiver) = oneshot::channel();
@@ -242,7 +247,7 @@ impl Controller {
         self.send_command(ClientCommand::ClientDisconnected { client_id });
     }
 
-    pub async fn client_subscribe(
+    pub async fn subscribe(
         &self,
         client_id: ClientId,
         exchange_pair: ExchangePair,
@@ -255,5 +260,68 @@ impl Controller {
         })?;
         let resp = recv_res(res_receiver).await?;
         Ok(resp)
+    }
+
+    pub async fn start_quotes(
+        &self,
+        client_id: ClientId,
+        exchange_pair: ExchangePair,
+        asset_type: AssetType,
+        amount: f64,
+        trade_dir: TradeDir,
+        order_id: Option<OrdId>,
+        private_id: Option<Box<String>>,
+    ) -> Result<StartQuotesResp, Error> {
+        let asset_pair = AssetPair {
+            base: dealer_ticker_to_asset_id(self.network, exchange_pair.base),
+            quote: dealer_ticker_to_asset_id(self.network, exchange_pair.quote),
+        };
+
+        let base_trade_dir = trade_dir.base_trade_dir(asset_type);
+        let recv_asset = TradeDir::recv_asset(base_trade_dir);
+        let receive_asset_id = asset_pair.asset(recv_asset);
+
+        let receive_address = self.resolve_recv_address(receive_asset_id).await?;
+        let change_address = self.new_address().await?;
+
+        let asset = exchange_pair.asset(asset_type);
+        let asset_precision = asset.asset_precision();
+        let amount = try_convert_asset_amount(amount, asset_precision)?;
+
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.make_request(ClientCommand::WsStartQuotes {
+            req: super::StartQuotesReq {
+                client_id,
+                asset_pair,
+                asset_type,
+                amount,
+                trade_dir,
+                order_id,
+                private_id,
+                receive_address,
+                change_address,
+            },
+            res_sender: res_sender.into(),
+        })?;
+
+        let resp = recv_res(res_receiver).await?;
+        Ok(resp)
+    }
+
+    pub fn stop_quotes(&self) {
+        let res = self.make_request(ClientCommand::WsStopQuotes {});
+        if let Err(err) = res {
+            log::error!("stopping quotes failed: {err}");
+        }
+    }
+
+    pub async fn accept_quote(&self, quote_id: QuoteId) -> Result<elements::Txid, Error> {
+        let (res_sender, res_receiver) = oneshot::channel();
+        self.make_request(ClientCommand::WsAcceptQuote {
+            req: super::AcceptQuoteReq { quote_id },
+            res_sender: res_sender.into(),
+        })?;
+        let super::AcceptQuoteResp { txid } = recv_res(res_receiver).await?;
+        Ok(txid)
     }
 }

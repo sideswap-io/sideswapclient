@@ -12,10 +12,7 @@ use crate::{
 use bitcoin::bip32;
 use sideswap_api::{Asset, AssetId};
 use sideswap_common::env::Env;
-use sideswap_jade::{
-    jade_mng::{self, JadeStatus},
-    models::JadeNetwork,
-};
+use sideswap_jade::{jade_mng, models::JadeNetwork};
 
 #[derive(Debug, Copy, Clone)]
 pub enum SignWith {
@@ -104,10 +101,6 @@ impl HwData {
         let xpub = self.jade.resolve_xpub(network, path)?;
         let xpub = bip32::Xpub::from_str(&xpub)?;
         Ok(xpub)
-    }
-
-    pub fn set_status(&self, status: JadeStatus) {
-        self.jade.set_status(status);
     }
 }
 

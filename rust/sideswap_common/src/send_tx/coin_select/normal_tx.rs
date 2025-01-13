@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use anyhow::ensure;
 use elements::AssetId;
 
 use crate::{coin_select, network_fee, verify};

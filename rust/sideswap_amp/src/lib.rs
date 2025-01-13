@@ -1218,12 +1218,7 @@ async fn process_ws_msg(data: &mut Data, msg: tungstenite::Message) -> Result<()
         tungstenite::Message::Binary(_) => {
             abort!(Error::ProtocolError("unexpected binary message received"))
         }
-        tungstenite::Message::Ping(msg) => {
-            data.connection
-                .send(tungstenite::Message::Pong(msg))
-                .await?;
-            Ok(())
-        }
+        tungstenite::Message::Ping(_) => Ok(()),
         tungstenite::Message::Pong(_) => Ok(()),
         tungstenite::Message::Close(close) => {
             log::debug!("close event received: {close:?}");
@@ -1253,9 +1248,7 @@ async fn get_wamp_msg(connection: &mut Connection) -> Result<Msg, Error> {
             tungstenite::Message::Binary(_) => {
                 abort!(Error::ProtocolError("unexpected binary message received"));
             }
-            tungstenite::Message::Ping(msg) => {
-                connection.send(tungstenite::Message::Pong(msg)).await?;
-            }
+            tungstenite::Message::Ping(_) => {}
             tungstenite::Message::Pong(_) => {}
             tungstenite::Message::Close(close) => {
                 log::debug!("close event received: {close:?}");

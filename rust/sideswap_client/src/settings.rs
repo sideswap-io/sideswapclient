@@ -61,6 +61,8 @@ pub struct Settings {
     pub master_pub_key: Option<bip32::Xpub>,
 
     pub reg_info_v3: Option<RegInfo>,
+
+    pub event_proofs: Option<serde_json::Value>,
 }
 
 const SETTINGS_NAME: &str = "settings.json";

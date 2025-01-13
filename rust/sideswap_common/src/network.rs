@@ -13,6 +13,9 @@ pub struct KnownAssetIds {
     pub mex: C,
     pub depix: C,
     pub sswp: C,
+    pub bmn2: C,
+    pub cmstr: C,
+    pub pprgb: C,
 }
 
 pub struct NetworkData {
@@ -55,6 +58,9 @@ pub const NETWORK_LIQUID: NetworkData = NetworkData {
         mex: C::new("26ac924263ba547b706251635550a8649545ee5c074fe5db8d7140557baaf32e"),
         depix: C::new("02f22f8d9c76ab41661a2729e4752e2c5d1a263012141b86ea98af5472df5189"),
         sswp: C::new("06d1085d6a3a1328fb8189d106c7a8afbef3d327e34504828c4cac2c74ac0802"),
+        bmn2: C::new("aa909f1b77451e409fe95fe1d3638ad017ab3325c6d4f00301af6d582d0f2034"),
+        cmstr: C::new("e8305bb5c1794b256a858a01e5d8af7a5817d257fbfbc2c9d49620f13ff401a9"),
+        pprgb: C::new("7f07d961c654f5a5aef82d97541016f32d43b7da91ab730bde883a7d6dd6c9c7"),
     },
 };
 
@@ -79,6 +85,9 @@ pub const NETWORK_LIQUID_TESTNET: NetworkData = NetworkData {
         mex: C::new("485ff8a902ad063bd8886ef8cfc0d22a068d14dcbe6ae06cf3f904dc581fbd2b"),
         depix: C::new("a5de979bc31dc731fa94b3661ae19c1e20cd067642c69798cad9011094a26f60"),
         sswp: C::new("1f9f9319beeded3aa3751190ec9b2d77df570c3b9e6e84a4aa321c11331e0118"),
+        bmn2: C::new("0000000000000000000000000000000000000000000000000000000000000000"),
+        cmstr: C::new("0000000000000000000000000000000000000000000000000000000000000000"),
+        pprgb: C::new("0000000000000000000000000000000000000000000000000000000000000000"),
     },
 };
 

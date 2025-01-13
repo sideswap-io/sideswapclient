@@ -35,6 +35,8 @@ impl std::error::Error for OutOfRangeError {}
 
 impl AssetPrecision {
     pub const ZERO: AssetPrecision = AssetPrecision(0);
+    pub const TWO: AssetPrecision = AssetPrecision(2);
+    pub const FOUR: AssetPrecision = AssetPrecision(4);
     pub const BITCOIN_PRECISION: AssetPrecision = AssetPrecision(8);
 
     pub const fn value(&self) -> u8 {

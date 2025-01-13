@@ -328,10 +328,8 @@ pub fn unlock_hw(env: Env, jade: &jade_mng::ManagedJade) -> Result<(), anyhow::E
         }
         sideswap_jade::models::State::Locked => {
             let network = get_jade_network(env);
-            jade.set_status(JadeStatus::AuthUser);
-            let res = jade.auth_user(network);
-            jade.set_status(JadeStatus::Idle);
-            let resp = res?;
+            let _status = jade.start_status(JadeStatus::AuthUser);
+            let resp = jade.auth_user(network)?;
             debug!("jade unlock result: {}", resp);
             ensure!(resp, "unlock failed");
         }
@@ -382,11 +380,7 @@ unsafe fn run_auth_handler<T: serde::de::DeserializeOwned>(
     call: *mut gdk::GA_auth_handler,
     params: HandlerParams,
 ) -> Result<T, anyhow::Error> {
-    let result = run_auth_handler_impl(hw_data, call, params);
-    if let Some(hw_data) = hw_data {
-        hw_data.set_status(JadeStatus::Idle);
-    }
-    result
+    run_auth_handler_impl(hw_data, call, params)
 }
 
 // Do it manually, because otherwise numbers will be converted as Map([(Text("$serde_json::private::Number"), Text("8"))]))
@@ -494,6 +488,8 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
 ) -> Result<T, anyhow::Error> {
     // Destroy auth handler if function returns early
     let _auth_handler_owner = AuthHandlerOwner { call };
+
+    let mut _jade_status = None;
 
     let mut json = loop {
         let mut status = std::ptr::null_mut();
@@ -603,7 +599,11 @@ unsafe fn run_auth_handler_impl<T: serde::de::DeserializeOwned>(
             }
 
             gdk_json::HwAction::SignTx => {
-                hw_data.set_status(JadeStatus::SignTx(params.tx_type));
+                _jade_status = Some(
+                    hw_data
+                        .jade
+                        .start_status(JadeStatus::SignTx(params.tx_type)),
+                );
 
                 let transaction = required_data.transaction.unwrap();
                 let tx = hex::decode(&transaction)?;

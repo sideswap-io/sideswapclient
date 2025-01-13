@@ -2,10 +2,13 @@ use crate::retry_delay::RetryDelay;
 
 use super::*;
 
+use anyhow::anyhow;
 use futures::prelude::*;
+use log::{debug, error, info, warn};
 use sideswap_api::*;
 use std::time::Instant;
 use tokio::sync::mpsc::{UnboundedReceiver, UnboundedSender};
+use tungstenite::Message;
 
 #[derive(Debug)]
 pub enum WrappedRequest {
@@ -145,17 +148,22 @@ async fn run(
 
         loop {
             tokio::select! {
-                server_msg = ws_stream.select_next_some() => {
-                    let server_msg = match server_msg {
-                        Ok(v) => v,
-                        Err(v) => {
-                            error!("ws connection to the server closed: {}", v);
+                msg = ws_stream.next() => {
+                    let msg = match msg {
+                        Some(Ok(msg)) => msg,
+                        Some(Err(err)) => {
+                            error!("ws connection to the server closed with an error: {err}");
                             break;
                         }
+                        None => {
+                            error!("ws connection to the server closed normally");
+                            break;
+                        },
                     };
+
                     last_recv_timestamp = Instant::now();
-                    match server_msg {
-                        tokio_tungstenite::tungstenite::Message::Text(text) => {
+                    match msg {
+                        Message::Text(text) => {
                             let server_msg = serde_json::from_str::<ResponseMessage>(&text);
                             match server_msg {
                                 Ok(v) => {
@@ -165,9 +173,6 @@ async fn run(
                                     error!("parsing response failed: {}: {}", e, &text);
                                 }
                             }
-                        }
-                        tokio_tungstenite::tungstenite::Message::Ping(data) => {
-                            let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::Pong(data)).await;
                         }
                         _ => {}
                     }
@@ -184,7 +189,7 @@ async fn run(
                     match client_result {
                         WrappedRequest::Request(req) => {
                             let text = serde_json::to_string(&req).unwrap();
-                            let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::text(&text)).await;
+                            let _ = ws_stream.send(Message::text(&text)).await;
                         }
                         WrappedRequest::Connect{..} => {
                             warn!("ignore unexpected ws connect request");
@@ -203,7 +208,7 @@ async fn run(
                         break;
                     }
                     if last_recv_duration > PING_PERIOD {
-                        let _ = ws_stream.send(tokio_tungstenite::tungstenite::Message::Ping(Vec::new())).await;
+                        let _ = ws_stream.send(Message::Ping(Vec::new())).await;
                     }
                 }
             }

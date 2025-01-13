@@ -16,6 +16,7 @@ struct Data {
     server_connected: bool,
     balances: BTreeMap<AccountId, Vec<proto::Balance>>,
     own_orders: BTreeMap<u64, proto::OwnOrder>,
+    own_orders_received: bool,
 }
 
 const LBTC: &str = "144c654344aa716d6f3abcc1ca90e5641e4e2a7f633bc09fe3baf64585819a49";
@@ -41,6 +42,7 @@ impl Data {
                     .iter()
                     .map(|order| (order.order_id.id, order.clone()))
                     .collect();
+                self.own_orders_received = true;
             }
             proto::from::Msg::OwnOrderCreated(msg) => {
                 self.own_orders.insert(msg.order_id.id, msg.clone());
@@ -65,7 +67,6 @@ impl Data {
             | proto::from::Msg::UpdatedPegs(_)
             | proto::from::Msg::NewAsset(_)
             | proto::from::Msg::AmpAssets(_)
-            | proto::from::Msg::TokenMarketOrder(_)
             | proto::from::Msg::ServerStatus(_)
             | proto::from::Msg::PriceUpdate(_)
             | proto::from::Msg::WalletLoaded(_)
@@ -82,30 +83,11 @@ impl Data {
             | proto::from::Msg::BlindedValues(_)
             | proto::from::Msg::LoadUtxos(_)
             | proto::from::Msg::LoadAddresses(_)
-            | proto::from::Msg::RegisterPhone(_)
-            | proto::from::Msg::VerifyPhone(_)
-            | proto::from::Msg::UploadAvatar(_)
-            | proto::from::Msg::UploadContacts(_)
-            | proto::from::Msg::ContactCreated(_)
-            | proto::from::Msg::ContactRemoved(_)
-            | proto::from::Msg::ContactTransaction(_)
-            | proto::from::Msg::AccountStatus(_)
             | proto::from::Msg::ShowMessage(_)
             | proto::from::Msg::InsufficientFunds(_)
-            | proto::from::Msg::SubmitReview(_)
-            | proto::from::Msg::SubmitResult(_)
-            | proto::from::Msg::EditOrder(_)
-            | proto::from::Msg::CancelOrder(_)
-            | proto::from::Msg::StartTimer(_)
-            | proto::from::Msg::OrderCreated(_)
-            | proto::from::Msg::OrderRemoved(_)
-            | proto::from::Msg::OrderComplete(_)
-            | proto::from::Msg::IndexPrice(_)
             | proto::from::Msg::AssetDetails(_)
             | proto::from::Msg::UpdatePriceStream(_)
             | proto::from::Msg::LocalMessage(_)
-            | proto::from::Msg::MarketDataSubscribe(_)
-            | proto::from::Msg::MarketDataUpdate(_)
             | proto::from::Msg::PortfolioPrices(_)
             | proto::from::Msg::ConversionRates(_)
             | proto::from::Msg::JadePorts(_)
@@ -121,6 +103,7 @@ impl Data {
             | proto::from::Msg::OrderSubmit(_)
             | proto::from::Msg::OrderEdit(_)
             | proto::from::Msg::OrderCancel(_)
+            | proto::from::Msg::StartOrder(_)
             | proto::from::Msg::Quote(_)
             | proto::from::Msg::AcceptQuote(_)
             | proto::from::Msg::ChartsSubscribe(_)
@@ -162,6 +145,7 @@ fn start_wallet(wallet: proto::to::login::Wallet, work_dir: &str) -> Data {
         server_connected: false,
         balances: BTreeMap::new(),
         own_orders: BTreeMap::new(),
+        own_orders_received: false,
     };
 
     data.send(proto::to::Msg::Login(proto::to::Login {
@@ -193,6 +177,16 @@ fn start_wallet(wallet: proto::to::login::Wallet, work_dir: &str) -> Data {
                 }
             }
         }
+    }
+
+    while !data.own_orders_received || !data.own_orders.is_empty() {
+        for id in data.own_orders.keys().cloned() {
+            data.send(proto::to::Msg::OrderCancel(proto::to::OrderCancel {
+                order_id: proto::OrderId { id },
+            }));
+        }
+
+        data.recv();
     }
 
     data
@@ -227,6 +221,7 @@ fn submit_order(
     price: f64,
     trade_dir: proto::TradeDir,
     two_step: bool,
+    private: bool,
 ) {
     data.send(proto::to::Msg::OrderSubmit(proto::to::OrderSubmit {
         asset_pair: proto::AssetPair {
@@ -236,10 +231,10 @@ fn submit_order(
         base_amount,
         price,
         trade_dir: trade_dir.into(),
-        ttl_seconds: Some(360),
+        ttl_seconds: Some(60),
         two_step,
         tx_chaining_allowed: Some(true),
-        private: false,
+        private,
     }));
 
     loop {
@@ -260,26 +255,16 @@ fn submit_order(
             }
         }
     }
+
+    loop {
+        let msg = data.recv();
+        if let proto::from::Msg::OwnOrderCreated(_msg) = msg {
+            break;
+        }
+    }
 }
 
-fn make_swap(
-    data: &mut Data,
-    base: &str,
-    quote: &str,
-    asset_type: proto::AssetType,
-    amount: u64,
-    trade_dir: proto::TradeDir,
-) {
-    data.send(proto::to::Msg::StartQuotes(proto::to::StartQuotes {
-        asset_pair: proto::AssetPair {
-            base: base.to_owned(),
-            quote: quote.to_owned(),
-        },
-        asset_type: asset_type.into(),
-        amount,
-        trade_dir: trade_dir.into(),
-    }));
-
+fn swap_first_quote(data: &mut Data) {
     let quote = loop {
         let msg = data.recv();
         if let proto::from::Msg::Quote(msg) = msg {
@@ -334,6 +319,47 @@ fn make_swap(
     }
 }
 
+fn make_order_swap(data: &mut Data, order_id: u64, private_id: Option<String>) {
+    data.send(proto::to::Msg::StartOrder(proto::to::StartOrder {
+        order_id,
+        private_id,
+    }));
+
+    loop {
+        let msg = data.recv();
+        if let proto::from::Msg::StartOrder(msg) = msg {
+            assert!(
+                msg.success && msg.error_msg.is_none(),
+                "starting private failed: {msg:?}"
+            );
+            break;
+        }
+    }
+
+    swap_first_quote(data);
+}
+
+fn make_swap(
+    data: &mut Data,
+    base: &str,
+    quote: &str,
+    asset_type: proto::AssetType,
+    amount: u64,
+    trade_dir: proto::TradeDir,
+) {
+    data.send(proto::to::Msg::StartQuotes(proto::to::StartQuotes {
+        asset_pair: proto::AssetPair {
+            base: base.to_owned(),
+            quote: quote.to_owned(),
+        },
+        asset_type: asset_type.into(),
+        amount,
+        trade_dir: trade_dir.into(),
+    }));
+
+    swap_first_quote(data);
+}
+
 fn payjoin(data: &mut Data, account_id: AccountId, asset_id: &str, amount: u64, address: &str) {
     data.send(proto::to::Msg::CreateTx(proto::CreateTx {
         addressees: vec![proto::AddressAmount {
@@ -382,6 +408,7 @@ fn payjoin(data: &mut Data, account_id: AccountId, asset_id: &str, amount: u64, 
     }
 }
 
+#[ignore]
 #[test]
 fn sell_lbtc_for_usdt_wallet1() {
     let mut data = start_wallet_1();
@@ -391,11 +418,12 @@ fn sell_lbtc_for_usdt_wallet1() {
         LBTC,
         USDT,
         proto::AssetType::Base,
-        10000,
+        50000,
         proto::TradeDir::Sell,
     );
 }
 
+#[ignore]
 #[test]
 fn buy_sswp_for_lbtc_wallet1() {
     let mut data = start_wallet_1();
@@ -410,6 +438,7 @@ fn buy_sswp_for_lbtc_wallet1() {
     );
 }
 
+#[ignore]
 #[test]
 fn swap_sswp_for_usdt_wallet1_wallet2() {
     let mut data1 = start_wallet_1();
@@ -421,6 +450,7 @@ fn swap_sswp_for_usdt_wallet1_wallet2() {
         100,
         0.85,
         proto::TradeDir::Sell,
+        false,
         false,
     );
 
@@ -436,6 +466,7 @@ fn swap_sswp_for_usdt_wallet1_wallet2() {
     );
 }
 
+#[ignore]
 #[test]
 fn buy_lbtc_for_usdt_jade() {
     let mut data = start_jade();
@@ -445,11 +476,12 @@ fn buy_lbtc_for_usdt_jade() {
         LBTC,
         USDT,
         proto::AssetType::Base,
-        10000,
+        50000,
         proto::TradeDir::Buy,
     );
 }
 
+#[ignore]
 #[test]
 fn sell_lbtc_for_usdt_jade() {
     let mut data = start_jade();
@@ -459,11 +491,12 @@ fn sell_lbtc_for_usdt_jade() {
         LBTC,
         USDT,
         proto::AssetType::Base,
-        10000,
+        50000,
         proto::TradeDir::Sell,
     );
 }
 
+#[ignore]
 #[test]
 fn sell_usdt_for_lbtc_jade() {
     let mut data = start_jade();
@@ -478,6 +511,7 @@ fn sell_usdt_for_lbtc_jade() {
     );
 }
 
+#[ignore]
 #[test]
 fn buy_sswp_for_lbtc_jade() {
     let mut data = start_jade();
@@ -492,6 +526,7 @@ fn buy_sswp_for_lbtc_jade() {
     );
 }
 
+#[ignore]
 #[test]
 fn sell_sswp_for_lbtc_jade() {
     let mut data = start_jade();
@@ -506,6 +541,7 @@ fn sell_sswp_for_lbtc_jade() {
     );
 }
 
+#[ignore]
 #[test]
 fn buy_lbtc_for_usdt_offline_maker_wallet1() {
     let mut data = start_wallet_1();
@@ -514,13 +550,15 @@ fn buy_lbtc_for_usdt_offline_maker_wallet1() {
         &mut data,
         LBTC,
         USDT,
-        10000,
+        50000,
         95000.0,
         proto::TradeDir::Buy,
         true,
+        false,
     );
 }
 
+#[ignore]
 #[test]
 fn buy_lbtc_for_usdt_offline_maker_jade() {
     let mut data = start_jade();
@@ -529,13 +567,15 @@ fn buy_lbtc_for_usdt_offline_maker_jade() {
         &mut data,
         LBTC,
         USDT,
-        10000,
+        50000,
         95000.0,
         proto::TradeDir::Buy,
         true,
+        false,
     );
 }
 
+#[ignore]
 #[test]
 fn sell_usdt_for_lbtc_taker_wallet2() {
     let mut data = start_wallet_2();
@@ -550,20 +590,41 @@ fn sell_usdt_for_lbtc_taker_wallet2() {
     );
 }
 
+#[ignore]
 #[test]
 fn sell_sswp_for_usdt_offline_wallet1() {
     let mut data = start_wallet_1();
 
-    submit_order(&mut data, SSWP, USDT, 12, 0.95, proto::TradeDir::Sell, true);
+    submit_order(
+        &mut data,
+        SSWP,
+        USDT,
+        12,
+        0.95,
+        proto::TradeDir::Sell,
+        true,
+        false,
+    );
 }
 
+#[ignore]
 #[test]
 fn sell_sswp_for_usdt_offline_jade() {
     let mut data = start_jade();
 
-    submit_order(&mut data, SSWP, USDT, 6, 0.95, proto::TradeDir::Sell, true);
+    submit_order(
+        &mut data,
+        SSWP,
+        USDT,
+        6,
+        0.95,
+        proto::TradeDir::Sell,
+        true,
+        false,
+    );
 }
 
+#[ignore]
 #[test]
 fn buy_lbtc_for_usdt_offline_jade() {
     let mut data1 = start_jade();
@@ -572,13 +633,15 @@ fn buy_lbtc_for_usdt_offline_jade() {
         &mut data1,
         LBTC,
         USDT,
-        10000,
+        50000,
         95000.0,
         proto::TradeDir::Buy,
         true,
+        false,
     );
 }
 
+#[ignore]
 #[test]
 fn send_payjoin_wallet1() {
     let mut data1 = start_wallet_1();
@@ -592,6 +655,7 @@ fn send_payjoin_wallet1() {
     );
 }
 
+#[ignore]
 #[test]
 fn send_payjoin_jade() {
     let mut data1 = start_jade();
@@ -603,4 +667,28 @@ fn send_payjoin_jade() {
         100000000,
         "vjU5WU5sQZVpuvY1GDHmjufQcBdRTS2yZKrCAQuBhBjxqVcKhHKN82YtBUiznTX9WQ5MSUUZaRBdG9Du",
     );
+}
+
+#[ignore]
+#[test]
+fn swap_sswp_for_usdt_wallet1_wallet2_private() {
+    let mut data1 = start_wallet_1();
+
+    submit_order(
+        &mut data1,
+        SSWP,
+        USDT,
+        100,
+        0.85,
+        proto::TradeDir::Sell,
+        false,
+        true,
+    );
+
+    assert_eq!(data1.own_orders.len(), 1);
+    let order = data1.own_orders.values().next().unwrap();
+
+    let mut data2 = start_wallet_2();
+
+    make_order_swap(&mut data2, order.order_id.id, order.private_id.clone());
 }

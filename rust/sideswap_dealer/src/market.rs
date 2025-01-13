@@ -12,8 +12,11 @@ use elements::{
     Address, AssetId, OutPoint, Txid,
 };
 use sideswap_api::{
-    mkt::{self, AssetPair, HistId, MarketInfo, Notification, OrdId, QuoteId, Request, TradeDir},
-    Asset, AssetsRequestParam, MarketType, ResponseMessage, Utxo,
+    mkt::{
+        self, AssetPair, AssetType, HistId, MarketInfo, Notification, OrdId, QuoteId, QuoteSubId,
+        Request, TradeDir,
+    },
+    Asset, AssetsRequestParam, MarketType, RequestId, ResponseMessage, Utxo,
 };
 use sideswap_common::{
     b64,
@@ -177,6 +180,31 @@ struct HistoryOrder {
     status: mkt::HistStatus,
 }
 
+struct StartQuotesReq {
+    client_id: ClientId,
+    asset_pair: AssetPair,
+    asset_type: AssetType,
+    amount: u64,
+    trade_dir: TradeDir,
+    order_id: Option<OrdId>,
+    private_id: Option<Box<String>>,
+    receive_address: Address,
+    change_address: Address,
+}
+
+struct StartQuotesResp {
+    quote_sub_id: QuoteSubId,
+    fee_asset: AssetType,
+}
+
+struct AcceptQuoteReq {
+    quote_id: QuoteId,
+}
+
+struct AcceptQuoteResp {
+    txid: elements::Txid,
+}
+
 #[derive(Debug, thiserror::Error)]
 enum Error {
     #[error("WS request error: {0}")]
@@ -199,6 +227,8 @@ enum Error {
     UnknownOrderId,
     #[error("Unknown asset id: {0}")]
     UnknownAssetId(AssetId),
+    #[error("Invalid asset amount: {0} (asset_precison: {1})")]
+    InvalidAssetAmount(f64, AssetPrecision),
 }
 
 impl Error {
@@ -217,7 +247,8 @@ impl Error {
             Error::UnknownTicker(_)
             | Error::InvalidFloat(_)
             | Error::UnknownOrderId
-            | Error::UnknownAssetId(_) => api::ErrorCode::InvalidRequest,
+            | Error::UnknownAssetId(_)
+            | Error::InvalidAssetAmount(_, _) => api::ErrorCode::InvalidRequest,
         }
     }
 
@@ -232,7 +263,8 @@ impl Error {
             | Error::UnknownTicker(_)
             | Error::InvalidFloat(_)
             | Error::UnknownOrderId
-            | Error::UnknownAssetId(_) => None,
+            | Error::UnknownAssetId(_)
+            | Error::InvalidAssetAmount(_, _) => None,
         }
     }
 }
@@ -293,6 +325,9 @@ enum ClientEvent {
     HistoryUpdated {
         order: HistoryOrder,
         is_new: bool,
+    },
+    Quote {
+        notif: api::QuoteNotif,
     },
 }
 
@@ -371,6 +406,15 @@ enum ClientCommand {
         exchange_pair: ExchangePair,
         res_sender: UncheckedOneshotSender<Result<OrderBook, Error>>,
     },
+    WsStartQuotes {
+        req: StartQuotesReq,
+        res_sender: UncheckedOneshotSender<Result<StartQuotesResp, Error>>,
+    },
+    WsStopQuotes {},
+    WsAcceptQuote {
+        req: AcceptQuoteReq,
+        res_sender: UncheckedOneshotSender<Result<AcceptQuoteResp, Error>>,
+    },
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -410,14 +454,25 @@ struct PublicSubscribe {
 
 type OrderGroupKey = (AssetPair, TradeDir);
 
+struct StartedQuote {
+    client_id: ClientId,
+    quote_sub_id: QuoteSubId,
+    fee_asset: AssetType,
+    base_trade_dir: TradeDir,
+}
+
+struct AcceptingQuote {
+    res_sender: UncheckedOneshotSender<Result<AcceptQuoteResp, Error>>,
+}
+
 struct Data {
     network: Network,
     mode: Mode,
-
     work_dir: String,
     state: persistent_state::Data,
 
     ws: WsReqSender,
+    async_requests: BTreeMap<RequestId, WsCallback>,
 
     wallet_utxos: Vec<Utxo>, // Only confidential UTXOs here
     server_utxos: BTreeSet<OutPoint>,
@@ -438,6 +493,10 @@ struct Data {
     clients: BTreeMap<ClientId, ClientSender>,
 
     subscribed: BTreeMap<ExchangePair, PublicSubscribe>,
+
+    started_quote: Option<StartedQuote>,
+
+    accepting_quotes: BTreeMap<QuoteId, AcceptingQuote>,
 }
 
 impl From<tokio::sync::oneshot::error::RecvError> for Error {
@@ -502,8 +561,33 @@ fn convert_history_order(order: &mkt::HistoryOrder, network: Network) -> Option<
     })
 }
 
+fn try_convert_asset_amount(amount: f64, asset_precision: AssetPrecision) -> Result<u64, Error> {
+    let int_amount = asset_int_amount_(amount, asset_precision);
+    let float_amount = asset_float_amount_(int_amount, asset_precision);
+    verify!(
+        float_amount == amount,
+        Error::InvalidAssetAmount(amount, asset_precision)
+    );
+    Ok(int_amount)
+}
+
 fn save_state(data: &Data) {
     persistent_state::save(&data.work_dir, &data.state);
+}
+
+type WsCallback = Box<dyn FnOnce(&mut Data, Result<mkt::Response, Error>) + Send>;
+
+fn ws_callback(data: &mut Data, req: mkt::Request, callback: WsCallback) {
+    if !data.ws.connected() {
+        callback(
+            data,
+            Err(Error::WsRequestError(ws_req_sender::Error::Disconnected)),
+        );
+        return;
+    }
+
+    let request_id = data.ws.send_request(sideswap_api::Request::Market(req));
+    data.async_requests.insert(request_id, callback);
 }
 
 async fn try_login(data: &mut Data) -> Result<mkt::LoginResponse, anyhow::Error> {
@@ -549,7 +633,10 @@ async fn try_login(data: &mut Data) -> Result<mkt::LoginResponse, anyhow::Error>
             data.ws,
             Login,
             mkt::LoginRequest {
-                token: token.clone()
+                token: token.clone(),
+                is_mobile: false,
+                is_jade: false,
+                event_count: 0,
             }
         );
 
@@ -568,13 +655,16 @@ async fn try_login(data: &mut Data) -> Result<mkt::LoginResponse, anyhow::Error>
     log::debug!("register...");
 
     let mkt::RegisterResponse { token } =
-        make_market_request!(data.ws, Register, mkt::RegisterRequest {})?;
+        make_market_request!(data.ws, Register, mkt::RegisterRequest { wallet_key: None })?;
 
     let resp = make_market_request!(
         data.ws,
         Login,
         mkt::LoginRequest {
-            token: token.clone()
+            token: token.clone(),
+            is_mobile: false,
+            is_jade: false,
+            event_count: 0,
         }
     )?;
 
@@ -585,8 +675,11 @@ async fn try_login(data: &mut Data) -> Result<mkt::LoginResponse, anyhow::Error>
 }
 
 async fn process_ws_connected(data: &mut Data) {
-    let mkt::LoginResponse { orders, utxos } =
-        try_login(data).await.expect("login failed unexpectedly");
+    let mkt::LoginResponse {
+        orders,
+        utxos,
+        new_events: _,
+    } = try_login(data).await.expect("login failed unexpectedly");
 
     for orders in data.orders.values_mut() {
         orders.server_orders.clear();
@@ -617,6 +710,15 @@ fn process_ws_disconnected(data: &mut Data) {
     // This will disconnect all WS clients, we need to force them to re-subscribe
     data.clients.clear();
     data.subscribed.clear();
+    data.started_quote = None;
+
+    let async_requests = std::mem::take(&mut data.async_requests);
+    for request in async_requests.into_values() {
+        request(
+            data,
+            Err(Error::WsRequestError(ws_req_sender::Error::Disconnected)),
+        );
+    }
 }
 
 fn process_sign_notif(data: &mut Data, notif: mkt::MakerSignNotif) {
@@ -630,6 +732,173 @@ fn process_sign_notif(data: &mut Data, notif: mkt::MakerSignNotif) {
         quote_id: notif.quote_id,
         pset,
     });
+}
+
+struct GetQuoteAmounts {
+    exchange_pair: ExchangePair,
+    base_trade_dir: TradeDir,
+    fee_asset: AssetType,
+    base_amount: u64,
+    quote_amount: u64,
+    server_fee: u64,
+    fixed_fee: u64,
+}
+
+struct QuoteAmounts {
+    base_amount: f64,
+    quote_amount: f64,
+    server_fee: f64,
+    fixed_fee: f64,
+    deliver_asset: DealerTicker,
+    receive_asset: DealerTicker,
+    deliver_amount: f64,
+    receive_amount: f64,
+}
+
+fn get_quote_amounts(
+    GetQuoteAmounts {
+        exchange_pair,
+        base_trade_dir,
+        fee_asset,
+        base_amount,
+        quote_amount,
+        server_fee,
+        fixed_fee,
+    }: GetQuoteAmounts,
+) -> QuoteAmounts {
+    let total_fee = server_fee + fixed_fee;
+
+    let (deliver_amount, receive_amount) = match (base_trade_dir, fee_asset) {
+        (TradeDir::Sell, AssetType::Base) => (base_amount + total_fee, quote_amount),
+        (TradeDir::Sell, AssetType::Quote) => (base_amount, quote_amount - total_fee),
+        (TradeDir::Buy, AssetType::Base) => (quote_amount, base_amount - total_fee),
+        (TradeDir::Buy, AssetType::Quote) => (quote_amount + total_fee, base_amount),
+    };
+
+    let fee_asset = exchange_pair.asset(fee_asset);
+
+    let (deliver_asset, receive_asset) = match base_trade_dir {
+        TradeDir::Sell => (exchange_pair.base, exchange_pair.quote),
+        TradeDir::Buy => (exchange_pair.quote, exchange_pair.base),
+    };
+
+    QuoteAmounts {
+        base_amount: asset_float_amount_(base_amount, exchange_pair.base.asset_precision()),
+        quote_amount: asset_float_amount_(quote_amount, exchange_pair.quote.asset_precision()),
+        server_fee: asset_float_amount_(server_fee, fee_asset.asset_precision()),
+        fixed_fee: asset_float_amount_(fixed_fee, fee_asset.asset_precision()),
+        deliver_asset,
+        receive_asset,
+        deliver_amount: asset_float_amount_(deliver_amount, deliver_asset.asset_precision()),
+        receive_amount: asset_float_amount_(receive_amount, receive_asset.asset_precision()),
+    }
+}
+
+fn process_quote(data: &mut Data, notif: mkt::QuoteNotif) {
+    let started_quote = match data.started_quote.as_ref() {
+        Some(started_quote) => started_quote,
+        None => return,
+    };
+
+    if started_quote.quote_sub_id != notif.quote_sub_id {
+        return;
+    }
+
+    let client = data
+        .clients
+        .get(&started_quote.client_id)
+        .expect("must exist");
+
+    let exchange_pair = get_exchange_pair(&notif.asset_pair, data.network).expect("must be known");
+    let fee_asset = started_quote.fee_asset;
+    let base_trade_dir = started_quote.base_trade_dir;
+
+    let notif = api::QuoteNotif {
+        quote_sub_id: notif.quote_sub_id,
+        status: match notif.status {
+            mkt::QuoteStatus::Success {
+                quote_id,
+                base_amount,
+                quote_amount,
+                server_fee,
+                fixed_fee,
+                ttl,
+            } => {
+                let QuoteAmounts {
+                    base_amount,
+                    quote_amount,
+                    server_fee,
+                    fixed_fee,
+                    deliver_asset,
+                    receive_asset,
+                    deliver_amount,
+                    receive_amount,
+                } = get_quote_amounts(GetQuoteAmounts {
+                    exchange_pair,
+                    base_trade_dir,
+                    fee_asset,
+                    base_amount,
+                    quote_amount,
+                    server_fee,
+                    fixed_fee,
+                });
+                api::QuoteStatus::Success {
+                    quote_id,
+                    base_amount,
+                    quote_amount,
+                    server_fee,
+                    fixed_fee,
+                    deliver_asset,
+                    receive_asset,
+                    deliver_amount,
+                    receive_amount,
+                    ttl,
+                }
+            }
+            mkt::QuoteStatus::LowBalance {
+                base_amount,
+                quote_amount,
+                server_fee,
+                fixed_fee,
+                available,
+            } => {
+                let QuoteAmounts {
+                    base_amount,
+                    quote_amount,
+                    server_fee,
+                    fixed_fee,
+                    deliver_asset,
+                    receive_asset,
+                    deliver_amount,
+                    receive_amount,
+                } = get_quote_amounts(GetQuoteAmounts {
+                    exchange_pair,
+                    base_trade_dir,
+                    fee_asset,
+                    base_amount,
+                    quote_amount,
+                    server_fee,
+                    fixed_fee,
+                });
+
+                let available = asset_float_amount_(available, deliver_asset.asset_precision());
+
+                api::QuoteStatus::LowBalance {
+                    base_amount,
+                    quote_amount,
+                    server_fee,
+                    fixed_fee,
+                    deliver_asset,
+                    receive_asset,
+                    deliver_amount,
+                    receive_amount,
+                    available,
+                }
+            }
+            mkt::QuoteStatus::Error { error_msg } => api::QuoteStatus::Error { error_msg },
+        },
+    };
+    client.send(ClientEvent::Quote { notif });
 }
 
 fn broadcast_tx(data: &mut Data, txid: Txid) {
@@ -741,7 +1010,9 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
             process_sign_notif(data, notif);
         }
 
-        Notification::Quote(_) => {}
+        Notification::Quote(notif) => {
+            process_quote(data, notif);
+        }
 
         Notification::MarketPrice(notif) => {
             let exchange_pair =
@@ -791,6 +1062,8 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
                 }
             }
         }
+
+        Notification::NewEvent(_) => {}
     }
 }
 
@@ -804,13 +1077,31 @@ async fn process_ws_event(data: &mut Data, event: WrappedResponse) {
             process_ws_disconnected(data);
         }
 
+        WrappedResponse::Response(ResponseMessage::Response(req_id, res)) => {
+            let req_id = req_id.expect("mut be set");
+            let ws_callback = data.async_requests.remove(&req_id);
+            if let Some(callback) = ws_callback {
+                let res = match res {
+                    Ok(sideswap_api::Response::Market(resp)) => Ok(resp),
+                    Ok(_) => Err(Error::WsRequestError(
+                        ws_req_sender::Error::UnexpectedResponse,
+                    )),
+                    Err(err) => Err(Error::WsRequestError(ws_req_sender::Error::BackendError(
+                        err.message,
+                        err.code,
+                    ))),
+                };
+                callback(data, res);
+            }
+        }
+
         WrappedResponse::Response(ResponseMessage::Notification(
             sideswap_api::Notification::Market(notif),
         )) => {
             process_market_notif(data, notif);
         }
 
-        WrappedResponse::Response(_) => {}
+        WrappedResponse::Response(ResponseMessage::Notification(_)) => {}
     }
 }
 
@@ -868,6 +1159,156 @@ async fn subscribe(
     }
 
     Ok(order_book)
+}
+
+fn start_quotes(
+    data: &mut Data,
+    StartQuotesReq {
+        client_id,
+        asset_pair,
+        asset_type,
+        amount,
+        trade_dir,
+        order_id,
+        private_id,
+        receive_address,
+        change_address,
+    }: StartQuotesReq,
+    res_sender: UncheckedOneshotSender<Result<StartQuotesResp, Error>>,
+) {
+    stop_quotes(data);
+
+    let base_trade_dir = trade_dir.base_trade_dir(asset_type);
+    let send_asset = TradeDir::send_asset(base_trade_dir);
+    let send_asset_id = asset_pair.asset(send_asset);
+
+    let utxos = data
+        .wallet_utxos
+        .iter()
+        .filter(|utxo| utxo.asset == send_asset_id)
+        .cloned()
+        .collect();
+
+    ws_callback(
+        data,
+        Request::StartQuotes(mkt::StartQuotesRequest {
+            asset_pair,
+            asset_type,
+            amount,
+            trade_dir,
+            utxos,
+            receive_address,
+            change_address,
+            order_id,
+            private_id,
+        }),
+        Box::new(move |data, res| {
+            let res = match res {
+                Ok(mkt::Response::StartQuotes(resp)) => {
+                    data.started_quote = Some(StartedQuote {
+                        client_id,
+                        quote_sub_id: resp.quote_sub_id,
+                        fee_asset: resp.fee_asset,
+                        base_trade_dir,
+                    });
+
+                    Ok(StartQuotesResp {
+                        quote_sub_id: resp.quote_sub_id,
+                        fee_asset: resp.fee_asset,
+                    })
+                }
+                Ok(_) => Err(Error::UnexpectedResponse("StartQuotes")),
+                Err(err) => Err(err),
+            };
+            res_sender.send(res);
+        }),
+    );
+}
+
+fn stop_quotes(data: &mut Data) {
+    data.started_quote = None;
+
+    ws_callback(
+        data,
+        Request::StopQuotes(mkt::StopQuotesRequest {}),
+        Box::new(move |_data, res| {
+            let res = match res {
+                Ok(mkt::Response::StopQuotes(_resp)) => Ok(()),
+                Ok(_) => Err(Error::UnexpectedResponse("StopQuotes")),
+                Err(err) => Err(err),
+            };
+            if let Err(err) = res {
+                log::error!("stopping quotes failed: {err}");
+            }
+        }),
+    );
+}
+
+fn accept_quote(
+    data: &mut Data,
+    AcceptQuoteReq { quote_id }: AcceptQuoteReq,
+    res_sender: UncheckedOneshotSender<Result<AcceptQuoteResp, Error>>,
+) {
+    ws_callback(
+        data,
+        Request::GetQuote(mkt::GetQuoteRequest { quote_id }),
+        Box::new(move |data, res| {
+            let res = match res {
+                Ok(mkt::Response::GetQuote(resp)) => Ok(resp),
+                Ok(_) => Err(Error::UnexpectedResponse("GetQuote")),
+                Err(err) => Err(err),
+            };
+            match res {
+                Ok(resp) => {
+                    sign_accepted_quote(data, quote_id, resp, res_sender);
+                }
+                Err(err) => {
+                    res_sender.send(Err(err));
+                }
+            }
+        }),
+    );
+}
+
+fn sign_accepted_quote(
+    data: &mut Data,
+    quote_id: QuoteId,
+    mkt::GetQuoteResponse { pset, ttl: _ }: mkt::GetQuoteResponse,
+    res_sender: UncheckedOneshotSender<Result<AcceptQuoteResp, Error>>,
+) {
+    data.accepting_quotes
+        .insert(quote_id, AcceptingQuote { res_sender });
+
+    // FIXME: Verify PSET amounts
+
+    let pset = b64::decode(&pset).expect("invalid base64 pset");
+    let pset =
+        elements::encode::deserialize::<PartiallySignedTransaction>(&pset).expect("invalid pset");
+
+    data.event_sender.send(Event::SignSwap { quote_id, pset });
+}
+
+fn signed_accepted_quote(
+    data: &mut Data,
+    quote_id: QuoteId,
+    pset: String,
+    AcceptingQuote { res_sender }: AcceptingQuote,
+) {
+    ws_callback(
+        data,
+        Request::TakerSign(mkt::TakerSignRequest { quote_id, pset }),
+        Box::new(move |data, res| {
+            let res = match res {
+                Ok(mkt::Response::TakerSign(resp)) => {
+                    stop_quotes(data);
+                    Ok(AcceptQuoteResp { txid: resp.txid })
+                }
+                Ok(_) => Err(Error::UnexpectedResponse("TakerSign")),
+                Err(err) => Err(err),
+            };
+            res_sender.send(res);
+        }),
+    );
 }
 
 async fn new_address(event_sender: &UncheckedUnboundedSender<Event>) -> Result<Address, Error> {
@@ -1081,6 +1522,7 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
                     change_address,
                     private: false,
                     client_order_id,
+                    signature: None,
                 })),
                 Box::new(move |res| {
                     let res = match res {
@@ -1113,6 +1555,7 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
                     price,
                     receive_address: None,
                     change_address: None,
+                    signature: None,
                 })),
                 Box::new(move |res| {
                     let res = match res {
@@ -1177,6 +1620,14 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
             for subscribed in data.subscribed.values_mut() {
                 subscribed.clients.remove(&client_id);
             }
+
+            let quote_client_id = data
+                .started_quote
+                .as_ref()
+                .map(|started_quote| started_quote.client_id);
+            if quote_client_id == Some(client_id) {
+                stop_quotes(data);
+            }
         }
 
         ClientCommand::WsSubscribe {
@@ -1186,6 +1637,18 @@ async fn process_client_command(data: &mut Data, command: ClientCommand) {
         } => {
             let res = subscribe(data, exchange_pair, Some(client_id)).await;
             res_sender.send(res);
+        }
+
+        ClientCommand::WsStartQuotes { req, res_sender } => {
+            start_quotes(data, req, res_sender);
+        }
+
+        ClientCommand::WsStopQuotes {} => {
+            stop_quotes(data);
+        }
+
+        ClientCommand::WsAcceptQuote { req, res_sender } => {
+            accept_quote(data, req, res_sender);
         }
     }
 }
@@ -1257,17 +1720,23 @@ fn process_command(data: &mut Data, command: Command) {
             let pset = elements::encode::serialize(&pset);
             let pset = b64::encode(&pset);
 
-            data.ws.callback_request(
-                sideswap_api::Request::Market(Request::MakerSign(mkt::MakerSignRequest {
-                    quote_id,
-                    pset,
-                })),
-                Box::new(|res| {
-                    if let Err(err) = res {
-                        log::error!("MakerSign failed: {err}");
-                    }
-                }),
-            );
+            let accepting_quote = data.accepting_quotes.remove(&quote_id);
+
+            if let Some(accepting_quote) = accepting_quote {
+                signed_accepted_quote(data, quote_id, pset, accepting_quote);
+            } else {
+                data.ws.callback_request(
+                    sideswap_api::Request::Market(Request::MakerSign(mkt::MakerSignRequest {
+                        quote_id,
+                        pset,
+                    })),
+                    Box::new(|res| {
+                        if let Err(err) = res {
+                            log::error!("MakerSign failed: {err}");
+                        }
+                    }),
+                );
+            }
         }
     }
 }
@@ -1354,6 +1823,7 @@ async fn try_sync_market(data: &mut Data, key: &OrderGroupKey) -> Result<(), any
                     price: Some(dealer_order.price),
                     receive_address: None,
                     change_address: None,
+                    signature: None,
                 }
             )?;
 
@@ -1407,6 +1877,7 @@ async fn try_sync_market(data: &mut Data, key: &OrderGroupKey) -> Result<(), any
                 change_address,
                 private: false,
                 client_order_id: None,
+                signature: None,
             }
         )?;
 
@@ -1486,6 +1957,7 @@ async fn run(
         work_dir: params.work_dir,
         state,
         ws,
+        async_requests: BTreeMap::new(),
         wallet_utxos: Vec::new(),
         server_utxos: BTreeSet::new(),
         balances: Balances::default(),
@@ -1497,6 +1969,8 @@ async fn run(
         markets: BTreeMap::new(),
         clients: BTreeMap::new(),
         subscribed: BTreeMap::new(),
+        started_quote: None,
+        accepting_quotes: BTreeMap::new(),
     };
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));

@@ -5,23 +5,29 @@ use std::{
 };
 
 use anyhow::{anyhow, bail, ensure};
-use bitcoin::bip32::{ChildNumber, Xpriv};
+use bitcoin::{
+    bip32::{ChildNumber, Xpriv},
+    hashes::Hash,
+};
 use elements::{
     pset::{serialize::Serialize, PartiallySignedTransaction},
     secp256k1_zkp, AssetId, EcdsaSighashType, OutPoint, Transaction, TxOutSecrets, Txid,
 };
 use elements_miniscript::slip77::MasterBlindingKey;
+use rand::Rng;
 use secp256k1::{SecretKey, SECP256K1};
 use serde_bytes::ByteBuf;
 use sideswap_api::{
     self as api,
     mkt::{
-        self, AssetPair, AssetType, HistStatus, HistoryOrder, MarketInfo, Notification, OrdId,
-        OwnOrder, PublicOrder, QuoteId, QuoteSubId, Request, Response, TradeDir,
+        self, AssetPair, AssetType, ClientEvent, HistStatus, HistoryOrder, MarketInfo,
+        Notification, OrdId, OwnOrder, PublicOrder, QuoteId, QuoteSubId, Request, Response,
+        TradeDir,
     },
     AssetBlindingFactor, MarketType, ValueBlindingFactor,
 };
 use sideswap_common::{
+    event_proofs::EventProofs,
     green_backend::GREEN_DUMMY_SIG,
     pset::p2pkh_script,
     pset_blind::get_blinding_nonces,
@@ -29,8 +35,8 @@ use sideswap_common::{
         coin_select::InOut,
         pset::{construct_pset, ConstructPsetArgs, ConstructedPset, PsetInput, PsetOutput},
     },
-    target_os::{target_os, TargetOs},
-    types::{asset_float_amount_, asset_int_amount_, MAX_SAT_AMOUNT},
+    target_os::TargetOs,
+    types::{asset_float_amount_, asset_int_amount_, asset_scale, MAX_SAT_AMOUNT},
 };
 use sideswap_jade::{
     byte_array::{ByteArray, ByteArray32},
@@ -44,7 +50,7 @@ use sideswap_types::{
 use crate::{
     ffi::proto,
     gdk_json,
-    gdk_ses::SignWith,
+    gdk_ses::{HwData, SignWith, WalletInfo},
     gdk_ses_impl::{
         decode_pset, encode_pset, get_jade_asset_info, get_jade_network, get_redeem_script,
     },
@@ -53,6 +59,11 @@ use crate::{
 
 use super::{convert_chart_point, AccountId, CallError, ACCOUNT_ID_AMP, ACCOUNT_ID_REG};
 
+// Some random path (not hardened)
+pub const REGISTER_PATH: [u32; 1] = [0x4ec71ae];
+
+const AE_STUB_DATA: ByteArray32 = ByteArray([1u8; 32]);
+
 struct StartedQuote {
     quote_sub_id: QuoteSubId,
     asset_pair: AssetPair,
@@ -60,6 +71,7 @@ struct StartedQuote {
     amount: u64,
     trade_dir: TradeDir,
     fee_asset: AssetType,
+    order_id: Option<u64>,
 
     utxos: Vec<gdk_json::UnspentOutput>,
     receive_address: gdk_json::AddressInfo,
@@ -67,8 +79,12 @@ struct StartedQuote {
 }
 
 pub struct Xprivs {
+    pub register_priv: secp256k1::SecretKey,
     pub single_sig_xpriv: Xpriv,
     pub multi_sig_xpriv: Xpriv,
+    pub event_proofs: EventProofs,
+    pub ack_succeed: bool,
+    pub expected_nonce: Option<u32>,
 }
 
 struct SwapInfo {
@@ -96,6 +112,8 @@ pub struct Data {
     received_quotes: BTreeMap<QuoteId, ReceivedQuote>,
     subscribed_charts: Option<AssetPair>,
     xprivs: Option<Xprivs>,
+    server_markets: Vec<MarketInfo>,
+    ui_markets: Vec<proto::MarketInfo>,
 }
 
 pub fn new() -> Data {
@@ -108,6 +126,8 @@ pub fn new() -> Data {
         received_quotes: BTreeMap::new(),
         subscribed_charts: None,
         xprivs: None,
+        server_markets: Vec::new(),
+        ui_markets: Vec::new(),
     }
 }
 
@@ -217,7 +237,10 @@ impl From<&OwnOrder> for proto::OwnOrder {
             asset_pair: value.asset_pair.into(),
             trade_dir: proto::TradeDir::from(value.trade_dir).into(),
             orig_amount: value.orig_amount,
+            active_amount: value.active_amount,
             price: value.price.value(),
+            private_id: value.private_id.as_ref().map(|value| value.to_string()),
+            ttl_seconds: value.ttl.map(|ttl| ttl.as_millis() / 1000),
         }
     }
 }
@@ -261,35 +284,18 @@ fn market_list_subscribe(worker: &mut super::Data) {
     worker.make_async_request(
         api::Request::Market(Request::ListMarkets(mkt::ListMarketsRequest {})),
         move |worker, res| {
-            let markets = match res {
-                Ok(api::Response::Market(Response::ListMarkets(resp))) => resp
-                    .markets
-                    .into_iter()
-                    .filter(|market| {
-                        let base = worker
-                            .add_gdk_asset_if_missing(&market.asset_pair.base)
-                            .is_ok();
-                        let quote = worker
-                            .add_gdk_asset_if_missing(&market.asset_pair.quote)
-                            .is_ok();
-                        base && quote
-                    })
-                    .map(Into::into)
-                    .collect(),
+            match res {
+                Ok(api::Response::Market(Response::ListMarkets(resp))) => {
+                    worker.market.server_markets = resp.markets;
+                    sync_market_list(worker);
+                }
                 Ok(_) => {
                     log::error!("unexpected list markets response");
-                    Vec::new()
                 }
                 Err(err) => {
-                    log::debug!("market list failed: {err}");
-                    Vec::new()
+                    log::error!("market list failed: {err}");
                 }
             };
-            worker
-                .ui
-                .send(proto::from::Msg::MarketList(proto::from::MarketList {
-                    markets,
-                }));
         },
     );
 }
@@ -323,35 +329,148 @@ fn public_orders_subscribe(worker: &mut super::Data) {
     }
 }
 
-fn ws_register(worker: &mut super::Data) {
-    log::debug!("start market register request...");
-    worker.make_async_request(
-        api::Request::Market(Request::Register(mkt::RegisterRequest {})),
-        move |worker, res| match res {
-            Ok(api::Response::Market(Response::Register(resp))) => {
-                log::debug!("market register succeed");
-                worker.settings.market_token = Some(resp.token);
-                worker.save_settings();
+fn try_get_wallet_key_software(
+    worker: &super::Data,
+    message: String,
+) -> Result<mkt::WalletKey, anyhow::Error> {
+    let xprivs = worker
+        .market
+        .xprivs
+        .as_ref()
+        .ok_or_else(|| anyhow::anyhow!("xprivs are not set"))?;
 
-                ws_login(worker);
-            }
-            Ok(_) => {
-                log::error!("unexpected register response");
-            }
-            Err(err) => {
-                log::debug!("market register failed: {err}");
-            }
-        },
-    );
+    let public_key = xprivs.register_priv.public_key(&SECP256K1);
+    let message_hash = bitcoin::sign_message::signed_msg_hash(&message);
+    let message = bitcoin::secp256k1::Message::from_digest(message_hash.to_byte_array());
+    let signature = SECP256K1
+        .sign_ecdsa(&message, &xprivs.register_priv)
+        .to_string();
+
+    Ok(mkt::WalletKey {
+        public_key,
+        signature,
+    })
+}
+
+fn try_get_wallet_key_jade(
+    hw_data: &HwData,
+    register_path: Vec<ChildNumber>,
+    message: String,
+) -> Result<mkt::WalletKey, anyhow::Error> {
+    let root_xpub = hw_data.xpubs.get(&vec![]).expect("must exist").clone();
+
+    let public_key = root_xpub
+        .derive_pub(SECP256K1, &register_path)
+        .expect("must not fail")
+        .public_key;
+
+    let _status = hw_data.jade.start_status(jade_mng::JadeStatus::SignMessage);
+    let _resp = hw_data
+        .jade
+        .sign_message(sideswap_jade::models::SignMessageReq {
+            path: register_path.iter().copied().map(u32::from).collect(),
+            message,
+            ae_host_commitment: AE_STUB_DATA,
+        })?;
+
+    let signature = hw_data
+        .jade
+        .get_signature(Some(AE_STUB_DATA))?
+        .ok_or_else(|| anyhow!("empty signature"))?;
+
+    // Convert signature into DER format
+    let signature = match signature.len() {
+        64 => signature.as_slice(),
+        65 => &signature[1..],
+        _ => bail!("unexpected signature size: {}", signature.len()),
+    };
+    let signature = secp256k1::ecdsa::Signature::from_compact(signature)?
+        .serialize_der()
+        .to_vec();
+
+    let signature = hex::encode(&signature);
+
+    Ok(mkt::WalletKey {
+        public_key,
+        signature,
+    })
+}
+
+fn try_get_wallet_key(
+    worker: &super::Data,
+    challenge: String,
+) -> Result<mkt::WalletKey, anyhow::Error> {
+    let wallet = worker.wallets.get(&ACCOUNT_ID_REG).expect("must exist");
+
+    let message = sideswap_common::registration::get_message(&challenge);
+    log::debug!("sign message: {message}");
+
+    let register_path = REGISTER_PATH
+        .iter()
+        .copied()
+        .map(ChildNumber::from)
+        .collect::<Vec<_>>();
+
+    match &wallet.login_info.wallet_info {
+        WalletInfo::Mnemonic(_mnemonic) => try_get_wallet_key_software(worker, message),
+
+        WalletInfo::HwData(hw_data) => try_get_wallet_key_jade(hw_data, register_path, message),
+
+        WalletInfo::WatchOnly(_) => unreachable!(),
+    }
+}
+
+fn try_ws_register(worker: &mut super::Data) -> Result<(), anyhow::Error> {
+    log::debug!("start market register request...");
+
+    let resp = send_market_request!(worker, Challenge, mkt::ChallengeRequest {})?;
+    log::debug!("received challenge: {}", resp.challenge);
+
+    let wallet_key = try_get_wallet_key(worker, resp.challenge)?;
+    log::debug!("received wallet key, public key: {}", wallet_key.public_key);
+
+    let resp = send_market_request!(
+        worker,
+        Register,
+        mkt::RegisterRequest {
+            wallet_key: Some(wallet_key),
+        }
+    )?;
+
+    log::debug!("market register succeed");
+    worker.settings.market_token = Some(resp.token);
+    worker.save_settings();
+
+    ws_login(worker);
+
+    Ok(())
+}
+
+fn ws_register(worker: &mut super::Data) {
+    let res = try_ws_register(worker);
+    if let Err(err) = res {
+        worker.show_message(&format!("registration failed: {err}"));
+    }
 }
 
 fn ws_login(worker: &mut super::Data) {
     match worker.settings.market_token.as_ref() {
         Some(token) => {
             log::debug!("start market login request...");
+
+            let event_count = worker
+                .market
+                .xprivs
+                .as_ref()
+                .map(|xprivs| xprivs.event_proofs.count())
+                .unwrap_or_default();
+
             worker.make_async_request(
                 api::Request::Market(Request::Login(mkt::LoginRequest {
                     token: token.clone(),
+                    is_mobile: TargetOs::get().is_mobile(),
+                    is_jade: is_jade(worker),
+                    event_count,
                 })),
                 move |worker, res| match res {
                     Ok(api::Response::Market(Response::Login(resp))) => {
@@ -376,6 +495,14 @@ fn ws_login(worker: &mut super::Data) {
                             .send(proto::from::Msg::OwnOrders(proto::from::OwnOrders {
                                 list: worker.market.own_orders.values().map(Into::into).collect(),
                             }));
+
+                        if let Some(xprivs) = worker.market.xprivs.as_mut() {
+                            for event in resp.new_events {
+                                xprivs.event_proofs.add_event(event).expect("must not fail");
+                            }
+                        }
+
+                        send_ack(worker);
                     }
                     Ok(_) => {
                         log::error!("unexpected login response");
@@ -396,6 +523,39 @@ fn ws_login(worker: &mut super::Data) {
     }
 }
 
+pub fn send_ack(worker: &mut super::Data) {
+    let xprivs = match worker.market.xprivs.as_mut() {
+        Some(xprivs) => xprivs,
+        None => return,
+    };
+
+    let nonce = rand::thread_rng().gen::<u32>();
+    log::debug!("send ack request, nonce: {nonce}...");
+    xprivs.expected_nonce = Some(nonce);
+    xprivs.ack_succeed = false;
+    let signature = xprivs
+        .event_proofs
+        .sign_client_event(mkt::ClientEvent::Ack { nonce }, &xprivs.register_priv);
+
+    worker.make_async_request(
+        api::Request::Market(Request::Ack(mkt::AckRequest { nonce, signature })),
+        move |worker, res| match res {
+            Ok(_) => {
+                log::debug!("send ack succeed");
+                worker::replace_timers(
+                    worker,
+                    Duration::from_secs(3600),
+                    worker::TimerEvent::SendAck,
+                );
+            }
+            Err(err) => {
+                log::error!("send ack failed: {err}");
+                worker::replace_timers(worker, Duration::from_secs(3), worker::TimerEvent::SendAck);
+            }
+        },
+    );
+}
+
 pub fn ws_connected(worker: &mut super::Data) {
     market_list_subscribe(worker);
     public_orders_subscribe(worker);
@@ -406,6 +566,10 @@ pub fn ws_connected(worker: &mut super::Data) {
 }
 
 pub fn ws_disconnected(worker: &mut super::Data) {
+    if let Some(xprivs) = worker.market.xprivs.as_mut() {
+        xprivs.ack_succeed = false;
+    }
+
     if let Some(asset_pair) = worker.market.selected_market {
         worker
             .ui
@@ -435,6 +599,7 @@ pub fn wallet_utxos(
     worker.market.wallet_utxos.insert(account_id, utxos);
 
     sync_utxos(worker);
+    sync_market_list(worker);
 }
 
 pub fn sync_utxos(worker: &mut super::Data) {
@@ -514,31 +679,7 @@ pub fn sync_utxos(worker: &mut super::Data) {
         );
     }
 }
-pub fn process_resp(_worker: &mut super::Data, resp: Response) {
-    match resp {
-        Response::ListMarkets(_) => {}
-        Response::Register(_) => {}
-        Response::Login(_) => {}
-        Response::Subscribe(_) => {}
-        Response::Unsubscribe(_) => {}
-        Response::AddUtxos(_) => {}
-        Response::RemoveUtxos(_) => {}
-        Response::AddOrder(_) => {}
-        Response::EditOrder(_) => {}
-        Response::AddOffline(_) => {}
-        Response::CancelOrder(_) => {}
-        Response::ResolveGaid(_) => {}
-        Response::StartQuotes(_) => {}
-        Response::StopQuotes(_) => {}
-        Response::MakerSign(_) => {}
-        Response::GetQuote(_) => {}
-        Response::TakerSign(_) => {}
-        Response::ChartSub(_) => {}
-        Response::ChartUnsub(_) => {}
-        Response::LoadHistory(_) => {}
-        Response::GetTransaction(_) => {}
-    }
-}
+pub fn process_resp(_worker: &mut super::Data, _resp: Response) {}
 
 pub fn process_notif(worker: &mut super::Data, msg: Notification) {
     match msg {
@@ -555,27 +696,25 @@ pub fn process_notif(worker: &mut super::Data, msg: Notification) {
         Notification::MarketPrice(notif) => process_ws_market_price(worker, notif),
         Notification::ChartUpdate(notif) => process_ws_charts_update(worker, notif),
         Notification::HistoryUpdated(notif) => process_ws_hist_updated(worker, notif),
+        Notification::NewEvent(notif) => process_ws_new_event(worker, notif),
     }
 }
 
 fn process_ws_market_added(worker: &mut super::Data, notif: mkt::MarketAddedNotif) {
-    let base = worker
-        .add_gdk_asset_if_missing(&notif.market.asset_pair.base)
-        .is_ok();
-    let quote = worker
-        .add_gdk_asset_if_missing(&notif.market.asset_pair.quote)
-        .is_ok();
-    if base && quote {
-        worker
-            .ui
-            .send(proto::from::Msg::MarketAdded(notif.market.into()));
-    }
+    worker.market.server_markets.push(notif.market);
+    sync_market_list(worker);
 }
 
 fn process_ws_market_removed(worker: &mut super::Data, notif: mkt::MarketRemovedNotif) {
-    worker
-        .ui
-        .send(proto::from::Msg::MarketRemoved(notif.asset_pair.into()));
+    let market_index = worker
+        .market
+        .server_markets
+        .iter()
+        .position(|market| market.asset_pair == notif.asset_pair);
+    if let Some(market_index) = market_index {
+        worker.market.server_markets.remove(market_index);
+        sync_market_list(worker);
+    }
 }
 
 fn process_ws_utxo_added(worker: &mut super::Data, notif: mkt::UtxoAddedNotif) {
@@ -638,12 +777,16 @@ fn process_ws_quote(worker: &mut super::Data, notif: mkt::QuoteNotif) {
             })
         }
         mkt::QuoteStatus::LowBalance {
-            asset_id,
-            required,
+            base_amount,
+            quote_amount,
+            server_fee,
+            fixed_fee,
             available,
         } => proto::from::quote::Result::LowBalance(proto::from::quote::LowBalance {
-            asset_id: asset_id.to_string(),
-            required,
+            base_amount,
+            quote_amount,
+            server_fee,
+            fixed_fee,
             available,
         }),
         mkt::QuoteStatus::Error { error_msg } => proto::from::quote::Result::Error(error_msg),
@@ -654,6 +797,7 @@ fn process_ws_quote(worker: &mut super::Data, notif: mkt::QuoteNotif) {
         asset_type: proto::AssetType::from(started_quote.asset_type).into(),
         amount: started_quote.amount,
         trade_dir: proto::TradeDir::from(started_quote.trade_dir).into(),
+        order_id: started_quote.order_id,
         result: Some(res),
     }));
 }
@@ -732,6 +876,8 @@ fn try_sign_pset_jade(
             .ok_or_else(|| anyhow!("jade is not set"))?
             .jade,
     );
+
+    let _status = jade.start_status(jade_mng::JadeStatus::SignTx(jade_mng::TxType::Swap));
 
     let mut trusted_commitments = Vec::new();
     let mut change = Vec::new();
@@ -819,8 +965,6 @@ fn try_sign_pset_jade(
 
     let resp = jade.sign_tx(sign_tx)?;
     ensure!(resp, "sign_tx failed");
-
-    const AE_STUB_DATA: ByteArray32 = ByteArray([1u8; 32]);
 
     for input in pset.inputs_mut() {
         let utxo = utxos.iter().find(|utxo| {
@@ -919,13 +1063,84 @@ fn try_sign_pset_jade(
     Ok(pset)
 }
 
-fn process_ws_maker_sign(worker: &mut super::Data, notif: mkt::MakerSignNotif) {
+fn try_sign_maker_pset(
+    worker: &super::Data,
+    notif: &mkt::MakerSignNotif,
+) -> Result<PartiallySignedTransaction, anyhow::Error> {
+    let pset = decode_pset(&notif.pset)?;
+
+    let xprivs = worker
+        .market
+        .xprivs
+        .as_ref()
+        .ok_or_else(|| anyhow!("xprivs must be set"))?;
+    ensure!(xprivs.ack_succeed);
+    ensure!(!notif.orders.is_empty());
+
+    let first_known_order = xprivs
+        .event_proofs
+        .get_active_orders()
+        .get(&notif.orders[0].order_id)
+        .ok_or_else(|| anyhow!("can't find order {}", notif.orders[0].order_id))?;
+
+    let base_precision = worker
+        .assets
+        .get(&first_known_order.asset_pair.base)
+        .ok_or_else(|| anyhow!("can't find asset {}", first_known_order.asset_pair.base))?
+        .precision;
+    let quote_precision = worker
+        .assets
+        .get(&first_known_order.asset_pair.quote)
+        .ok_or_else(|| anyhow!("can't find asset {}", first_known_order.asset_pair.quote))?
+        .precision;
+
+    let mut order_ids = BTreeSet::new();
+    let mut total_base_amount = 0;
+    let mut total_quote_amount = 0;
+    for swap in notif.orders.iter() {
+        let inserted = order_ids.insert(swap.order_id);
+        ensure!(inserted);
+
+        let known_order = xprivs
+            .event_proofs
+            .get_active_orders()
+            .get(&swap.order_id)
+            .ok_or_else(|| anyhow!("can't find order {}", swap.order_id))?;
+
+        ensure!(known_order.asset_pair == first_known_order.asset_pair);
+        ensure!(known_order.trade_dir == first_known_order.trade_dir);
+        if let Some(min_price) = known_order.min_price {
+            ensure!(swap.price >= min_price);
+        }
+        if let Some(max_price) = known_order.max_price {
+            ensure!(swap.price <= max_price);
+        }
+        ensure!(swap.base_amount > 0);
+        ensure!(swap.base_amount <= known_order.base_amount);
+
+        // Allow some tolerance in quote amount calculations
+        let expected_quote_amount =
+            asset_scale(quote_precision) * swap.base_amount as f64 * swap.price.value()
+                / asset_scale(base_precision);
+        let actual_quote_amount = swap.quote_amount as f64;
+        let diff = (1.0 - actual_quote_amount / expected_quote_amount).abs();
+        ensure!(diff < 0.0001, "actual_quote_amount: {actual_quote_amount}, expected_quote_amount: {expected_quote_amount}");
+
+        total_base_amount += swap.base_amount;
+        total_quote_amount += swap.quote_amount;
+    }
+
     // FIXME: Verify PSET amounts before signing it
+    log::debug!("sign swap, base: {total_base_amount}, quote: {total_quote_amount}");
+
+    let pset = try_sign_pset_software(worker, pset)?;
+    Ok(pset)
+}
+
+fn process_ws_maker_sign(worker: &mut super::Data, notif: mkt::MakerSignNotif) {
+    let res = try_sign_maker_pset(worker, &notif);
 
     let quote_id = notif.quote_id;
-
-    let res = decode_pset(&notif.pset).and_then(|pset| try_sign_pset_software(worker, pset));
-
     match res {
         Ok(pset) => {
             worker.make_async_request(
@@ -990,6 +1205,7 @@ fn process_ws_own_order_added(worker: &mut super::Data, notif: mkt::OwnOrderCrea
         .market
         .own_orders
         .insert(notif.order.order_id, notif.order);
+    sync_utxos(worker);
 }
 
 fn process_ws_own_order_removed(worker: &mut super::Data, notif: mkt::OwnOrderRemovedNotif) {
@@ -997,6 +1213,32 @@ fn process_ws_own_order_removed(worker: &mut super::Data, notif: mkt::OwnOrderRe
         .ui
         .send(proto::from::Msg::OwnOrderRemoved(notif.order_id.into()));
     worker.market.own_orders.remove(&notif.order_id);
+}
+
+fn process_ws_new_event(worker: &mut super::Data, notif: mkt::NewEventNotif) {
+    if let Some(xprivs) = worker.market.xprivs.as_mut() {
+        if let mkt::EventWithSignature::Client {
+            event: ClientEvent::Ack { nonce },
+            signature: _,
+        } = &notif.event
+        {
+            log::debug!("ack nonce received: {nonce}");
+            if xprivs.expected_nonce == Some(*nonce) {
+                log::debug!("expected nonce received");
+                xprivs.expected_nonce = None;
+                xprivs.ack_succeed = true;
+            }
+        };
+
+        xprivs
+            .event_proofs
+            .add_event(notif.event)
+            .expect("must not fail");
+
+        let json = serde_json::to_value(&xprivs.event_proofs).expect("must not fail");
+        worker.settings.event_proofs = Some(json);
+        worker.save_settings();
+    }
 }
 
 pub fn market_subscribe(worker: &mut super::Data, msg: proto::AssetPair) {
@@ -1025,17 +1267,43 @@ fn try_online_order_submit(
     swap_info: &SwapInfo,
     receive_address: gdk_json::AddressInfo,
 ) -> Result<OwnOrder, anyhow::Error> {
-    match target_os() {
-        TargetOs::Linux | TargetOs::Windows | TargetOs::MacOs => {}
-        TargetOs::Android | TargetOs::IOS => bail!("can't submit online order from mobile"),
-    }
+    // TODO: Allow submitting online orders from mobile (if desktop is connected)
+    ensure!(
+        !TargetOs::get().is_mobile(),
+        "can't submit online orders from mobile"
+    );
 
     ensure!(!is_jade(worker), "Jade can't submit online orders");
 
-    let trade_dir = TradeDir::from(msg.trade_dir());
     let asset_pair = AssetPair::from(&msg.asset_pair);
-
+    let trade_dir = TradeDir::from(msg.trade_dir());
+    let base_amount = msg.base_amount;
+    let price = NormalFloat::new(msg.price).expect("price must be valid");
+    let ttl = msg
+        .ttl_seconds
+        .map(Duration::from_secs)
+        .map(DurationMs::from);
+    let private = msg.private;
+    let client_order_id = None;
     let change_address = get_change_address(worker, swap_info.change_wallet)?;
+
+    let signature = worker.market.xprivs.as_ref().map(|xprivs| {
+        xprivs.event_proofs.sign_client_event(
+            mkt::ClientEvent::AddOrder {
+                asset_pair,
+                base_amount,
+                min_price: Some(price),
+                max_price: Some(price),
+                trade_dir,
+                ttl,
+                receive_address: receive_address.address.clone(),
+                change_address: change_address.address.clone(),
+                private,
+                client_order_id: client_order_id.clone(),
+            },
+            &xprivs.register_priv,
+        )
+    });
 
     let resp = send_market_request!(
         worker,
@@ -1043,16 +1311,14 @@ fn try_online_order_submit(
         mkt::AddOrderRequest {
             asset_pair,
             base_amount: msg.base_amount,
-            price: NormalFloat::new(msg.price).expect("price must be valid"),
+            price,
             trade_dir,
-            ttl: msg
-                .ttl_seconds
-                .map(Duration::from_secs)
-                .map(DurationMs::from),
+            ttl,
             receive_address: receive_address.address,
             change_address: change_address.address,
-            private: msg.private,
-            client_order_id: None,
+            private,
+            client_order_id,
+            signature,
         }
     )?;
 
@@ -1454,6 +1720,8 @@ fn try_offline_order_submit(
                 .ok_or_else(|| anyhow!("jade is not set"))?
                 .jade,
         );
+        let _status =
+            jade.start_status(jade_mng::JadeStatus::SignTx(jade_mng::TxType::OfflineSwap));
 
         let additional_info = sideswap_jade::models::ReqSignTxAdditionalInfo {
             is_partial: true,
@@ -1505,8 +1773,6 @@ fn try_offline_order_submit(
 
         let resp = jade.sign_tx(sign_tx)?;
         ensure!(resp, "sign_tx failed");
-
-        const AE_STUB_DATA: ByteArray32 = ByteArray([1u8; 32]);
 
         let user_path = match utxo.address_type {
             gdk_json::AddressType::P2shP2wpkh => utxo
@@ -1677,7 +1943,12 @@ fn get_change_address(
     Ok(address)
 }
 
-pub fn order_submit(worker: &mut super::Data, msg: proto::to::OrderSubmit) {
+pub fn order_submit(worker: &mut super::Data, mut msg: proto::to::OrderSubmit) {
+    // FIXME: Remove this once UI is updated
+    if is_jade(worker) {
+        msg.two_step = true;
+    }
+
     let asset_pair = AssetPair::from(&msg.asset_pair);
     let trade_dir = TradeDir::from(msg.trade_dir());
 
@@ -1730,17 +2001,36 @@ pub fn try_order_edit(
     worker: &mut super::Data,
     msg: proto::to::OrderEdit,
 ) -> Result<(), anyhow::Error> {
+    let order_id = OrdId::from(msg.order_id);
+    let base_amount = msg.base_amount;
     let price = msg.price.map(NormalFloat::new).transpose()?;
+    let receive_address = None;
+    let change_address = None;
+
+    let signature = worker.market.xprivs.as_ref().map(|xprivs| {
+        xprivs.event_proofs.sign_client_event(
+            mkt::ClientEvent::EditOrder {
+                order_id,
+                base_amount,
+                min_price: price,
+                max_price: price,
+                receive_address: receive_address.clone(),
+                change_address: change_address.clone(),
+            },
+            &xprivs.register_priv,
+        )
+    });
 
     let _res = send_market_request!(
         worker,
         EditOrder,
         mkt::EditOrderRequest {
-            order_id: msg.order_id.into(),
-            base_amount: msg.base_amount,
+            order_id,
+            base_amount,
             price,
-            receive_address: None,
-            change_address: None,
+            receive_address,
+            change_address,
+            signature,
         }
     )?;
 
@@ -1785,6 +2075,8 @@ fn try_start_quotes(
     msg: &proto::to::StartQuotes,
     swap_info: SwapInfo,
     receive_address: gdk_json::AddressInfo,
+    order_id: Option<u64>,
+    private_id: Option<String>,
 ) -> Result<StartedQuote, anyhow::Error> {
     let asset_pair = AssetPair::from(&msg.asset_pair);
     let asset_type = AssetType::from(msg.asset_type());
@@ -1816,6 +2108,8 @@ fn try_start_quotes(
             utxos: utxos.iter().cloned().map(convert_to_swap_utxo).collect(),
             receive_address: receive_address.address.clone(),
             change_address: change_address.address.clone(),
+            order_id: order_id.map(OrdId::new),
+            private_id: private_id.clone().map(Box::new),
         }
     )?;
 
@@ -1829,6 +2123,7 @@ fn try_start_quotes(
         utxos,
         receive_address,
         change_address,
+        order_id,
     })
 }
 
@@ -1870,7 +2165,12 @@ fn get_swap_info(
     }
 }
 
-pub fn start_quotes(worker: &mut super::Data, msg: proto::to::StartQuotes) {
+pub fn start_quotes(
+    worker: &mut super::Data,
+    msg: proto::to::StartQuotes,
+    order_id: Option<u64>,
+    private_id: Option<String>,
+) {
     stop_quotes(worker, proto::Empty {});
 
     let asset_pair = AssetPair::from(&msg.asset_pair);
@@ -1903,13 +2203,21 @@ pub fn start_quotes(worker: &mut super::Data, msg: proto::to::StartQuotes) {
                 asset_type: msg.asset_type,
                 amount: msg.amount,
                 trade_dir: msg.trade_dir,
+                order_id,
                 result: Some(resp),
             }));
             return;
         }
     };
 
-    let res = try_start_quotes(worker, &msg, swap_info, receive_address);
+    let res = try_start_quotes(
+        worker,
+        &msg,
+        swap_info,
+        receive_address,
+        order_id,
+        private_id.clone(),
+    );
 
     match res {
         Ok(started_quote) => {
@@ -1921,9 +2229,52 @@ pub fn start_quotes(worker: &mut super::Data, msg: proto::to::StartQuotes) {
                 asset_type: msg.asset_type,
                 amount: msg.amount,
                 trade_dir: msg.trade_dir,
+                order_id,
                 result: Some(proto::from::quote::Result::Error(err.to_string())),
             }));
         }
+    }
+}
+
+pub fn start_order(
+    worker: &mut super::Data,
+    proto::to::StartOrder {
+        order_id,
+        private_id,
+    }: proto::to::StartOrder,
+) {
+    stop_quotes(worker, proto::Empty {});
+
+    let res = send_market_request!(
+        worker,
+        GetOrder,
+        mkt::GetOrderRequest {
+            order_id: OrdId::new(order_id),
+            private_id: private_id.clone().map(Box::new),
+        }
+    );
+
+    let error_msg = res.as_ref().err().map(|err| err.to_string());
+
+    worker
+        .ui
+        .send(proto::from::Msg::StartOrder(proto::GenericResponse {
+            success: error_msg.is_none(),
+            error_msg,
+        }));
+
+    if let Ok(private) = res {
+        start_quotes(
+            worker,
+            proto::to::StartQuotes {
+                asset_pair: private.asset_pair.into(),
+                asset_type: proto::AssetType::Base.into(),
+                amount: u64::MAX,
+                trade_dir: proto::TradeDir::from(private.trade_dir.inv()).into(),
+            },
+            Some(order_id),
+            private_id,
+        );
     }
 }
 
@@ -2229,5 +2580,72 @@ fn get_witness(
                 utxo.prevout_script.to_bytes(),
             ]
         }
+    }
+}
+
+fn sync_market_list(worker: &mut super::Data) {
+    if worker.market.server_markets.is_empty() {
+        return;
+    }
+
+    let server_assets = worker
+        .market
+        .server_markets
+        .iter()
+        .flat_map(|market| [market.asset_pair.base, market.asset_pair.quote])
+        .collect::<BTreeSet<_>>();
+
+    let wallet_token_assets = worker
+        .market
+        .wallet_utxos
+        .iter()
+        .filter_map(|(account, utxos)| {
+            (*account == ACCOUNT_ID_REG).then_some(utxos.unspent_outputs.keys())
+        })
+        .flatten()
+        .copied()
+        .collect::<BTreeSet<_>>();
+
+    let all_assets = server_assets
+        .union(&wallet_token_assets)
+        .copied()
+        .collect::<Vec<_>>();
+    worker.add_missing_gdk_assets(&all_assets);
+
+    let mut market_list = Vec::<proto::MarketInfo>::new();
+    let mut asset_pairs = BTreeSet::<AssetPair>::new();
+    for market in worker.market.server_markets.iter() {
+        if worker.assets.contains_key(&market.asset_pair.base)
+            && worker.assets.contains_key(&market.asset_pair.quote)
+        {
+            market_list.push(market.clone().into());
+            asset_pairs.insert(market.asset_pair);
+        }
+    }
+
+    for asset in worker.assets.values() {
+        let asset_pair = AssetPair {
+            base: asset.asset_id,
+            quote: worker.policy_asset,
+        };
+        if asset.market_type == Some(MarketType::Token)
+            && !asset_pairs.contains(&asset_pair)
+            && wallet_token_assets.contains(&asset.asset_id)
+        {
+            market_list.push(proto::MarketInfo {
+                asset_pair: asset_pair.into(),
+                fee_asset: proto::AssetType::Quote.into(),
+                r#type: proto::MarketType::Token.into(),
+            });
+        }
+    }
+
+    if worker.market.ui_markets != market_list {
+        worker.market.ui_markets = market_list.clone();
+        worker
+            .ui
+            .send(proto::from::Msg::MarketList(proto::from::MarketList {
+                markets: market_list,
+            }));
     }
 }

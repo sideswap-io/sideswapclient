@@ -21,7 +21,7 @@ pub async fn send_once(text: &str, url: &str) -> Result<(), anyhow::Error> {
         .text()
         .await?;
 
-    ensure!(resp == "ok", "sending message failed: {}", &resp);
+    anyhow::ensure!(resp == "ok", "sending message failed: {}", &resp);
     Ok(())
 }
 

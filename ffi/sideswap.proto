@@ -119,51 +119,6 @@ message ServerStatus {
   repeated FeeRate bitcoin_fee_rates = 5;
 }
 
-message UploadContact {
-  required string identifier = 1;
-  required string name = 2;
-  repeated string phones = 3;
-}
-
-message Contact {
-  required string contact_key = 1;
-  required string name = 2;
-  required string phone = 3;
-}
-
-message ContactTransaction {
-  required string txid = 1;
-  required string contact_key = 2;
-}
-
-message Order {
-  required string order_id = 1;
-  required string asset_id = 2;
-  required int64 bitcoin_amount = 3;
-  required bool send_bitcoins = 10;
-  required int64 server_fee = 4;
-  required int64 asset_amount = 5;
-  required double price = 6;
-  required int64 created_at = 7;
-  optional int64 expires_at = 8;
-  required bool private = 9;
-  required bool two_step = 17;
-  required bool auto_sign = 11;
-  required bool own = 12;
-  required bool token_market = 16;
-  required bool from_notification = 13;
-  optional double index_price = 15;
-}
-
-message SwapDetails {
-  required string order_id = 1;
-  required string send_asset = 2;
-  required string recv_asset = 3;
-  required int64 send_amount = 4;
-  required int64 recv_amount = 5;
-  required string upload_url = 6;
-}
-
 message OutPoint {
   required string txid = 1;
   required uint32 vout = 2;
@@ -230,7 +185,10 @@ message OwnOrder {
   required AssetPair asset_pair = 2;
   required TradeDir trade_dir = 3;
   required uint64 orig_amount = 4;
-  required double price = 5;
+  required uint64 active_amount = 5;
+  required double price = 6;
+  optional string private_id = 7;
+  optional uint64 ttl_seconds = 8;
 }
 
 enum HistStatus {
@@ -353,82 +311,11 @@ message To {
     required string token = 1;
   }
 
-  message RegisterPhone {
-    required string number = 1;
-  }
-
-  message VerifyPhone {
-    required string phone_key = 1;
-    required string code = 2;
-  }
-
-  message UnregisterPhone {
-    required string phone_key = 1;
-  }
-
-  message UploadAvatar {
-    required string phone_key = 1;
-    required string image = 2;
-  }
-
-  message UploadContacts {
-    required string phone_key = 1;
-    repeated UploadContact contacts = 2;
-  }
-
-  message SubmitOrder {
-    required Account account = 7;
-    required string asset_id = 2;
-    optional double bitcoin_amount = 3;
-    optional double asset_amount = 4;
-    required double price = 5;
-    optional double index_price = 6;
-  }
-
-  message LinkOrder {
-    required string order_id = 1;
-  }
-
-  message SubmitDecision {
-    required string order_id = 1;
-    required bool accept = 2;
-    optional bool auto_sign = 3;
-    optional bool private = 4;
-    optional bool two_step = 6;
-    optional uint64 ttl_seconds = 5;
-    optional bool tx_chaining_allowed = 7;
-    optional bool only_unused_utxos = 8;
-  }
-
-  message EditOrder {
-    required string order_id = 1;
-    oneof data {
-      double price = 2;
-      double index_price = 3;
-      bool auto_sign = 4;
-    }
-  }
-
-  message CancelOrder {
-    required string order_id = 1;
-  }
-
-  message Subscribe {
-    message Market {
-      required string asset_id = 1;
-    }
-    repeated Market markets = 1;
-  }
-
   message SubscribePriceStream {
     required string asset_id = 1;
     required bool send_bitcoins = 2;
     optional int64 send_amount = 3;
     optional int64 recv_amount = 4;
-  }
-
-  message MarketDataSubscribe {
-    required string asset_id = 1;
   }
 
   message GaidStatus {
@@ -462,6 +349,11 @@ message To {
     required AssetType asset_type = 2;
     required uint64 amount = 3;
     required TradeDir trade_dir = 4;
+  }
+
+  message StartOrder {
+    required uint64 order_id = 1;
+    optional string private_id = 2;
   }
 
   message AcceptQuote {
@@ -498,28 +390,11 @@ message To {
     PegInRequest peg_in_request = 21;
     PegOutAmount peg_out_amount = 24;
     PegOutRequest peg_out_request = 22;
-    SwapDetails swap_accept = 23;
 
-    RegisterPhone register_phone = 40;
-    VerifyPhone verify_phone = 41;
-    UnregisterPhone unregister_phone = 44;
-    UploadAvatar upload_avatar = 42;
-    UploadContacts upload_contacts = 43;
-
-    SubmitOrder submit_order = 49;
-    LinkOrder link_order = 50;
-    SubmitDecision submit_decision = 51;
-    EditOrder edit_order = 52;
-    CancelOrder cancel_order = 53;
-    Subscribe subscribe = 54;
     AssetId asset_details = 57;
-    AssetId subscribe_price = 55;
-    AssetId unsubscribe_price = 56;
     SubscribePriceStream subscribe_price_stream = 58;
     Empty unsubscribe_price_stream = 59;
 
-    MarketDataSubscribe market_data_subscribe = 60;
-    Empty market_data_unsubscribe = 61;
     Empty portfolio_prices = 62;
     Empty conversion_rates = 63;
 
@@ -535,6 +410,7 @@ message To {
     OrderCancel order_cancel = 104;
 
     StartQuotes start_quotes = 110;
+    StartOrder start_order = 113;
     Empty stop_quotes = 111;
     AcceptQuote accept_quote = 112;
 
@@ -599,11 +475,6 @@ message From {
 
   message AmpAssets {
     repeated string assets = 1;
-  }
-
-  // TODO: Remove
-  message TokenMarketOrder {
-    repeated string asset_ids = 1;
   }
 
   message UpdatedTxs {
@@ -730,72 +601,6 @@ message From {
     required int64 required = 3;
   }
 
-  message SubmitReview {
-    enum Step {
-      SUBMIT = 1;
-      QUOTE = 2;
-      SIGN = 3;
-    }
-
-    required string order_id = 1;
-    required string asset = 2;
-    required int64 bitcoin_amount = 3;
-    required int64 server_fee = 8;
-    required int64 asset_amount = 4;
-    required double price = 5;
-    required bool sell_bitcoin = 6;
-    required Step step = 7;
-    required bool index_price = 9;
-    required bool auto_sign = 11;
-    optional bool two_step = 12;
-    optional bool tx_chaining_required = 13;
-  }
-
-  message SubmitResult {
-    message UnregisteredGaid {
-      required string domain_agent = 1;
-    }
-
-    oneof result {
-      Empty submit_succeed = 1;
-      TransItem swap_succeed = 2;
-      string error = 3;
-      UnregisteredGaid unregistered_gaid = 4;
-    }
-  }
-
-  message StartTimer {
-    required string order_id = 1;
-  }
-
-  message OrderCreated {
-    required Order order = 1;
-    required bool new = 2;
-  }
-
-  message OrderRemoved {
-    required string order_id = 1;
-  }
-
-  message OrderComplete {
-    required string order_id = 1;
-    optional string txid = 2;
-  }
-
-  message IndexPrice {
-    required string asset_id = 1;
-    optional double ind = 2;
-    optional double last = 3;
-  }
-
-  message ContactRemoved {
-    required string contact_key = 1;
-  }
-
-  message AccountStatus {
-    required bool registered = 1;
-  }
-
   message AssetDetails {
     message Stats {
       required int64 issued_amount = 1;
@@ -803,15 +608,9 @@ message From {
       required int64 offline_amount = 4;
       required bool has_blinded_issuances = 3;
     }
-    message ChartStats {
-      required double low = 1;
-      required double high = 2;
-      required double last = 3;
-    }
     required string asset_id = 1;
     optional Stats stats = 2;
     optional string chart_url = 3;
-    optional ChartStats chart_stats = 4;
   }
 
   message UpdatePriceStream {
@@ -826,16 +625,6 @@ message From {
   message LocalMessage {
     required string title = 1;
     required string body = 2;
-  }
-
-  message MarketDataSubscribe {
-    required string asset_id = 1;
-    repeated ChartPoint data = 2;
-  }
-
-  message MarketDataUpdate {
-    required string asset_id = 1;
-    required ChartPoint update = 2;
   }
 
   message PortfolioPrices {
@@ -862,6 +651,7 @@ message From {
       READ_STATUS = 2;
       AUTH_USER = 3;
       MASTER_BLINDING_KEY = 5;
+      SIGN_MESSAGE = 10;
 
       SIGN_TX = 4;
       SIGN_SWAP = 8;
@@ -919,9 +709,11 @@ message From {
     }
 
     message LowBalance {
-      required string asset_id = 1;
-      required uint64 required = 2;
-      required uint64 available = 3;
+      required uint64 base_amount = 1;
+      required uint64 quote_amount = 2;
+      required uint64 server_fee = 3;
+      required uint64 fixed_fee = 4;
+      required uint64 available = 5;
     }
 
     message UnregisteredGaid {
@@ -932,6 +724,7 @@ message From {
     required AssetType asset_type = 2;
     required uint64 amount = 3;
     required TradeDir trade_dir = 4;
+    optional uint64 order_id = 5;
 
     oneof result {
       Success success = 10;
@@ -982,7 +775,6 @@ message From {
     UpdatedPegs updated_pegs = 2;
     Asset new_asset = 3;
     AmpAssets amp_assets = 9;
-    TokenMarketOrder token_market_order = 18;
     BalanceUpdate balance_update = 4;
     ServerStatus server_status = 5;
     PriceUpdate price_update = 6;
@@ -1004,36 +796,16 @@ message From {
     LoadUtxos load_utxos = 35;
     LoadAddresses load_addresses = 36;
 
-    RegisterPhone register_phone = 40;
-    VerifyPhone verify_phone = 41;
-    GenericResponse upload_avatar = 42;
-    GenericResponse upload_contacts = 43;
-    Contact contact_created = 44;
-    ContactRemoved contact_removed = 45;
-    ContactTransaction contact_transaction = 46;
-    AccountStatus account_status = 47;
-
     ShowMessage show_message = 50;
     ShowInsufficientFunds insufficient_funds = 55;
-    SubmitReview submit_review = 51;
-    SubmitResult submit_result = 52;
-    GenericResponse edit_order = 53;
-    GenericResponse cancel_order = 54;
-    StartTimer start_timer = 56;
 
     Empty server_connected = 60;
     Empty server_disconnected = 61;
-    OrderCreated order_created = 62;
-    OrderRemoved order_removed = 63;
-    OrderComplete order_complete = 67;
-    IndexPrice index_price = 64;
     AssetDetails asset_details = 65;
 
     UpdatePriceStream update_price_stream = 66;
     LocalMessage local_message = 68;
 
-    MarketDataSubscribe market_data_subscribe = 70;
-    MarketDataUpdate market_data_update = 71;
     PortfolioPrices portfolio_prices = 72;
     ConversionRates conversion_rates = 73;
 
@@ -1060,6 +832,7 @@ message From {
     GenericResponse order_edit = 131;
     GenericResponse order_cancel = 132;
 
+    GenericResponse start_order = 142;
     Quote quote = 140;
     AcceptQuote accept_quote = 141;
 

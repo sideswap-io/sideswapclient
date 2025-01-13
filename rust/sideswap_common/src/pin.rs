@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use anyhow::anyhow;
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct PinData {
     pub salt: String,

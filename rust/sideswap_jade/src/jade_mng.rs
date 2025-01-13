@@ -14,16 +14,56 @@ pub enum TxType {
     OfflineSwap,
 }
 
+#[derive(Copy, Clone)]
 pub enum JadeStatus {
     Connecting,
-    Idle,
     ReadStatus,
     AuthUser,
     MasterBlindingKey,
+    SignMessage,
     SignTx(TxType),
 }
 
-pub type JadeStatusCallback = std::sync::Arc<Box<dyn Fn(JadeStatus)>>;
+pub type JadeStatusCallback = std::sync::Arc<Box<dyn Fn(Option<JadeStatus>)>>;
+
+// Number of started Jade popups (only the first status is shown).
+type ActiveStatuses = Arc<Mutex<usize>>;
+
+pub struct JadeStatusFlag {
+    active_statuses: ActiveStatuses,
+    status_callback: JadeStatusCallback,
+}
+
+impl JadeStatusFlag {
+    fn new(
+        status: JadeStatus,
+        active_statuses: ActiveStatuses,
+        status_callback: JadeStatusCallback,
+    ) -> JadeStatusFlag {
+        {
+            let mut status_lock = active_statuses.lock().expect("must not fail");
+            if *status_lock == 0 {
+                (status_callback)(Some(status));
+            }
+            *status_lock += 1;
+        }
+
+        JadeStatusFlag {
+            active_statuses,
+            status_callback,
+        }
+    }
+}
+
+impl Drop for JadeStatusFlag {
+    fn drop(&mut self) {
+        let mut status_lock = self.active_statuses.lock().expect("must not fail");
+        *status_lock -= 1;
+        if *status_lock == 0 {
+            (self.status_callback)(None);
+        }
+    }
+}
 
 use crate::{
     byte_array::ByteArray32,
@@ -78,17 +118,24 @@ pub struct ManagedJade {
     data: Arc<Mutex<ManagedJadeData>>,
     agent: ureq::Agent,
     transport: Arc<dyn Transport>,
+    active_statuses: ActiveStatuses,
     status_callback: JadeStatusCallback,
 }
 
 pub struct JadeMng {
     transports: Vec<Arc<dyn Transport>>,
+    active_statuses: ActiveStatuses,
     status_callback: JadeStatusCallback,
 }
 
 impl ManagedJade {
-    pub fn set_status(&self, status: JadeStatus) {
-        (self.status_callback)(status);
+    #[must_use]
+    pub fn start_status(&self, status: JadeStatus) -> JadeStatusFlag {
+        JadeStatusFlag::new(
+            status,
+            Arc::clone(&self.active_statuses),
+            Arc::clone(&self.status_callback),
+        )
     }
 
     fn try_make_request<Request: serde::Serialize, Response: serde::de::DeserializeOwned>(
@@ -111,15 +158,12 @@ impl ManagedJade {
         }
 
         if data.connection.is_none() {
-            let connecting_status = match self.transport.transport_type() {
-                transports::TransportType::Serial => JadeStatus::Idle,
-                transports::TransportType::Ble => JadeStatus::Connecting,
-                transports::TransportType::Tcp => JadeStatus::Idle,
+            let _status = match self.transport.transport_type() {
+                transports::TransportType::Serial => None,
+                transports::TransportType::Ble => Some(self.start_status(JadeStatus::Connecting)),
+                transports::TransportType::Tcp => None,
             };
-            self.set_status(connecting_status);
-            let open_res = self.transport.open(&self.jade_id);
-            self.set_status(JadeStatus::Idle);
-            let jade = open_res?;
+            let jade = self.transport.open(&self.jade_id)?;
             data.connection = Some(jade);
         }
         let jade = data.connection.as_mut().expect("connection is open now");
@@ -361,9 +405,11 @@ impl ManagedJade {
     }
 
     pub fn sign_message(&self, req: models::SignMessageReq) -> Result<Vec<u8>, anyhow::Error> {
+        // greenaddress.it requests are automatically signed, all others require user approval.
+        // Use 60 seconds timeout.
         let resp = self.make_request::<models::ReqSignMessage, models::RespSignMessage>(
             "sign_message",
-            std::time::Duration::from_secs(10),
+            std::time::Duration::from_secs(60),
             models::ReqSignMessage {
                 path: req.path,
                 message: req.message,
@@ -403,6 +449,7 @@ impl JadeMng {
 
         JadeMng {
             transports,
+            active_statuses: Default::default(),
             status_callback,
         }
     }
@@ -451,6 +498,7 @@ impl JadeMng {
             data: Arc::new(Mutex::new(jade_data)),
             agent: ureq::Agent::new(), // FIXME: Use proxy
             transport: Arc::clone(transport),
+            active_statuses: Arc::clone(&self.active_statuses),
             status_callback: Arc::clone(&self.status_callback),
         })
     }

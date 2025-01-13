@@ -115,12 +115,14 @@ impl WsReqSender {
         Ok(resp)
     }
 
-    pub fn send_request(&mut self, req: sideswap_api::Request) {
+    pub fn send_request(&mut self, req: sideswap_api::Request) -> sideswap_api::RequestId {
+        let request_id = next_request_id();
         self.req_sender
             .send(WrappedRequest::Request(
-                sideswap_api::RequestMessage::Request(next_request_id(), req),
+                sideswap_api::RequestMessage::Request(request_id.clone(), req),
             ))
             .expect("must be open");
+        request_id
     }
 
     pub async fn make_request(

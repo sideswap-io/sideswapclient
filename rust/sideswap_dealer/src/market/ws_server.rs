@@ -9,7 +9,7 @@ use tokio::{
 };
 use tokio_tungstenite::{tungstenite::Message, WebSocketStream};
 
-use super::{api, controller::Controller, ClientEvent, ClientId, Error};
+use super::{api, controller::Controller, ClientEvent, ClientId, Error, StartQuotesResp};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
@@ -40,13 +40,52 @@ async fn send_notif(data: &mut Data, notif: api::Notif) {
 
 async fn process_ws_req(data: &mut Data, req: api::Req) -> Result<api::Resp, Error> {
     match req {
-        api::Req::Subscribe(req) => {
+        api::Req::Subscribe(api::SubscribeReq { exchange_pair }) => {
             let resp = data
                 .controller
-                .client_subscribe(data.client_id, req.exchange_pair)
+                .subscribe(data.client_id, exchange_pair)
                 .await?;
             let orders = resp.orders.into_iter().map(Into::into).collect();
             Ok(api::Resp::Subscribe(api::SubscribeResp { orders }))
+        }
+
+        api::Req::StartQuotes(api::StartQuotesReq {
+            exchange_pair,
+            asset_type,
+            amount,
+            trade_dir,
+            order_id,
+            private_id,
+        }) => {
+            let StartQuotesResp {
+                quote_sub_id,
+                fee_asset,
+            } = data
+                .controller
+                .start_quotes(
+                    data.client_id,
+                    exchange_pair,
+                    asset_type,
+                    amount,
+                    trade_dir.into(),
+                    order_id,
+                    private_id,
+                )
+                .await?;
+            Ok(api::Resp::StartQuotes(api::StartQuotesResp {
+                quote_sub_id,
+                fee_asset,
+            }))
+        }
+
+        api::Req::StopQuotes(api::StopQuotesReq {}) => {
+            data.controller.stop_quotes();
+            Ok(api::Resp::StopQuotes(api::StopQuotesResp {}))
+        }
+
+        api::Req::AcceptQuote(api::AcceptQuoteReq { quote_id }) => {
+            let txid = data.controller.accept_quote(quote_id).await?;
+            Ok(api::Resp::AcceptQuote(api::AcceptQuoteResp { txid }))
         }
     }
 }
@@ -109,9 +148,7 @@ async fn process_ws_msg(data: &mut Data, msg: Message) {
         Message::Binary(_) => {
             log::debug!("binary message ignored");
         }
-        Message::Ping(msg) => {
-            send_msg(data, Message::Pong(msg)).await;
-        }
+        Message::Ping(_) => {}
         Message::Pong(_) => {}
         Message::Close(msg) => {
             log::debug!("close message received: {msg:?}");
@@ -209,6 +246,10 @@ async fn process_client_event(data: &mut Data, event: ClientEvent) {
                 }),
             )
             .await;
+        }
+
+        ClientEvent::Quote { notif } => {
+            send_notif(data, api::Notif::Quote(notif)).await;
         }
     }
 }

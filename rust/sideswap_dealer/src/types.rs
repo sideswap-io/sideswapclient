@@ -1,6 +1,6 @@
 use elements::AssetId;
 use serde::{Deserialize, Serialize};
-use sideswap_api::{TICKER_DEPIX, TICKER_EURX, TICKER_LBTC, TICKER_MEX, TICKER_SSWP, TICKER_USDT};
+use sideswap_api::mkt::AssetType;
 use sideswap_common::network::Network;
 use sideswap_types::asset_precision::AssetPrecision;
 
@@ -12,16 +12,22 @@ pub enum DealerTicker {
     MEX,
     DePix,
     SSWP,
+    BMN2,
+    CMSTR,
+    PPRGB,
 }
 
 impl DealerTicker {
-    pub const ALL: [DealerTicker; 6] = [
+    pub const ALL: [DealerTicker; 9] = [
         DealerTicker::LBTC,
         DealerTicker::USDt,
         DealerTicker::EURx,
         DealerTicker::MEX,
         DealerTicker::DePix,
         DealerTicker::SSWP,
+        DealerTicker::BMN2,
+        DealerTicker::CMSTR,
+        DealerTicker::PPRGB,
     ];
 
     pub fn asset_precision(&self) -> AssetPrecision {
@@ -31,7 +37,10 @@ impl DealerTicker {
             | DealerTicker::EURx
             | DealerTicker::MEX
             | DealerTicker::DePix => AssetPrecision::BITCOIN_PRECISION,
-            DealerTicker::SSWP => AssetPrecision::ZERO,
+
+            DealerTicker::BMN2 | DealerTicker::CMSTR => AssetPrecision::FOUR,
+
+            DealerTicker::SSWP | DealerTicker::PPRGB => AssetPrecision::ZERO,
         }
     }
 }
@@ -54,6 +63,15 @@ impl std::fmt::Display for ExchangePair {
     }
 }
 
+impl ExchangePair {
+    pub fn asset(&self, asset_type: AssetType) -> DealerTicker {
+        match asset_type {
+            AssetType::Base => self.base,
+            AssetType::Quote => self.quote,
+        }
+    }
+}
+
 pub fn dealer_ticker_to_asset_id(network: Network, ticker: DealerTicker) -> elements::AssetId {
     match ticker {
         DealerTicker::LBTC => network.d().policy_asset.asset_id(),
@@ -62,6 +80,9 @@ pub fn dealer_ticker_to_asset_id(network: Network, ticker: DealerTicker) -> elem
         DealerTicker::MEX => network.d().known_assets.mex.asset_id(),
         DealerTicker::DePix => network.d().known_assets.depix.asset_id(),
         DealerTicker::SSWP => network.d().known_assets.sswp.asset_id(),
+        DealerTicker::BMN2 => network.d().known_assets.bmn2.asset_id(),
+        DealerTicker::CMSTR => network.d().known_assets.cmstr.asset_id(),
+        DealerTicker::PPRGB => network.d().known_assets.pprgb.asset_id(),
     }
 }
 
@@ -74,23 +95,29 @@ pub fn dealer_ticker_from_asset_id(network: Network, asset_id: &AssetId) -> Opti
 
 fn dealer_ticker_to_asset_ticker(dealer_ticker: DealerTicker) -> &'static str {
     match dealer_ticker {
-        DealerTicker::LBTC => TICKER_LBTC,
-        DealerTicker::USDt => TICKER_USDT,
-        DealerTicker::EURx => TICKER_EURX,
-        DealerTicker::MEX => TICKER_MEX,
-        DealerTicker::DePix => TICKER_DEPIX,
-        DealerTicker::SSWP => TICKER_SSWP,
+        DealerTicker::LBTC => sideswap_api::TICKER_LBTC,
+        DealerTicker::USDt => sideswap_api::TICKER_USDT,
+        DealerTicker::EURx => sideswap_api::TICKER_EURX,
+        DealerTicker::MEX => sideswap_api::TICKER_MEX,
+        DealerTicker::DePix => sideswap_api::TICKER_DEPIX,
+        DealerTicker::SSWP => sideswap_api::TICKER_SSWP,
+        DealerTicker::BMN2 => sideswap_api::TICKER_BMN2,
+        DealerTicker::CMSTR => sideswap_api::TICKER_CMSTR,
+        DealerTicker::PPRGB => sideswap_api::TICKER_PPRGB,
     }
 }
 
 pub fn dealer_ticker_from_asset_ticker(ticker: &str) -> Option<DealerTicker> {
     let ticker = match ticker {
-        TICKER_LBTC => DealerTicker::LBTC,
-        TICKER_USDT => DealerTicker::USDt,
-        TICKER_EURX => DealerTicker::EURx,
-        TICKER_MEX => DealerTicker::MEX,
-        TICKER_DEPIX => DealerTicker::DePix,
-        TICKER_SSWP => DealerTicker::SSWP,
+        sideswap_api::TICKER_LBTC => DealerTicker::LBTC,
+        sideswap_api::TICKER_USDT => DealerTicker::USDt,
+        sideswap_api::TICKER_EURX => DealerTicker::EURx,
+        sideswap_api::TICKER_MEX => DealerTicker::MEX,
+        sideswap_api::TICKER_DEPIX => DealerTicker::DePix,
+        sideswap_api::TICKER_SSWP => DealerTicker::SSWP,
+        sideswap_api::TICKER_BMN2 => DealerTicker::BMN2,
+        sideswap_api::TICKER_CMSTR => DealerTicker::CMSTR,
+        sideswap_api::TICKER_PPRGB => DealerTicker::PPRGB,
         _ => return None,
     };
     Some(ticker)

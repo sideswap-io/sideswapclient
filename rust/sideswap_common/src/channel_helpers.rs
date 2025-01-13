@@ -4,7 +4,7 @@ impl<T> UncheckedUnboundedSender<T> {
     pub fn send(&self, message: T) {
         let res = self.0.send(message);
         if res.is_err() {
-            debug!("channel is closed");
+            log::debug!("channel is closed");
         }
     }
 }
@@ -21,7 +21,7 @@ impl<T> UncheckedOneshotSender<T> {
     pub fn send(self, message: T) {
         let res = self.0.send(message);
         if res.is_err() {
-            debug!("channel is closed");
+            log::debug!("channel is closed");
         }
     }
 }

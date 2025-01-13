@@ -20,6 +20,9 @@ pub const TICKER_EURX: &str = "EURx";
 pub const TICKER_MEX: &str = "MEX";
 pub const TICKER_DEPIX: &str = "DePix";
 pub const TICKER_SSWP: &str = "SSWP";
+pub const TICKER_BMN2: &str = "BMN2";
+pub const TICKER_CMSTR: &str = "CMSTR";
+pub const TICKER_PPRGB: &str = "PPRGB";
 
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
 pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";

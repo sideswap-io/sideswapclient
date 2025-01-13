@@ -43,7 +43,6 @@ use storage::Transfer;
 use storage::TransferState;
 use tokio::sync::mpsc::unbounded_channel;
 use tokio::sync::mpsc::UnboundedSender;
-use tokio::sync::oneshot;
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ExchangeTicker {
@@ -1211,24 +1210,7 @@ async fn main() {
         ));
     }
 
-    let (exit_sender, mut exit_receiver) = oneshot::channel::<()>();
-    #[cfg(target_os = "linux")]
-    {
-        tokio::spawn(async move {
-            let mut sig_terminate =
-                tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
-                    .expect("must not fail");
-            let mut sig_interrupt =
-                tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())
-                    .expect("must not fail");
-            tokio::select! {
-                _ = sig_terminate.recv() => {},
-                _ = sig_interrupt.recv() => {},
-            }
-            debug!("received term signal");
-            exit_sender.send(()).expect("must be open");
-        });
-    }
+    let term_signal = sideswap_dealer::signals::TermSignal::new();
 
     let (dealer_command_sender, mut dealer_event_receiver) = spawn_async(params.clone());
 
@@ -1330,7 +1312,7 @@ async fn main() {
                 process_timer(&mut data).await;
             },
 
-            _ = &mut exit_receiver => {
+            _ = term_signal.recv() => {
                 break;
             },
         }

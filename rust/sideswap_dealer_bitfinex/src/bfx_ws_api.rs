@@ -167,9 +167,7 @@ async fn next_msg<T: serde::de::DeserializeOwned>(conn: &mut Conn) -> Result<T, 
                 return Ok(msg);
             }
             tungstenite::Message::Binary(_) => bail!("unexpected binary message received"),
-            tungstenite::Message::Ping(data) => {
-                conn.send(tungstenite::Message::Pong(data)).await?;
-            }
+            tungstenite::Message::Ping(_) => {}
             tungstenite::Message::Pong(_) => {}
             tungstenite::Message::Close(info) => {
                 bail!("close message received: {info:?}");
@@ -551,7 +549,6 @@ fn get_events(state: &mut State, orig_msg: &str) -> Result<Vec<Event>, anyhow::E
 
 async fn process_ws_message(
     state: &mut State,
-    conn: &mut Conn,
     event_sender: &UncheckedUnboundedSender<Event>,
     msg: tungstenite::Message,
 ) -> Result<(), anyhow::Error> {
@@ -565,10 +562,7 @@ async fn process_ws_message(
             Ok(())
         }
         tungstenite::Message::Binary(_) => bail!("unexpected binary message received"),
-        tungstenite::Message::Ping(data) => {
-            conn.send(tungstenite::Message::Pong(data)).await?;
-            Ok(())
-        }
+        tungstenite::Message::Ping(_) => Ok(()),
         tungstenite::Message::Pong(_) => Ok(()),
         tungstenite::Message::Close(info) => {
             bail!("close message received: {info:?}");
@@ -650,7 +644,7 @@ pub async fn run_once(
         tokio::select! {
             msg = conn.next() => {
                 let msg = msg.ok_or_else(|| anyhow!("ws connection closed"))??;
-                process_ws_message(&mut state, conn, event_sender, msg).await?;
+                process_ws_message(&mut state, event_sender, msg).await?;
             },
 
             req = command_receiver.recv() => {

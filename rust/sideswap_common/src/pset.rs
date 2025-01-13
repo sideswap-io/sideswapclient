@@ -1,3 +1,4 @@
+use anyhow::{anyhow, ensure};
 use bitcoin::hashes::Hash;
 
 /// Server fee that clients pay to the server for each swap.

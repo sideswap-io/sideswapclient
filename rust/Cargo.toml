@@ -76,7 +76,7 @@ serialport = "4.2"
 sha2 = "0.10"
 thiserror = "1.0"
 time = { version = "0.3", features = ["local-offset", "formatting", "macros", "parsing"] }
-tokio = { version = "1.15", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time"] }
+tokio = { version = "1.15", features = ["macros", "net", "rt", "rt-multi-thread", "sync", "time", "signal"] }
 tokio-socks = "0.5"
 tokio-tungstenite = { version = "0.20", features = ["stream", "rustls-tls-webpki-roots"] }
 tungstenite = { version = "0.20", default-features = false }

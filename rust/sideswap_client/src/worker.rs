@@ -20,9 +20,11 @@ use bitcoin::secp256k1::global::SECP256K1;
 use elements::bitcoin::bip32::ChildNumber;
 use elements::AssetId;
 use log::{debug, error, info, warn};
+use market_worker::REGISTER_PATH;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use sideswap_common::env::Env;
+use sideswap_common::event_proofs::EventProofs;
 use sideswap_common::network::Network;
 use sideswap_common::send_tx::coin_select::InOut;
 use sideswap_common::types::{self, peg_out_amount, select_utxo_values, Amount};
@@ -138,6 +140,7 @@ type AsyncRequests =
 enum TimerEvent {
     AmpConnectionCheck,
     SyncUtxos,
+    SendAck,
 }
 
 pub struct Data {
@@ -176,15 +179,11 @@ pub struct Data {
     settings: settings::Settings,
     push_token: Option<String>,
     policy_asset: AssetId,
-    pending_submits: Vec<proto::to::SubmitOrder>, // TODO: Remove
-    pending_links: Vec<proto::to::LinkOrder>,     // TODO: Remove
     subscribed_price_stream: Option<api::SubscribePriceStreamRequest>,
     last_blocks: BTreeMap<AccountId, gdk_json::NotificationBlock>,
     used_addresses: UsedAddresses,
-    price_subscribes: BTreeSet<AssetId>,
 
     jade_mng: jade_mng::JadeMng,
-    jade_status_callback: JadeStatusCallback,
 
     async_requests: AsyncRequests,
 
@@ -510,7 +509,7 @@ impl Data {
         self.settings.master_pub_key.unwrap()
     }
 
-    fn load_gdk_asset(&mut self, asset_ids: &[AssetId]) -> Result<Vec<api::Asset>, anyhow::Error> {
+    fn load_gdk_assets(&mut self, asset_ids: &[AssetId]) -> Result<Vec<api::Asset>, anyhow::Error> {
         assets_registry::get_assets(self.env, self.master_xpub(), asset_ids)
     }
 
@@ -613,7 +612,10 @@ impl Data {
             .cloned()
             .collect::<Vec<_>>();
         if !new_asset_ids.is_empty() {
-            let new_assets = self.load_gdk_asset(&new_asset_ids).ok().unwrap_or_default();
+            let new_assets = self
+                .load_gdk_assets(&new_asset_ids)
+                .ok()
+                .unwrap_or_default();
             for asset_id in new_asset_ids.iter() {
                 info!("try add new asset: {}", asset_id);
                 let asset = match new_assets.iter().find(|asset| asset.asset_id == *asset_id) {
@@ -1018,12 +1020,6 @@ impl Data {
 
         self.ui
             .send(proto::from::Msg::ServerConnected(proto::Empty {}));
-
-        for asset_id in self.price_subscribes.iter() {
-            self.send_request_msg(api::Request::LoadPrices(api::LoadPricesRequest {
-                asset: *asset_id,
-            }));
-        }
     }
 
     fn process_ws_disconnected(&mut self) {
@@ -1049,6 +1045,8 @@ impl Data {
         if self.logged_in() {
             self.send_ws_connect();
         }
+
+        remove_timers(self, TimerEvent::SendAck);
     }
 
     fn process_server_status(&mut self, resp: api::ServerStatus) {
@@ -1670,10 +1668,8 @@ impl Data {
                 let jade = self.jade_mng.open(jade_id)?;
                 gdk_ses_impl::unlock_hw(self.env, &jade)?;
 
-                (self.jade_status_callback)(JadeStatus::MasterBlindingKey);
-                let res = jade.master_blinding_key();
-                (self.jade_status_callback)(JadeStatus::Idle);
-                let resp = res?;
+                let _status = jade.start_status(JadeStatus::MasterBlindingKey);
+                let resp = jade.master_blinding_key()?;
                 let master_blinding_key = hex::encode(resp);
 
                 WalletInfo::HwData(gdk_ses::HwData {
@@ -1843,6 +1839,17 @@ impl Data {
                 let seed = mnemonic.to_seed("");
                 let bitcoin_network = self.env.d().network.d().bitcoin_network;
                 let master_key = bip32::Xpriv::new_master(bitcoin_network, &seed).unwrap();
+
+                let register_priv = master_key
+                    .derive_priv(
+                        SECP256K1,
+                        &REGISTER_PATH
+                            .iter()
+                            .map(|num| ChildNumber::from(*num))
+                            .collect::<Vec<_>>(),
+                    )
+                    .unwrap()
+                    .private_key;
                 let single_sig_xpriv = master_key
                     .derive_priv(
                         SECP256K1,
@@ -1862,11 +1869,27 @@ impl Data {
                     )
                     .unwrap();
 
+                let event_proofs = self
+                    .settings
+                    .event_proofs
+                    .as_ref()
+                    .map(|event_proofs| {
+                        serde_json::from_value::<EventProofs>(event_proofs.clone())
+                            .expect("must not fail")
+                    })
+                    .unwrap_or_else(|| {
+                        EventProofs::new(self.env, register_priv.public_key(&SECP256K1))
+                    });
+
                 market_worker::set_xprivs(
                     self,
                     market_worker::Xprivs {
+                        register_priv,
                         single_sig_xpriv,
                         multi_sig_xpriv,
+                        event_proofs,
+                        ack_succeed: false,
+                        expected_nonce: None,
                     },
                 );
 
@@ -2128,18 +2151,10 @@ impl Data {
             offline_amount: v.offline_amount.unwrap_or_default(),
             has_blinded_issuances: v.has_blinded_issuances,
         });
-        let chart_stats = msg
-            .chart_stats
-            .map(|v| proto::from::asset_details::ChartStats {
-                low: v.low,
-                high: v.high,
-                last: v.last,
-            });
         let from = proto::from::AssetDetails {
             asset_id: msg.asset_id.to_string(),
             stats,
             chart_url: msg.chart_url,
-            chart_stats,
         };
         self.ui.send(proto::from::Msg::AssetDetails(from));
     }
@@ -2401,15 +2416,6 @@ impl Data {
                 ));
             }
         });
-    }
-
-    fn process_update_prices(&self, msg: api::LoadPricesResponse) {
-        let index_price = proto::from::IndexPrice {
-            asset_id: msg.asset.to_string(),
-            ind: msg.ind,
-            last: msg.last,
-        };
-        self.ui.send(proto::from::Msg::IndexPrice(index_price));
     }
 
     fn process_update_price_stream(&self, msg: api::SubscribePriceStreamResponse) {
@@ -2721,7 +2727,7 @@ impl Data {
     }
 
     fn skip_wallet_sync(&self) -> bool {
-        self.pending_submits.is_empty() && self.pending_links.is_empty()
+        true
     }
 
     fn process_ui(&mut self, msg: ffi::ToMsg) {
@@ -2750,14 +2756,9 @@ impl Data {
             proto::to::Msg::LoadUtxos(req) => self.process_load_utxos(req),
             proto::to::Msg::LoadAddresses(req) => self.process_load_addresses(req),
             proto::to::Msg::UpdatePushToken(req) => self.process_update_push_token(req),
-            proto::to::Msg::Subscribe(_) => {} // self.process_subscribe(req),
             proto::to::Msg::AssetDetails(req) => self.process_asset_details(req),
-            proto::to::Msg::SubscribePrice(_) => {} // self.process_subscribe_price(req),
-            proto::to::Msg::UnsubscribePrice(_) => {} // self.process_unsubscribe_price(req),
             proto::to::Msg::SubscribePriceStream(req) => self.process_subscribe_price_stream(req),
             proto::to::Msg::UnsubscribePriceStream(_) => self.process_unsubscribe_price_stream(),
-            proto::to::Msg::MarketDataSubscribe(_) => {} // self.process_market_data_subscribe(req),
-            proto::to::Msg::MarketDataUnsubscribe(_) => {} // self.process_market_data_unsubscribe(),
             proto::to::Msg::PortfolioPrices(_) => self.process_portfolio_prices(),
             proto::to::Msg::ConversionRates(_) => self.process_conversion_rates(),
             proto::to::Msg::JadeRescan(_) => self.process_jade_rescan_request(),
@@ -2767,25 +2768,13 @@ impl Data {
             proto::to::Msg::OrderSubmit(msg) => market_worker::order_submit(self, msg),
             proto::to::Msg::OrderEdit(msg) => market_worker::order_edit(self, msg),
             proto::to::Msg::OrderCancel(msg) => market_worker::order_cancel(self, msg),
-            proto::to::Msg::StartQuotes(msg) => market_worker::start_quotes(self, msg),
+            proto::to::Msg::StartQuotes(msg) => market_worker::start_quotes(self, msg, None, None),
+            proto::to::Msg::StartOrder(msg) => market_worker::start_order(self, msg),
             proto::to::Msg::StopQuotes(msg) => market_worker::stop_quotes(self, msg),
             proto::to::Msg::AcceptQuote(msg) => market_worker::accept_quote(self, msg),
             proto::to::Msg::ChartsSubscribe(msg) => market_worker::charts_subscribe(self, msg),
             proto::to::Msg::ChartsUnsubscribe(msg) => market_worker::charts_unsubscribe(self, msg),
             proto::to::Msg::LoadHistory(msg) => market_worker::load_history(self, msg),
-
-            // TODO: Remove
-            proto::to::Msg::RegisterPhone(_) => {}
-            proto::to::Msg::VerifyPhone(_) => {}
-            proto::to::Msg::UnregisterPhone(_) => {}
-            proto::to::Msg::UploadAvatar(_) => {}
-            proto::to::Msg::UploadContacts(_) => {}
-            proto::to::Msg::SwapAccept(_) => {} // self.process_swap_accept(req),
-            proto::to::Msg::SubmitOrder(_) => {} // self.process_submit_order(req),
-            proto::to::Msg::LinkOrder(_) => {}  // self.process_link_order(req),
-            proto::to::Msg::SubmitDecision(_) => {} // self.process_submit_decision(req),
-            proto::to::Msg::EditOrder(_) => {}  // self.process_edit_order(req),
-            proto::to::Msg::CancelOrder(_) => {} // self.process_cancel_order(req),
         }
     }
 
@@ -2807,7 +2796,7 @@ impl Data {
             api::Response::RegisterDevice(_) => {}
             api::Response::RegisterAddresses(_) => {}
             api::Response::UpdatePushToken(_) => {}
-            api::Response::LoadPrices(msg) => self.process_update_prices(msg),
+            api::Response::LoadPrices(_) => {}
             api::Response::CancelPrices(_) => {}
             api::Response::PortfolioPrices(_) => {}
             api::Response::ConversionRates(_) => {}
@@ -2815,8 +2804,8 @@ impl Data {
             api::Response::Edit(_) => {}
             api::Response::Cancel(_) => {}
             api::Response::Login(_) => {}
-            api::Response::Subscribe(_) => {} // self.process_subscribe_response(msg),
-            api::Response::Unsubscribe(_) => {} // self.process_unsubscribe_response(msg),
+            api::Response::Subscribe(_) => {}
+            api::Response::Unsubscribe(_) => {}
             api::Response::Link(_) => {}
             api::Response::PsetMaker(_) => {}
             api::Response::PsetTaker(_) => {}
@@ -2833,7 +2822,7 @@ impl Data {
             api::Response::StartSwapDealer(_) => {}
             api::Response::SignedSwapClient(_) => {}
             api::Response::SignedSwapDealer(_) => {}
-            api::Response::MarketDataSubscribe(_) => {} // self.process_market_data_response(msg),
+            api::Response::MarketDataSubscribe(_) => {}
             api::Response::MarketDataUnsubscribe(_) => {}
             api::Response::SwapPrices(_) => {}
             api::Response::Market(resp) => market_worker::process_resp(self, resp),
@@ -2877,35 +2866,39 @@ impl Data {
             api::Notification::PegStatus(status) => self.process_peg_status(status),
             api::Notification::ServerStatus(resp) => self.process_server_status(resp),
             api::Notification::PriceUpdate(msg) => self.process_price_update(msg),
-            api::Notification::Sign(_) => {} //self.process_sign(msg),
-            api::Notification::Complete(_) => {} // self.process_complete(msg),
-            api::Notification::OrderCreated(_) => {} //self.process_order_created(msg),
-            api::Notification::OrderRemoved(_) => {} //self.process_order_removed(msg),
-            api::Notification::UpdatePrices(msg) => self.process_update_prices(msg),
+            api::Notification::Sign(_) => {}
+            api::Notification::Complete(_) => {}
+            api::Notification::OrderCreated(_) => {}
+            api::Notification::OrderRemoved(_) => {}
+            api::Notification::UpdatePrices(_) => {}
             api::Notification::UpdatePriceStream(msg) => self.process_update_price_stream(msg),
             api::Notification::BlindedSwapClient(msg) => self.process_blinded_swap_client(msg),
             api::Notification::SwapDone(msg) => self.process_instant_swap_done(msg),
             api::Notification::LocalMessage(msg) => self.process_local_message(msg),
             api::Notification::NewAsset(msg) => self.process_new_asset(msg),
-            api::Notification::MarketDataUpdate(_) => {} // self.process_market_data_update(msg),
+            api::Notification::MarketDataUpdate(_) => {}
             api::Notification::StartSwapDealer(_) => {}
             api::Notification::BlindedSwapDealer(_) => {}
             api::Notification::NewSwapPrice(_) => {}
         }
     }
 
-    fn add_gdk_asset_if_missing(&mut self, asset_id: &AssetId) -> Result<(), anyhow::Error> {
+    fn add_missing_gdk_assets(&mut self, asset_ids: &[AssetId]) {
         // Do not replace existing asset information (like market_type)
-        if self.assets.get(asset_id).is_some() {
-            return Ok(());
+        let new_asset_ids = asset_ids
+            .iter()
+            .copied()
+            .filter(|asset_id| !self.assets.contains_key(asset_id))
+            .collect::<Vec<_>>();
+        if !new_asset_ids.is_empty() {
+            let new_assets = self
+                .load_gdk_assets(&new_asset_ids)
+                .ok()
+                .unwrap_or_default();
+            for asset in new_assets {
+                self.register_asset(asset);
+            }
         }
-        let asset = self
-            .load_gdk_asset(&[*asset_id])?
-            .into_iter()
-            .next()
-            .ok_or_else(|| anyhow!("asset not found in gdk registry: {}", asset_id))?;
-        self.register_asset(asset);
-        Ok(())
     }
 
     pub fn register_asset(&mut self, asset: api::Asset) {
@@ -2949,7 +2942,7 @@ impl Data {
             .iter()
             .map(|asset| asset.asset_id)
             .collect::<Vec<_>>();
-        let gdk_assets = self.load_gdk_asset(&asset_ids).ok().unwrap_or_default();
+        let gdk_assets = self.load_gdk_assets(&asset_ids).ok().unwrap_or_default();
         let gdk_icons = gdk_assets
             .into_iter()
             .map(|asset| (asset.asset_id, asset.icon))
@@ -3229,6 +3222,9 @@ fn process_timer_event(data: &mut Data, event: TimerEvent) {
         TimerEvent::SyncUtxos => {
             market_worker::sync_utxos(data);
         }
+        TimerEvent::SendAck => {
+            market_worker::send_ack(data);
+        }
     }
 }
 
@@ -3308,36 +3304,34 @@ pub fn start_processing(
     let (ws_sender, ws_hint) = ws::start(ws_resp_callback);
 
     let ui_copy = ui.clone();
-    let last_jade_status = std::sync::Arc::new(std::sync::Mutex::new(
-        proto::from::jade_status::Status::Idle as i32,
-    ));
     let jade_status_callback: JadeStatusCallback =
-        std::sync::Arc::new(Box::new(move |status: JadeStatus| {
+        std::sync::Arc::new(Box::new(move |status: Option<JadeStatus>| {
             let status: i32 = match status {
-                JadeStatus::Connecting => proto::from::jade_status::Status::Connecting,
-                JadeStatus::Idle => proto::from::jade_status::Status::Idle,
-                JadeStatus::ReadStatus => proto::from::jade_status::Status::ReadStatus,
-                JadeStatus::AuthUser => proto::from::jade_status::Status::AuthUser,
-                JadeStatus::MasterBlindingKey => {
-                    proto::from::jade_status::Status::MasterBlindingKey
-                }
-                JadeStatus::SignTx(tx_type) => match tx_type {
-                    jade_mng::TxType::Normal => proto::from::jade_status::Status::SignTx,
-                    jade_mng::TxType::Swap => proto::from::jade_status::Status::SignSwap,
-                    jade_mng::TxType::MakerUtxo => proto::from::jade_status::Status::SignSwapOutput,
-                    jade_mng::TxType::OfflineSwap => {
-                        proto::from::jade_status::Status::SignOfflineSwap
+                None => proto::from::jade_status::Status::Idle,
+                Some(status) => match status {
+                    JadeStatus::Connecting => proto::from::jade_status::Status::Connecting,
+                    JadeStatus::ReadStatus => proto::from::jade_status::Status::ReadStatus,
+                    JadeStatus::AuthUser => proto::from::jade_status::Status::AuthUser,
+                    JadeStatus::MasterBlindingKey => {
+                        proto::from::jade_status::Status::MasterBlindingKey
                     }
+                    JadeStatus::SignMessage => proto::from::jade_status::Status::SignMessage,
+                    JadeStatus::SignTx(tx_type) => match tx_type {
+                        jade_mng::TxType::Normal => proto::from::jade_status::Status::SignTx,
+                        jade_mng::TxType::Swap => proto::from::jade_status::Status::SignSwap,
+                        jade_mng::TxType::MakerUtxo => {
+                            proto::from::jade_status::Status::SignSwapOutput
+                        }
+                        jade_mng::TxType::OfflineSwap => {
+                            proto::from::jade_status::Status::SignOfflineSwap
+                        }
+                    },
                 },
             }
             .into();
-            let mut last_status = last_jade_status.lock().unwrap();
-            if *last_status != status {
-                ui_copy.send(proto::from::Msg::JadeStatus(proto::from::JadeStatus {
-                    status,
-                }));
-                *last_status = status;
-            }
+            ui_copy.send(proto::from::Msg::JadeStatus(proto::from::JadeStatus {
+                status,
+            }));
         }));
 
     let settings_path = Data::data_path(env, &params.work_dir);
@@ -3389,14 +3383,10 @@ pub fn start_processing(
         settings,
         push_token: None,
         policy_asset,
-        pending_submits: Vec::new(),
-        pending_links: Vec::new(),
         subscribed_price_stream: None,
         last_blocks: BTreeMap::new(),
         used_addresses: Default::default(),
-        price_subscribes: Default::default(),
-        jade_mng: jade_mng::JadeMng::new(Arc::clone(&jade_status_callback)),
-        jade_status_callback,
+        jade_mng: jade_mng::JadeMng::new(jade_status_callback),
         async_requests: BTreeMap::new(),
         network_settings: Default::default(),
         proxy_settings: Default::default(),

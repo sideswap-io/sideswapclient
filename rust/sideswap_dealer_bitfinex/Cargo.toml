@@ -29,8 +29,5 @@ tokio.workspace = true
 tungstenite.workspace = true
 url.workspace = true
 
-[target.'cfg(target_os = "linux")'.dependencies]
-tokio = {workspace = true, features = ["signal"]}
-
 [build-dependencies]
 prost-build.workspace = true

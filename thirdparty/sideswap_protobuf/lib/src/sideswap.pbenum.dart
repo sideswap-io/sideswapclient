@@ -104,29 +104,13 @@ class From_DecryptPin_ErrorCode extends $pb.ProtobufEnum {
   const From_DecryptPin_ErrorCode._($core.int v, $core.String n) : super(v, n);
 }
 
-class From_SubmitReview_Step extends $pb.ProtobufEnum {
-  static const From_SubmitReview_Step SUBMIT = From_SubmitReview_Step._(1, _omitEnumNames ? '' : 'SUBMIT');
-  static const From_SubmitReview_Step QUOTE = From_SubmitReview_Step._(2, _omitEnumNames ? '' : 'QUOTE');
-  static const From_SubmitReview_Step SIGN = From_SubmitReview_Step._(3, _omitEnumNames ? '' : 'SIGN');
-
-  static const $core.List<From_SubmitReview_Step> values = <From_SubmitReview_Step> [
-    SUBMIT,
-    QUOTE,
-    SIGN,
-  ];
-
-  static final $core.Map<$core.int, From_SubmitReview_Step> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static From_SubmitReview_Step? valueOf($core.int value) => _byValue[value];
-
-  const From_SubmitReview_Step._($core.int v, $core.String n) : super(v, n);
-}
-
 class From_JadeStatus_Status extends $pb.ProtobufEnum {
   static const From_JadeStatus_Status CONNECTING = From_JadeStatus_Status._(9, _omitEnumNames ? '' : 'CONNECTING');
   static const From_JadeStatus_Status IDLE = From_JadeStatus_Status._(1, _omitEnumNames ? '' : 'IDLE');
   static const From_JadeStatus_Status READ_STATUS = From_JadeStatus_Status._(2, _omitEnumNames ? '' : 'READ_STATUS');
   static const From_JadeStatus_Status AUTH_USER = From_JadeStatus_Status._(3, _omitEnumNames ? '' : 'AUTH_USER');
   static const From_JadeStatus_Status MASTER_BLINDING_KEY = From_JadeStatus_Status._(5, _omitEnumNames ? '' : 'MASTER_BLINDING_KEY');
+  static const From_JadeStatus_Status SIGN_MESSAGE = From_JadeStatus_Status._(10, _omitEnumNames ? '' : 'SIGN_MESSAGE');
   static const From_JadeStatus_Status SIGN_TX = From_JadeStatus_Status._(4, _omitEnumNames ? '' : 'SIGN_TX');
   static const From_JadeStatus_Status SIGN_SWAP = From_JadeStatus_Status._(8, _omitEnumNames ? '' : 'SIGN_SWAP');
   static const From_JadeStatus_Status SIGN_SWAP_OUTPUT = From_JadeStatus_Status._(6, _omitEnumNames ? '' : 'SIGN_SWAP_OUTPUT');
@@ -138,6 +122,7 @@ class From_JadeStatus_Status extends $pb.ProtobufEnum {
     READ_STATUS,
     AUTH_USER,
     MASTER_BLINDING_KEY,
+    SIGN_MESSAGE,
     SIGN_TX,
     SIGN_SWAP,
     SIGN_SWAP_OUTPUT,
