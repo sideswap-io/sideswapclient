@@ -1220,16 +1220,9 @@ async fn main() {
         Arc::clone(&health_text),
     ));
 
-    let disable_new_swaps = match settings.env {
-        sideswap_common::env::Env::Prod => true,
-        sideswap_common::env::Env::Testnet
-        | sideswap_common::env::Env::LocalLiquid
-        | sideswap_common::env::Env::LocalTestnet => false,
-    };
-
     let market_params = market::Params {
         env: settings.env,
-        disable_new_swaps,
+        disable_new_swaps: false,
         server_url: server_url.clone(),
         work_dir: settings.work_dir.clone(),
         web_server: None,

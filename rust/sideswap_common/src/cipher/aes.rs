@@ -29,10 +29,10 @@ impl Cipher for AesCipher {
     }
 
     fn decrypt(&mut self, data: &[u8]) -> Result<Vec<u8>, Self::Error> {
-        if data.len() < size_of::<aes_gcm_siv::Nonce>() {
+        if data.len() < std::mem::size_of::<aes_gcm_siv::Nonce>() {
             return Err(aes_gcm_siv::aead::Error);
         }
-        let (nonce, encrypted_data) = data.split_at(size_of::<aes_gcm_siv::Nonce>());
+        let (nonce, encrypted_data) = data.split_at(std::mem::size_of::<aes_gcm_siv::Nonce>());
         let nonce = Nonce::from_slice(nonce);
         self.0.decrypt(nonce, encrypted_data.as_ref())
     }
