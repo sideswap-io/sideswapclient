@@ -7,7 +7,14 @@ use crate::types::{DealerTicker, ExchangePair};
 
 use super::PriceCallback;
 
-const TICKER_ENDPOINT: &str = "https://api.bitpreco.com/btc-brl/ticker";
+#[derive(Debug, Copy, Clone)]
+enum Market {
+    BtcBrl,
+    UsdtBrl,
+}
+
+const TICKER_ENDPOINT_BTC_BRL: &str = "https://api.bitpreco.com/btc-brl/ticker";
+const TICKER_ENDPOINT_USDT_BRL: &str = "https://api.bitpreco.com/usdt-brl/ticker";
 
 #[derive(Deserialize)]
 struct PriceItem {
@@ -22,18 +29,27 @@ struct LastBitcoinPrices {
 
 async fn download_bitcoin_last_prices(
     http_client: &HttpClient,
+    market: Market,
 ) -> Result<LastBitcoinPrices, anyhow::Error> {
-    let item = http_client.get_json::<PriceItem>(TICKER_ENDPOINT).await?;
+    let endpoint = match market {
+        Market::BtcBrl => TICKER_ENDPOINT_BTC_BRL,
+        Market::UsdtBrl => TICKER_ENDPOINT_USDT_BRL,
+    };
+    let item = http_client.get_json::<PriceItem>(endpoint).await?;
     ensure!(item.success);
-    ensure!(item.market == "BTC-BRL");
+    let expected_market = match market {
+        Market::BtcBrl => "BTC-BRL",
+        Market::UsdtBrl => "USDT-BRL",
+    };
+    ensure!(item.market == expected_market);
     Ok(LastBitcoinPrices { brl: item.last })
 }
 
-async fn run(callback: PriceCallback) {
+async fn run(callback: PriceCallback, market: Market) {
     let http_client = HttpClient::new();
 
     loop {
-        let price = download_bitcoin_last_prices(&http_client).await;
+        let price = download_bitcoin_last_prices(&http_client, market).await;
 
         match price {
             Ok(v) => {
@@ -54,7 +70,10 @@ async fn run(callback: PriceCallback) {
 }
 
 pub fn start(exchange_pair: ExchangePair, callback: PriceCallback) {
-    assert!(exchange_pair.base == DealerTicker::LBTC);
-    assert!(exchange_pair.quote == DealerTicker::DePix);
-    tokio::spawn(run(callback));
+    let market = match (exchange_pair.base, exchange_pair.quote) {
+        (DealerTicker::LBTC, DealerTicker::DePix) => Market::BtcBrl,
+        (DealerTicker::USDt, DealerTicker::DePix) => Market::UsdtBrl,
+        _ => panic!("unexpected exchange_pair {exchange_pair}"),
+    };
+    tokio::spawn(run(callback, market));
 }

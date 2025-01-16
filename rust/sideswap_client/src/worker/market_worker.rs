@@ -241,6 +241,7 @@ impl From<&OwnOrder> for proto::OwnOrder {
             price: value.price.value(),
             private_id: value.private_id.as_ref().map(|value| value.to_string()),
             ttl_seconds: value.ttl.map(|ttl| ttl.as_millis() / 1000),
+            two_step: !value.online,
         }
     }
 }

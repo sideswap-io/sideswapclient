@@ -2072,6 +2072,7 @@ class OwnOrder extends $pb.GeneratedMessage {
     $core.double? price,
     $core.String? privateId,
     $fixnum.Int64? ttlSeconds,
+    $core.bool? twoStep,
   }) {
     final $result = create();
     if (orderId != null) {
@@ -2098,6 +2099,9 @@ class OwnOrder extends $pb.GeneratedMessage {
     if (ttlSeconds != null) {
       $result.ttlSeconds = ttlSeconds;
     }
+    if (twoStep != null) {
+      $result.twoStep = twoStep;
+    }
     return $result;
   }
   OwnOrder._() : super();
@@ -2113,6 +2117,7 @@ class OwnOrder extends $pb.GeneratedMessage {
     ..a<$core.double>(6, _omitFieldNames ? '' : 'price', $pb.PbFieldType.QD)
     ..aOS(7, _omitFieldNames ? '' : 'privateId')
     ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'ttlSeconds', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.bool>(9, _omitFieldNames ? '' : 'twoStep', $pb.PbFieldType.QB)
   ;
 
   @$core.Deprecated(
@@ -2211,6 +2216,15 @@ class OwnOrder extends $pb.GeneratedMessage {
   $core.bool hasTtlSeconds() => $_has(7);
   @$pb.TagNumber(8)
   void clearTtlSeconds() => clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get twoStep => $_getBF(8);
+  @$pb.TagNumber(9)
+  set twoStep($core.bool v) { $_setBool(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasTwoStep() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearTwoStep() => clearField(9);
 }
 
 class HistoryOrder extends $pb.GeneratedMessage {

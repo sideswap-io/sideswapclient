@@ -477,6 +477,7 @@ const OwnOrder$json = {
     {'1': 'price', '3': 6, '4': 2, '5': 1, '10': 'price'},
     {'1': 'private_id', '3': 7, '4': 1, '5': 9, '10': 'privateId'},
     {'1': 'ttl_seconds', '3': 8, '4': 1, '5': 4, '10': 'ttlSeconds'},
+    {'1': 'two_step', '3': 9, '4': 2, '5': 8, '10': 'twoStep'},
   ],
 };
 
@@ -487,7 +488,8 @@ final $typed_data.Uint8List ownOrderDescriptor = $convert.base64Decode(
     'YXNzZXRQYWlyEjUKCXRyYWRlX2RpchgDIAIoDjIYLnNpZGVzd2FwLnByb3RvLlRyYWRlRGlyUg'
     'h0cmFkZURpchIfCgtvcmlnX2Ftb3VudBgEIAIoBFIKb3JpZ0Ftb3VudBIjCg1hY3RpdmVfYW1v'
     'dW50GAUgAigEUgxhY3RpdmVBbW91bnQSFAoFcHJpY2UYBiACKAFSBXByaWNlEh0KCnByaXZhdG'
-    'VfaWQYByABKAlSCXByaXZhdGVJZBIfCgt0dGxfc2Vjb25kcxgIIAEoBFIKdHRsU2Vjb25kcw==');
+    'VfaWQYByABKAlSCXByaXZhdGVJZBIfCgt0dGxfc2Vjb25kcxgIIAEoBFIKdHRsU2Vjb25kcxIZ'
+    'Cgh0d29fc3RlcBgJIAIoCFIHdHdvU3RlcA==');
 
 @$core.Deprecated('Use historyOrderDescriptor instead')
 const HistoryOrder$json = {

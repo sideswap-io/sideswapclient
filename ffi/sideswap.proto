@@ -189,6 +189,7 @@ message OwnOrder {
   required double price = 6;
   optional string private_id = 7;
   optional uint64 ttl_seconds = 8;
+  required bool two_step = 9;
 }
 
 enum HistStatus {

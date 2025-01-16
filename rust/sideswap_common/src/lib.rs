@@ -14,6 +14,7 @@ pub mod log4rs_config;
 pub mod log_init;
 pub mod network;
 pub mod network_fee;
+pub mod network_fee_discount;
 pub mod panic_handler;
 pub mod pin;
 pub mod pset;
