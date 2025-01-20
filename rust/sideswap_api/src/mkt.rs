@@ -572,16 +572,6 @@ pub struct LoadHistoryResponse {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct GetTransactionRequest {
-    pub txid: Txid,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct GetTransactionResponse {
-    pub tx: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct AckRequest {
     pub nonce: u32,
     pub signature: String,
@@ -674,6 +664,11 @@ pub struct NewEventNotif {
     pub event: EventWithSignature,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TxBroadcastNotif {
+    pub tx: String,
+}
+
 // Top level messages
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -701,7 +696,6 @@ pub enum Request {
     ChartSub(ChartSubRequest),
     ChartUnsub(ChartUnsubRequest),
     LoadHistory(LoadHistoryRequest),
-    GetTransaction(GetTransactionRequest),
     Ack(AckRequest),
 }
 
@@ -730,7 +724,6 @@ pub enum Response {
     ChartSub(ChartSubResponse),
     ChartUnsub(ChartUnsubResponse),
     LoadHistory(LoadHistoryResponse),
-    GetTransaction(GetTransactionResponse),
     Ack(AckResponse),
 }
 
@@ -751,4 +744,5 @@ pub enum Notification {
     ChartUpdate(ChartUpdateNotif),
     HistoryUpdated(HistoryUpdatedNotif),
     NewEvent(NewEventNotif),
+    TxBroadcast(TxBroadcastNotif),
 }

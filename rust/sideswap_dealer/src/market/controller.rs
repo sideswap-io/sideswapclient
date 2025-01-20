@@ -4,12 +4,11 @@ use sideswap_api::{
     Asset,
 };
 use sideswap_common::{
-    channel_helpers::UncheckedUnboundedSender, network::Network, types::asset_int_amount_,
+    channel_helpers::UncheckedUnboundedSender, dealer_ticker::dealer_ticker_to_asset_id,
+    exchange_pair::ExchangePair, network::Network, types::asset_int_amount_,
 };
 use sideswap_types::{normal_float::NormalFloat, timestamp_ms::TimestampMs};
 use tokio::sync::{mpsc::UnboundedSender, oneshot};
-
-use crate::types::{dealer_ticker_to_asset_id, ExchangePair};
 
 use super::{
     try_convert_asset_amount, Balances, ClientCommand, ClientEvent, ClientId, Error, HistoryOrders,

@@ -2,7 +2,7 @@ use bitcoin::bip32;
 use elements::confidential::{AssetBlindingFactor, ValueBlindingFactor};
 use sideswap_api::AssetId;
 use sideswap_jade::byte_array::ByteArray32;
-use sideswap_types::{AssetHex, TransactionHex, ValueHex};
+use sideswap_types::{AssetHex, ValueHex};
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -355,83 +355,6 @@ pub struct AddressInfo {
 }
 
 #[derive(Serialize, Debug)]
-pub struct TxCreateAddressee {
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
-    pub address_info: Option<AddressInfo>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub address: Option<elements::Address>,
-
-    pub satoshi: u64,
-    pub asset_id: AssetId,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_greedy: Option<bool>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct TxResultAddressee {
-    pub address: String,
-    pub satoshi: u64,
-    pub asset_id: AssetId,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_greedy: Option<bool>,
-    pub user_path: Option<Vec<u32>>,
-}
-
-#[derive(Serialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub enum UtxoStrategy {
-    Default,
-    Manual,
-}
-
-#[derive(Serialize, Debug)]
-pub struct CreateTransactionOpt {
-    pub subaccount: i32,
-    pub addressees: Vec<TxCreateAddressee>,
-    pub utxos: BTreeMap<AssetId, Vec<UnspentOutput>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub transaction_inputs: Option<Vec<UnspentOutput>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub utxo_strategy: Option<UtxoStrategy>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_partial: Option<bool>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct CreateTransactionResult {
-    pub addressees: Vec<TxResultAddressee>,
-    pub transaction_outputs: Vec<CreatedTransactionOutput>,
-    pub transaction: Option<TransactionHex>,
-    pub fee: Option<u64>,
-    pub fee_rate: Option<u64>,
-    pub transaction_vsize: Option<u64>,
-    pub transaction_weight: Option<u64>,
-    pub error: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct CreatedTransactionOutput {
-    pub address: Option<String>,
-    pub asset_id: Option<elements::AssetId>, // Mandatory in GDK c++, missing in GDK rust
-    pub satoshi: u64,
-    pub is_change: Option<bool>,
-    pub amountblinder: Option<ValueBlindingFactor>,
-    pub assetblinder: Option<AssetBlindingFactor>,
-    // pub eph_private_key: Option<secp256k1::SecretKey>,
-    pub scriptpubkey: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct SignTransactionResult {
-    pub transaction_inputs: Vec<UnspentOutput>,
-    pub transaction_outputs: Vec<CreatedTransactionOutput>,
-    pub transaction: Option<TransactionHex>,
-    pub fee: Option<u64>,
-    pub error: String,
-}
-
-#[derive(Serialize, Debug)]
 pub struct PsetDetailsOpt {
     pub psbt: String,
     pub utxos: Vec<UnspentOutput>, // TODO: Switch to BTreeMap (GDK 0.70)
@@ -525,16 +448,6 @@ pub struct CreateSwapTransactionOpt {
     pub input_type: SwapInputOutputType,
     pub output_type: SwapInputOutputType,
     pub liquidex_v1: SwapLiquiDexV1,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct LiquiDexV1Result {
-    pub proposal: serde_json::Value,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct CreateSwapTransactionResult {
-    pub liquidex_v1: LiquiDexV1Result,
 }
 
 #[derive(Serialize, Debug)]
@@ -652,47 +565,4 @@ pub struct PreviousAddressesOpts {
 pub struct PreviousAddresses {
     pub last_pointer: Option<u32>,
     pub list: Vec<AddressInfo>,
-}
-
-#[derive(Serialize)]
-pub enum CreateSwapType {
-    #[serde(rename = "liquidex")]
-    Liquidex,
-}
-
-#[derive(Serialize)]
-pub enum CreateSwapInputType {
-    #[serde(rename = "liquidex_v1")]
-    LiquidexV1,
-}
-
-#[derive(Serialize)]
-pub struct LiquidexReceive {
-    pub asset_id: AssetId,
-    pub satoshi: u64,
-}
-
-#[derive(Serialize)]
-pub struct LiquidexOpts {
-    pub receive: Vec<LiquidexReceive>,
-    pub send: Vec<UnspentOutput>,
-}
-
-#[derive(Serialize)]
-pub struct CreateSwapOpts {
-    pub swap_type: CreateSwapType,
-    pub input_type: CreateSwapInputType,
-    pub output_type: CreateSwapInputType,
-    pub liquidex_v1: LiquidexOpts,
-    pub receive_address: Option<AddressInfo>,
-}
-
-#[derive(Deserialize)]
-pub struct LiquidexSwap {
-    pub proposal: sideswap_api::LiquidexProposal,
-}
-
-#[derive(Deserialize)]
-pub struct CreateSwap {
-    pub liquidex_v1: LiquidexSwap,
 }

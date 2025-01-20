@@ -4113,7 +4113,6 @@ dependencies = [
  "hex",
  "log",
  "log4rs",
- "prost-build",
  "rand",
  "reqwest",
  "ring",

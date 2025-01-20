@@ -13,7 +13,7 @@ use crate::gdk_ses_impl::{self};
 use crate::settings;
 use crate::{gdk_ses_jade, models, swaps};
 
-use anyhow::{anyhow, bail, ensure};
+use anyhow::{anyhow, ensure};
 use bitcoin::bip32;
 use bitcoin::hashes::Hash;
 use bitcoin::secp256k1::global::SECP256K1;
@@ -29,13 +29,13 @@ use sideswap_common::network::Network;
 use sideswap_common::send_tx::coin_select::InOut;
 use sideswap_common::types::{self, peg_out_amount, select_utxo_values, Amount};
 use sideswap_common::ws::next_request_id;
-use sideswap_common::{abort, b64, pin, send_tx};
+use sideswap_common::{abort, b64, pin, send_tx, verify};
 use sideswap_jade::jade_mng::{self, JadeStatus, JadeStatusCallback};
 use sideswap_types::asset_precision::AssetPrecision;
 use sideswap_types::fee_rate::FeeRateSats;
 use tokio::sync::mpsc::UnboundedSender;
 
-use sideswap_api::{self as api, fcm_models, http_rpc, MarketType, OrderId};
+use sideswap_api::{self as api, fcm_models, MarketType, OrderId};
 use sideswap_common::ws::manual as ws;
 
 pub struct StartParams {
@@ -51,11 +51,13 @@ pub enum CallError {
     Timeout,
     #[error("Unexpected response")]
     UnexpectedResponse,
+    #[error("Disconnected")]
+    Disconnected,
 }
 
 macro_rules! send_request {
-    ($sender:expr, $t:ident, $value:expr) => {
-        match $sender.send_request(sideswap_api::Request::$t($value)) {
+    ($sender:expr, $t:ident, $value:expr, $timeout:expr) => {
+        match $sender.send_request(sideswap_api::Request::$t($value), $timeout) {
             Ok(sideswap_api::Response::$t(value)) => Ok(value),
             Ok(_) => Err(CallError::UnexpectedResponse),
             Err(error) => Err(error),
@@ -64,10 +66,11 @@ macro_rules! send_request {
 }
 
 macro_rules! send_market_request {
-    ($sender:expr, $t:ident, $value:expr) => {
-        match $sender.send_request(sideswap_api::Request::Market(
-            sideswap_api::mkt::Request::$t($value),
-        )) {
+    ($sender:expr, $t:ident, $value:expr, $timeout:expr) => {
+        match $sender.send_request(
+            sideswap_api::Request::Market(sideswap_api::mkt::Request::$t($value)),
+            $timeout,
+        ) {
             Ok(sideswap_api::Response::Market(sideswap_api::mkt::Response::$t(value))) => Ok(value),
             Ok(_) => Err(CallError::UnexpectedResponse),
             Err(error) => Err(error),
@@ -84,7 +87,8 @@ const CLIENT_API_KEY: &str = "f8b7a12ee96aa68ee2b12ebfc51d804a4a404c9732652c298d
 
 pub const USER_AGENT: &str = "SideSwapApp";
 
-const SERVER_REQUEST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(5);
+const SERVER_REQUEST_TIMEOUT_SHORT: std::time::Duration = std::time::Duration::from_secs(5);
+const SERVER_REQUEST_TIMEOUT_LONG: std::time::Duration = std::time::Duration::from_secs(40);
 const SERVER_REQUEST_POLL_PERIOD: std::time::Duration = std::time::Duration::from_secs(1);
 
 // AMP session stops somewhere between 50 and 125 minutes, check it every 40 minutes
@@ -161,7 +165,6 @@ pub struct Data {
     params: StartParams,
     timers: BTreeMap<Instant, TimerEvent>,
 
-    agent: ureq::Agent,
     sync_complete: bool,
     wallet_loaded_sent: bool,
     confirmed_txids: BTreeMap<AccountId, HashSet<elements::Txid>>,
@@ -1326,7 +1329,8 @@ impl Data {
                 device_key: Some(device_key),
                 blocks: Some(req.blocks),
                 peg_out_amounts: Some(peg_out_server_amounts),
-            }
+            },
+            SERVER_REQUEST_TIMEOUT_LONG
         )?;
 
         self.add_peg_monitoring(resp.order_id, settings::PegDir::Out);
@@ -1381,7 +1385,8 @@ impl Data {
                 device_key: Some(device_key),
                 blocks: None,
                 peg_out_amounts: None,
-            }
+            },
+            SERVER_REQUEST_TIMEOUT_LONG
         )?;
 
         self.add_peg_monitoring(resp.order_id, settings::PegDir::In);
@@ -1451,7 +1456,8 @@ impl Data {
                 inputs,
                 recv_addr: recv_addr.address,
                 change_addr: change_addr.address,
-            }
+            },
+            SERVER_REQUEST_TIMEOUT_LONG
         )?;
 
         self.active_swap = Some(ActiveSwap {
@@ -1495,28 +1501,6 @@ impl Data {
                 }
             },
         );
-    }
-
-    #[allow(dead_code)]
-    fn send_rest_request(
-        &self,
-        request: http_rpc::RequestMsg,
-        url: &str,
-    ) -> Result<http_rpc::ResponseMsg, anyhow::Error> {
-        info!("send swap request to {}", &url);
-        let request = serde_json::to_value(&request).unwrap();
-        let response = self.agent.post(url).send_json(request)?;
-        if response.status() >= 400 && response.status() < 500 {
-            let msg = serde_json::from_str::<http_rpc::ErrorMsg>(&response.into_string()?)?;
-            bail!("{}", msg.error.message);
-        }
-        ensure!(
-            response.status() == 200,
-            "unexpected status: {}",
-            response.status()
-        );
-        let msg = serde_json::from_str::<http_rpc::ResponseMsg>(&response.into_string()?)?;
-        Ok(msg)
     }
 
     fn process_get_recv_address(&mut self, account: proto::Account) {
@@ -2438,7 +2422,8 @@ impl Data {
         send_request!(
             self,
             SignedSwapClient,
-            api::SignedSwapClientRequest { order_id, pset }
+            api::SignedSwapClientRequest { order_id, pset },
+            SERVER_REQUEST_TIMEOUT_LONG
         )?;
         Ok(())
     }
@@ -2552,7 +2537,13 @@ impl Data {
         request_id
     }
 
-    fn send_request(&self, request: api::Request) -> Result<api::Response, CallError> {
+    fn send_request(
+        &self,
+        request: api::Request,
+        timeout: Duration,
+    ) -> Result<api::Response, CallError> {
+        verify!(self.ws_connected, CallError::Disconnected);
+
         // Blocking requests use string ids
         let active_id = sideswap_common::ws::next_id().to_string();
         self.ws_sender
@@ -2575,7 +2566,7 @@ impl Data {
                 }
                 Err(_) => {
                     let spent_time = std::time::Instant::now().duration_since(started);
-                    if spent_time > SERVER_REQUEST_TIMEOUT {
+                    if spent_time > timeout {
                         error!("request timeout");
                         abort!(CallError::Timeout);
                     }
@@ -2624,7 +2615,7 @@ impl Data {
             let _ = self.ws_hint.send(());
             return;
         }
-        let ping_response = send_request!(self, Ping, None);
+        let ping_response = send_request!(self, Ping, None, SERVER_REQUEST_TIMEOUT_SHORT);
         if ping_response.is_err() {
             debug!("WS connection check failed, reconnecting...");
             self.restart_websocket();
@@ -3367,7 +3358,6 @@ pub fn start_processing(
         resp_receiver,
         params,
         timers: BTreeMap::new(),
-        agent: ureq::agent(),
         sync_complete: false,
         wallet_loaded_sent: false,
         confirmed_txids: BTreeMap::new(),

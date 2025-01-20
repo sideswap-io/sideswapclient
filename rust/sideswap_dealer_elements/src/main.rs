@@ -2,11 +2,12 @@ use std::time::Duration;
 
 use serde::Deserialize;
 use sideswap_api::mkt::AssetPair;
-use sideswap_common::{channel_helpers::UncheckedUnboundedSender, types::Amount};
+use sideswap_common::{
+    channel_helpers::UncheckedUnboundedSender, dealer_ticker::DealerTicker, types::Amount,
+};
 use sideswap_dealer::{
     dealer_rpc, market, price_stream,
     rpc::{self, RpcServer},
-    types::DealerTicker,
     utxo_data::{self, UtxoData},
 };
 

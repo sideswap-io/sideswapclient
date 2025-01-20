@@ -54,12 +54,6 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
         self.watch_only.get_gaid()
     }
 
-    fn unlock_hww(&self) -> Result<(), anyhow::Error> {
-        self.jade.unlock_hww()
-    }
-
-    fn update_sync_interval(&self, _time: u32) {}
-
     fn get_balances(&self) -> Result<Balances, anyhow::Error> {
         self.watch_only.get_balances()
     }
@@ -124,16 +118,6 @@ impl crate::gdk_ses::GdkSes for GdkSesMng {
 
         self.watch_only
             .get_previous_addresses(last_pointer, is_internal)
-    }
-
-    fn sig_single_maker_tx(
-        &mut self,
-        input: &crate::swaps::SigSingleInput,
-        output: &crate::swaps::SigSingleOutput,
-        assets: &BTreeMap<AssetId, Asset>,
-    ) -> Result<crate::swaps::SigSingleMaker, anyhow::Error> {
-        self.check_jade()?;
-        self.jade.sig_single_maker_tx(input, output, assets)
     }
 
     fn verify_and_sign_pset(

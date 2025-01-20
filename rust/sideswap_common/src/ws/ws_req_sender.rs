@@ -17,7 +17,7 @@ use super::{
 pub enum Error {
     #[error("Disconnected")]
     Disconnected,
-    #[error("Backend error: {0}: {1:?}")]
+    #[error("Backend error: {0} ({1:?})")]
     BackendError(String, ErrorCode),
     #[error("Request timeout")]
     Timeout(#[from] tokio::time::error::Elapsed),

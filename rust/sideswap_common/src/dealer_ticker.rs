@@ -1,11 +1,9 @@
 use elements::AssetId;
-use serde::{Deserialize, Serialize};
-use sideswap_api::mkt::AssetType;
-use sideswap_common::network::Network;
 use sideswap_types::asset_precision::AssetPrecision;
 
-#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DealerTicker {
+use crate::network::Network;
+
+sideswap_types::define_enum!(DealerTicker {
     LBTC,
     USDt,
     EURx,
@@ -15,21 +13,9 @@ pub enum DealerTicker {
     BMN2,
     CMSTR,
     PPRGB,
-}
+});
 
 impl DealerTicker {
-    pub const ALL: [DealerTicker; 9] = [
-        DealerTicker::LBTC,
-        DealerTicker::USDt,
-        DealerTicker::EURx,
-        DealerTicker::MEX,
-        DealerTicker::DePix,
-        DealerTicker::SSWP,
-        DealerTicker::BMN2,
-        DealerTicker::CMSTR,
-        DealerTicker::PPRGB,
-    ];
-
     pub fn asset_precision(&self) -> AssetPrecision {
         match self {
             DealerTicker::LBTC
@@ -45,30 +31,9 @@ impl DealerTicker {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct ExchangePair {
-    pub base: DealerTicker,
-    pub quote: DealerTicker,
-}
-
 impl std::fmt::Display for DealerTicker {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         dealer_ticker_to_asset_ticker(*self).fmt(f)
-    }
-}
-
-impl std::fmt::Display for ExchangePair {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}/{}", self.base, self.quote)
-    }
-}
-
-impl ExchangePair {
-    pub fn asset(&self, asset_type: AssetType) -> DealerTicker {
-        match asset_type {
-            AssetType::Base => self.base,
-            AssetType::Quote => self.quote,
-        }
     }
 }
 
@@ -123,7 +88,7 @@ pub fn dealer_ticker_from_asset_ticker(ticker: &str) -> Option<DealerTicker> {
     Some(ticker)
 }
 
-impl Serialize for DealerTicker {
+impl serde::Serialize for DealerTicker {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -133,7 +98,7 @@ impl Serialize for DealerTicker {
     }
 }
 
-impl<'de> Deserialize<'de> for DealerTicker {
+impl<'de> serde::Deserialize<'de> for DealerTicker {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,

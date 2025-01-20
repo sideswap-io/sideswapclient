@@ -21,6 +21,8 @@ use sideswap_api::{
 use sideswap_common::{
     b64,
     channel_helpers::{UncheckedOneshotSender, UncheckedUnboundedSender},
+    dealer_ticker::{dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker},
+    exchange_pair::ExchangePair,
     make_market_request, make_request,
     network::Network,
     types::{asset_float_amount_, asset_int_amount_},
@@ -50,10 +52,6 @@ mod ws_server;
 
 pub use web_server::Config as WebServerConfig;
 pub use ws_server::Config as WsServerConfig;
-
-use crate::types::{
-    dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker, ExchangePair,
-};
 
 #[derive(Debug, Clone)]
 pub struct Params {
@@ -901,26 +899,6 @@ fn process_quote(data: &mut Data, notif: mkt::QuoteNotif) {
     client.send(ClientEvent::Quote { notif });
 }
 
-fn broadcast_tx(data: &mut Data, txid: Txid) {
-    let event_sender = data.event_sender.clone();
-    data.ws.callback_request(
-        sideswap_api::Request::Market(Request::GetTransaction(mkt::GetTransactionRequest { txid })),
-        Box::new(move |res| {
-            let res = match res {
-                Ok(sideswap_api::Response::Market(mkt::Response::GetTransaction(resp))) => {
-                    Ok(resp.tx.clone())
-                }
-                Ok(_) => Err(Error::UnexpectedResponse("GetTransaction")),
-                Err(err) => Err(Error::WsRequestError(err)),
-            };
-            match res {
-                Ok(tx) => event_sender.send(Event::BroadcastTx { tx }),
-                Err(err) => log::error!("GetTransaction failed: {err}"),
-            }
-        }),
-    );
-}
-
 fn process_market_notif(data: &mut Data, notif: Notification) {
     match notif {
         Notification::MarketAdded(notif) => {
@@ -1047,8 +1025,6 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
                         price: notif.order.price,
                         txid,
                     });
-
-                    broadcast_tx(data, txid);
                 }
 
                 let order =
@@ -1064,6 +1040,10 @@ fn process_market_notif(data: &mut Data, notif: Notification) {
         }
 
         Notification::NewEvent(_) => {}
+
+        Notification::TxBroadcast(notif) => {
+            data.event_sender.send(Event::BroadcastTx { tx: notif.tx });
+        }
     }
 }
 

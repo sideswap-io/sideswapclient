@@ -28,6 +28,3 @@ tokio-tungstenite.workspace = true
 tokio.workspace = true
 tungstenite.workspace = true
 url.workspace = true
-
-[build-dependencies]
-prost-build.workspace = true

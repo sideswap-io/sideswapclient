@@ -4,6 +4,10 @@ use poem::{listener::TcpListener, Route, Server};
 use poem_openapi::{param::Query, payload::Json, ApiResponse, OpenApi, OpenApiService};
 use serde::Deserialize;
 use sideswap_api::mkt::OrdId;
+use sideswap_common::{
+    dealer_ticker::{dealer_ticker_from_asset_ticker, DealerTicker},
+    exchange_pair::ExchangePair,
+};
 use sideswap_types::{normal_float::NormalFloat, timestamp_ms::TimestampMs};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -11,8 +15,6 @@ pub struct Config {
     listen_on: SocketAddr,
     server_url: Option<String>,
 }
-
-use crate::types::{dealer_ticker_from_asset_ticker, DealerTicker, ExchangePair};
 
 use super::{api, controller::Controller, Error};
 

@@ -1,18 +1,18 @@
 use crate::{
     ffi, gdk, gdk_json,
     gdk_ses::{self, Balances, ElectrumServer, GdkSes, NotifCallback, SignWith},
-    models, swaps,
+    models,
     worker::{self, AccountId},
 };
 use anyhow::{anyhow, bail, ensure};
+use elements::AssetId;
 use elements::{
     hashes::Hash, pset::PartiallySignedTransaction, secp256k1_zkp::global::SECP256K1, TxOutSecrets,
 };
-use elements::{AssetId, Transaction};
 use gdk_ses::HwData;
 use log::{debug, info, warn};
 use serde_bytes::ByteBuf;
-use sideswap_api::{Asset, AssetBlindingFactor, ValueBlindingFactor};
+use sideswap_api::Asset;
 use sideswap_common::{
     b64,
     env::Env,
@@ -116,16 +116,6 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         try_get_gaid(self)
     }
 
-    fn unlock_hww(&self) -> Result<(), anyhow::Error> {
-        if let Some(hw_data) = self.hw_data.as_ref() {
-            unlock_hw(hw_data.env, &hw_data.jade)
-        } else {
-            Ok(())
-        }
-    }
-
-    fn update_sync_interval(&self, _time: u32) {}
-
     fn get_balances(&self) -> Result<Balances, anyhow::Error> {
         unsafe { get_balances(self) }
     }
@@ -194,15 +184,6 @@ impl gdk_ses::GdkSes for GdkSesImpl {
         internal: bool,
     ) -> Result<gdk_json::PreviousAddresses, anyhow::Error> {
         unsafe { get_previous_addresses(self, last_pointer, internal) }
-    }
-
-    fn sig_single_maker_tx(
-        &mut self,
-        input: &swaps::SigSingleInput,
-        output: &swaps::SigSingleOutput,
-        assets: &BTreeMap<AssetId, Asset>,
-    ) -> Result<swaps::SigSingleMaker, anyhow::Error> {
-        unsafe { sig_single_maker_tx(self, input, output, assets) }
     }
 
     fn verify_and_sign_pset(
@@ -1691,230 +1672,6 @@ unsafe fn sign_pset(
     Ok(signed_pset.psbt)
 }
 
-#[allow(dead_code)]
-unsafe fn sig_single_maker_utxo(
-    data: &GdkSesImpl,
-    input: &crate::swaps::SigSingleInput,
-    assets: &BTreeMap<AssetId, Asset>,
-) -> Result<(gdk_json::UnspentOutput, Option<Transaction>), anyhow::Error> {
-    let send_asset = input.asset;
-
-    let unspent_outputs = try_get_unspent_outputs(data)?.unspent_outputs;
-
-    if let Some(unspent_output) = unspent_outputs
-        .get(&send_asset)
-        .unwrap_or(&Vec::new())
-        .iter()
-        .find(|utxo| {
-            utxo.asset_id == send_asset
-                && utxo.satoshi == input.value
-                && utxo.assetblinder != AssetBlindingFactor::zero()
-                && utxo.amountblinder != ValueBlindingFactor::zero()
-        })
-    {
-        return Ok((unspent_output.clone(), None));
-    }
-
-    let subaccount = data.get_subaccount()?;
-    let session = data.session;
-
-    // If set to true, Jade will show all outputs for confirmation (because all outputs are recognized as changes)
-    let is_internal = false;
-    let address_info = try_get_addr_info(data, is_internal)?;
-    let bitcoin_balance = unspent_outputs
-        .get(&data.policy_asset)
-        .map(|inputs| inputs.iter().map(|input| input.satoshi).sum::<u64>())
-        .unwrap_or_default();
-    let send_all = input.value == bitcoin_balance && send_asset == data.policy_asset;
-
-    let addressee = gdk_json::TxCreateAddressee {
-        address: None,
-        address_info: Some(address_info.clone()),
-        satoshi: input.value,
-        asset_id: send_asset,
-        is_greedy: Some(send_all),
-    };
-
-    let create_tx = gdk_json::CreateTransactionOpt {
-        subaccount,
-        addressees: vec![addressee],
-        utxos: unspent_outputs,
-        transaction_inputs: None,
-        utxo_strategy: None,
-        is_partial: None,
-    };
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_create_transaction(session, GdkJson::new(&create_tx).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_create_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let mut created_tx_json =
-        run_auth_handler::<serde_json::Value>(data.hw_data.as_ref(), call, HandlerParams::new())
-            .map_err(|e| anyhow!("creating transaction failed: {}", e))?;
-    let created_tx =
-        serde_json::from_value::<gdk_json::CreateTransactionResult>(created_tx_json.clone())
-            .map_err(|e| anyhow!("parsing created transaction JSON failed: {}", e))?;
-    debug!("created tx: {:?}", &created_tx);
-    ensure!(created_tx.error.is_empty(), "{}", created_tx.error);
-    ensure!(created_tx.fee.unwrap_or_default() > 0, "network fee is 0");
-
-    if !data.login_info.single_sig {
-        created_tx_json.as_object_mut().unwrap().insert(
-            "sign_with".to_owned(),
-            serde_json::json!(["user", "green-backend"]),
-        );
-    }
-
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_blind_transaction(session, GdkJson::new(&created_tx_json).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_blind_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let blinded_tx_json =
-        run_auth_handler::<serde_json::Value>(data.hw_data.as_ref(), call, HandlerParams::new())
-            .map_err(|e| anyhow!("blinding transaction failed: {}", e))?;
-    debug!("blinded tx: {:?}", &blinded_tx_json);
-
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_sign_transaction(session, GdkJson::new(&blinded_tx_json).as_ptr(), &mut call);
-    ensure!(
-        rc == 0,
-        "GA_sign_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let signed_tx = run_auth_handler::<gdk_json::SignTransactionResult>(
-        data.hw_data.as_ref(),
-        call,
-        HandlerParams::new()
-            .with_assets(assets)
-            .with_tx_type(jade_mng::TxType::MakerUtxo),
-    )
-    .map_err(|e| anyhow!("signing tx failed: {}", e))?;
-    debug!("signed tx: {:?}", &signed_tx);
-    ensure!(signed_tx.error.is_empty(), "{}", signed_tx.error);
-
-    let tx = signed_tx
-        .transaction
-        .ok_or_else(|| anyhow!("transaction is empty"))?
-        .into_inner();
-
-    ensure!(!send_all || signed_tx.transaction_outputs.len() == 2);
-    let (pt_idx, output) = signed_tx
-        .transaction_outputs
-        .iter()
-        .enumerate()
-        .find(|(_, output)| {
-            output.address.as_ref() == Some(&address_info.address.to_string())
-                && (output.satoshi == input.value || send_all)
-                && output.asset_id == Some(send_asset)
-        })
-        .ok_or_else(|| anyhow!("constructed UTXO not found"))?;
-    let output_asset_bf = output
-        .assetblinder
-        .ok_or_else(|| anyhow!("assetblinder is not set"))?;
-    let output_value_bf = output
-        .amountblinder
-        .ok_or_else(|| anyhow!("amountblinder is not set"))?;
-
-    let tx_out = &tx.output[pt_idx];
-    let asset_commitment = tx_out.asset;
-    let value_commitment = tx_out.value;
-    let nonce_commitment = tx_out.nonce;
-
-    let prevout_script = if let Some(script) = address_info.script.clone() {
-        script
-    } else if let Some(public_key) = address_info.public_key {
-        ensure!(data.login_info.single_sig);
-        sideswap_common::pset::p2pkh_script(&public_key)
-    } else {
-        bail!("script or public_key must be known");
-    };
-
-    let utxo = gdk_json::UnspentOutput {
-        address_type: address_info.address_type,
-        txhash: tx.txid(),
-        pointer: address_info.pointer,
-        vout: pt_idx as u32,
-        asset_id: output.asset_id.unwrap(),
-        satoshi: output.satoshi,
-        amountblinder: output_value_bf,
-        assetblinder: output_asset_bf,
-        subaccount: address_info.subaccount,
-        is_internal,
-        user_sighash: None,
-        prevout_script,
-        is_blinded: true,
-        is_confidential: Some(true),
-        public_key: address_info.public_key,
-        user_path: Some(address_info.user_path),
-        block_height: None,
-        script: address_info.script,
-        subtype: address_info.subtype,
-        user_status: None,
-        asset_tag: asset_commitment.into(),
-        commitment: value_commitment.into(),
-        nonce_commitment: nonce_commitment.to_string(),
-    };
-    debug!("chained utxo: {}", serde_json::to_string(&utxo).unwrap());
-
-    Ok((utxo, Some(tx)))
-}
-
-#[allow(dead_code)]
-unsafe fn sig_single_maker_tx(
-    data: &GdkSesImpl,
-    input: &crate::swaps::SigSingleInput,
-    output: &crate::swaps::SigSingleOutput,
-    assets: &BTreeMap<AssetId, Asset>,
-) -> Result<crate::swaps::SigSingleMaker, anyhow::Error> {
-    let (unspent_output, funding_tx) = sig_single_maker_utxo(data, input, assets)?;
-
-    let session = data.session;
-
-    let create_swap_opts = gdk_json::CreateSwapOpts {
-        swap_type: gdk_json::CreateSwapType::Liquidex,
-        input_type: gdk_json::CreateSwapInputType::LiquidexV1,
-        output_type: gdk_json::CreateSwapInputType::LiquidexV1,
-        liquidex_v1: gdk_json::LiquidexOpts {
-            receive: vec![gdk_json::LiquidexReceive {
-                asset_id: output.asset,
-                satoshi: output.value,
-            }],
-            send: vec![unspent_output.clone()],
-        },
-        receive_address: Some(output.address_info.clone()),
-    };
-    let mut call = std::ptr::null_mut();
-    let rc = gdk::GA_create_swap_transaction(
-        session,
-        GdkJson::new(&create_swap_opts).as_ptr(),
-        &mut call,
-    );
-    ensure!(
-        rc == 0,
-        "GA_create_swap_transaction failed: {}",
-        last_gdk_error_details().unwrap_or_default()
-    );
-    let created_swap = run_auth_handler::<gdk_json::CreateSwap>(
-        data.hw_data.as_ref(),
-        call,
-        HandlerParams::new()
-            .with_assets(assets)
-            .with_tx_type(jade_mng::TxType::OfflineSwap),
-    )
-    .map_err(|e| anyhow!("creating swap failed: {}", e))?;
-
-    Ok(crate::swaps::SigSingleMaker {
-        proposal: created_swap.liquidex_v1.proposal,
-        funding_tx,
-        unspent_output,
-    })
-}
-
 unsafe fn get_balances(data: &GdkSesImpl) -> Result<gdk_json::BalanceList, anyhow::Error> {
     let subaccount = data.get_subaccount()?;
     let session = data.session;
@@ -2367,6 +2124,3 @@ fn take_utxos<'a>(
     }
     selected
 }
-
-#[cfg(test)]
-mod test;

@@ -18,6 +18,8 @@ use sideswap_api::mkt::TradeDir;
 use sideswap_api::PricePair;
 use sideswap_api::PriceUpdateBroadcast;
 use sideswap_common::channel_helpers::UncheckedUnboundedSender;
+use sideswap_common::dealer_ticker::dealer_ticker_to_asset_id;
+use sideswap_common::dealer_ticker::DealerTicker;
 use sideswap_common::network::Network;
 use sideswap_common::types::btc_to_sat;
 use sideswap_common::types::sat_to_btc;
@@ -27,10 +29,9 @@ use sideswap_common::types::MAX_BTC_AMOUNT;
 use sideswap_common::web_notif::send_many;
 use sideswap_dealer::dealer_rpc;
 use sideswap_dealer::dealer_rpc::*;
+use sideswap_dealer::logs::GIT_COMMIT_HASH;
 use sideswap_dealer::market;
 use sideswap_dealer::rpc;
-use sideswap_dealer::types::dealer_ticker_to_asset_id;
-use sideswap_dealer::types::DealerTicker;
 use sideswap_dealer::utxo_data;
 use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_types::normal_float::NormalFloat;
@@ -1275,7 +1276,10 @@ async fn main() {
         cli::start(msg_tx_copy);
     });
 
-    send_notification("dealer started", &data.settings.notifications.url);
+    send_notification(
+        &format!("dealer started, {GIT_COMMIT_HASH}"),
+        &data.settings.notifications.url,
+    );
 
     let mut interval = tokio::time::interval(Duration::from_secs(1));
 

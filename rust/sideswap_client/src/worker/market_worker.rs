@@ -57,7 +57,10 @@ use crate::{
     worker::{self, coin_select, convert_to_swap_utxo, wallet},
 };
 
-use super::{convert_chart_point, AccountId, CallError, ACCOUNT_ID_AMP, ACCOUNT_ID_REG};
+use super::{
+    convert_chart_point, AccountId, CallError, ACCOUNT_ID_AMP, ACCOUNT_ID_REG,
+    SERVER_REQUEST_TIMEOUT_LONG,
+};
 
 // Some random path (not hardened)
 pub const REGISTER_PATH: [u32; 1] = [0x4ec71ae];
@@ -421,37 +424,63 @@ fn try_get_wallet_key(
     }
 }
 
-fn try_ws_register(worker: &mut super::Data) -> Result<(), anyhow::Error> {
-    log::debug!("start market register request...");
-
-    let resp = send_market_request!(worker, Challenge, mkt::ChallengeRequest {})?;
-    log::debug!("received challenge: {}", resp.challenge);
-
-    let wallet_key = try_get_wallet_key(worker, resp.challenge)?;
-    log::debug!("received wallet key, public key: {}", wallet_key.public_key);
-
-    let resp = send_market_request!(
-        worker,
-        Register,
-        mkt::RegisterRequest {
-            wallet_key: Some(wallet_key),
-        }
-    )?;
-
-    log::debug!("market register succeed");
-    worker.settings.market_token = Some(resp.token);
-    worker.save_settings();
-
-    ws_login(worker);
-
-    Ok(())
+fn register_failed(worker: &mut super::Data, err: anyhow::Error) {
+    log::error!("market registration failed: {err}");
+    worker.show_message(&format!("registration failed: {err}"));
 }
 
 fn ws_register(worker: &mut super::Data) {
-    let res = try_ws_register(worker);
-    if let Err(err) = res {
-        worker.show_message(&format!("registration failed: {err}"));
-    }
+    log::debug!("start market register request...");
+    worker.make_async_request(
+        api::Request::Market(Request::Challenge(mkt::ChallengeRequest {})),
+        move |worker, res| match res {
+            Ok(api::Response::Market(Response::Challenge(resp))) => {
+                log::debug!("received challenge: {}", resp.challenge);
+                ws_register_with_challenge(worker, resp);
+            }
+            Ok(_) => {
+                log::error!("unexpected response, expected Challenge");
+            }
+            Err(err) => {
+                register_failed(worker, err.into());
+            }
+        },
+    );
+}
+
+fn ws_register_with_challenge(worker: &mut super::Data, resp: mkt::ChallengeResponse) {
+    let res = try_get_wallet_key(worker, resp.challenge);
+    let wallet_key = match res {
+        Ok(wallet_key) => {
+            log::debug!("received wallet key, public key: {}", wallet_key.public_key);
+            wallet_key
+        }
+        Err(err) => {
+            register_failed(worker, err);
+            return;
+        }
+    };
+
+    worker.make_async_request(
+        api::Request::Market(Request::Register(mkt::RegisterRequest {
+            wallet_key: Some(wallet_key),
+        })),
+        move |worker, res| match res {
+            Ok(api::Response::Market(Response::Register(resp))) => {
+                log::debug!("market register succeed");
+                worker.settings.market_token = Some(resp.token);
+                worker.save_settings();
+
+                ws_login(worker);
+            }
+            Ok(_) => {
+                log::error!("unexpected response, expected Register");
+            }
+            Err(err) => {
+                register_failed(worker, err.into());
+            }
+        },
+    );
 }
 
 fn ws_login(worker: &mut super::Data) {
@@ -698,6 +727,7 @@ pub fn process_notif(worker: &mut super::Data, msg: Notification) {
         Notification::ChartUpdate(notif) => process_ws_charts_update(worker, notif),
         Notification::HistoryUpdated(notif) => process_ws_hist_updated(worker, notif),
         Notification::NewEvent(notif) => process_ws_new_event(worker, notif),
+        Notification::TxBroadcast(notif) => process_ws_tx_broadcast(worker, notif),
     }
 }
 
@@ -1242,6 +1272,26 @@ fn process_ws_new_event(worker: &mut super::Data, notif: mkt::NewEventNotif) {
     }
 }
 
+pub fn process_ws_tx_broadcast(worker: &mut super::Data, notif: mkt::TxBroadcastNotif) {
+    let accounts = worker.wallets.keys().copied().collect::<Vec<_>>();
+    for account_id in accounts {
+        let tx = notif.tx.clone();
+        wallet::callback(
+            account_id,
+            worker,
+            move |data| data.ses.broadcast_tx(&tx),
+            |_data, res| match res {
+                Ok(()) => {
+                    log::debug!("tx broadcast succeed");
+                }
+                Err(err) => {
+                    log::error!("tx broadcast failed: {err}");
+                }
+            },
+        );
+    }
+}
+
 pub fn market_subscribe(worker: &mut super::Data, msg: proto::AssetPair) {
     market_unsubscribe(worker, proto::Empty {});
 
@@ -1320,7 +1370,8 @@ fn try_online_order_submit(
             private,
             client_order_id,
             signature,
-        }
+        },
+        SERVER_REQUEST_TIMEOUT_LONG
     )?;
 
     Ok(resp.order)
@@ -1873,7 +1924,8 @@ fn try_offline_order_submit(
             output_asset_bf,
             output_value_bf,
             output_ephemeral_sk
-        }
+        },
+        SERVER_REQUEST_TIMEOUT_LONG
     )?;
 
     Ok(resp.order)
@@ -1906,7 +1958,8 @@ fn resolve_recv_address(
             mkt::ResolveGaidRequest {
                 asset_id: swap_info.recv_asset,
                 gaid
-            }
+            },
+            SERVER_REQUEST_TIMEOUT_LONG
         );
 
         match res {
@@ -2032,7 +2085,8 @@ pub fn try_order_edit(
             receive_address,
             change_address,
             signature,
-        }
+        },
+        SERVER_REQUEST_TIMEOUT_LONG
     )?;
 
     Ok(())
@@ -2056,7 +2110,8 @@ pub fn try_order_cancel(
         CancelOrder,
         mkt::CancelOrderRequest {
             order_id: msg.order_id.into(),
-        }
+        },
+        SERVER_REQUEST_TIMEOUT_LONG
     )?;
 
     Ok(())
@@ -2094,8 +2149,6 @@ fn try_start_quotes(
         .cloned()
         .collect::<Vec<_>>();
 
-    ensure!(!utxos.is_empty(), "empty UTXO list");
-
     let change_address = get_change_address(worker, swap_info.change_wallet)?;
 
     let resp = send_market_request!(
@@ -2111,7 +2164,8 @@ fn try_start_quotes(
             change_address: change_address.address.clone(),
             order_id: order_id.map(OrdId::new),
             private_id: private_id.clone().map(Box::new),
-        }
+        },
+        SERVER_REQUEST_TIMEOUT_LONG
     )?;
 
     Ok(StartedQuote {
@@ -2252,7 +2306,8 @@ pub fn start_order(
         mkt::GetOrderRequest {
             order_id: OrdId::new(order_id),
             private_id: private_id.clone().map(Box::new),
-        }
+        },
+        SERVER_REQUEST_TIMEOUT_LONG
     );
 
     let error_msg = res.as_ref().err().map(|err| err.to_string());
@@ -2302,7 +2357,12 @@ fn try_accept_quote(
         .get(&quote_id)
         .ok_or_else(|| anyhow!("can't find quote"))?;
 
-    let resp = send_market_request!(worker, GetQuote, mkt::GetQuoteRequest { quote_id })?;
+    let resp = send_market_request!(
+        worker,
+        GetQuote,
+        mkt::GetQuoteRequest { quote_id },
+        SERVER_REQUEST_TIMEOUT_LONG
+    )?;
 
     let pset = decode_pset(&resp.pset)?;
 
@@ -2380,10 +2440,9 @@ fn try_accept_quote(
         mkt::TakerSignRequest {
             quote_id,
             pset: encode_pset(&pset)
-        }
+        },
+        SERVER_REQUEST_TIMEOUT_LONG
     )?;
-
-    rebroadcast_tx(worker, resp.txid);
 
     Ok(resp.txid)
 }
@@ -2473,42 +2532,6 @@ pub fn load_history(worker: &mut super::Data, msg: proto::to::LoadHistory) {
                 }
                 Err(err) => {
                     worker.show_message(&format!("History loading failed: {err}"));
-                }
-            };
-        },
-    );
-}
-
-pub fn rebroadcast_tx(worker: &mut super::Data, txid: Txid) {
-    log::debug!("re-broadcast tx, txid: {txid}");
-    worker.make_async_request(
-        api::Request::Market(Request::GetTransaction(mkt::GetTransactionRequest { txid })),
-        move |worker, res| {
-            match res {
-                Ok(api::Response::Market(Response::GetTransaction(resp))) => {
-                    let accounts = worker.wallets.keys().copied().collect::<Vec<_>>();
-                    for account_id in accounts {
-                        let tx = resp.tx.clone();
-                        wallet::callback(
-                            account_id,
-                            worker,
-                            move |data| data.ses.broadcast_tx(&tx),
-                            |_data, res| match res {
-                                Ok(()) => {
-                                    log::debug!("tx re-broadcast succeed");
-                                }
-                                Err(err) => {
-                                    log::error!("tx re-broadcast failed: {err}");
-                                }
-                            },
-                        );
-                    }
-                }
-                Ok(_) => {
-                    log::error!("unexpected markets response, expected GetTransaction");
-                }
-                Err(err) => {
-                    log::error!("GetTransaction request failed: {err}");
                 }
             };
         },

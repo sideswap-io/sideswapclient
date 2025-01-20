@@ -6,8 +6,11 @@ use sideswap_api::{
     PricePair,
 };
 use sideswap_common::{
+    dealer_ticker::{dealer_ticker_to_asset_id, DealerTicker},
     env::Env,
+    exchange_pair::ExchangePair,
     network::Network,
+    price_stream::{self, PriceSource},
     types::{btc_to_sat, MAX_BTC_AMOUNT},
 };
 use sideswap_types::normal_float::NormalFloat;
@@ -16,19 +19,7 @@ use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver};
 use crate::{
     dealer_rpc::{self, apply_interest},
     market,
-    types::{dealer_ticker_to_asset_id, DealerTicker, ExchangePair},
 };
-
-mod binance;
-mod bit_preco;
-
-type PriceCallback = Box<dyn Fn(Option<PricePair>) -> () + Send>;
-
-#[derive(Debug, Clone, Deserialize)]
-pub enum PriceSource {
-    Binance,
-    BitPreco,
-}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct Market {
@@ -79,10 +70,8 @@ impl Data {
                     log::error!("price channel closed: {err}");
                 }
             });
-            match market.source {
-                PriceSource::Binance => binance::start(exchange_pair, callback),
-                PriceSource::BitPreco => bit_preco::start(exchange_pair, callback),
-            }
+
+            price_stream::start(market.source, exchange_pair, callback);
         }
 
         Data {

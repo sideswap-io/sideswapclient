@@ -4,7 +4,7 @@ use super::*;
 
 #[test]
 fn names() {
-    for ticker in DealerTicker::ALL {
+    for &ticker in DealerTicker::ALL {
         let name = dealer_ticker_to_asset_ticker(ticker);
         let ticker2 = dealer_ticker_from_asset_ticker(name).unwrap();
         assert_eq!(ticker, ticker2);
@@ -15,13 +15,11 @@ fn names() {
 async fn dealer_tickers() {
     let network = Network::Liquid;
 
-    let gdk_registry = sideswap_common::gdk_registry_cache::GdkRegistryCache::new(
-        network,
-        &PathBuf::from("/tmp/sideswap/"),
-    )
-    .await;
+    let gdk_registry =
+        crate::gdk_registry_cache::GdkRegistryCache::new(network, &PathBuf::from("/tmp/sideswap/"))
+            .await;
 
-    for dealer_ticker in DealerTicker::ALL {
+    for &dealer_ticker in DealerTicker::ALL {
         let asset_id = dealer_ticker_to_asset_id(network, dealer_ticker);
         if asset_id == network.d().policy_asset.asset_id() {
             continue;

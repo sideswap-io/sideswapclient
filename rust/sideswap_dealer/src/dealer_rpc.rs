@@ -1,7 +1,6 @@
 //! Old instant swaps and swap API (deprecated)
 
 use crate::rpc::ListUnspent;
-use crate::types::{dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker};
 use crate::utxo_data::{self, UtxoData, UtxoWithKey};
 
 use super::rpc;
@@ -11,6 +10,9 @@ use elements::OutPoint;
 use log::{debug, error, info, warn};
 use serde::{Deserialize, Serialize};
 use sideswap_api::{Asset, *};
+use sideswap_common::dealer_ticker::{
+    dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker,
+};
 use sideswap_common::network::Network;
 use sideswap_common::types::Amount;
 use sideswap_common::ws::auto::WrappedResponse;

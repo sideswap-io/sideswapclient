@@ -178,6 +178,8 @@ pub async fn run(
                             method: method.clone(),
                             amount: amount.to_string(),
                             address: address.clone(),
+                            travel_rule_tos: true,
+                            beneficiary_self: true,
                         })
                         .await;
                     debug!("withdraw result: {res:?}");

@@ -144,12 +144,6 @@ pub trait GdkSes {
 
     fn get_gaid(&self) -> Result<String, anyhow::Error>;
 
-    #[allow(dead_code)]
-    fn unlock_hww(&self) -> Result<(), anyhow::Error>;
-
-    #[allow(dead_code)]
-    fn update_sync_interval(&self, time: u32);
-
     fn get_balances(&self) -> Result<Balances, anyhow::Error>;
 
     fn get_transactions_impl(&self) -> Result<Vec<gdk_json::Transaction>, anyhow::Error>;
@@ -191,14 +185,6 @@ pub trait GdkSes {
         last_pointer: Option<u32>,
         is_internal: bool,
     ) -> Result<gdk_json::PreviousAddresses, anyhow::Error>;
-
-    #[allow(dead_code)]
-    fn sig_single_maker_tx(
-        &mut self,
-        input: &crate::swaps::SigSingleInput,
-        output: &crate::swaps::SigSingleOutput,
-        assets: &BTreeMap<AssetId, Asset>,
-    ) -> Result<crate::swaps::SigSingleMaker, anyhow::Error>;
 
     fn verify_and_sign_pset(
         &mut self,

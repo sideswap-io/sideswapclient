@@ -8,6 +8,8 @@ pub struct WithdrawRequest {
     pub method: String,
     pub amount: String,
     pub address: String,
+    pub travel_rule_tos: bool,
+    pub beneficiary_self: bool,
 }
 
 #[derive(Debug)]

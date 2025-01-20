@@ -3,9 +3,8 @@ use std::collections::BTreeMap;
 use poem_openapi::{Enum, Object};
 use serde::{Deserialize, Serialize};
 use sideswap_api::mkt::{AssetType, OrdId, QuoteId, QuoteSubId};
+use sideswap_common::{dealer_ticker::DealerTicker, exchange_pair::ExchangePair};
 use sideswap_types::duration_ms::DurationMs;
-
-use crate::types::{DealerTicker, ExchangePair};
 
 #[derive(Debug, Serialize, Enum)]
 pub enum ErrorCode {
