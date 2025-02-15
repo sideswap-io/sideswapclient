@@ -58,6 +58,8 @@ impl Data {
                 self.server_connected = false;
             }
 
+            proto::from::Msg::MinMarketAmounts(_msg) => {}
+
             proto::from::Msg::Login(_)
             | proto::from::Msg::Logout(_)
             | proto::from::Msg::EnvSettings(_)
@@ -360,7 +362,15 @@ fn make_swap(
     swap_first_quote(data);
 }
 
-fn payjoin(data: &mut Data, account_id: AccountId, asset_id: &str, amount: u64, address: &str) {
+fn send_tx(
+    data: &mut Data,
+    account_id: AccountId,
+    asset_id: &str,
+    amount: u64,
+    address: &str,
+    fee_asset_id: Option<&str>,
+    deduct_fee_output: Option<u32>,
+) {
     data.send(proto::to::Msg::CreateTx(proto::CreateTx {
         addressees: vec![proto::AddressAmount {
             address: address.to_owned(),
@@ -369,8 +379,8 @@ fn payjoin(data: &mut Data, account_id: AccountId, asset_id: &str, amount: u64, 
         }],
         account: proto::Account { id: account_id },
         utxos: Vec::new(),
-        fee_asset_id: Some(asset_id.to_owned()),
-        deduct_fee_output: Some(0),
+        fee_asset_id: fee_asset_id.map(ToOwned::to_owned),
+        deduct_fee_output,
     }));
 
     let created = loop {
@@ -646,12 +656,14 @@ fn buy_lbtc_for_usdt_offline_jade() {
 fn send_payjoin_wallet1() {
     let mut data1 = start_wallet_1();
 
-    payjoin(
+    send_tx(
         &mut data1,
         ACCOUNT_ID_REG,
         USDT,
         100000000,
         "vjU5WU5sQZVpuvY1GDHmjufQcBdRTS2yZKrCAQuBhBjxqVcKhHKN82YtBUiznTX9WQ5MSUUZaRBdG9Du",
+        Some(USDT),
+        Some(0),
     );
 }
 
@@ -660,12 +672,14 @@ fn send_payjoin_wallet1() {
 fn send_payjoin_jade() {
     let mut data1 = start_jade();
 
-    payjoin(
+    send_tx(
         &mut data1,
         ACCOUNT_ID_REG,
         USDT,
         100000000,
         "vjU5WU5sQZVpuvY1GDHmjufQcBdRTS2yZKrCAQuBhBjxqVcKhHKN82YtBUiznTX9WQ5MSUUZaRBdG9Du",
+        Some(USDT),
+        Some(0),
     );
 }
 

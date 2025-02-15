@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use std::sync::mpsc::{channel, Sender};
 use std::time::Duration;
 
@@ -16,9 +17,10 @@ struct Settings {
     disable_new_swaps: bool,
     work_dir: String,
     mnemonic: bip39::Mnemonic,
+    script_variant: String,
     web_server: Option<market::WebServerConfig>,
     ws_server: Option<market::WsServerConfig>,
-    price_stream: price_stream::Config,
+    price_stream: sideswap_common::price_stream::Markets,
 }
 
 struct Data {
@@ -83,7 +85,7 @@ fn process_timer(data: &mut Data) {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), anyhow::Error> {
     let args = std::env::args().collect::<Vec<_>>();
     assert!(
         args.len() == 2,
@@ -114,12 +116,16 @@ async fn main() {
     };
     let (market_command_sender, mut market_event_receiver) = market::start(market_params);
 
+    let script_variant = lwk_common::Singlesig::from_str(&settings.script_variant)
+        .map_err(|err| anyhow::anyhow!("invalid script_variant value: {err}"))?;
+
     let (wallet_command_sender, wallet_command_receiver) = channel::<wallet::Command>();
     let (wallet_event_sender, mut wallet_event_receiver) = unbounded_channel::<wallet::Event>();
     let wallet_params = wallet::Params {
         network,
         work_dir: settings.work_dir.clone(),
         mnemonic: settings.mnemonic.clone(),
+        script_variant,
     };
     wallet::start(wallet_params, wallet_command_receiver, wallet_event_sender);
 
@@ -161,4 +167,6 @@ async fn main() {
             },
         }
     }
+
+    Ok(())
 }

@@ -9,6 +9,7 @@ pub mod hex_encoded;
 pub mod normal_float;
 pub mod timestamp_ms;
 pub mod timestamp_us;
+pub mod unconfidential_address;
 pub mod utxo_ext;
 
 pub type AssetHex = HexEncoded<elements::confidential::Asset>;

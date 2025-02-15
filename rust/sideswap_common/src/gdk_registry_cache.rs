@@ -122,8 +122,8 @@ impl GdkRegistryCache {
 
 fn check_network<T>(data: &BTreeMap<AssetId, T>, network: Network) -> Result<(), anyhow::Error> {
     ensure!(
-        data.contains_key(&network.d().known_assets.usdt.asset_id())
-            || data.contains_key(&network.d().known_assets.eurx.asset_id()),
+        data.contains_key(&network.d().known_assets.USDt.asset_id())
+            || data.contains_key(&network.d().known_assets.EURx.asset_id()),
         "wrong network, can't find usdt or eurx asset"
     );
     Ok(())

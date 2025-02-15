@@ -24,6 +24,7 @@ pub struct Params {
     pub network: Network,
     pub work_dir: String,
     pub mnemonic: bip39::Mnemonic,
+    pub script_variant: lwk_common::Singlesig,
 }
 
 pub enum Command {
@@ -54,6 +55,7 @@ fn run(
         network,
         work_dir: _work_dir,
         mnemonic,
+        script_variant,
     }: Params,
     command_receiver: Receiver<Command>,
     event_sender: UncheckedUnboundedSender<Event>,
@@ -72,7 +74,7 @@ fn run(
 
     let descriptor = singlesig_desc(
         &signer,
-        lwk_common::Singlesig::ShWpkh,
+        script_variant,
         lwk_common::DescriptorBlindingKey::Slip77,
         is_mainnet,
     )

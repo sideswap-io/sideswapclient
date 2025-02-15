@@ -135,9 +135,9 @@ async fn main() {
     ));
 
     let mut subs = Subscribes::new();
-    add_sub(&mut subs, &known_assets.usdt.asset_id(), "usdt");
-    add_sub(&mut subs, &known_assets.eurx.asset_id(), "eurx");
-    add_sub(&mut subs, &known_assets.depix.asset_id(), "depix");
+    add_sub(&mut subs, &known_assets.USDt.asset_id(), "usdt");
+    add_sub(&mut subs, &known_assets.EURx.asset_id(), "eurx");
+    add_sub(&mut subs, &known_assets.DePix.asset_id(), "depix");
 
     let mut ticker_states = BTreeMap::new();
     for sub in subs.values() {

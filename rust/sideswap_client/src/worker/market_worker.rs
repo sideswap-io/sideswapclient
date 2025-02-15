@@ -21,8 +21,8 @@ use sideswap_api::{
     self as api,
     mkt::{
         self, AssetPair, AssetType, ClientEvent, HistStatus, HistoryOrder, MarketInfo,
-        Notification, OrdId, OwnOrder, PublicOrder, QuoteId, QuoteSubId, Request, Response,
-        TradeDir,
+        MinOrderAmounts, Notification, OrdId, OwnOrder, PublicOrder, QuoteId, QuoteSubId, Request,
+        Response, TradeDir,
     },
     AssetBlindingFactor, MarketType, ValueBlindingFactor,
 };
@@ -36,7 +36,7 @@ use sideswap_common::{
         pset::{construct_pset, ConstructPsetArgs, ConstructedPset, PsetInput, PsetOutput},
     },
     target_os::TargetOs,
-    types::{asset_float_amount_, asset_int_amount_, asset_scale, MAX_SAT_AMOUNT},
+    types::{asset_float_amount_, asset_int_amount_, asset_scale},
 };
 use sideswap_jade::{
     byte_array::{ByteArray, ByteArray32},
@@ -116,7 +116,9 @@ pub struct Data {
     subscribed_charts: Option<AssetPair>,
     xprivs: Option<Xprivs>,
     server_markets: Vec<MarketInfo>,
+    token_quotes: Vec<AssetId>,
     ui_markets: Vec<proto::MarketInfo>,
+    min_order_amounts: Option<MinOrderAmounts>,
 }
 
 pub fn new() -> Data {
@@ -130,7 +132,9 @@ pub fn new() -> Data {
         subscribed_charts: None,
         xprivs: None,
         server_markets: Vec::new(),
+        token_quotes: Vec::new(),
         ui_markets: Vec::new(),
+        min_order_amounts: None,
     }
 }
 
@@ -291,6 +295,7 @@ fn market_list_subscribe(worker: &mut super::Data) {
             match res {
                 Ok(api::Response::Market(Response::ListMarkets(resp))) => {
                     worker.market.server_markets = resp.markets;
+                    worker.market.token_quotes = resp.token_quotes;
                     sync_market_list(worker);
                 }
                 Ok(_) => {
@@ -525,6 +530,19 @@ fn ws_login(worker: &mut super::Data) {
                             .send(proto::from::Msg::OwnOrders(proto::from::OwnOrders {
                                 list: worker.market.own_orders.values().map(Into::into).collect(),
                             }));
+
+                        if worker.market.min_order_amounts != resp.min_order_amounts {
+                            worker.market.min_order_amounts = resp.min_order_amounts;
+                            if let Some(min_order_amounts) = resp.min_order_amounts {
+                                worker.ui.send(proto::from::Msg::MinMarketAmounts(
+                                    proto::from::MinMarketAmounts {
+                                        lbtc: min_order_amounts.lbtc,
+                                        usdt: min_order_amounts.usdt,
+                                        eurx: min_order_amounts.eurx,
+                                    },
+                                ));
+                            }
+                        }
 
                         if let Some(xprivs) = worker.market.xprivs.as_mut() {
                             for event in resp.new_events {
@@ -908,6 +926,9 @@ fn try_sign_pset_jade(
             .jade,
     );
 
+    crate::gdk_ses_impl::unlock_hw(worker.env, &jade)
+        .map_err(|err| anyhow!("jade unlock error: {err}"))?;
+
     let _status = jade.start_status(jade_mng::JadeStatus::SignTx(jade_mng::TxType::Swap));
 
     let mut trusted_commitments = Vec::new();
@@ -1220,6 +1241,8 @@ fn process_ws_charts_update(worker: &mut super::Data, notif: mkt::ChartUpdateNot
 }
 
 fn process_ws_hist_updated(worker: &mut super::Data, notif: mkt::HistoryUpdatedNotif) {
+    worker.add_gdk_assets_for_asset_pair(std::iter::once(&notif.order.asset_pair));
+
     worker.ui.send(proto::from::Msg::HistoryUpdated(
         proto::from::HistoryUpdated {
             order: notif.order.into(),
@@ -1640,7 +1663,6 @@ fn try_offline_order_submit(
     let base_amount = msg.base_amount;
     let price = NormalFloat::new(msg.price).expect("price must be valid");
     ensure!(base_amount > 0);
-    ensure!(base_amount <= MAX_SAT_AMOUNT);
 
     ensure!(price.value() > 0.0);
     let base_asset = worker
@@ -1656,7 +1678,6 @@ fn try_offline_order_submit(
     let quote_amount_float = base_amount_float * price.value();
     let quote_amount = asset_int_amount_(quote_amount_float, quote_asset.precision);
     ensure!(quote_amount > 0);
-    ensure!(quote_amount <= MAX_SAT_AMOUNT);
 
     let (send_amount, recv_amount) = match trade_dir {
         TradeDir::Sell => (base_amount, quote_amount),
@@ -2520,6 +2541,10 @@ pub fn load_history(worker: &mut super::Data, msg: proto::to::LoadHistory) {
         move |worker, res| {
             match res {
                 Ok(api::Response::Market(Response::LoadHistory(resp))) => {
+                    worker.add_gdk_assets_for_asset_pair(
+                        resp.list.iter().map(|item| &item.asset_pair),
+                    );
+
                     worker
                         .ui
                         .send(proto::from::Msg::LoadHistory(proto::from::LoadHistory {
@@ -2634,7 +2659,7 @@ fn sync_market_list(worker: &mut super::Data) {
         .union(&wallet_token_assets)
         .copied()
         .collect::<Vec<_>>();
-    worker.add_missing_gdk_assets(&all_assets);
+    worker.add_missing_gdk_assets(all_assets.iter());
 
     let mut market_list = Vec::<proto::MarketInfo>::new();
     let mut asset_pairs = BTreeSet::<AssetPair>::new();
@@ -2648,19 +2673,21 @@ fn sync_market_list(worker: &mut super::Data) {
     }
 
     for asset in worker.assets.values() {
-        let asset_pair = AssetPair {
-            base: asset.asset_id,
-            quote: worker.policy_asset,
-        };
-        if asset.market_type == Some(MarketType::Token)
-            && !asset_pairs.contains(&asset_pair)
-            && wallet_token_assets.contains(&asset.asset_id)
-        {
-            market_list.push(proto::MarketInfo {
-                asset_pair: asset_pair.into(),
-                fee_asset: proto::AssetType::Quote.into(),
-                r#type: proto::MarketType::Token.into(),
-            });
+        for quote_asset in worker.market.token_quotes.iter() {
+            let asset_pair = AssetPair {
+                base: asset.asset_id,
+                quote: *quote_asset,
+            };
+            if asset.market_type == Some(MarketType::Token)
+                && !asset_pairs.contains(&asset_pair)
+                && wallet_token_assets.contains(&asset.asset_id)
+            {
+                market_list.push(proto::MarketInfo {
+                    asset_pair: asset_pair.into(),
+                    fee_asset: proto::AssetType::Quote.into(),
+                    r#type: proto::MarketType::Token.into(),
+                });
+            }
         }
     }
 

@@ -677,6 +677,12 @@ message From {
     repeated PublicOrder list = 2;
   }
 
+  message MinMarketAmounts {
+    required uint64 lbtc = 1;
+    required uint64 usdt = 2;
+    required uint64 eurx = 3;
+  }
+
   message OwnOrders {
     repeated OwnOrder list = 1;
   }
@@ -824,6 +830,7 @@ message From {
     OrderId public_order_removed = 107;
 
     MarketPrice market_price = 110;
+    MinMarketAmounts min_market_amounts = 119;
 
     OwnOrders own_orders = 120;
     OwnOrder own_order_created = 121;

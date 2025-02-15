@@ -1,9 +1,7 @@
 //! Old instant swaps and swap API (deprecated)
 
-use crate::rpc::ListUnspent;
 use crate::utxo_data::{self, UtxoData, UtxoWithKey};
 
-use super::rpc;
 use anyhow::{anyhow, ensure};
 use elements::pset::PartiallySignedTransaction;
 use elements::OutPoint;
@@ -14,10 +12,11 @@ use sideswap_common::dealer_ticker::{
     dealer_ticker_from_asset_id, dealer_ticker_to_asset_id, DealerTicker,
 };
 use sideswap_common::network::Network;
+use sideswap_common::rpc::ListUnspent;
 use sideswap_common::types::Amount;
 use sideswap_common::ws::auto::WrappedResponse;
 use sideswap_common::ws::ws_req_sender::WsReqSender;
-use sideswap_common::{b64, make_request, types, ws};
+use sideswap_common::{b64, make_request, rpc, types, ws};
 use std::collections::{BTreeMap, BTreeSet};
 use std::time::{Duration, Instant};
 use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};

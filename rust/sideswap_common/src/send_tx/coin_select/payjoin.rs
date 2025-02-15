@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use crate::{
-    coin_select, network_fee,
+    coin_select, network_fee, network_fee_discount,
     send_tx::coin_select::{asset_outputs, InOut},
 };
 use anyhow::{anyhow, ensure};
@@ -121,22 +121,26 @@ fn try_coin_select_impl(
                         + 1; // Server fee output
 
                     let (single_sig_inputs, multi_sig_inputs) = if multisig_wallet {
-                        (server_input_count, client_input_count)
+                        (0, client_input_count)
                     } else {
-                        (client_input_count + server_input_count, 0)
+                        (client_input_count, 0)
                     };
 
-                    let min_network_fee = network_fee::expected_network_fee(
-                        single_sig_inputs,
-                        multi_sig_inputs,
-                        output_count,
-                    );
+                    let min_network_fee = network_fee_discount::TxFee {
+                        vin_single_sig_native: server_input_count,
+                        vin_single_sig_nested: single_sig_inputs,
+                        vin_multi_sig: multi_sig_inputs,
+                        vout_native: 0,
+                        vout_nested: output_count,
+                    }
+                    .fee();
 
                     let server_inputs = if with_server_change {
                         naive_coin_select(min_network_fee + 1, server_input_count, &server_utxos)
                     } else {
-                        let upper_bound_delta =
-                            network_fee::weight_to_network_fee(network_fee::WEIGHT_VOUT);
+                        let upper_bound_delta = network_fee::weight_to_network_fee(
+                            network_fee_discount::WEIGHT_VOUT_NESTED,
+                        );
                         coin_select::in_range(
                             min_network_fee,
                             upper_bound_delta,
@@ -173,9 +177,10 @@ fn try_coin_select_impl(
                     let fee_asset_inputs = if with_fee_change {
                         naive_coin_select(fee_asset_target + 1, fee_input_count, &fee_utoxs)
                     } else {
-                        let upper_bound_delta =
-                            (network_fee::weight_to_network_fee(network_fee::WEIGHT_VOUT) as f64
-                                * price) as u64;
+                        let upper_bound_delta = (network_fee::weight_to_network_fee(
+                            network_fee_discount::WEIGHT_VOUT_NESTED,
+                        ) as f64
+                            * price) as u64;
                         coin_select::in_range(
                             fee_asset_target,
                             upper_bound_delta,
@@ -316,13 +321,20 @@ fn validate_res(
         + usize::from(fee_change.is_some());
 
     let (single_sig_inputs, multi_sig_inputs) = if args.multisig_wallet {
-        (server_input_count, client_input_count)
+        (0, client_input_count)
     } else {
-        (client_input_count + server_input_count, 0)
+        (client_input_count, 0)
     };
 
-    let min_network_fee =
-        network_fee::expected_network_fee(single_sig_inputs, multi_sig_inputs, output_count);
+    let min_network_fee = network_fee_discount::TxFee {
+        vin_single_sig_native: server_input_count,
+        vin_single_sig_nested: single_sig_inputs,
+        vin_multi_sig: multi_sig_inputs,
+        vout_native: 0,
+        vout_nested: output_count,
+    }
+    .fee();
+
     let actual_network_fee = network_fee.value;
     ensure!(actual_network_fee >= min_network_fee);
     ensure!(actual_network_fee <= 2 * min_network_fee);

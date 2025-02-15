@@ -20,6 +20,14 @@ pub mod server_api;
 pub const BASE_URL_PROD: &str = "https://api.sideswap.io";
 pub const BASE_URL_TESTNET: &str = "https://api-testnet.sideswap.io";
 
+pub struct GetAcceptedAssets {
+    pub base_url: String,
+}
+
+pub struct AcceptedAssets {
+    pub assets: Vec<AssetId>,
+}
+
 pub struct Utxo {
     pub txid: elements::Txid,
     pub vout: u32,
@@ -54,59 +62,40 @@ pub trait Wallet {
     fn change_address(&mut self) -> Result<elements::Address, anyhow::Error>;
 }
 
-fn take_utxos<'a>(
-    mut utxos: Vec<Utxo>,
-    required: impl Iterator<Item = &'a InOut>,
-) -> Vec<PsetInput> {
-    let mut selected = Vec::new();
-    for required in required {
-        let index = utxos
-            .iter()
-            .position(|utxo| utxo.asset_id == required.asset_id && utxo.value == required.value)
-            .expect("must exists");
-        let utxo = utxos.remove(index);
+static AGENT: std::sync::LazyLock<ureq::Agent> = std::sync::LazyLock::new(|| {
+    ureq::AgentBuilder::new()
+        .timeout(Duration::from_secs(30))
+        .build()
+});
 
-        let (asset_commitment, value_commitment) = if utxo.asset_bf
-            == elements::confidential::AssetBlindingFactor::zero()
-            || utxo.value_bf == elements::confidential::ValueBlindingFactor::zero()
-        {
-            (
-                elements::confidential::Asset::Explicit(utxo.asset_id),
-                elements::confidential::Value::Explicit(utxo.value),
-            )
-        } else {
-            let gen = elements::secp256k1_zkp::Generator::new_blinded(
-                SECP256K1,
-                utxo.asset_id.into_tag(),
-                utxo.asset_bf.into_inner(),
-            );
-            (
-                elements::confidential::Asset::Confidential(gen),
-                elements::confidential::Value::new_confidential(
-                    SECP256K1,
-                    utxo.value,
-                    gen,
-                    utxo.value_bf,
-                ),
-            )
-        };
+fn get_url(base_url: &str) -> String {
+    format!("{base_url}/payjoin")
+}
 
-        let input = PsetInput {
-            txid: utxo.txid,
-            vout: utxo.vout,
-            script_pub_key: utxo.script_pub_key,
-            asset_commitment,
-            value_commitment,
-            tx_out_sec: TxOutSecrets {
-                asset: utxo.asset_id,
-                asset_bf: utxo.asset_bf,
-                value: utxo.value,
-                value_bf: utxo.value_bf,
-            },
-        };
-        selected.push(input);
-    }
-    selected
+pub fn accepted_assets(req: GetAcceptedAssets) -> Result<AcceptedAssets, anyhow::Error> {
+    let GetAcceptedAssets { base_url } = req;
+
+    let url = get_url(&base_url);
+
+    let resp = make_server_request(
+        &AGENT,
+        &url,
+        server_api::Request::AcceptedAssets(server_api::AcceptedAssetsRequest {}),
+    )?;
+
+    let server_api::AcceptedAssetsResponse { accepted_asset } = match resp {
+        server_api::Response::AcceptedAssets(resp) => resp,
+        _ => bail!("unexpected response {resp:?}"),
+    };
+
+    ensure!(!accepted_asset.is_empty(), "empty payjoin asset list");
+
+    Ok(AcceptedAssets {
+        assets: accepted_asset
+            .into_iter()
+            .map(|asset| asset.asset_id)
+            .collect(),
+    })
 }
 
 pub fn create_payjoin(
@@ -129,18 +118,14 @@ pub fn create_payjoin(
     ensure!(recipients.iter().all(|r| r.address.is_blinded()));
     ensure!(recipients.iter().all(|r| r.amount > 0));
 
-    let agent: ureq::Agent = ureq::AgentBuilder::new()
-        .timeout(Duration::from_secs(30))
-        .build();
-
-    let url = format!("{base_url}/payjoin");
+    let url = get_url(&base_url);
 
     let req = server_api::Request::Start(server_api::StartRequest {
         asset_id: fee_asset,
         user_agent,
         api_key: None,
     });
-    let resp = make_server_request(&agent, &url, req)?;
+    let resp = make_server_request(&AGENT, &url, req)?;
     let StartResponse {
         order_id,
         expires_at: _,
@@ -274,7 +259,7 @@ pub fn create_payjoin(
         order_id,
         pset: base64::engine::general_purpose::STANDARD.encode(server_pset),
     });
-    let resp = make_server_request(&agent, &url, req)?;
+    let resp = make_server_request(&AGENT, &url, req)?;
     let SignResponse {
         pset: server_signed_pset,
     } = match resp {
@@ -293,6 +278,61 @@ pub fn create_payjoin(
         asset_fee: server_fee.value,
         network_fee: network_fee.value,
     })
+}
+
+fn take_utxos<'a>(
+    mut utxos: Vec<Utxo>,
+    required: impl Iterator<Item = &'a InOut>,
+) -> Vec<PsetInput> {
+    let mut selected = Vec::new();
+    for required in required {
+        let index = utxos
+            .iter()
+            .position(|utxo| utxo.asset_id == required.asset_id && utxo.value == required.value)
+            .expect("must exists");
+        let utxo = utxos.remove(index);
+
+        let (asset_commitment, value_commitment) = if utxo.asset_bf
+            == elements::confidential::AssetBlindingFactor::zero()
+            || utxo.value_bf == elements::confidential::ValueBlindingFactor::zero()
+        {
+            (
+                elements::confidential::Asset::Explicit(utxo.asset_id),
+                elements::confidential::Value::Explicit(utxo.value),
+            )
+        } else {
+            let gen = elements::secp256k1_zkp::Generator::new_blinded(
+                SECP256K1,
+                utxo.asset_id.into_tag(),
+                utxo.asset_bf.into_inner(),
+            );
+            (
+                elements::confidential::Asset::Confidential(gen),
+                elements::confidential::Value::new_confidential(
+                    SECP256K1,
+                    utxo.value,
+                    gen,
+                    utxo.value_bf,
+                ),
+            )
+        };
+
+        let input = PsetInput {
+            txid: utxo.txid,
+            vout: utxo.vout,
+            script_pub_key: utxo.script_pub_key,
+            asset_commitment,
+            value_commitment,
+            tx_out_sec: TxOutSecrets {
+                asset: utxo.asset_id,
+                asset_bf: utxo.asset_bf,
+                value: utxo.value,
+                value_bf: utxo.value_bf,
+            },
+        };
+        selected.push(input);
+    }
+    selected
 }
 
 fn copy_signatures(

@@ -2,7 +2,9 @@ use std::collections::BTreeMap;
 
 use anyhow::{anyhow, bail, ensure};
 use elements::{AssetId, Txid};
-use sideswap_common::{coin_select::no_change_or_naive, network_fee, send_tx::coin_select::InOut};
+use sideswap_common::{
+    coin_select::no_change_or_naive, network_fee_discount, send_tx::coin_select::InOut,
+};
 
 #[derive(Clone)]
 pub enum UtxoType {
@@ -123,7 +125,6 @@ pub fn coin_select_amount(
     }
     for output in user_outputs.iter() {
         ensure!(output.value > 0);
-        ensure!(output.value < elements::bitcoin::amount::Amount::MAX_MONEY.to_sat());
     }
 
     if let Some(index) = deduct_fee {
@@ -178,11 +179,14 @@ pub fn coin_select_amount(
         all_inputs.push(utxo.clone());
 
         for with_change in [false, true] {
-            let network_fee = network_fee::expected_network_fee(
-                single_sig_inputs,
-                multi_sig_inputs,
-                user_outputs.len() + change_outputs.len() + usize::from(with_change),
-            );
+            let network_fee = network_fee_discount::TxFee {
+                vin_single_sig_native: 0,
+                vin_single_sig_nested: single_sig_inputs,
+                vin_multi_sig: multi_sig_inputs,
+                vout_native: 0,
+                vout_nested: user_outputs.len() + change_outputs.len() + usize::from(with_change),
+            }
+            .fee();
 
             let target = if deduct_fee.is_some() {
                 bitcoin_user_output

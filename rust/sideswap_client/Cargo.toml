@@ -32,7 +32,6 @@ flexi_logger.workspace = true
 hex.workspace = true
 libc.workspace = true
 log.workspace = true
-once_cell.workspace = true
 prost.workspace = true
 rand.workspace = true
 secp256k1.workspace = true

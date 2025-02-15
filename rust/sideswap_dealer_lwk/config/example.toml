@@ -5,6 +5,7 @@ env = "Testnet" # SideSwap testnet server (Liquid Testnet network)
 work_dir = "/tmp/work_dir"
 
 mnemonic = "<YOUR_MNEMONIC>"
+script_variant = "wpkh" # Use "shwpkh" for legacy segwit addresses
 
 price_stream = []
 

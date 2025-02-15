@@ -1,6 +1,7 @@
 pub mod fcm_models;
 pub mod gdk;
 pub mod http_rpc;
+pub mod market;
 pub mod mkt;
 pub mod pegx;
 
@@ -15,13 +16,20 @@ use sideswap_types::{
 use std::{collections::BTreeMap, vec::Vec};
 
 pub const TICKER_LBTC: &str = "L-BTC";
+
 pub const TICKER_USDT: &str = "USDt";
 pub const TICKER_EURX: &str = "EURx";
 pub const TICKER_MEX: &str = "MEX";
 pub const TICKER_DEPIX: &str = "DePix";
+
 pub const TICKER_SSWP: &str = "SSWP";
 pub const TICKER_BMN2: &str = "BMN2";
 pub const TICKER_CMSTR: &str = "CMSTR";
+pub const TICKER_EXOEU: &str = "EXOeu";
+pub const TICKER_AQF: &str = "AQF";
+pub const TICKER_BAKER: &str = "BAKER";
+pub const TICKER_BSIC1: &str = "BSIC1";
+
 pub const TICKER_PPRGB: &str = "PPRGB";
 
 pub static PATH_JSON_RPC_WS: &str = "json-rpc-ws";
@@ -30,9 +38,6 @@ pub static PATH_JSON_RUST_WS: &str = "rust-rpc-ws";
 pub const OS_TYPE_OTHER: i32 = 0;
 pub const OS_TYPE_ANDROID: i32 = 1;
 pub const OS_TYPE_IOS: i32 = 2;
-
-pub const CONTACT_ADDRESSES_UPLOAD_COUNT_DEFAULT: usize = 20;
-pub const CONTACT_ADDRESSES_UPLOAD_COUNT_MAX: usize = 20;
 
 const SWAP_MARKETS_DEFAULT_SERVER_FEE: f64 = 0.001;
 
@@ -46,9 +51,6 @@ pub fn get_os_type() -> i32 {
     }
 }
 
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct PhoneKey(pub String);
-
 #[derive(
     Debug,
     Hash,
@@ -61,32 +63,37 @@ pub struct PhoneKey(pub String);
     serde_with::SerializeDisplay,
     serde_with::DeserializeFromStr,
 )]
-pub struct Hash32(pub [u8; 32]);
+pub struct HashN<const LEN: usize>(pub [u8; LEN]);
 
-impl rand::distributions::Distribution<Hash32> for rand::distributions::Standard {
-    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> Hash32 {
-        Hash32(rng.gen())
+impl<const LEN: usize> rand::distributions::Distribution<HashN<LEN>>
+    for rand::distributions::Standard
+{
+    fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> HashN<LEN> {
+        HashN(rng.gen())
     }
 }
 
-impl std::str::FromStr for Hash32 {
+impl<const LEN: usize> std::str::FromStr for HashN<LEN> {
     type Err = hex::FromHexError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut data: [u8; 32] = [0; 32];
+        let mut data: [u8; LEN] = [0; LEN];
         hex::decode_to_slice(s, &mut data)?;
         data.reverse();
-        Ok(Hash32(data))
+        Ok(HashN(data))
     }
 }
 
-impl std::fmt::Display for Hash32 {
+impl<const LEN: usize> std::fmt::Display for HashN<LEN> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut data = self.0;
         data.reverse();
         write!(f, "{}", hex::encode(data))
     }
 }
+
+pub type Hash16 = HashN<16>;
+pub type Hash32 = HashN<32>;
 
 pub type AssetId = elements::AssetId;
 
@@ -98,9 +105,6 @@ pub struct Ticker(pub String);
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
 pub struct ContactKey(pub String);
-
-#[derive(Debug, Hash, PartialEq, Eq, Clone, Ord, PartialOrd, Serialize, Deserialize)]
-pub struct AvatarId(pub String);
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Copy, Clone)]
 pub enum MarketType {

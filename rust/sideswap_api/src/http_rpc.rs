@@ -61,11 +61,6 @@ pub struct RequestMsg {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct RequestStubMsg {
-    pub id: Id,
-}
-
-#[derive(Serialize, Deserialize)]
 pub struct ResponseMsg {
     pub id: Id,
     #[serde(flatten)]

@@ -46,7 +46,7 @@ pub fn init_log_with_name(work_dir: impl AsRef<Path>, name: &str) {
         flexi_logger::Duplicate::Error
     };
 
-    let _ = flexi_logger::Logger::try_with_str(LOG_FILTER)
+    let res = flexi_logger::Logger::try_with_str(LOG_FILTER)
         .unwrap()
         .format(log_format)
         .use_utc()
@@ -54,6 +54,9 @@ pub fn init_log_with_name(work_dir: impl AsRef<Path>, name: &str) {
         .append()
         .duplicate_to_stderr(stdout_level)
         .start();
+    if let Err(err) = res {
+        eprintln!("starting log failed: {err}");
+    }
 }
 
 pub fn init_log(work_dir: impl AsRef<Path>) {

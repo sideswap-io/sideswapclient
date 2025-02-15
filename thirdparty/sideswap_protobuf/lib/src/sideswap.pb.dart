@@ -7968,6 +7968,83 @@ class From_PublicOrders extends $pb.GeneratedMessage {
   $core.List<PublicOrder> get list => $_getList(1);
 }
 
+class From_MinMarketAmounts extends $pb.GeneratedMessage {
+  factory From_MinMarketAmounts({
+    $fixnum.Int64? lbtc,
+    $fixnum.Int64? usdt,
+    $fixnum.Int64? eurx,
+  }) {
+    final $result = create();
+    if (lbtc != null) {
+      $result.lbtc = lbtc;
+    }
+    if (usdt != null) {
+      $result.usdt = usdt;
+    }
+    if (eurx != null) {
+      $result.eurx = eurx;
+    }
+    return $result;
+  }
+  From_MinMarketAmounts._() : super();
+  factory From_MinMarketAmounts.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory From_MinMarketAmounts.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From.MinMarketAmounts', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'lbtc', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'usdt', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'eurx', $pb.PbFieldType.QU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  ;
+
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
+  From_MinMarketAmounts clone() => From_MinMarketAmounts()..mergeFromMessage(this);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  From_MinMarketAmounts copyWith(void Function(From_MinMarketAmounts) updates) => super.copyWith((message) => updates(message as From_MinMarketAmounts)) as From_MinMarketAmounts;
+
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static From_MinMarketAmounts create() => From_MinMarketAmounts._();
+  From_MinMarketAmounts createEmptyInstance() => create();
+  static $pb.PbList<From_MinMarketAmounts> createRepeated() => $pb.PbList<From_MinMarketAmounts>();
+  @$core.pragma('dart2js:noInline')
+  static From_MinMarketAmounts getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<From_MinMarketAmounts>(create);
+  static From_MinMarketAmounts? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get lbtc => $_getI64(0);
+  @$pb.TagNumber(1)
+  set lbtc($fixnum.Int64 v) { $_setInt64(0, v); }
+  @$pb.TagNumber(1)
+  $core.bool hasLbtc() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLbtc() => clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get usdt => $_getI64(1);
+  @$pb.TagNumber(2)
+  set usdt($fixnum.Int64 v) { $_setInt64(1, v); }
+  @$pb.TagNumber(2)
+  $core.bool hasUsdt() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearUsdt() => clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get eurx => $_getI64(2);
+  @$pb.TagNumber(3)
+  set eurx($fixnum.Int64 v) { $_setInt64(2, v); }
+  @$pb.TagNumber(3)
+  $core.bool hasEurx() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearEurx() => clearField(3);
+}
+
 class From_OwnOrders extends $pb.GeneratedMessage {
   factory From_OwnOrders({
     $core.Iterable<OwnOrder>? list,
@@ -9121,6 +9198,7 @@ enum From_Msg {
   publicOrderCreated, 
   publicOrderRemoved, 
   marketPrice, 
+  minMarketAmounts, 
   ownOrders, 
   ownOrderCreated, 
   ownOrderRemoved, 
@@ -9184,6 +9262,7 @@ class From extends $pb.GeneratedMessage {
     PublicOrder? publicOrderCreated,
     OrderId? publicOrderRemoved,
     From_MarketPrice? marketPrice,
+    From_MinMarketAmounts? minMarketAmounts,
     From_OwnOrders? ownOrders,
     OwnOrder? ownOrderCreated,
     OrderId? ownOrderRemoved,
@@ -9334,6 +9413,9 @@ class From extends $pb.GeneratedMessage {
     if (marketPrice != null) {
       $result.marketPrice = marketPrice;
     }
+    if (minMarketAmounts != null) {
+      $result.minMarketAmounts = minMarketAmounts;
+    }
     if (ownOrders != null) {
       $result.ownOrders = ownOrders;
     }
@@ -9425,6 +9507,7 @@ class From extends $pb.GeneratedMessage {
     106 : From_Msg.publicOrderCreated,
     107 : From_Msg.publicOrderRemoved,
     110 : From_Msg.marketPrice,
+    119 : From_Msg.minMarketAmounts,
     120 : From_Msg.ownOrders,
     121 : From_Msg.ownOrderCreated,
     122 : From_Msg.ownOrderRemoved,
@@ -9441,7 +9524,7 @@ class From extends $pb.GeneratedMessage {
     0 : From_Msg.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'From', package: const $pb.PackageName(_omitMessageNames ? '' : 'sideswap.proto'), createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 21, 22, 23, 24, 30, 31, 32, 33, 35, 36, 50, 55, 60, 61, 65, 66, 68, 72, 73, 80, 83, 91, 100, 101, 102, 105, 106, 107, 110, 120, 121, 122, 130, 131, 132, 140, 141, 142, 150, 151, 160, 161])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 17, 21, 22, 23, 24, 30, 31, 32, 33, 35, 36, 50, 55, 60, 61, 65, 66, 68, 72, 73, 80, 83, 91, 100, 101, 102, 105, 106, 107, 110, 119, 120, 121, 122, 130, 131, 132, 140, 141, 142, 150, 151, 160, 161])
     ..aOM<From_UpdatedTxs>(1, _omitFieldNames ? '' : 'updatedTxs', subBuilder: From_UpdatedTxs.create)
     ..aOM<From_UpdatedPegs>(2, _omitFieldNames ? '' : 'updatedPegs', subBuilder: From_UpdatedPegs.create)
     ..aOM<Asset>(3, _omitFieldNames ? '' : 'newAsset', subBuilder: Asset.create)
@@ -9487,6 +9570,7 @@ class From extends $pb.GeneratedMessage {
     ..aOM<PublicOrder>(106, _omitFieldNames ? '' : 'publicOrderCreated', subBuilder: PublicOrder.create)
     ..aOM<OrderId>(107, _omitFieldNames ? '' : 'publicOrderRemoved', subBuilder: OrderId.create)
     ..aOM<From_MarketPrice>(110, _omitFieldNames ? '' : 'marketPrice', subBuilder: From_MarketPrice.create)
+    ..aOM<From_MinMarketAmounts>(119, _omitFieldNames ? '' : 'minMarketAmounts', subBuilder: From_MinMarketAmounts.create)
     ..aOM<From_OwnOrders>(120, _omitFieldNames ? '' : 'ownOrders', subBuilder: From_OwnOrders.create)
     ..aOM<OwnOrder>(121, _omitFieldNames ? '' : 'ownOrderCreated', subBuilder: OwnOrder.create)
     ..aOM<OrderId>(122, _omitFieldNames ? '' : 'ownOrderRemoved', subBuilder: OrderId.create)
@@ -10019,148 +10103,159 @@ class From extends $pb.GeneratedMessage {
   @$pb.TagNumber(110)
   From_MarketPrice ensureMarketPrice() => $_ensure(44);
 
+  @$pb.TagNumber(119)
+  From_MinMarketAmounts get minMarketAmounts => $_getN(45);
+  @$pb.TagNumber(119)
+  set minMarketAmounts(From_MinMarketAmounts v) { setField(119, v); }
+  @$pb.TagNumber(119)
+  $core.bool hasMinMarketAmounts() => $_has(45);
+  @$pb.TagNumber(119)
+  void clearMinMarketAmounts() => clearField(119);
+  @$pb.TagNumber(119)
+  From_MinMarketAmounts ensureMinMarketAmounts() => $_ensure(45);
+
   @$pb.TagNumber(120)
-  From_OwnOrders get ownOrders => $_getN(45);
+  From_OwnOrders get ownOrders => $_getN(46);
   @$pb.TagNumber(120)
   set ownOrders(From_OwnOrders v) { setField(120, v); }
   @$pb.TagNumber(120)
-  $core.bool hasOwnOrders() => $_has(45);
+  $core.bool hasOwnOrders() => $_has(46);
   @$pb.TagNumber(120)
   void clearOwnOrders() => clearField(120);
   @$pb.TagNumber(120)
-  From_OwnOrders ensureOwnOrders() => $_ensure(45);
+  From_OwnOrders ensureOwnOrders() => $_ensure(46);
 
   @$pb.TagNumber(121)
-  OwnOrder get ownOrderCreated => $_getN(46);
+  OwnOrder get ownOrderCreated => $_getN(47);
   @$pb.TagNumber(121)
   set ownOrderCreated(OwnOrder v) { setField(121, v); }
   @$pb.TagNumber(121)
-  $core.bool hasOwnOrderCreated() => $_has(46);
+  $core.bool hasOwnOrderCreated() => $_has(47);
   @$pb.TagNumber(121)
   void clearOwnOrderCreated() => clearField(121);
   @$pb.TagNumber(121)
-  OwnOrder ensureOwnOrderCreated() => $_ensure(46);
+  OwnOrder ensureOwnOrderCreated() => $_ensure(47);
 
   @$pb.TagNumber(122)
-  OrderId get ownOrderRemoved => $_getN(47);
+  OrderId get ownOrderRemoved => $_getN(48);
   @$pb.TagNumber(122)
   set ownOrderRemoved(OrderId v) { setField(122, v); }
   @$pb.TagNumber(122)
-  $core.bool hasOwnOrderRemoved() => $_has(47);
+  $core.bool hasOwnOrderRemoved() => $_has(48);
   @$pb.TagNumber(122)
   void clearOwnOrderRemoved() => clearField(122);
   @$pb.TagNumber(122)
-  OrderId ensureOwnOrderRemoved() => $_ensure(47);
+  OrderId ensureOwnOrderRemoved() => $_ensure(48);
 
   @$pb.TagNumber(130)
-  From_OrderSubmit get orderSubmit => $_getN(48);
+  From_OrderSubmit get orderSubmit => $_getN(49);
   @$pb.TagNumber(130)
   set orderSubmit(From_OrderSubmit v) { setField(130, v); }
   @$pb.TagNumber(130)
-  $core.bool hasOrderSubmit() => $_has(48);
+  $core.bool hasOrderSubmit() => $_has(49);
   @$pb.TagNumber(130)
   void clearOrderSubmit() => clearField(130);
   @$pb.TagNumber(130)
-  From_OrderSubmit ensureOrderSubmit() => $_ensure(48);
+  From_OrderSubmit ensureOrderSubmit() => $_ensure(49);
 
   @$pb.TagNumber(131)
-  GenericResponse get orderEdit => $_getN(49);
+  GenericResponse get orderEdit => $_getN(50);
   @$pb.TagNumber(131)
   set orderEdit(GenericResponse v) { setField(131, v); }
   @$pb.TagNumber(131)
-  $core.bool hasOrderEdit() => $_has(49);
+  $core.bool hasOrderEdit() => $_has(50);
   @$pb.TagNumber(131)
   void clearOrderEdit() => clearField(131);
   @$pb.TagNumber(131)
-  GenericResponse ensureOrderEdit() => $_ensure(49);
+  GenericResponse ensureOrderEdit() => $_ensure(50);
 
   @$pb.TagNumber(132)
-  GenericResponse get orderCancel => $_getN(50);
+  GenericResponse get orderCancel => $_getN(51);
   @$pb.TagNumber(132)
   set orderCancel(GenericResponse v) { setField(132, v); }
   @$pb.TagNumber(132)
-  $core.bool hasOrderCancel() => $_has(50);
+  $core.bool hasOrderCancel() => $_has(51);
   @$pb.TagNumber(132)
   void clearOrderCancel() => clearField(132);
   @$pb.TagNumber(132)
-  GenericResponse ensureOrderCancel() => $_ensure(50);
+  GenericResponse ensureOrderCancel() => $_ensure(51);
 
   @$pb.TagNumber(140)
-  From_Quote get quote => $_getN(51);
+  From_Quote get quote => $_getN(52);
   @$pb.TagNumber(140)
   set quote(From_Quote v) { setField(140, v); }
   @$pb.TagNumber(140)
-  $core.bool hasQuote() => $_has(51);
+  $core.bool hasQuote() => $_has(52);
   @$pb.TagNumber(140)
   void clearQuote() => clearField(140);
   @$pb.TagNumber(140)
-  From_Quote ensureQuote() => $_ensure(51);
+  From_Quote ensureQuote() => $_ensure(52);
 
   @$pb.TagNumber(141)
-  From_AcceptQuote get acceptQuote => $_getN(52);
+  From_AcceptQuote get acceptQuote => $_getN(53);
   @$pb.TagNumber(141)
   set acceptQuote(From_AcceptQuote v) { setField(141, v); }
   @$pb.TagNumber(141)
-  $core.bool hasAcceptQuote() => $_has(52);
+  $core.bool hasAcceptQuote() => $_has(53);
   @$pb.TagNumber(141)
   void clearAcceptQuote() => clearField(141);
   @$pb.TagNumber(141)
-  From_AcceptQuote ensureAcceptQuote() => $_ensure(52);
+  From_AcceptQuote ensureAcceptQuote() => $_ensure(53);
 
   @$pb.TagNumber(142)
-  GenericResponse get startOrder => $_getN(53);
+  GenericResponse get startOrder => $_getN(54);
   @$pb.TagNumber(142)
   set startOrder(GenericResponse v) { setField(142, v); }
   @$pb.TagNumber(142)
-  $core.bool hasStartOrder() => $_has(53);
+  $core.bool hasStartOrder() => $_has(54);
   @$pb.TagNumber(142)
   void clearStartOrder() => clearField(142);
   @$pb.TagNumber(142)
-  GenericResponse ensureStartOrder() => $_ensure(53);
+  GenericResponse ensureStartOrder() => $_ensure(54);
 
   @$pb.TagNumber(150)
-  From_ChartsSubscribe get chartsSubscribe => $_getN(54);
+  From_ChartsSubscribe get chartsSubscribe => $_getN(55);
   @$pb.TagNumber(150)
   set chartsSubscribe(From_ChartsSubscribe v) { setField(150, v); }
   @$pb.TagNumber(150)
-  $core.bool hasChartsSubscribe() => $_has(54);
+  $core.bool hasChartsSubscribe() => $_has(55);
   @$pb.TagNumber(150)
   void clearChartsSubscribe() => clearField(150);
   @$pb.TagNumber(150)
-  From_ChartsSubscribe ensureChartsSubscribe() => $_ensure(54);
+  From_ChartsSubscribe ensureChartsSubscribe() => $_ensure(55);
 
   @$pb.TagNumber(151)
-  From_ChartsUpdate get chartsUpdate => $_getN(55);
+  From_ChartsUpdate get chartsUpdate => $_getN(56);
   @$pb.TagNumber(151)
   set chartsUpdate(From_ChartsUpdate v) { setField(151, v); }
   @$pb.TagNumber(151)
-  $core.bool hasChartsUpdate() => $_has(55);
+  $core.bool hasChartsUpdate() => $_has(56);
   @$pb.TagNumber(151)
   void clearChartsUpdate() => clearField(151);
   @$pb.TagNumber(151)
-  From_ChartsUpdate ensureChartsUpdate() => $_ensure(55);
+  From_ChartsUpdate ensureChartsUpdate() => $_ensure(56);
 
   @$pb.TagNumber(160)
-  From_LoadHistory get loadHistory => $_getN(56);
+  From_LoadHistory get loadHistory => $_getN(57);
   @$pb.TagNumber(160)
   set loadHistory(From_LoadHistory v) { setField(160, v); }
   @$pb.TagNumber(160)
-  $core.bool hasLoadHistory() => $_has(56);
+  $core.bool hasLoadHistory() => $_has(57);
   @$pb.TagNumber(160)
   void clearLoadHistory() => clearField(160);
   @$pb.TagNumber(160)
-  From_LoadHistory ensureLoadHistory() => $_ensure(56);
+  From_LoadHistory ensureLoadHistory() => $_ensure(57);
 
   @$pb.TagNumber(161)
-  From_HistoryUpdated get historyUpdated => $_getN(57);
+  From_HistoryUpdated get historyUpdated => $_getN(58);
   @$pb.TagNumber(161)
   set historyUpdated(From_HistoryUpdated v) { setField(161, v); }
   @$pb.TagNumber(161)
-  $core.bool hasHistoryUpdated() => $_has(57);
+  $core.bool hasHistoryUpdated() => $_has(58);
   @$pb.TagNumber(161)
   void clearHistoryUpdated() => clearField(161);
   @$pb.TagNumber(161)
-  From_HistoryUpdated ensureHistoryUpdated() => $_ensure(57);
+  From_HistoryUpdated ensureHistoryUpdated() => $_ensure(58);
 }
 
 class Settings_AccountAsset extends $pb.GeneratedMessage {

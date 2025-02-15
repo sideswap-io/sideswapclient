@@ -1839,16 +1839,30 @@ unsafe fn login(data: &mut GdkSesImpl) -> Result<(), anyhow::Error> {
     let session = data.session;
 
     let hw_data = data.login_info.wallet_info.hw_data();
-    let mnemonic = data.login_info.wallet_info.mnemonic().cloned();
-    let watch_only = data.login_info.wallet_info.watch_only();
-    let username = watch_only.map(|watch_only| watch_only.username.clone());
-    let password = watch_only.map(|watch_only| watch_only.password.clone());
 
-    let hw_device = HwData::get_hw_device(hw_data);
-    let login_user = gdk_json::LoginUser {
-        mnemonic,
-        username,
-        password,
+    let (hw_device, login_user) = if data.subaccount.is_none() {
+        let mnemonic = data.login_info.wallet_info.mnemonic().cloned();
+        let watch_only = data.login_info.wallet_info.watch_only();
+        let username = watch_only.map(|watch_only| watch_only.username.clone());
+        let password = watch_only.map(|watch_only| watch_only.password.clone());
+
+        let hw_device = HwData::get_hw_device(hw_data);
+        let login_user = gdk_json::LoginUser {
+            mnemonic,
+            username,
+            password,
+        };
+
+        (hw_device, login_user)
+    } else {
+        (
+            gdk_json::HwDevice { device: None },
+            gdk_json::LoginUser {
+                mnemonic: None,
+                username: None,
+                password: None,
+            },
+        )
     };
 
     let mut call = std::ptr::null_mut();

@@ -208,7 +208,7 @@ async fn run(
                         break;
                     }
                     if last_recv_duration > PING_PERIOD {
-                        let _ = ws_stream.send(Message::Ping(Vec::new())).await;
+                        let _ = ws_stream.send(Message::Ping(tungstenite::Bytes::new())).await;
                     }
                 }
             }

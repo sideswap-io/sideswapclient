@@ -23,6 +23,7 @@ use log::{debug, error, info, warn};
 use market_worker::REGISTER_PATH;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use sideswap_api::mkt::AssetPair;
 use sideswap_common::env::Env;
 use sideswap_common::event_proofs::EventProofs;
 use sideswap_common::network::Network;
@@ -30,7 +31,7 @@ use sideswap_common::send_tx::coin_select::InOut;
 use sideswap_common::types::{self, peg_out_amount, select_utxo_values, Amount};
 use sideswap_common::ws::next_request_id;
 use sideswap_common::{abort, b64, pin, send_tx, verify};
-use sideswap_jade::jade_mng::{self, JadeStatus, JadeStatusCallback};
+use sideswap_jade::jade_mng::{self, JadeStatus, JadeStatusCallback, ManagedJade};
 use sideswap_types::asset_precision::AssetPrecision;
 use sideswap_types::fee_rate::FeeRateSats;
 use tokio::sync::mpsc::UnboundedSender;
@@ -110,6 +111,16 @@ struct ActivePeg {
 pub struct ServerResp(String, Result<api::Response, api::Error>);
 
 pub type FromCallback = Arc<dyn Fn(proto::from::Msg) -> bool>;
+
+enum LoginData {
+    Mnemonic {
+        mnemonic: bip39::Mnemonic,
+    },
+    Jade {
+        name: String,
+        jade: Arc<ManagedJade>,
+    },
+}
 
 #[derive(Clone)]
 struct UiData {
@@ -512,7 +523,12 @@ impl Data {
         self.settings.master_pub_key.unwrap()
     }
 
-    fn load_gdk_assets(&mut self, asset_ids: &[AssetId]) -> Result<Vec<api::Asset>, anyhow::Error> {
+    /// Elements of `asset_ids` must be unique
+    fn load_gdk_assets<'a>(
+        &mut self,
+        asset_ids: impl Iterator<Item = &'a AssetId>,
+    ) -> Result<Vec<api::Asset>, anyhow::Error> {
+        let asset_ids = asset_ids.copied().collect::<Vec<_>>();
         assets_registry::get_assets(self.env, self.master_xpub(), asset_ids)
     }
 
@@ -613,10 +629,11 @@ impl Data {
             .iter()
             .filter(|asset| self.assets.get(asset).is_none())
             .cloned()
-            .collect::<Vec<_>>();
+            .collect::<BTreeSet<_>>();
+
         if !new_asset_ids.is_empty() {
             let new_assets = self
-                .load_gdk_assets(&new_asset_ids)
+                .load_gdk_assets(new_asset_ids.iter())
                 .ok()
                 .unwrap_or_default();
             for asset_id in new_asset_ids.iter() {
@@ -1642,14 +1659,12 @@ impl Data {
 
     fn try_register(
         &mut self,
-        req: &proto::to::Login,
+        login: &LoginData,
         cache_dir: &str,
     ) -> Result<settings::RegInfo, anyhow::Error> {
-        let wallet_info = match req.wallet.as_ref().unwrap() {
-            proto::to::login::Wallet::Mnemonic(mnemonic) => WalletInfo::Mnemonic(mnemonic.clone()),
-            proto::to::login::Wallet::JadeId(jade_id) => {
-                let name = format!("Jade {}", jade_id);
-                let jade = self.jade_mng.open(jade_id)?;
+        let wallet_info = match login {
+            LoginData::Mnemonic { mnemonic } => WalletInfo::Mnemonic(mnemonic.to_string()),
+            LoginData::Jade { name, jade } => {
                 gdk_ses_impl::unlock_hw(self.env, &jade)?;
 
                 let _status = jade.start_status(JadeStatus::MasterBlindingKey);
@@ -1658,8 +1673,8 @@ impl Data {
 
                 WalletInfo::HwData(gdk_ses::HwData {
                     env: self.env,
-                    name,
-                    jade: std::sync::Arc::new(jade),
+                    name: name.clone(),
+                    jade: Arc::clone(jade),
                     master_blinding_key,
                     xpubs: BTreeMap::new(),
                 })
@@ -1729,23 +1744,37 @@ impl Data {
 
         let cache_dir = self.cache_path().to_str().unwrap().to_owned();
 
+        let wallet = req.wallet.ok_or_else(|| anyhow!("empty login request"))?;
+
+        let login_data = match wallet {
+            proto::to::login::Wallet::Mnemonic(mnemonic) => {
+                let mnemonic = bip39::Mnemonic::from_str(&mnemonic)?;
+                LoginData::Mnemonic { mnemonic }
+            }
+
+            proto::to::login::Wallet::JadeId(jade_id) => {
+                let name = format!("Jade {}", jade_id);
+                let jade = self.jade_mng.open(&jade_id)?;
+                LoginData::Jade {
+                    name,
+                    jade: Arc::new(jade),
+                }
+            }
+        };
+
         let reg_info = match self.settings.reg_info_v3.clone() {
             Some(reg_info) => reg_info,
             None => {
-                let reg_info = self.try_register(&req, &cache_dir)?;
+                let reg_info = self.try_register(&login_data, &cache_dir)?;
                 self.settings.reg_info_v3 = Some(reg_info.clone());
                 self.save_settings();
                 reg_info
             }
         };
 
-        let wallet = req.wallet.ok_or_else(|| anyhow!("empty login request"))?;
-
-        let wallet_info = match wallet {
-            proto::to::login::Wallet::Mnemonic(mnemonic) => WalletInfo::Mnemonic(mnemonic),
-            proto::to::login::Wallet::JadeId(jade_id) => {
-                let name = format!("Jade {}", jade_id);
-                let jade = self.jade_mng.open(&jade_id)?;
+        let wallet_info = match login_data {
+            LoginData::Mnemonic { mnemonic } => WalletInfo::Mnemonic(mnemonic.to_string()),
+            LoginData::Jade { name, jade } => {
                 let jade_watch_only = reg_info
                     .jade_watch_only
                     .as_ref()
@@ -1767,7 +1796,7 @@ impl Data {
                 WalletInfo::HwData(gdk_ses::HwData {
                     env: self.env,
                     name,
-                    jade: std::sync::Arc::new(jade),
+                    jade,
                     master_blinding_key: jade_watch_only.master_blinding_key.clone(),
                     xpubs,
                 })
@@ -1937,7 +1966,6 @@ impl Data {
     }
 
     fn process_login_request(&mut self, req: proto::to::Login) {
-        debug!("process login request...");
         let res = self.try_process_login_request(req);
         let res = match res {
             Ok(()) => proto::from::login::Result::Success(proto::Empty {}),
@@ -2520,10 +2548,6 @@ impl Data {
             }));
     }
 
-    fn process_new_asset(&mut self, msg: api::NewAssetNotification) {
-        self.register_assets_with_gdk_icons(vec![msg.asset]);
-    }
-
     // message processing
 
     fn send_request_msg(&self, request: api::Request) -> api::RequestId {
@@ -2866,7 +2890,7 @@ impl Data {
             api::Notification::BlindedSwapClient(msg) => self.process_blinded_swap_client(msg),
             api::Notification::SwapDone(msg) => self.process_instant_swap_done(msg),
             api::Notification::LocalMessage(msg) => self.process_local_message(msg),
-            api::Notification::NewAsset(msg) => self.process_new_asset(msg),
+            api::Notification::NewAsset(_) => {}
             api::Notification::MarketDataUpdate(_) => {}
             api::Notification::StartSwapDealer(_) => {}
             api::Notification::BlindedSwapDealer(_) => {}
@@ -2874,22 +2898,31 @@ impl Data {
         }
     }
 
-    fn add_missing_gdk_assets(&mut self, asset_ids: &[AssetId]) {
+    fn add_missing_gdk_assets<'a>(&mut self, asset_ids: impl Iterator<Item = &'a AssetId>) {
         // Do not replace existing asset information (like market_type)
         let new_asset_ids = asset_ids
-            .iter()
-            .copied()
             .filter(|asset_id| !self.assets.contains_key(asset_id))
-            .collect::<Vec<_>>();
+            .collect::<BTreeSet<_>>();
         if !new_asset_ids.is_empty() {
             let new_assets = self
-                .load_gdk_assets(&new_asset_ids)
+                .load_gdk_assets(new_asset_ids.into_iter())
                 .ok()
                 .unwrap_or_default();
             for asset in new_assets {
                 self.register_asset(asset);
             }
         }
+    }
+
+    fn add_gdk_assets_for_asset_pair<'a>(
+        &mut self,
+        asset_pairs: impl Iterator<Item = &'a AssetPair>,
+    ) {
+        let assets = asset_pairs
+            .into_iter()
+            .map(|asset_pair| [&asset_pair.base, &asset_pair.quote])
+            .flatten();
+        self.add_missing_gdk_assets(assets);
     }
 
     pub fn register_asset(&mut self, asset: api::Asset) {
@@ -2929,11 +2962,8 @@ impl Data {
     }
 
     pub fn register_assets_with_gdk_icons(&mut self, mut assets: api::Assets) {
-        let asset_ids = assets
-            .iter()
-            .map(|asset| asset.asset_id)
-            .collect::<Vec<_>>();
-        let gdk_assets = self.load_gdk_assets(&asset_ids).ok().unwrap_or_default();
+        let asset_ids = assets.iter().map(|asset| &asset.asset_id);
+        let gdk_assets = self.load_gdk_assets(asset_ids).ok().unwrap_or_default();
         let gdk_icons = gdk_assets
             .into_iter()
             .map(|asset| (asset.asset_id, asset.icon))
@@ -3267,8 +3297,8 @@ pub fn start_processing(
     };
     let env_settings = proto::from::EnvSettings {
         policy_asset_id: env.nd().policy_asset.asset_id().to_string(),
-        usdt_asset_id: env.nd().known_assets.usdt.asset_id().to_string(),
-        eurx_asset_id: env.nd().known_assets.eurx.asset_id().to_string(),
+        usdt_asset_id: env.nd().known_assets.USDt.asset_id().to_string(),
+        eurx_asset_id: env.nd().known_assets.EURx.asset_id().to_string(),
     };
     ui.send(proto::from::Msg::EnvSettings(env_settings));
 

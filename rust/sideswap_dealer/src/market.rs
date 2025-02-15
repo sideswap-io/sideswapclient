@@ -677,6 +677,7 @@ async fn process_ws_connected(data: &mut Data) {
         orders,
         utxos,
         new_events: _,
+        min_order_amounts: _,
     } = try_login(data).await.expect("login failed unexpectedly");
 
     for orders in data.orders.values_mut() {

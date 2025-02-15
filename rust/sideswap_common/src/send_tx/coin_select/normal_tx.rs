@@ -31,7 +31,7 @@ pub struct Res {
 }
 
 pub fn try_coin_select(args: Args) -> Result<Res, CoinSelectError> {
-    let fee_discount = !args.multisig_wallet;
+    let fee_discount = true;
 
     let res = if fee_discount {
         discount_fee::try_coin_select_impl(args.clone())

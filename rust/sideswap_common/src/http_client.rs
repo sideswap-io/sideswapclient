@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
 
 pub type Error = reqwest::Error;
 
@@ -32,6 +32,27 @@ impl HttpClient {
             let resp = self
                 .reqwest
                 .get(url)
+                .timeout(self.timeout)
+                .send()
+                .await?
+                .json::<T>()
+                .await?;
+            Ok(resp)
+        })
+        .await
+        .expect("bug in reqwest timeout handling")
+    }
+
+    pub async fn post<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        req: impl Serialize,
+    ) -> Result<T, Error> {
+        tokio::time::timeout(self.timeout + Duration::from_secs(60), async {
+            let resp = self
+                .reqwest
+                .post(url)
+                .json(&req)
                 .timeout(self.timeout)
                 .send()
                 .await?

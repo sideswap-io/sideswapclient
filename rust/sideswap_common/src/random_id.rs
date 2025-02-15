@@ -26,5 +26,13 @@ pub fn numeric_string(len: usize) -> String {
     res
 }
 
+pub fn random_hash32() -> sideswap_api::Hash32 {
+    rand::thread_rng().gen()
+}
+
+pub fn random_hash16() -> sideswap_api::Hash16 {
+    rand::thread_rng().gen()
+}
+
 #[cfg(test)]
 mod tests;

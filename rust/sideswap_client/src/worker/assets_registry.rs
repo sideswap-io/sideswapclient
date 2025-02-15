@@ -27,24 +27,23 @@ pub fn init(env: Env, registry_path: &std::path::Path, xpub: bitcoin::bip32::Xpu
 pub fn get_assets(
     env: Env,
     xpub: bitcoin::bip32::Xpub,
-    asset_ids: &[AssetId],
+    asset_ids: Vec<AssetId>,
 ) -> Result<Vec<Asset>, anyhow::Error> {
-    let asset_ids_copy = asset_ids.to_vec();
     let xpub = gdk_common::bitcoin::bip32::Xpub::decode(&xpub.encode()).unwrap();
     let loaded_assets = gdk_registry::get_assets(gdk_registry::GetAssetsParams {
-        assets_id: Some(asset_ids_copy.clone()),
+        assets_id: Some(asset_ids.clone()),
         xpub: Some(xpub),
         config: get_registry_config(env),
         names: None,
         tickers: None,
         category: None,
     })?;
+
     let result = asset_ids
         .iter()
-        .zip(asset_ids_copy.iter())
-        .filter_map(|(asset_id, asset_id_copy)| {
-            loaded_assets.assets.get(asset_id_copy).map(|v| {
-                let icon = loaded_assets.icons.get(asset_id_copy).cloned();
+        .filter_map(|asset_id| {
+            loaded_assets.assets.get(asset_id).map(|v| {
+                let icon = loaded_assets.icons.get(asset_id).cloned();
                 let default_ticker = || format!("{:0.4}", &asset_id.to_string());
                 Asset {
                     asset_id: *asset_id,

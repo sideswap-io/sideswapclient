@@ -5,13 +5,20 @@ use crate::network::Network;
 
 sideswap_types::define_enum!(DealerTicker {
     LBTC,
+
     USDt,
     EURx,
     MEX,
     DePix,
+
     SSWP,
     BMN2,
     CMSTR,
+    EXOeu,
+    AQF,
+    BAKER,
+    BSIC1,
+
     PPRGB,
 });
 
@@ -26,7 +33,12 @@ impl DealerTicker {
 
             DealerTicker::BMN2 | DealerTicker::CMSTR => AssetPrecision::FOUR,
 
-            DealerTicker::SSWP | DealerTicker::PPRGB => AssetPrecision::ZERO,
+            DealerTicker::AQF | DealerTicker::BSIC1 => AssetPrecision::TWO,
+
+            DealerTicker::SSWP
+            | DealerTicker::PPRGB
+            | DealerTicker::EXOeu
+            | DealerTicker::BAKER => AssetPrecision::ZERO,
         }
     }
 }
@@ -40,14 +52,20 @@ impl std::fmt::Display for DealerTicker {
 pub fn dealer_ticker_to_asset_id(network: Network, ticker: DealerTicker) -> elements::AssetId {
     match ticker {
         DealerTicker::LBTC => network.d().policy_asset.asset_id(),
-        DealerTicker::USDt => network.d().known_assets.usdt.asset_id(),
-        DealerTicker::EURx => network.d().known_assets.eurx.asset_id(),
-        DealerTicker::MEX => network.d().known_assets.mex.asset_id(),
-        DealerTicker::DePix => network.d().known_assets.depix.asset_id(),
-        DealerTicker::SSWP => network.d().known_assets.sswp.asset_id(),
-        DealerTicker::BMN2 => network.d().known_assets.bmn2.asset_id(),
-        DealerTicker::CMSTR => network.d().known_assets.cmstr.asset_id(),
-        DealerTicker::PPRGB => network.d().known_assets.pprgb.asset_id(),
+
+        DealerTicker::USDt => network.d().known_assets.USDt.asset_id(),
+        DealerTicker::EURx => network.d().known_assets.EURx.asset_id(),
+        DealerTicker::MEX => network.d().known_assets.MEX.asset_id(),
+        DealerTicker::DePix => network.d().known_assets.DePix.asset_id(),
+
+        DealerTicker::SSWP => network.d().known_assets.SSWP.asset_id(),
+        DealerTicker::BMN2 => network.d().known_assets.BMN2.asset_id(),
+        DealerTicker::CMSTR => network.d().known_assets.CMSTR.asset_id(),
+        DealerTicker::PPRGB => network.d().known_assets.PPRGB.asset_id(),
+        DealerTicker::EXOeu => network.d().known_assets.EXOeu.asset_id(),
+        DealerTicker::AQF => network.d().known_assets.AQF.asset_id(),
+        DealerTicker::BAKER => network.d().known_assets.BAKER.asset_id(),
+        DealerTicker::BSIC1 => network.d().known_assets.BSIC1.asset_id(),
     }
 }
 
@@ -69,6 +87,10 @@ fn dealer_ticker_to_asset_ticker(dealer_ticker: DealerTicker) -> &'static str {
         DealerTicker::BMN2 => sideswap_api::TICKER_BMN2,
         DealerTicker::CMSTR => sideswap_api::TICKER_CMSTR,
         DealerTicker::PPRGB => sideswap_api::TICKER_PPRGB,
+        DealerTicker::EXOeu => sideswap_api::TICKER_EXOEU,
+        DealerTicker::AQF => sideswap_api::TICKER_AQF,
+        DealerTicker::BAKER => sideswap_api::TICKER_BAKER,
+        DealerTicker::BSIC1 => sideswap_api::TICKER_BSIC1,
     }
 }
 
@@ -83,6 +105,10 @@ pub fn dealer_ticker_from_asset_ticker(ticker: &str) -> Option<DealerTicker> {
         sideswap_api::TICKER_BMN2 => DealerTicker::BMN2,
         sideswap_api::TICKER_CMSTR => DealerTicker::CMSTR,
         sideswap_api::TICKER_PPRGB => DealerTicker::PPRGB,
+        sideswap_api::TICKER_EXOEU => DealerTicker::EXOeu,
+        sideswap_api::TICKER_AQF => DealerTicker::AQF,
+        sideswap_api::TICKER_BAKER => DealerTicker::BAKER,
+        sideswap_api::TICKER_BSIC1 => DealerTicker::BSIC1,
         _ => return None,
     };
     Some(ticker)

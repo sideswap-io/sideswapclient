@@ -31,7 +31,7 @@ async fn send_msg(data: &mut Data, msg: Message) {
 
 async fn send_from(data: &mut Data, from: api::From) {
     let msg = serde_json::to_string(&from).expect("must not fail");
-    send_msg(data, Message::Text(msg)).await;
+    send_msg(data, Message::text(msg)).await;
 }
 
 async fn send_notif(data: &mut Data, notif: api::Notif) {

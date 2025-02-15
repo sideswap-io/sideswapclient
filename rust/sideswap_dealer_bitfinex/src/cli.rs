@@ -57,7 +57,7 @@ fn process_cli_client(
             };
             let resp = resp_rx.blocking_recv().unwrap();
             let resp = serde_json::to_string(&resp).unwrap();
-            websocket.write(tungstenite::protocol::Message::Text(resp))?;
+            websocket.write(tungstenite::protocol::Message::text(resp))?;
         }
     }
 }

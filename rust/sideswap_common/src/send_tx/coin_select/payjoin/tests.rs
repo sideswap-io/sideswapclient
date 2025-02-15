@@ -6,7 +6,7 @@ use super::*;
 fn basic() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
 
     let _res = try_coin_select(Args {
         multisig_wallet: false,
@@ -40,7 +40,7 @@ fn basic() {
 fn without_asset_change() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
 
     let _res = try_coin_select(Args {
         multisig_wallet: false,
@@ -74,7 +74,7 @@ fn without_asset_change() {
 fn send_lbtc() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
 
     let _res = try_coin_select(Args {
         multisig_wallet: false,
@@ -114,7 +114,7 @@ fn send_lbtc() {
 fn deduct_fee_whole_amount() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
 
     let _res = try_coin_select(Args {
         multisig_wallet: false,
@@ -148,7 +148,7 @@ fn deduct_fee_whole_amount() {
 fn deduct_fee_part_amount() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
 
     let _res = try_coin_select(Args {
         multisig_wallet: true,
@@ -202,9 +202,9 @@ fn deduct_fee_part_amount() {
 fn use_all_inputs() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
-    let eurx_asset = network.d().known_assets.eurx.asset_id();
-    let depix_asset = network.d().known_assets.depix.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
+    let eurx_asset = network.d().known_assets.EURx.asset_id();
+    let depix_asset = network.d().known_assets.DePix.asset_id();
 
     let _res = try_coin_select(Args {
         multisig_wallet: true,

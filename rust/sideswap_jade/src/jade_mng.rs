@@ -261,7 +261,7 @@ impl ManagedJade {
     pub fn read_status(&self) -> Result<models::RespVersionInfo, anyhow::Error> {
         let resp = self.make_request::<models::EmptyRequest, models::RespVersionInfo>(
             "get_version_info",
-            std::time::Duration::from_secs(10),
+            std::time::Duration::from_secs(5),
             None,
         )?;
 
@@ -477,6 +477,8 @@ impl JadeMng {
     }
 
     pub fn open(&mut self, jade_id: &JadeId) -> Result<ManagedJade, anyhow::Error> {
+        log::debug!("trying to connect to jade, jade_id: {jade_id}");
+
         let seconds = std::time::SystemTime::now()
             .duration_since(std::time::SystemTime::UNIX_EPOCH)
             .unwrap()
@@ -493,6 +495,8 @@ impl JadeMng {
             .find(|transport| transport.belongs(jade_id))
             .ok_or_else(|| anyhow!("can't find transport for {jade_id}"))?;
 
+        log::debug!("connecting to jade succeed, jade_id: {jade_id}");
+
         Ok(ManagedJade {
             jade_id: jade_id.clone(),
             data: Arc::new(Mutex::new(jade_data)),
@@ -501,5 +505,11 @@ impl JadeMng {
             active_statuses: Arc::clone(&self.active_statuses),
             status_callback: Arc::clone(&self.status_callback),
         })
+    }
+}
+
+impl Drop for ManagedJade {
+    fn drop(&mut self) {
+        log::debug!("closing jade connection, jade_id: {}", self.jade_id);
     }
 }

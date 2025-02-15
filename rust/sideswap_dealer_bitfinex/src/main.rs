@@ -21,6 +21,7 @@ use sideswap_common::channel_helpers::UncheckedUnboundedSender;
 use sideswap_common::dealer_ticker::dealer_ticker_to_asset_id;
 use sideswap_common::dealer_ticker::DealerTicker;
 use sideswap_common::network::Network;
+use sideswap_common::rpc;
 use sideswap_common::types::btc_to_sat;
 use sideswap_common::types::sat_to_btc;
 use sideswap_common::types::timestamp_now;
@@ -31,7 +32,6 @@ use sideswap_dealer::dealer_rpc;
 use sideswap_dealer::dealer_rpc::*;
 use sideswap_dealer::logs::GIT_COMMIT_HASH;
 use sideswap_dealer::market;
-use sideswap_dealer::rpc;
 use sideswap_dealer::utxo_data;
 use sideswap_dealer::utxo_data::UtxoData;
 use sideswap_types::normal_float::NormalFloat;
@@ -572,21 +572,21 @@ fn submit_market_prices(data: &mut Data) {
             ExchangePair::BtcUsdt => (
                 AssetPair {
                     base: data.policy_asset,
-                    quote: assets.usdt.asset_id(),
+                    quote: assets.USDt.asset_id(),
                 },
                 INTEREST_BTC_USDT,
             ),
             ExchangePair::BtcEur => (
                 AssetPair {
                     base: data.policy_asset,
-                    quote: assets.eurx.asset_id(),
+                    quote: assets.EURx.asset_id(),
                 },
                 INTEREST_BTC_EURX,
             ),
             ExchangePair::EurUsdt => (
                 AssetPair {
-                    base: assets.eurx.asset_id(),
-                    quote: assets.usdt.asset_id(),
+                    base: assets.EURx.asset_id(),
+                    quote: assets.USDt.asset_id(),
                 },
                 INTEREST_EURX_USDT,
             ),
@@ -1082,8 +1082,8 @@ fn process_market_event(data: &mut Data, event: market::Event) {
             price,
             txid,
         } => {
-            let usdt_asset = data.network.d().known_assets.usdt.asset_id();
-            let eurx_asset = data.network.d().known_assets.eurx.asset_id();
+            let usdt_asset = data.network.d().known_assets.USDt.asset_id();
+            let eurx_asset = data.network.d().known_assets.EURx.asset_id();
             let exchange_pair = if base == data.policy_asset && quote == usdt_asset {
                 ExchangePair::BtcUsdt
             } else if base == data.policy_asset && quote == eurx_asset {

@@ -33,17 +33,10 @@ pub fn try_coin_select_impl(
     }: Args,
 ) -> Result<Res, CoinSelectError> {
     for utxo in wallet_utxos.iter() {
-        verify!(
-            utxo.value > 0 && utxo.value < elements::bitcoin::amount::Amount::MAX_MONEY.to_sat(),
-            CoinSelectError::InvalidAmount(*utxo)
-        );
+        verify!(utxo.value > 0, CoinSelectError::InvalidAmount(*utxo));
     }
     for output in user_outputs.iter() {
-        verify!(
-            output.value > 0
-                && output.value < elements::bitcoin::amount::Amount::MAX_MONEY.to_sat(),
-            CoinSelectError::InvalidAmount(*output)
-        );
+        verify!(output.value > 0, CoinSelectError::InvalidAmount(*output));
     }
 
     if let Some(index) = deduct_fee {

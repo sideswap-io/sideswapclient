@@ -135,6 +135,13 @@ impl TradeDir {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
+pub struct MinOrderAmounts {
+    pub lbtc: u64,
+    pub usdt: u64,
+    pub eurx: u64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MarketInfo {
     pub asset_pair: AssetPair,
@@ -317,6 +324,7 @@ pub struct ListMarketsRequest {}
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ListMarketsResponse {
     pub markets: Vec<MarketInfo>,
+    pub token_quotes: Vec<AssetId>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -353,6 +361,7 @@ pub struct LoginResponse {
     pub orders: Vec<OwnOrder>,
     pub utxos: Vec<OutPoint>,
     pub new_events: Vec<EventWithSignature>,
+    pub min_order_amounts: Option<MinOrderAmounts>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

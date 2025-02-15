@@ -596,7 +596,7 @@ pub async fn connect(settings: &BfSettings) -> Result<Conn, anyhow::Error> {
         auth_nonce,
     };
     let auth_req = serde_json::to_string(&auth_req).expect("must not fail");
-    conn.send(tungstenite::Message::Text(auth_req)).await?;
+    conn.send(tungstenite::Message::text(auth_req)).await?;
 
     let auth_resp = next_msg::<Resp>(&mut conn).await?;
     match auth_resp {
@@ -608,7 +608,7 @@ pub async fn connect(settings: &BfSettings) -> Result<Conn, anyhow::Error> {
         flags: CONF_FLAG_BOOK_CHECKSUM | CONF_FLAG_BULK_UPDATES,
     };
     let conf_req = serde_json::to_string(&conf_req).expect("must not fail");
-    conn.send(tungstenite::Message::Text(conf_req)).await?;
+    conn.send(tungstenite::Message::text(conf_req)).await?;
 
     for exchange_pair in ExchangePair::ALL {
         let sub_req = Req::Subscribe {
@@ -616,7 +616,7 @@ pub async fn connect(settings: &BfSettings) -> Result<Conn, anyhow::Error> {
             symbol: exchange_pair.bfx_bookname().to_owned(),
         };
         let sub_req = serde_json::to_string(&sub_req).expect("must not fail");
-        conn.send(tungstenite::Message::Text(sub_req)).await?;
+        conn.send(tungstenite::Message::text(sub_req)).await?;
     }
 
     Ok(conn)

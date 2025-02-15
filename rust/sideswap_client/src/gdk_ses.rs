@@ -87,6 +87,7 @@ impl HwData {
                 supports_ae_protocol: 1,
                 supports_arbitrary_scripts: true,
                 supports_host_unblinding: true,
+                supports_external_blinding: true,
                 supports_liquid: 1,
                 supports_low_r: true,
             }),

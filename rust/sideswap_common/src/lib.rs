@@ -26,6 +26,7 @@ pub mod random_id;
 pub mod recipient;
 pub mod registration;
 pub mod retry_delay;
+pub mod rpc;
 pub mod send_tx;
 pub mod target_os;
 pub mod tx_type;

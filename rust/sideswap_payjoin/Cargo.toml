@@ -9,7 +9,6 @@ sideswap_common = { path = "../sideswap_common" }
 anyhow.workspace = true
 base64.workspace = true
 elements.workspace = true
-once_cell.workspace = true
 rand.workspace = true
 serde.workspace = true
 ureq.workspace = true

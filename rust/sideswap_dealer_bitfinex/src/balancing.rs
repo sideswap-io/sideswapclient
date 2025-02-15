@@ -203,7 +203,7 @@ pub async fn process_balancing(
                     && bitcoin_balance > 0.0
                     && module_connected
                 {
-                    let usdt_asset_id = network.d().known_assets.usdt.asset_id();
+                    let usdt_asset_id = network.d().known_assets.USDt.asset_id();
 
                     let result = rpc::make_rpc_call(
                         &args.rpc,

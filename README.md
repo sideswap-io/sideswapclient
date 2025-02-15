@@ -2,11 +2,9 @@
 
 SideSwap is released under the terms of the GNU General Public License. See [LICENSE](LICENSE) for more information.
 
-SideSwap swap protocol: [doc/protocol.md](doc/protocol.md).
+SideSwap swap protocol: [rust/docs/protocol.md](rust/docs/protocol.md).
 
-Client build instructions: [doc/build.md](doc/build.md).
-
-Dealer example: [doc/dealer.md](doc/dealer.md).
+Dealer documentation: [rust/docs/dealer.md](rust/docs/dealer.md).
 
 API reference: [https://sideswap.io/docs/](https://sideswap.io/docs/).
 

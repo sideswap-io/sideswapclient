@@ -16,7 +16,7 @@ struct Settings {
     mnemonic: bip39::Mnemonic,
     web_server: Option<market::WebServerConfig>,
     ws_server: Option<market::WsServerConfig>,
-    price_stream: price_stream::Config,
+    price_stream: sideswap_common::price_stream::Markets,
 }
 
 struct Data {

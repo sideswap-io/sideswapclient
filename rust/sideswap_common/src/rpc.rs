@@ -1,3 +1,4 @@
+use anyhow::ensure;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sideswap_types::bitcoin_amount::BtcAmount;
@@ -40,8 +41,7 @@ pub async fn make_rpc_call<T: RpcCall>(
     rpc_server: &RpcServer,
     req: T,
 ) -> Result<T::Response, anyhow::Error> {
-    static HTTP_CLIENT: once_cell::sync::OnceCell<reqwest::Client> =
-        once_cell::sync::OnceCell::new();
+    static HTTP_CLIENT: std::sync::OnceLock<reqwest::Client> = std::sync::OnceLock::new();
     let http_client = HTTP_CLIENT.get_or_init(|| {
         reqwest::Client::builder()
             .timeout(std::time::Duration::from_secs(30))
@@ -113,7 +113,7 @@ impl RpcCall for GetNewAddressCall {
     type Response = elements::Address;
 
     fn get_request(self) -> RpcRequest {
-        get_new_address_with_type(AddressType::P2SH)
+        get_new_address_with_type(None)
     }
 }
 
@@ -132,12 +132,14 @@ pub fn address_type_str(addr_type: AddressType) -> &'static str {
     }
 }
 
-pub fn get_new_address_with_type(addr_type: AddressType) -> RpcRequest {
+pub fn get_new_address_with_type(addr_type: Option<AddressType>) -> RpcRequest {
+    let mut params = json!({});
+    if let Some(address_type) = addr_type {
+        params["address_type"] = json!(address_type_str(address_type));
+    }
     RpcRequest {
         method: "getnewaddress".into(),
-        params: json!({
-            "address_type": address_type_str(addr_type),
-        }),
+        params,
     }
 }
 
@@ -238,4 +240,60 @@ impl RpcCall for SendRawTransactionCall {
             params: vec![json!(self.tx)].into(),
         }
     }
+}
+
+// Use `test_mempool_accepted` instead (to not forget to check the `allowed` value)
+struct TestMempoolAcceptedCall {
+    rawtxs: Vec<String>,
+}
+
+#[derive(Deserialize, Debug)]
+struct TestMempoolAcceptValue {
+    pub txid: String,
+    pub allowed: bool,
+    #[serde(rename = "reject-reason")]
+    pub reject_reason: Option<String>,
+}
+
+impl RpcCall for TestMempoolAcceptedCall {
+    type Response = Vec<TestMempoolAcceptValue>;
+
+    fn get_request(self) -> RpcRequest {
+        RpcRequest {
+            method: "testmempoolaccept".to_owned(),
+            params: vec![json!(self.rawtxs)].into(),
+        }
+    }
+}
+
+pub async fn test_mempool_accepted_list(
+    rpc_server: &RpcServer,
+    txs: Vec<String>,
+) -> Result<Vec<String>, anyhow::Error> {
+    let count = txs.len();
+    let check_acceptence =
+        make_rpc_call(rpc_server, TestMempoolAcceptedCall { rawtxs: txs }).await?;
+    ensure!(
+        check_acceptence.len() == count,
+        "invalid mempool test result"
+    );
+    let mut txids = Vec::new();
+    for resp in check_acceptence {
+        ensure!(
+            resp.allowed,
+            "mempool test failed: '{}', txid: {}",
+            resp.reject_reason.clone().unwrap_or_default(),
+            resp.txid,
+        );
+        txids.push(resp.txid);
+    }
+    Ok(txids)
+}
+
+pub async fn test_mempool_accepted(
+    rpc_server: &RpcServer,
+    tx: String,
+) -> Result<String, anyhow::Error> {
+    let resp = test_mempool_accepted_list(rpc_server, vec![tx]).await?;
+    Ok(resp[0].clone())
 }

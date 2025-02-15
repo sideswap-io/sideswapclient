@@ -2,9 +2,9 @@ pub const MIN_FEE_RATE: f64 = 0.1;
 
 pub const WEIGHT_FIXED: usize = 220;
 
-pub const WEIGHT_VIN_SINGLE_SIG_NATIVE: usize = 274;
-pub const WEIGHT_VIN_SINGLE_SIG_NESTED: usize = 366;
-pub const WEIGHT_VIN_MULTI_SIG: usize = 525;
+pub const WEIGHT_VIN_SINGLE_SIG_NATIVE: usize = 275;
+pub const WEIGHT_VIN_SINGLE_SIG_NESTED: usize = 367;
+pub const WEIGHT_VIN_MULTI_SIG: usize = 526;
 
 pub const WEIGHT_VOUT_NATIVE: usize = 266;
 pub const WEIGHT_VOUT_NESTED: usize = 270;

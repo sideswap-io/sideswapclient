@@ -1092,7 +1092,7 @@ fn get_challenge_address(master_key: &Xpriv, network: Network) -> Address {
 async fn send(connection: &mut Connection, msg: Msg) -> Result<(), Error> {
     let msg = serde_json::to_string(&msg).expect("should not fail");
     log::debug!("send: {}", msg);
-    connection.send(tungstenite::Message::Text(msg)).await?;
+    connection.send(tungstenite::Message::text(msg)).await?;
     Ok(())
 }
 

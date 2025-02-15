@@ -84,6 +84,7 @@ pub struct ListTransactions {
 
 #[derive(Serialize)]
 pub struct HwDevice {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub device: Option<HwDeviceDetails>,
 }
 
@@ -93,6 +94,7 @@ pub struct HwDeviceDetails {
     pub supports_ae_protocol: i32,
     pub supports_arbitrary_scripts: bool,
     pub supports_host_unblinding: bool,
+    pub supports_external_blinding: bool,
     pub supports_liquid: i32,
     pub supports_low_r: bool,
 }

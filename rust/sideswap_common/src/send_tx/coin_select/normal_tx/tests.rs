@@ -71,7 +71,7 @@ fn without_change() {
 fn send_asset() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
 
     run(Args {
         multisig_wallet: false,
@@ -119,9 +119,9 @@ fn send_asset() {
 fn use_all_inputs() {
     let network = Network::Liquid;
     let policy_asset = network.d().policy_asset.asset_id();
-    let usdt_asset = network.d().known_assets.usdt.asset_id();
-    let eurx_asset = network.d().known_assets.eurx.asset_id();
-    let depix_asset = network.d().known_assets.depix.asset_id();
+    let usdt_asset = network.d().known_assets.USDt.asset_id();
+    let eurx_asset = network.d().known_assets.EURx.asset_id();
+    let depix_asset = network.d().known_assets.DePix.asset_id();
 
     run(Args {
         multisig_wallet: false,

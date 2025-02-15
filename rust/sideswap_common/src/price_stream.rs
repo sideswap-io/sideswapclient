@@ -4,33 +4,80 @@ use anyhow::ensure;
 use serde::Deserialize;
 use sideswap_api::PricePair;
 
-use crate::{exchange_pair::ExchangePair, http_client::HttpClient};
+use crate::{
+    dealer_ticker::DealerTicker,
+    env::Env,
+    exchange_pair::ExchangePair,
+    http_client::HttpClient,
+    types::{asset_int_amount_, MAX_BTC_AMOUNT},
+};
 
 mod binance;
 mod bitfinex;
 mod bitpreco;
-mod sswp;
+mod fixed;
+mod sideswap;
 
 #[derive(Debug, Copy, Clone, Deserialize)]
 pub enum PriceSource {
     Binance,
     Bitfinex,
     BitPreco,
-    SSWP,
+    SideSwap,
+    Fixed,
 }
 
 pub type PriceCallback = Box<dyn FnMut(Option<PricePair>) -> () + Send>;
 
+#[derive(Debug, Clone, Deserialize)]
+pub struct Market {
+    pub source: PriceSource,
+    pub base: DealerTicker,
+    pub quote: DealerTicker,
+    pub interest: f64,
+    pub fixed: Option<fixed::Params>,
+    pub bid_amount: Option<f64>,
+    pub ask_amount: Option<f64>,
+}
+
+impl Market {
+    pub fn exchange_pair(&self) -> ExchangePair {
+        ExchangePair {
+            base: self.base,
+            quote: self.quote,
+        }
+    }
+
+    pub fn bid_amount_f64(&self) -> f64 {
+        self.bid_amount.unwrap_or(MAX_BTC_AMOUNT)
+    }
+
+    pub fn ask_amount_f64(&self) -> f64 {
+        self.ask_amount.unwrap_or(MAX_BTC_AMOUNT)
+    }
+
+    pub fn bid_amount_sats(&self) -> u64 {
+        asset_int_amount_(self.bid_amount_f64(), self.base.asset_precision())
+    }
+
+    pub fn ask_amount_sats(&self) -> u64 {
+        asset_int_amount_(self.ask_amount_f64(), self.base.asset_precision())
+    }
+}
+
+pub type Markets = Vec<Market>;
+
 async fn get_price(
+    env: Env,
     client: &HttpClient,
-    price_source: PriceSource,
-    exchange_pair: ExchangePair,
+    market: &Market,
 ) -> Result<PricePair, anyhow::Error> {
-    match price_source {
-        PriceSource::Binance => binance::get_price(client, exchange_pair).await,
-        PriceSource::Bitfinex => bitfinex::get_price(client, exchange_pair).await,
-        PriceSource::BitPreco => bitpreco::get_price(client, exchange_pair).await,
-        PriceSource::SSWP => sswp::get_price(client, exchange_pair).await,
+    match market.source {
+        PriceSource::Binance => binance::get_price(client, market).await,
+        PriceSource::Bitfinex => bitfinex::get_price(client, market).await,
+        PriceSource::BitPreco => bitpreco::get_price(client, market).await,
+        PriceSource::SideSwap => sideswap::get_price(env, client, market).await,
+        PriceSource::Fixed => fixed::get_price(client, market).await,
     }
 }
 
@@ -42,12 +89,13 @@ fn verify_price_pair(price_pair: PricePair) -> Result<PricePair, anyhow::Error> 
     Ok(price_pair)
 }
 
-async fn run(price_source: PriceSource, exchange_pair: ExchangePair, mut callback: PriceCallback) {
+async fn run(env: Env, market: Market, mut callback: PriceCallback) {
     let client = HttpClient::new();
     let mut last_success = None;
+    let exchange_pair = market.exchange_pair();
 
     loop {
-        let res = get_price(&client, price_source, exchange_pair)
+        let res = get_price(env, &client, &market)
             .await
             .and_then(verify_price_pair);
 
@@ -81,6 +129,6 @@ async fn run(price_source: PriceSource, exchange_pair: ExchangePair, mut callbac
     }
 }
 
-pub fn start(price_source: PriceSource, exchange_pair: ExchangePair, callback: PriceCallback) {
-    tokio::spawn(run(price_source, exchange_pair, callback));
+pub fn start(env: Env, market: Market, callback: PriceCallback) {
+    tokio::spawn(run(env, market, callback));
 }
